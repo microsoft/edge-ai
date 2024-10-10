@@ -1,5 +1,38 @@
 # Introduction 
-TODO: Give a short introduction of your project. Let this section explain the objectives or the motivation behind this project. 
+The IaC for Edge project, the first phase of ISE's "AI on Edge" Flagship Accelerator, will deliver a compiler/generator that outputs composable IaC. The IaC compiler/generator can grow with a customer's capabilities from innovative POCs and onto production system deployments. This solution will generate all the foundational cloud and edge solution components required to implement a “vision on edge” solution using Azure IoT Operations (AIO).
+
+The CLI-based IaC compiler/generator supports Terraform and Bicep outputs for base infrastructure and can interface with a limited selection of GitOps toolchains for core AIO components and custom customer workload deployment. Pre-built VM and cloud-hosted cluster setup scripts are also output from the generator, however the project only supports a very narrow set of configurations (Ubuntu & K3s clusters). 
+
+The IaC compiler/generator supports the following fine-grained output layers (though these layers can be flattened into larger chucks to fit a customer's operational model):
+
+* VM/host provisioning with configurable host operating system (initially limited to Ubuntu)
+* Installation of CNCF and AIO compatible clusters (initially limited to K3s)
+(Optional scripts, side-exhausted for Arc & AIO resource provider enablement in subscriptions)
+* Required cloud resources for Arc enabling of clusters (including Arc site management)
+* Arc enablement of (initially dev/test/lab) clusters
+* Cloud resource provisioning for MQTT protocol head for Event Grid, topic spaces, topics and cert-based authentication
+* AIO deployment of core infrastructure components (MQ Broker, Edge Storage Accelerator, Data Flow, Secretes Sync Controller, and Workload Identity Federation)
+* Cloud resource provisioning for cold data/event storage, connection to Fabric by means of RTI
+* Cloud resource provisioning for Azure Monitor (and required sub resources supporting edge and cloud infra)
+* AIO deployment of optionally selected components (OPC UA, AKRI, Strato, ADR((cloud)) & Schema Registry)
+* Customer defied custom workloads, and pre-built solution accelerators such as TIG/TICK stacks, InfluxDB Data Historian, Reference data backup from cloud to edge, etc.
+
+IaC compiler/generator output can be further tuned for the following environments:
+
+* Local Dev
+* Cloud-hosted development clusters
+* On-premises physical lab clusters
+* Cloud-hosted QA clusters
+* Cloud-hosted integration clusters
+* Cloud-hosted pre-production
+* Edge-hosted production
+* Cloud-hosted production
+
+Initial runs of the CLI will generate a full Arc-enabled, cloud-hosted development cluster with a basic AIO deployment (Phases 1 through 7). After that, annotations and naming conventions can be used to generate any set or sub-set of IaC for a target environment and reclassify elements for inclusion in alternate layers of the output IaC.
+ 
+Customers often approach with a wide variety of teams, roles and responsibilities to develop cloud-enabled edge computing solutions. There are often physical plant IT teams responsible for hardware through OSes at the edge, and enterprise IT responsible for cloud infrastructure deployment. There are teams managing cloud data estates, and specialist teams managing physical plant data systems. There are Data Science teams that often span edge and cloud and need to think of both edge and cloud environments in a unified (i.e. more uniform) way. This tool is built to directly address these constraints, and is positioned to accelerate customers through the POC phase with opinionated IaC, and the flexibility to grow and evolve IaC approaches to accommodate increasing solution complexity. 
+
+In the future, this CLI-based tool will provide extensible (though custom component integration) GitOps outputs for AIO components and custom workloads, initially supporting Argo CD, Flux and Kalypso.
 
 # Getting Started
 TODO: Guide users through getting your code up and running on their own system. In this section you can talk about:
