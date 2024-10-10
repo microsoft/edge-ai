@@ -11,7 +11,7 @@ Date: **2024-10-09** [Format=YYYY-MM-DD]
 
 ## Decision
 
-Select build vs buy of compiler/gnerator of IaC, scripts and charts for AI on Edge solutions. 
+Select build vs buy of compiler/generator of IaC, scripts and charts for AI on Edge solutions. 
 
 ## Context
 
