@@ -10,6 +10,10 @@ Date: **2021-11-21** [Format=YYYY-MM-DD]
 - [ ] Deprecated 
 - [ ] Superseded by 0002
 
+## Decision
+
+What is the decision being made? 
+
 ## Context
 
 What and why was this decision taken?

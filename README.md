@@ -5,17 +5,17 @@ The CLI-based IaC compiler/generator supports Terraform and Bicep outputs for ba
 
 The IaC compiler/generator supports the following fine-grained output layers (though these layers can be flattened into larger chucks to fit a customer's operational model):
 
-* VM/host provisioning with configurable host operating system (initially limited to Ubuntu)
-* Installation of CNCF and AIO compatible clusters (initially limited to K3s)
+1. VM/host provisioning with configurable host operating system (initially limited to Ubuntu)
+2. Installation of CNCF and AIO compatible clusters (initially limited to K3s)
 (Optional scripts, side-exhausted for Arc & AIO resource provider enablement in subscriptions)
-* Required cloud resources for Arc enabling of clusters (including Arc site management)
-* Arc enablement of (initially dev/test/lab) clusters
-* Cloud resource provisioning for MQTT protocol head for Event Grid, topic spaces, topics and cert-based authentication
-* AIO deployment of core infrastructure components (MQ Broker, Edge Storage Accelerator, Data Flow, Secretes Sync Controller, and Workload Identity Federation)
-* Cloud resource provisioning for cold data/event storage, connection to Fabric by means of RTI
-* Cloud resource provisioning for Azure Monitor (and required sub resources supporting edge and cloud infra)
-* AIO deployment of optionally selected components (OPC UA, AKRI, Strato, ADR((cloud)) & Schema Registry)
-* Customer defied custom workloads, and pre-built solution accelerators such as TIG/TICK stacks, InfluxDB Data Historian, Reference data backup from cloud to edge, etc.
+3. Required cloud resources for Arc enabling of clusters (including Arc site management)
+4. Arc enablement of (initially dev/test/lab) clusters
+5. Cloud resource provisioning for MQTT protocol head for Event Grid, topic spaces, topics and cert-based authentication
+6. AIO deployment of core infrastructure components (MQ Broker, Edge Storage Accelerator, Data Flow, Secretes Sync Controller, and Workload Identity Federation)
+7. Cloud resource provisioning for cold data/event storage, connection to Fabric by means of RTI
+8. Cloud resource provisioning for Azure Monitor (and required sub resources supporting edge and cloud infra)
+9. AIO deployment of optionally selected components (OPC UA, AKRI, Strato, ADR((cloud)) & Schema Registry)
+10. Customer defied custom workloads, and pre-built solution accelerators such as TIG/TICK stacks, InfluxDB Data Historian, Reference data backup from cloud to edge, etc.
 
 IaC compiler/generator output can be further tuned for the following environments:
 
