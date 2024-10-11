@@ -1,10 +1,8 @@
-# ADR Title
+# Repository Design and Compliance Considerations
 
-Date: **2021-11-21** [Format=YYYY-MM-DD]
+Date: **2021-10-10** [Format=YYYY-MM-DD]
 
 ## Status
-
-[Use the appropriate status to represent this decision record]
 
 - [x] Draft
 - [ ] Proposed
@@ -14,7 +12,7 @@ Date: **2021-11-21** [Format=YYYY-MM-DD]
 
 ## Decision
 
-What is the decision being made?
+Select an approach to repository setup and structure for AI on Edge solutions.
 
 ## Context
 
