@@ -1,0 +1,5 @@
+{
+  "devDependencies": {
+    "markdownlint": "^0.35.0"
+  }
+}
