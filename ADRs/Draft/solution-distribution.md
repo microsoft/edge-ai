@@ -22,22 +22,23 @@ How this solution is distributed is critical to both the complexity of maintenan
 
 The primary drivers for distribution/reuse of this tool are:
 
-* Developers at manufacturing customers are often prohibited from accessing public package repositories directly, meaning consumption via package distribution requires allow-listing with sufficient lead time.
-* Customers do not NEED to use this tool as it could be utilized only by ISE crews and contents distributed to customers after generation. 
-* Publishing packages as MSFT artifacts requires code signing, burdensome compliance requirements, additional reoccurring operational complexity (certificate expiry), and only those with secure access workstations can work on automation infrastructure.
+* Developers at manufacturing customers are often prohibited from accessing public package repositories directly, meaning consumption via package distribution requires allow-listing with sufficient lead time for DevOps teams to pre-scan and copy packages internally.
+* Customers do not NEED to use this tool as it could be utilized only by ISE crews and contents distributed to customers after an IaC generation run. 
+* Publishing packages as MSFT artifacts requires code signing, burdensome compliance requirements, additional reoccurring operational complexity (certificate expiry), only those with secure access workstations can work on automation infrastructure, and it will then necessitate an ongoing commitment from SolOps to keep publishing processes functioning.
 
 ## Considered options (optional)
 
-What were the options that were considered?
+The outcome here is one of a few choices:
 
-* driver 1
-* driver 2
+* Publish public packages and take on the operational complexity of maintaining the process
+* Publish internal packages which has less overhead as the code does not have to be signed, but the internal package repository will need ongoing operational support
+* Consumption (public or internal) directly from the repository requires downloading the tool, potentially installing the tool's runtime (or the development of a Codespace), and then running the tool, which can be more error prone than running a downloaded package.   
 
 ## Decision
 
-What decision was taken?
+The tool will be provided only as a code package that requires downloading/cloning and running the tool in its host runtime to execute. 
 
 ## Consequences
 
-What are the consequences of this decision?
+There is additional friction for consumption; however, requiring a clone may encourage contribution back to the project as developers will have the tool cloned locally. This decision also do not preclude distribution by package at a later date, when reuse is sufficiently high enough to justify the operational commitment.  
  
