@@ -54,6 +54,13 @@ There are numerous ways to achieve this outcome, including using existing projec
 - Mustache or Jinja templates
   - Pros: mildly known to to customer engineers, provides flexibility and speed for initial implementation, could reuse core of Project Coral to accelerate
   - Cons: custom coded solution, not likely usable for cross-AF integration without significant work and governance
+- No CLI and just raw IaC
+  - Pros: less work to bootstrap and more natural/idiomatic flow for Terraform & Bicep outputs
+  - Cons:
+    - There is a large body of shared scripts and disk image templates that need to be managed for both output formats
+    - Uniformity is a forcing function when the same tooling outputs multiple formats
+    - Limited ability to create single "solution" files representing different solution types, or solution descriptors must be duplicated for each output format
+    - More challenging to extend to additional output formats such as Powershell or Bash wrapping Az CLI commands for OEM/ODM or "boxed product" solutions in B2B scenarios 
 
 ## Decision Conclusion
 
