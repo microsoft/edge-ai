@@ -10,10 +10,6 @@ Date: **2021-10-10** [Format=YYYY-MM-DD]
 - [ ] Deprecated
 - [ ] Superseded by 0002
 
-## Decision
-
-Select an approach to repository setup and structure for AI on Edge solutions.
-
 ## Context
 
 What and why was this decision taken?
@@ -32,7 +28,7 @@ What were the options that were considered?
 - driver 1
 - driver 2
 
-## Decision Conclusion
+## Decision
 
 What decision was taken?
 
