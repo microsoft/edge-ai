@@ -4,8 +4,8 @@ Date: **2021-10-24** [Format=YYYY-MM-DD]
 
 ## Status
 
-- [x] Draft
-- [ ] Proposed
+- [ ] Draft
+- [X] Proposed
 - [ ] Accepted
 - [ ] Deprecated
 - [ ] Superseded by 0002
