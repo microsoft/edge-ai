@@ -38,7 +38,7 @@ What were the options that were considered?
 
 ## Decision Conclusion
 
-The CLI will be written in Java/Typescript and use the Node runtime.
+The CLI will be written in JavaScript/Typescript and use the Node runtime.
 
 ## Consequences
 
