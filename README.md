@@ -49,14 +49,16 @@ Describe and show how to build your code and run the tests.
 
 ## ADR Process
 
-All design decisions for direction, feature implementation, and community decisions happen through and ADR process. ADRs can be drafted by any contributors for consideration by project leads. Final ADR acceptance is performed via sign-off from the project's Technical Lead (Bill Berry), Product Owner (Larry Lieberman), Technical Program Manager (Mack Renard), and Architect (Paul Bower).
+All design decisions for project direction, feature or capability implementation, and community decisions happen through and Architecture Decision Record (ADR) process. ADRs can be drafted by any project community members for consideration first by project leads, and secondarily by the project's community. Final ADR acceptance is performed via sign-off from 3/4ths of the project's leads: Technical Lead (Bill Berry), Product Owner (Larry Lieberman), Technical Program Manager (Mack Renard), and Project Architect (Paul Bower).
 
-ARD move through a process that includes the following states:
+ARDs move through a process that includes the following states:
 
-* Draft - for all ADRs under development and in a drafting phase. May be committed to the main branch directly by project administrators, but must be done in branches by community members
-* Proposed - for all ADRs under review by the ADR sign-off team (project leads), this phase is for discussion amongst project leads to ensure quality before they are opened to broad community engagement
-* Accepted - for all ADRs that have received an "RFC" status. ADRs in this state will be presented to the project community for comment for no less than 5 business days, before ultimately being approved or denied by project administrators.
-* Deprecated - for all ADRs that are not relevant to the solution, it's active components or features, and should be retained for historical context. 
+* Draft - for all ADRs under development and in a drafting phase. May be committed to the main branch directly by project leads, but must be done via branches for community members
+* Proposed - for all ADRs that have been reviewed by the ADR sign-off team (project leads), this phase indicates the ADR is now open for discussion amongst the broad project community for feedback.
+* Accepted - for all ADRs that have completed the community RFC process. ADRs in this state have been ratified/accepted by the project community and may move to implementation.
+* Deprecated - for all ADRs that are no longer relevant to the solution or have been superseded by more comprehensive ADRs; this is inclusive of retired components or features, but will be retained in perpetuity for historical context.
+
+Please see [ADR README](./ADRs/README.MD) for a more detailed explanation of the ADR process flow and how to author and progress your ideas for this project, through to implementation.
 
 ## Contribute
 
