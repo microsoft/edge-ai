@@ -4,10 +4,8 @@ Date: **2021-10-14** [Format=YYYY-MM-DD]
 
 ## Status
 
-[Use the appropriate status to represent this decision record]
-
-- [x] Draft
-- [ ] Proposed
+- [ ] Draft
+- [X] Proposed
 - [ ] Accepted
 - [ ] Deprecated
 - [ ] Superseded by 0002
