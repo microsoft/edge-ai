@@ -1,3 +1,0 @@
-# Accepted State
-
-Accepted ADRs are those that have been approved by the project leads and have been committed to for development effort.
