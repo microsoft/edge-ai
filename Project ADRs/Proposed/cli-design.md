@@ -47,7 +47,7 @@ There are numerous ways to achieve this outcome, including using existing projec
   - Cons: Base language not broadly known to customer engineers
 - AZD
   - Pros: Supports the solo developer and customer sales story by creating easy demo environments
-  - Cons: Not designed to create production or production-like environments that targets the roles of customers preforming solution setup
+  - Cons: Not designed to create production or production-like environments that targets the roles of customers preforming solution setup, and is not a multi-environment deployment targeting solution.
 - Cargo
   - Pros: flexible in building/scaffolding multiple project types, understood by early-adopter customers
   - Cons: Ecosystem not broadly known to customer engineers  
