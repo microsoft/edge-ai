@@ -73,4 +73,4 @@ The IaC for Edge project of the AI on Edge Flagship Accelerator has chosen to bu
 
 Engineering team will likely need to adopt a more mature scaffolding framework in the future as project capability and complexity grows.
 
-Cross-coordination with Project CAIRA will be critical to the success of this CLI. Initial development of the CLI will happen independently of Project CAIRA, with frequent check-ins to optimize for cross-team collaboration.
+Cross-coordination with Project CAIRA will be critical to the success of this CLI. Initial development of the CLI will happen independently of Project CAIRA, with frequent check-ins to optimize for cross-team collaboration. Currently, Project CAIRA needs very limited capability and functionality from a CLI, where as this project's needs rely very heavily on unifying Terraform and Bicep approaches, and interlaced with scripts, images, from a unified solution defintion.
