@@ -44,14 +44,29 @@ Some elements to highlight influencing future decisions:
 - Authentication layer to models (AML keys)
 - Scale deployments pods
 - Deploy models
+- A/B test models
 
 #### Risks and dependencies
 
 - The extension is a solution that deploys as set of workloads into Kubernetes, needs to be upgraded and managed. As a Microsoft supported product there is added solution bundling/integrated value, compared to some 3rd party open source solutions
-- Identity pod - requirement to authenticate to the model through the front-end load balanced endpoints using Azure managed keys for the deployment
-- Offline and occasionally connected support - how long does the service run locally without connectivity to Azure, Storage and Entra ID endpoints? This needs to be researched further, no clarity about any support for disconnected operations although it can be assumed local model inference will continue working for some period of time after a successful deployment
-- See networking requirements [Inference router and connectivity requirements - Azure Machine Learning](https://learn.microsoft.com/en-us/azure/machine-learning/how-to-kubernetes-inference-routing-azureml-fe?view=azureml-api-2#understand-connectivity-requirements-for-aks-inferencing-cluster)
+- Identity pod - requirement to authenticate to the model through the front-end load balanced endpoints using Azure managed keys for the deployment. Unclear if federated workload identity is supported at edge (which is still in Preview).
+- Evaluate networking requirements [Inference router and connectivity requirements - Azure Machine Learning](https://learn.microsoft.com/en-us/azure/machine-learning/how-to-kubernetes-inference-routing-azureml-fe?view=azureml-api-2#understand-connectivity-requirements-for-aks-inferencing-cluster)
 - System requirements might be higher than running standalone models on edge
+
+#### Pros and cons
+
+Pros:
+- The solution is integral part of Azure ML SDK, CLI and Portal with a focus on Dsta scientist and Ml Endineer personas
+- Integrates model observability within Azure ML Workspace
+- Does not require data scientist to understand specifics of edge deployment, it just works out of the box like for any online endpoint deployment
+
+Cons:
+- Scale limits:
+  - Azure ML 'online endpoints' are limited to 50 per subscription. This scale limitation will be a blocker for most customers
+  - Azure ML deployments are limited to 20 per online endpoint. Again this can be a tough limitation for many scenarios
+- Offline support for the extension is not documented and needs to be evaluated
+- Monitoring and observability is not exposed locally on the edge cluster and tunneled directly into the Azure ML workspace without clear documentation on how to store the signals within a customer's monitoring solution
+- The model is deployed as a load balanced REST API endpoint which might not fit all use cases
 
 #### Push based deployment vs pull (GitOps)
 
@@ -78,9 +93,12 @@ A new model published into the Azure ML repository, requires manual steps of cre
 
 #### Pros and cons
 
+Pros:
 - Desired state reconciliation based on approved branch changes, no deployments are done without a clear Git based validation flow
 - Continuous reconciliation on an edge cluster
 - Traceability by means of Git (commit, PR, merge, approve, ...)
+
+Cons:
 - Managing hundreds of targets clusters within a single Git repository structure, with automated tools that may impact manifest creation, is a complex task which Git is not optimized for
 - RBAC separation per cluster is missing out of the box (as the Git permissions are for an entire repo)
 - Flux reconciliation engine runs continuously preventing clear maintenance windows out of the box, often prohibitive in manufacturing scenarios, though this can be addressed with approaches such as [Refactoring GitOps repository to support both real-time and reconciliation window changes](https://dev.to/mahrrah/refactoring-gitops-repository-to-support-both-real-time-and-reconciliation-window-changes-2cc) and [How to enable reconciliation windows using Flux and K8s native components](https://dev.to/mahrrah/how-to-enable-reconciliation-windows-using-flux-and-k8s-native-components-2d4i)
