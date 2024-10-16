@@ -45,6 +45,9 @@ There are numerous ways to achieve this outcome, including using existing projec
 - Ruby on Rails built-in "Scaffold" capability
   - Pros: flexible in building/scaffolding multiple project types
   - Cons: Base language not broadly known to customer engineers
+- AZD
+  - Pros: Supports the solo developer and customer sales story by creating easy demo environments
+  - Cons: Not designed to create production or production-like environments that targets the roles of customers preforming solution setup
 - Cargo
   - Pros: flexible in building/scaffolding multiple project types, understood by early-adopter customers
   - Cons: Ecosystem not broadly known to customer engineers  
@@ -60,7 +63,7 @@ There are numerous ways to achieve this outcome, including using existing projec
     - There is a large body of shared scripts and disk image templates that need to be managed for both output formats
     - Uniformity is a forcing function when the same tooling outputs multiple formats
     - Limited ability to create single "solution" files representing different solution types, or solution descriptors must be duplicated for each output format
-    - More challenging to extend to additional output formats such as Powershell or Bash wrapping Az CLI commands for OEM/ODM or "boxed product" solutions in B2B scenarios 
+    - More challenging to extend to additional output formats such as Powershell or Bash wrapping Az CLI commands for OEM/ODM or "boxed product" solutions in B2B scenarios
 
 ## Decision Conclusion
 
