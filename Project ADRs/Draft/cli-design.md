@@ -64,8 +64,10 @@ There are numerous ways to achieve this outcome, including using existing projec
 
 ## Decision Conclusion
 
-The IaC for Edge project of the AI on Edge Flagship Accelerator has chosen to build the initial compiler/generator using Mustache/Jinja templates to expedite the incubation phase of the project.
+The IaC for Edge project of the AI on Edge Flagship Accelerator has chosen to build the initial compiler/generator using Jinja templates to expedite the incubation phase of the project.
 
 ## Consequences
 
 Engineering team will likely need to adopt a more mature scaffolding framework in the future as project capability and complexity grows.
+
+Cross-coordination with Project CAIRA will be critical to the success of this CLI. Initial development of the CLI will happen independently of Project CAIRA, with frequent check-ins to optimize for cross-team collaboration.
