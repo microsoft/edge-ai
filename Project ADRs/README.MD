@@ -1,6 +1,8 @@
 # ADR Process
 
-This document outlines the process and workflow for all Architecture Decision Record (ADR) regardless of the author of origin.
+This document outlines the process and workflow for all Architecture Decision Record (ADR) regardless of the author of origin. 
+
+> NOTE: Project ADRs will never be shared with external contributors or the public unless the project garners enough momentum that public disclosure is warranted.
 
 ## When to draft ADRs
 
