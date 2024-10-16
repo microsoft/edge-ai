@@ -53,11 +53,7 @@ Additional dependant package solutions, adding to the matrix of the above soluti
 
 ## Decision Conclusion
 
-<<<<<<<< HEAD:Project ADRs/Proposed/language-selection.md
-The CLI will be written in JavaScript/Typescript and use the Node runtime.
-========
 The CLI will be written in Typed Python and use the Jinja template engine, uv package resolver, Ruff for linting and formatting.
->>>>>>>> main:Project ADRs/Draft/language-selection.md
 
 ## Consequences
 
