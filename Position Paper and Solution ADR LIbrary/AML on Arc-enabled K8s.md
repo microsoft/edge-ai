@@ -1,6 +1,6 @@
 # Scale deployment of Azure ML models to edge Arc-enabled Kubernetes clusters
 
-Date: **2021-10-15**
+Date: **2024-10-15**
 
 ## Decision
 
@@ -53,14 +53,16 @@ Some elements to highlight influencing future decisions:
 - Evaluate networking requirements [Inference router and connectivity requirements - Azure Machine Learning](https://learn.microsoft.com/en-us/azure/machine-learning/how-to-kubernetes-inference-routing-azureml-fe?view=azureml-api-2#understand-connectivity-requirements-for-aks-inferencing-cluster)
 - System requirements might be higher than running standalone models on edge
 
-#### Pros and cons
+#### Pros and cons for Option 1
 
 Pros:
+
 - The solution is integral part of Azure ML SDK, CLI and Portal with a focus on Dsta scientist and Ml Endineer personas
 - Integrates model observability within Azure ML Workspace
 - Does not require data scientist to understand specifics of edge deployment, it just works out of the box like for any online endpoint deployment
 
 Cons:
+
 - Scale limits:
   - Azure ML 'online endpoints' are limited to 50 per subscription. This scale limitation will be a blocker for most customers
   - Azure ML deployments are limited to 20 per online endpoint. Again this can be a tough limitation for many scenarios
@@ -91,14 +93,20 @@ The missing piece in the Azure ML scale deployment flow is the additional step o
 
 A new model published into the Azure ML repository, requires manual steps of creating a deployment manifest (or Helm Chart), updating an existing manifest in a Git repository, and updating settings of the new model into each edge cluster's configuration root. This is a manual process which can be partially automated through a UI or other automation processes, but adds additional complexity and effort during initial project iterations.
 
-#### Pros and cons
+#### Pros and cons for Option 2
 
 Pros:
+
 - Desired state reconciliation based on approved branch changes, no deployments are done without a clear Git based validation flow
 - Continuous reconciliation on an edge cluster
 - Traceability by means of Git (commit, PR, merge, approve, ...)
 
 Cons:
+
 - Managing hundreds of targets clusters within a single Git repository structure, with automated tools that may impact manifest creation, is a complex task which Git is not optimized for
 - RBAC separation per cluster is missing out of the box (as the Git permissions are for an entire repo)
 - Flux reconciliation engine runs continuously preventing clear maintenance windows out of the box, often prohibitive in manufacturing scenarios, though this can be addressed with approaches such as [Refactoring GitOps repository to support both real-time and reconciliation window changes](https://dev.to/mahrrah/refactoring-gitops-repository-to-support-both-real-time-and-reconciliation-window-changes-2cc) and [How to enable reconciliation windows using Flux and K8s native components](https://dev.to/mahrrah/how-to-enable-reconciliation-windows-using-flux-and-k8s-native-components-2d4i)
+
+### Future Options
+
+Edge & Platform Product team is working on extending ML model and workload deployment with solutions like Toolchain Orchestrator and Configuration Management. These solutions are in Private Preview at this of writing.
