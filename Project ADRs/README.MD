@@ -1,6 +1,8 @@
 # ADR Process
 
-This document outlines the process and workflow for all Architecture Decision Record (ADR) regardless of the author of origin.
+This document outlines the process and workflow for all Architecture Decision Record (ADR) regardless of the author of origin. 
+
+> NOTE: Project ADRs will never be shared with external contributors or the public unless the project garners enough momentum that public disclosure is warranted.
 
 ## When to draft ADRs
 
@@ -42,10 +44,16 @@ PRs raised to migrate a draft ADR to proposed will adhere to the following rules
 
 ### Accepted
 
-The Accepted state represents ADRs that have been reviewed for completeness and approved by the project leads and have progressed through a period of RFC from the broader project community. (To Be Completed)
+The Accepted state represents ADRs that have been reviewed for completeness and approved by the project leads and have progressed through a period of RFC from the broader project community. Work to implement the decisions once the ADR has moved into the accepted state. Once a month, ADRs in the accepted state will be reviewed by project leads to ensure they are still relevant to the project, and if not will either be moved to the Deprecated directory, or set back to a draft state for revision and updating.
+
+If the ADR is replacing a prior accepted ADR, the old ADR must be renamed with a `S-` prefix as part of the Superseded ADR PR, and the old ADR must remain in the Accepted folder for linage.
 
 ### Deprecated
 
+All ADRs in the deprecated state represent those where subsequent decisions have been made to change project course or direction, or are no longer applicable to the project due to feature deprecation. Deprecated ADRs are kept in perpetuity to act as a historical record of project growth and direction.
+
 ### Superseded
+
+Superseded ADR are those drafted to enhance or improve upon prior decisions. Superseded ADRs will be flagged with a `S-` prefix, and all subsequent ADRs will attempt to use the same original title as the ADR being superseded, and will have a three digit suffix appended to note the revision number.
 
 ## FAQ
