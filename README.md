@@ -49,7 +49,7 @@ Describe and show how to build your code and run the tests.
 
 ## ADR Process
 
-All design decisions for project direction, feature or capability implementation, and community decisions happen through and Architecture Decision Record (ADR) process. ADRs can be drafted by any project community members for consideration first by project leads, and secondarily by the project's community. Final ADR acceptance is performed via sign-off from 3/4ths of the project's leads: Technical Lead (Bill Berry), Product Owner (Larry Lieberman), Technical Program Manager (Mack Renard), and Project Architect (Paul Bower).
+All design decisions for project direction, feature or capability implementation, and community decisions happen through an Architecture Decision Record (ADR) process. ADRs can be drafted by any project community member for consideration first by project leads, and secondarily by the project's community. Final ADR acceptance is performed via sign-off from 3/5ths of the project's leads: Technical Lead (Bill Berry), Product Owner (Larry Lieberman), Technical Program Manager (Mack Renard), Consulting cross-domain Architect (Paul Bower), and Architect (Tim Park).
 
 ARDs move through a process that includes the following states:
 
