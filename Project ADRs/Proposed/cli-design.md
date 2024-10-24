@@ -1,4 +1,4 @@
-# CLI Design for AI on Edge - IaC fro Edge
+# CLI Design for AI on Edge - IaC for Edge
 
 Date: **2024-10-09** [Format=YYYY-MM-DD]
 
