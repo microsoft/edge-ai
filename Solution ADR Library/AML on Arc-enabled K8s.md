@@ -1,10 +1,13 @@
-# [30]. Scale deployment of Azure ML models to edge Arc-enabled Kubernetes clusters in an MVE
+# Scale deployment of Azure ML models to edge Arc-enabled Kubernetes clusters in an MVE / Demonstrator
 
 Date: **2024-09-06**
 
 ## Status
 
-Accepted in scope of the MVE/Demonstrator.
+- [ ] Draft
+- [ ] Proposed
+- [X] Accepted (in scope of the MVE/Demonstrator)
+- [ ] Deprecated
 
 ## Context
 

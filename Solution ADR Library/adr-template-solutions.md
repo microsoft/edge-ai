@@ -1,22 +1,24 @@
-# [#]. ADR Title
+# ADR Title
 
-[The title should be formatted with an ascending number to make it unique, typically the task/issue number]
+[The title should unique within the library, provide a longer title if needed to differentiate with other ADRs]
 
 Date: **2024-01-01** [Format=YYYY-MM-DD]
 
 ## Status (optional)
 
-[For this library of ADRs it can directly move to the status at which it was stored in the original project]
+[For this library of ADRs, mark the most applicable status at which it was stored in the original project. Ths can help provide context and validity for folks reviewing this ADR. If it has been deprecated you can add a note on why and date it.]
 
-- [x] Draft
+- [ ] Draft
 - [ ] Proposed
 - [ ] Accepted
 - [ ] Deprecated
-- [ ] Superseded by #0002
 
 ## Context
 
-What and why was this decision taken?
+Describe:
+
+- What scenario the solution is for?
+- The problem you want to solve?
 
 ## Decision
 
@@ -26,8 +28,8 @@ What is the decision being made?
 
 What were the drivers to make this decision?
 
-- driver 1
-- driver 2
+- Driver 1
+- Driver 2
 
 ## Considered Options (optional)
 
@@ -35,7 +37,7 @@ What were the options that were considered?
 
 ### Option 1
 
-[Share technical details, risks, and pros and cons, risks and dependencies]
+[Share technical details, pros and cons, risks and dependencies]
 
 ### Option 2
 
