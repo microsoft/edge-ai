@@ -71,3 +71,19 @@ Users and developers can contribute to make this solution better in several ways
 * [Contribute an ADR](./Solution%20ADR%20Library/README.md#contribute) from your engagement
 * [Contribute a Security Plan](./Solution%20Security%20Plan%20Library//README.md#contribute) from your engagement
 * [Find a user story or task from the backlog](https://dev.azure.com/ai-at-the-edge-flagship-accelerator/IaC%20for%20the%20Edge/_sprints/taskboard/IaC%20for%20the%20Edge%20Team/IaC%20for%20the%20Edge/***REMOVED***) and help move the accelerator forward
+
+When contributing to the project, please consider the following guidance:
+
+* Assign a workitem to yourself before beginning any effort, and set the item's status field accordingly.
+* If a work item for your contribution does not exist, [please file an issue](https://dev.azure.com/ai-at-the-edge-flagship-accelerator/IaC%20for%20the%20Edge/_workitems/create/Issue) first to engage the project's PO, TPM, or Tech Lead for guidance.
+* Commits (or at least one in a commit chain) should reference a User Story or Task item from the backlog for traceability.
+* When creating a PR, ensure descriptions use [Azure DevOps notation to close associated work items](https://learn.microsoft.com/en-us/azure/devops/repos/git/resolution-mentions?view=azure-devops).
+* All code PRs destined for the `main` branch must be reviewed by two reviewers including one of the follow personnel:
+  * Tech Lead (Bill Berry)
+  * Architect (Tim Park, Paul Bouwer)
+  * Assistant Tech Lead (Vy Ta, Katrien De Greave, or Allen Greaves)
+* All ADRs and Security Plans must be reviewed by two reviewers including the following personnel:
+  * Product Owner (Larry Lieberman)
+  * TPM (Mack Renard)
+  * AI related ADRs (Cheng Chen)
+  * Security related ADRs & Plans (Andrew Malkov)
