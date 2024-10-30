@@ -26,7 +26,7 @@ In addition to the security controls recommended in this plan, we strongly advis
 
 ## Application Overview
 
-RetailMart is a fictional retail corporation that stands as a symbol of innovation, customer-centricity, and market leadership in the retail industry. With a rich history spanning several decades, RetailMart has consistently set the standard for excellence and has become a household name, synonymous with quality and convenience.
+RetailMart is a fictional retail corporation that stands as a symbol of innovation, customer-centric, and market leadership in the retail industry. With a rich history spanning several decades, RetailMart has consistently set the standard for excellence and has become a household name, synonymous with quality and convenience.
 
 RetailMart operates a diverse range of retail products, catering to the diverse needs of its customers. Whether it's groceries, clothing, jewelry or DIY construction products, the convenience stores e-commerce platform provides a seamless shopping experience, RetailMart has a presence in every facet of the retail landscape.
 
@@ -116,7 +116,7 @@ Chat Bot Service, Routing Microservice, Conversational Microservice, Azure OpenA
 5. All products and services must encrypt data in transit using approved cryptographic protocols and algorithms.
 6. Use [Azure AI Content Safety Filters](https://azure.microsoft.com/en-us/products/ai-services/ai-content-safety/#features) for prompt inputs and its responses.
 7. Use TLS to encrypt all HTTP-based network traffic. Use other mechanisms, such as IPSec, to encrypt non-HTTP network traffic that contains customer or confidential data.
-7. Use only TLS 1.2 or TLS 1.3. Use ECDHE-based ciphers suites and NIST curves. Use strong keys. Enable HTTP Strict Transport Security. Turn off TLS compression and do not use ticket-based session resumption.
+8. Use only TLS 1.2 or TLS 1.3. Use ECDHE-based ciphers suites and NIST curves. Use strong keys. Enable HTTP Strict Transport Security. Turn off TLS compression and do not use ticket-based session resumption.
 
 ****
 
@@ -220,12 +220,12 @@ Web application, Non Search Microservice, Search API RAG microservice, Conversat
 
 ****
 
-**Threat #** : Overreliance
+**Threat #** : Over-reliance
 
 **Principle**: Integrity
 
 **Threat**:
-Overreliance can occur when an LLM produces erroneous information and provides it in an authoritative manner.
+Over-reliance can occur when an LLM produces erroneous information and provides it in an authoritative manner.
 
 **Affected Asset(s)**
 Web application, Non Search Microservice, Search API RAG microservice, Conversational Microservice, Browser
@@ -327,7 +327,7 @@ Regardless of the type of deployment, customer always retains the following resp
 - Account
 - Access management
 
-![srmodel](./images/azure-shared-responsibility-model.png)
+![sr_model](./images/azure-shared-responsibility-model.png)
 
 #### References
 
