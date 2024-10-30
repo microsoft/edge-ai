@@ -1,12 +1,12 @@
 # ADR Title
 
-[The title should unique within the library, provide a longer title if needed to differentiate with other ADRs]
+[The title should be unique within the library, provide a longer title if needed to differentiate with other ADRs]
 
 Date: **2024-01-01** [Format=YYYY-MM-DD]
 
 ## Status (optional)
 
-[For this library of ADRs, mark the most applicable status at which it was stored in the original project. Ths can help provide context and validity for folks reviewing this ADR. If it has been deprecated you can add a note on why and date it.]
+[For this library of ADRs, mark the most applicable status at which it was stored in the original project. This can help provide context and validity for folks reviewing this ADR. If it has been deprecated you can add a note on why and date it.]
 
 - [ ] Draft
 - [ ] Proposed
@@ -47,4 +47,4 @@ What are the consequences of this decision?
 
 ## Future Considerations (optional)
 
-Which upcoming solutions should be logged to keep in mind for re-evaluating this decision.
+Which upcoming solutions should be logged to keep in mind for re-evaluating this decision?
