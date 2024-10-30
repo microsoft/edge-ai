@@ -66,10 +66,8 @@ Please see [ADR README](./ADRs/README.MD) for a more detailed explanation of the
 
 ## Contribute
 
-Users and developers can contribute to make this solution better.
+Users and developers can contribute to make this solution better in several ways:
 
-If you want to learn more about creating good readme files then refer the following [guidelines](https://docs.microsoft.com/en-us/azure/devops/repos/git/create-a-readme?view=azure-devops). You can also seek inspiration from the below readme files:
-
-* [ASP.NET Core](https://github.com/aspnet/Home)
-* [Visual Studio Code](https://github.com/Microsoft/vscode)
-* [Chakra Core](https://github.com/Microsoft/ChakraCore)
+* [Contribute an ADR](./Solution%20ADR%20Library/README.md#contribute) from your engagement
+* [Contribute a Security Plan](./Solution%20Security%20Plan%20Library//README.md#contribute) from your engagement
+* [Find a user story or task from the backlog](https://dev.azure.com/ai-at-the-edge-flagship-accelerator/IaC%20for%20the%20Edge/_sprints/taskboard/IaC%20for%20the%20Edge%20Team/IaC%20for%20the%20Edge/***REMOVED***) and help move the accelerator forward
