@@ -1,7 +1,7 @@
 <!--=========================README TEMPLATE INSTRUCTIONS=============================
 ======================================================================================
 
-- THIS README TEMPLATE LARGELY CONSISTS OF COMMENTED OUT TEXT. THIS UNRENDERED TEXT IS MEANT TO BE LEFT IN AS A GUIDE 
+- THIS README TEMPLATE LARGELY CONSISTS OF COMMENTED OUT TEXT. THIS UN-RENDERED TEXT IS MEANT TO BE LEFT IN AS A GUIDE 
   THROUGHOUT THE REPOSITORY'S LIFE WHILE END USERS ONLY SEE THE RENDERED PAGE CONTENT. 
 - Any italicized text rendered in the initial template is intended to be replaced IMMEDIATELY upon repository creation.
 
