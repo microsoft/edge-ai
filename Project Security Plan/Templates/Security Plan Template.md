@@ -1,16 +1,16 @@
-# ISE Security Checklist Items
+<!-- ISE Security Checklist Items
 Please remove this section before sharing security plan information with your customers.
 
 Complete these tasks and share your progress throughout the engagement at [ISE SecDev Calculator](https://aka.ms/isesecdevcalc).  If guidance is needed on completing the SecureDev checklist items, please see [ISE SecDev Guidance](https://github.com/commercial-software-engineering/ISE-Security-Plan/blob/main/ISE%20Security%20Checklist%20Instructions.md).
 
--	Regularly review security recommendations from Defender for Cloud throughout your engagement as your deploy your code. Remediate findings or create backlog items as appropriate.
--	Identify and meet with the customer’s security stakeholder during the start, middle, and end of the engagement. Identify and prioritize security requirements, share progress, and hand off unfinished backlog items.
--	Meet with an ISE security champion or a member of the Security Tech Domain to review the design for your solution.
--	With the help of a champion or the Security TD, review and identify the elements in this security plan template that will be completed during the engagement. Deliver the completed components of this plan to the customer, ideally by committing it in markdown format to the customer's repo, so that they can integrate it into their threat model(s).
-
+- Regularly review security recommendations from Defender for Cloud throughout your engagement as your deploy your code. Remediate findings or create backlog items as appropriate.
+- Identify and meet with the customer’s security stakeholder during the start, middle, and end of the engagement. Identify and prioritize security requirements, share progress, and hand off unfinished backlog items.
+- Meet with an ISE security champion or a member of the Security Tech Domain to review the design for your solution.
+- With the help of a champion or the Security TD, review and identify the elements in this security plan template that will be completed during the engagement. Deliver the completed components of this plan to the customer, ideally by committing it in markdown format to the customer's repo, so that they can integrate it into their threat model(s).
+-->
 # Security Plan – Project Name
 
-## Preamble 
+## Preamble
 
 *Important to note:* ISE cannot certify/attest to the security of an architecture nor code. This document is intended to help produce backlog items specific to the customer engagement and to document the relevant security design decisions made by the team during build. Please direct your customer to work with their account team or preferred security vendor to seek an audit or pen-test from a security vendor if required/desired.
 
