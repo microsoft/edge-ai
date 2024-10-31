@@ -62,14 +62,27 @@ ARDs move through a process that includes the following states:
 * Accepted - for all ADRs that have completed the community RFC process. ADRs in this state have been ratified/accepted by the project community and may move to implementation.
 * Deprecated - for all ADRs that are no longer relevant to the solution or have been superseded by more comprehensive ADRs; this is inclusive of retired components or features, but will be retained in perpetuity for historical context.
 
-Please see [ADR README](./ADRs/README.MD) for a more detailed explanation of the ADR process flow and how to author and progress your ideas for this project, through to implementation.
+Please see [ADR README](./Project%20ADRs/README.MD) for a more detailed explanation of the ADR process flow and how to author and progress your ideas for this project, through to implementation.
 
 ## Contribute
 
-Users and developers can contribute to make this solution better.
+Users and developers can contribute to make this solution better in several ways:
 
-If you want to learn more about creating good readme files then refer the following [guidelines](https://docs.microsoft.com/en-us/azure/devops/repos/git/create-a-readme?view=azure-devops). You can also seek inspiration from the below readme files:
+* [Contribute an ADR](./Solution%20ADR%20Library/README.md#contribute) from your engagement
+* [Contribute a Security Plan](./Solution%20Security%20Plan%20Library//README.md#contribute) from your engagement
+* [Find a user story or task from the backlog](https://dev.azure.com/ai-at-the-edge-flagship-accelerator/IaC%20for%20the%20Edge/_sprints/taskboard/IaC%20for%20the%20Edge%20Team/IaC%20for%20the%20Edge/***REMOVED***) and help move the accelerator forward
 
-* [ASP.NET Core](https://github.com/aspnet/Home)
-* [Visual Studio Code](https://github.com/Microsoft/vscode)
-* [Chakra Core](https://github.com/Microsoft/ChakraCore)
+When contributing to the project, please consider the following guidance:
+
+* Assign a workitem to yourself before beginning any effort, and set the item's status field accordingly.
+* If a work item for your contribution does not exist, [please file an issue](https://dev.azure.com/ai-at-the-edge-flagship-accelerator/IaC%20for%20the%20Edge/_workitems/create/Issue) first to engage the project's PO, TPM, or Tech Lead for guidance.
+* Commits (or at least one in a commit chain) should reference a User Story or Task item from the backlog for traceability.
+* When creating a PR, ensure descriptions use [Azure DevOps notation to close associated work items](https://learn.microsoft.com/en-us/azure/devops/repos/git/resolution-mentions?view=azure-devops).
+* All code PRs destined for the `main` branch must be reviewed by two reviewers including one of the follow personnel:
+  * Tech Lead (Bill Berry)
+  * Architect (Tim Park, Paul Bouwer)
+  * Assistant Tech Lead (Vy Ta, Katrien De Graeve, or Allen Greaves)
+* All ADRs and Security Plans must be reviewed by two reviewers including the following personnel:
+  * Product Owner (Larry Lieberman) or TPM (Mack Renard)
+  * AI/ML related ADRs (Cheng Chen, Ren Silva)
+  * Security related ADRs & Plans (Andrew Malkov)
