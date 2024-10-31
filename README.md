@@ -83,7 +83,6 @@ When contributing to the project, please consider the following guidance:
   * Architect (Tim Park, Paul Bouwer)
   * Assistant Tech Lead (Vy Ta, Katrien De Greave, or Allen Greaves)
 * All ADRs and Security Plans must be reviewed by two reviewers including the following personnel:
-  * Product Owner (Larry Lieberman)
-  * TPM (Mack Renard)
-  * AI related ADRs (Cheng Chen)
+  * Product Owner (Larry Lieberman) or TPM (Mack Renard)
+  * AI/ML related ADRs (Cheng Chen, Ren Silva)
   * Security related ADRs & Plans (Andrew Malkov)
