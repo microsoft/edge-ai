@@ -81,7 +81,7 @@ When contributing to the project, please consider the following guidance:
 * All code PRs destined for the `main` branch must be reviewed by two reviewers including one of the follow personnel:
   * Tech Lead (Bill Berry)
   * Architect (Tim Park, Paul Bouwer)
-  * Assistant Tech Lead (Vy Ta, Katrien De Greave, or Allen Greaves)
+  * Assistant Tech Lead (Vy Ta, Katrien De Graeve, or Allen Greaves)
 * All ADRs and Security Plans must be reviewed by two reviewers including the following personnel:
   * Product Owner (Larry Lieberman) or TPM (Mack Renard)
   * AI/ML related ADRs (Cheng Chen, Ren Silva)
