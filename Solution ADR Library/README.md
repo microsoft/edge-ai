@@ -4,7 +4,7 @@ The Solution ADR library are real, though anonymized, architectural decision rec
 
 ## Contributing
 
-This project encourages the contribution of high-quality ADRs that have been used in ISE engagements. Contributions require some normalization to a template format and removal of customer specific or NDA information. When contributing and ADR to the project, please consider the following guidance:
+This project encourages the contribution of high-quality ADRs that have been used in ISE engagements. Contributions require some normalization to a template format and removal of customer specific or NDA information. When contributing an ADR to the project, please consider the following guidance:
 
 * Review the existing ADRs in the library to see if an existing one can be extended or improved before contributing a new document.
 * All ADRs must be formatted as Markdown documents and use the `.md` file extension
