@@ -9,11 +9,33 @@ trigger:
 pool:
   vmImage: ubuntu-latest
 
-steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
-
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+jobs:
+  # Run MegaLinter to detect linting and security issues
+  - job: MegaLinter
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+      # Checkout repo
+      - checkout: self
+ 
+      # Pull MegaLinter docker image
+      - script: docker pull oxsecurity/megalinter:v7
+        displayName: Pull MegaLinter
+ 
+      # Run MegaLinter
+      - script: |
+          docker run -v $(System.DefaultWorkingDirectory)/docs:/tmp/lint \
+            --env-file <(env | grep -e SYSTEM_ -e BUILD_ -e TF_ -e AGENT_) \
+            -e SYSTEM_ACCESSTOKEN=$(System.AccessToken) \
+            -e GIT_AUTHORIZATION_BEARER=$(System.AccessToken) \
+            -e MEGALINTER_CONFIG=newmegaLinter/.mega-linter.yml \
+            oxsecurity/megalinter:v7
+        displayName: Run MegaLinter
+      
+      # Upload MegaLinter reports
+      - task: PublishPipelineArtifact@1
+        condition: succeededOrFailed()
+        displayName: Upload MegaLinter reports
+        inputs:
+          targetPath: "$(System.DefaultWorkingDirectory)/megalinter-reports/"
+          artifactName: MegaLinterReport
