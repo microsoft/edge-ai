@@ -3,11 +3,28 @@
 {
 	"name": "Ubuntu",
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-	"image": "mcr.microsoft.com/devcontainers/base:jammy",
+	"image": "mcr.microsoft.com/devcontainers/base:ubuntu",
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	"features": {
 		"ghcr.io/devcontainers/features/azure-cli:1": {
 			"version": "latest"
+		}
+	},
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-vscode.azurecli",
+				"streetsidesoftware.code-spell-checker-cspell-bundled-dictionaries",
+				"DavidAnson.vscode-markdownlint",
+				"ms-python.vscode-pylance",
+				"ms-python.python",
+				"ms-python.debugpy",
+				"charliermarsh.ruff",
+				"streetsidesoftware.code-spell-checker",
+				"ms-azuretools.vscode-azureterraform",
+				"hashicorp.terraform",
+				"ms-azuretools.vscode-bicep"
+			]
 		}
 	}
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
