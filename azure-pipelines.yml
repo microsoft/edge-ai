@@ -30,7 +30,7 @@ jobs:
             --env-file <(env | grep -e SYSTEM_ -e BUILD_ -e TF_ -e AGENT_) \
             -e SYSTEM_ACCESSTOKEN=$(System.AccessToken) \
             -e GIT_AUTHORIZATION_BEARER=$(System.AccessToken) \
-            -e MEGALINTER_CONFIG=newmegaLinter/.mega-linter.yml \
+            -e MEGALINTER_CONFIG=.mega-linter.yml \
             oxsecurity/megalinter:v7
         displayName: Run MegaLinter
       
