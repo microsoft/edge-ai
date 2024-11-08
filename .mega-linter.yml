@@ -3,6 +3,7 @@
 # See all available variables at https://megalinter.io/latest/config-file/ and in
 # linters documentation
 
+---
 # all, none, or list of linter keys
 APPLY_FIXES: none
 
@@ -27,7 +28,7 @@ ENABLE_LINTERS:
 DISABLE:
   - COPYPASTE # Comment to enable checks of excessive copy-pastes
   - REPOSITORY_GIT_DIFF
-  - lychee 
+  - lychee
 
 SHOW_ELAPSED_TIME: true
 

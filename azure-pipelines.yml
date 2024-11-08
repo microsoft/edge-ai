@@ -3,10 +3,11 @@
 # Add steps that build, run tests, deploy, and more:
 # https://aka.ms/yaml
 
+---
 trigger:
-  branches: 
+  branches:
     include:
-    - '*'
+      - '*'
 
 pool:
   vmImage: ubuntu-latest
@@ -20,11 +21,11 @@ jobs:
       # Checkout repo
       - checkout: self
 
- 
+
       # Pull MegaLinter docker image
       - script: docker pull oxsecurity/megalinter:v7
         displayName: Pull MegaLinter
- 
+
       # Run MegaLinter
       - script: |
           docker run -v $(System.DefaultWorkingDirectory):/tmp/lint \
@@ -34,7 +35,7 @@ jobs:
             -e BUILD_REPOSITORY_ID='$(BUILD_REPOSITORY_ID)' \
             oxsecurity/megalinter:v7
         displayName: Run MegaLinter
-      
+
       # Upload MegaLinter reports
       - task: PublishPipelineArtifact@1
         condition: succeededOrFailed()
