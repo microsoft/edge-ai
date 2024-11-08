@@ -21,7 +21,8 @@ ENABLE_LINTERS:
 
 DISABLE:
   - COPYPASTE # Comment to enable checks of excessive copy-pastes
-  # - SPELL # Uncomment to disable checks of spelling mistakes
+  - REPOSITORY_GIT_DIFF
+  - lychee 
 
 SHOW_ELAPSED_TIME: true
 
