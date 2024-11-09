@@ -27,6 +27,7 @@ jobs:
         displayName: Pull MegaLinter
 
       # Run MegaLinter
+      # See here for required system props: https://github.com/oxsecurity/megalinter/blob/0f18f72065ffdeec09b616087b8298a3b13b2dee/megalinter/reporters/AzureCommentReporter.py#L7C1-L13C22
       - script: |
           docker run -v $(System.DefaultWorkingDirectory):/tmp/lint \
             --env-file <(env | grep -e SYSTEM_ -e BUILD_ -e TF_ -e AGENT_) \
