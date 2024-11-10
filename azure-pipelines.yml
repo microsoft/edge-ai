@@ -49,3 +49,13 @@ jobs:
         inputs:
           targetPath: "$(System.DefaultWorkingDirectory)/megalinter-reports/"
           artifactName: MegaLinterReport
+
+      # Dependency Analysis Scan
+      - task: dependency-check-build-task@6
+        displayName: Dependency Checker
+        continueOnError: true
+        inputs:
+          projectName: 'IaC4Edge'
+          scanPath: '**/*'
+          format: 'HTML, JSON'
+          failOnCVSS: '8'
