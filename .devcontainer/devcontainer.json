@@ -27,6 +27,7 @@
 			},
 			"extensions": [
 				"ms-vscode.azurecli",
+				"foxundermoon.shell-format",
 				"streetsidesoftware.code-spell-checker-cspell-bundled-dictionaries",
 				"DavidAnson.vscode-markdownlint",
 				"ms-python.vscode-pylance",
