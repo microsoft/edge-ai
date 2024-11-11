@@ -48,7 +48,7 @@ stages:
 - stage: PR
   displayName: PR Build Process
   # dependsOn: string | [ string ]
-  condition: eq(variables.isMain, true)
+  condition: eq(variables.isMain, false)
   # pool: string | pool
   # variables: { string: string } | [ variable | variableReference ] 
   jobs:
