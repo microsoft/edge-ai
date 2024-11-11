@@ -1,0 +1,22 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+---
+
+# Dependency Analysis Scan
+# - task: dependency-check-build-task@6
+#   displayName: Dependency Checker
+#   continueOnError: true
+#   inputs:
+#     projectName: 'IaC4Edge'
+#     scanPath: '**/*'
+#     format: 'HTML, JSON, JUNIT'
+#     failOnCVSS: '8'
+# - task: PublishTestResults@2
+#   displayName: "Publish Dependency Checks Tests Results"
+#   inputs:
+#     testResultsFormat: 'JUnit'
+#     testResultsFiles: '$(Agent.BuildDirectory)/TestResults/dependency-check/*junit.xml'
+#     mergeTestResults: true
