@@ -3,6 +3,7 @@
 [![Build Status](https://dev.azure.com/ai-at-the-edge-flagship-accelerator/IaC%20for%20the%20Edge/_apis/build/status%2FIaC%20for%20the%20Edge?branchName=main)](https://dev.azure.com/ai-at-the-edge-flagship-accelerator/IaC%20for%20the%20Edge/_build/latest?definitionId=3&branchName=main)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE.md)
 [![Board Status](https://dev.azure.com/ai-at-the-edge-flagship-accelerator/3bef5a01-44ac-4d6c-8c8d-f4b7d374def6/8567de21-1286-4352-a375-efb89ad55348/_apis/work/boardbadge/fd9375f1-e7c6-4439-b2c9-6969d853a2d4)](https://dev.azure.com/ai-at-the-edge-flagship-accelerator/3bef5a01-44ac-4d6c-8c8d-f4b7d374def6/_boards/board/t/8567de21-1286-4352-a375-efb89ad55348/Stories/)
+[![Open in Dev Containers](https://img.shields.io/static/v1?label=Dev%20Containers&message=Open&color=blue&logo=visualstudiocode)](https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://dev.azure.com/ai-at-the-edge-flagship-accelerator/_git/IaC%20for%20the%20Edge)
 
 The IaC for Edge project, the first phase of ISE's "AI on Edge" Flagship Accelerator, will deliver a compiler/generator that outputs composable IaC. The IaC compiler/generator can grow with a customer's capabilities from innovative POCs and onto production system deployments. This solution will generate all the foundational cloud and edge solution components required to implement a “vision on edge” solution using Azure IoT Operations (AIO).
 
@@ -49,7 +50,55 @@ Users can get started quickly by:
 
 ## Build and Test
 
-Describe and show how to build your code and run the tests.
+This repository only supports linting for the time being; follow the instructions below to lint any additions to the project.
+
+### Linting
+
+Run ALL linters
+
+```bash
+npm run lint
+```
+
+To fix basic linting issues, run the following:
+
+```bash
+npm run lint-fix
+```
+
+#### Markdown linting
+
+The linter run as part of PR validation is installed and configured in the DevContainer, making it possible to check your markdown before committing & PR.
+
+```bash
+npm run mdlint
+```
+
+To fix basic markdown linting issues, run the following:
+
+```bash
+npm run mdlint-fix
+```
+
+> **NOTE**
+>
+> Because not all rules include fix information when reporting errors, fixes may overlap, and not all errors are fixable, `fix` will not usually address all errors.
+
+#### Spell checking
+
+Cspell checker runs as part of PR validation and is installed and configured in the DevContainer, which makes it possible to check your language basics before committing & PR.
+
+```bash
+npm run cspell
+```
+
+> **NOTE**
+>
+> If cspell detects an unknown word which should be ignored, add the word to the excluded word dictionary file `cspell-cse.txt`. If you think it's a common computing word, you can make a PR against [the cspell software terms dictionary](https://github.com/streetsidesoftware/cspell-dicts/tree/main/dictionaries/software-terms/src)
+
+### Updates
+
+If you need to change this DevContainer, please ensure that the changes maintain consistency with the production build pipeline.
 
 ## ADR Process
 
