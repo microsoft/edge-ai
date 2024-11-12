@@ -6,11 +6,11 @@
 ---
 
 schedules:
-- cron: '0 0 * * *'
-  displayName: Daily midnight dependency scan
-  branches:
-    include:
-    - main
+  - cron: '0 0 * * *'
+    displayName: Daily midnight dependency scan
+    branches:
+      include:
+        - main
 
 # variables:
 #   isMain: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
