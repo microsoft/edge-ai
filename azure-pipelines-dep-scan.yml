@@ -31,12 +31,16 @@ stages:
         pool:
           vmImage: ubuntu-latest
         steps:
+          # Checkout repo
+          - checkout: self
 
+          # Install Latest Node
           - task: UseNode@1
             inputs:
               version: '22.x'
             displayName: 'Install Node.js'
 
+          # Run NPM Install
           - script: |
               npm install
             displayName: 'npm install'
@@ -44,8 +48,8 @@ stages:
           # - script: |
           #     npm run build
           #   displayName: 'npm build'
-# 
-          # - script: 
+
+          # - script: |
           #     npm test
           #   displayname: 'npm test'
 
