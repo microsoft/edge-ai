@@ -65,7 +65,7 @@ stages:
         steps:
           # Checkout repo
           - checkout: self
-          
+
           - task: CodeQL3000Init@0
 
           # Initialize dependency scan and fail the build if it does not pass
@@ -102,5 +102,5 @@ stages:
             inputs:
               targetPath: "$(System.DefaultWorkingDirectory)/megalinter-reports/"
               artifactName: MegaLinterReport
-          
+
           - task: CodeQL3000Finalize@0
