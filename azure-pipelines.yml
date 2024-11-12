@@ -65,6 +65,8 @@ stages:
         steps:
           # Checkout repo
           - checkout: self
+          
+          - task: CodeQL3000Init@0
 
           # Initialize dependency scan and fail the build if it does not pass
           - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
@@ -100,3 +102,5 @@ stages:
             inputs:
               targetPath: "$(System.DefaultWorkingDirectory)/megalinter-reports/"
               artifactName: MegaLinterReport
+          
+          - task: CodeQL3000Finalize@0
