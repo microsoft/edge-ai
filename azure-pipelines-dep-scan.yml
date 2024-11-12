@@ -5,18 +5,47 @@
 
 ---
 
-Dependency Analysis Scan
-- task: dependency-check-build-task@6
-  displayName: Dependency Checker
-  continueOnError: true
-  inputs:
-    projectName: 'IaC4Edge'
-    scanPath: '**/*'
-    format: 'HTML, JSON, JUNIT'
-    failOnCVSS: '8'
-- task: PublishTestResults@2
-  displayName: "Publish Dependency Checks Tests Results"
-  inputs:
-    testResultsFormat: 'JUnit'
-    testResultsFiles: '$(Agent.BuildDirectory)/TestResults/dependency-check/*junit.xml'
-    mergeTestResults: true
+schedules:
+- cron: '0 0 * * *'
+  displayName: Daily midnight dependency scan
+  branches:
+    include:
+    - main
+
+# variables:
+#   isMain: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
+
+pool:
+  vmImage: ubuntu-latest
+
+stages:
+  - stage: DepScan
+    displayName: Dependency Scanning
+    # dependsOn: string | [ string ]
+    # condition: eq(variables.isMain, true)
+    # pool: string | pool
+    # variables: { string: string } | [ variable | variableReference ]
+    jobs:
+      # Run MegaLinter to detect linting and security issues
+      - job: dep_scanner
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+
+          # Dependency Analysis Scan
+          - task: dependency-check-build-task@6
+            displayName: Dependency Checker
+            continueOnError: true
+            inputs:
+              projectName: 'IaC4Edge'
+              scanPath: '**/*'
+              format: 'HTML, JSON, JUNIT'
+              failOnCVSS: '8'
+
+          # Publish Dependency Scan Results
+          - task: PublishTestResults@2
+            displayName: "Publish Dependency Checks Tests Results"
+            inputs:
+              testResultsFormat: 'JUnit'
+              testResultsFiles: '$(Agent.BuildDirectory)/TestResults/dependency-check/*junit.xml'
+              mergeTestResults: true
