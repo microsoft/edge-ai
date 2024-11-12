@@ -1,0 +1,54 @@
+# Configuration file for MegaLinter
+#
+# See all available variables at https://megalinter.io/latest/config-file/ and in
+# linters documentation
+
+---
+# all, none, or list of linter keys
+APPLY_FIXES: none
+
+# If you use ENABLE variable, all other languages/formats/tooling-formats will
+# be disabled by default
+# ENABLE:
+
+# If you use ENABLE_LINTERS variable, all other linters will be disabled by
+# default
+ENABLE_LINTERS:
+  - SPELL
+  - MARKDOWN_MARKDOWNLINT
+  - MARKDOWN_MARKDOWN_TABLE_FORMATTERS
+  - TERRAFORM_TFLINT
+  - TERRAFORM_TERRASCAN
+  - TERRAFORM_TERRAFORM_FMT
+  - POWERSHELL_POWERSHELL
+  - POWERSHELL_POWERSHELL_FORMATTER
+  - BASH_SHELLCHECK
+  - DOCKERFILE_HADOLINT
+  - KUBERNETES_HELM
+  - YAML_YAMLLINT
+  - BASH_EXEC
+  - REPOSITORY_GITLEAKS
+  - REPOSITORY_GRYPE
+  - REPOSITORY_SECRETLINT
+
+DISABLE:
+  - COPYPASTE # Comment to enable checks of excessive copy-pastes
+  - REPOSITORY_GIT_DIFF
+  - lychee
+  - MARKDOWN_MARKDOWN_LINK_CHECK
+  - JSON_JSONLINT
+
+SHOW_ELAPSED_TIME: true
+FILEIO_REPORTER: false
+CLEAR_REPORT_FOLDER: true
+AZURE_COMMENT_REPORTER: true
+VALIDATE_ALL_CODEBASE: false
+PRINT_ALL_FILES: true
+JSON_REPORTER: true
+DEFAULT_BRANCH: main
+LOG_LEVEL: INFO
+SPELL_CSPELL_CONFIG_FILE: .cspell.json
+SPELL_CSPELL_FILE_EXTENSIONS: [".md"]
+
+# Uncomment if you want MegaLinter to detect errors but not block CI to pass
+# DISABLE_ERRORS: true
