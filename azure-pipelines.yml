@@ -35,7 +35,7 @@ stages:
           - script: docker pull oxsecurity/megalinter:v7
             displayName: Pull MegaLinter
 
-          # Run MegaLinter
+          # Run MegaLinter - for the main branch the reporter needs to be disabled
           - script: |
               docker run -v $(System.DefaultWorkingDirectory):/tmp/lint \
                 --env-file <(env | grep -e SYSTEM_ -e BUILD_ -e TF_ -e AGENT_) \
