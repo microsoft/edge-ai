@@ -66,7 +66,8 @@ stages:
           # Checkout repo
           - checkout: self
 
-          - task: CodeQL3000Init@0
+          - task: CredScan@3
+            inputs:
 
           # Initialize dependency scan and fail the build if it does not pass
           - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
@@ -103,4 +104,23 @@ stages:
               targetPath: "$(System.DefaultWorkingDirectory)/megalinter-reports/"
               artifactName: MegaLinterReport
 
-          - task: CodeQL3000Finalize@0
+          - task: nuget-security-analysis@0
+
+          # Run ARM vulnerability scan
+          - task: Armory@2
+            displayName: 'Run ARMory'
+            inputs:
+              toolVersion: Latest
+              targetDirectory: '$(Build.SourcesDirectory)'
+
+          # Run Static Analysis for Python Code
+          - task: Bandit@1
+            inputs:
+              targetsType: 'guardianGlob'
+              targets: 'f|**/*.py;-|.gdn/**'
+              ruleset: 'guardian'
+
+          - task: PoliCheck@2
+            inputs:
+              targetType: 'F'
+              targetArgument: '$(Build.SourcesDirectory)'
