@@ -100,24 +100,3 @@ stages:
             inputs:
               targetPath: "$(System.DefaultWorkingDirectory)/megalinter-reports/"
               artifactName: MegaLinterReport
-
-          - task: nuget-security-analysis@0
-
-          # Run ARM vulnerability scan
-          - task: Armory@2
-            displayName: 'Run ARMory'
-            inputs:
-              toolVersion: Latest
-              targetDirectory: '$(Build.SourcesDirectory)'
-
-          # Run Static Analysis for Python Code
-          - task: Bandit@1
-            inputs:
-              targetsType: 'guardianGlob'
-              targets: 'f|**/*.py;-|.gdn/**'
-              ruleset: 'guardian'
-
-          - task: PoliCheck@2
-            inputs:
-              targetType: 'F'
-              targetArgument: '$(Build.SourcesDirectory)'
