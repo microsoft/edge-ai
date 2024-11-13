@@ -66,8 +66,6 @@ stages:
           # Checkout repo
           - checkout: self
 
-          - task: CredScan@3
-
           # Initialize dependency scan and fail the build if it does not pass
           - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
             displayName: 'Component Detection'
