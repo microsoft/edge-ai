@@ -31,11 +31,17 @@ stages:
           # Checkout repo
           - checkout: self
 
+          # Initialize dependency scan and fail the build if it does not pass
+          - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
+            displayName: 'Component Detection'
+            inputs:
+              failOnAlert: true
+
           # Pull MegaLinter docker image
           - script: docker pull oxsecurity/megalinter:v7
             displayName: Pull MegaLinter
 
-          # Run MegaLinter
+          # Run MegaLinter - for the main branch the reporter needs to be disabled
           - script: |
               docker run -v $(System.DefaultWorkingDirectory):/tmp/lint \
                 --env-file <(env | grep -e SYSTEM_ -e BUILD_ -e TF_ -e AGENT_) \
@@ -59,6 +65,12 @@ stages:
         steps:
           # Checkout repo
           - checkout: self
+
+          # Initialize dependency scan and fail the build if it does not pass
+          - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
+            displayName: 'Component Detection'
+            inputs:
+              failOnAlert: true
 
           # Pull MegaLinter docker image
           - script: docker pull oxsecurity/megalinter:v7
