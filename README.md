@@ -69,7 +69,9 @@ Please see [ADR README](./Project%20ADRs/README.MD) for a more detailed explanat
 
 ## Contribute
 
-Users and developers can contribute to make this solution better in several ways:
+Before contributing, please review the project's [Code of Conduct](./CODE_OF_CONDUCT.md).
+
+Users and project developers can contribute to make this solution better in several ways:
 
 * [Review the project's Contributing doc](./CONTRIBUTING.md)
 * [Contribute an ADR](./Solution%20ADR%20Library/README.md#contribute) from your engagement
