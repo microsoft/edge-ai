@@ -14,9 +14,9 @@ APPLY_FIXES: none
 # If you use ENABLE_LINTERS variable, all other linters will be disabled by
 # default
 ENABLE_LINTERS:
-  - SPELL
+  - SPELL_CSPELL
   - MARKDOWN_MARKDOWNLINT
-  - MARKDOWN_MARKDOWN_TABLE_FORMATTERS
+  - MARKDOWN_MARKDOWN_TABLE_FORMATTER
   - TERRAFORM_TFLINT
   - TERRAFORM_TERRASCAN
   - TERRAFORM_TERRAFORM_FMT
@@ -31,12 +31,12 @@ ENABLE_LINTERS:
   - REPOSITORY_GRYPE
   - REPOSITORY_SECRETLINT
 
-DISABLE:
-  - COPYPASTE # Comment to enable checks of excessive copy-pastes
-  - REPOSITORY_GIT_DIFF
-  - lychee
-  - MARKDOWN_MARKDOWN_LINK_CHECK
-  - JSON_JSONLINT
+# DISABLE:
+#  - COPYPASTE # Comment to enable checks of excessive copy-pastes
+#  - REPOSITORY_GIT_DIFF
+#  - SPELL_LYCHEE
+#  - MARKDOWN_MARKDOWN_LINK_CHECK
+#  - JSON
 
 SHOW_ELAPSED_TIME: true
 FILEIO_REPORTER: false
@@ -49,6 +49,7 @@ DEFAULT_BRANCH: main
 LOG_LEVEL: INFO
 SPELL_CSPELL_CONFIG_FILE: .cspell.json
 SPELL_CSPELL_FILE_EXTENSIONS: [".md"]
+TERRAFORM_TERRASCAN_CONFIG_FILE: .terrascan.toml
 
 # Uncomment if you want MegaLinter to detect errors but not block CI to pass
 # DISABLE_ERRORS: true
