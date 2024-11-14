@@ -20,9 +20,8 @@ All types of contributions are encouraged and valued. See the [Table of Contents
 - [Suggesting Enhancements](#suggesting-enhancements)
 - [Your First Code Contribution](#your-first-code-contribution)
 - [Improving The Documentation](#improving-the-documentation)
-- [Style Guides](#styleguides)
+- [Style Guides](#style-guides)
 - [Commit Messages](#commit-messages)
-- [Join The Project Team](#join-the-project-team)
 
 ## Code of Conduct
 
