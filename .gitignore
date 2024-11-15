@@ -361,5 +361,40 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 
-#Megalinter reports
+# .env file
+.env
+
+# Local .terraform directories
+**/.terraform/*
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
+
+# Ignore tfplan files
+*.tfplan
+
+# Ignore .terraform lock
+.terraform.lock.hcl
+
+# Crash log files
+crash.log
+
+# Ignore all .tfvars files, which are likely to contain sensitive data, such as passwords
+*.tfvars
+
+# Ignore override files as they are usually used to override resources locally and should not be shared
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Ignore CLI configuration files
+.terraformrc
+terraform.rc
+
+# Ignore ssh folders
+.ssh/
+
+# Ignore megalinter reports
 [Mm]egalinter-reports
