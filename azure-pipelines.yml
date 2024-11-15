@@ -58,8 +58,7 @@ stages:
     # pool: string | pool
     # variables: { string: string } | [ variable | variableReference ]
     jobs:
-      # Run MegaLinter to detect linting and security issues
-      - job: MegaLinter
+      - job: DependencyScan
         pool:
           vmImage: ubuntu-latest
         steps:
@@ -71,6 +70,15 @@ stages:
             displayName: 'Component Detection'
             inputs:
               failOnAlert: true
+
+      # Run MegaLinter to detect linting and security issues
+      - job: MegaLinter
+        pool:
+          vmImage: ubuntu-latest
+        
+        steps:
+          # Checkout repo
+          - checkout: self
 
           # Pull MegaLinter docker image
           - script: docker pull oxsecurity/megalinter:v7
@@ -100,3 +108,39 @@ stages:
             inputs:
               targetPath: "$(System.DefaultWorkingDirectory)/megalinter-reports/"
               artifactName: MegaLinterReport
+      - job: TerraformTest
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          # Checkout repo
+          - checkout: self
+
+          # Initialize dependency scan and fail the build if it does not pass
+          - task: TerraformInstaller@1
+            displayName: install terraform
+            inputs:
+              terraformVersion: latest
+          
+          # Check version and output issue if needed
+          - task: TerraformCLI@0
+            displayName: 'check terraform version'
+            inputs:
+              command: version
+
+          # Run Terraform Plan for reporting
+          - task: TerraformCLI@0
+            displayName: 'terraform plan'
+            inputs:
+              command: plan
+              environmentServiceName: 'My Azure Service Connection'
+              publishPlanResults: 'Terrafrom Test Plan'
+
+          # Run Terraform Plan Change Detection 
+          - task: TerraformCLI@0
+            displayName: 'terraform plan'
+            inputs:
+              command: plan
+              environmentServiceName: 'My Azure Service Connection'
+              commandOptions: '-out=$(System.DefaultWorkingDirectory)/terraform.tfplan -detailed-exitcode'
+          
+
