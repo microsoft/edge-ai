@@ -133,10 +133,14 @@ stages:
               backendType: azurerm
               # Service connection to authorize backend access. Supports Subscription & Management Group Scope
               backendServiceArm: 'azdo-iac-for-edge'
-              ensureBackend: true
               backendAzureRmResourceGroupName: 'IaC_For_Edge'
-               # azure location shortname of the backend resource group and storage account
+              # azure location shortname of the backend resource group and storage account
               backendAzureRmResourceGroupLocation: 'eastus'
+              backendAzureRmStorageAccountName: 'iacforedgetf'
+              # azure blob container to store the state file
+              backendAzureRmContainerName: 'iacforedgetf'
+              # azure blob file name
+              backendAzureRmKey: infrax.tfstate
 
           # Run Terraform Plan for reporting
           - task: TerraformCLI@1
