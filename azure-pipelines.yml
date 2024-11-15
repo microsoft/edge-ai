@@ -154,8 +154,8 @@ stages:
               backendAzureRmKey: infrax.tfstate
 
           - bash: 'terraform plan -out=$(Build.ArtifactStagingDirectory)/$(Build.Buildnumber).tfplan -detailed-exitcode'
-              workingDirectory: "$(System.DefaultWorkingDirectory)/src/cluster_install/terraform/"
-              displayName: "terraform plan (bash)"
+            workingDirectory: "$(System.DefaultWorkingDirectory)/src/cluster_install/terraform/"
+            displayName: "terraform plan (bash)"
 
           # Run Terraform Plan for reporting
           - task: TerraformCLI@1
