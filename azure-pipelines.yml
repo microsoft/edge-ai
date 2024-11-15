@@ -112,8 +112,6 @@ stages:
         pool:
           vmImage: ubuntu-latest
         steps:
-          # Checkout repo
-          - checkout: self
 
           # Initialize dependency scan and fail the build if it does not pass
           - task: TerraformInstaller@1
@@ -132,7 +130,7 @@ stages:
             displayName: 'terraform plan'
             inputs:
               command: plan
-              environmentServiceName: 'My Azure Service Connection'
+              environmentServiceName: 'iac_for_edge_connection'
               publishPlanResults: 'Terrafrom Test Plan'
 
           # Run Terraform Plan Change Detection 
@@ -140,7 +138,7 @@ stages:
             displayName: 'terraform plan'
             inputs:
               command: plan
-              environmentServiceName: 'My Azure Service Connection'
+              environmentServiceName: 'iac_for_edge_connection'
               commandOptions: '-out=$(System.DefaultWorkingDirectory)/terraform.tfplan -detailed-exitcode'
           
 
