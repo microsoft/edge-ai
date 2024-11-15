@@ -130,7 +130,7 @@ stages:
             displayName: 'terraform plan'
             inputs:
               command: plan
-              workingDirectory: "$(System.DefaultWorkingDirectory)/src/cluster_install/terraform/modules"
+              workingDirectory: "$(System.DefaultWorkingDirectory)/src/cluster_install/terraform/"
               environmentServiceName: 'azdo-iac-for-edge'
               publishPlanResults: 'Terrafrom Test Plan'
 
