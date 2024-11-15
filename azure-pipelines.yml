@@ -125,6 +125,16 @@ stages:
             inputs:
               command: version
 
+          # Set required env vars
+          - bash: |
+              echo "Setting required TF env vars"
+            env:
+              ARM_SUBSCRIPTION_ID: $(subscription_id) # the recommended way to map to an env variable
+              TF_VAR_environment: 'test'
+              TF_VAR_resource_prefix: 'build_'
+              TF_VAR_location: 'eastus'
+
+          # Run terraform init
           - task: TerraformCLI@1
             displayName: 'terraform init'
             inputs:
