@@ -130,7 +130,7 @@ stages:
             displayName: 'terraform plan'
             inputs:
               command: plan
-              environmentServiceName: 'iac_for_edge_connection'
+              environmentServiceName: 'azdo-iac-for-edge'
               publishPlanResults: 'Terrafrom Test Plan'
 
           # Run Terraform Plan Change Detection 
@@ -138,7 +138,7 @@ stages:
             displayName: 'terraform plan'
             inputs:
               command: plan
-              environmentServiceName: 'iac_for_edge_connection'
+              environmentServiceName: 'azdo-iac-for-edge'
               commandOptions: '-out=$(System.DefaultWorkingDirectory)/terraform.tfplan -detailed-exitcode'
           
 
