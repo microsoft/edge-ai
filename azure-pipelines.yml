@@ -133,6 +133,10 @@ stages:
               backendType: azurerm
               # Service connection to authorize backend access. Supports Subscription & Management Group Scope
               backendServiceArm: 'azdo-iac-for-edge'
+              ensureBackend: true
+              backendAzureRmResourceGroupName: 'IaC_For_Edge'
+               # azure location shortname of the backend resource group and storage account
+              backendAzureRmResourceGroupLocation: 'eastus'
 
           # Run Terraform Plan for reporting
           - task: TerraformCLI@1
