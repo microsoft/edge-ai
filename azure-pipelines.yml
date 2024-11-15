@@ -126,7 +126,7 @@ stages:
               command: version
 
           # Run Terraform Plan for reporting
-          - task: TerraformCLI@0
+          - task: TerraformCLI@1
             displayName: 'terraform plan'
             inputs:
               command: plan
@@ -134,7 +134,7 @@ stages:
               publishPlanResults: 'Terrafrom Test Plan'
 
           # Run Terraform Plan Change Detection 
-          - task: TerraformCLI@0
+          - task: TerraformCLI@1
             displayName: 'terraform plan'
             inputs:
               command: plan
