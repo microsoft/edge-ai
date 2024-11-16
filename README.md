@@ -52,7 +52,7 @@ Users can get started quickly by:
 
 This repository only supports linting for the time being; follow the instructions below to lint any additions to the project.
 
-* Instructions to build and run the projects tests, once we have code, will go here.
+- Instructions to build and run the projects tests, once we have code, will go here.
 
 ## ADR Process
 
