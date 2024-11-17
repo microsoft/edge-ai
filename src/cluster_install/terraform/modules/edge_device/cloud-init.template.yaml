@@ -1,0 +1,78 @@
+#cloud-config
+runcmd:
+  - |
+    set -e
+
+    # Versions
+    K3S_VERSION=v1.31.2+k3s1
+
+    ###################
+    # Dependencies Install
+    ###################
+
+    # Install K3S
+    curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION=$K3S_VERSION sh -
+
+    # Install kubectl
+    if ! command -v kubectl &> /dev/null
+    then
+        curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+        chmod +x ./kubectl
+        sudo mv ./kubectl /usr/local/bin
+    fi
+    # Configure kubectl
+    mkdir -p /home/${VM_USERNAME}/.kube
+    sudo cat /etc/rancher/k3s/k3s.yaml > /home/${VM_USERNAME}/.kube/config
+    mkdir -p ~/.kube
+    sudo cat /etc/rancher/k3s/k3s.yaml > ~/.kube/config
+    export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+
+    # Install Azure CLI
+    echo "========== Installing Azure CLI =========="
+    curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+    echo "========== Enable Azure CLI extension connectedk8s =========="
+    az extension add --name connectedk8s --system
+
+    # Login to Azure CLI
+    echo "========== Logging in to Azure CLI =========="
+    az login --service-principal -u ${ARC_SP_CLIENT_ID} -p ${ARC_SP_SECRET} --tenant ${TENANT_ID}
+
+    # Connect to Azure Arc
+    ARC_RESOURCE_NAME=${ARC_RESOURCE_NAME}
+    VM_RESOURCE_GROUP=${VM_RESOURCE_GROUP}
+
+    connect_arc () {
+        echo "========== Connecting to Azure Arc =========="
+        az connectedk8s connect --name $ARC_RESOURCE_NAME --resource-group $VM_RESOURCE_GROUP
+    }
+
+    ENVIRONMENT=${ENVIRONMENT}
+
+    if [ "$ENVIRONMENT" = "prod" ]; then
+        connect_arc
+    else
+        # These steps are only required for development environment
+
+        # Configure Kubernetes nice-to-have bashrc
+        echo "source <(kubectl completion bash)" >> /etc/bash.bashrc
+        echo "alias k=kubectl" >> /etc/bash.bashrc
+        echo "complete -o default -F __start_kubectl k" >> /etc/bash.bashrc
+        echo "alias kubens='kubectl config set-context --current --namespace '" >> /etc/bash.bashrc
+
+        # Install k9s
+        wget https://github.com/derailed/k9s/releases/download/v0.28.0/k9s_Linux_amd64.tar.gz && \
+            tar xf k9s_Linux_amd64.tar.gz --directory=/usr/local/bin k9s && \
+            chmod +x /usr/local/bin/k9s && \
+            rm -rf k9s_Linux_amd64.tar.gz
+
+        # If connecting to cluster fails then delete existing Azure Arc connectedCluster in Azure and retry connecting
+        # This can happen because Azure Arc resource isn't deleted when the VM is deleted
+        if ! connect_arc ; then
+            echo "========== Connecting to Azure Arc failed =========="
+            echo "========== Attempting to reconnect by deleting Azure Arc connectedCluster resource in Azure =========="
+            # This deletion is only required in environments that are recreated
+            # Remove this for productions enviroments
+            az connectedk8s delete --name $ARC_RESOURCE_NAME --resource-group $VM_RESOURCE_GROUP --yes
+            connect_arc
+        fi
+    fi

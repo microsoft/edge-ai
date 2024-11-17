@@ -1,0 +1,6 @@
+# Define Rules
+[rules]
+# skip rules (list of rules to skip)
+skip-rules = [
+    "AC_AZURE_0389", # Skipping RG Lock requirement.
+]
