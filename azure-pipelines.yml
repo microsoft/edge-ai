@@ -133,18 +133,6 @@ stages:
             inputs:
               command: version
 
-          # Set required env vars
-          - task: Bash@3
-            inputs:
-              targetType: 'inline'
-              script: echo $TF_VAR_environment
-            env:
-              ARM_SUBSCRIPTION_ID: $(subscription_id)
-              TF_LOG: DEBUG
-              TF_VAR_environment: test
-              TF_VAR_resource_prefix: build_
-              TF_VAR_location: eastus
-
           # Run terraform init
           - task: TerraformCLI@1
             displayName: 'terraform init'
