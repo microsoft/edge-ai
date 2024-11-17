@@ -35,10 +35,12 @@ variable "arc_sp_client_id" {
   type        = string
   description = "Service Principal Client ID for connecting to Azure Arc. If left empty, a new Service Principal will be created"
   default     = ""
+  sensitive  = true
 }
 
 variable "arc_sp_secret" {
   type        = string
   description = "Service Principal Secret for connecting to Azure Arc. If left empty, a new Service Principal will be created"
   default     = ""
+  sensitive   = true
 }
