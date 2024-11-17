@@ -133,6 +133,12 @@ stages:
             inputs:
               command: version
 
+          - bash: |
+              echo "Mapping secrets for environment use"
+            env:
+              TF_VAR_ARC_SP_CLIENT_ID: $(TF_VAR_ARC_SP_CLIENT_ID)
+              TF_VAR_ARC_SP_SECRET: $(TF_VAR_ARC_SP_SECRET)
+
           # Run terraform init
           - task: TerraformCLI@1
             displayName: 'terraform init'
@@ -151,11 +157,6 @@ stages:
               # azure blob file name
               backendAzureRmKey: infrax.tfstate
 
-          - task: Bash@3
-            inputs:
-              targetType: 'inline'
-              script: echo $TF_VAR_ENVIRONMENT
-
           # Run Terraform Plan for reporting
           # -var environment=dev -var resource_prefix=build_ -var location=eastus
           - task: TerraformCLI@1
@@ -165,4 +166,5 @@ stages:
               workingDirectory: "$(System.DefaultWorkingDirectory)/src/cluster_install/terraform/"
               environmentServiceName: 'azdo-iac-for-edge'
               publishPlanResults: 'Terrafrom Test Plan'
-              commandOptions: "-out=$(Build.ArtifactStagingDirectory)/$(Build.Buildnumber).tfplan -detailed-exitcode"
+              commandOptions: "-out=$(Build.ArtifactStagingDirectory)/$(Build.Buildnumber).tfplan -detailed-exitcode -var environment=$(TF_VAR_ENVIRONMENT) -var resource_prefix=$(TF_VAR_RESOURCE_PREFIX) -var location=$(TF_VAR_LOCATION)
+              -var existing_resource_group_name=$(TF_VAR_EXISTING_RESOURCE_GROUP_NAME) -var arc_sp_client_id=$(TF_VAR_ARC_SP_CLIENT_ID) -var arc_sp_secret=$(TF_VAR_ARC_SP_SECRET)"
