@@ -23,8 +23,7 @@ stages:
     # pool: string | pool
     # variables: { string: string } | [ variable | variableReference ]
     jobs:
-      # Run MegaLinter to detect linting and security issues
-      - job: MegaLinter
+      - job: DependencyScan
         pool:
           vmImage: ubuntu-latest
         steps:
@@ -36,6 +35,14 @@ stages:
             displayName: 'Component Detection'
             inputs:
               failOnAlert: true
+
+      # Run MegaLinter to detect linting and security issues
+      - job: MegaLinter
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          # Checkout repo
+          - checkout: self
 
           # Pull MegaLinter docker image
           - script: docker pull oxsecurity/megalinter:v7
@@ -108,6 +115,7 @@ stages:
             inputs:
               targetPath: "$(System.DefaultWorkingDirectory)/megalinter-reports/"
               artifactName: MegaLinterReport
+
       - job: TerraformTest
         pool:
           vmImage: ubuntu-latest
@@ -130,7 +138,10 @@ stages:
               echo "Setting required TF env vars"
             env:
               ARM_SUBSCRIPTION_ID: $(subscription_id)
-              TF_LOG: 'DEBUG'
+              TF_LOG: DEBUG
+              TF_VAR_environment: test
+              TF_VAR_resource_prefix: build_
+              TF_VAR_location: eastus
 
           # Run terraform init
           - task: TerraformCLI@1
@@ -151,6 +162,7 @@ stages:
               backendAzureRmKey: infrax.tfstate
 
           # Run Terraform Plan for reporting
+          # -var environment=dev -var resource_prefix=build_ -var location=eastus
           - task: TerraformCLI@1
             displayName: 'terraform plan'
             inputs:
@@ -158,12 +170,5 @@ stages:
               workingDirectory: "$(System.DefaultWorkingDirectory)/src/cluster_install/terraform/"
               environmentServiceName: 'azdo-iac-for-edge'
               publishPlanResults: 'Terrafrom Test Plan'
-              commandOptions: "-out=$(Build.ArtifactStagingDirectory)/$(Build.Buildnumber).tfplan -detailed-exitcode -var environment=dev -var resource_prefix=build_ -var location=eastus"
+              commandOptions: "-out=$(Build.ArtifactStagingDirectory)/$(Build.Buildnumber).tfplan -detailed-exitcode"
 
-          # Run Terraform Plan Change Detection
-          - task: TerraformCLI@1
-            displayName: 'terraform plan'
-            inputs:
-              command: plan
-              environmentServiceName: 'azdo-iac-for-edge'
-              commandOptions: '-out=$(System.DefaultWorkingDirectory)/terraform.tfplan -detailed-exitcode'
