@@ -82,7 +82,7 @@ stages:
       - job: MegaLinter
         pool:
           vmImage: ubuntu-latest
-
+        dependsOn: Debug
         steps:
           # Checkout repo
           - checkout: self
@@ -119,8 +119,8 @@ stages:
       - job: TerraformTest
         pool:
           vmImage: ubuntu-latest
+        dependsOn: MegaLinter
         steps:
-
           # Initialize dependency scan and fail the build if it does not pass
           - task: TerraformInstaller@1
             displayName: install terraform
@@ -163,6 +163,11 @@ stages:
               # azure blob file name
               backendAzureRmKey: infrax.tfstate
 
+          - task: Bash@3
+            inputs:
+              targetType: 'inline'
+              script: echo $TF_VAR_environment
+
           # Run Terraform Plan for reporting
           # -var environment=dev -var resource_prefix=build_ -var location=eastus
           - task: TerraformCLI@1
@@ -173,4 +178,3 @@ stages:
               environmentServiceName: 'azdo-iac-for-edge'
               publishPlanResults: 'Terrafrom Test Plan'
               commandOptions: "-out=$(Build.ArtifactStagingDirectory)/$(Build.Buildnumber).tfplan -detailed-exitcode"
-
