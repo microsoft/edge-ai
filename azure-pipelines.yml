@@ -154,7 +154,7 @@ stages:
           - task: Bash@3
             inputs:
               targetType: 'inline'
-              script: echo $TF_VAR_environment
+              script: echo $TF_VAR_ENVIRONMENT
 
           # Run Terraform Plan for reporting
           # -var environment=dev -var resource_prefix=build_ -var location=eastus
