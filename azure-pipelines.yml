@@ -82,7 +82,7 @@ stages:
       - job: MegaLinter
         pool:
           vmImage: ubuntu-latest
-        dependsOn: Debug
+        dependsOn: DependencyScan
         steps:
           # Checkout repo
           - checkout: self
