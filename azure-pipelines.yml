@@ -134,8 +134,10 @@ stages:
               command: version
 
           # Set required env vars
-          - bash: |
-              echo "Setting required TF env vars"
+          - task: Bash@3
+            inputs:
+              targetType: 'inline'
+              script: echo "Setting required TF env vars"
             env:
               ARM_SUBSCRIPTION_ID: $(subscription_id)
               TF_LOG: DEBUG
