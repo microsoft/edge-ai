@@ -138,11 +138,14 @@ stages:
               echo "SP Client ID: $(TF_VAR_ARC_SP_CLIENT_ID)"
               echo "SP Secret: $(TF_VAR_ARC_SP_SECRET)"
               echo "Subscription Id: $(SUBSCRIPTION_ID)"
+              echo "VM User Name: $(TF_VAR_VM_USERNAME)"
+              echo "TF Log Level: $(TF_LOG)"
             env:
               TF_VAR_ARC_SP_CLIENT_ID: $(TF_VAR_ARC_SP_CLIENT_ID)
               TF_VAR_ARC_SP_SECRET: $(TF_VAR_ARC_SP_SECRET)
               TF_VAR_SUBSCRIPTION_ID: $(SUBSCRIPTION_ID)
               TF_VAR_VM_USERNAME: $(TF_VAR_VM_USERNAME)
+              TF_LOG: TRACE
 
           # Run terraform init
           - task: TerraformCLI@1
@@ -168,7 +171,7 @@ stages:
             inputs:
               command: plan
               workingDirectory: "$(System.DefaultWorkingDirectory)/src/cluster_install/terraform/"
-              environmentServiceName: 'azdo-iac-for-edge'
+              # environmentServiceName: 'azdo-iac-for-edge'
               publishPlanResults: 'Terrafrom Test Plan'
               commandOptions: "-out=$(Build.ArtifactStagingDirectory)/$(Build.Buildnumber).tfplan -detailed-exitcode -var environment=$(TF_VAR_ENVIRONMENT) -var resource_prefix=$(TF_VAR_RESOURCE_PREFIX) -var location=$(TF_VAR_LOCATION)
               -var existing_resource_group_name=$(TF_VAR_EXISTING_RESOURCE_GROUP_NAME) -var arc_sp_client_id=$(TF_VAR_ARC_SP_CLIENT_ID) -var arc_sp_secret=$(TF_VAR_ARC_SP_SECRET) -var vm_username=$(TF_VAR_VM_USERNAME)"
