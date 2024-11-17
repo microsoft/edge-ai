@@ -172,6 +172,7 @@ stages:
             inputs:
               command: plan
               workingDirectory: "$(System.DefaultWorkingDirectory)/src/cluster_install/terraform/"
+              runAzLogin: true
               # environmentServiceName: 'azdo-iac-for-edge'
               publishPlanResults: 'Terrafrom Test Plan'
               commandOptions: "-out=$(Build.ArtifactStagingDirectory)/$(Build.Buildnumber).tfplan -detailed-exitcode -var environment=$(TF_VAR_ENVIRONMENT) -var resource_prefix=$(TF_VAR_RESOURCE_PREFIX) -var location=$(TF_VAR_LOCATION)
