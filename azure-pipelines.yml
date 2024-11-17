@@ -153,6 +153,7 @@ stages:
             inputs:
               command: init
               workingDirectory: "$(System.DefaultWorkingDirectory)/src/cluster_install/terraform/"
+              runAzLogin: true
               backendType: azurerm
               # Service connection to authorize backend access. Supports Subscription & Management Group Scope
               backendServiceArm: 'azdo-iac-for-edge'
