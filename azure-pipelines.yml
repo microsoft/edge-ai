@@ -135,10 +135,13 @@ stages:
 
           - bash: |
               echo "Mapping secrets for environment use"
-              echo "$(TF_VAR_ARC_SP_CLIENT_ID)"
+              echo "SP Client ID: $(TF_VAR_ARC_SP_CLIENT_ID)"
+              echo "SP Secret: $(TF_VAR_ARC_SP_SECRET)"
+              echo "Subscription Id: $(SUBSCRIPTION_ID)"
             env:
               TF_VAR_ARC_SP_CLIENT_ID: $(TF_VAR_ARC_SP_CLIENT_ID)
               TF_VAR_ARC_SP_SECRET: $(TF_VAR_ARC_SP_SECRET)
+              TF_VAR_SUBSCRIPTION_ID: $(SUBSCRIPTION_ID)
 
           # Run terraform init
           - task: TerraformCLI@1
@@ -159,7 +162,6 @@ stages:
               backendAzureRmKey: infrax.tfstate
 
           # Run Terraform Plan for reporting
-          # -var arc_sp_client_id=$(TF_VAR_ARC_SP_CLIENT_ID) -var arc_sp_secret=$(TF_VAR_ARC_SP_SECRET)
           - task: TerraformCLI@1
             displayName: 'terraform plan'
             inputs:
@@ -168,4 +170,4 @@ stages:
               environmentServiceName: 'azdo-iac-for-edge'
               publishPlanResults: 'Terrafrom Test Plan'
               commandOptions: "-out=$(Build.ArtifactStagingDirectory)/$(Build.Buildnumber).tfplan -detailed-exitcode -var environment=$(TF_VAR_ENVIRONMENT) -var resource_prefix=$(TF_VAR_RESOURCE_PREFIX) -var location=$(TF_VAR_LOCATION)
-              -var existing_resource_group_name=$(TF_VAR_EXISTING_RESOURCE_GROUP_NAME)"
+              -var existing_resource_group_name=$(TF_VAR_EXISTING_RESOURCE_GROUP_NAME) -var subscription_id=$(TF_VAR_SUBSCRIPTION_ID) -var arc_sp_client_id=$(TF_VAR_ARC_SP_CLIENT_ID) -var arc_sp_secret=$(TF_VAR_ARC_SP_SECRET)"
