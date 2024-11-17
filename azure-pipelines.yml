@@ -135,6 +135,7 @@ stages:
 
           - bash: |
               echo "Mapping secrets for environment use"
+              echo "$(TF_VAR_ARC_SP_CLIENT_ID)"
             env:
               TF_VAR_ARC_SP_CLIENT_ID: $(TF_VAR_ARC_SP_CLIENT_ID)
               TF_VAR_ARC_SP_SECRET: $(TF_VAR_ARC_SP_SECRET)
