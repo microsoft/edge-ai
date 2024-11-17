@@ -3,6 +3,7 @@
 		"mdlint": "mega-linter-runner --env \"'ENABLE_LINTERS=MARKDOWN_MARKDOWNLINT,MARKDOWN_MARKDOWN_TABLE_FORMATTER'\"",
 		"mdlint-fix": "mega-linter-runner --env \"'ENABLE_LINTERS=MARKDOWN_MARKDOWNLINT,MARKDOWN_MARKDOWN_TABLE_FORMATTER'\" --fix",
 		"cspell": "mega-linter-runner  --env 'ENABLE_LINTERS=SPELL_CSPELL'",
+		"terrascan": "mega-linter-runner  --env \"'ENABLE_LINTERS=TERRAFORM_TERRASCAN,TERRAFORM_TERRASCAN_CONFIG_FILE:.terrascan.toml'\" ",
 		"lint": "mega-linter-runner",
 		"lint-fix": "mega-linter-runner --fix"
 	},
