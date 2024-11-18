@@ -167,6 +167,11 @@ stages:
               # azure blob file name
               backendAzureRmKey: infrax.tfstate
 
+          - task: TerraformCLI@2
+            displayName: 'terraform validate'
+            inputs:
+              workingDirectory: "$(System.DefaultWorkingDirectory)/src/cluster_install/terraform/"
+
           # Run Terraform Plan for reporting
           - task: TerraformCLI@1
             displayName: 'terraform plan'
@@ -177,4 +182,4 @@ stages:
               environmentServiceName: 'azdo_iac-for-edge-sp'
               publishPlanResults: 'Terrafrom Test Plan'
               commandOptions: "-out=$(Build.ArtifactStagingDirectory)/$(Build.Buildnumber).tfplan -detailed-exitcode -var environment=$(TF_VAR_ENVIRONMENT) -var resource_prefix=$(TF_VAR_RESOURCE_PREFIX) -var location=$(TF_VAR_LOCATION)
-              -var existing_resource_group_name=$(TF_VAR_EXISTING_RESOURCE_GROUP_NAME) -var arc_sp_client_id=$(TF_VAR_ARC_SP_CLIENT_ID) -var arc_sp_secret=$(TF_VAR_ARC_SP_SECRET) -var vm_username=$(TF_VAR_VM_USERNAME)"
+              -var existing_resource_group_name=$(TF_VAR_EXISTING_RESOURCE_GROUP_NAME) -var arc_sp_client_id=$(TF_VAR_ARC_SP_CLIENT_ID) -var arc_sp_secret=$(TF_VAR_ARC_SP_SECRET)"
