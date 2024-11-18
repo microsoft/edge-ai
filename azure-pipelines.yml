@@ -145,7 +145,7 @@ stages:
               TF_VAR_ARC_SP_SECRET: $(TF_VAR_ARC_SP_SECRET)
               TF_VAR_SUBSCRIPTION_ID: $(SUBSCRIPTION_ID)
               TF_VAR_VM_USERNAME: $(TF_VAR_VM_USERNAME)
-              TF_LOG: TRACE
+              TF_LOG: 'TRACE'
 
           # Run terraform init
           - task: TerraformCLI@1
