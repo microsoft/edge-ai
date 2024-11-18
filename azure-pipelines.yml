@@ -157,7 +157,7 @@ stages:
               environmentServiceName: 'azdo-ai-for-edge-iac-for-edge'
               backendType: azurerm
               # Service connection to authorize backend access. Supports Subscription & Management Group Scope
-              backendServiceArm: 'azdo-iac-for-edge'
+              backendServiceArm: 'azdo-ai-for-edge-iac-for-edge'
               backendAzureRmResourceGroupName: 'IaC_For_Edge'
               # azure location shortname of the backend resource group and storage account
               backendAzureRmResourceGroupLocation: 'eastus'
