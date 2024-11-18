@@ -173,12 +173,14 @@ stages:
               command: validate
               workingDirectory: "$(System.DefaultWorkingDirectory)/src/cluster_install/terraform/"
 
-          - task: TerraformCLI@2
-            displayName: 'terraform test'
-            inputs:
-              command: test
-              workingDirectory: "$(System.DefaultWorkingDirectory)/src/cluster_install/terraform/tests"
-              commandOptions: "-filter=cluster.tftest.hcl"
+          # Terraform Test Command
+          # This is not yet implemented, tracking here: https://github.com/jason-johnson/azure-pipelines-tasks-terraform/issues/398
+          # - task: TerraformCLI@2
+          #   displayName: 'terraform test'
+          #   inputs:
+          #     command: test
+          #     workingDirectory: "$(System.DefaultWorkingDirectory)/src/cluster_install/terraform/tests"
+          #     commandOptions: "-filter=cluster.tftest.hcl"
 
           # Run Terraform Plan for reporting
           - task: TerraformCLI@1
