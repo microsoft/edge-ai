@@ -170,7 +170,15 @@ stages:
           - task: TerraformCLI@2
             displayName: 'terraform validate'
             inputs:
+              command: validate
               workingDirectory: "$(System.DefaultWorkingDirectory)/src/cluster_install/terraform/"
+
+          - task: TerraformCLI@2
+            displayName: 'terraform test'
+            inputs:
+              command: test
+              workingDirectory: "$(System.DefaultWorkingDirectory)/src/cluster_install/terraform/tests"
+              commandOptions: "-filter=cluster.tftest.hcl"
 
           # Run Terraform Plan for reporting
           - task: TerraformCLI@1
