@@ -190,4 +190,5 @@ stages:
               inlineScript: |
                 az --version
                 export TF_VAR_subscription_id=$(SUBSCRIPTION_ID)
+                echo "The current user is $TF_VAR_subscription_id"
                 terraform test
