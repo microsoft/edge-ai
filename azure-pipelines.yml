@@ -192,3 +192,11 @@ stages:
                 export TF_VAR_subscription_id=$(SUBSCRIPTION_ID)
                 echo "The subscription id is: $TF_VAR_subscription_id"
                 terraform test
+
+          # - task: TerraformCLI@1
+          #   displayName: 'terraform apply'
+          #   condition: and(succeeded(), eq(variables['TERRAFORM_PLAN_HAS_CHANGES'], 'true'))
+          #   inputs:
+          #     command: apply
+          #     environmentServiceName: 'azdo-ai-for-edge-iac-for-edge'
+          #     commandOptions: '$(System.DefaultWorkingDirectory)/terraform.tfplan'

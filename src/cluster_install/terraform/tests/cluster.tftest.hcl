@@ -13,7 +13,6 @@ run "create_default_cluster" {
     location         = "westeurope"
     arc_sp_client_id = "test_sp_client_id"
     arc_sp_secret    = "test_sp_secret"
-    subscription_id  = "fake_sub_id"
   }
 
   # Check that a SP is not created when providing the SP credentials
