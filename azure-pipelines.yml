@@ -189,4 +189,4 @@ stages:
               scriptLocation: inlineScript
               inlineScript: |
                 az --version
-                terraform tests
+                terraform testS
