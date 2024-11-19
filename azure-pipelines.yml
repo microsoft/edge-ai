@@ -153,7 +153,7 @@ stages:
               # azure blob file name
               backendAzureRmKey: infrax.tfstate
 
-          - task: TerraformCLI@2
+          - task: TerraformCLI@1
             displayName: 'Terraform Validate'
             inputs:
               command: validate
@@ -184,7 +184,7 @@ stages:
             displayName: Azure CLI for Terraform CLI test run
             inputs:
               azureSubscription: 'azdo-ai-for-edge-iac-for-edge'
-              scriptType: ps
+              scriptType: bash
               scriptLocation: inlineScript
               inlineScript: |
                 az --version
