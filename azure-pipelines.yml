@@ -129,27 +129,13 @@ stages:
 
           # Check version and output issue if needed
           - task: TerraformCLI@1
-            displayName: 'check terraform version'
+            displayName: 'Check terraform version'
             inputs:
               command: version
 
-          - bash: |
-              echo "Mapping secrets for environment use"
-              echo "SP Client ID: $(TF_VAR_ARC_SP_CLIENT_ID)"
-              echo "SP Secret: $(TF_VAR_ARC_SP_SECRET)"
-              echo "Subscription Id: $(SUBSCRIPTION_ID)"
-              echo "VM User Name: $(TF_VAR_VM_USERNAME)"
-              echo "TF Log Level: $(TF_LOG)"
-            env:
-              TF_VAR_ARC_SP_CLIENT_ID: $(TF_VAR_ARC_SP_CLIENT_ID)
-              TF_VAR_ARC_SP_SECRET: $(TF_VAR_ARC_SP_SECRET)
-              TF_VAR_SUBSCRIPTION_ID: $(SUBSCRIPTION_ID)
-              TF_VAR_VM_USERNAME: $(TF_VAR_VM_USERNAME)
-              TF_LOG: 'TRACE'
-
           # Run terraform init
           - task: TerraformCLI@1
-            displayName: 'terraform init'
+            displayName: 'Terraform Init'
             inputs:
               command: init
               workingDirectory: "$(System.DefaultWorkingDirectory)/src/cluster_install/terraform/"
@@ -168,7 +154,7 @@ stages:
               backendAzureRmKey: infrax.tfstate
 
           - task: TerraformCLI@2
-            displayName: 'terraform validate'
+            displayName: 'Terraform Validate'
             inputs:
               command: validate
               workingDirectory: "$(System.DefaultWorkingDirectory)/src/cluster_install/terraform/"
@@ -184,7 +170,7 @@ stages:
 
           # Run Terraform Plan for reporting
           - task: TerraformCLI@1
-            displayName: 'terraform plan'
+            displayName: 'Terraform Plan'
             inputs:
               command: plan
               workingDirectory: "$(System.DefaultWorkingDirectory)/src/cluster_install/terraform/"
@@ -193,3 +179,12 @@ stages:
               publishPlanResults: 'Terrafrom Test Plan'
               commandOptions: "-out=$(Build.ArtifactStagingDirectory)/$(Build.Buildnumber).tfplan -detailed-exitcode -var environment=$(TF_VAR_ENVIRONMENT) -var resource_prefix=$(TF_VAR_RESOURCE_PREFIX) -var location=$(TF_VAR_LOCATION)
               -var existing_resource_group_name=$(TF_VAR_EXISTING_RESOURCE_GROUP_NAME) -var arc_sp_client_id=$(TF_VAR_ARC_SP_CLIENT_ID) -var arc_sp_secret=$(TF_VAR_ARC_SP_SECRET)"
+
+          - task: AzureCLI@2
+            displayName: Azure CLI for Terraform CLI test run
+            inputs:
+              azureSubscription: 'azdo-ai-for-edge-iac-for-edge'
+              scriptType: ps
+              scriptLocation: inlineScript
+              inlineScript: |
+                az --version
