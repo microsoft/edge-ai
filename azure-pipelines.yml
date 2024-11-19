@@ -23,8 +23,7 @@ stages:
     # pool: string | pool
     # variables: { string: string } | [ variable | variableReference ]
     jobs:
-      # Run MegaLinter to detect linting and security issues
-      - job: MegaLinter
+      - job: DependencyScan
         pool:
           vmImage: ubuntu-latest
         steps:
@@ -36,6 +35,14 @@ stages:
             displayName: 'Component Detection'
             inputs:
               failOnAlert: true
+
+      # Run MegaLinter to detect linting and security issues
+      - job: MegaLinter
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          # Checkout repo
+          - checkout: self
 
           # Pull MegaLinter docker image
           - script: docker pull oxsecurity/megalinter:v7
@@ -58,8 +65,7 @@ stages:
     # pool: string | pool
     # variables: { string: string } | [ variable | variableReference ]
     jobs:
-      # Run MegaLinter to detect linting and security issues
-      - job: MegaLinter
+      - job: DependencyScan
         pool:
           vmImage: ubuntu-latest
         steps:
@@ -71,6 +77,15 @@ stages:
             displayName: 'Component Detection'
             inputs:
               failOnAlert: true
+
+      # Run MegaLinter to detect linting and security issues
+      - job: MegaLinter
+        pool:
+          vmImage: ubuntu-latest
+        dependsOn: DependencyScan
+        steps:
+          # Checkout repo
+          - checkout: self
 
           # Pull MegaLinter docker image
           - script: docker pull oxsecurity/megalinter:v7
@@ -100,3 +115,81 @@ stages:
             inputs:
               targetPath: "$(System.DefaultWorkingDirectory)/megalinter-reports/"
               artifactName: MegaLinterReport
+
+      - job: TerraformTest
+        pool:
+          vmImage: ubuntu-latest
+        dependsOn: MegaLinter
+        steps:
+          # Initialize dependency scan and fail the build if it does not pass
+          - task: TerraformInstaller@1
+            displayName: install terraform
+            inputs:
+              terraformVersion: latest
+
+          # Check version and output issue if needed
+          - task: TerraformCLI@1
+            displayName: 'check terraform version'
+            inputs:
+              command: version
+
+          - bash: |
+              echo "Mapping secrets for environment use"
+              echo "SP Client ID: $(TF_VAR_ARC_SP_CLIENT_ID)"
+              echo "SP Secret: $(TF_VAR_ARC_SP_SECRET)"
+              echo "Subscription Id: $(SUBSCRIPTION_ID)"
+              echo "VM User Name: $(TF_VAR_VM_USERNAME)"
+              echo "TF Log Level: $(TF_LOG)"
+            env:
+              TF_VAR_ARC_SP_CLIENT_ID: $(TF_VAR_ARC_SP_CLIENT_ID)
+              TF_VAR_ARC_SP_SECRET: $(TF_VAR_ARC_SP_SECRET)
+              TF_VAR_SUBSCRIPTION_ID: $(SUBSCRIPTION_ID)
+              TF_VAR_VM_USERNAME: $(TF_VAR_VM_USERNAME)
+              TF_LOG: 'TRACE'
+
+          # Run terraform init
+          - task: TerraformCLI@1
+            displayName: 'terraform init'
+            inputs:
+              command: init
+              workingDirectory: "$(System.DefaultWorkingDirectory)/src/cluster_install/terraform/"
+              runAzLogin: true
+              environmentServiceName: 'azdo-ai-for-edge-iac-for-edge'
+              backendType: azurerm
+              # Service connection to authorize backend access. Supports Subscription & Management Group Scope
+              backendServiceArm: 'azdo-ai-for-edge-iac-for-edge'
+              backendAzureRmResourceGroupName: 'IaC_For_Edge'
+              # azure location shortname of the backend resource group and storage account
+              backendAzureRmResourceGroupLocation: 'eastus'
+              backendAzureRmStorageAccountName: 'iacforedgetf'
+              # azure blob container to store the state file
+              backendAzureRmContainerName: 'iacforedgetf'
+              # azure blob file name
+              backendAzureRmKey: infrax.tfstate
+
+          - task: TerraformCLI@2
+            displayName: 'terraform validate'
+            inputs:
+              command: validate
+              workingDirectory: "$(System.DefaultWorkingDirectory)/src/cluster_install/terraform/"
+
+          # Terraform Test Command
+          # This is not yet implemented, tracking here: https://github.com/jason-johnson/azure-pipelines-tasks-terraform/issues/398
+          # - task: TerraformCLI@2
+          #   displayName: 'terraform test'
+          #   inputs:
+          #     command: test
+          #     workingDirectory: "$(System.DefaultWorkingDirectory)/src/cluster_install/terraform/tests"
+          #     commandOptions: "-filter=cluster.tftest.hcl"
+
+          # Run Terraform Plan for reporting
+          - task: TerraformCLI@1
+            displayName: 'terraform plan'
+            inputs:
+              command: plan
+              workingDirectory: "$(System.DefaultWorkingDirectory)/src/cluster_install/terraform/"
+              runAzLogin: true
+              environmentServiceName: 'azdo-ai-for-edge-iac-for-edge'
+              publishPlanResults: 'Terrafrom Test Plan'
+              commandOptions: "-out=$(Build.ArtifactStagingDirectory)/$(Build.Buildnumber).tfplan -detailed-exitcode -var environment=$(TF_VAR_ENVIRONMENT) -var resource_prefix=$(TF_VAR_RESOURCE_PREFIX) -var location=$(TF_VAR_LOCATION)
+              -var existing_resource_group_name=$(TF_VAR_EXISTING_RESOURCE_GROUP_NAME) -var arc_sp_client_id=$(TF_VAR_ARC_SP_CLIENT_ID) -var arc_sp_secret=$(TF_VAR_ARC_SP_SECRET)"
