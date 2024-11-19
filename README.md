@@ -46,10 +46,10 @@ IaC compiler/generator output can be further tuned for the following environment
 
 ## Getting Started
 
-Users can get started quickly by:
+While the IaC generator tool is under development, users can still use the IaC direction and get started quickly by:
 
-1. Clone the tool's Repository (this solution is not available via package distribution - please consider updating all dependencies after cloning and file issues if challenges are encountered)
-2. Follow [README.md](src/README.md) files in src directory to provision a cluster.
+1. Cloning this repository locally (this solution is not available via package distribution - please consider updating all dependencies after cloning and file issues if challenges are encountered)
+2. Following our [README.md](src/README.md) files in `/src` directory to provision a cloud-hosted, simulated edge cluster.
 
 ## Build and Test
 
