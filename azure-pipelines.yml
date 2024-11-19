@@ -189,4 +189,4 @@ stages:
               scriptLocation: inlineScript
               inlineScript: |
                 az --version
-                terraform test
+                terraform test -var subscription_id=$(SUBSCRIPTION_ID) -var environment=$(TF_VAR_ENVIRONMENT) -var resource_prefix=$(TF_VAR_RESOURCE_PREFIX) -var location=$(TF_VAR_LOCATION) -var existing_resource_group_name=$(TF_VAR_EXISTING_RESOURCE_GROUP_NAME)
