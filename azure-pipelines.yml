@@ -190,4 +190,4 @@ stages:
               inlineScript: |
                 az --version
                 export TF_VAR_subscription_id=$(SUBSCRIPTION_ID)
-                terraform test 
+                terraform test
