@@ -9,6 +9,14 @@ The IaC for Edge project, the first phase of ISE's "AI on Edge" Flagship Acceler
 
 The IaC compiler/generator supports Terraform and Bicep outputs for base infrastructure and can interface with a limited selection of GitOps toolchains for core AIO components and custom customer workload deployment. Pre-built VM and cloud-hosted cluster setup scripts are also output from the generator, however the project only supports a very narrow set of configurations (Ubuntu & K3s clusters).
 
+Initial runs of the generator tool will generate a full Arc-enabled, cloud-hosted development cluster with a basic AIO deployment [Phases 1 through 7 below](#composable-layers). After that, annotations and naming conventions can be used to generate any set or sub-set of IaC for a target environment and reclassify elements for inclusion in alternate layers of the output IaC.
+
+Customers often approach with a wide variety of teams, roles and responsibilities to develop cloud-enabled edge computing solutions. There are often physical plant IT teams responsible for hardware through OSes at the edge, and enterprise IT responsible for cloud infrastructure deployment. There are teams managing cloud data estates, and specialist teams managing physical plant data systems. There are Data Science teams that often span edge and cloud and need to think of both edge and cloud environments in a unified (i.e. more uniform) way. This tool is built to directly address these constraints, and is positioned to accelerate customers through the POC phase with opinionated IaC, and the flexibility to grow and evolve IaC approaches to accommodate increasing solution complexity.
+
+In the future, this generator tool will provide extensible (though custom component integration) GitOps outputs for AIO components and custom workloads, initially supporting Argo CD, Flux and Kalypso.
+
+## Composable Layers
+
 The IaC compiler/generator supports the following fine-grained output layers (though these layers can be flattened into larger chucks to fit a customer's operational model):
 
 1. VM/host provisioning with configurable host operating system (initially limited to Ubuntu)
@@ -23,6 +31,8 @@ The IaC compiler/generator supports the following fine-grained output layers (th
 10. AIO deployment of optionally selected components (OPC UA, AKRI, Strato, ADR((cloud)) & Schema Registry)
 11. Customer defied custom workloads, and pre-built solution accelerators such as TIG/TICK stacks, InfluxDB Data Historian, Reference data backup from cloud to edge, etc.
 
+## Target Environments
+
 IaC compiler/generator output can be further tuned for the following environments:
 
 * Local Dev
@@ -34,25 +44,16 @@ IaC compiler/generator output can be further tuned for the following environment
 * Edge-hosted production
 * Cloud-hosted production
 
-Initial runs of the generator tool will generate a full Arc-enabled, cloud-hosted development cluster with a basic AIO deployment (Phases 1 through 7). After that, annotations and naming conventions can be used to generate any set or sub-set of IaC for a target environment and reclassify elements for inclusion in alternate layers of the output IaC.
-
-Customers often approach with a wide variety of teams, roles and responsibilities to develop cloud-enabled edge computing solutions. There are often physical plant IT teams responsible for hardware through OSes at the edge, and enterprise IT responsible for cloud infrastructure deployment. There are teams managing cloud data estates, and specialist teams managing physical plant data systems. There are Data Science teams that often span edge and cloud and need to think of both edge and cloud environments in a unified (i.e. more uniform) way. This tool is built to directly address these constraints, and is positioned to accelerate customers through the POC phase with opinionated IaC, and the flexibility to grow and evolve IaC approaches to accommodate increasing solution complexity.
-
-In the future, this generator tool will provide extensible (though custom component integration) GitOps outputs for AIO components and custom workloads, initially supporting Argo CD, Flux and Kalypso.
-
 ## Getting Started
 
-Users can get started quickly by:
+While the IaC generator tool is under development, users can still use the IaC direction and get started quickly by:
 
-1. Clone the tool's Repository (this solution is not available via package distribution - please update all components after cloning and file issues if challenges are encountered)
-2. Run the tool locally using `{tool} create {solution_template_file_path} {target_environment} {output_format}
-3. Collect output artifacts and execute in runtime of choice using output format tooling (instructions provided in output readme)
+1. Cloning this repository locally (this solution is not available via package distribution - please consider updating all dependencies after cloning and file issues if challenges are encountered)
+2. Following our [README.md](src/README.md) files in `/src` directory to provision a cloud-hosted, simulated edge cluster.
 
 ## Build and Test
 
-This repository only supports linting for the time being; follow the instructions below to lint any additions to the project.
-
-* Instructions to build and run the projects tests, once we have code, will go here.
+Currently, this repository only supports linting and Terraform validation/plans for the included IaC. We recommend using the project's [dev container](./.devcontainer/README.md) for all contribution work. Please refer to the project's [Azure Pipeline](./azure-pipelines.yml) to see the PR and `main` branch build approaches.
 
 ## ADR Process
 
