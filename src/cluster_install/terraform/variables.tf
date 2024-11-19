@@ -41,4 +41,5 @@ variable "arc_sp_secret" {
   type        = string
   description = "Service Principal Secret for connecting to Azure Arc. If left empty, a new Service Principal will be created"
   default     = ""
+  sensitive   = true
 }
