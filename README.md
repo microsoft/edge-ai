@@ -53,7 +53,7 @@ While the IaC generator tool is under development, users can still use the IaC d
 
 ## Build and Test
 
-Currently, this repository only supports linting and Terraform validation/plans for the included IaC. We recommend using the project's [dev container](./.devcontainer/README.md) for all contribution work.
+Currently, this repository only supports linting and Terraform validation/plans for the included IaC. We recommend using the project's [dev container](./.devcontainer/README.md) for all contribution work. Please refer to the project's [Azure Pipeline](./azure-pipelines.yml) to see the PR and `main` branch build approaches.
 
 ## ADR Process
 
