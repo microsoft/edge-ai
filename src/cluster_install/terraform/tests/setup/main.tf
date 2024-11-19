@@ -4,6 +4,14 @@ terraform {
       source  = "hashicorp/random"
       version = ">= 3.5.1"
     }
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = ">= 4.8.0"
+    }
+    azuread = {
+      source  = "hashicorp/azuread"
+      version = ">= 3.0.2"
+    }
   }
   required_version = ">= 1.9.8"
 }
