@@ -48,9 +48,8 @@ IaC compiler/generator output can be further tuned for the following environment
 
 Users can get started quickly by:
 
-1. Clone the tool's Repository (this solution is not available via package distribution - please update all components after cloning and file issues if challenges are encountered)
-2. Run the tool locally using `{tool} create {solution_template_file_path} {target_environment} {output_format}
-3. Collect output artifacts and execute in runtime of choice using output format tooling (instructions provided in output readme)
+1. Clone the tool's Repository (this solution is not available via package distribution - please consider updating all dependencies after cloning and file issues if challenges are encountered)
+2. Follow [README.md](src/README.md) files in src directory to provision a cluster.
 
 ## Build and Test
 
