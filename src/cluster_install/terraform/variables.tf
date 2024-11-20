@@ -22,7 +22,7 @@ variable "existing_resource_group_name" {
 variable "vm_sku_size" {
   type        = string
   description = "Size of the VM"
-  default     = "Standard_D4as_v4"
+  default     = "Standard_D8_v4"
 }
 
 variable "vm_username" {
