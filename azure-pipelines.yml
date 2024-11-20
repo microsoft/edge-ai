@@ -179,7 +179,6 @@ stages:
               publishPlanResults: 'Terrafrom Test Plan'
               commandOptions: "-out=$(Build.ArtifactStagingDirectory)/$(Build.Buildnumber).tfplan -detailed-exitcode -var environment=$(TF_VAR_ENVIRONMENT) -var resource_prefix=$(TF_VAR_RESOURCE_PREFIX) -var location=$(TF_VAR_LOCATION)
               -var existing_resource_group_name=$(TF_VAR_EXISTING_RESOURCE_GROUP_NAME) -var arc_sp_client_id=$(TF_VAR_ARC_SP_CLIENT_ID) -var arc_sp_secret=$(TF_VAR_ARC_SP_SECRET)-var vm_sku_size=$(TF_VAR_VM_SKU_SIZE)"
-              
 
           - task: AzureCLI@2
             displayName: Azure CLI for Terraform CLI test run
