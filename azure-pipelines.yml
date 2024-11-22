@@ -58,7 +58,7 @@ stages:
                 oxsecurity/megalinter:v7
             displayName: Run MegaLinter
 
-          # Placeholder block for integration environment. 
+          # Placeholder block for integration environment.
           # - task: TerraformCLI@1
           #   displayName: 'terraform apply'
           #   condition: and(succeeded(), eq(variables['TERRAFORM_PLAN_HAS_CHANGES'], 'true'))
@@ -182,7 +182,7 @@ stages:
 
           # Terraform Test Command
           # This is not yet implemented, tracking here: https://github.com/jason-johnson/azure-pipelines-tasks-terraform/issues/398
-          # Once this command is available, the AZ CLI below can be removed 
+          # Once this command is available, the AZ CLI below can be removed
           # - task: TerraformCLI@2
           #   displayName: 'terraform test'
           #   inputs:
