@@ -58,6 +58,15 @@ stages:
                 oxsecurity/megalinter:v7
             displayName: Run MegaLinter
 
+          # Placeholder block for integration environment. 
+          # - task: TerraformCLI@1
+          #   displayName: 'terraform apply'
+          #   condition: and(succeeded(), eq(variables['TERRAFORM_PLAN_HAS_CHANGES'], 'true'))
+          #   inputs:
+          #     command: apply
+          #     environmentServiceName: 'azdo-ai-for-edge-iac-for-edge'
+          #     commandOptions: '$(System.DefaultWorkingDirectory)/terraform.tfplan'
+
   - stage: PR
     displayName: PR Build Process
     # dependsOn: string | [ string ]
@@ -159,15 +168,6 @@ stages:
               command: validate
               workingDirectory: "$(System.DefaultWorkingDirectory)/src/cluster_install/terraform/"
 
-          # Terraform Test Command
-          # This is not yet implemented, tracking here: https://github.com/jason-johnson/azure-pipelines-tasks-terraform/issues/398
-          # - task: TerraformCLI@2
-          #   displayName: 'terraform test'
-          #   inputs:
-          #     command: test
-          #     workingDirectory: "$(System.DefaultWorkingDirectory)/src/cluster_install/terraform/tests"
-          #     commandOptions: "-filter=cluster.tftest.hcl"
-
           # Run Terraform Plan for reporting
           - task: TerraformCLI@1
             displayName: 'Terraform Plan'
@@ -180,6 +180,18 @@ stages:
               commandOptions: "-out=$(Build.ArtifactStagingDirectory)/$(Build.Buildnumber).tfplan -detailed-exitcode -var environment=$(TF_VAR_ENVIRONMENT) -var resource_prefix=$(TF_VAR_RESOURCE_PREFIX) -var location=$(TF_VAR_LOCATION)
               -var existing_resource_group_name=$(TF_VAR_EXISTING_RESOURCE_GROUP_NAME) -var arc_sp_client_id=$(TF_VAR_ARC_SP_CLIENT_ID) -var arc_sp_secret=$(TF_VAR_ARC_SP_SECRET) -var vm_sku_size=$(TF_VAR_VM_SKU_SIZE)"
 
+          # Terraform Test Command
+          # This is not yet implemented, tracking here: https://github.com/jason-johnson/azure-pipelines-tasks-terraform/issues/398
+          # Once this command is available, the AZ CLI below can be removed 
+          # - task: TerraformCLI@2
+          #   displayName: 'terraform test'
+          #   inputs:
+          #     command: test
+          #     workingDirectory: "$(System.DefaultWorkingDirectory)/src/cluster_install/terraform/tests"
+          #     commandOptions: "-filter=cluster.tftest.hcl"
+
+          # NOTE: For this task to work it needs the subscription id set for the AzureAD provider
+          # beyond the integrated MSI.
           - task: AzureCLI@2
             displayName: Azure CLI for Terraform CLI test run
             inputs:
@@ -188,15 +200,6 @@ stages:
               scriptType: bash
               scriptLocation: inlineScript
               inlineScript: |
-                az --version
                 export ARM_SUBSCRIPTION_ID=$(SUBSCRIPTION_ID)
                 terraform test
                 unset ARM_SUBSCRIPTION_ID
-
-          # - task: TerraformCLI@1
-          #   displayName: 'terraform apply'
-          #   condition: and(succeeded(), eq(variables['TERRAFORM_PLAN_HAS_CHANGES'], 'true'))
-          #   inputs:
-          #     command: apply
-          #     environmentServiceName: 'azdo-ai-for-edge-iac-for-edge'
-          #     commandOptions: '$(System.DefaultWorkingDirectory)/terraform.tfplan'
