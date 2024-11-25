@@ -70,10 +70,10 @@ while IFS= read -r line || [[ "$line" ]]; do
 done < "${1:-/dev/stdin}"
 
 # Get list of all registered azure resource providers
-registered_providers=( $(az provider list --query "sort_by([?registrationState=='Registered'].{Provider:namespace}, &Provider)" --out tsv) )
+mapfile -t registered_providers < <(az provider list --query "sort_by([?registrationState=='Registered'].{Provider:namespace}, &Provider)" --out tsv)
 
 # Build a sorted list of azure resource providers to register
-sorted_required_providers=($(for key in ${!providers[@]}; do echo "$key"; done | sort))
+mapfile -t sorted_required_providers < <(for key in "${!providers[@]}"; do echo "$key"; done | sort)
 
 # Register the providers in the list that are not already registered
 for provider in "${sorted_required_providers[@]}"; do 
@@ -107,8 +107,7 @@ do
     if [ "${providers[$provider]}" == "Registered" ]; then
       state="Registered"
     else
-      command="az provider show --namespace $provider --query 'registrationState' --output tsv"
-      state=$($command)
+      state=$(az provider show --namespace "$provider" --query 'registrationState' --output tsv)
     fi
 
     print_provider_name "$provider"
