@@ -25,7 +25,7 @@ str_len () {
 print_provider_name () {
   provider=$1
 
-  provider_name_len=$(str_len $provider)
+  provider_name_len=$(str_len "$provider")
   dot_len=$((max_len_provider_name-provider_name_len+5))
   echo -ne "\033[0K$provider "
   printf '.%.0s' $(seq 1 $dot_len)
@@ -63,8 +63,8 @@ elapsed_time_start=$(date +%s)
 declare -A providers
 while IFS= read -r line || [[ "$line" ]]; do
   providers[$line]="NotRegistered"
-  provider_name_len=$(str_len $line)
-  if [ $provider_name_len -gt $max_len_provider_name ]; then
+  provider_name_len=$(str_len "$line")
+  if [ "$provider_name_len" -gt "$max_len_provider_name" ]; then
     max_len_provider_name=$provider_name_len
   fi
 done < "${1:-/dev/stdin}"
@@ -73,17 +73,17 @@ done < "${1:-/dev/stdin}"
 registered_providers=( $(az provider list --query "sort_by([?registrationState=='Registered'].{Provider:namespace}, &Provider)" --out tsv) )
 
 # Build a sorted list of azure resource providers to register
-sorted_required_providers=($(for key in ${!providers[@]}; do echo $key; done | sort))
+sorted_required_providers=($(for key in ${!providers[@]}; do echo "$key"; done | sort))
 
 # Register the providers in the list that are not already registered
 for provider in "${sorted_required_providers[@]}"; do 
   
-  print_provider_name $provider
+  print_provider_name "$provider"
 
   if [ "$(echo "${registered_providers[@]}" | grep "$provider" )" == "" ]; then
     
     print_not_registered_state
-    az provider register --namespace $provider > /dev/null 2>&1
+    az provider register --namespace "$provider" > /dev/null 2>&1
 
   else
     
@@ -99,19 +99,19 @@ total_number_of_providers=${#providers[@]}
 not_registered_count=$total_number_of_providers
 
 # Print the updated state of each of the provider registrations
-while [ $not_registered_count -gt 0 ]
+while [ "$not_registered_count" -gt 0 ]
 do
-  move_cursor_to_first_line $total_number_of_providers
+  move_cursor_to_first_line "$total_number_of_providers"
   for provider in "${sorted_required_providers[@]}"; do 
 
     if [ "${providers[$provider]}" == "Registered" ]; then
       state="Registered"
     else
-      command="az provider show --namespace $provider --query \"registrationState\" --output tsv"
+      command="az provider show --namespace $provider --query 'registrationState' --output tsv"
       state=$($command)
     fi
 
-    print_provider_name $provider
+    print_provider_name "$provider"
     if [ "$state" = "Registered" ]; then
       ((not_registered_count--))
       print_registered_state
@@ -119,17 +119,17 @@ do
     elif [ "$state" = "NotRegistered" ]; then
       print_not_registered_state
     else
-      print_state $state
+      print_state "$state"
     fi
 
   done
 
-  if [ $not_registered_count -gt 0 ]; then
+  if [ "$not_registered_count" -gt 0 ]; then
     sleep $delay_in_seconds
     not_registered_count=$total_number_of_providers
   fi
 done
 
 elapsed_time_end=$(date +%s)
-elapsed_time=$(( $elapsed_time_end - $elapsed_time_start ))
+elapsed_time=$(( elapsed_time_end - elapsed_time_start ))
 echo -e "\nElapsed time - $(date -d@${elapsed_time} -u +%Hh:%Mm:%Ss)\n"
