@@ -10,7 +10,7 @@ run "create_default_cluster" {
   variables {
     resource_prefix  = run.setup_tests.resource_prefix
     environment      = "dev"
-    location         = "westeurope"
+    location         = "centralus"
     arc_sp_client_id = "test_sp_client_id"
     arc_sp_secret    = "test_sp_secret"
   }
