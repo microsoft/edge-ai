@@ -4,7 +4,7 @@ This folder contains a script that will register the required resource providers
 This script only needs to be run once per subscription.
 
 ```bash
-./register_providers.sh
+./register-azure-providers.sh aio-azure-resource-providers.txt
 ```
 
 ## Script prerequisites
