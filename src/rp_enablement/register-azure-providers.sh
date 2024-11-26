@@ -1,19 +1,32 @@
 #!/usr/bin/env bash
 
-#
-# Registers azure resource providers defined in a text file.
-#
-#  azure-providers.txt
-#  ------------------------------
-#  Microsoft.ApiManagement
-#  Microsoft.Web
-#  Microsoft.DocumentDB
-#  Microsoft.OperationalInsights
-#
-# Usage:
-#  ./register-azure-providers.sh azure-providers.txt
-#  cat azure-providers.txt | ./register-azure-providers.sh
-#
+usage () {
+
+  echo ""
+  echo "  Register Azure resource providers"
+  echo "  ------------------------------------------------------------"
+  echo ""
+  echo "  USAGE: ./register-azure-providers.sh <providers-file>"
+  echo ""
+  echo "    Registers Azure resource providers that are defined in a"
+  echo "    text file."
+  echo ""
+  echo "    Example:"
+  echo ""
+  echo "    azure-providers.txt"
+  echo "    ------------------------------"
+  echo "    Microsoft.ApiManagement"
+  echo "    Microsoft.Web"
+  echo "    Microsoft.DocumentDB"
+  echo "    Microsoft.OperationalInsights"
+  echo ""
+  echo "    ./register-azure-providers.sh azure-providers.txt"
+  echo ""
+  echo "  USAGE: ./register-azure-providers.sh --help"
+  echo ""
+  echo "    Prints this help."
+  echo ""
+}
 
 str_len () {
   str=$1
@@ -21,7 +34,15 @@ str_len () {
   echo ${#str}
 }
 
+# Prints the provider name followed by a number of dots to the terminal screen. The 
+# \033[0K CSI sequence clears any prior content at the location and then prints the 
+# provider name and dots. This is to allow for in-place refreshes of the registration 
+# state on the terminal screen.
+#
 # https://en.wikipedia.org/wiki/ANSI_escape_code#Control_Sequence_Introducer_commands
+# \033[nK - Erases part of the line. If n is 0 (or missing), clear from cursor to the end 
+# of the line. If n is 1, clear from cursor to beginning of the line. If n is 2, clear entire 
+# line. Cursor position does not change.
 print_provider_name () {
   provider=$1
 
@@ -32,27 +53,64 @@ print_provider_name () {
   echo -n " "
 }
 
+# Print the provider state "NotRegistered" with white text on dark red background
+# to the terminal screen.
+#
 # https://en.wikipedia.org/wiki/ANSI_escape_code#8-bit
+# \033[38;5;15m - foreground color - white
+# \033[48;5;1m - background color - dark red
+# \033[m - reset to normal
 print_not_registered_state () {
   echo -e "\033[38;5;15m\033[48;5;1m NotRegistered \033[m"
 }
 
+# Print the provider state "Registered" with black text on dark green background
+# to the terminal screen.
+#
 # https://en.wikipedia.org/wiki/ANSI_escape_code#8-bit
+# \033[38;5;0m - foreground color - black
+# \033[48;5;2m - background color - dark green
+# \033[m - reset to normal
 print_registered_state () {
   echo -e "\033[38;5;0m\033[48;5;2m Registered \033[m"
 }
 
+# Print the provided provider state with white text on dark grey background
+# to the terminal screen.
+#
+# https://en.wikipedia.org/wiki/ANSI_escape_code#8-bit
+# \033[38;5;15m - foreground color - white
+# \033[48;5;243m - background color - dark grey
+# \033[m - reset to normal
 # https://en.wikipedia.org/wiki/ANSI_escape_code#8-bit
 print_state () {
   state=$1
   echo -e "\033[38;5;15m\033[48;5;243m $state \033[m"
 }
 
+# Moves the cursor up n lines to the first line of provider names and states. This allows
+# the script to overwrite the provider name and state so that the terminal screen appears 
+# to refresh the state values in-place.
+#
 # https://en.wikipedia.org/wiki/ANSI_escape_code#Control_Sequence_Introducer_commands
+# \033[nF	- Moves cursor to beginning of the line n (default 1) lines up. 
 move_cursor_to_first_line () {
   number_of_lines=$1
   echo -ne "\033[${number_of_lines}F"
 }
+
+# Check input parameters for correct usage
+if [ $# -ne 1 ]; then
+  usage
+  exit 1
+elif [ "$1" == "--help" ]; then
+  usage
+  exit 0
+elif [[ ! -f $1 ]]; then
+  echo -e "\033[38;5;15m\033[48;5;1m File ${1} provided, does not exist. \033[m"
+  usage
+  exit 1
+fi
 
 delay_in_seconds=5
 max_len_provider_name=0
@@ -67,7 +125,7 @@ while IFS= read -r line || [[ "$line" ]]; do
   if [ "$provider_name_len" -gt "$max_len_provider_name" ]; then
     max_len_provider_name=$provider_name_len
   fi
-done < "${1:-/dev/stdin}"
+done < "${1}"
 
 # Get list of all registered azure resource providers
 mapfile -t registered_providers < <(az provider list --query "sort_by([?registrationState=='Registered'].{Provider:namespace}, &Provider)" --out tsv)
@@ -92,8 +150,6 @@ for provider in "${sorted_required_providers[@]}"; do
 
   fi
 done
-
-sleep $delay_in_seconds
 
 total_number_of_providers=${#providers[@]}
 not_registered_count=$total_number_of_providers
