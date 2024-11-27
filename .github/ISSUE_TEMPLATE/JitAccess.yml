@@ -1,10 +1,10 @@
+---
 name: Temporary administrator access request
 description: Request for temporary repository administrator access to this repository, a.k.a Just-in-Time (JIT) access.
 title: "JIT Request"
 labels: ["jit"]
 assignees:
   - gimsvc_microsoft
-  - 
 body:
   - type: markdown
     attributes:

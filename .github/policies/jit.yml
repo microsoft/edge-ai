@@ -1,5 +1,6 @@
 # Documentation for JIT policy: https://aka.ms/gim/docs/policy/jit
 
+---
 # metadata
 id: id
 name: JIT_Access

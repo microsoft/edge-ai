@@ -1,5 +1,6 @@
+---
 inventory:
-- source: ServiceTree
-  items:
-  - id: 7b29933a-29b6-4f78-a6dc-557f6b01b1df
-  isProduction: false
+  - source: ServiceTree
+    items:
+      - id: 7b29933a-29b6-4f78-a6dc-557f6b01b1df
+    isProduction: false
