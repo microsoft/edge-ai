@@ -1,0 +1,11 @@
+Microsoft.ExtendedLocation
+Microsoft.Kubernetes
+Microsoft.KubernetesConfiguration
+Microsoft.IoTOperations
+Microsoft.DeviceRegistry
+Microsoft.SecretSyncController
+Microsoft.AlertsManagement
+Microsoft.Monitor
+Microsoft.Dashboard
+Microsoft.Insights
+Microsoft.OperationalInsights
