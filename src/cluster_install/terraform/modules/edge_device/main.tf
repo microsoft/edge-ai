@@ -81,8 +81,8 @@ resource "azurerm_linux_virtual_machine" "aio_edge" {
     public_key = tls_private_key.vm_ssh.public_key_openssh
   }
 
-  provision_vm_agent         = false
-  allow_extension_operations = false
+  provision_vm_agent         = true
+  allow_extension_operations = true
   size                       = var.vm_sku_size
   network_interface_ids = [
     azurerm_network_interface.aio_edge.id
