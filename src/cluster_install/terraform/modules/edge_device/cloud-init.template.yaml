@@ -71,8 +71,17 @@ runcmd:
             echo "========== Connecting to Azure Arc failed =========="
             echo "========== Attempting to reconnect by deleting Azure Arc connectedCluster resource in Azure =========="
             # This deletion is only required in environments that are recreated
-            # Remove this for productions enviroments
+            # Remove this for productions environments
             az connectedk8s delete --name $ARC_RESOURCE_NAME --resource-group $VM_RESOURCE_GROUP --yes
             connect_arc
+        fi
+        # Enable cluster connect feature in non prod by default
+        az connectedk8s enable-features -n $ARC_RESOURCE_NAME --resource-group $VM_RESOURCE_GROUP --features cluster-connect
+
+        ADD_CURRENT_USER_CLUSTER_ADMIN=${ADD_CURRENT_USER_CLUSTER_ADMIN}
+
+        if [ "$ADD_CURRENT_USER_CLUSTER_ADMIN" = true ]; then
+            short_id=$(echo "${AAD_CURRENT_USER_ID}" | cut -c1-7)
+            kubectl create clusterrolebinding $short_id-user-binding --clusterrole cluster-admin --user=${AAD_CURRENT_USER_ID}
         fi
     fi
