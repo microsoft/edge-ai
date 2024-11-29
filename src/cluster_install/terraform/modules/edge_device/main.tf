@@ -90,15 +90,15 @@ resource "azurerm_linux_virtual_machine" "aio_edge" {
     azurerm_network_interface.aio_edge.id
   ]
   custom_data = base64encode(templatefile("${path.module}/cloud-init.template.yaml", {
-    "ARC_SP_CLIENT_ID"                = var.arc_sp_client_id
-    "ARC_SP_SECRET"                   = var.arc_sp_secret
-    "VM_USERNAME"                     = local.vm_username
-    "TENANT_ID"                       = data.azurerm_subscription.current.tenant_id
-    "VM_RESOURCE_GROUP"               = var.resource_group_name
-    "ARC_RESOURCE_NAME"               = local.arc_resource_name
-    "ENVIRONMENT"                     = var.environment
-    "ADD_CURRENT_USER_CLUSTER_ADMIN"  = var.add_current_entra_user_cluster_admin
-    "AAD_CURRENT_USER_ID"             = data.azurerm_client_config.current.object_id
+    "ARC_SP_CLIENT_ID"               = var.arc_sp_client_id
+    "ARC_SP_SECRET"                  = var.arc_sp_secret
+    "VM_USERNAME"                    = local.vm_username
+    "TENANT_ID"                      = data.azurerm_subscription.current.tenant_id
+    "VM_RESOURCE_GROUP"              = var.resource_group_name
+    "ARC_RESOURCE_NAME"              = local.arc_resource_name
+    "ENVIRONMENT"                    = var.environment
+    "ADD_CURRENT_USER_CLUSTER_ADMIN" = var.add_current_entra_user_cluster_admin
+    "AAD_CURRENT_USER_ID"            = data.azurerm_client_config.current.object_id
   }))
 
   source_image_reference {
