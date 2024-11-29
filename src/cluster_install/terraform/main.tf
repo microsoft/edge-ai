@@ -39,12 +39,13 @@ locals {
 module "edge_device" {
   source = "./modules/edge_device"
 
-  environment         = var.environment
-  resource_prefix     = var.resource_prefix
-  location            = var.location
-  resource_group_name = local.resource_group_name
-  arc_sp_client_id    = local.service_principal_client_id
-  arc_sp_secret       = local.service_principal_secret
-  vm_sku_size         = var.vm_sku_size
-  vm_username         = var.vm_username
+  environment                           = var.environment
+  resource_prefix                       = var.resource_prefix
+  location                              = var.location
+  resource_group_name                   = local.resource_group_name
+  arc_sp_client_id                      = local.service_principal_client_id
+  arc_sp_secret                         = local.service_principal_secret
+  vm_sku_size                           = var.vm_sku_size
+  vm_username                           = var.vm_username
+  add_current_entra_user_cluster_admin  = var.add_current_entra_user_cluster_admin
 }

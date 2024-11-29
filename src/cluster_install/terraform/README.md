@@ -6,6 +6,7 @@ In additionally to the above the config will optionally deploy the following:
 
 - Create a resource group to deploy the VM into if no existing resource group is provided
 - Create a Service Principal with minimum required permissions to connect the cluster to Azure Arc, if no existing Service Principal is provided
+- Enable the Arc feature `cluster-connect` and assign the current Entra ID user as Kubernetes `cluster-admin` role. This allows for the user to securely, [remote connect](https://learn.microsoft.com/azure/azure-arc/kubernetes/cluster-connect?tabs=azure-cli%2Cagent-version) into the Arc-enabled Kubernetes cluster.
 
 ## Prerequisites
 
@@ -54,17 +55,23 @@ Set up terraform setting and apply it
     location        = "<location>"
     ```
 
-4. Initalized and apply terraform
+4. Optionally, if `environment` is not set to `prod`, and you wish your current Azure Entra ID user to be assigned a `cluster-admin` role in the K3S cluster, add the following variable to `terraform.tfvars` file:
+
+    ```hcl
+    add_current_entra_user_cluster_admin = true
+    ```
+
+5. Initalized and apply terraform
 
     ```sh
     terraform init
     terraform apply
     ```
 
-5. Navigate to the deployed VM in Azure portal and Enable JIT (Just in time) access for your IP:
+6. Navigate to the deployed VM in Azure portal and Enable JIT (Just in time) access for your IP:
     Virtual Machines -> Select the VM -> Connect -> Native SSH -> VM Access -> Requests JIT access
 
-6. The terraform output will contain the SSH command to connect to the VM
+7. The terraform output will contain the SSH command to connect to the VM
     Use the SSH command to connect to the VM or any preferred SSH client.
 
     ```sh
