@@ -37,3 +37,8 @@ variable "arc_sp_secret" {
   type        = string
   description = "Service Principal Secret for connecting to Azure Arc"
 }
+
+variable "add_current_entra_user_cluster_admin" {
+  type        = bool
+  description = "Only applies if 'environment!=prod'. Adds the current user as cluster-admin cluster role binding"
+}
