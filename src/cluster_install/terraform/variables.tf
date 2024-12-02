@@ -43,3 +43,9 @@ variable "arc_sp_secret" {
   default     = ""
   sensitive   = true
 }
+
+variable "add_current_entra_user_cluster_admin" {
+  type        = bool
+  default     = false
+  description = "Only applies if 'environment!=prod'. Adds the current user as cluster-admin cluster role binding"
+}
