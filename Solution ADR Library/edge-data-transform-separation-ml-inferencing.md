@@ -24,7 +24,9 @@ This ADR focuses on this requirement:
 The following diagram shows the interaction between the _Scoring Gateway_ and the other edge components:
 
 ![Sequence diagram showing the interaction of edge components](./media/edge-data-transform-separation-ml-inferencing-diag.png)
-The devices publish data to the Azure IoT Operations MQTT broker. This data is then optionally [preprocessed by Azure IoT Operations Dataflow](https://learn.microsoft.com/en-us/azure/iot-operations/connect-to-cloud/overview-dataflow) to map (filter, project), convert and enrich the data. The goal is to provide the right preprocessed (mapped, filtered, enriched, etc.) features required by the scoring endpoint. This preprocessed data is then published back to the MQTT broker to a different topic for preprocessed data.
+
+The devices publish data to the Azure IoT Operations MQTT broker. This data is then optionally [preprocessed by Azure IoT Operations Dataflow](https://learn.microsoft.com/en-us/azure/iot-operations/connect-to-cloud/overview-dataflow) to map (filter, project), convert and enrich the data.
+The goal is to provide the right preprocessed (mapped, filtered, enriched, etc.) features required by the scoring endpoint. This preprocessed data is then published back to the MQTT broker to a different topic for preprocessed data.
 
 The gateway subscribes to the input topic on startup.
 
@@ -32,7 +34,9 @@ As data is published by the devices or the dataflow, the gateway receives this d
 
 At a given interval the gateway calls the scoring endpoint to get the prediction.
 
-To make the prediction, the time series data needs to be transformed in a way that fits the input of the scoring endpoint. The transformation depends on the scoring endpoint input format and can differ in between different scoring endpoints and even versions of the same. Some scoring endpoints might need a table containing a time series, others might just need a record of aggregated values, values need to be encoded, combined, imputation needs to be done, etc., and there might be many other options and combinations which require some flexibility.
+To make the prediction, the time series data needs to be transformed in a way that fits the input of the scoring endpoint.
+The transformation depends on the scoring endpoint input format and can differ in between different scoring endpoints and even versions of the same.
+Some scoring endpoints might need a table containing a time series, others might just need a record of aggregated values, values need to be encoded, combined, imputation needs to be done, etc., and there might be many other options and combinations which require some flexibility.
 
 To make sure that the scoring behaves in production as tested with the test set, it is important that this feature transformation is the equivalent in production and in the test script.
 
@@ -56,7 +60,8 @@ The main purpose of the gateway is to interact with the scoring endpoint to get 
 
 The chosen approach is model agnostic and the feature transformation script can be the same for the inference pipelines in testing and in production. There is the highest flexibility for the Data Scientist to change the transformation of the features as it is shared between the test code and the scoring script.
 
-Also, the Azure IoT Operations Dataflow component does not provide all the functions to give the required flexibility for feature engineering. Therefore, it is important that the dataflow is only responsible for providing a prepared dataset that can act as input for the inference pipeline dependent feature transformations (imputation, combination of features, encoding, etc.) that provide the right input to the scoring endpoint.
+Also, the Azure IoT Operations Dataflow component does not provide all the functions to give the required flexibility for feature engineering.
+Therefore, it is important that the dataflow is only responsible for providing a prepared dataset that can act as input for the inference pipeline dependent feature transformations (imputation, combination of features, encoding, etc.) that provide the right input to the scoring endpoint.
 
 ## Considered Options
 
