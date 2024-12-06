@@ -46,7 +46,7 @@ To make sure that the scoring behaves in production as tested with the test set,
 
 ### Glossary
 
-- (Scoring) Gateway: The Gateway between MQTT and Azure ML on the edge that reads the device messages from MQTT and sends them to the scoring endpoint for inference and forwards the result to and other MQTT topic.
+- (Scoring) Gateway: The Gateway between MQTT and Azure ML on the edge that reads the device messages from MQTT and sends them to the scoring endpoint for inference and forwards the result to another MQTT topic.
 - Scoring endpoint: The Azure ML scoring endpoint on the edge cluster provides a static REST API to perform predictions on the scoring deployment that hosts the ML inference pipeline including the ML model.
 - Model: The Machine Learning model that does the inference.
 
@@ -98,7 +98,7 @@ In the gateway the cached data is transformed into a time series data table with
 - More complex implementation of the gateway as it needs to aggregate the data by window.
   - How would the window be aggregated: average, median, min, max, first, last value?
   - How should non-numeric features such as the vendor_name in the sample be aggregated?
-- The split between windowing and feature engineering might make it difficult when for a certain time series more data is needed than for other, for example to extract the frequency of a time series, more data is needed than for other features where just the average is of interest.
+- The split between windowing and feature engineering might make it difficult when, for a certain time series, more data is needed than for other. For example, to extract the frequency of a time series, more data is needed than for other features where just the average is of interest.
 - There is data imputation needed for values that are sent less often than the window size.
 
 ### Option 3: Simple Gateway and full preprocessing in the scoring endpoint
