@@ -42,8 +42,18 @@ runcmd:
     VM_RESOURCE_GROUP=${VM_RESOURCE_GROUP}
 
     connect_arc () {
+        args="--name $ARC_RESOURCE_NAME \
+            --resource-group $VM_RESOURCE_GROUP \
+            --enable-oidc-issuer \
+            --enable-workload-identity \
+            --custom-locations-oid ${CUSTOM_LOCATIONS_OID}"
+
+        if [ ${ARC_AUTO_UPGRADE} = "disable"]; then
+            args+=" --disable-auto-upgrade"
+        fi
         echo "========== Connecting to Azure Arc =========="
-        az connectedk8s connect --name $ARC_RESOURCE_NAME --resource-group $VM_RESOURCE_GROUP
+        echo "Executing arc connect command: az connectedk8s connect $args"
+        az connectedk8s connect $args
     }
 
     ENVIRONMENT=${ENVIRONMENT}
@@ -85,3 +95,19 @@ runcmd:
             kubectl create clusterrolebinding $short_id-user-binding --clusterrole cluster-admin --user=${AAD_CURRENT_USER_ID}
         fi
     fi
+
+    # Update k3s config with OIDC issuer url
+    issuerUrl=$(az connectedk8s show --resource-group $VM_RESOURCE_GROUP --name $ARC_RESOURCE_NAME --query oidcIssuerProfile.issuerUrl --output tsv)
+    sudo tee /etc/rancher/k3s/config.yaml > /dev/null <<EOF
+    kube-apiserver-arg:
+    - service-account-issuer=$issuerUrl
+    - service-account-max-token-expiration=24h
+    EOF
+    systemctl restart k3s
+
+    # Increase limits for Azure Container Storage
+    sudo tee -a /etc/sysctl.conf > /dev/null <<EOF
+    fs.inotify.max_user_instances=8192
+    fs.inotify.max_user_watches=524288
+    EOF
+    sudo sysctl -p

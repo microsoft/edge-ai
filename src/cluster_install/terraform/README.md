@@ -1,12 +1,16 @@
 # Overview
 
-This folder contains the Terraform configuration to deploy a Arc Connected K3s Kubernetes cluster on a single Azure Virtual Machine. The VM can be accessed via SSH using a certificate and has the K3s Kubernetes cluster pre-installed. The cluster can be connected to Azure Arc for management and monitoring. The which will be stored a `.ssh` directory in the root of the project by default
+This folder contains the Terraform configuration to deploy a Arc Connected K3s Kubernetes cluster on a single Azure Virtual Machine with Azure IoT Operations.
 
-In additionally to the above the config will optionally deploy the following:
+The VM can be accessed via SSH using a certificate and has the K3s Kubernetes cluster pre-installed. The cluster is connected to Azure Arc for management and monitoring. The private key will be stored a `.ssh` directory in the root of the project by default.
+
+In addition to the above the config will optionally deploy the following:
 
 - Create a resource group to deploy the VM into if no existing resource group is provided
 - Create a Service Principal with minimum required permissions to connect the cluster to Azure Arc, if no existing Service Principal is provided
 - Enable the Arc feature `cluster-connect` and assign the current Entra ID user as Kubernetes `cluster-admin` role. This allows for the user to securely, [remote connect](https://learn.microsoft.com/azure/azure-arc/kubernetes/cluster-connect?tabs=azure-cli%2Cagent-version) into the Arc-enabled Kubernetes cluster.
+
+Learn more about the default configuration of each module by exploring the [modules](./modules/) directory.
 
 ## Prerequisites
 

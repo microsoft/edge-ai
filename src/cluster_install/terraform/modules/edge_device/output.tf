@@ -10,3 +10,6 @@ output "vm_id" {
   value = azurerm_linux_virtual_machine.aio_edge.id
 }
 
+output "connected_cluster_name" {
+  value = local.arc_resource_name
+}
