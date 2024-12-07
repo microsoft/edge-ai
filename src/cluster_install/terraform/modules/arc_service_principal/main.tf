@@ -1,6 +1,10 @@
-### Create Service Principal for Azure Arc ###
-# Create SP with minimal permissions to onboard the VM to Azure Arc
-# Meant to make it easier to get the Virtual edge device up and running and not for production use
+/**
+ * # Create Service Principal for Azure Arc
+ *
+ * Create SP with minimal permissions to onboard the VM to Azure Arc
+ * Meant to make it easier to get the Virtual edge device up and running and not for production use
+ *
+ */
 
 data "azurerm_client_config" "current" {}
 

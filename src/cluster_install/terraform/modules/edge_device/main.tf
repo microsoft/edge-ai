@@ -1,6 +1,18 @@
+/**
+ * # Edge Device Module
+ *
+ * Deploys a Linux VM with an Arc-connected K3s cluster
+ *
+ */
+
 data "azurerm_subscription" "current" {}
 
 data "azurerm_client_config" "current" {}
+data "azuread_service_principal" "custom_locations" {
+  # ref: https://learn.microsoft.com/en-us/azure/iot-operations/deploy-iot-ops/howto-prepare-cluster?tabs=ubuntu#arc-enable-your-cluster
+  client_id = "bc313c14-388c-4e7d-a58e-70017303ee3b" #gitleaks:allow
+  count     = var.custom_locations_oid != "" ? 0 : 1
+}
 
 resource "random_string" "vm_username" {
   length  = 10
@@ -8,9 +20,10 @@ resource "random_string" "vm_username" {
 }
 
 locals {
-  label_prefix      = "${var.resource_prefix}-aio-edge"
-  vm_username       = var.vm_username != "" ? var.vm_username : random_string.vm_username.result
-  arc_resource_name = "${var.resource_prefix}-arc"
+  label_prefix         = "${var.resource_prefix}-aio-edge"
+  vm_username          = var.vm_username != "" ? var.vm_username : random_string.vm_username.result
+  arc_resource_name    = "${var.resource_prefix}-arc"
+  custom_locations_oid = var.custom_locations_oid != "" ? var.custom_locations_oid : data.azuread_service_principal.custom_locations[0].object_id
 }
 
 ### Create Virtual Edge Device ###
@@ -96,9 +109,11 @@ resource "azurerm_linux_virtual_machine" "aio_edge" {
     "TENANT_ID"                      = data.azurerm_subscription.current.tenant_id
     "VM_RESOURCE_GROUP"              = var.resource_group_name
     "ARC_RESOURCE_NAME"              = local.arc_resource_name
+    "ARC_AUTO_UPGRADE"               = var.arc_auto_upgrade
     "ENVIRONMENT"                    = var.environment
     "ADD_CURRENT_USER_CLUSTER_ADMIN" = var.add_current_entra_user_cluster_admin
     "AAD_CURRENT_USER_ID"            = data.azurerm_client_config.current.object_id
+    "CUSTOM_LOCATIONS_OID"           = local.custom_locations_oid
   }))
 
   source_image_reference {
@@ -112,4 +127,12 @@ resource "azurerm_linux_virtual_machine" "aio_edge" {
     caching              = "ReadWrite"
     storage_account_type = "Standard_LRS"
   }
+}
+
+resource "terraform_data" "wait_connected_cluster_exists" {
+  provisioner "local-exec" {
+    interpreter = ["bash", "-c"]
+    command     = "while [[ -z $(az connectedk8s show -n ${local.arc_resource_name} -g ${var.resource_group_name} 2>/dev/null) ]]; do sleep 5; done; sleep 3;"
+  }
+  depends_on = [azurerm_linux_virtual_machine.aio_edge]
 }

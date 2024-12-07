@@ -1,7 +1,7 @@
 # Source Code Structure
 
 1. [`./rp_enablement`](rp_enablement/README.md) - scripts to set up required resource providers in your subscription.
-2. [`./cluster_install](cluster_install/README.md) - Terraform modules to install an edge cluster in an Azure VM.  
+2. [`./cluster_install](cluster_install/README.md) - Terraform modules to install an edge cluster in an Azure VM with an Azure IoT Operations deployment.
 
 ## Prerequisites
 

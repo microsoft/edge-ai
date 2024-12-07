@@ -48,4 +48,21 @@ module "edge_device" {
   vm_sku_size                          = var.vm_sku_size
   vm_username                          = var.vm_username
   add_current_entra_user_cluster_admin = var.add_current_entra_user_cluster_admin
+  custom_locations_oid                 = var.custom_locations_oid
+}
+
+module "aio_schema_registry" {
+  source              = "./modules/aio_schema_registry"
+  location            = var.location
+  resource_group_name = local.resource_group_name
+  resource_prefix     = var.resource_prefix
+}
+
+module "aio" {
+  source                     = "./modules/azure_iot_operations"
+  resource_group_name        = local.resource_group_name
+  connected_cluster_location = var.location
+  connected_cluster_name     = module.edge_device.connected_cluster_name
+  schema_registry_id         = module.aio_schema_registry.registry_id
+  depends_on                 = [module.edge_device]
 }
