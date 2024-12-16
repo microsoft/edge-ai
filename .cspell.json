@@ -44,7 +44,8 @@
 		"Ritchie",
 		"Strato",
 		"azapi",
-		"azuread"
+		"azuread",
+		"secretsync"
 	],
 	"dictionaryDefinitions": [
 		{
