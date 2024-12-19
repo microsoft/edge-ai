@@ -48,7 +48,7 @@ runcmd:
             --enable-workload-identity \
             --custom-locations-oid ${CUSTOM_LOCATIONS_OID}"
 
-        if [ ${ARC_AUTO_UPGRADE} = "disable"]; then
+        if [ "${ARC_AUTO_UPGRADE}" = "disable" ]; then
             args+=" --disable-auto-upgrade"
         fi
         echo "========== Connecting to Azure Arc =========="
