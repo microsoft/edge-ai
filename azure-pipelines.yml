@@ -58,15 +58,6 @@ stages:
                 oxsecurity/megalinter:v7
             displayName: Run MegaLinter
 
-          # Placeholder block for integration environment.
-          # - task: TerraformCLI@1
-          #   displayName: 'terraform apply'
-          #   condition: and(succeeded(), eq(variables['TERRAFORM_PLAN_HAS_CHANGES'], 'true'))
-          #   inputs:
-          #     command: apply
-          #     environmentServiceName: 'azdo-ai-for-edge-iac-for-edge'
-          #     commandOptions: '$(System.DefaultWorkingDirectory)/terraform.tfplan'
-
   - stage: PR
     displayName: PR Build Process
     # dependsOn: string | [ string ]
@@ -125,12 +116,89 @@ stages:
               targetPath: "$(System.DefaultWorkingDirectory)/megalinter-reports/"
               artifactName: MegaLinterReport
 
-      - job: TerraformTest
+      - job: CheckRpEnablementChanges
+        displayName: Check for changes in rp_enablement folder
         pool:
           vmImage: ubuntu-latest
         dependsOn: MegaLinter
         steps:
-          # Initialize dependency scan and fail the build if it does not pass
+          # Checkout repo
+          - checkout: self
+            fetchDepth: 0
+
+          # Check for changes in the rp_enablement folder
+          - bash: |
+              echo "Checking for changes in the ./src/rp_enablement folder..."
+              if git diff --name-only @~ @ | grep -q 'src/rp_enablement/'; then
+                echo "Changes detected in the ./src/rp_enablement folder."
+                echo "##vso[task.setvariable variable=changesInRpEnablement;isOutput=true]true"
+              else
+                echo "No changes detected in the ./src/rp_enablement folder."
+                echo "##vso[task.setvariable variable=changesInRpEnablement;isOutput=true]false"
+              fi
+            displayName: Check for rp_enablement changes
+            name: changesInRpEnablementScript
+
+      - job: ResourceProviderScriptTest
+        pool:
+          vmImage: ubuntu-latest
+        dependsOn: CheckRpEnablementChanges
+        # Check if the changeset includes rp_enablement files and run if it does.
+        condition: eq(dependencies.CheckRpEnablementChanges.outputs['changesInRpEnablementScript.changesInRpEnablement'], 'true')
+        steps:
+          - task: AzureCLI@2
+            displayName: Azure CLI for Resource Provider Unregistration Script Test
+            inputs:
+              azureSubscription: 'azdo-ai-for-edge-iac-for-edge'
+              workingDirectory: "$(System.DefaultWorkingDirectory)/src/rp_enablement"
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                echo "uninstalling azure providers"
+                ./unregister-azure-providers.sh aio-azure-resource-providers.txt
+                echo "uninstalled azure providers"
+          - task: AzureCLI@2
+            displayName: Azure CLI for Resource Provider Registration Script Test
+            inputs:
+              azureSubscription: 'azdo-ai-for-edge-iac-for-edge'
+              workingDirectory: "$(System.DefaultWorkingDirectory)/src/rp_enablement"
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                echo "installing azure providers"
+                ./register-azure-providers.sh aio-azure-resource-providers.txt
+                echo "installed azure providers"
+
+      - job: CheckTerraformClusterInstallChanges
+        displayName: Check for changes in cluster install terraform folder
+        pool:
+          vmImage: ubuntu-latest
+        dependsOn: MegaLinter
+        steps:
+          # Checkout repo
+          - checkout: self
+            fetchDepth: 0
+
+          # Check for changes in the cluster_install folder
+          - bash: |
+              echo "Checking for changes in the ./src/cluster_install folder..."
+              if git diff --name-only @~ @ | grep -qE 'src/cluster_install/.*\.(tf|tfvars|tfstate|hcl)$'; then
+                echo "Changes detected in the ./src/cluster_install folder."
+                echo "##vso[task.setvariable variable=changesInClusterInstall;isOutput=true]true"
+              else
+                echo "No changes detected in the ./src/cluster_install folder."
+                echo "##vso[task.setvariable variable=changesInClusterInstall;isOutput=true]false"
+              fi
+            displayName: Check for cluster_install changes
+            name: changesInClusterInstallScript
+
+      - job: TerraformTest
+        pool:
+          vmImage: ubuntu-latest
+        dependsOn: CheckTerraformClusterInstallChanges
+        condition: eq(dependencies.CheckTerraformClusterInstallChanges.outputs['changesInClusterInstallScript.changesInClusterInstall'], 'true')
+        steps:
+          # Initialize Terraform
           - task: TerraformInstaller@1
             displayName: install terraform
             inputs:
@@ -177,8 +245,16 @@ stages:
               runAzLogin: true
               environmentServiceName: 'azdo-ai-for-edge-iac-for-edge'
               publishPlanResults: 'Terrafrom Test Plan'
-              commandOptions: "-out=$(Build.ArtifactStagingDirectory)/$(Build.Buildnumber).tfplan -detailed-exitcode -var environment=$(TF_VAR_ENVIRONMENT) -var resource_prefix=$(TF_VAR_RESOURCE_PREFIX) -var location=$(TF_VAR_LOCATION)
-              -var existing_resource_group_name=$(TF_VAR_EXISTING_RESOURCE_GROUP_NAME) -var arc_sp_client_id=$(TF_VAR_ARC_SP_CLIENT_ID) -var arc_sp_secret=$(TF_VAR_ARC_SP_SECRET) -var vm_sku_size=$(TF_VAR_VM_SKU_SIZE) -var custom_locations_oid=$(TF_VAR_CUSTOM_LOCATIONS_OID)"
+              commandOptions: '-out=$(Build.ArtifactStagingDirectory)/$(Build.Buildnumber).tfplan
+                -detailed-exitcode
+                -var environment=$(TF_VAR_ENVIRONMENT)
+                -var resource_prefix=$(TF_VAR_RESOURCE_PREFIX)
+                -var location=$(TF_VAR_LOCATION)
+                -var existing_resource_group_name=$(TF_VAR_EXISTING_RESOURCE_GROUP_NAME)
+                -var arc_sp_client_id=$(TF_VAR_ARC_SP_CLIENT_ID)
+                -var arc_sp_secret=$(TF_VAR_ARC_SP_SECRET)
+                -var vm_sku_size=$(TF_VAR_VM_SKU_SIZE)
+                -var custom_locations_oid=$(TF_VAR_CUSTOM_LOCATIONS_OID)'
 
           # Terraform Test Command
           # This is not yet implemented, tracking here: https://github.com/jason-johnson/azure-pipelines-tasks-terraform/issues/398
@@ -200,6 +276,24 @@ stages:
               scriptType: bash
               scriptLocation: inlineScript
               inlineScript: |
+                # Export the ARM subscription ID so Terraform tests can be executed
                 export ARM_SUBSCRIPTION_ID=$(SUBSCRIPTION_ID)
-                terraform test
+                terraform test -json -var custom_locations_oid=$(TF_VAR_CUSTOM_LOCATIONS_OID) > test_output.log
                 unset ARM_SUBSCRIPTION_ID
+
+                # Define the log file from the test output to read up
+                log_file="test_output.log"
+
+                # Read each line of the log file and extract the @timestamp and @message fields
+                while IFS= read -r line; do
+                  echo "$line" | jq -r '"\(.["@timestamp"]) .... \(.["@message"])"'
+                done < "$log_file"
+
+                # Get the last line of the output and parse it for the word "Success"
+                last_line=$(tail -n 1 test_output.log)
+                if echo "$last_line" | jq -e '.["@message"]' | grep -q "Success"; then
+                  echo "Terraform tests passed."
+                else
+                  echo "Terraform tests failed."
+                  exit 1
+                fi

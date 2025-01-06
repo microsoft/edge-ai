@@ -1,3 +1,4 @@
 {
-    "json.schemaDownload.enable": true
+    "json.schemaDownload.enable": true,
+    "files.eol": "\n"
 }

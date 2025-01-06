@@ -1,0 +1,101 @@
+# Integration Environment Pipeline
+
+---
+trigger:
+  branches:
+    include:
+      - main
+
+variables:
+  isMain: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
+
+pool:
+  vmImage: ubuntu-latest
+
+stages:
+  - stage: Main
+    displayName: Deploy to Integration Env
+    # dependsOn: string | [ string ]
+    condition: eq(variables.isMain, true)
+    # pool: string | pool
+    # variables: { string: string } | [ variable | variableReference ]
+    jobs:
+      - job: TerraformDeploy
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+
+          # Initialize Terraform
+          - task: TerraformInstaller@1
+            displayName: install terraform
+            inputs:
+              terraformVersion: latest
+
+          # Check version and output issue if needed
+          - task: TerraformCLI@1
+            displayName: 'Check terraform version'
+            inputs:
+              command: version
+
+          # Run terraform init
+          - task: TerraformCLI@1
+            displayName: 'Terraform Init'
+            inputs:
+              command: init
+              workingDirectory: "$(System.DefaultWorkingDirectory)/src/cluster_install/terraform/"
+              runAzLogin: true
+              environmentServiceName: 'azdo-ai-for-edge-iac-for-edge'
+              backendType: azurerm
+              # Service connection to authorize backend access. Supports Subscription & Management Group Scope
+              backendServiceArm: 'azdo-ai-for-edge-iac-for-edge'
+              backendAzureRmResourceGroupName: 'IaC_For_Edge'
+              # azure location shortname of the backend resource group and storage account
+              backendAzureRmResourceGroupLocation: 'eastus'
+              backendAzureRmStorageAccountName: 'iacforedgetf'
+              # azure blob container to store the state file
+              backendAzureRmContainerName: 'iacforedgetf'
+              # azure blob file name
+              backendAzureRmKey: infrax.tfstate
+
+          - task: TerraformCLI@1
+            displayName: 'Terraform Validate'
+            inputs:
+              command: validate
+              workingDirectory: "$(System.DefaultWorkingDirectory)/src/cluster_install/terraform/"
+
+          # Run Terraform Plan for reporting
+          - task: TerraformCLI@1
+            displayName: 'Terraform Plan'
+            inputs:
+              command: plan
+              workingDirectory: "$(System.DefaultWorkingDirectory)/src/cluster_install/terraform/"
+              runAzLogin: true
+              environmentServiceName: 'azdo-ai-for-edge-iac-for-edge'
+              publishPlanResults: 'Terrafrom Test Plan'
+              commandOptions: '-out=$(Build.ArtifactStagingDirectory)/$(Build.Buildnumber).tfplan
+                -detailed-exitcode
+                -var environment=$(TF_VAR_ENVIRONMENT)
+                -var resource_prefix=$(TF_VAR_RESOURCE_PREFIX)
+                -var location=$(TF_VAR_LOCATION)
+                -var existing_resource_group_name=$(TF_VAR_INTEGRATION_RESOURCE_GROUP_NAME)
+                -var arc_sp_client_id=$(TF_VAR_ARC_SP_CLIENT_ID)
+                -var arc_sp_secret=$(TF_VAR_ARC_SP_SECRET)
+                -var vm_sku_size=$(TF_VAR_VM_SKU_SIZE)
+                -var custom_locations_oid=$(TF_VAR_CUSTOM_LOCATIONS_OID)'
+
+          - task: TerraformCLI@1
+            displayName: 'Terraform Apply'
+            inputs:
+              command: apply
+              environmentServiceName: 'azdo-ai-for-edge-iac-for-edge'
+              # indicate az login should be run as part of this command
+              runAzLogin: true
+              commandOptions: '-detailed-exitcode
+                -var environment=$(TF_VAR_ENVIRONMENT)
+                -var resource_prefix=$(TF_VAR_RESOURCE_PREFIX)
+                -var location=$(TF_VAR_LOCATION)
+                -var existing_resource_group_name=$(TF_VAR_INTEGRATION_RESOURCE_GROUP_NAME)
+                -var arc_sp_client_id=$(TF_VAR_ARC_SP_CLIENT_ID)
+                -var arc_sp_secret=$(TF_VAR_ARC_SP_SECRET)
+                -var vm_sku_size=$(TF_VAR_VM_SKU_SIZE)
+                -var custom_locations_oid=$(TF_VAR_CUSTOM_LOCATIONS_OID)'
