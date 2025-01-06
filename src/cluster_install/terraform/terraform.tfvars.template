@@ -1,0 +1,6 @@
+environment                             = "<environment>"
+resource_prefix                         = "<resource-prefix>"
+location                                = "<location>"
+add_current_entra_user_cluster_admin    = true
+service_principal_id                    = "<service-principal-id>"
+service_principal_secret                = "<service-principal-secret>"

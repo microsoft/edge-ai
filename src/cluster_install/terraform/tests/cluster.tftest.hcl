@@ -7,6 +7,8 @@ run "setup_tests" {
 
 # Apply run block to create the cluster
 run "create_default_cluster" {
+
+  command = plan
   variables {
     resource_prefix  = run.setup_tests.resource_prefix
     environment      = "dev"
@@ -20,4 +22,23 @@ run "create_default_cluster" {
     condition     = length(module.arc_service_principal) == 0
     error_message = "SP should not have been created"
   }
+
+  # Check the the cluster name is not empty
+  assert {
+    condition     = length(module.edge_device.connected_cluster_name) > 0
+    error_message = "edge device has a length"
+  }
+
+  # Check that permissions on the public key are set correctly
+  assert {
+    condition     = module.edge_device.public_ssh_permissions == "600"
+    error_message = "SSH Permissions should be set to 0600"
+  }
+
+  # Check that all resources use the same location
+  assert {
+    condition     = module.edge_device.connected_cluster_location == "centralus"
+    error_message = "Location should be centralus"
+  }
+
 }
