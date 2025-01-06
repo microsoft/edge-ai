@@ -305,7 +305,7 @@ resource "azapi_resource" "broker_listener" {
               issuerRef = {
                 name  = local.trust.issuer_name
                 kind  = local.trust.issuer_kind
-                group = "cert-manager-io"
+                group = "cert-manager.io"
               }
             }
           }

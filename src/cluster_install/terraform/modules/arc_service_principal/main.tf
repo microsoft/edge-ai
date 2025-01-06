@@ -8,6 +8,10 @@
 
 data "azurerm_client_config" "current" {}
 
+locals {
+  today = timestamp()
+}
+
 resource "azuread_application" "aio_edge" {
   display_name = "${var.resource_prefix}-arc-aio-sp"
   owners       = [data.azurerm_client_config.current.object_id]
@@ -20,8 +24,12 @@ resource "azuread_service_principal" "aio_edge" {
 
 resource "azuread_application_password" "aio_edge" {
   application_id = azuread_application.aio_edge.id
+  end_date       = timeadd(local.today, "720h") # By policy the default end date is not valid in some subscriptions
   # BUG: https://github.com/hashicorp/terraform-provider-azuread/issues/661
   # Occurs sometimes on destroying the resource, retrying the destroy solves the issue
+  lifecycle {
+    ignore_changes = [end_date]
+  }
 }
 
 resource "azurerm_role_assignment" "connected_machine_onboarding" {

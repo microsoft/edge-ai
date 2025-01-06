@@ -21,12 +21,14 @@ locals {
 }
 
 resource "azurerm_storage_account" "schema_registry_store" {
-  name                     = local.storage_account_name
-  resource_group_name      = var.resource_group_name
-  location                 = var.location
-  account_tier             = var.storage_account.tier
-  account_replication_type = var.storage_account.replication_type
-  is_hns_enabled           = true
+  name                            = local.storage_account_name
+  resource_group_name             = var.resource_group_name
+  location                        = var.location
+  account_tier                    = var.storage_account.tier
+  account_replication_type        = var.storage_account.replication_type
+  is_hns_enabled                  = true
+  shared_access_key_enabled       = false
+  allow_nested_items_to_be_public = false
 }
 
 resource "azurerm_storage_container" "schema_container" {

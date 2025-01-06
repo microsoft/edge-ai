@@ -102,6 +102,7 @@ resource "azurerm_linux_virtual_machine" "aio_edge" {
   network_interface_ids = [
     azurerm_network_interface.aio_edge.id
   ]
+
   custom_data = base64encode(templatefile("${path.module}/cloud-init.template.yaml", {
     "ARC_SP_CLIENT_ID"               = var.arc_sp_client_id
     "ARC_SP_SECRET"                  = var.arc_sp_secret
@@ -127,6 +128,10 @@ resource "azurerm_linux_virtual_machine" "aio_edge" {
     caching              = "ReadWrite"
     storage_account_type = "Standard_LRS"
   }
+
+  bypass_platform_safety_checks_on_user_schedule_enabled = true
+  patch_assessment_mode                                  = "AutomaticByPlatform"
+  patch_mode                                             = "AutomaticByPlatform"
 }
 
 resource "terraform_data" "wait_connected_cluster_exists" {
