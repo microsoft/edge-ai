@@ -103,5 +103,5 @@ cat /var/log/cloud-init-output.log
 Cloud init script can be found at:
 
 ```sh
- sudo cat /var/lib/cloud/instance/scripts/runcmd
+sudo cat /var/lib/cloud/instance/scripts/runcmd
 ```

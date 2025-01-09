@@ -128,6 +128,15 @@ resource "azurerm_linux_virtual_machine" "aio_edge" {
     caching              = "ReadWrite"
     storage_account_type = "Standard_LRS"
   }
+  dynamic "identity" {
+    for_each = var.arc_onboarding_user_managed_identity_id != "" ? [1] : []
+    content {
+      type = "UserAssigned"
+      identity_ids = [
+        var.arc_onboarding_user_managed_identity_id
+      ]
+    }
+  }
 
   bypass_platform_safety_checks_on_user_schedule_enabled = true
   patch_assessment_mode                                  = "AutomaticByPlatform"
