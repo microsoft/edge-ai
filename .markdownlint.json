@@ -31,7 +31,7 @@
   "MD013": {
     "line_length": 400,
     "heading_line_length": 80,
-    "code_block_line_length": 80,
+    "code_block_line_length": 140,
     "code_blocks": true,
     "tables": true,
     "headings": true,
@@ -95,10 +95,7 @@
     "front_matter_title": "^\\s*title\\s*[:=]"
   },
   "MD042": true,
-  "MD043": {
-    "headings": [],
-    "match_case": false
-  },
+  "MD043": false,
   "MD044": {
     "names": [],
     "code_blocks": true,
