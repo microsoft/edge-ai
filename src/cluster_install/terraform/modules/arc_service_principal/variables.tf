@@ -1,6 +1,6 @@
 variable "resource_group_id" {
   type        = string
-  description = "Environment for all resources in this module: dev, test, or prod"
+  description = "Resource group ID to scope the role assignment to"
 }
 
 variable "resource_prefix" {

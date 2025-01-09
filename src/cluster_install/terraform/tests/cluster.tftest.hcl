@@ -10,11 +10,9 @@ run "create_default_cluster" {
 
   command = plan
   variables {
-    resource_prefix  = run.setup_tests.resource_prefix
-    environment      = "dev"
-    location         = "centralus"
-    arc_sp_client_id = "test_sp_client_id"
-    arc_sp_secret    = "test_sp_secret"
+    resource_prefix = run.setup_tests.resource_prefix
+    environment     = "dev"
+    location        = "centralus"
   }
 
   # Check that a SP is not created when providing the SP credentials

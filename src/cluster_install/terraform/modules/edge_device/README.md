@@ -54,18 +54,6 @@ Description: Only applies if 'environment!=prod'. Adds the current user as clust
 
 Type: `bool`
 
-### arc\_sp\_client\_id
-
-Description: Service Principal Client ID for connecting to Azure Arc
-
-Type: `string`
-
-### arc\_sp\_secret
-
-Description: Service Principal Secret for connecting to Azure Arc
-
-Type: `string`
-
 ### environment
 
 Description: Environment for all resources in this module: dev, test, or prod
@@ -113,6 +101,30 @@ Description: Enable or disable auto-upgrades of Arc agents. Defaults to "enable"
 Type: `string`
 
 Default: `"enable"`
+
+### arc\_onboarding\_user\_managed\_identity\_id
+
+Description: Managed identity for connecting to Azure Arc
+
+Type: `string`
+
+Default: `""`
+
+### arc\_sp\_client\_id
+
+Description: Service Principal Client ID for connecting to Azure Arc
+
+Type: `string`
+
+Default: `""`
+
+### arc\_sp\_secret
+
+Description: Service Principal Secret for connecting to Azure Arc
+
+Type: `string`
+
+Default: `""`
 
 ### custom\_locations\_oid
 

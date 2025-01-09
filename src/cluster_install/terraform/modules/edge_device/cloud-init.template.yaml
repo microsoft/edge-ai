@@ -35,7 +35,14 @@ runcmd:
 
     # Login to Azure CLI
     echo "========== Logging in to Azure CLI =========="
-    az login --service-principal -u ${ARC_SP_CLIENT_ID} -p ${ARC_SP_SECRET} --tenant ${TENANT_ID}
+    ARC_SP_CLIENT_ID="${ARC_SP_CLIENT_ID}"
+    ARC_SP_SECRET="${ARC_SP_SECRET}"
+
+    if [ -z "$ARC_SP_CLIENT_ID" -o -z "$ARC_SP_SECRET" ]; then
+        az login --identity
+    else
+        az login --service-principal -u $ARC_SP_CLIENT_ID -p $ARC_SP_SECRET --tenant ${TENANT_ID}
+    fi
 
     # Connect to Azure Arc
     ARC_RESOURCE_NAME=${ARC_RESOURCE_NAME}
@@ -48,7 +55,7 @@ runcmd:
             --enable-workload-identity \
             --custom-locations-oid ${CUSTOM_LOCATIONS_OID}"
 
-        if [ "${ARC_AUTO_UPGRADE}" = "disable" ]; then
+        if [ "${ARC_AUTO_UPGRADE}" = "false" ]; then
             args+=" --disable-auto-upgrade"
         fi
         echo "========== Connecting to Azure Arc =========="

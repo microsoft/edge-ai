@@ -31,17 +31,10 @@ variable "vm_username" {
   default     = ""
 }
 
-variable "arc_sp_client_id" {
-  type        = string
-  description = "Service Principal Client ID for connecting to Azure Arc. If left empty, a new Service Principal will be created"
-  default     = ""
-}
-
-variable "arc_sp_secret" {
-  type        = string
-  description = "Service Principal Secret for connecting to Azure Arc. If left empty, a new Service Principal will be created"
-  default     = ""
-  sensitive   = true
+variable "use_service_principal_for_arc_onboarding_instead_of_managed_identity" {
+  type        = bool
+  description = "If set to true, a new service principal will be created for connecting to Azure Arc. If set to false, a managed identity will be created instead."
+  default     = false
 }
 
 variable "add_current_entra_user_cluster_admin" {

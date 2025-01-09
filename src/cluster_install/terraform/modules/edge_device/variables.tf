@@ -30,12 +30,21 @@ variable "vm_sku_size" {
 
 variable "arc_sp_client_id" {
   type        = string
+  default     = ""
   description = "Service Principal Client ID for connecting to Azure Arc"
 }
 
 variable "arc_sp_secret" {
   type        = string
+  default     = ""
   description = "Service Principal Secret for connecting to Azure Arc"
+  sensitive   = true
+}
+
+variable "arc_onboarding_user_managed_identity_id" {
+  type        = string
+  default     = ""
+  description = "Managed identity for connecting to Azure Arc"
 }
 
 variable "add_current_entra_user_cluster_admin" {
@@ -44,13 +53,9 @@ variable "add_current_entra_user_cluster_admin" {
 }
 
 variable "arc_auto_upgrade" {
-  type        = string
-  default     = "enable"
+  type        = bool
+  default     = true
   description = "Enable or disable auto-upgrades of Arc agents. Defaults to \"enable\"."
-  validation {
-    condition     = contains(["enable", "disable"], var.arc_auto_upgrade)
-    error_message = "arc_auto_upgrade can be one of [\"enable\", \"disable\"], got: ${var.arc_auto_upgrade}."
-  }
 }
 
 variable "custom_locations_oid" {
