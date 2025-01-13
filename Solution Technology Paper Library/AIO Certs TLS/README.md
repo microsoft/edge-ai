@@ -181,7 +181,8 @@ An Intermediate CA is created for each cluster and this Intermediate CA is used 
 
 For the certificates issued by `cert-manager` to be trusted by clients, a trust bundle needs to be created, containing the public portion of the Root CA and distributed to the clients.
 
-In the event of a renewal of the Intermediate CA, the Intermediate CA can be rolled over without the need to update the trust bundles on the clients. This is because all the clients trust all certificated that have been signed by the top-level CA.
+In the event of a renewal of the Intermediate CA, the Intermediate CA can be rolled over without the need to update the trust bundles on the clients.
+This is because all the clients trust all certificates that have been signed by the top-level CA.
 
 In addition, the Root CA can be kept offline and only used to sign the Intermediate CA, which limits the exposure of the Root CA.
 
@@ -193,15 +194,23 @@ However, in the event of a renewal of the Root CA the process is the same as wit
 
 When using custom certificates, the private key is stored as a secret in Kubernetes. To ensure this information is securely stored and synchronized to the cluster, Azure Key Vault [Secret Sync Extension](https://learn.microsoft.com/azure/azure-arc/kubernetes/secret-store-extension?tabs=arc-k8s) (Arc) can be leveraged.
 
-Configure CA Root private key and certificate, and any intermediates as Key Vault secrets. Next, have these secrets synced to the cluster using `SecretProviderClass` and `SecretSync` resources. Finally, when configuring the `Issuer` resource, reference the securely synchronized secret resources which SSE provisions.
+This can be achieved by following these steps:
 
-> Note: As of now, Azure IoT Operations supports the [Secret Sync Extension](https://learn.microsoft.com/azure/iot-operations/secure-iot-ops/howto-manage-secrets) (SSE) in General Availability (GA). However, standalone SSE is not yet GA.
-> In order to use SSE for secret configuration with custom trust, SSE is required on the cluster, by its standalone installation mode since AIO's CLI command `az iot ops secretsync enable` is dependent on an instance being deployed first.
-> This results dependency loop problem, as SSE is required for custom trust before `az iot ops create` command, but the latter is a pre-requisite for `az iot ops secretsync enable` command.
+* Configure CA Root private key and certificate, and any intermediates as Key Vault secrets.
+* Install [Secret Sync Extension](https://learn.microsoft.com/azure/azure-arc/kubernetes/secret-store-extension) (SSE) as a standalone installation.
+* Install [cert](https://cert-manager.io/) and [trust](https://cert-manager.io/docs/trust/trust-manager/) managers (which can be installed with the `az iot ops init` command, as documented above).
+* Sync the secrets to the cluster using `SecretProviderClass` and `SecretSync` resources.
+* Configure the `Issuer` or `ClusterIssuer` resource and reference the securely synchronized `secret` resources which SSE provisions.
+* Finally, continue with the installation of AIO with the `az iot ops create` command, as documented in the [Bring your own issuer](https://learn.microsoft.com/en-us/azure/iot-operations/secure-iot-ops/concept-default-root-ca#bring-your-own-issuer) approach.
+
+> ⚠️ **Warning**: Currently, Azure IoT Operations supports the Secret Sync Extension in General Availability (GA). However, standalone SSE is not yet GA.
+> To use SSE for secret configuration with custom trust, SSE is required on the cluster as a standalone installation because of AIO's CLI command `az iot ops secretsync enable`, which a dependency on an AIO instance resource being deployed first.
+> This results in a dependency loop problem, as SSE is required for custom trust before `az iot ops create` command, the command however is responsible for creating the instance.
+> But the `az iot ops create` command is a pre-requisite for `az iot ops secretsync enable` command.
 
 ## Resources
 
 * [cert-manager: Trusting certificates](https://cert-manager.io/docs/trust/)
 * [AIO MQTT broker: Encrypt internal traffic](https://learn.microsoft.com/azure/iot-operations/manage-mqtt-broker/howto-encrypt-internal-traffic)
 * [AIO tutorial: TLS, X.509 client authentication, and attribute-based access control (ABAC) authorization with Azure IoT Operations MQTT broker](https://learn.microsoft.com/azure/iot-operations/manage-mqtt-broker/tutorial-tls-x509)
-- [Create an Issuer for the TLS server certificate](https://learn.microsoft.com/azure/iot-operations/manage-mqtt-broker/howto-configure-brokerlistener?tabs=portal%2Cprod#create-an-issuer-for-the-tls-server-certificate)
+* [Create an Issuer for the TLS server certificate](https://learn.microsoft.com/azure/iot-operations/manage-mqtt-broker/howto-configure-brokerlistener?tabs=portal%2Cprod#create-an-issuer-for-the-tls-server-certificate)

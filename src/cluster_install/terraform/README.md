@@ -7,8 +7,10 @@ The VM can be accessed via SSH using a certificate and has the K3s Kubernetes cl
 In addition to the above the config will optionally deploy the following:
 
 - Create a resource group to deploy the VM into if no existing resource group is provided
-- Create a Service Principal with minimum required permissions to connect the cluster to Azure Arc, if no existing Service Principal is provided
-- Enable the Arc feature `cluster-connect` and assign the current Entra ID user as Kubernetes `cluster-admin` role. This allows for the user to securely, [remote connect](https://learn.microsoft.com/azure/azure-arc/kubernetes/cluster-connect?tabs=azure-cli%2Cagent-version) into the Arc-enabled Kubernetes cluster.
+- Create a Managed Identity leveraged by the VM, with minimum required permissions to connect the cluster to Azure Arc
+- Optionally, create or pass in a Service Principal to connect the cluster to Azure Arc
+- Optionally, enable the Arc feature `cluster-connect` and assign the current Entra ID user as Kubernetes `cluster-admin` role. This allows for the user to securely, [remote connect](https://learn.microsoft.com/azure/azure-arc/kubernetes/cluster-connect?tabs=azure-cli%2Cagent-version) into the Arc-enabled Kubernetes cluster.
+- Install and configure Azure IoT Operations and required dependencies with default settings
 
 Learn more about the default configuration of each module by exploring the [modules](./modules/) directory.
 
@@ -64,6 +66,14 @@ Set up terraform setting and apply it
     ```hcl
     add_current_entra_user_cluster_admin = true
     ```
+
+    - Additionally, if wish to deploy custom trust with TLS certificate in Key Vault and associated secrets for the broker, add the following to the `terraform.tfvars` file:
+
+        ```hcl
+        trust_config = {
+            source = "CustomerManaged"
+        }
+        ```
 
 5. Initalized and apply terraform
 

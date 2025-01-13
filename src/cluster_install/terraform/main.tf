@@ -50,32 +50,71 @@ locals {
 module "edge_device" {
   source = "./modules/edge_device"
 
-  environment                          = var.environment
-  resource_prefix                      = var.resource_prefix
-  location                             = var.location
-  resource_group_name                  = local.resource_group_name
-  vm_sku_size                          = var.vm_sku_size
-  vm_username                          = var.vm_username
-  add_current_entra_user_cluster_admin = var.add_current_entra_user_cluster_admin
-  custom_locations_oid                 = var.custom_locations_oid
-
+  environment                             = var.environment
+  resource_prefix                         = var.resource_prefix
+  location                                = var.location
+  resource_group_name                     = local.resource_group_name
+  vm_sku_size                             = var.vm_sku_size
+  vm_username                             = var.vm_username
+  add_current_entra_user_cluster_admin    = var.add_current_entra_user_cluster_admin
+  custom_locations_oid                    = var.custom_locations_oid
   arc_sp_client_id                        = local.service_principal_client_id
   arc_sp_secret                           = local.service_principal_secret
   arc_onboarding_user_managed_identity_id = local.arc_onboarding_user_managed_identity_id
 }
 
-module "aio_schema_registry" {
-  source              = "./modules/aio_schema_registry"
+module "schema_registry" {
+  source              = "./modules/schema_registry"
   location            = var.location
   resource_group_name = local.resource_group_name
   resource_prefix     = var.resource_prefix
 }
 
+module "aio_key_vault" {
+  source              = "./modules/key_vault"
+  location            = var.location
+  resource_group_name = local.resource_group_name
+  resource_prefix     = var.resource_prefix
+}
+
+locals {
+  is_customer_managed = var.trust_config.source == "CustomerManaged"
+
+  aio_root_ca = {
+    cert_pem        = local.is_customer_managed ? (var.aio_root_ca != null ? var.aio_root_ca.cert_pem : tls_self_signed_cert.ca[0].cert_pem) : ""
+    private_key_pem = local.is_customer_managed ? (var.aio_root_ca != null ? var.aio_root_ca.private_key_pem : tls_private_key.ca[0].private_key_pem) : ""
+  }
+}
+
+resource "tls_private_key" "ca" {
+  algorithm   = "ECDSA"
+  ecdsa_curve = "P256"
+  count       = local.is_customer_managed && var.aio_root_ca == null ? 1 : 0
+}
+
+resource "tls_self_signed_cert" "ca" {
+  private_key_pem       = tls_private_key.ca[0].private_key_pem
+  validity_period_hours = 8076
+  allowed_uses          = ["cert_signing"]
+  is_ca_certificate     = true
+  set_authority_key_id  = true
+  set_subject_key_id    = true
+  subject {
+    common_name = "AIO Root CA - Self Signed"
+  }
+  count = local.is_customer_managed && var.aio_root_ca == null ? 1 : 0
+}
+
 module "aio" {
-  source                     = "./modules/azure_iot_operations"
-  resource_group_name        = local.resource_group_name
-  connected_cluster_location = var.location
-  connected_cluster_name     = module.edge_device.connected_cluster_name
-  schema_registry_id         = module.aio_schema_registry.registry_id
-  depends_on                 = [module.edge_device]
+  source                         = "./modules/azure_iot_operations"
+  resource_group_name            = local.resource_group_name
+  connected_cluster_location     = var.location
+  connected_cluster_name         = module.edge_device.connected_cluster_name
+  schema_registry_id             = module.schema_registry.registry_id
+  trust_config                   = var.trust_config
+  key_vault_name                 = module.aio_key_vault.name
+  sse_user_managed_identity_name = module.aio_key_vault.sse_user_managed_identity_name
+  aio_root_ca                    = local.aio_root_ca
+  enable_instance_secret_sync    = var.enable_aio_instance_secret_sync
+  depends_on                     = [module.edge_device]
 }

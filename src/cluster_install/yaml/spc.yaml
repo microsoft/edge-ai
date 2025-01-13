@@ -1,0 +1,21 @@
+---
+apiVersion: secrets-store.csi.x-k8s.io/v1
+kind: SecretProviderClass
+metadata:
+  name: spc-custom-root-ca-cert
+  namespace: cert-manager
+spec:
+  provider: azure
+  parameters:
+    clientID: "__USER_ASSIGNED_CLIENT_ID__"
+    keyvaultName: __KEYVAULT_NAME__
+    objects: |
+      array:
+        - |
+          objectName: aio-root-ca-key
+          objectType: secret
+        - |
+          objectName: aio-root-ca-cert
+          objectType: secret
+
+    tenantID: "__AZURE_TENANT_ID__"

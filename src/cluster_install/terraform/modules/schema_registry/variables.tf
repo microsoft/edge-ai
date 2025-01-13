@@ -34,8 +34,4 @@ variable "storage_account" {
 variable "resource_prefix" {
   type        = string
   description = "Prefix for the registry and registry namespace created in this module"
-  validation {
-    condition     = length(var.resource_prefix) > 0 && can(regex("^[a-zA-Z](?:-?[a-zA-Z0-9])*$", var.resource_prefix))
-    error_message = "Resource prefix must not be empty, must start and end with letters or numbers. Only '-', letters, or numbers are allowed."
-  }
 }

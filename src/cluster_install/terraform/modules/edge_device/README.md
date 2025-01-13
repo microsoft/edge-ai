@@ -36,7 +36,7 @@ The following resources are used by this module:
 - [azurerm_subnet.aio_edge](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subnet) (resource)
 - [azurerm_subnet_network_security_group_association.aio_edge](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subnet_network_security_group_association) (resource)
 - [azurerm_virtual_network.aio_edge](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_network) (resource)
-- [local_file.ssh](https://registry.terraform.io/providers/hashicorp/local/latest/docs/resources/file) (resource)
+- [local_sensitive_file.ssh](https://registry.terraform.io/providers/hashicorp/local/latest/docs/resources/sensitive_file) (resource)
 - [random_string.vm_username](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/string) (resource)
 - [terraform_data.wait_connected_cluster_exists](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data) (resource)
 - [tls_private_key.vm_ssh](https://registry.terraform.io/providers/hashicorp/tls/latest/docs/resources/private_key) (resource)
@@ -53,6 +53,30 @@ The following input variables are required:
 Description: Only applies if 'environment!=prod'. Adds the current user as cluster-admin cluster role binding
 
 Type: `bool`
+
+### arc\_onboarding\_user\_managed\_identity\_id
+
+Description: Managed identity for connecting to Azure Arc
+
+Type: `string`
+
+### arc\_sp\_client\_id
+
+Description: Service Principal Client ID for connecting to Azure Arc
+
+Type: `string`
+
+### arc\_sp\_secret
+
+Description: Service Principal Secret for connecting to Azure Arc
+
+Type: `string`
+
+### custom\_locations\_oid
+
+Description: The object id of the Custom Locations Entra ID application for your tenant. If none is provided, the script will attempt to retrieve this requiring 'Application.Read.All' or 'Directory.Read.All' permissions.
+
+Type: `string`
 
 ### environment
 
@@ -96,47 +120,19 @@ The following input variables are optional (have default values):
 
 ### arc\_auto\_upgrade
 
-Description: Enable or disable auto-upgrades of Arc agents. Defaults to "enable".
+Description: Enable or disable auto-upgrades of Arc agents.
 
-Type: `string`
+Type: `bool`
 
-Default: `"enable"`
-
-### arc\_onboarding\_user\_managed\_identity\_id
-
-Description: Managed identity for connecting to Azure Arc
-
-Type: `string`
-
-Default: `""`
-
-### arc\_sp\_client\_id
-
-Description: Service Principal Client ID for connecting to Azure Arc
-
-Type: `string`
-
-Default: `""`
-
-### arc\_sp\_secret
-
-Description: Service Principal Secret for connecting to Azure Arc
-
-Type: `string`
-
-Default: `""`
-
-### custom\_locations\_oid
-
-Description: The object id of the Custom Locations Entra ID application for your tenant. If none is provided, the script will attempt to retrieve this requiring 'Application.Read.All' or 'Directory.Read.All' permissions.
-
-Type: `string`
-
-Default: `""`
+Default: `true`
 
 ## Outputs
 
 The following outputs are exported:
+
+### connected\_cluster\_location
+
+Description: n/a
 
 ### connected\_cluster\_name
 
@@ -147,6 +143,10 @@ Description: n/a
 Description: n/a
 
 ### public\_ssh
+
+Description: n/a
+
+### public\_ssh\_permissions
 
 Description: n/a
 

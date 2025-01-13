@@ -398,3 +398,6 @@ terraform.rc
 
 # Ignore megalinter reports
 [Mm]egalinter-reports
+
+# Ignore .temp files used for some processing
+*.temp
