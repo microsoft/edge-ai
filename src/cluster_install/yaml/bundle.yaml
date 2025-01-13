@@ -1,0 +1,18 @@
+---
+apiVersion: trust.cert-manager.io/v1alpha1
+kind: Bundle
+metadata:
+  name: bundle-custom-ca-cert
+spec:
+  sources:
+    - useDefaultCAs: false
+    # A Secret in the "trust" namespace; a Secret resource in the trust-manager namespace
+    - secret:
+        name: "secret-sync-custom-ca-cert"
+        key: "tls.crt"
+  target:
+    configMap:
+      key: "ca.crt"
+    namespaceSelector:
+      matchLabels:
+        ca-bundle/inject: "enabled"

@@ -79,7 +79,7 @@ resource "tls_private_key" "vm_ssh" {
   rsa_bits  = 4096
 }
 
-resource "local_file" "ssh" {
+resource "local_sensitive_file" "ssh" {
   content         = tls_private_key.vm_ssh.private_key_pem
   filename        = "../.ssh/id_rsa"
   file_permission = "600"
@@ -149,4 +149,9 @@ resource "terraform_data" "wait_connected_cluster_exists" {
     command     = "while [[ -z $(az connectedk8s show -n ${local.arc_resource_name} -g ${var.resource_group_name} 2>/dev/null) ]]; do sleep 5; done; sleep 3;"
   }
   depends_on = [azurerm_linux_virtual_machine.aio_edge]
+  lifecycle {
+    replace_triggered_by = [
+      azurerm_linux_virtual_machine.aio_edge.id
+    ]
+  }
 }

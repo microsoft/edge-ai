@@ -16,20 +16,7 @@ variable "connected_cluster_location" {
 variable "trust_config" {
   type = object({
     source = string
-    settings = optional(object({
-      issuerName    = string
-      issuerKind    = string
-      configMapName = string
-      configMapKey  = string
-    }))
   })
-  default = {
-    source = "SelfSigned"
-  }
-  validation {
-    condition     = var.trust_config.source == "SelfSigned" || (var.trust_config.source == "CustomerManaged" && var.trust_config.settings != {})
-    error_message = "TrustConfig must be one of 'SelfSigned' or 'CustomerManaged'"
-  }
   description = "TrustConfig must be one of 'SelfSigned' or 'CustomerManaged'. Defaults to SelfSigned."
 }
 
@@ -41,43 +28,6 @@ variable "platform" {
   default = {
     version = "0.7.6"
     train   = "preview"
-  }
-}
-
-variable "secret_sync_controller" {
-  type = object({
-    version = string
-    train   = string
-  })
-  default = {
-    version = "0.6.7"
-    train   = "preview"
-  }
-}
-
-variable "edge_storage_accelerator" {
-  type = object({
-    version               = string
-    train                 = string
-    diskStorageClass      = string
-    faultToleranceEnabled = bool
-  })
-  default = {
-    version               = "2.2.2"
-    train                 = "stable"
-    diskStorageClass      = ""
-    faultToleranceEnabled = false
-  }
-}
-
-variable "open_service_mesh" {
-  type = object({
-    version = string
-    train   = string
-  })
-  default = {
-    version = "1.2.10"
-    train   = "stable"
   }
 }
 
@@ -153,4 +103,78 @@ variable "dataflow_instance_count" {
   type        = number
   default     = 1
   description = "Number of dataflow instances. Defaults to 1."
+}
+
+variable "key_vault_name" {
+  type        = string
+  description = "The name of the existing key vault for Azure IoT Operations instance"
+}
+
+variable "sse_user_managed_identity_name" {
+  type        = string
+  description = "Secret Sync Extension user managed identity name"
+}
+
+variable "aio_root_ca" {
+  type = object({
+    cert_pem        = string
+    private_key_pem = string
+  })
+  sensitive   = true
+  description = "Root CA for the MQTT broker"
+}
+
+variable "enable_instance_secret_sync" {
+  type        = bool
+  default     = true
+  description = "Enable secret sync at the AIO instance level"
+}
+
+variable "aio_platform_config" {
+  type = object({
+    install_cert_manager  = bool
+    install_trust_manager = bool
+  })
+  default = {
+    install_cert_manager  = true
+    install_trust_manager = true
+  }
+  description = "Install cert-manager and trust-manager extensions"
+}
+
+variable "secret_sync_controller" {
+  type = object({
+    version = string
+    train   = string
+  })
+  default = {
+    version = "0.6.7"
+    train   = "preview"
+  }
+}
+
+variable "edge_storage_accelerator" {
+  type = object({
+    version               = string
+    train                 = string
+    diskStorageClass      = string
+    faultToleranceEnabled = bool
+  })
+  default = {
+    version               = "2.2.2"
+    train                 = "stable"
+    diskStorageClass      = ""
+    faultToleranceEnabled = false
+  }
+}
+
+variable "open_service_mesh" {
+  type = object({
+    version = string
+    train   = string
+  })
+  default = {
+    version = "1.2.10"
+    train   = "stable"
+  }
 }

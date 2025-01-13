@@ -1,7 +1,7 @@
 <!-- BEGIN_TF_DOCS -->
-# Create Service Principal for Azure Arc
+# Create Managed identity for Azure Arc cluster onboarding
 
-Create SP with minimal permissions to onboard the VM to Azure Arc
+Create MI with minimal permissions to onboard the VM to Azure Arc
 Meant to make it easier to get the Virtual edge device up and running and not for production use
 
 ## Requirements
@@ -22,7 +22,6 @@ The following resources are used by this module:
 
 - [azurerm_role_assignment.connected_machine_onboarding](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
 - [azurerm_user_assigned_identity.arc_onboarding](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/user_assigned_identity) (resource)
-- [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/client_config) (data source)
 
 ## Required Inputs
 

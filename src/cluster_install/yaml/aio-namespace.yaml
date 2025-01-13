@@ -1,0 +1,7 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: __AIO_OPERATIONS_NAMESPACE__
+  labels:
+    ca-bundle/inject: enabled

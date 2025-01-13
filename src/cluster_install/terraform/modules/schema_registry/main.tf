@@ -40,7 +40,7 @@ resource "azapi_resource" "schema_registry" {
   type      = "Microsoft.DeviceRegistry/schemaRegistries@2024-09-01-preview"
   name      = local.registry_name
   location  = var.location
-  parent_id = format("%s/resourceGroups/%s", data.azurerm_subscription.current.id, var.resource_group_name)
+  parent_id = "${data.azurerm_subscription.current.id}/resourceGroups/${var.resource_group_name}"
   identity {
     type = "SystemAssigned"
   }

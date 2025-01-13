@@ -3,7 +3,7 @@ output "public_ssh" {
 }
 
 output "public_ssh_permissions" {
-  value = local_file.ssh.file_permission
+  value = local_sensitive_file.ssh.file_permission
 }
 
 output "public_ip" {
