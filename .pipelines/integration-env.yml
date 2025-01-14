@@ -42,7 +42,7 @@ stages:
             displayName: 'Terraform Init'
             inputs:
               command: init
-              workingDirectory: "$(System.DefaultWorkingDirectory)/src/cluster_install/terraform/"
+              workingDirectory: "$(System.DefaultWorkingDirectory)/src/010_cluster_install/terraform/"
               runAzLogin: true
               environmentServiceName: 'azdo-ai-for-edge-iac-for-edge'
               backendType: azurerm
@@ -61,14 +61,14 @@ stages:
             displayName: 'Terraform Validate'
             inputs:
               command: validate
-              workingDirectory: "$(System.DefaultWorkingDirectory)/src/cluster_install/terraform/"
+              workingDirectory: "$(System.DefaultWorkingDirectory)/src/010_cluster_install/terraform/"
 
           # Run Terraform Plan for reporting
           - task: TerraformCLI@1
             displayName: 'Terraform Plan'
             inputs:
               command: plan
-              workingDirectory: "$(System.DefaultWorkingDirectory)/src/cluster_install/terraform/"
+              workingDirectory: "$(System.DefaultWorkingDirectory)/src/010_cluster_install/terraform/"
               runAzLogin: true
               environmentServiceName: 'azdo-ai-for-edge-iac-for-edge'
               publishPlanResults: 'Terrafrom Test Plan'

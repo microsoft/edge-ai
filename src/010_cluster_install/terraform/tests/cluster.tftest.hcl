@@ -13,9 +13,6 @@ run "create_default_cluster" {
     resource_prefix = run.setup_tests.resource_prefix
     environment     = "dev"
     location        = "centralus"
-    trust_config = {
-      source = "SelfSigned"
-    }
   }
 
   # Check that a SP is not created when providing the SP credentials
@@ -46,13 +43,10 @@ run "create_default_cluster" {
 run "create_non_default_cluster" {
   command = plan
   variables {
-    resource_prefix = run.setup_tests.resource_prefix
-    environment     = "dev"
-    location        = "centralus"
-    trust_config = {
-      source = "CustomerManaged"
-    }
-    enable_aio_instance_secret_sync      = false
+    resource_prefix                      = run.setup_tests.resource_prefix
+    environment                          = "dev"
+    location                             = "centralus"
     add_current_entra_user_cluster_admin = true
+    custom_locations_oid                 = "1234"
   }
 }

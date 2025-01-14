@@ -11,7 +11,7 @@ data "azurerm_client_config" "current" {}
 data "azuread_service_principal" "custom_locations" {
   # ref: https://learn.microsoft.com/en-us/azure/iot-operations/deploy-iot-ops/howto-prepare-cluster?tabs=ubuntu#arc-enable-your-cluster
   client_id = "bc313c14-388c-4e7d-a58e-70017303ee3b" #gitleaks:allow
-  count     = var.custom_locations_oid != "" ? 0 : 1
+  count     = var.custom_locations_oid != null ? 0 : 1
 }
 
 resource "random_string" "vm_username" {
@@ -21,9 +21,9 @@ resource "random_string" "vm_username" {
 
 locals {
   label_prefix         = "${var.resource_prefix}-aio-edge"
-  vm_username          = var.vm_username != "" ? var.vm_username : random_string.vm_username.result
+  vm_username          = coalesce(var.vm_username, random_string.vm_username.result)
   arc_resource_name    = "${var.resource_prefix}-arc"
-  custom_locations_oid = var.custom_locations_oid != "" ? var.custom_locations_oid : data.azuread_service_principal.custom_locations[0].object_id
+  custom_locations_oid = try(data.azuread_service_principal.custom_locations[0].object_id, var.custom_locations_oid)
 }
 
 ### Create Virtual Edge Device ###
