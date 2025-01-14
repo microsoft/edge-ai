@@ -17,25 +17,7 @@ Learn more about the default configuration of each module by exploring the [modu
 ## Prerequisites
 
 - [Terraform](https://developer.hashicorp.com/terraform/install)
-
-### Optionally create a Service Principal manually
-
-If you want to create a Service Principal manually instead of letting Terraform create it, you can use the following command:
-
-```sh
-# Create a Service Principal and assign roles to connect the cluster to Azure Arc
-resource_group_name=<resource-group-name>
-resource_group_id=$(az group show --name $resource_group_name --query id --output tsv)
-
-az ad sp create-for-rbac --name manual-azure-arc  --role "Kubernetes Cluster - Azure Arc Onboarding" --scopes $resource_group_id
-```
-
-Then add the Service Principal details to the `terraform.tfvars` file:
-
-```hcl
-service_principal_id     = "<service-principal-id>"
-service_principal_secret = "<service-principal-secret>"
-```
+- [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli)
 
 ## Create resources
 
@@ -44,7 +26,7 @@ Set up terraform setting and apply it
 1. cd into the `terraform` directory
 
     ```sh
-    cd src/cluster_install/terraform
+    cd src/010_cluster_install/terraform
     ```
 
 2. Set up env vars
@@ -66,14 +48,6 @@ Set up terraform setting and apply it
     ```hcl
     add_current_entra_user_cluster_admin = true
     ```
-
-    - Additionally, if wish to deploy custom trust with TLS certificate in Key Vault and associated secrets for the broker, add the following to the `terraform.tfvars` file:
-
-        ```hcl
-        trust_config = {
-            source = "CustomerManaged"
-        }
-        ```
 
 5. Initalized and apply terraform
 

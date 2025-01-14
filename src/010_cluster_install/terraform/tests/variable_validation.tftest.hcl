@@ -5,23 +5,7 @@ run "setup_tests" {
   }
 }
 
-run "test_trust_config_error_with_invalid_source" {
-
-  command = plan
-  variables {
-    resource_prefix = run.setup_tests.resource_prefix
-    environment     = "dev"
-    location        = "centralus"
-
-    # Variables under test
-    trust_config = {
-      source = "InvalidSource"
-    }
-  }
-  expect_failures = [var.trust_config, ]
-}
-
-run "test_customer_managed_trust_config_error_with_no_cluster_admin" {
+run "test__add_current_entra_user_cluster_admin__error_with_invalid_environment" {
 
   command = plan
   variables {
@@ -29,28 +13,35 @@ run "test_customer_managed_trust_config_error_with_no_cluster_admin" {
     location        = "centralus"
 
     # Variables under test
-    add_current_entra_user_cluster_admin = false
-    environment                          = "dev"
-    trust_config = {
-      source = "CustomerManaged"
-    }
-  }
-  expect_failures = [var.trust_config]
-}
-
-run "test_customer_managed_trust_config_error_with_invalid_environment" {
-
-  command = plan
-  variables {
-    resource_prefix = run.setup_tests.resource_prefix
-    location        = "centralus"
-
-    # Variables under test
-    add_current_entra_user_cluster_admin = true
     environment                          = "prod"
-    trust_config = {
-      source = "CustomerManaged"
-    }
+    add_current_entra_user_cluster_admin = true
   }
-  expect_failures = [var.trust_config]
+  expect_failures = [var.add_current_entra_user_cluster_admin]
 }
+
+run "test__add_current_entra_user_cluster_admin__success_with_cluster_admin_off" {
+
+  command = plan
+  variables {
+    resource_prefix = run.setup_tests.resource_prefix
+    location        = "centralus"
+
+    # Variables under test
+    environment                          = "prod"
+    add_current_entra_user_cluster_admin = false
+  }
+}
+
+run "test__add_current_entra_user_cluster_admin__success_with_valid_env" {
+
+  command = plan
+  variables {
+    resource_prefix = run.setup_tests.resource_prefix
+    location        = "centralus"
+
+    # Variables under test
+    environment                          = "dev"
+    add_current_entra_user_cluster_admin = true
+  }
+}
+

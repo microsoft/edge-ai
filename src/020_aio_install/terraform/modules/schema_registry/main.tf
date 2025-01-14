@@ -47,7 +47,7 @@ resource "azapi_resource" "schema_registry" {
   body = {
     properties = {
       namespace                  = local.registry_namespace
-      storageAccountContainerUrl = azurerm_storage_account.schema_registry_store.primary_blob_endpoint
+      storageAccountContainerUrl = "${azurerm_storage_account.schema_registry_store.primary_blob_endpoint}${azurerm_storage_container.schema_container.name}"
     }
   }
   response_export_values = ["id", "identity.principalId"]
