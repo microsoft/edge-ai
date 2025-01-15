@@ -1,8 +1,8 @@
 # Source Code Structure
 
-1. [`./000_rp_enablement`](000_rp_enablement/README.md) - scripts to set up required resource providers in your subscription.
-2. [`./010_cluster_install](010_cluster_install/README.md) - Terraform modules to install an edge cluster in an Azure VM and connect it to Azure Arc.
-3. [`./020_aio_install`](020_aio_install/README.md) - Terraform modules to install Azure IoT Operations deployment on an Azure Arc connected cluster.
+1. [`./000_rp_enablement`](000_rp_enablement/README.md) - recommended scripts to set up required resource providers in target subscription.
+2. [`./010_cluster_install`](010_cluster_install/README.md) - Terraform modules to install an edge cluster in an Azure VM and connect the VM to Azure Arc.
+3. [`./020_aio_install`](020_aio_install/README.md) - Terraform modules to install Azure IoT Operations on an Azure Arc connected cluster.
 
 ## Prerequisites
 
