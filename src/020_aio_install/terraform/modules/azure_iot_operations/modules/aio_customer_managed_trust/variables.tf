@@ -23,21 +23,22 @@ variable "sse_user_managed_identity_name" {
   description = "Secret Sync Extension user managed identity name"
 }
 
-variable "aio_root_ca" {
+variable "aio_ca" {
   type = object({
-    cert_pem        = string
-    private_key_pem = string
+    root_ca_cert_pem  = string
+    ca_cert_chain_pem = string
+    ca_key_pem        = string
   })
   sensitive   = true
-  description = "Root CA for the MQTT broker"
+  description = "Intermediate CA with Root CA certificate for the MQTT broker"
 }
 
 variable "customer_managed_trust_settings" {
   type = object({
-    issuerName    = string
-    issuerKind    = string
-    configMapName = string
-    configMapKey  = string
+    issuer_name    = string
+    issuer_kind    = string
+    configmap_name = string
+    configmap_key  = string
   })
   description = "Settings for CustomerManaged trust resources"
 }

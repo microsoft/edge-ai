@@ -9,7 +9,7 @@ spec:
     # A Secret in the "trust" namespace; a Secret resource in the trust-manager namespace
     - secret:
         name: "secret-sync-custom-ca-cert"
-        key: "tls.crt"
+        key: "ca.crt"
   target:
     configMap:
       key: "ca.crt"

@@ -12,11 +12,11 @@ locals {
 
   is_customer_managed = var.trust_config.source == "CustomerManaged"
 
-  trust = {
-    issuer_name    = local.is_customer_managed ? var.customer_managed_trust_settings.issuerName : local.selfsigned_issuer_name
-    issuer_kind    = local.is_customer_managed ? var.customer_managed_trust_settings.issuerKind : "ClusterIssuer"
-    configmap_name = local.is_customer_managed ? var.customer_managed_trust_settings.configMapName : local.selfsigned_configmap_name
-    configmap_key  = local.is_customer_managed ? var.customer_managed_trust_settings.configMapKey : ""
+  trust = local.is_customer_managed ? var.customer_managed_trust_settings : {
+    issuer_name    = local.selfsigned_issuer_name
+    issuer_kind    = "ClusterIssuer"
+    configmap_name = local.selfsigned_configmap_name
+    configmap_key  = ""
   }
   custom_location_name = "${var.connected_cluster_name}-cl"
   aio_instance_name    = "${var.connected_cluster_name}-ops-instance"

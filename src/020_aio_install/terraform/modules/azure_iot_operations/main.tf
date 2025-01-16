@@ -14,10 +14,10 @@ locals {
 
   # Hard-coding the values for CustomerManaged trust resources
   customer_managed_trust_settings = {
-    issuerName    = "issuer-custom-root-ca-cert"
-    issuerKind    = "ClusterIssuer"
-    configMapName = "bundle-custom-ca-cert"
-    configMapKey  = "ca.crt"
+    issuer_name    = "issuer-custom-root-ca-cert"
+    issuer_kind    = "ClusterIssuer"
+    configmap_name = "bundle-custom-ca-cert"
+    configmap_key  = "ca.crt"
   }
 }
 
@@ -39,7 +39,7 @@ module "aio_customer_managed_trust" {
 
   resource_group_name             = var.resource_group_name
   connected_cluster_name          = var.connected_cluster_name
-  aio_root_ca                     = var.aio_root_ca
+  aio_ca                          = var.aio_ca
   key_vault_name                  = var.key_vault_name
   sse_user_managed_identity_name  = var.sse_user_managed_identity_name
   customer_managed_trust_settings = local.customer_managed_trust_settings

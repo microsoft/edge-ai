@@ -7,15 +7,21 @@
 
 data "azurerm_subscription" "current" {}
 
-resource "azurerm_key_vault_secret" "aio_root_ca_key" {
-  name         = "aio-root-ca-key"
-  value        = var.aio_root_ca.private_key_pem
+resource "azurerm_key_vault_secret" "aio_ca_key" {
+  name         = "aio-ca-key"
+  value        = var.aio_ca.ca_key_pem
+  key_vault_id = data.azurerm_key_vault.existing_key_vault.id
+}
+
+resource "azurerm_key_vault_secret" "aio_ca_cert_chain" {
+  name         = "aio-ca-cert-chain"
+  value        = var.aio_ca.ca_cert_chain_pem
   key_vault_id = data.azurerm_key_vault.existing_key_vault.id
 }
 
 resource "azurerm_key_vault_secret" "aio_root_ca_cert" {
   name         = "aio-root-ca-cert"
-  value        = var.aio_root_ca.cert_pem
+  value        = var.aio_ca.root_ca_cert_pem
   key_vault_id = data.azurerm_key_vault.existing_key_vault.id
 }
 
@@ -35,7 +41,7 @@ resource "terraform_data" "add_customer_managed_configuration" {
       TF_SSE_USER_ASSIGNED_CLIENT_ID = data.azurerm_user_assigned_identity.existing_sse_user_managed_identity.client_id
       TF_KEY_VAULT_NAME              = data.azurerm_key_vault.existing_key_vault.name
       TF_AZURE_TENANT_ID             = data.azurerm_subscription.current.tenant_id
-      TF_AIO_CONFIGMAP_NAME          = var.customer_managed_trust_settings.configMapName
+      TF_AIO_CONFIGMAP_NAME          = var.customer_managed_trust_settings.configmap_name
     }
   }
 
