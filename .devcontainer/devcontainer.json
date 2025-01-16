@@ -58,7 +58,8 @@
 				"streetsidesoftware.code-spell-checker",
 				"streetsidesoftware.code-spell-checker-cspell-bundled-dictionaries",
 				"timonwong.shellcheck",
-				"yzhang.markdown-all-in-one"
+				"yzhang.markdown-all-in-one",
+				"ms-kubernetes-tools.vscode-kubernetes-tools"
 			]
 		}
 	},

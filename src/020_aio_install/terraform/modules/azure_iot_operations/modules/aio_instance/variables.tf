@@ -76,10 +76,10 @@ variable "dataflow_instance_count" {
 
 variable "customer_managed_trust_settings" {
   type = object({
-    issuerName    = string
-    issuerKind    = string
-    configMapName = string
-    configMapKey  = string
+    issuer_name    = string
+    issuer_kind    = string
+    configmap_name = string
+    configmap_key  = string
   })
   description = "Settings for CustomerManaged trust resources"
 }

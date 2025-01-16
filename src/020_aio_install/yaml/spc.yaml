@@ -12,7 +12,10 @@ spec:
     objects: |
       array:
         - |
-          objectName: aio-root-ca-key
+          objectName: aio-ca-key
+          objectType: secret
+        - |
+          objectName: aio-ca-cert-chain
           objectType: secret
         - |
           objectName: aio-root-ca-cert

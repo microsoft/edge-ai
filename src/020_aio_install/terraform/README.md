@@ -41,6 +41,20 @@ Set up terraform setting and apply it
     }
     ```
 
+    The above will generate the custom trust as self signed certificates, if you wish to configure your own certificates from a PKI infrastructure, you can provide the following configuration:
+
+    ```hcl
+    aio_ca = {
+        # Root CA certificate in PEM format, used as the trust bundle.
+        root_ca_cert_pem  = "<>"
+        # CA certificate chain, can be the same as root_ca_cert_pem or a chain with any number of intermediate certificates.
+        # Chain direction must be: ca -> intermediate(s) --> root ca
+        ca_cert_chain_pem = "<>"
+        # Root or intermediate CA private key in PEM format. If using intermediates, must provide the private key of the first cert in the chain.
+        ca_key_pem        = "<>"
+    }
+    ```
+
 5. Initalized and apply terraform
 
     ```sh

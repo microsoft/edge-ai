@@ -1,2 +1,10 @@
 resource_prefix                         = "<resource-prefix>"
 location                                = "<location>"
+
+# Optionally pass in your PKI CA certificate, private key and certificate chain. If left empty a local self-signed chain is generated
+# Only when trust source is set to CustomerManaged type of trust
+# aio_ca = {
+#    root_ca_cert_pem    = "<>"
+#    ca_cert_chain_pem   = "<>"
+#    ca_key_pem          = "<>"
+# }

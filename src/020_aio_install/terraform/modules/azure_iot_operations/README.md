@@ -27,16 +27,17 @@ The following resources are used by this module:
 
 The following input variables are required:
 
-### aio\_root\_ca
+### aio\_ca
 
-Description: Root CA for the MQTT broker
+Description: Intermediate CA with Root CA certificate for the MQTT broker
 
 Type:
 
 ```hcl
 object({
-    cert_pem        = string
-    private_key_pem = string
+    root_ca_cert_pem  = string
+    ca_cert_chain_pem = string
+    ca_key_pem        = string
   })
 ```
 
