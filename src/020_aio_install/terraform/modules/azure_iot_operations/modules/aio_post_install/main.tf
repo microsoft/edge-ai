@@ -10,7 +10,7 @@ data "azurerm_subscription" "current" {}
 resource "terraform_data" "enable_aio_instance_secret_sync" {
   provisioner "local-exec" {
     interpreter = ["bash", "-c"]
-    command     = "az iot ops secretsync enable --instance ${var.instance_name} --resource-group ${var.resource_group_name} --mi-user-assigned ${data.azurerm_user_assigned_identity.existing_sse_user_managed_identity.id} --kv-resource-id ${data.azurerm_key_vault.existing_key_vault.id}"
+    command     = "az iot ops secretsync enable --instance ${var.instance_name} --resource-group ${var.resource_group_name} --mi-user-assigned ${var.sse_user_managed_identity.id} --kv-resource-id ${var.key_vault.id}"
   }
   count = var.is_sse_standalone_enabled ? 0 : 1
 }
@@ -20,7 +20,7 @@ resource "azurerm_federated_identity_credential" "federated_identity_cred_sse_ai
   resource_group_name = var.resource_group_name
   audience            = ["api://AzureADTokenExchange"]
   issuer              = data.azapi_resource.cluster_oidc_issuer[0].output.properties.oidcIssuerProfile.issuerUrl
-  parent_id           = data.azurerm_user_assigned_identity.existing_sse_user_managed_identity.id
+  parent_id           = var.sse_user_managed_identity.id
   subject             = "system:serviceaccount:${var.aio_namespace}:aio-ssc-sa" # Service account name must be this value, this is currently not documented but hard-coded in CLI, eg here: https://github.com/Azure/azure-iot-ops-cli-extension/blob/dev/azext_edge/edge/providers/orchestration/resources/instances.py#L38
   count               = var.is_sse_standalone_enabled ? 1 : 0
 }
@@ -37,8 +37,8 @@ resource "azapi_resource" "default_aio_keyvault_secret_provider_class" {
       type = "CustomLocation"
     }
     properties = {
-      clientId     = data.azurerm_user_assigned_identity.existing_sse_user_managed_identity.client_id
-      keyvaultName = data.azurerm_key_vault.existing_key_vault.name
+      clientId     = var.sse_user_managed_identity.client_id
+      keyvaultName = var.key_vault.name
       tenantId     = data.azurerm_subscription.current.tenant_id
     }
   }
@@ -54,15 +54,4 @@ data "azapi_resource" "cluster_oidc_issuer" {
   response_export_values = ["properties.oidcIssuerProfile.issuerUrl"]
 
   count = var.is_sse_standalone_enabled ? 1 : 0
-}
-
-# reference an existing key vault resource
-data "azurerm_key_vault" "existing_key_vault" {
-  name                = var.key_vault_name
-  resource_group_name = var.resource_group_name
-}
-
-data "azurerm_user_assigned_identity" "existing_sse_user_managed_identity" {
-  name                = var.sse_user_managed_identity_name
-  resource_group_name = var.resource_group_name
 }

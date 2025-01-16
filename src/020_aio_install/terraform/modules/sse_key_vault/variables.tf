@@ -21,3 +21,8 @@ variable "resource_prefix" {
   type        = string
   description = "Prefix for all resources in this module"
 }
+
+variable "existing_key_vault_name" {
+  type        = string
+  description = "Name of the pre-existing Azure Key Vault to use"
+}

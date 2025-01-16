@@ -10,18 +10,28 @@ variable "resource_prefix" {
 variable "location" {
   type        = string
   description = "Location for all resources in this module"
+  validation {
+    condition     = length(var.location) > 0
+    error_message = "Location name must not be empty."
+  }
 }
 
-variable "resource_group_name" {
+variable "existing_resource_group_name" {
   type        = string
   default     = null
-  description = "Name of the resource group in which to create resources. If not provided, will default to '$(resource_prefix)-aio-edge-rg'. Will fail if resource group does not exist."
+  description = "Name of the resource group in which to create resources. If not provided, will look for '$(resource_prefix)-aio-edge-rg'. Will fail if resource group does not exist."
 }
 
-variable "connected_cluster_name" {
+variable "existing_key_vault_name" {
   type        = string
   default     = null
-  description = "Name of the connected cluster to deploy AIO. If not provided, will default to '$(resource_prefix)-arc'. Will fail if connected cluster does not exist."
+  description = "Name of the Azure Key Vault to use by Secret Sync Extension. If not provided, will create new key vault. Will fail if key vault does not exist in provided resource group."
+}
+
+variable "existing_connected_cluster_name" {
+  type        = string
+  default     = null
+  description = "Name of the connected cluster to deploy AIO. If not provided, will look for '$(resource_prefix)-arc'. Will fail if connected cluster does not exist."
 }
 
 variable "trust_config" {
