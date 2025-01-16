@@ -10,7 +10,7 @@ locals {
   selfsigned_issuer_name    = "${var.operations_config.namespace}-aio-certificate-issuer"
   selfsigned_configmap_name = "${var.operations_config.namespace}-aio-ca-trust-bundle"
 
-  is_customer_managed = var.trust_config.source == "CustomerManaged"
+  is_customer_managed = var.trust_source == "CustomerManaged"
 
   trust = local.is_customer_managed ? var.customer_managed_trust_settings : {
     issuer_name    = local.selfsigned_issuer_name
@@ -56,7 +56,7 @@ resource "azurerm_arc_kubernetes_cluster_extension" "iot_operations" {
     "observability.metrics.enabled"                                        = var.metrics.enabled ? "true" : "false"
     "observability.metrics.openTelemetryCollectorAddress"                  = var.metrics.otelCollectorAddress
     "observability.metrics.exportIntervalSeconds"                          = tostring(var.metrics.exportIntervalSeconds)
-    "trustSource"                                                          = var.trust_config.source
+    "trustSource"                                                          = var.trust_source
     "trustBundleSettings.issuer.name"                                      = local.trust.issuer_name
     "trustBundleSettings.issuer.kind"                                      = local.trust.issuer_kind
     "trustBundleSettings.configMap.name"                                   = local.trust.configmap_name

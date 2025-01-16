@@ -27,6 +27,19 @@ The following resources are used by this module:
 
 The following input variables are required:
 
+### aio\_platform\_config
+
+Description: Install cert-manager and trust-manager extensions
+
+Type:
+
+```hcl
+object({
+    install_cert_manager  = bool
+    install_trust_manager = bool
+  })
+```
+
 ### aio\_ca
 
 Description: Intermediate CA with Root CA certificate for the MQTT broker
@@ -53,6 +66,21 @@ Description: The name of the connected cluster to deploy Azure IoT Operations to
 
 Type: `string`
 
+### customer\_managed\_trust\_settings
+
+Description: Values for AIO CustomerManaged trust resources
+
+Type:
+
+```hcl
+object({
+    issuer_name    = string
+    issuer_kind    = string
+    configmap_name = string
+    configmap_key  = string
+  })
+```
+
 ### key\_vault\_name
 
 Description: The name of the existing key vault for Azure IoT Operations instance
@@ -77,43 +105,15 @@ Description: Secret Sync Extension user managed identity name
 
 Type: `string`
 
-### trust\_config
+### trust\_config\_source
 
-Description: TrustConfig must be one of 'SelfSigned' or 'CustomerManaged'. Defaults to SelfSigned.
+Description: TrustConfig source must be one of 'SelfSigned', 'CustomerManagedByoIssuer' or 'CustomerManagedGenerateIssuer'. Defaults to SelfSigned. When choosing CustomerManagedGenerateIssuer, ensure connectedk8s proxy is enabled on the cluster for current user. When choosing CustomerManagedByoIssuer, ensure an Issuer and ConfigMap resources exist in the cluster.
 
-Type:
-
-```hcl
-object({
-    source = string
-  })
-```
+Type: `string`
 
 ## Optional Inputs
 
 The following input variables are optional (have default values):
-
-### aio\_platform\_config
-
-Description: Install cert-manager and trust-manager extensions
-
-Type:
-
-```hcl
-object({
-    install_cert_manager  = bool
-    install_trust_manager = bool
-  })
-```
-
-Default:
-
-```json
-{
-  "install_cert_manager": true,
-  "install_trust_manager": true
-}
-```
 
 ### dataflow\_instance\_count
 
