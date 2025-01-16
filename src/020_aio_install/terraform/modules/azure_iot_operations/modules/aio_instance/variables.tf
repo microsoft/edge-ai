@@ -19,11 +19,14 @@ variable "connected_cluster_location" {
   description = "The location of the connected cluster resource"
 }
 
-variable "trust_config" {
-  type = object({
-    source = string
-  })
-  description = "TrustConfig must be one of 'SelfSigned' or 'CustomerManaged'. Defaults to SelfSigned."
+variable "trust_source" {
+  type    = string
+  default = "SelfSigned"
+  validation {
+    condition     = var.trust_source == "SelfSigned" || var.trust_source == "CustomerManaged"
+    error_message = "Trust source must be one of 'SelfSigned' or 'CustomerManaged'"
+  }
+  description = "Trust source must be one of 'SelfSigned' or 'CustomerManaged'. Defaults to SelfSigned."
 }
 
 variable "metrics" {
@@ -81,7 +84,7 @@ variable "customer_managed_trust_settings" {
     configmap_name = string
     configmap_key  = string
   })
-  description = "Settings for CustomerManaged trust resources"
+  description = "Values for AIO CustomerManaged trust resources"
 }
 
 variable "secret_store_cluster_extension_id" {

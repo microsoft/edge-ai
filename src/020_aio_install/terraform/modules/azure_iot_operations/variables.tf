@@ -13,11 +13,23 @@ variable "connected_cluster_location" {
   description = "The location of the connected cluster resource"
 }
 
-variable "trust_config" {
+variable "trust_config_source" {
+  type = string
+  validation {
+    condition     = var.trust_config_source == "SelfSigned" || var.trust_config_source == "CustomerManagedByoIssuer" || var.trust_config_source == "CustomerManagedGenerateIssuer"
+    error_message = "TrustConfig source must be one of 'SelfSigned', 'CustomerManagedByoIssuer' or 'CustomerManagedGenerateIssuer'"
+  }
+  description = "TrustConfig source must be one of 'SelfSigned', 'CustomerManagedByoIssuer' or 'CustomerManagedGenerateIssuer'. Defaults to SelfSigned. When choosing CustomerManagedGenerateIssuer, ensure connectedk8s proxy is enabled on the cluster for current user. When choosing CustomerManagedByoIssuer, ensure an Issuer and ConfigMap resources exist in the cluster."
+}
+
+variable "customer_managed_trust_settings" {
   type = object({
-    source = string
+    issuer_name    = string
+    issuer_kind    = string
+    configmap_name = string
+    configmap_key  = string
   })
-  description = "TrustConfig must be one of 'SelfSigned' or 'CustomerManaged'. Defaults to SelfSigned."
+  description = "Values for AIO CustomerManaged trust resources"
 }
 
 variable "platform" {
@@ -142,10 +154,6 @@ variable "aio_platform_config" {
     install_cert_manager  = bool
     install_trust_manager = bool
   })
-  default = {
-    install_cert_manager  = true
-    install_trust_manager = true
-  }
   description = "Install cert-manager and trust-manager extensions"
 }
 

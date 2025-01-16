@@ -33,12 +33,12 @@ Set up terraform setting and apply it
     location        = "<location>"
     ```
 
-4. Optionally, if `connectedk8s proxy` is enabled on the cluster for the user deploying terraform and if you wish to deploy custom trust with TLS certificate in Key Vault and associated secrets for the broker, add the following to the `terraform.tfvars` file:
+4. Optionally, if you wish to configure custom trust settings for `Issuer` and trust bundle `ConfigMap`, you have two options:
+
+    Option 1 - If `connectedk8s proxy` is enabled on the cluster for the user deploying terraform, and if you wish to deploy custom trust with TLS certificate in Key Vault and associated secrets for the broker and its required resources such as ClusterIssuer, all __automatically__ generated, add the following to the `terraform.tfvars` file:
 
     ```hcl
-    trust_config = {
-        source = "CustomerManaged"
-    }
+    trust_config_source = "CustomerManagedGenerateIssuer"
     ```
 
     The above will generate the custom trust as self signed certificates, if you wish to configure your own certificates from a PKI infrastructure, you can provide the following configuration:
@@ -54,6 +54,27 @@ Set up terraform setting and apply it
         ca_key_pem        = "<>"
     }
     ```
+
+   Option 2 - If you already have cert-manager, trust-manager, one Issuer or ClusterIssuer, and ConfigMap trust resources in your cluster such as described in [Bring your own issuer](https://learn.microsoft.com/azure/iot-operations/secure-iot-ops/concept-default-root-ca#bring-your-own-issuer), add the following to the `terraform.tfvars` file:
+
+    ```hcl
+    resource_group_name       = "<>" # validate the default generated value is correct, you might need to pass in an existing resource name instead
+    connected_cluster_name    = "<>" # validate the default generated value is correct, you might need to pass in an existing resource name instead
+    trust_config_source       = "CustomerManagedByoIssuer"
+    byo_issuer_trust_settings = {
+        iissuer_name    = "<>"
+        iissuer_kind    = "<>"
+        cconfigmap_name = "<>"
+        cconfigmap_key  = "<>"
+    }
+    aio_platform_config = {
+        install_cert_manager  = false
+        install_trust_manager = false
+    }
+    ```
+
+    > ⚠️ __Warning__: The scripts are not able to detect if your resources exist on the cluster, and installation will fail before completion. Error message may be unclear.
+    > We recommend you have `kubectl` access to the cluster and run `kubectl get` commands to validate the resources before continuing with this option.
 
 5. Initalized and apply terraform
 

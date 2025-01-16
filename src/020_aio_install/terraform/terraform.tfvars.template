@@ -1,10 +1,27 @@
-resource_prefix                         = "<resource-prefix>"
-location                                = "<location>"
+resource_prefix     = "<resource-prefix>"
+location            = "<location>"
 
+# The following values are optional, use when choosing custom trust and issuer configuration
+
+# Option 1 - To configure custom trust with TLS certs stored in Key Vault, secrets synced, a ClusterIssuer and Trust bundle configmap
+# trust_config_source = "CustomerManagedGenerateIssuer"
 # Optionally pass in your PKI CA certificate, private key and certificate chain. If left empty a local self-signed chain is generated
 # Only when trust source is set to CustomerManaged type of trust
 # aio_ca = {
 #    root_ca_cert_pem    = "<>"
 #    ca_cert_chain_pem   = "<>"
 #    ca_key_pem          = "<>"
+# }
+
+# Option 2 - To configure custom trust with existing Issuer or ClusterIssuer, requires cert-manager and trust-manager to be installed
+# trust_config_source = "CustomerManagedByoIssuer"
+# byo_issuer_trust_settings = {
+#    issuer_name    = "<>"
+#    issuer_kind    = "<>"
+#    configmap_name = "<>"
+#    configmap_key  = "<>"
+# }
+# aio_platform_config = {
+#    install_cert_manager  = false
+#    install_trust_manager = false
 # }
