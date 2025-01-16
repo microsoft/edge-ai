@@ -105,14 +105,20 @@ variable "dataflow_instance_count" {
   description = "Number of dataflow instances. Defaults to 1."
 }
 
-variable "key_vault_name" {
-  type        = string
-  description = "The name of the existing key vault for Azure IoT Operations instance"
+variable "key_vault" {
+  type = object({
+    name = string
+    id   = string
+  })
+  description = "The name and id of the existing key vault for Azure IoT Operations instance"
 }
 
-variable "sse_user_managed_identity_name" {
-  type        = string
-  description = "Secret Sync Extension user managed identity name"
+variable "sse_user_managed_identity" {
+  type = object({
+    id        = string
+    client_id = string
+  })
+  description = "Secret Sync Extension user managed identity id and client id"
 }
 
 variable "aio_ca" {
