@@ -1,4 +1,7 @@
 {
     "json.schemaDownload.enable": true,
-    "files.eol": "\n"
+    "files.eol": "\n",
+    "yaml.schemas": {
+        "https://raw.githubusercontent.com/microsoft/azure-pipelines-vscode/master/service-schema.json": "*-pipelines.yml",    
+    }
 }

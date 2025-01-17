@@ -20,7 +20,7 @@ variable "resource_group_name" {
 
 variable "vm_username" {
   type        = string
-  description = "Name for the user to create on the VM. If left empty, a random name will be generated"
+  description = "Name for the VM user to create on the target VM. If left empty, a random name will be generated"
 }
 
 variable "vm_sku_size" {

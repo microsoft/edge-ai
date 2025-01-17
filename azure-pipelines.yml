@@ -124,7 +124,7 @@ stages:
         steps:
           # Checkout repo
           - checkout: self
-            fetchDepth: 0
+            fetchDepth: "0"
 
           # Check for changes in the 000_rp_enablement folder
           - bash: |
@@ -169,34 +169,51 @@ stages:
                 ./register-azure-providers.sh aio-azure-resource-providers.txt
                 echo "installed azure providers"
 
-      - job: CheckTerraformClusterInstallChanges
-        displayName: Check for changes in cluster install terraform folder
+      - job: CheckTerraformChanges
+        displayName: Check for changes in terraform folders
         pool:
           vmImage: ubuntu-latest
         dependsOn: MegaLinter
         steps:
           # Checkout repo
           - checkout: self
-            fetchDepth: 0
+            fetchDepth: "0"
 
-          # Check for changes in the 010_cluster_install folder
+          # Check for TF changes in the all src folders
           - bash: |
-              echo "Checking for changes in the ./src/010_cluster_install folder..."
-              if git diff --name-only @~ @ | grep -qE 'src/010_cluster_install/.*\.(tf|tfvars|tfstate|hcl)$'; then
-                echo "Changes detected in the ./src/010_cluster_install folder."
-                echo "##vso[task.setvariable variable=changesInClusterInstall;isOutput=true]true"
+              echo "Checking for changes in the first-level folders under src with .tf, .tfvars, .tfstate, or .hcl file changes..."
+              changed_folders=$(git diff --name-only @~ @ | # Get the list of changed files
+                grep -E 'src/[^/]+/.*\.(tf|tfvars|tfstate|hcl)$' |  # Filter for .tf, .tfvars, .tfstate, or .hcl files in src directory
+                awk -F'/' '{print $2}' |  # Extract the first-level folder names
+                sort -u |  # Remove all duplicates
+                sort -n |  # Sort the folder names numerically so they can be applied in order
+                jq -R -s -c 'split("\n") |  # Convert the newline-separated list into a JSON array
+                map(select(length > 0)) |  # Remove all empty entries
+                map({key: ., value: {folderName: .}}) |  # Create JSON objects with folder name as keys, the keys are used to populate the AzDO job name
+                from_entries')  # Convert entries to a JSON object
+              if [ -n "$changed_folders" ]; then
+                echo "Changes detected in the following folders: $changed_folders"
+                echo "##vso[task.setvariable variable=changesInInstall;isOutput=true]true"
+                echo "##vso[task.setvariable variable=changedFolders;isOutput=true]$changed_folders"
               else
-                echo "No changes detected in the ./src/010_cluster_install folder."
-                echo "##vso[task.setvariable variable=changesInClusterInstall;isOutput=true]false"
+                echo "No changes detected in the first-level folders under src with .tf, .tfvars, .tfstate, or .hcl file changes."
+                echo "##vso[task.setvariable variable=changesInInstall;isOutput=true]false"
+                echo "##vso[task.setvariable variable=changedFolders;isOutput=true]none"
               fi
-            displayName: Check for 010_cluster_install changes
-            name: changesInClusterInstallScript
+            displayName: Check for TF changes in all src folders
+            name: changesInInstallScript
+            continueOnError: false
 
       - job: TerraformClusterTest
         pool:
           vmImage: ubuntu-latest
-        dependsOn: CheckTerraformClusterInstallChanges
-        condition: eq(dependencies.CheckTerraformClusterInstallChanges.outputs['changesInClusterInstallScript.changesInClusterInstall'], 'true')
+        dependsOn: CheckTerraformChanges
+        condition: eq(dependencies.CheckTerraformChanges.outputs['changesInInstallScript.changesInInstall'], 'true')
+        strategy:
+          matrix:
+            # Dynamically create a job for each folder in the changedFolders variable
+            $[ dependencies.CheckTerraformChanges.outputs['changesInInstallScript.changedFolders'] ]
+          maxParallel: 1
 
         steps:
           # Initialize Terraform
@@ -216,7 +233,7 @@ stages:
             displayName: "Terraform Init"
             inputs:
               command: init
-              workingDirectory: "$(System.DefaultWorkingDirectory)/src/010_cluster_install/terraform/"
+              workingDirectory: $(System.DefaultWorkingDirectory)/src/$(folderName)/terraform/
               runAzLogin: true
               environmentServiceName: "azdo-ai-for-edge-iac-for-edge"
               backendType: azurerm
@@ -235,151 +252,46 @@ stages:
             displayName: "Terraform Validate"
             inputs:
               command: validate
-              workingDirectory: "$(System.DefaultWorkingDirectory)/src/010_cluster_install/terraform/"
+              workingDirectory: $(System.DefaultWorkingDirectory)/src/$(folderName)/terraform/
+            continueOnError: false
 
-          # Run Terraform Plan for reporting
-          - task: TerraformCLI@1
-            displayName: "Terraform Plan"
-            inputs:
-              command: plan
-              workingDirectory: "$(System.DefaultWorkingDirectory)/src/010_cluster_install/terraform/"
-              runAzLogin: true
-              environmentServiceName: "azdo-ai-for-edge-iac-for-edge"
-              publishPlanResults: "Terrafrom Test Plan"
-              commandOptions:
-                "-out=$(Build.ArtifactStagingDirectory)/$(Build.Buildnumber).tfplan
-                -detailed-exitcode
-                -var environment=$(TF_VAR_ENVIRONMENT)
-                -var resource_prefix=$(TF_VAR_RESOURCE_PREFIX)
-                -var location=$(TF_VAR_LOCATION)
-                -var existing_resource_group_name=$(TF_VAR_EXISTING_RESOURCE_GROUP_NAME)
-                -var vm_sku_size=$(TF_VAR_VM_SKU_SIZE)
-                -var custom_locations_oid=$(TF_VAR_CUSTOM_LOCATIONS_OID)"
-
-          # Terraform Test Command
-          # This is not yet implemented, tracking here: https://github.com/jason-johnson/azure-pipelines-tasks-terraform/issues/398
-          # Once this command is available, the AZ CLI below can be removed
-          # - task: TerraformCLI@2
-          #   displayName: 'terraform test'
-          #   inputs:
-          #     command: test
-          #     workingDirectory: "$(System.DefaultWorkingDirectory)/src/010_cluster_install/terraform/tests"
-          #     commandOptions: "-filter=cluster.tftest.hcl"
-
-          # NOTE: For this task to work it needs the subscription id set for the AzureAD provider
-          # beyond the integrated MSI.
-          - task: AzureCLI@2
-            displayName: Azure CLI for Terraform CLI test run
-            inputs:
-              azureSubscription: "azdo-ai-for-edge-iac-for-edge"
-              workingDirectory: "$(System.DefaultWorkingDirectory)/src/010_cluster_install/terraform"
-              scriptType: bash
-              scriptLocation: inlineScript
-              inlineScript: |
-                # Export the ARM subscription ID so Terraform tests can be executed
-                export ARM_SUBSCRIPTION_ID=$(SUBSCRIPTION_ID)
-                terraform test -json -var custom_locations_oid=$(TF_VAR_CUSTOM_LOCATIONS_OID) > test_output.log
-                unset ARM_SUBSCRIPTION_ID
-
-                # Define the log file from the test output to read up
-                log_file="test_output.log"
-
-                # Read each line of the log file and extract the @timestamp and @message fields
-                while IFS= read -r line; do
-                  echo "$line" | jq -r '"\(.["@timestamp"]) .... \(.["@message"])"'
-                done < "$log_file"
-
-                # Get the last line of the output and parse it for the word "Success"
-                last_line=$(tail -n 1 test_output.log)
-                if echo "$last_line" | jq -e '.["@message"]' | grep -q "Success"; then
-                  echo "Terraform tests passed."
-                else
-                  echo "Terraform tests failed."
-                  exit 1
-                fi
-
-      - job: CheckTerraformAioInstallChanges
-        displayName: Check for changes in cluster install terraform folder
-        pool:
-          vmImage: ubuntu-latest
-        dependsOn: MegaLinter
-        steps:
-          # Checkout repo
-          - checkout: self
-            fetchDepth: 0
-
-          # Check for changes in the 020_aio_install folder
+          # Parse variables.tf and construct the specific commandOptions required for the plan call
           - bash: |
-              echo "Checking for changes in the ./src/020_aio_install folder..."
-              if git diff --name-only @~ @ | grep -qE 'src/020_aio_install/.*\.(tf|tfvars|tfstate|hcl)$'; then
-                echo "Changes detected in the ./src/020_aio_install folder."
-                echo "##vso[task.setvariable variable=changesInAioInstall;isOutput=true]true"
-              else
-                echo "No changes detected in the ./src/020_aio_install folder."
-                echo "##vso[task.setvariable variable=changesInAioInstall;isOutput=true]false"
+              # get the tf variable file from the current matrix directory
+              variables_file=$(System.DefaultWorkingDirectory)/src/$(folderName)/terraform/variables.tf
+              # start the base command option for the coming TF Plan
+              command_options="-out=$(Build.ArtifactStagingDirectory)/$(Build.Buildnumber).$(folderName).tfplan -detailed-exitcode"
+              # if the variables file exists, parse it and for each variable,
+              # see if we've set an AzDO pipeline variable to a matched name,
+              # and then add that combination to that to the command options.
+              # Special case is for Custom Locations OID because that is a
+              # secrete value, and AzDO will not let you dynamically access
+              # the variable name, you must know it, to map it.
+              # e.g. https://stackoverflow.com/questions/75536144/azure-pipelines-error-tf401444-please-sign-in-at-least-once-as
+              if [ -f "$variables_file" ]; then
+                required_vars=$(grep -E 'variable "[^"]+" \{' $variables_file | awk -F'"' '{print $2}')
+                for env_var in $(printenv | awk -F= '{print $1}'; echo "TF_VAR_CUSTOM_LOCATIONS_OID"); do
+                  var_name=${env_var#TF_VAR_}
+                  if echo "$required_vars" | grep -q "^${var_name,,}$"; then
+                    command_options="$command_options -var ${var_name,,}=${!env_var}"
+                  fi
+                done
+                echo $command_options
               fi
-            displayName: Check for 020_aio_install changes
-            name: changesInAioInstallScript
-
-      - job: TerraformAioTest
-        pool:
-          vmImage: ubuntu-latest
-        dependsOn: CheckTerraformAioInstallChanges
-        condition: eq(dependencies.CheckTerraformAioInstallChanges.outputs['changesInAioInstallScript.changesInAioInstall'], 'true')
-
-        steps:
-          # Initialize Terraform
-          - task: TerraformInstaller@1
-            displayName: install terraform
-            inputs:
-              terraformVersion: latest
-
-          # Check version and output issue if needed
-          - task: TerraformCLI@1
-            displayName: "Check terraform version"
-            inputs:
-              command: version
-
-          # Run terraform init
-          - task: TerraformCLI@1
-            displayName: "Terraform Init"
-            inputs:
-              command: init
-              workingDirectory: "$(System.DefaultWorkingDirectory)/src/020_aio_install/terraform/"
-              runAzLogin: true
-              environmentServiceName: "azdo-ai-for-edge-iac-for-edge"
-              backendType: azurerm
-              # Service connection to authorize backend access. Supports Subscription & Management Group Scope
-              backendServiceArm: "azdo-ai-for-edge-iac-for-edge"
-              backendAzureRmResourceGroupName: "IaC_For_Edge"
-              # azure location shortname of the backend resource group and storage account
-              backendAzureRmResourceGroupLocation: "eastus"
-              backendAzureRmStorageAccountName: "iacforedgetf"
-              # azure blob container to store the state file
-              backendAzureRmContainerName: "iacforedgetf"
-              # azure blob file name
-              backendAzureRmKey: infrax.tfstate
-
-          - task: TerraformCLI@1
-            displayName: "Terraform Validate"
-            inputs:
-              command: validate
-              workingDirectory: "$(System.DefaultWorkingDirectory)/src/020_aio_install/terraform/"
+              echo "##vso[task.setvariable variable=commandOptions;isOutput=true]$command_options"
+            displayName: Parse variables.tf and construct commandOptions
+            name: parseVariables
 
           # Run Terraform Plan for reporting
           - task: TerraformCLI@1
             displayName: "Terraform Plan"
             inputs:
               command: plan
-              workingDirectory: "$(System.DefaultWorkingDirectory)/src/020_aio_install/terraform/"
+              workingDirectory: $(System.DefaultWorkingDirectory)/src/$(folderName)/terraform/
               runAzLogin: true
               environmentServiceName: "azdo-ai-for-edge-iac-for-edge"
-              publishPlanResults: "Terrafrom Test Plan"
-              commandOptions:
-                "-out=$(Build.ArtifactStagingDirectory)/$(Build.Buildnumber).tfplan
-                -detailed-exitcode
-                -var resource_prefix=$(TF_VAR_RESOURCE_PREFIX)
-                -var location=$(TF_VAR_LOCATION)"
+              publishPlanResults: "$(folderName) - Terraform Test Plan"
+              commandOptions: $(parseVariables.commandOptions)
 
           # Terraform Test Command
           # This is not yet implemented, tracking here: https://github.com/jason-johnson/azure-pipelines-tasks-terraform/issues/398
@@ -388,16 +300,17 @@ stages:
           #   displayName: 'terraform test'
           #   inputs:
           #     command: test
-          #     workingDirectory: "$(System.DefaultWorkingDirectory)/src/020_aio_install/terraform/tests"
+          #     workingDirectory: $(System.DefaultWorkingDirectory)/src/$(folderName)/terraform/tests"
           #     commandOptions: "-filter=cluster.tftest.hcl"
 
           # NOTE: For this task to work it needs the subscription id set for the AzureAD provider
           # beyond the integrated MSI.
+
           - task: AzureCLI@2
             displayName: Azure CLI for Terraform CLI test run
             inputs:
               azureSubscription: "azdo-ai-for-edge-iac-for-edge"
-              workingDirectory: "$(System.DefaultWorkingDirectory)/src/020_aio_install/terraform"
+              workingDirectory: $(System.DefaultWorkingDirectory)/src/$(folderName)/terraform/
               scriptType: bash
               scriptLocation: inlineScript
               inlineScript: |
