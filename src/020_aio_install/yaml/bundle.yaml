@@ -2,7 +2,7 @@
 apiVersion: trust.cert-manager.io/v1alpha1
 kind: Bundle
 metadata:
-  name: bundle-custom-ca-cert
+  name: ${TF_AIO_CONFIGMAP_NAME}
 spec:
   sources:
     - useDefaultCAs: false
@@ -12,7 +12,7 @@ spec:
         key: "ca.crt"
   target:
     configMap:
-      key: "ca.crt"
+      key: "${TF_AIO_CONFIGMAP_KEY}"
     namespaceSelector:
       matchLabels:
         ca-bundle/inject: "enabled"

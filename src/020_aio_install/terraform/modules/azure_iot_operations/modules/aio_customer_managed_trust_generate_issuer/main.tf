@@ -41,7 +41,10 @@ resource "terraform_data" "add_customer_managed_configuration" {
       TF_SSE_USER_ASSIGNED_CLIENT_ID = var.sse_user_managed_identity.client_id
       TF_KEY_VAULT_NAME              = var.key_vault.name
       TF_AZURE_TENANT_ID             = data.azurerm_subscription.current.tenant_id
+      TF_AIO_CONFIGMAP_KEY           = var.customer_managed_trust_settings.configmap_key
       TF_AIO_CONFIGMAP_NAME          = var.customer_managed_trust_settings.configmap_name
+      TF_AIO_ISSUER_KIND             = var.customer_managed_trust_settings.issuer_kind
+      TF_AIO_ISSUER_NAME             = var.customer_managed_trust_settings.issuer_name
     }
   }
 

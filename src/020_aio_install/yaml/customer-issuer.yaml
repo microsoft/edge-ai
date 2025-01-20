@@ -1,8 +1,8 @@
 ---
 apiVersion: cert-manager.io/v1
-kind: ClusterIssuer
+kind: ${TF_AIO_ISSUER_KIND}
 metadata:
-  name: issuer-custom-root-ca-cert
+  name: ${TF_AIO_ISSUER_NAME}
 spec:
   ca:
     secretName: secret-sync-custom-ca-cert

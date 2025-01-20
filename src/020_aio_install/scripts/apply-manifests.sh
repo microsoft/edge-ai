@@ -43,23 +43,8 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# echo "Preparing cluster for customer managed trust (deploying YAML files directly within KUBECONFIG remote context)"
-# Create SA and namespace for SSE manual extension setup
-for file in aio-namespace.yaml sa.yaml; do
-    until sed <"$TF_MODULE_PATH/yaml/$file" "s/__AIO_OPERATIONS_NAMESPACE__/$TF_AIO_NAMESPACE/g" | kubectl apply -f - --kubeconfig "$kube_config_file"; do
-        echo "Error applying $file, retrying in 5 seconds"
-        sleep 5
-    done
-done
-
-# Create SPC object and replace placeholders with actual values
-until sed <"$TF_MODULE_PATH/yaml/spc.yaml" "s/__AIO_OPERATIONS_NAMESPACE__/$TF_AIO_NAMESPACE/g" | sed "s/__USER_ASSIGNED_CLIENT_ID__/$TF_SSE_USER_ASSIGNED_CLIENT_ID/g" | sed "s/__KEYVAULT_NAME__/$TF_KEY_VAULT_NAME/g" | sed "s/__AZURE_TENANT_ID__/$TF_AZURE_TENANT_ID/g" | kubectl apply -f - --kubeconfig "$kube_config_file"; do
-    echo "Error applying spc.yaml, retrying in 5 seconds"
-    sleep 5
-done
-
-for file in secretsync.yaml bundle.yaml customer-issuer.yaml; do
-    until sed <"$TF_MODULE_PATH/yaml/$file" "s/__AIO_OPERATIONS_NAMESPACE__/$TF_AIO_NAMESPACE/g" | sed "s/__BUNDLE_NAME__/$TF_AIO_CONFIGMAP_NAME/g" | kubectl apply -f - --kubeconfig "$kube_config_file"; do
+for file in aio-namespace.yaml sa.yaml spc.yaml secretsync.yaml bundle.yaml customer-issuer.yaml; do
+    until envsubst <"$TF_MODULE_PATH/yaml/$file" | kubectl apply -f - --kubeconfig "$kube_config_file"; do
         echo "Error applying $file, retrying in 5 seconds"
         sleep 5
     done
