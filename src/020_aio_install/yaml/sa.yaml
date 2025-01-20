@@ -3,7 +3,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: aio-ssc-sa
-  namespace: __AIO_OPERATIONS_NAMESPACE__
+  namespace: ${TF_AIO_NAMESPACE}
 ---
 apiVersion: v1
 kind: ServiceAccount

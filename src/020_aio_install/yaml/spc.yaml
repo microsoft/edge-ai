@@ -7,8 +7,8 @@ metadata:
 spec:
   provider: azure
   parameters:
-    clientID: "__USER_ASSIGNED_CLIENT_ID__"
-    keyvaultName: __KEYVAULT_NAME__
+    clientID: "${TF_SSE_USER_ASSIGNED_CLIENT_ID}"
+    keyvaultName: ${TF_KEY_VAULT_NAME}
     objects: |
       array:
         - |
@@ -21,4 +21,4 @@ spec:
           objectName: aio-root-ca-cert
           objectType: secret
 
-    tenantID: "__AZURE_TENANT_ID__"
+    tenantID: "${TF_AZURE_TENANT_ID}"

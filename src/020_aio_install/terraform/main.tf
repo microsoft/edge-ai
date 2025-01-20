@@ -5,7 +5,7 @@ locals {
   # Hard-coding the values for CustomerManagedGenerateIssuer trust resources, these values are not configurable
   customer_managed_trust_settings = coalesce(var.byo_issuer_trust_settings, {
     issuer_name    = "issuer-custom-root-ca-cert"
-    issuer_kind    = "ClusterIssuer"
+    issuer_kind    = "ClusterIssuer" # This needs to be set as ClusterIssuer when using CustomerManagedGenerateIssuer, since current implementation does not support Issuer kind. Validate if adapt in future.
     configmap_name = "bundle-custom-ca-cert"
     configmap_key  = "ca.crt"
   })
