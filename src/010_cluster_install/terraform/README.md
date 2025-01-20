@@ -76,16 +76,11 @@ terraform destroy
 
 ## Troubleshooting
 
-### Cloud-init
+### Virtual Machine extension
 
-Check the cloud-init logs for errors:
-
-```sh
-cat /var/log/cloud-init-output.log
-```
-
-Cloud init script can be found at:
+Check the VM extension logs for errors:
 
 ```sh
-sudo cat /var/lib/cloud/instance/scripts/runcmd
+sudo su
+cat /var/lib/waagent/Microsoft.Azure.Extensions.CustomScript-2.1.10/status/0.status
 ```
