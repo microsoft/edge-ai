@@ -103,20 +103,6 @@ resource "azurerm_linux_virtual_machine" "aio_edge" {
     azurerm_network_interface.aio_edge.id
   ]
 
-  custom_data = base64encode(templatefile("${path.module}/cloud-init.template.yaml", {
-    "ARC_SP_CLIENT_ID"               = var.arc_sp_client_id
-    "ARC_SP_SECRET"                  = var.arc_sp_secret
-    "VM_USERNAME"                    = local.vm_username
-    "TENANT_ID"                      = data.azurerm_subscription.current.tenant_id
-    "VM_RESOURCE_GROUP"              = var.resource_group_name
-    "ARC_RESOURCE_NAME"              = local.arc_resource_name
-    "ARC_AUTO_UPGRADE"               = var.arc_auto_upgrade
-    "ENVIRONMENT"                    = var.environment
-    "ADD_CURRENT_USER_CLUSTER_ADMIN" = var.add_current_entra_user_cluster_admin
-    "AAD_CURRENT_USER_ID"            = data.azurerm_client_config.current.object_id
-    "CUSTOM_LOCATIONS_OID"           = local.custom_locations_oid
-  }))
-
   source_image_reference {
     offer     = "0001-com-ubuntu-server-jammy"
     publisher = "Canonical"
@@ -143,15 +129,30 @@ resource "azurerm_linux_virtual_machine" "aio_edge" {
   patch_mode                                             = "AutomaticByPlatform"
 }
 
-resource "terraform_data" "wait_connected_cluster_exists" {
-  provisioner "local-exec" {
-    interpreter = ["bash", "-c"]
-    command     = "while [[ -z $(az connectedk8s show -n ${local.arc_resource_name} -g ${var.resource_group_name} 2>/dev/null) ]]; do sleep 5; done; sleep 3;"
+resource "azurerm_virtual_machine_extension" "linux_setup" {
+  name                        = "linux-vm-setup"
+  virtual_machine_id          = azurerm_linux_virtual_machine.aio_edge.id
+  publisher                   = "Microsoft.Azure.Extensions"
+  type                        = "CustomScript"
+  type_handler_version        = "2.1"
+  automatic_upgrade_enabled   = false
+  auto_upgrade_minor_version  = false
+  failure_suppression_enabled = false
+  protected_settings = <<SETTINGS
+  {
+    "script": "${base64encode(templatefile("${path.root}/../../011_device_setup/device-setup.sh", {
+  "ENV_HOST_USERNAME"             = local.vm_username
+  "ENV_ARC_RESOURCE_GROUP"        = var.resource_group_name
+  "ENV_ARC_RESOURCE_NAME"         = local.arc_resource_name
+  "ENV_CUSTOM_LOCATIONS_OID"      = local.custom_locations_oid
+  "ENV_ENVIRONMENT"               = var.environment
+  "ENV_ARC_AUTO_UPGRADE"          = var.arc_auto_upgrade
+  "ENV_ADD_USER_AS_CLUSTER_ADMIN" = var.add_current_entra_user_cluster_admin
+  "ENV_AAD_USER_ID"               = data.azurerm_client_config.current.object_id
+  "ENV_ARC_SP_CLIENT_ID"          = var.arc_sp_client_id
+  "ENV_ARC_SP_SECRET"             = var.arc_sp_secret
+  "ENV_TENANT_ID"                 = data.azurerm_subscription.current.tenant_id
+}))}"
   }
-  depends_on = [azurerm_linux_virtual_machine.aio_edge]
-  lifecycle {
-    replace_triggered_by = [
-      azurerm_linux_virtual_machine.aio_edge.id
-    ]
-  }
+  SETTINGS
 }

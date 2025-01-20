@@ -19,5 +19,5 @@ output "connected_cluster_name" {
 }
 
 output "connected_k8s_proxy_enabled" {
-  value = var.environment != "prod" && var.add_current_entra_user_cluster_admin
+  value = var.add_current_entra_user_cluster_admin
 }
