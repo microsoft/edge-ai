@@ -35,7 +35,7 @@ resource "terraform_data" "add_customer_managed_configuration" {
     command     = "${local.script_path}/scripts/apply-manifests.sh"
     environment = {
       TF_CONNECTED_CLUSTER_NAME      = var.connected_cluster_name
-      TF_RESOURCE_GROUP_NAME         = var.resource_group_name
+      TF_RESOURCE_GROUP_NAME         = var.resource_group.name
       TF_MODULE_PATH                 = local.script_path
       TF_AIO_NAMESPACE               = var.aio_namespace
       TF_SSE_USER_ASSIGNED_CLIENT_ID = var.sse_user_managed_identity.client_id
@@ -53,7 +53,7 @@ resource "terraform_data" "add_customer_managed_configuration" {
 
 resource "azurerm_federated_identity_credential" "federated_identity_cred_sse_cert_manager" {
   name                = "cert-manager-sse-ficred"
-  resource_group_name = var.resource_group_name
+  resource_group_name = var.resource_group.name
   audience            = ["api://AzureADTokenExchange"]
   issuer              = data.azapi_resource.cluster_oidc_issuer.output.properties.oidcIssuerProfile.issuerUrl
   parent_id           = var.sse_user_managed_identity.id
@@ -62,7 +62,7 @@ resource "azurerm_federated_identity_credential" "federated_identity_cred_sse_ce
 
 data "azapi_resource" "cluster_oidc_issuer" {
   name      = var.connected_cluster_name
-  parent_id = var.resource_group_id
+  parent_id = var.resource_group.id
   type      = "Microsoft.Kubernetes/connectedClusters@2024-12-01-preview"
 
   response_export_values = ["properties.oidcIssuerProfile.issuerUrl"]

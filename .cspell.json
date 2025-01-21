@@ -29,27 +29,28 @@
 	],
 	"words": [
 		"AKRI",
+		"azapi",
+		"azuread",
+		"Baynes",
 		"Bouwer",
 		"CAIRA",
 		"Cardy",
 		"CNCF",
+		"connectedk8s",
 		"Entra",
 		"Graeve",
 		"Kalypso",
 		"Katrien",
 		"Malkov",
 		"megalinter",
+		"mosquitto",
 		"OWASP",
 		"oxsecurity",
 		"Renard",
 		"Ritchie",
-		"Strato",
-		"azapi",
-		"azuread",
 		"secretsync",
 		"Siobhan",
-		"Baynes",
-		"connectedk8s"
+		"Strato"
 	],
 	"dictionaryDefinitions": [
 		{

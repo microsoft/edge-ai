@@ -28,8 +28,9 @@ run "create_custom_generated_issuer_cluster" {
     location                        = "centralus"
     trust_config_source             = "CustomerManagedGenerateIssuer"
     enable_aio_instance_secret_sync = false
-    existing_resource_group_name             = "test-rg"
-    existing_connected_cluster_name          = "test-cluster"
+    existing_resource_group_name    = "test-rg"
+    existing_connected_cluster_name = "test-cluster"
+    enable_opc_ua_simulator         = true
     aio_ca = {
       root_ca_cert_pem  = "root_ca_cert_pem"
       ca_cert_chain_pem = "ca_cert_chain_pem"
