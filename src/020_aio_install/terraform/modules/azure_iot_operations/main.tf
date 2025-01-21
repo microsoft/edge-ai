@@ -64,16 +64,14 @@ module "aio_instance" {
 module "aio_post_install" {
   source     = "./modules/aio_post_install"
   depends_on = [module.aio_instance]
-  count      = var.enable_instance_secret_sync ? 1 : 0
 
-  connected_cluster_location = var.connected_cluster_location
-  resource_group_name        = var.resource_group_name
-  connected_cluster_name     = var.connected_cluster_name
-  key_vault                  = var.key_vault
-  sse_user_managed_identity  = var.sse_user_managed_identity
-  is_sse_standalone_enabled  = local.is_customer_managed_generate_issuer ? true : false
-  instance_name              = module.aio_instance.instance_name
-  resource_group_id          = local.resource_group_id
-  custom_location_id         = module.aio_instance.custom_location_id
-  aio_namespace              = var.operations_config.namespace
+  connected_cluster_location  = var.connected_cluster_location
+  resource_group_name         = var.resource_group_name
+  connected_cluster_name      = var.connected_cluster_name
+  key_vault                   = var.key_vault
+  sse_user_managed_identity   = var.sse_user_managed_identity
+  enable_instance_secret_sync = var.enable_instance_secret_sync
+  resource_group_id           = local.resource_group_id
+  custom_location_id          = module.aio_instance.custom_location_id
+  aio_namespace               = var.operations_config.namespace
 }
