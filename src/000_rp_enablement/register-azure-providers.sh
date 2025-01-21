@@ -28,10 +28,23 @@ usage () {
   echo ""
 }
 
+# Calculate the length of a string
 str_len () {
   str=$1
 
   echo ${#str}
+}
+
+# Trim leading and trailing whitespace from a string.
+trim_whitespace() {
+    str=$1
+
+    # remove leading whitespace characters
+    str="${str#"${str%%[![:space:]]*}"}"
+    # remove trailing whitespace characters
+    str="${str%"${str##*[![:space:]]}"}"
+
+    echo "$str"
 }
 
 # Prints the provider name followed by a number of dots to the terminal screen. The 
@@ -120,6 +133,7 @@ elapsed_time_start=$(date +%s)
 # with state of NotRegistered
 declare -A providers
 while IFS= read -r line || [[ "$line" ]]; do
+  line=$(trim_whitespace "$line") # required to cater for LF and CRLF line endings
   providers[$line]="NotRegistered"
   provider_name_len=$(str_len "$line")
   if [ "$provider_name_len" -gt "$max_len_provider_name" ]; then
