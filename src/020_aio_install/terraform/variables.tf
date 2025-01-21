@@ -107,6 +107,12 @@ variable "aio_platform_config" {
   description = "Install cert-manager and trust-manager extensions"
 }
 
+variable "provision_event_hubs" {
+  type        = bool
+  description = "Whether to provision Azure Event Hubs resources and role assignment"
+  default     = true
+}
+
 variable "enable_opc_ua_simulator" {
   type        = bool
   default     = false

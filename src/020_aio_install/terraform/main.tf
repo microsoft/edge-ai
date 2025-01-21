@@ -61,6 +61,16 @@ module "aio" {
   customer_managed_trust_settings = local.customer_managed_trust_settings
 }
 
+module "event_hubs" {
+  source                 = "./modules/event_hubs"
+  connected_cluster_name = local.connected_cluster_name
+  resource_prefix        = var.resource_prefix
+  resource_group_name    = local.resource_group.name
+  aio_extension_name     = module.aio.aio_extension_name
+  depends_on             = [module.aio]
+  count                  = var.provision_event_hubs ? 1 : 0
+}
+
 module "opc_ua_simulator" {
   source = "./modules/opc_ua_simulator"
 
