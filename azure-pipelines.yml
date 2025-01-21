@@ -13,6 +13,7 @@ variables:
   isMain: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
 
 pool:
+  name: ai-on-edge-managed-pool
   vmImage: ubuntu-latest
 
 stages:
@@ -25,8 +26,14 @@ stages:
     jobs:
       - job: DependencyScan
         pool:
+          name: ai-on-edge-managed-pool
           vmImage: ubuntu-latest
         steps:
+          # Set the agent name as an output variable so the same agent runs all jobs
+          - bash: |
+              echo "##vso[task.setvariable variable=AgentName;isoutput=true]$(Agent.Name)"
+            name: passOutputVar
+
           # Checkout repo
           - checkout: self
 
@@ -38,8 +45,14 @@ stages:
 
       # Run MegaLinter to detect linting and security issues
       - job: MegaLinter
+        dependsOn: DependencyScan
+        variables:
+          AgentName: $[ dependencies.A.outputs['passOutput.AgentName'] ]
         pool:
+          name: ai-on-edge-managed-pool
           vmImage: ubuntu-latest
+          demands: Agent.Name -equals $(Agent.Name)
+
         steps:
           # Checkout repo
           - checkout: self
@@ -65,9 +78,21 @@ stages:
     # pool: string | pool
     # variables: { string: string } | [ variable | variableReference ]
     jobs:
+      - job: AgentAssign
+        steps:
+          # Set the agent name as an output variable so the same agent runs all jobs
+          - bash: |
+              echo "##vso[task.setvariable variable=AgentName;isoutput=true]$(Agent.Name)"
+            name: passAgentNameOutput
+
       - job: DependencyScan
+        dependsOn: AgentAssign
+        variables:
+          AgentName: $[ dependencies.AgentAssign.outputs['agentNameScript.AgentName'] ]
         pool:
+          name: ai-on-edge-managed-pool
           vmImage: ubuntu-latest
+          demands: Agent.Name -equals $(Agent.Name)
         steps:
           # Checkout repo
           - checkout: self
@@ -80,9 +105,15 @@ stages:
 
       # Run MegaLinter to detect linting and security issues
       - job: MegaLinter
+        dependsOn:
+          - AgentAssign
+          - DependencyScan
+        variables:
+          AgentName: $[ dependencies.AgentAssign.outputs['agentNameScript.AgentName'] ]
         pool:
+          name: ai-on-edge-managed-pool
           vmImage: ubuntu-latest
-        dependsOn: DependencyScan
+          demands: Agent.Name -equals $(Agent.Name)
         steps:
           # Checkout repo
           - checkout: self
@@ -118,9 +149,15 @@ stages:
 
       - job: CheckRpEnablementChanges
         displayName: Check for changes in 000_rp_enablement folder
+        dependsOn:
+          - AgentAssign
+          - MegaLinter
+        variables:
+          AgentName: $[ dependencies.AgentAssign.outputs['agentNameScript.AgentName'] ]
         pool:
+          name: ai-on-edge-managed-pool
           vmImage: ubuntu-latest
-        dependsOn: MegaLinter
+          demands: Agent.Name -equals $(Agent.Name)
         steps:
           # Checkout repo
           - checkout: self
@@ -140,9 +177,15 @@ stages:
             name: changesInRpEnablementScript
 
       - job: ResourceProviderScriptTest
+        dependsOn:
+          - AgentAssign
+          - CheckRpEnablementChanges
+        variables:
+          AgentName: $[ dependencies.AgentAssign.outputs['agentNameScript.AgentName'] ]
         pool:
+          name: ai-on-edge-managed-pool
           vmImage: ubuntu-latest
-        dependsOn: CheckRpEnablementChanges
+          demands: Agent.Name -equals $(Agent.Name)
         # Check if the changeset includes 000_rp_enablement files and run if it does.
         condition: eq(dependencies.CheckRpEnablementChanges.outputs['changesInRpEnablementScript.changesInRpEnablement'], 'true')
         steps:
@@ -171,9 +214,15 @@ stages:
 
       - job: CheckTerraformChanges
         displayName: Check for changes in terraform folders
+        dependsOn:
+          - AgentAssign
+          - MegaLinter
+        variables:
+          AgentName: $[ dependencies.AgentAssign.outputs['agentNameScript.AgentName'] ]
         pool:
+          name: ai-on-edge-managed-pool
           vmImage: ubuntu-latest
-        dependsOn: MegaLinter
+          demands: Agent.Name -equals $(Agent.Name)
         steps:
           # Checkout repo
           - checkout: self
@@ -205,9 +254,15 @@ stages:
             continueOnError: false
 
       - job: TerraformClusterTest
+        dependsOn:
+          - AgentAssign
+          - CheckTerraformChanges
+        variables:
+          AgentName: $[ dependencies.AgentAssign.outputs['agentNameScript.AgentName'] ]
         pool:
+          name: ai-on-edge-managed-pool
           vmImage: ubuntu-latest
-        dependsOn: CheckTerraformChanges
+          demands: Agent.Name -equals $(Agent.Name)
         condition: eq(dependencies.CheckTerraformChanges.outputs['changesInInstallScript.changesInInstall'], 'true')
         strategy:
           matrix:
@@ -221,12 +276,6 @@ stages:
             displayName: install terraform
             inputs:
               terraformVersion: latest
-
-          # Check version and output issue if needed
-          - task: TerraformCLI@1
-            displayName: "Check terraform version"
-            inputs:
-              command: version
 
           # Run terraform init
           - task: TerraformCLI@1
@@ -247,6 +296,43 @@ stages:
               backendAzureRmContainerName: "iacforedgetf"
               # azure blob file name
               backendAzureRmKey: infrax.tfstate
+
+          # Check version and output issue if needed
+          - task: AzureCLI@2
+            displayName: "Terraform Provider version check"
+            inputs:
+              azureSubscription: "azdo-ai-for-edge-iac-for-edge"
+              workingDirectory: $(System.DefaultWorkingDirectory)/src/$(folderName)/terraform/
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                version_data=$(terraform version -json)
+                echo "$version_data" | jq .
+                outdated=$(echo "$version_data" | jq -r '.terraform_outdated')
+                provider_details=$(echo "$version_data" | jq -r '.provider_selections | to_entries[] | "\(.key) \(.key | split("/") | .[1]) \(.key | split("/") | .[2]) \(.value)"')
+
+                while IFS= read -r line; do
+                  registry=$(echo "$line" | awk '{print $1}')
+                  source=$(echo "$line" | awk '{print $2}')
+                  provider=$(echo "$line" | awk '{print $3}')
+                  version=$(echo "$line" | awk '{print $4}')
+                  url="https://registry.terraform.io/v1/providers/$source/$provider/versions"
+                  response=$(curl -s "$url")
+
+                  # Check versions
+                  latest_version=$(echo "$response" | jq -r '.versions[].version' | sort -V | tail -n 1)
+                  if [ "$(printf '%s\n' "$version" "$latest_version" | sort -V | tail -n 1)" != "$version" ]; then
+                    echo "##vso[task.logissue type=warning]A newer version ($latest_version) is available for provider $provider from $source. Specified version: $version."
+                  else
+                    echo "Terraform provider: $provider version is up to date."
+                  fi
+                done <<< "$provider_details"
+
+                if [ "$outdated" = "true" ]; then
+                  echo "##vso[task.logissue type=warning]Terraform version is outdated."
+                else
+                  echo "Terraform version is up to date."
+                fi
 
           - task: TerraformCLI@1
             displayName: "Terraform Validate"
@@ -279,7 +365,7 @@ stages:
                 echo $command_options
               fi
               echo "##vso[task.setvariable variable=commandOptions;isOutput=true]$command_options"
-            displayName: Parse variables.tf and construct commandOptions
+            displayName: "Parse variables.tf and build commandOptions"
             name: parseVariables
 
           # Run Terraform Plan for reporting

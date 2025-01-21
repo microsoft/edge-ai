@@ -12,7 +12,7 @@ variable "location" {
   description = "Location for all resources in this module"
   validation {
     condition     = length(var.location) > 0
-    error_message = "Location name must not be empty."
+    error_message = "Location name cannot be empty."
   }
 }
 

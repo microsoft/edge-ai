@@ -50,5 +50,5 @@ variable "add_current_entra_user_cluster_admin" {
 variable "custom_locations_oid" {
   type        = string
   default     = null
-  description = "The object id of the Custom Locations Entra ID application for your tenant. If none is provided, the script will attempt to retrieve this requiring 'Application.Read.All' or 'Directory.Read.All' permissions."
+  description = "The object id of the Custom Locations Entra ID application for your tenant. If none is provided, the script will attempt to retrieve this. Retrieval requires either 'Application.Read.All' or 'Directory.Read.All' permissions."
 }
