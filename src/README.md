@@ -7,7 +7,11 @@
 ## Prerequisites
 
 - [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest)
-- Azure subscription
+- An Azure subscription
+- [Visual Studio Code](https://code.visualstudio.com/)
+- A Linux-based development environment or a [Windows system with WSL](https://code.visualstudio.com/docs/remote/wsl)
+
+> NOTE: We highly suggest using [this project's integrated dev container](./.devcontainer/README.md) to get started quickly particularly with Windows-bases systems.
 
 Login to Azure CLI using the below command:
 
@@ -25,3 +29,21 @@ terraform-docs .
 ```
 
 This generates docs based on the configuration defined in `terraform/.terraform-docs.yml`
+
+## Testing
+
+Each Terraform module within the sub-folders of the `./src` directory include Terraform tests. These tests can be run from the command line, assuming you have logged into the Azure CLI, and selected a target subscription.
+
+```sh
+export ARM_SUBSCRIPTION_ID="<SUBSCRIPTION_ID>"
+terraform test 
+```
+
+Optionally, to test passing the pre-fetched value for
+[OID for Azure Arc Custom Locations](https://learn.microsoft.com/azure/azure-arc/kubernetes/custom-locations#to-enable-the-custom-locations-feature-with-a-service-principal-follow-the-steps-below),
+use the command:
+
+```sh
+export ARM_SUBSCRIPTION_ID="<SUBSCRIPTION_ID>"
+terraform test -var custom_locations_oid=$(TF_VAR_CUSTOM_LOCATIONS_OID)
+```

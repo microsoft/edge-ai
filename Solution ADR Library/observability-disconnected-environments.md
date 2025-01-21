@@ -6,6 +6,8 @@ Authors: Adele Churchill, Andrew Cardy, Siobhan Baynes
 
 ## Status
 
+[For this library of ADRs, mark the most applicable status at which it was stored in the original project. This can help provide context and validity for folks reviewing this ADR. If it has been deprecated you can add a note on why and date it.]
+
 - [ ] Draft
 - [ ] Proposed
 - [x] Accepted

@@ -1,8 +1,10 @@
-# Scale deployment of Azure ML models to edge Arc-enabled Kubernetes clusters in an MVE / Demonstrator
+# Scale deployment of Azure ML models to edge Arc-enabled K&s clusters in an PoC
 
 Date: **2024-09-06**
 
 ## Status
+
+[For this library of ADRs, mark the most applicable status at which it was stored in the original project. This can help provide context and validity for folks reviewing this ADR. If it has been deprecated you can add a note on why and date it.]
 
 - [ ] Draft
 - [ ] Proposed
@@ -56,10 +58,10 @@ The AML Arc Extension implements an Inference Router functionality which takes c
 
 The following are the minimum requirements to running the Arc extension, which could change based on other workloads or performance requirements of actual models deployed into the cluster.
 
-|Scenario | Enabled Inference | Enabled Training | CPU Request(m) |CPU Limit(m)| Memory Request(Mi) | Memory Limit(Mi) | Node count | Recommended minimum VM size | Corresponding AKS VM SKU |
-|-- |-- |--|--|--|--|--|--|--|--|
-|For Test | **&check;** | N/A | **1780** |8300 |**2440** | 12296 |1 Node |2 vCPU, 7 GiB Memory, 6400 IOPS, 1500Mbps BW| DS2v2|
-|For Production |**&check;** | N/A | 3600 |**12700**|4240|**15296**|3 Node(s)|4 vCPU, 14 GiB Memory, 12800 IOPS, 1500Mbps BW|  DS3v2|
+| Scenario       | Enabled Inference | Enabled Training | CPU Request (m) | CPU Limit (m) | Memory Request (Mi) | Memory Limit (Mi) | Node count | Recommended minimum VM size                    | Corresponding AKS VM SKU |
+|----------------|-------------------|------------------|-----------------|---------------|---------------------|-------------------|------------|------------------------------------------------|--------------------------|
+| For Test       | **✓**             | N/A              | **1780**        | 8300          | **2440**            | 12296             | 1 Node     | 2 vCPU, 7 GiB Memory, 6400 IOPS, 1500Mbps BW   | DS2v2                    |
+| For Production | **✓**             | N/A              | 3600            | **12700**     | 4240                | **15296**         | 3 Node(s)  | 4 vCPU, 14 GiB Memory, 12800 IOPS, 1500Mbps BW | DS3v2                    |
 
 See details in [Recommended resource planning](https://learn.microsoft.com/en-us/azure/machine-learning/reference-kubernetes?view=azureml-api-2#recommended-resource-planning)
 
@@ -88,9 +90,16 @@ Cons:
 
 ### Option 2: Azure Arc Flux GitOps extension and GitOps based deployment
 
-GitOps with solutions like Flux or ArgoCD are a common approach to deploying and managing software in Kubernetes clusters, in the cloud and at the edge. For deploying Azure Machine Learning workloads, Flux GitOps through Azure Arc extension is a viable consideration. [Azure Arc GitOps Flux v2](https://learn.microsoft.com/en-us/azure/azure-arc/kubernetes/conceptual-gitops-flux2) extension simplifies installing Flux as a cluster extension and configuring Flux Configuration resources that sync Git repository sources and reconcile a cluster's desired state.
+GitOps with solutions like Flux or ArgoCD are a common approach to deploying and managing software in
+Kubernetes clusters, in the cloud and at the edge. For deploying Azure Machine Learning workloads, Flux GitOps
+through Azure Arc extension is a viable consideration. [Azure Arc GitOps Flux v2](https://learn.microsoft.com/en-us/azure/azure-arc/kubernetes/conceptual-gitops-flux2)
+extension simplifies installing Flux as a cluster extension and configuring Flux Configuration resources that
+sync Git repository sources and reconcile a cluster's desired state.
 
-A new model published into the Azure ML repository requires manual steps of creating a deployment manifest (or Helm Chart), updating an existing manifest in a Git repository, and updating settings of the new model into each edge cluster's configuration root. This is a manual process which can be partially automated through a UI or other automation processes but adds additional complexity and effort during initial project iterations.
+A new model published into the Azure ML repository requires manual steps of creating a deployment manifest
+(or Helm Chart), updating an existing manifest in a Git repository, and updating settings of the new model
+into each edge cluster's configuration root. This is a manual process which can be partially automated through
+a UI or other automation processes but adds additional complexity and effort during initial project iterations.
 
 #### Pros and Cons for Option 2
 
@@ -105,16 +114,21 @@ Cons:
 - Managing hundreds of targets clusters within a single Git repository structure, with automated tools that may impact manifest creation, is a complex task which Git is not optimized for.
 - Requires additional workflows and tooling for fleet configuration management at scale, see [Workload management in a multi-cluster environment with GitOps](https://learn.microsoft.com/en-us/azure/azure-arc/kubernetes/conceptual-workload-management).
 - RBAC separation per cluster is missing out of the box (as the Git permissions are for an entire repo).
-- Flux reconciliation engine runs continuously preventing clear maintenance windows out of the box, often prohibitive in manufacturing scenarios, though this can be addressed with approaches such as [Refactoring GitOps repository to support both real-time and reconciliation window changes](https://dev.to/mahrrah/refactoring-gitops-repository-to-support-both-real-time-and-reconciliation-window-changes-2cc) and [How to enable reconciliation windows using Flux and K8s native components](https://dev.to/mahrrah/how-to-enable-reconciliation-windows-using-flux-and-k8s-native-components-2d4i).
+- Flux reconciliation engine runs continuously preventing clear maintenance windows out of the box, often
+prohibitive in manufacturing scenarios, though this can be addressed with approaches such as [Refactoring GitOps repository to support both real-time and reconciliation window changes](https://dev.to/mahrrah/refactoring-gitops-repository-to-support-both-real-time-and-reconciliation-window-changes-2cc)
+and [How to enable reconciliation windows using Flux and K8s native components](https://dev.to/mahrrah/how-to-enable-reconciliation-windows-using-flux-and-k8s-native-components-2d4i).
 
 ## Consequences
 
-The decision to go for the integrated offering of AML Arc Extension allows for building a Demonstrator that achieves the goals, within a period of less than 3 weeks.
+The decision to go for the integrated offering of AML Arc Extension allows for building a Demonstrator that
+achieves the goals, within a period of less than 3 weeks.
 It does not however aim to solve the scale problem of 100's of edges, models and versions of models.
 
 ## Future considerations
 
-The choice not to use a GitOps approach currently to deploy Azure ML models does not prevent changing to a GitOps or a combination approach in the future. Both approaches deploy docker containers from a registry, and most components would be reused regardless of terminal decision.
+The choice not to use a GitOps approach currently to deploy Azure ML models does not prevent changing to a
+GitOps or a combination approach in the future. Both approaches deploy docker containers from a registry, and
+most components would be reused regardless of terminal decision.
 
 Some elements to highlight influencing future decisions:
 
@@ -124,4 +138,6 @@ Some elements to highlight influencing future decisions:
 
 Product team offering:
 
-Edge & Platform Product team is working on extending ML model and workload deployment with solutions like Toolchain Orchestrator and Configuration Management. These solutions are in Private Preview at time of writing but should be evaluated in future engagements.
+Edge & Platform Product team is working on extending ML model and workload deployment with solutions like
+Toolchain Orchestrator and Configuration Management. These solutions are in Private Preview at time of writing
+but should be evaluated in future engagements.
