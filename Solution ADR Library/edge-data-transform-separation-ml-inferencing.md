@@ -1,10 +1,15 @@
-# Separation of concerns in edge data transformation pipeline for inferencing ML model hosted by Azure ML Arc extension (in an MVE)
+# Separation of Concerns in Edge Data Transforms
+
+This ADR addresses approaches to edge data transform pipelines for ML models hosted
+using the Azure ML Arc extension.
 
 Date: **2024-09-18**
 
 Author: **Martin Weber**
 
 ## Status
+
+[For this library of ADRs, mark the most applicable status at which it was stored in the original project. This can help provide context and validity for folks reviewing this ADR. If it has been deprecated you can add a note on why and date it.]
 
 - [ ] Draft
 - [ ] Proposed
@@ -82,7 +87,10 @@ The sensor data ingested via MQTT is prepared in the gateway to be ready for pre
   - Risk of different behavior between test and production.
 - The gateway needs to be more complex to configure and handle this preprocessing. It needs to decide how to aggregate each feature. This is especially complex for non-numeric features where it is not possible to take the average or min/max function.
 
-### Option 2: Aligning time series by windowing in the gateway and creating more complex features in the scoring script
+### Option 2: Aligning time series by windowing
+
+This approach focuses on aligning time series data by using a windowing function in the
+gateway and creating more complex features in the scoring script.
 
 This option is a compromise between the options 1 and 3.
 In the gateway the cached data is transformed into a time series data table with some simple windowing by time to align all the time series of the different features, before passing it to the scoring endpoint for prediction.

@@ -7,6 +7,12 @@ This script only needs to be run once per subscription.
 ./register-azure-providers.sh aio-azure-resource-providers.txt
 ```
 
+or
+
+```pwsh
+./register-azure-providers.ps1 -filePath azure-providers.txt
+```
+
 ## Script prerequisites
 
 - To register resource providers, you need permission to do the /register/action operation, which is included in subscription Contributor and Owner roles. For more information, see [Azure resource providers and types](https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/resource-providers-and-types).

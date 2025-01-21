@@ -5,69 +5,65 @@
 [![Board Status](https://dev.azure.com/ai-at-the-edge-flagship-accelerator/3bef5a01-44ac-4d6c-8c8d-f4b7d374def6/8567de21-1286-4352-a375-efb89ad55348/_apis/work/boardbadge/fd9375f1-e7c6-4439-b2c9-6969d853a2d4)](https://dev.azure.com/ai-at-the-edge-flagship-accelerator/3bef5a01-44ac-4d6c-8c8d-f4b7d374def6/_boards/board/t/8567de21-1286-4352-a375-efb89ad55348/Stories/)
 [![Open in Dev Containers](https://img.shields.io/static/v1?label=Dev%20Containers&message=Open&color=blue&logo=visualstudiocode)](https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://dev.azure.com/ai-at-the-edge-flagship-accelerator/_git/IaC%20for%20the%20Edge)
 
-The IaC for Edge project, the first phase of ISE's "AI on Edge" Flagship Accelerator, will deliver a compiler
-generator that outputs composable IaC. The IaC compiler/generator can grow with a customer's capabilities from
-innovative POCs and onto production system deployments. This solution will generate all the foundational cloud
-and edge solution components required to implement a “vision on edge” solution using Azure IoT Operations (AIO).
+Implementing an Adaptive Cloud approach requires great tooling; we're excited to introduce the "IaC for the
+Edge" project, our next generation Infrastructure as Code solution designed specifically for systems spanning
+edge and cloud. This project encodes a decade of experience harvesting petabytes of edge telemetry and
+extending the power and capabilites of Azure, to the edge. This project is just the first step in enabling our
+AI on Edge Accelerator, a suite of IaC, tools, and applications for designing, engineering, deploying and
+managing scale AI solutions at the edge.
 
-The IaC compiler/generator supports Terraform and Bicep outputs for base infrastructure and can interface with
-a limited selection of GitOps toolchains for core AIO components and custom customer workload deployment.
-Pre-built VM and cloud-hosted cluster setup scripts are also output from the generator, however the project
-only supports a very narrow set of configurations (Ubuntu & K3s clusters).
+It takes a wide variety of teams, roles, and responsibilities to develop cloud-enabled edge computing
+solutions. There are physical plant IT teams responsible for hardware at the edge, and enterprise IT
+responsible for cloud infrastructure. There are teams managing cloud data estates, and specialist
+teams managing physical plant data systems. There are Data Science teams that need to process
+telemetry across edge and cloud and need to view both environments as a unified whole. This project is built to
+address the needs of all stakeholders, and will accelerate POCs to production, with the flexibility to
+tackle the increasing complexity of delivering business value from edge data.
 
-Initial runs of the generator tool will generate a full Arc-enabled, cloud-hosted development cluster with a
-basic AIO deployment [Phases 1 through 7 below](#composable-layers). After that, annotations and naming
-conventions can be used to generate any set or sub-set of IaC for a target environment and reclassify elements
-for inclusion in alternate layers of the output IaC.
+## Composable IaC
 
-Customers often approach with a wide variety of teams, roles and responsibilities to develop cloud-enabled edge
-computing solutions. There are often physical plant IT teams responsible for hardware through OSes at the edge,
-and enterprise IT responsible for cloud infrastructure deployment. There are teams managing cloud data estates,
-and specialist teams managing physical plant data systems. There are Data Science teams that often span edge
-and cloud and need to think of both edge and cloud environments in a unified (i.e. more uniform) way. This tool
-is built to directly address these constraints, and is positioned to accelerate customers through the POC phase
-with opinionated IaC, and the flexibility to grow and evolve IaC approaches to accommodate increasing solution
-complexity.
+This project is not a reference architecture; for that, please see
+[Azure IoT Operations (AIO)](https://learn.microsoft.com/en-us/azure/iot-operations/overview-iot-operations)
+documentation or the [Azure Arc Jumpstart](https://azurearcjumpstart.com/) project. This project is a
+composable library of fine-grained, production ready IaC that can be easily layered to fit nearly any
+operational model, from small, single machine systems, to orchestrated, globally-distributed solutions. The
+project uses a decimal system to organize the IaC, scripts, and resources, which can be collated in myriad ways
+to meet operational requirements:
 
-In the future, this generator tool will provide extensible (though custom component integration) GitOps outputs
-for AIO components and custom workloads, initially supporting Argo CD, Flux and Kalypso.
-
-## Composable Layers
-
-The IaC compiler/generator supports the following fine-grained output layers (though these layers can be
-flattened into larger chucks to fit a customer's operational model):
-
-1. (000) Run-once scripts for Arc & AIO resource provider enablement in subscriptions, if necessary
+1. [(000)](./src/000_rp_enablement/README.md) Run-once scripts for Arc & AIO resource provider enablement in subscriptions, if necessary
 2. (005) Resource Groups, Site Management (optional), Role assignments/permissions for Arc onboarding
-3. (010) VM/host provisioning, with configurable host operating system (initially limited to Ubuntu)
-4. (020) Installation of a CNCF cluster that is AIO compatible (initially limited to K3s) and Arc enablement of target clusters, workload identity, and OTEL collector
-5. (030) Cloud resource provisioning for Azure Key Vault, Storage Accounts, Container Registry, and User Assigned Managed Identity
-6. (040) AIO deployment of core infrastructure components (MQ Broker, Edge Storage Accelerator, Data Flow, Secretes Sync Controller, Workload Identity Federation, and Schema Registry)
+3. [(010)](./src/010_cluster_install/terraform/README.md) VM/host provisioning, with configurable host operating system (initially limited to Ubuntu)
+4. [(020)](./src/010_cluster_install/terraform/README.md) Installation of a CNCF cluster that is AIO compatible (initially limited to K3s) and Arc enablement of target clusters, workload identity, and OTEL collector
+5. [(030)](./src/010_cluster_install/terraform/README.md) Cloud resource provisioning for Azure Key Vault, Storage Accounts, Container Registry, and User Assigned Managed Identity
+6. [(040)](./src/020_aio_install/terraform/README.md) AIO deployment of core infrastructure components (MQ Broker, Edge Storage Accelerator, Data Flow, Secretes Sync Controller, Workload Identity Federation, and Schema Registry)
 7. (050) Cloud resource provisioning for cloud communication (MQTT protocol head for Event Grid (topic spaces, topics and cert-based authentication), Event Hubs, Service Bus, Relay, etc.)
 8. (060) Cloud resource provisioning for data/event storage (Fabric by means of RTI, Data Lakes, Warehouses, etc.)
 9. (070) Cloud resource provisioning for Azure Monitor and Container Insights
 10. (080) AIO deployment of additionally selected components (OTEL Collector (Phase 2), OPC UA, AKRI, Strato, FluxCD/Argo)
 11. (090) Customer defined custom workloads, and pre-built solution accelerators such as TIG/TICK stacks, InfluxDB Data Historian, reference data backup from cloud to edge, etc.
 
-## Target Environments
+## Using this project
 
-IaC compiler/generator output can be further tuned for the following environments:
+This project can be used in two primary ways: 1) running the projects IaC (Terraform) directly to bootstrap
+environments such as labs, cloud-hosted development environments, integration/QA environments, or small
+production deployments; or 2) cloning the repository and all its automation to have and out-of-the-box CI/CD
+solution for your IaC.
 
-* Local Dev
-* Cloud-hosted development clusters (initial scope)
-* On-premises physical lab clusters
-* Cloud-hosted QA clusters
-* Cloud-hosted integration clusters
-* Cloud-hosted pre-production
-* Edge-hosted production
-* Cloud-hosted production
+For running the IaC to bootstrap environments, please refer to the [Getting Started](#getting-started)
+documentation below. For using this repository and it's automation to have a complete CI/CD system for your
+IaC, please review the [pipelines ReadMe](./.pipelines/README.md) and reach out to the
+[Microsoft ISE Edge Computing Technical Domain team](mailto:ectd@microsoft.com) if you need support.
 
 ## Getting Started
 
-While the IaC generator tool is under development, users can still use the IaC direction and get started quickly by:
+While further documentation is under development, you can use the IaC (Terraform) in this repository
+directly to get started bootstrapping environments by:
 
-1. Cloning this repository locally (this solution is not available via package distribution - please consider updating all dependencies after cloning and file issues if challenges are encountered)
-2. Following our [README.md](src/README.md) files in `/src` directory to provision a cloud-hosted, simulated edge cluster.
+1. Ensuring you have all the [required pre-requisites](./src/README.md#prerequisites) met for your development machine. We highly suggest using [this project's integrated dev container](./.devcontainer/README.md) to get started quickly.
+2. [Cloning this repository locally](https://learn.microsoft.com/en-us/azure/devops/repos/git/clone?view=azure-devops&tabs=visual-studio-2022#get-the-clone-url-of-an-azure-repos-git-repo) (this solution is not available via package distribution - please consider updating all dependencies after cloning and file issues if challenges are encountered)
+3. [Preparing an Azure Subscription with the required resource providers](./src/000_rp_enablement/README.md) to support Azure Arc and Azure IoT Operations.
+4. [Deploy an Azure Arc-enabled K3s cluster](./src/010_cluster_install/terraform/README.md) to an Azure-hosted Virtual Machine.
+5. [Deploy Azure IoT Operations](./src/020_aio_install/terraform/README.md) to the previously deployed Azure-hosted VM.
 
 ### Supported Features
 
@@ -95,7 +91,7 @@ refer to the project's [Azure Pipeline](./azure-pipelines.yml) to see the PR and
 
 ## ADR Process
 
-All design decisions for project direction, feature or capability implementation, and community decisions
+Design decisions for project direction, feature or capability implementation, and community decisions
 happen through an Architecture Decision Record (ADR) process. ADRs can be drafted by any project community
 member for consideration first by project leads, and secondarily by the project's community. Final ADR
 acceptance is performed via sign-off from 3/5ths of the project's leads: Technical Lead (Bill Berry), Product
