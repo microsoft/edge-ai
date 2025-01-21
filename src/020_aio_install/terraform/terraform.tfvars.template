@@ -11,6 +11,7 @@ location        = "<location>"
 # existing_key_vault_name         = "<existing-key-vault-name>"
 # existing_connected_cluster_name = "<existing-arc-cluster-name>"
 # enable_aio_instance_secret_sync = false
+# enable_opc_ua_simulator         = false
 
 # Options when choosing custom Trust and Issuer configurations
 

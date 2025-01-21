@@ -12,9 +12,7 @@ run "test__aio_ca__error_with_missing_key" {
     location        = "centralus"
 
     # Variables under test
-    trust_config = {
-      source = "CustomerManaged"
-    }
+    trust_config_source = "CustomerManagedGenerateIssuer"
     aio_ca = {
       root_ca_cert_pem  = "test"
       ca_cert_chain_pem = "test"
@@ -31,9 +29,7 @@ run "test__aio_ca__error_with_missing_cert_chain" {
     location        = "centralus"
 
     # Variables under test
-    trust_config = {
-      source = "CustomerManaged"
-    }
+    trust_config_source = "CustomerManagedGenerateIssuer"
     aio_ca = {
       root_ca_cert_pem  = "test"
       ca_cert_chain_pem = ""
@@ -50,9 +46,7 @@ run "test__aio_ca__error_with_missing_cert" {
     location        = "centralus"
 
     # Variables under test
-    trust_config = {
-      source = "CustomerManaged"
-    }
+    trust_config_source = "CustomerManagedGenerateIssuer"
     aio_ca = {
       root_ca_cert_pem  = ""
       ca_cert_chain_pem = "test"
@@ -69,9 +63,7 @@ run "test__aio_ca__error_with_incompatible_source" {
     location        = "centralus"
 
     # Variables under test
-    trust_config = {
-      source = "SelfSigned"
-    }
+    trust_config_source = "SelfSigned"
     aio_ca = {
       root_ca_cert_pem  = "test"
       ca_cert_chain_pem = "test"
@@ -102,7 +94,7 @@ run "test_trust_config_byo_issuer_null_trust_and_platform_config_settings" {
     location        = "centralus"
 
     # Variables under test
-    trust_config_source = "CustomerManagedByoIssuer"
+    trust_config_source       = "CustomerManagedByoIssuer"
     byo_issuer_trust_settings = null
 
     aio_platform_config = {
@@ -146,7 +138,7 @@ run "test_trust_config_byo_issuer_error_issuer_settings_missing_name" {
       install_cert_manager  = false
       install_trust_manager = false
     }
-  
+
   }
   expect_failures = [var.byo_issuer_trust_settings]
 }
@@ -172,7 +164,7 @@ run "test_trust_config_byo_issuer_error_issuer_settings_missing_kind" {
       install_cert_manager  = false
       install_trust_manager = false
     }
-  
+
   }
   expect_failures = [var.byo_issuer_trust_settings]
 }
@@ -198,7 +190,7 @@ run "test_trust_config_byo_issuer_error_issuer_settings_missing_cm_name" {
       install_cert_manager  = false
       install_trust_manager = false
     }
-  
+
   }
   expect_failures = [var.byo_issuer_trust_settings]
 }
@@ -224,7 +216,7 @@ run "test_trust_config_byo_issuer_error_issuer_settings_missing_cm_key" {
       install_cert_manager  = false
       install_trust_manager = false
     }
-  
+
   }
   expect_failures = [var.byo_issuer_trust_settings]
 }

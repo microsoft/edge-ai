@@ -1,13 +1,10 @@
-variable "resource_group_name" {
-  type        = string
-  description = "Name of the pre-existing resource group in which to create resources"
+variable "resource_group" {
+  type = object({
+    id   = string
+    name = string
+  })
+  description = "Name and ID of the pre-existing resource group in which to create resources"
 }
-
-variable "resource_group_id" {
-  type        = string
-  description = "ID of the resource group to create resources in"
-}
-
 variable "custom_location_id" {
   type        = string
   description = "The resource ID of the Custom Location."

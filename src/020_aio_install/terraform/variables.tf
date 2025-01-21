@@ -106,3 +106,9 @@ variable "aio_platform_config" {
   }
   description = "Install cert-manager and trust-manager extensions"
 }
+
+variable "enable_opc_ua_simulator" {
+  type        = bool
+  default     = false
+  description = "Deploy OPC UA Simulator to the cluster"
+}
