@@ -7,14 +7,6 @@
 
 data "azurerm_subscription" "current" {}
 
-resource "terraform_data" "enable_aio_instance_secret_sync" {
-  provisioner "local-exec" {
-    interpreter = ["bash", "-c"]
-    command     = "az iot ops secretsync enable --instance ${var.instance_name} --resource-group ${var.resource_group_name} --mi-user-assigned ${var.sse_user_managed_identity.id} --kv-resource-id ${var.key_vault.id}"
-  }
-  count = var.is_sse_standalone_enabled ? 0 : 1
-}
-
 resource "azurerm_federated_identity_credential" "federated_identity_cred_sse_aio" {
   name                = "aio-sse-ficred"
   resource_group_name = var.resource_group_name
@@ -22,7 +14,7 @@ resource "azurerm_federated_identity_credential" "federated_identity_cred_sse_ai
   issuer              = data.azapi_resource.cluster_oidc_issuer[0].output.properties.oidcIssuerProfile.issuerUrl
   parent_id           = var.sse_user_managed_identity.id
   subject             = "system:serviceaccount:${var.aio_namespace}:aio-ssc-sa" # Service account name must be this value, this is currently not documented but hard-coded in CLI, eg here: https://github.com/Azure/azure-iot-ops-cli-extension/blob/dev/azext_edge/edge/providers/orchestration/resources/instances.py#L38
-  count               = var.is_sse_standalone_enabled ? 1 : 0
+  count               = var.enable_instance_secret_sync ? 1 : 0
 }
 
 resource "azapi_resource" "default_aio_keyvault_secret_provider_class" {
@@ -43,7 +35,7 @@ resource "azapi_resource" "default_aio_keyvault_secret_provider_class" {
     }
   }
 
-  count = var.is_sse_standalone_enabled ? 1 : 0
+  count = var.enable_instance_secret_sync ? 1 : 0
 }
 
 data "azapi_resource" "cluster_oidc_issuer" {
@@ -53,5 +45,5 @@ data "azapi_resource" "cluster_oidc_issuer" {
 
   response_export_values = ["properties.oidcIssuerProfile.issuerUrl"]
 
-  count = var.is_sse_standalone_enabled ? 1 : 0
+  count = var.enable_instance_secret_sync ? 1 : 0
 }

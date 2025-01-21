@@ -201,12 +201,11 @@ This can be achieved by following these steps:
 * Install [cert](https://cert-manager.io/) and [trust](https://cert-manager.io/docs/trust/trust-manager/) managers (which can be installed with the `az iot ops init` command, as documented above).
 * Sync the secrets to the cluster using `SecretProviderClass` and `SecretSync` resources.
 * Configure the `Issuer` or `ClusterIssuer` resource and reference the securely synchronized `secret` resources which SSE provisions.
+* Configure the `ConfigMap` for storing the trust bundle, referencing the root CA from the synced `secret`. If you use `Bundle` from `trust-manager`, create all resources in the `cert-manager` namespace.
 * Finally, continue with the installation of AIO with the `az iot ops create` command, as documented in the [Bring your own issuer](https://learn.microsoft.com/en-us/azure/iot-operations/secure-iot-ops/concept-default-root-ca#bring-your-own-issuer) approach.
 
-> ⚠️ **Warning**: Currently, Azure IoT Operations supports the Secret Sync Extension in General Availability (GA). However, standalone SSE is not yet GA.
-> To use SSE for secret configuration with custom trust, SSE is required on the cluster as a standalone installation because of AIO's CLI command `az iot ops secretsync enable`, which a dependency on an AIO instance resource being deployed first.
-> This results in a dependency loop problem, as SSE is required for custom trust before `az iot ops create` command, the command however is responsible for creating the instance.
-> But the `az iot ops create` command is a pre-requisite for `az iot ops secretsync enable` command.
+> ⚠️ **Warning**: Currently, Azure IoT Operations supports the Secret Sync Extension (SSE) in General Availability (GA) when installed as part of the default AIO installation. Although standalone SSE is not yet GA, it can be configured and installed before AIO to sync trust-related secrets.
+> Follow the official documentation to install the Secret Sync Extension. Enable SSE federated identity with a service account in the `cert-manager` namespace to avoid conflicts with `az iot ops secretsync enable` functionality in the `azure-iot-operations` namespace.
 
 ## Resources
 

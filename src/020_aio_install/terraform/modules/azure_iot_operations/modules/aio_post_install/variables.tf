@@ -23,9 +23,9 @@ variable "connected_cluster_name" {
   description = "The name of the connected cluster to deploy Azure IoT Operations to"
 }
 
-variable "is_sse_standalone_enabled" {
+variable "enable_instance_secret_sync" {
   type        = bool
-  description = "Whether the SSE Standalone setup has been applied to the Arc cluster"
+  description = "Whether to enable secret sync on the Azure IoT Operations instance"
 }
 
 variable "key_vault" {
@@ -46,9 +46,4 @@ variable "sse_user_managed_identity" {
 variable "aio_namespace" {
   type        = string
   description = "Azure IoT Operations namespace"
-}
-
-variable "instance_name" {
-  type        = string
-  description = "The name of the Azure IoT Operations instance"
 }
