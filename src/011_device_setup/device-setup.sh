@@ -114,12 +114,14 @@ fi
 az connectedk8s enable-features -n "$arc_resource_name" --resource-group "$arc_resource_group" --features cluster-connect
 
 # Add user as cluster admin
-if [ "$add_user_as_cluster_admin" = true ] && [ -z "$aad_user_id" ]; then
+if [[ "$add_user_as_cluster_admin" = "true" &&  -n "$aad_user_id" ]]; then
+    echo "Add user as cluster admin"
     short_id=$(echo "$aad_user_id" | cut -c1-7)
     kubectl create clusterrolebinding "$short_id"-user-binding --clusterrole cluster-admin --user="$aad_user_id"
 fi
 
 # Update k3s config with OIDC issuer url
+echo "Update K3S config with OIDC issuer url"
 issuerUrl=$(az connectedk8s show --resource-group "$arc_resource_group" --name "$arc_resource_name" --query oidcIssuerProfile.issuerUrl --output tsv)
 sudo tee /etc/rancher/k3s/config.yaml >/dev/null <<EOF
 kube-apiserver-arg:
@@ -130,6 +132,7 @@ systemctl restart k3s
 
 # Increase limits for Azure Container Storage
 # https://learn.microsoft.com/en-us/azure/azure-arc/container-storage/single-node-cluster-edge-volumes?pivots=other#prepare-linux-with-other-platforms
+echo "Increase limits for Azure Container Storage"
 sudo tee -a /etc/sysctl.conf >/dev/null <<EOF
 fs.inotify.max_user_instances=8192
 fs.inotify.max_user_watches=524288

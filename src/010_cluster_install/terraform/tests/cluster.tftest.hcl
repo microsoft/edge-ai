@@ -46,7 +46,7 @@ run "create_non_default_cluster" {
     resource_prefix                      = run.setup_tests.resource_prefix
     environment                          = "dev"
     location                             = "centralus"
-    add_current_entra_user_cluster_admin = true
+    add_current_entra_user_cluster_admin = false
     custom_locations_oid                 = "1234"
   }
 }

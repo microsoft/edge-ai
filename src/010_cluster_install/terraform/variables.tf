@@ -43,7 +43,7 @@ variable "use_service_principal_for_arc_onboarding_instead_of_managed_identity" 
 
 variable "add_current_entra_user_cluster_admin" {
   type        = bool
-  default     = false
+  default     = true
   description = "Adds the current terraform user as cluster-admin cluster role binding"
 }
 

@@ -43,10 +43,10 @@ Set up terraform setting and apply it
     location        = "<location>"
     ```
 
-4. Optionally, if `environment` is not set to `prod`, and you wish your current Azure Entra ID user to be assigned a `cluster-admin` role in the K3S cluster, add the following variable to `terraform.tfvars` file:
+4. By default, current Azure Entra ID user or principal will be assigned a `cluster-admin` role in the K3S cluster so modules like Azure IoT Operations requiring `kubectl` can run successfully. If you wish to disable this, add the following variable to `terraform.tfvars` file:
 
     ```hcl
-    add_current_entra_user_cluster_admin = true
+    add_current_entra_user_cluster_admin = false
     ```
 
 5. Initalized and apply terraform
@@ -78,9 +78,16 @@ terraform destroy
 
 ### Virtual Machine extension
 
-Check the VM extension logs for errors:
+Check the VM extension logs for errors, ensure you SSH into the machine:
 
 ```sh
 sudo su
 cat /var/lib/waagent/Microsoft.Azure.Extensions.CustomScript-2.1.10/status/0.status
+```
+
+Check the VM extension `stdout` and `stderr` logs:
+
+```sh
+sudo cat /var/lib/waagent/custom-script/download/0/stdout
+sudo cat /var/lib/waagent/custom-script/download/0/stderr
 ```
