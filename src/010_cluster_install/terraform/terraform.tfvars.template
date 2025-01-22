@@ -10,8 +10,8 @@ location        = "<location>"
 # vm_sku_size                  = "<vm_sku_size>"
 # vm_username                  = "<vm_username>"
 
-# Optionally add clusterrolebinding to enable 'az connectedk8s proxy' for current user
-# add_current_entra_user_cluster_admin = true
+# Optionally do not add clusterrolebinding to enable 'az connectedk8s proxy' for current user/principal - this will disable the proxy command and fail subsequent IaC runs requiring kubectl
+# add_current_entra_user_cluster_admin = false
 
 # By default set to false, recommended to use Managed Identity
 # use_service_principal_for_arc_onboarding_instead_of_managed_identity = true
