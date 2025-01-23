@@ -33,7 +33,7 @@ check_connected_to_cluster() {
 
 start_proxy() {
   # Use a custom kubeconfig file to ensure the current user's context is not affected
-  kube_config_file=$(mktemp -t "$TF_CONNECTED_CLUSTER_NAME")
+  kube_config_file=$(mktemp -t "${TF_CONNECTED_CLUSTER_NAME}.XXX")
   # Start proxy in its own process group with -m
   set -m
   az connectedk8s proxy -n "$TF_CONNECTED_CLUSTER_NAME" -g "$TF_RESOURCE_GROUP_NAME" --port 9800 --file "$kube_config_file" >/dev/null &

@@ -239,3 +239,48 @@ run "test_trust_config_generated_issuer_invalid_trust_settings" {
   }
   expect_failures = [var.byo_issuer_trust_settings]
 }
+
+run "test_enabling_data_flow_without_event_hub" {
+  command = plan
+  variables {
+    resource_prefix = run.setup_tests.resource_prefix
+    location        = "centralus"
+
+    # Variables under test
+    enable_sample_dataflow_to_event_hub = true
+    enable_event_hubs                   = false
+    enable_opc_ua_simulator             = true
+
+  }
+  expect_failures = [var.enable_sample_dataflow_to_event_hub]
+}
+
+run "test_enabling_data_flow_without_opc_ua_simulator" {
+  command = plan
+  variables {
+    resource_prefix = run.setup_tests.resource_prefix
+    location        = "centralus"
+
+    # Variables under test
+    enable_sample_dataflow_to_event_hub = true
+    enable_event_hubs                   = true
+    enable_opc_ua_simulator             = false
+
+  }
+  expect_failures = [var.enable_sample_dataflow_to_event_hub]
+}
+
+run "test_enabling_data_flow_without_opc_ua_simulator_and_event_hub" {
+  command = plan
+  variables {
+    resource_prefix = run.setup_tests.resource_prefix
+    location        = "centralus"
+
+    # Variables under test
+    enable_sample_dataflow_to_event_hub = true
+    enable_event_hubs                   = false
+    enable_opc_ua_simulator             = false
+
+  }
+  expect_failures = [var.enable_sample_dataflow_to_event_hub]
+}

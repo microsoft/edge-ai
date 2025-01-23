@@ -7,11 +7,13 @@ location        = "<location>"
 
 # Optional variables
 
-# existing_resource_group_name    = "<existing-resource-group-name>"
-# existing_key_vault_name         = "<existing-key-vault-name>"
-# existing_connected_cluster_name = "<existing-arc-cluster-name>"
-# enable_aio_instance_secret_sync = false
-# enable_opc_ua_simulator         = false
+# existing_resource_group_name        = "<existing-resource-group-name>"
+# existing_key_vault_name             = "<existing-key-vault-name>"
+# existing_connected_cluster_name     = "<existing-arc-cluster-name>"
+# enable_aio_instance_secret_sync     = false
+# enable_opc_ua_simulator             = true
+# enable_event_hubs                   = true
+# enable_sample_dataflow_to_event_hub = true
 
 # Options when choosing custom Trust and Issuer configurations
 

@@ -63,13 +63,14 @@ module "aio" {
 }
 
 module "event_hubs" {
-  source                 = "./modules/event_hubs"
+  source = "./modules/event_hubs"
+
   connected_cluster_name = local.connected_cluster_name
   resource_prefix        = var.resource_prefix
   resource_group_name    = local.resource_group.name
   aio_extension_name     = module.aio.aio_extension_name
   depends_on             = [module.aio]
-  count                  = var.provision_event_hubs ? 1 : 0
+  count                  = var.enable_event_hubs ? 1 : 0
 }
 
 module "opc_ua_simulator" {
@@ -79,6 +80,21 @@ module "opc_ua_simulator" {
   resource_group         = local.resource_group
   connected_cluster_name = local.connected_cluster_name
   custom_location_id     = module.aio.custom_location_id
+  depends_on             = [module.aio]
 
   count = var.enable_opc_ua_simulator ? 1 : 0
+}
+
+module "sample_data_flow" {
+  source = "./modules/sample_data_flow"
+
+  resource_prefix     = var.resource_prefix
+  resource_group_name = local.resource_group.name
+  custom_location_id  = module.aio.custom_location_id
+  aio_instance_name   = module.aio.aio_instance_name
+  event_hub           = module.event_hubs[0].event_hub
+  asset_name          = module.opc_ua_simulator[0].asset_name
+  depends_on          = [module.event_hubs]
+
+  count = var.enable_sample_dataflow_to_event_hub ? 1 : 0
 }

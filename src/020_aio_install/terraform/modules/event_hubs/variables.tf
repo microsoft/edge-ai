@@ -6,35 +6,16 @@ variable "connected_cluster_name" {
 variable "resource_prefix" {
   type        = string
   description = "Prefix for all resources in this module"
-  validation {
-    condition     = length(var.resource_prefix) > 0
-    error_message = "Prefix must not be empty."
-  }
 }
 
 variable "resource_group_name" {
   type        = string
   description = "Name of the pre-existing resource group in which to create resources"
-
-  validation {
-    condition     = length(var.resource_group_name) > 0
-    error_message = "Resource group name must not be empty."
-  }
 }
 
 variable "aio_extension_name" {
   type        = string
   description = "The name of the Azure IoT Operations Platform Arc extension"
-}
-
-variable "sku" {
-  description = "Defines which tier to use. Valid options are Basic and Standard."
-  default     = "Basic"
-  type        = string
-  validation {
-    condition     = var.sku == "Basic" || var.sku == "Standard"
-    error_message = "SKU must be either Basic or Standard."
-  }
 }
 
 variable "capacity" {

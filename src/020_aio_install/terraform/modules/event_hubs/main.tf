@@ -23,27 +23,23 @@ data "azapi_resource" "aio_extension" {
   response_export_values = ["identity.principalId"]
 }
 
-output "aio_extension_principal_id" {
-  value = data.azapi_resource.aio_extension.output
-}
-
 resource "azurerm_eventhub_namespace" "destination_event_hub_namespace" {
-  name                = "${var.resource_prefix}-aio-eh-ns"
+  name                = "evhns-${var.resource_prefix}-aio"
   location            = data.azurerm_resource_group.aio_rg.location
   resource_group_name = data.azurerm_resource_group.aio_rg.name
-  sku                 = var.sku
+  sku                 = "Standard" # Basic is not supported for Kafka protocol required for dataflows
   capacity            = var.capacity
 }
 
 resource "azurerm_eventhub" "destination_eh" {
-  name              = "${var.resource_prefix}-aio-eh"
+  name              = "evh-${var.resource_prefix}-aio"
   namespace_id      = azurerm_eventhub_namespace.destination_event_hub_namespace.id
   partition_count   = var.partition_count
   message_retention = var.message_retention
 }
 
 resource "azurerm_role_assignment" "data_sender" {
-  # In future this will be moved out of the EH module
+  # In future this will be moved out of the EH module and using UAMI
   scope                = azurerm_eventhub_namespace.destination_event_hub_namespace.id
   role_definition_name = "Azure Event Hubs Data Sender"
   principal_id         = data.azapi_resource.aio_extension.output.identity.principalId
