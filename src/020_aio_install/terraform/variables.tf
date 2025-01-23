@@ -107,10 +107,10 @@ variable "aio_platform_config" {
   description = "Install cert-manager and trust-manager extensions"
 }
 
-variable "provision_event_hubs" {
+variable "enable_event_hubs" {
   type        = bool
   description = "Whether to provision Azure Event Hubs resources and role assignment"
-  default     = true
+  default     = false
 }
 
 variable "enable_opc_ua_simulator" {
@@ -123,4 +123,14 @@ variable "enable_otel_collector" {
   type        = bool
   default     = false
   description = "Deploy the OpenTelemetry Collector and Azure Monitor ConfigMap (optionally used)"
+}
+
+variable "enable_sample_dataflow_to_event_hub" {
+  type        = bool
+  default     = false
+  description = "Deploy sample data flow to the cluster connecting to PLC simulator Asset"
+  validation {
+    condition     = var.enable_sample_dataflow_to_event_hub == false || var.enable_event_hubs == true && var.enable_opc_ua_simulator == true
+    error_message = "Sample data flow can only be enabled if enable_event_hubs and enable_opc_ua_simulator are true"
+  }
 }
