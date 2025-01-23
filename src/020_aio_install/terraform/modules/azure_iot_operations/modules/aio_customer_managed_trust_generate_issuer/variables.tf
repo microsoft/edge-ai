@@ -46,8 +46,3 @@ variable "customer_managed_trust_settings" {
   })
   description = "Values for AIO CustomerManaged trust resources"
 }
-
-variable "aio_namespace" {
-  type        = string
-  description = "Azure IoT Operations namespace"
-}

@@ -46,19 +46,6 @@ variable "platform" {
   }
 }
 
-variable "metrics" {
-  type = object({
-    enabled               = bool
-    otelCollectorAddress  = string
-    exportIntervalSeconds = number
-  })
-  default = {
-    enabled               = false
-    otelCollectorAddress  = ""
-    exportIntervalSeconds = 60
-  }
-}
-
 variable "operations_config" {
   type = object({
     namespace                      = string
@@ -195,4 +182,9 @@ variable "open_service_mesh" {
     version = "1.2.10"
     train   = "stable"
   }
+}
+
+variable "enable_otel_collector" {
+  type        = bool
+  description = "Deploy the OpenTelemetry Collector and Azure Monitor ConfigMap (optionally used)"
 }

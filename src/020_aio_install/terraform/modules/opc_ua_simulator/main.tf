@@ -5,15 +5,16 @@
  *
  */
 
-resource "terraform_data" "add_customer_managed_configuration" {
-  provisioner "local-exec" {
-    interpreter = ["bash", "-c"]
-    command     = "${path.root}/../scripts/apply-simulator.sh"
-    environment = {
-      TF_CONNECTED_CLUSTER_NAME = var.connected_cluster_name
-      TF_RESOURCE_GROUP_NAME    = var.resource_group.name
-    }
-  }
+module "aio_apply_scripts_pre_instance" {
+  source = "../azure_iot_operations/modules/aio_apply_scripts"
+
+  aio_namespace = "azure-iot-operations"
+  scripts = [{
+    files       = ["apply-simulator.sh"]
+    environment = {}
+  }]
+  connected_cluster_name = var.connected_cluster_name
+  resource_group_name    = var.resource_group.name
 }
 
 resource "azapi_resource" "asset_endpoint" {

@@ -118,3 +118,9 @@ variable "enable_opc_ua_simulator" {
   default     = false
   description = "Deploy OPC UA Simulator to the cluster"
 }
+
+variable "enable_otel_collector" {
+  type        = bool
+  default     = false
+  description = "Deploy the OpenTelemetry Collector and Azure Monitor ConfigMap (optionally used)"
+}

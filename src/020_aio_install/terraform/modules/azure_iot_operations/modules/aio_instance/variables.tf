@@ -29,14 +29,6 @@ variable "trust_source" {
   description = "Trust source must be one of 'SelfSigned' or 'CustomerManaged'. Defaults to SelfSigned."
 }
 
-variable "metrics" {
-  type = object({
-    enabled               = bool
-    otelCollectorAddress  = string
-    exportIntervalSeconds = number
-  })
-}
-
 variable "operations_config" {
   type = object({
     namespace                      = string
@@ -95,4 +87,9 @@ variable "secret_store_cluster_extension_id" {
 variable "platform_cluster_extension_id" {
   type        = string
   description = "The resource ID of the AIO Platform cluster extension"
+}
+
+variable "enable_otel_collector" {
+  type        = bool
+  description = "Deploy the OpenTelemetry Collector and Azure Monitor ConfigMap (optionally used)"
 }
