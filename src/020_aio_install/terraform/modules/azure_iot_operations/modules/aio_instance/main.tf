@@ -22,6 +22,12 @@ locals {
   aio_instance_name    = "${var.connected_cluster_name}-ops-instance"
 
   mqtt_broker_address = "mqtts://${var.mqtt_broker_config.brokerListenerServiceName}.${var.operations_config.namespace}:${var.mqtt_broker_config.brokerListenerPort}"
+
+  metrics = {
+    enabled               = var.enable_otel_collector
+    otelCollectorAddress  = "aio-otel-collector.${var.operations_config.namespace}.svc.cluster.local:4317"
+    exportIntervalSeconds = 60
+  }
 }
 
 
@@ -53,9 +59,9 @@ resource "azurerm_arc_kubernetes_cluster_extension" "iot_operations" {
     "akri.values.kubernetesDistro"                                         = lower(var.operations_config.kubernetesDistro)
     "mqttBroker.values.global.quickstart"                                  = "false"
     "mqttBroker.values.operator.firstPartyMetricsOn"                       = "true"
-    "observability.metrics.enabled"                                        = var.metrics.enabled ? "true" : "false"
-    "observability.metrics.openTelemetryCollectorAddress"                  = var.metrics.otelCollectorAddress
-    "observability.metrics.exportIntervalSeconds"                          = tostring(var.metrics.exportIntervalSeconds)
+    "observability.metrics.enabled"                                        = local.metrics.enabled ? "true" : "false"
+    "observability.metrics.openTelemetryCollectorAddress"                  = local.metrics.otelCollectorAddress
+    "observability.metrics.exportIntervalSeconds"                          = tostring(local.metrics.exportIntervalSeconds)
     "trustSource"                                                          = var.trust_source
     "trustBundleSettings.issuer.name"                                      = local.trust.issuer_name
     "trustBundleSettings.issuer.kind"                                      = local.trust.issuer_kind

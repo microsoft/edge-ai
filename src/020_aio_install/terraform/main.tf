@@ -59,6 +59,7 @@ module "aio" {
   enable_instance_secret_sync     = var.enable_aio_instance_secret_sync
   aio_platform_config             = var.aio_platform_config
   customer_managed_trust_settings = local.customer_managed_trust_settings
+  enable_otel_collector           = var.enable_otel_collector
 }
 
 module "event_hubs" {

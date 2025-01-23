@@ -10,6 +10,15 @@ locals {
   is_customer_managed_generate_issuer = var.trust_config_source == "CustomerManagedGenerateIssuer"
   is_customer_managed_byo_issuer      = var.trust_config_source == "CustomerManagedByoIssuer"
   trust_source                        = (local.is_customer_managed_generate_issuer || local.is_customer_managed_byo_issuer) ? "CustomerManaged" : "SelfSigned"
+
+  scripts_otel_collector = !var.enable_otel_collector ? [] : [{
+    files : ["apply-otel-collector.sh"]
+    environment : {}
+  }]
+  scripts_pre_instance = flatten([
+    try([module.aio_customer_managed_trust_generate_issuer[0].scripts], []),
+    local.scripts_otel_collector,
+  ])
 }
 
 module "aio_init" {
@@ -34,7 +43,19 @@ module "aio_customer_managed_trust_generate_issuer" {
   key_vault                       = var.key_vault
   sse_user_managed_identity       = var.sse_user_managed_identity
   customer_managed_trust_settings = var.customer_managed_trust_settings
-  aio_namespace                   = var.operations_config.namespace
+}
+
+module "aio_apply_scripts_pre_instance" {
+  source = "./modules/aio_apply_scripts"
+  count = anytrue([
+    local.is_customer_managed_generate_issuer,
+    var.enable_otel_collector,
+  ]) ? 1 : 0
+
+  aio_namespace          = var.operations_config.namespace
+  scripts                = local.scripts_pre_instance
+  connected_cluster_name = var.connected_cluster_name
+  resource_group_name    = var.resource_group.name
 }
 
 module "aio_instance" {
@@ -49,12 +70,12 @@ module "aio_instance" {
   operations_config                 = var.operations_config
   schema_registry_id                = var.schema_registry_id
   mqtt_broker_config                = var.mqtt_broker_config
-  metrics                           = var.metrics
   dataflow_instance_count           = var.dataflow_instance_count
   deploy_resource_sync_rules        = var.deploy_resource_sync_rules
   customer_managed_trust_settings   = var.customer_managed_trust_settings
   secret_store_cluster_extension_id = module.aio_init.secret_store_extension_cluster_id
   platform_cluster_extension_id     = module.aio_init.platform_cluster_extension_id
+  enable_otel_collector             = var.enable_otel_collector
 }
 
 module "aio_post_install" {
