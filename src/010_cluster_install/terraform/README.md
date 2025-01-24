@@ -21,6 +21,13 @@ Learn more about the default configuration of each module by exploring the [modu
 
 ## Create resources
 
+Login to Azure CLI using the below command:
+
+```bash
+# Login to Azure CLI, optionally specify the tenant-id
+az login # --tenant <tenant-id>
+```
+
 Set up terraform setting and apply it
 
 1. cd into the `terraform` directory

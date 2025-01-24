@@ -25,7 +25,14 @@ The script performs the following steps:
 - Increase limits for Azure container storage within the host machine
 - In non production environments will install k9s and configure `.bashrc` with auto complete and aliases for development
 
-## Script usage
+## Script
+
+Login to Azure CLI using the below command:
+
+```bash
+# Login to Azure CLI, optionally specify the tenant-id
+az login # --tenant <tenant-id>
+```
 
 Set the following environment variables:
 

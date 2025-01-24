@@ -9,8 +9,8 @@ Implementing an Adaptive Cloud approach requires great tooling; we're excited to
 Edge" project, our next generation Infrastructure as Code solution designed specifically for systems spanning
 edge and cloud. This project encodes a decade of experience harvesting petabytes of edge telemetry and
 extending the power and capabilites of Azure, to the edge. This project is just the first step in enabling our
-AI on Edge Accelerator, a suite of IaC, tools, and applications for designing, engineering, deploying and
-managing scale AI solutions at the edge.
+*Edge AI Accelerator*, a suite of IaC, tools, and applications for designing, engineering, and deploying
+edge AI solutions that are resilient, scalable, and maintainable.
 
 It takes a wide variety of teams, roles, and responsibilities to develop cloud-enabled edge computing
 solutions. There are physical plant IT teams responsible for hardware at the edge, and enterprise IT
@@ -20,15 +20,20 @@ telemetry across edge and cloud and need to view both environments as a unified 
 address the needs of all stakeholders, and will accelerate POCs to production, with the flexibility to
 tackle the increasing complexity of delivering business value from edge data.
 
+## This project is not a quickstart
+
+Quickstarts for Azure IoT Operations or example implementations can be found in official
+Azure documentation:
+
+- [Azure IoT Operations - Quickstart](https://learn.microsoft.com/en-us/azure/iot-operations/get-started-end-to-end-sample/quickstart-deploy)
+- [Azure IoT Operations (AIO) documentation](https://learn.microsoft.com/en-us/azure/iot-operations/overview-iot-operations)
+- [Azure Arc Jumpstart Agora Manufacturing Scenario](https://azurearcjumpstart.com/azure_jumpstart_ag/contoso_motors#overview).
+
 ## Composable IaC
 
-This project is not a reference architecture; for that, please see
-[Azure IoT Operations (AIO)](https://learn.microsoft.com/en-us/azure/iot-operations/overview-iot-operations)
-documentation or the [Azure Arc Jumpstart](https://azurearcjumpstart.com/) project. This project is a
-composable library of fine-grained, production ready IaC that can be easily layered to fit nearly any
-operational model, from small, single machine systems, to orchestrated, globally-distributed solutions. The
-project uses a decimal system to organize the IaC, scripts, and resources, which can be collated in myriad ways
-to meet operational requirements:
+This project is a composable library of fine-grained, production ready IaC that can be easily layered to fit
+nearly any operational model, from small, single machine systems, to orchestrated, globally-distributed solutions.
+The project uses a decimal system to organize IaC, scripts, and supplementary resources, which can be collated in myriad ways to meet operational requirements:
 
 1. [(000)](./src/000_rp_enablement/README.md) Run-once scripts for Arc & AIO resource provider enablement in subscriptions, if necessary
 2. (005) Resource Groups, Site Management (optional), Role assignments/permissions for Arc onboarding
@@ -63,22 +68,23 @@ directly to get started bootstrapping environments by:
 2. [Cloning this repository locally](https://learn.microsoft.com/en-us/azure/devops/repos/git/clone?view=azure-devops&tabs=visual-studio-2022#get-the-clone-url-of-an-azure-repos-git-repo) (this solution is not available via package distribution - please consider updating all dependencies after cloning and file issues if challenges are encountered)
 3. [Preparing an Azure Subscription with the required resource providers](./src/000_rp_enablement/README.md) to support Azure Arc and Azure IoT Operations.
 4. [Deploy an Azure Arc-enabled K3s cluster](./src/010_cluster_install/terraform/README.md) to an Azure-hosted Virtual Machine.
-5. [Deploy Azure IoT Operations](./src/020_aio_install/terraform/README.md) to the previously deployed Azure-hosted VM.
+5. [Cluster host setup](./src/011_device_setup/README.md)
+6. [Deploy Azure IoT Operations](./src/020_aio_install/terraform/README.md) to the previously deployed Azure-hosted VM.
 
 ### Supported Features
 
 The Terraform, scripts, and documentation in this repository can provide you the following features and capabilities:
 
-* Subscription resources to support all "in-the-box" components of an Azure IoT Operations (AIO) solution
-* Deployment of a cloud-hosted VM, sized and provisioned specifically for developing AIO solutions
-* Deployment of a development-ready K3s cluster with all the basic AIO components installed
-* [Integrated support for Azure Managed Identities](./src/010_cluster_install/terraform/README.md)
-* [Integrated support for "Bring-Your-Own" certificates](./src/020_aio_install/terraform/README.md#create_resources) (and intermediate certificates) for intra-cluster TLS
-* [A robust, matrix'ed IaC build system](./azure-pipelines.yml) with integrated testing and validation, to ensure your IaC deploys as you expect it to
-* Auto-validation and auto-generation of Terraform Plans to support expedited CISO/Security/DevOps team approvals
-* [A library of common "Architectural Decision Records" (ARDs)](./Solution%20ADR%20Library/README.md), ready to be modified to document your solution's requirements and the decisions you've made along the way
-* [A library of technology papers](./Solution%20Technology%20Paper%20Library/README.md) to upskill your peers
-* [A well-stocked development container](./.devcontainer) for you to take the IaC for your "AI on the Edge Solutions" to production with confidence, repeatability, and reliability your organization deserves
+- Subscription resources to support all "in-the-box" components of an Azure IoT Operations (AIO) solution
+- Deployment of a cloud-hosted VM, sized and provisioned specifically for developing AIO solutions
+- Deployment of a development-ready K3s cluster with all the basic AIO components installed
+- [Integrated support for Azure Managed Identities](./src/010_cluster_install/terraform/README.md)
+- [Integrated support for "Bring-Your-Own" certificates](./src/020_aio_install/terraform/README.md#create_resources) (and intermediate certificates) for intra-cluster TLS
+- [A robust, matrix'ed IaC build system](./azure-pipelines.yml) with integrated testing and validation, to ensure your IaC deploys as you expect it to
+- Auto-validation and auto-generation of Terraform Plans to support expedited CISO/Security/DevOps team approvals
+- [A library of common "Architectural Decision Records" (ARDs)](./Solution%20ADR%20Library/README.md), ready to be modified to document your solution's requirements and the decisions you've made along the way
+- [A library of technology papers](./Solution%20Technology%20Paper%20Library/README.md) to upskill your peers
+- [A well-stocked development container](./.devcontainer) for you to take the IaC for your "AI on the Edge Solutions" to production with confidence, repeatability, and reliability your organization deserves
 
 Happy Developing!
 ISE's AI on the Edge Accelerator Team
@@ -100,10 +106,10 @@ Bower), and Architect (Tim Park).
 
 ARDs move through a process that includes the following states:
 
-* Draft - for all ADRs under development and in a drafting phase. May be committed to the main branch directly by project leads, but must be done via branches for community members
-* Proposed - for all ADRs that have been reviewed by the ADR sign-off team (project leads), this phase indicates the ADR is now open for discussion amongst the broad project community for feedback.
-* Accepted - for all ADRs that have completed the community RFC process. ADRs in this state have been ratified/accepted by the project community and may move to implementation.
-* Deprecated - for all ADRs that are no longer relevant to the solution or have been superseded by more comprehensive ADRs; this is inclusive of retired components or features, but will be retained in perpetuity for historical context.
+- Draft - for all ADRs under development and in a drafting phase. May be committed to the main branch directly by project leads, but must be done via branches for community members
+- Proposed - for all ADRs that have been reviewed by the ADR sign-off team (project leads), this phase indicates the ADR is now open for discussion amongst the broad project community for feedback.
+- Accepted - for all ADRs that have completed the community RFC process. ADRs in this state have been ratified/accepted by the project community and may move to implementation.
+- Deprecated - for all ADRs that are no longer relevant to the solution or have been superseded by more comprehensive ADRs; this is inclusive of retired components or features, but will be retained in perpetuity for historical context.
 
 Please see [ADR README](./Project%20ADRs/README.MD) for a more detailed explanation of the ADR process flow and how to author and progress your ideas for this project, through to implementation.
 
@@ -113,7 +119,7 @@ Before contributing, please review the project's [Code of Conduct](./CODE_OF_CON
 
 Users and project developers can contribute to make this solution better in several ways:
 
-* [Review the project's Contributing doc](./CONTRIBUTING.md)
-* [Contribute an ADR](./Solution%20ADR%20Library/README.md#contribute) from your engagement
-* [Contribute a Security Plan](./Solution%20Security%20Plan%20Library//README.md#contribute) from your engagement
-* [Find a user story or task from the backlog](https://dev.azure.com/ai-at-the-edge-flagship-accelerator/IaC%20for%20the%20Edge/_sprints/taskboard/IaC%20for%20the%20Edge%20Team/IaC%20for%20the%20Edge/***REMOVED***) and help move the accelerator forward
+- [Review the project's Contributing doc](./CONTRIBUTING.md)
+- [Contribute an ADR](./Solution%20ADR%20Library/README.md#contribute) from your engagement
+- [Contribute a Security Plan](./Solution%20Security%20Plan%20Library//README.md#contribute) from your engagement
+- [Find a user story or task from the backlog](https://dev.azure.com/ai-at-the-edge-flagship-accelerator/IaC%20for%20the%20Edge/_sprints/taskboard/IaC%20for%20the%20Edge%20Team/IaC%20for%20the%20Edge/***REMOVED***) and help move the accelerator forward

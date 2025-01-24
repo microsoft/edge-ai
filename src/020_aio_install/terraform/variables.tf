@@ -25,7 +25,7 @@ variable "existing_resource_group_name" {
 variable "existing_key_vault_name" {
   type        = string
   default     = null
-  description = "Name of the Azure Key Vault to use by Secret Sync Extension. If not provided, will create new key vault. Will fail if key vault does not exist in provided resource group."
+  description = "Name of the Azure Key Vault to use by Secret Sync Extension. If not provided, will create a new Key Vault. Will fail if Key Vault does not exist in provided resource group."
 }
 
 variable "existing_connected_cluster_name" {

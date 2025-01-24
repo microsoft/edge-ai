@@ -31,7 +31,7 @@ variable "vm_sku_size" {
 
 variable "vm_username" {
   type        = string
-  description = "Name for the user to create on the VM. If left empty, a random name will be generated"
+  description = "Name for the user to create on the VM. If left empty, a random user name will be generated"
   default     = null
 }
 
