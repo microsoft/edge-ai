@@ -147,8 +147,8 @@ stages:
               targetPath: "$(System.DefaultWorkingDirectory)/megalinter-reports/"
               artifactName: MegaLinterReport
 
-      - job: CheckRpEnablementChanges
-        displayName: Check for changes in 000_rp_enablement folder
+      - job: MatrixBuildFolderCheck
+        displayName: Check for changes in src directory
         dependsOn:
           - AgentAssign
           - MegaLinter
@@ -163,23 +163,55 @@ stages:
           - checkout: self
             fetchDepth: "0"
 
-          # Check for changes in the 000_rp_enablement folder
+          # Check for changes in the src directory
           - bash: |
               echo "Checking for changes in the ./src/000_rp_enablement folder..."
-              if git diff --name-only @~ @ | grep -q 'src/000_rp_enablement/.*\.sh$'; then
+              changed_files=$(git diff --name-only @~ @)
+              if echo "$changed_files" | grep -q 'src/000_rp_enablement/.*\.sh$'; then
                 echo "Changes detected in the ./src/000_rp_enablement folder shell files."
-                echo "##vso[task.setvariable variable=changesInRpEnablement;isOutput=true]true"
+                echo "##vso[task.setvariable variable=changesInRpEnablementShell;isOutput=true]true"
               else
                 echo "No changes detected in the ./src/000_rp_enablement folder shell files."
-                echo "##vso[task.setvariable variable=changesInRpEnablement;isOutput=true]false"
+                echo "##vso[task.setvariable variable=changesInRpEnablementShell;isOutput=true]false"
               fi
-            displayName: Check for 000_rp_enablement shell file changes
-            name: changesInRpEnablementScript
 
-      - job: ResourceProviderScriptTest
+              # check if PWSH files in rp_enablement have changed
+              if echo "$changed_files" | grep -q 'src/000_rp_enablement/'; then
+                echo "Changes detected in the ./src/000_rp_enablement folder pwsh files."
+                echo "##vso[task.setvariable variable=changesInRpEnablementPwsh;isOutput=true]true"
+              else
+                echo "No changes detected in the ./src/000_rp_enablement folder pwsh files."
+                echo "##vso[task.setvariable variable=changesInRpEnablementPwsh;isOutput=true]false"
+              fi
+
+              echo "Checking for changes in the first-level folders under src with .tf, .tfvars, .tfstate, or .hcl file changes..."
+              changed_tf_folders=$(echo "$changed_files" |  # Get the list of changed files
+                grep -E 'src/[^/]+/.*\.(tf|tfvars|tfstate|hcl)$' |  # Filter for .tf, .tfvars, .tfstate, or .hcl files in src directory
+                awk -F'/' '{print $2}' |  # Extract the first-level folder names
+                sort -u |  # Remove all duplicates
+                sort -n |  # Sort the folder names numerically so they can be applied in order
+                jq -R -s -c 'split("\n") |  # Convert the newline-separated list into a JSON array
+                map(select(length > 0)) |  # Remove all empty entries
+                map({key: ., value: {folderName: .}}) |  # Create JSON objects with folder name as keys, the keys are used to populate the AzDO job name
+                from_entries')  # Convert entries to a JSON object
+
+              if [ "$(echo $changed_tf_folders | jq 'length')" -ne 0 ]; then
+                echo "Changes detected in the following Terraform folders: $changed_tf_folders"
+                echo "##vso[task.setvariable variable=changesInInstall;isOutput=true]true"
+                echo "##vso[task.setvariable variable=changedTFFolders;isOutput=true]$changed_tf_folders"
+              else
+                echo "No changes detected in the first-level folders under src with .tf, .tfvars, .tfstate, or .hcl file changes."
+                echo "##vso[task.setvariable variable=changesInInstall;isOutput=true]false"
+                echo "##vso[task.setvariable variable=changedTFFolders;isOutput=true]none"
+              fi
+
+            displayName: Check for changes in src folders
+            name: matrixBuildFolderCheckTask
+
+      - job: ResourceProviderShellScriptTest
         dependsOn:
           - AgentAssign
-          - CheckRpEnablementChanges
+          - MatrixBuildFolderCheck
         variables:
           AgentName: $[ dependencies.AgentAssign.outputs['agentNameScript.AgentName'] ]
         pool:
@@ -187,7 +219,7 @@ stages:
           vmImage: ubuntu-latest
           demands: Agent.Name -equals $(Agent.Name)
         # Check if the changeset includes 000_rp_enablement files and run if it does.
-        condition: eq(dependencies.CheckRpEnablementChanges.outputs['changesInRpEnablementScript.changesInRpEnablement'], 'true')
+        condition: eq(dependencies.MatrixBuildFolderCheck.outputs['matrixBuildFolderCheckTask.changesInRpEnablementShell'], 'true')
         steps:
           - task: AzureCLI@2
             displayName: Azure CLI for Resource Provider Unregistration Script Test
@@ -212,68 +244,52 @@ stages:
                 ./register-azure-providers.sh aio-azure-resource-providers.txt
                 echo "installed azure providers"
 
-      - job: CheckTerraformChanges
-        displayName: Check for changes in terraform folders
+      - job: ResourceProviderPWSHScriptTest
         dependsOn:
-          - AgentAssign
           - MegaLinter
-        variables:
-          AgentName: $[ dependencies.AgentAssign.outputs['agentNameScript.AgentName'] ]
+          - MatrixBuildFolderCheck
         pool:
           name: ai-on-edge-managed-pool
-          vmImage: ubuntu-latest
-          demands: Agent.Name -equals $(Agent.Name)
+          vmImage: 'windows-2022'
+        condition: eq(dependencies.MatrixBuildFolderCheck.outputs['matrixBuildFolderCheckTask.changesInRpEnablementPwsh'], 'true')
+        variables:
+          testResultsOutput: '$(System.DefaultWorkingDirectory)/PWSH-TEST-RESULTS.xml'
         steps:
-          # Checkout repo
-          - checkout: self
-            fetchDepth: "0"
+          - powershell: ./.pipelines/subscripts/Invoke-Pester.ps1 -Path ./src/000_rp_enablement -OutputFile $(testResultsOutput)
+            displayName: 'Run pester'
+            workingDirectory: $(System.DefaultWorkingDirectory)
 
-          # Check for TF changes in the all src folders
-          - bash: |
-              echo "Checking for changes in the first-level folders under src with .tf, .tfvars, .tfstate, or .hcl file changes..."
-              changed_folders=$(git diff --name-only @~ @ | # Get the list of changed files
-                grep -E 'src/[^/]+/.*\.(tf|tfvars|tfstate|hcl)$' |  # Filter for .tf, .tfvars, .tfstate, or .hcl files in src directory
-                awk -F'/' '{print $2}' |  # Extract the first-level folder names
-                sort -u |  # Remove all duplicates
-                sort -n |  # Sort the folder names numerically so they can be applied in order
-                jq -R -s -c 'split("\n") |  # Convert the newline-separated list into a JSON array
-                map(select(length > 0)) |  # Remove all empty entries
-                map({key: ., value: {folderName: .}}) |  # Create JSON objects with folder name as keys, the keys are used to populate the AzDO job name
-                from_entries')  # Convert entries to a JSON object
-              if [ "$(echo $changed_folders | jq 'length')" -ne 0 ]; then
-                echo "Changes detected in the following folders: $changed_folders"
-                echo "##vso[task.setvariable variable=changesInInstall;isOutput=true]true"
-                echo "##vso[task.setvariable variable=changedFolders;isOutput=true]$changed_folders"
-              else
-                echo "No changes detected in the first-level folders under src with .tf, .tfvars, .tfstate, or .hcl file changes."
-                echo "##vso[task.setvariable variable=changesInInstall;isOutput=true]false"
-                echo "##vso[task.setvariable variable=changedFolders;isOutput=true]none"
-              fi
-            displayName: Check for TF changes in all src folders
-            name: changesInInstallScript
-            continueOnError: false
+          - task: PublishTestResults@2
+            displayName: Publish Test Results
+            inputs:
+              testRunTitle: 'Test Results for Pester'
+              buildPlatform: 'Windows'
+              testRunner: 'NUnit'
+              testResultsFiles: '$(testResultsOutput)'
+              failTaskOnFailedTests: true
 
       - job: TerraformClusterTest
         dependsOn:
           - AgentAssign
-          - CheckTerraformChanges
+          - MegaLinter
+          - MatrixBuildFolderCheck
         variables:
           AgentName: $[ dependencies.AgentAssign.outputs['agentNameScript.AgentName'] ]
         pool:
           name: ai-on-edge-managed-pool
           vmImage: ubuntu-latest
           demands: Agent.Name -equals $(Agent.Name)
-        condition: eq(dependencies.CheckTerraformChanges.outputs['changesInInstallScript.changesInInstall'], 'true')
+        condition: eq(dependencies.MatrixBuildFolderCheck.outputs['matrixBuildFolderCheckTask.changesInInstall'], 'true')
         strategy:
           matrix:
-            # Dynamically create a job for each folder in the changedFolders variable
-            $[ dependencies.CheckTerraformChanges.outputs['changesInInstallScript.changedFolders'] ]
+            # Dynamically create a job for each folder in the changedTFFolders variable
+            $[ dependencies.MatrixBuildFolderCheck.outputs['matrixBuildFolderCheckTask.changedTFFolders'] ]
           maxParallel: 1
 
         steps:
           # Initialize Terraform
           - task: TerraformInstaller@1
-            displayName: install terraform
+            displayName: "Install Terraform"
             inputs:
               terraformVersion: latest
 
@@ -393,6 +409,7 @@ stages:
           # beyond the integrated MSI.
 
           - task: AzureCLI@2
+            name: TerraformTest
             displayName: Azure CLI for Terraform CLI test run
             inputs:
               azureSubscription: "azdo-ai-for-edge-iac-for-edge"
@@ -402,11 +419,12 @@ stages:
               inlineScript: |
                 # Export the ARM subscription ID so Terraform tests can be executed
                 export ARM_SUBSCRIPTION_ID=$(SUBSCRIPTION_ID)
-                terraform test -json -var custom_locations_oid=$(TF_VAR_CUSTOM_LOCATIONS_OID) > test_output.log
-                unset ARM_SUBSCRIPTION_ID
-
                 # Define the log file from the test output to read up
-                log_file="test_output.log"
+                log_file="$(System.DefaultWorkingDirectory)/$(folderName)_test_output.log"
+                echo "Writing Terraform test output to $log_file"
+                # run TF tests
+                terraform test -json -var custom_locations_oid=$(TF_VAR_CUSTOM_LOCATIONS_OID) > $log_file
+                unset ARM_SUBSCRIPTION_ID
 
                 # Read each line of the log file and extract the @timestamp and @message fields
                 while IFS= read -r line; do
@@ -414,10 +432,36 @@ stages:
                 done < "$log_file"
 
                 # Get the last line of the output and parse it for the word "Success"
-                last_line=$(tail -n 1 test_output.log)
+                last_line=$(tail -n 1 "$log_file")
                 if echo "$last_line" | jq -e '.["@message"]' | grep -q "Success"; then
                   echo "Terraform tests passed."
                 else
                   echo "Terraform tests failed."
                   exit 1
                 fi
+
+          - task: UseNode@1
+            inputs:
+              version: '22.x'
+            condition: always()
+
+          # https://github.com/Liam-Johnston/tftest-to-junitxml
+          - script: |
+              npm install -g tftest-to-junitxml
+            displayName: 'Install tftest-to-junitxml'
+            condition: always()
+
+          - script: |
+              npx tftest-to-junitxml "$(System.DefaultWorkingDirectory)/$(folderName)_test_output.log"
+            displayName: 'Convert Terraform test output to JUnit XML'
+            condition: always()
+
+          - task: PublishTestResults@2
+            displayName: Publish Test Results
+            inputs:
+              testResultsFiles: 'TEST-terraform.xml'
+              testRunTitle: 'Test Results for $(folderName)'
+              buildPlatform: 'Linux'
+              testRunner: 'JUnit'
+              failTaskOnFailedTests: true
+            condition: always()

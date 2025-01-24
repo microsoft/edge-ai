@@ -1,57 +1,33 @@
 <#
-    .SYNOPSIS
+.SYNOPSIS
     Register Azure resource providers that are defined in a text file.
 
-    .PARAMETER filePath
-    The path to the text file that contains the list of Azure resource providers to register.
+.DESCRIPTION
+    This script registers Azure resource providers specified in a text file. Each line in the text file should contain the name of an Azure resource provider.
 
-    .PARAMETER help
-    Prints the help message.
+.PARAMETER filePath
+    The path to the text file that contains the list of Azure resource providers to register. This parameter is required.
 
-    .INPUTS
+.INPUTS
     None
 
-    .OUTPUTS
+.OUTPUTS
     None
 
-    .EXAMPLE
+.EXAMPLE
     ./register-azure-providers.ps1 -filePath azure-providers.txt
+    This command registers the Azure resource providers listed in the azure-providers.txt file.
 
-    .EXAMPLE
-    ./register-azure-providers.ps1 -help
-
+.NOTES
+    Author: Your Name
+    Date: YYYY-MM-DD
+    Version: 1.0
 #>
-param (
-    [string]$filePath,
-    [switch]$help
-)
 
-function Show-Usage {
-    Write-Output ""
-    Write-Output "  Register Azure resource providers"
-    Write-Output "  ------------------------------------------------------------"
-    Write-Output ""
-    Write-Output "  USAGE: ./register-azure-providers.ps1 -filePath <providers-file>"
-    Write-Output ""
-    Write-Output "    Registers Azure resource providers that are defined in a"
-    Write-Output "    text file."
-    Write-Output ""
-    Write-Output "    Example:"
-    Write-Output ""
-    Write-Output "    azure-providers.txt"
-    Write-Output "    ------------------------------"
-    Write-Output "    Microsoft.ApiManagement"
-    Write-Output "    Microsoft.Web"
-    Write-Output "    Microsoft.DocumentDB"
-    Write-Output "    Microsoft.OperationalInsights"
-    Write-Output ""
-    Write-Output "    ./register-azure-providers.ps1 -filePath azure-providers.txt"
-    Write-Output ""
-    Write-Output "  USAGE: ./register-azure-providers.ps1 -help"
-    Write-Output ""
-    Write-Output "    Prints this help."
-    Write-Output ""
-}
+Param (
+    [Parameter(Mandatory)]
+    [string]$filePath
+)
 
 function Show-ProviderName {
     param (
@@ -59,22 +35,22 @@ function Show-ProviderName {
     )
     $providerNameLen = $provider.Length
     $dotLen = $maxLenProviderName - $providerNameLen + 5
-    Write-Host -NoNewline ("`e[0K$provider " + "." * $dotLen + " ")
+    return ("`e[0K$provider " + "." * $dotLen + " ")
 }
 
 function Show-NotRegisteredState {
-    Write-Host "`e[38;5;15m`e[48;5;1m NotRegistered `e[m"
+    return ("`e[38;5;15m`e[48;5;1m NotRegistered `e[m")
 }
 
 function Show-RegisteredState {
-    Write-Host "`e[38;5;0m`e[48;5;2m Registered `e[m"
+    return ("`e[38;5;0m`e[48;5;2m Registered `e[m")
 }
 
 function Show-State {
     param (
         [string]$state
     )
-    Write-Host "`e[38;5;15m`e[48;5;243m $state `e[m"
+    return ("`e[38;5;15m`e[48;5;243m $state `e[m")
 }
 
 function Move-CursorToFirstLine {
@@ -84,14 +60,8 @@ function Move-CursorToFirstLine {
     Write-Host -NoNewline "`e[${numberOfLines}F"
 }
 
-if ($help) {
-    Show-Usage
-    exit 0
-}
-
 if (-not (Test-Path $filePath)) {
-    Write-Error "File not found: $filePath"
-    Show-Usage
+    Write-Error "Providers file not found: $filePath"
     exit 1
 }
 
@@ -109,6 +79,12 @@ Get-Content $filePath | ForEach-Object {
     }
 }
 
+# Check if there are any providers to register
+if ($providers.Count -eq 0) {
+    Write-Host "No providers to register."
+    exit 0
+}
+
 # Get list of all registered azure resource providers
 $registeredProviders = az provider list --query "sort_by([?registrationState=='Registered'].{Provider:namespace}, &Provider)" --out tsv
 
@@ -117,13 +93,13 @@ $sortedRequiredProviders = $providers.Keys | Sort-Object
 
 # Register the providers in the list that are not already registered
 foreach ($provider in $sortedRequiredProviders) {
-    Show-ProviderName $provider
+    Write-Host -NoNewline (Show-ProviderName -provider $provider)
 
     if ($registeredProviders -notcontains $provider) {
-        Show-NotRegisteredState
+        Write-Host (Show-NotRegisteredState)
         az provider register --namespace $provider > $null 2>&1
     } else {
-        Show-RegisteredState
+        Write-Host (Show-RegisteredState)
         $providers[$provider] = "Registered"
     }
 }
@@ -141,15 +117,15 @@ while ($notRegisteredCount -gt 0) {
             $state = az provider show --namespace $provider --query 'registrationState' --output tsv
         }
 
-        Show-ProviderName $provider
+        Write-Host -NoNewline (Show-ProviderName -provider $provider)
         if ($state -eq "Registered") {
             $notRegisteredCount--
-            Show-RegisteredState
+            Write-Host (Show-RegisteredState)
             $providers[$provider] = "Registered"
         } elseif ($state -eq "NotRegistered") {
-            Show-NotRegisteredState
+            Write-Host (Show-NotRegisteredState)
         } else {
-            Show-State $state
+            Write-Host (Show-State $state)
         }
     }
 

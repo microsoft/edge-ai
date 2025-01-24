@@ -25,7 +25,10 @@
 			"helm": "latest",
 			"minikube": "none"
 		},
-		"ghcr.io/rio/features/k9s:1": {}
+		"ghcr.io/rio/features/k9s:1": {},
+		"ghcr.io/devcontainers/features/powershell": {
+			"pwsh": "latest"
+		}
 	},
 	"customizations": {
 		"vscode": {
