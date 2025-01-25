@@ -1,0 +1,38 @@
+# Required variables
+
+# TIP! If you are running the ../010-vm-host and wish to continue from that run
+# copy the 'resource_prefix' and 'location' exact same values from ../../010-vm-host/terraform/terraform.tfvars file
+resource_prefix = "<resource-prefix>"
+location        = "<location>"
+
+# Optional variables
+
+# existing_resource_group_name        = "<existing-resource-group-name>"
+# existing_key_vault_name             = "<existing-key-vault-name>"
+# existing_connected_cluster_name     = "<existing-arc-cluster-name>"
+# enable_opc_ua_simulator             = true
+
+# Options when choosing custom Trust and Issuer configurations
+
+# Option 1 - To configure custom trust with TLS certs stored in Key Vault, secrets synced, a ClusterIssuer and Trust bundle configmap
+# trust_config_source = "CustomerManagedGenerateIssuer"
+# Optionally pass in your PKI CA certificate, private key and certificate chain. If left empty a local self-signed chain is generated
+# Only when trust source is set to CustomerManagedGenerateIssuer type of trust
+# aio_ca = {
+#    root_ca_cert_pem    = "<>"
+#    ca_cert_chain_pem   = "<>"
+#    ca_key_pem          = "<>"
+# }
+
+# Option 2 - To configure custom trust with existing Issuer or ClusterIssuer, requires cert-manager and trust-manager to be pre-installed
+# trust_config_source = "CustomerManagedByoIssuer"
+# byo_issuer_trust_settings = {
+#    issuer_name    = "<>"
+#    issuer_kind    = "<>"
+#    configmap_name = "<>"
+#    configmap_key  = "<>"
+# }
+# aio_platform_config = {
+#    install_cert_manager  = false
+#    install_trust_manager = false
+# }

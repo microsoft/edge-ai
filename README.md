@@ -35,12 +35,12 @@ This project is a composable library of fine-grained, production ready IaC that 
 nearly any operational model, from small, single machine systems, to orchestrated, globally-distributed solutions.
 The project uses a decimal system to organize IaC, scripts, and supplementary resources, which can be collated in myriad ways to meet operational requirements:
 
-1. [(000)](./src/000_rp_enablement/README.md) Run-once scripts for Arc & AIO resource provider enablement in subscriptions, if necessary
+1. [(000)](./src/000-subscription/README.md) Run-once scripts for Arc & AIO resource provider enablement in subscriptions, if necessary
 2. (005) Resource Groups, Site Management (optional), Role assignments/permissions for Arc onboarding
-3. [(010)](./src/010_cluster_install/terraform/README.md) VM/host provisioning, with configurable host operating system (initially limited to Ubuntu)
-4. [(020)](./src/010_cluster_install/terraform/README.md) Installation of a CNCF cluster that is AIO compatible (initially limited to K3s) and Arc enablement of target clusters, workload identity, and OTEL collector
-5. [(030)](./src/010_cluster_install/terraform/README.md) Cloud resource provisioning for Azure Key Vault, Storage Accounts, Container Registry, and User Assigned Managed Identity
-6. [(040)](./src/020_aio_install/terraform/README.md) AIO deployment of core infrastructure components (MQ Broker, Edge Storage Accelerator, Data Flow, Secretes Sync Controller, Workload Identity Federation, and Schema Registry)
+3. [(010)](./src/010-vm-host/terraform/README.md) VM/host provisioning, with configurable host operating system (initially limited to Ubuntu)
+4. [(020)](./src/010-vm-host/terraform/README.md) Installation of a CNCF cluster that is AIO compatible (initially limited to K3s) and Arc enablement of target clusters, workload identity, and OTEL collector
+5. [(030)](./src/010-vm-host/terraform/README.md) Cloud resource provisioning for Azure Key Vault, Storage Accounts, Container Registry, and User Assigned Managed Identity
+6. [(040)](./src/040-iot-ops/terraform/README.md) AIO deployment of core infrastructure components (MQ Broker, Edge Storage Accelerator, Data Flow, Secretes Sync Controller, Workload Identity Federation, and Schema Registry)
 7. (050) Cloud resource provisioning for cloud communication (MQTT protocol head for Event Grid (topic spaces, topics and cert-based authentication), Event Hubs, Service Bus, Relay, etc.)
 8. (060) Cloud resource provisioning for data/event storage (Fabric by means of RTI, Data Lakes, Warehouses, etc.)
 9. (070) Cloud resource provisioning for Azure Monitor and Container Insights
@@ -66,10 +66,10 @@ directly to get started bootstrapping environments by:
 
 1. Ensuring you have all the [required pre-requisites](./src/README.md#prerequisites) met for your development machine. We highly suggest using [this project's integrated dev container](./.devcontainer/README.md) to get started quickly.
 2. [Cloning this repository locally](https://learn.microsoft.com/en-us/azure/devops/repos/git/clone?view=azure-devops&tabs=visual-studio-2022#get-the-clone-url-of-an-azure-repos-git-repo) (this solution is not available via package distribution - please consider updating all dependencies after cloning and file issues if challenges are encountered)
-3. [Preparing an Azure Subscription with the required resource providers](./src/000_rp_enablement/README.md) to support Azure Arc and Azure IoT Operations.
-4. [Deploy an Azure Arc-enabled K3s cluster](./src/010_cluster_install/terraform/README.md) to an Azure-hosted Virtual Machine.
-5. [Cluster host setup](./src/011_device_setup/README.md)
-6. [Deploy Azure IoT Operations](./src/020_aio_install/terraform/README.md) to the previously deployed Azure-hosted VM.
+3. [Preparing an Azure Subscription with the required resource providers](./src/000-subscription/README.md) to support Azure Arc and Azure IoT Operations.
+4. [Deploy an Azure Arc-enabled K3s cluster](./src/010-vm-host/terraform/README.md) to an Azure-hosted Virtual Machine.
+5. [Cluster host setup](./src/020-cncf-cluster/README.md)
+6. [Deploy Azure IoT Operations](./src/040-iot-ops/terraform/README.md) to the previously deployed Azure-hosted VM.
 
 ### Supported Features
 
@@ -78,8 +78,8 @@ The Terraform, scripts, and documentation in this repository can provide you the
 - Subscription resources to support all "in-the-box" components of an Azure IoT Operations (AIO) solution
 - Deployment of a cloud-hosted VM, sized and provisioned specifically for developing AIO solutions
 - Deployment of a development-ready K3s cluster with all the basic AIO components installed
-- [Integrated support for Azure Managed Identities](./src/010_cluster_install/terraform/README.md)
-- [Integrated support for "Bring-Your-Own" certificates](./src/020_aio_install/terraform/README.md#create_resources) (and intermediate certificates) for intra-cluster TLS
+- [Integrated support for Azure Managed Identities](./src/010-vm-host/terraform/README.md)
+- [Integrated support for "Bring-Your-Own" certificates](./src/040-iot-ops/terraform/README.md#create_resources) (and intermediate certificates) for intra-cluster TLS
 - [A robust, matrix'ed IaC build system](./azure-pipelines.yml) with integrated testing and validation, to ensure your IaC deploys as you expect it to
 - Auto-validation and auto-generation of Terraform Plans to support expedited CISO/Security/DevOps team approvals
 - [A library of common "Architectural Decision Records" (ARDs)](./Solution%20ADR%20Library/README.md), ready to be modified to document your solution's requirements and the decisions you've made along the way

@@ -401,3 +401,7 @@ terraform.rc
 
 # Ignore .temp files used for some processing
 *.temp
+
+# Ignore JetBrains files
+.idea
+.idea/

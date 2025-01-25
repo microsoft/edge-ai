@@ -165,22 +165,22 @@ stages:
 
           # Check for changes in the src directory
           - bash: |
-              echo "Checking for changes in the ./src/000_rp_enablement folder..."
-              changed_files=$(git diff --name-only @~ @)
-              if echo "$changed_files" | grep -q 'src/000_rp_enablement/.*\.sh$'; then
-                echo "Changes detected in the ./src/000_rp_enablement folder shell files."
+              echo "Checking for changes in the ./src/000-subscription folder..."
+              changed_files=$(git diff --name-only --diff-filter=ACMRT origin/main...HEAD)
+              if echo "$changed_files" | grep -q 'src/000-subscription/.*\.sh$'; then
+                echo "Changes detected in the ./src/000-subscription folder shell files."
                 echo "##vso[task.setvariable variable=changesInRpEnablementShell;isOutput=true]true"
               else
-                echo "No changes detected in the ./src/000_rp_enablement folder shell files."
+                echo "No changes detected in the ./src/000-subscription folder shell files."
                 echo "##vso[task.setvariable variable=changesInRpEnablementShell;isOutput=true]false"
               fi
 
-              # check if PWSH files in rp_enablement have changed
-              if echo "$changed_files" | grep -q 'src/000_rp_enablement/'; then
-                echo "Changes detected in the ./src/000_rp_enablement folder pwsh files."
+              # check if PWSH files in subscription have changed
+              if echo "$changed_files" | grep -q 'src/000-subscription/.*\.ps1$'; then
+                echo "Changes detected in the ./src/000-subscription folder pwsh files."
                 echo "##vso[task.setvariable variable=changesInRpEnablementPwsh;isOutput=true]true"
               else
-                echo "No changes detected in the ./src/000_rp_enablement folder pwsh files."
+                echo "No changes detected in the ./src/000-subscription folder pwsh files."
                 echo "##vso[task.setvariable variable=changesInRpEnablementPwsh;isOutput=true]false"
               fi
 
@@ -218,14 +218,14 @@ stages:
           name: ai-on-edge-managed-pool
           vmImage: ubuntu-latest
           demands: Agent.Name -equals $(Agent.Name)
-        # Check if the changeset includes 000_rp_enablement files and run if it does.
+        # Check if the changeset includes 000-subscription files and run if it does.
         condition: eq(dependencies.MatrixBuildFolderCheck.outputs['matrixBuildFolderCheckTask.changesInRpEnablementShell'], 'true')
         steps:
           - task: AzureCLI@2
             displayName: Azure CLI for Resource Provider Unregistration Script Test
             inputs:
               azureSubscription: "azdo-ai-for-edge-iac-for-edge"
-              workingDirectory: "$(System.DefaultWorkingDirectory)/src/000_rp_enablement"
+              workingDirectory: "$(System.DefaultWorkingDirectory)/src/000-subscription"
               scriptType: bash
               scriptLocation: inlineScript
               inlineScript: |
@@ -236,7 +236,7 @@ stages:
             displayName: Azure CLI for Resource Provider Registration Script Test
             inputs:
               azureSubscription: "azdo-ai-for-edge-iac-for-edge"
-              workingDirectory: "$(System.DefaultWorkingDirectory)/src/000_rp_enablement"
+              workingDirectory: "$(System.DefaultWorkingDirectory)/src/000-subscription"
               scriptType: bash
               scriptLocation: inlineScript
               inlineScript: |
@@ -255,7 +255,7 @@ stages:
         variables:
           testResultsOutput: '$(System.DefaultWorkingDirectory)/PWSH-TEST-RESULTS.xml'
         steps:
-          - powershell: ./.pipelines/subscripts/Invoke-Pester.ps1 -Path ./src/000_rp_enablement -OutputFile $(testResultsOutput)
+          - powershell: ./.pipelines/subscripts/Invoke-Pester.ps1 -Path ./src/000-subscription -OutputFile $(testResultsOutput)
             displayName: 'Run pester'
             workingDirectory: $(System.DefaultWorkingDirectory)
 
