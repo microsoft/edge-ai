@@ -1,0 +1,49 @@
+formatter: "markdown doc"
+
+recursive:
+  enabled: true
+
+header-from: main.tf
+
+content: |-
+  {{ .Header | default "# Terraform IaC" }}
+  {{- with .Requirements }}{{ println }}
+  {{ . }}
+  {{- end }}
+  {{- with .Providers }}{{ println }}
+  {{ . }}
+  {{- end }}
+  {{- with .Resources }}{{ println }}
+  {{ . }}
+  {{- end }}
+  {{- with .Modules }}{{ println }}
+  {{ . }}
+  {{- end }}
+  {{- with .Inputs }}{{ println }}
+  {{ . }}
+  {{- end }}
+  {{- with .Outputs }}{{ println }}
+  {{ . }}
+  {{- end }}
+
+output:
+  file: README.md
+  mode: replace
+  template: |-
+    <!-- BEGIN_TF_DOCS -->
+    {{ .Content }}
+    <!-- END_TF_DOCS -->{{ println }}
+
+sort:
+  enabled: true
+  by: required
+
+settings:
+  anchor: false
+  escape: true
+  hide-empty: true
+  html: false
+  lockfile: false
+  required: true
+  sensitive: true
+  type: true

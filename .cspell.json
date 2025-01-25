@@ -40,6 +40,7 @@
 		"connectedk8s",
 		"CUSTOMLOCATION",
 		"Entra",
+		"eventhub",
 		"Graeve",
 		"Infeed",
 		"Kalypso",
@@ -47,10 +48,10 @@
 		"Kyverno",
 		"Malkov",
 		"megalinter",
+		"mosquitto",
 		"NNPI",
 		"OID",
 		"Outfeed",
-		"mosquitto",
 		"OWASP",
 		"oxsecurity",
 		"PUBACK",
@@ -59,7 +60,8 @@
 		"Ritchie",
 		"secretsync",
 		"Siobhan",
-		"Strato"
+		"Strato",
+		"UAMI"
 	],
 	"dictionaryDefinitions": [
 		{
