@@ -60,6 +60,27 @@ function Move-CursorToFirstLine {
     Write-Host -NoNewline "`e[${numberOfLines}F"
 }
 
+function Get-RegisteredProvider {
+    # Get list of all registered azure resource providers
+    return az provider list --query "sort_by([?registrationState=='Registered'].{Provider:namespace}, &Provider)" --out tsv
+}
+
+function Register-Provider {
+    param (
+        [string]$provider
+    )
+    # Register the azure resource provider
+    az provider register --namespace $provider > $null 2>&1
+}
+
+function Show-Provider {
+    param (
+        [string]$provider
+    )
+    # Show the azure resource provider
+    return az provider show --namespace $provider --query "registrationState" --out tsv
+}
+
 if (-not (Test-Path $filePath)) {
     Write-Error "Providers file not found: $filePath"
     exit 1
@@ -86,7 +107,7 @@ if ($providers.Count -eq 0) {
 }
 
 # Get list of all registered azure resource providers
-$registeredProviders = az provider list --query "sort_by([?registrationState=='Registered'].{Provider:namespace}, &Provider)" --out tsv
+$registeredProviders = Get-RegisteredProvider
 
 # Build a sorted list of azure resource providers to register
 $sortedRequiredProviders = $providers.Keys | Sort-Object
@@ -97,7 +118,7 @@ foreach ($provider in $sortedRequiredProviders) {
 
     if ($registeredProviders -notcontains $provider) {
         Write-Host (Show-NotRegisteredState)
-        az provider register --namespace $provider > $null 2>&1
+        Register-Provider -provider $provider
     }
     else {
         Write-Host (Show-RegisteredState)
@@ -116,7 +137,7 @@ while ($notRegisteredCount -gt 0) {
             $state = "Registered"
         }
         else {
-            $state = az provider show --namespace $provider --query 'registrationState' --output tsv
+            $state = Show-Provider -provider $provider
         }
 
         Write-Host -NoNewline (Show-ProviderName -provider $provider)

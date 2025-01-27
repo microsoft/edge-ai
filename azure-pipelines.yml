@@ -9,9 +9,12 @@ trigger:
     include:
       - main
 
+# set isMain to true if the branch is main to trigger main stage
 variables:
   isMain: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
 
+# Define the default pool for the entire pipeline. This is a
+# Managed DevOps Pool with Ubuntu 2022 and WIndows 2022 agents
 pool:
   name: ai-on-edge-managed-pool
   vmImage: ubuntu-latest
@@ -30,6 +33,7 @@ stages:
           vmImage: ubuntu-latest
         steps:
           # Set the agent name as an output variable so the same agent runs all jobs
+          # Jobs that are using ubuntu-latest will use the same cached agent to improve performance
           - bash: |
               echo "##vso[task.setvariable variable=AgentName;isoutput=true]$(Agent.Name)"
             name: passOutputVar
@@ -45,6 +49,8 @@ stages:
 
       # Run MegaLinter to detect linting and security issues
       - job: MegaLinter
+        # Declare the job depends on the DependencyScan job to get the agent name
+        # set the agent name as a demand to ensure the same agent runs all tasks
         dependsOn: DependencyScan
         variables:
           AgentName: $[ dependencies.A.outputs['passOutput.AgentName'] ]
@@ -78,6 +84,7 @@ stages:
     # pool: string | pool
     # variables: { string: string } | [ variable | variableReference ]
     jobs:
+      # Assign an agent to the job from the build pool and set it as an output variable
       - job: AgentAssign
         steps:
           # Set the agent name as an output variable so the same agent runs all jobs
@@ -85,6 +92,9 @@ stages:
               echo "##vso[task.setvariable variable=AgentName;isoutput=true]$(Agent.Name)"
             name: passAgentNameOutput
 
+      # Run Dependency Scan based on the MSFT vss governance build task.
+      # A version of this task is also auto injected by corporate policy.
+      # It's declared here to make it explicit in the pipeline.
       - job: DependencyScan
         dependsOn: AgentAssign
         variables:
@@ -105,6 +115,8 @@ stages:
 
       # Run MegaLinter to detect linting and security issues
       - job: MegaLinter
+        # Declare the job depends on the AgentAssign job to get the agent name
+        # This should also only run if the DependencyScan job passes
         dependsOn:
           - AgentAssign
           - DependencyScan
@@ -119,6 +131,7 @@ stages:
           - checkout: self
 
           # Pull MegaLinter docker image
+          # Down the road this should be cached to improve performance
           - script: docker pull oxsecurity/megalinter:v7
             displayName: Pull MegaLinter
 
@@ -139,7 +152,7 @@ stages:
                 oxsecurity/megalinter:v7
             displayName: Run MegaLinter
 
-          # Upload MegaLinter reports
+          # Upload MegaLinter reports as artifacts
           - task: PublishPipelineArtifact@1
             condition: succeededOrFailed()
             displayName: Upload MegaLinter reports
@@ -147,6 +160,8 @@ stages:
               targetPath: "$(System.DefaultWorkingDirectory)/megalinter-reports/"
               artifactName: MegaLinterReport
 
+      # This job checks for changes in the src directory and runs specific
+      # tasks based on the changes it discovers. Primarily for bash, pwsh and terraform.
       - job: MatrixBuildFolderCheck
         displayName: Check for changes in src directory
         dependsOn:
@@ -159,14 +174,18 @@ stages:
           vmImage: ubuntu-latest
           demands: Agent.Name -equals $(Agent.Name)
         steps:
-          # Checkout repo
+          # Checkout repo and set fetchDepth to 0 to get all history
+          # In large codebases, this can be slow, but it's necessary to get all the history
           - checkout: self
             fetchDepth: "0"
 
           # Check for changes in the src directory
           - bash: |
               echo "Checking for changes in the ./src/000-subscription folder..."
+              # Get the list of changed files between the current branch and main
               changed_files=$(git diff --name-only --diff-filter=ACMRT origin/main...HEAD)
+
+              # check if shell files in subscription setup folder have changed
               if echo "$changed_files" | grep -q 'src/000-subscription/.*\.sh$'; then
                 echo "Changes detected in the ./src/000-subscription folder shell files."
                 echo "##vso[task.setvariable variable=changesInRpEnablementShell;isOutput=true]true"
@@ -175,7 +194,7 @@ stages:
                 echo "##vso[task.setvariable variable=changesInRpEnablementShell;isOutput=true]false"
               fi
 
-              # check if PWSH files in subscription have changed
+              # check if Pwsh files in subscription setup folder have changed
               if echo "$changed_files" | grep -q 'src/000-subscription/.*\.ps1$'; then
                 echo "Changes detected in the ./src/000-subscription folder pwsh files."
                 echo "##vso[task.setvariable variable=changesInRpEnablementPwsh;isOutput=true]true"
@@ -184,6 +203,32 @@ stages:
                 echo "##vso[task.setvariable variable=changesInRpEnablementPwsh;isOutput=true]false"
               fi
 
+              # Check if Terraform files, in any src directory that has tf files, have changed
+              # This command will create a JSON object with the first-level folder names as keys
+              # which will be used to create a matrix of jobs to run Terraform tasks for each folder
+              # see the Azure DevOps documentation for more information on matrix jobs using JSON objects
+              # https://learn.microsoft.com/azure/devops/pipelines/yaml-schema/jobs-job-strategy?view=azure-pipelines#remarks
+              # This will output a JSON object as follows:
+              # {
+              #   "005-onboard-reqs": {
+              #     "folderName": "005-onboard-reqs"
+              #   },
+              #   "010-vm-host": {
+              #     "folderName": "010-vm-host"
+              #   },
+              #   "020-cncf-cluster": {
+              #     "folderName": "020-cncf-cluster"
+              #   },
+              #   "030-iot-ops-cloud-reqs": {
+              #     "folderName": "030-iot-ops-cloud-reqs"
+              #   },
+              #   "040-iot-ops": {
+              #     "folderName": "040-iot-ops"
+              #   },
+              #   "050-messaging": {
+              #     "folderName": "050-messaging"
+              #   }
+              # }
               echo "Checking for changes in the first-level folders under src with .tf, .tfvars, .tfstate, or .hcl file changes..."
               changed_tf_folders=$(echo "$changed_files" |  # Get the list of changed files
                 grep -E 'src/[^/]+/.*\.(tf|tfvars|tfstate|hcl)$' |  # Filter for .tf, .tfvars, .tfstate, or .hcl files in src directory
@@ -208,6 +253,7 @@ stages:
             displayName: Check for changes in src folders
             name: matrixBuildFolderCheckTask
 
+      # Job to run shell script tests for the resource providers if they have changed
       - job: ResourceProviderShellScriptTest
         dependsOn:
           - AgentAssign
@@ -232,6 +278,7 @@ stages:
                 echo "uninstalling azure providers"
                 ./unregister-azure-providers.sh aio-azure-resource-providers.txt
                 echo "uninstalled azure providers"
+
           - task: AzureCLI@2
             displayName: Azure CLI for Resource Provider Registration Script Test
             inputs:
@@ -244,6 +291,7 @@ stages:
                 ./register-azure-providers.sh aio-azure-resource-providers.txt
                 echo "installed azure providers"
 
+      # Job to run Pwsh script tests for the resource providers if they have changed
       - job: ResourceProviderPWSHScriptTest
         dependsOn:
           - MegaLinter
@@ -255,10 +303,12 @@ stages:
         variables:
           testResultsOutput: '$(System.DefaultWorkingDirectory)/PWSH-TEST-RESULTS.xml'
         steps:
+          # Run Pester tests for the resource provider scripts
           - powershell: ./.pipelines/subscripts/Invoke-Pester.ps1 -Path ./src/000-subscription -OutputFile $(testResultsOutput)
             displayName: 'Run pester'
             workingDirectory: $(System.DefaultWorkingDirectory)
 
+          # Publish the Pester test results
           - task: PublishTestResults@2
             displayName: Publish Test Results
             inputs:
@@ -268,6 +318,8 @@ stages:
               testResultsFiles: '$(testResultsOutput)'
               failTaskOnFailedTests: true
 
+      # Job to run Terraform install, init, provider version checks, plan,
+      # and tests for the changed TF folders
       - job: TerraformClusterTest
         dependsOn:
           - AgentAssign
@@ -283,6 +335,11 @@ stages:
         strategy:
           matrix:
             # Dynamically create a job for each folder in the changedTFFolders variable
+            # there is some magic here as the changedTFFolders variable is a JSON object
+            # Azure Pipeline strategy matrix can automatically parse JSON objects into
+            # an enumerated matrix of values. This will create a $folderName variable
+            # that can be used in the job steps to reference the current TF folder name
+            # being processed.
             $[ dependencies.MatrixBuildFolderCheck.outputs['matrixBuildFolderCheckTask.changedTFFolders'] ]
           maxParallel: 1
 
@@ -293,7 +350,7 @@ stages:
             inputs:
               terraformVersion: latest
 
-          # Run terraform init
+          # Run terraform init with the established service connection in AzDO Pipeline config
           - task: TerraformCLI@1
             displayName: "Terraform Init"
             inputs:
@@ -313,7 +370,7 @@ stages:
               # azure blob file name
               backendAzureRmKey: infrax.tfstate
 
-          # Check version and output issue if needed
+          # Check TF Provider versions for this folder and output build warnings if issues are detected
           - task: AzureCLI@2
             displayName: "Terraform Provider version check"
             inputs:
@@ -322,11 +379,36 @@ stages:
               scriptType: bash
               scriptLocation: inlineScript
               inlineScript: |
+                # Call TF version command and parse the output
                 version_data=$(terraform version -json)
                 echo "$version_data" | jq .
+                # set outdated if there is a global TF update available
                 outdated=$(echo "$version_data" | jq -r '.terraform_outdated')
-                provider_details=$(echo "$version_data" | jq -r '.provider_selections | to_entries[] | "\(.key) \(.key | split("/") | .[1]) \(.key | split("/") | .[2]) \(.value)"')
+                # Parse the provider selections and build an array to check for updates
+                # This section will parse the provider subobject and extract the provider name
+                # and version.
+                # example object:
+                # {
+                #  "terraform_version": "1.10.5",
+                #  "platform": "linux_amd64",
+                #  "provider_selections": {
+                #    "registry.terraform.io/hashicorp/azuread": "3.1.0",
+                #    "registry.terraform.io/hashicorp/azurerm": "4.16.0",
+                #    "registry.terraform.io/hashicorp/random": "3.6.3"
+                #  },
+                #  "terraform_outdated": false
+                # }
+                provider_details=$(echo "$version_data" | jq -r '
+                  .provider_selections |
+                  to_entries[] |
+                  "\(.key) \
+                  \(.key | split("/") | .[1]) \
+                  \(.key | split("/") | .[2]) \
+                  \(.value)"
+                ')
 
+                # Loop through the provider details and check for updates
+                # by calling the tf registry API and comparing the versions
                 while IFS= read -r line; do
                   registry=$(echo "$line" | awk '{print $1}')
                   source=$(echo "$line" | awk '{print $2}')
@@ -338,18 +420,22 @@ stages:
                   # Check versions
                   latest_version=$(echo "$response" | jq -r '.versions[].version' | sort -V | tail -n 1)
                   if [ "$(printf '%s\n' "$version" "$latest_version" | sort -V | tail -n 1)" != "$version" ]; then
+                    # Log a build warning if the provider version is outdated
                     echo "##vso[task.logissue type=warning]A newer version ($latest_version) is available for provider $provider from $source. Specified version: $version."
                   else
                     echo "Terraform provider: $provider version is up to date."
                   fi
                 done <<< "$provider_details"
 
+                # If the global TF version is outdated, log a build warning
                 if [ "$outdated" = "true" ]; then
                   echo "##vso[task.logissue type=warning]Terraform version is outdated."
                 else
                   echo "Terraform version is up to date."
                 fi
 
+          # Run Terraform Validate to ensure the TF files are valid
+          # break if validation fails
           - task: TerraformCLI@1
             displayName: "Terraform Validate"
             inputs:
@@ -378,6 +464,7 @@ stages:
                     command_options="$command_options -var ${var_name,,}=${!env_var}"
                   fi
                 done
+                # secretes will be automatically masked by AzDO
                 echo $command_options
               fi
               echo "##vso[task.setvariable variable=commandOptions;isOutput=true]$command_options"
@@ -392,8 +479,16 @@ stages:
               workingDirectory: $(System.DefaultWorkingDirectory)/src/$(folderName)/terraform/
               runAzLogin: true
               environmentServiceName: "azdo-ai-for-edge-iac-for-edge"
+              # this publish will drive the Terraform Plan UI on each build
               publishPlanResults: "$(folderName) - Terraform Test Plan"
               commandOptions: $(parseVariables.commandOptions)
+
+          # Publish the Terraform Plan as an official build artifact for downloading
+          - task: PublishBuildArtifacts@1
+            displayName: 'Publish Artifact: $(folderName) Terraform Plan'
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)/$(Build.Buildnumber).$(folderName).tfplan'
+              ArtifactName: 'TerraformPlan'
 
           # Terraform Test Command
           # This is not yet implemented, tracking here: https://github.com/jason-johnson/azure-pipelines-tasks-terraform/issues/398
@@ -405,9 +500,9 @@ stages:
           #     workingDirectory: $(System.DefaultWorkingDirectory)/src/$(folderName)/terraform/tests"
           #     commandOptions: "-filter=cluster.tftest.hcl"
 
+          # Run Terraform Test command using the Azure CLI
           # NOTE: For this task to work it needs the subscription id set for the AzureAD provider
           # beyond the integrated MSI.
-
           - task: AzureCLI@2
             name: TerraformTest
             displayName: Azure CLI for Terraform CLI test run
@@ -419,14 +514,17 @@ stages:
               inlineScript: |
                 # Export the ARM subscription ID so Terraform tests can be executed
                 export ARM_SUBSCRIPTION_ID=$(SUBSCRIPTION_ID)
+
                 # Define the log file from the test output to read up
                 log_file="$(System.DefaultWorkingDirectory)/$(folderName)_test_output.log"
                 echo "Writing Terraform test output to $log_file"
-                # run TF tests
+
+                # run TF tests and push results to log file
                 terraform test -json -var custom_locations_oid=$(TF_VAR_CUSTOM_LOCATIONS_OID) > $log_file
                 unset ARM_SUBSCRIPTION_ID
 
                 # Read each line of the log file and extract the @timestamp and @message fields
+                # this will be output to console in the build system
                 while IFS= read -r line; do
                   echo "$line" | jq -r '"\(.["@timestamp"]) .... \(.["@message"])"'
                 done < "$log_file"
@@ -440,22 +538,31 @@ stages:
                   exit 1
                 fi
 
+          # Need to use an external tool to convert the Terraform test output to JUnit XML
+          # This tool is available as an NPM package and can be installed and run in the pipeline
+          # But it requires Node.js to be installed on the agent
           - task: UseNode@1
             inputs:
               version: '22.x'
             condition: always()
 
+          # Install the tftest-to-junitxml NPM package
           # https://github.com/Liam-Johnston/tftest-to-junitxml
           - script: |
               npm install -g tftest-to-junitxml
             displayName: 'Install tftest-to-junitxml'
             condition: always()
 
+          # Call the tool to convert the Terraform test output to JUnit XML
           - script: |
               npx tftest-to-junitxml "$(System.DefaultWorkingDirectory)/$(folderName)_test_output.log"
             displayName: 'Convert Terraform test output to JUnit XML'
             condition: always()
 
+          # Publish the Terraform test results as a build artifact to drive
+          # the Test Results UI on each build. These will be merged with the
+          # Pester Tests and other test results in the pipeline, but are
+          # discretely visible in the Test Results UI.
           - task: PublishTestResults@2
             displayName: Publish Test Results
             inputs:
