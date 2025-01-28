@@ -84,25 +84,13 @@ stages:
     # pool: string | pool
     # variables: { string: string } | [ variable | variableReference ]
     jobs:
-      # Assign an agent to the job from the build pool and set it as an output variable
-      - job: AgentAssign
-        steps:
-          # Set the agent name as an output variable so the same agent runs all jobs
-          - bash: |
-              echo "##vso[task.setvariable variable=AgentName;isoutput=true]$(Agent.Name)"
-            name: passAgentNameOutput
-
       # Run Dependency Scan based on the MSFT vss governance build task.
       # A version of this task is also auto injected by corporate policy.
       # It's declared here to make it explicit in the pipeline.
       - job: DependencyScan
-        dependsOn: AgentAssign
-        variables:
-          AgentName: $[ dependencies.AgentAssign.outputs['agentNameScript.AgentName'] ]
         pool:
           name: ai-on-edge-managed-pool
           vmImage: ubuntu-latest
-          demands: Agent.Name -equals $(Agent.Name)
         steps:
           # Checkout repo
           - checkout: self
@@ -115,17 +103,12 @@ stages:
 
       # Run MegaLinter to detect linting and security issues
       - job: MegaLinter
-        # Declare the job depends on the AgentAssign job to get the agent name
         # This should also only run if the DependencyScan job passes
         dependsOn:
-          - AgentAssign
           - DependencyScan
-        variables:
-          AgentName: $[ dependencies.AgentAssign.outputs['agentNameScript.AgentName'] ]
         pool:
           name: ai-on-edge-managed-pool
           vmImage: ubuntu-latest
-          demands: Agent.Name -equals $(Agent.Name)
         steps:
           # Checkout repo
           - checkout: self
@@ -160,19 +143,58 @@ stages:
               targetPath: "$(System.DefaultWorkingDirectory)/megalinter-reports/"
               artifactName: MegaLinterReport
 
+      # Run Terraform documentation check to prompt committer to update
+      # auto-generated documentation if changes are detected
+      - job: TerrformDocsCheck
+        dependsOn:
+          - MegaLinter
+        pool:
+          name: ai-on-edge-managed-pool
+          vmImage: ubuntu-latest
+        steps:
+          # Checkout repo
+          - checkout: self
+
+          - bash: |
+              # Install terraform-docs
+              curl -sSL https://github.com/terraform-docs/terraform-docs/releases/download/v0.16.0/terraform-docs-v0.16.0-linux-amd64.tar.gz | tar -xz -C /usr/local/bin
+
+              # Ensure Terraform Docs update script is set to executable (just in case)
+              chmod +x $(System.DefaultWorkingDirectory)/src/update-all-terraform-docs.sh
+
+              # Run documentation update Terrform
+              $(System.DefaultWorkingDirectory)/src/update-all-terraform-docs.sh
+
+              # Check for changes in README.md files
+              changed_files=$(git diff --name-only HEAD~1 HEAD)
+              readme_changed=false
+              for file in $changed_files; do
+                if [[ $file == src/*/README.md ]]; then
+                  echo "README.md changed: $(System.DefaultWorkingDirectory)/$file"
+                  readme_changed=true
+                fi
+              done
+
+              # Check if there are any changes in the Terraform documentation
+              if [ "$readme_changed" = true ]; then
+                echo "Updates are required for Terraform documentation."
+                echo "Please go into the project's src directory, run the update-all-terraform-docs.sh script, and commit changes."
+                echo "##vso[task.logissue type=error]Terraform auto-gen documentation needs to be updated. Please run the update-all-terraform-docs.sh script and commit the changes."
+                exit 1
+              else
+                echo "No updates detected in the Terraform documentation."
+              fi
+            workingDirectory: $(System.DefaultWorkingDirectory)
+
       # This job checks for changes in the src directory and runs specific
       # tasks based on the changes it discovers. Primarily for bash, pwsh and terraform.
       - job: MatrixBuildFolderCheck
         displayName: Check for changes in src directory
         dependsOn:
-          - AgentAssign
-          - MegaLinter
-        variables:
-          AgentName: $[ dependencies.AgentAssign.outputs['agentNameScript.AgentName'] ]
+          - TerrformDocsCheck
         pool:
           name: ai-on-edge-managed-pool
           vmImage: ubuntu-latest
-          demands: Agent.Name -equals $(Agent.Name)
         steps:
           # Checkout repo and set fetchDepth to 0 to get all history
           # In large codebases, this can be slow, but it's necessary to get all the history
@@ -256,14 +278,10 @@ stages:
       # Job to run shell script tests for the resource providers if they have changed
       - job: ResourceProviderShellScriptTest
         dependsOn:
-          - AgentAssign
           - MatrixBuildFolderCheck
-        variables:
-          AgentName: $[ dependencies.AgentAssign.outputs['agentNameScript.AgentName'] ]
         pool:
           name: ai-on-edge-managed-pool
           vmImage: ubuntu-latest
-          demands: Agent.Name -equals $(Agent.Name)
         # Check if the changeset includes 000-subscription files and run if it does.
         condition: eq(dependencies.MatrixBuildFolderCheck.outputs['matrixBuildFolderCheckTask.changesInRpEnablementShell'], 'true')
         steps:
@@ -322,15 +340,11 @@ stages:
       # and tests for the changed TF folders
       - job: TerraformClusterTest
         dependsOn:
-          - AgentAssign
           - MegaLinter
           - MatrixBuildFolderCheck
-        variables:
-          AgentName: $[ dependencies.AgentAssign.outputs['agentNameScript.AgentName'] ]
         pool:
           name: ai-on-edge-managed-pool
           vmImage: ubuntu-latest
-          demands: Agent.Name -equals $(Agent.Name)
         condition: eq(dependencies.MatrixBuildFolderCheck.outputs['matrixBuildFolderCheckTask.changesInInstall'], 'true')
         strategy:
           matrix:

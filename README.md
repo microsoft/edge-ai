@@ -36,12 +36,12 @@ nearly any operational model, from small, single machine systems, to orchestrate
 The project uses a decimal system to organize IaC, scripts, and supplementary resources, which can be collated in myriad ways to meet operational requirements:
 
 1. [(000)](./src/000-subscription/README.md) Run-once scripts for Arc & AIO resource provider enablement in subscriptions, if necessary
-2. (005) Resource Groups, Site Management (optional), Role assignments/permissions for Arc onboarding
-3. [(010)](./src/010-vm-host/terraform/README.md) VM/host provisioning, with configurable host operating system (initially limited to Ubuntu)
-4. [(020)](./src/010-vm-host/terraform/README.md) Installation of a CNCF cluster that is AIO compatible (initially limited to K3s) and Arc enablement of target clusters, workload identity, and OTEL collector
-5. [(030)](./src/010-vm-host/terraform/README.md) Cloud resource provisioning for Azure Key Vault, Storage Accounts, Container Registry, and User Assigned Managed Identity
-6. [(040)](./src/040-iot-ops/terraform/README.md) AIO deployment of core infrastructure components (MQ Broker, Edge Storage Accelerator, Data Flow, Secretes Sync Controller, Workload Identity Federation, and Schema Registry)
-7. (050) Cloud resource provisioning for cloud communication (MQTT protocol head for Event Grid (topic spaces, topics and cert-based authentication), Event Hubs, Service Bus, Relay, etc.)
+2. [(005)](./src/005-onboard-reqs/README.md) Resource Groups, Site Management (optional), Role assignments/permissions for Arc onboarding
+3. [(010)](./src/010-vm-host/README.md) VM/host provisioning, with configurable host operating system (initially limited to Ubuntu)
+4. [(020)](./src/020-cncf-cluster/README.md) Installation of a CNCF cluster that is AIO compatible (initially limited to K3s) and Arc enablement of target clusters, enable workload identity
+5. [(030)](./src/030-iot-ops-cloud-reqs/README.md) Cloud resource provisioning for Azure Key Vault, Schema Registry, Storage Accounts, Container Registry, and User Assigned Managed Identity
+6. [(040)](./src/040-iot-ops/README.md) AIO deployment of core infrastructure components (MQ Broker, Edge Storage Accelerator, Secrets Sync Controller, Workload Identity Federation, OpenTelemetry Collector, OPC UA simulator)
+7. [(050)](./src/050-messaging/README.md) Cloud resource provisioning for cloud communication (MQTT protocol head for Event Grid (topic spaces, topics and cert-based authentication), Event Hubs, Service Bus, Relay, etc.)
 8. (060) Cloud resource provisioning for data/event storage (Fabric by means of RTI, Data Lakes, Warehouses, etc.)
 9. (070) Cloud resource provisioning for Azure Monitor and Container Insights
 10. (080) AIO deployment of additionally selected components (OTEL Collector (Phase 2), OPC UA, AKRI, Strato, FluxCD/Argo)
