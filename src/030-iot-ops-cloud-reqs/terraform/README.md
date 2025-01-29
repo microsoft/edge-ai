@@ -30,7 +30,7 @@ The following providers are used by this module:
 The following resources are used by this module:
 
 - [terraform_data.defer](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data) (resource)
-- [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/resource_group) (data source)
+- [azurerm_resource_group.aio_rg](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/resource_group) (data source)
 
 ## Modules
 
@@ -45,6 +45,12 @@ Version:
 ### sse\_key\_vault
 
 Source: ./modules/sse-key-vault
+
+Version:
+
+### uami
+
+Source: ./modules/uami
 
 Version:
 
@@ -76,7 +82,7 @@ The following input variables are optional (have default values):
 
 ### existing\_key\_vault\_name
 
-Description: Name of the Azure Key Vault to use by Secret Sync Extension. If not provided, will create new key vault. Will fail if key vault does not exist in provided resource group.
+Description: Name of the Azure Key Vault to use by Secret Sync Extension. If not provided, will create new key vault. Will fail if provided key vault does not exist in provided resource group.
 
 Type: `string`
 
@@ -102,15 +108,19 @@ Default: `null`
 
 The following outputs are exported:
 
+### aio\_uami\_name
+
+Description: n/a
+
 ### schema\_registry\_id
 
 Description: n/a
 
-### sse\_key\_vault\_id
+### sse\_key\_vault\_name
 
 Description: n/a
 
-### sse\_key\_vault\_name
+### sse\_uami\_name
 
 Description: n/a
 <!-- END_TF_DOCS -->

@@ -5,14 +5,8 @@ run "setup_tests" {
   }
 }
 
-# Import the mock provider
-mock_provider "azurerm" {
-  source = "./tests/mock"
-}
-
 # Apply run block to create the cluster
 run "create_default_cluster" {
-
   command = plan
   variables {
     resource_prefix = run.setup_tests.resource_prefix

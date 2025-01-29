@@ -8,7 +8,7 @@
 
 locals {
   connected_cluster_name     = coalesce(var.connected_cluster_name, "${var.resource_prefix}-arc")
-  arc_connected_cluster_id   = "${data.azurerm_resource_group.this.id}/providers/Microsoft.Kubernetes/connectedClusters/${local.connected_cluster_name}"
+  arc_connected_cluster_id   = "${data.azurerm_resource_group.aio_rg.id}/providers/Microsoft.Kubernetes/connectedClusters/${local.connected_cluster_name}"
   connected_cluster_location = coalesce(var.connected_cluster_location, var.location)
 
   # Hard-coding the values for CustomerManagedGenerateIssuer trust resources, these values are not configurable
@@ -32,8 +32,8 @@ locals {
   }]
 
   resource_group = {
-    id   = data.azurerm_resource_group.this.id
-    name = data.azurerm_resource_group.this.name
+    id   = data.azurerm_resource_group.aio_rg.id
+    name = data.azurerm_resource_group.aio_rg.name
   }
   key_vault = {
     name = data.azurerm_key_vault.sse_key_vault.name
@@ -56,24 +56,29 @@ resource "terraform_data" "defer" {
   }
 }
 
-data "azurerm_resource_group" "this" {
+data "azurerm_resource_group" "aio_rg" {
   name = terraform_data.defer.output.resource_group_name
 }
 
 data "azurerm_key_vault" "sse_key_vault" {
   name                = coalesce(var.existing_key_vault_name, "${var.resource_prefix}-kv")
-  resource_group_name = data.azurerm_resource_group.this.name
+  resource_group_name = data.azurerm_resource_group.aio_rg.name
 }
 
 data "azurerm_user_assigned_identity" "sse_uami" {
-  name                = coalesce(var.sse_uami_name, "${var.resource_prefix}-sse-umi")
-  resource_group_name = data.azurerm_resource_group.this.name
+  name                = coalesce(var.sse_uami_name, "${var.resource_prefix}-sse-uami")
+  resource_group_name = data.azurerm_resource_group.aio_rg.name
+}
+
+data "azurerm_user_assigned_identity" "aio_uami" {
+  name                = coalesce(var.aio_uami_name, "${var.resource_prefix}-aio-uami")
+  resource_group_name = data.azurerm_resource_group.aio_rg.name
 }
 
 data "azapi_resource" "schema_registry" {
   type      = "Microsoft.DeviceRegistry/schemaRegistries@2024-09-01-preview"
   name      = coalesce(var.schema_registry_name, "${var.resource_prefix}-registry")
-  parent_id = data.azurerm_resource_group.this.id
+  parent_id = data.azurerm_resource_group.aio_rg.id
 
 }
 
@@ -134,7 +139,7 @@ module "apply_scripts_post_init" {
 
   aio_namespace          = var.operations_config.namespace
   connected_cluster_name = local.connected_cluster_name
-  resource_group_name    = data.azurerm_resource_group.this.name
+  resource_group_name    = data.azurerm_resource_group.aio_rg.name
 }
 
 ###
@@ -145,7 +150,7 @@ module "iot_ops_instance" {
   source     = "./modules/iot-ops-instance"
   depends_on = [module.apply_scripts_post_init]
 
-  resource_group_id                 = data.azurerm_resource_group.this.id
+  resource_group_id                 = data.azurerm_resource_group.aio_rg.id
   arc_connected_cluster_id          = local.arc_connected_cluster_id
   connected_cluster_location        = local.connected_cluster_location
   connected_cluster_name            = local.connected_cluster_name
@@ -159,6 +164,7 @@ module "iot_ops_instance" {
   secret_store_cluster_extension_id = module.iot_ops_init.secret_store_extension_cluster_id
   platform_cluster_extension_id     = module.iot_ops_init.platform_cluster_extension_id
   enable_otel_collector             = var.enable_otel_collector
+  aio_uami_id                       = data.azurerm_user_assigned_identity.aio_uami.id
 }
 
 ###
@@ -169,14 +175,15 @@ module "iot_ops_instance_post" {
   source     = "./modules/iot-ops-instance-post"
   depends_on = [module.iot_ops_instance]
 
-  resource_group              = local.resource_group
-  connected_cluster_location  = local.connected_cluster_location
-  connected_cluster_name      = local.connected_cluster_name
-  key_vault                   = local.key_vault
-  sse_user_managed_identity   = local.sse_uami
-  enable_instance_secret_sync = var.enable_instance_secret_sync
-  custom_location_id          = module.iot_ops_instance.custom_location_id
-  aio_namespace               = var.operations_config.namespace
+  resource_group               = local.resource_group
+  connected_cluster_location   = local.connected_cluster_location
+  connected_cluster_name       = local.connected_cluster_name
+  key_vault                    = local.key_vault
+  enable_instance_secret_sync  = var.enable_instance_secret_sync
+  custom_location_id           = module.iot_ops_instance.custom_location_id
+  aio_namespace                = var.operations_config.namespace
+  sse_user_managed_identity    = local.sse_uami
+  aio_user_managed_identity_id = data.azurerm_user_assigned_identity.aio_uami.id
 }
 
 module "opc_ua_simulator" {

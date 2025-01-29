@@ -22,32 +22,39 @@ resource "terraform_data" "defer" {
   }
 }
 
-data "azurerm_resource_group" "this" {
+data "azurerm_resource_group" "aio_rg" {
   name = terraform_data.defer.output.resource_group_name
+}
+
+data "azurerm_user_assigned_identity" "aio_uami" {
+  name                = coalesce(var.aio_uami_name, "${var.resource_prefix}-aio-uami")
+  resource_group_name = data.azurerm_resource_group.aio_rg.name
 }
 
 data "azapi_resource" "custom_locations" {
   type      = "Microsoft.ExtendedLocation/customLocations@2021-08-31-preview"
   name      = local.custom_locations_name
-  parent_id = data.azurerm_resource_group.this.id
+  parent_id = data.azurerm_resource_group.aio_rg.id
 }
 
 module "event_hubs" {
   source = "./modules/event-hubs"
 
-  connected_cluster_name = local.connected_cluster_name
-  resource_prefix        = var.resource_prefix
-  resource_group_name    = data.azurerm_resource_group.this.name
-  aio_extension_name     = var.iot_ops_k8s_extension_name
+  resource_prefix       = var.resource_prefix
+  resource_group_name   = data.azurerm_resource_group.aio_rg.name
+  location              = data.azurerm_resource_group.aio_rg.location
+  aio_uami_principal_id = data.azurerm_user_assigned_identity.aio_uami.principal_id
 }
 
 module "sample_event_hub_dataflow" {
   source = "./modules/event-hub-dataflow"
 
   resource_prefix    = var.resource_prefix
-  resource_group_id  = data.azurerm_resource_group.this.id
+  resource_group_id  = data.azurerm_resource_group.aio_rg.id
   custom_location_id = data.azapi_resource.custom_locations.id
   aio_instance_name  = local.iot_ops_instance_name
   event_hub          = module.event_hubs.event_hub
   asset_name         = var.asset_name
+  aio_uami_tenant_id = data.azurerm_user_assigned_identity.aio_uami.tenant_id
+  aio_uami_client_id = data.azurerm_user_assigned_identity.aio_uami.client_id
 }

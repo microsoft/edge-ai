@@ -20,7 +20,7 @@ resource "terraform_data" "defer" {
   }
 }
 
-data "azurerm_resource_group" "this" {
+data "azurerm_resource_group" "aio_rg" {
   name = terraform_data.defer.output.resource_group_name
 }
 
@@ -31,14 +31,14 @@ data "azurerm_user_assigned_identity" "arc_onboarding" {
     var.arc_onboarding_user_managed_identity_name,
     "${var.resource_prefix}-arc-aio-mi"
   )
-  resource_group_name = data.azurerm_resource_group.this.name
+  resource_group_name = data.azurerm_resource_group.aio_rg.name
 }
 
 ### Create Virtual Edge Device ###
 
 resource "azurerm_public_ip" "aio_edge" {
   name                = "${local.label_prefix}-ip"
-  resource_group_name = data.azurerm_resource_group.this.name
+  resource_group_name = data.azurerm_resource_group.aio_rg.name
   location            = var.location
   allocation_method   = "Static"
   sku                 = "Basic"
@@ -47,19 +47,19 @@ resource "azurerm_public_ip" "aio_edge" {
 
 resource "azurerm_network_security_group" "aio_edge" {
   name                = "${local.label_prefix}-nsg"
-  resource_group_name = data.azurerm_resource_group.this.name
+  resource_group_name = data.azurerm_resource_group.aio_rg.name
   location            = var.location
 }
 
 resource "azurerm_virtual_network" "aio_edge" {
   name                = "${local.label_prefix}-vnet"
   location            = var.location
-  resource_group_name = data.azurerm_resource_group.this.name
+  resource_group_name = data.azurerm_resource_group.aio_rg.name
   address_space       = ["10.0.0.0/16"]
 }
 
 resource "azurerm_subnet" "aio_edge" {
-  resource_group_name  = data.azurerm_resource_group.this.name
+  resource_group_name  = data.azurerm_resource_group.aio_rg.name
   virtual_network_name = azurerm_virtual_network.aio_edge.name
   name                 = "${local.label_prefix}-subnet"
   address_prefixes     = ["10.0.1.0/24"]
@@ -73,7 +73,7 @@ resource "azurerm_subnet_network_security_group_association" "aio_edge" {
 resource "azurerm_network_interface" "aio_edge" {
   name                = "${local.label_prefix}-nic"
   location            = var.location
-  resource_group_name = data.azurerm_resource_group.this.name
+  resource_group_name = data.azurerm_resource_group.aio_rg.name
 
   ip_configuration {
     name                          = "${local.label_prefix}-ipconfig"
@@ -96,7 +96,7 @@ resource "local_sensitive_file" "ssh" {
 resource "azurerm_linux_virtual_machine" "aio_edge" {
   name                            = "${local.label_prefix}-vm"
   location                        = var.location
-  resource_group_name             = data.azurerm_resource_group.this.name
+  resource_group_name             = data.azurerm_resource_group.aio_rg.name
   admin_username                  = local.vm_username
   disable_password_authentication = true
   admin_ssh_key {

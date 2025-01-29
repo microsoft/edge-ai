@@ -5,29 +5,6 @@ run "setup_tests" {
   }
 }
 
-mock_provider "azurerm" {
-  mock_data "azurerm_resource_group" {
-    defaults = {
-      name = "test_name"
-      id   = "/subscriptions/00000000-0000-0000-0000-000000000000"
-    }
-  }
-  mock_data "azurerm_subscription" {
-    defaults = {
-      id = "/subscriptions/00000000-0000-0000-0000-000000000000"
-    }
-  }
-  mock_data "azurerm_user_assigned_identity" {
-    defaults = {
-      id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/example-resource-group/providers/Microsoft.ManagedIdentity/userAssignedIdentities/userAssignedIdentityValue"
-      output = {
-        principalId = "test_principal_id"
-      }
-    }
-    
-  }
-}
-
 # Apply run block to create the cluster
 run "create_default_vm" {
 

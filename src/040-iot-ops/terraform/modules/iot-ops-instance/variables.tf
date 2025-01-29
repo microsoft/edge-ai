@@ -13,7 +13,6 @@ variable "arc_connected_cluster_id" {
   description = "The resource ID of the connected cluster to deploy Azure IoT Operations Platform to"
 }
 
-
 variable "connected_cluster_location" {
   type        = string
   description = "The location of the connected cluster resource"
@@ -92,4 +91,9 @@ variable "platform_cluster_extension_id" {
 variable "enable_otel_collector" {
   type        = bool
   description = "Deploy the OpenTelemetry Collector and Azure Monitor ConfigMap (optionally used)"
+}
+
+variable "aio_uami_id" {
+  type        = string
+  description = "The principal ID of the User Assigned Managed Identity for the Azure IoT Operations instance"
 }

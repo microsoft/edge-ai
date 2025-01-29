@@ -128,7 +128,13 @@ variable "enable_otel_collector" {
 
 variable "sse_uami_name" {
   type        = string
-  description = "The name of the User Assigned Managed Identity that was federated for Secret Sync Extension. (Otherwise, '{var.resource_prefix}-sse-umi'"
+  description = "The name of the User Assigned Managed Identity that was federated for Secret Sync Extension. (Otherwise, '{var.resource_prefix}-sse-uami'"
+  default     = null
+}
+
+variable "aio_uami_name" {
+  type        = string
+  description = "The name of the User Assigned Managed Identity for the Azure IoT Operations instance. (Otherwise, '{var.resource_prefix}-aio-uami')"
   default     = null
 }
 

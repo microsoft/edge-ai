@@ -31,3 +31,13 @@ variable "asset_name" {
   type        = string
   description = "The name of the Event Hub namespace"
 }
+
+variable "aio_uami_tenant_id" {
+  type        = string
+  description = "Tenant ID of the User Assigned Managed Identity for the Azure IoT Operations instance"
+}
+
+variable "aio_uami_client_id" {
+  type        = string
+  description = "Client ID of the User Assigned Managed Identity for the Azure IoT Operations instance"
+}

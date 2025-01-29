@@ -17,7 +17,7 @@ resource "terraform_data" "defer" {
   }
 }
 
-data "azurerm_resource_group" "this" {
+data "azurerm_resource_group" "aio_rg" {
   name = terraform_data.defer.output.resource_group_name
 }
 
@@ -25,7 +25,7 @@ module "schema_registry" {
   source = "./modules/schema-registry"
 
   location            = var.location
-  resource_group_name = data.azurerm_resource_group.this.name
+  resource_group_name = data.azurerm_resource_group.aio_rg.name
   resource_prefix     = var.resource_prefix
 }
 
@@ -33,7 +33,16 @@ module "sse_key_vault" {
   source = "./modules/sse-key-vault"
 
   location                = var.location
-  resource_group_name     = data.azurerm_resource_group.this.name
+  resource_group_name     = data.azurerm_resource_group.aio_rg.name
   resource_prefix         = var.resource_prefix
   existing_key_vault_name = var.existing_key_vault_name
+}
+
+module "uami" {
+  source = "./modules/uami"
+
+  location            = var.location
+  resource_group_name = data.azurerm_resource_group.aio_rg.name
+  resource_prefix     = var.resource_prefix
+  key_vault_id        = module.sse_key_vault.key_vault.id
 }

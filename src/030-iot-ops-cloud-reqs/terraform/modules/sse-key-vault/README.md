@@ -1,7 +1,7 @@
 <!-- BEGIN_TF_DOCS -->
 # Azure Key Vault for Secret Sync Extension
 
-Create or use and existing a Key Vault and configure it for use by Secret Sync Extension
+Create or use and existing a Key Vault for Secret Sync Extension
 
 ## Requirements
 
@@ -20,10 +20,6 @@ The following providers are used by this module:
 The following resources are used by this module:
 
 - [azurerm_key_vault.new](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault) (resource)
-- [azurerm_role_assignment.umi_key_vault_reader](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
-- [azurerm_role_assignment.umi_key_vault_secrets_user](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
-- [azurerm_role_assignment.user_key_vault_secrets_officer](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
-- [azurerm_user_assigned_identity.user_managed_identity_secret_sync](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/user_assigned_identity) (resource)
 - [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/client_config) (data source)
 - [azurerm_key_vault.existing](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/key_vault) (data source)
 
@@ -60,10 +56,6 @@ Type: `string`
 The following outputs are exported:
 
 ### key\_vault
-
-Description: n/a
-
-### sse\_user\_managed\_identity
 
 Description: n/a
 <!-- END_TF_DOCS -->

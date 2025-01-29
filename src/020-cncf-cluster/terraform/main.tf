@@ -31,18 +31,18 @@ data "azuread_service_principal" "custom_locations" {
   client_id = "bc313c14-388c-4e7d-a58e-70017303ee3b" #gitleaks:allow
 }
 
-data "azurerm_resource_group" "this" {
+data "azurerm_resource_group" "aio_rg" {
   name = terraform_data.defer.output.resource_group_name
 }
 
-data "azurerm_virtual_machine" "this" {
+data "azurerm_virtual_machine" "aio_vm" {
   name                = coalesce(var.linux_virtual_machine_name, "${var.resource_prefix}-aio-edge-vm")
-  resource_group_name = data.azurerm_resource_group.this.name
+  resource_group_name = data.azurerm_resource_group.aio_rg.name
 }
 
 resource "azurerm_virtual_machine_extension" "linux_setup" {
   name                        = "linux-vm-setup"
-  virtual_machine_id          = data.azurerm_virtual_machine.this.id
+  virtual_machine_id          = data.azurerm_virtual_machine.aio_vm.id
   publisher                   = "Microsoft.Azure.Extensions"
   type                        = "CustomScript"
   type_handler_version        = "2.1"
@@ -53,7 +53,7 @@ resource "azurerm_virtual_machine_extension" "linux_setup" {
   {
     "script": "${base64encode(templatefile("${path.root}/../scripts/device-setup.sh", {
   "ENV_HOST_USERNAME"             = coalesce(var.vm_username, var.resource_prefix)
-  "ENV_ARC_RESOURCE_GROUP"        = data.azurerm_resource_group.this.name
+  "ENV_ARC_RESOURCE_GROUP"        = data.azurerm_resource_group.aio_rg.name
   "ENV_ARC_RESOURCE_NAME"         = local.arc_resource_name
   "ENV_CUSTOM_LOCATIONS_OID"      = local.custom_locations_oid
   "ENV_ENVIRONMENT"               = var.environment
