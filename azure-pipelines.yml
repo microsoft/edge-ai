@@ -9,9 +9,21 @@ trigger:
     include:
       - main
 
+schedules:
+  - cron: '0 5 * * *'
+    displayName: Daily 9 PM PST/5 AM UTC Trigger
+    branches:
+      include:
+        - main
+    always: true
+
 # set isMain to true if the branch is main to trigger main stage
+# set isScheduled to true if the build is scheduled to trigger
+# define the Megalinter cache path for the pipeline
 variables:
   isMain: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
+  isScheduled: $[eq(variables['Build.Reason'], 'Schedule')]
+  MegalinterCachePath: '/mnt/storage/sdc/cache/images/megalinter'
 
 # Define the default pool for the entire pipeline. This is a
 # Managed DevOps Pool with Ubuntu 2022 and WIndows 2022 agents
@@ -20,10 +32,42 @@ pool:
   vmImage: ubuntu-latest
 
 stages:
+  # Daily scheduled build to update the MegaLinter cache
+  - stage: Scheduled
+    displayName: Megalinter Scheduled Caching
+    condition: eq(variables.isScheduled, true)
+    jobs:
+      - job: UpdateMegaLinterCache
+        displayName: 'Update MegaLinter Cache'
+
+        pool:
+          name: ai-on-edge-managed-pool
+          vmImage: ubuntu-latest
+        steps:
+          # Clear the cache directory ahead of the refresh
+          - script: |
+              # Clear the cache data directory ahead of the refresh
+              rm -rf $(MegalinterCachePath)
+              mkdir -p $(MegalinterCachePath)
+            displayName: 'Clear Megalinter Cache Directory'
+
+          # Pull MegaLinter docker image
+          - script: |
+              # Pull MegaLinter docker image
+              docker pull oxsecurity/megalinter:v8
+            displayName: 'Pull MegaLinter'
+
+          # Save MegaLinter docker image to cache
+          - script: |
+              echo "Saving Megalinter Docker image to cache..."
+              docker save oxsecurity/megalinter:v8 -o $(MegalinterCachePath)/megalinterv8-cache.tar
+            displayName: 'Save MegaLinter Docker Image to Cache'
+
   - stage: Main
     displayName: Main Build
     # dependsOn: string | [ string ]
-    condition: eq(variables.isMain, true)
+    # Run the main build process only if the build is not scheduled and is the main branch
+    condition: and(eq(variables.isMain, true), eq(variables.isScheduled, false))
     # pool: string | pool
     # variables: { string: string } | [ variable | variableReference ]
     jobs:
@@ -57,15 +101,29 @@ stages:
         pool:
           name: ai-on-edge-managed-pool
           vmImage: ubuntu-latest
-          demands: Agent.Name -equals $(Agent.Name)
+          demands:
+            - Agent.Name -equals $(Agent.Name)
 
         steps:
           # Checkout repo
           - checkout: self
 
-          # Pull MegaLinter docker image
-          - script: docker pull oxsecurity/megalinter:v7
-            displayName: Pull MegaLinter
+          # Attempt to restore MegaLinter from the cache otherwise pull it
+          - script: |
+              if [ -d "$(MegalinterCachePath)" ]; then
+                if [ -f "$(MegalinterCachePath)/megalinter-cache.tar" ]; then
+                  echo "Loading MegaLinter from cache..."
+                  docker load -i $(MegalinterCachePath)/megalinter-cache.tar
+                else
+                  echo "Megalinter cache not found. Pulling MegaLinter from Docker registry..."
+                  docker pull oxsecurity/megalinter:v8
+                fi
+              else
+                echo "Cache directory $(MegalinterCachePath) does not exist. Pulling MegaLinter from Docker registry..."
+                docker pull oxsecurity/megalinter:v8
+              fi
+            displayName: MegaLinter Cache Restore
+            condition: not(canceled())
 
           # Run MegaLinter - for the main branch the reporter needs to be disabled
           - script: |
@@ -74,16 +132,29 @@ stages:
                 -e SYSTEM_ACCESSTOKEN=$(System.AccessToken) \
                 -e GIT_AUTHORIZATION_BEARER=$(System.AccessToken) \
                 -e AZURE_COMMENT_REPORTER='false' \
-                oxsecurity/megalinter:v7
+                oxsecurity/megalinter:v8
             displayName: Run MegaLinter
 
   - stage: PR
     displayName: PR Build Process
     # dependsOn: string | [ string ]
-    condition: eq(variables.isMain, false)
+    # Run the PR build process only if the build is not scheduled and not the main branch
+    condition: and(eq(variables.isMain, false), eq(variables.isScheduled, false))
     # pool: string | pool
     # variables: { string: string } | [ variable | variableReference ]
     jobs:
+      # Ensure a clean workspace for the PR build process
+      - job: PrePRCleanup
+        displayName: Pre-PR Workspace Cleanup
+        pool:
+          name: ai-on-edge-managed-pool
+          vmImage: ubuntu-latest
+        steps:
+          - task: DeleteFiles@1
+            displayName: 'Delete files from $(Agent.WorkFolder)'
+            inputs:
+              SourceFolder: '$(Agent.WorkFolder)'
+
       # Run Dependency Scan based on the MSFT vss governance build task.
       # A version of this task is also auto injected by corporate policy.
       # It's declared here to make it explicit in the pipeline.
@@ -91,6 +162,8 @@ stages:
         pool:
           name: ai-on-edge-managed-pool
           vmImage: ubuntu-latest
+        dependsOn:
+          - PrePRCleanup
         steps:
           # Checkout repo
           - checkout: self
@@ -113,10 +186,22 @@ stages:
           # Checkout repo
           - checkout: self
 
-          # Pull MegaLinter docker image
-          # Down the road this should be cached to improve performance
-          - script: docker pull oxsecurity/megalinter:v7
-            displayName: Pull MegaLinter
+          # Attempt to restore MegaLinter from the cache otherwise pull it
+          - script: |
+              if [ -d "$(MegalinterCachePath)" ]; then
+                if [ -f "$(MegalinterCachePath)/megalinter-cache.tar" ]; then
+                  echo "Loading MegaLinter from cache..."
+                  docker load -i $(MegalinterCachePath)/megalinter-cache.tar
+                else
+                  echo "Megalinter cache not found. Pulling MegaLinter from Docker registry..."
+                  docker pull oxsecurity/megalinter:v8
+                fi
+              else
+                echo "Cache directory $(MegalinterCachePath) does not exist. Pulling MegaLinter from Docker registry..."
+                docker pull oxsecurity/megalinter:v8
+              fi
+            displayName: MegaLinter Cache Restore
+            condition: not(canceled())
 
           # Run MegaLinter
           # See here for required system props: https://github.com/oxsecurity/megalinter/blob/0f18f72065ffdeec09b616087b8298a3b13b2dee/megalinter/reporters/AzureCommentReporter.py#L7C1-L13C22
@@ -132,7 +217,7 @@ stages:
                 -e BUILD_BUILDID='$(Build.BuildId)' \
                 -e BUILD_REPOSITORY_ID='$(Build.Repository.ID)' \
                 -e AZURE_COMMENT_REPORTER='true' \
-                oxsecurity/megalinter:v7
+                oxsecurity/megalinter:v8
             displayName: Run MegaLinter
 
           # Upload MegaLinter reports as artifacts
@@ -185,6 +270,7 @@ stages:
                 echo "No updates detected in the Terraform documentation."
               fi
             workingDirectory: $(System.DefaultWorkingDirectory)
+            condition: and( not(failed()), not(canceled()) )
 
       # This job checks for changes in the src directory and runs specific
       # tasks based on the changes it discovers. Primarily for bash, pwsh and terraform.
@@ -296,6 +382,7 @@ stages:
                 echo "uninstalling azure providers"
                 ./unregister-azure-providers.sh aio-azure-resource-providers.txt
                 echo "uninstalled azure providers"
+            condition: and( not(failed()), not(canceled()) )
 
           - task: AzureCLI@2
             displayName: Azure CLI for Resource Provider Registration Script Test
@@ -308,6 +395,7 @@ stages:
                 echo "installing azure providers"
                 ./register-azure-providers.sh aio-azure-resource-providers.txt
                 echo "installed azure providers"
+            condition: and( not(failed()), not(canceled()) )
 
       # Job to run Pwsh script tests for the resource providers if they have changed
       - job: ResourceProviderPWSHScriptTest
@@ -424,6 +512,13 @@ stages:
                 # Loop through the provider details and check for updates
                 # by calling the tf registry API and comparing the versions
                 while IFS= read -r line; do
+
+                  # Check if the pipeline is canceled, and exit if so
+                  if [ "$AGENT_JOBSTATUS" = "Canceled" ]; then
+                    echo "Pipeline is canceled. Exiting..."
+                    exit 0
+                  fi
+
                   registry=$(echo "$line" | awk '{print $1}')
                   source=$(echo "$line" | awk '{print $2}')
                   provider=$(echo "$line" | awk '{print $3}')
@@ -447,6 +542,7 @@ stages:
                 else
                   echo "Terraform version is up to date."
                 fi
+            condition: and( not(failed()), not(canceled()) )
 
           # Run Terraform Validate to ensure the TF files are valid
           # break if validation fails
@@ -484,6 +580,7 @@ stages:
               echo "##vso[task.setvariable variable=commandOptions;isOutput=true]$command_options"
             displayName: "Parse variables.tf and build commandOptions"
             name: parseVariables
+            condition: and( not(failed()), not(canceled()) )
 
           # Run Terraform Plan for reporting
           - task: TerraformCLI@1
@@ -496,6 +593,7 @@ stages:
               # this publish will drive the Terraform Plan UI on each build
               publishPlanResults: "$(folderName) - Terraform Test Plan"
               commandOptions: $(parseVariables.commandOptions)
+            condition: and( not(failed()), not(canceled()) )
 
           # Publish the Terraform Plan as an official build artifact for downloading
           - task: PublishBuildArtifacts@1
@@ -551,6 +649,7 @@ stages:
                   echo "Terraform tests failed."
                   exit 1
                 fi
+            condition: and( not(failed()), not(canceled()) )
 
           # Need to use an external tool to convert the Terraform test output to JUnit XML
           # This tool is available as an NPM package and can be installed and run in the pipeline
