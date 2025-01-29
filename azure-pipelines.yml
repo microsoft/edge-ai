@@ -30,6 +30,8 @@ variables:
 pool:
   name: ai-on-edge-managed-pool
   vmImage: ubuntu-latest
+  demands:
+    - WorkFolder -equals /mnt/storage/sdc
 
 stages:
   # Daily scheduled build to update the MegaLinter cache
@@ -43,6 +45,8 @@ stages:
         pool:
           name: ai-on-edge-managed-pool
           vmImage: ubuntu-latest
+          demands:
+            - WorkFolder -equals /mnt/storage/sdc
         steps:
           # Clear the cache directory ahead of the refresh
           - script: |
@@ -76,12 +80,6 @@ stages:
           name: ai-on-edge-managed-pool
           vmImage: ubuntu-latest
         steps:
-          # Set the agent name as an output variable so the same agent runs all jobs
-          # Jobs that are using ubuntu-latest will use the same cached agent to improve performance
-          - bash: |
-              echo "##vso[task.setvariable variable=AgentName;isoutput=true]$(Agent.Name)"
-            name: passOutputVar
-
           # Checkout repo
           - checkout: self
 
@@ -96,13 +94,11 @@ stages:
         # Declare the job depends on the DependencyScan job to get the agent name
         # set the agent name as a demand to ensure the same agent runs all tasks
         dependsOn: DependencyScan
-        variables:
-          AgentName: $[ dependencies.A.outputs['passOutput.AgentName'] ]
         pool:
           name: ai-on-edge-managed-pool
           vmImage: ubuntu-latest
           demands:
-            - Agent.Name -equals $(Agent.Name)
+            - WorkFolder -equals /mnt/storage/sdc
 
         steps:
           # Checkout repo
@@ -182,6 +178,8 @@ stages:
         pool:
           name: ai-on-edge-managed-pool
           vmImage: ubuntu-latest
+          demands:
+            - WorkFolder -equals /mnt/storage/sdc
         steps:
           # Checkout repo
           - checkout: self
