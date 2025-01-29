@@ -230,7 +230,7 @@ stages:
 
       # Run Terraform documentation check to prompt committer to update
       # auto-generated documentation if changes are detected
-      - job: TerrformDocsCheck
+      - job: TerraformDocsCheck
         dependsOn:
           - MegaLinter
         pool:
@@ -277,7 +277,7 @@ stages:
       - job: MatrixBuildFolderCheck
         displayName: Check for changes in src directory
         dependsOn:
-          - TerrformDocsCheck
+          - TerraformDocsCheck
         pool:
           name: ai-on-edge-managed-pool
           vmImage: ubuntu-latest
@@ -400,7 +400,6 @@ stages:
       # Job to run Pwsh script tests for the resource providers if they have changed
       - job: ResourceProviderPWSHScriptTest
         dependsOn:
-          - MegaLinter
           - MatrixBuildFolderCheck
         pool:
           name: ai-on-edge-managed-pool
@@ -428,7 +427,6 @@ stages:
       # and tests for the changed TF folders
       - job: TerraformClusterTest
         dependsOn:
-          - MegaLinter
           - MatrixBuildFolderCheck
         pool:
           name: ai-on-edge-managed-pool
