@@ -249,12 +249,14 @@ stages:
               $(System.DefaultWorkingDirectory)/src/update-all-terraform-docs.sh
 
               # Check for changes in README.md files
-              changed_files=$(git diff --name-only HEAD~1 HEAD)
+              changed_files=$(git diff --name-only)
               readme_changed=false
               for file in $changed_files; do
                 if [[ $file == src/*/README.md ]]; then
-                  echo "README.md changed: $(System.DefaultWorkingDirectory)/$file"
-                  readme_changed=true
+                  if head -n 1 "$file" | grep -q "^<!-- BEGIN_TF_DOCS -->$"; then
+                    echo "Updates required for: $(System.DefaultWorkingDirectory)/$file"
+                    readme_changed=true
+                  fi
                 fi
               done
 
