@@ -38,8 +38,11 @@ resource "azapi_resource" "data_flow_endpoint_to_event_hub" {
           mode = "Enabled"
         }
         authentication = {
-          method                                = "SystemAssignedManagedIdentity"
-          systemAssignedManagedIdentitySettings = {}
+          method = "UserAssignedManagedIdentity"
+          userAssignedManagedIdentitySettings = {
+            tenantId = var.aio_uami_tenant_id
+            clientId = var.aio_uami_client_id
+          }
         }
       }
     }

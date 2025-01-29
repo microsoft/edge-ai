@@ -6,6 +6,10 @@ output "sse_key_vault_name" {
   value = module.sse_key_vault.key_vault.name
 }
 
-output "sse_key_vault_id" {
-  value = module.sse_key_vault.key_vault.id
+output "aio_uami_name" {
+  value = module.uami.aio_uami_name
+}
+
+output "sse_uami_name" {
+  value = module.uami.sse_uami_name
 }

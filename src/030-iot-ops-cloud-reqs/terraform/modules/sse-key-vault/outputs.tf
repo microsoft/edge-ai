@@ -4,10 +4,3 @@ output "key_vault" {
     id   = local.key_vault_id
   }
 }
-
-output "sse_user_managed_identity" {
-  value = {
-    id        = azurerm_user_assigned_identity.user_managed_identity_secret_sync.id
-    client_id = azurerm_user_assigned_identity.user_managed_identity_secret_sync.client_id
-  }
-}

@@ -30,7 +30,8 @@ The following resources are used by this module:
 
 - [terraform_data.defer](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data) (resource)
 - [azapi_resource.custom_locations](https://registry.terraform.io/providers/Azure/azapi/latest/docs/data-sources/resource) (data source)
-- [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/resource_group) (data source)
+- [azurerm_resource_group.aio_rg](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/resource_group) (data source)
+- [azurerm_user_assigned_identity.aio_uami](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/user_assigned_identity) (data source)
 
 ## Modules
 
@@ -67,6 +68,14 @@ Type: `string`
 ## Optional Inputs
 
 The following input variables are optional (have default values):
+
+### aio\_uami\_name
+
+Description: The name of the User Assigned Managed Identity for the Azure IoT Operations instance
+
+Type: `string`
+
+Default: `null`
 
 ### asset\_name
 
@@ -107,14 +116,6 @@ Description: The name of the Azure IoT Operations Instance resource. (Otherwise,
 Type: `string`
 
 Default: `null`
-
-### iot\_ops\_k8s\_extension\_name
-
-Description: The name of the Azure Arc Extension for Azure IoT Operations, needed to assign permissions. (Should be changed to a UAMI)
-
-Type: `string`
-
-Default: `"iot-ops"`
 
 ### resource\_group\_name
 

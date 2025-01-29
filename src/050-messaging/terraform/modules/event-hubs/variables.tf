@@ -1,8 +1,3 @@
-variable "connected_cluster_name" {
-  type        = string
-  description = "The name of the connected Arc cluster"
-}
-
 variable "resource_prefix" {
   type        = string
   description = "Prefix for all resources in this module"
@@ -13,9 +8,14 @@ variable "resource_group_name" {
   description = "Name of the pre-existing resource group in which to create resources"
 }
 
-variable "aio_extension_name" {
+variable "location" {
   type        = string
-  description = "The name of the Azure IoT Operations Platform Arc extension"
+  description = "Location for all resources in this module"
+}
+
+variable "aio_uami_principal_id" {
+  type        = string
+  description = "Principal ID of the User Assigned Managed Identity for the Azure IoT Operations instance"
 }
 
 variable "capacity" {

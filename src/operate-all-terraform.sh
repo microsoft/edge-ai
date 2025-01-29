@@ -5,6 +5,8 @@ set -e
 # Optional parameter for the layer to start from (e.g. "--start-layer 040")
 start_layer=""
 
+operation="apply"
+
 while [[ $# -gt 0 ]]; do
     case "$1" in
     --start-layer)
@@ -12,12 +14,22 @@ while [[ $# -gt 0 ]]; do
         shift
         shift
         ;;
+    --operation)
+        operation="$2"
+        shift
+        shift
+        ;;
     *)
-        echo "Usage: $0 [--start-layer LAYER_NUMBER]"
+        echo "Usage: $0 [--start-layer LAYER_NUMBER] [--operation apply|test]"
         exit 1
         ;;
     esac
 done
+
+if [[ "$operation" != "apply" && "$operation" != "test" ]]; then
+    echo "Invalid operation: $operation. Allowed values are 'apply' or 'test'."
+    exit 1
+fi
 
 print_visible() {
     echo "-------------- $1 -----------------"
@@ -32,6 +44,10 @@ apply_terraform() {
     fi
     print_visible "Applying terraform in $folder_path"
     terraform -chdir="$folder_path" init
+    if [ "$operation" = "test" ]; then
+        terraform -chdir="$folder_path" test
+        return
+    fi
     terraform -chdir="$folder_path" apply -auto-approve -var-file=../../terraform.tfvars
 }
 

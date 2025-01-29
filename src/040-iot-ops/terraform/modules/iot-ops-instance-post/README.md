@@ -24,6 +24,7 @@ The following providers are used by this module:
 The following resources are used by this module:
 
 - [azapi_resource.default_aio_keyvault_secret_provider_class](https://registry.terraform.io/providers/Azure/azapi/2.1.0/docs/resources/resource) (resource)
+- [azurerm_federated_identity_credential.federated_identity_cred_aio_instance](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/federated_identity_credential) (resource)
 - [azurerm_federated_identity_credential.federated_identity_cred_sse_aio](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/federated_identity_credential) (resource)
 - [azapi_resource.cluster_oidc_issuer](https://registry.terraform.io/providers/Azure/azapi/2.1.0/docs/data-sources/resource) (data source)
 - [azurerm_subscription.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/subscription) (data source)
@@ -35,6 +36,12 @@ The following input variables are required:
 ### aio\_namespace
 
 Description: Azure IoT Operations namespace
+
+Type: `string`
+
+### aio\_user\_managed\_identity\_id
+
+Description: ID of the User Assigned Managed Identity for the Azure IoT Operations instance
 
 Type: `string`
 

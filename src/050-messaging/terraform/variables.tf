@@ -36,10 +36,10 @@ variable "connected_cluster_name" {
   default     = null
 }
 
-variable "iot_ops_k8s_extension_name" {
+variable "aio_uami_name" {
   type        = string
-  description = "The name of the Azure Arc Extension for Azure IoT Operations, needed to assign permissions. (Should be changed to a UAMI)"
-  default     = "iot-ops"
+  description = "The name of the User Assigned Managed Identity for the Azure IoT Operations instance"
+  default     = null
 }
 
 variable "iot_ops_instance_name" {

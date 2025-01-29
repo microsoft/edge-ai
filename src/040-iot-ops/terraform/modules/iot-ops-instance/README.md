@@ -38,6 +38,12 @@ The following resources are used by this module:
 
 The following input variables are required:
 
+### aio\_uami\_id
+
+Description: The principal ID of the User Assigned Managed Identity for the Azure IoT Operations instance
+
+Type: `string`
+
 ### arc\_connected\_cluster\_id
 
 Description: The resource ID of the connected cluster to deploy Azure IoT Operations Platform to
@@ -165,10 +171,6 @@ Default: `"SelfSigned"`
 ## Outputs
 
 The following outputs are exported:
-
-### aio\_extension\_name
-
-Description: n/a
 
 ### custom\_location\_id
 

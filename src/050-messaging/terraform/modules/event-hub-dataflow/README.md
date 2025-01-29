@@ -36,6 +36,18 @@ Description: The name of the Azure IoT Operations instance
 
 Type: `string`
 
+### aio\_uami\_client\_id
+
+Description: Client ID of the User Assigned Managed Identity for the Azure IoT Operations instance
+
+Type: `string`
+
+### aio\_uami\_tenant\_id
+
+Description: Tenant ID of the User Assigned Managed Identity for the Azure IoT Operations instance
+
+Type: `string`
+
 ### asset\_name
 
 Description: The name of the Event Hub namespace

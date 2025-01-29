@@ -32,7 +32,8 @@ The following resources are used by this module:
 - [terraform_data.defer](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data) (resource)
 - [azapi_resource.schema_registry](https://registry.terraform.io/providers/Azure/azapi/latest/docs/data-sources/resource) (data source)
 - [azurerm_key_vault.sse_key_vault](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/key_vault) (data source)
-- [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/resource_group) (data source)
+- [azurerm_resource_group.aio_rg](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/resource_group) (data source)
+- [azurerm_user_assigned_identity.aio_uami](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/user_assigned_identity) (data source)
 - [azurerm_user_assigned_identity.sse_uami](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/user_assigned_identity) (data source)
 
 ## Modules
@@ -144,6 +145,14 @@ Default:
   "install_trust_manager": true
 }
 ```
+
+### aio\_uami\_name
+
+Description: The name of the User Assigned Managed Identity for the Azure IoT Operations instance. (Otherwise, '{var.resource\_prefix}-aio-uami')
+
+Type: `string`
+
+Default: `null`
 
 ### byo\_issuer\_trust\_settings
 
@@ -410,7 +419,7 @@ Default:
 
 ### sse\_uami\_name
 
-Description: The name of the User Assigned Managed Identity that was federated for Secret Sync Extension. (Otherwise, '{var.resource\_prefix}-sse-umi'
+Description: The name of the User Assigned Managed Identity that was federated for Secret Sync Extension. (Otherwise, '{var.resource\_prefix}-sse-uami'
 
 Type: `string`
 
@@ -427,10 +436,6 @@ Default: `"SelfSigned"`
 ## Outputs
 
 The following outputs are exported:
-
-### aio\_extension\_name
-
-Description: n/a
 
 ### aio\_instance\_name
 

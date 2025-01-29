@@ -144,7 +144,8 @@ resource "azapi_resource" "instance" {
   location  = var.connected_cluster_location
   parent_id = var.resource_group_id
   identity {
-    type = "SystemAssigned"
+    type         = "UserAssigned"
+    identity_ids = [var.aio_uami_id]
   }
   body = {
     extendedLocation = {

@@ -1,7 +1,3 @@
-output "aio_extension_name" {
-  value = module.iot_ops_instance.aio_extension_name
-}
-
 output "custom_location_id" {
   value = module.iot_ops_instance.custom_location_id
 }
