@@ -16,7 +16,8 @@ Determine the initial distribution approach for the solution.
 
 ## Context
 
-How this project (CLI tool, solution template file(s), and IaC/scripts/image definitions) is distributed is critical to both the complexity of maintenance and publishing, and to the opportunities for reuse in the context of MSFT customers consuming it. This tool currently has optimal opportunity for use in the context of manufacturing (discrete and process, including CPGs) edge computing engagements; product groups will not be targeting the development of industry solutions outside of manufacturing for atleast the next 9-12 months.
+How this project (CLI tool, solution template file(s), and IaC/scripts/image definitions) is distributed is critical to both the complexity of maintenance and publishing, and to the opportunities for reuse in the context of MSFT customers consuming it.
+This tool currently has optimal opportunity for use in the context of manufacturing (discrete and process, including CPGs) edge computing engagements; product groups will not be targeting the development of industry solutions outside of manufacturing for atleast the next 9-12 months.
 
 ## Decision drivers (optional)
 

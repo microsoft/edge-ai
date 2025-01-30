@@ -16,7 +16,8 @@ Select language and runtime of compiler/generator of IaC, scripts and charts for
 
 ## Context
 
-Selecting a language for the CLI is important for both consumption and contribution. On the consumption side there is friction in downloading a developer environment that is not easy to secure in constrained corporate environments. On the contribution front, selecting an ecosystem known by a majority of developers, and has a low learning curve for new developers is critical. Secondarily, the ability to easily process text files in a meta-programming/text parsing fashion is also within focus as a driving factor.  
+Selecting a language for the CLI is important for both consumption and contribution. On the consumption side there is friction in downloading a developer environment that is not easy to secure in constrained corporate environments.
+On the contribution front, selecting an ecosystem known by a majority of developers, and has a low learning curve for new developers is critical.Secondarily, the ability to easily process text files in a meta-programming/text parsing fashion is also within focus as a driving factor.  
 
 ## Decision drivers (optional)
 

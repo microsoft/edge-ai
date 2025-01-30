@@ -32,10 +32,10 @@ For help getting started, please see our [Security Plan Guidelines](https://www.
 
 ### Data Flow Attributes
   
-| # | Transport Protocol | Data Classification | Authentication | Authorization | Notes|
-|---|--------------------|---------------------|----------------|---------------|------|
-| 1 | [Name of the protocol for the service] | [Data classification guidance can be found in the [Appendix](https://www.cwcwiki.com/wiki/Security_Plan_Guidelines#Microsoft_Data_Classification_Guidelines)] | [Method of authenticating the caller] | [Method of authorizing the caller] | [Additional Notes] |
-| ... | ... | ... | ... | ... | ... |
+| #   | Transport Protocol                     | Data Classification                                                                                                                                           | Authentication                        | Authorization                      | Notes              |
+|-----|----------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------|------------------------------------|--------------------|
+| 1   | [Name of the protocol for the service] | [Data classification guidance can be found in the [Appendix](https://www.cwcwiki.com/wiki/Security_Plan_Guidelines#Microsoft_Data_Classification_Guidelines)] | [Method of authenticating the caller] | [Method of authorizing the caller] | [Additional Notes] |
+| ... | ...                                    | ...                                                                                                                                                           | ...                                   | ...                                | ...                |
 
 ## Threats and Mitigations
 
@@ -48,5 +48,5 @@ For inspiration, see our [Example Threats and Mitigations](https://www.cwcwiki.c
 An ideal architecture would contain *zero secrets*. Credential-less options like managed identities should be used wherever possible. Where secrets are required, it’s important to track them for operational purposes. Please see our [Example Secrets Inventory](https://www.cwcwiki.com/wiki/Security_Plan_Guidelines#Example_Secrets_Inventory) to help you get started.
 
 | Name | What is its purpose? | Where does it live? | How was it generated? | What's the rotation strategy? Does it cause downtime? | How does the secret get distributed to consumers? | What’s the secret’s lifespan? |
-| ---- | ----------- | ------------------- | --------------------- | ----------------------------------------------------- | ------------------------------------------------- | ----------------------------- |
-| ... | ... | ... | ... | ... | ... | ... |
+|------|----------------------|---------------------|-----------------------|-------------------------------------------------------|---------------------------------------------------|-------------------------------|
+| ...  | ...                  | ...                 | ...                   | ...                                                   | ...                                               | ...                           |

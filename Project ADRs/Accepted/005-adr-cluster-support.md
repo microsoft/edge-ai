@@ -24,14 +24,14 @@ Customers need to enable collaborative development with Kubernetes clusters host
 
 - Cloud hosted clusters that must be as close to production environments as possible:
   - Lightweight
-  - Run on Ubuntu x86/x64 
+  - Run on Ubuntu x86/x64
   - Certified/CNCF Compliant
 
 ## Considered options
 
 1. K3s - Lightweight certified Kubernetes distribution
     - Good, great for development use cases
-    - Good, designed for resource restricted environments 
+    - Good, designed for resource restricted environments
     - Good, requires the least amount of memory: 512 MB
     - Good, supported platform for GA of AIO
 
@@ -58,4 +58,4 @@ K3s on Ubuntu VMs as it's the only supported platform for GA.
 
 ## Consequences
 
-We're only meeting about 25% of customers where they are. 
+We're only meeting about 25% of customers where they are.

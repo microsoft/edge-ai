@@ -1,6 +1,7 @@
 # ISE Security Checklist (SecureDev Program)
 
-The Security Checklist aims to improve the baseline security posture of ISE engagements by focusing on fundamentals. The Security Checklist is a part of a larger program that provides a process, the ISE Security Checklist, automation, and a reporting tool for software development teams across ISE. By using the Security Checklist, dev crews (and customers) follow security best practices including: reviewing recommendations from Defender for Cloud, having conversations with the customer’s security stakeholder(s) and ISE Security Champions, and delivering a Security Plan to the customer.
+The Security Checklist aims to improve the baseline security posture of ISE engagements by focusing on fundamentals. The Security Checklist is a part of a larger program that provides a process, the ISE Security Checklist, automation, and a reporting tool for software development teams across ISE.
+By using the Security Checklist, dev crews (and customers) follow security best practices including: reviewing recommendations from Defender for Cloud, having conversations with the customer’s security stakeholder(s) and ISE Security Champions, and delivering a Security Plan to the customer.
 
 ## Getting Started
 

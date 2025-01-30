@@ -3,10 +3,10 @@
 # To run locally, simply just run Invoke-Pester, no need to run this script
 
 param (
-    [Parameter(Mandatory=$true)]
+    [Parameter(Mandatory = $true)]
     [string]$Path,
 
-    [Parameter(Mandatory=$true)]
+    [Parameter(Mandatory = $true)]
     [string]$OutputFile
 )
 
@@ -22,7 +22,8 @@ function Find-PesterModule {
     if ($null -eq $module -or $module.Version -lt [version]$MinimumVersion) {
         Write-Host "Installing or updating $ModuleName to version $MinimumVersion or higher..."
         Install-Module -Name $ModuleName -MinimumVersion $MinimumVersion -Force -AllowClobber
-    } else {
+    }
+    else {
         Write-Host "$ModuleName version $($module.Version) is already installed."
     }
 }
@@ -34,14 +35,14 @@ Find-PesterModule -ModuleName "Pester" -MinimumVersion "5.0.0"
 Import-Module Pester
 
 $configuration = [PesterConfiguration]@{
-    Run = @{
+    Run        = @{
         Path = $Path
     }
-    Output = @{
+    Output     = @{
         Verbosity = 'Detailed'
-     }
-     TestResult = @{
-        Enabled = $true
+    }
+    TestResult = @{
+        Enabled      = $true
         OutputFormat = "NUnitXml"
         OutputPath   = $OutputFile
     }

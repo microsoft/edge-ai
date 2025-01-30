@@ -20,7 +20,9 @@ As part of a new pilot program, ISE Security TD has established the following ba
 
 ## Security Plan Overview
 
-Please find the Security Plan for RetailMart below. This document shows the architecture and data flow diagram of the application. These artifacts were constructed based on documentation and source code from the project itself and are subject to change as the architecture and codebase evolves.  Each of the labeled entities in the figures below are accompanied by meta-information which describes the threats, describes the data in scope, and recommendations for security controls.
+Please find the Security Plan for RetailMart below. This document shows the architecture and data flow diagram of the application. These artifacts were constructed based on documentation and source code from the project itself and are subject to change as the architecture and codebase evolves.
+Each of the labeled entities in the figures below are accompanied by meta-information which describes the threats, describes the data in scope, and recommendations for security controls.
+
 Discretion and resilience are essential qualities for AI models to effectively navigate complex and sensitive tasks, ensuring they can make informed decisions and maintain performance in challenging environments.More details can ne found [here.](#discretion)
 In addition to the security controls recommended in this plan, we strongly advise our customers to have robust defense mechanisms implemented using SIEM, SOC tools.
 
@@ -30,7 +32,8 @@ RetailMart is a fictional retail corporation that stands as a symbol of innovati
 
 RetailMart operates a diverse range of retail products, catering to the diverse needs of its customers. Whether it's groceries, clothing, jewelry or DIY construction products, the convenience stores e-commerce platform provides a seamless shopping experience, RetailMart has a presence in every facet of the retail landscape.
 
-The company's commitment to customer satisfaction is evident in its dedication to offering top-notch products, exceptional service, and a wide array of choices to meet the demands of shoppers from all walks of life. RetailMart wants to embrace cutting-edge technologies by making use of data-driven analytics and AI-driven recommendations to enhance the shopping experience and ensure that customers find exactly what they need.
+The company's commitment to customer satisfaction is evident in its dedication to offering top-notch products, exceptional service, and a wide array of choices to meet the demands of shoppers from all walks of life.
+RetailMart wants to embrace cutting-edge technologies by making use of data-driven analytics and AI-driven recommendations to enhance the shopping experience and ensure that customers find exactly what they need.
 
 This is the security plan that will highlight the security risks associated with the proposed architecture and the security controls that will reduce the likelihood and severity of the security risks assessed within the RetailMart AI driven architecture for its e-commerce web app.
 
@@ -39,14 +42,14 @@ This is the security plan that will highlight the security risks associated with
 ### Architecture Diagram
 
 | ![architecture diagram](./images/ABCMart_Solution_Architecture.png) |
-|:------------------------------------------------------------------------------------------:|
-|                              *Figure 1: Architecture Diagram*                              |
+|:-------------------------------------------------------------------:|
+|                  *Figure 1: Architecture Diagram*                   |
 
 ### Data Flow Diagram
 
-|![Data Flow Diagram ](./images/ABCMart_DFD.jpg)|
-|:---------------------------------------------:|
-| *Figure 2: Data Flow Diagram*                              |
+| ![Data Flow Diagram ](./images/ABCMart_DFD.jpg) |
+|:-----------------------------------------------:|
+|          *Figure 2: Data Flow Diagram*          |
 
 #### Use Cases
 
@@ -59,35 +62,35 @@ This is the security plan that will highlight the security risks associated with
 
 ## Data Flow Attributes
 
-| # | Transport Protocol | Data Classification | Authentication | Authorization | Notes|
-|---|--------------------|---------------------|----------------|---------------|------|
-| 1 | HTTPS | Confidential  | Entra ID |  Entra Application permissions | User enters the prompt on client and send request to web application with prompt input.|
-| 2 | HTTPS | Confidential | Entra ID | Entra Application permissions | User request is enhanced and sent to routing service. |
-| 3.a | HTTPS | Confidential | Entra ID | Entra Application permissions | If request is related to search, then it's sent to Search RAG (Retrieval Augmented Generation) microservice|
-| 3.b | HTTPS | Confidential | Entra ID | Entra Application permissions | If the request is conversational, it is sent to Conversational Microservice. |
-| 3.b.1 | HTTPS | Confidential  | Entra ID | Azure RBAC(Cognitive Services OpenAI User) | Conversational Prompt Input is sent to GPT model |
-| 3.b.2 | HTTPS | Confidential | Entra ID | Azure RBAC(Cognitive Services OpenAI User) | Conversational prompt response from GPT model. |
-| 3.b.3 | HTTPS | Confidential | Entra ID | Entra Application permissions | Response from Conversational Service to Routing Service |
-| 3.c | HTTPS | Confidential | Entra ID | Entra Application permissions | If the request is non search, it is sent to non search Microservice. |
-| 3.c.1| HTTPS | Confidential | Entra ID | Azure RBAC(Cognitive Services OpenAI User) | Non-Search Request sent to GPT model |
-| 3.c.2| HTTPS | Confidential | Entra ID | Azure RBAC(Cognitive Services OpenAI User) | Non search response from GPT model |
-| 3.c.3| HTTPS | Confidential  | Entra ID | Entra Application permissions | Response from Non Search API service to Routing Service|
-| 4 | HTTPS | Confidential | Entra ID | Azure RBAC(Cognitive Services OpenAI User) | Search API calls cognitive search API to fetch top 10 products. |
-| 5 | HTTPS | Confidential | Entra ID | Azure RBAC(Cognitive Services OpenAI User) |  Response from Cognitive search API with details about top 10 products matching search input. |
-| 6 | HTTPS | Confidential | Entra ID | Azure RBAC(Cognitive Services OpenAI User) | Product details output from cognitive search is sent to GPT model to summarize the content. |
-| 7 | HTTPS | Confidential | Entra ID | Azure RBAC(Cognitive Services OpenAI User) | Response of GPT model to summarize the output|
-| 8 | HTTPS | Confidential | Entra ID | Entra Application permissions | Response from Search Service|
-| 9 | HTTPS | Confidential | Entra ID | Entra Application permissions | Response from routing service to Web application |
-| 10 | HTTPS | Confidential | Entra ID | Azure RBAC(Cognitive Services OpenAI User) | Request sent to content moderation service to filter out harmful content provided by user. Content moderation service used at both user input and output response. |
-| 11 | HTTPS | Confidential | Entra ID | Azure RBAC(Cognitive Services OpenAI User) | Output response of content moderation service. |
-| 12 | HTTPS | Confidential | Entra ID | Entra Application permissions | Response from web application to client browser|
-| 13.a, 13.b, 13.c | HTTPS | Confidential | Entra ID | Azure RBAC(Cognitive Services OpenAI User) | Logs sent to Azure Monitor. |
+| #                | Transport Protocol | Data Classification | Authentication | Authorization                              | Notes                                                                                                                                                              |
+|------------------|--------------------|---------------------|----------------|--------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1                | HTTPS              | Confidential        | Entra ID       | Entra Application permissions              | User enters the prompt on client and send request to web application with prompt input.                                                                            |
+| 2                | HTTPS              | Confidential        | Entra ID       | Entra Application permissions              | User request is enhanced and sent to routing service.                                                                                                              |
+| 3.a              | HTTPS              | Confidential        | Entra ID       | Entra Application permissions              | If request is related to search, then it's sent to Search RAG (Retrieval Augmented Generation) microservice                                                        |
+| 3.b              | HTTPS              | Confidential        | Entra ID       | Entra Application permissions              | If the request is conversational, it is sent to Conversational Microservice.                                                                                       |
+| 3.b.1            | HTTPS              | Confidential        | Entra ID       | Azure RBAC(Cognitive Services OpenAI User) | Conversational Prompt Input is sent to GPT model                                                                                                                   |
+| 3.b.2            | HTTPS              | Confidential        | Entra ID       | Azure RBAC(Cognitive Services OpenAI User) | Conversational prompt response from GPT model.                                                                                                                     |
+| 3.b.3            | HTTPS              | Confidential        | Entra ID       | Entra Application permissions              | Response from Conversational Service to Routing Service                                                                                                            |
+| 3.c              | HTTPS              | Confidential        | Entra ID       | Entra Application permissions              | If the request is non search, it is sent to non search Microservice.                                                                                               |
+| 3.c.1            | HTTPS              | Confidential        | Entra ID       | Azure RBAC(Cognitive Services OpenAI User) | Non-Search Request sent to GPT model                                                                                                                               |
+| 3.c.2            | HTTPS              | Confidential        | Entra ID       | Azure RBAC(Cognitive Services OpenAI User) | Non search response from GPT model                                                                                                                                 |
+| 3.c.3            | HTTPS              | Confidential        | Entra ID       | Entra Application permissions              | Response from Non Search API service to Routing Service                                                                                                            |
+| 4                | HTTPS              | Confidential        | Entra ID       | Azure RBAC(Cognitive Services OpenAI User) | Search API calls cognitive search API to fetch top 10 products.                                                                                                    |
+| 5                | HTTPS              | Confidential        | Entra ID       | Azure RBAC(Cognitive Services OpenAI User) | Response from Cognitive search API with details about top 10 products matching search input.                                                                       |
+| 6                | HTTPS              | Confidential        | Entra ID       | Azure RBAC(Cognitive Services OpenAI User) | Product details output from cognitive search is sent to GPT model to summarize the content.                                                                        |
+| 7                | HTTPS              | Confidential        | Entra ID       | Azure RBAC(Cognitive Services OpenAI User) | Response of GPT model to summarize the output                                                                                                                      |
+| 8                | HTTPS              | Confidential        | Entra ID       | Entra Application permissions              | Response from Search Service                                                                                                                                       |
+| 9                | HTTPS              | Confidential        | Entra ID       | Entra Application permissions              | Response from routing service to Web application                                                                                                                   |
+| 10               | HTTPS              | Confidential        | Entra ID       | Azure RBAC(Cognitive Services OpenAI User) | Request sent to content moderation service to filter out harmful content provided by user. Content moderation service used at both user input and output response. |
+| 11               | HTTPS              | Confidential        | Entra ID       | Azure RBAC(Cognitive Services OpenAI User) | Output response of content moderation service.                                                                                                                     |
+| 12               | HTTPS              | Confidential        | Entra ID       | Entra Application permissions              | Response from web application to client browser                                                                                                                    |
+| 13.a, 13.b, 13.c | HTTPS              | Confidential        | Entra ID       | Azure RBAC(Cognitive Services OpenAI User) | Logs sent to Azure Monitor.                                                                                                                                        |
 
 ### Threat Map
 
-|![Threat Map ](./images/ABCMart_ThreatMap.png)|
-|:---------------------------------------------:|
-| *Figure 3: Threat Map*                              |
+| ![Threat Map ](./images/ABCMart_ThreatMap.png) |
+|:----------------------------------------------:|
+|             *Figure 3: Threat Map*             |
 
 ### Threat Properties
 
@@ -208,7 +211,8 @@ Web application, Non Search Microservice, Search API RAG microservice, Conversat
 **Mitigation**:
 
 1. Use Azure Artifacts to publish and control feeds, that will lower risk of supply chain vulnerability.
-2. Carefully vet data sources and suppliers, including T&Cs and their privacy policies, only using trusted suppliers. Ensure adequate and independently audited security is in place and that model operator policies align with your data protection policies, i.e., your data is not used for training their models; similarly, seek assurances and legal mitigation against using copyrighted material from model maintainers.
+2. Carefully vet data sources and suppliers, including T&Cs and their privacy policies, only using trusted suppliers. Ensure adequate and independently audited security is in place and that model operator policies align with your data protection policies,
+i.e., your data is not used for training their models; similarly, seek assurances and legal mitigation against using copyrighted material from model maintainers.
 3. Only use reputable plug-ins and ensure they have been tested for your application requirements. LLM-Insecure Plugin Design provides information on the LLM-aspects of Insecure Plugin design you should test against to mitigate risks from using third-party plugins.
 4. Maintain an up-to-date inventory of components using a Software Bill of Materials (SBOM) to ensure you have an up-to-date, accurate, and signed inventory preventing tampering with deployed packages. SBOMs can be used to detect and alert new, zero-day vulnerabilities quickly.
 5. At the time of writing, SBOMs do not cover models, their artifacts, and datasets. If your LLM application uses its own model, you should use MLOps best practices and platforms offering secure model repositories with data, model, and experiment tracking.
@@ -268,9 +272,9 @@ Web application, Non Search Microservice, Search API RAG microservice, Conversat
 
 An ideal architecture would contain **zero secrets**. Credential-less options like managed identities should be used wherever possible. Where secrets are required, it's important to track them for operational purposes. Please see our [Example SecretsInventory](https://www.cwcwiki.com/wiki/Security_Plan_Guidelines#Example_Secrets_Inventory) to help you get started.
 
-| **Name**        | **What is it?** | **Where does it live?** | **How was it generated?** | **What's the rotation strategy? Does it cause downtime?** | **How does the secret get distributed to consumers?**  | **What’s the secret’s lifespan?**|
-| --------- | ------ | -------- | ----- | ----- | -------- | ---------- |
-| ......... | ...... | ........ | ..... | ..... | ........ | .......... |
+| **Name**  | **What is it?** | **Where does it live?** | **How was it generated?** | **What's the rotation strategy? Does it cause downtime?** | **How does the secret get distributed to consumers?** | **What’s the secret’s lifespan?** |
+|-----------|-----------------|-------------------------|---------------------------|-----------------------------------------------------------|-------------------------------------------------------|-----------------------------------|
+| ......... | ......          | ........                | .....                     | .....                                                     | ........                                              | ..........                        |
 
 ### Appendix
 
@@ -308,13 +312,14 @@ Minimize blast radius and segment access. Verify end-to-end encryption and use a
 
 #### Microsoft Data Classification Guidelines
 
-| **Classification     | **Description**                               |
-|-------------|--------------------------------------------------------|
-| **Sensitive**          | Data that is to have the most limited access and requires a high degree of integrity. This is typically data that will do the most damage to the organization should it be disclosed. Personal data (including PII) falls into this category and includes any identifier, such as name, identification number, location data, online identifier. This also includes data related to one or more factors specific to the physical, psychological, genetic, mental, economic, cultural, or social identity of an individual. |
-| **Confidential**       | Data that might be less restrictive within the company but might cause damage if disclosed. |
-| **Private** | Private data is usually compartmental data that might not do the company damage but must be kept private for other reasons. Human resources data is one example of data that can be classified as private.  |
-| **Proprietary**        | Proprietary data is data that is disclosed outside the company on a limited basis or contains information that could reduce the company's competitive advantage, such as the technical specifications of a new product. |
-| **Public**  | Public data is the least sensitive data used by the company and would cause the least harm if disclosed. This could be anything from data used for marketing to the number of employees in the company.    |
+| **Classification** | **Description**                                                                                                                                                                                                                                                                                                                                  |
+|--------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Sensitive**      | Data that is to have the most limited access and requires a high degree of integrity. This is typically data that will do the most damage to the organization should it be disclosed. Personal data (including PII) falls into this category and includes any identifier, such as name, identification number, location data, online identifier. |
+|                    | This also includes data related to one or more factors specific to the physical, psychological, genetic, mental, economic, cultural, or social identity of an individual.                                                                                                                                                                        |
+| **Confidential**   | Data that might be less restrictive within the company but might cause damage if disclosed.                                                                                                                                                                                                                                                      |
+| **Private**        | Private data is usually compartmental data that might not do the company damage but must be kept private for other reasons. Human resources data is one example of data that can be classified as private.                                                                                                                                       |
+| **Proprietary**    | Proprietary data is data that is disclosed outside the company on a limited basis or contains information that could reduce the company's competitive advantage, such as the technical specifications of a new product.                                                                                                                          |
+| **Public**         | Public data is the least sensitive data used by the company and would cause the least harm if disclosed. This could be anything from data used for marketing to the number of employees in the company.                                                                                                                                          |
 
 #### Shared Responsibility Model in the Azure Cloud
 
