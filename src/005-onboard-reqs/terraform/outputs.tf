@@ -25,11 +25,7 @@ output "arc_onboarding_sp_client_id" {
 
 output "arc_onboarding_sp_client_secret" {
   description = <<-EOF
-    The Service Principal Secret used for automation.
-
-    ```sh
-    terraform output -json | jq -r '.arc_onboard_sp_client_secret.value'
-    ```
+    The Service Principal Secret used for automation. `jq -r '.arc_onboard_sp_client_secret.value' <<< "$(terraform output -json)"`
 EOF
   value       = try(module.onboard_identity[0].sp_client_secret, "")
   sensitive   = true

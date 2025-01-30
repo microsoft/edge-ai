@@ -10,7 +10,7 @@ trigger:
       - main
 
 schedules:
-  - cron: '0 5 * * *'
+  - cron: "0 5 * * *"
     displayName: Daily 9 PM PST/5 AM UTC Trigger
     branches:
       include:
@@ -23,7 +23,7 @@ schedules:
 variables:
   isMain: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
   isScheduled: $[eq(variables['Build.Reason'], 'Schedule')]
-  MegalinterCachePath: '/mnt/storage/sdc/cache/images/megalinter'
+  MegalinterCachePath: "/mnt/storage/sdc/cache/images/megalinter"
 
 # Define the default pool for the entire pipeline. This is a
 # Managed DevOps Pool with Ubuntu 2022 and WIndows 2022 agents
@@ -40,7 +40,7 @@ stages:
     condition: eq(variables.isScheduled, true)
     jobs:
       - job: UpdateMegaLinterCache
-        displayName: 'Update MegaLinter Cache'
+        displayName: "Update MegaLinter Cache"
 
         pool:
           name: ai-on-edge-managed-pool
@@ -53,19 +53,19 @@ stages:
               # Clear the cache data directory ahead of the refresh
               rm -rf $(MegalinterCachePath)
               mkdir -p $(MegalinterCachePath)
-            displayName: 'Clear Megalinter Cache Directory'
+            displayName: "Clear Megalinter Cache Directory"
 
           # Pull MegaLinter docker image
           - script: |
               # Pull MegaLinter docker image
               docker pull oxsecurity/megalinter:v8
-            displayName: 'Pull MegaLinter'
+            displayName: "Pull MegaLinter"
 
           # Save MegaLinter docker image to cache
           - script: |
               echo "Saving Megalinter Docker image to cache..."
               docker save oxsecurity/megalinter:v8 -o $(MegalinterCachePath)/megalinterv8-cache.tar
-            displayName: 'Save MegaLinter Docker Image to Cache'
+            displayName: "Save MegaLinter Docker Image to Cache"
 
   - stage: Main
     displayName: Main Build
@@ -147,9 +147,9 @@ stages:
           vmImage: ubuntu-latest
         steps:
           - task: DeleteFiles@1
-            displayName: 'Delete files from $(Agent.WorkFolder)'
+            displayName: "Delete files from $(Agent.WorkFolder)"
             inputs:
-              SourceFolder: '$(Agent.WorkFolder)'
+              SourceFolder: "$(Agent.WorkFolder)"
 
       # Run Dependency Scan based on the MSFT vss governance build task.
       # A version of this task is also auto injected by corporate policy.
@@ -269,6 +269,7 @@ stages:
               else
                 echo "No updates detected in the Terraform documentation."
               fi
+            displayName: Check for changes in terraform docs
             workingDirectory: $(System.DefaultWorkingDirectory)
             condition: and( not(failed()), not(canceled()) )
 
@@ -403,24 +404,24 @@ stages:
           - MatrixBuildFolderCheck
         pool:
           name: ai-on-edge-managed-pool
-          vmImage: 'windows-2022'
+          vmImage: "windows-2022"
         condition: eq(dependencies.MatrixBuildFolderCheck.outputs['matrixBuildFolderCheckTask.changesInRpEnablementPwsh'], 'true')
         variables:
-          testResultsOutput: '$(System.DefaultWorkingDirectory)/PWSH-TEST-RESULTS.xml'
+          testResultsOutput: "$(System.DefaultWorkingDirectory)/PWSH-TEST-RESULTS.xml"
         steps:
           # Run Pester tests for the resource provider scripts
           - powershell: ./.pipelines/subscripts/Invoke-Pester.ps1 -Path ./src/000-subscription -OutputFile $(testResultsOutput)
-            displayName: 'Run pester'
+            displayName: "Run pester"
             workingDirectory: $(System.DefaultWorkingDirectory)
 
           # Publish the Pester test results
           - task: PublishTestResults@2
             displayName: Publish Test Results
             inputs:
-              testRunTitle: 'Test Results for Pester'
-              buildPlatform: 'Windows'
-              testRunner: 'NUnit'
-              testResultsFiles: '$(testResultsOutput)'
+              testRunTitle: "Test Results for Pester"
+              buildPlatform: "Windows"
+              testRunner: "NUnit"
+              testResultsFiles: "$(testResultsOutput)"
               failTaskOnFailedTests: true
 
       # Job to run Terraform install, init, provider version checks, plan,
@@ -595,10 +596,10 @@ stages:
 
           # Publish the Terraform Plan as an official build artifact for downloading
           - task: PublishBuildArtifacts@1
-            displayName: 'Publish Artifact: $(folderName) Terraform Plan'
+            displayName: "Publish Artifact: $(folderName) Terraform Plan"
             inputs:
-              PathtoPublish: '$(Build.ArtifactStagingDirectory)/$(Build.Buildnumber).$(folderName).tfplan'
-              ArtifactName: 'TerraformPlan'
+              PathtoPublish: "$(Build.ArtifactStagingDirectory)/$(Build.Buildnumber).$(folderName).tfplan"
+              ArtifactName: "TerraformPlan"
 
           # Terraform Test Command
           # This is not yet implemented, tracking here: https://github.com/jason-johnson/azure-pipelines-tasks-terraform/issues/398
@@ -654,20 +655,20 @@ stages:
           # But it requires Node.js to be installed on the agent
           - task: UseNode@1
             inputs:
-              version: '22.x'
+              version: "22.x"
             condition: always()
 
           # Install the tftest-to-junitxml NPM package
           # https://github.com/Liam-Johnston/tftest-to-junitxml
           - script: |
               npm install -g tftest-to-junitxml
-            displayName: 'Install tftest-to-junitxml'
+            displayName: "Install tftest-to-junitxml"
             condition: always()
 
           # Call the tool to convert the Terraform test output to JUnit XML
           - script: |
               npx tftest-to-junitxml "$(System.DefaultWorkingDirectory)/$(folderName)_test_output.log"
-            displayName: 'Convert Terraform test output to JUnit XML'
+            displayName: "Convert Terraform test output to JUnit XML"
             condition: always()
 
           # Publish the Terraform test results as a build artifact to drive
@@ -677,9 +678,9 @@ stages:
           - task: PublishTestResults@2
             displayName: Publish Test Results
             inputs:
-              testResultsFiles: 'TEST-terraform.xml'
-              testRunTitle: 'Test Results for $(folderName)'
-              buildPlatform: 'Linux'
-              testRunner: 'JUnit'
+              testResultsFiles: "TEST-terraform.xml"
+              testRunTitle: "Test Results for $(folderName)"
+              buildPlatform: "Linux"
+              testRunner: "JUnit"
               failTaskOnFailedTests: true
             condition: always()

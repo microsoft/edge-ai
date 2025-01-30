@@ -1,4 +1,5 @@
 <!-- BEGIN_TF_DOCS -->
+<!-- markdown-table-prettify-ignore-start -->
 # Azure IoT Operations Cloud Requirements
 
 Sets up required cloud resources for Azure IoT Operations installation
@@ -7,120 +8,53 @@ access to resources.
 
 ## Requirements
 
-The following requirements are needed by this module:
-
-- terraform (>= 1.9.8, < 2.0)
-
-- azapi (>= 2.1.0)
-
-- azuread (>= 3.0.2)
-
-- azurerm (>= 4.8.0)
+| Name | Version |
+|------|---------|
+| terraform | >= 1.9.8, < 2.0 |
+| azapi | >= 2.1.0 |
+| azuread | >= 3.0.2 |
+| azurerm | >= 4.8.0 |
 
 ## Providers
 
-The following providers are used by this module:
-
-- azurerm (>= 4.8.0)
-
-- terraform
+| Name | Version |
+|------|---------|
+| azurerm | >= 4.8.0 |
+| terraform | n/a |
 
 ## Resources
 
-The following resources are used by this module:
-
-- [terraform_data.defer](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data) (resource)
-- [azurerm_resource_group.aio_rg](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/resource_group) (data source)
+| Name | Type |
+|------|------|
+| [terraform_data.defer](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data) | resource |
+| [azurerm_resource_group.aio_rg](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/resource_group) | data source |
 
 ## Modules
 
-The following Modules are called:
+| Name | Source | Version |
+|------|--------|---------|
+| schema\_registry | ./modules/schema-registry | n/a |
+| sse\_key\_vault | ./modules/sse-key-vault | n/a |
+| uami | ./modules/uami | n/a |
 
-### schema\_registry
+## Inputs
 
-Source: ./modules/schema-registry
-
-Version:
-
-### sse\_key\_vault
-
-Source: ./modules/sse-key-vault
-
-Version:
-
-### uami
-
-Source: ./modules/uami
-
-Version:
-
-## Required Inputs
-
-The following input variables are required:
-
-### environment
-
-Description: Environment for all resources in this module: dev, test, or prod
-
-Type: `string`
-
-### location
-
-Description: Location for all resources in this module
-
-Type: `string`
-
-### resource\_prefix
-
-Description: Prefix for all resources in this module
-
-Type: `string`
-
-## Optional Inputs
-
-The following input variables are optional (have default values):
-
-### existing\_key\_vault\_name
-
-Description: Name of the Azure Key Vault to use by Secret Sync Extension. If not provided, will create new key vault. Will fail if provided key vault does not exist in provided resource group.
-
-Type: `string`
-
-Default: `null`
-
-### instance
-
-Description: Instance identifier for naming resources: 001, 002, etc...
-
-Type: `string`
-
-Default: `"001"`
-
-### resource\_group\_name
-
-Description: The name for the resource group. (Otherwise, 'rg-{var.resource\_prefix}-{var.environment}-{var.instance}')
-
-Type: `string`
-
-Default: `null`
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|:--------:|
+| environment | Environment for all resources in this module: dev, test, or prod | `string` | n/a | yes |
+| location | Location for all resources in this module | `string` | n/a | yes |
+| resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
+| existing\_key\_vault\_name | Name of the Azure Key Vault to use by Secret Sync Extension. If not provided, will create new key vault. Will fail if provided key vault does not exist in provided resource group. | `string` | `null` | no |
+| instance | Instance identifier for naming resources: 001, 002, etc... | `string` | `"001"` | no |
+| resource\_group\_name | The name for the resource group. (Otherwise, 'rg-{var.resource\_prefix}-{var.environment}-{var.instance}') | `string` | `null` | no |
 
 ## Outputs
 
-The following outputs are exported:
-
-### aio\_uami\_name
-
-Description: n/a
-
-### schema\_registry\_id
-
-Description: n/a
-
-### sse\_key\_vault\_name
-
-Description: n/a
-
-### sse\_uami\_name
-
-Description: n/a
+| Name | Description |
+|------|-------------|
+| aio\_uami\_name | n/a |
+| schema\_registry\_id | n/a |
+| sse\_key\_vault\_name | n/a |
+| sse\_uami\_name | n/a |
+<!-- markdown-table-prettify-ignore-end -->
 <!-- END_TF_DOCS -->
