@@ -72,9 +72,8 @@ directly to get started bootstrapping environments by:
 6. [Deploy Azure IoT Operations](./src/040-iot-ops/terraform/README.md) to the previously deployed Azure-hosted VM.
 
 ### Video Demonstration
-<!-- markdownlint-disable -->
-<iframe src="https://microsoft-my.sharepoint.com/personal/allengreaves_microsoft_com/_layouts/15/embed.aspx?UniqueId=5996fe11-0c09-40d7-a0f3-6719c8912157&embed=%7B%22ust%22%3Atrue%2C%22hv%22%3A%22CopyEmbedCode%22%7D&referrer=StreamWebApp&referrerScenario=EmbedDialog.Create" width="640" height="360" frameborder="0" scrolling="no" allowfullscreen title="iac-for-edge-sample-deploy.mp4"></iframe>
-<!-- markdownlint-enable -->
+
+[See our demonstration of using IaC for Edge on your next project](https://microsoft-my.sharepoint.com/:v:/p/allengreaves/ERH-llkJDNdAoPNnGciRIVcBUmuCON1lkx3zfaXgDthX8g?e=oRRx8f)
 
 ### Supported Features
 
