@@ -1,4 +1,5 @@
 <!-- BEGIN_TF_DOCS -->
+<!-- markdown-table-prettify-ignore-start -->
 # Apply Scripts
 
 Sets up an `az connectedk8s proxy`, if needed,  and then runs the corresponding
@@ -6,56 +7,29 @@ scripts passed into this module.
 
 ## Requirements
 
-The following requirements are needed by this module:
-
-- terraform (>= 1.9.8, < 2.0)
+| Name | Version |
+|------|---------|
+| terraform | >= 1.9.8, < 2.0 |
 
 ## Providers
 
-The following providers are used by this module:
-
-- terraform
+| Name | Version |
+|------|---------|
+| terraform | n/a |
 
 ## Resources
 
-The following resources are used by this module:
+| Name | Type |
+|------|------|
+| [terraform_data.apply_scripts](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data) | resource |
 
-- [terraform_data.apply_scripts](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data) (resource)
+## Inputs
 
-## Required Inputs
-
-The following input variables are required:
-
-### aio\_namespace
-
-Description: Azure IoT Operations namespace
-
-Type: `string`
-
-### connected\_cluster\_name
-
-Description: The name of the connected cluster to deploy Azure IoT Operations to
-
-Type: `string`
-
-### resource\_group\_name
-
-Description: Name of the pre-existing resource group in which to create resources
-
-Type: `string`
-
-### scripts
-
-Description: List of scripts to apply, the objects will be merged together to make one scripting call
-
-Type:
-
-```hcl
-list(
-    object({
-      files       = list(string)
-      environment = map(any)
-    })
-  )
-```
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|:--------:|
+| aio\_namespace | Azure IoT Operations namespace | `string` | n/a | yes |
+| connected\_cluster\_name | The name of the connected cluster to deploy Azure IoT Operations to | `string` | n/a | yes |
+| resource\_group\_name | Name of the pre-existing resource group in which to create resources | `string` | n/a | yes |
+| scripts | List of scripts to apply, the objects will be merged together to make one scripting call | ```list( object({ files = list(string) environment = map(any) }) )``` | n/a | yes |
+<!-- markdown-table-prettify-ignore-end -->
 <!-- END_TF_DOCS -->

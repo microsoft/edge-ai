@@ -1,110 +1,45 @@
 <!-- BEGIN_TF_DOCS -->
+<!-- markdown-table-prettify-ignore-start -->
 # Azure IoT Instance post-installation enablement
 
 Enables secret-sync on the Azure IoT instance after the instance is created.
 
 ## Requirements
 
-The following requirements are needed by this module:
-
-- terraform (>= 1.9.8, < 2.0)
-
-- azapi (2.1.0)
+| Name | Version |
+|------|---------|
+| terraform | >= 1.9.8, < 2.0 |
+| azapi | 2.1.0 |
 
 ## Providers
 
-The following providers are used by this module:
-
-- azapi (2.1.0)
-
-- azurerm
+| Name | Version |
+|------|---------|
+| azapi | 2.1.0 |
+| azurerm | n/a |
 
 ## Resources
 
-The following resources are used by this module:
+| Name | Type |
+|------|------|
+| [azapi_resource.default_aio_keyvault_secret_provider_class](https://registry.terraform.io/providers/Azure/azapi/2.1.0/docs/resources/resource) | resource |
+| [azurerm_federated_identity_credential.federated_identity_cred_aio_instance](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/federated_identity_credential) | resource |
+| [azurerm_federated_identity_credential.federated_identity_cred_sse_aio](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/federated_identity_credential) | resource |
+| [azapi_resource.cluster_oidc_issuer](https://registry.terraform.io/providers/Azure/azapi/2.1.0/docs/data-sources/resource) | data source |
+| [azurerm_subscription.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/subscription) | data source |
 
-- [azapi_resource.default_aio_keyvault_secret_provider_class](https://registry.terraform.io/providers/Azure/azapi/2.1.0/docs/resources/resource) (resource)
-- [azurerm_federated_identity_credential.federated_identity_cred_aio_instance](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/federated_identity_credential) (resource)
-- [azurerm_federated_identity_credential.federated_identity_cred_sse_aio](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/federated_identity_credential) (resource)
-- [azapi_resource.cluster_oidc_issuer](https://registry.terraform.io/providers/Azure/azapi/2.1.0/docs/data-sources/resource) (data source)
-- [azurerm_subscription.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/subscription) (data source)
+## Inputs
 
-## Required Inputs
-
-The following input variables are required:
-
-### aio\_namespace
-
-Description: Azure IoT Operations namespace
-
-Type: `string`
-
-### aio\_user\_managed\_identity\_id
-
-Description: ID of the User Assigned Managed Identity for the Azure IoT Operations instance
-
-Type: `string`
-
-### connected\_cluster\_location
-
-Description: The location of the connected cluster resource
-
-Type: `string`
-
-### connected\_cluster\_name
-
-Description: The name of the connected cluster to deploy Azure IoT Operations to
-
-Type: `string`
-
-### custom\_location\_id
-
-Description: The resource ID of the Custom Location.
-
-Type: `string`
-
-### enable\_instance\_secret\_sync
-
-Description: Whether to enable secret sync on the Azure IoT Operations instance
-
-Type: `bool`
-
-### key\_vault
-
-Description: The name and id of the existing key vault for Azure IoT Operations instance
-
-Type:
-
-```hcl
-object({
-    name = string
-    id   = string
-  })
-```
-
-### resource\_group
-
-Description: Name and ID of the pre-existing resource group in which to create resources
-
-Type:
-
-```hcl
-object({
-    id   = string
-    name = string
-  })
-```
-
-### sse\_user\_managed\_identity
-
-Description: Secret Sync Extension user managed identity id and client id
-
-Type:
-
-```hcl
-object({
-    id        = string
-    client_id = string
-  })
-```
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|:--------:|
+| aio\_namespace | Azure IoT Operations namespace | `string` | n/a | yes |
+| aio\_user\_managed\_identity\_id | ID of the User Assigned Managed Identity for the Azure IoT Operations instance | `string` | n/a | yes |
+| connected\_cluster\_location | The location of the connected cluster resource | `string` | n/a | yes |
+| connected\_cluster\_name | The name of the connected cluster to deploy Azure IoT Operations to | `string` | n/a | yes |
+| custom\_location\_id | The resource ID of the Custom Location. | `string` | n/a | yes |
+| enable\_instance\_secret\_sync | Whether to enable secret sync on the Azure IoT Operations instance | `bool` | n/a | yes |
+| key\_vault | The name and id of the existing key vault for Azure IoT Operations instance | ```object({ name = string id = string })``` | n/a | yes |
+| resource\_group | Name and ID of the pre-existing resource group in which to create resources | ```object({ id = string name = string })``` | n/a | yes |
+| sse\_user\_managed\_identity | Secret Sync Extension user managed identity id and client id | ```object({ id = string client_id = string })``` | n/a | yes |
+<!-- markdown-table-prettify-ignore-end -->
 <!-- END_TF_DOCS -->

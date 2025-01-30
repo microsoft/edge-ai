@@ -33,7 +33,7 @@
     "heading_line_length": 80,
     "code_block_line_length": 1200,
     "code_blocks": true,
-    "tables": true,
+    "tables": false,
     "headings": true,
     "strict": false,
     "stern": false
