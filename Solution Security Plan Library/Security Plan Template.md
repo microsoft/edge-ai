@@ -12,11 +12,13 @@ Complete these tasks and share your progress throughout the engagement at [ISE S
 
 ## Preamble
 
-*Important to note:* ISE cannot certify/attest to the security of an architecture nor code. This document is intended to help produce backlog items specific to the customer engagement and to document the relevant security design decisions made by the team during build. Please direct your customer to work with their account team or preferred security vendor to seek an audit or pen-test from a security vendor if required/desired.
+*Important to note:* ISE cannot certify/attest to the security of an architecture nor code. This document is intended to help produce backlog items specific to the customer engagement and to document the relevant security design decisions made by the team during build.
+Please direct your customer to work with their account team or preferred security vendor to seek an audit or pen-test from a security vendor if required/desired.
 
 ## Overview
 
-Please find the Security Plan for the Project Name below. This document shows the architecture and data flow diagram of the application. These artifacts were constructed based on documentation and source code from the project itself and are subject to change as the architecture and codebase evolves. Each of the labeled entities in the figures below are accompanied by meta-information which describes the threats, describes the data in scope, and recommendations for security controls.
+Please find the Security Plan for the Project Name below. This document shows the architecture and data flow diagram of the application.These artifacts were constructed based on documentation and source code from the project itself and are subject to change as the architecture and codebase evolves.
+Each of the labeled entities in the figures below are accompanied by meta-information which describes the threats, describes the data in scope, and recommendations for security controls.
 
 ## Diagrams
 
@@ -32,10 +34,10 @@ For help getting started, please see our [Security Plan Guidelines](https://www.
 
 ### Data Flow Attributes
   
-| # | Transport Protocol | Data Classification | Authentication | Authorization | Notes|
-|---|--------------------|---------------------|----------------|---------------|------|
-| 1 | [Name of the protocol for the service] | [Data classification guidance can be found in the [Appendix](https://www.cwcwiki.com/wiki/Security_Plan_Guidelines#Microsoft_Data_Classification_Guidelines)] | [Method of authenticating the caller] | [Method of authorizing the caller] | [Additional Notes] |
-| ... | ... | ... | ... | ... | ... |
+| #   | Transport Protocol                     | Data Classification                                                                                                                                           | Authentication                        | Authorization                      | Notes              |
+|-----|----------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------|------------------------------------|--------------------|
+| 1   | [Name of the protocol for the service] | [Data classification guidance can be found in the [Appendix](https://www.cwcwiki.com/wiki/Security_Plan_Guidelines#Microsoft_Data_Classification_Guidelines)] | [Method of authenticating the caller] | [Method of authorizing the caller] | [Additional Notes] |
+| ... | ...                                    | ...                                                                                                                                                           | ...                                   | ...                                | ...                |
 
 ## Threats and Mitigations
 
@@ -48,5 +50,5 @@ For inspiration, see our [Example Threats and Mitigations](https://www.cwcwiki.c
 An ideal architecture would contain *zero secrets*. Credential-less options like managed identities should be used wherever possible. Where secrets are required, it’s important to track them for operational purposes. Please see our [Example Secrets Inventory](https://www.cwcwiki.com/wiki/Security_Plan_Guidelines#Example_Secrets_Inventory) to help you get started.
 
 | Name | What is its purpose? | Where does it live? | How was it generated? | What's the rotation strategy? Does it cause downtime? | How does the secret get distributed to consumers? | What’s the secret’s lifespan? |
-| ---- | ----------- | ------------------- | --------------------- | ----------------------------------------------------- | ------------------------------------------------- | ----------------------------- |
-| ... | ... | ... | ... | ... | ... | ... |
+|------|----------------------|---------------------|-----------------------|-------------------------------------------------------|---------------------------------------------------|-------------------------------|
+| ...  | ...                  | ...                 | ...                   | ...                                                   | ...                                               | ...                           |

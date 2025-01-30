@@ -7,7 +7,7 @@
 		"terrascan": "mega-linter-runner  --env \"'ENABLE_LINTERS=TERRAFORM_TERRASCAN,TERRAFORM_TERRASCAN_CONFIG_FILE:.terrascan.toml'\" ",
 		"lint": "mega-linter-runner",
 		"lint-fix": "mega-linter-runner --fix",
-		"tf-docs": "for dir in $(find . -type d -name 'terraform' ! -path './megalinter-reports/*'); do (echo $dir && terraform-docs markdown $dir); done"
+		"tf-docs": "./src/update-all-terraform-docs.sh"
 	},
 	"dependencies": {
 		"mega-linter-runner": "^8.1.0"

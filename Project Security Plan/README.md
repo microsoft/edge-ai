@@ -1,4 +1,7 @@
 <!--=========================README TEMPLATE INSTRUCTIONS=============================
+
+cspell:ignore TODO
+
 ======================================================================================
 
 - THIS README TEMPLATE LARGELY CONSISTS OF COMMENTED OUT TEXT. THIS UN-RENDERED TEXT IS MEANT TO BE LEFT IN AS A GUIDE 
@@ -22,9 +25,9 @@ within the file for "TODO".
 ======================================================================================
 ====================================================================================-->
 
-<!---------------------[  Description  ]------------------<recommended> section below------------------>
-
 # ISE-Security-Plan
+
+<!---------------------[  Description  ]------------------<recommended> section below------------------>
 
 <!-- 
 INSTRUCTIONS:
@@ -87,7 +90,7 @@ How to Evaluate & Examples:
 -->
 
 <!---- [TODO]  CONTENT GOES BELOW ------->
-*Description of how to install and use the code or content goes here*
+*Description of how to install and use the code or content goes here.*
 <!------====-- CONTENT GOES ABOVE ------->
 
 <!-----------------------[ Prerequisites  ]-----------------<optional> section below--------------------->
@@ -180,8 +183,6 @@ How to Evaluate & Examples:
 <!---- [TODO]  CONTENT GOES BELOW ------->
 <!-- We use [SemVer](https://aka.ms/StartRight/README-Template/semver) for versioning. -->
 <!------====-- CONTENT GOES ABOVE ------->
-
------------------------------------------------
 
 <!-----------------------[  Access  ]-----------------------<recommended> section below------------------>
 ## Access
@@ -288,8 +289,6 @@ How to Evaluate & Examples:
 <!---- [TODO]  CONTENT GOES BELOW ------->
 
 <!------====-- CONTENT GOES ABOVE ------->
-
---------------------------------------------
 
 <!-----------------------[  Links to Platform Policies  ]-------<recommended> section below-------------->
 ## How to Accomplish Common User Actions

@@ -62,7 +62,7 @@ Describe "Show-State" {
 Describe 'Register-Azure-Providers' {
 
     BeforeEach {
-        [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUserDeclaredVarsMoreThanAssignments', '', Scope='Function')]
+        [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUserDeclaredVarsMoreThanAssignments', '', Scope = 'Function')]
         $hash = @{
             callcount = 0
         }
@@ -101,7 +101,8 @@ Describe 'Register-Azure-Providers' {
             param ($provider)
             if ($provider -eq "Microsoft.Storage") {
                 return "NotRegistered"
-            } else {
+            }
+            else {
                 return "Registered"
             }
         }
@@ -134,7 +135,8 @@ Describe 'Register-Azure-Providers' {
             param ($provider)
             if ($provider -eq "Microsoft.Storage" -and $hash.callcount -eq 1) {
                 return "Registered"
-            }else{
+            }
+            else {
                 return "NotRegistered"
             }
         }

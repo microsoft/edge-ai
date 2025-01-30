@@ -29,9 +29,9 @@
     "maximum": 1
   },
   "MD013": {
-    "line_length": 400,
+    "line_length": 500,
     "heading_line_length": 80,
-    "code_block_line_length": 140,
+    "code_block_line_length": 1200,
     "code_blocks": true,
     "tables": true,
     "headings": true,
@@ -74,7 +74,10 @@
   },
   "MD032": true,
   "MD033": {
-    "allowed_elements": []
+    "allowed_elements": [
+      "details",
+      "summary"
+    ]
   },
   "MD034": true,
   "MD035": {
