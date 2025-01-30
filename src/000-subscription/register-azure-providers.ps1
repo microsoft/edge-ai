@@ -60,6 +60,22 @@ function Move-CursorToFirstLine {
     Write-Host -NoNewline "`e[${numberOfLines}F"
 }
 
+function Test-Cli-Install {
+	# Check the operating system
+	$os = $PSVersionTable.OS
+	Write-Output $os
+
+	    # Check if Azure CLI is installed on Windows
+	    $azCliPath = Get-Command az -ErrorAction SilentlyContinue
+
+	    if ($azCliPath) {
+		Write-Output "Azure CLI is installed. Path: $($azCliPath.Path)"
+	    } else {
+		Write-Output "Azure CLI is not installed. Please install Azure CLI at https://aka.ms/azurecli."
+        exit 1
+	    }
+}
+
 function Get-RegisteredProvider {
     # Get list of all registered azure resource providers
     return az provider list --query "sort_by([?registrationState=='Registered'].{Provider:namespace}, &Provider)" --out tsv
@@ -80,6 +96,8 @@ function Show-Provider {
     # Show the azure resource provider
     return az provider show --namespace $provider --query "registrationState" --out tsv
 }
+
+Test-Cli-Install
 
 if (-not (Test-Path $filePath)) {
     Write-Error "Providers file not found: $filePath"
