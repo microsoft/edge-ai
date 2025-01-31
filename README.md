@@ -20,9 +20,13 @@ telemetry across edge and cloud and need to view both environments as a unified 
 address the needs of all stakeholders, and will accelerate POCs to production, with the flexibility to
 tackle the increasing complexity of delivering business value from edge data.
 
-## This project is not a quickstart
+## Production Ready Edge IaC Acceleration
 
-Quickstarts for Azure IoT Operations or example implementations can be found in official
+The primary objective of this repository is to provide production ready IaC for scale Edge AI solutions. This
+repository provides Terraform for building edge and cloud infrastructure, with a Bicep implementation on the roadmap
+for delivery in Q2 CY2025.
+
+If you are in need of Quickstarts for Azure IoT Operations or example implementations, they  can be found in official
 Azure documentation:
 
 - [Azure IoT Operations - Quickstart](https://learn.microsoft.com/en-us/azure/iot-operations/get-started-end-to-end-sample/quickstart-deploy)
@@ -38,9 +42,10 @@ directly to get started bootstrapping Arc-enabled AIO environments by:
 2. [Install pre-requisites](./src/README.md#prerequisites) or use [this project's integrated dev container](./.devcontainer/README.md).
 3. Login to the Azure Portal.
 4. From a terminal:
-    - `cd /src`
-    - Follow instructions in the [005-onboarding-reqs README](./src/005-onboard-reqs/README.md)
-    - Run `./operate-all-terraform.sh`
+    - `cd ./src/000-subscription`
+    - Run `./register-azure-providers.sh` to prepare your subscription
+    - Follow instructions in the [./src/005-onboarding-reqs README](./src/005-onboard-reqs/README.md)
+    - Run `./operate-all-terraform.sh` from the `./src` directory
 
 ### Video Demonstration
 
