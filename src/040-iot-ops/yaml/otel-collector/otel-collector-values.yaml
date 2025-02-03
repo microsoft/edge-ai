@@ -1,3 +1,4 @@
+---
 mode: deployment
 fullnameOverride: aio-otel-collector
 image:

@@ -1,0 +1,8 @@
+---
+site_name: Edge AI
+theme:
+  name: material
+  palette:
+    primary: "indigo"
+    accent: "indigo"
+  logo: media/logo.png
