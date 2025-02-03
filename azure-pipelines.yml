@@ -410,7 +410,7 @@ stages:
           testResultsOutput: "$(System.DefaultWorkingDirectory)/PWSH-TEST-RESULTS.xml"
         steps:
           # Run Pester tests for the resource provider scripts
-          - powershell: ./.pipelines/subscripts/Invoke-Pester.ps1 -Path ./src/000-subscription -OutputFile $(testResultsOutput)
+          - powershell: ./.azdo/subscripts/Invoke-Pester.ps1 -Path ./src/000-subscription -OutputFile $(testResultsOutput)
             displayName: "Run pester"
             workingDirectory: $(System.DefaultWorkingDirectory)
 
