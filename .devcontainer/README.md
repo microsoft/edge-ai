@@ -10,7 +10,7 @@ A small amount of configuration may be required when setting up your DevContaine
 
 Remote-Containers should copy your gitconfig settings from your local machine, but you may be asked to configure your global git settings when developing in the container.
 
-```bash
+```sh
 git config --global user.name "Your Name"
 git config --global user.email "your.email@address"
 ```
@@ -25,13 +25,13 @@ Note: If you are running Windows as your host OS and launch VS Code from the sta
 
 Run ALL linters
 
-```bash
+```sh
 npm run lint
 ```
 
 To fix basic linting issues, run the following:
 
-```bash
+```sh
 npm run lint-fix
 ```
 
@@ -39,13 +39,13 @@ npm run lint-fix
 
 The linter run as part of PR validation is installed and configured in the DevContainer, making it possible to check your markdown before committing & PR.
 
-```bash
+```sh
 npm run mdlint
 ```
 
 To fix basic markdown linting issues, run the following:
 
-```bash
+```sh
 npm run mdlint-fix
 ```
 
@@ -57,7 +57,7 @@ npm run mdlint-fix
 
 Cspell checker runs as part of PR validation and is installed and configured in the DevContainer, which makes it possible to check your language basics before committing & PR.
 
-```bash
+```sh
 npm run cspell
 ```
 

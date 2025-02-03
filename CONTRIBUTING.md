@@ -11,15 +11,26 @@ All types of contributions are encouraged and valued. See the [Table of Contents
 
 ## Table of Contents
 
-- [Code of Conduct](#code-of-conduct)
-- [I Have a Question](#i-have-a-question)
-- [I Want To Contribute](#i-want-to-contribute)
-- [Reporting Bugs](#reporting-bugs)
-- [Suggesting Enhancements](#suggesting-enhancements)
-- [Your First Code Contribution](#your-first-code-contribution)
-- [Improving The Documentation](#improving-the-documentation)
-- [Style Guides](#style-guides)
-- [Commit Messages](#commit-messages)
+- [Contributing to the AI on Edge Flagship Accelerator](#contributing-to-the-ai-on-edge-flagship-accelerator)
+  - [Table of Contents](#table-of-contents)
+  - [Code of Conduct](#code-of-conduct)
+  - [I Have a Question](#i-have-a-question)
+  - [I Want To Contribute](#i-want-to-contribute)
+    - [Reporting Bugs](#reporting-bugs)
+      - [Before Submitting a Bug Report](#before-submitting-a-bug-report)
+      - [How Do I Submit a Good Bug Report?](#how-do-i-submit-a-good-bug-report)
+    - [Suggesting Enhancements](#suggesting-enhancements)
+      - [Before Submitting an Enhancement](#before-submitting-an-enhancement)
+      - [How Do I Submit a Good Enhancement Suggestion?](#how-do-i-submit-a-good-enhancement-suggestion)
+    - [Your First Code Contribution](#your-first-code-contribution)
+    - [Improving The Documentation](#improving-the-documentation)
+  - [Style Guides](#style-guides)
+    - [Linting](#linting)
+      - [Markdown linting](#markdown-linting)
+      - [Spell checking](#spell-checking)
+    - [Linting Updates](#linting-updates)
+    - [Commit Messages](#commit-messages)
+  - [Attribution](#attribution)
 
 ## Code of Conduct
 
@@ -133,13 +144,13 @@ This project uses MegaLinter with numerous custom configured linters. These lint
 
 Run ALL linters
 
-```bash
+```sh
 npm run lint
 ```
 
 To fix basic linting issues, run the following:
 
-```bash
+```sh
 npm run lint-fix
 ```
 
@@ -147,13 +158,13 @@ npm run lint-fix
 
 The linter run as part of PR validation is installed and configured in the DevContainer, making it possible to check your markdown before committing & PR.
 
-```bash
+```sh
 npm run mdlint
 ```
 
 To fix basic markdown linting issues, run the following:
 
-```bash
+```sh
 npm run mdlint-fix
 ```
 
@@ -165,7 +176,7 @@ npm run mdlint-fix
 
 Cspell checker runs as part of PR validation and is installed and configured in the DevContainer, which makes it possible to check your language basics before committing & PR.
 
-```bash
+```sh
 npm run cspell
 ```
 

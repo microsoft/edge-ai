@@ -79,7 +79,7 @@ A shell script can be used to implement the following steps in an efficient way:
     - Build the topic name, e.g. `Meta/DK/HI/24A/azure-iot-operations/data/kepware-opc-ua-connector/Line01/Unit01`
     - Publish the payload to the MQTT broker via
 
-        ```bash
+        ```sh
         kubectl exec  mqtt-client -n azure-iot-operations -- \
         mqttui -b mqtts://aio-mq-dmqtt-frontend:8883 -u '$sat' \
         --password $mqttClientPassword --insecure publish "$metaTopicName" "$metaValue"

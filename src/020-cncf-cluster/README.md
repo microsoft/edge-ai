@@ -12,7 +12,7 @@ This script has been tested on the following operating systems:
 
 Login to Azure CLI using the below command:
 
-```bash
+```sh
 # Login to Azure CLI, optionally specify the tenant-id
 az login # --tenant <tenant-id>
 ```
@@ -109,7 +109,7 @@ The script performs the following steps:
 
 Login to Azure CLI using the below command:
 
-```bash
+```sh
 # Login to Azure CLI, optionally specify the tenant-id
 az login # --tenant <tenant-id>
 ```

@@ -106,7 +106,7 @@ We consider the following metadata:
 
 We expect it to be published into the Enterprise UNS with the following structure:
 
-```bash
+```sh
 Enterprise/
 └── FR/
     └── CH/
@@ -193,7 +193,7 @@ Another script will be responsible to extract metadata from the Azure resources 
 
 What we imagine to have in the Enterprise UNS:
 
-```console
+```sh
 Meta/
 └── DK/
     └── HI/

@@ -12,7 +12,7 @@ The registration script only needs to be run once per subscription.
 
 Login to Azure CLI using the below command:
 
-```bash
+```sh
 # Login to Azure CLI, optionally specify the tenant-id
 az login # --tenant <tenant-id>
 ```
@@ -21,7 +21,7 @@ Run either script example below, depending on your environment.
 
 ### Shell Example
 
-```bash
+```sh
 ./register-azure-providers.sh aio-azure-resource-providers.txt
 ```
 
