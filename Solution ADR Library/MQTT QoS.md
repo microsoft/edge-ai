@@ -115,7 +115,7 @@ To configure the `cardinality` of the MQTT Broker elements, we can:
 
 - or we can define the `cardinality` and `memoryProfile` while deploying the `mq` extension during the AIO Install.
 
-    ```bash
+    ```sh
     az iot ops init ... \
         --mq-mode distributed
         --mq-backend-workers

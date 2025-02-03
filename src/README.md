@@ -23,7 +23,7 @@
 
 Login to Azure CLI using the below command:
 
-```bash
+```sh
 # Login to Azure CLI, optionally specify the tenant-id
 az login # --tenant <tenant-id>
 ```

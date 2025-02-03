@@ -39,7 +39,7 @@ b. publish the connectivity state to an MQTT broker and make it available in the
 
 OPC UA Broker can log connectivity state of an asset and needs to be configured to expose the logs. Configure observability as documented, and ensure you install Azure IoT Operations OPC UA broker with the setting `connectors.values.openTelemetry.endpoints.default.emitLogs=true`.
 
-```bash
+```sh
 az iot ops create --cluster <> --resource-group <> --name <> \
     --otherparams <...> \
     --ops-config observability.metrics.openTelemetryCollectorAddress=<> \
