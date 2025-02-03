@@ -92,7 +92,7 @@ solution for your IaC.
 
 For running the IaC to bootstrap environments, please refer to the [Getting Started](#getting-started)
 documentation below. For using this repository and it's automation to have a complete CI/CD system for your
-IaC, please review the [pipelines ReadMe](./.pipelines/README.md) and reach out to the
+IaC, please review the [build pipelines ReadMe](./.azdo/README.md) and reach out to the
 [Microsoft ISE Edge Computing Technical Domain team](mailto:ectd@microsoft.com) if you need support.
 
 ### Supported Features
