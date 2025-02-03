@@ -1,7 +1,7 @@
 /**
  * # Azure Event Hubs
  *
- * Create a new Event Hub namespace and Event Hub and optionally assign the current AIO extension the Azure Event Hubs Data Sender role.
+ * Create a new Event Hub namespace and Event Hub and assign the AIO instance UAMI the Azure Event Hubs Data Sender role.
  */
 
 resource "azurerm_eventhub_namespace" "destination_event_hub_namespace" {
@@ -20,7 +20,6 @@ resource "azurerm_eventhub" "destination_eh" {
 }
 
 resource "azurerm_role_assignment" "data_sender" {
-  # In future this will be moved out of the EH module and using UAMI
   scope                = azurerm_eventhub_namespace.destination_event_hub_namespace.id
   role_definition_name = "Azure Event Hubs Data Sender"
   principal_id         = var.aio_uami_principal_id

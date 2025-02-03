@@ -2,8 +2,9 @@
 
 set -e
 
-# Optional parameter for the layer to start from (e.g. "--start-layer 040")
+# Optional parameters for the layer to start from and end at (e.g. "--start-layer 040" "--end-layer 060")
 start_layer=""
+end_layer=""
 
 operation="apply"
 
@@ -14,13 +15,18 @@ while [[ $# -gt 0 ]]; do
         shift
         shift
         ;;
+    --end-layer)
+        end_layer="$2"
+        shift
+        shift
+        ;;
     --operation)
         operation="$2"
         shift
         shift
         ;;
     *)
-        echo "Usage: $0 [--start-layer LAYER_NUMBER] [--operation apply|test]"
+        echo "Usage: $0 [--start-layer LAYER_NUMBER] [--end-layer LAYER_NUMBER] [--operation apply|test]"
         exit 1
         ;;
     esac
@@ -78,5 +84,10 @@ for folder in "${folders[@]}"; do
     fi
     if [ "$start_skipping" = false ]; then
         apply_terraform "$folder"
+    fi
+    # If the folder begins with or fully matches $end_layer, stop execution
+    if [[ "$folder" == "$end_layer"* ]]; then
+        print_visible "Stopping terraform apply at layer $end_layer"
+        break
     fi
 done

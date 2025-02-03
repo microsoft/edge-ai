@@ -1,7 +1,7 @@
 /**
- * # Azure IoT Operations Dataflow sample
+ * # Azure IoT Operations Dataflow Event Grid sample
  *
- * Provisions the ARM based data flow endpoint and data flow, requires Asset
+ * Provisions the ARM based data flow endpoint and data flow for Event Grid, requires Asset
  */
 
 data "azapi_resource" "instance" {
@@ -10,15 +10,17 @@ data "azapi_resource" "instance" {
   parent_id = var.resource_group_id
 }
 
+# For troubleshooting, a custom dataflow profile can be created with a higher log level
+# https://learn.microsoft.com/en-us/azure/iot-operations/connect-to-cloud/howto-configure-dataflow-profile?tabs=bicep#tabpanel_4_bicep
 data "azapi_resource" "dataflow_profile" {
   type      = "Microsoft.IoTOperations/instances/dataflowProfiles@2024-11-01"
   name      = "default"
   parent_id = data.azapi_resource.instance.id
 }
 
-resource "azapi_resource" "dataflow_endpoint_to_event_hub" {
+resource "azapi_resource" "dataflow_endpoint_to_event_grid" {
   type      = "Microsoft.IoTOperations/instances/dataflowEndpoints@2024-11-01"
-  name      = "dfe-eh-${var.resource_prefix}-sample"
+  name      = "dfe-eg-${var.resource_prefix}-sample"
   parent_id = data.azapi_resource.instance.id
 
   body = {
@@ -27,13 +29,9 @@ resource "azapi_resource" "dataflow_endpoint_to_event_hub" {
       name = var.custom_location_id
     }
     properties = {
-      endpointType = "Kafka"
-      kafkaSettings = {
-        host = "${var.event_hub.namespace_name}.servicebus.windows.net:9093"
-        batching = {
-          latencyMs   = 0
-          maxMessages = 100
-        }
+      endpointType = "Mqtt"
+      mqttSettings = {
+        host = var.event_grid.endpoint
         tls = {
           mode = "Enabled"
         }
@@ -49,9 +47,9 @@ resource "azapi_resource" "dataflow_endpoint_to_event_hub" {
   }
 }
 
-resource "azapi_resource" "dataflow_to_event_hub" {
+resource "azapi_resource" "dataflow_to_event_grid" {
   type      = "Microsoft.IoTOperations/instances/dataflowProfiles/dataflows@2024-11-01"
-  name      = "df-eh-${var.resource_prefix}-passthrough"
+  name      = "df-eg-${var.resource_prefix}-passthrough"
   parent_id = data.azapi_resource.dataflow_profile.id
 
   body = {
@@ -87,8 +85,8 @@ resource "azapi_resource" "dataflow_to_event_hub" {
         {
           operationType = "Destination"
           destinationSettings = {
-            endpointRef     = azapi_resource.dataflow_endpoint_to_event_hub.name
-            dataDestination = var.event_hub.event_hub_name
+            endpointRef     = azapi_resource.dataflow_endpoint_to_event_grid.name
+            dataDestination = var.event_grid.topic_name
           }
         }
       ]
