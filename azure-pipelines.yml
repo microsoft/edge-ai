@@ -82,6 +82,7 @@ stages:
         steps:
           # Checkout repo
           - checkout: self
+            clean: true
 
           # Initialize dependency scan and fail the build if it does not pass
           - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
@@ -97,19 +98,26 @@ stages:
         pool:
           name: ai-on-edge-managed-pool
           vmImage: ubuntu-latest
+          # mounting the storage disk as a demand to ensure the same disk is used
+          # for the megalinter cache.
           demands:
             - WorkFolder -equals /mnt/storage/sdc
 
         steps:
           # Checkout repo
           - checkout: self
+            clean: true
 
           # Attempt to restore MegaLinter from the cache otherwise pull it
           - script: |
+
+              # Check if the cache directory exists
               if [ -d "$(MegalinterCachePath)" ]; then
-                if [ -f "$(MegalinterCachePath)/megalinter-cache.tar" ]; then
+                # Check if the cache file exists
+                if [ -f "$(MegalinterCachePath)/megalinterv8-cache.tar" ]; then
                   echo "Loading MegaLinter from cache..."
-                  docker load -i $(MegalinterCachePath)/megalinter-cache.tar
+                  docker load -i $(MegalinterCachePath)/megalinterv8-cache.tar
+                # If the cache file does not exist, pull the MegaLinter image
                 else
                   echo "Megalinter cache not found. Pulling MegaLinter from Docker registry..."
                   docker pull oxsecurity/megalinter:v8
@@ -130,6 +138,218 @@ stages:
                 -e AZURE_COMMENT_REPORTER='false' \
                 oxsecurity/megalinter:v8
             displayName: Run MegaLinter
+
+      # Job to update the wiki documentation with the latest changes
+      # from the main repository for all md files in the docs directory
+      # and src directory (e.g. src/000-subscription/README.md).
+      # This job will only run if the MegaLinter job passes.
+      # and defines two directories to checkout the main branch and
+      # the wiki branch.
+      - job: WikiUpdate
+        displayName: Wiki Doc Update
+        dependsOn:
+          - MegaLinter
+        pool:
+          name: ai-on-edge-managed-pool
+          vmImage: ubuntu-latest
+        variables:
+          BRANCH_REPO_FOLDER: "branch"
+          WIKI_REPO_FOLDER: "wiki"
+        steps:
+          - script: |
+
+              # Create repo directories for the main and wiki branches
+              echo "Creating repo directories..."
+              mkdir "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER"
+              mkdir "$(Agent.BuildDirectory)/$BRANCH_REPO_FOLDER"
+              echo "Repo directories created at $WIKI_REPO_FOLDER"
+              echo "and $BRANCH_REPO_FOLDER"
+            displayName: Create repo directories
+
+          # Checking out the main branch and the wiki branch
+          # The @refs/heads/main is the main branch(self) and the
+          # @refs/heads/wiki is the wiki branch.
+          # The format for the checkout is checkout: <project>/<repo>@refs/heads/<branch>
+          # Persisting credentials allows us to use git commands below.
+          - checkout: self
+            persistCredentials: true
+            path: $(BRANCH_REPO_FOLDER)
+          - checkout: git://IaC for the Edge/IaC for the Edge@refs/heads/wiki
+            persistCredentials: true
+            path: $(WIKI_REPO_FOLDER)
+
+          - script: |
+
+              # List the contents of the WIKI_REPO_FOLDER
+              # echo "Listing contents of $WIKI_REPO_FOLDER ..."
+              # ls -la "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER"
+
+              # List the contents of the BRANCH_REPO_FOLDER
+              # echo "Listing contents of $BRANCH_REPO_FOLDER ..."
+              # ls -la "$(Agent.BuildDirectory)/$BRANCH_REPO_FOLDER"
+
+              # Checkout the wiki branch
+              # This should be checked out in the call above but
+              # it has been occasionally flaky, so we are checking it out here
+              git -C "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER" checkout wiki
+
+              # Remove all contents in the work_dir except the .git folder
+              echo "Clearing wiki contents except for git folder ..."
+              find "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER" -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
+
+              # List the contents of the WIKI_REPO_FOLDER to ensure it is empty
+              # echo "Listing contents of $WIKI_REPO_FOLDER..."
+              # ls -la "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER"
+
+              # Commit the changes of clearing out the wiki contents
+              echo "Committing cleared wiki contents..."
+              git -C "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER" commit --allow-empty -m "Cleared wiki contents on `date +'%Y-%m-%d %H:%M:%S'`"
+
+              # Copy the contents of the docs directory into the work_dir
+              # This will create a folder structure
+              # wiki-root
+              # ├── docs subfolders
+              echo "Copying new docs contents..."
+              # Make sure the * is outside the quotes to expand the files
+              cp -r "$(Agent.BuildDirectory)/$BRANCH_REPO_FOLDER/docs/"* "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER"
+              mv "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER/README.md" "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER/Getting-Started.md"
+              # Replace all occurrences of './src/{000-subscription}/README.md' with './terraform/{000-subscription}.md'
+              echo "Replacing URLs in README.md..."
+              sed -i 's|(\.\./src/\([0-9]*-[^/]*\)/README\.md)|(./terraform/\1.md)|g' "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER/Getting-Started.md"
+              # Create a .order file with getting-started.md first
+              echo "Creating .order file..."
+              echo "Getting-Started" > "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER/.order"
+
+              # Copy the contents of the dev container readme into the work_dir
+              # This will create a folder structure
+              # wiki-root
+              # ├── dev-container readme
+              echo "Copying new dev container contents..."
+              cp "$(Agent.BuildDirectory)/$BRANCH_REPO_FOLDER/.devcontainer/README.md" "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER/devcontainer.md"
+
+              # Copy the contents of the contributing readme into the work_dir
+              # This will create a folder structure
+              # wiki-root
+              # ├── contributing readme
+              echo "Copying new contributing contents..."
+              cp "$(Agent.BuildDirectory)/$BRANCH_REPO_FOLDER/CONTRIBUTING.md" "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER/contributing.md"
+
+              # Copy the contents of the azdo directory into the work_dir
+              # This will create a folder structure
+              # wiki-root
+              # ├── azdo readme
+              echo "Copying new pipelines contents..."
+              cp "$(Agent.BuildDirectory)/$BRANCH_REPO_FOLDER/.azdo/README.md" "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER/pipelines.md"
+
+              # Copy the contents of the src directory's Readme into the work_dir
+              # This will create a folder structure
+              # wiki-root
+              # ├── src.md
+              echo "Copying src main README"
+              mkdir -p "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER/src"
+              cp "$(Agent.BuildDirectory)/$BRANCH_REPO_FOLDER/src/README.md" "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER/src.md"
+
+              # Copy all markdown files directly under src, excluding README.md, to the src folder
+              # This will create a folder structure
+              # wiki-root
+              # ├── src
+              # │   ├── {other markdown}.md
+              echo "Copying markdown files directly under src to wiki/src..."
+              find "$(Agent.BuildDirectory)/$BRANCH_REPO_FOLDER/src" -mindepth 1 -maxdepth 1 -type f -name '*.md' ! -name 'README.md' | while read -r file; do
+                cp "$file" "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER/src/"
+              done
+
+              # Rewrite URLs in src.md to point to the correct markdown files
+              echo "Rewriting URLs in src.md..."
+              sed -i 's|\./\([0-9]*-[^/]*\)/README\.md|./terraform/\1.md|g' "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER/src.md"
+
+              # This will get uncommented after a future refactoring
+              # Get all README.md files from the first level of directories under src and copy them to the src folder
+              # Copy all markdown files directly under src, excluding README.md, to the src folder
+              # This will create a folder structure
+              # wiki-root
+              # ├── src
+              # │   ├── {other markdown}.md
+              # |   ├── {directory_name}.md e.g. "000-subscription.md"
+              # echo "Copying README.md files from first level of directories under src to wiki/src..."
+              # find "$(Agent.BuildDirectory)/$BRANCH_REPO_FOLDER/src" -mindepth 2 -maxdepth 2 -type f -name 'README.md' | while read -r file; do
+              #   parent_dir=$(basename "$(dirname "$file")")
+              #   new_filename="${parent_dir}.md"
+              #   echo "Renaming $file to $new_filename"
+              #   cp "$file" "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER/src/$new_filename"
+              # done
+
+              # Recursively search for markdown documents under the src folder and copy them to the WIKI_REPO_FOLDER
+              echo "Copying markdown documents from src to wiki..."
+              # Create the terraform directory in the wiki repo to move the files to
+              mkdir -p "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER/terraform"
+
+              # Find all markdown files in the src directory and copy them to the wiki repo
+              # This will create a folder structure
+              # wiki-root
+              # ├── terraform
+              # │   ├── {folder_name} e.g. 010-vm-host
+              # │   │   ├── {markdown}.md e.g. modules.md
+              # │   │   ├── {folder_name} e.g. modules
+              # │   │   │   ├── {markdown}.md e.g. uami.md
+              # │   ├── {folder_name} e.g. 020-cncf-cluster
+              find "$(Agent.BuildDirectory)/$BRANCH_REPO_FOLDER/src" -name '*.md' | while read -r file; do
+                # Given a path like 010-vm-host/terraform/modules/README.md
+                # we want to remove the `terraform` segment of the path
+                # rename README.md to the name of the parent directory
+                # e.g. modules.md and place it into a the parent directory
+                # parallel to 010-vm-host/modules.
+
+                # Get the relative path of the file from the src directory
+                relative_path="${file#$(Agent.BuildDirectory)/$BRANCH_REPO_FOLDER/src/}"
+
+                # Remove the first terraform directory from the relative path
+                # to ensure the files are copied to the correct location
+                relative_path=$(dirname "$relative_path" | sed 's|terraform/||')
+                echo "File relative path: $relative_path"
+                # Get the parent directory of the file to support renames
+                parent_dir=$(basename "$relative_path")
+                # Check if the file is a README.md file and rename it to the name of parent directory
+                # All folders will have a README.md file
+                if [ "$(basename "$file")" = "README.md" ]; then
+
+                  # Replace all slashes with dashes in the parent directory for the new filename
+                  new_filename="${parent_dir//\//-}"
+                  echo "File will be placed in $WIKI_REPO_FOLDER/terraform/$relative_path as $new_filename.md"
+
+                  mkdir -p "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER/terraform/$relative_path"
+                  # Copy the README.md file to the parent directory so it
+                  # displays when you click on the folder in the wiki
+                  cp "$file" "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER/terraform/$relative_path/../$new_filename.md"
+                else
+                  # Copy the file to the existing location in the wiki repo if it is not a
+                  # generically named README.md file
+                  echo "Copying $relative_path to $WIKI_REPO_FOLDER/src/$relative_path"
+                  mkdir -p "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER/terraform/$relative_path"
+                  cp "$file" "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER/terraform/$relative_path"
+                fi
+              done
+
+              # Replace all URLs like '../020-cncf-cluster/README.md' with '020-cncf-cluster.md'
+              # This is super hacky and does not handle edge cases well. It is a best effort to
+              # make the wiki work with the new structure.
+              # echo "Replacing URLs in markdown files..."
+              # find "$WIKI_REPO_FOLDER" -name '*.md' | while read -r file; do
+              #  sed -i 's|\.\./\([^/]*\)/README\.md|\1.md|g' "$file"
+              # done
+
+              # Commit the changes
+              echo "Committing new wiki contents..."
+              git -C "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER" add .
+              git -C "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER" commit -m "Updated wiki contents on `date +'%Y-%m-%d %H:%M:%S'`"
+
+              # Push the changes to the remote repository
+              echo "Pushing wiki contents..."
+              git -C "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER" push -f origin wiki
+
+              # Delete the work_dir if needed for cleanup
+              # rm -rf "$WIKI_REPO_FOLDER"
+            displayName: Push Wiki
 
   - stage: PR
     displayName: PR Build Process
@@ -163,6 +383,7 @@ stages:
         steps:
           # Checkout repo
           - checkout: self
+            clean: true
 
           # Initialize dependency scan and fail the build if it does not pass
           - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
@@ -183,19 +404,24 @@ stages:
         steps:
           # Checkout repo
           - checkout: self
+            clean: true
 
           # Attempt to restore MegaLinter from the cache otherwise pull it
           - script: |
+
+              # Check if the cache directory exists
               if [ -d "$(MegalinterCachePath)" ]; then
-                if [ -f "$(MegalinterCachePath)/megalinter-cache.tar" ]; then
+                # Check if the cache file exists
+                if [ -f "$(MegalinterCachePath)/megalinterv8-cache.tar" ]; then
                   echo "Loading MegaLinter from cache..."
-                  docker load -i $(MegalinterCachePath)/megalinter-cache.tar
+                  docker load -i $(MegalinterCachePath)/megalinterv8-cache.tar
                 else
-                  echo "Megalinter cache not found. Pulling MegaLinter from Docker registry..."
+                  echo "Megalinter cache not found. Pulling MegaLinter from Docker registry and saving to cache..."
                   docker pull oxsecurity/megalinter:v8
                 fi
+              # If the cache file does not exist, pull the MegaLinter image
               else
-                echo "Cache directory $(MegalinterCachePath) does not exist. Pulling MegaLinter from Docker registry..."
+                echo "Cache directory $(MegalinterCachePath) does not exist. Pulling MegaLinter from"
                 docker pull oxsecurity/megalinter:v8
               fi
             displayName: MegaLinter Cache Restore
@@ -204,6 +430,7 @@ stages:
           # Run MegaLinter
           # See here for required system props: https://github.com/oxsecurity/megalinter/blob/0f18f72065ffdeec09b616087b8298a3b13b2dee/megalinter/reporters/AzureCommentReporter.py#L7C1-L13C22
           - script: |
+
               docker run -v $(System.DefaultWorkingDirectory):/tmp/lint \
                 --env-file <(env | grep -e SYSTEM_ -e BUILD_ -e TF_ -e AGENT_) \
                 -e SYSTEM_ACCESSTOKEN=$(System.AccessToken) \
@@ -237,8 +464,10 @@ stages:
         steps:
           # Checkout repo
           - checkout: self
+            clean: true
 
           - bash: |
+
               # Install terraform-docs
               curl -sSL https://github.com/terraform-docs/terraform-docs/releases/download/v0.16.0/terraform-docs-v0.16.0-linux-amd64.tar.gz | tar -xz -C /usr/local/bin
 
@@ -287,9 +516,11 @@ stages:
           # In large codebases, this can be slow, but it's necessary to get all the history
           - checkout: self
             fetchDepth: "0"
+            clean: true
 
           # Check for changes in the src directory
           - bash: |
+
               echo "Checking for changes in the ./src/000-subscription folder..."
               # Get the list of changed files between the current branch and main
               changed_files=$(git diff --name-only --diff-filter=ACMRT origin/main...HEAD)
@@ -372,6 +603,9 @@ stages:
         # Check if the changeset includes 000-subscription files and run if it does.
         condition: eq(dependencies.MatrixBuildFolderCheck.outputs['matrixBuildFolderCheckTask.changesInRpEnablementShell'], 'true')
         steps:
+          - checkout: self
+            clean: true
+
           - task: AzureCLI@2
             displayName: Azure CLI for Resource Provider Unregistration Script Test
             inputs:
@@ -380,6 +614,8 @@ stages:
               scriptType: bash
               scriptLocation: inlineScript
               inlineScript: |
+
+                # Uninstall the Azure providers
                 echo "uninstalling azure providers"
                 ./unregister-azure-providers.sh aio-azure-resource-providers.txt
                 echo "uninstalled azure providers"
@@ -393,6 +629,8 @@ stages:
               scriptType: bash
               scriptLocation: inlineScript
               inlineScript: |
+
+                # Install the Azure providers
                 echo "installing azure providers"
                 ./register-azure-providers.sh aio-azure-resource-providers.txt
                 echo "installed azure providers"
@@ -409,6 +647,9 @@ stages:
         variables:
           testResultsOutput: "$(System.DefaultWorkingDirectory)/PWSH-TEST-RESULTS.xml"
         steps:
+          - checkout: self
+            clean: true
+
           # Run Pester tests for the resource provider scripts
           - powershell: ./.azdo/subscripts/Invoke-Pester.ps1 -Path ./src/000-subscription -OutputFile $(testResultsOutput)
             displayName: "Run pester"
@@ -445,6 +686,9 @@ stages:
           maxParallel: 1
 
         steps:
+          - checkout: self
+            clean: true
+
           # Initialize Terraform
           - task: TerraformInstaller@1
             displayName: "Install Terraform"
@@ -480,6 +724,7 @@ stages:
               scriptType: bash
               scriptLocation: inlineScript
               inlineScript: |
+
                 # Call TF version command and parse the output
                 version_data=$(terraform version -json)
                 echo "$version_data" | jq .
@@ -554,6 +799,7 @@ stages:
 
           # Parse variables.tf and construct the specific commandOptions required for the plan call
           - bash: |
+
               # get the tf variable file from the current matrix directory
               variables_file=$(System.DefaultWorkingDirectory)/src/$(folderName)/terraform/variables.tf
               # start the base command option for the coming TF Plan
@@ -623,6 +869,7 @@ stages:
               scriptType: bash
               scriptLocation: inlineScript
               inlineScript: |
+
                 # Export the ARM subscription ID so Terraform tests can be executed
                 export ARM_SUBSCRIPTION_ID=$(SUBSCRIPTION_ID)
 

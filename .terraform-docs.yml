@@ -1,3 +1,4 @@
+---
 formatter: "markdown table"
 recursive:
   enabled: true

@@ -35,8 +35,9 @@ Azure documentation:
 
 ## Getting Started
 
-While further documentation is under development, you can use the IaC (Terraform) in this repository
-directly to get started bootstrapping Arc-enabled AIO environments by:
+While enhanced documentation is under development, please start by reviewing this
+project's [wiki](https://dev.azure.com/ai-at-the-edge-flagship-accelerator/IaC%20for%20the%20Edge/_wiki/wikis/Edge%20AI/5/)
+before you use the IaC (Terraform) in this repository. Then, get started bootstrapping Arc-enabled AIO environments:
 
 1. [Cloning this repository locally](https://learn.microsoft.com/en-us/azure/devops/repos/git/clone?view=azure-devops&tabs=visual-studio-2022#get-the-clone-url-of-an-azure-repos-git-repo)
 2. [Install pre-requisites](./src/README.md#prerequisites) or use [this project's integrated dev container](./.devcontainer/README.md).
@@ -54,12 +55,12 @@ directly to get started bootstrapping Arc-enabled AIO environments by:
 ## ADR Library
 
 See and evaluate the decision records various teams have made when building cloud-enabled edge computing system,
-using our [Architectural Decision Record Library](./Solution%20ADR%20Library/README.md).
+using our [Architectural Decision Record Library](./docs/solution-adr-library/README.md).
 
 ## Technical Paper Library
 
 Learn about key architectural approaches or find introductions to key edge technologies in our
-[Technical Paper Library](./Solution%20Technology%20Paper%20Library/).
+[Technical Paper Library](./docs/solution-technology-paper-library/README.md).
 
 ## The Details
 
@@ -106,8 +107,8 @@ The Terraform, scripts, and documentation in this repository can provide you the
 - [Integrated support for "Bring-Your-Own" certificates](./src/040-iot-ops/terraform/README.md#create_resources) (and intermediate certificates) for intra-cluster TLS
 - [A robust, matrix'ed IaC build system](./azure-pipelines.yml) with integrated testing and validation, to ensure your IaC deploys as you expect it to
 - Auto-validation and auto-generation of Terraform Plans to support expedited CISO/Security/DevOps team approvals
-- [A library of common "Architectural Decision Records" (ARDs)](./Solution%20ADR%20Library/README.md), ready to be modified to document your solution's requirements and the decisions you've made along the way
-- [A library of technology papers](./Solution%20Technology%20Paper%20Library/README.md) to upskill your peers
+- [A library of common "Architectural Decision Records" (ARDs)](./docs/solution-adr-library/README.md), ready to be modified to document your solution's requirements and the decisions you've made along the way
+- [A library of technology papers](./docs/solution-technology-paper-library/README.md) to upskill your peers
 - [A well-stocked development container](./.devcontainer) for you to take the IaC for your "AI on the Edge Solutions" to production with confidence, repeatability, and reliability your organization deserves
 
 ### Contribute
@@ -117,8 +118,8 @@ Before contributing, please review the project's [Code of Conduct](./CODE_OF_CON
 Users and project developers can contribute to make this solution better in several ways:
 
 - [Review the project's Contributing doc](./CONTRIBUTING.md)
-- [Contribute an ADR](./Solution%20ADR%20Library/README.md#contribute) from your engagement
-- [Contribute a Security Plan](./Solution%20Security%20Plan%20Library//README.md#contribute) from your engagement
+- [Contribute an ADR](./docs/solution-adr-library/README.md#contribute) from your engagement
+- [Contribute a Security Plan](./docs/solution-security-plan-library/README.md#contribute) from your engagement
 - [Find a user story or task from the backlog](https://dev.azure.com/ai-at-the-edge-flagship-accelerator/IaC%20for%20the%20Edge/_sprints/taskboard/IaC%20for%20the%20Edge%20Team/IaC%20for%20the%20Edge/***REMOVED***) and help move the accelerator forward
 
 #### Build and Test
@@ -147,4 +148,4 @@ ARDs move through a process that includes the following states:
 - Accepted - for all ADRs that have completed the community RFC process. ADRs in this state have been ratified/accepted by the project community and may move to implementation.
 - Deprecated - for all ADRs that are no longer relevant to the solution or have been superseded by more comprehensive ADRs; this is inclusive of retired components or features, but will be retained in perpetuity for historical context.
 
-Please see [ADR README](./Project%20ADRs/README.MD) for a more detailed explanation of the ADR process flow and how to author and progress your ideas for this project, through to implementation.
+Please see [ADR README](./project-adrs/README.MD) for a more detailed explanation of the ADR process flow and how to author and progress your ideas for this project, through to implementation.
