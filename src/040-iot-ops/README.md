@@ -101,9 +101,8 @@ To test with the simulator, just modify the `mosquitto_sub`s `--topic` parameter
 The output should be similar to the following:
 
 ```sh
-$ mosquitto_sub --host aio-broker --port 18883 --topic "azure-iot-operations/data/oven" --debug --cafile
- /var/run/certs/ca.crt -D CONNECT authentication-method 'K8S-SAT' -D CONNECT authentication-data
-Client $server-generated/930bf917-b418-44e0-bb9d-b5020ed7e9ef received PUBLISH (d0, q0, r0, m0, 'azure-iot-operations/data/oven', ... (235 bytes))
+mosquitto_sub --host aio-broker --port 18883 --topic "azure-iot-operations/data/oven" --debug --cafile /var/run/certs/ca.crt -D CONNECT authentication-method 'K8S-SAT' -D CONNECT authentication-data $(cat /var/run/secrets/tokens/broker-sat)
+> Client $server-generated/930bf917-b418-44e0-bb9d-b5020ed7e9ef received PUBLISH (d0, q0, r0, m0, 'azure-iot-operations/data/oven', ... (235 bytes))
 {"Temperature":{"SourceTimestamp":"2025-01-21T15:47:54.4126889Z","Value":10969},"FillWeight":{"SourceTimestamp":"2025-01-21T15:47:54.4129477Z","Value":10969},"EnergyUse":{"SourceTimestamp":"2025-01-21T15:47:54.4129567Z","Value":10969}}
 ```
 

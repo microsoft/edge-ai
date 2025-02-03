@@ -1,27 +1,29 @@
 <!-- BEGIN_TF_DOCS -->
 <!-- markdown-table-prettify-ignore-start -->
-# Azure Event Hubs
+# Azure Event Grid
 
-Create a new Event Hub namespace and Event Hub and assign the AIO instance UAMI the Azure Event Hubs Data Sender role.
+Create a new Event Grid namespace and namespace topic and assign the AIO instance UAMI the EventGrid TopicSpaces Publisher role.
 
 ## Requirements
 
 | Name | Version |
 |------|---------|
 | terraform | >= 1.9.8, < 2.0 |
+| azapi | 2.2.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
+| azapi | 2.2.0 |
 | azurerm | n/a |
 
 ## Resources
 
 | Name | Type |
 |------|------|
-| [azurerm_eventhub.destination_eh](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/eventhub) | resource |
-| [azurerm_eventhub_namespace.destination_event_hub_namespace](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/eventhub_namespace) | resource |
+| [azapi_resource.event_grid_namespace_topic_space](https://registry.terraform.io/providers/Azure/azapi/2.2.0/docs/resources/resource) | resource |
+| [azurerm_eventgrid_namespace.aio_eg_ns](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/eventgrid_namespace) | resource |
 | [azurerm_role_assignment.data_sender](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) | resource |
 
 ## Inputs
@@ -32,14 +34,14 @@ Create a new Event Hub namespace and Event Hub and assign the AIO instance UAMI 
 | location | Location for all resources in this module | `string` | n/a | yes |
 | resource\_group\_name | Name of the pre-existing resource group in which to create resources | `string` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
-| capacity | Specifies the Capacity / Throughput Units for a Standard SKU namespace. Valid values range from 1 - 20. | `number` | `1` | no |
-| message\_retention | Specifies the number of days to retain events for this Event Hub, from 1 to 7 days. | `number` | `1` | no |
-| partition\_count | Specifies the number of partitions for the Event Hub. Valid values are from 1 to 32. | `number` | `1` | no |
+| capacity | Specifies the Capacity / Throughput Units for a Standard SKU namespace. Valid values range from 1 - 40. | `number` | `1` | no |
+| event\_grid\_max\_client\_sessions\_per\_auth\_name | Specifies the maximum number of client sessions per authentication name. Valid values are from 3 to 100. This parameter should be greater than the number of dataflows | `number` | `8` | no |
+| topic\_name | Topic template name to create in the Event Grid namespace | `string` | `"default"` | no |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| event\_hub | n/a |
+| event\_grid | n/a |
 <!-- markdown-table-prettify-ignore-end -->
 <!-- END_TF_DOCS -->

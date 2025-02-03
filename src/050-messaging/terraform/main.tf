@@ -58,3 +58,25 @@ module "sample_event_hub_dataflow" {
   aio_uami_tenant_id = data.azurerm_user_assigned_identity.aio_uami.tenant_id
   aio_uami_client_id = data.azurerm_user_assigned_identity.aio_uami.client_id
 }
+
+module "event_grid" {
+  source = "./modules/event-grid"
+
+  resource_prefix       = var.resource_prefix
+  resource_group_name   = data.azurerm_resource_group.aio_rg.name
+  location              = data.azurerm_resource_group.aio_rg.location
+  aio_uami_principal_id = data.azurerm_user_assigned_identity.aio_uami.principal_id
+}
+
+module "sample_event_grid_dataflow" {
+  source = "./modules/event-grid-dataflow"
+
+  resource_prefix    = var.resource_prefix
+  resource_group_id  = data.azurerm_resource_group.aio_rg.id
+  custom_location_id = data.azapi_resource.custom_locations.id
+  aio_instance_name  = local.iot_ops_instance_name
+  event_grid         = module.event_grid.event_grid
+  asset_name         = var.asset_name
+  aio_uami_tenant_id = data.azurerm_user_assigned_identity.aio_uami.tenant_id
+  aio_uami_client_id = data.azurerm_user_assigned_identity.aio_uami.client_id
+}

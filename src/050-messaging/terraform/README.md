@@ -10,14 +10,14 @@ Azure IoT Operations Dataflow to send and receive data from edge to cloud.
 | Name | Version |
 |------|---------|
 | terraform | >= 1.9.8, < 2.0 |
-| azapi | >= 2.1.0 |
+| azapi | >= 2.2.0 |
 | azurerm | >= 4.8.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| azapi | >= 2.1.0 |
+| azapi | >= 2.2.0 |
 | azurerm | >= 4.8.0 |
 | terraform | n/a |
 
@@ -34,7 +34,9 @@ Azure IoT Operations Dataflow to send and receive data from edge to cloud.
 
 | Name | Source | Version |
 |------|--------|---------|
+| event\_grid | ./modules/event-grid | n/a |
 | event\_hubs | ./modules/event-hubs | n/a |
+| sample\_event\_grid\_dataflow | ./modules/event-grid-dataflow | n/a |
 | sample\_event\_hub\_dataflow | ./modules/event-hub-dataflow | n/a |
 
 ## Inputs
