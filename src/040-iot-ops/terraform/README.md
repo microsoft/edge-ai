@@ -11,27 +11,8 @@ Instance can be created, and after.
 | Name | Version |
 |------|---------|
 | terraform | >= 1.9.8, < 2.0 |
-| azapi | >= 2.1.0 |
+| azapi | >= 2.2.0 |
 | azurerm | >= 4.8.0 |
-
-## Providers
-
-| Name | Version |
-|------|---------|
-| azapi | >= 2.1.0 |
-| azurerm | >= 4.8.0 |
-| terraform | n/a |
-
-## Resources
-
-| Name | Type |
-|------|------|
-| [terraform_data.defer](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data) | resource |
-| [azapi_resource.schema_registry](https://registry.terraform.io/providers/Azure/azapi/latest/docs/data-sources/resource) | data source |
-| [azurerm_key_vault.sse_key_vault](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/key_vault) | data source |
-| [azurerm_resource_group.aio_rg](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/resource_group) | data source |
-| [azurerm_user_assigned_identity.aio_uami](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/user_assigned_identity) | data source |
-| [azurerm_user_assigned_identity.sse_uami](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/user_assigned_identity) | data source |
 
 ## Modules
 
@@ -49,38 +30,36 @@ Instance can be created, and after.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| environment | Environment for all resources in this module: dev, test, or prod | `string` | n/a | yes |
-| location | Location for all resources in this module | `string` | n/a | yes |
-| resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
+| adr\_schema\_registry | n/a | ```object({ id = string })``` | n/a | yes |
+| aio\_resource\_group | n/a | ```object({ name = string id = string location = string })``` | n/a | yes |
+| aio\_user\_assigned\_identity | n/a | ```object({ id = string })``` | n/a | yes |
+| arc\_connected\_cluster | n/a | ```object({ name = string id = string location = string })``` | n/a | yes |
+| sse\_key\_vault | n/a | ```object({ name = string id = string })``` | n/a | yes |
+| sse\_user\_assigned\_identity | n/a | ```object({ id = string client_id = string })``` | n/a | yes |
 | aio\_ca | CA certificate for the MQTT broker, can be either Root CA or Root CA with any number of Intermediate CAs. If not provided, a self-signed Root CA with a intermediate will be generated. Only valid when Trust Source is set to CustomerManaged | ```object({ root_ca_cert_pem = string ca_cert_chain_pem = string ca_key_pem = string })``` | `null` | no |
 | aio\_platform\_config | Install cert-manager and trust-manager extensions | ```object({ install_cert_manager = bool install_trust_manager = bool })``` | ```{ "install_cert_manager": true, "install_trust_manager": true }``` | no |
-| aio\_uami\_name | The name of the User Assigned Managed Identity for the Azure IoT Operations instance. (Otherwise, '{var.resource\_prefix}-aio-uami') | `string` | `null` | no |
 | byo\_issuer\_trust\_settings | Settings for CustomerManagedByoIssuer (Bring Your Own Issuer) trust configuration | ```object({ issuer_name = string issuer_kind = string configmap_name = string configmap_key = string })``` | `null` | no |
-| connected\_cluster\_location | The location of the connected cluster resource. (Otherwise, 'var.location') | `string` | `null` | no |
-| connected\_cluster\_name | The name of the Azure Arc connected cluster resource for Azure IoT Operations. (Otherwise, '{var.resource\_prefix}-arc') | `string` | `null` | no |
 | dataflow\_instance\_count | Number of dataflow instances. Defaults to 1. | `number` | `1` | no |
 | deploy\_resource\_sync\_rules | Deploys resource sync rules if set to true | `bool` | `false` | no |
 | edge\_storage\_accelerator | n/a | ```object({ version = string train = string diskStorageClass = string faultToleranceEnabled = bool })``` | ```{ "diskStorageClass": "", "faultToleranceEnabled": false, "train": "stable", "version": "2.2.2" }``` | no |
 | enable\_instance\_secret\_sync | Enable secret sync at the AIO instance level | `bool` | `true` | no |
-| enable\_opc\_ua\_simulator | Deploy OPC UA Simulator to the cluster | `bool` | `false` | no |
-| enable\_otel\_collector | Deploy the OpenTelemetry Collector and Azure Monitor ConfigMap (optionally used) | `bool` | `false` | no |
-| existing\_key\_vault\_name | Name of the Azure Key Vault to use by Secret Sync Extension. If not provided, will create a new Key Vault. Will fail if Key Vault does not exist in provided resource group. | `string` | `null` | no |
-| instance | Instance identifier for naming resources: 001, 002, etc... | `string` | `"001"` | no |
+| enable\_opc\_ua\_simulator | Deploy OPC UA Simulator to the cluster | `bool` | `true` | no |
+| enable\_otel\_collector | Deploy the OpenTelemetry Collector and Azure Monitor ConfigMap (optionally used) | `bool` | `true` | no |
 | mqtt\_broker\_config | n/a | ```object({ brokerListenerServiceName = string brokerListenerPort = number serviceAccountAudience = string frontendReplicas = number frontendWorkers = number backendRedundancyFactor = number backendWorkers = number backendPartitions = number memoryProfile = string serviceType = string })``` | ```{ "backendPartitions": 1, "backendRedundancyFactor": 2, "backendWorkers": 1, "brokerListenerPort": 18883, "brokerListenerServiceName": "aio-broker", "frontendReplicas": 1, "frontendWorkers": 1, "memoryProfile": "Low", "serviceAccountAudience": "aio-internal", "serviceType": "ClusterIp" }``` | no |
 | open\_service\_mesh | n/a | ```object({ version = string train = string })``` | ```{ "train": "stable", "version": "1.2.10" }``` | no |
 | operations\_config | n/a | ```object({ namespace = string kubernetesDistro = string version = string train = string agentOperationTimeoutInMinutes = number })``` | ```{ "agentOperationTimeoutInMinutes": 120, "kubernetesDistro": "K3s", "namespace": "azure-iot-operations", "train": "stable", "version": "1.0.9" }``` | no |
 | platform | n/a | ```object({ version = string train = string })``` | ```{ "train": "preview", "version": "0.7.6" }``` | no |
-| resource\_group\_name | The name for the resource group. (Otherwise, 'rg-{var.resource\_prefix}-{var.environment}-{var.instance}') | `string` | `null` | no |
-| schema\_registry\_name | The name of the Azure Device Registry Schema Registry resource. (Otherwise, '{var.resource\_prefix}-registry') | `string` | `null` | no |
 | secret\_sync\_controller | n/a | ```object({ version = string train = string })``` | ```{ "train": "preview", "version": "0.6.7" }``` | no |
-| sse\_uami\_name | The name of the User Assigned Managed Identity that was federated for Secret Sync Extension. (Otherwise, '{var.resource\_prefix}-sse-uami' | `string` | `null` | no |
 | trust\_config\_source | TrustConfig source must be one of 'SelfSigned', 'CustomerManagedByoIssuer' or 'CustomerManagedGenerateIssuer'. Defaults to SelfSigned. When choosing CustomerManagedGenerateIssuer, ensure connectedk8s proxy is enabled on the cluster for current user. When choosing CustomerManagedByoIssuer, ensure an Issuer and ConfigMap resources exist in the cluster. | `string` | `"SelfSigned"` | no |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
+| aio\_dataflow\_profile | n/a |
+| aio\_instance | n/a |
 | aio\_instance\_name | n/a |
 | custom\_location\_id | n/a |
+| custom\_locations | n/a |
 <!-- markdown-table-prettify-ignore-end -->
 <!-- END_TF_DOCS -->

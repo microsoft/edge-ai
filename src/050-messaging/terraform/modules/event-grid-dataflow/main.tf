@@ -4,24 +4,10 @@
  * Provisions the ARM based data flow endpoint and data flow for Event Grid, requires Asset
  */
 
-data "azapi_resource" "instance" {
-  type      = "Microsoft.IoTOperations/instances@2024-11-01"
-  name      = var.aio_instance_name
-  parent_id = var.resource_group_id
-}
-
-# For troubleshooting, a custom dataflow profile can be created with a higher log level
-# https://learn.microsoft.com/en-us/azure/iot-operations/connect-to-cloud/howto-configure-dataflow-profile?tabs=bicep#tabpanel_4_bicep
-data "azapi_resource" "dataflow_profile" {
-  type      = "Microsoft.IoTOperations/instances/dataflowProfiles@2024-11-01"
-  name      = "default"
-  parent_id = data.azapi_resource.instance.id
-}
-
 resource "azapi_resource" "dataflow_endpoint_to_event_grid" {
   type      = "Microsoft.IoTOperations/instances/dataflowEndpoints@2024-11-01"
   name      = "dfe-eg-${var.resource_prefix}-sample"
-  parent_id = data.azapi_resource.instance.id
+  parent_id = var.aio_instance.id
 
   body = {
     extendedLocation = {
@@ -50,7 +36,7 @@ resource "azapi_resource" "dataflow_endpoint_to_event_grid" {
 resource "azapi_resource" "dataflow_to_event_grid" {
   type      = "Microsoft.IoTOperations/instances/dataflowProfiles/dataflows@2024-11-01"
   name      = "df-eg-${var.resource_prefix}-passthrough"
-  parent_id = data.azapi_resource.dataflow_profile.id
+  parent_id = var.aio_dataflow_profile.id
 
   body = {
     extendedLocation = {

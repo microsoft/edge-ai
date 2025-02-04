@@ -9,23 +9,22 @@ Enables secret-sync on the Azure IoT instance after the instance is created.
 | Name | Version |
 |------|---------|
 | terraform | >= 1.9.8, < 2.0 |
-| azapi | 2.1.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| azapi | 2.1.0 |
+| azapi | n/a |
 | azurerm | n/a |
 
 ## Resources
 
 | Name | Type |
 |------|------|
-| [azapi_resource.default_aio_keyvault_secret_provider_class](https://registry.terraform.io/providers/Azure/azapi/2.1.0/docs/resources/resource) | resource |
+| [azapi_resource.default_aio_keyvault_secret_provider_class](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) | resource |
 | [azurerm_federated_identity_credential.federated_identity_cred_aio_instance](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/federated_identity_credential) | resource |
 | [azurerm_federated_identity_credential.federated_identity_cred_sse_aio](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/federated_identity_credential) | resource |
-| [azapi_resource.cluster_oidc_issuer](https://registry.terraform.io/providers/Azure/azapi/2.1.0/docs/data-sources/resource) | data source |
+| [azapi_resource.cluster_oidc_issuer](https://registry.terraform.io/providers/Azure/azapi/latest/docs/data-sources/resource) | data source |
 | [azurerm_subscription.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/subscription) | data source |
 
 ## Inputs

@@ -6,43 +6,29 @@
  * access to resources.
  */
 
-# Defer computation to prevent `data` objects from querying for state on `terraform plan`.
-# Needed for testing and build system.
-resource "terraform_data" "defer" {
-  input = {
-    resource_group_name = coalesce(
-      var.resource_group_name,
-      "rg-${var.resource_prefix}-${var.environment}-${var.instance}"
-    )
-  }
-}
-
-data "azurerm_resource_group" "aio_rg" {
-  name = terraform_data.defer.output.resource_group_name
-}
-
 module "schema_registry" {
   source = "./modules/schema-registry"
 
-  location            = var.location
-  resource_group_name = data.azurerm_resource_group.aio_rg.name
+  location            = var.aio_resource_group.location
+  resource_group_name = var.aio_resource_group.name
   resource_prefix     = var.resource_prefix
 }
 
 module "sse_key_vault" {
+  count = var.sse_key_vault == null ? 1 : 0
+
   source = "./modules/sse-key-vault"
 
-  location                = var.location
-  resource_group_name     = data.azurerm_resource_group.aio_rg.name
-  resource_prefix         = var.resource_prefix
-  existing_key_vault_name = var.existing_key_vault_name
+  location            = var.aio_resource_group.location
+  resource_group_name = var.aio_resource_group.name
+  resource_prefix     = var.resource_prefix
 }
 
 module "uami" {
   source = "./modules/uami"
 
-  location            = var.location
-  resource_group_name = data.azurerm_resource_group.aio_rg.name
+  location            = var.aio_resource_group.location
+  resource_group_name = var.aio_resource_group.name
   resource_prefix     = var.resource_prefix
-  key_vault_id        = module.sse_key_vault.key_vault.id
+  key_vault_id        = try(module.sse_key_vault[0].key_vault, var.sse_key_vault).id
 }

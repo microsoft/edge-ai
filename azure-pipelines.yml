@@ -697,7 +697,27 @@ stages:
 
           # Run terraform init with the established service connection in AzDO Pipeline config
           - task: TerraformCLI@1
-            displayName: "Terraform Init"
+            displayName: "Terraform Init - CI"
+            inputs:
+              command: init
+              workingDirectory: $(System.DefaultWorkingDirectory)/src/$(folderName)/ci/terraform/
+              runAzLogin: true
+              environmentServiceName: "azdo-ai-for-edge-iac-for-edge"
+              backendType: azurerm
+              # Service connection to authorize backend access. Supports Subscription & Management Group Scope
+              backendServiceArm: "azdo-ai-for-edge-iac-for-edge"
+              backendAzureRmResourceGroupName: "IaC_For_Edge"
+              # azure location shortname of the backend resource group and storage account
+              backendAzureRmResourceGroupLocation: "eastus"
+              backendAzureRmStorageAccountName: "iacforedgetf"
+              # azure blob container to store the state file
+              backendAzureRmContainerName: "iacforedgetf"
+              # azure blob file name
+              backendAzureRmKey: infrax.tfstate
+
+          # Run terraform init with the established service connection in AzDO Pipeline config
+          - task: TerraformCLI@1
+            displayName: "Terraform Init - Tests"
             inputs:
               command: init
               workingDirectory: $(System.DefaultWorkingDirectory)/src/$(folderName)/terraform/
@@ -720,7 +740,7 @@ stages:
             displayName: "Terraform Provider version check"
             inputs:
               azureSubscription: "azdo-ai-for-edge-iac-for-edge"
-              workingDirectory: $(System.DefaultWorkingDirectory)/src/$(folderName)/terraform/
+              workingDirectory: $(System.DefaultWorkingDirectory)/src/$(folderName)/ci/terraform/
               scriptType: bash
               scriptLocation: inlineScript
               inlineScript: |
@@ -794,14 +814,14 @@ stages:
             displayName: "Terraform Validate"
             inputs:
               command: validate
-              workingDirectory: $(System.DefaultWorkingDirectory)/src/$(folderName)/terraform/
+              workingDirectory: $(System.DefaultWorkingDirectory)/src/$(folderName)/ci/terraform/
             continueOnError: false
 
           # Parse variables.tf and construct the specific commandOptions required for the plan call
           - bash: |
 
               # get the tf variable file from the current matrix directory
-              variables_file=$(System.DefaultWorkingDirectory)/src/$(folderName)/terraform/variables.tf
+              variables_file=$(System.DefaultWorkingDirectory)/src/$(folderName)/ci/terraform/variables.tf
               # start the base command option for the coming TF Plan
               command_options="-out=$(Build.ArtifactStagingDirectory)/$(Build.Buildnumber).$(folderName).tfplan -detailed-exitcode"
               # if the variables file exists, parse it and for each variable,
@@ -832,7 +852,7 @@ stages:
             displayName: "Terraform Plan"
             inputs:
               command: plan
-              workingDirectory: $(System.DefaultWorkingDirectory)/src/$(folderName)/terraform/
+              workingDirectory: $(System.DefaultWorkingDirectory)/src/$(folderName)/ci/terraform/
               runAzLogin: true
               environmentServiceName: "azdo-ai-for-edge-iac-for-edge"
               # this publish will drive the Terraform Plan UI on each build

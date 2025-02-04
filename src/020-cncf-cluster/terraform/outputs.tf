@@ -3,9 +3,13 @@ output "connected_cluster_name" {
 }
 
 output "connected_cluster_resource_group_name" {
-  value = terraform_data.defer.output.resource_group_name
+  value = var.aio_resource_group.name
 }
 
 output "azure_arc_proxy_command" {
-  value = "az connectedk8s proxy -n ${local.arc_resource_name} -g ${terraform_data.defer.output.resource_group_name}"
+  value = "az connectedk8s proxy -n ${local.arc_resource_name} -g ${var.aio_resource_group.name}"
+}
+
+output "arc_connected_cluster" {
+  value = data.azapi_resource.arc_connected_cluster.output
 }

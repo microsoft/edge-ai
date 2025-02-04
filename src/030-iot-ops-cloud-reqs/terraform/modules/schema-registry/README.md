@@ -9,13 +9,12 @@ Deploys a storage account and schema registry to be used for Azure IoT Operation
 | Name | Version |
 |------|---------|
 | terraform | >= 1.9.8, < 2.0 |
-| azapi | 2.1.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| azapi | 2.1.0 |
+| azapi | n/a |
 | azurerm | n/a |
 | random | n/a |
 
@@ -23,7 +22,7 @@ Deploys a storage account and schema registry to be used for Azure IoT Operation
 
 | Name | Type |
 |------|------|
-| [azapi_resource.schema_registry](https://registry.terraform.io/providers/Azure/azapi/2.1.0/docs/resources/resource) | resource |
+| [azapi_resource.schema_registry](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) | resource |
 | [azurerm_role_assignment.registry_storage_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) | resource |
 | [azurerm_storage_account.schema_registry_store](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account) | resource |
 | [azurerm_storage_container.schema_container](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_container) | resource |
@@ -43,6 +42,7 @@ Deploys a storage account and schema registry to be used for Azure IoT Operation
 
 | Name | Description |
 |------|-------------|
+| adr\_schema\_registry | n/a |
 | registry\_id | n/a |
 <!-- markdown-table-prettify-ignore-end -->
 <!-- END_TF_DOCS -->

@@ -1,3 +1,7 @@
+/*
+ * Optional Variables
+ */
+
 variable "platform" {
   type = object({
     version = string

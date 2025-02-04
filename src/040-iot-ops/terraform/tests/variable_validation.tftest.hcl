@@ -1,3 +1,8 @@
+provider "azurerm" {
+  storage_use_azuread = true
+  features {}
+}
+
 # Call the setup module to create a random resource prefix
 run "setup_tests" {
   module {
@@ -8,9 +13,12 @@ run "setup_tests" {
 run "test__aio_ca__error_with_missing_key" {
   command = plan
   variables {
-    environment     = "dev"
-    resource_prefix = run.setup_tests.resource_prefix
-    location        = "centralus"
+    aio_resource_group         = run.setup_tests.aio_resource_group
+    sse_key_vault              = run.setup_tests.sse_key_vault
+    sse_user_assigned_identity = run.setup_tests.sse_user_assigned_identity
+    aio_user_assigned_identity = run.setup_tests.aio_user_assigned_identity
+    adr_schema_registry        = run.setup_tests.adr_schema_registry
+    arc_connected_cluster      = run.setup_tests.arc_connected_cluster
 
     # Variables under test
     trust_config_source = "CustomerManagedGenerateIssuer"
@@ -26,9 +34,12 @@ run "test__aio_ca__error_with_missing_key" {
 run "test__aio_ca__error_with_missing_cert_chain" {
   command = plan
   variables {
-    environment     = "dev"
-    resource_prefix = run.setup_tests.resource_prefix
-    location        = "centralus"
+    aio_resource_group         = run.setup_tests.aio_resource_group
+    sse_key_vault              = run.setup_tests.sse_key_vault
+    sse_user_assigned_identity = run.setup_tests.sse_user_assigned_identity
+    aio_user_assigned_identity = run.setup_tests.aio_user_assigned_identity
+    adr_schema_registry        = run.setup_tests.adr_schema_registry
+    arc_connected_cluster      = run.setup_tests.arc_connected_cluster
 
     # Variables under test
     trust_config_source = "CustomerManagedGenerateIssuer"
@@ -44,9 +55,12 @@ run "test__aio_ca__error_with_missing_cert_chain" {
 run "test__aio_ca__error_with_missing_cert" {
   command = plan
   variables {
-    environment     = "dev"
-    resource_prefix = run.setup_tests.resource_prefix
-    location        = "centralus"
+    aio_resource_group         = run.setup_tests.aio_resource_group
+    sse_key_vault              = run.setup_tests.sse_key_vault
+    sse_user_assigned_identity = run.setup_tests.sse_user_assigned_identity
+    aio_user_assigned_identity = run.setup_tests.aio_user_assigned_identity
+    adr_schema_registry        = run.setup_tests.adr_schema_registry
+    arc_connected_cluster      = run.setup_tests.arc_connected_cluster
 
     # Variables under test
     trust_config_source = "CustomerManagedGenerateIssuer"
@@ -62,9 +76,12 @@ run "test__aio_ca__error_with_missing_cert" {
 run "test__aio_ca__error_with_incompatible_source" {
   command = plan
   variables {
-    environment     = "dev"
-    resource_prefix = run.setup_tests.resource_prefix
-    location        = "centralus"
+    aio_resource_group         = run.setup_tests.aio_resource_group
+    sse_key_vault              = run.setup_tests.sse_key_vault
+    sse_user_assigned_identity = run.setup_tests.sse_user_assigned_identity
+    aio_user_assigned_identity = run.setup_tests.aio_user_assigned_identity
+    adr_schema_registry        = run.setup_tests.adr_schema_registry
+    arc_connected_cluster      = run.setup_tests.arc_connected_cluster
 
     # Variables under test
     trust_config_source = "SelfSigned"
@@ -81,9 +98,12 @@ run "test__aio_ca__error_with_incompatible_source" {
 run "test_trust_config_error_with_invalid_source" {
   command = plan
   variables {
-    environment     = "dev"
-    resource_prefix = run.setup_tests.resource_prefix
-    location        = "centralus"
+    aio_resource_group         = run.setup_tests.aio_resource_group
+    sse_key_vault              = run.setup_tests.sse_key_vault
+    sse_user_assigned_identity = run.setup_tests.sse_user_assigned_identity
+    aio_user_assigned_identity = run.setup_tests.aio_user_assigned_identity
+    adr_schema_registry        = run.setup_tests.adr_schema_registry
+    arc_connected_cluster      = run.setup_tests.arc_connected_cluster
 
     # Variables under test
     trust_config_source = "InvalidSource"
@@ -95,9 +115,12 @@ run "test_trust_config_byo_issuer_null_trust_and_platform_config_settings" {
 
   command = plan
   variables {
-    environment     = "dev"
-    resource_prefix = run.setup_tests.resource_prefix
-    location        = "centralus"
+    aio_resource_group         = run.setup_tests.aio_resource_group
+    sse_key_vault              = run.setup_tests.sse_key_vault
+    sse_user_assigned_identity = run.setup_tests.sse_user_assigned_identity
+    aio_user_assigned_identity = run.setup_tests.aio_user_assigned_identity
+    adr_schema_registry        = run.setup_tests.adr_schema_registry
+    arc_connected_cluster      = run.setup_tests.arc_connected_cluster
 
     # Variables under test
     trust_config_source       = "CustomerManagedByoIssuer"
@@ -115,9 +138,12 @@ run "test_trust_config_should_pass_generated_issuer_without_extra_settings" {
 
   command = plan
   variables {
-    environment     = "dev"
-    resource_prefix = run.setup_tests.resource_prefix
-    location        = "centralus"
+    aio_resource_group         = run.setup_tests.aio_resource_group
+    sse_key_vault              = run.setup_tests.sse_key_vault
+    sse_user_assigned_identity = run.setup_tests.sse_user_assigned_identity
+    aio_user_assigned_identity = run.setup_tests.aio_user_assigned_identity
+    adr_schema_registry        = run.setup_tests.adr_schema_registry
+    arc_connected_cluster      = run.setup_tests.arc_connected_cluster
 
     # Variables under test
     trust_config_source = "CustomerManagedGenerateIssuer"
@@ -128,9 +154,12 @@ run "test_trust_config_byo_issuer_error_issuer_settings_missing_name" {
 
   command = plan
   variables {
-    environment     = "dev"
-    resource_prefix = run.setup_tests.resource_prefix
-    location        = "centralus"
+    aio_resource_group         = run.setup_tests.aio_resource_group
+    sse_key_vault              = run.setup_tests.sse_key_vault
+    sse_user_assigned_identity = run.setup_tests.sse_user_assigned_identity
+    aio_user_assigned_identity = run.setup_tests.aio_user_assigned_identity
+    adr_schema_registry        = run.setup_tests.adr_schema_registry
+    arc_connected_cluster      = run.setup_tests.arc_connected_cluster
 
     # Variables under test
     trust_config_source = "CustomerManagedByoIssuer"
@@ -155,9 +184,12 @@ run "test_trust_config_byo_issuer_error_issuer_settings_missing_kind" {
 
   command = plan
   variables {
-    environment     = "dev"
-    resource_prefix = run.setup_tests.resource_prefix
-    location        = "centralus"
+    aio_resource_group         = run.setup_tests.aio_resource_group
+    sse_key_vault              = run.setup_tests.sse_key_vault
+    sse_user_assigned_identity = run.setup_tests.sse_user_assigned_identity
+    aio_user_assigned_identity = run.setup_tests.aio_user_assigned_identity
+    adr_schema_registry        = run.setup_tests.adr_schema_registry
+    arc_connected_cluster      = run.setup_tests.arc_connected_cluster
 
     # Variables under test
     trust_config_source = "CustomerManagedByoIssuer"
@@ -182,9 +214,12 @@ run "test_trust_config_byo_issuer_error_issuer_settings_missing_cm_name" {
 
   command = plan
   variables {
-    environment     = "dev"
-    resource_prefix = run.setup_tests.resource_prefix
-    location        = "centralus"
+    aio_resource_group         = run.setup_tests.aio_resource_group
+    sse_key_vault              = run.setup_tests.sse_key_vault
+    sse_user_assigned_identity = run.setup_tests.sse_user_assigned_identity
+    aio_user_assigned_identity = run.setup_tests.aio_user_assigned_identity
+    adr_schema_registry        = run.setup_tests.adr_schema_registry
+    arc_connected_cluster      = run.setup_tests.arc_connected_cluster
 
     # Variables under test
     trust_config_source = "CustomerManagedByoIssuer"
@@ -209,9 +244,12 @@ run "test_trust_config_byo_issuer_error_issuer_settings_missing_cm_key" {
 
   command = plan
   variables {
-    environment     = "dev"
-    resource_prefix = run.setup_tests.resource_prefix
-    location        = "centralus"
+    aio_resource_group         = run.setup_tests.aio_resource_group
+    sse_key_vault              = run.setup_tests.sse_key_vault
+    sse_user_assigned_identity = run.setup_tests.sse_user_assigned_identity
+    aio_user_assigned_identity = run.setup_tests.aio_user_assigned_identity
+    adr_schema_registry        = run.setup_tests.adr_schema_registry
+    arc_connected_cluster      = run.setup_tests.arc_connected_cluster
 
     # Variables under test
     trust_config_source = "CustomerManagedByoIssuer"
@@ -236,9 +274,12 @@ run "test_trust_config_generated_issuer_invalid_trust_settings" {
 
   command = plan
   variables {
-    environment     = "dev"
-    resource_prefix = run.setup_tests.resource_prefix
-    location        = "centralus"
+    aio_resource_group         = run.setup_tests.aio_resource_group
+    sse_key_vault              = run.setup_tests.sse_key_vault
+    sse_user_assigned_identity = run.setup_tests.sse_user_assigned_identity
+    aio_user_assigned_identity = run.setup_tests.aio_user_assigned_identity
+    adr_schema_registry        = run.setup_tests.adr_schema_registry
+    arc_connected_cluster      = run.setup_tests.arc_connected_cluster
 
     # Variables under test
     trust_config_source = "CustomerManagedGenerateIssuer"

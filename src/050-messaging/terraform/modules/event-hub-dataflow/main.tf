@@ -4,22 +4,10 @@
  * Provisions the ARM based data flow endpoint and data flow, requires Asset
  */
 
-data "azapi_resource" "instance" {
-  type      = "Microsoft.IoTOperations/instances@2024-11-01"
-  name      = var.aio_instance_name
-  parent_id = var.resource_group_id
-}
-
-data "azapi_resource" "dataflow_profile" {
-  type      = "Microsoft.IoTOperations/instances/dataflowProfiles@2024-11-01"
-  name      = "default"
-  parent_id = data.azapi_resource.instance.id
-}
-
 resource "azapi_resource" "dataflow_endpoint_to_event_hub" {
   type      = "Microsoft.IoTOperations/instances/dataflowEndpoints@2024-11-01"
   name      = "dfe-eh-${var.resource_prefix}-sample"
-  parent_id = data.azapi_resource.instance.id
+  parent_id = var.aio_instance.id
 
   body = {
     extendedLocation = {
@@ -52,7 +40,7 @@ resource "azapi_resource" "dataflow_endpoint_to_event_hub" {
 resource "azapi_resource" "dataflow_to_event_hub" {
   type      = "Microsoft.IoTOperations/instances/dataflowProfiles/dataflows@2024-11-01"
   name      = "df-eh-${var.resource_prefix}-passthrough"
-  parent_id = data.azapi_resource.dataflow_profile.id
+  parent_id = var.aio_dataflow_profile.id
 
   body = {
     extendedLocation = {

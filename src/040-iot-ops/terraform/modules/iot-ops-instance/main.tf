@@ -89,7 +89,7 @@ resource "azapi_resource" "custom_location" {
       clusterExtensionIds = [var.platform_cluster_extension_id, var.secret_store_cluster_extension_id, azurerm_arc_kubernetes_cluster_extension.iot_operations.id]
     }
   }
-  response_export_values = ["id"]
+  response_export_values = ["name", "id"]
   depends_on             = [azurerm_arc_kubernetes_cluster_extension.iot_operations]
 }
 
@@ -158,6 +158,7 @@ resource "azapi_resource" "instance" {
       }
     }
   }
+  response_export_values = ["name", "id"]
 }
 
 resource "azapi_resource" "broker" {
@@ -259,7 +260,8 @@ resource "azapi_resource" "data_profiles" {
       instanceCount = var.dataflow_instance_count
     }
   }
-  depends_on = [azapi_resource.custom_location, azapi_resource.instance]
+  depends_on             = [azapi_resource.custom_location, azapi_resource.instance]
+  response_export_values = ["name", "id"]
 }
 
 resource "azapi_resource" "data_endpoint" {

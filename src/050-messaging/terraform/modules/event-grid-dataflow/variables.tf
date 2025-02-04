@@ -3,19 +3,9 @@ variable "resource_prefix" {
   description = "Prefix for all resources in this module"
 }
 
-variable "resource_group_id" {
-  type        = string
-  description = "The id of the pre-existing resource group in which to create resources"
-}
-
 variable "custom_location_id" {
   type        = string
   description = "The id of the custom location to deploy Azure IoT Operations to"
-}
-
-variable "aio_instance_name" {
-  type        = string
-  description = "The name of the Azure IoT Operations instance"
 }
 
 variable "event_grid" {

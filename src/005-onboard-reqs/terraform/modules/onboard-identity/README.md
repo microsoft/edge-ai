@@ -43,6 +43,7 @@ Used with a hands-off deployment that will embed UAMI/SP
 
 | Name | Description |
 |------|-------------|
+| arc\_onboarding\_user\_assigned\_identity | n/a |
 | arc\_onboarding\_user\_managed\_identity\_id | n/a |
 | arc\_onboarding\_user\_managed\_identity\_name | n/a |
 | sp\_client\_id | n/a |

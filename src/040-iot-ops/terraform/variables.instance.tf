@@ -1,3 +1,7 @@
+/*
+ * Optional Variables
+ */
+
 variable "operations_config" {
   type = object({
     namespace                      = string

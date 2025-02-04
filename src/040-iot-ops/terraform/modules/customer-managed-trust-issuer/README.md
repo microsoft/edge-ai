@@ -9,13 +9,12 @@ Deploys resources necessary to enable Azure IoT Operations (AIO) with Customer M
 | Name | Version |
 |------|---------|
 | terraform | >= 1.9.8, < 2.0 |
-| azapi | 2.1.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| azapi | 2.1.0 |
+| azapi | n/a |
 | azurerm | n/a |
 
 ## Resources
@@ -26,7 +25,7 @@ Deploys resources necessary to enable Azure IoT Operations (AIO) with Customer M
 | [azurerm_key_vault_secret.aio_ca_cert_chain](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) | resource |
 | [azurerm_key_vault_secret.aio_ca_key](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) | resource |
 | [azurerm_key_vault_secret.aio_root_ca_cert](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) | resource |
-| [azapi_resource.cluster_oidc_issuer](https://registry.terraform.io/providers/Azure/azapi/2.1.0/docs/data-sources/resource) | data source |
+| [azapi_resource.cluster_oidc_issuer](https://registry.terraform.io/providers/Azure/azapi/latest/docs/data-sources/resource) | data source |
 | [azurerm_subscription.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/subscription) | data source |
 
 ## Inputs

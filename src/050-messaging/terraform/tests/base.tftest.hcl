@@ -1,3 +1,8 @@
+provider "azurerm" {
+  storage_use_azuread = true
+  features {}
+}
+
 # Call the setup module to create a random resource prefix
 run "setup_tests" {
   module {
@@ -6,36 +11,28 @@ run "setup_tests" {
 }
 
 run "create_default_configuration" {
-
   command = plan
 
   variables {
-    resource_prefix        = run.setup_tests.resource_prefix
-    environment            = "dev"
-    instance               = "001"
-    resource_group_name    = null
-    custom_locations_name  = null
-    connected_cluster_name = null
-    aio_uami_name          = "null"
-    iot_ops_instance_name  = null
-    asset_name             = "oven"
+    resource_prefix            = run.setup_tests.resource_prefix
+    aio_resource_group         = run.setup_tests.aio_resource_group
+    aio_user_assigned_identity = run.setup_tests.aio_user_assigned_identity
+    aio_custom_locations       = run.setup_tests.aio_custom_locations
+    aio_instance               = run.setup_tests.aio_instance
+    aio_dataflow_profile       = run.setup_tests.aio_dataflow_profile
   }
 }
 
 run "create_non_default_configuration" {
-
   command = plan
 
   variables {
-    resource_prefix        = run.setup_tests.resource_prefix
-    environment            = "dev"
-    instance               = "002"
-    resource_group_name    = "test"
-    custom_locations_name  = "test"
-    connected_cluster_name = "test"
-    aio_uami_name          = "test"
-    iot_ops_instance_name  = "test"
-    asset_name             = "oven"
+    resource_prefix            = run.setup_tests.resource_prefix
+    aio_resource_group         = run.setup_tests.aio_resource_group
+    aio_user_assigned_identity = run.setup_tests.aio_user_assigned_identity
+    aio_custom_locations       = run.setup_tests.aio_custom_locations
+    aio_instance               = run.setup_tests.aio_instance
+    aio_dataflow_profile       = run.setup_tests.aio_dataflow_profile
+    asset_name                 = "freezer"
   }
 }
-

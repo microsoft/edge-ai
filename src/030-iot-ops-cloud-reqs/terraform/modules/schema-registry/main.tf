@@ -50,7 +50,7 @@ resource "azapi_resource" "schema_registry" {
       storageAccountContainerUrl = "${azurerm_storage_account.schema_registry_store.primary_blob_endpoint}${azurerm_storage_container.schema_container.name}"
     }
   }
-  response_export_values = ["id", "identity.principalId"]
+  response_export_values = ["name", "id", "identity.principalId"]
 }
 
 resource "azurerm_role_assignment" "registry_storage_contributor" {

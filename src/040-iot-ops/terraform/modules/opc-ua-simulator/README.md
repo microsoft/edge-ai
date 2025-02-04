@@ -9,20 +9,19 @@ Deploy and configure the OPC UA Simulator
 | Name | Version |
 |------|---------|
 | terraform | >= 1.9.8, < 2.0 |
-| azapi | 2.1.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| azapi | 2.1.0 |
+| azapi | n/a |
 
 ## Resources
 
 | Name | Type |
 |------|------|
-| [azapi_resource.asset](https://registry.terraform.io/providers/Azure/azapi/2.1.0/docs/resources/resource) | resource |
-| [azapi_resource.asset_endpoint](https://registry.terraform.io/providers/Azure/azapi/2.1.0/docs/resources/resource) | resource |
+| [azapi_resource.asset](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) | resource |
+| [azapi_resource.asset_endpoint](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) | resource |
 
 ## Modules
 
