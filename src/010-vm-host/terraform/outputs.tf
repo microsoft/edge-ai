@@ -21,3 +21,9 @@ output "username" {
 output "linux_virtual_machine_name" {
   value = azurerm_linux_virtual_machine.aio_edge.name
 }
+
+output "virtual_machine" {
+  value = azurerm_linux_virtual_machine.aio_edge
+
+  sensitive = true
+}

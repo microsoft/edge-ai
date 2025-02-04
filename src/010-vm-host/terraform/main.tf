@@ -9,36 +9,11 @@ locals {
   vm_username  = coalesce(var.vm_username, var.resource_prefix)
 }
 
-# Defer computation to prevent `data` objects from querying for state on `terraform plan`.
-# Needed for testing and build system.
-resource "terraform_data" "defer" {
-  input = {
-    resource_group_name = coalesce(
-      var.resource_group_name,
-      "rg-${var.resource_prefix}-${var.environment}-${var.instance}"
-    )
-  }
-}
-
-data "azurerm_resource_group" "aio_rg" {
-  name = terraform_data.defer.output.resource_group_name
-}
-
-data "azurerm_user_assigned_identity" "arc_onboarding" {
-  count = var.enable_arc_onboarding_user_managed_identity ? 1 : 0
-
-  name = coalesce(
-    var.arc_onboarding_user_managed_identity_name,
-    "${var.resource_prefix}-arc-aio-mi"
-  )
-  resource_group_name = data.azurerm_resource_group.aio_rg.name
-}
-
 ### Create Virtual Edge Device ###
 
 resource "azurerm_public_ip" "aio_edge" {
   name                = "${local.label_prefix}-ip"
-  resource_group_name = data.azurerm_resource_group.aio_rg.name
+  resource_group_name = var.aio_resource_group.name
   location            = var.location
   allocation_method   = "Static"
   sku                 = "Basic"
@@ -47,19 +22,19 @@ resource "azurerm_public_ip" "aio_edge" {
 
 resource "azurerm_network_security_group" "aio_edge" {
   name                = "${local.label_prefix}-nsg"
-  resource_group_name = data.azurerm_resource_group.aio_rg.name
+  resource_group_name = var.aio_resource_group.name
   location            = var.location
 }
 
 resource "azurerm_virtual_network" "aio_edge" {
   name                = "${local.label_prefix}-vnet"
   location            = var.location
-  resource_group_name = data.azurerm_resource_group.aio_rg.name
+  resource_group_name = var.aio_resource_group.name
   address_space       = ["10.0.0.0/16"]
 }
 
 resource "azurerm_subnet" "aio_edge" {
-  resource_group_name  = data.azurerm_resource_group.aio_rg.name
+  resource_group_name  = var.aio_resource_group.name
   virtual_network_name = azurerm_virtual_network.aio_edge.name
   name                 = "${local.label_prefix}-subnet"
   address_prefixes     = ["10.0.1.0/24"]
@@ -73,7 +48,7 @@ resource "azurerm_subnet_network_security_group_association" "aio_edge" {
 resource "azurerm_network_interface" "aio_edge" {
   name                = "${local.label_prefix}-nic"
   location            = var.location
-  resource_group_name = data.azurerm_resource_group.aio_rg.name
+  resource_group_name = var.aio_resource_group.name
 
   ip_configuration {
     name                          = "${local.label_prefix}-ipconfig"
@@ -96,7 +71,7 @@ resource "local_sensitive_file" "ssh" {
 resource "azurerm_linux_virtual_machine" "aio_edge" {
   name                            = "${local.label_prefix}-vm"
   location                        = var.location
-  resource_group_name             = data.azurerm_resource_group.aio_rg.name
+  resource_group_name             = var.aio_resource_group.name
   admin_username                  = local.vm_username
   disable_password_authentication = true
   admin_ssh_key {
@@ -123,12 +98,12 @@ resource "azurerm_linux_virtual_machine" "aio_edge" {
     storage_account_type = "Standard_LRS"
   }
   dynamic "identity" {
-    for_each = data.azurerm_user_assigned_identity.arc_onboarding
+    for_each = try([var.arc_onboarding_user_assigned_identity.id], [])
 
     content {
       type = "UserAssigned"
       identity_ids = [
-        identity.value.id
+        identity.value
       ]
     }
   }

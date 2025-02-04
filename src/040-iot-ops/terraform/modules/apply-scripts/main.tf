@@ -6,7 +6,7 @@
  */
 
 locals {
-  script_path        = "${path.root}/.."
+  script_path        = "${path.module}/../../.."
   source_start_proxy = ["source ${local.script_path}/scripts/init-scripts.sh"]
   files              = distinct(concat(var.scripts[*].files...))
   formatted_files    = formatlist("${local.script_path}/scripts/%s", local.files)

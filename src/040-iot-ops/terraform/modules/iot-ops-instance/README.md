@@ -9,28 +9,27 @@ Deploys an AIO instance.
 | Name | Version |
 |------|---------|
 | terraform | >= 1.9.8, < 2.0 |
-| azapi | 2.1.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| azapi | 2.1.0 |
+| azapi | n/a |
 | azurerm | n/a |
 
 ## Resources
 
 | Name | Type |
 |------|------|
-| [azapi_resource.aio_device_registry_sync_rule](https://registry.terraform.io/providers/Azure/azapi/2.1.0/docs/resources/resource) | resource |
-| [azapi_resource.aio_sync_rule](https://registry.terraform.io/providers/Azure/azapi/2.1.0/docs/resources/resource) | resource |
-| [azapi_resource.broker](https://registry.terraform.io/providers/Azure/azapi/2.1.0/docs/resources/resource) | resource |
-| [azapi_resource.broker_authn](https://registry.terraform.io/providers/Azure/azapi/2.1.0/docs/resources/resource) | resource |
-| [azapi_resource.broker_listener](https://registry.terraform.io/providers/Azure/azapi/2.1.0/docs/resources/resource) | resource |
-| [azapi_resource.custom_location](https://registry.terraform.io/providers/Azure/azapi/2.1.0/docs/resources/resource) | resource |
-| [azapi_resource.data_endpoint](https://registry.terraform.io/providers/Azure/azapi/2.1.0/docs/resources/resource) | resource |
-| [azapi_resource.data_profiles](https://registry.terraform.io/providers/Azure/azapi/2.1.0/docs/resources/resource) | resource |
-| [azapi_resource.instance](https://registry.terraform.io/providers/Azure/azapi/2.1.0/docs/resources/resource) | resource |
+| [azapi_resource.aio_device_registry_sync_rule](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) | resource |
+| [azapi_resource.aio_sync_rule](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) | resource |
+| [azapi_resource.broker](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) | resource |
+| [azapi_resource.broker_authn](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) | resource |
+| [azapi_resource.broker_listener](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) | resource |
+| [azapi_resource.custom_location](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) | resource |
+| [azapi_resource.data_endpoint](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) | resource |
+| [azapi_resource.data_profiles](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) | resource |
+| [azapi_resource.instance](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) | resource |
 | [azurerm_arc_kubernetes_cluster_extension.iot_operations](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/arc_kubernetes_cluster_extension) | resource |
 
 ## Inputs
@@ -57,7 +56,10 @@ Deploys an AIO instance.
 
 | Name | Description |
 |------|-------------|
+| aio\_dataflow\_profile | n/a |
+| aio\_instance | n/a |
 | custom\_location\_id | n/a |
+| custom\_locations | n/a |
 | instance\_name | n/a |
 <!-- markdown-table-prettify-ignore-end -->
 <!-- END_TF_DOCS -->

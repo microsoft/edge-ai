@@ -10,33 +10,17 @@ locals {
 
 data "azurerm_client_config" "current" {}
 
-# Defer computation to prevent `data` objects from querying for state on `terraform plan`.
-# Needed for testing and build system.
-resource "terraform_data" "defer" {
-  input = {
-    resource_group_name = coalesce(
-      var.shared_resource_group_name,
-      var.resource_group_name,
-      "rg-${var.resource_prefix}-${var.environment}-${var.instance}"
-    )
-  }
-}
-
-data "azurerm_resource_group" "this" {
-  name = terraform_data.defer.output.resource_group_name
-}
-
 # Log Analytics Workspace
 resource "azurerm_monitor_workspace" "monitor" {
   name                = "azmon-${var.resource_prefix}-${var.environment}-${var.instance}"
-  resource_group_name = data.azurerm_resource_group.this.name
-  location            = data.azurerm_resource_group.this.location
+  location            = var.azmon_resource_group.location
+  resource_group_name = var.azmon_resource_group.name
 }
 
 resource "azurerm_log_analytics_workspace" "monitor" {
   name                = "log-${var.resource_prefix}-${var.environment}-${var.instance}"
-  location            = data.azurerm_resource_group.this.location
-  resource_group_name = data.azurerm_resource_group.this.name
+  location            = var.azmon_resource_group.location
+  resource_group_name = var.azmon_resource_group.name
   sku                 = "PerGB2018"
 
   retention_in_days = var.log_retention_in_days
@@ -49,8 +33,8 @@ resource "azurerm_log_analytics_workspace" "monitor" {
 
 resource "azurerm_log_analytics_solution" "monitor" {
   solution_name         = "ContainerInsights"
-  location              = data.azurerm_resource_group.this.location
-  resource_group_name   = data.azurerm_resource_group.this.name
+  location              = var.azmon_resource_group.location
+  resource_group_name   = var.azmon_resource_group.name
   workspace_resource_id = azurerm_log_analytics_workspace.monitor.id
   workspace_name        = azurerm_log_analytics_workspace.monitor.name
 
@@ -62,8 +46,8 @@ resource "azurerm_log_analytics_solution" "monitor" {
 
 resource "azurerm_dashboard_grafana" "monitor" {
   name                = "amg-${var.resource_prefix}-${var.environment}-${var.instance}"
-  location            = data.azurerm_resource_group.this.location
-  resource_group_name = data.azurerm_resource_group.this.name
+  location            = var.azmon_resource_group.location
+  resource_group_name = var.azmon_resource_group.name
   sku                 = "Standard"
 
   public_network_access_enabled     = true
@@ -104,7 +88,15 @@ resource "azurerm_role_assignment" "grafana_metrics_reader" {
 
 # import grafana dashboard for AIO
 resource "terraform_data" "apply_scripts" {
+  count = var.grafana_admin_principal_id != "" ? 1 : 0
+
+  depends_on = [
+    azurerm_role_assignment.grafana_admin,
+    azurerm_role_assignment.grafana_logs_reader,
+    azurerm_role_assignment.grafana_metrics_reader
+  ]
+
   provisioner "local-exec" {
-    command = "az grafana dashboard import -g ${data.azurerm_resource_group.this.name} -n ${azurerm_dashboard_grafana.monitor.name} --definition https://raw.githubusercontent.com/Azure/azure-iot-operations/refs/heads/main/samples/grafana-dashboard/aio.sample.json"
+    command = "az grafana dashboard import -g ${var.azmon_resource_group.name} -n ${azurerm_dashboard_grafana.monitor.name} --definition https://raw.githubusercontent.com/Azure/azure-iot-operations/refs/heads/main/samples/grafana-dashboard/aio.sample.json"
   }
 }

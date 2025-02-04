@@ -41,6 +41,8 @@ Create User Assigned Managed Identities for Azure IoT Operations and assign role
 | Name | Description |
 |------|-------------|
 | aio\_uami\_name | n/a |
+| aio\_user\_assigned\_identity | n/a |
 | sse\_uami\_name | n/a |
+| sse\_user\_assigned\_identity | n/a |
 <!-- markdown-table-prettify-ignore-end -->
 <!-- END_TF_DOCS -->

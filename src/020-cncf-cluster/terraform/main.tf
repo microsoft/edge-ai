@@ -11,17 +11,6 @@ locals {
   custom_locations_oid = try(coalesce(var.custom_locations_oid), data.azuread_service_principal.custom_locations[0].object_id, "")
 }
 
-# Defer computation to prevent `data` objects from querying for state on `terraform plan`.
-# Needed for testing and build system.
-resource "terraform_data" "defer" {
-  input = {
-    resource_group_name = coalesce(
-      var.resource_group_name,
-      "rg-${var.resource_prefix}-${var.environment}-${var.instance}"
-    )
-  }
-}
-
 data "azurerm_client_config" "current" {}
 
 data "azuread_service_principal" "custom_locations" {
@@ -31,18 +20,9 @@ data "azuread_service_principal" "custom_locations" {
   client_id = "bc313c14-388c-4e7d-a58e-70017303ee3b" #gitleaks:allow
 }
 
-data "azurerm_resource_group" "aio_rg" {
-  name = terraform_data.defer.output.resource_group_name
-}
-
-data "azurerm_virtual_machine" "aio_vm" {
-  name                = coalesce(var.linux_virtual_machine_name, "${var.resource_prefix}-aio-edge-vm")
-  resource_group_name = data.azurerm_resource_group.aio_rg.name
-}
-
 resource "azurerm_virtual_machine_extension" "linux_setup" {
   name                        = "linux-vm-setup"
-  virtual_machine_id          = data.azurerm_virtual_machine.aio_vm.id
+  virtual_machine_id          = var.aio_virtual_machine.id
   publisher                   = "Microsoft.Azure.Extensions"
   type                        = "CustomScript"
   type_handler_version        = "2.1"
@@ -51,9 +31,9 @@ resource "azurerm_virtual_machine_extension" "linux_setup" {
   failure_suppression_enabled = false
   protected_settings = <<SETTINGS
   {
-    "script": "${base64encode(templatefile("${path.root}/../scripts/device-setup.sh", {
+    "script": "${base64encode(templatefile("${path.module}/../scripts/device-setup.sh", {
   "ENV_HOST_USERNAME"             = coalesce(var.vm_username, var.resource_prefix)
-  "ENV_ARC_RESOURCE_GROUP"        = data.azurerm_resource_group.aio_rg.name
+  "ENV_ARC_RESOURCE_GROUP"        = var.aio_resource_group.name
   "ENV_ARC_RESOURCE_NAME"         = local.arc_resource_name
   "ENV_CUSTOM_LOCATIONS_OID"      = local.custom_locations_oid
   "ENV_ENVIRONMENT"               = var.environment
@@ -66,4 +46,14 @@ resource "azurerm_virtual_machine_extension" "linux_setup" {
 }))}"
   }
   SETTINGS
+}
+
+data "azapi_resource" "arc_connected_cluster" {
+  type      = "Microsoft.Kubernetes/connectedClusters@2024-01-01"
+  parent_id = var.aio_resource_group.id
+  name      = "${var.resource_prefix}-arc"
+
+  depends_on = [azurerm_virtual_machine_extension.linux_setup]
+
+  response_export_values = ["name", "id", "location", "properties.oidcIssuerProfile.issuerUrl"]
 }

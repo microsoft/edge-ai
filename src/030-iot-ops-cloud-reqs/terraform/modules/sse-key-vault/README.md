@@ -22,13 +22,11 @@ Create or use and existing a Key Vault for Secret Sync Extension
 |------|------|
 | [azurerm_key_vault.new](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault) | resource |
 | [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/client_config) | data source |
-| [azurerm_key_vault.existing](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/key_vault) | data source |
 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| existing\_key\_vault\_name | Name of the pre-existing Azure Key Vault to use | `string` | n/a | yes |
 | location | Location for all resources in this module | `string` | n/a | yes |
 | resource\_group\_name | Name of the pre-existing resource group in which to create resources | `string` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |

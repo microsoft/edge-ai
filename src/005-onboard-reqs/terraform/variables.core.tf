@@ -1,3 +1,7 @@
+/*
+ * Required Variables
+ */
+
 variable "environment" {
   type        = string
   description = "Environment for all resources in this module: dev, test, or prod"
@@ -21,16 +25,4 @@ variable "instance" {
   type        = string
   description = "Instance identifier for naming resources: 001, 002, etc..."
   default     = "001"
-}
-
-variable "resource_group_name" {
-  type        = string
-  description = "The name for the resource group. (Otherwise, 'rg-{var.resource_prefix}-{var.environment}-{var.instance}')"
-  default     = null
-}
-
-variable "existing_key_vault_name" {
-  type        = string
-  description = "Name of the Azure Key Vault to use by Secret Sync Extension. If not provided, will create new key vault. Will fail if provided key vault does not exist in provided resource group."
-  default     = null
 }

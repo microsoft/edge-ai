@@ -18,7 +18,6 @@ Deploys a Linux VM with an Arc-connected K3s cluster
 |------|---------|
 | azurerm | >= 4.8.0 |
 | local | n/a |
-| terraform | n/a |
 | tls | n/a |
 
 ## Resources
@@ -33,22 +32,16 @@ Deploys a Linux VM with an Arc-connected K3s cluster
 | [azurerm_subnet_network_security_group_association.aio_edge](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subnet_network_security_group_association) | resource |
 | [azurerm_virtual_network.aio_edge](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_network) | resource |
 | [local_sensitive_file.ssh](https://registry.terraform.io/providers/hashicorp/local/latest/docs/resources/sensitive_file) | resource |
-| [terraform_data.defer](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data) | resource |
 | [tls_private_key.vm_ssh](https://registry.terraform.io/providers/hashicorp/tls/latest/docs/resources/private_key) | resource |
-| [azurerm_resource_group.aio_rg](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/resource_group) | data source |
-| [azurerm_user_assigned_identity.arc_onboarding](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/user_assigned_identity) | data source |
 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| environment | Environment for all resources in this module: dev, test, or prod | `string` | n/a | yes |
+| aio\_resource\_group | n/a | ```object({ name = string })``` | n/a | yes |
 | location | Location for all resources in this module | `string` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
-| arc\_onboarding\_user\_managed\_identity\_name | If using, the User Assigned Managed Identity name with 'Kubernetes Cluster - Azure Arc Onboarding' permissions. | `string` | `null` | no |
-| enable\_arc\_onboarding\_user\_managed\_identity | n/a | `string` | `true` | no |
-| instance | Instance identifier for naming resources: 001, 002, etc... | `string` | `"001"` | no |
-| resource\_group\_name | The name for the resource group. (Otherwise, 'rg-{var.resource\_prefix}-{var.environment}-{var.instance}') | `string` | `null` | no |
+| arc\_onboarding\_user\_assigned\_identity | n/a | ```object({ id = string })``` | `null` | no |
 | vm\_sku\_size | Size of the VM | `string` | `"Standard_D8s_v3"` | no |
 | vm\_username | Name for the VM user to create on the target VM. If left empty, a random user name will be generated | `string` | `null` | no |
 
@@ -61,6 +54,7 @@ Deploys a Linux VM with an Arc-connected K3s cluster
 | public\_ssh | n/a |
 | public\_ssh\_permissions | n/a |
 | username | n/a |
+| virtual\_machine | n/a |
 | vm\_id | n/a |
 <!-- markdown-table-prettify-ignore-end -->
 <!-- END_TF_DOCS -->

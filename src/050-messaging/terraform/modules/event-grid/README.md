@@ -9,20 +9,19 @@ Create a new Event Grid namespace and namespace topic and assign the AIO instanc
 | Name | Version |
 |------|---------|
 | terraform | >= 1.9.8, < 2.0 |
-| azapi | 2.2.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| azapi | 2.2.0 |
+| azapi | n/a |
 | azurerm | n/a |
 
 ## Resources
 
 | Name | Type |
 |------|------|
-| [azapi_resource.event_grid_namespace_topic_space](https://registry.terraform.io/providers/Azure/azapi/2.2.0/docs/resources/resource) | resource |
+| [azapi_resource.event_grid_namespace_topic_space](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) | resource |
 | [azurerm_eventgrid_namespace.aio_eg_ns](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/eventgrid_namespace) | resource |
 | [azurerm_role_assignment.data_sender](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) | resource |
 
