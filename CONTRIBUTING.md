@@ -121,14 +121,14 @@ When contributing code to the project, please consider the following guidance:
 - If a work item for your contribution does not exist, [please file an issue](https://dev.azure.com/ai-at-the-edge-flagship-accelerator/IaC%20for%20the%20Edge/_workitems/create/Issue) first to engage the project's PO, TPM, or Tech Lead for guidance.
 - Commits (or at least one in a commit chain) should reference a User Story or Task item from the backlog for traceability.
 - When creating a PR, ensure descriptions use [Azure DevOps notation to close associated work items](https://learn.microsoft.com/en-us/azure/devops/repos/git/resolution-mentions?view=azure-devops).
-- All code PRs destined for the `main` branch must be reviewed by two reviewers including one of the follow personnel:
-  - Tech Lead (Bill Berry)
-  - Architect (Tim Park, Paul Bouwer)
-  - Assistant Tech Lead (Vy Ta, Katrien De Graeve, or Allen Greaves)
+- All code PRs destined for the `main` branch must be reviewed by two reviewers including one of the following:
+  - Tech Lead: Bill Berry
+  - Architect: Tim Park, Paul Bouwer
+  - Maintainers: Vy Ta, Katrien De Graeve, or Allen Greaves
 - All ADRs and Security Plans must be reviewed by two reviewers including the following personnel:
-  - Product Owner (Larry Lieberman) or TPM (Mack Renard)
-  - AI/ML related ADRs (Cheng Chen, Ren Silva)
-  - Security related ADRs & Plans (Andrew Malkov)
+  - Product Owner: Larry Lieberman
+  - AI/ML related ADRs: Cheng Chen, Ren Silva
+  - Security related ADRs & Plans: Andrew Malkov
 
 This project also includes a Dev Container for development work, and using that dev container is preferred, to ensure you are using the same toolchains and tool versions as other contributors. You can read more about the Dev Container in its [ReadMe](./.devcontainer/README.md).
 
