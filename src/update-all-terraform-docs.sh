@@ -17,8 +17,8 @@
 set -e
 
 # Check if terraform-docs is installed
-if ! command -v terraform-docs &> /dev/null; then
-  echo "terraform-docs could not be found." 
+if ! command -v terraform-docs &>/dev/null; then
+  echo "terraform-docs could not be found."
   echo "Please install terraform-docs and ensure it is in your PATH."
   echo "Installation instructions can be found at: https://terraform-docs.io/user-guide/installation/"
   echo
@@ -34,16 +34,17 @@ echo
 echo "Starting terraform doc updates ..."
 echo
 
-# Loop over top_level_dirs and select only the folders
-# where there is a "terraform" subfolder and call tf-docs on them.
-find "$SCRIPT_DIR/../src" -mindepth 1 -maxdepth 1 -type d | while read -r folder; do
-  # Check if the folder contains a "terraform" subfolder
-  if [ -d "$folder/terraform" ]; then
-    echo "Updating Terraform docs in folder: $folder/terraform"
-    # Run terraform-docs on the folder. The configuration file declares a recursive
-    # processing of the folder and its subfolders (ie. modules).
-    terraform-docs "$folder/terraform" --config "$TERRAFORM_DOCS_CONFIG"
-    echo "Completed processing Terraform docs in folder: $folder"
-    echo
-  fi
-done
+# Loop over all component dirs and select only folders that have *.tf files.
+# Exclude tests, .terraform, and ci directories. Remove duplicates with `sort -u`.
+find "$SCRIPT_DIR/../src" \
+  -type d \( -name "tests" -o -name ".terraform" -o -name "ci" \) -prune -false -o \
+  -type f -name "*.tf" -exec dirname {} \; |
+  sort -u |
+  while read -r folder; do
+    if [ -d "$folder" ]; then
+      echo "Updating Terraform docs in folder: $folder"
+      terraform-docs "$folder" --config "$TERRAFORM_DOCS_CONFIG"
+      echo "Completed processing Terraform docs in folder: $folder"
+      echo
+    fi
+  done
