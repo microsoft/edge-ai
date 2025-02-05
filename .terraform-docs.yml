@@ -1,7 +1,5 @@
 ---
 formatter: "markdown table"
-recursive:
-  enabled: true
 
 header-from: main.tf
 
