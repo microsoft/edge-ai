@@ -50,7 +50,7 @@ An event often traverses multiple messaging infrastructure layers. It may start 
 ## CloudEvents
 
 Given the diversity of metadata information models across protocols and the necessity for events to traverse multiple protocol routes, major cloud vendors collaborate within the Cloud Native Computing Foundation (CNCF) CloudEvents project.
-This initiative aims to establish a standardized metadata information model for events, with well-defined [bindings](<https://github.com/cloudevents/spec/blob/main/cloudevents/bindings>) and [extensions](<https://github.com/cloudevents/spec/blob/main/cloudevents/extensions>) enabling interoperation across key messaging protocols.
+This initiative aims to establish a standardized metadata information model for events, with well-defined [bindings](https://github.com/cloudevents/spec/blob/main/cloudevents/bindings) and [extensions](https://github.com/cloudevents/spec/blob/main/cloudevents/extensions) enabling interoperation across key messaging protocols.
 The goal being uniform event metadata definitions and preservation of metadata across multi-protocol routes, as illustrated in the following diagram:
 
 ![Message Flow](media/message-flow.png)
@@ -212,7 +212,7 @@ The data model of the data acquired by the connector is enforced by [JSON schema
                 "additionalProperties": true
             }
         }
-    }   
+    }
     ```
 
     </details>
@@ -251,12 +251,12 @@ These properties primarily consist of CloudEvent's OPC UA [extension properties]
 ## Data Transformation
 
 The second step in the process involves transforming or filtering the acquired data.
-Message schemas created through the Asset creation process, or uploaded and configured via the DataFlow component, allow for the use of [dotted notation](<https://learn.microsoft.com/azure/iot-operations/connect-to-cloud/howto-create-dataflow?tabs=portal#filter-filter-data-based-on-a-condition>) to create data transformations or filters.
+Message schemas created through the Asset creation process, or uploaded and configured via the DataFlow component, allow for the use of [dotted notation](https://learn.microsoft.com/azure/iot-operations/connect-to-cloud/howto-create-dataflow?tabs=portal#filter-filter-data-based-on-a-condition) to create data transformations or filters.
 This approach help enhance developer experience and avoid runtime errors.
 
 > **_NOTE:_** The message structure is often modified at this stage (e.g., removing or injecting a computed field). As the metadata is passed through this stage, some of that metadata may become invalid. For example, AIO does not automatically remove or update the CloudEvent property called `dataschema`, which is likely to be valid for the pre-modified JSON.
-> To address this, you can use the [map](<https://learn.microsoft.com/azure/iot-operations/connect-to-cloud/concept-dataflow-mapping?tabs=bicep#output-mapping>) feature of the DataFlow component or in AIO Ops portal to explicitly update the property with the correct value
-> e.g. use [Compute](<https://learn.microsoft.com/azure/iot-operations/connect-to-cloud/howto-create-dataflow?tabs=portal#compute>) transformation and use ```$metadata.user_property.dataschema``` as output.
+> To address this, you can use the [map](https://learn.microsoft.com/azure/iot-operations/connect-to-cloud/concept-dataflow-mapping?tabs=bicep#output-mapping) feature of the DataFlow component or in AIO Ops portal to explicitly update the property with the correct value
+> e.g. use [Compute](https://learn.microsoft.com/azure/iot-operations/connect-to-cloud/howto-create-dataflow?tabs=portal#compute) transformation and use ```$metadata.user_property.dataschema``` as output.
 
 ## Data Destination (Sink)
 

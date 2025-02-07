@@ -68,8 +68,8 @@ This project is a composable library of fine-grained, production ready IaC that 
 nearly any operational model, from small, single machine systems, to orchestrated, globally-distributed solutions.
 The project uses a decimal system to organize IaC, scripts, and supplementary resources, which can be collated in myriad ways to meet operational requirements:
 
-| Folder                                                      | Description                                                                                                                                                                              |
-|-------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Folder                                                       | Description                                                                                                                                                                              |
+| ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [000-subscription](../src/000-subscription/README.md)        | Run-once scripts for Arc & AIO resource provider enablement in subscriptions, if necessary                                                                                               |
 | [005-onboard-reqs](../src/005-onboard-reqs/README.md)        | Resource Groups, Site Management (optional), Role assignments/permissions for Arc onboarding                                                                                             |
 | [010-vm-host](../src/010-vm-host/README.md)                  | VM/host provisioning, with configurable host operating system (initially limited to Ubuntu)                                                                                              |
@@ -80,7 +80,7 @@ The project uses a decimal system to organize IaC, scripts, and supplementary re
 | [060-storage](../src/060-storage/README.md)                  | Cloud resource provisioning for data/event storage (Fabric by means of RTI, Data Lakes, Warehouses, etc.)                                                                                |
 | [070-observability](../src/070-observability/README.md)      | Cloud resource provisioning for Azure Monitor and Container Insights                                                                                                                     |
 | [080-iot-ops-utility](../src/080-iot-ops-utility/README.md)  | AIO deployment of additionally selected components (OTEL Collector (Phase 2), OPC UA, AKRI, Strato, FluxCD/Argo)                                                                         |
-| 090                                                         | Customer defined custom workloads, and pre-built solution accelerators such as TIG/TICK stacks, InfluxDB Data Historian, reference data backup from cloud to edge, etc.                  |
+| 090                                                          | Customer defined custom workloads, and pre-built solution accelerators such as TIG/TICK stacks, InfluxDB Data Historian, reference data backup from cloud to edge, etc.                  |
 
 ### Using this project
 
