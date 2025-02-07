@@ -180,163 +180,23 @@ stages:
 
           - script: |
 
-              # List the contents of the WIKI_REPO_FOLDER
-              # echo "Listing contents of $WIKI_REPO_FOLDER ..."
-              # ls -la "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER"
-
-              # List the contents of the BRANCH_REPO_FOLDER
-              # echo "Listing contents of $BRANCH_REPO_FOLDER ..."
-              # ls -la "$(Agent.BuildDirectory)/$BRANCH_REPO_FOLDER"
-
               # Checkout the wiki branch
               # This should be checked out in the call above but
               # it has been occasionally flaky, so we are checking it out here
               git -C "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER" checkout wiki
 
-              # Remove all contents in the work_dir except the .git folder
-              echo "Clearing wiki contents except for git folder ..."
-              find "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER" -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
+              # Clear contents of wiki repo directory excluding the .git folder
+              echo "Clearing contents of wiki repo directory..."
+              find "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER" -mindepth 1 -maxdepth 1 -not -name '.git' -exec rm -rf {} \;
 
-              # List the contents of the WIKI_REPO_FOLDER to ensure it is empty
-              # echo "Listing contents of $WIKI_REPO_FOLDER..."
-              # ls -la "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER"
+              # Build/refresh the wiki contents. This will put artifacs into the
+              # .wiki folder in the main branch.
+              echo "Building wiki contents..."
+              "./scripts/wiki-build.sh"
 
-              # Commit the changes of clearing out the wiki contents
-              echo "Committing cleared wiki contents..."
-              git -C "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER" commit --allow-empty -m "Cleared wiki contents on `date +'%Y-%m-%d %H:%M:%S'`"
-
-              # Copy the contents of the docs directory into the work_dir
-              # This will create a folder structure
-              # wiki-root
-              # ├── docs subfolders
-              echo "Copying new docs contents..."
-              # Make sure the * is outside the quotes to expand the files
-              cp -r "$(Agent.BuildDirectory)/$BRANCH_REPO_FOLDER/docs/"* "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER"
-              mv "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER/README.md" "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER/Getting-Started.md"
-              # Replace all occurrences of './src/{000-subscription}/README.md' with './terraform/{000-subscription}.md'
-              echo "Replacing URLs in README.md..."
-              sed -i 's|(\.\./src/\([0-9]*-[^/]*\)/README\.md)|(./terraform/\1.md)|g' "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER/Getting-Started.md"
-              # Create a .order file with getting-started.md first
-              echo "Creating .order file..."
-              echo "Getting-Started" > "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER/.order"
-
-              # Copy the contents of the dev container readme into the work_dir
-              # This will create a folder structure
-              # wiki-root
-              # ├── dev-container readme
-              echo "Copying new dev container contents..."
-              cp "$(Agent.BuildDirectory)/$BRANCH_REPO_FOLDER/.devcontainer/README.md" "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER/devcontainer.md"
-
-              # Copy the contents of the contributing readme into the work_dir
-              # This will create a folder structure
-              # wiki-root
-              # ├── contributing readme
-              echo "Copying new contributing contents..."
-              cp "$(Agent.BuildDirectory)/$BRANCH_REPO_FOLDER/CONTRIBUTING.md" "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER/contributing.md"
-
-              # Copy the contents of the azdo directory into the work_dir
-              # This will create a folder structure
-              # wiki-root
-              # ├── azdo readme
-              echo "Copying new pipelines contents..."
-              cp "$(Agent.BuildDirectory)/$BRANCH_REPO_FOLDER/.azdo/README.md" "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER/pipelines.md"
-
-              # Copy the contents of the src directory's Readme into the work_dir
-              # This will create a folder structure
-              # wiki-root
-              # ├── src.md
-              echo "Copying src main README"
-              mkdir -p "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER/src"
-              cp "$(Agent.BuildDirectory)/$BRANCH_REPO_FOLDER/src/README.md" "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER/src.md"
-
-              # Copy all markdown files directly under src, excluding README.md, to the src folder
-              # This will create a folder structure
-              # wiki-root
-              # ├── src
-              # │   ├── {other markdown}.md
-              echo "Copying markdown files directly under src to wiki/src..."
-              find "$(Agent.BuildDirectory)/$BRANCH_REPO_FOLDER/src" -mindepth 1 -maxdepth 1 -type f -name '*.md' ! -name 'README.md' | while read -r file; do
-                cp "$file" "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER/src/"
-              done
-
-              # Rewrite URLs in src.md to point to the correct markdown files
-              echo "Rewriting URLs in src.md..."
-              sed -i 's|\./\([0-9]*-[^/]*\)/README\.md|./terraform/\1.md|g' "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER/src.md"
-
-              # This will get uncommented after a future refactoring
-              # Get all README.md files from the first level of directories under src and copy them to the src folder
-              # Copy all markdown files directly under src, excluding README.md, to the src folder
-              # This will create a folder structure
-              # wiki-root
-              # ├── src
-              # │   ├── {other markdown}.md
-              # |   ├── {directory_name}.md e.g. "000-subscription.md"
-              # echo "Copying README.md files from first level of directories under src to wiki/src..."
-              # find "$(Agent.BuildDirectory)/$BRANCH_REPO_FOLDER/src" -mindepth 2 -maxdepth 2 -type f -name 'README.md' | while read -r file; do
-              #   parent_dir=$(basename "$(dirname "$file")")
-              #   new_filename="${parent_dir}.md"
-              #   echo "Renaming $file to $new_filename"
-              #   cp "$file" "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER/src/$new_filename"
-              # done
-
-              # Recursively search for markdown documents under the src folder and copy them to the WIKI_REPO_FOLDER
-              echo "Copying markdown documents from src to wiki..."
-              # Create the terraform directory in the wiki repo to move the files to
-              mkdir -p "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER/terraform"
-
-              # Find all markdown files in the src directory and copy them to the wiki repo
-              # This will create a folder structure
-              # wiki-root
-              # ├── terraform
-              # │   ├── {folder_name} e.g. 010-vm-host
-              # │   │   ├── {markdown}.md e.g. modules.md
-              # │   │   ├── {folder_name} e.g. modules
-              # │   │   │   ├── {markdown}.md e.g. uami.md
-              # │   ├── {folder_name} e.g. 020-cncf-cluster
-              find "$(Agent.BuildDirectory)/$BRANCH_REPO_FOLDER/src" -name '*.md' | while read -r file; do
-                # Given a path like 010-vm-host/terraform/modules/README.md
-                # we want to remove the `terraform` segment of the path
-                # rename README.md to the name of the parent directory
-                # e.g. modules.md and place it into a the parent directory
-                # parallel to 010-vm-host/modules.
-
-                # Get the relative path of the file from the src directory
-                relative_path="${file#$(Agent.BuildDirectory)/$BRANCH_REPO_FOLDER/src/}"
-
-                # Remove the first terraform directory from the relative path
-                # to ensure the files are copied to the correct location
-                relative_path=$(dirname "$relative_path" | sed 's|terraform/||')
-                echo "File relative path: $relative_path"
-                # Get the parent directory of the file to support renames
-                parent_dir=$(basename "$relative_path")
-                # Check if the file is a README.md file and rename it to the name of parent directory
-                # All folders will have a README.md file
-                if [ "$(basename "$file")" = "README.md" ]; then
-
-                  # Replace all slashes with dashes in the parent directory for the new filename
-                  new_filename="${parent_dir//\//-}"
-                  echo "File will be placed in $WIKI_REPO_FOLDER/terraform/$relative_path as $new_filename.md"
-
-                  mkdir -p "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER/terraform/$relative_path"
-                  # Copy the README.md file to the parent directory so it
-                  # displays when you click on the folder in the wiki
-                  cp "$file" "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER/terraform/$relative_path/../$new_filename.md"
-                else
-                  # Copy the file to the existing location in the wiki repo if it is not a
-                  # generically named README.md file
-                  echo "Copying $relative_path to $WIKI_REPO_FOLDER/src/$relative_path"
-                  mkdir -p "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER/terraform/$relative_path"
-                  cp "$file" "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER/terraform/$relative_path"
-                fi
-              done
-
-              # Replace all URLs like '../020-cncf-cluster/README.md' with '020-cncf-cluster.md'
-              # This is super hacky and does not handle edge cases well. It is a best effort to
-              # make the wiki work with the new structure.
-              # echo "Replacing URLs in markdown files..."
-              # find "$WIKI_REPO_FOLDER" -name '*.md' | while read -r file; do
-              #  sed -i 's|\.\./\([^/]*\)/README\.md|\1.md|g' "$file"
-              # done
+              # Copy the wiki contents to the wiki repo directory
+              echo "Copying wiki contents to wiki repo directory..."
+              cp -r ".wiki"/* "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER"
 
               # Commit the changes
               echo "Committing new wiki contents..."
@@ -350,6 +210,7 @@ stages:
               # Delete the work_dir if needed for cleanup
               # rm -rf "$WIKI_REPO_FOLDER"
             displayName: Push Wiki
+            workingDirectory: $(Agent.BuildDirectory)/$(BRANCH_REPO_FOLDER)
 
   - stage: PR
     displayName: PR Build Process
@@ -468,26 +329,9 @@ stages:
 
           - bash: |
 
-              # Install terraform-docs
-              curl -sSL https://github.com/terraform-docs/terraform-docs/releases/download/v0.16.0/terraform-docs-v0.16.0-linux-amd64.tar.gz | tar -xz -C /usr/local/bin
-
-              # Ensure Terraform Docs update script is set to executable (just in case)
-              chmod +x $(System.DefaultWorkingDirectory)/src/update-all-terraform-docs.sh
-
-              # Run documentation update Terrform
-              $(System.DefaultWorkingDirectory)/src/update-all-terraform-docs.sh
-
-              # Check for changes in README.md files
-              changed_files=$(git diff --name-only)
-              readme_changed=false
-              for file in $changed_files; do
-                if [[ $file == src/*/README.md ]]; then
-                  if head -n 1 "$file" | grep -q "^<!-- BEGIN_TF_DOCS -->$"; then
-                    echo "Updates required for: $(System.DefaultWorkingDirectory)/$file"
-                    readme_changed=true
-                  fi
-                fi
-              done
+              # Call tf-docs-check.sh script to check for changes in the Terraform documentation
+              # The script will return a boolean value indicating if updates are needed.
+              readme_changed=$(tail -n 1 $(System.DefaultWorkingDirectory)/scripts/tf-docs-check.sh)
 
               # Check if there are any changes in the Terraform documentation
               if [ "$readme_changed" = true ]; then
@@ -498,6 +342,7 @@ stages:
               else
                 echo "No updates detected in the Terraform documentation."
               fi
+
             displayName: Check for changes in terraform docs
             workingDirectory: $(System.DefaultWorkingDirectory)
             condition: and( not(failed()), not(canceled()) )
@@ -651,7 +496,7 @@ stages:
             clean: true
 
           # Run Pester tests for the resource provider scripts
-          - powershell: ./.azdo/subscripts/Invoke-Pester.ps1 -Path ./src/000-subscription -OutputFile $(testResultsOutput)
+          - powershell: ./scripts/Invoke-Pester.ps1 -Path ./src/000-subscription -OutputFile $(testResultsOutput)
             displayName: "Run pester"
             workingDirectory: $(System.DefaultWorkingDirectory)
 
@@ -745,67 +590,30 @@ stages:
               scriptLocation: inlineScript
               inlineScript: |
 
-                # Call TF version command and parse the output
-                version_data=$(terraform version -json)
-                echo "$version_data" | jq .
-                # set outdated if there is a global TF update available
-                outdated=$(echo "$version_data" | jq -r '.terraform_outdated')
-                # Parse the provider selections and build an array to check for updates
-                # This section will parse the provider subobject and extract the provider name
-                # and version.
-                # example object:
-                # {
-                #  "terraform_version": "1.10.5",
-                #  "platform": "linux_amd64",
-                #  "provider_selections": {
-                #    "registry.terraform.io/hashicorp/azuread": "3.1.0",
-                #    "registry.terraform.io/hashicorp/azurerm": "4.16.0",
-                #    "registry.terraform.io/hashicorp/random": "3.6.3"
-                #  },
-                #  "terraform_outdated": false
-                # }
-                provider_details=$(echo "$version_data" | jq -r '
-                  .provider_selections |
-                  to_entries[] |
-                  "\(.key) \
-                  \(.key | split("/") | .[1]) \
-                  \(.key | split("/") | .[2]) \
-                  \(.value)"
-                ')
+                # Get the provider details from the Terraform configuration
+                # This will output a list of providers and their versions in the format:
+                # folder,provider,version, latest_version, e.g.
+                # ./src/030-iot-ops-cloud-reqs/terraform,azapi,2.1.0,2.2.0
+                # ./src/040-iot-ops/terraform,azapi,2.1.0,2.2.0
+                # Example version_check_results string
+                version_check_results=$(./scripts/terraform-provider-version-check.sh -f ./)
 
-                # Loop through the provider details and check for updates
-                # by calling the tf registry API and comparing the versions
-                while IFS= read -r line; do
+                # Split the string into an array
+                IFS=' ' read -r -a results_array <<< "$version_check_results"
 
-                  # Check if the pipeline is canceled, and exit if so
-                  if [ "$AGENT_JOBSTATUS" = "Canceled" ]; then
-                    echo "Pipeline is canceled. Exiting..."
-                    exit 0
+                # Loop through each result and check the fields
+                for result in "${results_array[@]}"; do
+                  IFS=',' read -r -a fields <<< "$result"
+                  folder="${fields[0]}"
+                  provider="${fields[1]}"
+                  current_version="${fields[2]}"
+                  available_version="${fields[3]}"
+
+                  # Check if the third field (current_version) does not match the fourth field (available_version)
+                  if [ "$current_version" != "$available_version" ]; then
+                    echo "##vso[task.logissue type=error]Version mismatch in $folder for provider $provider: current version is $current_version, but available version is $available_version."
                   fi
-
-                  registry=$(echo "$line" | awk '{print $1}')
-                  source=$(echo "$line" | awk '{print $2}')
-                  provider=$(echo "$line" | awk '{print $3}')
-                  version=$(echo "$line" | awk '{print $4}')
-                  url="https://registry.terraform.io/v1/providers/$source/$provider/versions"
-                  response=$(curl -s "$url")
-
-                  # Check versions
-                  latest_version=$(echo "$response" | jq -r '.versions[].version' | sort -V | tail -n 1)
-                  if [ "$(printf '%s\n' "$version" "$latest_version" | sort -V | tail -n 1)" != "$version" ]; then
-                    # Log a build warning if the provider version is outdated
-                    echo "##vso[task.logissue type=warning]A newer version ($latest_version) is available for provider $provider from $source. Specified version: $version."
-                  else
-                    echo "Terraform provider: $provider version is up to date."
-                  fi
-                done <<< "$provider_details"
-
-                # If the global TF version is outdated, log a build warning
-                if [ "$outdated" = "true" ]; then
-                  echo "##vso[task.logissue type=warning]Terraform version is outdated."
-                else
-                  echo "Terraform version is up to date."
-                fi
+                done
             condition: and( not(failed()), not(canceled()) )
 
           # Run Terraform Validate to ensure the TF files are valid
