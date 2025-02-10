@@ -198,6 +198,13 @@ stages:
               echo "Copying wiki contents to wiki repo directory..."
               cp -r ".wiki"/* "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER"
 
+              # Explicitly copy the .order file to the wiki repo directory
+              # This file is used to order the wiki pages in the Azure DevOps wiki
+              # We're calling explicitly for it's copy incase we play with
+              # other `.` files we don't want copied in the future.
+              echo "Copying .order file to wiki repo directory..."
+              cp ".wiki/.order" "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER/.order"
+
               # Commit the changes
               echo "Committing new wiki contents..."
               git -C "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER" add .

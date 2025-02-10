@@ -156,11 +156,11 @@ for entry in "${!src_dest_tuples[@]}"; do
     if [[ "$src" == *"/README.md" ]]; then
         # Get the parent directory name
         parent_dir=$(basename "$(dirname "$src")")
-        # convert the parent directory name to camel case
-        # camel_case_parent_dir=$(echo "${parent_dir#.}" | sed -r 's/(^|-)(\w)/\U\2/g')
+        # remove the leading "./" from the parent_dir
+        clean_parent_dir="${parent_dir#.}"
         # Replace README.md with the parent directory name in the dest path
         # taking {dir-name}/README.md to {Dir-Name}.md
-        new_dest="${src//\/$parent_dir\/README.md/\/$parent_dir.md}"
+        new_dest="${src//\/$parent_dir\/README.md/\/$clean_parent_dir.md}"
     else
         new_dest="$dest"
     fi
