@@ -8,67 +8,12 @@ This script has been tested on the following operating systems:
 
 - Azure Virtual Machine with Ubuntu 20.04 LTS
 
-## Create resources
+## Terraform
 
-Login to Azure CLI using the below command:
+Refer to [Terraform Components - Getting Started](../README.md#terraform-components---getting-started) for
+deployment instructions.
 
-```sh
-# Login to Azure CLI, optionally specify the tenant-id
-az login # --tenant <tenant-id>
-```
-
-Set up terraform setting and apply it
-
-1. cd into the `terraform` directory
-
-    ```sh
-    cd ./terraform
-    ```
-
-2. Set up env vars
-
-    ```sh
-    export ARM_SUBSCRIPTION_ID=<subscription-id>
-    ```
-
-3. Create a `terraform.tfvars` file with the at least the following minumum configuration:
-
-    ```hcl
-    environment     = "<environment>"
-    resource_prefix = "<resource-prefix>"
-    location        = "<location>"
-    ```
-
-4. By default, current Azure Entra ID user or principal will be assigned a `cluster-admin` role in the K3S cluster so modules like Azure IoT Operations requiring `kubectl` can run successfully. If you wish to disable this, add the following variable to `terraform.tfvars` file:
-
-    ```hcl
-    add_current_entra_user_cluster_admin = false
-    ```
-
-5. Initalized and apply terraform
-
-    ```sh
-    terraform init
-    terraform apply
-    ```
-
-6. Navigate to the deployed VM in Azure portal and Enable JIT (Just in time) access for your IP:
-   Virtual Machines -> Select the VM -> Connect -> Native SSH -> VM Access -> Requests JIT access
-
-7. The terraform output will contain the SSH command to connect to the VM
-   Use the SSH command to connect to the VM or any preferred SSH client.
-
-    ```sh
-    ssh -i ../.ssh/id_rsa <vm_user_name>@<vm_dns_or_public_ip>
-    ```
-
-## Destroy resources
-
-To destroy the resources created by Terraform, run the following command:
-
-```sh
-terraform destroy
-```
+Learn more about the required configuration by reading the [./terraform/README.md](./terraform/README.md)
 
 ## Troubleshooting
 
