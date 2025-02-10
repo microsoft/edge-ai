@@ -4,93 +4,60 @@ Component to deploy Azure IoT Operations to an Arc Connected K3s Kubernetes clus
 
 Learn more about the required configuration by reading the [./terraform/README.md](./terraform/README.md)
 
-## Prerequisites
+## Terraform
 
-- [Terraform](https://developer.hashicorp.com/terraform/install)
-- [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli)
-- K3s cluster connected to Azure Arc, can be done by following the [020-cncf-cluster/README.md](../020-cncf-cluster/README.md)
+Refer to [Terraform Components - Getting Started](../README.md#terraform-components---getting-started) for
+deployment instructions.
 
-## Create resources
+Learn more about the required configuration by reading the [./terraform/README.md](./terraform/README.md)
 
-Login to Azure CLI using the below command:
+### Customer Managed Trust - TLS
 
-```sh
-# Login to Azure CLI, optionally specify the tenant-id
-az login # --tenant <tenant-id>
-```
+If you wish to configure custom trust settings for `Issuer` and trust bundle `ConfigMap`, you have two options:
 
-Set up terraform setting and apply it
+- Option 1 - If you wish to manage and provide trust with a TLS certificate from Key Vault along with having all
+  AIO MQ trust and issuer resources __automatically__ generated from this certificate, update the following variables
+  into your `terraform.tfvars` file before deploying AIO:
 
-1. cd into the `terraform` directory
+  ```hcl
+  trust_config_source = "CustomerManagedGenerateIssuer"
+  ```
 
-    ```sh
-    cd src/040-iot-ops/terraform
-    ```
+  Update the following variable to provide your own certificate (rather than self-signed):
 
-2. Set up env vars
+  ```hcl
+  aio_ca = {
+    # Root CA certificate in PEM format, used as the trust bundle.
+    root_ca_cert_pem  = "<>"
+    # CA certificate chain, can be the same as root_ca_cert_pem or a chain with any number of intermediate certificates.
+    # Chain direction must be: ca -> intermediate(s) --> root ca
+    ca_cert_chain_pem = "<>"
+    # Root or intermediate CA private key in PEM format. If using intermediates, must provide the private key of the first cert in the chain.
+    ca_key_pem        = "<>"
+  }
+  ```
 
-    ```sh
-    export ARM_SUBSCRIPTION_ID=<subscription-id>
-    ```
+- Option 2 - If you already have cert-manager, trust-manager, one of Issuer or ClusterIssuer, and a ConfigMap
+  for AIO TLS trust settings already deployed into your cluster as, refer to [Bring your own issuer](https://learn.microsoft.com/azure/iot-operations/secure-iot-ops/concept-default-root-ca#bring-your-own-issuer),
+  then update the following variables into your `terraform.tfvars` file:
 
-3. Create a `terraform.tfvars` file with the at least the following minumum configuration:
+  ```hcl
+  trust_config_source       = "CustomerManagedByoIssuer"
 
-    ```hcl
-    resource_prefix = "<resource-prefix>"
-    location        = "<location>"
-    ```
+  byo_issuer_trust_settings = {
+      iissuer_name    = "<>"
+      iissuer_kind    = "<>"
+      cconfigmap_name = "<>"
+      cconfigmap_key  = "<>"
+  }
+  aio_platform_config = {
+      install_cert_manager  = false
+      install_trust_manager = false
+  }
+  ```
 
-4. Optionally, if you wish to configure custom trust settings for `Issuer` and trust bundle `ConfigMap`, you have two options:
-
-    Option 1 - If `connectedk8s proxy` is enabled on the cluster for the user deploying terraform, and if you wish to deploy custom trust with TLS certificate in Key Vault and associated secrets for the broker and its required resources such as ClusterIssuer, all __automatically__ generated, add the following to the `terraform.tfvars` file:
-
-    ```hcl
-    trust_config_source = "CustomerManagedGenerateIssuer"
-    ```
-
-    The above will generate the custom trust as self signed certificates, if you wish to configure your own certificates from a PKI infrastructure, you can provide the following configuration:
-
-    ```hcl
-    aio_ca = {
-        # Root CA certificate in PEM format, used as the trust bundle.
-        root_ca_cert_pem  = "<>"
-        # CA certificate chain, can be the same as root_ca_cert_pem or a chain with any number of intermediate certificates.
-        # Chain direction must be: ca -> intermediate(s) --> root ca
-        ca_cert_chain_pem = "<>"
-        # Root or intermediate CA private key in PEM format. If using intermediates, must provide the private key of the first cert in the chain.
-        ca_key_pem        = "<>"
-    }
-    ```
-
-   Option 2 - If you already have cert-manager, trust-manager, one Issuer or ClusterIssuer, and ConfigMap trust resources in your cluster such as described in [Bring your own issuer](https://learn.microsoft.com/azure/iot-operations/secure-iot-ops/concept-default-root-ca#bring-your-own-issuer), add the following to the `terraform.tfvars` file:
-
-    ```hcl
-    resource_group_name       = "<>" # validate the default generated value is correct, you might need to pass in an existing resource name instead
-    connected_cluster_name    = "<>" # validate the default generated value is correct, you might need to pass in an existing resource name instead
-    trust_config_source       = "CustomerManagedByoIssuer"
-    byo_issuer_trust_settings = {
-        iissuer_name    = "<>"
-        iissuer_kind    = "<>"
-        cconfigmap_name = "<>"
-        cconfigmap_key  = "<>"
-    }
-    aio_platform_config = {
-        install_cert_manager  = false
-        install_trust_manager = false
-    }
-    ```
-
-    > ⚠️ __Warning__: The scripts are not able to detect if your resources exist on the cluster, and installation will fail before completion. Error message may be unclear.
-    > We recommend you have `kubectl` access to the cluster and run `kubectl get` commands to validate the resources before continuing with this option.
-
-5. Initalized and apply terraform
-
-    ```sh
-    terraform init
-    terraform apply
-    ```
-
-6. Connect to the cluster as you normally would
+  > ⚠️ __Warning__: The scripts are not able to detect if your resources exist on the cluster, and installation will fail before completion. Error message may be unclear.
+  > We recommend you have `kubectl` access to the cluster and run `kubectl get` commands to validate the resources before continuing with this option.
 
 ## Test OPC UA connectivity with MQTT Broker
 
@@ -102,14 +69,7 @@ The output should be similar to the following:
 
 ```sh
 mosquitto_sub --host aio-broker --port 18883 --topic "azure-iot-operations/data/oven" --debug --cafile /var/run/certs/ca.crt -D CONNECT authentication-method 'K8S-SAT' -D CONNECT authentication-data $(cat /var/run/secrets/tokens/broker-sat)
-> Client $server-generated/930bf917-b418-44e0-bb9d-b5020ed7e9ef received PUBLISH (d0, q0, r0, m0, 'azure-iot-operations/data/oven', ... (235 bytes))
-{"Temperature":{"SourceTimestamp":"2025-01-21T15:47:54.4126889Z","Value":10969},"FillWeight":{"SourceTimestamp":"2025-01-21T15:47:54.4129477Z","Value":10969},"EnergyUse":{"SourceTimestamp":"2025-01-21T15:47:54.4129567Z","Value":10969}}
-```
 
-## Destroy resources
-
-To destroy the resources created by Terraform, run the following command:
-
-```sh
-terraform destroy
+# > Client $server-generated/930bf917-b418-44e0-bb9d-b5020ed7e9ef received PUBLISH (d0, q0, r0, m0, 'azure-iot-operations/data/oven', ... (235 bytes))
+# {"Temperature":{"SourceTimestamp":"2025-01-21T15:47:54.4126889Z","Value":10969},"FillWeight":{"SourceTimestamp":"2025-01-21T15:47:54.4129477Z","Value":10969},"EnergyUse":{"SourceTimestamp":"2025-01-21T15:47:54.4129567Z","Value":10969}}
 ```

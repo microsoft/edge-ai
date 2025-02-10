@@ -37,6 +37,7 @@ Azure documentation:
 
 While enhanced documentation is under development, please start by reviewing this
 project's [wiki](https://dev.azure.com/ai-at-the-edge-flagship-accelerator/IaC%20for%20the%20Edge/_wiki/wikis/Edge%20AI/5/)
+
 before you use the IaC (Terraform) in this repository. Then, get started bootstrapping Arc-enabled AIO environments:
 
 1. [Cloning this repository locally](https://learn.microsoft.com/en-us/azure/devops/repos/git/clone?view=azure-devops&tabs=visual-studio-2022#get-the-clone-url-of-an-azure-repos-git-repo)
@@ -46,7 +47,12 @@ before you use the IaC (Terraform) in this repository. Then, get started bootstr
     - `cd ./src/000-subscription`
     - Run `./register-azure-providers.sh` to prepare your subscription
     - Follow instructions in the [./src/005-onboarding-reqs README](./src/005-onboard-reqs/README.md)
-    - Run `./operate-all-terraform.sh` from the `./src` directory
+    - Deploy the IaC:
+      - Select a `full-*` *blueprint* from the [blueprints](./blueprints) directory and follow deployment instructions
+        located in those folders.
+
+**Optionally**, this repository includes scripts to individually deploy each and every component. Follow the
+instructions located at [./src/README.md](./src/README.md) for details.
 
 ### Video Demonstration
 
@@ -68,7 +74,20 @@ Learn about key architectural approaches or find introductions to key edge techn
 
 This project is a composable library of fine-grained, production ready IaC that can be easily layered to fit
 nearly any operational model, from small, single machine systems, to orchestrated, globally-distributed solutions.
-The project uses a decimal system to organize IaC, scripts, and supplementary resources, which can be collated in myriad ways to meet operational requirements:
+The project uses a decimal system to organize IaC, scripts, and supplementary resources, which can be collated in a
+myriad of ways to meet operational requirements. Refer to [blueprints](./blueprints) for example "full scenario" level
+deployments, to help build your understanding and knowledge of how best to leverage this repository.
+
+#### Components
+
+Components for this composable architecture are located under the [src](./src) directory of this repository. Each
+component is organized as a separate module that can be used individually, duplicated to where it's required, or
+pulled in as a dependency.
+
+Each component directory includes the different forms of IaC that's supported as folders, e.g. Terraform and Bicep.
+Additionally, a `ci` directory is included for verification and deployment within this repository's build
+system. This directory can also be referenced as an example for a straightforward deployment, typically only including
+default variables and assumes that prior requirements have been deployed from other component directories.
 
 | Folder                                                      | Description                                                                                                                                                                              |
 |-------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -84,12 +103,19 @@ The project uses a decimal system to organize IaC, scripts, and supplementary re
 | [080-iot-ops-utility](./src/080-iot-ops-utility/README.md)  | AIO deployment of additionally selected components (OTEL Collector (Phase 2), OPC UA, AKRI, Strato, FluxCD/Argo)                                                                         |
 | 090                                                         | Customer defined custom workloads, and pre-built solution accelerators such as TIG/TICK stacks, InfluxDB Data Historian, reference data backup from cloud to edge, etc.                  |
 
+#### Blueprints
+
+This project includes *blueprints* that can be used as reference for deploying specific edge scenarios. Blueprints
+are located in the [blueprints](./blueprints) folder and are organized by the supported IaC framework being used,
+which includes Terraform, Bicep, and script-based.
+
 ### Using this project
 
-This project can be used in two primary ways: 1) running the projects IaC (Terraform) directly to bootstrap
+This project can be used in two primary ways: 1) running the projects IaC and/or blueprints directly to bootstrap
 environments such as labs, cloud-hosted development environments, integration/QA environments, or small
 production deployments; or 2) cloning the repository and all its automation to have and out-of-the-box CI/CD
-solution for your IaC.
+solution for your IaC. Feel free to pick and choose which components are needed or necessary to help start or
+extend your project.
 
 For running the IaC to bootstrap environments, please refer to the [Getting Started](#getting-started)
 documentation below. For using this repository and it's automation to have a complete CI/CD system for your
@@ -100,7 +126,7 @@ IaC, please review the [build pipelines ReadMe](./.azdo/README.md) and reach out
 
 The Terraform, scripts, and documentation in this repository can provide you the following features and capabilities:
 
-- Subscription resources to support all "in-the-box" components of an Azure IoT Operations (AIO) solution
+- Subscription resources supporting all "in-the-box" components of an Azure IoT Operations (AIO) solution
 - Deployment of a cloud-hosted VM, sized and provisioned specifically for developing AIO solutions
 - Deployment of a development-ready K3s cluster with all the basic AIO components installed
 - [Integrated support for Azure Managed Identities](./src/010-vm-host/terraform/README.md)
@@ -110,6 +136,7 @@ The Terraform, scripts, and documentation in this repository can provide you the
 - [A library of common "Architectural Decision Records" (ARDs)](./docs/solution-adr-library/README.md), ready to be modified to document your solution's requirements and the decisions you've made along the way
 - [A library of technology papers](./docs/solution-technology-paper-library/README.md) to upskill your peers
 - [A well-stocked development container](./.devcontainer) for you to take the IaC for your "AI on the Edge Solutions" to production with confidence, repeatability, and reliability your organization deserves
+- [Blueprints](./blueprints) full scenario deployments that demonstrate how components are composed together
 
 ### Contribute
 
@@ -125,6 +152,8 @@ Users and project developers can contribute to make this solution better in seve
 #### Build and Test
 
 We recommend using the project's [dev container](./.devcontainer/README.md) for all contribution work.
+
+Start orienting yourself with this repository by referring to [blueprints](./blueprints) for your first deployment.
 
 Pull requests made to the repository go through a through build process including linting, testing, and
 in some cases deployment validation. After raising a PR, the build process with begin evaluating your
