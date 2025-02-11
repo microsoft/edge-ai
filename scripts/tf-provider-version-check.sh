@@ -11,6 +11,11 @@ check_terraform_install() {
     else
       echo "terraform-cli is installed. Continuing ..."
     fi
+    # Check if jq is installed
+    if ! command -v jq &> /dev/null; then
+    echo "jq not found. Please download and install jq from https://stedolan.github.io/jq/download/."
+    exit 1
+    fi
 }
 
 check_provider_versions_in_folder() {
@@ -23,30 +28,45 @@ check_provider_versions_in_folder() {
     # Run terraform init (calculate elapsed time)
     echo "executing terraform init"
     terraform init -input=false -no-color > /dev/null
+    echo "terraform init completed"
 
     # Call TF version command and parse the output
-    version_data=$(terraform version -json)
-    echo "$version_data" | jq .
+    echo "Provider Data: $provider_data"
+    provider_data=$(terraform providers)
 
-    # Parse the provider selections and build an array to check for updates
+    # Parse the provider data and build an array to check for updates
     # This section will parse the provider subobject and extract the provider name
     # and version.
-    # example object:
-    # {
-    #  "terraform_version": "1.10.5",
-    #  "platform": "linux_amd64",
-    #  "provider_selections": {
-    #    "registry.terraform.io/hashicorp/azuread": "3.1.0",
-    #    "registry.terraform.io/hashicorp/azurerm": "4.16.0",
-    #    "registry.terraform.io/hashicorp/random": "3.6.3"
-    #  },
-    #  "terraform_outdated": false
-    # }
-    provider_details=$(echo "$version_data" | jq -r '
-        .provider_selections |
-          to_entries[] |
-          "\(.key | split("/") | .[0]) \(.key | split("/") | .[1]) \(.key | split("/") | .[2]) \(.value)"
-        ')
+    # Returned result of providers call:
+    #
+    # Providers required by configuration:
+    # .
+    # ├── provider[registry.terraform.io/azure/azapi] >= 2.2.0
+    # ├── provider[registry.terraform.io/hashicorp/azurerm] >= 4.8.0
+    # ├── provider[registry.terraform.io/hashicorp/azuread] >= 3.0.2
+    # ├── test.tests.iot-ops-cloud-reqs
+    # │   └── run.setup_tests
+    # │       └── provider[registry.terraform.io/hashicorp/random] >= 3.5.1
+    # ├── module.schema_registry
+    # │   ├── provider[registry.terraform.io/hashicorp/random]
+    # │   ├── provider[registry.terraform.io/hashicorp/azurerm]
+    # │   └── provider[registry.terraform.io/azure/azapi]
+    # ├── module.sse_key_vault
+    # │   └── provider[registry.terraform.io/hashicorp/azurerm]
+    # └── module.uami
+    #     └── provider[registry.terraform.io/hashicorp/azurerm]
+    # This will create the final space delimited tuple array, shaped like:
+    #     [
+    #       (registry.terraform.io/hashicorp/azurerm 4.8.0),
+    #       (registry.terraform.io/hashicorp/azuread 3.0.2),
+    #       (registry.terraform.io/azure/azapi 2.2.0),
+    #       (registry.terraform.io/hashicorp/random 3.5.1)
+    #     ]
+    provider_details=$(echo "$provider_data" | \
+    # Extract lines where there are any characters up to 'provider'
+    # and get the rest of the string
+    sed -nE 's/.*provider\[([^]]+)][^[:digit:]]+([[:digit:].]+)/\1 \2/p')
+    echo "Provider Details: $provider_details"
 
     # Loop through the provider details and check for updates
     # by calling the tf registry API and comparing the versions
@@ -58,10 +78,12 @@ check_provider_versions_in_folder() {
             exit 0
         fi
 
-        registry=$(echo "$line" | awk '{print $1}')
-        source=$(echo "$line" | awk '{print $2}')
-        provider=$(echo "$line" | awk '{print $3}')
-        version=$(echo "$line" | awk '{print $4}')
+        # Slice the provider details into registry, source, provider, and version
+        # [registry.terraform.io] / [hashicorp] / [azurerm] [4.8.0]
+        registry=$(echo "$line" | awk -F'/' '{print $1}')
+        source=$(echo "$line" | awk -F'/' '{print $2}')
+        provider=$(echo "$line" | awk -F'/' '{print $3}' | awk '{print $1}')
+        version=$(echo "$line" | awk '{print $2}')
 
         # Check if the provider is in checked_providers based on
         # provider name. If it is in the checked_providers array and the
@@ -88,30 +110,29 @@ check_provider_versions_in_folder() {
                 # If the provider version is equal to the checked_provider's latest_version, skip the provider
                 if [ "$version" == "$checked_provider_latest_version" ]; then
                     echo "Provider: $provider is up to date"
-                    continue 2  # Continue the while loop
 
                 # If the provider version is less than the checked_provider's latest_version, add to version_error_tracking_array
                 elif [ "$(printf '%s\n' "$version" "$checked_provider_latest_version" | sort -V | head -n 1)" == "$version" ]; then
                     echo "Version mismatch. Provider: $provider is outdated, target version: $checked_provider_latest_version, current version: $version"
-                    version_error_tracking_array+=("$folder,$provider,$version,$latest_version")
+                    version_error_tracking_array+=("$folder,$provider,$version,$checked_provider_latest_version")
                 fi
             fi
         done
 
-
-        url="https://$registry/v1/providers/$source/$provider/versions"
-        echo "Checking provider: $provider as it has not yet been checked"
-        response=$(curl -s "$url")
-        # Check versions
-        latest_version=$(echo "$response" | jq -r '.versions[].version' | sort -V | tail -n 1)
-
-        if [ "$(printf '%s\n' "$version" "$latest_version" | sort -V | tail -n 1)" != "$version" ]; then
-          # Log a build warning if the provider version is outdated
-          version_error_tracking_array+=("$folder,$provider,$version,$latest_version")
-        fi
-
-        # Add to checked_providers if unique
         if ! $provider_in_checked; then
+            url="https://$registry/v1/providers/$source/$provider/versions"
+            echo "Checking provider: $provider as it has not yet been checked"
+            response=$(curl -s "$url")
+            # Check versions
+            latest_version=$(echo "$response" | jq -r '.versions[].version' | sort -V | tail -n 1)
+
+            if [ "$(printf '%s\n' "$version" "$latest_version" | sort -V | tail -n 1)" != "$version" ]; then
+                # Log a build warning if the provider version is outdated
+                echo "$provider is out of date. Declared version is $version, Latest version is $latest_version."
+                version_error_tracking_array+=("$folder,$provider,$version,$latest_version")
+            fi
+
+            # Add to checked_providers if unique
             echo "Adding provider: $provider to checked_providers with version: $latest_version"
             checked_providers+=("$provider,$latest_version")
         fi
@@ -151,7 +172,7 @@ if [ "$run_all" = true ]; then
     top_level_tf_folders=$(find src -mindepth 1 -maxdepth 1 -type d -exec test -d "{}/terraform" \; -print)
     for folder in $top_level_tf_folders; do
         if [ -d "./$folder/terraform" ]; then
-        check_provider_versions_in_folder "./$folder/terraform"
+            check_provider_versions_in_folder "./$folder/terraform"
         fi
     done
 elif [ -n "$specific_folder" ]; then
@@ -166,5 +187,11 @@ else
     exit 1
 fi
 
-# Pass the tracking array to jq to format the output
-echo "${version_error_tracking_array[@]}" | jq -r .
+# Join the array elements with newlines and pass to jq
+# to format the output as JSON for the build
+printf "%s\n" "${version_error_tracking_array[@]}" | jq -R -s '
+  split("\n") |
+  map(select(length > 0)) |
+  map(split(",")) |
+  map({folder: .[0], provider: .[1], current_version: .[2], latest_version: .[3]})
+'
