@@ -606,7 +606,7 @@ stages:
                 version_check_results=$(./scripts/terraform-provider-version-check.sh -f ./)
 
                 # Split the string into an array
-                IFS=' ' read -r -a results_array <<< "$version_check_results"
+                IFS='\n' read -r -d results_array <<< "$version_check_results"
 
                 # Loop through each result and check the fields
                 for result in "${results_array[@]}"; do
