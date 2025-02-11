@@ -47,14 +47,14 @@ trim_whitespace() {
     echo "$str"
 }
 
-# Prints the provider name followed by a number of dots to the terminal screen. The 
-# \033[0K CSI sequence clears any prior content at the location and then prints the 
-# provider name and dots. This is to allow for in-place refreshes of the registration 
+# Prints the provider name followed by a number of dots to the terminal screen. The
+# \033[0K CSI sequence clears any prior content at the location and then prints the
+# provider name and dots. This is to allow for in-place refreshes of the registration
 # state on the terminal screen.
 #
 # https://en.wikipedia.org/wiki/ANSI_escape_code#Control_Sequence_Introducer_commands
-# \033[nK - Erases part of the line. If n is 0 (or missing), clear from cursor to the end 
-# of the line. If n is 1, clear from cursor to beginning of the line. If n is 2, clear entire 
+# \033[nK - Erases part of the line. If n is 0 (or missing), clear from cursor to the end
+# of the line. If n is 1, clear from cursor to beginning of the line. If n is 2, clear entire
 # line. Cursor position does not change.
 print_provider_name () {
   provider=$1
@@ -102,15 +102,32 @@ print_state () {
 }
 
 # Moves the cursor up n lines to the first line of provider names and states. This allows
-# the script to overwrite the provider name and state so that the terminal screen appears 
+# the script to overwrite the provider name and state so that the terminal screen appears
 # to refresh the state values in-place.
 #
 # https://en.wikipedia.org/wiki/ANSI_escape_code#Control_Sequence_Introducer_commands
-# \033[nF	- Moves cursor to beginning of the line n (default 1) lines up. 
+# \033[nF	- Moves cursor to beginning of the line n (default 1) lines up.
 move_cursor_to_first_line () {
   number_of_lines=$1
   echo -ne "\033[${number_of_lines}F"
 }
+
+# Function to check if Azure CLI is installed
+# This function verifies if the Azure CLI is installed.
+# If the Azure CLI is installed, it outputs the path to the executable.
+# If the Azure CLI is not installed, it prompts the user to install it and exits with a status code of 1.
+test_cli_install() {
+    # Check if Azure CLI is installed
+    if command -v az &> /dev/null; then
+        az_cli_path=$(command -v az)
+        echo "Azure CLI is installed. Path: $az_cli_path"
+    else
+        echo "Azure CLI is not installed. Please install Azure CLI at https://aka.ms/azurecli."
+        exit 1
+    fi
+}
+
+test_cli_install
 
 # Check input parameters for correct usage
 if [ $# -ne 1 ]; then
@@ -129,7 +146,7 @@ delay_in_seconds=5
 max_len_provider_name=0
 elapsed_time_start=$(date +%s)
 
-# Read azure resource providers from text file into associative array 
+# Read azure resource providers from text file into associative array
 # with state of NotRegistered
 declare -A providers
 while IFS= read -r line || [[ "$line" ]]; do
@@ -148,17 +165,17 @@ mapfile -t registered_providers < <(az provider list --query "sort_by([?registra
 mapfile -t sorted_required_providers < <(for key in "${!providers[@]}"; do echo "$key"; done | sort)
 
 # Register the providers in the list that are not already registered
-for provider in "${sorted_required_providers[@]}"; do 
-  
+for provider in "${sorted_required_providers[@]}"; do
+
   print_provider_name "$provider"
 
   if [ "$(echo "${registered_providers[@]}" | grep "$provider" )" == "" ]; then
-    
+
     print_not_registered_state
     az provider register --namespace "$provider" > /dev/null 2>&1
 
   else
-    
+
     print_registered_state
     providers[$provider]="Registered"
 
@@ -172,7 +189,7 @@ not_registered_count=$total_number_of_providers
 while [ "$not_registered_count" -gt 0 ]
 do
   move_cursor_to_first_line "$total_number_of_providers"
-  for provider in "${sorted_required_providers[@]}"; do 
+  for provider in "${sorted_required_providers[@]}"; do
 
     if [ "${providers[$provider]}" == "Registered" ]; then
       state="Registered"

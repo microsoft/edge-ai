@@ -61,19 +61,15 @@ function Move-CursorToFirstLine {
 }
 
 function Test-Cli-Install {
-	# Check the operating system
-	$os = $PSVersionTable.OS
-	Write-Output $os
+    # Check if Azure CLI is installed on Windows
+    $azCliPath = Get-Command az -ErrorAction SilentlyContinue
 
-	    # Check if Azure CLI is installed on Windows
-	    $azCliPath = Get-Command az -ErrorAction SilentlyContinue
-
-	    if ($azCliPath) {
-		Write-Output "Azure CLI is installed. Path: $($azCliPath.Path)"
-	    } else {
-		Write-Output "Azure CLI is not installed. Please install Azure CLI at https://aka.ms/azurecli."
-        exit 1
-	    }
+    if ($azCliPath) {
+        Write-Output "Azure CLI is installed. Path: $($azCliPath.Path)"
+    } else {
+        Write-Output "Azure CLI is not installed. Please install Azure CLI at https://aka.ms/azurecli."
+    exit 1
+    }
 }
 
 function Get-RegisteredProvider {
