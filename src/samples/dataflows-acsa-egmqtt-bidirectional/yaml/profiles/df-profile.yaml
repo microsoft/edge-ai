@@ -1,0 +1,11 @@
+---
+apiVersion: connectivity.iotoperations.azure.com/v1
+kind: DataflowProfile
+metadata:
+  name: df-profile
+  namespace: azure-iot-operations
+spec:
+  instanceCount: 1
+  diagnostics:
+    logs:
+      level: "trace"

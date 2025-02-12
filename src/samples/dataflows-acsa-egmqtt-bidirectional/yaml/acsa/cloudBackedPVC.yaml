@@ -1,0 +1,15 @@
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  ### CREATE A NAME FOR YOUR PVC ###
+  name: {ACSA_CLOUD_BACKED_PVC_NAME}
+  ### USE A NAMESPACE THAT MATCHES YOUR INTENDED CONSUMING POD OR "DEFAULT" ###
+  namespace: {NAMESPACE}
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 3Gi
+  storageClassName: cloud-backed-sc

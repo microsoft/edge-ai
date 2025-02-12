@@ -1,0 +1,46 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: acsa-local-viewer-deployment
+  namespace: {NAMESPACE}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: acsa-local-viewer
+  template:
+    metadata:
+      name: acsa-local-viewer
+      labels:
+        name: acsa-local-viewer
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - acsa-local-viewer
+              topologyKey: kubernetes.io/hostname
+      containers:
+        ### Specify the container in which to launch the busy box. ###
+        - name: acsa-local-viewer
+          image: 'mcr.microsoft.com/mirror/docker/library/busybox:1.35'
+          command:
+            - "/bin/sh"
+            - "-c"
+            - "dd if=/dev/urandom of=/data/acsalocalsharedtestfile count=16 bs=1M && while true; do ls /data &>/dev/null || break; sleep 1; done"
+          volumeMounts:
+            ### This name must match the following volumes::name attribute ###
+            - name: acsa-volume
+              ### This mountPath is where the PVC will be attached to the pod's filesystem ###
+              mountPath: /data
+      volumes:
+        ### User-defined name that is used to link the volumeMounts. This name must match volumeMounts::name as previously specified. ###
+        - name: acsa-volume
+          persistentVolumeClaim:
+            ### This claimName must refer to your PVC metadata::name from lsevPVC.yaml.
+            claimName: {ACSA_UNBACKED_PVC_NAME}

@@ -405,3 +405,6 @@ terraform.rc
 # Ignore JetBrains files
 .idea
 .idea/
+
+# Ignore Azure files
+.azure
