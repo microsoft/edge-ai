@@ -1,0 +1,16 @@
+---
+apiVersion: connectivity.iotoperations.azure.com/v1
+kind: DataflowEndpoint
+metadata:
+  name: {ENDPOINT_NAME}
+  namespace: azure-iot-operations
+spec:
+  endpointType: Mqtt
+  mqttSettings:
+    host: "{EVENT_GRID_NAMESPACE}.{LOCATION}-1.ts.eventgrid.azure.net:8883"
+    authentication:
+      method: SystemAssignedManagedIdentity
+      systemAssignedManagedIdentitySettings:
+        {}
+    tls:
+      mode: Enabled

@@ -28,6 +28,8 @@
 		"*megalinter_file_names_cspell.txt"
 	],
 	"words": [
+		"acsa",
+		"ACSA",
 		"AKRI",
 		"azapi",
 		"azmon",
@@ -45,6 +47,7 @@
 		"CUSTOMLOCATION",
 		"datacontenttype",
 		"dataschema",
+		"egmqtt",
 		"Entra",
 		"eventgrid",
 		"Eventhouse",
@@ -72,6 +75,7 @@
 		"Ritchie",
 		"secretsync",
 		"Siobhan",
+		"Subvolumes",
 		"specversion",
 		"Strato",
 		"Suneet",
