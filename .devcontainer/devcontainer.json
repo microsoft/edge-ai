@@ -63,7 +63,8 @@
 				"timonwong.shellcheck",
 				"yzhang.markdown-all-in-one",
 				"ms-azure-devops.azure-pipelines",
-				"ms-kubernetes-tools.vscode-kubernetes-tools"
+				"ms-kubernetes-tools.vscode-kubernetes-tools",
+				"ms-vscode.powershell"
 			]
 		}
 	},
