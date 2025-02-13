@@ -1,17 +1,24 @@
 # Source Code Structure
 
+The source code for this project is organized into discrete steps optimized for enterprise
+deployments of Arc-enabled Azure IoT Operations solutions, and takes project execution
+phases into account. When a project first kicks off, pass the `000-subscription` IaC off
+to Azure subscription managers to ensure that all resource providers are pre-registered
+before work begins. Physical plant engineers can layer up `010`, `020` and `040` for on
+premises cluster set-up. And so on.
+
 1. [(000)](./000-subscription/README.md) Run-once scripts for Arc & AIO resource provider enablement in subscriptions, if necessary
-1. [(005)](./005-onboard-reqs/README.md) Resource Groups, Site Management (optional), Role assignments/permissions for Arc onboarding
-1. [(010)](./010-vm-host/README.md) VM/host provisioning, with configurable host operating system (initially limited to Ubuntu)
-1. [(020)](./020-cncf-cluster/README.md) Installation of a CNCF cluster that is AIO compatible (initially limited to K3s) and Arc enablement of target clusters, workload identity
-1. [(030)](./030-iot-ops-cloud-reqs/README.md) Cloud resource provisioning for Azure Key Vault, Storage Accounts, Schema Registry, Container Registry, and User Assigned Managed Identity
-1. [(040)](./040-iot-ops/README.md) AIO deployment of core infrastructure components (MQ Broker, Edge Storage Accelerator, Secrets Sync Controller, Workload Identity Federation, OpenTelemetry Collector, OPC UA Simulator)
-1. [(050)](./050-messaging/README.md) Cloud resource provisioning for cloud communication (MQTT protocol head for Event Grid (topic spaces, topics and cert-based authentication), Event Hubs, Service Bus, Relay, etc.)
-1. [(060)](./060-storage/README.md) Cloud resource provisioning for data/event storage (Fabric by means of RTI, Data Lakes, Warehouses, etc.)
-1. [(070)](./070-observability/README.md) Cloud resource provisioning for Azure Monitor and Container Insights
-1. [(080)](./080-iot-ops-utility/README.md) AIO deployment of additionally selected components (OTEL Collector (Phase 2), OPC UA, AKRI, Strato, FluxCD/Argo)
-1. (090) Customer defined custom workloads, and pre-built solution accelerators such as TIG/TICK stacks, InfluxDB Data Historian, reference data backup from cloud to edge, etc.
-1. [(samples/dataflows-acsa-egmqtt-bidirectional)](./samples/dataflows-acsa-egmqtt-bidirectional/README.md) Sample that provides assets with Azure IoT Operations Dataflows and supported infrastructure creation to manage `AIO MQTT->ACSA` and `AIO MQTT-> Event Grid` bidirectional data flow.
+2. [(005)](./005-onboard-reqs/README.md) Resource Groups, Site Management (optional), Role assignments/permissions for Arc onboarding
+3. [(010)](./010-vm-host/README.md) VM/host provisioning, with configurable host operating system (initially limited to Ubuntu)
+4. [(020)](./020-cncf-cluster/README.md) Installation of a CNCF cluster that is AIO compatible (initially limited to K3s) and Arc enablement of target clusters, workload identity
+5. [(030)](./030-iot-ops-cloud-reqs/README.md) Cloud resource provisioning for Azure Key Vault, Storage Accounts, Schema Registry, Container Registry, and User Assigned Managed Identity
+6. [(040)](./040-iot-ops/README.md) AIO deployment of core infrastructure components (MQ Broker, Edge Storage Accelerator, Secrets Sync Controller, Workload Identity Federation, OpenTelemetry Collector, OPC UA Simulator)
+7. [(050)](./050-messaging/README.md) Cloud resource provisioning for cloud communication (MQTT protocol head for Event Grid (topic spaces, topics and cert-based authentication), Event Hubs, Service Bus, Relay, etc.)
+8. [(060)](./060-storage/README.md) Cloud resource provisioning for data/event storage (Fabric by means of RTI, Data Lakes, Warehouses, etc.)
+9. [(070)](./070-observability/README.md) Cloud resource provisioning for Azure Monitor and Container Insights
+10. [(080)](./080-iot-ops-utility/README.md) AIO deployment of additionally selected components (OTEL Collector (Phase 2), OPC UA, AKRI, Strato, FluxCD/Argo)
+11. (090) Customer defined custom workloads, and pre-built solution accelerators such as TIG/TICK stacks, InfluxDB Data Historian, reference data backup from cloud to edge, etc.
+12. [(samples/dataflows-acsa-egmqtt-bidirectional)](./samples/dataflows-acsa-egmqtt-bidirectional/README.md) Sample that provides assets with Azure IoT Operations Dataflows and supported infrastructure creation to manage `AIO MQTT->ACSA` and `AIO MQTT-> Event Grid` bidirectional data flow.
 
 ## Prerequisites
 

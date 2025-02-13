@@ -35,21 +35,20 @@ Azure documentation:
 
 ## Getting Started
 
-While enhanced documentation is under development, please start by reviewing this
-project's [wiki](https://dev.azure.com/ai-at-the-edge-flagship-accelerator/IaC%20for%20the%20Edge/_wiki/wikis/Edge%20AI/5/)
+Check out the project's [wiki](https://dev.azure.com/ai-at-the-edge-flagship-accelerator/IaC%20for%20the%20Edge/_wiki/wikis/Edge%20AI/5/), or after cloning the repository, open a
+Copilot chat and ask `@workspace What should I know before I use this repository?`
 
-before you use the IaC (Terraform) in this repository. Then, get started bootstrapping Arc-enabled AIO environments:
+Then, get started bootstrapping Arc-enabled AIO environments:
 
 1. [Cloning this repository locally](https://learn.microsoft.com/en-us/azure/devops/repos/git/clone?view=azure-devops&tabs=visual-studio-2022#get-the-clone-url-of-an-azure-repos-git-repo)
-2. [Install pre-requisites](./src/README.md#prerequisites) or use [this project's integrated dev container](./.devcontainer/README.md).
+2. [Install pre-requisites](./blueprints/README.md) or use [this project's integrated dev container](./.devcontainer/README.md).
 3. Login to the Azure Portal.
 4. From a terminal:
     - `cd ./src/000-subscription`
     - Run `./register-azure-providers.sh` to prepare your subscription
     - Follow instructions in the [./src/005-onboarding-reqs README](./src/005-onboard-reqs/README.md)
     - Deploy the IaC:
-      - Select a `full-*` *blueprint* from the [blueprints](./blueprints) directory and follow deployment instructions
-        located in those folders.
+      - Select a `full-*` *blueprint* from the [blueprints](./blueprints/README.md) directory and follow deployment instructions located in the root blueprint folder.
 
 **Optionally**, this repository includes scripts to individually deploy each and every component. Follow the
 instructions located at [./src/README.md](./src/README.md) for details.
@@ -67,6 +66,21 @@ using our [Architectural Decision Record Library](./docs/solution-adr-library/RE
 
 Learn about key architectural approaches or find introductions to key edge technologies in our
 [Technical Paper Library](./docs/solution-technology-paper-library/README.md).
+
+## Using Copilot to explore the repository
+
+This project maintainers have begun a journey to understand how to optimize the
+project, its layout, and documentation for a stellar copilot experience. If you
+encounter friction with `@workspace` questions to Copilot, please file an issue
+with your prompt and what you hoped Copilot would return you.
+
+You can use Copilot to easily explore this repository. Here are a few prompts
+to get you started:
+
+- `@workspace Where is the terraform code for the event grid deployment?`
+- `@workspace Is there a script in this repository that can help me check my terraform provider version numbers?`
+- `@workspace Does this repository include an observability solution?`
+- `@workspace Does this repository include UAMI for any of its resources?`
 
 ## The Details
 
@@ -118,7 +132,7 @@ solution for your IaC. Feel free to pick and choose which components are needed 
 extend your project.
 
 For running the IaC to bootstrap environments, please refer to the [Getting Started](#getting-started)
-documentation below. For using this repository and it's automation to have a complete CI/CD system for your
+documentation. For using this repository and it's automation to have a complete CI/CD system for your
 IaC, please review the [build pipelines ReadMe](./.azdo/README.md) and reach out to the
 [Microsoft ISE Edge Computing Technical Domain team](mailto:ectd@microsoft.com) if you need support.
 
@@ -147,13 +161,13 @@ Users and project developers can contribute to make this solution better in seve
 - [Review the project's Contributing doc](./CONTRIBUTING.md)
 - [Contribute an ADR](./docs/solution-adr-library/README.md#contribute) from your engagement
 - [Contribute a Security Plan](./docs/solution-security-plan-library/README.md#contribute) from your engagement
-- [Find a user story or task from the backlog](https://dev.azure.com/ai-at-the-edge-flagship-accelerator/IaC%20for%20the%20Edge/_sprints/taskboard/IaC%20for%20the%20Edge%20Team/IaC%20for%20the%20Edge/***REMOVED***) and help move the accelerator forward
+- Pick up from the backlog a [#GoodFirstIssue or a #GoodFirstStory](https://dev.azure.com/ai-at-the-edge-flagship-accelerator/IaC%20for%20the%20Edge/_queries/query/?tempQueryId=a44d85ba-bc5b-43fc-954d-78e15bc8f68f) and help move this accelerator forward
 
 #### Build and Test
 
 We recommend using the project's [dev container](./.devcontainer/README.md) for all contribution work.
 
-Start orienting yourself with this repository by referring to [blueprints](./blueprints) for your first deployment.
+Start orienting yourself with this repository by referring to [blueprints](./blueprints/README.md) for your first deployment.
 
 Pull requests made to the repository go through a through build process including linting, testing, and
 in some cases deployment validation. After raising a PR, the build process with begin evaluating your
