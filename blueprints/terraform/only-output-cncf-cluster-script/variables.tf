@@ -1,6 +1,30 @@
 /*
+ * Required Variables
+ */
+
+variable "environment" {
+  type        = string
+  description = "Environment for all resources in this module: dev, test, or prod"
+}
+
+variable "resource_prefix" {
+  type        = string
+  description = "Prefix for all resources in this module"
+  validation {
+    condition     = length(var.resource_prefix) > 0 && can(regex("^[a-zA-Z](?:-?[a-zA-Z0-9])*$", var.resource_prefix))
+    error_message = "Resource prefix must not be empty, must only contain alphanumeric characters and dashes. Must start with an alphabetic character."
+  }
+}
+
+/*
  * Optional Variables
  */
+
+variable "instance" {
+  type        = string
+  description = "Instance identifier for naming resources: 001, 002, etc..."
+  default     = "001"
+}
 
 variable "vm_username" {
   type        = string
@@ -42,20 +66,8 @@ variable "cluster_admin_oid" {
   default     = null
 }
 
-variable "should_output_script" {
-  type        = bool
-  description = "Should write out the script to a file. (Specified by 'var.script_output_filepath')"
-  default     = false
-}
-
 variable "script_output_filepath" {
   type        = string
   description = "The location of where to write out the script file. (Otherwise, '{path.root}/out')"
   default     = null
-}
-
-variable "should_deploy_script_to_vm" {
-  type        = bool
-  description = "Should deploy the script to an Azure VM assuming that it exists."
-  default     = true
 }

@@ -11,5 +11,5 @@ output "azure_arc_proxy_command" {
 }
 
 output "arc_connected_cluster" {
-  value = data.azapi_resource.arc_connected_cluster.output
+  value = try(data.azapi_resource.arc_connected_cluster[0].output, null)
 }

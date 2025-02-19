@@ -5,19 +5,20 @@
 variable "aio_resource_group" {
   type = object({
     name = string
-    id   = string
-  })
-}
-
-variable "aio_virtual_machine" {
-  type = object({
-    id = string
+    id   = optional(string)
   })
 }
 
 /*
  * Optional Variables
  */
+
+variable "aio_virtual_machine" {
+  type = object({
+    id = string
+  })
+  default = null
+}
 
 variable "arc_onboarding_sp_client_id" {
   type        = string

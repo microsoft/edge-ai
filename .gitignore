@@ -408,3 +408,6 @@ terraform.rc
 
 # Ignore Azure files
 .azure
+
+# Ignore directories that output build specific files
+out
