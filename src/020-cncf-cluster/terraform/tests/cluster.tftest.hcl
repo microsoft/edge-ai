@@ -30,7 +30,7 @@ run "create_non_default_cluster" {
     aio_virtual_machine             = run.setup_tests.aio_virtual_machine
     vm_username                     = "test"
     custom_locations_oid            = "test"
-    arc_auto_upgrade                = false
+    enable_arc_auto_upgrade         = false
     arc_onboarding_sp_client_id     = "test"
     arc_onboarding_sp_client_secret = "test"
   }
