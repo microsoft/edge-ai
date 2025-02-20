@@ -69,7 +69,7 @@ nearly any operational model, from small, single machine systems, to orchestrate
 The project uses a decimal system to organize IaC, scripts, and supplementary resources, which can be collated in myriad ways to meet operational requirements:
 
 | Folder                                                       | Description                                                                                                                                                                              |
-| ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|--------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | [000-subscription](../src/000-subscription/README.md)        | Run-once scripts for Arc & AIO resource provider enablement in subscriptions, if necessary                                                                                               |
 | [005-onboard-reqs](../src/005-onboard-reqs/README.md)        | Resource Groups, Site Management (optional), Role assignments/permissions for Arc onboarding                                                                                             |
 | [010-vm-host](../src/010-vm-host/README.md)                  | VM/host provisioning, with configurable host operating system (initially limited to Ubuntu)                                                                                              |

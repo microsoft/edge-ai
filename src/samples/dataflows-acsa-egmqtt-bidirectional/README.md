@@ -42,18 +42,18 @@ The following resources will be created when using the assets available under th
     export <variable name>="<variable value>"
     ```
 
-    | Variable Name                      | Description                                                                                                                                       | Default Value               |
-    |------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------|
-    | RESOURCE_GROUP                     | Resource Group name where Arc enabled Kubernetes cluster is located                                                                               | n/a                         |
-    | CLUSTER_NAME                       | Azure Arc enabled Kubernetes cluster name                                                                                                         | n/a                         |
-    | LOCATION                           | Location name to which the Azure Arc enabled Kubernetes cluster is provisioned, e.g., `eastus2`                                                   | n/a                         |
-    | ACSA_UNBACKED_AIO_PVC_NAME         | Name of Persistent Volume Claim that would be created as Local Shared Edge ACSA Volume                                                            | `pvc-acsa-unbacked-aio`     |
-    | ACSA_CLOUD_BACKED_AIO_PVC_NAME     | Name of Persistent Volume Claim that would be created as Cloud Ingest Edge ACSA Volume                                                            | `pvc-acsa-cloud-backed-aio` |
-    | EVENT_GRID_NAMESPACE_NAME          | Event Grid Namespace name                                                                                                                         | `eg-`$RESOURCE_GROUP        |
-    | METRIC1_TOPIC_PATH_NAME            | This variable would be used for defining both Event Grid Namespace Topic Spaces name and Storage Account Container name for Machine Status metric | `machine-status`            |
-    | METRIC2_TOPIC_PATH_NAME            | This variable would be used for defining both Event Grid Namespace Topic Spaces name and Storage Account Container name for Total Counter metric  | `total-counter`             |
-    | METRIC3_TOPIC_TEMPLATE_NAME        | Event Grid Namespace Topic Spaces name for Devices Health metric                                                                                  | `devices-health`            |
-    | STORAGE_ACCOUNT_NAME               | Storage Account name                                                                                                                              | `st`$RESOURCE_GROUP         |
+    | Variable Name                  | Description                                                                                                                                       | Default Value               |
+    |--------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------|
+    | RESOURCE_GROUP                 | Resource Group name where Arc enabled Kubernetes cluster is located                                                                               | n/a                         |
+    | CLUSTER_NAME                   | Azure Arc enabled Kubernetes cluster name                                                                                                         | n/a                         |
+    | LOCATION                       | Location name to which the Azure Arc enabled Kubernetes cluster is provisioned, e.g., `eastus2`                                                   | n/a                         |
+    | ACSA_UNBACKED_AIO_PVC_NAME     | Name of Persistent Volume Claim that would be created as Local Shared Edge ACSA Volume                                                            | `pvc-acsa-unbacked-aio`     |
+    | ACSA_CLOUD_BACKED_AIO_PVC_NAME | Name of Persistent Volume Claim that would be created as Cloud Ingest Edge ACSA Volume                                                            | `pvc-acsa-cloud-backed-aio` |
+    | EVENT_GRID_NAMESPACE_NAME      | Event Grid Namespace name                                                                                                                         | `eg-`$RESOURCE_GROUP        |
+    | METRIC1_TOPIC_PATH_NAME        | This variable would be used for defining both Event Grid Namespace Topic Spaces name and Storage Account Container name for Machine Status metric | `machine-status`            |
+    | METRIC2_TOPIC_PATH_NAME        | This variable would be used for defining both Event Grid Namespace Topic Spaces name and Storage Account Container name for Total Counter metric  | `total-counter`             |
+    | METRIC3_TOPIC_TEMPLATE_NAME    | Event Grid Namespace Topic Spaces name for Devices Health metric                                                                                  | `devices-health`            |
+    | STORAGE_ACCOUNT_NAME           | Storage Account name                                                                                                                              | `st`$RESOURCE_GROUP         |
 
 ## Getting Started
 
