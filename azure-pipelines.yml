@@ -30,8 +30,6 @@ variables:
 pool:
   name: ai-on-edge-managed-pool
   vmImage: ubuntu-latest
-  demands:
-    - WorkFolder -equals /mnt/storage/sdc
 
 stages:
   # Daily scheduled build to update the MegaLinter cache
@@ -41,23 +39,29 @@ stages:
     jobs:
       - job: UpdateMegaLinterCache
         displayName: "Update MegaLinter Cache"
-
         pool:
           name: ai-on-edge-managed-pool
           vmImage: ubuntu-latest
+          # Make a demand for the data drive on this agent to ensure
+          # we can pull megalinter from the cache
           demands:
-            - WorkFolder -equals /mnt/storage/sdc
+            - WorkFolder -equals /mnt/storage/sdc/
+
         steps:
           # Clear the cache directory ahead of the refresh
           - script: |
+
               # Clear the cache data directory ahead of the refresh
+              echo "Clearing Megalinter Cache Directory... $(MegalinterCachePath)"
               rm -rf $(MegalinterCachePath)
+              echo "Creating Megalinter Cache Directory... $(MegalinterCachePath)"
               mkdir -p $(MegalinterCachePath)
+
             displayName: "Clear Megalinter Cache Directory"
 
           # Pull MegaLinter docker image
           - script: |
-              # Pull MegaLinter docker image
+              echo "Pulling MegaLinter Docker image..."
               docker pull oxsecurity/megalinter:v8
             displayName: "Pull MegaLinter"
 
@@ -98,10 +102,10 @@ stages:
         pool:
           name: ai-on-edge-managed-pool
           vmImage: ubuntu-latest
-          # mounting the storage disk as a demand to ensure the same disk is used
-          # for the megalinter cache.
+          # Make a demand for the data drive on this agent to ensure
+          # we can pull megalinter from the cache
           demands:
-            - WorkFolder -equals /mnt/storage/sdc
+            - WorkFolder -equals /mnt/storage/sdc/
 
         steps:
           # Checkout repo
@@ -259,6 +263,7 @@ stages:
             inputs:
               failOnAlert: true
 
+
       # Run MegaLinter to detect linting and security issues
       - job: MegaLinter
         # This should also only run if the DependencyScan job passes
@@ -267,9 +272,13 @@ stages:
         pool:
           name: ai-on-edge-managed-pool
           vmImage: ubuntu-latest
+          # Make a demand for the data drive on this agent to ensure
+          # we can pull megalinter from the cache
           demands:
-            - WorkFolder -equals /mnt/storage/sdc
+            - WorkFolder -equals /mnt/storage/sdc/
+
         steps:
+
           # Checkout repo
           - checkout: self
             clean: true
