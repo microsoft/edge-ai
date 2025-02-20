@@ -1,0 +1,55 @@
+# GitHub sync pipeline
+---
+trigger: none
+variables:
+  - group: 'ai-on-edge-secrets'
+pool:
+  name: ai-on-edge-managed-pool
+  vmImage: ubuntu-latest
+stages:
+  - stage: Main
+    displayName: AzDO to GitHub
+    jobs:
+      - job: "GitHubPush"
+        displayName: "Updating GitHub repo from AzDO"
+        steps:
+          # Checkout repo
+          - checkout: self
+            fetchDepth: "0"
+            clean: true
+
+          # Create GitHub access token
+          - bash: |
+              echo "Generating Github JWT Token"
+              echo "$(github-app-private-key)" > ./github-app-private-key.pem
+              token=$(bash $(System.DefaultWorkingDirectory)/scripts/github/jwt-token.sh $(github-app-client-id) ./github-app-private-key.pem)
+
+              echo "Generating Github Access Tokens Url"
+              url=$(bash $(System.DefaultWorkingDirectory)/scripts/github/access-tokens-url.sh $token)
+
+              echo "Generating Github Installation Token"
+              installationToken=$(bash $(System.DefaultWorkingDirectory)/scripts/github/installation-token.sh $token $url)
+              echo "##vso[task.setvariable variable=installationToken]$installationToken";
+            displayName: "Create GitHub access token"
+            name: githubToken
+
+          # Push to GitHub
+          - bash: |
+              echo "Pushing to GitHub"
+              remoteUrl=$(echo $(githubRepoUrl) | sed "s|__token__|$(installationToken)|g")
+              echo "Remote URL: $remoteUrl"
+              git checkout -b $(Build.SourceBranch)
+              git remote remove origin
+              git remote add origin $remoteUrl
+              git push --force origin $(Build.SourceBranch):azdo-$(Build.BuildId)
+              git remote remove origin
+              echo "Pushed branch azdo-$(Build.BuildId) to GitHub"
+            displayName: "Push to GitHub"
+            name: githubPush
+
+          # Create GitHub PR
+          - bash: |
+              echo "Creating PR"
+              bash $(System.DefaultWorkingDirectory)/scripts/github/create-pr.sh $(installationToken) azdo-$(Build.BuildId) $(Build.SourceVersionMessage)
+            displayName: "Create GitHub PR"
+            name: githubPR
