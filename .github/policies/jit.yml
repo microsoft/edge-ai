@@ -1,5 +1,4 @@
 # Documentation for JIT policy: https://aka.ms/gim/docs/policy/jit
-
 ---
 # metadata
 id: id
@@ -15,6 +14,7 @@ configuration:
         enabled: true
         maxHours: 2
         approvers:
-            role: Maintain
+            role:
+            users:
         requestors:
             role: Write
