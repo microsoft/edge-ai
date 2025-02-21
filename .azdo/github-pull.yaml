@@ -3,8 +3,6 @@
 trigger: none
 variables:
   - group: 'ai-on-edge-secrets'
-  - name: isMain
-    value: $[eq(variables['Build.SourceBranch'], 'refs/heads/feat/gh-push')]
 pool:
   name: ai-on-edge-managed-pool
   vmImage: ubuntu-latest
@@ -66,40 +64,3 @@ stages:
               az repos pr create --repository "Iac for the Edge" --source-branch "github-$(Build.BuildId)" --target-branch "main" --title "GitHub merge for branch github-$(Build.BuildId)" --description "Sync from Git Hub - IaC for the Edge repo"
             displayName: "Create AzDO branch and PR"
             name: azdoPR
-
-      - job: "Versioning"
-        displayName: "Updating Version based on Git Tag"
-        dependsOn: GitHubPull
-        condition: eq(variables.isMain, true)
-        steps:
-          # Checkout repo
-          - checkout: self
-            fetchDepth: "0"
-            clean: true
-
-          # Install GitVersion
-          - task: gitversion/setup@3
-            name: installGitVersion
-            displayName: Install GitVersion
-            inputs:
-              versionSpec: '5.x'
-
-          # Determine Version
-          - task: gitversion/execute@3
-            name: executeGitVersion
-            displayName: Determine Version
-            inputs:
-              useConfigFile: true
-              configFilePath: ./GitVersion.yml
-
-          # Create Git Tag
-          - bash: |
-              git tag $(GitVersion_MajorMinorPatch)
-            displayName: Create git tag
-            name: createGitTag
-
-          # Push Git Tag
-          - bash: |
-              git -c http.extraheader="AUTHORIZATION: bearer $(System.AccessToken)" push origin $(GitVersion_MajorMinorPatch)
-            displayName: Push git tag
-            name: pushGitTag
