@@ -71,8 +71,8 @@ It also serves as a unified deployment approach for all Kubernetes workloads, in
 
 The related topics are highlighted in separate ADRs:
 
-- Promotional CI/CD flow with GitOps
-- GitOps operator. Azure Arc GitOps vs Flux vs ArgoCD
+- [CI/CD. Multi-Environment Promotional Flow with GitOps](./cicd-gitops.md)
+- [GitOps operator for an Azure Arc enabled cluster](./gitops-operator.md)
 - Workload and Configuration Management
 - Deployment Observability
 - Secret Management on the Edge with GitOps

@@ -114,7 +114,8 @@ Since it is an environment specific configuration change, it is not promoted to 
 
 The related topics are highlighted in separate ADRs:
 
-- GitOps operator. Azure Arc GitOps vs Flux vs ArgoCD
+- [Deployment on the Edge with GitOps](./deployment-on-edge-gitops.md)
+- [GitOps operator for an Azure Arc enabled cluster](./gitops-operator.md)
 - Workload and Configuration Management
 - Deployment Observability
 - Secret Management on the Edge with GitOps
