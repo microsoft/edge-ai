@@ -8,8 +8,6 @@ check_terraform_install() {
       echo "terraform-cli not found; please download and install the"
       echo "terraform cli from https://developer.hashicorp.com/terraform/install"
       exit 1
-    else
-      echo "terraform-cli is installed. Continuing ..."
     fi
     # Check if jq is installed
     if ! command -v jq &> /dev/null; then
@@ -20,18 +18,18 @@ check_terraform_install() {
 
 check_provider_versions_in_folder() {
     local folder=$1
-    echo "Checking provider versions in folder: $folder"
+    # echo "Checking provider versions in folder: $folder"
 
     # Change to the folder being passed in
     pushd "$folder" > /dev/null || exit 1
 
     # Run terraform init (calculate elapsed time)
-    echo "executing terraform init"
+    # echo "executing terraform init"
     terraform init -input=false -no-color > /dev/null
-    echo "terraform init completed"
+    # echo "terraform init completed"
 
     # Call TF version command and parse the output
-    echo "Provider Data: $provider_data"
+    # echo "Provider Data: $provider_data"
     provider_data=$(terraform providers)
 
     # Parse the provider data and build an array to check for updates
@@ -66,7 +64,7 @@ check_provider_versions_in_folder() {
     # Extract lines where there are any characters up to 'provider'
     # and get the rest of the string
     sed -nE 's/.*provider\[([^]]+)][^[:digit:]]+([[:digit:].]+)/\1 \2/p')
-    echo "Provider Details: $provider_details"
+    # echo "Provider Details: $provider_details"
 
     # Loop through the provider details and check for updates
     # by calling the tf registry API and comparing the versions
@@ -94,8 +92,8 @@ check_provider_versions_in_folder() {
         # Check if the provider is in checked_providers based on provider name
         provider_in_checked=false
 
-        echo "Checking status of provider: $provider"
-        #echo "Checked providers: ${checked_providers[*]}"
+        # echo "Checking status of provider: $provider"
+        # echo "Checked providers: ${checked_providers[*]}"
 
         # Loop through checked_providers array to check if the provider has already been checked
         for checked_providers_entry in "${checked_providers[@]}"; do
@@ -109,11 +107,11 @@ check_provider_versions_in_folder() {
 
                 # If the provider version is equal to the checked_provider's latest_version, skip the provider
                 if [ "$version" == "$checked_provider_latest_version" ]; then
-                    echo "Provider: $provider is up to date"
-
+                    # echo "Provider: $provider is up to date"
+                    continue
                 # If the provider version is less than the checked_provider's latest_version, add to version_error_tracking_array
                 elif [ "$(printf '%s\n' "$version" "$checked_provider_latest_version" | sort -V | head -n 1)" == "$version" ]; then
-                    echo "Version mismatch. Provider: $provider is outdated, target version: $checked_provider_latest_version, current version: $version"
+                    # echo "Version mismatch. Provider: $provider is outdated, target version: $checked_provider_latest_version, current version: $version"
                     version_error_tracking_array+=("$folder,$provider,$version,$checked_provider_latest_version")
                 fi
             fi
@@ -121,24 +119,24 @@ check_provider_versions_in_folder() {
 
         if ! $provider_in_checked; then
             url="https://$registry/v1/providers/$source/$provider/versions"
-            echo "Checking provider: $provider as it has not yet been checked"
+            # echo "Checking provider: $provider as it has not yet been checked"
             response=$(curl -s "$url")
             # Check versions
             latest_version=$(echo "$response" | jq -r '.versions[].version' | sort -V | tail -n 1)
 
             if [ "$(printf '%s\n' "$version" "$latest_version" | sort -V | tail -n 1)" != "$version" ]; then
                 # Log a build warning if the provider version is outdated
-                echo "$provider is out of date. Declared version is $version, Latest version is $latest_version."
+                # echo "$provider is out of date. Declared version is $version, Latest version is $latest_version."
                 version_error_tracking_array+=("$folder,$provider,$version,$latest_version")
             fi
 
             # Add to checked_providers if unique
-            echo "Adding provider: $provider to checked_providers with version: $latest_version"
+            # echo "Adding provider: $provider to checked_providers with version: $latest_version"
             checked_providers+=("$provider,$latest_version")
         fi
     done <<< "$provider_details"
     # echo "Tracking array: ${version_error_tracking_array[*]}"
-    popd || exit 1
+    popd > /dev/null || exit 1
 }
 
 # Establish a tracking array to store the provider version data

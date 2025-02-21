@@ -526,6 +526,40 @@ stages:
               testResultsFiles: "$(testResultsOutput)"
               failTaskOnFailedTests: true
 
+      # Job to check changes in the Terraform AIO component versions and ensure that
+      # they are not outdated. See ./scripts/aio-version-checker.sh for details
+      - job: TFAIOVersionChecker
+        dependsOn:
+          - MatrixBuildFolderCheck
+        pool:
+          name: ai-on-edge-managed-pool
+          vmImage: ubuntu-latest
+        steps:
+          - checkout: self
+            clean: true
+          # Call aio-version-checker.sh script to check for changes in the TF specified AIO components
+          # versions. Creates build warnings if differences between local defined and remote available are detected
+          - bash: |
+              # Call aio-version-checker.sh script to check for changes in the specified AIO component
+              # versions. Creates build warnings if differences between local and remote are detected
+              version_check_results=$(./scripts/aio-version-checker.sh)
+              # Split the string into an array
+              # Parse the JSON and loop through each object
+              echo "$version_check_results" | jq -c '.[]' | while read -r result; do
+                name=$(echo "$result" | jq -r '.name')
+                local_version=$(echo "$result" | jq -r '.local_version')
+                remote_version=$(echo "$result" | jq -r '.remote_version')
+                local_train=$(echo "$result" | jq -r '.local_train')
+                remote_train=$(echo "$result" | jq -r '.remote_train')
+
+                if [[ "$local_version" != "$remote_version" ]]; then
+                    echo "##vso[task.logissue type=error]Component $name has version mismatch. Local version: $local_version, Available version: $remote_version. Local train: $local_train, Available train: $remote_train."
+                fi
+              done
+            displayName: "TF AIO Version Check"
+            condition: and( not(failed()), not(canceled()) )
+
+
       # Job to run Terraform install, init, provider version checks, plan,
       # and tests for the changed TF folders
       - job: TerraformClusterTest
@@ -612,22 +646,18 @@ stages:
                 # ./src/030-iot-ops-cloud-reqs/terraform,azapi,2.1.0,2.2.0
                 # ./src/040-iot-ops/terraform,azapi,2.1.0,2.2.0
                 # Example version_check_results string
-                version_check_results=$(./scripts/terraform-provider-version-check.sh -f ./)
+                version_check_results=$(./scripts/tf-provider-version-check.sh -f ./)
 
-                # Split the string into an array
-                IFS='\n' read -r -d results_array <<< "$version_check_results"
+                # Parse the JSON and loop through each object
+                echo "$version_check_results" | jq -c '.[]' | while read -r result; do
+                  folder=$(echo "$result" | jq -r '.folder')
+                  provider=$(echo "$result" | jq -r '.provider')
+                  current_version=$(echo "$result" | jq -r '.current_version')
+                  latest_version=$(echo "$result" | jq -r '.latest_version')
 
-                # Loop through each result and check the fields
-                for result in "${results_array[@]}"; do
-                  IFS=',' read -r -a fields <<< "$result"
-                  folder="${fields[0]}"
-                  provider="${fields[1]}"
-                  current_version="${fields[2]}"
-                  available_version="${fields[3]}"
-
-                  # Check if the third field (current_version) does not match the fourth field (available_version)
-                  if [ "$current_version" != "$available_version" ]; then
-                    echo "##vso[task.logissue type=error]Version mismatch in $folder for provider $provider: current version is $current_version, but available version is $available_version."
+                  # Check if the current version does not match the latest version
+                  if [[ "$current_version" != "$latest_version" ]]; then
+                      echo "##vso[task.logissue type=error]Version mismatch in $folder for provider $provider: current version is $current_version, but latest version is $latest_version."
                   fi
                 done
             condition: and( not(failed()), not(canceled()) )
