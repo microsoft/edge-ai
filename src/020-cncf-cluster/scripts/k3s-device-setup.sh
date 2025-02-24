@@ -190,9 +190,6 @@ connect_arc() {
     "--enable-oidc-issuer"
     "--enable-workload-identity"
   )
-  if [[ $CUSTOM_LOCATIONS_OID ]]; then
-    az_connectedk8s_connect+=("--custom-locations-oid $CUSTOM_LOCATIONS_OID")
-  fi
   if [[ ${ARC_AUTO_UPGRADE,,} == "false" ]]; then
     az_connectedk8s_connect+=("--disable-auto-upgrade")
   fi
@@ -247,8 +244,17 @@ if [[ ${ENVIRONMENT,,} != "prod" ]]; then
 fi
 
 # Cluster Connect is required for Custom Locations and needed for 'az connectedk8s proxy'.
-log "Enabling Azure Arc feature [cluster-connect]"
-az connectedk8s enable-features -n "$ARC_RESOURCE_NAME" -g "$ARC_RESOURCE_GROUP_NAME" --features cluster-connect
+log "Enabling Azure Arc feature [cluster-connect custom-locations]"
+az_connectedk8s_enable_features=("az connectedk8s enable-features"
+  "--name $ARC_RESOURCE_NAME"
+  "--resource-group $ARC_RESOURCE_GROUP_NAME"
+  "--features cluster-connect custom-locations"
+)
+if [[ $CUSTOM_LOCATIONS_OID ]]; then
+  az_connectedk8s_enable_features+=("--custom-locations-oid $CUSTOM_LOCATIONS_OID")
+fi
+echo "Executing: ${az_connectedk8s_enable_features[*]}"
+eval "${az_connectedk8s_enable_features[*]}"
 
 # Add a 'cluster-admin' for the Object ID that was provided. This will be useful and
 # needed for additional setup and configuration of the cluster at a later point.
