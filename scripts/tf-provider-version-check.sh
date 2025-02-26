@@ -1,18 +1,49 @@
 #!/usr/bin/env bash
 
+# This script checks the provider versions in the Terraform
+# configuration files in the specified folder or all folders
+# and compares them with the latest versions available in the
+# Terraform registry. It outputs any mismatches found and is useful
+# for build systems to ensure that the most recent released versions
+# of providers are being used.
+#
+# Usage: ./tf-provider-version-check.sh [-a] [-f <folder_path>]
+#
+# Flags:
+#   -a: Run check on all terraform folders under src/
+#   -f <folder_path>: Run check on a specific folder path
+#
+# Dependencies:
+#   - terraform: https://developer.hashicorp.com/terraform/install
+#   - jq: https://stedolan.github.io/jq/download/
+#
+# Exit Codes:
+#   0 - Success
+#   1 - Failure (e.g., missing dependencies, errors during execution)
+#
+# Example:
+#   ./tf-provider-version-check.sh -a
+#   ./tf-provider-version-check.sh -f ./src/030-iot-ops-cloud-reqs/terraform
+
+set -e
+
 usage() { echo "$0 usage:" && grep " .)\ #" "$0"; exit 0; }
 
 # Function to check if terraform-cli is installed
-check_terraform_install() {
+check_dependency_install_status() {
     if ! command -v terraform &> /dev/null; then
-      echo "terraform-cli not found; please download and install the"
-      echo "terraform cli from https://developer.hashicorp.com/terraform/install"
-      exit 1
+        echo "terraform-cli not found."
+        echo "Please install terraform-cli and ensure it is in your PATH."
+        echo "Installation instructions for terraform-cli can be found at: https://developer.hashicorp.com/terraform/install"
+        exit 1
     fi
     # Check if jq is installed
     if ! command -v jq &> /dev/null; then
-    echo "jq not found. Please download and install jq from https://stedolan.github.io/jq/download/."
-    exit 1
+        echo "jq could not be found."
+        echo "Please install jq and ensure it is in your PATH."
+        echo "Installation instructions for jq can be found at: https://stedolan.github.io/jq/download/."
+        echo
+        exit 1
     fi
 }
 
@@ -92,7 +123,7 @@ check_provider_versions_in_folder() {
         # Check if the provider is in checked_providers based on provider name
         provider_in_checked=false
 
-        # echo "Checking status of provider: $provider"
+        echo "Checking status of provider: $provider"
         # echo "Checked providers: ${checked_providers[*]}"
 
         # Loop through checked_providers array to check if the provider has already been checked
@@ -107,31 +138,31 @@ check_provider_versions_in_folder() {
 
                 # If the provider version is equal to the checked_provider's latest_version, skip the provider
                 if [ "$version" == "$checked_provider_latest_version" ]; then
-                    # echo "Provider: $provider is up to date"
+                    echo "Provider: $provider is up to date"
                     continue
                 # If the provider version is less than the checked_provider's latest_version, add to version_error_tracking_array
                 elif [ "$(printf '%s\n' "$version" "$checked_provider_latest_version" | sort -V | head -n 1)" == "$version" ]; then
-                    # echo "Version mismatch. Provider: $provider is outdated, target version: $checked_provider_latest_version, current version: $version"
+                    echo "Version mismatch. Provider: $provider is outdated, target version: $checked_provider_latest_version, current version: $version"
                     version_error_tracking_array+=("$folder,$provider,$version,$checked_provider_latest_version")
                 fi
             fi
         done
 
         if ! $provider_in_checked; then
+            echo "Connecting to remote to collect details for provider: $provider"
             url="https://$registry/v1/providers/$source/$provider/versions"
-            # echo "Checking provider: $provider as it has not yet been checked"
             response=$(curl -s "$url")
             # Check versions
             latest_version=$(echo "$response" | jq -r '.versions[].version' | sort -V | tail -n 1)
 
             if [ "$(printf '%s\n' "$version" "$latest_version" | sort -V | tail -n 1)" != "$version" ]; then
                 # Log a build warning if the provider version is outdated
-                # echo "$provider is out of date. Declared version is $version, Latest version is $latest_version."
+                echo "$provider is out of date. Declared version is $version, Latest version is $latest_version."
                 version_error_tracking_array+=("$folder,$provider,$version,$latest_version")
             fi
 
             # Add to checked_providers if unique
-            # echo "Adding provider: $provider to checked_providers with version: $latest_version"
+            echo "Adding provider: $provider to checked_providers with version: $latest_version"
             checked_providers+=("$provider,$latest_version")
         fi
     done <<< "$provider_details"
@@ -163,7 +194,7 @@ while getopts "af:" opt; do
 done
 
 # Check if terraform CLI is installed
-check_terraform_install
+check_dependency_install_status
 
 # Run in specified folder or all folders
 if [ "$run_all" = true ]; then

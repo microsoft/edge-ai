@@ -8,6 +8,7 @@ solutions.
 ## Available Blueprints
 
 - [Full Single Cluster install](./terraform/full-single-cluster/)
+- [CNCF Cluster Script](./terraform/only-output-cncf-cluster-script/)
 - more coming soon ...
 
 ## Prerequisites

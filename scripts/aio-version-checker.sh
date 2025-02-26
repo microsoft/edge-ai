@@ -6,6 +6,8 @@
 # for build systems to ensure that the most recent released versions of AIO
 # components and trains are being used.
 
+set -e
+
 # URL of the JSON file from GitHub for Azure IoT Operations
 # that contains the version and train information for required components
 AIO_MANIFEST_VERSIONS_URL="https://raw.githubusercontent.com/Azure/azure-iot-operations/main/release/azure-iot-operations-enablement.json"
@@ -15,7 +17,10 @@ CURRENT_AIO_VERSION_TF_DATA="./src/040-iot-ops/terraform/variables.init.tf"
 
 # Check if jq is installed
 if ! command -v jq &> /dev/null; then
-  echo "jq not found. Please download and install jq from https://stedolan.github.io/jq/download/."
+  echo "jq could not be found."
+  echo "Please install jq and ensure it is in your PATH."
+  echo "Installation instructions for jq can be found at: https://stedolan.github.io/jq/download/."
+  echo
   exit 1
 fi
 

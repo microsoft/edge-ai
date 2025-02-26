@@ -7,20 +7,42 @@
 # is that the build/ci system calls this script and contributors
 # would call the ./src/update-all-terraform-docs.sh script
 # directly.
+#
+# Usage: ./tf-docs-check.sh
+#
+# Dependencies:
+#   - terraform-docs: https://terraform-docs.io/user-guide/installation/
+#   - jq: https://stedolan.github.io/jq/download/
+#
+# Exit Codes:
+#   0 - Success
+#   1 - Failure (e.g., missing dependencies, errors during execution)
+#
+# Example:
+#   ./tf-docs-check.sh
 
-# Check if terraform-docs and jq are installed
-if ! command -v terraform-docs &> /dev/null; then
-  echo "terraform-docs not found. Please download and install terraform-docs from https://terraform-docs.io/user-guide/installation/."
+set -e
+
+# Check if terraform-docs is installed
+if ! command -v terraform-docs &>/dev/null; then
+  echo "terraform-docs could not be found."
+  echo "Please install terraform-docs and ensure it is in your PATH."
+  echo "Installation instructions can be found at: https://terraform-docs.io/user-guide/installation/"
+  echo
   exit 1
 fi
 
+# Check if jq is installed
 if ! command -v jq &> /dev/null; then
-  echo "jq not found. Please download and install jq from https://stedolan.github.io/jq/download/."
+  echo "jq could not be found."
+  echo "Please install jq and ensure it is in your PATH."
+  echo "Installation instructions for jq can be found at: https://stedolan.github.io/jq/download/."
+  echo
   exit 1
 fi
 
 # Run the script to update all TF auto-gen README.md files
-echo "Running the script ./src/update-all-terraform-docs.sh ..."
+echo "Running the script ./update-all-terraform-docs.sh ..."
 ./src/update-all-terraform-docs.sh
 
 # Check for changes in README.md files

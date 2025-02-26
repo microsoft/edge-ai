@@ -343,10 +343,44 @@ stages:
           - checkout: self
             clean: true
 
+            # Install terraform-docs from GitHub releases
           - bash: |
 
-              # Call tf-docs-check.sh script to check for changes in the Terraform documentation
-              # The script will return a boolean value indicating if updates are needed.
+              # Check if terraform-docs is already installed
+              if ! command -v terraform-docs &> /dev/null; then
+                echo "terraform-docs not found. Installing..."
+                # Detect architecture
+                ARCH=$(uname -m)
+                case $ARCH in
+                  x86_64|amd64)
+                    TERRAFORM_DOCS_ARCH="amd64"
+                    ;;
+                  aarch64|arm64)
+                    TERRAFORM_DOCS_ARCH="arm64"
+                    ;;
+                  *)
+                    echo "Unsupported architecture: $ARCH"
+                    exit 1
+                    ;;
+                esac
+
+                # Install terraform-docs
+                echo "Installing terraform-docs for $TERRAFORM_DOCS_ARCH architecture..."
+                curl -Lo ./terraform-docs.tar.gz "https://github.com/terraform-docs/terraform-docs/releases/download/v0.16.0/terraform-docs-v0.16.0-$(uname)-$TERRAFORM_DOCS_ARCH.tar.gz"
+                tar -xzf terraform-docs.tar.gz
+                chmod +x terraform-docs
+                sudo mv terraform-docs /usr/local/bin/
+              else
+                echo "terraform-docs is already installed"
+                terraform-docs --version
+              fi
+
+            displayName: Install terraform-docs
+            condition: and( not(failed()), not(canceled()) )
+
+          - bash: |
+
+              # Call tf-docs-check.sh script to check for changes
               readme_changed=$(tail -n 1 $(System.DefaultWorkingDirectory)/scripts/tf-docs-check.sh)
 
               # Check if there are any changes in the Terraform documentation
@@ -528,7 +562,7 @@ stages:
 
       # Job to check changes in the Terraform AIO component versions and ensure that
       # they are not outdated. See ./scripts/aio-version-checker.sh for details
-      - job: TFAIOVersionChecker
+      - job: TfAIOVersionChecker
         dependsOn:
           - MatrixBuildFolderCheck
         pool:
@@ -537,12 +571,17 @@ stages:
         steps:
           - checkout: self
             clean: true
+
           # Call aio-version-checker.sh script to check for changes in the TF specified AIO components
           # versions. Creates build warnings if differences between local defined and remote available are detected
           - bash: |
+
               # Call aio-version-checker.sh script to check for changes in the specified AIO component
               # versions. Creates build warnings if differences between local and remote are detected
               version_check_results=$(./scripts/aio-version-checker.sh)
+
+              echo "Version Check Results: $version_check_results"
+
               # Split the string into an array
               # Parse the JSON and loop through each object
               echo "$version_check_results" | jq -c '.[]' | while read -r result; do
@@ -552,13 +591,87 @@ stages:
                 local_train=$(echo "$result" | jq -r '.local_train')
                 remote_train=$(echo "$result" | jq -r '.remote_train')
 
+                # Check for version mismatch
                 if [[ "$local_version" != "$remote_version" ]]; then
-                    echo "##vso[task.logissue type=error]Component $name has version mismatch. Local version: $local_version, Available version: $remote_version. Local train: $local_train, Available train: $remote_train."
+                    echo "##vso[task.logissue type=error]Component $name has version mismatch. Local version: $local_version, Available version: $remote_version."
+                fi
+
+                # Additional train quality check
+                if [[ "$local_train" != "$remote_train" ]]; then
+                    echo "##vso[task.logissue type=error]Component $name has train quality mismatch. Local train: $local_train, Available train: $remote_train."
                 fi
               done
+
             displayName: "TF AIO Version Check"
             condition: and( not(failed()), not(canceled()) )
 
+      # Job to check uniformity differences in TF var definitions and ensure that
+      # they are consistent. See tf-var-compliance-checker.sh for details
+      - job: TFVariableComplianceChecker
+        dependsOn:
+          - MatrixBuildFolderCheck
+        pool:
+          name: ai-on-edge-managed-pool
+          vmImage: ubuntu-latest
+        steps:
+          - checkout: self
+            clean: true
+
+          # Install terraform-docs from GitHub releases
+          - bash: |
+
+              # Check if terraform-docs is already installed
+              if ! command -v terraform-docs &> /dev/null; then
+                echo "terraform-docs not found. Installing..."
+                # Detect architecture
+                ARCH=$(uname -m)
+                case $ARCH in
+                  x86_64|amd64)
+                    TERRAFORM_DOCS_ARCH="amd64"
+                    ;;
+                  aarch64|arm64)
+                    TERRAFORM_DOCS_ARCH="arm64"
+                    ;;
+                  *)
+                    echo "Unsupported architecture: $ARCH"
+                    exit 1
+                    ;;
+                esac
+
+                # Install terraform-docs
+                echo "Installing terraform-docs for $TERRAFORM_DOCS_ARCH architecture..."
+                curl -Lo ./terraform-docs.tar.gz "https://github.com/terraform-docs/terraform-docs/releases/download/v0.16.0/terraform-docs-v0.16.0-$(uname)-$TERRAFORM_DOCS_ARCH.tar.gz"
+                tar -xzf terraform-docs.tar.gz
+                chmod +x terraform-docs
+                sudo mv terraform-docs /usr/local/bin/
+              else
+                echo "terraform-docs is already installed"
+                terraform-docs --version
+              fi
+
+            displayName: Install terraform-docs
+            condition: and( not(failed()), not(canceled()) )
+
+          # Parse tf-vars-compliance-check.py output
+          - bash: |
+              variable_check_results=$(python3 ./scripts/tf-vars-compliance-check.py)
+              echo "Variable Check Results: $variable_check_results"
+
+              # Check if we got valid JSON results
+              if echo "$variable_check_results" | jq empty 2>/dev/null; then
+                # Parse each warning and output as an Azure Pipeline error
+                echo "$variable_check_results" | jq -c '.[]' | while read -r result; do
+                    variable=$(echo "$result" | jq -r '.variable')
+                    # Join multiple folders with newlines and proper indentation
+                    folders=$(echo "$result" | jq -r '.folders | join("\n  - ")')
+                    # Format differences with newlines and indentation
+                    differences=$(echo "$result" | jq -r '.differences | map("\n  - " + .) | join("")')
+                    echo "##vso[task.logissue type=error]Variable '$variable' has inconsistencies in folders:\n  - $folders\n\nDifferences:$differences"
+                done
+              fi
+
+            displayName: "Tf Variable Compliance Check"
+            condition: and( not(failed()), not(canceled()) )
 
       # Job to run Terraform install, init, provider version checks, plan,
       # and tests for the changed TF folders
