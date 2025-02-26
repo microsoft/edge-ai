@@ -5,14 +5,14 @@
  */
 
 locals {
-  label_prefix = "${var.resource_prefix}-aio-edge"
+  label_prefix = "${var.resource_prefix}-aio-edge-${var.instance}"
   vm_username  = coalesce(var.vm_username, var.resource_prefix)
 }
 
 ### Create Virtual Edge Device ###
 
 resource "azurerm_public_ip" "aio_edge" {
-  name                = "${local.label_prefix}-ip"
+  name                = "pip-${local.label_prefix}"
   resource_group_name = var.aio_resource_group.name
   location            = var.location
   allocation_method   = "Static"

@@ -42,6 +42,7 @@ Deploys a Linux VM with an Arc-connected K3s cluster
 | location | Location for all resources in this module | `string` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
 | arc\_onboarding\_user\_assigned\_identity | n/a | ```object({ id = string })``` | `null` | no |
+| instance | Instance identifier for naming resources: 001, 002, etc... | `string` | `"001"` | no |
 | vm\_sku\_size | Size of the VM | `string` | `"Standard_D8s_v3"` | no |
 | vm\_username | Name for the VM user to create on the target VM. If left empty, a random user name will be generated | `string` | `null` | no |
 
