@@ -1,5 +1,25 @@
 #!/usr/bin/env bash
 
+# This script builds an Azure DevOps Wiki structure from the repository's markdown
+# documentation. It searches the defined folders in the "FOLDER_PATHS"
+# variable and processes them into a structure for the wiki. It will attempt
+# some amount of URL rewriting for relative paths where possible.
+#
+# The script is intended to be run by the build system but may be useful for
+# local testing in some instances.
+#
+# Usage: ./wiki-build.sh
+#
+# Dependencies:
+#   - None (uses standard Unix utilities)
+#
+# Exit Codes:
+#   0 - Success
+#   1 - Failure (e.g., errors during execution)
+#
+# Example:
+#   ./wiki-build.sh
+
 WIKI_REPO_FOLDER=".wiki"
 
 # Create the directory if it does not exist
