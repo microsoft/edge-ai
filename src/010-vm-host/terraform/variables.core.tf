@@ -15,3 +15,9 @@ variable "location" {
   type        = string
   description = "Location for all resources in this module"
 }
+
+variable "instance" {
+  type        = string
+  description = "Instance identifier for naming resources: 001, 002, etc..."
+  default     = "001"
+}

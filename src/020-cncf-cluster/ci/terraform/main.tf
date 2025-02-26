@@ -11,7 +11,7 @@ data "azurerm_resource_group" "aio" {
 }
 
 data "azurerm_virtual_machine" "aio" {
-  name                = "${var.resource_prefix}-aio-edge-vm"
+  name                = "${var.resource_prefix}-aio-edge-${var.instance}-vm"
   resource_group_name = data.azurerm_resource_group.aio.name
 }
 
