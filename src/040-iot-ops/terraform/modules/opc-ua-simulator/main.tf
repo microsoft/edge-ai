@@ -29,7 +29,7 @@ resource "azapi_resource" "asset_endpoint" {
     }
     properties = {
       targetAddress       = "opc.tcp://opcplc-000000:50000"
-      endpointProfileType = ""
+      endpointProfileType = "Microsoft.OpcUa"
       authentication = {
         method = "Anonymous"
       }
