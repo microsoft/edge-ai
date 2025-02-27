@@ -13,6 +13,6 @@ variable "sse_key_vault" {
   type = object({
     id = string
   })
-  description = "Azure Key Vault ID to use with Secret Sync Extension. (Otherwise, creates a new Azure Key Vault)"
+  description = "Azure Key Vault ID to use with Secret Sync Extension."
   default     = null
 }

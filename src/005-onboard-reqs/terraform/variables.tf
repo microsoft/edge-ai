@@ -6,7 +6,7 @@ variable "should_create_resource_group" {
 
 variable "resource_group_name" {
   type        = string
-  description = "The name for the resource group. (Otherwise, 'rg-{var.resource_prefix}-{var.environment}-{var.instance}')"
+  description = "The name for the resource group."
   default     = null
 }
 

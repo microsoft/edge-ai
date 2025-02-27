@@ -61,5 +61,5 @@ variable "deploy_resource_sync_rules" {
 variable "enable_instance_secret_sync" {
   type        = bool
   default     = true
-  description = "Enable secret sync at the AIO instance level"
+  description = "Whether to enable secret sync on the Azure IoT Operations instance"
 }

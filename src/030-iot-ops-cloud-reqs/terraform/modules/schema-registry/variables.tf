@@ -9,7 +9,7 @@ variable "location" {
 
 variable "resource_group_name" {
   type        = string
-  description = "Name of the pre-existing resource group in which to create resources"
+  description = "The name for the resource group."
 
   validation {
     condition     = length(var.resource_group_name) > 0
@@ -33,5 +33,5 @@ variable "storage_account" {
 
 variable "resource_prefix" {
   type        = string
-  description = "Prefix for the registry and registry namespace created in this module"
+  description = "Prefix for all resources in this module"
 }

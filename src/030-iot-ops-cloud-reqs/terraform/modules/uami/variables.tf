@@ -9,7 +9,7 @@ variable "location" {
 
 variable "resource_group_name" {
   type        = string
-  description = "Name of the pre-existing resource group in which to create resources"
+  description = "The name for the resource group."
 
   validation {
     condition     = length(var.resource_group_name) > 0

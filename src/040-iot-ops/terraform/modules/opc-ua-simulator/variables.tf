@@ -17,5 +17,5 @@ variable "connected_cluster_name" {
 }
 variable "custom_location_id" {
   type        = string
-  description = "The id of the custom location to deploy Azure IoT Operations to"
+  description = "The resource ID of the Custom Location."
 }
