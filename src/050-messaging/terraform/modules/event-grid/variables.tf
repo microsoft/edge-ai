@@ -5,7 +5,7 @@ variable "resource_prefix" {
 
 variable "resource_group_name" {
   type        = string
-  description = "Name of the pre-existing resource group in which to create resources"
+  description = "The name for the resource group."
 }
 
 variable "location" {
@@ -19,7 +19,7 @@ variable "aio_uami_principal_id" {
 }
 
 variable "capacity" {
-  description = "Specifies the Capacity / Throughput Units for a Standard SKU namespace. Valid values range from 1 - 40."
+  description = "Specifies the Capacity / Throughput Units for a Standard SKU namespace."
   type        = number
   default     = 1
   validation {

@@ -1,6 +1,6 @@
 variable "resource_group_id" {
   type        = string
-  description = "ID of the resource group to create resources in"
+  description = "The ID for the Resource Group for the resources."
 }
 
 variable "connected_cluster_name" {

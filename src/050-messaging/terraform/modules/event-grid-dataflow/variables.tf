@@ -5,7 +5,7 @@ variable "resource_prefix" {
 
 variable "custom_location_id" {
   type        = string
-  description = "The id of the custom location to deploy Azure IoT Operations to"
+  description = "The resource ID of the Custom Location."
 }
 
 variable "event_grid" {
@@ -18,7 +18,7 @@ variable "event_grid" {
 
 variable "asset_name" {
   type        = string
-  description = "The name of the Event Hub namespace"
+  description = "The name of the Azure IoT Operations Device Registry Asset resource to send its data from edge to cloud."
 }
 
 variable "aio_uami_tenant_id" {

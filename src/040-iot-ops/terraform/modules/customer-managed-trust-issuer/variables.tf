@@ -34,7 +34,7 @@ variable "aio_ca" {
     ca_key_pem        = string
   })
   sensitive   = true
-  description = "Intermediate CA with Root CA certificate for the MQTT broker"
+  description = "CA certificate for the MQTT broker, can be either Root CA or Root CA with any number of Intermediate CAs. If not provided, a self-signed Root CA with a intermediate will be generated. Only valid when Trust Source is set to CustomerManaged"
 }
 
 variable "customer_managed_trust_settings" {

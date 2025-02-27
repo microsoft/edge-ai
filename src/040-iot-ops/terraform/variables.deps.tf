@@ -15,6 +15,7 @@ variable "sse_key_vault" {
     name = string
     id   = string
   })
+  description = "Azure Key Vault ID to use with Secret Sync Extension."
 }
 
 variable "sse_user_assigned_identity" {

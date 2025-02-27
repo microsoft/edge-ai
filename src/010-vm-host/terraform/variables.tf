@@ -4,7 +4,10 @@
 
 variable "vm_username" {
   type        = string
-  description = "Name for the VM user to create on the target VM. If left empty, a random user name will be generated"
+  description = <<-EOF
+    Username used for the host VM that will be given kube-config settings on setup.
+    (Otherwise, 'resource_prefix' if it exists as a user)
+EOF
   default     = null
 }
 

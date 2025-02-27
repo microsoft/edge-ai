@@ -20,5 +20,5 @@ variable "connected_cluster_name" {
 
 variable "resource_group_name" {
   type        = string
-  description = "Name of the pre-existing resource group in which to create resources"
+  description = "The name for the resource group."
 }
