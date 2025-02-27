@@ -411,3 +411,10 @@ terraform.rc
 
 # Ignore directories that output build specific files
 out
+
+# Ignore python virtual env
+.venv/
+venv/
+
+# Ignore Bicep files
+*.bicepparam
