@@ -1,12 +1,16 @@
 variable "arc_connected_cluster" {
   type = object({
-    id = string
+    name     = string
+    id       = string
+    location = string
   })
 }
 
 variable "aio_log_analytics_workspace" {
   type = object({
-    id = string
+    id                 = string
+    workspace_id       = string
+    primary_shared_key = string
   })
 }
 

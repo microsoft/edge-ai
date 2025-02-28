@@ -33,11 +33,24 @@ data "azapi_resource" "arc_connected_cluster" {
   response_export_values = ["name", "id", "location"]
 }
 
+data "azurerm_monitor_data_collection_rule" "aio_metrics" {
+  name                = "dcr-metrics-${var.resource_prefix}-${var.environment}-${var.instance}"
+  resource_group_name = data.azurerm_resource_group.aio.name
+}
+
+data "azurerm_monitor_data_collection_rule" "aio_logs" {
+  name                = "dcr-logs-${var.resource_prefix}-${var.environment}-${var.instance}"
+  resource_group_name = data.azurerm_resource_group.aio.name
+}
+
 module "iot_ops_utility" {
   source = "../../terraform"
 
-  aio_azure_managed_grafana   = data.azurerm_dashboard_grafana.aio
-  aio_azure_monitor_workspace = data.azurerm_monitor_workspace.aio
-  aio_log_analytics_workspace = data.azurerm_log_analytics_workspace.aio
-  arc_connected_cluster       = data.azapi_resource.arc_connected_cluster.output
+  aio_azure_managed_grafana        = data.azurerm_dashboard_grafana.aio
+  aio_azure_monitor_workspace      = data.azurerm_monitor_workspace.aio
+  aio_log_analytics_workspace      = data.azurerm_log_analytics_workspace.aio
+  aio_metrics_data_collection_rule = data.azurerm_monitor_data_collection_rule.aio_metrics
+  aio_logs_data_collection_rule    = data.azurerm_monitor_data_collection_rule.aio_logs
+  aio_resource_group               = data.azurerm_resource_group.aio
+  arc_connected_cluster            = data.azapi_resource.arc_connected_cluster.output
 }
