@@ -54,6 +54,7 @@
 		"eventgrid",
 		"Eventhouse",
 		"eventhub",
+		"FIDAP",
 		"gimsvc",
 		"Graeve",
 		"hotfixes",
@@ -87,6 +88,7 @@
 		"Subvolumes",
 		"Suneet",
 		"tfstate",
+		"thermodyanmics",
 		"UAMI"
 	],
 	"dictionaryDefinitions": [
