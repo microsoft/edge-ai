@@ -409,6 +409,9 @@ terraform.rc
 # Ignore Azure files
 .azure
 
+# Ignore Python virtual environments
+.venv/
+
 # Ignore directories that output build specific files
 out
 
