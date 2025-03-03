@@ -40,7 +40,7 @@ Creates the required resources needed for an edge IaC deployment.
 | resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
 | instance | Instance identifier for naming resources: 001, 002, etc... | `string` | `"001"` | no |
 | onboard\_identity\_type | Identity type to use for onboarding the cluster to Azure Arc.  Allowed values:  - uami - sp | `string` | `"uami"` | no |
-| resource\_group\_name | The name for the resource group. (Otherwise, 'rg-{var.resource\_prefix}-{var.environment}-{var.instance}') | `string` | `null` | no |
+| resource\_group\_name | The name for the resource group. | `string` | `null` | no |
 | should\_create\_onboard\_identity | Should create either a User Assigned Managed Identity or Service Principal to be used with onboarding a cluster to Azure Arc. | `bool` | `true` | no |
 | should\_create\_resource\_group | Should create and manage a new Resource Group. | `bool` | `true` | no |
 

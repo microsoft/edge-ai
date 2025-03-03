@@ -43,7 +43,13 @@ fi
 
 # Run the script to update all TF auto-gen README.md files
 echo "Running the script ./update-all-terraform-docs.sh ..."
-./src/update-all-terraform-docs.sh
+error_output=$("$(dirname "$0")/update-all-terraform-docs.sh" 2>&1) || {
+  exit_code=$?
+  echo "Error executing update-all-terraform-docs.sh:"
+  echo "$error_output"
+  echo "Exit code: $exit_code"
+  exit $exit_code
+}
 
 # Check for changes in README.md files
 echo "Checking for changes in README.md files ..."

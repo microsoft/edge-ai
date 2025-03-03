@@ -34,7 +34,7 @@ Instance can be created, and after.
 | aio\_resource\_group | n/a | ```object({ name = string id = string location = string })``` | n/a | yes |
 | aio\_user\_assigned\_identity | n/a | ```object({ id = string })``` | n/a | yes |
 | arc\_connected\_cluster | n/a | ```object({ name = string id = string location = string })``` | n/a | yes |
-| sse\_key\_vault | n/a | ```object({ name = string id = string })``` | n/a | yes |
+| sse\_key\_vault | Azure Key Vault ID to use with Secret Sync Extension. | ```object({ name = string id = string })``` | n/a | yes |
 | sse\_user\_assigned\_identity | n/a | ```object({ id = string client_id = string })``` | n/a | yes |
 | aio\_ca | CA certificate for the MQTT broker, can be either Root CA or Root CA with any number of Intermediate CAs. If not provided, a self-signed Root CA with a intermediate will be generated. Only valid when Trust Source is set to CustomerManaged | ```object({ root_ca_cert_pem = string ca_cert_chain_pem = string ca_key_pem = string })``` | `null` | no |
 | aio\_platform\_config | Install cert-manager and trust-manager extensions | ```object({ install_cert_manager = bool install_trust_manager = bool })``` | ```{ "install_cert_manager": true, "install_trust_manager": true }``` | no |
@@ -42,7 +42,7 @@ Instance can be created, and after.
 | dataflow\_instance\_count | Number of dataflow instances. Defaults to 1. | `number` | `1` | no |
 | deploy\_resource\_sync\_rules | Deploys resource sync rules if set to true | `bool` | `false` | no |
 | edge\_storage\_accelerator | n/a | ```object({ version = string train = string diskStorageClass = string faultToleranceEnabled = bool })``` | ```{ "diskStorageClass": "", "faultToleranceEnabled": false, "train": "stable", "version": "2.2.2" }``` | no |
-| enable\_instance\_secret\_sync | Enable secret sync at the AIO instance level | `bool` | `true` | no |
+| enable\_instance\_secret\_sync | Whether to enable secret sync on the Azure IoT Operations instance | `bool` | `true` | no |
 | enable\_opc\_ua\_simulator | Deploy OPC UA Simulator to the cluster | `bool` | `true` | no |
 | enable\_otel\_collector | Deploy the OpenTelemetry Collector and Azure Monitor ConfigMap (optionally used) | `bool` | `true` | no |
 | mqtt\_broker\_config | n/a | ```object({ brokerListenerServiceName = string brokerListenerPort = number serviceAccountAudience = string frontendReplicas = number frontendWorkers = number backendRedundancyFactor = number backendWorkers = number backendPartitions = number memoryProfile = string serviceType = string })``` | ```{ "backendPartitions": 1, "backendRedundancyFactor": 2, "backendWorkers": 1, "brokerListenerPort": 18883, "brokerListenerServiceName": "aio-broker", "frontendReplicas": 1, "frontendWorkers": 1, "memoryProfile": "Low", "serviceAccountAudience": "aio-internal", "serviceType": "ClusterIp" }``` | no |

@@ -59,5 +59,7 @@ ref: <https://learn.microsoft.com/en-us/azure/azure-monitor/containers/kubernete
 | azure\_managed\_grafana | n/a |
 | azure\_monitor\_workspace | n/a |
 | log\_analytics\_workspace | n/a |
+| logs\_data\_collection\_rule | n/a |
+| metrics\_data\_collection\_rule | n/a |
 <!-- markdown-table-prettify-ignore-end -->
 <!-- END_TF_DOCS -->

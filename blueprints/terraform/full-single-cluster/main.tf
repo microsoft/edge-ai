@@ -47,10 +47,10 @@ module "messaging" {
   source = "../../../src/050-messaging/terraform"
 
   resource_prefix            = var.resource_prefix
-  aio_custom_locations       = module.iot_ops_install.custom_locations
-  aio_instance               = module.iot_ops_install.aio_instance
   aio_resource_group         = module.onboard_requirements.resource_group
   aio_user_assigned_identity = module.iot_ops_cloud_requirements.aio_user_assigned_identity
+  aio_custom_locations       = module.iot_ops_install.custom_locations
+  aio_instance               = module.iot_ops_install.aio_instance
   aio_dataflow_profile       = module.iot_ops_install.aio_dataflow_profile
 }
 
@@ -66,8 +66,11 @@ module "observability" {
 module "iot_ops_utilities" {
   source = "../../../src/080-iot-ops-utility/terraform"
 
-  arc_connected_cluster       = module.cncf_cluster_install.arc_connected_cluster
-  aio_azure_monitor_workspace = module.observability.azure_monitor_workspace
-  aio_log_analytics_workspace = module.observability.log_analytics_workspace
-  aio_azure_managed_grafana   = module.observability.azure_managed_grafana
+  aio_resource_group               = module.onboard_requirements.resource_group
+  arc_connected_cluster            = module.cncf_cluster_install.arc_connected_cluster
+  aio_azure_monitor_workspace      = module.observability.azure_monitor_workspace
+  aio_log_analytics_workspace      = module.observability.log_analytics_workspace
+  aio_azure_managed_grafana        = module.observability.azure_managed_grafana
+  aio_logs_data_collection_rule    = module.observability.logs_data_collection_rule
+  aio_metrics_data_collection_rule = module.observability.metrics_data_collection_rule
 }

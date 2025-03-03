@@ -31,8 +31,8 @@ Provisions the ARM based data flow endpoint and data flow for Event Grid, requir
 | aio\_instance | n/a | ```object({ id = string })``` | n/a | yes |
 | aio\_uami\_client\_id | Client ID of the User Assigned Managed Identity for the Azure IoT Operations instance | `string` | n/a | yes |
 | aio\_uami\_tenant\_id | Tenant ID of the User Assigned Managed Identity for the Azure IoT Operations instance | `string` | n/a | yes |
-| asset\_name | The name of the Event Hub namespace | `string` | n/a | yes |
-| custom\_location\_id | The id of the custom location to deploy Azure IoT Operations to | `string` | n/a | yes |
+| asset\_name | The name of the Azure IoT Operations Device Registry Asset resource to send its data from edge to cloud. | `string` | n/a | yes |
+| custom\_location\_id | The resource ID of the Custom Location. | `string` | n/a | yes |
 | event\_grid | Values for the existing Event Grid | ```object({ topic_name = string endpoint = string })``` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
 <!-- markdown-table-prettify-ignore-end -->
