@@ -9,7 +9,7 @@ Implementing an Adaptive Cloud approach requires great tooling; we're excited to
 Edge" project, our next generation Infrastructure as Code solution designed specifically for systems spanning
 edge and cloud. This project encodes a decade of experience harvesting petabytes of edge telemetry and
 extending the power and capabilites of Azure, to the edge. This project is just the first step in enabling our
-*Edge AI Accelerator*, a suite of IaC, tools, and applications for designing, engineering, and deploying
+_Edge AI Accelerator_, a suite of IaC, tools, and applications for designing, engineering, and deploying
 edge AI solutions that are resilient, scalable, and maintainable.
 
 It takes a wide variety of teams, roles, and responsibilities to develop cloud-enabled edge computing
@@ -26,7 +26,7 @@ The primary objective of this repository is to provide production ready IaC for 
 repository provides Terraform for building edge and cloud infrastructure, with a Bicep implementation on the roadmap
 for delivery in Q2 CY2025.
 
-If you are in need of Quickstarts for Azure IoT Operations or example implementations, they  can be found in official
+If you are in need of Quickstarts for Azure IoT Operations or example implementations, they can be found in official
 Azure documentation:
 
 - [Azure IoT Operations - Quickstart](https://learn.microsoft.com/en-us/azure/iot-operations/get-started-end-to-end-sample/quickstart-deploy)
@@ -44,14 +44,16 @@ Then, get started bootstrapping Arc-enabled AIO environments:
 2. [Install pre-requisites](./blueprints/README.md) or use [this project's integrated dev container](./.devcontainer/README.md).
 3. Login to the Azure Portal.
 4. From a terminal:
-    - `cd ./src/000-subscription`
-    - Run `./register-azure-providers.sh` to prepare your subscription
-    - Follow instructions in the [./src/005-onboarding-reqs README](./src/005-onboard-reqs/README.md)
-    - Deploy the IaC:
-      - Select a `full-*` *blueprint* from the [blueprints](./blueprints/README.md) directory and follow deployment instructions located in the root blueprint folder.
+   - `cd ./src/000-subscription`
+   - Run `./register-azure-providers.sh` to prepare your subscription
+   - Follow instructions in the [./src/005-onboarding-reqs README](./src/005-onboard-reqs/README.md)
+   - Deploy the IaC:
+     - Select a `full-*` _blueprint_ from the [blueprints](./blueprints/README.md) directory and follow deployment instructions located in the root blueprint folder.
 
 **Optionally**, this repository includes scripts to individually deploy each and every component. Follow the
 instructions located at [./src/README.md](./src/README.md) for details.
+
+**✨ GitHub Copilot Agent-assisted deployment (experimental)**: Open Copilot, switch to the 'Edit' Tab, and to 'Agent' mode. Then ask `Deploy this solution` to be guided through the setup in your subscription. (Copilot will use the README and extra prompting in this repo to run the deployment steps listed above.)
 
 ### Video Demonstration
 
@@ -119,7 +121,7 @@ default variables and assumes that prior requirements have been deployed from ot
 
 #### Blueprints
 
-This project includes *blueprints* that can be used as reference for deploying specific edge scenarios. Blueprints
+This project includes _blueprints_ that can be used as reference for deploying specific edge scenarios. Blueprints
 are located in the [blueprints](./blueprints) folder and are organized by the supported IaC framework being used,
 which includes Terraform, Bicep, and script-based.
 

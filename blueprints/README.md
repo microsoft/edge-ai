@@ -48,6 +48,8 @@ az login # --tenant <tenant-id>
 
 3. Set up required env vars:
 
+   - __ARM_SUBSCRIPTION_ID__ -- The Azure Subscription ID target for this deployment (required to be set for the Terraform tasks below)
+
    ```sh
    # Dynamically get the Subscription ID or manually get and pass to ARM_SUBSCRIPTION_ID
    current_subscription_id=$(az account show --query id -o tsv)
