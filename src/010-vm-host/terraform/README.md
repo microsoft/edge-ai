@@ -44,7 +44,7 @@ Deploys a Linux VM with an Arc-connected K3s cluster
 | arc\_onboarding\_user\_assigned\_identity | n/a | ```object({ id = string })``` | `null` | no |
 | instance | Instance identifier for naming resources: 001, 002, etc... | `string` | `"001"` | no |
 | vm\_sku\_size | Size of the VM | `string` | `"Standard_D8s_v3"` | no |
-| vm\_username | Name for the VM user to create on the target VM. If left empty, a random user name will be generated | `string` | `null` | no |
+| vm\_username | Username used for the host VM that will be given kube-config settings on setup. (Otherwise, 'resource\_prefix' if it exists as a user) | `string` | `null` | no |
 
 ## Outputs
 

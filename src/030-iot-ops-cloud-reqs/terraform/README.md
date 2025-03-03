@@ -29,7 +29,7 @@ access to resources.
 |------|-------------|------|---------|:--------:|
 | aio\_resource\_group | n/a | ```object({ name = string location = string })``` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
-| sse\_key\_vault | Azure Key Vault ID to use with Secret Sync Extension. (Otherwise, creates a new Azure Key Vault) | ```object({ id = string })``` | `null` | no |
+| sse\_key\_vault | Azure Key Vault ID to use with Secret Sync Extension. | ```object({ id = string })``` | `null` | no |
 
 ## Outputs
 

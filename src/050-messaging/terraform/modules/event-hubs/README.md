@@ -30,9 +30,9 @@ Create a new Event Hub namespace and Event Hub and assign the AIO instance UAMI 
 |------|-------------|------|---------|:--------:|
 | aio\_uami\_principal\_id | Principal ID of the User Assigned Managed Identity for the Azure IoT Operations instance | `string` | n/a | yes |
 | location | Location for all resources in this module | `string` | n/a | yes |
-| resource\_group\_name | Name of the pre-existing resource group in which to create resources | `string` | n/a | yes |
+| resource\_group\_name | The name for the resource group. | `string` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
-| capacity | Specifies the Capacity / Throughput Units for a Standard SKU namespace. Valid values range from 1 - 20. | `number` | `1` | no |
+| capacity | Specifies the Capacity / Throughput Units for a Standard SKU namespace. | `number` | `1` | no |
 | message\_retention | Specifies the number of days to retain events for this Event Hub, from 1 to 7 days. | `number` | `1` | no |
 | partition\_count | Specifies the number of partitions for the Event Hub. Valid values are from 1 to 32. | `number` | `1` | no |
 

@@ -32,7 +32,7 @@ Deploys resources necessary to enable Azure IoT Operations (AIO) with Customer M
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| aio\_ca | Intermediate CA with Root CA certificate for the MQTT broker | ```object({ root_ca_cert_pem = string ca_cert_chain_pem = string ca_key_pem = string })``` | n/a | yes |
+| aio\_ca | CA certificate for the MQTT broker, can be either Root CA or Root CA with any number of Intermediate CAs. If not provided, a self-signed Root CA with a intermediate will be generated. Only valid when Trust Source is set to CustomerManaged | ```object({ root_ca_cert_pem = string ca_cert_chain_pem = string ca_key_pem = string })``` | n/a | yes |
 | connected\_cluster\_name | The name of the connected cluster to deploy Azure IoT Operations to | `string` | n/a | yes |
 | customer\_managed\_trust\_settings | Values for AIO CustomerManaged trust resources | ```object({ issuer_name = string issuer_kind = string configmap_name = string configmap_key = string })``` | n/a | yes |
 | key\_vault | The name and id of the existing key vault for Azure IoT Operations instance | ```object({ name = string id = string })``` | n/a | yes |

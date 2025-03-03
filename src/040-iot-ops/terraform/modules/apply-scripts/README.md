@@ -29,7 +29,7 @@ scripts passed into this module.
 |------|-------------|------|---------|:--------:|
 | aio\_namespace | Azure IoT Operations namespace | `string` | n/a | yes |
 | connected\_cluster\_name | The name of the connected cluster to deploy Azure IoT Operations to | `string` | n/a | yes |
-| resource\_group\_name | Name of the pre-existing resource group in which to create resources | `string` | n/a | yes |
+| resource\_group\_name | The name for the resource group. | `string` | n/a | yes |
 | scripts | List of scripts to apply, the objects will be merged together to make one scripting call | ```list( object({ files = list(string) environment = map(any) }) )``` | n/a | yes |
 <!-- markdown-table-prettify-ignore-end -->
 <!-- END_TF_DOCS -->

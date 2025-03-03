@@ -34,9 +34,9 @@ Used with a hands-off deployment that will embed UAMI/SP
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | location | Location for all resources in this module | `string` | n/a | yes |
-| onboard\_identity\_type | Identity type to use for onboarding the cluster to Azure Arc.  - `uami` - `sp` | `string` | n/a | yes |
-| resource\_group\_id | Resource group id to scope the role assignment to | `string` | n/a | yes |
-| resource\_group\_name | Name of the pre-existing resource group in which to create resources | `string` | n/a | yes |
+| onboard\_identity\_type | Identity type to use for onboarding the cluster to Azure Arc.  Allowed values:  - uami - sp | `string` | n/a | yes |
+| resource\_group\_id | The ID for the Resource Group for the resources. | `string` | n/a | yes |
+| resource\_group\_name | The name for the resource group. | `string` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
 
 ## Outputs

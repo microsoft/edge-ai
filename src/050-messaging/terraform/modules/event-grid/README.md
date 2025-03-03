@@ -31,9 +31,9 @@ Create a new Event Grid namespace and namespace topic and assign the AIO instanc
 |------|-------------|------|---------|:--------:|
 | aio\_uami\_principal\_id | Principal ID of the User Assigned Managed Identity for the Azure IoT Operations instance | `string` | n/a | yes |
 | location | Location for all resources in this module | `string` | n/a | yes |
-| resource\_group\_name | Name of the pre-existing resource group in which to create resources | `string` | n/a | yes |
+| resource\_group\_name | The name for the resource group. | `string` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
-| capacity | Specifies the Capacity / Throughput Units for a Standard SKU namespace. Valid values range from 1 - 40. | `number` | `1` | no |
+| capacity | Specifies the Capacity / Throughput Units for a Standard SKU namespace. | `number` | `1` | no |
 | event\_grid\_max\_client\_sessions\_per\_auth\_name | Specifies the maximum number of client sessions per authentication name. Valid values are from 3 to 100. This parameter should be greater than the number of dataflows | `number` | `8` | no |
 | topic\_name | Topic template name to create in the Event Grid namespace | `string` | `"default"` | no |
 

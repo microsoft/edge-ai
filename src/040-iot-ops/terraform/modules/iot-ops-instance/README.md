@@ -47,7 +47,7 @@ Deploys an AIO instance.
 | mqtt\_broker\_config | n/a | ```object({ brokerListenerServiceName = string brokerListenerPort = number serviceAccountAudience = string frontendReplicas = number frontendWorkers = number backendRedundancyFactor = number backendWorkers = number backendPartitions = number memoryProfile = string serviceType = string })``` | n/a | yes |
 | operations\_config | n/a | ```object({ namespace = string kubernetesDistro = string version = string train = string agentOperationTimeoutInMinutes = number })``` | n/a | yes |
 | platform\_cluster\_extension\_id | The resource ID of the AIO Platform cluster extension | `string` | n/a | yes |
-| resource\_group\_id | ID of the resource group to create resources in | `string` | n/a | yes |
+| resource\_group\_id | The ID for the Resource Group for the resources. | `string` | n/a | yes |
 | schema\_registry\_id | The resource ID of the schema registry for Azure IoT Operations instance | `string` | n/a | yes |
 | secret\_store\_cluster\_extension\_id | The resource ID of the Secret Store cluster extension | `string` | n/a | yes |
 | trust\_source | Trust source must be one of 'SelfSigned' or 'CustomerManaged'. Defaults to SelfSigned. | `string` | `"SelfSigned"` | no |

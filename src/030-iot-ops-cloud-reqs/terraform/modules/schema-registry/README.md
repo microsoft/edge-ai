@@ -34,8 +34,8 @@ Deploys a storage account and schema registry to be used for Azure IoT Operation
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | location | Location for all resources in this module | `string` | n/a | yes |
-| resource\_group\_name | Name of the pre-existing resource group in which to create resources | `string` | n/a | yes |
-| resource\_prefix | Prefix for the registry and registry namespace created in this module | `string` | n/a | yes |
+| resource\_group\_name | The name for the resource group. | `string` | n/a | yes |
+| resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
 | storage\_account | Storage account name, tier and replication\_type for the Storage Account to be created. Defaults to a randomly generated name, "Standard" tier and "LRS" replication\_type | ```object({ name = string tier = string replication_type = string })``` | ```{ "name": "", "replication_type": "LRS", "tier": "Standard" }``` | no |
 
 ## Outputs

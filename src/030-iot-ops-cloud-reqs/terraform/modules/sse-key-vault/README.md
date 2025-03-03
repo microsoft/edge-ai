@@ -28,7 +28,7 @@ Create or use and existing a Key Vault for Secret Sync Extension
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | location | Location for all resources in this module | `string` | n/a | yes |
-| resource\_group\_name | Name of the pre-existing resource group in which to create resources | `string` | n/a | yes |
+| resource\_group\_name | The name for the resource group. | `string` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
 
 ## Outputs
