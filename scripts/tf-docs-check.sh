@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
 # This script checks if terraform-docs is installed and then
-# runs the ./src/update-all-terraform-docs.sh script. It
+# runs the ./update-all-terraform-docs.sh script. It
 # returns a boolean value to indicate if README.md files
 # have changed after running the auto-docs-gen. The intent
 # is that the build/ci system calls this script and contributors
-# would call the ./src/update-all-terraform-docs.sh script
+# would call the ./update-all-terraform-docs.sh script
 # directly.
 #
 # Usage: ./tf-docs-check.sh
