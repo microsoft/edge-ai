@@ -1,54 +1,45 @@
 # Blueprints
 
-__Blueprints__ are the IaC composition mechanism for this repository. They
-provide a way to bring complete end-to-end solutions to life easily, and
-can be extended, modified, or layered to build up and deploy complex multi-stage
-solutions.
+## Overview
+
+Blueprints are the Infrastructure as Code (IaC) composition mechanism for this repository. They provide ready-to-deploy end-to-end solutions that showcase how to combine individual components into complete edge computing solutions. Blueprints can be deployed as-is, extended, modified, or layered to build complex multi-stage solutions that meet your specific requirements.
 
 ## Available Blueprints
 
-- [Full Single Cluster install](./terraform/full-single-cluster/)
-- [CNCF Cluster Script](./terraform/only-output-cncf-cluster-script/)
-- more coming soon ...
+| Blueprint                                                                | Description                                                                                  |
+|--------------------------------------------------------------------------|----------------------------------------------------------------------------------------------|
+| [Full Single Cluster](./terraform/full-single-cluster/)                  | Complete deployment of Azure IoT Operations on a single-node, Arc-enabled Kubernetes cluster |
+| [CNCF Cluster Script Only](./terraform/only-output-cncf-cluster-script/) | Generates scripts for cluster creation without deploying resources                           |
+| *More coming soon...*                                                    |                                                                                              |
 
 ## Prerequisites
 
 - [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest)
 - An Azure subscription
 - [Visual Studio Code](https://code.visualstudio.com/)
+- [Terraform](https://developer.hashicorp.com/terraform/install)
 - A Linux-based development environment or a [Windows system with WSL](https://code.visualstudio.com/docs/remote/wsl)
 
-> NOTE: We highly suggest using [this project's integrated dev container](./.devcontainer/README.md) to get started quickly particularly with Windows-bases systems.
+> **NOTE**: We highly recommend using [this project's integrated dev container](../.devcontainer/README.md) to get started quickly, particularly with Windows-based systems.
 
-Login to Azure CLI using the below command:
-
-```sh
-# Login to Azure CLI, optionally specify the tenant-id
-az login # --tenant <tenant-id>
-```
-
-### Terraform - Prerequisites
-
-- [Terraform](https://developer.hashicorp.com/terraform/install)
-
-## Terraform - Getting Started
+## Getting Started with Terraform Blueprints
 
 1. Login to Azure CLI using the below command:
 
     ```sh
-    # Optionally, specify the tenant-id or tenant login
-    az login # --tenant <tenant>.onmicrosoft.com
+    # Login to Azure CLI, optionally specify the tenant-id
+    az login # --tenant <tenant-id>
     ```
 
-2. cd into the `blueprints/terraform/<deployment>` directory
+2. Navigate to your chosen blueprint directory:
 
    ```sh
-   cd ./terraform/ful-single-cluster
+   cd ./terraform/full-single-cluster
    ```
 
-3. Set up required env vars:
+3. Set up required environment variables:
 
-   - __ARM_SUBSCRIPTION_ID__ -- The Azure Subscription ID target for this deployment (required to be set for the Terraform tasks below)
+   - **ARM_SUBSCRIPTION_ID** -- The Azure Subscription ID target for this deployment (required to be set for the Terraform tasks below)
 
    ```sh
    # Dynamically get the Subscription ID or manually get and pass to ARM_SUBSCRIPTION_ID
@@ -56,7 +47,7 @@ az login # --tenant <tenant-id>
    export ARM_SUBSCRIPTION_ID="$current_subscription_id"
    ```
 
-4. Create a `terraform.tfvars` file with at least the following minimum configuration settings:
+4. Create a `terraform.tfvars` file with the following minimum configuration:
 
    ```hcl
    # Required, environment hosting resource: "dev", "prod", "test", etc...
@@ -69,21 +60,16 @@ az login # --tenant <tenant-id>
    instance        = "<instance>"
    ```
 
-   For additional variables to configure, refer to the `variables.tf` or any of the `variables.*.tf` files located
-   in the `terraform` directory for the component.
+   > **NOTE**: To have Terraform automatically use your variables, you can name your tfvars file `terraform.auto.tfvars`. Terraform will use variables from any `*.auto.tfvars` files located in the same deployment folder.
 
-   > [!NOTE]: To have Terraform automatically use your variables you can name your tfvars file `terraform.auto.tfvars`.
-   > Terraform will use variables from any `*.auto.tfvars` files located in the same deployment folder.
-
-5. Initialize and apply terraform
+5. Initialize and apply Terraform:
 
    ```sh
    # Pulls down providers and modules, initializes state and backend
-   # Use '-update -reconfigure' if provider or backend updates are required
-   terraform init # -update -reconfigure
+   terraform init # Use '-update -reconfigure' if provider or backend updates are required
 
-   # Review resource change list, then type 'y' enter to deploy, or, deploy with '-auto-approve'
-   terraform apply -var-file=terraform.tfvars # -auto-approve
+   # Review resource change list, then deploy
+   terraform apply -var-file=terraform.tfvars # Add '-auto-approve' to skip confirmation
    ```
 
-6. Wait patiently while your end-to-end solution deploys.
+6. Wait for the deployment to complete.
