@@ -44,11 +44,11 @@ Then, get started bootstrapping Arc-enabled AIO environments:
 2. [Install pre-requisites](./blueprints/README.md) or use [this project's integrated dev container](./.devcontainer/README.md).
 3. Login to the Azure Portal.
 4. From a terminal:
-   - `cd ./src/000-subscription`
-   - Run `./register-azure-providers.sh` to prepare your subscription
-   - Follow instructions in the [./src/005-onboarding-reqs README](./src/005-onboard-reqs/README.md)
-   - Deploy the IaC:
-     - Select a `full-*` _blueprint_ from the [blueprints](./blueprints/README.md) directory and follow deployment instructions located in the root blueprint folder.
+    - `cd ./src/000-subscription`
+    - Run `./register-azure-providers.sh <providers-file>` to prepare your subscription
+    - Follow instructions in the [./src/005-onboard-reqs README](./src/005-onboard-reqs/README.md)
+    - Deploy the IaC:
+      - Select a `full-*` _blueprint_ from the [blueprints](./blueprints/README.md) directory and follow deployment instructions located in the root blueprint folder.
 
 **Optionally**, this repository includes scripts to individually deploy each and every component. Follow the
 instructions located at [./src/README.md](./src/README.md) for details.
@@ -134,7 +134,7 @@ solution for your IaC. Feel free to pick and choose which components are needed 
 extend your project.
 
 For running the IaC to bootstrap environments, please refer to the [Getting Started](#getting-started)
-documentation. For using this repository and it's automation to have a complete CI/CD system for your
+documentation. For using this repository and its automation to have a complete CI/CD system for your
 IaC, please review the [build pipelines ReadMe](./.azdo/README.md) and reach out to the
 [Microsoft ISE Edge Computing Technical Domain team](mailto:ectd@microsoft.com) if you need support.
 
@@ -149,7 +149,7 @@ The Terraform, scripts, and documentation in this repository can provide you the
 - [Integrated support for "Bring-Your-Own" certificates](./src/040-iot-ops/terraform/README.md#create_resources) (and intermediate certificates) for intra-cluster TLS
 - [A robust, matrix'ed IaC build system](./azure-pipelines.yml) with integrated testing and validation, to ensure your IaC deploys as you expect it to
 - Auto-validation and auto-generation of Terraform Plans to support expedited CISO/Security/DevOps team approvals
-- [A library of common "Architectural Decision Records" (ARDs)](./docs/solution-adr-library/README.md), ready to be modified to document your solution's requirements and the decisions you've made along the way
+- [A library of common "Architectural Decision Records" (ADRs)](./docs/solution-adr-library/README.md), ready to be modified to document your solution's requirements and the decisions you've made along the way
 - [A library of technology papers](./docs/solution-technology-paper-library/README.md) to upskill your peers
 - [A well-stocked development container](./.devcontainer) for you to take the IaC for your "AI on the Edge Solutions" to production with confidence, repeatability, and reliability your organization deserves
 - [Blueprints](./blueprints) full scenario deployments that demonstrate how components are composed together
@@ -171,7 +171,7 @@ We recommend using the project's [dev container](./.devcontainer/README.md) for 
 
 Start orienting yourself with this repository by referring to [blueprints](./blueprints/README.md) for your first deployment.
 
-Pull requests made to the repository go through a through build process including linting, testing, and
+Pull requests made to the repository go through a thorough build process including linting, testing, and
 in some cases deployment validation. After raising a PR, the build process with begin evaluating your
 contribution. If errors arise from the build, please attend to them as soon as you can.
 
@@ -186,7 +186,7 @@ acceptance is performed via sign-off from 3/5ths of the project's leads: Technic
 Owner (Larry Lieberman), Technical Program Manager (Mack Renard), Consulting cross-domain Architect (Paul
 Bower), and Architect (Tim Park).
 
-ARDs move through a process that includes the following states:
+ADRs move through a process that includes the following states:
 
 - Draft - for all ADRs under development and in a drafting phase. May be committed to the main branch directly by project leads, but must be done via branches for community members
 - Proposed - for all ADRs that have been reviewed by the ADR sign-off team (project leads), this phase indicates the ADR is now open for discussion amongst the broad project community for feedback.
