@@ -20,9 +20,7 @@ Blueprints are the Infrastructure as Code (IaC) composition mechanism for this r
 - [Terraform](https://developer.hashicorp.com/terraform/install)
 - A Linux-based development environment or a [Windows system with WSL](https://code.visualstudio.com/docs/remote/wsl)
 
-> **NOTE**: We highly recommend using [this project's integrated dev container](../.devcontainer/README.md) to get started quickly, particularly with Windows-based systems.
-
-## Getting Started with Terraform Blueprints
+> NOTE: We highly suggest using [this project's integrated dev container](./.devcontainer/README.md) to get started quickly particularly with Windows-based systems.
 
 1. Login to Azure CLI using the below command:
 
