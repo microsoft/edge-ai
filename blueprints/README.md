@@ -14,13 +14,13 @@ Blueprints are the Infrastructure as Code (IaC) composition mechanism for this r
 
 ## Prerequisites
 
+**IMPORTANT:** We highly suggest using [this project's integrated dev container](./.devcontainer/README.md) to get started quickly with Windows-based systems and also works well with nix-compatible environments.
+
 - [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest)
 - An Azure subscription
 - [Visual Studio Code](https://code.visualstudio.com/)
 - [Terraform](https://developer.hashicorp.com/terraform/install)
 - A Linux-based development environment or a [Windows system with WSL](https://code.visualstudio.com/docs/remote/wsl)
-
-> NOTE: We highly suggest using [this project's integrated dev container](./.devcontainer/README.md) to get started quickly particularly with Windows-based systems.
 
 1. Login to Azure CLI using the below command:
 
@@ -70,4 +70,8 @@ Blueprints are the Infrastructure as Code (IaC) composition mechanism for this r
    terraform apply -var-file=terraform.tfvars # Add '-auto-approve' to skip confirmation
    ```
 
-6. Wait for the deployment to complete.
+6. Wait for the deployments to complete with the message:
+
+   ```txt
+   Apply complete! Resources: *** added, *** changed, *** destroyed.
+   ```
