@@ -73,7 +73,7 @@
 	"postCreateCommand": {
 		//"pip": "pip install --upgrade pip && pip3 install -r requirements.txt",
 		"npm": "npm install -g npm && npm ci",
-		"gcm": "curl -sSLO $(curl -sSL https://api.github.com/repos/git-ecosystem/git-credential-manager/releases/latest | jq --compact-output --raw-output '.assets[] | select( .name | test(\"linux_\") and (test(\"symbols\") | not)) | select( .name | endswith(\".deb\") ).browser_download_url') && sudo dpkg -i gcm-linux_*.deb && rm --force gcm-linux_*.deb"
+		"gcm": "bash -c 'set -e; ARCH=$(dpkg --print-architecture); echo \"Configuring Git authentication...\"; if [ \"$ARCH\" = \"arm64\" ]; then echo \"M1/ARM64 architecture detected - configuring Git to use VS Code authentication\"; git config --global credential.helper \"$HOME/.vscode-server/bin/*/node /usr/local/share/vscode-server/resources/app/extensions/git/dist/askpass.js\"; else echo \"Installing Git Credential Manager for $ARCH...\"; GCM_DEB_URL=$(curl -sSL https://api.github.com/repos/git-ecosystem/git-credential-manager/releases/latest | grep -o \"https://github.com.*linux_${ARCH}.*.deb\" | grep -v symbols | head -n 1); if [ -z \"$GCM_DEB_URL\" ]; then echo \"Could not find GCM package for $ARCH. Configuring VS Code auth helper instead.\"; git config --global credential.helper \"$HOME/.vscode-server/bin/*/node /usr/local/share/vscode-server/resources/app/extensions/git/dist/askpass.js\"; else echo \"Installing from $GCM_DEB_URL\"; curl -sSLO \"$GCM_DEB_URL\" && sudo dpkg -i gcm-linux_*.deb && rm -f gcm-linux_*.deb && git-credential-manager configure; fi; fi'"
 	},
 	// Use 'postCreateCommand' to run commands after the container is created.
 	// "postCreateCommand": "uname -a",
