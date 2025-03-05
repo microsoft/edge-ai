@@ -3,6 +3,7 @@
 ## Overview
 
 This blueprint provides a complete end-to-end deployment of Azure IoT Operations (AIO) on a single-node, Arc-enabled Kubernetes cluster. It deploys all necessary components from VM creation to AIO installation, resulting in a fully functional edge computing environment that integrates with Azure cloud services.
+Please follow general blueprint recommendations from blueprints [README.md](../../README.md), two levels above.
 
 ## Architecture
 
@@ -73,4 +74,38 @@ After successful deployment:
 
    ```bash
    kubectl get pods -n azure-iot-operations
+   ```
+
+## Deployment troubleshooting
+
+Deployment duration is expected to be reasonable, although actual completion times may vary.
+Make sure that you don't see the following message for more than ~10 minutes, messages that persist too long indicate a stuck deployment operation:
+
+   ```txt
+   module.iot_ops_install.module.apply_scripts_post_init[0].terraform_data.apply_scripts: Still creating... [2h17m9s elapsed]
+   ```
+
+After 1-2 hours, it may fail with an error message like this:
+
+   ```txt
+   │   24:   provisioner "local-exec" {
+   │
+   │ Error running command 'source ../../../src/040-iot-ops/terraform/modules/apply-scripts/../../../scripts/init-scripts.sh &&
+   │ ../../../src/040-iot-ops/terraform/modules/apply-scripts/../../../scripts/apply-otel-collector.sh': exit status 1. Output: Starting 'az
+   │ connectedk8s proxy'
+   │ Proxy PID: 79335, PGID: 79335
+   ```
+
+This particular error occurs because the Arc cluster is in an inappropriate state.
+In this case, you can perform the following steps to recover and rerun `terraform apply` after that:
+
+- List terraform resources with the command `terraform state list` and remove specific resources using `terraform state rm <resource-id>`
+- Manually remove the resource group with all its included resources
+
+The following messages are considered normal during deployment:
+
+   ```txt
+   module.cncf_cluster_install.azurerm_virtual_machine_extension.linux_setup[0]: Still creating... [7m6s elapsed]
+   module.iot_ops_install.module.iot_ops_instance.azurerm_arc_kubernetes_cluster_extension.iot_operations: Still creating... [3m20s elapsed]
+   module.iot_ops_install.module.iot_ops_instance.azapi_resource.instance: Still creating... [2m10s elapsed]
    ```
