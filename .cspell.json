@@ -28,6 +28,7 @@
 		"*megalinter_file_names_cspell.txt"
 	],
 	"words": [
+		"AAOS",
 		"acsa",
 		"ACSA",
 		"AKRI",
@@ -54,9 +55,11 @@
 		"eventgrid",
 		"Eventhouse",
 		"eventhub",
+		"FAISS",
 		"FIDAP",
 		"gimsvc",
 		"Graeve",
+		"HNSW",
 		"hotfixes",
 		"Infeed",
 		"interoperation",
@@ -75,6 +78,7 @@
 		"OWASP",
 		"oxsecurity",
 		"PUBACK",
+		"Qdrant",
 		"RAGRS",
 		"RAGZRS",
 		"recordedtime",
