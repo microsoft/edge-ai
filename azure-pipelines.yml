@@ -178,7 +178,7 @@ stages:
           - checkout: self
             persistCredentials: true
             path: $(BRANCH_REPO_FOLDER)
-          - checkout: git://IaC for the Edge/IaC for the Edge@refs/heads/wiki
+          - checkout: git://edge-ai/edge-ai@refs/heads/wiki
             persistCredentials: true
             path: $(WIKI_REPO_FOLDER)
 
