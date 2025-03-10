@@ -39,6 +39,7 @@ Deploys a Linux VM with an Arc-connected K3s cluster
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | aio\_resource\_group | n/a | ```object({ name = string })``` | n/a | yes |
+| environment | Environment for all resources in this module: dev, test, or prod | `string` | n/a | yes |
 | location | Location for all resources in this module | `string` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
 | arc\_onboarding\_user\_assigned\_identity | n/a | ```object({ id = string })``` | `null` | no |

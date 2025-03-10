@@ -11,7 +11,7 @@ data "azurerm_resource_group" "aio" {
 }
 
 data "azurerm_virtual_machine" "aio" {
-  name                = "${var.resource_prefix}-aio-edge-${var.instance}-vm"
+  name                = "vm-${var.resource_prefix}-${var.environment}-aio-${var.instance}"
   resource_group_name = data.azurerm_resource_group.aio.name
 }
 
@@ -19,6 +19,7 @@ module "cncf_cluster" {
   source = "../../terraform"
 
   environment          = var.environment
+  instance             = var.instance
   resource_prefix      = var.resource_prefix
   custom_locations_oid = var.custom_locations_oid
   aio_resource_group   = data.azurerm_resource_group.aio

@@ -7,7 +7,7 @@
  */
 
 locals {
-  arc_resource_name    = "${var.resource_prefix}-arc"
+  arc_resource_name    = "arc-${var.resource_prefix}-${var.environment}-${var.instance}"
   custom_locations_oid = try(coalesce(var.custom_locations_oid), data.azuread_service_principal.custom_locations[0].object_id, "")
   current_user_oid     = var.should_add_current_user_cluster_admin ? data.azurerm_client_config.current.object_id : null
   env_var = {
@@ -81,7 +81,7 @@ data "azapi_resource" "arc_connected_cluster" {
 
   type      = "Microsoft.Kubernetes/connectedClusters@2024-01-01"
   parent_id = var.aio_resource_group.id
-  name      = "${var.resource_prefix}-arc"
+  name      = "arc-${var.resource_prefix}-${var.environment}-${var.instance}"
 
   depends_on = [azurerm_virtual_machine_extension.linux_setup]
 

@@ -15,7 +15,7 @@ param shouldCreateStorageAccount bool = true
 param storageAccountResourceGroupName string = resourceGroup().name
 
 @description('The name for the Storage Account.')
-param storageAccountName string = 'sa${uniqueString(resourceGroup().id)}'
+param storageAccountName string = 'st${uniqueString(resourceGroup().id)}'
 
 @description('The settings for the new Storage Account.')
 param storageAccountSettings types.StorageAccountSettings = {
@@ -31,10 +31,10 @@ param schemaContainerName string = 'schemas'
 */
 
 @description('The name for the ADR Schema Registry.')
-param schemaRegistryName string = '${common.resourcePrefix}-registry'
+param schemaRegistryName string = 'sch-reg-${common.resourcePrefix}-${common.environment}-${common.instance}'
 
 @description('The ADLS Gen2 namespace for the ADR Schema Registry.')
-param schemaRegistryNamespace string = '${common.resourcePrefix}-registry-ns'
+param schemaRegistryNamespace string = 'sch-reg-ns-${common.resourcePrefix}-${common.environment}-${common.instance}'
 
 /*
   Key Vault Parameters
@@ -44,7 +44,7 @@ param schemaRegistryNamespace string = '${common.resourcePrefix}-registry-ns'
 param shouldCreateKeyVault bool = true
 
 @description('The name of the Key Vault.')
-param keyVaultName string = '${common.resourcePrefix}-kv'
+param keyVaultName string = 'kv-${common.resourcePrefix}-${common.environment}-${common.instance}'
 
 @description('The name for the Resource Group for the Key Vault.')
 param keyVaultResourceGroupName string = resourceGroup().name

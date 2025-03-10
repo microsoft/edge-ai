@@ -11,14 +11,14 @@ data "azurerm_resource_group" "aio" {
 }
 
 data "azurerm_user_assigned_identity" "aio" {
-  name                = "${var.resource_prefix}-aio-uami"
+  name                = "uami-${var.resource_prefix}-${var.environment}-aio-${var.instance}"
   resource_group_name = data.azurerm_resource_group.aio.name
 }
 
 data "azapi_resource" "aio_instance" {
   type      = "Microsoft.IoTOperations/instances@2024-11-01"
   parent_id = data.azurerm_resource_group.aio.id
-  name      = "${var.resource_prefix}-arc-ops-instance"
+  name      = "arc-${var.resource_prefix}-${var.environment}-${var.instance}-ops-instance"
 
   response_export_values = ["name", "id"]
 }
@@ -26,7 +26,7 @@ data "azapi_resource" "aio_instance" {
 data "azapi_resource" "aio_custom_locations" {
   type      = "Microsoft.ExtendedLocation/customLocations@2021-08-31-preview"
   parent_id = data.azurerm_resource_group.aio.id
-  name      = "${var.resource_prefix}-arc-cl"
+  name      = "arc-${var.resource_prefix}-${var.environment}-${var.instance}-cl"
 
   response_export_values = ["name", "id"]
 }
@@ -43,6 +43,8 @@ module "messaging" {
   source = "../../terraform"
 
   resource_prefix            = var.resource_prefix
+  environment                = var.environment
+  instance                   = var.instance
   aio_resource_group         = data.azurerm_resource_group.aio
   aio_instance               = data.azapi_resource.aio_instance.output
   aio_custom_locations       = data.azapi_resource.aio_custom_locations.output

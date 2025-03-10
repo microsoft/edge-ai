@@ -31,6 +31,8 @@ Create User Assigned Managed Identities for Azure IoT Operations and assign role
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| environment | Environment for all resources in this module: dev, test, or prod | `string` | n/a | yes |
+| instance | Instance identifier for naming resources: 001, 002, etc... | `string` | n/a | yes |
 | key\_vault\_id | ID of the Key Vault to use by the Secret Sync Extension | `string` | n/a | yes |
 | location | Location for all resources in this module | `string` | n/a | yes |
 | resource\_group\_name | The name for the resource group. | `string` | n/a | yes |

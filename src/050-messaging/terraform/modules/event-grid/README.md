@@ -30,6 +30,8 @@ Create a new Event Grid namespace and namespace topic and assign the AIO instanc
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | aio\_uami\_principal\_id | Principal ID of the User Assigned Managed Identity for the Azure IoT Operations instance | `string` | n/a | yes |
+| environment | Environment for all resources in this module: dev, test, or prod | `string` | n/a | yes |
+| instance | Instance identifier for naming resources: 001, 002, etc... | `string` | n/a | yes |
 | location | Location for all resources in this module | `string` | n/a | yes |
 | resource\_group\_name | The name for the resource group. | `string` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |

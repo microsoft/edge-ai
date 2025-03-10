@@ -11,24 +11,24 @@ data "azurerm_resource_group" "aio" {
 }
 
 data "azurerm_key_vault" "sse" {
-  name                = "${var.resource_prefix}-kv"
+  name                = "kv-${var.resource_prefix}-${var.environment}-${var.instance}"
   resource_group_name = data.azurerm_resource_group.aio.name
 }
 
 data "azurerm_user_assigned_identity" "sse" {
-  name                = "${var.resource_prefix}-sse-uami"
+  name                = "uami-${var.resource_prefix}-${var.environment}-sse-${var.instance}"
   resource_group_name = data.azurerm_resource_group.aio.name
 }
 
 data "azurerm_user_assigned_identity" "aio" {
-  name                = "${var.resource_prefix}-aio-uami"
+  name                = "uami-${var.resource_prefix}-${var.environment}-aio-${var.instance}"
   resource_group_name = data.azurerm_resource_group.aio.name
 }
 
 data "azapi_resource" "schema_registry" {
   type      = "Microsoft.DeviceRegistry/schemaRegistries@2024-09-01-preview"
   parent_id = data.azurerm_resource_group.aio.id
-  name      = "${var.resource_prefix}-registry"
+  name      = "sch-reg-${var.resource_prefix}-${var.environment}-${var.instance}"
 
   response_export_values = ["name", "id"]
 }
@@ -36,7 +36,7 @@ data "azapi_resource" "schema_registry" {
 data "azapi_resource" "arc_connected_cluster" {
   type      = "Microsoft.Kubernetes/connectedClusters@2024-01-01"
   parent_id = data.azurerm_resource_group.aio.id
-  name      = "${var.resource_prefix}-arc"
+  name      = "arc-${var.resource_prefix}-${var.environment}-${var.instance}"
 
   response_export_values = ["name", "id", "location"]
 }

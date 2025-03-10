@@ -9,7 +9,7 @@ resource sseUami 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' =
 }
 
 resource aioUami 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
-  name: '${common.resourcePrefix}-aio-uami'
+  name: 'id-${common.resourcePrefix}-${common.environment}-aio-${common.instance}'
   location: common.location
 }
 

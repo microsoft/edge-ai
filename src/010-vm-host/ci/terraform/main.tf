@@ -3,7 +3,7 @@
 resource "terraform_data" "defer" {
   input = {
     resource_group_name                       = "rg-${var.resource_prefix}-${var.environment}-${var.instance}"
-    arc_onboarding_user_managed_identity_name = "${var.resource_prefix}-arc-aio-mi"
+    arc_onboarding_user_managed_identity_name = "id-${var.resource_prefix}-${var.environment}-arc-aio-${var.instance}"
   }
 }
 
@@ -21,6 +21,8 @@ module "vm_host" {
 
   resource_prefix                       = var.resource_prefix
   location                              = var.location
+  environment                           = var.environment
+  instance                              = var.instance
   aio_resource_group                    = data.azurerm_resource_group.aio
   arc_onboarding_user_assigned_identity = data.azurerm_user_assigned_identity.arc_onboarding
 }

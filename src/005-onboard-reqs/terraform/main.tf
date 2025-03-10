@@ -35,6 +35,8 @@ module "onboard_identity" {
   location              = var.location
   resource_group_name   = local.resource_group_name
   resource_prefix       = var.resource_prefix
+  environment           = var.environment
+  instance              = var.instance
   resource_group_id     = local.resource_group_id
   onboard_identity_type = var.onboard_identity_type
 }

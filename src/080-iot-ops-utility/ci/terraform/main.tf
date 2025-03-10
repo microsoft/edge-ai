@@ -28,18 +28,18 @@ data "azurerm_dashboard_grafana" "aio" {
 data "azapi_resource" "arc_connected_cluster" {
   type      = "Microsoft.Kubernetes/connectedClusters@2024-01-01"
   parent_id = data.azurerm_resource_group.aio.id
-  name      = "${var.resource_prefix}-arc"
+  name      = "arc-${var.resource_prefix}-${var.environment}-${var.instance}"
 
   response_export_values = ["name", "id", "location"]
 }
 
 data "azurerm_monitor_data_collection_rule" "aio_metrics" {
-  name                = "dcr-metrics-${var.resource_prefix}-${var.environment}-${var.instance}"
+  name                = "dcr-${var.resource_prefix}-${var.environment}-metrics-${var.instance}"
   resource_group_name = data.azurerm_resource_group.aio.name
 }
 
 data "azurerm_monitor_data_collection_rule" "aio_logs" {
-  name                = "dcr-logs-${var.resource_prefix}-${var.environment}-${var.instance}"
+  name                = "dcr-${var.resource_prefix}-${var.environment}-logs-${var.instance}"
   resource_group_name = data.azurerm_resource_group.aio.name
 }
 

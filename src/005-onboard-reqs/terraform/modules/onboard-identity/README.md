@@ -33,6 +33,8 @@ Used with a hands-off deployment that will embed UAMI/SP
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| environment | Environment for all resources in this module: dev, test, or prod | `string` | n/a | yes |
+| instance | Instance identifier for naming resources: 001, 002, etc... | `string` | n/a | yes |
 | location | Location for all resources in this module | `string` | n/a | yes |
 | onboard\_identity\_type | Identity type to use for onboarding the cluster to Azure Arc.  Allowed values:  - uami - sp | `string` | n/a | yes |
 | resource\_group\_id | The ID for the Resource Group for the resources. | `string` | n/a | yes |

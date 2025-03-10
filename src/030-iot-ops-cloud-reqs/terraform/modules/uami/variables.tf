@@ -17,9 +17,19 @@ variable "resource_group_name" {
   }
 }
 
+variable "environment" {
+  type        = string
+  description = "Environment for all resources in this module: dev, test, or prod"
+}
+
 variable "resource_prefix" {
   type        = string
   description = "Prefix for all resources in this module"
+}
+
+variable "instance" {
+  type        = string
+  description = "Instance identifier for naming resources: 001, 002, etc..."
 }
 
 variable "key_vault_id" {

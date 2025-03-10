@@ -15,6 +15,7 @@ run "create_default_configuration" {
 
   variables {
     resource_prefix            = run.setup_tests.resource_prefix
+    environment                = "test"
     aio_resource_group         = run.setup_tests.aio_resource_group
     aio_user_assigned_identity = run.setup_tests.aio_user_assigned_identity
     aio_custom_locations       = run.setup_tests.aio_custom_locations
@@ -28,6 +29,7 @@ run "create_non_default_configuration" {
 
   variables {
     resource_prefix            = run.setup_tests.resource_prefix
+    environment                = "test"
     aio_resource_group         = run.setup_tests.aio_resource_group
     aio_user_assigned_identity = run.setup_tests.aio_user_assigned_identity
     aio_custom_locations       = run.setup_tests.aio_custom_locations

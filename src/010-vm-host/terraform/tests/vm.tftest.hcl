@@ -16,6 +16,7 @@ run "create_default_vm" {
 
   variables {
     resource_prefix    = run.setup_tests.resource_prefix
+    environment        = "test"
     location           = "centralus"
     aio_resource_group = run.setup_tests.aio_resource_group
   }
@@ -39,6 +40,7 @@ run "create_non_default_vm_with_uami" {
   variables {
     resource_prefix                       = run.setup_tests.resource_prefix
     location                              = "centralus"
+    environment                           = "test"
     vm_username                           = "1234"
     vm_sku_size                           = "Standard_D8s_v3"
     aio_resource_group                    = run.setup_tests.aio_resource_group

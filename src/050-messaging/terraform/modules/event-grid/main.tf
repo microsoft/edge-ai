@@ -5,7 +5,7 @@
  */
 
 resource "azurerm_eventgrid_namespace" "aio_eg_ns" {
-  name                = "egns-${var.resource_prefix}-aio"
+  name                = "evgns-${var.resource_prefix}-${var.environment}-aio-${var.instance}"
   location            = var.location
   resource_group_name = var.resource_group_name
   sku                 = "Standard"
@@ -19,7 +19,7 @@ resource "azurerm_eventgrid_namespace" "aio_eg_ns" {
 resource "azapi_resource" "event_grid_namespace_topic_space" {
   type      = "Microsoft.EventGrid/namespaces/topicSpaces@2024-12-15-preview"
   parent_id = azurerm_eventgrid_namespace.aio_eg_ns.id
-  name      = "eg-topic-${var.resource_prefix}-aio"
+  name      = "evgts-${var.resource_prefix}-${var.environment}-aio-${var.instance}"
   body = {
     properties = {
       topicTemplates = [
