@@ -14,10 +14,10 @@ resource "random_string" "name" {
 }
 
 locals {
-  storage_account_name  = var.storage_account.name == "" ? "sa${random_string.name.result}" : var.storage_account.name
+  storage_account_name  = var.storage_account.name == "" ? "st${random_string.name.result}" : var.storage_account.name
   schema_container_name = "schemas"
-  registry_name         = "${var.resource_prefix}-registry"
-  registry_namespace    = "${var.resource_prefix}-registry-ns"
+  registry_name         = "sch-reg-${var.resource_prefix}-${var.environment}-${var.instance}"
+  registry_namespace    = "sch-reg-ns-${var.resource_prefix}-${var.environment}-${var.instance}"
 }
 
 resource "azurerm_storage_account" "schema_registry_store" {

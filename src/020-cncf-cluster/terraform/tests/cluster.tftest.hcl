@@ -26,6 +26,7 @@ run "create_non_default_cluster" {
   variables {
     resource_prefix                 = run.setup_tests.resource_prefix
     environment                     = "dev"
+    instance                        = "test"
     aio_resource_group              = run.setup_tests.aio_resource_group
     aio_virtual_machine             = run.setup_tests.aio_virtual_machine
     vm_username                     = "test"

@@ -15,3 +15,9 @@ variable "resource_prefix" {
     error_message = "Resource prefix must not be empty, must only contain alphanumeric characters and dashes. Must start with an alphabetic character."
   }
 }
+
+variable "instance" {
+  type        = string
+  description = "Instance identifier for naming resources: 001, 002, etc..."
+  default     = "001"
+}

@@ -20,13 +20,13 @@ data "azurerm_client_config" "current" {}
 resource "azurerm_user_assigned_identity" "arc_onboarding" {
   count               = local.enable_uami ? 1 : 0
   location            = var.location
-  name                = "${var.resource_prefix}-arc-aio-mi"
+  name                = "id-${var.resource_prefix}-${var.environment}-arc-aio-${var.instance}"
   resource_group_name = var.resource_group_name
 }
 
 resource "azuread_application" "aio_edge" {
   count        = local.enable_sp ? 1 : 0
-  display_name = "${var.resource_prefix}-arc-aio-sp"
+  display_name = "sp-${var.resource_prefix}-${var.environment}-arc-aio-${var.instance}"
   owners       = [data.azurerm_client_config.current.object_id]
 }
 

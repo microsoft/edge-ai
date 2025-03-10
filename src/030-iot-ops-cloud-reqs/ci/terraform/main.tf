@@ -14,5 +14,7 @@ module "iot_ops_cloud_reqs" {
   source = "../../terraform"
 
   resource_prefix    = var.resource_prefix
+  environment        = var.environment
+  instance           = var.instance
   aio_resource_group = data.azurerm_resource_group.aio
 }

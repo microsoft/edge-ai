@@ -27,6 +27,8 @@ Create or use and existing a Key Vault for Secret Sync Extension
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| environment | Environment for all resources in this module: dev, test, or prod | `string` | n/a | yes |
+| instance | Instance identifier for naming resources: 001, 002, etc... | `string` | n/a | yes |
 | location | Location for all resources in this module | `string` | n/a | yes |
 | resource\_group\_name | The name for the resource group. | `string` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |

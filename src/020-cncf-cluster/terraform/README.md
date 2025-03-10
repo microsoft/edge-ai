@@ -47,6 +47,7 @@ install extensions for cluster connect and custom locations.
 | cluster\_admin\_oid | The Object ID that will be given cluster-admin permissions with the new cluster. (Otherwise, current logged in user if 'should\_add\_current\_user\_cluster\_admin=true') | `string` | `null` | no |
 | custom\_locations\_oid | The object id of the Custom Locations Entra ID application for your tenant. If none is provided, the script will attempt to retrieve this requiring 'Application.Read.All' or 'Directory.Read.All' permissions. ```sh az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv``` | `string` | `null` | no |
 | enable\_arc\_auto\_upgrade | Enable or disable auto-upgrades of Arc agents. (Otherwise, 'false' for 'env=prod' else 'true' for all other envs). | `bool` | `null` | no |
+| instance | Instance identifier for naming resources: 001, 002, etc... | `string` | `"001"` | no |
 | script\_output\_filepath | The location of where to write out the script file. (Otherwise, '{path.root}/out') | `string` | `null` | no |
 | should\_add\_current\_user\_cluster\_admin | Gives the current logged in user cluster-admin permissions with the new cluster. | `bool` | `true` | no |
 | should\_deploy\_script\_to\_vm | Should deploy the script to an Azure VM assuming that it exists. | `bool` | `true` | no |

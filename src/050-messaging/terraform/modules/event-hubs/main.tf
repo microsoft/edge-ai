@@ -5,7 +5,7 @@
  */
 
 resource "azurerm_eventhub_namespace" "destination_event_hub_namespace" {
-  name                = "evhns-${var.resource_prefix}-aio"
+  name                = "evhns-${var.resource_prefix}-${var.environment}-aio-${var.instance}"
   location            = var.location
   resource_group_name = var.resource_group_name
   sku                 = "Standard" # Basic is not supported for Kafka protocol required for dataflows
@@ -13,7 +13,7 @@ resource "azurerm_eventhub_namespace" "destination_event_hub_namespace" {
 }
 
 resource "azurerm_eventhub" "destination_eh" {
-  name              = "evh-${var.resource_prefix}-aio"
+  name              = "evh-${var.resource_prefix}-${var.environment}-aio-${var.instance}"
   namespace_id      = azurerm_eventhub_namespace.destination_event_hub_namespace.id
   partition_count   = var.partition_count
   message_retention = var.message_retention

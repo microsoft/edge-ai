@@ -31,7 +31,9 @@ Azure IoT Operations Dataflow to send and receive data from edge to cloud.
 | aio\_instance | n/a | ```object({ id = string })``` | n/a | yes |
 | aio\_resource\_group | n/a | ```object({ name = string id = string location = string })``` | n/a | yes |
 | aio\_user\_assigned\_identity | n/a | ```object({ id = string principal_id = string tenant_id = string client_id = string })``` | n/a | yes |
+| environment | Environment for all resources in this module: dev, test, or prod | `string` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
 | asset\_name | The name of the Azure IoT Operations Device Registry Asset resource to send its data from edge to cloud. | `string` | `"oven"` | no |
+| instance | Instance identifier for naming resources: 001, 002, etc... | `string` | `"001"` | no |
 <!-- markdown-table-prettify-ignore-end -->
 <!-- END_TF_DOCS -->

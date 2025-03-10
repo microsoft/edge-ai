@@ -28,7 +28,9 @@ access to resources.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | aio\_resource\_group | n/a | ```object({ name = string location = string })``` | n/a | yes |
+| environment | Environment for all resources in this module: dev, test, or prod | `string` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
+| instance | Instance identifier for naming resources: 001, 002, etc... | `string` | `"001"` | no |
 | sse\_key\_vault | Azure Key Vault ID to use with Secret Sync Extension. | ```object({ id = string })``` | `null` | no |
 
 ## Outputs

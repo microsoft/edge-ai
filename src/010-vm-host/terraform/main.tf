@@ -5,7 +5,7 @@
  */
 
 locals {
-  label_prefix = "${var.resource_prefix}-aio-edge-${var.instance}"
+  label_prefix = "${var.resource_prefix}-${var.environment}-aio-${var.instance}"
   vm_username  = coalesce(var.vm_username, var.resource_prefix)
 }
 
@@ -17,17 +17,17 @@ resource "azurerm_public_ip" "aio_edge" {
   location            = var.location
   allocation_method   = "Static"
   sku                 = "Basic"
-  domain_name_label   = "a-${local.label_prefix}-dns"
+  domain_name_label   = "dns-${local.label_prefix}"
 }
 
 resource "azurerm_network_security_group" "aio_edge" {
-  name                = "${local.label_prefix}-nsg"
+  name                = "nsg-${local.label_prefix}"
   resource_group_name = var.aio_resource_group.name
   location            = var.location
 }
 
 resource "azurerm_virtual_network" "aio_edge" {
-  name                = "${local.label_prefix}-vnet"
+  name                = "vnet-${local.label_prefix}"
   location            = var.location
   resource_group_name = var.aio_resource_group.name
   address_space       = ["10.0.0.0/16"]
@@ -36,7 +36,7 @@ resource "azurerm_virtual_network" "aio_edge" {
 resource "azurerm_subnet" "aio_edge" {
   resource_group_name  = var.aio_resource_group.name
   virtual_network_name = azurerm_virtual_network.aio_edge.name
-  name                 = "${local.label_prefix}-subnet"
+  name                 = "subnet-${local.label_prefix}"
   address_prefixes     = ["10.0.1.0/24"]
 }
 
@@ -46,12 +46,12 @@ resource "azurerm_subnet_network_security_group_association" "aio_edge" {
 }
 
 resource "azurerm_network_interface" "aio_edge" {
-  name                = "${local.label_prefix}-nic"
+  name                = "nic-${local.label_prefix}"
   location            = var.location
   resource_group_name = var.aio_resource_group.name
 
   ip_configuration {
-    name                          = "${local.label_prefix}-ipconfig"
+    name                          = "ipconfig-${local.label_prefix}"
     private_ip_address_allocation = "Dynamic"
     public_ip_address_id          = azurerm_public_ip.aio_edge.id
     subnet_id                     = azurerm_subnet.aio_edge.id
@@ -69,7 +69,7 @@ resource "local_sensitive_file" "ssh" {
 }
 
 resource "azurerm_linux_virtual_machine" "aio_edge" {
-  name                            = "${local.label_prefix}-vm"
+  name                            = "vm-${local.label_prefix}"
   location                        = var.location
   resource_group_name             = var.aio_resource_group.name
   admin_username                  = local.vm_username
