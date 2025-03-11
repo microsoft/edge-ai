@@ -39,7 +39,7 @@ stages:
 
               cd Iac-for-the-Edge
               git remote remove origin
-              git remote add origin https://dev.azure.com/ai-at-the-edge-flagship-accelerator/_git/IaC%20for%20the%20Edge
+              git remote add origin $(azdoRepoUrl)
               git -c http.extraheader="AUTHORIZATION: bearer $(System.AccessToken)" fetch origin main
             displayName: "Pull from GitHub"
             name: githubPull
