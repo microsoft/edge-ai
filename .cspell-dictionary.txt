@@ -1367,3 +1367,9 @@ zipkin
 zonemap
 zref
 zscaler
+Qwen
+Nemotron
+genai
+amsr
+Huggingface
+Llamacpp
