@@ -94,54 +94,16 @@ stages:
             inputs:
               failOnAlert: true
 
-      # Run MegaLinter to detect linting and security issues
-      - job: MegaLinter
-        # Declare the job depends on the DependencyScan job to get the agent name
-        # set the agent name as a demand to ensure the same agent runs all tasks
-        dependsOn: DependencyScan
-        pool:
-          name: ai-on-edge-managed-pool
-          vmImage: ubuntu-latest
-          # Make a demand for the data drive on this agent to ensure
-          # we can pull megalinter from the cache
-          demands:
-            - WorkFolder -equals /mnt/storage/sdc/
-
-        steps:
-          # Checkout repo
-          - checkout: self
-            clean: true
-
-          # Attempt to restore MegaLinter from the cache otherwise pull it
-          - script: |
-
-              # Check if the cache directory exists
-              if [ -d "$(MegalinterCachePath)" ]; then
-                # Check if the cache file exists
-                if [ -f "$(MegalinterCachePath)/megalinterv8-cache.tar" ]; then
-                  echo "Loading MegaLinter from cache..."
-                  docker load -i $(MegalinterCachePath)/megalinterv8-cache.tar
-                # If the cache file does not exist, pull the MegaLinter image
-                else
-                  echo "Megalinter cache not found. Pulling MegaLinter from Docker registry..."
-                  docker pull oxsecurity/megalinter:v8
-                fi
-              else
-                echo "Cache directory $(MegalinterCachePath) does not exist. Pulling MegaLinter from Docker registry..."
-                docker pull oxsecurity/megalinter:v8
-              fi
-            displayName: MegaLinter Cache Restore
-            condition: not(canceled())
-
-          # Run MegaLinter - for the main branch the reporter needs to be disabled
-          - script: |
-              docker run -v $(System.DefaultWorkingDirectory):/tmp/lint \
-                --env-file <(env | grep -e SYSTEM_ -e BUILD_ -e TF_ -e AGENT_) \
-                -e SYSTEM_ACCESSTOKEN=$(System.AccessToken) \
-                -e GIT_AUTHORIZATION_BEARER=$(System.AccessToken) \
-                -e AZURE_COMMENT_REPORTER='false' \
-                oxsecurity/megalinter:v8
-            displayName: Run MegaLinter
+      # Use the MegaLinter template to run MeagaLinter
+      # This job will only run if the DependencyScan job passes.
+      - template: .azdo/megalinter-template.yml
+        parameters:
+          dependsOn: DependencyScan
+          displayName: "Run MegaLinter"
+          condition: succeeded()
+          megalinterCachePath: $(MegalinterCachePath)
+          # for main do not report results as there's no PR to report to
+          enableAzureReporter: false
 
       # Job to update the wiki documentation with the latest changes
       # from the main repository for all md files in the docs directory
@@ -263,72 +225,18 @@ stages:
             inputs:
               failOnAlert: true
 
-
-      # Run MegaLinter to detect linting and security issues
-      - job: MegaLinter
-        # This should also only run if the DependencyScan job passes
-        dependsOn:
-          - DependencyScan
-        pool:
-          name: ai-on-edge-managed-pool
-          vmImage: ubuntu-latest
-          # Make a demand for the data drive on this agent to ensure
-          # we can pull megalinter from the cache
-          demands:
-            - WorkFolder -equals /mnt/storage/sdc/
-
-        steps:
-
-          # Checkout repo
-          - checkout: self
-            clean: true
-
-          # Attempt to restore MegaLinter from the cache otherwise pull it
-          - script: |
-
-              # Check if the cache directory exists
-              if [ -d "$(MegalinterCachePath)" ]; then
-                # Check if the cache file exists
-                if [ -f "$(MegalinterCachePath)/megalinterv8-cache.tar" ]; then
-                  echo "Loading MegaLinter from cache..."
-                  docker load -i $(MegalinterCachePath)/megalinterv8-cache.tar
-                else
-                  echo "Megalinter cache not found. Pulling MegaLinter from Docker registry and saving to cache..."
-                  docker pull oxsecurity/megalinter:v8
-                fi
-              # If the cache file does not exist, pull the MegaLinter image
-              else
-                echo "Cache directory $(MegalinterCachePath) does not exist. Pulling MegaLinter from"
-                docker pull oxsecurity/megalinter:v8
-              fi
-            displayName: MegaLinter Cache Restore
-            condition: not(canceled())
-
-          # Run MegaLinter
-          # See here for required system props: https://github.com/oxsecurity/megalinter/blob/0f18f72065ffdeec09b616087b8298a3b13b2dee/megalinter/reporters/AzureCommentReporter.py#L7C1-L13C22
-          - script: |
-
-              docker run -v $(System.DefaultWorkingDirectory):/tmp/lint \
-                --env-file <(env | grep -e SYSTEM_ -e BUILD_ -e TF_ -e AGENT_) \
-                -e SYSTEM_ACCESSTOKEN=$(System.AccessToken) \
-                -e GIT_AUTHORIZATION_BEARER=$(System.AccessToken) \
-                -e SYSTEM_COLLECTIONURI='$(System.CollectionUri)' \
-                -e SYSTEM_PULLREQUEST_PULLREQUESTID='$(System.PullRequest.PullRequestId)' \
-                -e SYSTEM_PULLREQUEST_SOURCEREPOSITORYURI='$(System.PullRequest.SourceRepositoryURI)' \
-                -e SYSTEM_TEAMPROJECT='$(System.TeamProject)' \
-                -e BUILD_BUILDID='$(Build.BuildId)' \
-                -e BUILD_REPOSITORY_ID='$(Build.Repository.ID)' \
-                -e AZURE_COMMENT_REPORTER='true' \
-                oxsecurity/megalinter:v8
-            displayName: Run MegaLinter
-
-          # Upload MegaLinter reports as artifacts
-          - task: PublishPipelineArtifact@1
-            condition: succeededOrFailed()
-            displayName: Upload MegaLinter reports
-            inputs:
-              targetPath: "$(System.DefaultWorkingDirectory)/megalinter-reports/"
-              artifactName: MegaLinterReport
+      # Use the MegaLinter template for PR builds with Azure reporter enabled
+      - template: .azdo/megalinter-template.yml
+        parameters:
+          dependsOn: DependencyScan
+          displayName: "Run MegaLinter"
+          condition: succeeded()
+          megalinterCachePath: $(MegalinterCachePath)
+          # for PR builds, enable the Azure reporter to report results
+          # to the PR and set the pull request ID and source repo URI
+          enableAzureReporter: true
+          pullRequestId: $(System.PullRequest.PullRequestId)
+          sourceRepoUri: $(System.PullRequest.SourceRepositoryURI)
 
       # Run Terraform documentation check to prompt committer to update
       # auto-generated documentation if changes are detected

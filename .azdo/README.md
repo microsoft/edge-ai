@@ -21,6 +21,8 @@ automation:
 - All IaC changes will use a decimal system for process organization
 - All build processes will be built on each pull request
 - Key build processes will be run on each merge to main
+- All pipeline components should be templatized for reuse and consistency
+- Pipeline templates should be modular and parameterized for flexibility and reuse
 
 ## Getting Started
 
@@ -50,6 +52,65 @@ for establishing the service connection.
 Follow the Azure Pipelines documentation for creating a
 [User Assigned Managed Identity Service Connection](https://learn.microsoft.com/azure/devops/pipelines/library/service-endpoints?view=azure-devops).
 
+### Templatized Build System
+
+This repository implements a modular, templatized approach to pipeline definitions. Instead of monolithic pipeline files, we break down common tasks into reusable templates that can be combined in different ways. This approach provides several benefits:
+
+1. **Consistency**: Ensures the same validation steps are applied across all pipelines
+2. **Maintainability**: Changes to a pipeline component only need to be made in one place
+3. **Reusability**: Common tasks can be easily reused across different pipelines and copied/referenced for additional projects
+4. **Flexibility**: Templates can be parameterized for different scenarios
+
+#### Available Templates
+
+The following templates are available in the `.azdo` directory:
+
+| Template                  | Purpose                                                 | Documentation                               |
+|---------------------------|---------------------------------------------------------|---------------------------------------------|
+| `megalinter-template.yml` | Provides linting capabilities across multiple languages | [MegaLinter Documentation](./megalinter.md) |
+
+#### How to Use Templates
+
+Templates can be included in your pipeline definition using the `template` keyword:
+
+```yaml
+stages:
+  - stage: Validate
+    jobs:
+      - template: .azdo/megalinter-template.yml
+        parameters:
+          displayName: 'Lint Code'
+          enableAzureReporter: true
+```
+
+#### Creating a Pipeline with Templates
+
+To create a pipeline that uses these templates:
+
+1. Create a pipeline file (e.g. `azure-pipelines.yml`)
+2. Include the necessary templates at appropriate stages
+3. Pass required parameters to each template
+
+Example:
+
+```yaml
+trigger:
+  - main
+  - feature/*
+
+stages:
+  - stage: Validate
+    jobs:
+      - template: .azdo/megalinter-template.yml
+
+  - stage: TF Plan
+    dependsOn: Validate
+    jobs:
+      - template: .azdo/terraform-plan-template.yml
+        parameters:
+          workingDirectory: 'blueprints/terraform/full-single-cluster'
+```
+
 ### Required Pipeline Variables
 
 The following variables are required to run this repository's main pipeline.
@@ -72,7 +133,11 @@ The build pipeline provides several key features, with more on the way:
 
 - Checks Terraform Provider versions for update opportunities and publishes build warning
 - Runs a lightweight vulnerability scan for all dependant packages
-- Runs file linting on a wide variety of languages and file types
+- Runs file linting on a wide variety of languages and file types using the MegaLinter template
 - Performs a matrix build on only resources that have been modified in the current PR
 - Publishes Terraform Plans for all changed resources within the current PR
 - Runs unit tests on changed Terraform within the current PR
+- Provides modular, templatized pipeline components for flexible pipeline creation
+- Ensures consistent validation steps across all pipelines through shared templates
+- Enables PR comment integration for linting results through the MegaLinter Azure Reporter
+- Optimizes pipeline performance with intelligent caching mechanisms

@@ -8,8 +8,8 @@ MegaLinter runs as part of our CI/CD pipeline to validate code quality before ch
 
 1. **Detects languages** in the repository automatically
 2. **Runs appropriate linters** for each file type
-3. **Generates detailed reports** for fixing issues
-4. **Blocks builds** when quality standards aren't met
+3. **Generates detailed reports** for fixing linting issues
+4. **Blocks builds** when linting standards are not met
 
 ### Configuration Files
 
@@ -23,7 +23,60 @@ MegaLinter uses the following configuration files in the root directory:
 | `terrascan.toml`                | Configuration for Terrascan security scanner for IaC                                                   |
 | `PSScriptAnalyzerSettings.psd1` | PowerShell script analyzer settings                                                                    |
 
-### Build Pipeline Integration
+## Using the MegaLinter Template
+
+We provide a reusable template for MegaLinter integration in your Azure DevOps pipelines. This template simplifies configuration and ensures consistent linting across all pipelines.
+
+### Template Location
+
+The template is available at [`.azdo/megalinter-template.yml`](./megalinter-template.yml)
+
+### Parameters
+
+| Parameter             | Type    | Default                                    | Description                                                                          |
+|-----------------------|---------|--------------------------------------------|--------------------------------------------------------------------------------------|
+| `dependsOn`           | object  | `[]`                                       | Jobs this MegaLinter job depends on                                                  |
+| `displayName`         | string  | 'Run MegaLinter'                           | Custom display name for the job                                                      |
+| `condition`           | string  | succeeded()                                | Condition to run this job                                                            |
+| `megalinterCachePath` | string  | '/mnt/storage/sdc/cache/images/megalinter' | Path for caching the MegaLinter Docker image                                         |
+| `enableAzureReporter` | boolean | false                                      | Enable Azure DevOps PR commenting integration                                        |
+| `pullRequestId`       | string  | ''                                         | Pull Request ID for Azure Reporter (required when enableAzureReporter is true)       |
+| `sourceRepoUri`       | string  | ''                                         | Source Repository URI for Azure Reporter (required when enableAzureReporter is true) |
+
+### Example Usage
+
+Here's how to integrate the MegaLinter template into your Azure DevOps pipeline:
+
+```yaml
+# Basic usage
+stages:
+  - stage: Validate
+    jobs:
+      - template: .azdo/megalinter-template.yml
+
+# Advanced usage with parameters
+stages:
+  - stage: Validate
+    jobs:
+      - template: .azdo/megalinter-template.yml
+        parameters:
+          displayName: 'Lint Pull Request Code'
+          dependsOn: [BuildAndTest]
+          condition: succeeded('BuildAndTest')
+          enableAzureReporter: ${{ eq(variables['Build.Reason'], 'PullRequest') }}
+          pullRequestId: $(System.PullRequest.PullRequestId)
+          sourceRepoUri: $(System.PullRequest.SourceRepositoryURI)
+```
+
+### PR Comment Integration
+
+When `enableAzureReporter` is set to `true`, MegaLinter will automatically post comments to your Pull Request with linting results. To enable this:
+
+1. Make sure the build service has permissions to comment on PRs
+2. Set the required parameters: `pullRequestId` and `sourceRepoUri`
+3. These typically come from system variables when the pipeline is triggered by a PR
+
+## Build Pipeline Integration
 
 MegaLinter is integrated into our Azure DevOps pipeline in the following locations:
 
@@ -38,9 +91,9 @@ MegaLinter is integrated into our Azure DevOps pipeline in the following locatio
 3. **Scheduled** - In `.azdo/azure-pipeline.yml`
    - Attempts to download and cache the most recent Megalinter container release
 
-### Example Job Configuration
+### Legacy Example Job Configuration
 
-Here's the exact implementation from our `.azdo/pipelines/azure-pipelines.yml` file:
+For reference, here is a basic implementation that can be used inplace of our template:
 
 ```yaml
 - task: Cache@2
@@ -100,35 +153,17 @@ Here's the exact implementation from our `.azdo/pipelines/azure-pipelines.yml` f
   condition: succeededOrFailed()
 ```
 
-This implementation:
-
-- Uses caching to store and retrieve the MegaLinter Docker image between runs
-- Checks if the image is already cached before pulling
-- Runs MegaLinter with our configuration
-- Publishes the linting reports as pipeline artifacts
+> **Note:** We recommend using the new template rather than this legacy approach.
 
 ### Pipeline Optimization with Caching
 
-Our implementation of MegaLinter includes caching to improve pipeline performance by saving the Docker image to disk:
+Our implementation of MegaLinter includes caching to improve pipeline performance by saving the Docker image to disk. The template automatically handles:
 
-```yaml
-- bash: |
-    MegalinterCachePath=$(Pipeline.Workspace)/.megalinter-cache
-    mkdir -p $MegalinterCachePath
-    docker save oxsecurity/megalinter:v8 -o $(MegalinterCachePath)/megalinterv8-cache.tar
-  displayName: 'Save MegaLinter Docker image to cache'
-  condition: and(succeeded(), ne(variables['CacheRestored'], 'true'))
-```
-
-This caching mechanism:
-
-- Uses a storage disk for all build agents
-- Saves the entire Docker image to disk to avoid repeated downloads
-- Loads the cached image in subsequent runs of agents
-- Significantly reduces pipeline execution time by eliminating excessive image pull operations
-- Falls back to downloading the image only when cache is not available
-
-When implementing MegaLinter in your pipelines, we strongly recommend including similar caching to optimize performance.
+- Using a storage disk for all build agents
+- Saving the entire Docker image to disk to avoid repeated downloads
+- Loading the cached image in subsequent runs of agents
+- Significantly reducing pipeline execution time by eliminating excessive image pull operations
+- Falling back to downloading the image only when cache is not available
 
 ## Why You Should Adopt This Approach
 
@@ -139,6 +174,7 @@ When implementing MegaLinter in your pipelines, we strongly recommend including 
 - **Faster Code Reviews**: Less time spent on style and formatting issues
 - **Improved Developer Experience**: Clear feedback on how to fix issues
 - **Self-Documentation**: Code standards are codified, not tribal knowledge
+- **Simplified Integration**: Template-based approach for easy reuse
 
 ### Situations Where You May Not Want to Use Cached Versions
 
@@ -149,10 +185,11 @@ When implementing MegaLinter in your pipelines, we strongly recommend including 
 
 ### Getting Started in Your Project
 
-1. Copy our `.mega-linter.yml` as a starting point
-2. Copy all configuration files noted above
-3. Refer to our `.azdo/pipelines/azure-pipelines.yml` file for the complete MegaLinter job(s) implementations including setup, caching, and execution
-4. Gradually enforce stricter rules and new linters as your team adapts
+1. Copy our `.mega-linter.yml` as a starting point for configuration
+2. Copy the remainder of our configuration files (noted above)
+3. Include the `.azdo/megalinter-template.yml` template in your project
+4. Reference the template in your pipeline definition (per instructions above)
+5. Gradually enforce stricter rules and new linters as your team adapts
 
 ## Learn More
 
