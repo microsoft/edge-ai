@@ -105,7 +105,7 @@ The Terraform, scripts, and documentation in this repository can provide you the
 - [Integrated support for "Bring-Your-Own" certificates](../src/040-iot-ops/terraform/README.md#create_resources) (and intermediate certificates) for intra-cluster TLS
 - [A robust, matrix'ed IaC build system](../azure-pipelines.yml) with integrated testing and validation, to ensure your IaC deploys as you expect it to
 - Auto-validation and auto-generation of Terraform Plans to support expedited CISO/Security/DevOps team approvals
-- [A library of common "Architectural Decision Records" (ARDs)](./solution-adr-library/README.md), ready to be modified to document your solution's requirements and the decisions you've made along the way
+- [A library of common "Architectural Decision Records" (ADRs)](./solution-adr-library/README.md), ready to be modified to document your solution's requirements and the decisions you've made along the way
 - [A library of technology papers](./solution-technology-paper-library/README.md) to upskill your peers
 - [A well-stocked development container](../.devcontainer) for you to take the IaC for your "AI on the Edge Solutions" to production with confidence, repeatability, and reliability your organization deserves
 
@@ -139,7 +139,7 @@ acceptance is performed via sign-off from 3/5ths of the project's leads: Technic
 Owner (Larry Lieberman), Technical Program Manager (Mack Renard), Consulting cross-domain Architect (Paul
 Bower), and Architect (Tim Park).
 
-ARDs move through a process that includes the following states:
+ADRs move through a process that includes the following states:
 
 - Draft - for all ADRs under development and in a drafting phase. May be committed to the main branch directly by project leads, but must be done via branches for community members
 - Proposed - for all ADRs that have been reviewed by the ADR sign-off team (project leads), this phase indicates the ADR is now open for discussion amongst the broad project community for feedback.

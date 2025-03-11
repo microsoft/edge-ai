@@ -182,12 +182,20 @@ for entry in "${!src_dest_tuples[@]}"; do
         # taking {dir-name}/README.md to {Dir-Name}.md
         new_dest="${src//\/$parent_dir\/README.md/\/$clean_parent_dir.md}"
     else
+        # Set new_dest to dest
         new_dest="$dest"
     fi
+
+    # If the dest begins with './.', replace it with './'
+    if [[ "$new_dest" == "./."* ]]; then
+        new_dest="${new_dest/\.\/\./\.\/}"
+    fi
+
     # Remove "docs/" from the dest path if it exists
     if [[ "$new_dest" == *"/docs/"* ]]; then
         new_dest="${new_dest//\/docs\//\/}"
     fi
+
     # add the new tuple back into the tuples array
     src_dest_tuples[entry]="($src, $new_dest)"
 
