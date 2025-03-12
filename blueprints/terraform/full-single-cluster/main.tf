@@ -61,6 +61,16 @@ module "messaging" {
   aio_dataflow_profile       = module.iot_ops_install.aio_dataflow_profile
 }
 
+module "storage" {
+  source = "../../../src/060-cloud-data-persistence/terraform"
+
+  resource_group_name = module.onboard_requirements.resource_group.name
+  location            = var.location
+  environment         = var.environment
+  instance            = var.instance
+  resource_prefix     = var.resource_prefix
+}
+
 module "observability" {
   source = "../../../src/070-observability/terraform"
 

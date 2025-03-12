@@ -14,7 +14,7 @@ premises cluster set-up. And so on.
 5. [(030)](./030-iot-ops-cloud-reqs/README.md) Cloud resource provisioning for Azure Key Vault, Storage Accounts, Schema Registry, Container Registry, and User Assigned Managed Identity
 6. [(040)](./040-iot-ops/README.md) AIO deployment of core infrastructure components (MQ Broker, Edge Storage Accelerator, Secrets Sync Controller, Workload Identity Federation, OpenTelemetry Collector, OPC UA Simulator)
 7. [(050)](./050-messaging/README.md) Cloud resource provisioning for cloud communication (MQTT protocol head for Event Grid (topic spaces, topics and cert-based authentication), Event Hubs, Service Bus, Relay, etc.)
-8. [(060)](./060-storage/README.md) Cloud resource provisioning for data/event storage (Fabric by means of RTI, Data Lakes, Warehouses, etc.)
+8. [(060)](./060-cloud-data-persistence/README.md) Cloud resource provisioning for data/event storage (Fabric by means of RTI, Data Lakes, Warehouses, etc.)
 9. [(070)](./070-observability/README.md) Cloud resource provisioning for Azure Monitor and Container Insights
 10. [(080)](./080-iot-ops-utility/README.md) AIO deployment of additionally selected components (OTEL Collector (Phase 2), OPC UA, AKRI, Strato, FluxCD/Argo)
 11. (090) Customer defined custom workloads, and pre-built solution accelerators such as TIG/TICK stacks, InfluxDB Data Historian, reference data backup from cloud to edge, etc.

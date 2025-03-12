@@ -64,7 +64,7 @@ folders=(
   "030-iot-ops-cloud-reqs"
   "040-iot-ops"
   "050-messaging"
-  "060-storage"
+  "060-cloud-data-persistence"
   "070-observability"
   "080-iot-ops-utility"
 )
