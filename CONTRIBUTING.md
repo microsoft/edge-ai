@@ -25,11 +25,8 @@ All types of contributions are encouraged and valued. See the [Table of Contents
     - [Your First Code Contribution](#your-first-code-contribution)
     - [Improving The Documentation](#improving-the-documentation)
   - [Style Guides](#style-guides)
-    - [Linting](#linting)
-      - [Markdown linting](#markdown-linting)
-      - [Spell checking](#spell-checking)
-    - [Linting Updates](#linting-updates)
-    - [Commit Messages](#commit-messages)
+    - [Development Environment](#development-environment)
+    - [Coding Conventions](#coding-conventions)
   - [Attribution](#attribution)
 
 ## Code of Conduct
@@ -138,59 +135,33 @@ If you see issues with the documentation, please follow the [your first code con
 
 ## Style Guides
 
-This project uses MegaLinter with numerous custom configured linters. These linters can be run locally to ensure that code reads the same across the project. Please review the following guidance:
+This project uses MegaLinter with numerous custom configured linters. These linters can be run locally to ensure that code reads the same across the project.
 
-### Linting
+For detailed information about our MegaLinter configuration, integration with our CI/CD pipeline, and available linters, please refer to our [MegaLinter documentation](/.azdo/megalinter.md).
 
-Run ALL linters
+### Development Environment
 
-```sh
-npm run lint
-```
+We strongly recommend using the provided [DevContainer](./.devcontainer/README.md) for development work. The DevContainer:
 
-To fix basic linting issues, run the following:
+- Ensures consistent tooling across all developers
+- Comes pre-configured with all required linters and development tools
+- Provides npm scripts for common development tasks
 
-```sh
-npm run lint-fix
-```
+Refer to the [DevContainer README](./.devcontainer/README.md) for detailed information on:
 
-#### Markdown linting
+- Setting up your development environment
+- Available linting commands and tools
+- Spell checking configuration
+- Git configuration in the container
 
-The linter run as part of PR validation is installed and configured in the DevContainer, making it possible to check your markdown before committing & PR.
+### Coding Conventions
 
-```sh
-npm run mdlint
-```
+For detailed information about our coding standards, please refer to the [Coding Conventions](/docs/coding-conventions.md) document, which includes:
 
-To fix basic markdown linting issues, run the following:
-
-```sh
-npm run mdlint-fix
-```
-
-> **NOTE**
->
-> Because not all rules include fix information when reporting errors, fixes may overlap, and not all errors are fixable, `fix` will not usually address all errors.
-
-#### Spell checking
-
-Cspell checker runs as part of PR validation and is installed and configured in the DevContainer, which makes it possible to check your language basics before committing & PR.
-
-```sh
-npm run cspell
-```
-
-### Linting Updates
-
-If you need to change the DevContainer, please ensure that the changes maintain consistency with the production build pipeline.
-
-> **NOTE**
->
-> If cspell detects an unknown word which should be ignored, add the word to the excluded word dictionary file `cspell-cse.txt`. If you think it's a common computing word, you can make a PR against [the cspell software terms dictionary](https://github.com/streetsidesoftware/cspell-dicts/tree/main/dictionaries/software-terms/src)
-
-### Commit Messages
-
-Ideally, at least one commit message in a PR includes a reference to the workitem that it addresses. We would appreciate if commits we descriptive and concise, however we also recognize there are times where `reverting the last change` is appropriate. Please use your judgement, squash commit when appropriate, and do your best to keep the commit history clean and readable.
+- Infrastructure as Code standards (Terraform and Bicep)
+- Git workflow practices including Conventional Commits
+- Documentation requirements
+- Variable naming and structure conventions
 
 ## Attribution
 
