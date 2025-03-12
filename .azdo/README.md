@@ -65,9 +65,10 @@ This repository implements a modular, templatized approach to pipeline definitio
 
 The following templates are available in the `.azdo` directory:
 
-| Template                  | Purpose                                                 | Documentation                               |
-|---------------------------|---------------------------------------------------------|---------------------------------------------|
-| `megalinter-template.yml` | Provides linting capabilities across multiple languages | [MegaLinter Documentation](./megalinter.md) |
+| Template                   | Purpose                                                                   | Documentation                                 |
+|----------------------------|---------------------------------------------------------------------------|-----------------------------------------------|
+| `megalinter-template.yml`  | Provides linting capabilities across multiple languages                   | [MegaLinter Documentation](./megalinter.md)   |
+| `wiki-update-template.yml` | Updates Azure DevOps wiki with markdown documentation from the repository | [Wiki Update Documentation](./wiki-update.md) |
 
 #### How to Use Templates
 
@@ -109,6 +110,15 @@ stages:
       - template: .azdo/terraform-plan-template.yml
         parameters:
           workingDirectory: 'blueprints/terraform/full-single-cluster'
+
+  - stage: Documentation
+    dependsOn: Validate
+    jobs:
+      - template: .azdo/wiki-update-template.yml
+        parameters:
+          dependsOn: MegaLinter
+          branchRepoFolder: "branch"
+          wikiRepoFolder: "wiki"
 ```
 
 ### Required Pipeline Variables
@@ -117,7 +127,7 @@ The following variables are required to run this repository's main pipeline.
 Please see, [Set variables in pipeline](https://learn.microsoft.com/azure/devops/pipelines/process/variables?view=azure-devops&tabs=classic%2Cbatch#set-variables-in-pipeline) for this process.
 
 | variable                              | secret | suggested value            | details                                                                                                                                                                                                             |
-|-:-------------------------------------|-:-:----|-:--------------------------|-:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|--:------------------------------------|--:-:---|--:-------------------------|--:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `subscription_id`                     | Y      | Azure subscription GUID    |                                                                                                                                                                                                                     |
 | `TF_VAR_CUSTOM_LOCATIONS_OID`         | Y      | OID of Arc Custom Location | [Create and manage custom locations on Azure Arc-enabled Kubernetes](https://learn.microsoft.com/azure/azure-arc/kubernetes/custom-locations)                                                                       |
 | `TF_VAR_ENVIRONMENT`                  | N      | `prod`                     | e.g. `dev`, `stage`, `prod`                                                                                                                                                                                         |

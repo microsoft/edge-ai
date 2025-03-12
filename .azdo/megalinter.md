@@ -80,59 +80,22 @@ When `enableAzureReporter` is set to `true`, MegaLinter will automatically post 
 
 MegaLinter is integrated into our Azure DevOps pipeline in the following locations:
 
-1. **PR Stage** - In `.azdo/azure-pipeline.yml`
+1. **PR Stage** - In `~/azure-pipeline.yml`
    - The `lint` job executes MegaLinter as a pre-merge quality gate
    - Runs on PRs to enforce code standards before code review
 
-2. **Main Stage** - In `.azdo/azure-pipeline.yml`
+2. **Main Stage** - In `~/azure-pipeline.yml`
    - Validates all committed code meets quality standards
    - Generates quality reports as pipeline artifacts
 
-3. **Scheduled** - In `.azdo/azure-pipeline.yml`
+3. **Scheduled** - In `~/azure-pipeline.yml`
    - Attempts to download and cache the most recent Megalinter container release
 
 ### Legacy Example Job Configuration
 
-For reference, here is a basic implementation that can be used inplace of our template:
+For reference, here is a basic implementation (without a reporter) that can be used inplace of our template:
 
 ```yaml
-- task: Cache@2
-  displayName: Cache MegaLinter
-  inputs:
-    key: 'megalinter | "$(Agent.OS)"'
-    restoreKeys: |
-      megalinter | "$(Agent.OS)"
-      megalinter
-    path: $(Pipeline.Workspace)/.megalinter-cache
-
-- bash: |
-    set -e
-    MegalinterCachePath=$(Pipeline.Workspace)/.megalinter-cache
-    mkdir -p $MegalinterCachePath
-
-    # Check if the Docker image is already cached
-    if [ -f "$MegalinterCachePath/megalinterv8-cache.tar" ]; then
-      echo "Loading cached MegaLinter Docker image..."
-      docker load -i $MegalinterCachePath/megalinterv8-cache.tar
-      echo "##vso[task.setvariable variable=CacheRestored]true"
-    else
-      echo "No cached MegaLinter Docker image found. Will pull and cache after use."
-      echo "##vso[task.setvariable variable=CacheRestored]false"
-    fi
-  displayName: 'Restore MegaLinter Docker image from cache'
-
-- bash: |
-    docker pull oxsecurity/megalinter:v8
-  displayName: 'Pull MegaLinter Docker image'
-  condition: ne(variables['CacheRestored'], 'true')
-
-- bash: |
-    MegalinterCachePath=$(Pipeline.Workspace)/.megalinter-cache
-    mkdir -p $MegalinterCachePath
-    docker save oxsecurity/megalinter:v8 -o $MegalinterCachePath/megalinterv8-cache.tar
-  displayName: 'Save MegaLinter Docker image to cache'
-  condition: and(succeeded(), ne(variables['CacheRestored'], 'true'))
-
 - bash: |
     docker run \
       --rm \
@@ -157,7 +120,7 @@ For reference, here is a basic implementation that can be used inplace of our te
 
 ### Pipeline Optimization with Caching
 
-Our implementation of MegaLinter includes caching to improve pipeline performance by saving the Docker image to disk. The template automatically handles:
+Our implementation of MegaLinter includes a scheduled daily caching to improve pipeline performance by saving the Docker image to disk. The template automatically handles:
 
 - Using a storage disk for all build agents
 - Saving the entire Docker image to disk to avoid repeated downloads
