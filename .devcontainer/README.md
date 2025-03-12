@@ -21,6 +21,36 @@ For SSH to work with your local SSH keys in the DevContainer, you must configure
 
 Note: If you are running Windows as your host OS and launch VS Code from the start menu or PowerShell, use the Windows instructions (even if you're using WSL/WSL2 to run a Linux terminal for git)
 
+## Project Configuration
+
+### package.json
+
+The project uses a `package.json` file to define scripts and dependencies for development tasks. This file enables consistent command execution across different environments and simplifies common tasks through npm scripts.
+
+Key npm scripts available:
+
+```sh
+# Install dependencies
+npm install
+
+# Run all linters
+npm run lint
+
+# Fix common linting issues
+npm run lint-fix
+
+# Run only markdown linting
+npm run mdlint
+
+# Fix markdown linting issues
+npm run mdlint-fix
+
+# Run spell check
+npm run cspell
+```
+
+These scripts are defined in the `package.json` file in the project root and provide shortcuts to the underlying tools configured specifically for this project.
+
 ## Linting
 
 Run ALL linters
@@ -34,6 +64,8 @@ To fix basic linting issues, run the following:
 ```sh
 npm run lint-fix
 ```
+
+For detailed information about our MegaLinter configuration, integration with our CI/CD pipeline, and available linters, please refer to our [MegaLinter documentation](/.azdo/megalinter.md).
 
 ### Markdown linting
 
