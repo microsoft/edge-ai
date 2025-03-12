@@ -94,7 +94,7 @@ stages:
             inputs:
               failOnAlert: true
 
-      # Use the MegaLinter template to run MeagaLinter
+      # Use the megaLinter-template.yml to run MeagaLinter
       # This job will only run if the DependencyScan job passes.
       - template: .azdo/megalinter-template.yml
         parameters:
@@ -105,85 +105,17 @@ stages:
           # for main do not report results as there's no PR to report to
           enableAzureReporter: false
 
-      # Job to update the wiki documentation with the latest changes
-      # from the main repository for all md files in the docs directory
-      # and src directory (e.g. src/000-subscription/README.md).
+      # Use the wiki-update-template.yml to update the wiki documentation
       # This job will only run if the MegaLinter job passes.
-      # and defines two directories to checkout the main branch and
-      # the wiki branch.
-      - job: WikiUpdate
-        displayName: Wiki Doc Update
-        dependsOn:
-          - MegaLinter
-        pool:
-          name: ai-on-edge-managed-pool
-          vmImage: ubuntu-latest
-        variables:
-          BRANCH_REPO_FOLDER: "branch"
-          WIKI_REPO_FOLDER: "wiki"
-        steps:
-          - script: |
-
-              # Create repo directories for the main and wiki branches
-              echo "Creating repo directories..."
-              mkdir "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER"
-              mkdir "$(Agent.BuildDirectory)/$BRANCH_REPO_FOLDER"
-              echo "Repo directories created at $WIKI_REPO_FOLDER"
-              echo "and $BRANCH_REPO_FOLDER"
-            displayName: Create repo directories
-
-          # Checking out the main branch and the wiki branch
-          # The @refs/heads/main is the main branch(self) and the
-          # @refs/heads/wiki is the wiki branch.
-          # The format for the checkout is checkout: <project>/<repo>@refs/heads/<branch>
-          # Persisting credentials allows us to use git commands below.
-          - checkout: self
-            persistCredentials: true
-            path: $(BRANCH_REPO_FOLDER)
-          - checkout: git://edge-ai/edge-ai@refs/heads/wiki
-            persistCredentials: true
-            path: $(WIKI_REPO_FOLDER)
-
-          - script: |
-
-              # Checkout the wiki branch
-              # This should be checked out in the call above but
-              # it has been occasionally flaky, so we are checking it out here
-              git -C "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER" checkout wiki
-
-              # Clear contents of wiki repo directory excluding the .git folder
-              echo "Clearing contents of wiki repo directory..."
-              find "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER" -mindepth 1 -maxdepth 1 -not -name '.git' -exec rm -rf {} \;
-
-              # Build/refresh the wiki contents. This will put artifacs into the
-              # .wiki folder in the main branch.
-              echo "Building wiki contents..."
-              "./scripts/wiki-build.sh"
-
-              # Copy the wiki contents to the wiki repo directory
-              echo "Copying wiki contents to wiki repo directory..."
-              cp -r ".wiki"/* "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER"
-
-              # Explicitly copy the .order file to the wiki repo directory
-              # This file is used to order the wiki pages in the Azure DevOps wiki
-              # We're calling explicitly for it's copy incase we play with
-              # other `.` files we don't want copied in the future.
-              echo "Copying .order file to wiki repo directory..."
-              cp ".wiki/.order" "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER/.order"
-
-              # Commit the changes
-              echo "Committing new wiki contents..."
-              git -C "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER" add .
-              git -C "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER" commit -m "Updated wiki contents on `date +'%Y-%m-%d %H:%M:%S'`"
-
-              # Push the changes to the remote repository
-              echo "Pushing wiki contents..."
-              git -C "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER" push -f origin wiki
-
-              # Delete the work_dir if needed for cleanup
-              # rm -rf "$WIKI_REPO_FOLDER"
-            displayName: Push Wiki
-            workingDirectory: $(Agent.BuildDirectory)/$(BRANCH_REPO_FOLDER)
+      - template: .azdo/wiki-update-template.yml
+        parameters:
+          dependsOn: MegaLinter
+          displayName: "Wiki Documentation Update"
+          condition: succeeded()
+          branchRepoFolder: "branch"
+          wikiRepoFolder: "wiki"
+          wikiRepo: "git://edge-ai/edge-ai@refs/heads/wiki"
+          wikiBranch: "wiki"
 
   - stage: PR
     displayName: PR Build Process
