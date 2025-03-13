@@ -51,7 +51,7 @@ We selected **ONNX Runtime GenAI** as the best inference engine for running SLM 
 
 ### Option 1: ONNX Runtime GenAI ✅ (Selected)
 
-#### Pros
+**Pros:**
 
 - Best performance (higher token throughput, lower latency).
 - Windows-native support without extra dependencies.
@@ -59,42 +59,42 @@ We selected **ONNX Runtime GenAI** as the best inference engine for running SLM 
 - Provides graph optimizations.
 - Fully self-contained for offline execution.
 
-#### Cons
+**Cons:**
 
 - Requires manual model conversion using `onnxruntime-genai.builder` if there is no Onnx version published.
 
 ### Option 2: LlamaCPP
 
-#### Pros
+**Pros:**
 
 - Good performance on CPU-only environments.
 - Fully self-contained for offline execution.
 
-#### Cons
+**Cons:**
 
 - GPU support is limited on Windows.
 - Requires custom Windows builds, adding complexity.
 
 ### Option 3: Hugging Face Optimum
 
-#### Pros
+**Pros:**
 
 - Supports various ONNX models.
 - Provides graph optimizations.
 - Fully self-contained for offline execution.
 
-#### Cons
+**Cons:**
 
 - Does not optimize model inferencing like usage of KV-cache, input/ouput binding, pre/post processing/
 - Lower token throughput than ONNX Runtime GenAI.
 
 ### Option 4: NVIDIA Triton Inference Server
 
-#### Pros
+**Pros:**
 
 - Multi-GPU scalability and efficient batching.
 
-#### Cons
+**Cons:**
 
 - Not feasible for offline Windows environments (requires Docker).
 - Higher resource overhead compared to ONNX Runtime GenAI.
@@ -109,9 +109,9 @@ By selecting **ONNX Runtime GenAI**, we achieve:
 - Optimized inference speeds, keeping response times low.
 - Better resource utilization in on-prem settings.
 
-## Other Considerations about Disconnected Environment
+## Additional Considerations for Disconnected Environments
 
-### Logging
+### Logging & Telemetry
 
 For disconnected environments, the chosen solution was leveraging OpenTelemetry to export file logs. After these logs are produced, using log clients to periodically import exported logs to Azure Log Monitor, Grafana, and similar applications for visualization.
 
