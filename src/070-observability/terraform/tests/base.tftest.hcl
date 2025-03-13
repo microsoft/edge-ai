@@ -27,15 +27,15 @@ run "create_non_default_configuration" {
   command = plan
 
   variables {
-    resource_prefix                             = run.setup_tests.resource_prefix
-    environment                                 = "dev"
-    instance                                    = "001"
-    azmon_resource_group                        = run.setup_tests.azmon_resource_group
-    grafana_admin_principal_id                  = "test_principal_id"
-    grafana_major_version                       = "10"
-    log_retention_in_days                       = 45
-    daily_quota_in_gb                           = 15
-    logs_data_collection_rule_namespaces        = ["kube-system", "gatekeeper-system"]
-    logs_data_collection_rule_streams           = ["Microsoft-ContainerLog", "Microsoft-ContainerLogV2"]
+    resource_prefix                      = run.setup_tests.resource_prefix
+    environment                          = "dev"
+    instance                             = "001"
+    azmon_resource_group                 = run.setup_tests.azmon_resource_group
+    grafana_admin_principal_id           = "test_principal_id"
+    grafana_major_version                = "10"
+    log_retention_in_days                = 45
+    daily_quota_in_gb                    = 15
+    logs_data_collection_rule_namespaces = ["kube-system", "gatekeeper-system"]
+    logs_data_collection_rule_streams    = ["Microsoft-ContainerLog", "Microsoft-ContainerLogV2"]
   }
 }
