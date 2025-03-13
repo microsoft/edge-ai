@@ -18,8 +18,8 @@ run "data_lake_creation" {
     resource_prefix           = run.setup_tests.resource_prefix
     resource_group_name       = run.setup_tests.resource_group_name
     location                  = run.setup_tests.location
-    environment              = run.setup_tests.environment
-    instance                 = run.setup_tests.instance
+    environment               = run.setup_tests.environment
+    instance                  = run.setup_tests.instance
     data_lake_filesystem_name = "testdatalake"
   }
 
@@ -39,9 +39,9 @@ run "data_lake_permissions" {
   command = plan
 
   variables {
-    resource_prefix                = run.setup_tests.resource_prefix
-    resource_group_name            = run.setup_tests.resource_group_name
-    location                       = run.setup_tests.location
+    resource_prefix               = run.setup_tests.resource_prefix
+    resource_group_name           = run.setup_tests.resource_group_name
+    location                      = run.setup_tests.location
     environment                   = run.setup_tests.environment
     instance                      = run.setup_tests.instance
     managed_identity_principal_id = "11111111-1111-1111-1111-111111111111"

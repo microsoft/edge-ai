@@ -27,10 +27,10 @@ resource "azurerm_role_assignment" "data_lake_contributor" {
 
 # File Share (Optional)
 resource "azurerm_storage_share" "file_share" {
-  count               = var.create_file_share ? 1 : 0
-  name                = var.file_share_name
-  quota               = var.file_share_quota_gb
-  storage_account_id  = var.storage_account_id
+  count              = var.create_file_share ? 1 : 0
+  name               = var.file_share_name
+  quota              = var.file_share_quota_gb
+  storage_account_id = var.storage_account_id
 }
 
 # Data Lake Gen2 Filesystem

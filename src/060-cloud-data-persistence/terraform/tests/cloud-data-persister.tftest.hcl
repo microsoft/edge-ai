@@ -42,20 +42,20 @@ run "create_custom_configuration" {
   command = plan
 
   variables {
-    resource_prefix           = run.setup_tests.resource_prefix
-    resource_group_name       = run.setup_tests.resource_group_name
-    location                  = run.setup_tests.location
-    environment               = run.setup_tests.environment
-    instance                  = run.setup_tests.instance
-    storage_account_tier      = "Premium"
-    storage_account_kind      = "BlockBlobStorage"
-    storage_account_replication = "ZRS"
-    blob_soft_delete_retention_days = 14
+    resource_prefix                      = run.setup_tests.resource_prefix
+    resource_group_name                  = run.setup_tests.resource_group_name
+    location                             = run.setup_tests.location
+    environment                          = run.setup_tests.environment
+    instance                             = run.setup_tests.instance
+    storage_account_tier                 = "Premium"
+    storage_account_kind                 = "BlockBlobStorage"
+    storage_account_replication          = "ZRS"
+    blob_soft_delete_retention_days      = 14
     container_soft_delete_retention_days = 14
-    data_lake_filesystem_name = "customdatalake"
-    container_name            = "customcontainer"
-    enable_private_endpoint   = true
-    subnet_id                 = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/testrg/providers/Microsoft.Network/virtualNetworks/testvnet/subnets/testsubnet"
+    data_lake_filesystem_name            = "customdatalake"
+    container_name                       = "customcontainer"
+    enable_private_endpoint              = true
+    subnet_id                            = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/testrg/providers/Microsoft.Network/virtualNetworks/testvnet/subnets/testsubnet"
   }
 
   assert {
