@@ -4,8 +4,9 @@
 # linters documentation
 
 ---
-# all, none, or list of linter keys
-APPLY_FIXES: none
+# ----------------------------------------
+# CORE CONFIGURATION
+# ----------------------------------------
 
 # If you use ENABLE variable, all other languages/formats/tooling-formats will
 # be disabled by default
@@ -14,21 +15,34 @@ APPLY_FIXES: none
 # If you use ENABLE_LINTERS variable, all other linters will be disabled by
 # default
 ENABLE_LINTERS:
+  # Shell scripts
   - BASH_EXEC
   - BASH_SHELLCHECK
+
+  # Infrastructure as Code
+  - TERRAFORM_TERRAFORM_FMT
+  - TERRAFORM_TFLINT
   - BICEP_BICEP_LINTER
+
+  # Container configuration
   - DOCKERFILE_HADOLINT
   - KUBERNETES_HELM
+
+  # Documentation
   - MARKDOWN_MARKDOWNLINT
   - MARKDOWN_MARKDOWN_TABLE_FORMATTER
+
+  # PowerShell
   - POWERSHELL_POWERSHELL
   - POWERSHELL_POWERSHELL_FORMATTER
+
+  # Security scanning
   - REPOSITORY_GITLEAKS
   - REPOSITORY_GRYPE
   - REPOSITORY_SECRETLINT
+
+  # Quality
   - SPELL_CSPELL
-  - TERRAFORM_TERRAFORM_FMT
-  - TERRAFORM_TFLINT
   - YAML_YAMLLINT
 
 # DISABLE:
@@ -39,24 +53,69 @@ ENABLE_LINTERS:
 #  - JSON
 #  - TERRAFORM_TERRASCAN
 
-SHOW_ELAPSED_TIME: true
-FILEIO_REPORTER: false
-CLEAR_REPORT_FOLDER: true
-AZURE_COMMENT_REPORTER: true
-VALIDATE_ALL_CODEBASE: true
-PRINT_ALL_FILES: true
-JSON_REPORTER: true
+# ----------------------------------------
+# BEHAVIOR CONFIGURATION
+# ----------------------------------------
+
+# Fixes application: none, all, or specific linters
+APPLY_FIXES: none
+
+# Default branch name for comparison
 DEFAULT_BRANCH: main
+
+# Validate entire codebase, not just changes
+VALIDATE_ALL_CODEBASE: true
+
+# Log level: DEBUG, INFO, WARNING or ERROR
 LOG_LEVEL: INFO
-SPELL_CSPELL_CONFIG_FILE: .cspell.json
-SPELL_CSPELL_FILE_EXTENSIONS: [".md"]
-TERRAFORM_TFLINT_UNSECURED_ENV_VARIABLES:
-  - GITHUB_TOKEN
-YAML_YAMLLINT_FILTER_REGEX_EXCLUDE: '(\.github/ISSUE_TEMPLATE)'
-# TERRAFORM_TERRASCAN_CONFIG_FILE: .terrascan.toml
-# TERRAFORM_TERRASCAN_DISABLE_ERRORS: true
+
+# Print all scanned files in logs
+PRINT_ALL_FILES: true
+
+# ----------------------------------------
+# REPORTER CONFIGURATION
+# ----------------------------------------
+
+# Show elapsed time per linter
+SHOW_ELAPSED_TIME: true
+
+# File I/O reporter
+FILEIO_REPORTER: false
+
+# Clear the report folder before generating new reports
+CLEAR_REPORT_FOLDER: true
+
+# Generate JSON report
+JSON_REPORTER: true
+
+# Enable Azure DevOps PR comment reporter
+AZURE_COMMENT_REPORTER: true
 
 # Uncomment if you want MegaLinter to detect errors but not block CI to pass
 # DISABLE_ERRORS: true
 
+# ----------------------------------------
+# LINTER SPECIFIC CONFIGURATION
+# ----------------------------------------
+
+# Terraform Format configuration
+TERRAFORM_TERRAFORM_FMT_DISABLE_ERRORS: false
+TERRAFORM_TERRAFORM_FMT_ARGUMENTS: "-check -diff"
+
+# TFLint configuration
+TERRAFORM_TFLINT_UNSECURED_ENV_VARIABLES:
+  - GITHUB_TOKEN
+
+# YAML Lint configuration
+YAML_YAMLLINT_FILTER_REGEX_EXCLUDE: '(\.github/ISSUE_TEMPLATE)'
+
+# Spell checker configuration
+SPELL_CSPELL_CONFIG_FILE: .cspell.json
+SPELL_CSPELL_FILE_EXTENSIONS: [".md"]
+
+# PowerShell configuration
 POWERSHELL_POWERSHELL_CONFIG_FILE: PSScriptAnalyzerSettings.psd1
+
+# Terrascan configuration (currently disabled)
+# TERRAFORM_TERRASCAN_CONFIG_FILE: .terrascan.toml
+# TERRAFORM_TERRASCAN_DISABLE_ERRORS: true
