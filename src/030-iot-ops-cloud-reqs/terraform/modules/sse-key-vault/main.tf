@@ -8,7 +8,7 @@
 data "azurerm_client_config" "current" {}
 
 resource "azurerm_key_vault" "new" {
-  name                      = "kv-${var.resource_prefix}-${var.environment}-${var.instance}"
+  name                      = coalesce(var.sse_key_vault_name, "kv-${var.resource_prefix}-${var.environment}-${var.instance}")
   location                  = var.location
   resource_group_name       = var.resource_group_name
   tenant_id                 = data.azurerm_client_config.current.tenant_id

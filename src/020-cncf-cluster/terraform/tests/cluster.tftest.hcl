@@ -14,25 +14,25 @@ run "setup_tests" {
 run "create_default_cluster" {
   command = plan
   variables {
-    resource_prefix     = run.setup_tests.resource_prefix
-    environment         = "dev"
-    aio_resource_group  = run.setup_tests.aio_resource_group
-    aio_virtual_machine = run.setup_tests.aio_virtual_machine
+    resource_prefix                = run.setup_tests.resource_prefix
+    environment                    = "dev"
+    aio_resource_group             = run.setup_tests.aio_resource_group
+    cluster_server_virtual_machine = run.setup_tests.aio_virtual_machine
   }
 }
 
 run "create_non_default_cluster" {
   command = plan
   variables {
-    resource_prefix                 = run.setup_tests.resource_prefix
-    environment                     = "dev"
-    instance                        = "test"
-    aio_resource_group              = run.setup_tests.aio_resource_group
-    aio_virtual_machine             = run.setup_tests.aio_virtual_machine
-    vm_username                     = "test"
-    custom_locations_oid            = "test"
-    enable_arc_auto_upgrade         = false
-    arc_onboarding_sp_client_id     = "test"
-    arc_onboarding_sp_client_secret = "test"
+    resource_prefix                      = run.setup_tests.resource_prefix
+    environment                          = "dev"
+    instance                             = "test"
+    aio_resource_group                   = run.setup_tests.aio_resource_group
+    cluster_server_virtual_machine       = run.setup_tests.aio_virtual_machine
+    cluster_server_host_machine_username = "test"
+    custom_locations_oid                 = "test"
+    should_enable_arc_auto_upgrade       = false
+    arc_onboarding_sp_client_id          = "test"
+    arc_onboarding_sp_client_secret      = "test"
   }
 }

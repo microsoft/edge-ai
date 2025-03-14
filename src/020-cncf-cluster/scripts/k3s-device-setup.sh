@@ -9,6 +9,9 @@ ARC_RESOURCE_NAME="${ARC_RESOURCE_NAME}"             # The name of the Azure Arc
 
 ## Optional Environment Variables:
 
+K3S_URL="${K3S_URL}"                           # The url for the k3s server if creating an 'agent' node (ex. 'https://<public-ip>:6443')
+K3S_NODE_TYPE="${K3S_NODE_TYPE}"               # Type of k3s node to create (ex. 'server' or 'agent', defaults to 'server')
+K3S_TOKEN="${K3S_TOKEN}"                       # The token used to secure k3s agent nodes joining a k3s cluster (refer https://docs.k3s.io/cli/token)
 K3S_VERSION="${K3S_VERSION}"                   # Version of k3s to install (ex. 'v1.31.2+k3s1') leave blank to install latest
 CLUSTER_ADMIN_OID="${CLUSTER_ADMIN_OID}"       # The Object ID that would be given the cluster-admin permission in the cluster (ex. 'az ad signed-in-user show --query id -o tsv')
 ARC_AUTO_UPGRADE="${ARC_AUTO_UPGRADE}"         # Enable/disable auto upgrade for Azure Arc cluster components (ex. 'false' to disable)
@@ -132,16 +135,35 @@ fi
 
 sudo sysctl -p
 
-# Install k3s if it is missing.
-if ! command -v 'k3s' &>/dev/null; then
-  if [[ ! $SKIP_INSTALL_K3S ]]; then
-    log "Installing k3s"
-    if [[ "$K3S_VERSION" ]]; then
-      export INSTALL_K3S_VERSION="$K3S_VERSION"
+# Install k3s server or agent node.
+if [[ ! $SKIP_INSTALL_K3S ]]; then
+  # Install k3s agent node if requested.
+  if [[ ${K3S_NODE_TYPE,,} == "agent" ]]; then
+    # Validate 'agent' required parameters.
+    if [[ ! $K3S_URL ]]; then
+      err "'K3S_URL' env var is required for 'agent' K3S_NODE_TYPE"
+    elif [[ ! $K3S_TOKEN ]]; then
+      err "'K3S_TOKEN' env var is required for 'agent' K3S_NODE_TYPE"
     fi
+
+    export INSTALL_K3S_EXEC="agent"
+    export INSTALL_K3S_VERSION="$K3S_VERSION"
+    export K3S_TOKEN
+    export K3S_URL
     curl -sfL https://get.k3s.io | sh -
-  else
-    err "'k3s' is missing and required"
+
+    log "Finished installing k3s agent node... exiting..."
+    exit 0
+  fi
+
+  # Install k3s if it is missing.
+  if ! command -v 'k3s' &>/dev/null; then
+    export INSTALL_K3S_EXEC="server"
+    export INSTALL_K3S_VERSION="$K3S_VERSION"
+    export K3S_TOKEN
+    curl -sfL https://get.k3s.io | sh -
+
+    log "Finished installing k3s server"
   fi
 fi
 
@@ -244,17 +266,19 @@ if [[ ${ENVIRONMENT,,} != "prod" ]]; then
 fi
 
 # Cluster Connect is required for Custom Locations and needed for 'az connectedk8s proxy'.
-log "Enabling Azure Arc feature [cluster-connect custom-locations]"
-az_connectedk8s_enable_features=("az connectedk8s enable-features"
-  "--name $ARC_RESOURCE_NAME"
-  "--resource-group $ARC_RESOURCE_GROUP_NAME"
-  "--features cluster-connect custom-locations"
-)
-if [[ $CUSTOM_LOCATIONS_OID ]]; then
-  az_connectedk8s_enable_features+=("--custom-locations-oid $CUSTOM_LOCATIONS_OID")
+if [[ ! $SKIP_ARC_CONNECT ]]; then
+  log "Enabling Azure Arc feature [cluster-connect custom-locations]"
+  az_connectedk8s_enable_features=("az connectedk8s enable-features"
+    "--name $ARC_RESOURCE_NAME"
+    "--resource-group $ARC_RESOURCE_GROUP_NAME"
+    "--features cluster-connect custom-locations"
+  )
+  if [[ $CUSTOM_LOCATIONS_OID ]]; then
+    az_connectedk8s_enable_features+=("--custom-locations-oid $CUSTOM_LOCATIONS_OID")
+  fi
+  echo "Executing: ${az_connectedk8s_enable_features[*]}"
+  eval "${az_connectedk8s_enable_features[*]}"
 fi
-echo "Executing: ${az_connectedk8s_enable_features[*]}"
-eval "${az_connectedk8s_enable_features[*]}"
 
 # Add a 'cluster-admin' for the Object ID that was provided. This will be useful and
 # needed for additional setup and configuration of the cluster at a later point.

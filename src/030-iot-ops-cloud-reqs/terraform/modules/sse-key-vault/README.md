@@ -32,6 +32,7 @@ Create or use and existing a Key Vault for Secret Sync Extension
 | location | Location for all resources in this module | `string` | n/a | yes |
 | resource\_group\_name | The name for the resource group. | `string` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
+| sse\_key\_vault\_name | The name of the Key Vault for Secret Sync Extension. (Otherwise, 'kv-{var.resource\_prefix}-{var.environment}-{var.instance}' | `string` | n/a | yes |
 
 ## Outputs
 

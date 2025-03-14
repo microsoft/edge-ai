@@ -16,16 +16,20 @@ module "vm_host" {
   location                              = var.location
   aio_resource_group                    = module.onboard_requirements.resource_group
   arc_onboarding_user_assigned_identity = module.onboard_requirements.arc_onboarding_user_assigned_identity
+  vm_count                              = var.host_machine_count
 }
 
 module "cncf_cluster_install" {
   source = "../../../src/020-cncf-cluster/terraform"
 
-  environment                    = var.environment
-  instance                       = var.instance
-  resource_prefix                = var.resource_prefix
-  aio_resource_group             = module.onboard_requirements.resource_group
-  cluster_server_virtual_machine = module.vm_host.virtual_machines[0]
+  environment                          = var.environment
+  instance                             = var.instance
+  resource_prefix                      = var.resource_prefix
+  aio_resource_group                   = module.onboard_requirements.resource_group
+  cluster_server_virtual_machine       = module.vm_host.virtual_machines[0]
+  cluster_node_virtual_machines        = slice(module.vm_host.virtual_machines, 1, length(module.vm_host.virtual_machines))
+  should_generate_cluster_server_token = true
+  cluster_server_ip                    = module.vm_host.private_ips[0]
 }
 
 module "iot_ops_cloud_requirements" {
@@ -59,16 +63,6 @@ module "messaging" {
   aio_custom_locations       = module.iot_ops_install.custom_locations
   aio_instance               = module.iot_ops_install.aio_instance
   aio_dataflow_profile       = module.iot_ops_install.aio_dataflow_profile
-}
-
-module "storage" {
-  source = "../../../src/060-cloud-data-persistence/terraform"
-
-  resource_group_name = module.onboard_requirements.resource_group.name
-  location            = var.location
-  environment         = var.environment
-  instance            = var.instance
-  resource_prefix     = var.resource_prefix
 }
 
 module "observability" {

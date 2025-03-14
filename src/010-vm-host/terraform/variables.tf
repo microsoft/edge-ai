@@ -16,3 +16,9 @@ variable "vm_sku_size" {
   description = "Size of the VM"
   default     = "Standard_D8s_v3"
 }
+
+variable "vm_count" {
+  type        = number
+  description = "The number of host VMs to create if a multi-node cluster is needed."
+  default     = 1
+}

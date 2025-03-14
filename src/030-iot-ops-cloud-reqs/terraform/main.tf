@@ -26,6 +26,7 @@ module "sse_key_vault" {
   resource_prefix     = var.resource_prefix
   environment         = var.environment
   instance            = var.instance
+  sse_key_vault_name  = var.sse_key_vault_name
 }
 
 module "uami" {

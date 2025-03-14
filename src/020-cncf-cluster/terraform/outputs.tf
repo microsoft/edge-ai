@@ -13,3 +13,10 @@ output "azure_arc_proxy_command" {
 output "arc_connected_cluster" {
   value = try(data.azapi_resource.arc_connected_cluster[0].output, null)
 }
+
+output "server_token" {
+  description = "The token used by the server in the k3s cluster. ('null' if the server is responsible for generating the token)"
+  value       = module.ubuntu_k3s.cluster_server_token
+
+  sensitive = true
+}

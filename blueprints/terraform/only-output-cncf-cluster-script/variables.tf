@@ -26,10 +26,10 @@ variable "instance" {
   default     = "001"
 }
 
-variable "vm_username" {
+variable "cluster_server_host_machine_username" {
   type        = string
   description = <<-EOF
-    Username used for the host VM that will be given kube-config settings on setup.
+    Username used for the host machines that will be given kube-config settings on setup.
     (Otherwise, 'resource_prefix' if it exists as a user)
 EOF
   default     = null
@@ -64,6 +64,18 @@ variable "cluster_admin_oid" {
   type        = string
   description = "The Object ID that will be given cluster-admin permissions with the new cluster. (Otherwise, current logged in user if 'should_add_current_user_cluster_admin=true')"
   default     = null
+}
+
+variable "should_output_cluster_server_script" {
+  type        = string
+  description = "Whether to write out the script for setting up the cluster server host machine."
+  default     = true
+}
+
+variable "should_output_cluster_node_script" {
+  type        = string
+  description = "Whether to write out the script for setting up cluster node host machines. (Needed for multi-node clusters)"
+  default     = false
 }
 
 variable "script_output_filepath" {
