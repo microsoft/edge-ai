@@ -29,7 +29,7 @@ run "create_default_vm" {
 
   # Check that all resources use the same location
   assert {
-    condition     = azurerm_linux_virtual_machine.aio_edge.location == "centralus"
+    condition     = azurerm_linux_virtual_machine.aio_edge[0].location == "centralus"
     error_message = "Location should be centralus"
   }
 }
@@ -48,7 +48,7 @@ run "create_non_default_vm_with_uami" {
   }
 
   assert {
-    condition     = strcontains(one(azurerm_linux_virtual_machine.aio_edge.identity[0].identity_ids), "uami-")
+    condition     = strcontains(one(azurerm_linux_virtual_machine.aio_edge[0].identity[0].identity_ids), "uami-")
     error_message = "'arc_onboarding_user_assigned_identity' must be used when creating the VM"
   }
 }

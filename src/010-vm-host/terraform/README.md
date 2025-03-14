@@ -44,6 +44,7 @@ Deploys a Linux VM with an Arc-connected K3s cluster
 | resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
 | arc\_onboarding\_user\_assigned\_identity | n/a | ```object({ id = string })``` | `null` | no |
 | instance | Instance identifier for naming resources: 001, 002, etc... | `string` | `"001"` | no |
+| vm\_count | The number of host VMs to create if a multi-node cluster is needed. | `number` | `1` | no |
 | vm\_sku\_size | Size of the VM | `string` | `"Standard_D8s_v3"` | no |
 | vm\_username | Username used for the host VM that will be given kube-config settings on setup. (Otherwise, 'resource\_prefix' if it exists as a user) | `string` | `null` | no |
 
@@ -52,11 +53,13 @@ Deploys a Linux VM with an Arc-connected K3s cluster
 | Name | Description |
 |------|-------------|
 | linux\_virtual\_machine\_name | n/a |
-| public\_ip | n/a |
+| private\_ips | n/a |
+| public\_fqdns | n/a |
+| public\_ips | n/a |
 | public\_ssh | n/a |
 | public\_ssh\_permissions | n/a |
 | username | n/a |
-| virtual\_machine | n/a |
+| virtual\_machines | n/a |
 | vm\_id | n/a |
 <!-- markdown-table-prettify-ignore-end -->
 <!-- END_TF_DOCS -->

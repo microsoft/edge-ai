@@ -43,6 +43,7 @@ Creates the required resources needed for an edge IaC deployment.
 | resource\_group\_name | The name for the resource group. | `string` | `null` | no |
 | should\_create\_onboard\_identity | Should create either a User Assigned Managed Identity or Service Principal to be used with onboarding a cluster to Azure Arc. | `bool` | `true` | no |
 | should\_create\_resource\_group | Should create and manage a new Resource Group. | `bool` | `true` | no |
+| tags | The tags to add to the resources. | `map(string)` | `null` | no |
 
 ## Outputs
 

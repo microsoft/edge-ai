@@ -32,3 +32,9 @@ EOF
     error_message = "Must be one of ['uami', 'sp']."
   }
 }
+
+variable "tags" {
+  type        = map(string)
+  description = "The tags to add to the resources."
+  default     = null
+}

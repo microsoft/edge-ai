@@ -5,19 +5,21 @@
  */
 
 locals {
-  label_prefix = "${var.resource_prefix}-${var.environment}-aio-${var.instance}"
+  label_prefix = "${var.resource_prefix}-aio-${var.environment}-${var.instance}"
   vm_username  = coalesce(var.vm_username, var.resource_prefix)
 }
 
 ### Create Virtual Edge Device ###
 
 resource "azurerm_public_ip" "aio_edge" {
-  name                = "pip-${local.label_prefix}"
+  count = var.vm_count
+
+  name                = "pip-${local.label_prefix}-${count.index}"
   resource_group_name = var.aio_resource_group.name
   location            = var.location
   allocation_method   = "Static"
   sku                 = "Basic"
-  domain_name_label   = "dns-${local.label_prefix}"
+  domain_name_label   = "dns-${local.label_prefix}-${count.index}"
 }
 
 resource "azurerm_network_security_group" "aio_edge" {
@@ -46,17 +48,20 @@ resource "azurerm_subnet_network_security_group_association" "aio_edge" {
 }
 
 resource "azurerm_network_interface" "aio_edge" {
-  name                = "nic-${local.label_prefix}"
+  count = var.vm_count
+
+  name                = "nic-${local.label_prefix}-${count.index}"
   location            = var.location
   resource_group_name = var.aio_resource_group.name
 
   ip_configuration {
-    name                          = "ipconfig-${local.label_prefix}"
+    name                          = "ipconfig-${local.label_prefix}-${count.index}"
     private_ip_address_allocation = "Dynamic"
-    public_ip_address_id          = azurerm_public_ip.aio_edge.id
+    public_ip_address_id          = azurerm_public_ip.aio_edge[count.index].id
     subnet_id                     = azurerm_subnet.aio_edge.id
   }
 }
+
 resource "tls_private_key" "vm_ssh" {
   algorithm = "RSA"
   rsa_bits  = 4096
@@ -64,12 +69,14 @@ resource "tls_private_key" "vm_ssh" {
 
 resource "local_sensitive_file" "ssh" {
   content         = tls_private_key.vm_ssh.private_key_pem
-  filename        = "../.ssh/id_rsa"
+  filename        = "../.ssh/vm-${local.label_prefix}-id_rsa"
   file_permission = "600"
 }
 
 resource "azurerm_linux_virtual_machine" "aio_edge" {
-  name                            = "vm-${local.label_prefix}"
+  count = var.vm_count
+
+  name                            = "vm-${local.label_prefix}-${count.index}"
   location                        = var.location
   resource_group_name             = var.aio_resource_group.name
   admin_username                  = local.vm_username
@@ -83,7 +90,7 @@ resource "azurerm_linux_virtual_machine" "aio_edge" {
   allow_extension_operations = true
   size                       = var.vm_sku_size
   network_interface_ids = [
-    azurerm_network_interface.aio_edge.id
+    azurerm_network_interface.aio_edge[count.index].id
   ]
 
   source_image_reference {
