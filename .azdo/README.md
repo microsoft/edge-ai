@@ -24,6 +24,21 @@ automation:
 - All pipeline components should be templatized for reuse and consistency
 - Pipeline templates should be modular and parameterized for flexibility and reuse
 
+## Build Feature Sets
+
+The build pipeline provides several key features, with more on the way:
+
+- Checks Terraform Provider versions for update opportunities and publishes build warning
+- Runs a lightweight vulnerability scan for all dependant packages
+- Runs file linting on a wide variety of languages and file types using the MegaLinter template
+- Performs a matrix build on only resources that have been modified in the current PR
+- Publishes Terraform Plans for all changed resources within the current PR
+- Runs unit tests on changed Terraform within the current PR
+- Provides modular, templatized pipeline components for flexible pipeline creation
+- Ensures consistent validation steps across all pipelines through shared templates
+- Enables PR comment integration for linting results through the MegaLinter Azure Reporter
+- Optimizes pipeline performance with intelligent caching mechanisms
+
 ## Getting Started
 
 The following sections will walk you through the process of configuring Azure
@@ -63,12 +78,11 @@ This repository implements a modular, templatized approach to pipeline definitio
 
 #### Available Templates
 
-The following templates are available in the `.azdo` directory:
-
-| Template                   | Purpose                                                                   | Documentation                                 |
-|----------------------------|---------------------------------------------------------------------------|-----------------------------------------------|
-| `megalinter-template.yml`  | Provides linting capabilities across multiple languages                   | [MegaLinter Documentation](./megalinter.md)   |
-| `wiki-update-template.yml` | Updates Azure DevOps wiki with markdown documentation from the repository | [Wiki Update Documentation](./wiki-update.md) |
+| Template | Description | Documentation |
+|----------|-------------|---------------|
+| [`megalinter-template.yml`](./megalinter-template.yml) | Runs MegaLinter to enforce code quality standards | [MegaLinter Integration](./megalinter.md) |
+| [`wiki-update-template.yml`](./wiki-update-template.yml) | Synchronizes documentation to Azure DevOps wiki | [Wiki Update Integration](./wiki-update.md) |
+| [`resource-provider-tests-template.yml`](./resource-provider-tests-template.yml) | Tests Azure Resource Provider scripts | [Resource Provider Testing](./resource-provider-tests.md) |
 
 #### How to Use Templates
 
@@ -84,41 +98,64 @@ stages:
           enableAzureReporter: true
 ```
 
-#### Creating a Pipeline with Templates
+## Creating a Pipeline with Templates
 
-To create a pipeline that uses these templates:
+You can use our templates to build sophisticated pipelines that implement best practices for code quality, testing, and documentation.
 
-1. Create a pipeline file (e.g. `azure-pipelines.yml`)
-2. Include the necessary templates at appropriate stages
-3. Pass required parameters to each template
-
-Example:
+### Basic Template Usage
 
 ```yaml
-trigger:
-  - main
-  - feature/*
+# Example of basic template inclusion
+- template: .azdo/megalinter-template.yml
+  parameters:
+    dependsOn: DependencyScan
+```
 
-stages:
-  - stage: Validate
-    jobs:
-      - template: .azdo/megalinter-template.yml
+### Advanced MegaLinter Template Usage
 
-  - stage: TF Plan
-    dependsOn: Validate
-    jobs:
-      - template: .azdo/terraform-plan-template.yml
-        parameters:
-          workingDirectory: 'blueprints/terraform/full-single-cluster'
+```yaml
+# Advanced configuration of the MegaLinter template
+- template: .azdo/megalinter-template.yml
+  parameters:
+    displayName: 'Comprehensive Code Quality Analysis'
+    dependsOn:
+      - SecurityScan
+      - DependencyScan
+    condition: and(succeeded('SecurityScan'), succeeded('DependencyScan'))
+    megalinterCachePath: '$(Build.ArtifactStagingDirectory)/megalinter-cache'
+    enableAzureReporter: ${{ eq(variables['Build.Reason'], 'PullRequest') }}
+    pullRequestId: $(System.PullRequest.PullRequestId)
+    sourceRepoUri: $(System.PullRequest.SourceRepositoryURI)
+```
 
-  - stage: Documentation
-    dependsOn: Validate
-    jobs:
-      - template: .azdo/wiki-update-template.yml
-        parameters:
-          dependsOn: MegaLinter
-          branchRepoFolder: "branch"
-          wikiRepoFolder: "wiki"
+This advanced configuration:
+
+- Provides a custom display name for better pipeline readability
+- Sets multiple job dependencies with an array
+- Uses a more complex condition checking across multiple jobs
+- Specifies a custom cache path in the build artifact staging directory
+- Dynamically enables the Azure reporter only for pull requests
+- Passes required PR information for commenting
+
+### Combining Multiple Templates
+
+You can also combine multiple templates for a complete CI/CD workflow:
+
+```yaml
+jobs:
+  - template: .azdo/megalinter-template.yml
+    parameters:
+      # MegaLinter parameters...
+
+  - template: .azdo/resource-provider-tests-template.yml
+    parameters:
+      dependsOn: MegaLinter
+      # Resource Provider test parameters...
+
+  - template: .azdo/wiki-update-template.yml
+    parameters:
+      dependsOn: [MegaLinter, ResourceProviderShellScriptTest]
+      # Wiki update parameters...
 ```
 
 ### Required Pipeline Variables
@@ -127,7 +164,7 @@ The following variables are required to run this repository's main pipeline.
 Please see, [Set variables in pipeline](https://learn.microsoft.com/azure/devops/pipelines/process/variables?view=azure-devops&tabs=classic%2Cbatch#set-variables-in-pipeline) for this process.
 
 | variable                              | secret | suggested value            | details                                                                                                                                                                                                             |
-|--:------------------------------------|--:-:---|--:-------------------------|--:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|:--------------------------------------|:------:|:---------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `subscription_id`                     | Y      | Azure subscription GUID    |                                                                                                                                                                                                                     |
 | `TF_VAR_CUSTOM_LOCATIONS_OID`         | Y      | OID of Arc Custom Location | [Create and manage custom locations on Azure Arc-enabled Kubernetes](https://learn.microsoft.com/azure/azure-arc/kubernetes/custom-locations)                                                                       |
 | `TF_VAR_ENVIRONMENT`                  | N      | `prod`                     | e.g. `dev`, `stage`, `prod`                                                                                                                                                                                         |
@@ -136,18 +173,3 @@ Please see, [Set variables in pipeline](https://learn.microsoft.com/azure/devops
 | `TF_VAR_RESOURCE_PREFIX`              | N      | `build`                    | prefix for all created resources                                                                                                                                                                                    |
 | `TF_VAR_VM_SKU_SIZE`                  | N      | `Standard_D8s_v3`          | [VM Size](https://learn.microsoft.com/azure/virtual-machines/sizes/overview?tabs=breakdownseries%2Cgeneralsizelist%2Ccomputesizelist%2Cmemorysizelist%2Cstoragesizelist%2Cgpusizelist%2Cfpgasizelist%2Chpcsizelist) |
 | `TF_VAR_VM_USERNAME`                  | Y      | VM admin user name         |                                                                                                                                                                                                                     |
-
-## Build Feature Sets
-
-The build pipeline provides several key features, with more on the way:
-
-- Checks Terraform Provider versions for update opportunities and publishes build warning
-- Runs a lightweight vulnerability scan for all dependant packages
-- Runs file linting on a wide variety of languages and file types using the MegaLinter template
-- Performs a matrix build on only resources that have been modified in the current PR
-- Publishes Terraform Plans for all changed resources within the current PR
-- Runs unit tests on changed Terraform within the current PR
-- Provides modular, templatized pipeline components for flexible pipeline creation
-- Ensures consistent validation steps across all pipelines through shared templates
-- Enables PR comment integration for linting results through the MegaLinter Azure Reporter
-- Optimizes pipeline performance with intelligent caching mechanisms
