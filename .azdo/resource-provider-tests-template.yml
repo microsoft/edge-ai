@@ -1,0 +1,101 @@
+# Resource Provider Testing Template
+#
+# This template includes jobs to test both shell scripts and PowerShell scripts
+# for Azure resource provider registration/unregistration.
+#
+# Parameters:
+#   dependsOn: Job(s) this template depends on (default: MatrixBuildFolderCheck)
+#   shellScriptCondition: Condition to run the shell script test (default: using changesInRpEnablementShell)
+#   pwshScriptCondition: Condition to run the PowerShell script test (default: using changesInRpEnablementPwsh)
+#   azureServiceConnection: Azure service connection name to use for CLI tasks
+#   workingDirectory: Directory containing the scripts to test (default: src/000-subscription)
+#   pwshTestResultsOutput: Path to output test results (default: $(System.DefaultWorkingDirectory)/PWSH-TEST-RESULTS.xml)
+
+parameters:
+  - name: dependsOn
+    type: string
+    default: MatrixBuildFolderCheck
+  - name: shellScriptCondition
+    type: string
+    default: eq(dependencies.MatrixBuildFolderCheck.outputs['matrixBuildFolderCheckTask.changesInRpEnablementShell'], 'true')
+  - name: pwshScriptCondition
+    type: string
+    default: eq(dependencies.MatrixBuildFolderCheck.outputs['matrixBuildFolderCheckTask.changesInRpEnablementPwsh'], 'true')
+  - name: azureServiceConnection
+    type: string
+    default: azdo-ai-for-edge-iac-for-edge
+  - name: workingDirectory
+    type: string
+    default: $(System.DefaultWorkingDirectory)/src/000-subscription
+  - name: pwshTestResultsOutput
+    type: string
+    default: $(System.DefaultWorkingDirectory)/PWSH-TEST-RESULTS.xml
+
+jobs:
+  # Job to run shell script tests for the resource providers if they have changed
+  - job: ResourceProviderShellScriptTest
+    dependsOn: ${{ parameters.dependsOn }}
+    pool:
+      name: ai-on-edge-managed-pool
+      vmImage: ubuntu-latest
+    # Check if the changeset includes shell script files and run if it does
+    condition: ${{ parameters.shellScriptCondition }}
+    steps:
+      - checkout: self
+        clean: true
+
+      - task: AzureCLI@2
+        displayName: Azure CLI for Resource Provider Unregistration Script Test
+        inputs:
+          azureSubscription: ${{ parameters.azureServiceConnection }}
+          workingDirectory: ${{ parameters.workingDirectory }}
+          scriptType: bash
+          scriptLocation: inlineScript
+          inlineScript: |
+            # Uninstall the Azure providers
+            echo "uninstalling azure providers"
+            ./unregister-azure-providers.sh aio-azure-resource-providers.txt
+            echo "uninstalled azure providers"
+        condition: and( not(failed()), not(canceled()) )
+
+      - task: AzureCLI@2
+        displayName: Azure CLI for Resource Provider Registration Script Test
+        inputs:
+          azureSubscription: ${{ parameters.azureServiceConnection }}
+          workingDirectory: ${{ parameters.workingDirectory }}
+          scriptType: bash
+          scriptLocation: inlineScript
+          inlineScript: |
+            # Install the Azure providers
+            echo "installing azure providers"
+            ./register-azure-providers.sh aio-azure-resource-providers.txt
+            echo "installed azure providers"
+        condition: and( not(failed()), not(canceled()) )
+
+  # Job to run PowerShell script tests for the resource providers if they have changed
+  - job: ResourceProviderPWSHScriptTest
+    dependsOn: ${{ parameters.dependsOn }}
+    pool:
+      name: ai-on-edge-managed-pool
+      vmImage: "windows-2022"
+    condition: ${{ parameters.pwshScriptCondition }}
+    variables:
+      testResultsOutput: ${{ parameters.pwshTestResultsOutput }}
+    steps:
+      - checkout: self
+        clean: true
+
+      # Run Pester tests for the resource provider scripts
+      - powershell: ./scripts/Invoke-Pester.ps1 -Path ./src/000-subscription -OutputFile $(testResultsOutput)
+        displayName: "Run pester"
+        workingDirectory: $(System.DefaultWorkingDirectory)
+
+      # Publish the Pester test results
+      - task: PublishTestResults@2
+        displayName: Publish Test Results
+        inputs:
+          testRunTitle: "Test Results for Pester"
+          buildPlatform: "Windows"
+          testRunner: "NUnit"
+          testResultsFiles: "$(testResultsOutput)"
+          failTaskOnFailedTests: true
