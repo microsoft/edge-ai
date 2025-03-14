@@ -1,6 +1,7 @@
 # Azure IoT Operations (AIO) Messaging
 
-**Date:** January 24, 2025 | **Author(s):** Suneet Nangia
+Author: Suneet Nangia
+Date: January 24, 2025
 
 In the modern industrial landscape, the seamless collection, contextualization, and integration of edge events into analytics platforms are crucial for operational efficiency and insightful decision-making.
 In edge-based solutions, including AIO, the messaging system provides a reliable backbone to exchange events between disparate internal and external components, enabling patterns like RPC as well as event sourcing for the other data stores.

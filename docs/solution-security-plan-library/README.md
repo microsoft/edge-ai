@@ -15,6 +15,4 @@ This project encourages the contribution of high-quality Security Plans that hav
 * Assign a workitem to yourself before beginning any effort, and set the item's status field accordingly.
 * If a work item for your contribution does not exist, [please file an issue](https://dev.azure.com/ai-at-the-edge-flagship-accelerator/IaC%20for%20the%20Edge/_workitems/create/Issue) first to engage the project's PO, TPM, or Tech Lead for guidance.
 * Commits (or at least one in a commit chain) should reference a User Story or Task item from the backlog for traceability.
-* All Security Plans must be reviewed by two reviewers including the following personnel:
-  * Product Owner (Larry Lieberman) or TPM (Mack Renard)
-  * Security Specialist (Andrew Malkov)
+* All Security Plans must be reviewed by two reviewers defined by auto-injected build reviewer groups.

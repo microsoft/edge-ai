@@ -36,10 +36,7 @@
 		"azapi",
 		"azmon",
 		"azuread",
-		"Baynes",
-		"Bouwer",
 		"CAIRA",
-		"Cardy",
 		"cloudedge",
 		"cloudedge002",
 		"clusterrolebinding",
@@ -60,19 +57,15 @@
 		"FIDAP",
 		"firewalld",
 		"gimsvc",
-		"Graeve",
 		"HNSW",
 		"hotfixes",
 		"Infeed",
 		"interoperation",
 		"isengineering",
 		"Kalypso",
-		"Katrien",
 		"Kyverno",
-		"Malkov",
 		"megalinter",
 		"mosquitto",
-		"Nangia",
 		"NNPI",
 		"OID",
 		"opcplc",
@@ -85,19 +78,15 @@
 		"RAGZRS",
 		"recordedtime",
 		"Rego",
-		"Renard",
 		"Ritchie",
 		"secretsync",
-		"Siobhan",
 		"specversion",
 		"Strato",
 		"Subvolumes",
-		"Suneet",
 		"Terrascan",
 		"tfstate",
 		"thermodyanmics",
-		"UAMI",
-		"Demir"
+		"UAMI"
 	],
 	"dictionaryDefinitions": [
 		{
@@ -132,6 +121,7 @@
 	"caseSensitive": false,
 	"useGitignore": true,
 	"ignoreRegExpList": [
-		"/^\\s*```[\\s\\S]*?^\\s*```/gm"
+		"/^\\s*```[\\s\\S]*?^\\s*```/gm",
+		"/^Authors?:.*$/gm"
 	]
 }
