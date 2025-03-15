@@ -16,7 +16,7 @@ Blueprints are the Infrastructure as Code (IaC) composition mechanism for this r
 
 **IMPORTANT:** We highly suggest using [this project's integrated dev container](./.devcontainer/README.md) to get started quickly with Windows-based systems and also works well with nix-compatible environments.
 
-- [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest)
+- [Azure CLI](https://docs.microsoft.com/cli/azure/install-azure-cli?view=azure-cli-latest)
 - An Azure subscription
 - [Visual Studio Code](https://code.visualstudio.com/)
 - [Terraform](https://developer.hashicorp.com/terraform/install)

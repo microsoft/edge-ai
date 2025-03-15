@@ -36,7 +36,7 @@ Using Azure ML Arc extension to deploy Machine Learning models registered in Azu
 
 ### Option 1: Azure Machine Learning (AML) Arc Extension
 
-[Azure ML Kubernetes compute target](https://learn.microsoft.com/en-us/azure/machine-learning/how-to-attach-kubernetes-anywhere?view=azureml-api-2) is available as Arc extension for a remote Kubernetes cluster to be used as a compute target in AML for training and/or deploying inference models.
+[Azure ML Kubernetes compute target](https://learn.microsoft.com/azure/machine-learning/how-to-attach-kubernetes-anywhere?view=azureml-api-2) is available as Arc extension for a remote Kubernetes cluster to be used as a compute target in AML for training and/or deploying inference models.
 
 - Extends the Azure ML Kubernetes compute target to Arc-enabled Kubernetes clusters on multi-cloud or edge. Part of `Online deployments` feature of Azure ML workspace. This addresses the scenario requirements for showcasing AML model training and seamless deployment pipeline to Kubernetes edge clusters.
 - Hosts the base components to deploy (new & remove), rollout, scale, secure, load balance models to the edge where they become available for local inference.
@@ -63,7 +63,7 @@ The following are the minimum requirements to running the Arc extension, which c
 | For Test       | **✓**             | N/A              | **1780**        | 8300          | **2440**            | 12296             | 1 Node     | 2 vCPU, 7 GiB Memory, 6400 IOPS, 1500Mbps BW   | DS2v2                    |
 | For Production | **✓**             | N/A              | 3600            | **12700**     | 4240                | **15296**         | 3 Node(s)  | 4 vCPU, 14 GiB Memory, 12800 IOPS, 1500Mbps BW | DS3v2                    |
 
-See details in [Recommended resource planning](https://learn.microsoft.com/en-us/azure/machine-learning/reference-kubernetes?view=azureml-api-2#recommended-resource-planning)
+See details in [Recommended resource planning](https://learn.microsoft.com/azure/machine-learning/reference-kubernetes?view=azureml-api-2#recommended-resource-planning)
 
 #### Pros and Cons for Option 1
 
@@ -85,14 +85,14 @@ Cons:
 - Monitoring and observability is not exposed locally on the edge cluster and tunnelled directly into the Azure ML workspace without clear documentation on how to store the signals within a customer's monitoring solution
 - The model is deployed as a load balanced REST API endpoint which might not fit all use cases.
 - Azure ML Arc extension does not solve the requirement for creating, maintaining, and managing a Git repo-based deployment for a workload that interact with the deployed models for inferencing calls, so an additional solution needs to be implemented regardless.
-- Evaluate networking requirements [Inference router and connectivity requirements - Azure Machine Learning](https://learn.microsoft.com/en-us/azure/machine-learning/how-to-kubernetes-inference-routing-azureml-fe?view=azureml-api-2#understand-connectivity-requirements-for-aks-inferencing-cluster)
+- Evaluate networking requirements [Inference router and connectivity requirements - Azure Machine Learning](https://learn.microsoft.com/azure/machine-learning/how-to-kubernetes-inference-routing-azureml-fe?view=azureml-api-2#understand-connectivity-requirements-for-aks-inferencing-cluster)
 - System requirements might be higher than running standalone models on edge.
 
 ### Option 2: Azure Arc Flux GitOps extension and GitOps based deployment
 
 GitOps with solutions like Flux or ArgoCD are a common approach to deploying and managing software in
 Kubernetes clusters, in the cloud and at the edge. For deploying Azure Machine Learning workloads, Flux GitOps
-through Azure Arc extension is a viable consideration. [Azure Arc GitOps Flux v2](https://learn.microsoft.com/en-us/azure/azure-arc/kubernetes/conceptual-gitops-flux2)
+through Azure Arc extension is a viable consideration. [Azure Arc GitOps Flux v2](https://learn.microsoft.com/azure/azure-arc/kubernetes/conceptual-gitops-flux2)
 extension simplifies installing Flux as a cluster extension and configuring Flux Configuration resources that
 sync Git repository sources and reconcile a cluster's desired state.
 
@@ -112,7 +112,7 @@ Pros:
 Cons:
 
 - Managing hundreds of targets clusters within a single Git repository structure, with automated tools that may impact manifest creation, is a complex task which Git is not optimized for.
-- Requires additional workflows and tooling for fleet configuration management at scale, see [Workload management in a multi-cluster environment with GitOps](https://learn.microsoft.com/en-us/azure/azure-arc/kubernetes/conceptual-workload-management).
+- Requires additional workflows and tooling for fleet configuration management at scale, see [Workload management in a multi-cluster environment with GitOps](https://learn.microsoft.com/azure/azure-arc/kubernetes/conceptual-workload-management).
 - RBAC separation per cluster is missing out of the box (as the Git permissions are for an entire repo).
 - Flux reconciliation engine runs continuously preventing clear maintenance windows out of the box, often
 prohibitive in manufacturing scenarios, though this can be addressed with approaches such as [Refactoring GitOps repository to support both real-time and reconciliation window changes](https://dev.to/mahrrah/refactoring-gitops-repository-to-support-both-real-time-and-reconciliation-window-changes-2cc)

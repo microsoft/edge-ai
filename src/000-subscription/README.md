@@ -5,8 +5,8 @@ The registration script only needs to be run once per subscription.
 
 ## Prerequisites
 
-- [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli)
-- To register resource providers, you need permission to do the /register/action operation, which is included in subscription Contributor and Owner roles. For more information, see [Azure resource providers and types](https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/resource-providers-and-types).
+- [Azure CLI](https://docs.microsoft.com/cli/azure/install-azure-cli)
+- To register resource providers, you need permission to do the /register/action operation, which is included in subscription Contributor and Owner roles. For more information, see [Azure resource providers and types](https://learn.microsoft.com/azure/azure-resource-manager/management/resource-providers-and-types).
 
 ## Getting Started
 

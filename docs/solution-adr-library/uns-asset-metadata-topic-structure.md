@@ -178,10 +178,10 @@ Metadata about assets needs to be stored and reused to create a UNS friendly top
 
 We considered the following options to store the assets metadata:
 
-- [Azure tags](https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/tag-resources): as every asset is an Azure resource, we can benefit from the usual Azure tags to store the metadata.
-- Asset custom properties: [Azure IoT Operations assets](https://learn.microsoft.com/en-us/azure/iot-operations/manage-devices-assets/overview-manage-assets#manage-assets-as-azure-resources-in-a-centralized-registry) can have a key/value property bags with any custom properties.
+- [Azure tags](https://learn.microsoft.com/azure/azure-resource-manager/management/tag-resources): as every asset is an Azure resource, we can benefit from the usual Azure tags to store the metadata.
+- Asset custom properties: [Azure IoT Operations assets](https://learn.microsoft.com/azure/iot-operations/manage-devices-assets/overview-manage-assets#manage-assets-as-azure-resources-in-a-centralized-registry) can have a key/value property bags with any custom properties.
 It is stored directly at the resource level in Azure, and it can be set using the Azure CLI, ARM Templates (batch operation) or through the Azure IoT Operations portal (manual).
-- [IoT MQ State Store](https://learn.microsoft.com/en-us/azure/iot-operations/develop/concept-about-state-store-protocol): The MQ state store is a distributed storage system within the Azure IoT Operations cluster. It allows to store key-value data that could be used for such kind of metadata.
+- [IoT MQ State Store](https://learn.microsoft.com/azure/iot-operations/develop/concept-about-state-store-protocol): The MQ state store is a distributed storage system within the Azure IoT Operations cluster. It allows to store key-value data that could be used for such kind of metadata.
 
 ## Decision Conclusion
 

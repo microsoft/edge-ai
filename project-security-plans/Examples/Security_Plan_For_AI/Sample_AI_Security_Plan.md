@@ -117,7 +117,7 @@ Chat Bot Service, Routing Microservice, Conversational Microservice, Azure OpenA
 3. Manually monitor input and output periodically to check that as expected.
 4. Maintain fine user control on decision making capabilities by LLM.
 5. All products and services must encrypt data in transit using approved cryptographic protocols and algorithms.
-6. Use [Azure AI Content Safety Filters](https://azure.microsoft.com/en-us/products/ai-services/ai-content-safety/#features) for prompt inputs and its responses.
+6. Use [Azure AI Content Safety Filters](https://azure.microsoft.com/products/ai-services/ai-content-safety/#features) for prompt inputs and its responses.
 7. Use TLS to encrypt all HTTP-based network traffic. Use other mechanisms, such as IPSec, to encrypt non-HTTP network traffic that contains customer or confidential data.
 8. Use only TLS 1.2 or TLS 1.3. Use ECDHE-based ciphers suites and NIST curves. Use strong keys. Enable HTTP Strict Transport Security. Turn off TLS compression and do not use ticket-based session resumption.
 
@@ -192,7 +192,7 @@ Web application, Non Search Microservice, Search API RAG microservice, Conversat
 1. Treat the model as any other user, adopting a zero-trust approach, and apply proper input validation on responses coming from the model to backend functions.
 2. Follow the best practices to ensure effective input validation and sanitization.
 3. Encode model output back to users to mitigate undesired code execution by JavaScript or Markdown.
-4. Use [Azure AI Content Safety Filters](https://azure.microsoft.com/en-us/products/ai-services/ai-content-safety/#features) for prompt inputs and its responses.
+4. Use [Azure AI Content Safety Filters](https://azure.microsoft.com/products/ai-services/ai-content-safety/#features) for prompt inputs and its responses.
 
 ****
 
@@ -299,7 +299,7 @@ Hence, it is important to spruce up the defense mechanisms for the early detecti
 - **Availability** means that networks, systems, and applications are up and running. It ensures that authorized users have timely reliable access to resources when they are needed.
 - **Privacy** relates to activities that focus on individual users' rights.
 
-#### Microsoft [Zero Trust](https://www.microsoft.com/en-us/security/business/zero-trust/?ef_id=67d61e29cde6157ddb0b7f7559e92f81:G:s&OCID=AID2200938_SEM_67d61e29cde6157ddb0b7f7559e92f81:G:s&msclkid=67d61e29cde6157ddb0b7f7559e92f81) Principles
+#### Microsoft [Zero Trust](https://www.microsoft.com/security/business/zero-trust/?ef_id=67d61e29cde6157ddb0b7f7559e92f81:G:s&OCID=AID2200938_SEM_67d61e29cde6157ddb0b7f7559e92f81:G:s&msclkid=67d61e29cde6157ddb0b7f7559e92f81) Principles
 
 - **Verify explicitly**.
 Always authenticate and authorize based on all available data points, including user identity, location, device health, service or workload, data classification, and anomalies.
@@ -337,14 +337,14 @@ Regardless of the type of deployment, customer always retains the following resp
 #### References
 
 - [Moderation - OpenAI API](https://platform.openai.com/docs/guides/moderation/overview)
-- [Azure AI Content Moderator](https://learn.microsoft.com/en-us/azure/ai-services/content-moderator/overview)
-- [Azure AI Content Safety](https://azure.microsoft.com/en-us/products/ai-services/ai-content-safety/#features)
-- [Security Bug Reports](https://learn.microsoft.com/en-us/security/engineering/identifying-security-bug-reports)
-- [AI Security Risk Assessment](https://www.microsoft.com/en-us/security/blog/2021/12/09/best-practices-for-ai-security-risk-management/)
+- [Azure AI Content Moderator](https://learn.microsoft.com/azure/ai-services/content-moderator/overview)
+- [Azure AI Content Safety](https://azure.microsoft.com/products/ai-services/ai-content-safety/#features)
+- [Security Bug Reports](https://learn.microsoft.com/security/engineering/identifying-security-bug-reports)
+- [AI Security Risk Assessment](https://www.microsoft.com/security/blog/2021/12/09/best-practices-for-ai-security-risk-management/)
 - [AI Impact Assessment](https://microsoft.sharepoint.com/sites/ResponsibleAI/SitePages/Achieving-Compliance.aspx#impact-assessments)
 - [Azure AI Security Risk Assessment](https://github.com/Azure/AI-Security-Risk-Assessment/blob/main/AI_Risk_Assessment_v4.1.4.pdf)
 - [MITRE Adversarial ML Threat Matrix](https://github.com/mitre/advmlthreatmatrix)
 - [OWASP AI Security and Privacy Guide](https://owasp.org/www-project-ai-security-and-privacy-guide/)
-- [Azure ML Prompt Flow](https://learn.microsoft.com/en-us/azure/machine-learning/prompt-flow/overview-what-is-prompt-flow?view=azureml-api-2)
+- [Azure ML Prompt Flow](https://learn.microsoft.com/azure/machine-learning/prompt-flow/overview-what-is-prompt-flow?view=azureml-api-2)
 - [Deck and Go Dos Responsible AI at Microsoft](https://strikecommunity.azurewebsites.net/articles/12301/deck-and-go-dos-responsible-ai-at-microsoft-deploy.html)
 - [Looking for Threats and Harms in AI System](https://microsoft.sharepoint.com/teams/PRCommunityTeam/Shared%20Documents/Forms/AllItems.aspx?id=%2Fteams%2FPRCommunityTeam%2FShared%20Documents%2FSTRIKE%2FSTRIKE%20Contributors%2FSTRIKE%20Presentations%2FArchive%2F2023%2F9%2E22%2E2023%20STRIKE%20Live%20%2D%20AI%2FAI%20FINAL%2F4%29%20Looking%20for%20Threat%20and%20Harms%2FLooking%20for%20Threats%20and%20Harms%20Presentation%2Epdf&parent=%2Fteams%2FPRCommunityTeam%2FShared%20Documents%2FSTRIKE%2FSTRIKE%20Contributors%2FSTRIKE%20Presentations%2FArchive%2F2023%2F9%2E22%2E2023%20STRIKE%20Live%20%2D%20AI%2FAI%20FINAL%2F4%29%20Looking%20for%20Threat%20and%20Harms&p=true&ga=1)

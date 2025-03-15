@@ -22,7 +22,7 @@ premises cluster set-up. And so on.
 
 ## Prerequisites
 
-- [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest)
+- [Azure CLI](https://docs.microsoft.com/cli/azure/install-azure-cli?view=azure-cli-latest)
 - An Azure subscription
 - [Visual Studio Code](https://code.visualstudio.com/)
 - A Linux-based development environment or a [Windows system with WSL](https://code.visualstudio.com/docs/remote/wsl)

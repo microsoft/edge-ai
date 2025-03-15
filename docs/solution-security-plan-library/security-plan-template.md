@@ -30,10 +30,10 @@ Each of the labeled entities in the figures below are accompanied by meta-inform
 
 `<insert image here>`
 
-For help getting started, please see our [Security Plan Guidelines](https://www.cwcwiki.com/wiki/Security_Plan_Guidelines) and [Microsoft Threat Modeling Security Fundamentals](https://learn.microsoft.com/en-us/training/paths/tm-threat-modeling-fundamentals/).
+For help getting started, please see our [Security Plan Guidelines](https://www.cwcwiki.com/wiki/Security_Plan_Guidelines) and [Microsoft Threat Modeling Security Fundamentals](https://learn.microsoft.com/training/paths/tm-threat-modeling-fundamentals/).
 
 ### Data Flow Attributes
-  
+
 | #   | Transport Protocol                     | Data Classification                                                                                                                                           | Authentication                        | Authorization                      | Notes              |
 |-----|----------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------|------------------------------------|--------------------|
 | 1   | [Name of the protocol for the service] | [Data classification guidance can be found in the [Appendix](https://www.cwcwiki.com/wiki/Security_Plan_Guidelines#Microsoft_Data_Classification_Guidelines)] | [Method of authenticating the caller] | [Method of authorizing the caller] | [Additional Notes] |

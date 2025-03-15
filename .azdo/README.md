@@ -80,13 +80,13 @@ This repository implements a modular, templatized approach to pipeline definitio
 
 The following templates are available in the `.azdo` directory:
 
-| Template                              | Purpose                                                                          | Documentation                                                            |
-|---------------------------------------|----------------------------------------------------------------------------------|--------------------------------------------------------------------------|
-| `docs-check-template.yml`             | Validates documentation quality including Terraform docs and URL checks          | [Documentation Check Documentation](./docs-check-template.md)            |
-| `megalinter-template.yml`             | Provides linting capabilities across multiple languages                          | [MegaLinter Documentation](./megalinter.md)                              |
-| `resource-provider-test-template.yml` | Runs tests to ensure resource provider registration scripts function as expected | [Resource Provider Tests](./resource-provider-testing.md)                |
-| `tf-variable-compliance-template.yml` | Ensures consistent Terraform variable definitions across modules                 | [Variable Compliance Documentation](./terraformf-variable-compliance.md) |
-| `wiki-update-template.yml`            | Updates Azure DevOps wiki with markdown documentation from the repository        | [Wiki Update Documentation](./wiki-update.md)                            |
+| Template                                     | Purpose                                                                          | Documentation                                                                    |
+|----------------------------------------------|----------------------------------------------------------------------------------|----------------------------------------------------------------------------------|
+| `docs-check-template.yml`                    | Validates documentation quality including Terraform docs and URL checks          | [Documentation Check Documentation](./docs-check-template.md)                    |
+| `megalinter-template.yml`                    | Provides linting capabilities across multiple languages                          | [MegaLinter Documentation](./megalinter-template.md)                             |
+| `resource-provider-test-template.yml`        | Runs tests to ensure resource provider registration scripts function as expected | [Resource Provider Tests](./resource-provider-tests-template.md)                 |
+| `terraform-variable-compliance-template.yml` | Ensures consistent Terraform variable definitions across modules                 | [Variable Compliance Documentation](./terraform-variable-compliance-template.md) |
+| `wiki-update-template.yml`                   | Updates Azure DevOps wiki with markdown documentation from the repository        | [Wiki Update Documentation](./wiki-update.md)                                    |
 
 #### How to Use Templates
 
@@ -102,20 +102,7 @@ stages:
           enableAzureReporter: true
 ```
 
-## Creating a Pipeline with Templates
-
-You can use our templates to build sophisticated pipelines that implement best practices for code quality, testing, and documentation.
-
-### Basic Template Usage
-
-```yaml
-# Example of basic template inclusion
-- template: .azdo/megalinter-template.yml
-  parameters:
-    dependsOn: DependencyScan
-```
-
-### Advanced MegaLinter Template Usage
+#### Advanced MegaLinter Template Usage
 
 ```yaml
 # Advanced configuration of the MegaLinter template
@@ -141,7 +128,7 @@ This advanced configuration:
 - Dynamically enables the Azure reporter only for pull requests
 - Passes required PR information for commenting
 
-### Combining Multiple Templates
+#### Combining Multiple Templates
 
 You can also combine multiple templates for a complete CI/CD workflow:
 
@@ -155,7 +142,15 @@ jobs:
     parameters:
       dependsOn: MegaLinter
       # Resource Provider test parameters...
+  - template: .azdo/resource-provider-tests-template.yml
+    parameters:
+      dependsOn: MegaLinter
+      # Resource Provider test parameters...
 
+  - template: .azdo/wiki-update-template.yml
+    parameters:
+      dependsOn: [MegaLinter, ResourceProviderShellScriptTest]
+      # Wiki update parameters...
   - template: .azdo/wiki-update-template.yml
     parameters:
       dependsOn: [MegaLinter, ResourceProviderShellScriptTest]

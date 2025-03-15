@@ -115,7 +115,7 @@ Enhancement suggestions are tracked as [Azure DevOps Features](https://dev.azure
 When contributing code to the project, please consider the following guidance:
 
 - Assign a workitem to yourself before beginning any effort, and set the item's status field accordingly.
-- If a work item for your contribution does not exist, [please file an issue](https://dev.azure.com/ai-at-the-edge-flagship-accelerator/IaC%20for%20the%20Edge/_workitems/create/Issue) first to engage the project's PO, TPM, or Tech Lead for guidance.
+- If a work item for your contribution does not exist, [please file an issue](https://dev.azure.com/ai-at-the-edge-flagship-accelerator/edge-ai/_workitems/create/Issue) first to engage the project's PO, TPM, or Tech Lead for guidance.
 - Commits (or at least one in a commit chain) should reference a User Story or Task item from the backlog for traceability.
 - When creating a PR, ensure descriptions use [Azure DevOps notation to close associated work items](https://learn.microsoft.com/en-us/azure/devops/repos/git/resolution-mentions?view=azure-devops).
 - All code PRs destined for the `main` branch will be reviewed by pre-determined reviewer groups that are automatically added to each PR.

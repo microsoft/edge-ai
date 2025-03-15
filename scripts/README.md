@@ -5,6 +5,19 @@ Azure DevOps build system for managing and validating the project's IaC.
 
 ## Developer and Build System Scripts
 
+### link-lang-check.py
+
+Finds and optionally fixes URLs with language path segments ('en-us').
+
+- **Usage**:
+  - Find links with language defaults only: `python3 link-lang-check.py` (outputs JSON)
+  - Find links with verbose output: `python3 link-lang-check.py -v`
+  - Fix links and remove 'en-us': `python3 link-lang-check.py -f`
+  - Fix links with verbose output: `python3 link-lang-check.py -f -v`
+- **Returns**: JSON array of detected links with file paths and line numbers (in search mode)
+- **Build Integration**: Used by DocsCheck job to detect links with language path segments and generate build warnings
+- **When to Use**: Run before submitting PRs to ensure links don't contain language-specific paths which can cause internationalization issues
+
 ### tf-vars-compliance-check.sh
 
 Validates terraform variable definitions across modules for consistency.

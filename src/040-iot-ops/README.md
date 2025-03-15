@@ -61,7 +61,7 @@ If you wish to configure custom trust settings for `Issuer` and trust bundle `Co
 
 ## Test OPC UA connectivity with MQTT Broker
 
-If you deployed the OPC UA broker simulator, you can test the connectivity by following this tutorial: [Test OPC UA connectivity with MQTT Broker](https://learn.microsoft.com/en-us/azure/iot-operations/manage-mqtt-broker/howto-test-connection?tabs=bicep#connect-to-the-default-listener-inside-the-cluster)
+If you deployed the OPC UA broker simulator, you can test the connectivity by following this tutorial: [Test OPC UA connectivity with MQTT Broker](https://learn.microsoft.com/azure/iot-operations/manage-mqtt-broker/howto-test-connection?tabs=bicep#connect-to-the-default-listener-inside-the-cluster)
 
 To test with the simulator, just modify the `mosquitto_sub`s `--topic` parameter to be the topic of the OPC UA broker simulator, which is `azure-iot-operations/data/oven` by default.
 

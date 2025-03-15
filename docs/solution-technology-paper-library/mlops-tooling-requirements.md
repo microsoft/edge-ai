@@ -40,12 +40,12 @@ Design considerations are discussed under the below scenarios:
 ### Scenario 1
 
 Training: AML
-Packaging: AML  
+Packaging: AML
 Deployment: flexible for any deployment tool
 
 AML training service is used for model training and model packaging. The model package is deployed to the compute target via the AML deployment tooling or other deployment tool via a managed container registry.
 
-AML provides a model optimization feature supporting ONNX during model training; for details on how ONNX can help optimizing model inferencing, check [here](https://learn.microsoft.com/en-us/azure/machine-learning/concept-onnx?view=azureml-api-2). You can use AML to train an ONNX model, use automated machine learning capabilities for ONNX format conversion, or use Azure AI Custom Vision to generate customized ONNX models.
+AML provides a model optimization feature supporting ONNX during model training; for details on how ONNX can help optimizing model inferencing, check [here](https://learn.microsoft.com/azure/machine-learning/concept-onnx?view=azureml-api-2). You can use AML to train an ONNX model, use automated machine learning capabilities for ONNX format conversion, or use Azure AI Custom Vision to generate customized ONNX models.
 
 Alternatively, if the model is built on one of the [frameworks which support ONNX conversion](https://onnx.ai/supported-tools), you can use [ONNX conversion tools](https://github.com/onnx/tutorials) to convert it.
 
@@ -53,7 +53,7 @@ Another important hardware acceleration feature that AML can provide is distribu
 
 The vision model trained with AML can be seamlessly deployed to Arc-enabled Kubernetes edge clusters with the AML native deployment service (arc extension) or can be flexibility packaged and saved in a container registry and subsequently deployed via other deployment tooling approaches.
 
-If you decide to use AML native deployment, it has built-in support for autoscaling. For autoscaling design and configuration, check [here](https://learn.microsoft.com/en-us/azure/machine-learning/how-to-kubernetes-inference-routing-azureml-fe?view=azureml-api-2#autoscaling) to become familiar with the AML autoscaling feature and its associated inferencing router component.
+If you decide to use AML native deployment, it has built-in support for autoscaling. For autoscaling design and configuration, check [here](https://learn.microsoft.com/azure/machine-learning/how-to-kubernetes-inference-routing-azureml-fe?view=azureml-api-2#autoscaling) to become familiar with the AML autoscaling feature and its associated inferencing router component.
 
 If you decide to use a deployment tool other than AML deployment, such as GitOps/Flux, Kubernetes Horizontal Pod Autoscaler (HPA) is a popular choice for autoscaling pods, which is also compatible with model containers created by AML. See [Scenario 3](#scenario-3) for more details.
 
@@ -73,9 +73,9 @@ Considerations for this option:
 
 ### Scenario 2
 
-Training: a custom model trained by own or a proprietary model  
-Packaging: AML  
-Deployment: AML  
+Training: a custom model trained by own or a proprietary model
+Packaging: AML
+Deployment: AML
 
 You have a custom model trained in your own training environment or a proprietary model you are using and decide to use AML for model packaging and deployment due to its seamless integration with Azure services and compute target.
 
@@ -90,7 +90,7 @@ AML supports most computer vision model frameworks, especially the mainstream ML
 
 For the scoring script, the specific functions, init() and run(), must be defined in this script for it to work with the inference router. During the deployment, it uses the registered model, inference environment, and scoring script to package the model and create a Kubernetes endpoint. Then AML will configure its inference router, other supporting services, and deploy all the components to edge.
 
-During AML packaging and deployment, the inference router is retrieved from the Microsoft Container Registry (MCR) (Implied from [MS official document](https://learn.microsoft.com/en-us/azure/machine-learning/how-to-kubernetes-inference-routing-azureml-fe?view=azureml-api-2&utm_source=chatgpt.com);
+During AML packaging and deployment, the inference router is retrieved from the Microsoft Container Registry (MCR) (Implied from [MS official document](https://learn.microsoft.com/azure/machine-learning/how-to-kubernetes-inference-routing-azureml-fe?view=azureml-api-2&utm_source=chatgpt.com);
 connection to the MCR is one of the connectivity requirements for deploying inference router to Arc AKS; though the documentation does not directly state that the inference router component is pulled from MCR. The Kubernetes EP created by AML is an abstract layer for all supporting Kubernetes services and exposes the model container via an HTTP REST API, with the inference router to be configured for traffic routing and autoscaling.
 
 The model acceleration conversion is the same as in [Scenario 1](#scenario-1). During packaging, AML supports converting models from many frameworks. You need to check your custom model to make sure it is compatible with the ONNX format, via checking the supported ONNX conversion frameworks [here](https://onnx.ai/supported-tools).
@@ -116,9 +116,9 @@ Cons:
 
 ### Scenario 3
 
-Training: A custom model trained by own or a proprietary model  
-Packaging: manual  
-Deployment: other deployment tool such as GitOps/Flux, HPA (recommended)  
+Training: A custom model trained by own or a proprietary model
+Packaging: manual
+Deployment: other deployment tool such as GitOps/Flux, HPA (recommended)
 
 The vision processing tasks sometimes have more complexities than the case of using a statistical model for sensor data analysis and the vision model framework can be complex. Though the mainstream frameworks are still common and capable for most of the vision tasks, there might be the case that the core framework such as PyTorch or TensorFlow can be combined with other frameworks for the purpose of preprocessing, optimization, or image data fusion.
 To make our evaluation more complete, we took the capability of supporting proprietary framework into consideration too.
@@ -139,11 +139,11 @@ If the use case does not require AML native deployment but does require autoscal
   If you decide to bypass AML and use other deployment tool such as GitOps/Flux, but integrate AML inference router component for autoscaling control, the challenges would lie in
   - Fetching the inference router component from MCR. You have to ensure the permission to the inference router component from MCR.
   - Setting up routing configuration of the inference router with the model container, expose the model container via a Kubernetes EP, and setup resource limits, autoscaling, and other deployment parameters.
-  This may require manual configuration of the inference router and EP with the same logic that AML service does. The inference router configuration is through [AML SDK AksWebService Class](https://learn.microsoft.com/en-us/python/api/azureml-core/azureml.core.webservice.akswebservice?view=azure-ml-py). The documentation for implementing this logic is limited.
+  This may require manual configuration of the inference router and EP with the same logic that AML service does. The inference router configuration is through [AML SDK AksWebService Class](https://learn.microsoft.com/python/api/azureml-core/azureml.core.webservice.akswebservice?view=azure-ml-py). The documentation for implementing this logic is limited.
   - Deploying the inference router with the model container during runtime.
   - Disabling HPA for the model container pod, as AML's inference router and HPA would conflict with each other. This may result in design complexity in managing the autoscaling and routing logic if combining with HPA for other workload autoscaling control.
 
-- Approach 2: Use Kubernetes Horizontal Pod Autoscaler(HPA) for standalone model container autoscaling  
+- Approach 2: Use Kubernetes Horizontal Pod Autoscaler(HPA) for standalone model container autoscaling
 
   HPA is a Kubernetes feature that scales the number of replicas of a deployment, stateful set, or replica set based on observed metrics such as CPU/memory utilization or custom-defined metrics. It functions similarly to the AML inference router scaling that allows the user to configure settings such as the model's utilization, or min/max replicas.
   But they conflict with each other, and as such, you should not use AML inference router while using HPA on the same inference workload pod. By using HPA, we can have more control with scaling approaches, such as manually setting the desired number of replicas, or setting custom thresholds for autoscaling.
@@ -173,20 +173,20 @@ For future considerations, if any AIO deployment tool that will be publicly avai
 
 ## Resources
 
-[AML ONNX acceleration support](https://learn.microsoft.com/en-us/azure/machine-learning/concept-onnx?view=azureml-api-2)
+[AML ONNX acceleration support](https://learn.microsoft.com/azure/machine-learning/concept-onnx?view=azureml-api-2)
 
-[Register your custom model to AML](https://learn.microsoft.com/en-us/azure/machine-learning/tutorial-deploy-model?view=azureml-api-2)
+[Register your custom model to AML](https://learn.microsoft.com/azure/machine-learning/tutorial-deploy-model?view=azureml-api-2)
 
-[How to package a model in AML](https://learn.microsoft.com/en-us/azure/machine-learning/how-to-package-models?view=azureml-api-2&tabs=cli)
+[How to package a model in AML](https://learn.microsoft.com/azure/machine-learning/how-to-package-models?view=azureml-api-2&tabs=cli)
 
-[Distributed training with AML](https://learn.microsoft.com/en-us/azure/machine-learning/concept-distributed-training?view=azureml-api-2)
+[Distributed training with AML](https://learn.microsoft.com/azure/machine-learning/concept-distributed-training?view=azureml-api-2)
 
-[Understand the AML scoring script](https://learn.microsoft.com/en-us/azure/machine-learning/how-to-deploy-online-endpoints?view=azureml-api-2&utm_source=chatgpt.com&tabs=cli#understand-the-scoring-script)
+[Understand the AML scoring script](https://learn.microsoft.com/azure/machine-learning/how-to-deploy-online-endpoints?view=azureml-api-2&utm_source=chatgpt.com&tabs=cli#understand-the-scoring-script)
 
-[Deploy a model to an hardware accelerated AKS cluster with AML](https://learn.microsoft.com/en-us/azure/machine-learning/how-to-deploy-azure-kubernetes-service?view=azureml-api-1&tabs=python)
+[Deploy a model to an hardware accelerated AKS cluster with AML](https://learn.microsoft.com/azure/machine-learning/how-to-deploy-azure-kubernetes-service?view=azureml-api-1&tabs=python)
 
-[Use Azure Machine Learning compute cluster to distribute a training or batch inference process across a cluster of CPU or GPU compute nodes in the cloud](https://learn.microsoft.com/en-us/azure/machine-learning/how-to-create-attach-compute-cluster?view=azureml-api-2&tabs=python)
+[Use Azure Machine Learning compute cluster to distribute a training or batch inference process across a cluster of CPU or GPU compute nodes in the cloud](https://learn.microsoft.com/azure/machine-learning/how-to-create-attach-compute-cluster?view=azureml-api-2&tabs=python)
 
 [Deploy AI using Microsoft Azure & ONNX for the OpenVINO Toolkit](https://www.intel.com/content/www/us/en/developer/videos/microsoft-azure-onnx-runtime-for-openvino.html#gs.j0ucc8)
 
-[Implementing optimized CPU inference in AML using ONNX models and Intel's OpenVINO toolkit](https://learn.microsoft.com/en-us/shows/ai-show/combining-the-power-of-optimum-openvino-onnx-runtime-and-azure)
+[Implementing optimized CPU inference in AML using ONNX models and Intel's OpenVINO toolkit](https://learn.microsoft.com/shows/ai-show/combining-the-power-of-optimum-openvino-onnx-runtime-and-azure)

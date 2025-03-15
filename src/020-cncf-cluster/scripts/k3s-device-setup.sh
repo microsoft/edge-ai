@@ -118,7 +118,7 @@ fi
 ####
 
 # Increase file system watches and notifies for AIO and ACSA
-# https://learn.microsoft.com/en-us/azure/azure-arc/container-storage/single-node-cluster-edge-volumes?pivots=other#prepare-linux-with-other-platforms
+# https://learn.microsoft.com/azure/azure-arc/container-storage/single-node-cluster-edge-volumes?pivots=other#prepare-linux-with-other-platforms
 max_user_instances=8192
 max_user_watches=524288
 file_max=100000

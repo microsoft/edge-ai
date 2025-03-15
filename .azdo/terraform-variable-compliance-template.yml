@@ -1,0 +1,99 @@
+# Template for checking Terraform variable definition compliance across modules
+# This template ensures consistent variable definitions throughout the codebase
+
+parameters:
+  # Dependencies for this job
+  dependsOn: []
+  # Display name for the job
+  displayName: 'Terraform Variable Compliance Check'
+  # Condition for when this job should run
+  condition: 'succeeded()'
+  # Version of terraform-docs to install
+  terraformDocsVersion: 'v0.16.0'
+  # Pool configuration
+  pool:
+    name: 'ai-on-edge-managed-pool'
+    vmImage: 'ubuntu-latest'
+
+jobs:
+  - job: TFVariableComplianceChecker
+    displayName: ${{ parameters.displayName }}
+    dependsOn: ${{ parameters.dependsOn }}
+    condition: ${{ parameters.condition }}
+    pool: ${{ parameters.pool }}
+    steps:
+      - checkout: self
+        clean: true
+
+      # Install terraform-docs from GitHub releases
+      - bash: |
+
+          # Check for latest terraform-docs version and compare with specified version
+          echo "Checking for latest terraform-docs version..."
+          # Use GitHub API to get the latest release version
+          LATEST_VERSION=$(curl -s https://api.github.com/repos/terraform-docs/terraform-docs/releases/latest | grep -o '"tag_name": "[^"]*' | grep -o '[^"]*$')
+          SPECIFIED_VERSION="${{ parameters.terraformDocsVersion }}"
+
+          echo "Latest version: $LATEST_VERSION"
+          echo "Specified version: $SPECIFIED_VERSION"
+
+          # Compare versions - using simple string comparison, since terraform-docs uses vX.Y.Z format
+          if [ "$LATEST_VERSION" != "$SPECIFIED_VERSION" ]; then
+            echo "##vso[task.logissue type=warning]A newer version of terraform-docs is available: $LATEST_VERSION (currently using $SPECIFIED_VERSION). Consider updating the terraformDocsVersion parameter."
+          else
+            echo "Using the latest version of terraform-docs: $SPECIFIED_VERSION"
+          fi
+
+          # Check if terraform-docs is already installed
+          if ! command -v terraform-docs &> /dev/null; then
+            echo "terraform-docs not found. Installing..."
+            # Detect architecture
+            ARCH=$(uname -m)
+            case $ARCH in
+              x86_64|amd64)
+                TERRAFORM_DOCS_ARCH="amd64"
+                ;;
+              aarch64|arm64)
+                TERRAFORM_DOCS_ARCH="arm64"
+                ;;
+              *)
+                echo "Unsupported architecture: $ARCH"
+                exit 1
+                ;;
+            esac
+
+            # Install terraform-docs (using the specified version, not the latest)
+            echo "Installing terraform-docs for $TERRAFORM_DOCS_ARCH architecture..."
+            curl -Lo ./terraform-docs.tar.gz "https://github.com/terraform-docs/terraform-docs/releases/download/$SPECIFIED_VERSION/terraform-docs-$SPECIFIED_VERSION-$(uname)-$TERRAFORM_DOCS_ARCH.tar.gz"
+            tar -xzf terraform-docs.tar.gz
+            chmod +x terraform-docs
+            sudo mv terraform-docs /usr/local/bin/
+          else
+            echo "terraform-docs is already installed"
+            terraform-docs --version
+          fi
+
+        displayName: Install terraform-docs
+        condition: and( not(failed()), not(canceled()) )
+
+      # Parse tf-vars-compliance-check.py output
+      - bash: |
+
+          variable_check_results=$(python3 ./scripts/tf-vars-compliance-check.py)
+          echo "Variable Check Results: $variable_check_results"
+
+          # Check if we got valid JSON results
+          if echo "$variable_check_results" | jq empty 2>/dev/null; then
+            # Parse each warning and output as an Azure Pipeline error
+            echo "$variable_check_results" | jq -c '.[]' | while read -r result; do
+                variable=$(echo "$result" | jq -r '.variable')
+                # Join multiple folders with newlines and proper indentation
+                folders=$(echo "$result" | jq -r '.folders | join("\n  - ")')
+                # Format differences with newlines and indentation
+                differences=$(echo "$result" | jq -r '.differences | map("\n  - " + .) | join("")')
+                echo "##vso[task.logissue type=error]Variable '$variable' has inconsistencies in folders:\n  - $folders\n\nDifferences:$differences"
+            done
+          fi
+
+        displayName: "Tf Variable Compliance Check"
+        condition: and( not(failed()), not(canceled()) )

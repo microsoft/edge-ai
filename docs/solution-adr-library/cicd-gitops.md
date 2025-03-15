@@ -48,7 +48,7 @@ This ADR provides a CI/CD flow implementation with a chain of GitHub Action work
 The entire flow is based on three GitHub repositories: *Source Code*, *Config* and *GitOps*.
 
 - *Source Code* repository contains the application source code along with a Docker file and manifest templates, such as Helm charts.
-- *Config* repository contains environment-specific [application configuration](https://learn.microsoft.com/en-us/azure/azure-arc/kubernetes/conceptual-workload-management#application-configurations) values.
+- *Config* repository contains environment-specific [application configuration](https://learn.microsoft.com/azure/azure-arc/kubernetes/conceptual-workload-management#application-configurations) values.
 These configurations are application-centric, such as logging levels, number of replicas, feature flags, localizations, etc.
 Refer to [Define application configurations](https://github.com/microsoft/kalypso/blob/main/cicd/setup.md#define-application-configurations) for more details on the *Config* repository structure.
 - *GitOps* repository contains the application manifests ready for deployment in each environment.

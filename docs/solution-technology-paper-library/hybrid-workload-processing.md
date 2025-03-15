@@ -370,7 +370,7 @@ Table Output:
 
 Purpose: Provides a more reliable and consistent dataset for analytical processing and further refinement.
 
-It is a cleaned and refined data table in KQL, contains data that has undergone transformation, cleansing, and normalization. Errors and duplicates are addressed in this layer. This table is updated via KQL [table policy](https://learn.microsoft.com/en-us/fabric/real-time-intelligence/table-update-policy) construct, as new records are inserted in Bronze layer table.
+It is a cleaned and refined data table in KQL, contains data that has undergone transformation, cleansing, and normalization. Errors and duplicates are addressed in this layer. This table is updated via KQL [table policy](https://learn.microsoft.com/fabric/real-time-intelligence/table-update-policy) construct, as new records are inserted in Bronze layer table.
 The record insertion in Silver layer table occurs using the following logic:
 
 1. Create a function `bronze_to_silver` to run every time a new record inserted in Bronze layer table called `bronze`. The function will expand JSON in the `Data` column of Bronze layer table and split into type specific columns e.g. `ValueInt`, `ValueReal`, `ValueString` in Silver layer table.
@@ -546,5 +546,5 @@ The Active-Standby model offers several key benefits for ensuring high availabil
 
 These benefits make the Active-Standby model a robust solution for maintaining high availability and reliability in Fabric Eventhouse.
 
-[Microsoft Garnet]: https://www.microsoft.com/en-us/research/blog/introducing-garnet-an-open-source-next-generation-faster-cache-store-for-accelerating-applications-and-services/?msockid=1801f6b6973f61b51466e273963060b
-[def]: https://learn.microsoft.com/en-us/fabric/real-time-intelligence/eventhouse
+[Microsoft Garnet]: https://www.microsoft.com/research/blog/introducing-garnet-an-open-source-next-generation-faster-cache-store-for-accelerating-applications-and-services/?msockid=1801f6b6973f61b51466e273963060b
+[def]: https://learn.microsoft.com/fabric/real-time-intelligence/eventhouse
