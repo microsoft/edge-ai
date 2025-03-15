@@ -78,11 +78,15 @@ This repository implements a modular, templatized approach to pipeline definitio
 
 #### Available Templates
 
-| Template | Description | Documentation |
-|----------|-------------|---------------|
-| [`megalinter-template.yml`](./megalinter-template.yml) | Runs MegaLinter to enforce code quality standards | [MegaLinter Integration](./megalinter.md) |
-| [`wiki-update-template.yml`](./wiki-update-template.yml) | Synchronizes documentation to Azure DevOps wiki | [Wiki Update Integration](./wiki-update.md) |
-| [`resource-provider-tests-template.yml`](./resource-provider-tests-template.yml) | Tests Azure Resource Provider scripts | [Resource Provider Testing](./resource-provider-tests.md) |
+The following templates are available in the `.azdo` directory:
+
+| Template                              | Purpose                                                                          | Documentation                                                            |
+|---------------------------------------|----------------------------------------------------------------------------------|--------------------------------------------------------------------------|
+| `docs-check-template.yml`             | Validates documentation quality including Terraform docs and URL checks          | [Documentation Check Documentation](./docs-check-template.md)            |
+| `megalinter-template.yml`             | Provides linting capabilities across multiple languages                          | [MegaLinter Documentation](./megalinter.md)                              |
+| `resource-provider-test-template.yml` | Runs tests to ensure resource provider registration scripts function as expected | [Resource Provider Tests](./resource-provider-testing.md)                |
+| `tf-variable-compliance-template.yml` | Ensures consistent Terraform variable definitions across modules                 | [Variable Compliance Documentation](./terraformf-variable-compliance.md) |
+| `wiki-update-template.yml`            | Updates Azure DevOps wiki with markdown documentation from the repository        | [Wiki Update Documentation](./wiki-update.md)                            |
 
 #### How to Use Templates
 
@@ -165,11 +169,11 @@ Please see, [Set variables in pipeline](https://learn.microsoft.com/azure/devops
 
 | variable                              | secret | suggested value            | details                                                                                                                                                                                                             |
 |:--------------------------------------|:------:|:---------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `subscription_id`                     | Y      | Azure subscription GUID    |                                                                                                                                                                                                                     |
-| `TF_VAR_CUSTOM_LOCATIONS_OID`         | Y      | OID of Arc Custom Location | [Create and manage custom locations on Azure Arc-enabled Kubernetes](https://learn.microsoft.com/azure/azure-arc/kubernetes/custom-locations)                                                                       |
-| `TF_VAR_ENVIRONMENT`                  | N      | `prod`                     | e.g. `dev`, `stage`, `prod`                                                                                                                                                                                         |
-| `TF_VAR_EXISTING_RESOURCE_GROUP_NAME` | N      | `build_system`             | useful for integration environments                                                                                                                                                                                 |
-| `TF_VAR_LOCATION`                     | N      | `westus`                   | [Azure region](https://azure.microsoft.com/explore/global-infrastructure/geographies/) to deploy to                                                                                                                 |
-| `TF_VAR_RESOURCE_PREFIX`              | N      | `build`                    | prefix for all created resources                                                                                                                                                                                    |
-| `TF_VAR_VM_SKU_SIZE`                  | N      | `Standard_D8s_v3`          | [VM Size](https://learn.microsoft.com/azure/virtual-machines/sizes/overview?tabs=breakdownseries%2Cgeneralsizelist%2Ccomputesizelist%2Cmemorysizelist%2Cstoragesizelist%2Cgpusizelist%2Cfpgasizelist%2Chpcsizelist) |
-| `TF_VAR_VM_USERNAME`                  | Y      | VM admin user name         |                                                                                                                                                                                                                     |
+| `subscription_id`                     |   Y    | Azure subscription GUID    |                                                                                                                                                                                                                     |
+| `TF_VAR_CUSTOM_LOCATIONS_OID`         |   Y    | OID of Arc Custom Location | [Create and manage custom locations on Azure Arc-enabled Kubernetes](https://learn.microsoft.com/azure/azure-arc/kubernetes/custom-locations)                                                                       |
+| `TF_VAR_ENVIRONMENT`                  |   N    | `prod`                     | e.g. `dev`, `stage`, `prod`                                                                                                                                                                                         |
+| `TF_VAR_EXISTING_RESOURCE_GROUP_NAME` |   N    | `build_system`             | useful for integration environments                                                                                                                                                                                 |
+| `TF_VAR_LOCATION`                     |   N    | `westus`                   | [Azure region](https://azure.microsoft.com/explore/global-infrastructure/geographies/) to deploy to                                                                                                                 |
+| `TF_VAR_RESOURCE_PREFIX`              |   N    | `build`                    | prefix for all created resources                                                                                                                                                                                    |
+| `TF_VAR_VM_SKU_SIZE`                  |   N    | `Standard_D8s_v3`          | [VM Size](https://learn.microsoft.com/azure/virtual-machines/sizes/overview?tabs=breakdownseries%2Cgeneralsizelist%2Ccomputesizelist%2Cmemorysizelist%2Cstoragesizelist%2Cgpusizelist%2Cfpgasizelist%2Chpcsizelist) |
+| `TF_VAR_VM_USERNAME`                  |   Y    | VM admin user name         |                                                                                                                                                                                                                     |

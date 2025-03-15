@@ -31,14 +31,14 @@ The template is available at [`.azdo/resource-provider-tests-template.yml`](./re
 
 ### Parameters
 
-| Parameter               | Type   | Default                                                                                     | Description                                        |
-|-------------------------|--------|---------------------------------------------------------------------------------------------|----------------------------------------------------|
-| `dependsOn`             | string | MatrixBuildFolderCheck                                                                      | Job this template depends on                       |
-| `shellScriptCondition`  | string | eq(dependencies.MatrixBuildFolderCheck.outputs['matrixBuildFolderCheckTask.changesInRpEnablementShell'], 'true') | Condition to run shell script tests               |
-| `pwshScriptCondition`   | string | eq(dependencies.MatrixBuildFolderCheck.outputs['matrixBuildFolderCheckTask.changesInRpEnablementPwsh'], 'true')  | Condition to run PowerShell script tests          |
-| `azureServiceConnection`| string | azdo-ai-for-edge-iac-for-edge                                                               | Azure service connection to use                    |
-| `workingDirectory`      | string | $(System.DefaultWorkingDirectory)/src/000-subscription                                      | Directory containing resource provider scripts     |
-| `pwshTestResultsOutput` | string | $(System.DefaultWorkingDirectory)/PWSH-TEST-RESULTS.xml                                     | Path for PowerShell test results output            |
+| Parameter                | Type   | Default                                                                                                          | Description                                    |
+|--------------------------|--------|------------------------------------------------------------------------------------------------------------------|------------------------------------------------|
+| `dependsOn`              | string | MatrixBuildFolderCheck                                                                                           | Job this template depends on                   |
+| `shellScriptCondition`   | string | eq(dependencies.MatrixBuildFolderCheck.outputs['matrixBuildFolderCheckTask.changesInRpEnablementShell'], 'true') | Condition to run shell script tests            |
+| `pwshScriptCondition`    | string | eq(dependencies.MatrixBuildFolderCheck.outputs['matrixBuildFolderCheckTask.changesInRpEnablementPwsh'], 'true')  | Condition to run PowerShell script tests       |
+| `azureServiceConnection` | string | azdo-ai-for-edge-iac-for-edge                                                                                    | Azure service connection to use                |
+| `workingDirectory`       | string | $(System.DefaultWorkingDirectory)/src/000-subscription                                                           | Directory containing resource provider scripts |
+| `pwshTestResultsOutput`  | string | $(System.DefaultWorkingDirectory)/PWSH-TEST-RESULTS.xml                                                          | Path for PowerShell test results output        |
 
 ### Example Usage
 
