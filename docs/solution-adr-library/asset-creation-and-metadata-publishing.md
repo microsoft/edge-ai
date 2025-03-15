@@ -33,13 +33,13 @@ The ideal way is the use the custom properties of the asset in AIO to store that
 
 Unfortunately, adding custom properties automatically via the `az iot ops asset create` command is not yet supported.
 
-The alternative is to store the metadata in a central place. Here [Azure Resource Tags](https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/tag-resources) of the synced Azure resource can be used. This can be added by using the `az iot ops asset create --tags` command. The operator can then update the metadata in the Azure Portal if changes occur.
+The alternative is to store the metadata in a central place. Here [Azure Resource Tags](https://learn.microsoft.com/azure/azure-resource-manager/management/tag-resources) of the synced Azure resource can be used. This can be added by using the `az iot ops asset create --tags` command. The operator can then update the metadata in the Azure Portal if changes occur.
 
 ## Decision Conclusion
 
 ### Asset Creation
 
-The creation of assets and asset endpoint profiles can be achieved by utilizing the Azure CLI `az iot ops asset`. See [this page](https://learn.microsoft.com/en-us/cli/azure/iot/ops?view=azure-cli-latest) for latest CLI details / updates.
+The creation of assets and asset endpoint profiles can be achieved by utilizing the Azure CLI `az iot ops asset`. See [this page](https://learn.microsoft.com/cli/azure/iot/ops?view=azure-cli-latest) for latest CLI details / updates.
 Asset creation will be automated via shell script which executes the following steps:
 
 1. Receive the following parameters:

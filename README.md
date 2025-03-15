@@ -29,18 +29,18 @@ for delivery in Q2 CY2025.
 If you are in need of Quickstarts for Azure IoT Operations or example implementations, they can be found in official
 Azure documentation:
 
-- [Azure IoT Operations - Quickstart](https://learn.microsoft.com/en-us/azure/iot-operations/get-started-end-to-end-sample/quickstart-deploy)
-- [Azure IoT Operations (AIO) documentation](https://learn.microsoft.com/en-us/azure/iot-operations/overview-iot-operations)
+- [Azure IoT Operations - Quickstart](https://learn.microsoft.com/azure/iot-operations/get-started-end-to-end-sample/quickstart-deploy)
+- [Azure IoT Operations (AIO) documentation](https://learn.microsoft.com/azure/iot-operations/overview-iot-operations)
 - [Azure Arc Jumpstart Agora Manufacturing Scenario](https://azurearcjumpstart.com/azure_jumpstart_ag/contoso_motors#overview).
 
 ## Getting Started
 
-Check out the project's [wiki](https://dev.azure.com/ai-at-the-edge-flagship-accelerator/IaC%20for%20the%20Edge/_wiki/wikis/Edge%20AI/5/), or after cloning the repository, open a
+Check out the project's [wiki](https://dev.azure.com/ai-at-the-edge-flagship-accelerator/edge-ai/_wiki/wikis/Edge%20AI/5/), or after cloning the repository, open a
 Copilot chat and ask `@workspace What should I know before I use this repository?`
 
 Then, get started bootstrapping Arc-enabled AIO environments:
 
-1. [Cloning this repository locally](https://learn.microsoft.com/en-us/azure/devops/repos/git/clone?view=azure-devops&tabs=visual-studio-2022#get-the-clone-url-of-an-azure-repos-git-repo)
+1. [Cloning this repository locally](https://learn.microsoft.com/azure/devops/repos/git/clone?view=azure-devops&tabs=visual-studio-2022#get-the-clone-url-of-an-azure-repos-git-repo)
 2. [Install pre-requisites](./blueprints/README.md) or use [this project's integrated dev container](./.devcontainer/README.md).
 3. Login to the Azure Portal.
 4. From a terminal:

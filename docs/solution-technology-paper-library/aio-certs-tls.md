@@ -135,9 +135,9 @@ spec:
         issuerRef:
           name: my-issuer
           kind: Issuer
-        duration: 240h # default is 720 hours 
+        duration: 240h # default is 720 hours
         san:
-          dns: 
+          dns:
           - mycustom.domain # add my custom internal or public DNS entries
           ip: []
 
@@ -202,7 +202,7 @@ This can be achieved by following these steps:
 * Sync the secrets to the cluster using `SecretProviderClass` and `SecretSync` resources.
 * Configure the `Issuer` or `ClusterIssuer` resource and reference the securely synchronized `secret` resources which SSE provisions.
 * Configure the `ConfigMap` for storing the trust bundle, referencing the root CA from the synced `secret`. If you use `Bundle` from `trust-manager`, create all resources in the `cert-manager` namespace.
-* Finally, continue with the installation of AIO with the `az iot ops create` command, as documented in the [Bring your own issuer](https://learn.microsoft.com/en-us/azure/iot-operations/secure-iot-ops/concept-default-root-ca#bring-your-own-issuer) approach.
+* Finally, continue with the installation of AIO with the `az iot ops create` command, as documented in the [Bring your own issuer](https://learn.microsoft.com/azure/iot-operations/secure-iot-ops/concept-default-root-ca#bring-your-own-issuer) approach.
 
 > ⚠️ **Warning**: Currently, Azure IoT Operations supports the Secret Sync Extension (SSE) in General Availability (GA) when installed as part of the default AIO installation. Although standalone SSE is not yet GA, it can be configured and installed before AIO to sync trust-related secrets.
 > Follow the official documentation to install the Secret Sync Extension. Enable SSE federated identity with a service account in the `cert-manager` namespace to avoid conflicts with `az iot ops secretsync enable` functionality in the `azure-iot-operations` namespace.

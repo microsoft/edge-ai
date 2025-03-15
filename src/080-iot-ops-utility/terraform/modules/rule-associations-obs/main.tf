@@ -2,7 +2,7 @@
  * # Data Collection Rule Associations for Observability
  *
  * Creates the data collection rule associations required to link the right data for observability.
- * ref: <https://learn.microsoft.com/en-us/azure/azure-monitor/essentials/data-collection-rule-associations?tabs=cli>
+ * ref: <https://learn.microsoft.com/azure/azure-monitor/essentials/data-collection-rule-associations?tabs=cli>
  */
 
 # ref: https://github.com/microsoft/Docker-Provider/blob/4961414fc6fa72d072533cfbcdc9667f82d92f18/scripts/onboarding/aks/onboarding-msi-terraform/main.tf#L66

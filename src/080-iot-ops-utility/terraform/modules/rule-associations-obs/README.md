@@ -3,7 +3,7 @@
 # Data Collection Rule Associations for Observability
 
 Creates the data collection rule associations required to link the right data for observability.
-ref: <https://learn.microsoft.com/en-us/azure/azure-monitor/essentials/data-collection-rule-associations?tabs=cli>
+ref: <https://learn.microsoft.com/azure/azure-monitor/essentials/data-collection-rule-associations?tabs=cli>
 
 ## Requirements
 

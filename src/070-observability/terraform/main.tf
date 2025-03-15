@@ -2,7 +2,7 @@
  * # Observability
  *
  * Creates a new Azure Monitor Workspace, Log Analytics Workspace and Azure Managed Grafana and assigns the required roles.
- * ref: <https://learn.microsoft.com/en-us/azure/azure-monitor/containers/kubernetes-monitoring-enable?tabs=terraform>
+ * ref: <https://learn.microsoft.com/azure/azure-monitor/containers/kubernetes-monitoring-enable?tabs=terraform>
  */
 
 locals {
@@ -102,7 +102,7 @@ resource "terraform_data" "apply_scripts" {
   }
 }
 
-# ref: https://learn.microsoft.com/en-us/azure/azure-monitor/essentials/data-collection-rule-overview
+# ref: https://learn.microsoft.com/azure/azure-monitor/essentials/data-collection-rule-overview
 # ref: https://github.com/microsoft/Docker-Provider/blob/4961414fc6fa72d072533cfbcdc9667f82d92f18/scripts/onboarding/aks/onboarding-msi-terraform/main.tf#L30
 resource "azurerm_monitor_data_collection_rule" "logs_data_collection_rule" {
   name                = "dcr-${var.resource_prefix}-${var.environment}-logs-${var.instance}"
@@ -177,7 +177,7 @@ resource "azurerm_monitor_data_collection_rule" "metrics_data_collection_rule" {
   ]
 }
 
-# ref: https://learn.microsoft.com/en-us/azure/azure-monitor/essentials/data-collection-endpoint-overview?tabs=portal
+# ref: https://learn.microsoft.com/azure/azure-monitor/essentials/data-collection-endpoint-overview?tabs=portal
 # ref: https://github.com/Azure/prometheus-collector/blob/ecd8086c57e234bf0465dd82dbfb2f34ee3475f1/AddonTerraformTemplate/main.tf#L56
 resource "azurerm_monitor_data_collection_endpoint" "data_collection_endpoint" {
   name                = "dce-${var.resource_prefix}-${var.environment}-${var.instance}"

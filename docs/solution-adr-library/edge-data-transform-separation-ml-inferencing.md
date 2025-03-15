@@ -30,7 +30,7 @@ The following diagram shows the interaction between the _Scoring Gateway_ and th
 
 ![Sequence diagram showing the interaction of edge components](./media/edge-data-transform-separation-ml-inferencing-diag.png)
 
-The devices publish data to the Azure IoT Operations MQTT broker. This data is then optionally [preprocessed by Azure IoT Operations Dataflow](https://learn.microsoft.com/en-us/azure/iot-operations/connect-to-cloud/overview-dataflow) to map (filter, project), convert and enrich the data.
+The devices publish data to the Azure IoT Operations MQTT broker. This data is then optionally [preprocessed by Azure IoT Operations Dataflow](https://learn.microsoft.com/azure/iot-operations/connect-to-cloud/overview-dataflow) to map (filter, project), convert and enrich the data.
 The goal is to provide the right preprocessed (mapped, filtered, enriched, etc.) features required by the scoring endpoint. This preprocessed data is then published back to the MQTT broker to a different topic for preprocessed data.
 
 The gateway subscribes to the input topic on startup.
@@ -113,7 +113,7 @@ In the gateway the cached data is transformed into a time series data table with
 
 The gateway is scoring endpoint agnostic. All MQTT data is transformed into a set of time series that is then forwarded to the scoring endpoint for inference at the configured interval.
 
-The filtering of the data can be either done as part of the gateway or in an [Azure IoT Operations dataflow](https://learn.microsoft.com/en-us/azure/iot-operations/connect-to-cloud/overview-dataflow) that just filters the data required by the scoring and forwards it to a MQTT topic on which the gateway receives it.
+The filtering of the data can be either done as part of the gateway or in an [Azure IoT Operations dataflow](https://learn.microsoft.com/azure/iot-operations/connect-to-cloud/overview-dataflow) that just filters the data required by the scoring and forwards it to a MQTT topic on which the gateway receives it.
 
 **Advantages:**
 

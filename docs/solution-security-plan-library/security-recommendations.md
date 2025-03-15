@@ -523,8 +523,8 @@ Service produces resource logs that can provide enhanced service-specific metric
 **Configuration Guidance:**
 
 Azure Monitor starts automatically collecting metric data for your virtual machine host when you create the VM. To collect logs and performance data from the guest operating system of the virtual machine, though, you must install the Azure Monitor agent. You can install the agent and configure collection using either
-[VM insights](https://learn.microsoft.com/azure/virtual-machines/monitor-vm?toc=https%3A%2F%2Flearn.microsoft.com%2Fen-us%2Fazure%2Fvirtual-machine-scale-sets%2Ftoc.json&bc=https%3A%2F%2Flearn.microsoft.com%2Fen-us%2Fazure%2Fbread%2Ftoc.json#vm-insights) or by
-[creating a data collection](https://learn.microsoft.com/azure/virtual-machines/monitor-vm?toc=https%3A%2F%2Flearn.microsoft.com%2Fen-us%2Fazure%2Fvirtual-machine-scale-sets%2Ftoc.json&bc=https%3A%2F%2Flearn.microsoft.com%2Fen-us%2Fazure%2Fbread%2Ftoc.json#create-data-collection-rule) rule.
+[VM insights](https://learn.microsoft.com/azure/virtual-machines/monitor-vm?toc=https%3A%2F%2Flearn.microsoft.com%2Fazure%2Fvirtual-machine-scale-sets%2Ftoc.json&bc=https%3A%2F%2Flearn.microsoft.com%2Fazure%2Fbread%2Ftoc.json#vm-insights) or by
+[creating a data collection](https://learn.microsoft.com/azure/virtual-machines/monitor-vm?toc=https%3A%2F%2Flearn.microsoft.com%2Fazure%2Fvirtual-machine-scale-sets%2Ftoc.json&bc=https%3A%2F%2Flearn.microsoft.com%2Fazure%2Fbread%2Ftoc.json#create-data-collection-rule) rule.
 
 **Reference:**
 

@@ -18,11 +18,11 @@ The following resources will be created when using the assets available under th
 - Dataflow Event Grid and ACSA endpoints
 - Dataflows for `AIO MQTT -> ACSA` and `AIO MQTT -> Event Grid` bidirectional flow
 
-![sample-arch-diagram](./assets/arch-diagram.drawio.png)
+![sample-arch-diagram](./media/arch-diagram.drawio.png)
 
 ## Prerequisites
 
-- [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest)
+- [Azure CLI](https://docs.microsoft.com/cli/azure/install-azure-cli?view=azure-cli-latest)
 - Azure subscription
 
     Login to Azure CLI using the below command:
@@ -34,7 +34,7 @@ The following resources will be created when using the assets available under th
 
 - A Kubernetes cluster with the Azure IoT Operations installed. You can follow the following tutorials to cover this prerequisite: [Creating a cluster](../../020-cncf-cluster/README.md), [installing AIO prerequisites](../../030-iot-ops-cloud-reqs/README.md), and [installing AIO](../../040-iot-ops/README.md).
 - [kubectl](https://k8s-docs.netlify.app/en/docs/tasks/tools/install-kubectl/) command-line tool installed and configured to connect to your Kubernetes cluster
-- Access to Arc enabled Kubernetes cluster with a [proxy configured](https://learn.microsoft.com/en-us/cli/azure/connectedk8s?view=azure-cli-latest#az-connectedk8s-proxy)
+- Access to Arc enabled Kubernetes cluster with a [proxy configured](https://learn.microsoft.com/cli/azure/connectedk8s?view=azure-cli-latest#az-connectedk8s-proxy)
 - An MQTT client such as `mosquitto_pub` for testing the connection
 - Set up the following environment variables by running:
 
@@ -75,7 +75,7 @@ The following resources will be created when using the assets available under th
     ./create-event-grid.sh
     ```
 
-    >**Note**: `maximumClientSessionsPerAuthenticationName` Event Grid parameter [should be increased](https://learn.microsoft.com/en-us/azure/iot-operations/connect-to-cloud/howto-configure-mqtt-endpoint?tabs=portal#enable-mqtt) if more Event Grid sync Dataflows are created. You can use the `EVENT_GRID_MAX_CLIENT_SESSIONS` environment variable to configure this value.
+    >**Note**: `maximumClientSessionsPerAuthenticationName` Event Grid parameter [should be increased](https://learn.microsoft.com/azure/iot-operations/connect-to-cloud/howto-configure-mqtt-endpoint?tabs=portal#enable-mqtt) if more Event Grid sync Dataflows are created. You can use the `EVENT_GRID_MAX_CLIENT_SESSIONS` environment variable to configure this value.
 
 - Create Storage Account, ACSA Edge Subvolumes, and supporting role access assignments:
 
@@ -91,7 +91,7 @@ The following resources will be created when using the assets available under th
 
 ### Testing the sample
 
-- [Connect to the default listener inside the cluster](https://learn.microsoft.com/en-us/azure/iot-operations/manage-mqtt-broker/howto-test-connection?tabs=portal#connect-to-the-default-listener-inside-the-cluster) to be able to send payload to AIO MQTT Broker
+- [Connect to the default listener inside the cluster](https://learn.microsoft.com/azure/iot-operations/manage-mqtt-broker/howto-test-connection?tabs=portal#connect-to-the-default-listener-inside-the-cluster) to be able to send payload to AIO MQTT Broker
 
 - Send a payload to AIO MQTT Broker to the following topics to see data in the created Storage Account `machine-status` and `total-counter` containers accordingly:
 

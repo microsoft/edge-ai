@@ -29,7 +29,7 @@ MQTT defines three QoS levels:
 - **QoS 1 (At least once)**: The publisher resends the message until an acknowledgment (called PUBACK) is received from the broker. This ensures delivery but might lead to duplicates. To be used for moderately important data where some redundancy is tolerable.
 - **QoS 2 (Exactly once)**: A four-handshake process guarantees a single message delivery. This offers the highest reliability **but incurs the most overhead**. To be used for critical data requiring guaranteed delivery without duplicates.
 
-> NOTE: QoS 2 is [not supported in Azure IoT Operations](https://learn.microsoft.com/en-us/azure/iot-operations/reference/mqtt-support).
+> NOTE: QoS 2 is [not supported in Azure IoT Operations](https://learn.microsoft.com/azure/iot-operations/reference/mqtt-support).
 
 ### Data types
 
@@ -99,11 +99,11 @@ To configure the `cardinality` of the MQTT Broker elements, we can:
         partitions: 2
         redundancyFactor: 2
         workers: 2
-      frontend: 
+      frontend:
         replicas: 2
         workers: 2
     encryptInternalTraffic: false
-    memoryProfile: medium 
+    memoryProfile: medium
   ```
 
   - the `distributed` mode is used to override the default values.
@@ -111,7 +111,7 @@ To configure the `cardinality` of the MQTT Broker elements, we can:
   - the `frontend` is using **2 replicas** (number of `frontend` pods to deploy) and **2 workers** (number of workers to deploy per frontend).
   - the `memoryProfile` defines the settings profile for the **memory usage**. It's a very important value and needs good understanding of the targeted use cases. It has a huge impact on performance/infrastructure resource. For example, it can cause memory usage to go from `99 MiB` max to `4.9 GiB` max per `frontend replica`.
 
-> NB: All these settings are covered in details in the [Configure core Azure IoT MQ Preview MQTT broker settings](https://learn.microsoft.com/en-us/azure/iot-operations/manage-mqtt-connectivity/howto-configure-availability-scale)
+> NB: All these settings are covered in details in the [Configure core Azure IoT MQ Preview MQTT broker settings](https://learn.microsoft.com/azure/iot-operations/manage-mqtt-connectivity/howto-configure-availability-scale)
 
 - or we can define the `cardinality` and `memoryProfile` while deploying the `mq` extension during the AIO Install.
 
@@ -138,6 +138,6 @@ To configure the `cardinality` of the MQTT Broker elements, we can:
 
 ## References
 
-- [Configure scaling settings - Configure core Azure IoT MQ](https://learn.microsoft.com/en-us/azure/iot-operations/manage-mqtt-connectivity/howto-configure-availability-scale#configure-scaling-settings)
-- [az iot ops - Azure CLI Reference](https://learn.microsoft.com/en-us/cli/azure/iot/ops?view=azure-cli-latest#az-iot-ops-init)
-- [Secure Azure IoT MQ Preview communication using BrokerListener](https://learn.microsoft.com/en-us/azure/iot-operations/manage-mqtt-connectivity/howto-configure-brokerlistener)
+- [Configure scaling settings - Configure core Azure IoT MQ](https://learn.microsoft.com/azure/iot-operations/manage-mqtt-connectivity/howto-configure-availability-scale#configure-scaling-settings)
+- [az iot ops - Azure CLI Reference](https://learn.microsoft.com/cli/azure/iot/ops?view=azure-cli-latest#az-iot-ops-init)
+- [Secure Azure IoT MQ Preview communication using BrokerListener](https://learn.microsoft.com/azure/iot-operations/manage-mqtt-connectivity/howto-configure-brokerlistener)
