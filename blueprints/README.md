@@ -6,11 +6,28 @@ Blueprints are the Infrastructure as Code (IaC) composition mechanism for this r
 
 ## Available Blueprints
 
-| Blueprint                                                                | Description                                                                                  |
-|--------------------------------------------------------------------------|----------------------------------------------------------------------------------------------|
-| [Full Single Cluster](./terraform/full-single-cluster/)                  | Complete deployment of Azure IoT Operations on a single-node, Arc-enabled Kubernetes cluster |
-| [CNCF Cluster Script Only](./terraform/only-output-cncf-cluster-script/) | Generates scripts for cluster creation without deploying resources                           |
-| *More coming soon...*                                                    |                                                                                              |
+| Blueprint                                                               | Description                                                                                  |
+|-------------------------------------------------------------------------|----------------------------------------------------------------------------------------------|
+| [Full Single Cluster](./full-single-cluster/README.md)                  | Complete deployment of Azure IoT Operations on a single-node, Arc-enabled Kubernetes cluster |
+| [Full Multi-node Cluster](./full-single-cluster/README.md)              | Complete deployment of Azure IoT Operations on a multi-node, Arc-enabled Kubernetes cluster  |
+| [CNCF Cluster Script Only](./only-output-cncf-cluster-script/README.md) | Generates scripts for cluster creation without deploying resources                           |
+| *More coming soon...*                                                   |                                                                                              |
+
+## Terraform Architecture
+
+Each blueprint in this repository follows a consistent structure:
+
+- **Main Configuration**: Root module that orchestrates component deployment
+- **Variables**: Defined in `variables.tf` with descriptions and default values
+- **Outputs**: Critical resource information returned after deployment in `outputs.tf`
+- **Reusable Modules**: Leverages components from `/src` to ensure consistency and maintainability
+- **Local State**: By default, state is stored locally but can be configured for remote backends
+
+## Blueprint Selection Guide
+
+- **Full Single Cluster**: Best for development, testing, and proof-of-concept deployments
+- **Full Multi-node Cluster**: Recommended for production-grade deployments requiring high availability
+- **CNCF Cluster Script Only**: Ideal for environments with existing infrastructure or custom deployment processes
 
 ## Prerequisites
 
@@ -32,7 +49,7 @@ Blueprints are the Infrastructure as Code (IaC) composition mechanism for this r
 2. Navigate to your chosen blueprint directory:
 
    ```sh
-   cd ./terraform/full-single-cluster
+   cd ./full-single-cluster
    ```
 
 3. Set up required environment variables:
@@ -75,3 +92,34 @@ Blueprints are the Infrastructure as Code (IaC) composition mechanism for this r
    ```txt
    Apply complete! Resources: *** added, *** changed, *** destroyed.
    ```
+
+## Common Terraform Commands
+
+```sh
+# Validate Terraform configuration
+terraform validate
+
+# Format Terraform files
+terraform fmt
+
+# Preview changes before applying
+terraform plan -var-file=terraform.tfvars
+
+# Clean up deployed resources
+terraform destroy -var-file=terraform.tfvars
+```
+
+## State Management
+
+By default, Terraform state is stored locally. For team environments, consider configuring a remote backend:
+
+```hcl
+terraform {
+  backend "azurerm" {
+    resource_group_name  = "terraform-state-rg"
+    storage_account_name = "terraformstate"
+    container_name       = "tfstate"
+    key                  = "blueprint.tfstate"
+  }
+}
+```

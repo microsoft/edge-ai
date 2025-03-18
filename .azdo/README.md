@@ -2,7 +2,7 @@
 
 This repository can be cloned and used as the base image for an IaC repo with
 integrated CI/CD. There is minimal configuration required to enable the pipelines,
-though fully automated setup is under design.
+though fully automated, IaC-based setup is under design/construction.
 
 ## Engineering Principles
 
@@ -80,13 +80,38 @@ This repository implements a modular, templatized approach to pipeline definitio
 
 The following templates are available in the `.azdo` directory:
 
-| Template                                     | Purpose                                                                          | Documentation                                                                    |
-|----------------------------------------------|----------------------------------------------------------------------------------|----------------------------------------------------------------------------------|
-| `docs-check-template.yml`                    | Validates documentation quality including Terraform docs and URL checks          | [Documentation Check Documentation](./docs-check-template.md)                    |
-| `megalinter-template.yml`                    | Provides linting capabilities across multiple languages                          | [MegaLinter Documentation](./megalinter-template.md)                             |
-| `resource-provider-test-template.yml`        | Runs tests to ensure resource provider registration scripts function as expected | [Resource Provider Tests](./resource-provider-tests-template.md)                 |
-| `terraform-variable-compliance-template.yml` | Ensures consistent Terraform variable definitions across modules                 | [Variable Compliance Documentation](./terraform-variable-compliance-template.md) |
-| `wiki-update-template.yml`                   | Updates Azure DevOps wiki with markdown documentation from the repository        | [Wiki Update Documentation](./wiki-update.md)                                    |
+| Template                                     | Purpose                                                                                              | Documentation                                                                   |
+|----------------------------------------------|------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------|
+| `aio-version-checker-template.yml`           | Checks Azure IoT Operations component versions against latest available releases                     | [Template Documentation](./templates/aio-version-checker-template.md)           |
+| `cluster-test-terraform-template.yml`        | Runs Terraform init, validate, plan and tests on component folders                                   | [Template Documentation](./templates/cluster-test-terraform-template.md)        |
+| `docs-check-template.yml`                    | Validates documentation quality including Terraform docs and URL checks                              | [Template Documentation](./templates/docs-check-template.md)                    |
+| `matrix-folder-check-template.yml`           | Checks for changes in source directories and creates a dynamic matrix of folders for downstream jobs | [Template Documentation](./templates/matrix-folder-check-template.md)           |
+| `megalinter-template.yml`                    | Provides linting capabilities across multiple languages                                              | [Template Documentation](./templates/megalinter-template.md)                    |
+| `resource-provider-tests-template.yml`       | Runs tests to ensure resource provider registration scripts function as expected                     | [Template Documentation](./templates/resource-provider-tests-template.md)       |
+| `variable-compliance-terraform-template.yml` | Ensures consistent Terraform variable definitions across modules                                     | [Template Documentation](./templates/variable-compliance-terraform-template.md) |
+| `wiki-update-template.yml`                   | Updates Azure DevOps wiki with markdown documentation from the repository                            | [Template Documentation](./templates/wiki-update-template.md)                   |
+
+> **Note:** All template documentation follows a standardized format that includes overview,
+> features, parameters, usage examples, implementation details, and troubleshooting sections.
+> This consistent structure makes it easier to learn and use the templates effectively.
+
+#### Documentation Template
+
+To maintain consistency across all pipeline template documentation, this repository includes a standardized documentation template file: `docs/templates/function-name-template.md.template`. This file serves several important purposes:
+
+- Provides a uniform structure for all template documentation
+- Ensures comprehensive coverage of essential information (parameters, outputs, examples, etc.)
+- Makes it easier for new team members to understand how pipeline templates work
+- Helps GitHub Copilot generate properly formatted documentation when assisting with updates
+
+When creating documentation for a new template or updating existing template documentation:
+
+1. Use the `function-name-template.md.template` as a starting point
+2. Replace the placeholder content with information specific to your template
+3. Maintain the standardized formatting, especially for parameters and outputs tables
+4. Include all relevant sections (Overview, Features, Parameters, Outputs, etc.)
+
+This standardized approach significantly improves documentation quality and helps users find the information they need quickly and consistently across all templates.
 
 #### How to Use Templates
 
@@ -96,7 +121,7 @@ Templates can be included in your pipeline definition using the `template` keywo
 stages:
   - stage: Validate
     jobs:
-      - template: .azdo/megalinter-template.yml
+      - template: .azdo/templates/megalinter-template.yml
         parameters:
           displayName: 'Lint Code'
           enableAzureReporter: true
@@ -106,7 +131,7 @@ stages:
 
 ```yaml
 # Advanced configuration of the MegaLinter template
-- template: .azdo/megalinter-template.yml
+- template: .azdo/templates/megalinter-template.yml
   parameters:
     displayName: 'Comprehensive Code Quality Analysis'
     dependsOn:
@@ -134,24 +159,20 @@ You can also combine multiple templates for a complete CI/CD workflow:
 
 ```yaml
 jobs:
-  - template: .azdo/megalinter-template.yml
+  - template: .azdo/templates/megalinter-template.yml
     parameters:
       # MegaLinter parameters...
 
-  - template: .azdo/resource-provider-tests-template.yml
+  - template: .azdo/templates/resource-provider-tests-template.yml
     parameters:
       dependsOn: MegaLinter
       # Resource Provider test parameters...
-  - template: .azdo/resource-provider-tests-template.yml
+  - template: .azdo/templates/resource-provider-tests-template.yml
     parameters:
       dependsOn: MegaLinter
       # Resource Provider test parameters...
 
-  - template: .azdo/wiki-update-template.yml
-    parameters:
-      dependsOn: [MegaLinter, ResourceProviderShellScriptTest]
-      # Wiki update parameters...
-  - template: .azdo/wiki-update-template.yml
+  - template: .azdo/templates/wiki-update-template.yml
     parameters:
       dependsOn: [MegaLinter, ResourceProviderShellScriptTest]
       # Wiki update parameters...
@@ -159,7 +180,7 @@ jobs:
 
 ### Required Pipeline Variables
 
-The following variables are required to run this repository's main pipeline.
+The following variables are required/optional to run this repository's main pipeline.
 Please see, [Set variables in pipeline](https://learn.microsoft.com/azure/devops/pipelines/process/variables?view=azure-devops&tabs=classic%2Cbatch#set-variables-in-pipeline) for this process.
 
 | variable                              | secret | suggested value            | details                                                                                                                                                                                                             |

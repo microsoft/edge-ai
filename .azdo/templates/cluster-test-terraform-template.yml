@@ -1,0 +1,386 @@
+# Terraform Cluster Test Template
+#
+# Purpose:
+# This template defines a job for testing Terraform components in the repository.
+# It runs Terraform init, validate, plan, and tests for the specified folders,
+# supporting dynamic matrix-based execution for multiple folders.
+#
+# Key Features:
+# - Dynamically tests multiple Terraform folders based on detected changes
+# - Runs terraform init, plan, validate and test operations
+# - Checks for provider version mismatches
+# - Publishes test results and plan artifacts
+# - Supports both CI and test directories
+
+parameters:
+  # Dependencies for this job
+  - name: dependsOn
+    type: object
+    default: []
+  # Folder name to be used in the job
+  - name: displayName
+    type: string
+    default: 'Terraform Cluster Test'
+  # Condition for when to run this job
+  - name: condition
+    type: string
+    default: succeeded()
+  # Folder list to be used in the job
+  - name: matrixVariable
+    type: string
+    default: 'dependencies.MatrixBuildFolderCheck.outputs[''matrixBuildFolderCheckTask.changedTFFolders'']'
+  # Pool name to be used in the job
+  - name: poolName
+    type: string
+    default: 'ai-on-edge-managed-pool'
+  # VM image to be used in the job
+  - name: vmImage
+    type: string
+    default: 'ubuntu-latest'
+  # Azure service connection name
+  - name: azureServiceConnection
+    type: string
+    default: 'azdo-ai-for-edge-iac-for-edge'
+  # Backend Resource Group name
+  - name: backendResourceGroup
+    type: string
+    default: 'IaC_For_Edge'
+  # Backend Storage Account name
+  - name: backendStorageAccount
+    type: string
+    default: 'iacforedgetf'
+  # Backend Container name for store state file
+  - name: backendContainer
+    type: string
+    default: 'iacforedgetf'
+  # Backend Key name for state file
+  - name: backendKey
+    type: string
+    default: 'edge-ai.tfstate'
+  # Backend Location for the resource group and storage account
+  - name: backendLocation
+    type: string
+    default: 'eastus'
+  # Max parallel jobs to run (we have a limited agent pool so default to 1)
+  - name: maxParallel
+    type: number
+    default: 1
+  # Break build if provider version mismatch is detected
+  - name: breakBuild
+    type: boolean
+    default: true
+
+jobs:
+  - job: TerraformClusterTest
+    displayName: ${{ parameters.displayName }}
+    dependsOn: ${{ parameters.dependsOn }}
+    condition: ${{ parameters.condition }}
+    pool:
+      name: ${{ parameters.poolName }}
+      vmImage: ${{ parameters.vmImage }}
+    strategy:
+      matrix: $[ ${{ parameters.matrixVariable }} ]
+      maxParallel: ${{ parameters.maxParallel }}
+
+    steps:
+      - checkout: self
+        clean: true
+
+      # Process working directory: extract paths and check for CI folders
+      # The matrix strategy and this step will process an object that looks
+      # like:
+      # [
+      #   "src/040-iot-ops": {
+      #     "folderName": "src/040-iot-ops"
+      #   },
+      #   "blueprints/full-single-cluster": {
+      #     "folderName": "blueprints/full-single-cluster"
+      #   }
+      # ]
+      - bash: |
+
+          FOLDER_PATH="$(folderName)"
+
+          # Extract folder name components for cleaner references
+          # Get the basename (part after last slash)
+          FOLDER_BASENAME=$(basename "$FOLDER_PATH")
+          echo "Folder basename: $FOLDER_BASENAME"
+          echo "##vso[task.setvariable variable=folderBasename;isOutput=true]$FOLDER_BASENAME"
+
+          # Create path-safe version (replace slashes with underscores)
+          # based on: "folderName": "blueprints/full-single-cluster"
+          # This will replace slashes with underscores for use in variable names
+          # e.g. "blueprints_full-single-cluster"
+          # This is used for log file names and other references
+          # to avoid issues with slashes in variable names
+          # e.g. "blueprints/full-single-cluster" -> "blueprints_full-single-cluster"
+          FOLDER_PATH_SAFE=$(echo "$FOLDER_PATH" | tr '/' '_')
+          echo "Path-safe folder name: $FOLDER_PATH_SAFE"
+          echo "##vso[task.setvariable variable=folderPathSafe;isOutput=true]$FOLDER_PATH_SAFE"
+
+          # Source directories should have a 'ci' folder - check if it exists
+          if [[ "$FOLDER_PATH" == src/* && -d "$(System.DefaultWorkingDirectory)/$FOLDER_PATH/ci" ]]; then
+            CI_WORKING_DIRECTORY="$(System.DefaultWorkingDirectory)/$FOLDER_PATH/ci/terraform"
+            echo "##vso[task.setvariable variable=ciFolderExists;isOutput=true]true"
+            echo "##vso[task.setvariable variable=terraformCIWorkingDir;isOutput=true]$CI_WORKING_DIRECTORY"
+            echo "Setting CI working directory to: $CI_WORKING_DIRECTORY"
+          else
+            # set the ci working directory to the terraform folder if the ci folder does not exist
+            # this will ensure that where we are not relying on the ci folder, we still have a working directory
+            # for the terraform files (e.g. blueprints)
+            CI_WORKING_DIRECTORY="$(System.DefaultWorkingDirectory)/$FOLDER_PATH/terraform"
+            echo "##vso[task.setvariable variable=ciFolderExists;isOutput=true]false"
+            echo "##vso[task.setvariable variable=terraformCIWorkingDir;isOutput=true]$CI_WORKING_DIRECTORY"
+            echo "Setting CI working directory to: $CI_WORKING_DIRECTORY"
+          fi
+
+          # Set the default working directory
+          WORKING_DIRECTORY="$(System.DefaultWorkingDirectory)/$FOLDER_PATH/terraform"
+          echo "##vso[task.setvariable variable=terraformWorkingDir;isOutput=true]$WORKING_DIRECTORY"
+          echo "Setting working directory to: $WORKING_DIRECTORY"
+
+          # Check if the tests folder exists in the current working directory
+          if [[ -d "$(System.DefaultWorkingDirectory)/$FOLDER_PATH/terraform/tests" ]]; then
+            echo "##vso[task.setvariable variable=tfTestsExist;isOutput=true]true"
+          else
+            echo "##vso[task.setvariable variable=tfTestsExist;isOutput=true]false"
+          fi
+
+        displayName: "Process working directories"
+        name: workingDirProcessor
+
+      # Initialize Terraform
+      - task: TerraformInstaller@1
+        displayName: "Install Terraform"
+        inputs:
+          terraformVersion: latest
+
+      # Run terraform init with the established service connection in AzDO Pipeline config
+      - task: TerraformCLI@1
+        displayName: "Terraform Init - CI"
+        inputs:
+          command: init
+          workingDirectory: $(workingDirProcessor.terraformCIWorkingDir)
+          runAzLogin: true
+          environmentServiceName: "${{ parameters.azureServiceConnection }}"
+          backendType: azurerm
+          # Service connection to authorize backend access. Supports Subscription & Management Group Scope
+          backendServiceArm: "${{ parameters.azureServiceConnection }}"
+          backendAzureRmResourceGroupName: "${{ parameters.backendResourceGroup }}"
+          # azure location shortname of the backend resource group and storage account
+          backendAzureRmResourceGroupLocation: "${{ parameters.backendLocation }}"
+          backendAzureRmStorageAccountName: "${{ parameters.backendStorageAccount }}"
+          # azure blob container to store the state file
+          backendAzureRmContainerName: "${{ parameters.backendContainer }}"
+          # azure blob file name
+          backendAzureRmKey: ${{ parameters.backendKey }}
+        condition: eq(variables['workingDirProcessor.ciFolderExists'], 'true')
+
+      # Run terraform init with the established service connection in AzDO Pipeline config
+      - task: TerraformCLI@1
+        displayName: "Terraform Init - Tests"
+        inputs:
+          command: init
+          workingDirectory: $(workingDirProcessor.terraformWorkingDir)
+          runAzLogin: true
+          environmentServiceName: "${{ parameters.azureServiceConnection }}"
+          backendType: azurerm
+          # Service connection to authorize backend access. Supports Subscription & Management Group Scope
+          backendServiceArm: "${{ parameters.azureServiceConnection }}"
+          backendAzureRmResourceGroupName: "${{ parameters.backendResourceGroup }}"
+          # azure location shortname of the backend resource group and storage account
+          backendAzureRmResourceGroupLocation: "${{ parameters.backendLocation }}"
+          backendAzureRmStorageAccountName: "${{ parameters.backendStorageAccount }}"
+          # azure blob container to store the state file
+          backendAzureRmContainerName: "${{ parameters.backendContainer }}"
+          # azure blob file name
+          backendAzureRmKey: ${{ parameters.backendKey }}
+
+      # Check TF Provider versions for this folder and output build warnings if issues are detected
+      - task: AzureCLI@2
+        displayName: "Terraform Provider version check"
+        inputs:
+          azureSubscription: "${{ parameters.azureServiceConnection }}"
+          workingDirectory: $(workingDirProcessor.terraformCIWorkingDir)
+          scriptType: bash
+          scriptLocation: inlineScript
+          inlineScript: |
+
+            # Determine issue type based on breakBuild parameter
+            if [[ "${{ parameters.breakBuild }}" == "true" ]]; then
+              issue_type="error"
+            else
+              issue_type="warning"
+            fi
+
+            # Get the provider details from the Terraform configuration
+            # This will output a list of providers and their versions in the format:
+            # folder,provider,version, latest_version, e.g.
+            # ./src/030-iot-ops-cloud-reqs/terraform,azapi,2.1.0,2.2.0
+            # ./src/040-iot-ops/terraform,azapi,2.1.0,2.2.0
+            # Example version_check_results string
+            version_check_results=$(./scripts/tf-provider-version-check.sh -f ./)
+
+            # Parse the JSON and loop through each object
+            echo "$version_check_results" | jq -c '.[]' | while read -r result; do
+              folder=$(echo "$result" | jq -r '.folder')
+              provider=$(echo "$result" | jq -r '.provider')
+              current_version=$(echo "$result" | jq -r '.current_version')
+              latest_version=$(echo "$result" | jq -r '.latest_version')
+
+              # Check if the current version does not match the latest version
+              if [[ "$current_version" != "$latest_version" ]]; then
+                  echo "##vso[task.logissue type=$issue_type]Version mismatch in $folder for provider $provider: current version is $current_version, but latest version is $latest_version."
+              fi
+            done
+        condition: and( not(failed()), not(canceled()), eq(variables['workingDirProcessor.ciFolderExists'], 'true') )
+
+      # Run Terraform Validate to ensure the TF files are valid
+      # break if validation fails
+      - task: TerraformCLI@1
+        displayName: "Terraform Validate"
+        inputs:
+          command: validate
+          workingDirectory: $(workingDirProcessor.terraformCIWorkingDir)
+        continueOnError: false
+        condition: not(failed())
+
+      # Parse variables.tf and construct the specific commandOptions required for the plan call
+      - bash: |
+
+          # get the tf variable file from the current matrix directory
+          variables_file=$(workingDirProcessor.terraformCIWorkingDir)/variables.tf
+          # start the base command option for the coming TF Plan
+          command_options="-out=$(Build.ArtifactStagingDirectory)/$(Build.Buildnumber).$(workingDirProcessor.folderPathSafe).tfplan -detailed-exitcode"
+          # if the variables file exists, parse it and for each variable,
+          # see if we've set an AzDO pipeline variable to a matched name,
+          # and then add that combination to that to the command options.
+          # Special case is for Custom Locations OID because that is a
+          # secrete value, and AzDO will not let you dynamically access
+          # the variable name, you must know it, to map it.
+          # e.g. https://stackoverflow.com/questions/75536144/azure-pipelines-error-tf401444-please-sign-in-at-least-once-as
+          if [ -f "$variables_file" ]; then
+            required_vars=$(grep -E 'variable "[^"]+" \{' $variables_file | awk -F'"' '{print $2}')
+            for env_var in $(printenv | awk -F= '{print $1}'; echo "TF_VAR_CUSTOM_LOCATIONS_OID"); do
+              var_name=${env_var#TF_VAR_}
+              if echo "$required_vars" | grep -q "^${var_name,,}$"; then
+                command_options="$command_options -var ${var_name,,}=${!env_var}"
+              fi
+            done
+            # secretes will be automatically masked by AzDO
+            echo $command_options
+          fi
+          echo "##vso[task.setvariable variable=commandOptions;isOutput=true]$command_options"
+        displayName: "Parse variables.tf and build commandOptions"
+        name: parseVariables
+        condition: and( not(failed()), not(canceled()) )
+
+      # Run Terraform Plan for reporting
+      - task: TerraformCLI@1
+        displayName: "Terraform Plan"
+        inputs:
+          command: plan
+          workingDirectory: $(workingDirProcessor.terraformCIWorkingDir)
+          runAzLogin: true
+          environmentServiceName: "${{ parameters.azureServiceConnection }}"
+          # This publish will drive the Terraform Plan UI on each build
+          publishPlanResults: "$(workingDirProcessor.folderPathSafe) - Terraform Test Plan"
+          commandOptions: $(parseVariables.commandOptions)
+        condition: and( not(failed()), not(canceled()) )
+
+      # Publish the Terraform Plan as an official build artifact for downloading
+      - task: PublishBuildArtifacts@1
+        displayName: "Publish Artifact: $(workingDirProcessor.folderPathSafe) Terraform Plan"
+        inputs:
+          PathtoPublish: "$(Build.ArtifactStagingDirectory)/$(Build.Buildnumber).$(workingDirProcessor.folderPathSafe).tfplan"
+          ArtifactName: "TerraformPlan"
+        condition: and( not(failed()), not(canceled()) )
+
+      # Run Terraform Test command using the Azure CLI
+      - task: AzureCLI@2
+        name: TerraformTest
+        displayName: Azure CLI for Terraform CLI test run
+        inputs:
+          azureSubscription: "${{ parameters.azureServiceConnection }}"
+          workingDirectory: $(workingDirProcessor.terraformWorkingDir)
+          scriptType: bash
+          scriptLocation: inlineScript
+          inlineScript: |
+
+            # Export the ARM subscription ID so Terraform tests can be executed
+            export ARM_SUBSCRIPTION_ID=$(SUBSCRIPTION_ID)
+
+            # Define the log file from the test output to read up
+            log_file="$(System.DefaultWorkingDirectory)/$(workingDirProcessor.folderPathSafe)_test_output.log"
+            echo "Writing Terraform test output to $log_file"
+
+            # run TF tests and push results to log file
+            terraform test -json -var custom_locations_oid=$(TF_VAR_CUSTOM_LOCATIONS_OID) > $log_file
+            unset ARM_SUBSCRIPTION_ID
+
+            # Read each line of the log file and extract the @timestamp and @message fields
+            # this will be output to console in the build system
+            while IFS= read -r line; do
+              echo "$line" | jq -r '"\(.["@timestamp"]) .... \(.["@message"])"'
+            done < "$log_file"
+
+            # Get the last line of the output and parse it for the word "Success"
+            last_line=$(tail -n 1 "$log_file")
+            if echo "$last_line" | jq -e '.["@message"]' | grep -q "Success"; then
+              echo "Terraform tests passed."
+            else
+              echo "Terraform tests failed."
+              exit 1
+            fi
+        condition: and( not(failed()), not(canceled()), eq(variables['workingDirProcessor.tfTestsExist'], 'true') )
+
+      # Need to use an external tool to convert the Terraform test output to JUnit XML
+      # This tool is available as an NPM package and can be installed and run in the pipeline
+      # But it requires Node.js to be installed on the agent
+      - task: UseNode@1
+        inputs:
+          version: "22.x"
+        condition: always()
+
+      # Install the tftest-to-junitxml NPM package
+      # https://github.com/Liam-Johnston/tftest-to-junitxml
+      - script: |
+          # Check for newer versions
+          CURRENT_VERSION="0.2.0"
+          echo "Current version of tftest-to-junitxml: $CURRENT_VERSION"
+
+          # Pin latest version
+          npm install -g tftest-to-junitxml@$CURRENT_VERSION
+
+          # Query npm registry for latest version
+          LATEST_VERSION=$(npm view tftest-to-junitxml version)
+          echo "Latest version: $LATEST_VERSION"
+
+          # Compare versions and log a warning if newer version exists
+          if [ "$CURRENT_VERSION" != "$LATEST_VERSION" ]; then
+            echo "##vso[task.logissue type=warning]A newer version of tftest-to-junitxml exists: $LATEST_VERSION. Consider updating from current version: $CURRENT_VERSION"
+          else
+            echo "Using the latest version of tftest-to-junitxml: $CURRENT_VERSION"
+          fi
+        displayName: "Install tftest-to-junitxml"
+        condition: always()
+
+      # Call the tool to convert the Terraform test output to JUnit XML
+      - script: |
+          npx tftest-to-junitxml "$(System.DefaultWorkingDirectory)/$(workingDirProcessor.folderPathSafe)_test_output.log"
+        displayName: "Convert Terraform test output to JUnit XML"
+        condition: and(not(canceled()), eq(variables['TerraformTest.result'], 'Succeeded'))
+
+      # Publish the Terraform test results as a build artifact to drive
+      # the Test Results UI on each build. These will be merged with the
+      # Pester Tests and other test results in the pipeline, but are
+      # discretely visible in the Test Results UI.
+      - task: PublishTestResults@2
+        displayName: Publish Test Results
+        inputs:
+          testResultsFiles: "TEST-terraform.xml"
+          testRunTitle: "Test Results for $(workingDirProcessor.folderPathSafe)"
+          buildPlatform: "Linux"
+          testRunner: "JUnit"
+          failTaskOnFailedTests: true
+        condition: always()

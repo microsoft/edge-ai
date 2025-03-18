@@ -44,7 +44,7 @@ echo
 
 # Loop over all component dirs and select only folders that have *.tf files.
 # Exclude tests, .terraform, and ci directories. Remove duplicates with `sort -u`.
-find "$script_dir/../src" \
+find "$script_dir/../src" "$script_dir/../blueprints" \
   -type d \( -name "tests" -o -name ".terraform" -o -name "ci" \) -prune -false -o \
   -type f -name "*.tf" -exec dirname {} \; |
   sort -u |

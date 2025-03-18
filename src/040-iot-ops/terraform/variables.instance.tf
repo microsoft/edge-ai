@@ -1,5 +1,10 @@
 /*
  * Optional Variables
+ *
+ * IMPORTANT: The 'operations_config' variable in this file is explicitly referenced by the
+ * aio-version-checker.py script to check IoT Operations instance versions. If you rename this
+ * variable or change its structure, you must also update the script and the
+ * aio-version-checker-template.yml pipeline.
  */
 
 variable "operations_config" {

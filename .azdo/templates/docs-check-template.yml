@@ -1,0 +1,126 @@
+# Template for checking Terraform documentation compliance
+# This template ensures documentation is up-to-date with the code
+
+parameters:
+  # Dependencies for this job
+  - name: dependsOn
+    type: object
+    default: []
+  # Display name for the job
+  - name: displayName
+    type: string
+    default: 'Terraform Documentation Check'
+  # Condition for when this job should run
+  - name: condition
+    type: string
+    default: 'succeeded()'
+  # Version of terraform-docs to install
+  - name: terraformDocsVersion
+    type: string
+    default: 'v0.16.0'
+  # Whether to break the build on compliance issues (true) or just show warnings (false)
+  - name: breakBuild
+    type: boolean
+    default: false
+  # Pool configuration
+  - name: pool
+    type: object
+    default:
+      name: 'ai-on-edge-managed-pool'
+      vmImage: 'ubuntu-latest'
+
+jobs:
+  - job: DocsCheck
+    displayName: ${{ parameters.displayName }}
+    dependsOn: ${{ parameters.dependsOn }}
+    condition: ${{ parameters.condition }}
+    pool: ${{ parameters.pool }}
+
+    steps:
+
+      # Checkout repo
+      - checkout: self
+        clean: true
+
+      # Add Python setup task
+      - task: UsePythonVersion@0
+        inputs:
+          versionSpec: '3.11'
+          addToPath: true
+        displayName: "Setup Python 3.11"
+
+      # Install terraform-docs using the shared script with new parameter format
+      - bash: |
+          ./scripts/install-terraform-docs.sh -v "${{ parameters.terraformDocsVersion }}"
+        displayName: Install terraform-docs
+        condition: and( not(failed()), not(canceled()) )
+
+      # Check for terraform docs changes
+      - bash: |
+
+          # Call tf-docs-check.sh script to check for changes
+          readme_changed=$(tail -n 1 $(System.DefaultWorkingDirectory)/scripts/tf-docs-check.sh)
+
+          # Check if there are any changes in the Terraform documentation
+          if [ "$readme_changed" = true ]; then
+            echo "Updates are required for Terraform documentation."
+            echo "Please go into the project's src directory, run the update-all-terraform-docs.sh script, and commit changes."
+
+            if [[ "${{ parameters.breakBuild }}" == "true" ]]; then
+              issue_type="error"
+            else
+              issue_type="warning"
+            fi
+
+            echo "##vso[task.logissue type=$issue_type]Terraform auto-gen documentation needs to be updated. Please run the update-all-terraform-docs.sh script and commit the changes."
+            exit 1
+          else
+            echo "No updates detected in the Terraform documentation."
+          fi
+
+        displayName: Check for changes in terraform docs
+        workingDirectory: $(System.DefaultWorkingDirectory)
+        condition: and( not(failed()), not(canceled()) )
+
+      # Check for en-us links in docs
+      - bash: |
+
+          # Run the link-lang-check.py script to find en-us URLs
+          echo "Checking for language path segments (en-us) in links..."
+          links_json=$(python3 $(System.DefaultWorkingDirectory)/scripts/link-lang-check.py)
+
+          # Check if we got valid JSON results
+          if echo "$links_json" | jq empty 2>/dev/null; then
+            # Count the number of links found
+            link_count=$(echo "$links_json" | jq '. | length')
+
+            if [ "$link_count" -gt 0 ]; then
+              echo "Found $link_count URLs with language path segments (en-us)."
+
+              # Loop through each link and create a build warning
+              echo "$links_json" | jq -c '.[]' | while read -r link; do
+                file=$(echo "$link" | jq -r '.file')
+                line=$(echo "$link" | jq -r '.line_number')
+                url=$(echo "$link" | jq -r '.original_url')
+
+                # Create a warning for each link
+                if [[ "${{ parameters.breakBuild }}" == "true" ]]; then
+                  issue_type="error"
+                else
+                  issue_type="warning"
+                fi
+
+                echo "##vso[task.logissue type=$issue_type;sourcepath=$file;linenumber=$line;]URL contains language path segment (en-us): $url"
+              done
+
+            else
+              echo "No URLs with language path segments (en-us) found."
+            fi
+          else
+            echo "Error parsing output from link-lang-check.py script"
+            echo "$links_json"
+          fi
+
+        displayName: Check for language path segments in links
+        workingDirectory: $(System.DefaultWorkingDirectory)
+        condition: and( not(failed()), not(canceled()) )
