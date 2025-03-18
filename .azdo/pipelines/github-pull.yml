@@ -1,0 +1,96 @@
+# GitHub Pull Template
+#
+# Purpose:
+# This template defines a job for pulling content from GitHub repositories into the Azure DevOps
+# repository. It's used to fetch public repository changes and ensure internal
+# and external versions of this project stay in sync.
+#
+# When to use:
+# - When your pipeline needs to access code from public GitHub repositories
+# - When you need to clone specific branches, tags, or commits from external repositories
+# - When integrating open-source components that are maintained in GitHub
+#
+# Functionality:
+# - Clones specified GitHub repositories to the pipeline workspace
+# - Supports configuring specific branches, tags, or commit SHAs
+# - Can be configured to authenticate with private repositories when needed
+# - Maintains repository structure for downstream pipeline steps
+#
+# Key Parameters:
+# - repoUrl: The GitHub repository URL to pull from
+# - targetPath: Where to clone the repository in the workspace
+# - branch/tag/ref: Which version of the repository to pull
+# - auth: Authentication details for private repositories (if needed)
+
+# GitHub sync pipeline
+---
+trigger: none
+variables:
+  - group: 'ai-on-edge-secrets'
+pool:
+  name: ai-on-edge-managed-pool
+  vmImage: ubuntu-latest
+stages:
+  - stage: Main
+    displayName: GitHub to AzDO
+    jobs:
+      - job: "GitHubPull"
+        displayName: "Updating AzDO repo from GitHub"
+        steps:
+          # Checkout repo
+          - checkout: self
+            clean: true
+
+          # Create GitHub access token
+          - bash: |
+
+              echo "Generating Github JWT Token"
+              echo "$(github-app-private-key)" > ./github-app-private-key.pem
+              token=$(bash $(System.DefaultWorkingDirectory)/scripts/github/jwt-token.sh $(github-app-client-id) ./github-app-private-key.pem)
+
+              echo "Generating Github Access Tokens Url"
+              url=$(bash $(System.DefaultWorkingDirectory)/scripts/github/access-tokens-url.sh $token)
+
+              echo "Generating Github Installation Token"
+              installationToken=$(bash $(System.DefaultWorkingDirectory)/scripts/github/installation-token.sh $token $url)
+              echo "##vso[task.setvariable variable=installationToken]$installationToken";
+
+            displayName: "Create GitHub access token"
+            name: githubToken
+
+          # Clone GitHub repo
+          - bash: |
+
+              remoteUrl=$(echo $(githubRepoUrl) | sed "s|__token__|$(installationToken)|g")
+              git clone $remoteUrl
+
+              cd Iac-for-the-Edge
+              git remote remove origin
+              git remote add origin $(azdoRepoUrl)
+              git -c http.extraheader="AUTHORIZATION: bearer $(System.AccessToken)" fetch origin main
+
+            displayName: "Pull from GitHub"
+            name: githubPull
+
+          # Create AzDO branch and PR if changes detected
+          - bash: |
+
+              cd Iac-for-the-Edge
+
+              echo "run git diff"
+              changedFiles=$(git -c http.extraheader="AUTHORIZATION: bearer $(System.AccessToken)" diff --name-only origin/main...HEAD)
+              if [[ -z "$changedFiles" ]]; then
+                echo "No files changed - no sync required"
+                exit 0
+              fi
+
+              echo "GitHub has new changes"
+              echo "Creating new branch github-$(Build.BuildId)"
+              git -c http.extraheader="AUTHORIZATION: bearer $(System.AccessToken)" push --force origin main:github-$(Build.BuildId)
+
+              echo "Creating PR"
+              export AZURE_DEVOPS_EXT_PAT=$(System.AccessToken)
+              az repos pr create --repository "Iac for the Edge" --source-branch "github-$(Build.BuildId)" --target-branch "main" --title "GitHub merge for branch github-$(Build.BuildId)" --description "Sync from Git Hub - IaC for the Edge repo"
+
+            displayName: "Create AzDO branch and PR"
+            name: azdoPR

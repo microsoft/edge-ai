@@ -1,0 +1,144 @@
+# Azure IoT Operations Version Checker Template
+#
+# This template runs a Python script that checks the versions and trains of
+# Azure IoT Operations components defined in both Terraform and Bicep files
+# against the latest releases published in remote manifests.
+#
+# The script checks:
+# - Terraform variables in ./src/040-iot-ops/terraform/variables.init.tf
+# - Terraform instance variables in ./src/040-iot-ops/terraform/variables.instance.tf
+# - Bicep variables in ./src/040-iot-ops/bicep/types.bicep
+#
+# It compares these with the latest versions and trains from:
+# - https://raw.githubusercontent.com/Azure/azure-iot-operations/main/release/azure-iot-operations-enablement.json
+# - https://raw.githubusercontent.com/Azure/azure-iot-operations/main/release/azure-iot-operations-instance.json
+#
+# Any mismatches are reported as build warnings.
+
+parameters:
+  # Display name for the job
+  - name: displayName
+    type: string
+    default: "Check AIO Component Versions"
+  # Dependencies for this job
+  - name: dependsOn
+    type: string
+    default: ""
+  # Condition for when to run this job
+  - name: condition
+    type: string
+    default: succeeded()
+  # IaC type for the version checker
+  - name: iacType
+    type: string
+    default: "all"
+    values:
+      - terraform
+      - bicep
+      - all
+  # Break the build if version mismatches are found
+  - name: breakBuild
+    type: boolean
+    default: false
+
+jobs:
+  - job: AIOVersionCheck
+    displayName: ${{ parameters.displayName }}
+    dependsOn: ${{ parameters.dependsOn }}
+    condition: ${{ parameters.condition }}
+    pool:
+      name: ai-on-edge-managed-pool
+      vmImage: ubuntu-latest
+    steps:
+      - checkout: self
+        clean: true
+        displayName: "Checkout Repository"
+
+      - task: UsePythonVersion@0
+        inputs:
+          versionSpec: '3.11'
+          addToPath: true
+        displayName: "Setup Python 3.11"
+
+      - script: |
+
+          # Install dependencies from requirements.txt if it exists, as this is a
+          # template, we don't know if it exists or not in the repo using this template
+          if [ -f ./requirements.txt ]; then
+            python -m pip install --upgrade pip
+            pip install -r ./requirements.txt
+          else
+            # Fallback to installing just what's needed
+            pip install hcl2 requests
+          fi
+
+        displayName: "Install Python Dependencies"
+
+      - script: |
+
+          # Run the version checker and save results to a temporary file
+          python ./scripts/aio-version-checker.py \
+            --iac-type ${{ parameters.iacType }} \
+            --verbose > version_mismatches.json
+
+          # Check if we found any mismatches
+          if [ -s version_mismatches.json ] && [ "$(cat version_mismatches.json)" != "[]" ]; then
+            echo "Found version mismatches:"
+            cat version_mismatches.json
+
+            # Process each mismatch and publish warnings
+            # First check if jq is installed, if not install it
+            if ! command -v jq &> /dev/null; then
+              echo "jq not found, installing..."
+              sudo apt-get update && sudo apt-get install -y jq
+            fi
+
+            # Use jq to parse the JSON and create a warning for each mismatch
+            MISMATCHES=$(cat version_mismatches.json)
+            COUNT=$(echo "$MISMATCHES" | jq length)
+
+            echo "Processing $COUNT version mismatches..."
+
+            for (( i=0; i<$COUNT; i++ ))
+            do
+              # Extract fields from the JSON
+              IAC_TYPE=$(echo "$MISMATCHES" | jq -r ".[$i].iac_type")
+              NAME=$(echo "$MISMATCHES" | jq -r ".[$i].name")
+              LOCAL_FILE=$(echo "$MISMATCHES" | jq -r ".[$i].local_file")
+              LOCAL_VERSION=$(echo "$MISMATCHES" | jq -r ".[$i].local_version")
+              REMOTE_VERSION=$(echo "$MISMATCHES" | jq -r ".[$i].remote_version")
+              LOCAL_TRAIN=$(echo "$MISMATCHES" | jq -r ".[$i].local_train")
+              REMOTE_TRAIN=$(echo "$MISMATCHES" | jq -r ".[$i].remote_train")
+              REMOTE_URL=$(echo "$MISMATCHES" | jq -r ".[$i].remote_url")
+
+              # Create warning message
+              MESSAGE="AIO component version/train mismatch for $NAME in $IAC_TYPE file: $LOCAL_FILE"
+
+              # Add version mismatch if present
+              if [[ "$LOCAL_VERSION" != "$REMOTE_VERSION" ]]; then
+                MESSAGE="$MESSAGE\nVersion: Local=$LOCAL_VERSION, Remote=$REMOTE_VERSION"
+              fi
+
+              # Add train mismatch if present
+              if [[ "$LOCAL_TRAIN" != "$REMOTE_TRAIN" ]]; then
+                MESSAGE="$MESSAGE\nTrain: Local=$LOCAL_TRAIN, Remote=$REMOTE_TRAIN"
+              fi
+
+              # Add remote source information
+              MESSAGE="$MESSAGE\nRemote source: $REMOTE_URL"
+
+              # Determine issue type based on breakBuild parameter
+              if [[ "${{ parameters.breakBuild }}" == "true" ]]; then
+                issue_type="error"
+              else
+                issue_type="warning"
+              fi
+
+              # Create VSO warning
+              echo "##vso[task.logissue type=$issue_type]$MESSAGE"
+            done
+          else
+            echo "All AIO components are using the correct versions."
+          fi
+
+        displayName: "Run AIO Version Checker"

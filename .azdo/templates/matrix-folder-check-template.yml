@@ -1,0 +1,175 @@
+# Matrix Folder Check Template
+#
+# Purpose:
+# This template checks for changes in the blueprints & src directory structure and creates dynamic outputs
+# that drive conditional execution in downstream jobs. It's primarily used to determine which
+# components have been modified and need testing.
+#
+# Functionality:
+# - Detects changes in shell scripts (.sh) in the subscription setup folder
+# - Detects changes in PowerShell scripts (.ps1) in the subscription setup folder
+# - Creates a dynamic matrix of Terraform folders that have changed (used for testing both blueprints and the src directory)
+# - Optionally can return all folders containing Terraform files, not just those with changes
+#
+# Parameters:
+# - dependsOn: Jobs that this job depends on
+# - displayName: Display name for this job
+# - condition: Condition for running this job
+# - includeAllFolders: When true, returns all folders containing Terraform files regardless of changes
+#
+# Output Variables:
+# - matrixBuildFolderCheckTask.changesInRpEnablementShell: true/false if shell scripts changed
+# - matrixBuildFolderCheckTask.changesInRpEnablementPwsh: true/false if PowerShell scripts changed
+# - matrixBuildFolderCheckTask.changesInInstall: true/false if any Terraform files changed
+# - matrixBuildFolderCheckTask.changedTFFolders: JSON object with all identified TF folder names (changed folders or all folders depending on includeAllFolders setting)
+#
+# Usage Examples:
+# ```yaml
+# # To check only for folders with changes:
+# - template: .azdo/matrix-folder-check-template.yml
+#   parameters:
+#     dependsOn: PreviousJob
+#     displayName: "Check for component changes"
+#     condition: succeeded()
+#
+# # To include all folders containing Terraform files:
+# - template: .azdo/matrix-folder-check-template.yml
+#   parameters:
+#     dependsOn: PreviousJob
+#     displayName: "Check all component folders"
+#     includeAllFolders: true
+# ```
+#
+# The output of this template is used by downstream jobs to conditionally run tests only
+# on components that have changed (or all components when includeAllFolders is true),
+# improving pipeline efficiency.
+
+parameters:
+  # Dependencies for this job
+  - name: dependsOn
+    type: object
+    default: []
+  # Display name for the job
+  - name: displayName
+    type: string
+    default: 'Check for changes in src directory'
+  # Condition for when to run this job
+  - name: condition
+    type: string
+    default: succeeded()
+  # Whether to include all folders for a complete Terraform run
+  # This is useful for testing all Terraform files in the src directory
+  # regardless of whether they have changed or not, e.g. Scheduled Builds
+  - name: includeAllFolders
+    type: boolean
+    default: false
+
+jobs:
+  - job: MatrixBuildFolderCheck
+    displayName: ${{ parameters.displayName }}
+    dependsOn: ${{ parameters.dependsOn }}
+    condition: ${{ parameters.condition }}
+    pool:
+      name: ai-on-edge-managed-pool
+      vmImage: ubuntu-latest
+    steps:
+      # Checkout repo and set fetchDepth to 0 to get all history
+      # In large codebases, this can be slow, but it's necessary to get all the history
+      - checkout: self
+        fetchDepth: "0"
+        clean: true
+
+      # Check for changes in the src directory
+      - bash: |
+
+          echo "Checking for changes in the ./src/000-subscription folder..."
+          # Get the list of changed files between the current branch and main
+          changed_files=$(git diff --name-only --diff-filter=ACMRT origin/main...HEAD)
+
+          # check if shell files in subscription setup folder have changed
+          if echo "$changed_files" | grep -q 'src/000-subscription/.*\.sh$'; then
+            echo "Changes detected in the ./src/000-subscription folder shell files."
+            echo "##vso[task.setvariable variable=changesInRpEnablementShell;isOutput=true]true"
+          else
+            echo "No changes detected in the ./src/000-subscription folder shell files."
+            echo "##vso[task.setvariable variable=changesInRpEnablementShell;isOutput=true]false"
+          fi
+
+          # check if Pwsh files in subscription setup folder have changed
+          if echo "$changed_files" | grep -q 'src/000-subscription/.*\.ps1$'; then
+            echo "Changes detected in the ./src/000-subscription folder pwsh files."
+            echo "##vso[task.setvariable variable=changesInRpEnablementPwsh;isOutput=true]true"
+          else
+            echo "No changes detected in the ./src/000-subscription folder pwsh files."
+            echo "##vso[task.setvariable variable=changesInRpEnablementPwsh;isOutput=true]false"
+          fi
+
+          # Check if Terraform files, in any src directory that has tf files, have changed
+          # This command will create a JSON object with the first-level folder names as keys
+          # which will be used to create a matrix of jobs to run Terraform tasks for each folder
+          # see the Azure DevOps documentation for more information on matrix jobs using JSON objects
+          # https://learn.microsoft.com/azure/devops/pipelines/yaml-schema/jobs-job-strategy?view=azure-pipelines#remarks
+          # This will output a JSON object as follows:
+          # {
+          #   "src/005-onboard-reqs": {
+          #     "folderName": "src/005-onboard-reqs"
+          #   },
+          #   "src/010-vm-host": {
+          #     "folderName": "src/010-vm-host"
+          #   },
+          #   "src/-cncf-cluster": {
+          #     "folderName": "src/020-cncf-cluster"
+          #   },
+          #   "src/030-iot-ops-cloud-reqs": {
+          #     "folderName": "src/030-iot-ops-cloud-reqs"
+          #   },
+          #   "src/040-iot-ops": {
+          #     "folderName": "src/040-iot-ops"
+          #   },
+          #   "blueprints/full-single-cluster": {
+          #     "folderName": "blueprints/full-single-cluster"
+          #   }
+          # }
+          echo "Checking for changes in the first-level folders under src with .tf, .tfvars, .tfstate, or .hcl file changes..."
+          echo "Parameter includeAllFolders is set to: ${{ parameters.includeAllFolders }}"
+
+          # Convert the parameter value to lowercase for case-insensitive comparison
+          includeAllFoldersLower=$(echo "${{ parameters.includeAllFolders }}" | tr '[:upper:]' '[:lower:]')
+
+          if [ "$includeAllFoldersLower" = "true" ]; then
+            echo "Including all folders that contain Terraform files, not just changed ones."
+
+            # Find all folders that contain Terraform files
+            changed_tf_folders=$(find src blueprints -type f \( -name "*.tf" -o -name "*.tfvars" -o -name "*.tfstate" -o -name "*.hcl" \) | # Find all Terraform files
+              awk -F'/' '{if ($1=="src") print $1"/"$2; else if ($1=="blueprints") print $1"/"$2}' | # Extract folder names with path prefix for blueprints
+              sort -u | # Remove all duplicates and sort
+              jq -R -s -c 'split("\n") | # Convert the newline-separated list into a JSON array
+              map(select(length > 0)) | # Remove all empty entries
+              map({key: ., value: {folderName: .}}) | # Create JSON objects with folder name as keys, the keys are used to populate the AzDO job name
+              from_entries') # Convert entries to a JSON object
+          else
+            changed_tf_folders=$(echo "$changed_files" |  # Get the list of changed files
+              # we will uncomment the grep command below to include blueprints folder
+              # in a future PR update.
+              # grep -E '(src/[^/]+/|blueprints/[^/]+/).*\.(tf|tfvars|tfstate|hcl)$' |  # Filter for .tf, .tfvars, .tfstate, or .hcl files in src or blueprints directory
+              grep -E 'src/[^/]+/.*\.(tf|tfvars|tfstate|hcl)$' |  # Filter for .tf, .tfvars, .tfstate, or .hcl files in src directory
+              awk -F'/' '{if ($1=="src") print $1"/"$2; else if ($1=="blueprints") print $1"/"$2}' |  # Extract folder names with path prefix for blueprints
+              sort -u |  # Remove all duplicates and sort
+              jq -R -s -c 'split("\n") |  # Convert the newline-separated list into a JSON array
+              map(select(length > 0)) |  # Remove all empty entries
+              map({key: ., value: {folderName: .}}) |  # Create JSON objects with folder name as keys, the keys are used to populate the AzDO job name
+              from_entries')  # Convert entries to a JSON object
+          fi
+
+          if [ "$(echo $changed_tf_folders | jq 'length')" -ne 0 ]; then
+            echo "Changes detected in the following Terraform folders: $changed_tf_folders"
+            echo "##vso[task.setvariable variable=changesInInstall;isOutput=true]true"
+            echo "##vso[task.setvariable variable=changedTFFolders;isOutput=true]$changed_tf_folders"
+          else
+            echo "No changes detected in the first-level folders under src with .tf, .tfvars, .tfstate, or .hcl file changes."
+            echo "##vso[task.setvariable variable=changesInInstall;isOutput=true]false"
+            echo "##vso[task.setvariable variable=changedTFFolders;isOutput=true]none"
+          fi
+
+        displayName: Check for changes in src folders
+        name: matrixBuildFolderCheckTask

@@ -1,0 +1,82 @@
+# Template for checking Terraform variable definition compliance across modules
+# This template ensures consistent variable definitions throughout the codebase
+
+parameters:
+  # Dependencies for this job
+  - name: dependsOn
+    type: object
+    default: []
+  # Display name for the job
+  - name: displayName
+    type: string
+    default: 'Terraform Variable Compliance Check'
+  # Condition for when this job should run
+  - name: condition
+    type: string
+    default: 'succeeded()'
+  # Version of terraform-docs to install
+  - name: terraformDocsVersion
+    type: string
+    default: 'v0.16.0'
+  # Whether to break the build on compliance issues (true) or just show warnings (false)
+  - name: breakBuild
+    type: boolean
+    default: false
+  # Pool configuration
+  - name: pool
+    type: object
+    default:
+      name: 'ai-on-edge-managed-pool'
+      vmImage: 'ubuntu-latest'
+
+jobs:
+  - job: TFVariableComplianceChecker
+    displayName: ${{ parameters.displayName }}
+    dependsOn: ${{ parameters.dependsOn }}
+    condition: ${{ parameters.condition }}
+    pool: ${{ parameters.pool }}
+    steps:
+      - checkout: self
+        clean: true
+
+      # Add Python setup task
+      - task: UsePythonVersion@0
+        inputs:
+          versionSpec: '3.11'
+          addToPath: true
+        displayName: "Setup Python 3.11"
+
+      # Install terraform-docs using the shared script with new parameter format
+      - bash: |
+          ./scripts/install-terraform-docs.sh -v "${{ parameters.terraformDocsVersion }}"
+        displayName: Install terraform-docs
+        condition: and( not(failed()), not(canceled()) )
+
+      # Parse tf-vars-compliance-check.py output
+      - bash: |
+
+          variable_check_results=$(python3 ./scripts/tf-vars-compliance-check.py)
+          echo "Variable Check Results: $variable_check_results"
+
+          # Check if we got valid JSON results
+          if echo "$variable_check_results" | jq empty 2>/dev/null; then
+            # Determine issue type based on breakBuild parameter
+            if [[ "${{ parameters.breakBuild }}" == "true" ]]; then
+              issue_type="error"
+            else
+              issue_type="warning"
+            fi
+
+            # Parse each warning/error and output as an Azure Pipeline message
+            echo "$variable_check_results" | jq -c '.[]' | while read -r result; do
+                variable=$(echo "$result" | jq -r '.variable')
+                # Join multiple folders with newlines and proper indentation
+                folders=$(echo "$result" | jq -r '.folders | join("\n  - ")')
+                # Format differences with newlines and indentation
+                differences=$(echo "$result" | jq -r '.differences | map("\n  - " + .) | join("")')
+                echo "##vso[task.logissue type=$issue_type]Variable '$variable' has inconsistencies in folders:\n  - $folders\n\nDifferences:$differences"
+            done
+          fi
+
+        displayName: "Tf Variable Compliance Check"
+        condition: and( not(failed()), not(canceled()) )

@@ -1,0 +1,114 @@
+# Wiki Update Template for Azure DevOps Pipelines that can be included
+# in other pipeline definitions.
+
+parameters:
+  # Dependencies for this job
+  - name: dependsOn
+    type: object
+    default: []
+  # Display name for the job
+  - name: displayName
+    type: string
+    default: 'Wiki Documentation Update'
+  # Condition for when to run this job
+  - name: condition
+    type: string
+    default: succeeded()
+  # Folder names for repos
+  - name: branchRepoFolder
+    type: string
+    default: 'branch'
+
+  # Wiki repo folder name
+  # This is the folder where the wiki repo will be checked out
+  # and where the wiki contents will be copied to.
+  # This folder is created in the $(Agent.BuildDirectory) directory.
+  - name: wikiRepoFolder
+    type: string
+    default: 'wiki'
+
+  # Wiki repository reference
+  # This is the repository where the wiki contents will be pushed to.
+  # The format for the checkout is checkout: <project>/<repo>@refs/heads/<branch>
+  - name: wikiRepo
+    type: string
+    default: 'git://edge-ai/edge-ai@refs/heads/wiki'
+
+  # Branch to check out
+  - name: wikiBranch
+    type: string
+    default: 'wiki'
+
+jobs:
+  - job: WikiUpdate
+    displayName: ${{ parameters.displayName }}
+    dependsOn: ${{ parameters.dependsOn }}
+    condition: ${{ parameters.condition }}
+    pool:
+      name: ai-on-edge-managed-pool
+      vmImage: ubuntu-latest
+    variables:
+      BRANCH_REPO_FOLDER: ${{ parameters.branchRepoFolder }}
+      WIKI_REPO_FOLDER: ${{ parameters.wikiRepoFolder }}
+    steps:
+      - script: |
+
+          # Create repo directories for the main and wiki branches
+          echo "Creating repo directories..."
+          mkdir "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER"
+          mkdir "$(Agent.BuildDirectory)/$BRANCH_REPO_FOLDER"
+          echo "Repo directories created at $WIKI_REPO_FOLDER"
+          echo "and $BRANCH_REPO_FOLDER"
+
+        displayName: Create repo directories
+
+      # Checking out the main branch and the wiki branch
+      # The @refs/heads/main is the main branch(self) and the
+      # @refs/heads/wiki is the wiki branch.
+      # The format for the checkout is checkout: <project>/<repo>@refs/heads/<branch>
+      # Persisting credentials allows us to use git commands below.
+      - checkout: self
+        persistCredentials: true
+        path: $(BRANCH_REPO_FOLDER)
+      - checkout: ${{ parameters.wikiRepo }}
+        persistCredentials: true
+        path: $(WIKI_REPO_FOLDER)
+
+      - script: |
+
+          # Checkout the wiki branch
+          # This should be checked out in the call above but
+          # it has been occasionally flaky, so we are checking it out here
+          git -C "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER" checkout ${{ parameters.wikiBranch }}
+
+          # Clear contents of wiki repo directory excluding the .git folder
+          echo "Clearing contents of wiki repo directory..."
+          find "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER" -mindepth 1 -maxdepth 1 -not -name '.git' -exec rm -rf {} \;
+
+          # Build/refresh the wiki contents. This will put all artifacts into the
+          # .wiki folder in the main branch.
+          echo "Building wiki contents..."
+          "./scripts/wiki-build.sh"
+
+          # Copy the wiki contents to the wiki repo directory
+          echo "Copying wiki contents to wiki repo directory..."
+          cp -r ".wiki"/* "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER"
+
+          # Explicitly copy the .order file to the wiki repo directory
+          # This file is used to order the wiki pages in the Azure DevOps wiki
+          # We're calling explicitly for it's copy incase we play with
+          # other `.` files we don't want copied in the future.
+          echo "Copying .order file to wiki repo directory..."
+          cp ".wiki/.order" "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER/.order"
+
+          # Commit the changes
+          echo "Committing new wiki contents..."
+          git -C "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER" add .
+          git -C "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER" commit -m "Updated wiki contents on `date +'%Y-%m-%d %H:%M:%S'`"
+
+          # Push the changes to the remote repository
+          echo "Pushing wiki contents..."
+          git -C "$(Agent.BuildDirectory)/$WIKI_REPO_FOLDER" push -f origin ${{ parameters.wikiBranch }}
+
+        displayName: Push Wiki
+        workingDirectory: $(Agent.BuildDirectory)/$(BRANCH_REPO_FOLDER)

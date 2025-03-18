@@ -1,0 +1,125 @@
+# MegaLinter Azure DevOps Pipeline Template
+# This template is designed to run MegaLinter in an Azure DevOps pipeline.
+# It includes steps to restore the MegaLinter image from a cache or pull it from the Docker registry,
+# run the linter with different configurations based on the Azure Reporter setting,
+# and upload the reports as artifacts.
+# The template uses parameters to allow customization of the job's dependencies, display name, condition,
+# cache path, and Azure Reporter setting.
+# Parameters:
+# - dependsOn: List of jobs that this job depends on.
+# - displayName: Display name for the job.
+# - condition: Condition under which the job runs.
+# - megalinterCachePath: Path to the MegaLinter cache.
+# - enableAzureReporter: Boolean to enable or disable Azure Reporter.
+# - pullRequestId: ID of the pull request.
+# - sourceRepoUri: URI of the source repository.
+# The template is designed to be reusable and can be included in other pipeline YAML files.
+
+---
+
+parameters:
+  # Dependencies for this job
+  - name: dependsOn
+    type: object
+    default: []
+  # Display name for the job
+  - name: displayName
+    type: string
+    default: 'Run MegaLinter'
+  # Condition for when to run this job
+  - name: condition
+    type: string
+    default: succeeded()
+  # Path to the MegaLinter cache
+  - name: megalinterCachePath
+    type: string
+    default: '/mnt/storage/sdc/cache/images/megalinter'
+  # Enable or disable Azure Reporter
+  - name: enableAzureReporter
+    type: boolean
+    default: false
+  # ID of the pull request
+  - name: pullRequestId
+    type: string
+    default: ''
+  # URI of the source repository
+  - name: sourceRepoUri
+    type: string
+    default: ''
+
+jobs:
+  - job: MegaLinter
+    dependsOn: ${{ parameters.dependsOn }}
+    displayName: ${{ parameters.displayName }}
+    condition: ${{ parameters.condition }}
+    pool:
+      name: ai-on-edge-managed-pool
+      vmImage: ubuntu-latest
+      demands:
+        - WorkFolder -equals /mnt/storage/sdc/
+
+    steps:
+      # Checkout repo
+      - checkout: self
+        clean: true
+
+      # Attempt to restore MegaLinter from the cache otherwise pull it
+      - script: |
+
+          # Check if the cache directory exists
+          if [ -d "${{ parameters.megalinterCachePath }}" ]; then
+            # Check if the cache file exists
+            if [ -f "${{ parameters.megalinterCachePath }}/megalinterv8-cache.tar" ]; then
+              echo "Loading MegaLinter from cache..."
+              docker load -i ${{ parameters.megalinterCachePath }}/megalinterv8-cache.tar
+            # If the cache file does not exist, pull the MegaLinter image
+            else
+              echo "Megalinter cache not found. Pulling MegaLinter from Docker registry..."
+              docker pull oxsecurity/megalinter:v8
+            fi
+          else
+            echo "Cache directory ${{ parameters.megalinterCachePath }} does not exist. Pulling MegaLinter from Docker registry..."
+            docker pull oxsecurity/megalinter:v8
+          fi
+
+        displayName: MegaLinter Cache Restore
+        condition: not(canceled())
+
+      # Run MegaLinter with different configurations based on Azure Reporter setting
+      - ${{ if eq(parameters.enableAzureReporter, true) }}:
+          - script: |
+
+              docker run -v $(System.DefaultWorkingDirectory):/tmp/lint \
+                --env-file <(env | grep -e SYSTEM_ -e BUILD_ -e TF_ -e AGENT_) \
+                -e SYSTEM_ACCESSTOKEN=$(System.AccessToken) \
+                -e GIT_AUTHORIZATION_BEARER=$(System.AccessToken) \
+                -e SYSTEM_COLLECTIONURI='$(System.CollectionUri)' \
+                -e SYSTEM_PULLREQUEST_PULLREQUESTID='${{ parameters.pullRequestId }}' \
+                -e SYSTEM_PULLREQUEST_SOURCEREPOSITORYURI='${{ parameters.sourceRepoUri }}' \
+                -e SYSTEM_TEAMPROJECT='$(System.TeamProject)' \
+                -e BUILD_BUILDID='$(Build.BuildId)' \
+                -e BUILD_REPOSITORY_ID='$(Build.Repository.ID)' \
+                -e AZURE_COMMENT_REPORTER='true' \
+                oxsecurity/megalinter:v8
+
+            displayName: Run MegaLinter
+
+      - ${{ if eq(parameters.enableAzureReporter, false) }}:
+          - script: |
+
+              docker run -v $(System.DefaultWorkingDirectory):/tmp/lint \
+                --env-file <(env | grep -e SYSTEM_ -e BUILD_ -e TF_ -e AGENT_) \
+                -e SYSTEM_ACCESSTOKEN=$(System.AccessToken) \
+                -e GIT_AUTHORIZATION_BEARER=$(System.AccessToken) \
+                -e AZURE_COMMENT_REPORTER='false' \
+                oxsecurity/megalinter:v8
+
+            displayName: Run MegaLinter
+
+      # Upload MegaLinter reports as artifacts
+      - task: PublishPipelineArtifact@1
+        condition: succeededOrFailed()
+        displayName: Upload MegaLinter reports
+        inputs:
+          targetPath: "$(System.DefaultWorkingDirectory)/megalinter-reports/"
+          artifactName: MegaLinterReport
