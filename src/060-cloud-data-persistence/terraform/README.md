@@ -14,13 +14,13 @@
 
 | Name | Version |
 |------|---------|
-| random | n/a |
+| azurerm | >= 4.8.0 |
 
 ## Resources
 
 | Name | Type |
 |------|------|
-| [random_string.random_clean_prefix](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/string) | resource |
+| [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/client_config) | data source |
 
 ## Modules
 
@@ -33,36 +33,36 @@
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| environment | The environment name (e.g., dev, staging, prod) | `string` | n/a | yes |
-| instance | The instance identifier for the deployment | `string` | n/a | yes |
-| location | Azure region where resources will be created | `string` | n/a | yes |
-| resource\_group\_name | Name of the resource group | `string` | n/a | yes |
-| resource\_prefix | The prefix to use for resource names | `string` | n/a | yes |
+| environment | Environment for all resources in this module: dev, test, or prod | `string` | n/a | yes |
+| location | Location for all resources in this module | `string` | n/a | yes |
+| resource\_group | n/a | ```object({ name = string id = optional(string) })``` | n/a | yes |
+| resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
 | blob\_soft\_delete\_retention\_days | Number of days to retain deleted blobs | `number` | `7` | no |
 | container\_access\_type | The Access Level for the container (blob, container or private) | `string` | `"private"` | no |
-| container\_name | Name of the container to create | `string` | `"data"` | no |
 | container\_soft\_delete\_retention\_days | Number of days to retain deleted containers | `number` | `7` | no |
-| create\_file\_share | Whether to create a file share | `bool` | `false` | no |
+| data\_lake\_blob\_container\_name | The name of the Blob Container for the data lake. | `string` | `"data"` | no |
+| data\_lake\_data\_contributor\_principal\_id | Principal ID of a managed identity that should be granted Storage Blob Data Contributor access | `string` | `null` | no |
+| data\_lake\_data\_owner\_principal\_id | The Principal ID that will be assigned the 'Storage Blob Data Owner' role at the Storage Account scope. (Otherwise, uses the current logged in user) | `string` | `null` | no |
 | data\_lake\_filesystem\_name | Name of the Data Lake Gen2 filesystem to create | `string` | `"datalake"` | no |
-| enable\_private\_endpoint | Whether to create a private endpoint for the storage account | `bool` | `false` | no |
 | file\_share\_name | Name of the file share to create | `string` | `"fileshare"` | no |
 | file\_share\_quota\_gb | Maximum size of the file share in GB | `number` | `5` | no |
-| managed\_identity\_principal\_id | Principal ID of a managed identity that should be granted Storage Blob Data Contributor access | `string` | `""` | no |
+| instance | Instance identifier for naming resources: 001, 002, etc... | `string` | `"001"` | no |
+| private\_endpoint\_subnet\_id | ID of the subnet to deploy the private endpoint | `string` | `null` | no |
+| should\_create\_data\_lake | Whether or not to create the data lake which includes a Blob Container and Data Lake Filesystem. | `bool` | `true` | no |
+| should\_create\_data\_lake\_file\_share | Whether to create a file share | `bool` | `false` | no |
+| should\_enable\_private\_endpoint | Whether to create a private endpoint for the storage account | `bool` | `false` | no |
 | storage\_account\_kind | Defines the Kind of account (BlobStorage, BlockBlobStorage, FileStorage, Storage or StorageV2) | `string` | `"StorageV2"` | no |
 | storage\_account\_replication | Defines the type of replication to use for this storage account (LRS, GRS, RAGRS, ZRS) | `string` | `"LRS"` | no |
 | storage\_account\_tier | Defines the Tier to use for this storage account (Standard or Premium) | `string` | `"Standard"` | no |
-| subnet\_id | ID of the subnet to deploy the private endpoint | `string` | `""` | no |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| container\_name | The name of the storage container |
-| data\_lake\_filesystem\_name | The name of the Data Lake Gen2 filesystem |
-| file\_share\_name | The name of the file share (if created) |
-| primary\_connection\_string | Primary connection string of the Storage Account |
-| storage\_account\_id | ID of the Storage Account |
-| storage\_account\_name | Name of the Storage Account |
-| storage\_account\_primary\_blob\_endpoint | Primary endpoint for blob service |
+| data\_lake\_blob\_container\_name | The name for the Data Lake Blob Container. |
+| data\_lake\_file\_share\_name | The name for the Data Lake File Share. |
+| data\_lake\_filesystem\_name | The name for the Data Lake Gen2 Filesystem. |
+| storage\_account\_id | The resource ID for the Storage Account. |
+| storage\_account\_name | The name for the Storage Account. |
 <!-- markdown-table-prettify-ignore-end -->
 <!-- END_TF_DOCS -->

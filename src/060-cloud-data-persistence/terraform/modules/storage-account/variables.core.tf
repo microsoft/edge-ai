@@ -24,5 +24,4 @@ variable "location" {
 variable "instance" {
   type        = string
   description = "Instance identifier for naming resources: 001, 002, etc..."
-  default     = "001"
 }

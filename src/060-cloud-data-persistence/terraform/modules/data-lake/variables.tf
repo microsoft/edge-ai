@@ -1,5 +1,5 @@
-variable "container_name" {
-  description = "Name of the storage container"
+variable "data_lake_blob_container_name" {
+  description = "The name of the Blob Container for the data lake."
   type        = string
 }
 
@@ -13,12 +13,17 @@ variable "storage_account_id" {
   type        = string
 }
 
-variable "managed_identity_principal_id" {
-  description = "Principal ID of the managed identity to assign roles to"
+variable "data_lake_data_owner_principal_id" {
+  description = "The Principal ID that will be assigned the 'Storage Blob Data Owner' role at the Storage Account scope. (Otherwise, uses the current logged in user)"
   type        = string
 }
 
-variable "create_file_share" {
+variable "data_lake_data_contributor_principal_id" {
+  description = "The Principal ID that will be assigned the 'Storage Blob Data Contributor' role at the Storage Account scope."
+  type        = string
+}
+
+variable "should_create_data_lake_file_share" {
   description = "Whether to create a file share"
   type        = bool
 }

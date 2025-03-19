@@ -7,50 +7,43 @@ locals {
     Instance    = var.instance
     component   = "storage"
   }
-
-  # Storage account name
-  storage_account_name = substr(lower("st${random_string.random_clean_prefix.result}${var.environment}aio${var.instance}"), 0, 24)
 }
 
-# Generate random string for storage account name
-resource "random_string" "random_clean_prefix" {
-  length  = 5
-  special = false
-  upper   = false
-  lower   = true
-  numeric = true
-}
-
-# Call the data-lake module and pass the storage account details
-module "data_lake" {
-  source = "./modules/data-lake"
-
-  container_name                = var.container_name
-  storage_account_id            = module.storage_account.id
-  container_access_type         = var.container_access_type
-  managed_identity_principal_id = var.managed_identity_principal_id != null ? var.managed_identity_principal_id : ""
-  create_file_share             = var.create_file_share
-  file_share_name               = var.file_share_name
-  file_share_quota_gb           = var.file_share_quota_gb
-  data_lake_filesystem_name     = var.data_lake_filesystem_name
-}
+# Add data source for current client config
+data "azurerm_client_config" "current" {}
 
 # Storage Account
 module "storage_account" {
   source = "./modules/storage-account"
 
-  storage_account_name                 = local.storage_account_name
-  resource_group_name                  = var.resource_group_name
-  location                             = var.location
   account_tier                         = var.storage_account_tier
   account_replication_type             = var.storage_account_replication
   account_kind                         = var.storage_account_kind
   blob_soft_delete_retention_days      = var.blob_soft_delete_retention_days
   container_soft_delete_retention_days = var.container_soft_delete_retention_days
-  tags                                 = local.tags
   environment                          = var.environment
   instance                             = var.instance
+  location                             = var.location
+  private_endpoint_subnet_id           = var.private_endpoint_subnet_id
+  resource_group_name                  = var.resource_group.name
   resource_prefix                      = var.resource_prefix
-  subnet_id                            = var.subnet_id
-  enable_private_endpoint              = var.enable_private_endpoint
+  should_enable_private_endpoint       = var.should_enable_private_endpoint
+  tags                                 = local.tags
+}
+
+# Create the data lake and pass the storage account details
+module "data_lake" {
+  count = var.should_create_data_lake ? 1 : 0
+
+  source = "./modules/data-lake"
+
+  container_access_type                   = var.container_access_type
+  data_lake_blob_container_name           = var.data_lake_blob_container_name
+  data_lake_filesystem_name               = var.data_lake_filesystem_name
+  data_lake_data_owner_principal_id       = coalesce(var.data_lake_data_owner_principal_id, data.azurerm_client_config.current.object_id)
+  data_lake_data_contributor_principal_id = var.data_lake_data_contributor_principal_id
+  file_share_name                         = var.file_share_name
+  file_share_quota_gb                     = var.file_share_quota_gb
+  should_create_data_lake_file_share      = var.should_create_data_lake_file_share
+  storage_account_id                      = module.storage_account.id
 }

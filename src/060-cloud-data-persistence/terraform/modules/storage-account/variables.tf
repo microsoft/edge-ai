@@ -1,15 +1,5 @@
-variable "storage_account_name" {
-  description = "Name of the storage account"
-  type        = string
-}
-
 variable "resource_group_name" {
   description = "Name of the resource group"
-  type        = string
-}
-
-variable "location" {
-  description = "Azure region where resources will be created"
   type        = string
 }
 
@@ -43,27 +33,13 @@ variable "tags" {
   type        = map(string)
 }
 
-variable "instance" {
-  description = "Instance identifier to distinguish between multiple instances"
-  type        = string
+# Private Endpoint Variables
+variable "should_enable_private_endpoint" {
+  description = "Whether to create a private endpoint for the storage account"
+  type        = bool
 }
 
-variable "environment" {
-  description = "Environment name (dev, test, prod)"
-  type        = string
-}
-
-variable "resource_prefix" {
-  description = "Prefix to add to all resources"
-  type        = string
-}
-
-variable "subnet_id" {
+variable "private_endpoint_subnet_id" {
   description = "ID of the subnet to deploy the private endpoint"
   type        = string
-}
-
-variable "enable_private_endpoint" {
-  description = "Enable private endpoint for the storage account"
-  type        = bool
 }
