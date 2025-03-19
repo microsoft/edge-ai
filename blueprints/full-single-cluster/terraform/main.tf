@@ -64,11 +64,11 @@ module "messaging" {
 module "storage" {
   source = "../../../src/060-cloud-data-persistence/terraform"
 
-  resource_group_name = module.onboard_requirements.resource_group.name
-  location            = var.location
-  environment         = var.environment
-  instance            = var.instance
-  resource_prefix     = var.resource_prefix
+  location        = var.location
+  environment     = var.environment
+  instance        = var.instance
+  resource_prefix = var.resource_prefix
+  resource_group  = module.onboard_requirements.resource_group
 }
 
 module "observability" {

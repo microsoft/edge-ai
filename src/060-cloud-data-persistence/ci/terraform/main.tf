@@ -13,9 +13,9 @@ data "azurerm_resource_group" "aio" {
 module "cloud_data_persistence" {
   source = "../../terraform"
 
-  resource_prefix     = var.resource_prefix
-  environment         = var.environment
-  instance            = var.instance
-  resource_group_name = data.azurerm_resource_group.aio.name
-  location            = data.azurerm_resource_group.aio.location
+  resource_prefix = var.resource_prefix
+  environment     = var.environment
+  instance        = var.instance
+  resource_group  = data.azurerm_resource_group.aio
+  location        = data.azurerm_resource_group.aio.location
 }

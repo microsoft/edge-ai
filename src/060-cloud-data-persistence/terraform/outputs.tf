@@ -1,35 +1,24 @@
 output "storage_account_id" {
-  description = "ID of the Storage Account"
+  description = "The resource ID for the Storage Account."
   value       = module.storage_account.id
 }
 
 output "storage_account_name" {
-  description = "Name of the Storage Account"
+  description = "The name for the Storage Account."
   value       = module.storage_account.name
 }
 
-output "storage_account_primary_blob_endpoint" {
-  description = "Primary endpoint for blob service"
-  value       = module.storage_account.primary_blob_endpoint
+output "data_lake_blob_container_name" {
+  description = "The name for the Data Lake Blob Container."
+  value       = try(module.data_lake[0].blob_container_name, null)
 }
 
-output "primary_connection_string" {
-  description = "Primary connection string of the Storage Account"
-  value       = module.storage_account.primary_connection_string
-  sensitive   = true
-}
-
-output "container_name" {
-  description = "The name of the storage container"
-  value       = module.data_lake.container_name
-}
-
-output "file_share_name" {
-  description = "The name of the file share (if created)"
-  value       = module.data_lake.file_share_name
+output "data_lake_file_share_name" {
+  description = "The name for the Data Lake File Share."
+  value       = try(module.data_lake[0].file_share_name, null)
 }
 
 output "data_lake_filesystem_name" {
-  description = "The name of the Data Lake Gen2 filesystem"
-  value       = module.data_lake.data_lake_filesystem_name
+  description = "The name for the Data Lake Gen2 Filesystem."
+  value       = try(module.data_lake[0].filesystem_name, null)
 }

@@ -40,8 +40,10 @@ output "resource_prefix" {
   value = "a${random_string.prefix.id}"
 }
 
-output "resource_group_name" {
-  value = local.resource_group_name
+output "resource_group" {
+  value = {
+    name = local.resource_group_name
+  }
 }
 
 output "location" {

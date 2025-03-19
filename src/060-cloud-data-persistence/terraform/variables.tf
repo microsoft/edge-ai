@@ -1,15 +1,7 @@
-# Basic Resource Variables
-variable "resource_group_name" {
-  description = "Name of the resource group"
-  type        = string
-}
+/*
+ * Storage Account
+ */
 
-variable "location" {
-  description = "Azure region where resources will be created"
-  type        = string
-}
-
-# Storage Account Variables
 variable "storage_account_tier" {
   description = "Defines the Tier to use for this storage account (Standard or Premium)"
   type        = string
@@ -28,7 +20,26 @@ variable "storage_account_kind" {
   default     = "StorageV2"
 }
 
-# Blob Storage Variables
+/*
+ * Private Endpoint for Storage Account
+ */
+
+variable "should_enable_private_endpoint" {
+  description = "Whether to create a private endpoint for the storage account"
+  type        = bool
+  default     = false
+}
+
+variable "private_endpoint_subnet_id" {
+  description = "ID of the subnet to deploy the private endpoint"
+  type        = string
+  default     = null
+}
+
+/*
+ * Blob Container Configuration
+ */
+
 variable "blob_soft_delete_retention_days" {
   description = "Number of days to retain deleted blobs"
   type        = number
@@ -41,8 +52,8 @@ variable "container_soft_delete_retention_days" {
   default     = 7
 }
 
-variable "container_name" {
-  description = "Name of the container to create"
+variable "data_lake_blob_container_name" {
+  description = "The name of the Blob Container for the data lake."
   type        = string
   default     = "data"
 }
@@ -53,8 +64,39 @@ variable "container_access_type" {
   default     = "private"
 }
 
-# File Share Variables
-variable "create_file_share" {
+variable "should_create_data_lake" {
+  description = "Whether or not to create the data lake which includes a Blob Container and Data Lake Filesystem."
+  type        = bool
+  default     = true
+}
+
+/*
+ * Data Lake
+ */
+
+variable "data_lake_filesystem_name" {
+  description = "Name of the Data Lake Gen2 filesystem to create"
+  type        = string
+  default     = "datalake"
+}
+
+variable "data_lake_data_owner_principal_id" {
+  description = "The Principal ID that will be assigned the 'Storage Blob Data Owner' role at the Storage Account scope. (Otherwise, uses the current logged in user)"
+  type        = string
+  default     = null
+}
+
+variable "data_lake_data_contributor_principal_id" {
+  description = "Principal ID of a managed identity that should be granted Storage Blob Data Contributor access"
+  type        = string
+  default     = null
+}
+
+/*
+ * File Share
+ */
+
+variable "should_create_data_lake_file_share" {
   description = "Whether to create a file share"
   type        = bool
   default     = false
@@ -70,18 +112,4 @@ variable "file_share_quota_gb" {
   description = "Maximum size of the file share in GB"
   type        = number
   default     = 5
-}
-
-# Data Lake Variables
-variable "data_lake_filesystem_name" {
-  description = "Name of the Data Lake Gen2 filesystem to create"
-  type        = string
-  default     = "datalake"
-}
-
-# Identity Variables
-variable "managed_identity_principal_id" {
-  description = "Principal ID of a managed identity that should be granted Storage Blob Data Contributor access"
-  type        = string
-  default     = ""
 }
