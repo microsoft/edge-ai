@@ -8,7 +8,7 @@
 
 locals {
   arc_resource_name    = "arc-${var.resource_prefix}-${var.environment}-${var.instance}"
-  custom_locations_oid = try(coalesce(var.custom_locations_oid), data.azuread_service_principal.custom_locations[0].object_id, "")
+  custom_locations_oid = try(coalesce(var.custom_locations_oid, data.azuread_service_principal.custom_locations[0].object_id), "")
   current_user_oid     = var.should_add_current_user_cluster_admin ? data.azurerm_client_config.current.object_id : null
 }
 
@@ -16,7 +16,7 @@ data "azurerm_client_config" "current" {
 }
 
 data "azuread_service_principal" "custom_locations" {
-  count = var.custom_locations_oid == null ? 1 : 0
+  count = alltrue([var.should_get_custom_locations_oid, var.custom_locations_oid == null]) ? 1 : 0
 
   # ref: https://learn.microsoft.com/azure/iot-operations/deploy-iot-ops/howto-prepare-cluster?tabs=ubuntu#arc-enable-your-cluster
   client_id = "bc313c14-388c-4e7d-a58e-70017303ee3b" #gitleaks:allow

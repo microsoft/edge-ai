@@ -8,6 +8,7 @@ module "cncf_cluster_install" {
 
   should_output_cluster_server_script = var.should_output_cluster_server_script
   should_output_cluster_node_script   = var.should_output_cluster_node_script
+  should_deploy_script_to_vm          = false
 
   environment                           = var.environment
   resource_prefix                       = var.resource_prefix
@@ -18,4 +19,5 @@ module "cncf_cluster_install" {
   should_add_current_user_cluster_admin = var.should_add_current_user_cluster_admin
   cluster_admin_oid                     = var.cluster_admin_oid
   script_output_filepath                = var.script_output_filepath
+  should_get_custom_locations_oid       = var.should_get_custom_locations_oid
 }

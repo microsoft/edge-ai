@@ -59,41 +59,18 @@ Login to Azure CLI using the below command:
 az login # --tenant <tenant-id>
 ```
 
-Set the following environment variables:
+Find required environment variables that must be set:
 
 ```sh
-## Required environment variables
-
-# The username of user that will be used on the host machine
-ENV_HOST_USERNAME=<device_username>
-# The resource group where the Azure Arc resource will be created
-ENV_ARC_RESOURCE_GROUP=<arc_resource_group>
-# The name of the Azure Arc resource
-ENV_ARC_RESOURCE_NAME=<arc_resource_name>
-
-# The Azure AD object ID of the custom locations resource for the Azure Arc resource
-ENV_CUSTOM_LOCATIONS_OID=<custom_locations_oid>
-
-# Optional environment variables
-
-# When environment is set to not 'prod', the script install development tools on the cluster, such as  K9s, etc.
-ENV_ENVIRONMENT=<environment>
-
-# If set to 'true', add the 'aad_user_id' as a cluster admin to enable the user to access the cluster with cluster connect
-ENV_ADD_USER_AS_CLUSTER_ADMIN=<add_user_as_cluster_admin>
-# The Azure AD user ID that will be added as a cluster admin
-ENV_AAD_USER_ID=<aad_user_id>
-
-# If set to 'true', enable auto-upgrade for the Azure Arc resource
-ENV_ARC_AUTO_UPGRADE=<arc_auto_upgrade>
-
-# The tenant ID, client ID and client secret of the service principal used to connect the Azure Arc resource to Azure
-# If not set, the script will attempt to use the managed identity of the VM
-ENV_ARC_SP_CLIENT_ID=<arc_sp_client_id>
-ENV_ARC_SP_SECRET=<arc_sp_secret>
-ENV_TENANT_ID=<tenant_id>
+./k3s-device-setup.sh -h
 ```
 
+Set environment variables and call the script.
+
 ```sh
-./device_setup.sh
+# Replace or add environment variables below with parameters for your need.
+ENVIRONMENT=dev \
+  ARC_RESOURCE_GROUP_NAME=rg-sample-dev-001 \
+  ARC_RESOURCE_NAME=arck-sample-dev-001 \
+  ./k3s-device-setup.sh
 ```

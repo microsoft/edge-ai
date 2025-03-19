@@ -30,6 +30,8 @@ module "cncf_cluster_install" {
   cluster_node_virtual_machines        = slice(module.vm_host.virtual_machines, 1, length(module.vm_host.virtual_machines))
   should_generate_cluster_server_token = true
   cluster_server_ip                    = module.vm_host.private_ips[0]
+  custom_locations_oid                 = var.custom_locations_oid
+  should_get_custom_locations_oid      = var.should_get_custom_locations_oid
 }
 
 module "iot_ops_cloud_requirements" {

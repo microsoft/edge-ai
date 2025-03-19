@@ -149,10 +149,7 @@ jobs:
               from_entries') # Convert entries to a JSON object
           else
             changed_tf_folders=$(echo "$changed_files" |  # Get the list of changed files
-              # we will uncomment the grep command below to include blueprints folder
-              # in a future PR update.
-              # grep -E '(src/[^/]+/|blueprints/[^/]+/).*\.(tf|tfvars|tfstate|hcl)$' |  # Filter for .tf, .tfvars, .tfstate, or .hcl files in src or blueprints directory
-              grep -E 'src/[^/]+/.*\.(tf|tfvars|tfstate|hcl)$' |  # Filter for .tf, .tfvars, .tfstate, or .hcl files in src directory
+              grep -E '(src/[^/]+/|blueprints/[^/]+/).*\.(tf|tfvars|tfstate|hcl)$' |  # Filter for .tf, .tfvars, .tfstate, or .hcl files in src or blueprints directory
               awk -F'/' '{if ($1=="src") print $1"/"$2; else if ($1=="blueprints") print $1"/"$2}' |  # Extract folder names with path prefix for blueprints
               sort -u |  # Remove all duplicates and sort
               jq -R -s -c 'split("\n") |  # Convert the newline-separated list into a JSON array
