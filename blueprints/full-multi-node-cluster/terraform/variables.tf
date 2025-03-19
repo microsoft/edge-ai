@@ -23,6 +23,29 @@ variable "instance" {
   default     = "001"
 }
 
+
+variable "should_get_custom_locations_oid" {
+  type        = bool
+  description = <<-EOF
+    Whether to get Custom Locations Object ID using Terraform's azuread provider. (Otherwise, provided by
+    'custom_locations_oid' or `az connectedk8s enable-features` for custom-locations on cluster setup if not provided.)
+EOF
+  default     = true
+}
+
+variable "custom_locations_oid" {
+  type        = string
+  description = <<-EOF
+    The object id of the Custom Locations Entra ID application for your tenant.
+    If none is provided, the script will attempt to retrieve this requiring 'Application.Read.All' or 'Directory.Read.All' permissions.
+
+    ```sh
+    az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv
+    ```
+EOF
+  default     = null
+}
+
 variable "host_machine_count" {
   type        = number
   description = "The number of host machines for the cluster. (The first host machine will be the cluster server)"

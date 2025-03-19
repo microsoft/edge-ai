@@ -16,15 +16,24 @@ variable "resource_prefix" {
   }
 }
 
+/*
+ * Optional Variables
+ */
+
 variable "instance" {
   type        = string
   description = "Instance identifier for naming resources: 001, 002, etc..."
   default     = "001"
 }
 
-/*
- * Optional Variables
- */
+variable "should_get_custom_locations_oid" {
+  type        = bool
+  description = <<-EOF
+    Whether to get Custom Locations Object ID using Terraform's azuread provider. (Otherwise, provided by
+    'custom_locations_oid' or `az connectedk8s enable-features` for custom-locations on cluster setup if not provided.)
+EOF
+  default     = true
+}
 
 # Needed for ci system so this can be passed in during the build step
 variable "custom_locations_oid" {

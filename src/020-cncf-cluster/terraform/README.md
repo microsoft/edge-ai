@@ -44,6 +44,7 @@ install extensions for cluster connect and custom locations.
 | aio\_resource\_group | n/a | ```object({ name = string id = optional(string) })``` | n/a | yes |
 | environment | Environment for all resources in this module: dev, test, or prod | `string` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
+| should\_get\_custom\_locations\_oid | Whether to get Custom Locations Object ID using Terraform's azuread provider. (Otherwise, provided by 'custom\_locations\_oid' or `az connectedk8s enable-features` for custom-locations on cluster setup if not provided.) | `bool` | n/a | yes |
 | arc\_onboarding\_sp\_client\_id | If using, the Service Principal Client ID with 'Kubernetes Cluster - Azure Arc Onboarding' permissions. (Otherwise, not used and will attempt to use identity of the host) | `string` | `null` | no |
 | arc\_onboarding\_sp\_client\_secret | If using, the Service Principal Client Secret to use for automation. (Otherwise, not used and will attempt to use identity of the host) | `string` | `null` | no |
 | cluster\_admin\_oid | The Object ID that will be given cluster-admin permissions with the new cluster. (Otherwise, current logged in user if 'should\_add\_current\_user\_cluster\_admin=true') | `string` | `null` | no |

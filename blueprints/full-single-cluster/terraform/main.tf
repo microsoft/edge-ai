@@ -21,11 +21,13 @@ module "vm_host" {
 module "cncf_cluster_install" {
   source = "../../../src/020-cncf-cluster/terraform"
 
-  environment                    = var.environment
-  instance                       = var.instance
-  resource_prefix                = var.resource_prefix
-  aio_resource_group             = module.onboard_requirements.resource_group
-  cluster_server_virtual_machine = module.vm_host.virtual_machines[0]
+  environment                     = var.environment
+  instance                        = var.instance
+  resource_prefix                 = var.resource_prefix
+  aio_resource_group              = module.onboard_requirements.resource_group
+  cluster_server_virtual_machine  = module.vm_host.virtual_machines[0]
+  custom_locations_oid            = var.custom_locations_oid
+  should_get_custom_locations_oid = var.should_get_custom_locations_oid
 }
 
 module "iot_ops_cloud_requirements" {

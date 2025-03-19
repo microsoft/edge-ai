@@ -35,6 +35,15 @@ EOF
   default     = null
 }
 
+variable "should_get_custom_locations_oid" {
+  type        = bool
+  description = <<-EOF
+    Whether to get Custom Locations Object ID using Terraform's azuread provider. (Otherwise, provided by
+    'custom_locations_oid' or `az connectedk8s enable-features` for custom-locations on cluster setup if not provided.)
+EOF
+  default     = true
+}
+
 variable "custom_locations_oid" {
   type        = string
   description = <<-EOF

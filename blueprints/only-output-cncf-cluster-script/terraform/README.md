@@ -29,6 +29,7 @@
 | instance | Instance identifier for naming resources: 001, 002, etc... | `string` | `"001"` | no |
 | script\_output\_filepath | The location of where to write out the script file. (Otherwise, '{path.root}/out') | `string` | `null` | no |
 | should\_add\_current\_user\_cluster\_admin | Gives the current logged in user cluster-admin permissions with the new cluster. | `bool` | `true` | no |
+| should\_get\_custom\_locations\_oid | Whether to get Custom Locations Object ID using Terraform's azuread provider. (Otherwise, provided by 'custom\_locations\_oid' or `az connectedk8s enable-features` for custom-locations on cluster setup if not provided.) | `bool` | `true` | no |
 | should\_output\_cluster\_node\_script | Whether to write out the script for setting up cluster node host machines. (Needed for multi-node clusters) | `string` | `false` | no |
 | should\_output\_cluster\_server\_script | Whether to write out the script for setting up the cluster server host machine. | `string` | `true` | no |
 <!-- markdown-table-prettify-ignore-end -->

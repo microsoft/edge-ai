@@ -18,10 +18,11 @@ data "azurerm_virtual_machine" "aio" {
 module "cncf_cluster" {
   source = "../../terraform"
 
-  environment                    = var.environment
-  instance                       = var.instance
-  resource_prefix                = var.resource_prefix
-  custom_locations_oid           = var.custom_locations_oid
-  aio_resource_group             = data.azurerm_resource_group.aio
-  cluster_server_virtual_machine = data.azurerm_virtual_machine.aio
+  environment                     = var.environment
+  instance                        = var.instance
+  resource_prefix                 = var.resource_prefix
+  custom_locations_oid            = var.custom_locations_oid
+  aio_resource_group              = data.azurerm_resource_group.aio
+  cluster_server_virtual_machine  = data.azurerm_virtual_machine.aio
+  should_get_custom_locations_oid = var.should_get_custom_locations_oid
 }
