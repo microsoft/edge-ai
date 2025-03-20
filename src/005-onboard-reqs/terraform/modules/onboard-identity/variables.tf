@@ -35,7 +35,7 @@ variable "onboard_identity_type" {
 
     Allowed values:
 
-    - uami
+    - id
     - sp
 EOF
 }

@@ -17,7 +17,7 @@ locals {
   custom_locations_id             = "${local.subscription_id_part}/resourceGroups/${local.resource_group_name}/providers/Microsoft.ExtendedLocation/customLocations/${local.custom_locations_name}"
   aio_instance_name               = "aio-instance-${local.resource_prefix}"
   aio_instance_id                 = "${local.resource_group_id}/providers/Microsoft.IoTOperations/instances/${local.aio_instance_name}"
-  aio_user_assigned_identity_name = "uami-aio-${local.resource_prefix}"
+  aio_user_assigned_identity_name = "id-${local.resource_prefix}-aio"
   aio_user_assigned_identity_id   = "${local.resource_group_id}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${local.aio_user_assigned_identity_name}"
   aio_dataflow_profile_id         = "${local.aio_instance_id}/dataflowProfiles/default"
 }

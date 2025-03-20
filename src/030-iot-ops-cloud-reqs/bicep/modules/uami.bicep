@@ -4,7 +4,7 @@ import * as core from '../types.core.bicep'
 param common core.Common
 
 resource sseUami 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
-  name: '${common.resourcePrefix}-sse-uami'
+  name: 'id-${common.resourcePrefix}-${common.environment}-sse-${common.instance}'
   location: common.location
 }
 
