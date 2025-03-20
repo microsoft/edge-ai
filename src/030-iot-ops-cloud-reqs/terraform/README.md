@@ -31,7 +31,7 @@ access to resources.
 | environment | Environment for all resources in this module: dev, test, or prod | `string` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
 | instance | Instance identifier for naming resources: 001, 002, etc... | `string` | `"001"` | no |
-| sse\_key\_vault | Azure Key Vault ID to use with Secret Sync Extension. | ```object({ id = string })``` | `null` | no |
+| sse\_key\_vault | Azure Key Vault ID to use with Secret Sync Extension. | ```object({ id = string name = string })``` | `null` | no |
 | sse\_key\_vault\_name | The name of the Key Vault for Secret Sync Extension. (Otherwise, 'kv-{var.resource\_prefix}-{var.environment}-{var.instance}' | `string` | `null` | no |
 
 ## Outputs

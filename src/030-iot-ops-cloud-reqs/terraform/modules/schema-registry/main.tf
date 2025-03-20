@@ -16,8 +16,8 @@ resource "random_string" "name" {
 locals {
   storage_account_name  = var.storage_account.name == "" ? "st${random_string.name.result}" : var.storage_account.name
   schema_container_name = "schemas"
-  registry_name         = "sch-reg-${var.resource_prefix}-${var.environment}-${var.instance}"
-  registry_namespace    = "sch-reg-ns-${var.resource_prefix}-${var.environment}-${var.instance}"
+  registry_name         = "sr-${var.resource_prefix}-${var.environment}-${var.instance}"
+  registry_namespace    = "srns-${var.resource_prefix}-${var.environment}-${var.instance}"
 }
 
 resource "azurerm_storage_account" "schema_registry_store" {

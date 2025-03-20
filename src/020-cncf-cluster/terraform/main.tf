@@ -7,7 +7,7 @@
  */
 
 locals {
-  arc_resource_name    = "arc-${var.resource_prefix}-${var.environment}-${var.instance}"
+  arc_resource_name    = "arck-${var.resource_prefix}-${var.environment}-${var.instance}"
   custom_locations_oid = try(coalesce(var.custom_locations_oid, data.azuread_service_principal.custom_locations[0].object_id), "")
   current_user_oid     = var.should_add_current_user_cluster_admin ? data.azurerm_client_config.current.object_id : null
 }

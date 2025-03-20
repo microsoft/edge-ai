@@ -9,7 +9,7 @@
 locals {
   today = timestamp()
 
-  enable_uami = lower(var.onboard_identity_type) == "uami"
+  enable_uami = lower(var.onboard_identity_type) == "id"
   enable_sp   = lower(var.onboard_identity_type) == "sp"
 
   principal_id = try(azurerm_user_assigned_identity.arc_onboarding[0].principal_id, azuread_service_principal.aio_edge[0].object_id)

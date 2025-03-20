@@ -9,13 +9,13 @@ data "azurerm_client_config" "current" {}
 
 resource "azurerm_user_assigned_identity" "user_managed_identity_secret_sync" {
   location            = var.location
-  name                = "uami-${var.resource_prefix}-${var.environment}-sse-${var.instance}"
+  name                = "id-${var.resource_prefix}-${var.environment}-sse-${var.instance}"
   resource_group_name = var.resource_group_name
 }
 
 resource "azurerm_user_assigned_identity" "user_managed_identity_aio" {
   location            = var.location
-  name                = "uami-${var.resource_prefix}-${var.environment}-aio-${var.instance}"
+  name                = "id-${var.resource_prefix}-${var.environment}-aio-${var.instance}"
   resource_group_name = var.resource_group_name
 }
 

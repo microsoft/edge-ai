@@ -31,10 +31,10 @@ param schemaContainerName string = 'schemas'
 */
 
 @description('The name for the ADR Schema Registry.')
-param schemaRegistryName string = 'sch-reg-${common.resourcePrefix}-${common.environment}-${common.instance}'
+param schemaRegistryName string = 'sr-${common.resourcePrefix}-${common.environment}-${common.instance}'
 
 @description('The ADLS Gen2 namespace for the ADR Schema Registry.')
-param schemaRegistryNamespace string = 'sch-reg-ns-${common.resourcePrefix}-${common.environment}-${common.instance}'
+param schemaRegistryNamespace string = 'srns-${common.resourcePrefix}-${common.environment}-${common.instance}'
 
 /*
   Key Vault Parameters

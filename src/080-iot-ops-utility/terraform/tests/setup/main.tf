@@ -13,7 +13,7 @@ locals {
   resource_prefix                            = "a${random_string.prefix.id}"
   resource_group_name                        = "rg-${local.resource_prefix}"
   resource_group_id                          = "${local.subscription_id_part}/resourceGroups/${local.resource_group_name}"
-  arc_connected_cluster_name                 = "arc-${local.resource_prefix}"
+  arc_connected_cluster_name                 = "arck-${local.resource_prefix}"
   arc_connected_cluster_id                   = "${local.resource_group_id}/providers/Microsoft.Kubernetes/connectedClusters/${local.arc_connected_cluster_name}"
   log_analytics_workspace_name               = "log-${local.resource_prefix}"
   log_analytics_workspace_id                 = "${local.resource_group_id}/providers/Microsoft.OperationalInsights/workspaces/${local.log_analytics_workspace_name}"

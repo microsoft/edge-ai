@@ -28,7 +28,7 @@ data "azurerm_dashboard_grafana" "aio" {
 data "azapi_resource" "arc_connected_cluster" {
   type      = "Microsoft.Kubernetes/connectedClusters@2024-01-01"
   parent_id = data.azurerm_resource_group.aio.id
-  name      = "arc-${var.resource_prefix}-${var.environment}-${var.instance}"
+  name      = "arck-${var.resource_prefix}-${var.environment}-${var.instance}"
 
   response_export_values = ["name", "id", "location"]
 }

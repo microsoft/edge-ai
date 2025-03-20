@@ -12,7 +12,7 @@ locals {
   subscription_id_part  = "/subscriptions/00000000-0000-0000-0000-000000000000"
   resource_prefix       = "a${random_string.prefix.id}"
   resource_group_name   = "rg-${local.resource_prefix}"
-  arc_onboard_uami_name = "uami-${local.resource_prefix}"
+  arc_onboard_uami_name = "id-${local.resource_prefix}"
   arc_onboard_uami_id   = "${local.subscription_id_part}/resourceGroups/${local.resource_group_name}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${local.arc_onboard_uami_name}"
 }
 

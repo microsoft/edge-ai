@@ -15,13 +15,13 @@ locals {
   resource_group_id               = "${local.subscription_id_part}/resourceGroups/${local.resource_group_name}"
   key_vault_name                  = "kv-${local.resource_prefix}"
   key_vault_id                    = "${local.subscription_id_part}/resourceGroups/${local.resource_group_name}/providers/Microsoft.KeyVault/vaults/${local.key_vault_name}"
-  sse_user_assigned_identity_name = "uami-sse-${local.resource_prefix}"
+  sse_user_assigned_identity_name = "id-${local.resource_prefix}-sse"
   sse_user_assigned_identity_id   = "${local.resource_group_id}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${local.sse_user_assigned_identity_name}"
-  aio_user_assigned_identity_name = "uami-aio-${local.resource_prefix}"
+  aio_user_assigned_identity_name = "id-${local.resource_prefix}-aio"
   aio_user_assigned_identity_id   = "${local.resource_group_id}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${local.aio_user_assigned_identity_name}"
   adr_schema_registry_name        = "adr-${local.resource_prefix}"
   adr_schema_registry_id          = "${local.resource_group_id}/providers/Microsoft.DeviceRegistry/schemaRegistries/${local.adr_schema_registry_name}"
-  arc_connected_cluster_name      = "arc-${local.resource_prefix}"
+  arc_connected_cluster_name      = "arck-${local.resource_prefix}"
   arc_connected_cluster_id        = "${local.resource_group_id}/providers/Microsoft.Kubernetes/connectedClusters/${local.arc_connected_cluster_name}"
 }
 

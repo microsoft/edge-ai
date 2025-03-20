@@ -48,7 +48,7 @@ run "create_non_default_vm_with_uami" {
   }
 
   assert {
-    condition     = strcontains(one(azurerm_linux_virtual_machine.aio_edge[0].identity[0].identity_ids), "uami-")
+    condition     = strcontains(one(azurerm_linux_virtual_machine.aio_edge[0].identity[0].identity_ids), "id-")
     error_message = "'arc_onboarding_user_assigned_identity' must be used when creating the VM"
   }
 }

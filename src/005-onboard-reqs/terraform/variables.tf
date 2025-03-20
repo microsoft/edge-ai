@@ -23,13 +23,13 @@ variable "onboard_identity_type" {
 
     Allowed values:
 
-    - uami
+    - id
     - sp
 EOF
-  default     = "uami"
+  default     = "id"
   validation {
-    condition     = contains(["uami", "sp"], var.onboard_identity_type)
-    error_message = "Must be one of ['uami', 'sp']."
+    condition     = contains(["id", "sp"], var.onboard_identity_type)
+    error_message = "Must be one of ['id', 'sp']."
   }
 }
 
