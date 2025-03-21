@@ -50,6 +50,6 @@ The related topics are highlighted in separate ADRs:
 
 - [CI/CD. Multi-Environment Promotional Flow with GitOps](./cicd-gitops.md)
 - [Deployment on the Edge with GitOps](./deployment-on-edge-gitops.md)
-- Workload and Configuration Management
+- [Workload and Configuration Management](./workload-configuration-management.md)
 - Deployment Observability
 - Secret Management on the Edge with GitOps
