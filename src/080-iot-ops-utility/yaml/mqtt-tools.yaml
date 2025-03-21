@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: mqtt-tools
+  namespace: azure-iot-operations
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mqtt-tools
+  namespace: azure-iot-operations
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mqtt-tools
+  template:
+    metadata:
+      labels:
+        app: mqtt-tools
+    spec:
+      serviceAccountName: mqtt-tools
+      containers:
+        - image: alpine
+          name: mqtt-tools
+          command: ["sh", "-c"]
+          args: ["apk add mosquitto-clients mqttui && sleep infinity"]
+          volumeMounts:
+            - name: broker-sat # Only needed for non-anonymous listener
+              mountPath: /var/run/secrets/tokens
+            - name: trust-bundle # Only needed for non-anonymous listener
+              mountPath: /var/run/certs
+      volumes:
+        - name: broker-sat # Only needed for non-anonymous listener
+          projected:
+            sources:
+              - serviceAccountToken:
+                  path: broker-sat
+                  audience: aio-internal # Must match audience in BrokerAuthentication
+                  expirationSeconds: 86400
+        - name: trust-bundle # Only needed for non-anonymous listener
+          configMap:
+            name: azure-iot-operations-aio-ca-trust-bundle # Default root CA cert

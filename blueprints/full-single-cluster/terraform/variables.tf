@@ -44,3 +44,9 @@ variable "custom_locations_oid" {
 EOF
   default     = null
 }
+
+variable "should_create_anonymous_broker_listener" {
+  type        = string
+  description = "Whether to enable an insecure anonymous AIO MQ Broker Listener. (Should only be used for dev or test environments)"
+  default     = false
+}

@@ -67,19 +67,19 @@ resource "azapi_resource" "asset" {
           dataPoints = [
             {
               name                   = "Temperature"
-              dataSource             = "ns=3;s=FastUInt100"
+              dataSource             = "ns=3;s=FastUInt10"
               dataPointConfiguration = "{\"samplingInterval\":500,\"queueSize\":1}"
               observabilityMode      = "None"
             },
             {
               name                   = "FillWeight"
-              dataSource             = "ns=3;s=FastUInt1004"
+              dataSource             = "ns=3;s=FastUInt4"
               dataPointConfiguration = "{\"samplingInterval\":500,\"queueSize\":1}"
               observabilityMode      = "None"
             },
             {
               name                   = "EnergyUse"
-              dataSource             = "ns=3;s=FastUInt1005"
+              dataSource             = "ns=3;s=FastUInt5"
               dataPointConfiguration = "{\"samplingInterval\":500,\"queueSize\":1}"
               observabilityMode      = "None"
             }

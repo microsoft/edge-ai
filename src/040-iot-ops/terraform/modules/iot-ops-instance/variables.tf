@@ -97,3 +97,21 @@ variable "aio_uami_id" {
   type        = string
   description = "The principal ID of the User Assigned Managed Identity for the Azure IoT Operations instance"
 }
+
+variable "should_create_anonymous_broker_listener" {
+  type        = string
+  description = "Whether to enable an insecure anonymous AIO MQ Broker Listener. (Should only be used for dev or test environments)"
+}
+
+variable "broker_listener_anonymous_config" {
+  type = object({
+    serviceName = string
+    port        = number
+    nodePort    = number
+  })
+  description = <<-EOF
+  Configuration for the insecure anonymous AIO MQ Broker Listener.
+
+  For additional information, refer to: https://learn.microsoft.com/azure/iot-operations/manage-mqtt-broker/howto-test-connection?tabs=bicep#node-port
+EOF
+}
