@@ -42,12 +42,13 @@ module "iot_ops_cloud_requirements" {
 module "iot_ops_install" {
   source = "../../../src/040-iot-ops/terraform"
 
-  aio_resource_group         = module.onboard_requirements.resource_group
-  arc_connected_cluster      = module.cncf_cluster_install.arc_connected_cluster
-  adr_schema_registry        = module.iot_ops_cloud_requirements.adr_schema_registry
-  aio_user_assigned_identity = module.iot_ops_cloud_requirements.aio_user_assigned_identity
-  sse_key_vault              = module.iot_ops_cloud_requirements.sse_key_vault
-  sse_user_assigned_identity = module.iot_ops_cloud_requirements.sse_user_assigned_identity
+  aio_resource_group                      = module.onboard_requirements.resource_group
+  arc_connected_cluster                   = module.cncf_cluster_install.arc_connected_cluster
+  adr_schema_registry                     = module.iot_ops_cloud_requirements.adr_schema_registry
+  aio_user_assigned_identity              = module.iot_ops_cloud_requirements.aio_user_assigned_identity
+  sse_key_vault                           = module.iot_ops_cloud_requirements.sse_key_vault
+  sse_user_assigned_identity              = module.iot_ops_cloud_requirements.sse_user_assigned_identity
+  should_create_anonymous_broker_listener = var.should_create_anonymous_broker_listener
 }
 
 module "messaging" {

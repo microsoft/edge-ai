@@ -68,3 +68,27 @@ variable "enable_instance_secret_sync" {
   default     = true
   description = "Whether to enable secret sync on the Azure IoT Operations instance"
 }
+
+variable "should_create_anonymous_broker_listener" {
+  type        = string
+  description = "Whether to enable an insecure anonymous AIO MQ Broker Listener. (Should only be used for dev or test environments)"
+  default     = false
+}
+
+variable "broker_listener_anonymous_config" {
+  type = object({
+    serviceName = string
+    port        = number
+    nodePort    = number
+  })
+  description = <<-EOF
+  Configuration for the insecure anonymous AIO MQ Broker Listener.
+
+  For additional information, refer to: https://learn.microsoft.com/azure/iot-operations/manage-mqtt-broker/howto-test-connection?tabs=bicep#node-port
+EOF
+  default = {
+    serviceName = "aio-broker-anon"
+    port        = 18884
+    nodePort    = 31884
+  }
+}

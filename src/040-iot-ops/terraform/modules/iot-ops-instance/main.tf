@@ -247,6 +247,31 @@ resource "azapi_resource" "broker_listener" {
   depends_on = [azapi_resource.custom_location, azapi_resource.broker, azapi_resource.broker_authn]
 }
 
+resource "azapi_resource" "broker_listener_anonymous" {
+  count = var.should_create_anonymous_broker_listener ? 1 : 0
+
+  type      = "Microsoft.IoTOperations/instances/brokers/listeners@2024-11-01"
+  name      = "default-anon"
+  parent_id = azapi_resource.broker.id
+  body = {
+    extendedLocation = {
+      name = azapi_resource.custom_location.output.id
+      type = "CustomLocation"
+    }
+    properties = {
+      serviceType = "NodePort"
+      serviceName = var.broker_listener_anonymous_config.serviceName
+      ports = [
+        {
+          port     = var.broker_listener_anonymous_config.port
+          nodePort = var.broker_listener_anonymous_config.nodePort
+        }
+      ]
+    }
+  }
+  depends_on = [azapi_resource.custom_location, azapi_resource.broker, azapi_resource.broker_authn]
+}
+
 resource "azapi_resource" "data_profiles" {
   type      = "Microsoft.IoTOperations/instances/dataflowProfiles@2024-11-01"
   name      = "default"
