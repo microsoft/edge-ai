@@ -8,9 +8,13 @@ As part of the AI flagship development cycles it is also important to consider s
 
 KeyVault **kv-ai-on-edge-azdo** in the underlying Azure subscription is used to maintain all the secrets for the project.
 
+## Network Security
+
+The KeyVault´s public network access is disabled to prevent any unauthorized access. A Private Endpoint is enabled for this KeyVault which makes it accessible within the Azure Virtual Network. The Azure Managed DevOps Pool providing the build agents for the Azure DevOps Pipelines is linked to the same Virtual Network and hence authorized to access the KeyVault.
+
 ## Azure DevOps Library/Variable Group
 
-The KeyVault is linked to Azure DevOps Variable Groups **ai-on-edge-secrets** and **azdo-build-vars** which make secrets available and accessible to the Azure DevOps Pipelines.
+The KeyVault is linked to Azure DevOps Variable Groups **ai-on-edge-secrets** and **azdo-build-vars** which make secrets available and accessible to the Azure DevOps Pipelines. To link new secrets to the Variable Group the public network access for the KeyVault must be enabled temporarily.
 
 ## Documentation References
 
