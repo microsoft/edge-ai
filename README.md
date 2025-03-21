@@ -71,18 +71,24 @@ Learn about key architectural approaches or find introductions to key edge techn
 
 ## Using Copilot to explore the repository
 
-This project maintainers have begun a journey to understand how to optimize the
-project, its layout, and documentation for a stellar copilot experience. If you
-encounter friction with `@workspace` questions to Copilot, please file an issue
-with your prompt and what you hoped Copilot would return you.
+This project includes comprehensive documentation and tooling to optimize your experience with GitHub Copilot. We've invested in making the repository Copilot-friendly through structured documentation, prompt files, and best practices.
 
-You can use Copilot to easily explore this repository. Here are a few prompts
-to get you started:
+### Quick exploration with @workspace
+
+You can use Copilot to easily explore this repository with `@workspace` queries. Here are a few prompts to get you started:
 
 - `@workspace Where is the terraform code for the event grid deployment?`
 - `@workspace Is there a script in this repository that can help me check my terraform provider version numbers?`
 - `@workspace Does this repository include an observability solution?`
 - `@workspace Does this repository include UAMI for any of its resources?`
+
+If you encounter friction with `@workspace` questions to Copilot, please file an issue with your prompt and what you hoped Copilot would return you.
+
+### Advanced Copilot usage
+
+For developers and contributors who want to leverage GitHub Copilot more effectively with this repository:
+
+- [AI-Assisted Engineering Guide](./docs/ai-assisted-engineering.md) - A comprehensive guide to all resources in this project that enhance Copilot's capabilities, including contextual and reusable prompt files, documentation structures, and real-world examples.
 
 ## The Details
 

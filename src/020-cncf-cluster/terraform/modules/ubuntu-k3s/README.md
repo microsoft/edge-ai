@@ -45,7 +45,7 @@ along with installing extensions for cluster connect and custom locations.
 | cluster\_node\_virtual\_machines | n/a | ```list(object({ id = string }))``` | n/a | yes |
 | cluster\_server\_host\_machine\_username | Username used for the host machines that will be given kube-config settings on setup. (Otherwise, 'resource\_prefix' if it exists as a user) | `string` | n/a | yes |
 | cluster\_server\_ip | The IP address for the server for the cluster. (Needed for mult-node cluster) | `string` | n/a | yes |
-| cluster\_server\_token | The token that will be given to the server for the cluster or used by the agent nodes to connect them to the cluster. (ex. https://docs.k3s.io/cli/token) | `string` | n/a | yes |
+| cluster\_server\_token | The token that will be given to the server for the cluster or used by the agent nodes to connect them to the cluster. (ex. <https://docs.k3s.io/cli/token>) | `string` | n/a | yes |
 | cluster\_server\_virtual\_machine | n/a | ```object({ id = string })``` | n/a | yes |
 | custom\_locations\_oid | The object id of the Custom Locations Entra ID application for your tenant. If none is provided, the script will attempt to retrieve this requiring 'Application.Read.All' or 'Directory.Read.All' permissions. ```sh az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv``` | `string` | n/a | yes |
 | environment | Environment for all resources in this module: dev, test, or prod | `string` | n/a | yes |
