@@ -30,7 +30,7 @@ trigger: none
 variables:
   - group: 'ai-on-edge-secrets'
   - name: isMain
-    value: $[eq(variables['Build.SourceBranch'], 'refs/heads/feat/gh-push')]
+    value: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
 pool:
   name: ai-on-edge-managed-pool
   vmImage: ubuntu-latest
@@ -40,6 +40,7 @@ stages:
     jobs:
       - job: "GitHubPush"
         displayName: "Updating GitHub repo from AzDO"
+        condition: eq(variables.isMain, true)
         steps:
           # Checkout repo
           - checkout: self
@@ -90,7 +91,7 @@ stages:
 
       - job: "Versioning"
         displayName: "Updating Version based on Git Tag"
-        dependsOn: GitHubPull
+        dependsOn: GitHubPush
         condition: eq(variables.isMain, true)
         steps:
           # Checkout repo
