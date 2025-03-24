@@ -78,7 +78,7 @@ The Deployment Observability Hub collects information about scheduled deployment
 - Track deployment history per environment, per application/service, per microservice
 - Compare desired deployment state to the reality and see deployment drift
 
-**Capabilities matching**
+#### Opt-A: Capabilities matching
 
 | Capability                  | Support | Comments                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 |-----------------------------|---------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -93,7 +93,7 @@ The Deployment Observability Hub collects information about scheduled deployment
 | Platform as code            | YES     | Platform engineers define the deployment platform with CRD objects such as environment, cluster types, workloads, etc. It's very common to keep and maintain these definitions in a Git repository and deliver them to the Kalypso management cluster with GitOps.                                                                                                                                                                                                                                                                                                              |
 | UI/CLI                      | NO      | By default, Kalypso Scheduler relies on the `Platform as Code` concept, so that the input is provided through a Git repository. However, customer is free to implement a preferable UI solution (e.g. VS code extension) to manipulate Kalypso Scheduler CRD objects.                                                                                                                                                                                                                                                                                                           |
 
-**Concerns**
+#### Opt-A: Concerns
 
 - The solution requires a dedicated management cluster to host Kalypso Scheduler and Deployment Observability Hub
 - If the Platform Team is not familiar with Git, they might require a custom UI on top of Kalypso Scheduler
@@ -109,7 +109,7 @@ Project Edge Ascent was inspired by Kalypso and implemented similar concepts but
 This is a FastAPI-based application that exposes API endpoints to define applications, clusters, namespaces and target assignment policies.
 The service processes these entities, assigns applications to the clusters using capability matching approach, generates ArgoCD resources and puts them in a GitOps repository, which is observed by the clusters in the fleet.
 
-**Capabilities matching**
+#### Opt-B: Capabilities matching
 
 | Capability                  | Support | Comments                                                                                                                                                                                                                                                                                                    |
 |-----------------------------|---------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -124,7 +124,7 @@ The service processes these entities, assigns applications to the clusters using
 | Platform as code            | NO      | Platform engineers can define Ascent abstractions in a Git repository and then have a CI/CD pipeline deliver them to Ascent trough available API                                                                                                                                                            |
 | UI/CLI                      | NO      | Ascent exposes API only. It is up to the customer how to use it.                                                                                                                                                                                                                                            |
 
-**Concerns**
+#### Opt-B: Concerns
 
 - The solution requires Azure App Services to be hosted on. It requires access management to the API.
 - The solution requires either UI/CLI to be built or a Git CI/CD setup to be configured by the customer.
@@ -141,7 +141,7 @@ Namespaces are configured with expressions that resolve to what clusters the app
 There is also an automation process that processes all defined entities, evaluates target clusters for applications,
 generates manifests with the templates provided for each application and pushes the manifests to a platform GitOps repository, which is observed by the clusters in the fleet.
 
-**Capabilities matching**
+#### Opt-C: Capabilities matching
 
 | Capability                  | Support | Comments                                                                                                                                                                                                                                                                           |
 |-----------------------------|---------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -156,7 +156,7 @@ generates manifests with the templates provided for each application and pushes 
 | Platform as code            | NO      | Platform engineers can define ResEdge abstractions in a Git repository and then have a CI/CD pipeline deliver them to Ascent trough available API                                                                                                                                  |
 | UI/CLI                      | YES     | There is a basic web UX for Res-Edge. It provides CRUD for the core entities - Application, Cluster, Group, Namespace. There is `ds` CLI that provides some basic quires and updates to the ResEdge entities, but it can't be used to completely define and maintain the platform. |
 
-**Concerns**
+#### Opt-C: Concerns
 
 - It is difficult to define a [configuration graph](https://learn.microsoft.com/azure/azure-arc/kubernetes/conceptual-workload-management#configuration-graph-model) with the Kustomize approach
 - The automation process regenerates all manifests on each run, leading to the "render the universe" problem. This results in scalability limitations and implicit cross-dependencies, where a small change to one application or cluster can impact the entire fleet.
@@ -172,7 +172,7 @@ generates manifests with the templates provided for each application and pushes 
 Platform engineers define the deployment platform with a set of high level abstractions such as clusters, cluster groups, GitOps repositories, assignment rules, etc.
 These abstractions are CRD objects, processed by Rancher Fleet controller, hosted on a management Kubernetes cluster. Each cluster runs a Fleet Agent, which connects to the controller cluster and grabs assigned manifests.
 
-**Capabilities matching**
+#### Opt-D: Capabilities matching
 
 | Capability                  | Support | Comments                                                                                                                                                                                                                                                                            |
 |-----------------------------|---------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -187,7 +187,7 @@ These abstractions are CRD objects, processed by Rancher Fleet controller, hoste
 | Platform as code            | YES     | Platform engineers define the deployment platform with CRD objects such as clusters, cluster groups, repositories, assignment rules, etc. It's very common to keep and maintain these definitions in a Git repository and deliver them to the Fleet controller cluster with GitOps. |
 | UI/CLI                      | YES     | A set of CLIs such as `fleet`, `fleet-agent` and `fleet-controller` help with maintaining the system. However, all abstractions (CRDs) are supposed to be created with a standard Kubernetes API.                                                                                   |
 
-**Concerns**
+#### Opt-D: Concerns
 
 - The controller cluster is a single point of failure, imposing additional requirements regarding availability and connectivity from the fleet clusters.
 - Hard dependency on Rancher Fleet Agent reconciler
@@ -202,7 +202,7 @@ These abstractions are CRD objects, processed by Rancher Fleet controller, hoste
 Platform engineers define the deployment platform with a set of high level abstractions such as environments, clusters, applications, assignment rules in a Control Plane repository.
 A GitHub Actions workflow uses scripts and CLI tools to process the abstractions, defined in the repo, generates assignment manifests and pushes them to the platform GitOps repository.
 
-**Concerns**
+#### Opt-E: Concerns
 
 The capabilities matching map depends on the exact implementation. There are fundamental concerns that are applicable to any solution like this:
 
