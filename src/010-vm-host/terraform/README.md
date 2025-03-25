@@ -2,21 +2,19 @@
 <!-- markdown-table-prettify-ignore-start -->
 # VM Host
 
-Deploys a Linux VM with an Arc-connected K3s cluster
+Deploys one or more Linux VMs for Arc-connected K3s cluster
 
 ## Requirements
 
 | Name | Version |
 |------|---------|
 | terraform | >= 1.9.8, < 2.0 |
-| azuread | >= 3.0.2 |
 | azurerm | >= 4.8.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| azurerm | >= 4.8.0 |
 | local | n/a |
 | tls | n/a |
 
@@ -24,15 +22,15 @@ Deploys a Linux VM with an Arc-connected K3s cluster
 
 | Name | Type |
 |------|------|
-| [azurerm_linux_virtual_machine.aio_edge](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_virtual_machine) | resource |
-| [azurerm_network_interface.aio_edge](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_interface) | resource |
-| [azurerm_network_security_group.aio_edge](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_security_group) | resource |
-| [azurerm_public_ip.aio_edge](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/public_ip) | resource |
-| [azurerm_subnet.aio_edge](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subnet) | resource |
-| [azurerm_subnet_network_security_group_association.aio_edge](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subnet_network_security_group_association) | resource |
-| [azurerm_virtual_network.aio_edge](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_network) | resource |
-| [local_sensitive_file.ssh](https://registry.terraform.io/providers/hashicorp/local/latest/docs/resources/sensitive_file) | resource |
-| [tls_private_key.vm_ssh](https://registry.terraform.io/providers/hashicorp/tls/latest/docs/resources/private_key) | resource |
+| [local_sensitive_file.private_key](https://registry.terraform.io/providers/hashicorp/local/latest/docs/resources/sensitive_file) | resource |
+| [tls_private_key.ssh](https://registry.terraform.io/providers/hashicorp/tls/latest/docs/resources/private_key) | resource |
+
+## Modules
+
+| Name | Source | Version |
+|------|--------|---------|
+| virtual\_machine | ./modules/virtual-machine | n/a |
+| virtual\_network | ./modules/virtual-network | n/a |
 
 ## Inputs
 
@@ -58,6 +56,8 @@ Deploys a Linux VM with an Arc-connected K3s cluster
 | public\_ips | n/a |
 | public\_ssh | n/a |
 | public\_ssh\_permissions | n/a |
+| ssh\_private\_key\_path | The path to the SSH private key file |
+| ssh\_public\_key | The SSH public key for all VMs |
 | username | n/a |
 | virtual\_machines | n/a |
 | vm\_id | n/a |

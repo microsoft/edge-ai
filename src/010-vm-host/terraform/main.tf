@@ -1,7 +1,7 @@
 /**
  * # VM Host
  *
- * Deploys a Linux VM with an Arc-connected K3s cluster
+ * Deploys one or more Linux VMs for Arc-connected K3s cluster
  */
 
 locals {
@@ -9,113 +9,38 @@ locals {
   vm_username  = coalesce(var.vm_username, var.resource_prefix)
 }
 
-### Create Virtual Edge Device ###
-
-resource "azurerm_public_ip" "aio_edge" {
-  count = var.vm_count
-
-  name                = "pip-${local.label_prefix}-${count.index}"
-  resource_group_name = var.aio_resource_group.name
-  location            = var.location
-  allocation_method   = "Static"
-  sku                 = "Basic"
-  domain_name_label   = "dns-${local.label_prefix}-${count.index}"
-}
-
-resource "azurerm_network_security_group" "aio_edge" {
-  name                = "nsg-${local.label_prefix}"
-  resource_group_name = var.aio_resource_group.name
-  location            = var.location
-}
-
-resource "azurerm_virtual_network" "aio_edge" {
-  name                = "vnet-${local.label_prefix}"
-  location            = var.location
-  resource_group_name = var.aio_resource_group.name
-  address_space       = ["10.0.0.0/16"]
-}
-
-resource "azurerm_subnet" "aio_edge" {
-  resource_group_name  = var.aio_resource_group.name
-  virtual_network_name = azurerm_virtual_network.aio_edge.name
-  name                 = "subnet-${local.label_prefix}"
-  address_prefixes     = ["10.0.1.0/24"]
-}
-
-resource "azurerm_subnet_network_security_group_association" "aio_edge" {
-  subnet_id                 = azurerm_subnet.aio_edge.id
-  network_security_group_id = azurerm_network_security_group.aio_edge.id
-}
-
-resource "azurerm_network_interface" "aio_edge" {
-  count = var.vm_count
-
-  name                = "nic-${local.label_prefix}-${count.index}"
-  location            = var.location
-  resource_group_name = var.aio_resource_group.name
-
-  ip_configuration {
-    name                          = "ipconfig-${local.label_prefix}-${count.index}"
-    private_ip_address_allocation = "Dynamic"
-    public_ip_address_id          = azurerm_public_ip.aio_edge[count.index].id
-    subnet_id                     = azurerm_subnet.aio_edge.id
-  }
-}
-
-resource "tls_private_key" "vm_ssh" {
+# Generate SSH key for VM authentication (once for all VMs)
+resource "tls_private_key" "ssh" {
   algorithm = "RSA"
   rsa_bits  = 4096
 }
 
-resource "local_sensitive_file" "ssh" {
-  content         = tls_private_key.vm_ssh.private_key_pem
+# Save private key to local file
+resource "local_sensitive_file" "private_key" {
+  content         = tls_private_key.ssh.private_key_pem
   filename        = "../.ssh/vm-${local.label_prefix}-id_rsa"
   file_permission = "600"
 }
 
-resource "azurerm_linux_virtual_machine" "aio_edge" {
-  count = var.vm_count
+module "virtual_network" {
+  source = "./modules/virtual-network"
 
-  name                            = "vm-${local.label_prefix}-${count.index}"
-  location                        = var.location
-  resource_group_name             = var.aio_resource_group.name
-  admin_username                  = local.vm_username
-  disable_password_authentication = true
-  admin_ssh_key {
-    username   = local.vm_username
-    public_key = tls_private_key.vm_ssh.public_key_openssh
-  }
+  label_prefix        = local.label_prefix
+  location            = var.location
+  resource_group_name = var.aio_resource_group.name
+}
 
-  provision_vm_agent         = true
-  allow_extension_operations = true
-  size                       = var.vm_sku_size
-  network_interface_ids = [
-    azurerm_network_interface.aio_edge[count.index].id
-  ]
+module "virtual_machine" {
+  count  = var.vm_count
+  source = "./modules/virtual-machine"
 
-  source_image_reference {
-    offer     = "0001-com-ubuntu-server-jammy"
-    publisher = "Canonical"
-    sku       = "22_04-lts-gen2"
-    version   = "latest"
-  }
-
-  os_disk {
-    caching              = "ReadWrite"
-    storage_account_type = "Standard_LRS"
-  }
-  dynamic "identity" {
-    for_each = try([var.arc_onboarding_user_assigned_identity.id], [])
-
-    content {
-      type = "UserAssigned"
-      identity_ids = [
-        identity.value
-      ]
-    }
-  }
-
-  bypass_platform_safety_checks_on_user_schedule_enabled = true
-  patch_assessment_mode                                  = "AutomaticByPlatform"
-  patch_mode                                             = "AutomaticByPlatform"
+  label_prefix               = local.label_prefix
+  location                   = var.location
+  resource_group_name        = var.aio_resource_group.name
+  subnet_id                  = module.virtual_network.subnet_id
+  vm_index                   = count.index
+  vm_username                = local.vm_username
+  vm_sku_size                = var.vm_sku_size
+  ssh_public_key             = tls_private_key.ssh.public_key_openssh
+  arc_onboarding_identity_id = var.arc_onboarding_user_assigned_identity != null ? var.arc_onboarding_user_assigned_identity.id : null
 }

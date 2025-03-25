@@ -1,25 +1,35 @@
 output "public_ssh" {
-  value = "ssh -i ../.ssh/vm-${local.label_prefix}-id_rsa ${local.vm_username}@${azurerm_public_ip.aio_edge[0].fqdn}"
+  value = "ssh -i ../.ssh/vm-${local.label_prefix}-id_rsa ${local.vm_username}@${module.virtual_machine[0].public_fqdn}"
 }
 
 output "public_ssh_permissions" {
-  value = local_sensitive_file.ssh.file_permission
+  value = local_sensitive_file.private_key.file_permission
+}
+
+output "ssh_private_key_path" {
+  value       = local_sensitive_file.private_key.filename
+  description = "The path to the SSH private key file"
+}
+
+output "ssh_public_key" {
+  value       = tls_private_key.ssh.public_key_openssh
+  description = "The SSH public key for all VMs"
 }
 
 output "public_ips" {
-  value = azurerm_public_ip.aio_edge[*].ip_address
+  value = module.virtual_machine[*].public_ip
 }
 
 output "private_ips" {
-  value = azurerm_linux_virtual_machine.aio_edge[*].private_ip_address
+  value = module.virtual_machine[*].private_ip
 }
 
 output "public_fqdns" {
-  value = azurerm_public_ip.aio_edge[*].fqdn
+  value = module.virtual_machine[*].public_fqdn
 }
 
 output "vm_id" {
-  value = azurerm_linux_virtual_machine.aio_edge[*].id
+  value = module.virtual_machine[*].vm_id
 }
 
 output "username" {
@@ -27,11 +37,10 @@ output "username" {
 }
 
 output "linux_virtual_machine_name" {
-  value = azurerm_linux_virtual_machine.aio_edge[*].name
+  value = module.virtual_machine[*].linux_virtual_machine_name
 }
 
 output "virtual_machines" {
-  value = azurerm_linux_virtual_machine.aio_edge[*]
-
+  value     = module.virtual_machine[*].virtual_machine
   sensitive = true
 }
