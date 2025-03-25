@@ -113,6 +113,8 @@ resource aioPlatform 'Microsoft.KubernetesConfiguration/extensions@2023-05-01' =
 
 ### Parameters
 
+Parameter ordering: always put common and complex types at the top, followed by module parameters
+Parameters are always sorted alphabetically within their sections
 Group related parameters under commented section headers
 Always add `@description()` to every parameter
 Use consistent naming: `resourceName`, `shouldCreateResource`, see for example [types.bicep](../../src/040-iot-ops/bicep/types.bicep)
@@ -197,9 +199,10 @@ module iotOpsCloudReqs '../../bicep/main.bicep' = {
 
 ## Critical Rules (Always Follow)
 
-- ALWAYS alphabetically sort parameters in ALL types and parameter files after adding new parameters
-  ❌ BAD: Leaving new parameters at the end of the file
+- ALWAYS alphabetically sort parameters, but do this in sections: common and complex types at the top, then module parameters
+  ❌ BAD: Leaving new unordered
   ✓ GOOD: Reordering the complete variable list alphabetically
+
 
 ## Implementation Checklist
 
