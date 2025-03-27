@@ -8,6 +8,13 @@ param common core.Common
 @description('Password used for the host VM')
 param adminPassword string
 
+@description('VM count for creating server and cluster node VMs. Defaults to 1 (server node only).')
+param vmCount int = 1
+
+/*
+  Variables
+*/
+
 var arcOnboardingUserManagedIdentityName = 'id-${common.resourcePrefix}-${common.environment}-arc-aio-${common.instance}'
 
 resource arcOnboardingIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' existing = {
@@ -20,5 +27,6 @@ module vmHost '../../bicep/main.bicep' = {
     common: common
     adminPassword: adminPassword
     arcOnboardingUserAssignedIdentityId: arcOnboardingIdentity.id
+    vmCount: vmCount
   }
 }

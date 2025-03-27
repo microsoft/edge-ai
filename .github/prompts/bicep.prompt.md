@@ -1,11 +1,12 @@
 # Bicep IaC conventions
 
 You are expert in Azure Bicep IaC conventions and best practices. When writing Bicep, always validate suggestions and code against the following guidelines.
-You understand this project by looking at the [README.md](../../README.md), [CONTRIBUTING.md](../../CONTRIBUTING.md) and [coding conventions](../../docs/coding-conventions.md) files.
-First look at [bicep conventions](../../docs/coding-conventions.md) for general Bicep coding standards.
+You understand this project by looking at the [README.md](../../README.md), `CONTRIBUTING.md` and `coding conventions` files.
+Review bicep conventions for general Bicep coding standards.
 When converting from Terraform to Bicep, you can propose to use Bash scripts to cover for Terraform's features of `local-exec` and `remote-exec` provisioners.
 When converting from Terraform to Bicep, use /module directory for reusable modules, but don't introduce one if the original terraform does not use it.
 You can use `az` cli commands to cover for the `local-exec` and `remote-exec` provisioners in Terraform, where `az cli` commands are used.
+Use Bicep idiomatic syntax and features, such as `@description()` decorators, `@export()` decorators, and `@secure()` decorators.
 
 ## Source Components Structure Components and Modules (`/src`)
 
@@ -53,7 +54,7 @@ type Common = {
 }
 ```
 
-- Always define complex types with defaults in `types.bicep`
+- Define complex types with defaults in `types.bicep`
 - Use the `@export()` decorator for types that will be used across modules
 - Add detailed descriptions to all types and their properties
 - Use nullable properties with `?` when appropriate
@@ -122,32 +123,49 @@ Provide sensible defaults when appropriate
 Parameters should be simple types, with or without defaults
 Use string interpolation for naming resources that includes Common type properties
 
+Example for parameters and section headings in `main.bicep` files, which calls two modules (storage and schema registry):
+
+```bicep
+// In main.bicep
+import * as core from './types.core.bicep'
+import * as types from './types.bicep'
+
+@description('The common component configuration.')
+param common core.Common
+
+/*
+  Storage Account for Schema Registry Parameters
+*/
+
+@description('Whether or not to create a new Storage Account for the ADR Schema Registry.')
+param shouldCreateStorageAccount bool = true
+
+@description('The name for the Resource Group for the Storage Account.')
+param storageAccountResourceGroupName string = resourceGroup().name
+
+@description('The settings for the new Storage Account.')
+param storageAccountSettings types.StorageAccountSettings = {
+  replicationType: 'LRS'
+  tier: 'Standard'
+}
+
+/*
+  Schema Registry Parameters
+*/
+
+@description('The name for the ADR Schema Registry.')
+param schemaRegistryName string = 'sr-${common.resourcePrefix}-${common.environment}-${common.instance}'
+
+@description('The ADLS Gen2 namespace for the ADR Schema Registry.')
+param schemaRegistryNamespace string = 'srns-${common.resourcePrefix}-${common.environment}-${common.instance}'
+
+```
+
 ## Modules
 
 Each module imports necessary type definitions
 Always include the `common` parameter
 Use consistent output naming: `resourceNameId`, `resourceName`
-
-```bicep
-// In modules/resource-name.bicep
-import * as core from '../types.core.bicep'
-
-@description('The common component configuration.')
-param common core.Common
-
-@description('Specific parameter for this module.')
-param paramName string
-
-resource resourceName 'Microsoft.ResourceProvider/resourceType@2023-01-01' = {
-  name: paramName
-  location: common.location
-  // Properties
-}
-
-output resourceNameId string = resourceName.id
-output resourceName string = resourceName.name
-```
-
 Consistently pass the `common` parameter to all modules
 Use conditional deployment when appropriate
 Set appropriate `dependsOn` relationships
@@ -161,6 +179,27 @@ Types use PascalCase: `CommonType`
 Output names match resource names with descriptive suffixes: `resourceNameId`
 Match outputs to module interfaces when used by dependent modules
 Apply rfc2119 to all variable names when applicable
+
+### Resources
+
+Nest child resources under parent resource scope when possible
+Use conditional deployment when appropriate
+
+```bicep
+// In main.bicep
+
+resource parentResource 'Microsoft.ResourceType/parentResourceType@2024-01-01' = {
+  name: 'parentResourceName'
+  location: 'location'
+
+  resource childResource 'childResourceType' = {
+    name: 'childResourceName'
+    properties: {
+      // Child resource properties
+    }
+  }
+}
+```
 
 ### CI setup
 
@@ -179,16 +218,49 @@ import * as types from '../../bicep/types.bicep'
 param common core.Common
 
 /*
+  Virtual Machine Parameters
+*/
+
+@description('The number of host VMs to create if a multi-node cluster is needed.')
+param vmCount int = 2
+
+@description('Size of the VM')
+param vmSkuSize string = 'Standard_D8s_v3'
+
+/*
   Modules
 */
 
-module iotOpsCloudReqs '../../bicep/main.bicep' = {
-  name: '${common.resourcePrefix}-iotOpsCloudReqs'
+module virtualMachine 'modules/virtual-machine.bicep' = [for i in range(0, vmCount): {
+  name: '${common.resourcePrefix}-virtualMachine-${i}'
   params: {
     common: common
+    vmSkuSize: vmSkuSize
+    vmIndex: i
   }
-}
+}]
+
 ```
+
+## Comment sections in Bicep files
+
+When writing Bicep files, use the following format for section headers:
+
+```bicep
+/*
+  Section Name
+*/
+```
+
+Key points:
+
+- Use a single line comment start (/*) and end (*/)
+- Include two spaces of indentation for the section name
+- No asterisks (*) on each line
+- Leave a blank line after the section header
+- Use consistent capitalization for section names (Title Case)
+- Common sections: Common Parameters, Resources, Variables, Modules, Outputs
+- Group parameters logically under domain-specific section headers
 
 ## Blueprints Structure (`/blueprints`)
 
@@ -199,10 +271,9 @@ module iotOpsCloudReqs '../../bicep/main.bicep' = {
 
 ## Critical Rules (Always Follow)
 
-- ALWAYS alphabetically sort parameters, but do this in sections: common and complex types at the top, then module parameters
+- ALWAYS alphabetically sort parameters, per header grouping, but do this in sections: common and complex types at the top, then module parameters
   ❌ BAD: Leaving new unordered
   ✓ GOOD: Reordering the complete variable list alphabetically
-
 
 ## Implementation Checklist
 

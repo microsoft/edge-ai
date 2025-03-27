@@ -5,7 +5,7 @@ import * as types from './types.bicep'
 param common core.Common
 
 /*
-* Parameters
+* Virtual Machine Parameters
 */
 
 // Note this wil be replaced with SSH public key usage in future, simplifying until we have automation scripts for Bicep deployment
