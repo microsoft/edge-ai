@@ -198,3 +198,10 @@ ADRs move through a process that includes the following states:
 - Deprecated - for all ADRs that are no longer relevant to the solution or have been superseded by more comprehensive ADRs; this is inclusive of retired components or features, but will be retained in perpetuity for historical context.
 
 Please see [ADR README](./project-adrs/README.MD) for a more detailed explanation of the ADR process flow and how to author and progress your ideas for this project, through to implementation.
+
+## Trademark Notice
+
+> This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft trademarks or
+> logos is subject to and must follow Microsoft’s Trademark & Brand Guidelines. Use of Microsoft trademarks or logos in modified
+> versions of this project must not cause confusion or imply Microsoft sponsorship. Any use of third-party trademarks or logos
+> are subject to those third-party’s policies.
