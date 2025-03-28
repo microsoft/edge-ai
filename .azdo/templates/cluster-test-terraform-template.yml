@@ -201,7 +201,7 @@ jobs:
         displayName: "Terraform Provider version check"
         inputs:
           azureSubscription: "${{ parameters.azureServiceConnection }}"
-          workingDirectory: $(workingDirProcessor.terraformCIWorkingDir)
+          workingDirectory: $(System.DefaultWorkingDirectory)
           scriptType: bash
           scriptLocation: inlineScript
           inlineScript: |
@@ -219,7 +219,7 @@ jobs:
             # ./src/030-iot-ops-cloud-reqs/terraform,azapi,2.1.0,2.2.0
             # ./src/040-iot-ops/terraform,azapi,2.1.0,2.2.0
             # Example version_check_results string
-            version_check_results=$(./scripts/tf-provider-version-check.sh -f ./)
+            version_check_results=$(./scripts/tf-provider-version-check.sh -f $(workingDirProcessor.terraformCIWorkingDir))
 
             # Parse the JSON and loop through each object
             echo "$version_check_results" | jq -c '.[]' | while read -r result; do
