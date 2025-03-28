@@ -236,6 +236,14 @@ stages:
           condition: succeeded()
           breakBuild: false  # Only show warnings by default
 
+      # Use template for Bicep variable compliance checking
+      - template: .azdo/templates/variable-compliance-bicep-template.yml
+        parameters:
+          dependsOn: MatrixBuildFolderCheck
+          displayName: "Check Bicep Variable Consistency"
+          condition: succeeded()
+          breakBuild: false  # Only show warnings by default
+
       # Use the cluster-test-terraform-template.yml template for Terraform testing
       - template: .azdo/templates/cluster-test-terraform-template.yml
         parameters:

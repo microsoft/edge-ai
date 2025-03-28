@@ -10,7 +10,7 @@
 #   azureServiceConnection: Azure service connection name to use for CLI tasks
 #   workingDirectory: Directory containing the scripts to test (default: src/000-subscription)
 #   pwshTestResultsOutput: Path to output test results (default: $(System.DefaultWorkingDirectory)/PWSH-TEST-RESULTS.xml)
-
+---
 parameters:
   # Dependencies for this job
   - name: dependsOn

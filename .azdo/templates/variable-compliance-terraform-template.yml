@@ -1,6 +1,6 @@
 # Template for checking Terraform variable definition compliance across modules
 # This template ensures consistent variable definitions throughout the codebase
-
+---
 parameters:
   # Dependencies for this job
   - name: dependsOn

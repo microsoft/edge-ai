@@ -1,6 +1,6 @@
 # Template for checking Terraform documentation compliance
 # This template ensures documentation is up-to-date with the code
-
+---
 parameters:
   # Dependencies for this job
   - name: dependsOn
