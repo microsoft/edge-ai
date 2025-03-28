@@ -1,6 +1,6 @@
 # Wiki Update Template for Azure DevOps Pipelines that can be included
 # in other pipeline definitions.
-
+---
 parameters:
   # Dependencies for this job
   - name: dependsOn

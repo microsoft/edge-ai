@@ -1,0 +1,87 @@
+# Template for checking Bicep variable definition compliance across modules
+# This template ensures consistent variable definitions throughout the codebase
+---
+parameters:
+  # Dependencies for this job
+  - name: dependsOn
+    type: object
+    default: []
+  # Display name for the job
+  - name: displayName
+    type: string
+    default: 'Bicep Variable Compliance Check'
+  # Condition for when this job should run
+  - name: condition
+    type: string
+    default: 'succeeded()'
+  # Whether to break the build on compliance issues (true) or just show warnings (false)
+  - name: breakBuild
+    type: boolean
+    default: false
+  # Pool configuration
+  - name: pool
+    type: object
+    default:
+      name: 'ai-on-edge-managed-pool'
+      vmImage: 'windows-2022'
+
+jobs:
+  - job: BicepVariableComplianceChecker
+    displayName: ${{ parameters.displayName }}
+    dependsOn: ${{ parameters.dependsOn }}
+    condition: ${{ parameters.condition }}
+    pool: ${{ parameters.pool }}
+    steps:
+      - checkout: self
+        clean: true
+
+      # Run the Bicep variable compliance check script. Write the results to
+      # disk and set the output variable for the next task.
+      - task: PowerShell@2
+        name: runComplianceCheck
+        displayName: "Run Bicep Variable Compliance Check"
+        inputs:
+          filePath: '$(System.DefaultWorkingDirectory)/scripts/Bicep-Var-Compliance-Check.ps1'
+          errorActionPreference: 'Continue'
+          pwsh: true
+          workingDirectory: '$(System.DefaultWorkingDirectory)'
+        condition: and( not(failed()), not(canceled()) )
+
+      # Process the results from the compliance check script
+      - task: PowerShell@2
+        displayName: "Process Bicep Compliance Results"
+        inputs:
+          errorActionPreference: 'Continue'
+          pwsh: true
+          workingDirectory: '$(System.DefaultWorkingDirectory)'
+          targetType: 'inline'
+          script: |
+
+            # Get the results from the previous task
+            $resultsFile = "$(System.DefaultWorkingDirectory)/.arm/bicep-compliance-results.json"
+
+            if (Test-Path $resultsFile) {
+                $results = Get-Content $resultsFile | ConvertFrom-Json
+
+                if ($results) {
+                    $issueType = if ("${{ parameters.breakBuild }}" -eq "true") { "error" } else { "warning" }
+
+                    foreach ($result in $results) {
+                        $variable = $result.variable
+                        $differences = ($result.differences | ForEach-Object { "`n  - $_" }) -join ""
+
+                        # Format files with their line numbers
+                        $locationsInfo = @()
+                        foreach ($location in $result.locations) {
+                            $locationsInfo += "  - $($location.file):$($location.lineNumber)"
+                        }
+                        $filesWithLines = $locationsInfo -join "`n"
+
+                        Write-Host "##vso[task.logissue type=$issueType]Variable '$variable' has inconsistencies in files:`n$filesWithLines`n`nDifferences:$differences"
+                    }
+                }
+            } else {
+                Write-Host "##vso[task.logissue type=warning]No compliance check results found. Ensure the script is correctly outputting the results to '$(System.DefaultWorkingDirectory)/.arm/bicep-compliance-results.json'"
+            }
+
+        condition: and( not(failed()), not(canceled()) )

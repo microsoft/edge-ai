@@ -14,9 +14,7 @@
 # - pullRequestId: ID of the pull request.
 # - sourceRepoUri: URI of the source repository.
 # The template is designed to be reusable and can be included in other pipeline YAML files.
-
 ---
-
 parameters:
   # Dependencies for this job
   - name: dependsOn

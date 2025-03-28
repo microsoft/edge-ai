@@ -421,3 +421,6 @@ venv/
 
 # Ignore Bicep files
 *.bicepparam
+
+# Bicep compiled ARM templates
+**/.arm/

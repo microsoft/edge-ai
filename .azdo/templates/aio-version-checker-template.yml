@@ -14,7 +14,7 @@
 # - https://raw.githubusercontent.com/Azure/azure-iot-operations/main/release/azure-iot-operations-instance.json
 #
 # Any mismatches are reported as build warnings.
-
+---
 parameters:
   # Display name for the job
   - name: displayName

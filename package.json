@@ -10,6 +10,7 @@
 		"tf-docs": "./src/update-all-terraform-docs.sh"
 	},
 	"dependencies": {
+		"markdown-table-formatter": "1.6.1",
 		"mega-linter-runner": "^8.1.0"
 	}
 }
