@@ -249,7 +249,7 @@ stages:
         parameters:
           dependsOn: MatrixBuildFolderCheck
           displayName: "Terraform Component Test"
-          condition: eq(dependencies.MatrixBuildFolderCheck.outputs['matrixBuildFolderCheckTask.changesInInstall'], 'true')
-          matrixVariable: dependencies.MatrixBuildFolderCheck.outputs['matrixBuildFolderCheckTask.changedTFFolders']
+          condition: eq(dependencies.MatrixBuildFolderCheck.outputs['matrixBuildFolderCheckTask.changesInTfInstall'], 'true')
+          matrixVariable: dependencies.MatrixBuildFolderCheck.outputs['matrixBuildFolderCheckTask.changedTfFolders']
           azureServiceConnection: azdo-ai-for-edge-iac-for-edge
           breakBuild: true
