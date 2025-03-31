@@ -276,7 +276,7 @@ variable "resource_prefix" {
 
 #### Module Organization (Bicep)
 
-- Each Bicep module MUST be in a dedicated directory
+- Bicep modules MUST be in a dedicated directory `/modules` within the component directory, module file name should be descriptive of the module's purpose
 - Each module MUST include a `README.md` with clear documentation
 - Parameters and outputs MUST be well-documented within the module
 
@@ -296,6 +296,8 @@ param location string = resourceGroup().location
 1. **Naming Convention**:
    - Parameter names MUST use `camelCase`
    - Parameter names MUST be descriptive and indicate purpose
+   - Type names MUST use `PascalCase`
+   - Resource names MUST use `kebab-case`
    - Common concept parameters MUST use consistent names across modules
 
 2. **Documentation**:
