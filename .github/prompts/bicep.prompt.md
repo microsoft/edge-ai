@@ -12,18 +12,19 @@ Use Bicep idiomatic syntax and features, such as `@description()` decorators, `@
 
 Component directory structure:
 
-```text
+```plaintext
 src/
-  component-name/                   # Component with numerical prefix
-    bicep/                          # Bicep implementation
-      main.bicep                    # Main orchestration file
-      types.bicep                   # Component-specific complex types, always with defaults
-      types.core.bicep              # Core types shared across modules
-      modules/                      # Individual resource modules - when needed and relevant.
-        resource-name.bicep         # Individual resource module files - when relevant
-    ci/                             # CI configuration
+  000-componentname/                   # Component with numerical prefix
+    bicep/                         # Bicep implementation
+      main.bicep                   # Main orchestration file
+      types.bicep                  # Component-specific types with defaults
+      types.core.bicep             # Core shared types (Common)
+      modules/                     # Resource modules
+        resources-name-a.bicep     # Individual modules
+        resource-name-b.bicep      # Individual modules
+    ci/
       bicep/
-        main.bicep                  # Simple wrapper for CI deployment
+        main.bicep                 # CI wrapper for deployment
 ```
 
 - Components use decimal naming for deployment order: `000-subscription`, `010-vm-host`
@@ -60,6 +61,7 @@ type Common = {
 - Use nullable properties with `?` when appropriate
 - Always create default objects with default values for complex types
 - For resources that require version tracking, use complex types
+- Avoid creating custom object types for existing Azure resources - instead reference resources by name and use the `existing` keyword
 
 Follow this type pattern to maintain consistent versioning across infrastructure:
 
@@ -112,6 +114,33 @@ resource aioPlatform 'Microsoft.KubernetesConfiguration/extensions@2023-05-01' =
 }
 ```
 
+## Resource References
+
+Always use the Bicep `existing` keyword to reference existing resources rather than passing resource IDs as strings:
+
+```bicep
+// Preferred approach
+@description('The user assigned managed identity name.')
+param userAssignedIdentityName string
+
+// Reference existing resource
+resource userAssignedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' existing = {
+  name: userAssignedIdentityName
+}
+
+// Access properties directly
+var principalId = userAssignedIdentity.properties.principalId
+
+// NOT recommended - passing IDs as strings
+// param userAssignedIdentityId string  // Avoid this approach
+```
+
+- This approach validates that resources exist at deployment time
+- It improves maintainability by requiring fewer parameters
+- It makes dependencies between resources more explicit
+- Access resource properties using dot notation (e.g., `resource.property`)
+- Use the `scope` property when resources are in different resource groups
+
 ### Parameters
 
 Parameter ordering: always put common and complex types at the top, followed by module parameters
@@ -120,8 +149,10 @@ Group related parameters under commented section headers
 Always add `@description()` to every parameter
 Use consistent naming: `resourceName`, `shouldCreateResource`, see for example [types.bicep](../../src/040-iot-ops/bicep/types.bicep)
 Provide sensible defaults when appropriate
+Parameter defaults should only be provided at the top level, not at the module
 Parameters should be simple types, with or without defaults
 Use string interpolation for naming resources that includes Common type properties
+Use resourceGroup() function instead of passing resource group objects as parameters
 
 Example for parameters and section headings in `main.bicep` files, which calls two modules (storage and schema registry):
 
@@ -173,7 +204,7 @@ Set appropriate `dependsOn` relationships
 ### Naming Conventions
 
 Resource names use kebab-case: `'resource-name-with-hyphens'`
-Use the safe access (.?) operator.
+Use the safe access (.?) operator. For example `${common.?instance}`
 Parameters use camelCase: `paramName`
 Types use PascalCase: `CommonType`
 Output names match resource names with descriptive suffixes: `resourceNameId`
