@@ -21,16 +21,24 @@ param common core.Common
   Azure Arc Parameters
 */
 
-@description('The Object ID that will be given cluster-admin permissions with the new cluster.')
+@description('The Object ID that will be given cluster-admin permissions.')
 param clusterAdminOid string?
 
-@description('The Object ID of the Custom Locations Entra ID application for your tenant.')
+@description('''
+The object id of the Custom Locations Entra ID application for your tenant.
+If none is provided, the script will attempt to retrieve this requiring 'Application.Read.All' or 'Directory.Read.All' permissions.
+Can be retrieved using:
+
+  ```sh
+  az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv
+  ```
+''')
 param customLocationsOid string?
 
 @description('Service Principal Client ID with Kubernetes Cluster - Azure Arc Onboarding permissions.')
 param arcOnboardingSpClientId string?
 
-@description('Service Principal Client Secret for automation.')
+@description('The Service Principal Client Secret for Arc onboarding.')
 @secure()
 param arcOnboardingSpClientSecret string?
 
@@ -44,10 +52,10 @@ param shouldEnableArcAutoUpgrade bool = common.environment != 'prod'
   Cluster Parameters
 */
 
-@description('The node virtual machines information.')
-param clusterNodeVirtualMachineNames string[]
+@description('The node virtual machines names.')
+param clusterNodeVirtualMachineNames string[] = []
 
-@description('The server virtual machine information.')
+@description('The server virtual machines name.')
 @minLength(3)
 param clusterServerVirtualMachineName string
 
@@ -64,16 +72,16 @@ param serverToken string?
 param shouldDeployScriptToVm bool = true
 
 @description('Whether to get Custom Locations Object ID using Azure APIs.')
-param shouldGetCustomLocationsOid bool
+param shouldGetCustomLocationsOid bool = true
 
 @description('Should generate token used by the server.')
 param shouldGenerateServerToken bool = false
 
-@description('Should skip downloading and installing Azure CLI on the server.')
-param shouldSkipInstallingAzCli bool = false
-
 @description('Should skip login process with Azure CLI on the server.')
 param shouldSkipAzCliLogin bool = false
+
+@description('Should skip downloading and installing Azure CLI on the server.')
+param shouldSkipInstallingAzCli bool = false
 
 /*
   Variables

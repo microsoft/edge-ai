@@ -14,7 +14,7 @@ param shouldCreateStorageAccount bool = true
 @description('The name for the Resource Group for the Storage Account.')
 param storageAccountResourceGroupName string = resourceGroup().name
 
-@description('The name for the Storage Account.')
+@description('The name for the Storage Account used by the Schema Registry.')
 param storageAccountName string = 'st${uniqueString(resourceGroup().id)}'
 
 @description('The settings for the new Storage Account.')
@@ -118,3 +118,22 @@ module sseKeyVaultRoleAssignments 'modules/sse-key-vault-role-assignments.bicep'
     adminUserObjectId: adminUserObjectId
   }
 }
+
+/*
+  Outputs
+*/
+
+@description('The ADR Schema Registry ID.')
+output adrSchemaRegistryId string = schemaRegistry.outputs.schemaRegistryId
+
+@description('The Key Vault ID.')
+output sseKeyVaultName string = shouldCreateKeyVault ? sseKeyVault.outputs.sseKeyVaultName : ''
+
+@description('The Secret Sync Extension Managed Identity Name.')
+output sseUamiName string = uami.outputs.sseUamiName
+
+@description('The AIO Managed Identity Name.')
+output aioUamiName string = uami.outputs.aioUamiName
+
+@description('The User Assigned Managed Identity ID for Azure IoT Operations.')
+output aioUamiId string = uami.outputs.aioUamiId

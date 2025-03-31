@@ -3,16 +3,21 @@ import * as core from '../../bicep/types.core.bicep'
 @description('The common component configuration.')
 param common core.Common
 
-@description('VM information for the cluster server.')
+@description('The server virtual machines name.')
 param clusterServerVirtualMachineName string = 'vm-${common.resourcePrefix}-aio-${common.environment}-${common.?instance ?? '001'}-0'
 
-@description('VM information for the cluster nodes.')
+@description('The node virtual machines names.')
 param clusterNodeVirtualMachineNames string[] = []
 
 @description('Whether to get Custom Locations Object ID using Azure APIs.')
 param shouldGetCustomLocationsOid bool = true
 
-@description('The Object ID of the Custom Locations Entra ID application for your tenant.')
+@description('''
+The object id of the Custom Locations Entra ID application for your tenant.
+If none is provided, the script will attempt to retrieve this requiring 'Application.Read.All'
+or 'Directory.Read.All' permissions.
+Can be retrieved using: az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv')
+''')
 param customLocationsOid string?
 
 @description('The IP address for the server for the cluster. (Needed for mult-node cluster)')

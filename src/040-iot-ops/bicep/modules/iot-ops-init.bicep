@@ -114,8 +114,8 @@ resource aioPlatform 'Microsoft.KubernetesConfiguration/extensions@2023-05-01' =
       }
     }
     configurationSettings: {
-      installCertManager: '${aioPlatformConfig.?installCertManager ?? true}'
-      installTrustManager: '${aioPlatformConfig.?installCertManager ?? true}'
+      installCertManager: '${aioPlatformConfig.settings.?installCertManager ?? true}'
+      installTrustManager: '${aioPlatformConfig.settings.?installCertManager ?? true}'
     }
   }
 }

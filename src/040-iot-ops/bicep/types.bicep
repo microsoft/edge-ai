@@ -156,6 +156,26 @@ var aioMqBrokerDefaults = {
 }
 
 @export()
+@description('Configuration for the insecure anonymous AIO MQ Broker Listener.')
+type AioMqBrokerAnonymous = {
+  @description('The service name for the anonymous broker listener.')
+  serviceName: string
+
+  @description('The port for the anonymous broker listener.')
+  port: int
+
+  @description('The node port for the anonymous broker listener.')
+  nodePort: int
+}
+
+@export()
+var aioMqBrokerAnonymousDefaults = {
+  serviceName: 'aio-broker-anon'
+  port: 18884
+  nodePort: 31884
+}
+
+@export()
 @description('The settings for Azure IoT Operations Data Flow Instances.')
 type AioDataFlowInstance = {
   @description('The number of data flow instances.')

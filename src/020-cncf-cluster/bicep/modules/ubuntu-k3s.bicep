@@ -3,11 +3,11 @@ import * as core from '../types.core.bicep'
 @description('The common component configuration.')
 param common core.Common
 
-@description('The server virtual machine information.')
+@description('The server virtual machines name.')
 @minLength(3)
 param clusterServerVirtualMachineName string
 
-@description('The node virtual machines information.')
+@description('The node virtual machines names.')
 param clusterNodeVirtualMachineNames string[]
 
 @description('The name of the Azure Arc resource.')
@@ -16,7 +16,15 @@ param arcResourceName string
 @description('The tenant ID for Azure Arc resource.')
 param arcTenantId string
 
-@description('The Object ID of the Custom Locations Entra ID application.')
+@description('''
+The object id of the Custom Locations Entra ID application for your tenant.
+If none is provided, the script will attempt to retrieve this requiring 'Application.Read.All' or 'Directory.Read.All' permissions.
+Can be retrieved using:
+
+  ```sh
+  az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv
+  ```
+''')
 param customLocationsOid string
 
 @description('Whether to enable auto-upgrades for Arc agents.')
@@ -45,10 +53,10 @@ param clusterServerToken string?
 @description('Should deploy the scripts to the VM.')
 param shouldDeployScriptToVm bool
 
-@description('Should skip Azure CLI login.')
+@description('Should skip login process with Azure CLI on the server.')
 param shouldSkipAzCliLogin bool
 
-@description('Should skip installing Azure CLI.')
+@description('Should skip downloading and installing Azure CLI on the server.')
 param shouldSkipInstallingAzCli bool
 
 /*

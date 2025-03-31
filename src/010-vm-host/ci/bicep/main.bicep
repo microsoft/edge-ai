@@ -4,8 +4,9 @@ import * as types from '../../bicep/types.bicep'
 @description('The common component configuration.')
 param common core.Common
 
+// Note this wil be replaced with SSH public key usage in future, simplifying until we have automation scripts for Bicep deployment
 @secure()
-@description('Password used for the host VM')
+@description('Password used for the host VM.')
 param adminPassword string
 
 @description('VM count for creating server and cluster node VMs. Defaults to 1 (server node only).')

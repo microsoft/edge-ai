@@ -18,6 +18,15 @@ This blueprint deploys:
 
 The resulting architecture provides a unified edge-to-cloud solution with secure communication, data processing capabilities, and comprehensive monitoring.
 
+## Implementation Options
+
+This blueprint is available in two implementation options:
+
+- **Terraform** - Infrastructure as Code using HashiCorp Terraform
+- **Bicep** - Infrastructure as Code using Azure Bicep
+
+Choose the implementation that best fits your team's expertise and existing pipelines.
+
 ## Terraform Structure
 
 This blueprint consists of the following key components:
@@ -28,10 +37,11 @@ This blueprint consists of the following key components:
 - **Locals** (`locals.tf`): Contains local variable calculations and transformations
 - **Providers** (`providers.tf`): Configures the required Terraform providers
 
-### Key Modules Used
+### Key Modules Used in Terraform
 
 | Module                       | Purpose                              | Source Location                                 |
 |------------------------------|--------------------------------------|-------------------------------------------------|
+| `onboard_requirements`       | Handles onboarding prerequisites     | `../../../src/005-onboard-reqs/terraform`       |
 | `vm_host`                    | Creates the VM host for the cluster  | `../../../src/010-vm-host/terraform`            |
 | `cncf_cluster_install`       | Deploys K3s Kubernetes cluster       | `../../../src/020-cncf-cluster/terraform`       |
 | `iot_ops_cloud_requirements` | Sets up cloud prerequisites for AIO  | `../../../src/030-iot-ops-cloud-reqs/terraform` |
@@ -39,32 +49,63 @@ This blueprint consists of the following key components:
 | `messaging`                  | Deploys messaging components         | `../../../src/050-messaging/terraform`          |
 | `observability`              | Sets up monitoring and observability | `../../../src/070-observability/terraform`      |
 | `iot_ops_utilities`          | Installs AIO utility components      | `../../../src/080-iot-ops-utility/terraform`    |
-| `onboard_requirements`       | Handles onboarding prerequisites     | `../../../src/005-onboard-reqs/terraform`       |
 
-## Variable Reference
+### Variable Reference in Terraform
 
 Beyond the basic required variables, this blueprint supports advanced customization:
 
-| Variable            | Description                | Default           | Notes                            |
-|---------------------|----------------------------|-------------------|----------------------------------|
-| `vm_size`           | VM size for the K3s node   | `Standard_D4s_v3` | Increase for production loads    |
-| `k8s_version`       | Kubernetes version         | `1.26.0`          | Tested with 1.25.x-1.27.x        |
-| `enable_monitoring` | Deploy monitoring stack    | `true`            | Includes Prometheus/Grafana      |
-| `environment`       | Environment type           | Required          | "dev", "test", "prod", etc.      |
-| `resource_prefix`   | Prefix for resource naming | Required          | Short unique alphanumeric string |
-| `location`          | Azure region location      | Required          | "eastus2", "westus3", etc.       |
-| `instance`          | Deployment instance number | `"001"`           | For multiple deployments         |
+| Variable          | Description                | Default  | Notes                            |
+|-------------------|----------------------------|----------|----------------------------------|
+| `environment`     | Environment type           | Required | "dev", "test", "prod", etc.      |
+| `resource_prefix` | Prefix for resource naming | Required | Short unique alphanumeric string |
+| `location`        | Azure region location      | Required | "eastus2", "westus3", etc.       |
+| `instance`        | Deployment instance number | `"001"`  | For multiple deployments         |
 
 For additional configuration options, review the variables in `variables.tf`.
+
+## Bicep Structure
+
+This blueprint also provides a Bicep implementation with the following components:
+
+- **Main Template** (`bicep/main.bicep`): The primary deployment template that orchestrates the overall solution
+- **Types Definition** (`bicep/types.core.bicep`): Defines core parameter types and structures used throughout the deployment
+
+The Bicep implementation follows the same architecture as the Terraform version, providing a native Azure Resource Manager (ARM) approach to deploying the same resources.
+Note currently not all modules are available in Bicep yet.
+
+### Key Modules Used in Bicep
+
+| Module            | Purpose                             | Source Location                             |
+|-------------------|-------------------------------------|---------------------------------------------|
+| `onboardReqs`     | Handles onboarding prerequisites    | `../../../src/005-onboard-reqs/bicep`       |
+| `vmHost`          | Creates the VM host for the cluster | `../../../src/010-vm-host/bicep`            |
+| `cncfCluster`     | Deploys K3s Kubernetes cluster      | `../../../src/020-cncf-cluster/bicep`       |
+| `iotOpsCloudReqs` | Sets up cloud prerequisites for AIO | `../../../src/030-iot-ops-cloud-reqs/bicep` |
+| `iotOps`          | Installs Azure IoT Operations       | `../../../src/040-iot-ops/bicep`            |
+
+## Variable Reference in Bicep
+
+Beyond the basic required variables, this blueprint supports advanced customization:
+
+| Variable                 | Description                  | Default  | Notes                                                                |
+|--------------------------|------------------------------|----------|----------------------------------------------------------------------|
+| `common.environment`     | Environment type             | Required | "dev", "test", "prod", etc.                                          |
+| `common.resource_prefix` | Prefix for resource naming   | Required | Short unique alphanumeric string                                     |
+| `common.location`        | Azure region location        | Required | "eastus2", "westus3", etc.                                           |
+| `common.instance`        | Deployment instance number   | `"001"`  | For multiple deployments                                             |
+| `adminPassword`          | A password for SSH to the VM | Required | **Important**: always pass this inline, never store in `.bicepparam` |
+
+For additional configuration options, review the parameters in `main.bicep` (Bicep).
 
 ## Prerequisites
 
 - Azure subscription with Owner or Contributor access
-- Azure CLI installed (version 2.30.0 or later)
-- Terraform installed (version 1.9.8 or later)
+- Azure CLI installed (version 2.60.0 or later)
+- For Terraform: Terraform installed (version 1.9.8 or later)
+- For Bicep: Bicep CLI version 0.34.0 or later
 - Git installed
 
-## Deployment Instructions
+## Terraform Deployment Instructions
 
 ### 1. Prepare Configuration
 
@@ -97,7 +138,58 @@ terraform init
 terraform apply
 ```
 
-### 4. Access Deployed Resources
+## Bicep Deployment Instructions
+
+### 1. Create a Resource Group
+
+First, create a resource group to contain all deployed resources:
+
+```sh
+# Set your Azure subscription
+az account set --subscription <subscription-id>
+
+# Define variables
+LOCATION="eastus2"
+RESOURCE_PREFIX="myprefix"
+ENVIRONMENT="dev"
+RG_NAME="${RESOURCE_PREFIX}-${ENVIRONMENT}-001"
+
+# Create resource group
+az group create --name $RG_NAME --location $LOCATION
+```
+
+### 2. Create a Parameters File
+
+Create a file named `main.bicepparam` in the root of the `full-single-cluster` directory with your deployment parameters:
+
+```bicep
+// Parameters for full-single-cluster blueprint
+using './bicep/main.bicep'
+
+// Required parameters
+param common = {
+  resourcePrefix: 'myprefix'     // Replace with a unique prefix
+  location: 'eastus2'            // Replace with your Azure region
+  environment: 'dev'             // 'dev', 'test', or 'prod'
+  instance: '001'
+}
+
+// This is not optimal, to be replaced by KeyVault usage in future
+@secure()
+param adminPassword = 'YourSecurePassword123!' // Replace with a secure password
+
+```
+
+### 3. Deploy Resources with Bicep
+
+```sh
+# Deploy using the Azure CLI
+az deployment group create \
+  --resource-group "$RG_NAME" \
+  --parameters ./main.bicepparam
+```
+
+## Access Deployed Resources
 
 After successful deployment:
 
@@ -121,23 +213,27 @@ After successful deployment:
 
 ## Post-Deployment Tasks
 
-### Connecting Additional Edge Devices
-
-Use the generated connection string output to connect edge devices:
-
-```sh
-terraform output edge_device_connection_string
-```
-
 ### Monitoring the Deployment
+
+#### For Terraform Deployments
 
 View deployed resources and their status:
 
-```sh
+```bash
 terraform output -json | jq
 ```
 
+#### For Bicep Deployments
+
+View deployed resources and their status:
+
+```bash
+az resource list --resource-group $RG_NAME -o table
+```
+
 ## Cleanup
+
+### Cleanup for Terraform Deployments
 
 When finished with your deployment:
 
@@ -145,7 +241,15 @@ When finished with your deployment:
 terraform destroy -var-file=terraform.tfvars
 ```
 
-## Deployment Troubleshooting
+### Cleanup for Bicep Deployments
+
+When finished with your deployment:
+
+```sh
+az group delete --name $RG_NAME --no-wait
+```
+
+## Terraform Deployment Troubleshooting
 
 Deployment duration is expected to be reasonable, although actual completion times may vary.
 Make sure that you don't see the following message for more than ~10 minutes, messages that persist too long indicate a stuck deployment operation:
