@@ -23,6 +23,12 @@ param shouldDeployResourceSyncRules bool
 @description('The settings for the Azure IoT Operations MQ Broker.')
 param aioMqBrokerConfig types.AioMqBroker
 
+@description('Whether to enable an insecure anonymous AIO MQ Broker Listener. (Should only be used for dev or test environments)')
+param shouldCreateAnonymousBrokerListener bool = false
+
+@description('Configuration for the insecure anonymous AIO MQ Broker Listener.')
+param brokerListenerAnonymousConfig types.AioMqBrokerAnonymous
+
 @description('The settings for Azure IoT Operations Data Flow Instances.')
 param aioDataFlowInstanceConfig types.AioDataFlowInstance
 
@@ -263,6 +269,28 @@ resource brokerListener 'Microsoft.IoTOperations/instances/brokers/listeners@202
       }
     ]
   }
+}
+
+resource brokerListenerAnonymous 'Microsoft.IoTOperations/instances/brokers/listeners@2024-11-01' = if (shouldCreateAnonymousBrokerListener) {
+  parent: broker
+  name: 'default-anon'
+  extendedLocation: {
+    name: customLocation.id
+    type: 'CustomLocation'
+  }
+  properties: {
+    serviceType: 'NodePort'
+    serviceName: brokerListenerAnonymousConfig.serviceName
+    ports: [
+      {
+        port: brokerListenerAnonymousConfig.port
+        nodePort: brokerListenerAnonymousConfig.nodePort
+      }
+    ]
+  }
+  dependsOn: [
+    brokerAuthn
+  ]
 }
 
 resource dataFlowProfile 'Microsoft.IoTOperations/instances/dataflowProfiles@2024-11-01' = {

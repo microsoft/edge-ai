@@ -37,6 +37,12 @@ param shouldDeployResourceSyncRules bool = true
 @description('The settings for the Azure IoT Operations MQ Broker.')
 param aioMqBrokerConfig types.AioMqBroker = types.aioMqBrokerDefaults
 
+@description('Whether to enable an insecure anonymous AIO MQ Broker Listener. (Should only be used for dev or test environments)')
+param shouldCreateAnonymousBrokerListener bool = false
+
+@description('Configuration for the insecure anonymous AIO MQ Broker Listener.')
+param brokerListenerAnonymousConfig types.AioMqBrokerAnonymous = types.aioMqBrokerAnonymousDefaults
+
 @description('The settings for Azure IoT Operations Data Flow Instances.')
 param aioDataFlowInstanceConfig types.AioDataFlowInstance = types.aioDataFlowInstanceDefaults
 
@@ -96,10 +102,12 @@ module iotOpsInstance 'modules/iot-ops-instance.bicep' = {
     aioPlatformExtensionId: iotOpsInit.outputs.aioPlatformExtensionId
     aioUserAssignedIdentityId: aioUserAssignedIdentityId
     arcConnectedClusterName: arcConnectedClusterName
+    brokerListenerAnonymousConfig: brokerListenerAnonymousConfig
     common: common
     customLocationName: customLocationName
     schemaRegistryId: schemaRegistryId
     secretStoreExtensionId: iotOpsInit.outputs.secretStoreExtensionId
+    shouldCreateAnonymousBrokerListener: shouldCreateAnonymousBrokerListener
     shouldDeployResourceSyncRules: shouldDeployResourceSyncRules
     shouldEnableOtelCollector: shouldEnableOtelCollector
     trustSource: trustSource

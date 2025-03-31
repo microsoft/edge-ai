@@ -9,7 +9,7 @@ param common core.Common
 */
 
 // Note this wil be replaced with SSH public key usage in future, simplifying until we have automation scripts for Bicep deployment
-@description('The admin password for the VM(s).')
+@description('The admin password for the VM.')
 @secure()
 param adminPassword string
 

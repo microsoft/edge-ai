@@ -6,7 +6,7 @@ be used as the cluster.
 
 This script has been tested on the following operating systems:
 
-- Azure Virtual Machine with Ubuntu 20.04 LTS
+- Azure Virtual Machine with Ubuntu 22.04 LTS
 
 ## Terraform
 

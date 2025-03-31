@@ -2,7 +2,7 @@
 
 You are expert in Azure Bicep IaC conventions and best practices. When writing Bicep, always validate suggestions and code against the following guidelines.
 You understand this project by looking at the [README.md](../../README.md), `CONTRIBUTING.md` and `coding conventions` files.
-Review bicep conventions for general Bicep coding standards.
+First look at `bicep conventions` for general Bicep coding standards.
 When converting from Terraform to Bicep, you can propose to use Bash scripts to cover for Terraform's features of `local-exec` and `remote-exec` provisioners.
 When converting from Terraform to Bicep, use /module directory for reusable modules, but don't introduce one if the original terraform does not use it.
 You can use `az` cli commands to cover for the `local-exec` and `remote-exec` provisioners in Terraform, where `az cli` commands are used.
@@ -147,6 +147,7 @@ Parameter ordering: always put common and complex types at the top, followed by 
 Parameters are always sorted alphabetically within their sections
 Group related parameters under commented section headers
 Always add `@description()` to every parameter
+Allow multiline descriptions to keep them readable
 Use consistent naming: `resourceName`, `shouldCreateResource`, see for example [types.bicep](../../src/040-iot-ops/bicep/types.bicep)
 Provide sensible defaults when appropriate
 Parameter defaults should only be provided at the top level, not at the module
@@ -187,7 +188,10 @@ param storageAccountSettings types.StorageAccountSettings = {
 @description('The name for the ADR Schema Registry.')
 param schemaRegistryName string = 'sr-${common.resourcePrefix}-${common.environment}-${common.instance}'
 
-@description('The ADLS Gen2 namespace for the ADR Schema Registry.')
+@description('''
+The ADLS Gen2 namespace for the ADR Schema Registry.
+This is an example of a multi-line description.
+''')
 param schemaRegistryNamespace string = 'srns-${common.resourcePrefix}-${common.environment}-${common.instance}'
 
 ```
@@ -262,15 +266,12 @@ param vmSkuSize string = 'Standard_D8s_v3'
   Modules
 */
 
-module virtualMachine 'modules/virtual-machine.bicep' = [for i in range(0, vmCount): {
-  name: '${common.resourcePrefix}-virtualMachine-${i}'
+module iotOpsCloudReqs '../../bicep/main.bicep' = {
+  name: '${common.resourcePrefix}-iotOpsCloudReqs'
   params: {
     common: common
-    vmSkuSize: vmSkuSize
-    vmIndex: i
   }
-}]
-
+}
 ```
 
 ## Comment sections in Bicep files
@@ -295,10 +296,16 @@ Key points:
 
 ## Blueprints Structure (`/blueprints`)
 
-### Purpose
+### Purpose and Conventions
 
 - Blueprints combine multiple components from `/src` to create deployable solutions
 - Use descriptive names reflecting their purpose (e.g. `full-single-cluster`)
+
+Conventions:
+
+- When generating a blueprint, always validate the referenced components in `/src` exist in Bicep
+- Always put the blueprint in the `/blueprints` directory
+- When generating README.md files for blueprints, always validate parameters are specific to the blueprint
 
 ## Critical Rules (Always Follow)
 

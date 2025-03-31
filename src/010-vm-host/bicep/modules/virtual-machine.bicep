@@ -11,9 +11,9 @@ param storageProfile types.StorageProfile = types.storageProfileDefaults
 * Parameters
 */
 
-@secure()
-@description('The admin password for the VM(s).')
 // Note this wil be replaced with SSH public key usage in future, simplifying until we have automation scripts for Bicep deployment
+@description('The admin password for the VM.')
+@secure()
 param adminPassword string
 
 @description('The user-assigned identity for Arc onboarding.')

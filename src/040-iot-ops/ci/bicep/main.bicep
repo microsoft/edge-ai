@@ -7,7 +7,7 @@ param common core.Common
 @description('The resource name for the Arc connected cluster.')
 param arcConnectedClusterName string
 
-@description('The name for the ADR Schema Registry for Azure IoT Operations.')
+@description('The name for the ADR Schema Registry.')
 param schemaRegistryName string
 
 @description('The name of the User Assigned Managed Identity for Azure IoT Operations.')
