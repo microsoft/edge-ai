@@ -37,6 +37,7 @@ run "create_non_default_configuration" {
     aio_resource_group               = run.setup_tests.aio_resource_group
     aio_metrics_data_collection_rule = run.setup_tests.aio_metrics_data_collection_rule
     aio_logs_data_collection_rule    = run.setup_tests.aio_logs_data_collection_rule
+    # Periodically scrape the metrics from the cluster at 5 minute intervals
     scrape_interval                  = "PT5M"
   }
 }
