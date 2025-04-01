@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InferencePipeline", "src\InferencePipeline\InferencePipeline.csproj", "{3DED1767-D710-49B3-8A7C-D25B0E334904}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InferencePipeline.Tests", "src\InferencePipeline.Tests\InferencePipeline.Tests.csproj", "{36A385D0-0A3F-4270-B76E-83264C957792}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3DED1767-D710-49B3-8A7C-D25B0E334904}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3DED1767-D710-49B3-8A7C-D25B0E334904}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3DED1767-D710-49B3-8A7C-D25B0E334904}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3DED1767-D710-49B3-8A7C-D25B0E334904}.Release|Any CPU.Build.0 = Release|Any CPU
+		{36A385D0-0A3F-4270-B76E-83264C957792}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{36A385D0-0A3F-4270-B76E-83264C957792}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{36A385D0-0A3F-4270-B76E-83264C957792}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{36A385D0-0A3F-4270-B76E-83264C957792}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
