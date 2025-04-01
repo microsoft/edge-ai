@@ -224,6 +224,7 @@ contoso
 contoso pharmaceuticals
 contoso suites
 contoso's
+contravariance
 coredns
 corent
 corosync
@@ -1353,6 +1354,7 @@ xbox
 xcode
 xlat
 xlong
+xunit
 ydata
 yennifer
 yolo

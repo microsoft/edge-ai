@@ -1,0 +1,29 @@
+services:
+  inference-pipeline:
+    build:
+      context: ./services/pipeline
+    image: inference-pipeline:local
+    environment:
+      INFERENCE_URL: "http://inference-service:8883"
+      AIO_MQTT_USE_TLS: "false"
+      AIO_MQTT_CLIENT_ID: "InferencePipeline"
+      AIO_BROKER_HOSTNAME: "mosquitto-broker"
+      AIO_BROKER_TCP_PORT: "1883"
+    depends_on:
+      - mosquitto-broker
+    networks:
+      - basic-inference
+
+
+  mosquitto-broker:
+    image: eclipse-mosquitto
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - "./resources/mosquitto.conf:/mosquitto/config/mosquitto.conf"
+    networks:
+      - basic-inference
+
+networks:
+  basic-inference: null

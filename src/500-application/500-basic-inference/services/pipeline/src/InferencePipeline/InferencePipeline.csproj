@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <UserSecretsId>dotnet-InferencePipeline-6dc9e8af-d22f-46eb-be3a-96d6ee5a362d</UserSecretsId>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Azure.IoT.Operations.Mqtt" Version="0.10.0"/>
+        <PackageReference Include="Azure.IoT.Operations.Protocol" Version="0.10.0"/>
+        <PackageReference Include="Azure.IoT.Operations.Services" Version="0.10.1"/>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.2"/>
+        <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.2"/>
+    </ItemGroup>
+</Project>

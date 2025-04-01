@@ -35,25 +35,31 @@ Azure documentation:
 
 ## Getting Started
 
-Check out the project's [wiki](https://dev.azure.com/ai-at-the-edge-flagship-accelerator/edge-ai/_wiki/wikis/Edge%20AI/5/), or after cloning the repository, open a
+Check out the
+project's [wiki](https://dev.azure.com/ai-at-the-edge-flagship-accelerator/edge-ai/_wiki/wikis/Edge%20AI/5/), or after
+cloning the repository, open a
 Copilot chat and ask `@workspace What should I know before I use this repository?`
 
 Then, get started bootstrapping Arc-enabled AIO environments:
 
 1. [Cloning this repository locally](https://learn.microsoft.com/azure/devops/repos/git/clone?view=azure-devops&tabs=visual-studio-2022#get-the-clone-url-of-an-azure-repos-git-repo)
-2. [Install pre-requisites](./blueprints/README.md) or use [this project's integrated dev container](./.devcontainer/README.md).
+2. [Install pre-requisites](./blueprints/README.md) or
+   use [this project's integrated dev container](./.devcontainer/README.md).
 3. Login to the Azure Portal.
 4. From a terminal:
-    - `cd ./src/000-subscription`
-    - Run `./register-azure-providers.sh <providers-file>` to prepare your subscription
-    - Follow instructions in the [./src/005-onboard-reqs README](./src/005-onboard-reqs/README.md)
-    - Deploy the IaC:
-      - Select a `full-*` _blueprint_ from the [blueprints](./blueprints/README.md) directory and follow deployment instructions located in the root blueprint folder.
+  - `cd ./src/000-subscription`
+  - Run `./register-azure-providers.sh <providers-file>` to prepare your subscription
+  - Follow instructions in the [./src/005-onboard-reqs README](./src/005-onboard-reqs/README.md)
+  - Deploy the IaC:
+    - Select a `full-*` _blueprint_ from the [blueprints](./blueprints/README.md) directory and follow deployment
+      instructions located in the root blueprint folder.
 
 **Optionally**, this repository includes scripts to individually deploy each and every component. Follow the
 instructions located at [./src/README.md](./src/README.md) for details.
 
-**✨ GitHub Copilot Agent-assisted deployment (experimental)**: Open Copilot, switch to the 'Edit' Tab, and to 'Agent' mode. Then ask `Deploy this solution` to be guided through the setup in your subscription. (Copilot will use the README and extra prompting in this repo to run the deployment steps listed above.)
+**✨ GitHub Copilot Agent-assisted deployment (experimental)**: Open Copilot, switch to the 'Edit' Tab, and to 'Agent'
+mode. Then ask `Deploy this solution` to be guided through the setup in your subscription. (Copilot will use the README
+and extra prompting in this repo to run the deployment steps listed above.)
 
 ### Video Demonstration
 
@@ -71,24 +77,29 @@ Learn about key architectural approaches or find introductions to key edge techn
 
 ## Using Copilot to explore the repository
 
-This project includes comprehensive documentation and tooling to optimize your experience with GitHub Copilot. We've invested in making the repository Copilot-friendly through structured documentation, prompt files, and best practices.
+This project includes comprehensive documentation and tooling to optimize your experience with GitHub Copilot. We've
+invested in making the repository Copilot-friendly through structured documentation, prompt files, and best practices.
 
 ### Quick exploration with @workspace
 
-You can use Copilot to easily explore this repository with `@workspace` queries. Here are a few prompts to get you started:
+You can use Copilot to easily explore this repository with `@workspace` queries. Here are a few prompts to get you
+started:
 
 - `@workspace Where is the terraform code for the event grid deployment?`
 - `@workspace Is there a script in this repository that can help me check my terraform provider version numbers?`
 - `@workspace Does this repository include an observability solution?`
 - `@workspace Does this repository include UAMI for any of its resources?`
 
-If you encounter friction with `@workspace` questions to Copilot, please file an issue with your prompt and what you hoped Copilot would return you.
+If you encounter friction with `@workspace` questions to Copilot, please file an issue with your prompt and what you
+hoped Copilot would return you.
 
 ### Advanced Copilot usage
 
 For developers and contributors who want to leverage GitHub Copilot more effectively with this repository:
 
-- [AI-Assisted Engineering Guide](./docs/ai-assisted-engineering.md) - A comprehensive guide to all resources in this project that enhance Copilot's capabilities, including contextual and reusable prompt files, documentation structures, and real-world examples.
+- [AI-Assisted Engineering Guide](./docs/ai-assisted-engineering.md) - A comprehensive guide to all resources in this
+  project that enhance Copilot's capabilities, including contextual and reusable prompt files, documentation structures,
+  and real-world examples.
 
 ## The Details
 
@@ -123,7 +134,7 @@ default variables and assumes that prior requirements have been deployed from ot
 | [060-cloud-data-persistence](./src/060-cloud-data-persistence/README.md) | Cloud resource provisioning for data/event storage (Fabric by means of RTI, Data Lakes, Warehouses, etc.)                                                                                |
 | [070-observability](./src/070-observability/README.md)                   | Cloud resource provisioning for Azure Monitor and Container Insights                                                                                                                     |
 | [080-iot-ops-utility](./src/080-iot-ops-utility/README.md)               | AIO deployment of additionally selected components (OTEL Collector (Phase 2), OPC UA, AKRI, Strato, FluxCD/Argo)                                                                         |
-| 090                                                                      | Customer defined custom workloads, and pre-built solution accelerators such as TIG/TICK stacks, InfluxDB Data Historian, reference data backup from cloud to edge, etc.                  |
+| [500-application](./src/500-application/README.md)                       | Custom workloads and applications, including a basic Inference Pipeline, TIG/TICK stacks, InfluxDB Data Historian, reference data backup from cloud to edge, etc.                        |
 
 #### Blueprints
 
@@ -152,12 +163,16 @@ The Terraform, scripts, and documentation in this repository can provide you the
 - Deployment of a cloud-hosted VM, sized and provisioned specifically for developing AIO solutions
 - Deployment of a development-ready K3s cluster with all the basic AIO components installed
 - [Integrated support for Azure Managed Identities](./src/010-vm-host/terraform/README.md)
-- [Integrated support for "Bring-Your-Own" certificates](./src/040-iot-ops/terraform/README.md#create_resources) (and intermediate certificates) for intra-cluster TLS
-- [A robust, matrix'ed IaC build system](./azure-pipelines.yml) with integrated testing and validation, to ensure your IaC deploys as you expect it to
+- [Integrated support for "Bring-Your-Own" certificates](./src/040-iot-ops/terraform/README.md#create_resources) (and
+  intermediate certificates) for intra-cluster TLS
+- [A robust, matrix'ed IaC build system](./azure-pipelines.yml) with integrated testing and validation, to ensure your
+  IaC deploys as you expect it to
 - Auto-validation and auto-generation of Terraform Plans to support expedited CISO/Security/DevOps team approvals
-- [A library of common "Architectural Decision Records" (ADRs)](./docs/solution-adr-library/README.md), ready to be modified to document your solution's requirements and the decisions you've made along the way
+- [A library of common "Architectural Decision Records" (ADRs)](./docs/solution-adr-library/README.md), ready to be
+  modified to document your solution's requirements and the decisions you've made along the way
 - [A library of technology papers](./docs/solution-technology-paper-library/README.md) to upskill your peers
-- [A well-stocked development container](./.devcontainer) for you to take the IaC for your "AI on the Edge Solutions" to production with confidence, repeatability, and reliability your organization deserves
+- [A well-stocked development container](./.devcontainer) for you to take the IaC for your "AI on the Edge Solutions" to
+  production with confidence, repeatability, and reliability your organization deserves
 - [Blueprints](./blueprints) full scenario deployments that demonstrate how components are composed together
 
 ### Contribute
@@ -169,19 +184,23 @@ Users and project developers can contribute to make this solution better in seve
 - [Review the project's Contributing doc](./CONTRIBUTING.md)
 - [Contribute an ADR](./docs/solution-adr-library/README.md#contribute) from your engagement
 - [Contribute a Security Plan](./docs/solution-security-plan-library/README.md#contribute) from your engagement
-- Pick up from the backlog a [#GoodFirstIssue or a #GoodFirstStory](https://dev.azure.com/ai-at-the-edge-flagship-accelerator/IaC%20for%20the%20Edge/_queries/query/?tempQueryId=a44d85ba-bc5b-43fc-954d-78e15bc8f68f) and help move this accelerator forward
+- Pick up from the backlog
+  a [#GoodFirstIssue or a #GoodFirstStory](https://dev.azure.com/ai-at-the-edge-flagship-accelerator/IaC%20for%20the%20Edge/_queries/query/?tempQueryId=a44d85ba-bc5b-43fc-954d-78e15bc8f68f)
+  and help move this accelerator forward
 
 #### Build and Test
 
 We recommend using the project's [dev container](./.devcontainer/README.md) for all contribution work.
 
-Start orienting yourself with this repository by referring to [blueprints](./blueprints/README.md) for your first deployment.
+Start orienting yourself with this repository by referring to [blueprints](./blueprints/README.md) for your first
+deployment.
 
 Pull requests made to the repository go through a thorough build process including linting, testing, and
 in some cases deployment validation. After raising a PR, the build process with begin evaluating your
 contribution. If errors arise from the build, please attend to them as soon as you can.
 
-The project includes a [package.json script set](./package.json) that can be quite useful in development, and is worth a review.
+The project includes a [package.json script set](./package.json) that can be quite useful in development, and is worth a
+review.
 
 #### ADR Process
 
@@ -192,16 +211,24 @@ acceptance is performed via sign-off from 3/5ths of the project's leads defined 
 
 ADRs move through a process that includes the following states:
 
-- Draft - for all ADRs under development and in a drafting phase. May be committed to the main branch directly by project leads, but must be done via branches for community members
-- Proposed - for all ADRs that have been reviewed by the ADR sign-off team (project leads), this phase indicates the ADR is now open for discussion amongst the broad project community for feedback.
-- Accepted - for all ADRs that have completed the community RFC process. ADRs in this state have been ratified/accepted by the project community and may move to implementation.
-- Deprecated - for all ADRs that are no longer relevant to the solution or have been superseded by more comprehensive ADRs; this is inclusive of retired components or features, but will be retained in perpetuity for historical context.
+- Draft - for all ADRs under development and in a drafting phase. May be committed to the main branch directly by
+  project leads, but must be done via branches for community members
+- Proposed - for all ADRs that have been reviewed by the ADR sign-off team (project leads), this phase indicates the ADR
+  is now open for discussion amongst the broad project community for feedback.
+- Accepted - for all ADRs that have completed the community RFC process. ADRs in this state have been ratified/accepted
+  by the project community and may move to implementation.
+- Deprecated - for all ADRs that are no longer relevant to the solution or have been superseded by more comprehensive
+  ADRs; this is inclusive of retired components or features, but will be retained in perpetuity for historical context.
 
-Please see [ADR README](./project-adrs/README.MD) for a more detailed explanation of the ADR process flow and how to author and progress your ideas for this project, through to implementation.
+Please see [ADR README](./project-adrs/README.MD) for a more detailed explanation of the ADR process flow and how to
+author and progress your ideas for this project, through to implementation.
 
 ## Trademark Notice
 
-> This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft trademarks or
-> logos is subject to and must follow Microsoft’s Trademark & Brand Guidelines. Use of Microsoft trademarks or logos in modified
-> versions of this project must not cause confusion or imply Microsoft sponsorship. Any use of third-party trademarks or logos
+> This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft
+> trademarks or
+> logos is subject to and must follow Microsoft’s Trademark & Brand Guidelines. Use of Microsoft trademarks or logos in
+> modified
+> versions of this project must not cause confusion or imply Microsoft sponsorship. Any use of third-party trademarks or
+> logos
 > are subject to those third-party’s policies.
