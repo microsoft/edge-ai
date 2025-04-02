@@ -1,7 +1,44 @@
 {
     "json.schemaDownload.enable": true,
+
     "files.eol": "\n",
     "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+
+    "diffEditor.ignoreTrimWhitespace": false,
+
+    "editor.insertSpaces": true,
+
+    "[markdown]": {
+        "editor.formatOnSave": true,
+        "editor.wordWrap": "on",
+    },
+
+    "[terraform]": {
+        "editor.formatOnSave": true,
+        "editor.tabSize": 2,
+    },
+
+    "[bicep]": {
+        "editor.formatOnSave": true,
+        "editor.tabSize": 2,
+    },
+
+    "[shellscript]": {
+        "editor.formatOnSave": true,
+        "editor.tabSize": 2,
+    },
+
+    "[csharp]": {
+        "editor.formatOnSave": true,
+        "editor.tabSize": 4,
+    },
+
+    "[python]": {
+        "editor.formatOnSave": true,
+        "editor.tabSize": 4,
+    },
+
     "yaml.schemas": {
         "https://raw.githubusercontent.com/microsoft/azure-pipelines-vscode/master/service-schema.json": "*-pipelines.yml",
         "https://squidfunk.github.io/mkdocs-material/schema.json": "mkdocs.yml",
