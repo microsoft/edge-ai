@@ -1,3 +1,6 @@
+metadata name = 'Secret Store Extension Key Vault Role Assignments Module'
+metadata description = 'Configures RBAC permissions for Secret Store Extension and administrators to access Key Vault secrets.'
+
 @description('The name of the Key Vault to scope the role assignments.')
 param keyVaultName string
 

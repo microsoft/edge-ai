@@ -1,9 +1,5 @@
-/*
-  Full Single Cluster Blueprint - Main Orchestration File
-
-  This blueprint deploys a complete end-to-end environment for Azure IoT Operations
-  on a single-node, Arc-enabled Kubernetes cluster.
-*/
+metadata name = 'Full Single Cluster Blueprint'
+metadata description = 'Deploys a complete end-to-end environment for Azure IoT Operations on a single-node, Arc-enabled Kubernetes cluster.'
 
 import * as core from './types.core.bicep'
 

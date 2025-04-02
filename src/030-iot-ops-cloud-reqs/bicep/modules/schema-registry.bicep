@@ -1,3 +1,6 @@
+metadata name = 'Schema Registry Module'
+metadata description = 'Creates an Azure Device Registry (ADR) Schema Registry for storing and managing device schemas.'
+
 import * as core from '../types.core.bicep'
 
 @description('The common component configuration.')

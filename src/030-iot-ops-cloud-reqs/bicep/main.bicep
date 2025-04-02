@@ -1,3 +1,6 @@
+metadata name = 'IoT Operations Cloud Requirements Component'
+metadata description = 'Provisions cloud resources required for Azure IoT Operations including Schema Registry, Storage Account, Key Vault, and User Assigned Managed Identities.'
+
 import * as core from './types.core.bicep'
 import * as types from './types.bicep'
 

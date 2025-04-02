@@ -1,3 +1,6 @@
+metadata name = 'VM Host Component'
+metadata description = 'Provisions virtual machines and networking infrastructure for hosting Azure IoT Operations edge deployments.'
+
 import * as core from './types.core.bicep'
 import * as types from './types.bicep'
 

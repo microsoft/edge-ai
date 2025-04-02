@@ -1,80 +1,94 @@
-# Onboard Infrastructure Requirements - Bicep
+<!-- BEGIN_BICEP_DOCS -->
+<!-- markdown-table-prettify-ignore-start -->
+<!-- markdownlint-disable MD033 -->
 
-This Bicep implementation creates the required resources needed for an edge IaC deployment, including:
-
-- Resource Group creation or use of an existing Resource Group
-- Onboarding Identity (User Assigned Managed Identity or Service Principal) with Azure Arc permissions
+# Onboard Infrastructure Prerequisites
+  
+Creates the required resources needed for an edge IaC deployment.  
 
 ## Parameters
 
-### Common Parameters
+|Name|Description|Type|Default|Required|
+| :--- | :--- | :--- | :--- | :--- |
+|common|The common component configuration.|[_2.Common](#user-defined-types)|n/a|yes|
+|onboardIdentityConfig|Settings for the onboarding identity.|[_1.OnboardIdentitySettings](#user-defined-types)|[variables('_1.onboardIdentityDefaults')]|no|
 
-| Parameter | Type   | Description                                                                    | Required |
-|-----------|--------|--------------------------------------------------------------------------------|:--------:|
-| common    | object | Common settings including resource prefix, location, environment, and instance |   Yes    |
+## Resources
 
-### Resource Group Configuration
+|Name|Type|API Version|
+| :--- | :--- | :--- |
+|onboardIdentity|Microsoft.Resources/deployments|2022-09-01|
 
-| Parameter           | Type   | Description                                                | Default                           |
-|---------------------|--------|------------------------------------------------------------|-----------------------------------|
-| resourceGroupConfig | object | Settings for the resource group (shouldCreate, name, tags) | See default values in types.bicep |
+## Modules
 
-### Onboard Identity Configuration
+|Name|Description|
+| :--- | :--- |
+|onboardIdentity|Creates an identity (User Assigned or Service Principal) with necessary permissions for Azure Arc onboarding.|
 
-| Parameter             | Type   | Description                                                       | Default                           |
-|-----------------------|--------|-------------------------------------------------------------------|-----------------------------------|
-| onboardIdentityConfig | object | Settings for the onboarding identity (shouldCreate, identityType) | See default values in types.bicep |
+## Module Details
+
+### onboardIdentity
+  
+Creates an identity (User Assigned or Service Principal) with necessary permissions for Azure Arc onboarding.  
+
+#### Parameters for onboardIdentity
+
+|Name|Description|Type|Default|Required|
+| :--- | :--- | :--- | :--- | :--- |
+|common|The common component configuration.|[_2.Common](#user-defined-types)|n/a|yes|
+|identityType|The identity type to use for onboarding the cluster to Azure Arc.|[_1.OnboardIdentityType](#user-defined-types)|n/a|yes|
+
+#### Resources for onboardIdentity
+
+|Name|Type|API Version|
+| :--- | :--- | :--- |
+|userAssignedIdentity|Microsoft.ManagedIdentity/userAssignedIdentities|2024-11-30|
+|arcOnboardingRoleAssignment|Microsoft.Authorization/roleAssignments|2022-04-01|
+|arcOnboardingApp|Microsoft.Graph/applications@v1.0||
+|arcOnboardingClientSp|Microsoft.Graph/servicePrincipals@v1.0||
+
+#### Outputs for onboardIdentity
+
+|Name|Type|Description|
+| :--- | :--- | :--- |
+|userManagedIdentityId|string|The User Assigned Managed Identity ID with "Kubernetes Cluster - Azure Arc Onboarding" permissions.|
+|userManagedIdentityName|string|The User Assigned Managed Identity name with "Kubernetes Cluster - Azure Arc Onboarding" permissions.|
+|userAssignedIdentity|object|The User Assigned Managed Identity with "Kubernetes Cluster - Azure Arc Onboarding" permissions.|
+|servicePrincipalClientId|string|The Service Principal App (Client) ID with "Kubernetes Cluster - Azure Arc Onboarding" permissions.|
+
+## User Defined Types
+
+### `_1.OnboardIdentitySettings`
+  
+Settings for onboarding identity creation.  
+
+|Property|Type|Description|
+| :--- | :--- | :--- |
+|shouldCreate|bool|Should create either a User Assigned Managed Identity or Service Principal to be used with onboarding a cluster to Azure Arc.|
+|identityType|[_1.OnboardIdentityType](#user-defined-types)|Identity type to use for onboarding the cluster to Azure Arc.|
+
+### `_1.OnboardIdentityType`
+  
+Identity type to use for onboarding the cluster to Azure Arc. Allowed values: "id" (User Assigned Managed Identity) or "sp" (Service Principal)  
+
+### `_2.Common`
+  
+Common settings for the components.  
+
+|Property|Type|Description|
+| :--- | :--- | :--- |
+|resourcePrefix|string|Prefix for all resources in this module|
+|location|string|Location for all resources in this module|
+|environment|string|Environment for all resources in this module: dev, test, or prod|
+|instance|string|Instance identifier for naming resources: 001, 002, etc...|
 
 ## Outputs
 
-| Output                               | Type   | Description                                                                                          |
-|--------------------------------------|--------|------------------------------------------------------------------------------------------------------|
-| arcOnboardingUserManagedIdentityId   | string | The User Assigned Managed Identity ID with "Kubernetes Cluster - Azure Arc Onboarding" permissions   |
-| arcOnboardingUserManagedIdentityName | string | The User Assigned Managed Identity name with "Kubernetes Cluster - Azure Arc Onboarding" permissions |
-| arcOnboardingSpClientId              | string | The Service Principal Client ID with "Kubernetes Cluster - Azure Arc Onboarding" permissions         |
-| arcOnboardingSpClientSecret          | string | The Service Principal Secret used for automation (sensitive value)                                   |
-| arcOnboardingUserAssignedIdentity    | object | The User Assigned Managed Identity with "Kubernetes Cluster - Azure Arc Onboarding" permissions      |
-| resourceGroup                        | object | The Resource Group for the deployment                                                                |
+|Name|Type|Description|
+| :--- | :--- | :--- |
+|arcOnboardingUserManagedIdentityId|string|The User Assigned Managed Identity ID with "Kubernetes Cluster - Azure Arc Onboarding" permissions.|
+|arcOnboardingUserManagedIdentityName|string|The User Assigned Managed Identity name with "Kubernetes Cluster - Azure Arc Onboarding" permissions.|
+|arcOnboardingSpClientId|string|The Service Principal Client ID with "Kubernetes Cluster - Azure Arc Onboarding" permissions.|
 
-## Example Usage
-
-```bicep
-// Define common parameters
-param common = {
-  resourcePrefix: 'myprefix'
-  location: 'eastus2'
-  environment: 'dev'
-  instance: '001'
-}
-
-// Deploy the onboarding requirements
-module onboardReqs './main.bicep' = {
-  name: 'onboardingRequirements'
-  params: {
-    common: common
-    resourceGroupConfig: {
-      shouldCreate: true
-      name: 'my-custom-rg'
-      tags: {
-        Environment: 'Development'
-        Owner: 'Edge Team'
-      }
-    }
-    onboardIdentityConfig: {
-      shouldCreate: true
-      identityType: 'id' // Use 'id' for User Assigned Managed Identity or 'sp' for Service Principal
-    }
-  }
-}
-
-// Reference outputs
-output resourceGroupName string = onboardReqs.outputs.resourceGroup.name
-output uamiId string = onboardReqs.outputs.arcOnboardingUserManagedIdentityId
-```
-
-## Module Structure
-
-- `main.bicep`: Core implementation that orchestrates resource creation
-- `types.core.bicep`: Common types shared across components
-- `types.bicep`: Component-specific types and default values
-- `modules/onboard-identity.bicep`: Module for creating onboarding identity (UAMI or SP)
+<!-- markdown-table-prettify-ignore-end -->
+<!-- END_BICEP_DOCS -->

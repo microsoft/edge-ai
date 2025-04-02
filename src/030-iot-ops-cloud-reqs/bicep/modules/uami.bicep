@@ -1,3 +1,6 @@
+metadata name = 'User Assigned Managed Identity Module'
+metadata description = 'Creates user-assigned managed identities for Secret Store Extension and Azure IoT Operations components.'
+
 import * as core from '../types.core.bicep'
 
 @description('The common component configuration.')

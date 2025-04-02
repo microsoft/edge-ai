@@ -196,3 +196,99 @@ terraform test
 # Additionally, you can use the '-var' parameter to pass variables on the command line
 # terraform test -var custom_locations_oid=$(TF_VAR_CUSTOM_LOCATIONS_OID)
 ```
+
+## Bicep Components - Getting Started
+
+Each component directory that contains Bicep IaC will have a corresponding `bicep` directory with Bicep templates.
+Similar to Terraform modules, these templates are designed to be reusable building blocks for your infrastructure deployments.
+
+### Bicep - Local CI
+
+The following steps are for manual local deployment of Bicep components.
+
+#### Bicep - Prerequisites
+
+- [Azure CLI](https://docs.microsoft.com/cli/azure/install-azure-cli)
+- [Bicep CLI](https://docs.microsoft.com/azure/azure-resource-manager/bicep/install) (included in recent Azure CLI versions)
+
+#### Bicep - Create Resources
+
+Login to Azure CLI using the below command:
+
+```sh
+# Optionally, specify the tenant-id or tenant login
+az login # --tenant <tenant>.onmicrosoft.com
+```
+
+Set up Bicep parameters and deploy:
+
+1. cd into the `<component>/ci/bicep` directory
+
+   ```sh
+   cd ./component-directory/ci/bicep
+   ```
+
+1. Create a resource group for your deployment
+
+   ```sh
+   # Replace with your preferred location
+   LOCATION="eastus2"
+   # Create a unique resource group name
+   RESOURCE_GROUP_NAME="rg-aio-bicep-deployment"
+
+   # Create the resource group
+   az group create --name $RESOURCE_GROUP_NAME --location $LOCATION
+   ```
+
+1. Create a parameter file named `main.dev.bicepparam` in the `ci/bicep` directory with your deployment parameters:
+
+   ```bicep
+   // Parameters for component deployment
+   using './bicep/main.bicep'
+
+   // Required parameters
+   param common = {
+     resourcePrefix: 'myprefix'     // Replace with a unique prefix
+     location: 'eastus2'            // Replace with your Azure region
+     environment: 'dev'             // 'dev', 'test', or 'prod'
+     instance: '001'                // Instance identifier
+   }
+
+   // Component-specific parameters will vary based on the component
+   // Example additional parameters:
+   // param storageAccountSku = 'Standard_LRS'
+   // param enableDiagnostics = true
+   ```
+
+1. Deploy the Bicep template
+
+   ```sh
+   # Deploy a specific component
+   az deployment group create \
+     --name <deployment-name> \
+     --resource-group $RESOURCE_GROUP_NAME \
+     --parameters ./main.dev.bicepparam
+   ```
+
+#### Bicep - Cleanup Resources
+
+To remove resources created by Bicep deployments, you can:
+
+```sh
+# Remove a specific deployment
+az deployment group delete --resource-group $RESOURCE_GROUP_NAME --name <deployment-name>
+
+# Remove the entire resource group and all resources
+az group delete --name $RESOURCE_GROUP_NAME --no-wait
+```
+
+### Bicep - Generating Docs
+
+To simplify doc generation, this directory makes use of scripts to generate documentation for Bicep modules.
+To generate docs for new modules or re-generate docs for existing modules, run the following command from the root of this repository:
+
+```sh
+./scripts/update-all-bicep-docs.sh
+```
+
+This generates documentation based on the configuration defined in the repository, using the metadata from your Bicep files.
