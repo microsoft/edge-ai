@@ -65,13 +65,20 @@ module "messaging" {
 }
 
 module "storage" {
-  source = "../../../src/060-cloud-data-persistence/terraform"
+  source            = "../../../src/060-cloud-data-persistence/terraform"
+  eventhub_endpoint = module.messaging.event_hub.event_hub_name
+  capacity_id       = var.capacity_id
 
   location        = var.location
   environment     = var.environment
   instance        = var.instance
   resource_prefix = var.resource_prefix
   resource_group  = module.onboard_requirements.resource_group
+
+  should_create_fabric_workspace   = var.should_create_fabric_workspace
+  should_create_fabric_capacity    = var.should_create_fabric_capacity
+  should_create_fabric_lakehouse   = var.should_create_fabric_lakehouse
+  should_create_fabric_eventstream = var.should_create_fabric_eventstream
 }
 
 module "observability" {
