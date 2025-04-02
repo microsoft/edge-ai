@@ -23,7 +23,7 @@ parameters:
     type: object
     default:
       name: 'ai-on-edge-managed-pool'
-      vmImage: 'windows-2022'
+      vmImage: 'ubuntu-latest'
 
 jobs:
   - job: BicepVariableComplianceChecker

@@ -1,36 +1,41 @@
-# IaC for the Edge - Azure DevOps CI/CD Pipeline
-# ------------------------------------------------------------------------------
+# Azure DevOps CI/CD Pipeline
 #
 # Purpose:
-# This pipeline implements the CI/CD process for the Infrastructure as Code (IaC)
-# components that deploy and manage edge infrastructure solutions. It validates code
-# quality, tests components, and ensures consistency across the codebase.
+# This pipeline automates the build, test, and deployment processes for IaC components,
+# ensuring consistent quality and validation before deployment to production environments.
 #
-# Pipeline Organization:
-# - Scheduled Stage: Updates MegaLinter Docker image cache for improved performance
-# - Main Stage: Runs on the main branch for dependency scanning, linting, and wiki updates
-# - PR Stage: Executes on pull requests for comprehensive component validation:
-#   * Code quality checks (MegaLinter)
-#   * Documentation quality verification
-#   * Component version validation
-#   * IaC module testing based on changed components (or all components when specified)
-#   * Terraform variable consistency verification
+# Functionality:
+# - Runs on pull requests and commits to main branch
+# - Dynamically detects changes and determines which components to validate
+# - Executes matrix-based Terraform testing for affected infrastructure components
+# - Validates PowerShell and shell scripts for resource provider operations
+# - Performs infrastructure validation using custom test harnesses
 #
-# Key Features:
-# - Conditional execution based on detected changes (matrix-folder-check-template.yml)
-# - Highly templated pipeline for reusability and maintainability
-# - Integration with Azure resources via service connections
+# Parameters:
+# - None directly in this file, but parameters are passed to templates
 #
-# See also:
-# - Repository documentation: /README.md
-# - Blueprint deployment guide: /blueprints/README.md
-# - Component structure guide: /src/README.md
+# Output Variables:
+# - None directly, outputs are managed by individual template stages
+#
+# Usage Examples:
+# This pipeline runs automatically on PR creation and merges to main.
+# It can also be manually triggered through the Azure DevOps interface.
+#
+# This pipeline is the primary CI/CD process for the Edge infrastructure components,
+# ensuring quality before any changes reach production environments.
 
 ---
 trigger:
   branches:
     include:
       - main
+
+# Add parameters section for manual trigger option
+parameters:
+  - name: runMegalinterCacheUpdate
+    displayName: 'Run MegaLinter Cache Update'
+    type: boolean
+    default: false
 
 schedules:
   - cron: "0 5 * * *"
@@ -58,7 +63,7 @@ stages:
   # Daily scheduled build to update the MegaLinter cache
   - stage: Scheduled
     displayName: Megalinter Scheduled Caching
-    condition: eq(variables.isScheduled, true)
+    condition: or(eq(variables.isScheduled, true), eq(${{ parameters.runMegalinterCacheUpdate }}, true))
     jobs:
       - job: UpdateMegaLinterCache
         displayName: "Update MegaLinter Cache"
@@ -194,10 +199,10 @@ stages:
           sourceRepoUri: $(System.PullRequest.SourceRepositoryURI)
 
       # Use the docs check template for PR builds
-      - template: .azdo/templates/docs-check-template.yml
+      - template: .azdo/templates/docs-check-terraform-template.yml
         parameters:
           dependsOn: MegaLinter
-          displayName: "Documentation Quality Check"
+          displayName: "Terraform Documentation Quality Check"
           condition: succeeded()
           breakBuild: false  # Only show warnings by default
 
@@ -206,7 +211,7 @@ stages:
         parameters:
           dependsOn: MegaLinter
           displayName: "AIO Version Check"
-          condition: and( not(failed()), not(canceled()) )
+          condition: succeeded()
           iacType: all  # Check all supported file types (currently only Terraform and Bicep files)
           breakBuild: false  # Only show warnings by default
 
@@ -218,11 +223,10 @@ stages:
           condition: succeeded()
           includeAllFolders: false  # Only check folders with changes for PR builds
 
-      # Use the resource-provider-tests-template.yml template for Resource Provider testing jobs
-      - template: .azdo/templates/resource-provider-tests-template.yml
+      # Use the resource-provider-pwsh-tests-template.yml template for Resource Provider testing jobs
+      - template: .azdo/templates/resource-provider-pwsh-tests-template.yml
         parameters:
           dependsOn: MatrixBuildFolderCheck
-          shellScriptCondition: eq(dependencies.MatrixBuildFolderCheck.outputs['matrixBuildFolderCheckTask.changesInRpEnablementShell'], 'true')
           pwshScriptCondition: eq(dependencies.MatrixBuildFolderCheck.outputs['matrixBuildFolderCheckTask.changesInRpEnablementPwsh'], 'true')
           azureServiceConnection: azdo-ai-for-edge-iac-for-edge
           workingDirectory: $(System.DefaultWorkingDirectory)/src/000-subscription

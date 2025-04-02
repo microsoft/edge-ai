@@ -1,5 +1,16 @@
-# Template for checking Terraform documentation compliance
-# This template ensures documentation is up-to-date with the code
+# Terraform Documentation Compliance Check Template
+#
+# Purpose:
+# This template validates that all Terraform documentation is properly maintained and up-to-date with the code.
+# It enforces documentation standards and helps ensure consistent documentation across the codebase.
+#
+# Checks performed:
+# 1. Verifies Terraform module documentation is current using terraform-docs
+# 2. Ensures links in documentation don't contain language-specific paths (e.g., 'en-us')
+#
+# Usage:
+# Include this template in your Azure DevOps pipeline to automate documentation compliance checks.
+# Set breakBuild=true to enforce documentation standards by failing the build when issues are found.
 ---
 parameters:
   # Dependencies for this job
@@ -66,7 +77,7 @@ jobs:
             echo "Updates are required for Terraform documentation."
             echo "Please go into the project's src directory, run the update-all-terraform-docs.sh script, and commit changes."
 
-            if [[ "${{ parameters.breakBuild }}" == "true" ]]; then
+            if [[ "$(echo ${{ parameters.breakBuild }} | tr '[:upper:]' '[:lower:]')" == "true" ]]; then
               issue_type="error"
             else
               issue_type="warning"

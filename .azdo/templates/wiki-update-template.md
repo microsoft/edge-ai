@@ -155,7 +155,7 @@ Common issues and their solutions:
 ## Related Templates
 
 - MegaLinter Template: [YAML](./megalinter-template.yml) | [Documentation](./megalinter-template.md) - Validates documentation quality before wiki updates
-- Docs Check Template: [YAML](./docs-check-template.yml) | [Documentation](./docs-check-template.md) - Ensures documentation follows standards
+- Docs Check Template: [YAML](./docs-check-terraform-template.yml) | [Documentation](./docs-check-terraform-template.md) - Ensures documentation follows standards
 - Matrix Folder Check Template: [YAML](./matrix-folder-check-template.yml) | [Documentation](./matrix-folder-check-template.md) - Detects changes in documentation files
 
 ## Learn More

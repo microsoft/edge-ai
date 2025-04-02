@@ -1,19 +1,42 @@
-# MegaLinter Azure DevOps Pipeline Template
-# This template is designed to run MegaLinter in an Azure DevOps pipeline.
-# It includes steps to restore the MegaLinter image from a cache or pull it from the Docker registry,
-# run the linter with different configurations based on the Azure Reporter setting,
-# and upload the reports as artifacts.
-# The template uses parameters to allow customization of the job's dependencies, display name, condition,
-# cache path, and Azure Reporter setting.
+# MegaLinter Template
+#
+# Purpose:
+# This template integrates MegaLinter into the pipeline to perform comprehensive code quality
+# checks across multiple languages and file types, ensuring consistent code standards throughout
+# the repository.
+#
+# Functionality:
+# - Restores MegaLinter from cache or pulls it from Docker registry
+# - Executes MegaLinter against the codebase with customizable configurations
+# - Optionally posts comments on pull requests with linting results
+# - Publishes linting reports as pipeline artifacts
+#
 # Parameters:
-# - dependsOn: List of jobs that this job depends on.
-# - displayName: Display name for the job.
-# - condition: Condition under which the job runs.
-# - megalinterCachePath: Path to the MegaLinter cache.
-# - enableAzureReporter: Boolean to enable or disable Azure Reporter.
-# - pullRequestId: ID of the pull request.
-# - sourceRepoUri: URI of the source repository.
-# The template is designed to be reusable and can be included in other pipeline YAML files.
+# - dependsOn: Jobs that this job depends on
+# - displayName: Display name for this job
+# - condition: Condition for running this job
+# - megalinterCachePath: Path to the MegaLinter cache
+# - enableAzureReporter: When true, posts results as comments on Azure DevOps PRs
+# - pullRequestId: ID of the pull request (required for PR comments)
+# - sourceRepoUri: URI of the source repository (required for PR comments)
+#
+# Usage Examples:
+# ```yaml
+# # Basic usage:
+# - template: .azdo/templates/megalinter-template.yml
+#   parameters:
+#     dependsOn: PreviousJob
+#
+# # With PR commenting enabled:
+# - template: .azdo/templates/megalinter-template.yml
+#   parameters:
+#     enableAzureReporter: true
+#     pullRequestId: $(System.PullRequest.PullRequestId)
+#     sourceRepoUri: $(System.PullRequest.SourceRepositoryURI)
+# ```
+#
+# MegaLinter provides a unified approach to code quality by running multiple linters
+# in parallel, significantly improving code quality and consistency across the project.
 ---
 parameters:
   # Dependencies for this job
@@ -54,7 +77,7 @@ jobs:
       name: ai-on-edge-managed-pool
       vmImage: ubuntu-latest
       demands:
-        - WorkFolder -equals /mnt/storage/sdc/
+        - WorkFolder -equals /mnt/storage/sdc/megalinter/
 
     steps:
       # Checkout repo
@@ -121,3 +144,56 @@ jobs:
         inputs:
           targetPath: "$(System.DefaultWorkingDirectory)/megalinter-reports/"
           artifactName: MegaLinterReport
+
+  # Cleanup job to remove files in /mnt/storage/sdc/ except for the MegaLinter cache tar file
+  - job: CleanupStorage
+    dependsOn: MegaLinter
+    displayName: 'Clean up Storage Directory'
+    condition: always()
+    pool:
+      name: ai-on-edge-managed-pool
+      vmImage: ubuntu-latest
+      demands:
+        - WorkFolder -equals /mnt/storage/sdc/
+    steps:
+      - script: |
+
+          echo "=== Storage Metrics Before Cleanup ==="
+          echo "Total disk space:"
+          df -h /mnt/storage/sdc
+          echo "MegaLinter directory size:"
+          du -sh /mnt/storage/sdc/megalinter 2>/dev/null || echo "Directory not found"
+          echo "Cache directory size:"
+          du -sh ${{ parameters.megalinterCachePath }} 2>/dev/null || echo "Directory not found"
+
+          echo "=== Starting Cleanup ==="
+
+          # Ensure the cache directory exists
+          mkdir -p ${{ parameters.megalinterCachePath }}
+
+          # Clean up the megalinter directory but preserve the cache
+          if [ -d "/mnt/storage/sdc/megalinter" ]; then
+            find /mnt/storage/sdc/megalinter -mindepth 1 -not -path "${{ parameters.megalinterCachePath }}*" -exec rm -rf {} \; 2>/dev/null || true
+            echo "Removed all files in /mnt/storage/sdc/megalinter except cache"
+          else
+            echo "MegaLinter directory does not exist, nothing to clean"
+          fi
+
+          # Make sure we don't have excessive cache files
+          if [ -d "${{ parameters.megalinterCachePath }}" ]; then
+            # Keep only the latest megalinter cache file
+            find ${{ parameters.megalinterCachePath }} -type f -not -name "megalinterv8-cache.tar" -delete 2>/dev/null || true
+            echo "Removed old cache files"
+          fi
+
+          echo "=== Storage Metrics After Cleanup ==="
+          echo "Total disk space:"
+          df -h /mnt/storage/sdc
+          echo "MegaLinter directory size:"
+          du -sh /mnt/storage/sdc/megalinter 2>/dev/null || echo "Directory not found"
+          echo "Cache directory size:"
+          du -sh ${{ parameters.megalinterCachePath }} 2>/dev/null || echo "Directory not found"
+
+          echo "=== Cleanup Complete ==="
+        displayName: 'Collect Metrics and Clean MegaLinter Storage'
+        condition: not(canceled())

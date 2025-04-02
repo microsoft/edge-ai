@@ -1,0 +1,118 @@
+# GitHub Pages Deployment Workflow
+#
+# Purpose:
+# This workflow builds and deploys documentation to GitHub Pages whenever documentation files are updated.
+#
+# Functionality:
+# - Triggers via workflow_call (manually or from ci-cd.yml)
+# - Sets up GitHub Pages environment
+# - Builds documentation (configurable for various documentation generators)
+# - Deploys built documentation to GitHub Pages
+#
+# Parameters:
+# - source_branch: Branch to build documentation from
+# - deploy_environment: Environment to deploy to (e.g., production, staging)
+#
+# Output Variables:
+# - page_url: URL of the deployed GitHub Pages site
+#
+# Usage Examples:
+# ```yaml
+# # Called from another workflow:
+# jobs:
+#   deploy-docs:
+#     uses: ./.github/workflows/pages-deploy.yml
+#     with:
+#       source_branch: 'main'
+#       deploy_environment: 'github-pages'
+#
+# # Direct call with custom branch:
+# jobs:
+#   deploy-docs:
+#     uses: ./.github/workflows/pages-deploy.yml
+#     with:
+#       source_branch: 'feature/improved-docs'
+#       deploy_environment: 'staging'
+# ```
+#
+# This workflow follows GitHub's best practices for Pages deployments and uses the
+# recommended actions for setting up and deploying to GitHub Pages.
+---
+name: Deploy to GitHub Pages
+
+on: # yamllint disable-line rule:truthy
+  workflow_call:      # Make this a reusable workflow
+    inputs:
+      source_branch:
+        description: 'Branch to build documentation from'
+        required: true
+        type: string
+      deploy_environment:
+        description: 'Environment to deploy to (e.g., production, staging)'
+        required: true
+        type: string
+    outputs:
+      page_url:
+        description: "URL of the deployed GitHub Pages site"
+        value: ${{ jobs.deploy.outputs.page_url }}
+
+# Sets permissions of the GITHUB_TOKEN
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ inputs.source_branch }}
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      # If you use a documentation generator like MkDocs, Jekyll, etc.
+      # add the build steps here
+      # Example for MkDocs:
+      # - name: Setup Python
+      #   uses: actions/setup-python@v5
+      #   with:
+      #     python-version: '3.10'
+      #
+      # - name: Install MkDocs and dependencies
+      #   run: |
+      #     python -m pip install --upgrade pip
+      #     pip install mkdocs mkdocs-material
+      #
+      # - name: Build documentation
+      #   run: mkdocs build
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Adjust this path to match your documentation output directory
+          path: './docs'
+
+  deploy:
+    name: Deploy to GitHub Pages
+    environment:
+      name: ${{ inputs.deploy_environment }}
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    outputs:
+      page_url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

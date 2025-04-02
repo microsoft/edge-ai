@@ -1,20 +1,45 @@
 #!/usr/bin/env python3
 """
-Language Path Link Checker and Fixer.
+Language Path Link Checker and Fixer
 
 This script finds and optionally fixes URLs in git-tracked text files that contain
 the language path segment 'en-us'. It helps maintain links that work regardless
 of user language settings by removing unnecessary language path segments.
 
-The script can be run in two modes:
-- Search mode: Identifies URLs with 'en-us' and outputs them as JSON (default)
-- Fix mode: Removes 'en-us/' from URLs and reports changes made (-f/--fix)
+Functionality:
+    - Scans git-tracked text files for URLs containing 'en-us'
+    - Identifies link locations by file and line number
+    - Optionally removes 'en-us/' from URLs to make them language-neutral
+    - Reports changes in human-readable or JSON format
 
-Example usage:
-    python link-lang-check.py                # Search and output JSON
-    python link-lang-check.py -v             # Verbose search mode
-    python link-lang-check.py -f             # Fix URLs
-    python link-lang-check.py -f -v          # Fix URLs with verbose output
+Parameters:
+    -f, --fix: Fix URLs by removing "en-us/" instead of just reporting them
+    -v, --verbose: Increase output verbosity with detailed processing information
+
+Returns:
+    JSON array or console output: When not in fix mode, outputs a JSON array of found links
+                                 When in fix mode, outputs human-readable summary of changes
+
+Raises:
+    None: The script handles errors internally without raising exceptions
+
+Dependencies:
+    - git: Required for identifying text files under source control
+    - Python 3.6+: Uses f-strings and other modern Python features
+
+Example:
+    # Search for URLs containing 'en-us' and output as JSON
+    python link-lang-check.py
+
+    # Fix URLs by removing 'en-us/' with verbose output
+    python link-lang-check.py -f -v
+
+Notes:
+    The script is designed to help maintain documentation links that work regardless
+    of the user's language settings in their browser.
+
+See Also:
+    - Microsoft documentation guidance on language neutrality: https://learn.microsoft.com/style-guide/urls-web-addresses
 """
 import argparse
 import re

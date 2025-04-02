@@ -1,21 +1,14 @@
 # Resource Provider Testing Template
 
-This template provides automated testing for both shell scripts and PowerShell scripts
-that manage Azure resource provider registration and unregistration, ensuring they
-correctly enable or disable required Azure services for your Edge AI infrastructure.
+This template provides automated testing for PowerShell scripts that manage Azure resource provider registration and unregistration, ensuring they correctly enable or disable required Azure services for your Edge AI infrastructure.
 
 ## Overview
 
-The Resource Provider Testing Template validates the functionality of scripts that
-manage Azure resource providers. It runs parallel test tracks for both Bash shell
-scripts (Linux-based) and PowerShell scripts (Windows-based), ensuring cross-platform
-compatibility of your resource provider management code. Tests are intelligently
-triggered when changes are detected in the respective script files, optimizing pipeline
-execution time while maintaining quality assurance.
+The Resource Provider Testing Template validates the functionality of scripts that manage Azure resource providers. It runs tests for PowerShell scripts using PowerShell Core on Linux, ensuring proper functionality of your resource provider management code. Tests are intelligently triggered when changes are detected in the respective script files, optimizing pipeline execution time while maintaining quality assurance.
 
 ## Features
 
-- **Cross-Platform Testing**: Tests both Bash shell scripts for Linux and PowerShell scripts for Linux/Windows environments
+- **Linux-Based Testing**: Tests PowerShell scripts on Ubuntu environments
 - **Conditional Execution**: Only runs tests when changes are detected in the relevant script files
 - **Azure CLI Integration**: Authenticates with Azure to execute the actual provider registration/unregistration operations (**CAUTION**: this is a destructive test)
 - **Pester Test Framework**: Uses industry-standard PowerShell testing framework for robust test coverage
@@ -25,14 +18,13 @@ execution time while maintaining quality assurance.
 
 ## Parameters
 
-| Parameter                | Type   | Required | Default                                                                                                            | Description                                    |
-|--------------------------|--------|----------|--------------------------------------------------------------------------------------------------------------------|------------------------------------------------|
-| `dependsOn`              | string | No       | `MatrixBuildFolderCheck`                                                                                           | Job this template depends on                   |
-| `shellScriptCondition`   | string | No       | `eq(dependencies.MatrixBuildFolderCheck.outputs['matrixBuildFolderCheckTask.changesInRpEnablementShell'], 'true')` | Condition to run shell script tests            |
-| `pwshScriptCondition`    | string | No       | `eq(dependencies.MatrixBuildFolderCheck.outputs['matrixBuildFolderCheckTask.changesInRpEnablementPwsh'], 'true')`  | Condition to run PowerShell script tests       |
-| `azureServiceConnection` | string | No       | `azdo-ai-for-edge-iac-for-edge`                                                                                    | Azure service connection to use                |
-| `workingDirectory`       | string | No       | `$(System.DefaultWorkingDirectory)/src/000-subscription`                                                           | Directory containing resource provider scripts |
-| `pwshTestResultsOutput`  | string | No       | `$(System.DefaultWorkingDirectory)/PWSH-TEST-RESULTS.xml`                                                          | Path for PowerShell test results output        |
+| Parameter                | Type   | Required | Default                                                                                                           | Description                                    |
+|--------------------------|--------|----------|-------------------------------------------------------------------------------------------------------------------|------------------------------------------------|
+| `dependsOn`              | string | No       | `MatrixBuildFolderCheck`                                                                                          | Job this template depends on                   |
+| `pwshScriptCondition`    | string | No       | `eq(dependencies.MatrixBuildFolderCheck.outputs['matrixBuildFolderCheckTask.changesInRpEnablementPwsh'], 'true')` | Condition to run PowerShell script tests       |
+| `azureServiceConnection` | string | No       | `azdo-ai-for-edge-iac-for-edge`                                                                                   | Azure service connection to use                |
+| `workingDirectory`       | string | No       | `$(System.DefaultWorkingDirectory)/src/000-subscription`                                                          | Directory containing resource provider scripts |
+| `pwshTestResultsOutput`  | string | No       | `$(System.DefaultWorkingDirectory)/PWSH-TEST-RESULTS.xml`                                                         | Path for PowerShell test results output        |
 
 ## Outputs
 
@@ -42,20 +34,19 @@ This template doesn't produce formal pipeline outputs, but it generates test res
 
 This template may depend on the following:
 
-- **Required Azure DevOps Tasks**: AzureCLI, Bash, PowerShell, PublishTestResults
+- **Required Azure DevOps Tasks**: Bash, PublishTestResults
 - **Required Service Connections**:
   - Azure service connection with permissions to register and unregister resource providers
 - **Required Agent Capabilities**:
-  - Linux agent for shell script tests
-  - Windows agent for PowerShell tests
+  - Ubuntu Linux agent
+  - PowerShell Core (pwsh) installation
   - Azure CLI installation
-  - PowerShell with Pester module
+  - Pester module for PowerShell
 - **Required Scripts**:
-  - Shell scripts: `register-azure-providers.sh` and `unregister-azure-providers.sh`
   - PowerShell scripts: `register-azure-providers.ps1` with corresponding Pester tests
   - `scripts/Invoke-Pester.ps1` for running PowerShell tests
 - **Required Prior Jobs**:
-  - MatrixBuildFolderCheck job that detects changes in Shell and PowerShell files
+  - MatrixBuildFolderCheck job that detects changes in PowerShell files
 
 ## Usage
 
@@ -63,7 +54,7 @@ This template may depend on the following:
 
 ```yaml
 # Basic implementation with minimal parameters
-- template: .azdo/templates/resource-provider-tests-template.yml
+- template: .azdo/templates/resource-provider-pwsh-tests-template.yml
   parameters:
     dependsOn: MatrixBuildFolderCheck
     azureServiceConnection: my-azure-connection
@@ -74,10 +65,9 @@ This template may depend on the following:
 
 ```yaml
 # Advanced implementation with all parameters
-- template: .azdo/templates/resource-provider-tests-template.yml
+- template: .azdo/templates/resource-provider-pwsh-tests-template.yml
   parameters:
     dependsOn: CustomCheckJob
-    shellScriptCondition: eq(dependencies.CustomCheckJob.outputs['customTask.shellFilesChanged'], 'true')
     pwshScriptCondition: eq(dependencies.CustomCheckJob.outputs['customTask.pwshFilesChanged'], 'true')
     azureServiceConnection: production-service-connection
     workingDirectory: $(System.DefaultWorkingDirectory)/src/setup
@@ -86,25 +76,18 @@ This template may depend on the following:
 
 ## Implementation Details
 
-The template creates two independent jobs that run in parallel, each testing a different aspect of resource provider management:
+The template creates a job that tests resource provider management:
 
-1. **Shell Script Testing Process**:
-   - Runs on a Linux agent (ubuntu-latest)
-   - Executes unregister-azure-providers.sh to remove providers
-   - Executes register-azure-providers.sh to add them back
-   - Verifies both operations complete successfully
+**PowerShell Testing Process**:
 
-2. **PowerShell Testing Process**:
-   - Runs on a Windows agent (windows-2022)
-   - Executes Invoke-Pester.ps1 to run all Pester tests
-   - Publishes test results in NUnit format
-   - Fails the build if any test fails
+- Runs on an Ubuntu Linux agent (ubuntu-latest)
+- Uses PowerShell Core (pwsh) to execute Invoke-Pester.ps1 to run all Pester tests
+- Publishes test results in NUnit format
+- Fails the build if any test fails
 
 ### Key Components
 
-- **ResourceProviderShellScriptTest**: Job that tests bash scripts on Linux
 - **ResourceProviderPWSHScriptTest**: Job that tests PowerShell scripts on Windows
-- **Azure CLI Task**: Provides authentication for script execution
 - **Pester Framework**: Runs structured tests for PowerShell scripts
 - **Test Results Publisher**: Integrates test outcomes with Azure DevOps
 
@@ -127,7 +110,7 @@ jobs:
     parameters:
       displayName: "Check for script changes"
 
-  - template: .azdo/templates/resource-provider-tests-template.yml
+  - template: .azdo/templates/resource-provider-pwsh-tests-template.yml
     parameters:
       dependsOn: MatrixBuildFolderCheck
       azureServiceConnection: my-azure-service-connection
@@ -144,10 +127,9 @@ jobs:
       condition: succeeded()
 
   # Run the resource provider tests based on detected changes
-  - template: .azdo/resource-provider-tests-template.yml
+  - template: .azdo/templates/resource-provider-pwsh-tests-template.yml
     parameters:
       dependsOn: MatrixBuildFolderCheck
-      shellScriptCondition: eq(dependencies.MatrixBuildFolderCheck.outputs['matrixBuildFolderCheckTask.changesInRpEnablementShell'], 'true')
       pwshScriptCondition: eq(dependencies.MatrixBuildFolderCheck.outputs['matrixBuildFolderCheckTask.changesInRpEnablementPwsh'], 'true')
       azureServiceConnection: azdo-ai-for-edge-iac-for-edge
       workingDirectory: $(System.DefaultWorkingDirectory)/src/000-subscription

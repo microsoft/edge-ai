@@ -165,7 +165,7 @@ Common issues and their solutions:
 
 ## Related Templates
 
-- Docs Check Template: [YAML](./docs-check-template.yml) | [Documentation](./docs-check-template.md) - Validates documentation quality
+- Docs Check Template: [YAML](./docs-check-terraform-template.yml) | [Documentation](./docs-check-terraform-template.md) - Validates documentation quality
 - Matrix Folder Check Template: [YAML](./matrix-folder-check-template.yml) | [Documentation](./matrix-folder-check-template.md) - Detects changes in repository structure
 - Cluster Test Terraform Template: [YAML](./cluster-test-terraform-template.yml) | [Documentation](./cluster-test-terraform-template.md) - Tests Terraform component functionality
 

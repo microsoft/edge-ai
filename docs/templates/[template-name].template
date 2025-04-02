@@ -1,0 +1,131 @@
+# Shell and YML Header Comment Version
+
+# !/bin/bash
+
+# [Template Name] Template
+#
+# Purpose:
+# [Concise description of what this template does and why it exists]
+#
+# Functionality:
+# - [Key function 1]
+# - [Key function 2]
+# - [Key function 3]
+# - [Key function 4]
+#
+# Parameters:
+# - dependsOn: [Description of this parameter]
+# - displayName: [Description of this parameter]
+# - condition: [Description of this parameter]
+# - [additional-parameter]: [Description of this parameter]
+#
+# Output Variables:
+# - [output-variable-1]: [Description of what this output contains and how it's used]
+# - [output-variable-2]: [Description of what this output contains and how it's used]
+#
+# Exit Codes:
+# - 0: [Description of success condition]
+# - 1: [Description of failure condition or specific error]
+# - 2: [Description of another error condition]
+# - [additional-exit-code]: [Description of what this exit code represents]
+#
+# Dependencies:
+# - [dependency-1]: [Description of this dependency, including version requirements]
+# - [dependency-2]: [Description of this dependency, purpose, and any configuration needed]
+# - [module-dependency]: [Description of required modules or components]
+# - [environment-dependency]: [Description of environment requirements]
+#
+# Usage Examples:
+# ```yaml
+# # [Example scenario description]:
+# - template: .azdo/templates/[template-name].yml
+#   parameters:
+#     dependsOn: [Example value]
+#     displayName: "[Example value]"
+#     [additional-parameter]: [Example value]
+#
+# # [Alternative scenario description]:
+# - template: .azdo/templates/[template-name].yml
+#   parameters:
+#     dependsOn: [Alternative example]
+#     displayName: "[Alternative example]"
+#     [additional-parameter]: [Alternative example]
+# ```
+#
+# [Additional notes about when or how to use this template, relation to other templates, or other important information]
+#
+# Learn More:
+# - [Link to relevant documentation]: [Brief description of what can be found at this link]
+# - [Link to related components or modules]: [Description of how these relate to this template]
+# - [Reference to related ADRs or design documents]: [Explanation of design decisions]
+# - [Link to examples or sample implementations]: [What these examples demonstrate]
+
+# Implementation goes here
+---
+
+# Python Docstring Header Comment Version
+
+#!/usr/bin/env python3
+```python
+
+def template_name(depends_on=None, display_name=None, condition=None, additional_parameter=None):
+    """
+    [Template Name]
+
+    [Concise description of what this template does and why it exists]
+
+    Functionality:
+        - [Key function 1]
+        - [Key function 2]
+        - [Key function 3]
+        - [Key function 4]
+
+    Parameters:
+        depends_on: [Description of this parameter]
+        display_name: [Description of this parameter]
+        condition: [Description of this parameter]
+        additional_parameter: [Description of this parameter]
+
+    Returns:
+        dict: Contains the following output variables:
+            - [output-variable-1]: [Description of what this output contains and how it's used]
+            - [output-variable-2]: [Description of what this output contains and how it's used]
+
+    Raises:
+        Exception: If exit code is non-zero:
+            - 1: [Description of failure condition or specific error]
+            - 2: [Description of another error condition]
+            - [additional-exit-code]: [Description of what this exit code represents]
+
+    Dependencies:
+        - [dependency-1]: [Description of this dependency, including version requirements]
+        - [dependency-2]: [Description of this dependency, purpose, and any configuration needed]
+        - [module-dependency]: [Description of required modules or components]
+        - [environment-dependency]: [Description of environment requirements]
+
+    Example:
+        # [Example scenario description]
+        result = template_name(
+            depends_on=[Example value],
+            display_name="[Example value]",
+            additional_parameter=[Example value]
+        )
+
+        # [Alternative scenario description]
+        result = template_name(
+            depends_on=[Alternative example],
+            display_name="[Alternative example]",
+            additional_parameter=[Alternative example]
+        )
+
+    Notes:
+        [Additional notes about when or how to use this template, relation to other templates, or other important information]
+
+    See Also:
+        - [Link to relevant documentation]: [Brief description of what can be found at this link]
+        - [Link to related components or modules]: [Description of how these relate to this template]
+        - [Reference to related ADRs or design documents]: [Explanation of design decisions]
+        - [Link to examples or sample implementations]: [What these examples demonstrate]
+    """
+    # Implementation goes here
+

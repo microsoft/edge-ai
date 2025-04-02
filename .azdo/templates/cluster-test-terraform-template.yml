@@ -1,16 +1,54 @@
 # Terraform Cluster Test Template
 #
 # Purpose:
-# This template defines a job for testing Terraform components in the repository.
-# It runs Terraform init, validate, plan, and tests for the specified folders,
-# supporting dynamic matrix-based execution for multiple folders.
+# This template validates Terraform components by running initialization, validation,
+# planning, and testing operations. It supports dynamic matrix-based execution to
+# efficiently test multiple components that have changed in a pull request.
 #
-# Key Features:
+# Functionality:
 # - Dynamically tests multiple Terraform folders based on detected changes
 # - Runs terraform init, plan, validate and test operations
 # - Checks for provider version mismatches
 # - Publishes test results and plan artifacts
-# - Supports both CI and test directories
+# - Converts Terraform test output to JUnit format for reporting
+#
+# Parameters:
+# - dependsOn: Jobs that this job depends on
+# - displayName: Display name for this job
+# - condition: Condition for running this job
+# - matrixVariable: Variable containing the matrix of folders to test
+# - poolName: Azure DevOps agent pool name
+# - vmImage: VM image to use for the job
+# - azureServiceConnection: Azure service connection for authentication
+# - backendResourceGroup, backendStorageAccount, backendContainer, backendKey: Terraform backend configuration
+# - backendLocation: Location for backend resources
+# - maxParallel: Maximum number of parallel jobs to run
+# - breakBuild: When true, provider version mismatches fail the build
+#
+# Output Variables:
+# - workingDirProcessor.folderBasename: Basename of the current folder being processed
+# - workingDirProcessor.folderPathSafe: Path-safe version of the folder name
+# - workingDirProcessor.terraformCIWorkingDir: Working directory for CI operations
+# - workingDirProcessor.terraformWorkingDir: Working directory for Terraform
+# - workingDirProcessor.tfTestsExist: Whether tests exist for the current folder
+#
+# Usage Examples:
+# ```yaml
+# # Basic usage:
+# - template: .azdo/templates/cluster-test-terraform-template.yml
+#   parameters:
+#     dependsOn: MatrixBuildFolderCheck
+#
+# # Custom configuration:
+# - template: .azdo/templates/cluster-test-terraform-template.yml
+#   parameters:
+#     dependsOn: [Lint, MatrixCheck]
+#     matrixVariable: 'dependencies.CustomJob.outputs[''customMatrix'']'
+#     maxParallel: 3
+# ```
+#
+# This template is essential for validating infrastructure changes before deployment,
+# helping to prevent costly mistakes and ensuring reliable infrastructure deployments.
 ---
 parameters:
   # Dependencies for this job
@@ -28,7 +66,7 @@ parameters:
   # Folder list to be used in the job
   - name: matrixVariable
     type: string
-    default: 'dependencies.MatrixBuildFolderCheck.outputs[''matrixBuildFolderCheckTask.changedTFFolders'']'
+    default: 'dependencies.MatrixBuildFolderCheck.outputs[''matrixBuildFolderCheckTask.changedTfFolders'']'
   # Pool name to be used in the job
   - name: poolName
     type: string
@@ -194,7 +232,7 @@ jobs:
           # azure blob container to store the state file
           backendAzureRmContainerName: "${{ parameters.backendContainer }}"
           # azure blob file name
-          backendAzureRmKey: ${{ parameters.backendKey }}
+          backendAzureRmKey: "${{ parameters.backendKey }}"
 
       # Check TF Provider versions for this folder and output build warnings if issues are detected
       - task: AzureCLI@2
@@ -207,7 +245,7 @@ jobs:
           inlineScript: |
 
             # Determine issue type based on breakBuild parameter
-            if [[ "${{ parameters.breakBuild }}" == "true" ]]; then
+            if [[ "$(echo ${{ parameters.breakBuild }} | tr '[:upper:]' '[:lower:]')" == "true" ]]; then
               issue_type="error"
             else
               issue_type="warning"
@@ -367,9 +405,17 @@ jobs:
 
       # Call the tool to convert the Terraform test output to JUnit XML
       - script: |
-          npx tftest-to-junitxml "$(System.DefaultWorkingDirectory)/$(workingDirProcessor.folderPathSafe)_test_output.log"
+          LOG_FILE="$(System.DefaultWorkingDirectory)/$(workingDirProcessor.folderPathSafe)_test_output.log"
+
+          if [ -f "$LOG_FILE" ]; then
+            echo "Converting Terraform test output to JUnit XML"
+            npx tftest-to-junitxml "$LOG_FILE"
+          else
+            echo "Terraform test output file not found: $LOG_FILE"
+            echo "Skipping conversion to JUnit XML"
+          fi
         displayName: "Convert Terraform test output to JUnit XML"
-        condition: and(not(canceled()), eq(variables['TerraformTest.result'], 'Succeeded'))
+        condition: not(canceled())
 
       # Publish the Terraform test results as a build artifact to drive
       # the Test Results UI on each build. These will be merged with the

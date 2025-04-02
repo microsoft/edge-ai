@@ -1,0 +1,159 @@
+# Azure IoT Operations Version Checker Workflow
+#
+# Purpose:
+# This workflow validates that Azure IoT Operations component versions defined in
+# the codebase match the latest published versions, to ensure deployments use
+# current and compatible components.
+#
+# Functionality:
+# - Checks component versions in Terraform and Bicep files against official releases
+# - Compares local versions with latest versions from remote manifests
+# - Generates GitHub annotations for version mismatches
+# - Creates a summary report of findings
+# - Can be configured to break the build on version mismatches
+#
+# Parameters:
+# - iac-type: The IaC type to check (terraform, bicep, or all)
+# - break-build: Controls whether to fail the workflow on version mismatches
+#
+# Output Variables:
+# - mismatches_found: Indicates if any version mismatches were found
+#
+# Usage:
+# This workflow is triggered by the ci-cd.yml workflow.
+---
+name: AIO Version Checker
+
+on: # yamllint disable-line rule:truthy
+  workflow_dispatch:
+    inputs:
+      iac-type:
+        description: 'IaC type to check (terraform, bicep, or all)'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - terraform
+          - bicep
+          - all
+      break-build:
+        description: 'Break the build if version mismatches are found'
+        required: true
+        default: false
+        type: boolean
+  workflow_call:
+    inputs:
+      iac-type:
+        description: 'IaC type to check (terraform, bicep, or all)'
+        required: true
+        default: 'all'
+        type: string
+      break-build:
+        description: 'Break the build if version mismatches are found'
+        required: true
+        default: false
+        type: boolean
+    outputs:
+      mismatches_found:
+        description: 'Indicates if any version mismatches were found'
+        value: ${{ jobs.check-aio-versions.outputs.mismatches_found }}
+
+jobs:
+  check-aio-versions:
+    name: Check AIO Component Versions
+    runs-on: ubuntu-latest
+    outputs:
+      mismatches_found: ${{ steps.version-check.outputs.mismatches_found }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Python Dependencies
+        run: |
+          # Install dependencies from requirements.txt if it exists
+          if [ -f ./requirements.txt ]; then
+            python -m pip install --upgrade pip
+            pip install -r ./requirements.txt
+          else
+            # Fallback to installing just what's needed
+            pip install hcl2 requests
+          fi
+
+      - name: Run AIO Version Checker
+        id: version-check
+        run: |
+          # Determine the IaC type to check
+          IAC_TYPE="${{ github.event_name == 'workflow_dispatch' && github.event.inputs.iac-type || 'all' }}"
+          BREAK_BUILD="${{ github.event_name == 'workflow_dispatch' && github.event.inputs.break-build || 'false' }}"
+
+          echo "Running version checker with iac-type=$IAC_TYPE and break-build=$BREAK_BUILD"
+
+          # Run the version checker and save results to a temporary file
+          python ./scripts/aio-version-checker.py \
+            --iac-type $IAC_TYPE \
+            --verbose > version_mismatches.json
+
+          # Check if we found any mismatches
+          if [ -s version_mismatches.json ] && [ "$(cat version_mismatches.json)" != "[]" ]; then
+            echo "Found version mismatches:"
+            cat version_mismatches.json
+
+            # Process each mismatch and generate annotations
+            MISMATCHES=$(cat version_mismatches.json)
+            COUNT=$(jq length version_mismatches.json)
+
+            echo "Processing $COUNT version mismatches..."
+
+            # Create a summary of all mismatches
+            echo "## AIO Component Version Mismatches" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "| Component | IaC Type | Local Version | Remote Version | Local Train | Remote Train |" >> $GITHUB_STEP_SUMMARY
+            echo "| --------- | -------- | ------------- | -------------- | ----------- | ------------ |" >> $GITHUB_STEP_SUMMARY
+
+            for (( i=0; i<$COUNT; i++ ))
+            do
+              # Extract fields from the JSON
+              IAC_TYPE=$(jq -r ".[$i].iac_type" version_mismatches.json)
+              NAME=$(jq -r ".[$i].name" version_mismatches.json)
+              LOCAL_FILE=$(jq -r ".[$i].local_file" version_mismatches.json)
+              LOCAL_VERSION=$(jq -r ".[$i].local_version" version_mismatches.json)
+              REMOTE_VERSION=$(jq -r ".[$i].remote_version" version_mismatches.json)
+              LOCAL_TRAIN=$(jq -r ".[$i].local_train" version_mismatches.json)
+              REMOTE_TRAIN=$(jq -r ".[$i].remote_train" version_mismatches.json)
+              REMOTE_URL=$(jq -r ".[$i].remote_url" version_mismatches.json)
+
+              # Create warning message
+              MESSAGE="AIO component version/train mismatch for $NAME in $IAC_TYPE file: $LOCAL_FILE"
+
+              # Add to GitHub summary
+              echo "| $NAME | $IAC_TYPE | $LOCAL_VERSION | $REMOTE_VERSION | $LOCAL_TRAIN | $REMOTE_TRAIN |" >> $GITHUB_STEP_SUMMARY
+
+              # Create GitHub annotation
+              if [[ "$BREAK_BUILD" == "true" ]]; then
+                echo "::error file=$LOCAL_FILE::$MESSAGE"
+              else
+                echo "::warning file=$LOCAL_FILE::$MESSAGE"
+              fi
+            done
+
+            # Set output flag for mismatches found
+            echo "mismatches_found=true" >> $GITHUB_OUTPUT
+
+            # Fail the build if break-build is true
+            if [[ "$BREAK_BUILD" == "true" ]]; then
+              echo "Breaking build due to version mismatches and break-build=true"
+              exit 1
+            fi
+          else
+            echo "All AIO components are using the correct versions."
+            echo "## AIO Version Check" >> $GITHUB_STEP_SUMMARY
+            echo "✅ All AIO components are using the correct versions." >> $GITHUB_STEP_SUMMARY
+            echo "mismatches_found=false" >> $GITHUB_OUTPUT
+          fi

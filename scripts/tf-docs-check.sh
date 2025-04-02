@@ -1,25 +1,37 @@
 #!/usr/bin/env bash
-
-# This script checks if terraform-docs is installed and then
-# runs the ./update-all-terraform-docs.sh script. It
-# returns a boolean value to indicate if README.md files
-# have changed after running the auto-docs-gen. The intent
-# is that the build/ci system calls this script and contributors
-# would call the ./update-all-terraform-docs.sh script
-# directly.
+# Terraform Docs Check Script
 #
-# Usage: ./tf-docs-check.sh
+# Purpose:
+# This script checks if terraform-docs is installed and then runs the update-all-terraform-docs.sh script.
+# It returns a boolean value to indicate if README.md files have changed after running the auto-docs-gen.
+# The intent is that the build/CI system calls this script while contributors would call the
+# update-all-terraform-docs.sh script directly.
 #
-# Dependencies:
-#   - terraform-docs: https://terraform-docs.io/user-guide/installation/
-#   - jq: https://stedolan.github.io/jq/download/
+# Functionality:
+# - Verifies terraform-docs installation
+# - Executes update-all-terraform-docs.sh script
+# - Checks for changes in README.md files
+# - Reports which files require updates
+#
+# Parameters:
+# - None: The script uses predefined paths and settings
+#
+# Output Variables:
+# - Returns boolean (true/false) indicating if README.md files have changed
 #
 # Exit Codes:
-#   0 - Success
-#   1 - Failure (e.g., missing dependencies, errors during execution)
+# - 0: Success
+# - 1: Failure (e.g., missing dependencies, errors during execution)
 #
-# Example:
-#   ./tf-docs-check.sh
+# Dependencies:
+# - terraform-docs: https://terraform-docs.io/user-guide/installation/
+# - jq: https://stedolan.github.io/jq/download/
+#
+# Usage Examples:
+# ```bash
+# # Check if terraform documentation needs updating:
+# ./tf-docs-check.sh
+# ```
 
 set -e
 

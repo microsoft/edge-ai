@@ -1,23 +1,35 @@
 #!/usr/bin/env bash
-
-# This script updates the Terraform documentation for all the modules
-# in the repository. It uses the terraform-docs tool to generate the documentation
-# based on the configuration provided in the .terraform-docs.yml file.
-# The script loops over all the top-level directories in the src folder and checks
-# if there is a "terraform" subfolder. If it finds one, it runs terraform-docs on
-# that folder to generate the documentation for the Terraform folder and modules.
+# Update All Terraform Docs Script
 #
-# Usage: ./update-all-terraform-docs.sh
+# Purpose:
+# This script updates the Terraform documentation for all modules in the repository
+# using terraform-docs. It automatically generates documentation based on the
+# configuration provided in the .terraform-docs.yml file.
 #
-# Dependencies:
-#   - terraform-docs: https://terraform-docs.io/user-guide/installation/
+# Functionality:
+# - Searches for Terraform modules in src and blueprints directories
+# - Runs terraform-docs on each found module
+# - Updates README.md files with standardized documentation
+# - Maintains consistent documentation across all Terraform modules
+#
+# Parameters:
+# - None: Script uses predefined paths and configuration
+#
+# Output Variables:
+# - None
 #
 # Exit Codes:
-#   0 - Success
-#   1 - Failure (e.g., missing dependencies, errors during execution)
+# - 0: Success
+# - 1: Failure (e.g., missing dependencies, errors during execution)
 #
-# Example:
-#   ./update-all-terraform-docs.sh
+# Dependencies:
+# - terraform-docs: https://terraform-docs.io/user-guide/installation/
+#
+# Usage Examples:
+# ```bash
+# # Update all Terraform documentation:
+# ./update-all-terraform-docs.sh
+# ```
 
 set -e
 

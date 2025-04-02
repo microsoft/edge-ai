@@ -44,7 +44,7 @@ Verifies that Terraform documentation is up-to-date.
 
 - **Usage**: `./tf-docs-check.sh`
 - **Returns**: Boolean indicating if documentation needs updates
-- **Build Integration**: Used by the [docs-check-template.yml](../.azdo/docs-check-template.yml) in the DocsCheck job
+- **Build Integration**: Used by the [docs-check-terraform-template.yml](../.azdo/docs-check-terraform-template.yml) in the DocsCheck job
 - **When to Use**: Before submitting PRs to ensure documentation matches code
 
 ### tf-vars-compliance-check.py
@@ -78,7 +78,7 @@ Installs the terraform-docs tool at a specific version.
 - **Flags**:
   - `-v version`: Specify terraform-docs version (default: v0.16.0)
   - `-h`: Display help message
-- **Build Integration**: Used by the [docs-check-template.yml](../.azdo/docs-check-template.yml) in the DocsCheck job
+- **Build Integration**: Used by the [docs-check-terraform-template.yml](../.azdo/docs-check-terraform-template.yml) in the DocsCheck job
 - **When to Use**: When setting up a new development environment or updating the terraform-docs version
 
 ## Azure IoT Operations Scripts
@@ -109,7 +109,7 @@ Finds and optionally fixes URLs with language path segments ('en-us').
   - Fix links and remove 'en-us': `python3 link-lang-check.py -f`
   - Fix links with verbose output: `python3 link-lang-check.py -f -v`
 - **Returns**: JSON array of detected links with file paths and line numbers (in search mode)
-- **Build Integration**: Used by the [docs-check-template.yml](../.azdo/docs-check-template.yml) in the DocsCheck job
+- **Build Integration**: Used by the [docs-check-terraform-template.yml](../.azdo/docs-check-terraform-template.yml) in the DocsCheck job
 - **When to Use**: Run before submitting PRs to ensure links don't contain language-specific paths which can cause internationalization issues
 
 ### wiki-build.sh
@@ -156,7 +156,7 @@ PowerShell script for running Pester tests on PowerShell code.
 - **Arguments**:
   - `-Path`: Path to the directory containing tests
   - `-OutputFile`: Path to output test results in NUnit XML format
-- **Build Integration**: Used by the [resource-provider-tests-template.yml](../.azdo/resource-provider-tests-template.yml) for testing PowerShell scripts
+- **Build Integration**: Used by the [resource-provider-pwsh-tests-template.yml](../.azdo/resource-provider-pwsh-tests-template.yml) for testing PowerShell scripts
 - **When to Use**: When developing or testing PowerShell modules, particularly for resource provider scripts
 
 ## Error Handling
@@ -174,9 +174,9 @@ The following Azure DevOps pipeline templates depend on these scripts:
 
 | Azure DevOps Template                                                                            | Script Dependencies                                             |
 |--------------------------------------------------------------------------------------------------|-----------------------------------------------------------------|
-| [docs-check-template.yml](../.azdo/docs-check-template.md)                                       | install-terraform-docs.sh, tf-docs-check.sh, link-lang-check.py |
+| [docs-check-terraform-template.yml](../.azdo/docs-check-terraform-template.md)                   | install-terraform-docs.sh, tf-docs-check.sh, link-lang-check.py |
 | [aio-version-checker-template.yml](../.azdo/aio-version-checker-template.md)                     | aio-version-checker.py                                          |
 | [variable-compliance-terraform-template.yml](../.azdo/variable-compliance-terraform-template.md) | tf-vars-compliance-check.py                                     |
 | [cluster-test-terraform-template.yml](../.azdo/cluster-test-terraform-template.md)               | tf-provider-version-check.sh                                    |
-| [resource-provider-tests-template.yml](../.azdo/resource-provider-tests-template.md)             | Invoke-Pester.ps1                                               |
+| [resource-provider-pwsh-tests-template.yml](../.azdo/resource-provider-pwsh-tests-template.md)   | Invoke-Pester.ps1                                               |
 | [wiki-update-template.yml](../.azdo/wiki-update-template.md)                                     | wiki-build.sh                                                   |

@@ -175,7 +175,7 @@ Common issues and their solutions:
 ## Related Templates
 
 - Matrix Folder Check Template: [YAML](./matrix-folder-check-template.yml) | [Documentation](./matrix-folder-check-template.md) - Detects changes for conditional running of downstream jobs
-- Docs Check Template: [YAML](./docs-check-template.yml) | [Documentation](./docs-check-template.md) - Validates documentation quality
+- Docs Check Template: [YAML](./docs-check-terraform-template.yml) | [Documentation](./docs-check-terraform-template.md) - Validates documentation quality
 - AIO Version Checker Template: [YAML](./aio-version-checker-template.yml) | [Documentation](./aio-version-checker-template.md) - Ensures component versions are up to date
 
 ## Learn More

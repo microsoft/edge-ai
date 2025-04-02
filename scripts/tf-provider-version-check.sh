@@ -1,29 +1,41 @@
 #!/usr/bin/env bash
-
-# This script checks the provider versions in the Terraform
-# configuration files in the specified folder or all folders
-# and compares them with the latest versions available in the
-# Terraform registry. It outputs any mismatches found and is useful
-# for build systems to ensure that the most recent released versions
-# of providers are being used.
+# Terraform Provider Version Check Script
 #
-# Usage: ./tf-provider-version-check.sh [-a] [-f <folder_path>]
+# Purpose:
+# This script checks the provider versions in the Terraform configuration files in the
+# specified folder or all folders and compares them with the latest versions available in the
+# Terraform registry. It outputs any mismatches found and is useful for build systems to
+# ensure that the most recent released versions of providers are being used.
 #
-# Flags:
-#   -a: Run check on all terraform folders under src/
-#   -f <folder_path>: Run check on a specific folder path
+# Functionality:
+# - Searches for provider configurations in Terraform files
+# - Compares configured provider versions with latest available versions
+# - Reports outdated provider versions
+# - Can check a specific folder or all Terraform folders
 #
-# Dependencies:
-#   - terraform: https://developer.hashicorp.com/terraform/install
-#   - jq: https://stedolan.github.io/jq/download/
+# Parameters:
+# - -a: Run check on all terraform folders under src/
+# - -f <folder_path>: Run check on a specific folder path
+#
+# Output Variables:
+# - JSON output of version mismatches for build reporting
 #
 # Exit Codes:
-#   0 - Success
-#   1 - Failure (e.g., missing dependencies, errors during execution)
+# - 0: Success
+# - 1: Failure (e.g., missing dependencies, errors during execution)
 #
-# Example:
-#   ./tf-provider-version-check.sh -a
-#   ./tf-provider-version-check.sh -f ./src/030-iot-ops-cloud-reqs/terraform
+# Dependencies:
+# - terraform: https://developer.hashicorp.com/terraform/install
+# - jq: https://stedolan.github.io/jq/download/
+#
+# Usage Examples:
+# ```bash
+# # Check all terraform folders:
+# ./tf-provider-version-check.sh -a
+#
+# # Check a specific folder:
+# ./tf-provider-version-check.sh -f ./src/030-iot-ops-cloud-reqs/terraform
+# ```
 
 set -e
 

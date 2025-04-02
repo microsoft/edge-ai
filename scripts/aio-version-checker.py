@@ -1,10 +1,56 @@
 #!/usr/bin/env python3
 
 """
+AIO Version Checker
+
 This script compares the version and train of components in either Terraform or Bicep
 configuration files with AIO components defined in remote JSON files. It outputs
 any mismatches found and is useful for build systems to ensure that the most recent
 released versions of AIO components and trains are being used.
+
+Functionality:
+    - Checks Terraform variables in ./src/040-iot-ops/terraform/variables.init.tf
+    - Checks Terraform instance variables in ./src/040-iot-ops/terraform/variables.instance.tf
+    - Checks Bicep variables in ./src/040-iot-ops/bicep/types.bicep
+    - Compares with latest versions and trains from remote manifest files
+    - Reports any mismatches in versions or trains
+
+Parameters:
+    --error-on-mismatch: Exit with error code 1 if versions don't match
+    -v, --verbose: Enable verbose output
+    -t, --iac-type: Type of IaC files to check (terraform, bicep, or all)
+
+Returns:
+    JSON array: Outputs a list of mismatches found, with each mismatch containing details
+                about the component, local and remote versions/trains
+
+Raises:
+    Exception: If manifests cannot be downloaded or parsed
+    SystemExit: If script terminates due to errors or mismatches
+
+Dependencies:
+    - requests: For downloading remote manifest files
+    - hcl2: For parsing Terraform configuration files
+
+Example:
+    # Check all IaC types for version mismatches
+    python aio-version-checker.py
+
+    # Check only Terraform files with verbose output
+    python aio-version-checker.py -t terraform -v
+
+    # Check all IaC types and exit with error if mismatches found
+    python aio-version-checker.py --error-on-mismatch
+
+Notes:
+    The script is designed to ensure that infrastructure code in a repository stays
+    up-to-date with the latest released versions of Azure IoT Operations components.
+
+See Also:
+    - Azure IoT Operations documentation: https://learn.microsoft.com/azure/iot-operations
+    - AIO manifest files:
+      - https://raw.githubusercontent.com/Azure/azure-iot-operations/main/release/azure-iot-operations-enablement.json
+      - https://raw.githubusercontent.com/Azure/azure-iot-operations/main/release/azure-iot-operations-instance.json
 """
 
 import argparse

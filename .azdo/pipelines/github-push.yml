@@ -70,10 +70,10 @@ stages:
               echo "Pushing to GitHub"
               remoteUrl=$(echo $(githubRepoUrl) | sed "s|__token__|$(installationToken)|g")
               echo "Remote URL: $remoteUrl"
-              git checkout -b $(Build.SourceBranch)
               git remote remove origin
               git remote add origin $remoteUrl
-              git push --force origin $(Build.SourceBranch):azdo-$(Build.BuildId)
+              echo "Source branch: $(Build.SourceBranch)"
+              git push --force origin $(Build.SourceBranch):refs/heads/azdo-$(Build.BuildId)
               git remote remove origin
               echo "Pushed branch azdo-$(Build.BuildId) to GitHub"
 
@@ -84,7 +84,7 @@ stages:
           - bash: |
 
               echo "Creating PR"
-              bash $(System.DefaultWorkingDirectory)/scripts/github/create-pr.sh $(installationToken) azdo-$(Build.BuildId) $(Build.SourceVersionMessage)
+              bash $(System.DefaultWorkingDirectory)/scripts/github/create-pr.sh "$(installationToken)" "azdo-$(Build.BuildId)" "$(Build.SourceVersionMessage)"
 
             displayName: "Create GitHub PR"
             name: githubPR
@@ -92,7 +92,7 @@ stages:
       - job: "Versioning"
         displayName: "Updating Version based on Git Tag"
         dependsOn: GitHubPush
-        condition: eq(variables.isMain, true)
+        condition: and(succeeded(), eq(variables.isMain, true))
         steps:
           # Checkout repo
           - checkout: self

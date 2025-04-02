@@ -1,0 +1,164 @@
+# Variable Compliance Bicep Workflow
+#
+# Purpose:
+# This workflow checks for consistency in Bicep parameter definitions across modules,
+# ensuring that parameters with the same name have consistent descriptions, types, and defaults.
+#
+# Functionality:
+# - Scans all Bicep files in the repository for parameter definitions
+# - Compares parameter definitions across different modules for consistency
+# - Reports inconsistencies as warnings or errors in the GitHub Action logs
+# - Optionally fails the workflow if inconsistencies are found
+#
+# Parameters:
+# - break_build: Whether to fail the workflow if inconsistencies are found
+#
+# Output Variables:
+# - mismatches_found: Boolean indicating if any parameter inconsistencies were found
+#
+# Usage Examples:
+# ```yaml
+# # Run as a standalone check with default parameters:
+# name: Check Bicep Parameters
+# uses: ./.github/workflows/variable-compliance-bicep.yml
+#
+# # Run as part of CI with stricter settings:
+# name: Validate Parameters in CI
+# uses: ./.github/workflows/variable-compliance-bicep.yml
+# with:
+#   break_build: true
+# ```
+#
+# This workflow helps maintain consistency across infrastructure code, which improves
+# maintainability and reduces errors when reusing modules across different environments.
+---
+name: Bicep Variable Compliance
+
+on: # yamllint disable-line rule:truthy
+  workflow_dispatch:
+    inputs:
+      break_build:
+        description: 'Fail workflow on inconsistencies'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+  workflow_call:
+    inputs:
+      break_build:
+        description: 'Fail workflow on inconsistencies'
+        required: false
+        type: boolean
+        default: false
+    outputs:
+      mismatches_found:
+        description: 'Indicates if any parameter inconsistencies were found'
+        value: ${{ jobs.variable-compliance.outputs.mismatches_found }}
+
+concurrency:
+  group: ${{ github.ref }}-bicep-var-compliance
+  cancel-in-progress: true
+
+jobs:
+  variable-compliance:
+    name: Check Bicep Parameter Consistency
+    runs-on: ubuntu-latest
+    outputs:
+      mismatches_found: ${{ steps.var-check.outputs.mismatches_found }}
+    steps:
+      # Git Checkout
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Run variable compliance check
+      - name: Run Bicep Variable Compliance Check
+        id: var-check
+        shell: pwsh
+        env:
+          BREAK_BUILD: ${{ inputs.break_build || 'false' }}
+        run: |
+          # Create output directories if they don't exist
+          New-Item -Path ".arm" -ItemType Directory -Force
+
+          # Run the compliance check script
+          $scriptPath = Join-Path $env:GITHUB_WORKSPACE "scripts/Bicep-Var-Compliance-Check.ps1"
+          & $scriptPath
+
+          # Check if results file exists
+          $resultsFile = ".arm/bicep-compliance-results.json"
+          if (Test-Path $resultsFile) {
+            $results = Get-Content $resultsFile | ConvertFrom-Json
+
+            if ($results -and $results.Count -gt 0) {
+              Write-Host "Inconsistencies found in Bicep parameter definitions:"
+
+              # Set output variable for mismatches found
+              Write-Host "::set-output name=mismatches_found::true"
+
+              # Process each inconsistency
+              foreach ($result in $results) {
+                $variable = $result.variable
+                $differences = ($result.differences | ForEach-Object { "`n  - $_" }) -join ""
+
+                # Format files with their line numbers
+                $locationsInfo = @()
+                foreach ($location in $result.locations) {
+                  $locationsInfo += "  - $($location.file):$($location.lineNumber)"
+                }
+                $filesWithLines = $locationsInfo -join "`n"
+
+                $message = "Variable '$variable' has inconsistencies in files:`n$filesWithLines`n`nDifferences:$differences"
+
+                # Create GitHub annotation based on break_build setting
+                if ($env:BREAK_BUILD -eq "true") {
+                  Write-Host "::error::$message"
+                } else {
+                  Write-Host "::warning::$message"
+                }
+              }
+
+              # Create summary for GitHub
+              $summary = "## Bicep Parameter Inconsistencies Found`n`n"
+              $summary += "| Parameter | Files | Differences |`n"
+              $summary += "|-----------|-------|-------------|`n"
+
+              foreach ($result in $results) {
+                $filesList = ($result.locations | ForEach-Object { "$($location.file)" }) -join ", "
+                $diffsList = ($result.differences | ForEach-Object { "$_" }) -join "<br>"
+                $summary += "| `$${result.variable} | $filesList | $diffsList |`n"
+              }
+
+              # Write the summary to GitHub step summary
+              $summary | Out-File -FilePath $env:GITHUB_STEP_SUMMARY
+
+              # Fail the build if configured to do so
+              if ($env:BREAK_BUILD -eq "true") {
+                Write-Host "Failing build due to parameter inconsistencies"
+                exit 1
+              }
+            } else {
+              Write-Host "No inconsistencies found in Bicep parameter definitions."
+              Write-Host "::set-output name=mismatches_found::false"
+
+              # Write success to GitHub step summary
+              "## Bicep Parameter Consistency Check`n`n✅ All Bicep parameters are consistently defined across modules." |
+                Out-File -FilePath $env:GITHUB_STEP_SUMMARY
+            }
+          } else {
+            Write-Host "No results file found. The compliance check may have failed to complete."
+            Write-Host "::set-output name=mismatches_found::false"
+          }
+
+      # Upload results as artifacts
+      - name: Upload compliance results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bicep-variable-compliance-results
+          path: |
+            .arm/bicep-compliance-results.json
+          retention-days: 5

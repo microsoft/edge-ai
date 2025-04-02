@@ -1,19 +1,40 @@
 # Azure IoT Operations Version Checker Template
 #
-# This template runs a Python script that checks the versions and trains of
-# Azure IoT Operations components defined in both Terraform and Bicep files
-# against the latest releases published in remote manifests.
+# Purpose:
+# This template validates that Azure IoT Operations component versions in the codebase
+# match the latest versions published in official manifests, ensuring deployments use
+# up-to-date components.
 #
-# The script checks:
-# - Terraform variables in ./src/040-iot-ops/terraform/variables.init.tf
-# - Terraform instance variables in ./src/040-iot-ops/terraform/variables.instance.tf
-# - Bicep variables in ./src/040-iot-ops/bicep/types.bicep
+# Functionality:
+# - Checks component versions in Terraform and Bicep files
+# - Compares local versions against official Azure IoT Operations manifests
+# - Reports version and train mismatches as warnings or errors
+# - Supports checking specific IaC types (Terraform, Bicep, or both)
 #
-# It compares these with the latest versions and trains from:
-# - https://raw.githubusercontent.com/Azure/azure-iot-operations/main/release/azure-iot-operations-enablement.json
-# - https://raw.githubusercontent.com/Azure/azure-iot-operations/main/release/azure-iot-operations-instance.json
+# Parameters:
+# - displayName: Display name for this job
+# - dependsOn: Jobs that this job depends on
+# - condition: Condition for running this job
+# - iacType: IaC type to check (terraform, bicep, or all)
+# - breakBuild: When true, version mismatches fail the build
 #
-# Any mismatches are reported as build warnings.
+# Usage Examples:
+# ```yaml
+# # Basic usage checking all IaC types:
+# - template: .azdo/templates/aio-version-checker-template.yml
+#   parameters:
+#     dependsOn: PreviousJob
+#
+# # Check only Terraform files with strict validation:
+# - template: .azdo/templates/aio-version-checker-template.yml
+#   parameters:
+#     dependsOn: Lint
+#     iacType: terraform
+#     breakBuild: true
+# ```
+#
+# Keeping component versions up-to-date is critical for security, performance,
+# and compatibility with the Azure IoT Operations platform.
 ---
 parameters:
   # Display name for the job
@@ -128,7 +149,7 @@ jobs:
               MESSAGE="$MESSAGE\nRemote source: $REMOTE_URL"
 
               # Determine issue type based on breakBuild parameter
-              if [[ "${{ parameters.breakBuild }}" == "true" ]]; then
+              if [[ "$(echo ${{ parameters.breakBuild }} | tr '[:upper:]' '[:lower:]')" == "true" ]]; then
                 issue_type="error"
               else
                 issue_type="warning"

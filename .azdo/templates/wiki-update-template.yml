@@ -1,5 +1,43 @@
-# Wiki Update Template for Azure DevOps Pipelines that can be included
-# in other pipeline definitions.
+# Wiki Update Template
+#
+# Purpose:
+# This template automates the process of building and publishing documentation to an Azure DevOps wiki.
+# It maintains synchronized documentation between the codebase and the associated wiki repository.
+#
+# Functionality:
+# - Checks out both the main code branch and the wiki branch
+# - Executes the wiki-build.sh script to generate documentation from code
+# - Copies the generated documentation to the wiki repository
+# - Commits and pushes changes to the wiki repository
+# - Preserves special files like .order for wiki navigation structure
+#
+# Parameters:
+# - dependsOn: Jobs that this job depends on
+# - displayName: Display name for this job
+# - condition: Condition for running this job
+# - branchRepoFolder: Folder name for the main branch checkout
+# - wikiRepoFolder: Folder name for the wiki branch checkout
+# - wikiRepo: Repository reference for the wiki
+# - wikiBranch: Branch name for the wiki
+#
+# Usage Examples:
+# ```yaml
+# # Basic usage:
+# - template: .azdo/templates/wiki-update-template.yml
+#   parameters:
+#     dependsOn: PreviousJob
+#     displayName: "Update Wiki Documentation"
+#
+# # Custom repository settings:
+# - template: .azdo/templates/wiki-update-template.yml
+#   parameters:
+#     dependsOn: [Lint, Build]
+#     wikiRepo: "git://myproject/myrepo@refs/heads/wiki"
+#     wikiBranch: "custom-wiki-branch"
+# ```
+#
+# This template should typically be run after successful validation of changes,
+# usually as one of the final steps in a pipeline that targets the main branch.
 ---
 parameters:
   # Dependencies for this job

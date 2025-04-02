@@ -84,10 +84,10 @@ The following templates are available in the `.azdo` directory:
 |----------------------------------------------|------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------|
 | `aio-version-checker-template.yml`           | Checks Azure IoT Operations component versions against latest available releases                     | [Template Documentation](./templates/aio-version-checker-template.md)           |
 | `cluster-test-terraform-template.yml`        | Runs Terraform init, validate, plan and tests on component folders                                   | [Template Documentation](./templates/cluster-test-terraform-template.md)        |
-| `docs-check-template.yml`                    | Validates documentation quality including Terraform docs and URL checks                              | [Template Documentation](./templates/docs-check-template.md)                    |
+| `docs-check-terraform-template.yml`          | Validates documentation quality including Terraform docs and URL checks                              | [Template Documentation](./templates/docs-check-terraform-template.md)          |
 | `matrix-folder-check-template.yml`           | Checks for changes in source directories and creates a dynamic matrix of folders for downstream jobs | [Template Documentation](./templates/matrix-folder-check-template.md)           |
 | `megalinter-template.yml`                    | Provides linting capabilities across multiple languages                                              | [Template Documentation](./templates/megalinter-template.md)                    |
-| `resource-provider-tests-template.yml`       | Runs tests to ensure resource provider registration scripts function as expected                     | [Template Documentation](./templates/resource-provider-tests-template.md)       |
+| `resource-provider-pwsh-tests-template.yml`  | Runs tests to ensure resource provider registration scripts function as expected                     | [Template Documentation](./templates/resource-provider-pwsh-tests-template.md)  |
 | `variable-compliance-terraform-template.yml` | Ensures consistent Terraform variable definitions across modules                                     | [Template Documentation](./templates/variable-compliance-terraform-template.md) |
 | `wiki-update-template.yml`                   | Updates Azure DevOps wiki with markdown documentation from the repository                            | [Template Documentation](./templates/wiki-update-template.md)                   |
 
@@ -163,11 +163,7 @@ jobs:
     parameters:
       # MegaLinter parameters...
 
-  - template: .azdo/templates/resource-provider-tests-template.yml
-    parameters:
-      dependsOn: MegaLinter
-      # Resource Provider test parameters...
-  - template: .azdo/templates/resource-provider-tests-template.yml
+  - template: .azdo/templates/resource-provider-pwsh-tests-template.yml
     parameters:
       dependsOn: MegaLinter
       # Resource Provider test parameters...
