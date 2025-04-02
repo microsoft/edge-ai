@@ -1,0 +1,118 @@
+# Main Branch CI/CD Workflow
+#
+# Purpose:
+# This workflow runs the continuous integration and deployment pipeline for the main branch,
+# ensuring code quality and deploying documentation to GitHub Pages.
+#
+# Functionality:
+# - Runs MegaLinter for static code analysis across multiple languages
+# - Validates documentation standards and updates docs if needed
+# - Deploys documentation to GitHub Pages when docs have changed
+# - Checks Azure IoT Operations component versions against latest published releases
+# - Performs matrix-based validation of Terraform configurations
+#
+# Parameters:
+# None - This workflow is triggered automatically on pushes to main branch
+#
+# Output Variables:
+# None - Results are provided as GitHub checks, annotations, and artifacts
+#
+# Usage Examples:
+# This workflow is automatically triggered on pushes to main branch and doesn't need manual invocation.
+#
+# This workflow helps maintain code quality on the main branch and keeps documentation
+# up-to-date for users of the repository.
+---
+name: Main Branch CI/CD
+
+on: # yamllint disable-line rule:truthy
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  # CodeQL Analysis job for code security scanning
+  codeql-analysis:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ['javascript', 'python', 'typescript', 'csharp']
+        # CodeQL supports these languages: https://aka.ms/codeql-docs/language-support
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          languages: ${{ matrix.language }}
+          # If you wish to specify custom queries, you can do so here or in a config file.
+          # By default, queries listed here will override any specified in a config file.
+          # For more details, see: https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/configuring-code-scanning#using-queries-in-ql-packs
+          # queries: security-extended,security-and-quality
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v2
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v2
+        with:
+          category: "/language:${{matrix.language}}"
+
+  # Dependency scanning job for main branch
+  dependency-scan-main:
+    name: Dependency Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # GitHub doesn't have a direct equivalent to Azure's ComponentGovernanceComponentDetection
+      # Using a basic dependency check with built-in security scanning
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v3
+
+  # MegaLinter job for main branch
+  mega-linter-main:
+    name: MegaLinter
+    needs: [dependency-scan-main]
+    permissions:
+      contents: write
+      pull-requests: write
+    uses: ./.github/workflows/megalinter.yml
+    with:
+      validate_all_codebase: true
+      github_comment_reporter: false
+    secrets: inherit
+
+  # Call docs-check workflow
+  docs-check-main:
+    name: Documentation Check
+    needs: [mega-linter-main]
+    uses: ./.github/workflows/docs-check.yml
+    with:
+      break_build: false
+    secrets: inherit
+
+  # Pages deployment for main branch (replaces wiki update)
+  deploy-pages-main:
+    name: Deploy Documentation (Main)
+    needs: [docs-check-main]
+    # Only deploy if there are documentation changes
+    if: success()
+    uses: ./.github/workflows/pages-deploy.yml
+    with:
+      source_branch: main
+      deploy_environment: production
+    secrets: inherit

@@ -229,7 +229,7 @@ Common issues and their solutions:
 
 - Matrix Folder Check Template: [YAML](./matrix-folder-check-template.yml) | [Documentation](./matrix-folder-check-template.md) - Detects changes in Terraform folders and creates a build matrix
 - Variable Compliance Terraform Template: [YAML](./variable-compliance-terraform-template.yml) | [Documentation](./variable-compliance-terraform-template.md) - Ensures consistent variable definitions across Terraform modules
-- Resource Provider Tests Template: [YAML](./resource-provider-tests-template.yml) | [Documentation](./resource-provider-tests-template.md) - Tests Azure Resource Provider registration scripts
+- Resource Provider Tests Template: [YAML](./resource-provider-pwsh-tests-template.yml) | [Documentation](./resource-provider-pwsh-tests-template.md) - Tests Azure Resource Provider registration scripts
 
 ## Learn More
 

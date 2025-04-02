@@ -42,7 +42,6 @@ This template depends on the following:
 
 - **Required Tools**:
   - PowerShell 7.0+
-  - Az.Bicep PowerShell module (installed automatically if not present)
 - **Required Scripts**:
   - `scripts/Bicep-Var-Compliance-Check.ps1`: For checking variable consistency
 - **Required Repository Structure**:
@@ -139,19 +138,15 @@ jobs:
 
 Common issues and their solutions:
 
-1. **PowerShell Module Errors**:
-   - **Symptom**: Build fails with errors about Az.Bicep module not being available
-   - **Solution**: The script attempts to install the module automatically, but you may need to ensure the build agent has permissions to install PowerShell modules
-
-2. **Variable Inconsistencies Detected**:
+1. **Variable Inconsistencies Detected**:
    - **Symptom**: Build warns or fails with "Variable has inconsistencies in folders"
    - **Solution**: Update the parameter descriptions to be consistent across modules where the same parameter is used
 
-3. **Regular Expression Issues**:
+2. **Regular Expression Issues**:
    - **Symptom**: Not all parameters are being detected or compared correctly
    - **Solution**: The detection pattern may need adjustment for certain parameter styles; review the PowerShell script for potential updates
 
-4. **False Positives**:
+3. **False Positives**:
    - **Symptom**: The check reports inconsistencies for parameters that should be different
    - **Solution**: Consider refactoring to use different parameter names if they truly represent different concepts
 
@@ -159,13 +154,12 @@ Common issues and their solutions:
 
 - Variable Compliance Terraform Template: [YAML](./variable-compliance-terraform-template.yml) | [Documentation](./variable-compliance-terraform-template.md) - Similar functionality but for Terraform files
 - Matrix Folder Check Template: [YAML](./matrix-folder-check-template.yml) | [Documentation](./matrix-folder-check-template.md) - Detects changes in repository structure
-- Docs Check Template: [YAML](./docs-check-template.yml) | [Documentation](./docs-check-template.md) - Validates documentation quality
+- Docs Check Template: [YAML](./docs-check-terraform-template.yml) | [Documentation](./docs-check-terraform-template.md) - Validates documentation quality
 
 ## Learn More
 
 - [Bicep Documentation](https://learn.microsoft.com/azure/azure-resource-manager/bicep/)
 - [Bicep Best Practices](https://learn.microsoft.com/azure/azure-resource-manager/bicep/best-practices)
 - [Azure DevOps Pipeline Templates](https://learn.microsoft.com/azure/devops/pipelines/process/templates)
-- [PowerShell Az.Bicep Module](https://learn.microsoft.com/powershell/module/az.bicep/)
 - [Reusable Infrastructure as Code](https://learn.microsoft.com/azure/architecture/framework/devops/automation-infrastructure)
 - [Repository Structure Guide](/README.md)

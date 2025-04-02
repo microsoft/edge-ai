@@ -1,0 +1,90 @@
+# Resource Provider PWSH Tests Template
+#
+# Purpose:
+# This template tests PowerShell scripts to ensure they can properly manage the
+# Azure resource providers needed by the solution.
+#
+# Functionality:
+# - Tests PowerShell scripts using Pester tests
+# - Conditionally runs tests based on detected changes in relevant script files
+# - Publishes test results for PowerShell tests
+#
+# Parameters:
+# - dependsOn: Job that this template depends on (typically the matrix folder check)
+# - pwshScriptCondition: Condition to determine when to run PowerShell script tests
+# - azureServiceConnection: Azure service connection name for authentication
+# - workingDirectory: Directory containing the resource provider scripts
+# - pwshTestResultsOutput: Path to output PowerShell test results
+#
+# Output Variables:
+# - None specifically, but publishes test results as artifacts
+#
+# Usage Examples:
+# ```yaml
+# # Basic usage with default conditions:
+# - template: .azdo/templates/resource-provider-pwsh-tests-template.yml
+#   parameters:
+#     dependsOn: MatrixBuildFolderCheck
+#
+# # Custom configuration:
+# - template: .azdo/templates/resource-provider-pwsh-tests-template.yml
+#   parameters:
+#     dependsOn: CustomJob
+#     shellScriptCondition: always()
+#     azureServiceConnection: "my-custom-connection"
+# ```
+#
+# These tests are critical for ensuring that the infrastructure can be properly
+# provisioned by verifying that all required Azure resource providers can be registered.
+---
+parameters:
+  # Dependencies for this job
+  - name: dependsOn
+    type: string
+    default: MatrixBuildFolderCheck
+  # Condition for when this job should run
+  - name: pwshScriptCondition
+    type: string
+    default: eq(dependencies.MatrixBuildFolderCheck.outputs['matrixBuildFolderCheckTask.changesInRpEnablementPwsh'], 'true')
+  # Azure service connection name to use for CLI tasks
+  - name: azureServiceConnection
+    type: string
+    default: azdo-ai-for-edge-iac-for-edge
+  # Working directory containing the scripts to test
+  - name: workingDirectory
+    type: string
+    default: $(System.DefaultWorkingDirectory)/src/000-subscription
+  # PowerShell test results output path
+  - name: pwshTestResultsOutput
+    type: string
+    default: $(System.DefaultWorkingDirectory)/PWSH-TEST-RESULTS.xml
+
+jobs:
+  # Job to run PowerShell script tests for the resource providers if they have changed
+  - job: ResourceProviderPWSHScriptTest
+    dependsOn: ${{ parameters.dependsOn }}
+    pool:
+      name: ai-on-edge-managed-pool
+      vmImage: "ubuntu-latest"
+    condition: ${{ parameters.pwshScriptCondition }}
+    variables:
+      testResultsOutput: ${{ parameters.pwshTestResultsOutput }}
+    steps:
+      - checkout: self
+        clean: true
+
+      # Run Pester tests for the resource provider scripts
+      - bash: |
+          pwsh ./scripts/Invoke-Pester.ps1 -Path ./src/000-subscription -OutputFile $(testResultsOutput)
+        displayName: "Run pester"
+        workingDirectory: $(System.DefaultWorkingDirectory)
+
+      # Publish the Pester test results
+      - task: PublishTestResults@2
+        displayName: Publish Test Results
+        inputs:
+          testRunTitle: "Test Results for Pester"
+          buildPlatform: "Linux"
+          testRunner: "NUnit"
+          testResultsFiles: "$(testResultsOutput)"
+          failTaskOnFailedTests: true

@@ -1,3 +1,19 @@
+# MQTT Tools for Azure IoT Operations
+#
+# This file defines Kubernetes resources to deploy MQTT client tools for debugging, testing,
+# and interacting with MQTT brokers in an Azure IoT Operations environment.
+#
+# Components:
+# - ServiceAccount: Used for authentication with the AIO MQTT broker
+# - Deployment: Creates a pod with Alpine Linux and installs mosquitto-clients and mqttui tools
+#
+# Usage:
+# Apply with: kubectl apply -f mqtt-tools.yaml
+# Connect to the pod: kubectl exec -it deployment/mqtt-tools -n azure-iot-operations -- sh
+#
+# The deployment is configured to work with authenticated MQTT brokers in Azure IoT Operations
+# using service account token authentication and the appropriate trust bundle.
+---
 apiVersion: v1
 kind: ServiceAccount
 metadata:

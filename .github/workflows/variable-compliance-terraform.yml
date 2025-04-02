@@ -1,0 +1,150 @@
+# Variable Compliance Terraform Workflow
+#
+# Purpose:
+# This workflow checks for consistency in Terraform variable definitions across modules,
+# ensuring that variables with the same name have consistent descriptions, types, and defaults.
+#
+# Functionality:
+# - Scans all Terraform files in the repository for variable definitions
+# - Compares variable definitions across different modules for consistency
+# - Reports inconsistencies as warnings or errors in the GitHub Action logs
+# - Optionally fails the workflow if inconsistencies are found
+#
+# Parameters:
+# - terraform_docs_version: Version of terraform-docs to use for parsing variables
+# - break_build: Whether to fail the workflow if inconsistencies are found
+#
+# Output Variables:
+# - None directly, but creates GitHub annotations for any inconsistencies found
+#
+# Usage Examples:
+# ```yaml
+# # Run as a standalone check with default parameters:
+# name: Check Terraform Variables
+# uses: ./.github/workflows/variable-compliance-terraform.yml
+#
+# # Run as part of CI with stricter settings:
+# name: Validate Variables in CI
+# uses: ./.github/workflows/variable-compliance-terraform.yml
+# with:
+#   terraform_docs_version: 'v0.16.0'
+#   break_build: true
+# ```
+#
+# This workflow helps maintain consistency across infrastructure code, which improves
+# maintainability and reduces errors when reusing modules across different environments.
+---
+name: Terraform Variable Compliance
+
+on: # yamllint disable-line rule:truthy
+  workflow_dispatch:
+    inputs:
+      terraform_docs_version:
+        description: 'Version of terraform-docs to use'
+        required: false
+        default: 'v0.16.0'
+      break_build:
+        description: 'Fail workflow on inconsistencies'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+  workflow_call:
+    inputs:
+      terraform_docs_version:
+        description: 'Version of terraform-docs to use'
+        required: false
+        type: string
+        default: 'v0.16.0'
+      break_build:
+        description: 'Fail workflow on inconsistencies'
+        required: false
+        type: boolean
+        default: false
+
+concurrency:
+  group: ${{ github.ref }}-terraform-var-compliance
+  cancel-in-progress: true
+
+jobs:
+  variable-compliance:
+    name: Check Terraform Variable Consistency
+    runs-on: ubuntu-latest
+    steps:
+      # Git Checkout
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Setup Python
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      # Install terraform-docs
+      - name: Install terraform-docs
+        env:
+          TERRAFORM_DOCS_VERSION: ${{ inputs.terraform_docs_version || 'v0.16.0' }}
+        run: |
+          curl -sSLo ./terraform-docs.tar.gz https://github.com/terraform-docs/terraform-docs/releases/download/${TERRAFORM_DOCS_VERSION}/terraform-docs-${TERRAFORM_DOCS_VERSION}-linux-amd64.tar.gz
+          tar -xzf terraform-docs.tar.gz terraform-docs
+          chmod +x terraform-docs
+          sudo mv terraform-docs /usr/local/bin/
+          terraform-docs --version
+
+      # Install Python dependencies
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install jq pyyaml
+
+      # Run variable compliance check
+      - name: Run Terraform Variable Compliance Check
+        id: var-check
+        env:
+          BREAK_BUILD: ${{ inputs.break_build || 'false' }}
+        run: |
+          # Create temporary file for results
+          results_file=$(mktemp)
+
+          # Run the analysis script and capture its output
+          python scripts/tf-vars-compliance-check.py > $results_file
+
+          # Parse the results and create GitHub annotations
+          if [ -s "$results_file" ]; then
+            echo "Inconsistencies found in Terraform variable definitions:"
+            cat $results_file
+
+            # Generate GitHub annotations from the results
+            while IFS= read -r line; do
+              if [[ "$BREAK_BUILD" == "true" ]]; then
+                echo "::error::$line"
+              else
+                echo "::warning::$line"
+              fi
+            done < $results_file
+
+            # Fail the build if configured to do so
+            if [[ "$BREAK_BUILD" == "true" ]]; then
+              echo "Failing build due to variable inconsistencies"
+              exit 1
+            fi
+          else
+            echo "No inconsistencies found in Terraform variable definitions."
+          fi
+
+      # Upload results as artifacts
+      - name: Upload compliance results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-variable-compliance-results
+          path: |
+            **/terraform-docs-output*.json
+            **/variable-compliance-results*.json
+          retention-days: 5

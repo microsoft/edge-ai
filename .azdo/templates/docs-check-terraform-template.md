@@ -57,14 +57,14 @@ This template depends on the following:
 
 ```yaml
 # Basic implementation with minimal parameters
-- template: .azdo/templates/docs-check-template.yml
+- template: .azdo/templates/docs-check-terraform-template.yml
 ```
 
 ### Advanced Usage
 
 ```yaml
 # Advanced implementation with all parameters
-- template: .azdo/templates/docs-check-template.yml
+- template: .azdo/templates/docs-check-terraform-template.yml
   parameters:
     dependsOn: [MegaLinter]
     displayName: "Documentation Quality Validation"
@@ -113,7 +113,7 @@ The template handles documentation issues according to the `breakBuild` paramete
 stages:
   - stage: Validate
     jobs:
-      - template: .azdo/templates/docs-check-template.yml
+      - template: .azdo/templates/docs-check-terraform-template.yml
 ```
 
 ### Example 2: Strict Documentation Check
@@ -123,7 +123,7 @@ stages:
 stages:
   - stage: Validate
     jobs:
-      - template: .azdo/templates/docs-check-template.yml
+      - template: .azdo/templates/docs-check-terraform-template.yml
         parameters:
           displayName: "Strict Documentation Check"
           breakBuild: true
@@ -139,7 +139,7 @@ stages:
       - template: .azdo/templates/megalinter-template.yml
         # MegaLinter parameters...
 
-      - template: .azdo/templates/docs-check-template.yml
+      - template: .azdo/templates/docs-check-terraform-template.yml
         parameters:
           dependsOn: [MegaLinter]
           condition: succeeded('MegaLinter')

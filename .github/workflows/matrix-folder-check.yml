@@ -1,0 +1,180 @@
+# Matrix Folder Check Workflow
+#
+# Purpose:
+# This reusable workflow detects changes in the repository's directory structure and creates
+# dynamic outputs that drive conditional execution in downstream jobs. It determines which
+# components have been modified and need testing.
+#
+# Functionality:
+# - Detects changes in shell scripts (.sh) in the subscription setup folder
+# - Detects changes in PowerShell scripts (.ps1) in the subscription setup folder
+# - Creates a dynamic matrix of Terraform folders that have changed
+# - Creates a dynamic matrix of Bicep folders that have changed
+# - Optionally can return all folders containing Terraform and Bicep files (using --include-all-folders)
+# - Uses the detect-folder-changes.sh script to efficiently identify changes
+#
+# Parameters:
+# - displayName: Display name for this job (optional, default: 'Check for changes in src directory')
+# - includeAllFolders: When true, returns all folders containing Terraform and Bicep files regardless of changes (default: false)
+#
+# Output Variables:
+# - changesInRpEnablementShell: true/false indicating if shell scripts in subscription setup have changed
+# - changesInRpEnablementPwsh: true/false indicating if PowerShell scripts in subscription setup have changed
+# - changesInTfInstall: true/false indicating if any Terraform files have changed
+# - changedTfFolders: JSON object with all identified Terraform folder names for matrix strategy
+# - changesInBicepInstall: true/false indicating if any Bicep files have changed
+# - changedBicepFolders: JSON object with all identified Bicep folder names for matrix strategy
+#
+# Usage Examples:
+# ```yaml
+# # Basic usage with default parameters:
+# jobs:
+#   check-changes:
+#     uses: ./.github/workflows/matrix-folder-check.yml
+#
+# # Include all folders for a complete test run:
+#   check-all-folders:
+#     uses: ./.github/workflows/matrix-folder-check.yml
+#     with:
+#       includeAllFolders: true
+#       displayName: "Check all folders"
+#
+# # Using outputs in a downstream job for Terraform:
+#   terraform-tests:
+#     needs: check-changes
+#     if: ${{ needs.check-changes.outputs.changesInTfInstall == 'true' }}
+#     strategy:
+#       matrix: ${{ fromJson(needs.check-changes.outputs.changedTfFolders) }}
+#     steps:
+#       - name: Run Tests
+#         run: echo "Testing ${{ matrix.folderName }}"
+#
+# # Using outputs in a downstream job for Bicep:
+#   bicep-tests:
+#     needs: check-changes
+#     if: ${{ needs.check-changes.outputs.changesInBicepInstall == 'true' }}
+#     strategy:
+#       matrix: ${{ fromJson(needs.check-changes.outputs.changedBicepFolders) }}
+#     steps:
+#       - name: Run Tests
+#         run: echo "Testing ${{ matrix.folderName }}"
+# ```
+#
+# This workflow is primarily used for CI/CD pipelines to conditionally run tests and
+# verification steps based on which files have changed in a pull request or commit.
+---
+name: Matrix Folder Check
+
+on: # yamllint disable-line rule:truthy
+  workflow_call:
+    inputs:
+      displayName:
+        description: 'Display name for the job'
+        required: false
+        default: 'Check for changes in src directory'
+        type: string
+      includeAllFolders:
+        description: 'Whether to include all folders for a complete run'
+        required: false
+        default: false
+        type: boolean
+    outputs:
+      changesInRpEnablementShell:
+        description: 'Whether shell scripts in subscription setup have changed'
+        value: ${{ jobs.matrix-folder-check.outputs.changesInRpEnablementShell }}
+      changesInRpEnablementPwsh:
+        description: 'Whether PowerShell scripts in subscription setup have changed'
+        value: ${{ jobs.matrix-folder-check.outputs.changesInRpEnablementPwsh }}
+      changesInTfInstall:
+        description: 'Whether any Terraform files have changed'
+        value: ${{ jobs.matrix-folder-check.outputs.changesInTfInstall }}
+      changedTfFolders:
+        description: 'JSON matrix of Terraform folders that have changed'
+        value: ${{ jobs.matrix-folder-check.outputs.changedTfFolders }}
+      changesInBicepInstall:
+        description: 'Whether any Bicep files have changed'
+        value: ${{ jobs.matrix-folder-check.outputs.changesInBicepInstall }}
+      changedBicepFolders:
+        description: 'JSON matrix of Bicep folders that have changed'
+        value: ${{ jobs.matrix-folder-check.outputs.changedBicepFolders }}
+
+jobs:
+  matrix-folder-check:
+    name: ${{ inputs.displayName }}
+    runs-on: ubuntu-latest
+    outputs:
+      changesInRpEnablementShell: ${{ steps.check-changes.outputs.changesInRpEnablementShell }}
+      changesInRpEnablementPwsh: ${{ steps.check-changes.outputs.changesInRpEnablementPwsh }}
+      changesInTfInstall: ${{ steps.check-changes.outputs.changesInTfInstall }}
+      changedTfFolders: ${{ steps.check-changes.outputs.changedTfFolders }}
+      changesInBicepInstall: ${{ steps.check-changes.outputs.changesInBicepInstall }}
+      changedBicepFolders: ${{ steps.check-changes.outputs.changedBicepFolders }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Needed to get all history for comparing changes
+
+      - name: Check for changes in src folders
+        id: check-changes
+        run: |
+          echo "Checking for changes using detect-folder-changes.sh script..."
+
+          # Echo parameters for debugging
+          echo "Debug: includeAllFolders = ${{ inputs.includeAllFolders }}"
+
+          # Initialize parameters string
+          params=""
+
+          # Add parameters based on conditions
+          if [[ "${{ inputs.includeAllFolders }}" == "true" ]]; then
+            echo "Debug: Adding --include-all-folders parameter"
+            params="--include-all-folders"
+          fi
+
+          echo "Debug: Final parameters = [$params]"
+          echo "Running detect-folder-changes.sh with parameters: $params"
+
+          # Execute the script and capture the output
+          result=$(./scripts/build/detect-folder-changes.sh $params)
+          echo "Script completed successfully"
+
+          # Echo the full script output for debugging
+          echo "==== FULL SCRIPT OUTPUT ===="
+          echo "$result"
+          echo "============================"
+
+          # Parse the JSON output and set the GitHub outputs
+          subscription_shell_changes=$(echo "$result" | jq -r '.subscription.shell_changes')
+          subscription_pwsh_changes=$(echo "$result" | jq -r '.subscription.powershell_changes')
+          terraform_has_changes=$(echo "$result" | jq -r '.terraform.has_changes')
+          bicep_has_changes=$(echo "$result" | jq -r '.bicep.has_changes')
+
+          # Set the outputs for the workflow
+          echo "changesInRpEnablementShell=$subscription_shell_changes" >> $GITHUB_OUTPUT
+          echo "changesInRpEnablementPwsh=$subscription_pwsh_changes" >> $GITHUB_OUTPUT
+          echo "changesInTfInstall=$terraform_has_changes" >> $GITHUB_OUTPUT
+          echo "changesInBicepInstall=$bicep_has_changes" >> $GITHUB_OUTPUT
+
+          # Extract and format the terraform folders for the matrix
+          if [ "$terraform_has_changes" = "true" ]; then
+            # Format for GitHub Actions matrix: {"include":[{"folderName":"folder1"},{"folderName":"folder2"}]}
+            # Ensure proper JSON escaping with -c flag for compact output
+            folder_names=$(echo "$result" | jq -c '.terraform.folders | keys | map({folderName: .}) | {include: .}')
+            echo "changedTfFolders=$folder_names" >> $GITHUB_OUTPUT
+          else
+            echo "No changes detected in Terraform folders"
+            echo "changedTfFolders={\"include\":[]}" >> $GITHUB_OUTPUT
+          fi
+
+          # Extract and format the Bicep folders for the matrix
+          if [ "$bicep_has_changes" = "true" ]; then
+            # Format for GitHub Actions matrix: {"include":[{"folderName":"folder1"},{"folderName":"folder2"}]}
+            # Ensure proper JSON escaping with -c flag for compact output
+            folder_names=$(echo "$result" | jq -c '.bicep.folders | keys | map({folderName: .}) | {include: .}')
+            echo "changedBicepFolders=$folder_names" >> $GITHUB_OUTPUT
+          else
+            echo "No changes detected in Bicep folders"
+            echo "changedBicepFolders={\"include\":[]}" >> $GITHUB_OUTPUT
+          fi

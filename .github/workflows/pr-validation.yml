@@ -1,0 +1,167 @@
+# Pull Request Validation Workflow
+#
+# Purpose:
+# This workflow runs the CI/CD pipeline for pull requests to maintain code quality,
+# validate infrastructure changes, and ensure readiness for merging to main branch.
+#
+# Functionality:
+# - Detects changed files in the pull request to determine required validation steps
+# - Runs MegaLinter for static code analysis across multiple languages
+# - Validates Terraform configurations using init, validate, plan, and test operations
+# - Checks Azure IoT Operations component versions against latest published releases
+# - Ensures consistent documentation standards
+# - Tests resource provider scripts in PowerShell and bash
+#
+# Parameters:
+# None - This workflow is triggered automatically on pull requests to protected branches
+#
+# Output Variables:
+# None - Results are provided as GitHub checks, annotations, and artifacts
+#
+# Usage Examples:
+# This workflow is automatically triggered on pull requests and doesn't need manual invocation.
+#
+# This comprehensive validation workflow helps maintain code quality and prevents
+# problematic code from being merged into the main branch.
+---
+name: PR Validation
+
+on: # yamllint disable-line rule:truthy
+  pull_request:
+    # Only run on PRs targeting the main branch
+    branches:
+      - main
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+    inputs:
+      includeAllTerraformFolders:
+        description: 'Include all folders in the matrix check'
+        required: true
+        default: false
+        type: boolean
+
+jobs:
+  # #CodeQL Analysis job for PR code security scanning
+  # codeql-analysis:
+  #   name: CodeQL Analysis
+  #   runs-on: ubuntu-latest
+  #   permissions:
+  #     # Required for all workflows
+  #     security-events: write
+  #     # Only required for workflows in private repositories
+  #     actions: read
+  #     contents: read
+  #
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       language: ['javascript', 'python', 'typescript', 'csharp']
+  #       # CodeQL supports these languages: https://aka.ms/codeql-docs/language-support
+  #
+  #   steps:
+  #     - name: Checkout Repository
+  #       uses: actions/checkout@v4
+  #       with:
+  #         fetch-depth: 0
+  #
+  #     - name: Initialize CodeQL
+  #       uses: github/codeql-action/init@v2
+  #       with:
+  #         languages: ${{ matrix.language }}
+  #
+  #     - name: Autobuild
+  #       uses: github/codeql-action/autobuild@v2
+  #
+  #     - name: Perform CodeQL Analysis
+  #       uses: github/codeql-action/analyze@v2
+  #       with:
+  #         category: "/language:${{matrix.language}}"
+
+  # Dependency scanning job for PRs
+  dependency-scan:
+    name: Dependency Scan
+    runs-on: ubuntu-latest
+    # needs: [codeql-analysis]
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v3
+
+  # MegaLinter job for PRs
+  mega-linter:
+    name: MegaLinter
+    needs: [dependency-scan]
+    uses: ./.github/workflows/megalinter.yml
+    permissions:
+      contents: write
+      pull-requests: write
+      statuses: write
+    with:
+      github_comment_reporter: true
+
+  # Documentation checks for PRs
+  docs-check:
+    name: Documentation Check
+    needs: [mega-linter]
+    uses: ./.github/workflows/docs-check-terraform.yml
+    with:
+      break_build: true
+      terraformDocsVersion: 'v0.16.0'
+
+  # AIO version checks for PRs
+  aio-version-check:
+    name: AIO Version Check
+    needs: [mega-linter]
+    uses: ./.github/workflows/aio-version-checker.yml
+    with:
+      iac-type: all
+      break-build: false
+
+  # Use reusable workflow to detect detailed changes and create folder matrix
+  matrix-changes:
+    name: Detect Matrix Changes
+    needs: [docs-check]
+    uses: ./.github/workflows/matrix-folder-check.yml
+    with:
+      displayName: 'Detect component changes for PR validation'
+      includeAllFolders: ${{ github.event_name == 'workflow_dispatch' && inputs.includeAllFolders || false }}
+
+  # PowerShell Resource Provider Tests for PRs
+  pwsh-provider-tests:
+    name: PowerShell Provider Tests
+    needs: [matrix-changes]
+    if: needs.matrix-changes.outputs.changesInRpEnablementPwsh == 'true'
+    uses: ./.github/workflows/resource-provider-pwsh-tests.yml
+    with:
+      working-directory: 'src/000-subscription'
+      test-results-output: 'PWSH-TEST-RESULTS.xml'
+    secrets: inherit
+
+  # Terraform variable compliance check for PRs
+  terraform-var-compliance:
+    name: Terraform Variable Compliance
+    needs: [matrix-changes]
+    uses: ./.github/workflows/variable-compliance-terraform.yml
+    permissions:
+      contents: write
+      statuses: write
+    with:
+      break_build: false
+    secrets: inherit
+
+  # Terraform tests using matrix for each changed module
+  terraform-module-tests:
+    name: Terraform Module Tests
+    needs: [matrix-changes]
+    if: needs.matrix-changes.outputs.changesInTfInstall == 'true' && fromJson(needs.matrix-changes.outputs.changedTfFolders).folderName[0] != null
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.matrix-changes.outputs.changedTfFolders) }}
+    uses: ./.github/workflows/cluster-test-terraform.yml
+    with:
+      working-directory: ${{ matrix.folderName }}
+      terraform-version: '1.9.8'
+      test-apply: false
+    secrets: inherit

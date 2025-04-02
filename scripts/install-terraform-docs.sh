@@ -1,5 +1,41 @@
 #!/bin/bash
-# Script to install terraform-docs and check for new versions
+# Terraform Docs Installation Script
+#
+# Purpose:
+# This script installs terraform-docs and checks for new versions. It can be used to manage
+# terraform-docs installation and versioning for local development or CI/CD pipelines.
+#
+# Functionality:
+# - Installs terraform-docs at a specified version
+# - Checks for latest version via GitHub API
+# - Shows warnings when a newer version is available
+# - Detects system architecture automatically
+#
+# Parameters:
+# - -v version: Specify terraform-docs version (default: v0.16.0)
+# - -h: Display help message
+#
+# Output Variables:
+# - None
+#
+# Exit Codes:
+# - 0: Success
+# - 1: Failure (e.g., unsupported architecture, download failures)
+#
+# Dependencies:
+# - curl: Used for downloading files and API requests
+#
+# Usage Examples:
+# ```bash
+# # Install default version:
+# ./install-terraform-docs.sh
+#
+# # Install specific version:
+# ./install-terraform-docs.sh -v v0.16.0
+#
+# # Show help:
+# ./install-terraform-docs.sh -h
+# ```
 
 # Default values
 DEFAULT_VERSION="v0.16.0"

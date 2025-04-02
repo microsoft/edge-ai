@@ -1,0 +1,103 @@
+# MegaLinter GitHub Action Workflow
+#
+# Purpose:
+# This workflow runs MegaLinter to perform static analysis across the codebase,
+# ensuring code quality and adherence to coding standards.
+#
+# Functionality:
+# - Validates code quality across multiple languages and formats
+# - Runs on pull requests to main branch or via manual trigger
+# - Posts comments on PRs with linting results
+# - Uploads linting reports as artifacts
+#
+# Parameters:
+# - validate_all_codebase: Controls whether to validate the entire codebase or just changes
+# - github_comment_reporter: Enables PR commenting with results
+# - github_status_reporter: Reports status checks to GitHub
+#
+# Output Variables:
+# - None directly, but generates linting reports and GitHub annotations
+#
+# Usage Examples:
+# ```yaml
+# # Basic usage with defaults:
+# linting:
+#   uses: ./.github/workflows/megalinter.yml
+#
+# # Scan entire codebase and provide comments:
+# full-scan:
+#   uses: ./.github/workflows/megalinter.yml
+#   with:
+#     validate_all_codebase: true
+#     github_comment_reporter: true
+# ```
+#
+# This workflow helps maintain consistent code quality and identify potential issues
+# before they are merged into the main branch.
+---
+name: MegaLinter
+on: # yamllint disable-line rule:truthy
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      validate_all_codebase:
+        description: 'Whether to validate all codebase or just changes'
+        required: false
+        type: boolean
+        default: false
+      github_comment_reporter:
+        description: 'Whether to enable GitHub comment reporter'
+        required: false
+        type: boolean
+        default: false
+      github_status_reporter:
+        description: 'Whether to enable GitHub status reporter'
+        required: false
+        type: boolean
+        default: false
+
+concurrency:
+  group: ${{ github.ref }}-${{ github.workflow }}
+  cancel-in-progress: true
+jobs:
+  megalinter:
+    name: MegaLinter
+    runs-on: ubuntu-latest
+    permissions:
+      # Give the default GITHUB_TOKEN write permission to commit and push, comment issues & post new PR
+      # Remove the ones you do not need
+      contents: write
+      pull-requests: write
+      statuses: write
+    steps:
+      # Git Checkout
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # If you use VALIDATE_ALL_CODEBASE = true, you can remove this line to improve performances
+      # MegaLinter
+      - name: MegaLinter
+        id: ml
+        # You can override MegaLinter flavor used to have faster performances
+        # More info at https://megalinter.io/flavors/
+        uses: oxsecurity/megalinter@v8
+        env:
+          # All available variables are described in documentation
+          # https://megalinter.io/configuration/
+          VALIDATE_ALL_CODEBASE: ${{ inputs.validate_all_codebase || (github.event_name == 'push' && github.ref == 'refs/heads/main') }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Use input parameters with fallback to current behavior
+          GITHUB_COMMENT_REPORTER: ${{ inputs.github_comment_reporter != false || github.ref != 'refs/heads/main' }}
+          GITHUB_STATUS_REPORTER: ${{ inputs.github_status_reporter != false || github.ref != 'refs/heads/main' }}
+          GITHUB_COMMENT_REPORTER_ON_CHANGES_ONLY: true
+          # ADD YOUR CUSTOM ENV VARIABLES HERE OR DEFINE THEM IN A FILE .mega-linter.yml AT THE ROOT OF YOUR REPOSITORY
+          # DISABLE: COPYPASTE,SPELL # Uncomment to disable copy-paste and spell checks
+      # Upload MegaLinter artifacts
+      - name: Archive production artifacts
+        if: success() || failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: MegaLinter reports
+          path: |
+            megalinter-reports
+            mega-linter.log

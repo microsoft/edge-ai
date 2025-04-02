@@ -1,19 +1,41 @@
 #!/usr/bin/env python3
 
 """
+Terraform Variable Compliance Checker
+
 This script validates Terraform variable definitions across modules for consistency.
 It scans all Terraform files in the specified directory (default: ../src), extracts
 input and output variable definitions, and checks for inconsistencies.
 
-The script generates a JSON array of inconsistencies found in variable definitions.
-Each inconsistency is reported as a warning with details about the current and expected values.
+Functionality:
+    - Scans Terraform files in specified directories
+    - Extracts input and output variable definitions
+    - Compares variable descriptions across modules
+    - Reports inconsistencies in variable definitions
+
+Parameters:
+    None: Script doesn't accept command line parameters
+
+Returns:
+    JSON array: Reports inconsistencies found in variable definitions, with details
+        about the current and expected values for each inconsistency
+
+Raises:
+    SystemExit: If terraform-docs is not found, exits with code 1
 
 Dependencies:
-    - terraform-docs: https://terraform-docs.io/
+    - terraform-docs: Used to extract variable information from Terraform files
 
-Exit Codes:
-    0 - Success
-    1 - Failure (e.g., missing dependencies, errors during execution)
+Example:
+    # Run the script to check for inconsistencies
+    python tf-vars-compliance-check.py
+
+Notes:
+    The script is designed to be used in CI/CD pipelines to ensure consistency
+    in Terraform variable definitions across a large project.
+
+See Also:
+    - terraform-docs documentation: https://terraform-docs.io/
 """
 
 import json

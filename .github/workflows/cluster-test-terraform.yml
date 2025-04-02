@@ -1,0 +1,433 @@
+# Cluster Terraform Testing Workflow
+#
+# Purpose:
+# This workflow validates Terraform configurations for cluster components by running
+# initialization, format checking, validation, planning, and testing operations.
+#
+# Functionality:
+# - Tests Terraform configurations in specified directories
+# - Checks Terraform provider versions against latest available
+# - Validates Terraform code syntax and structure
+# - Generates and validates execution plans
+# - Runs Terraform tests and publishes results
+# - Converts test outputs to standard JUnit format for easier review
+#
+# Parameters:
+# - working-directory: Directory containing the Terraform configurations
+# - terraform-version: Version of Terraform to use
+# - backend-config: Optional backend configuration parameters (JSON format)
+# - terraform-vars-file: Optional path to terraform.tfvars file
+# - keyvault-name: Name of the Azure Key Vault to fetch secrets from
+# - break-build-on-provider-mismatch: Controls whether provider version mismatches fail the build
+# - backend-resource-group, backend-storage-account, backend-container, backend-key: Terraform backend configuration
+# - backend-location: Location for backend resources
+# - test-apply: Whether to perform a test apply
+#
+# Output Variables:
+# - workingDirProcessor.folderBasename: Basename of the current folder being processed
+# - workingDirProcessor.folderPathSafe: Path-safe version of the folder name
+# - workingDirProcessor.terraformCIWorkingDir: Working directory for CI operations
+# - workingDirProcessor.terraformWorkingDir: Working directory for Terraform
+# - workingDirProcessor.tfTestsExist: Whether tests exist for the current folder
+#
+# Usage Examples:
+# ```yaml
+# # Basic usage with default backend configuration:
+# jobs:
+#   terraform-test:
+#     uses: ./.github/workflows/cluster-test-terraform.yml
+#     with:
+#       working-directory: 'src/040-iot-ops'
+#
+# # Custom configuration with variables file:
+# jobs:
+#   custom-terraform-test:
+#     uses: ./.github/workflows/cluster-test-terraform.yml
+#     with:
+#       working-directory: 'blueprints/full-single-cluster/terraform'
+#       terraform-version: '1.9.8'
+#       terraform-vars-file: './test.tfvars'
+#       backend-key: 'custom-state.tfstate'
+# ```
+#
+# This workflow is essential for maintaining the quality and reliability of infrastructure code,
+# ensuring consistent deployments across different environments.
+---
+name: Cluster Terraform Testing
+
+on: # yamllint disable-line rule:truthy
+  workflow_call:
+    inputs:
+      working-directory:
+        description: 'Directory containing the Terraform configurations'
+        required: true
+        type: string
+      terraform-version:
+        description: 'Version of Terraform to use'
+        required: false
+        default: '1.9.8'
+        type: string
+      backend-config:
+        description: 'Optional backend configuration parameters (JSON format)'
+        required: false
+        type: string
+        default: '{}'
+      terraform-vars-file:
+        description: 'Optional path to terraform.tfvars file'
+        required: false
+        type: string
+        default: ''
+      keyvault-name:
+        description: 'Name of the Azure Key Vault to fetch secrets from'
+        required: false
+        type: string
+        default: ''
+      break-build-on-provider-mismatch:
+        description: 'Break build if provider version mismatch is detected'
+        required: false
+        type: boolean
+        default: true
+      backend-resource-group:
+        description: 'Resource group for Terraform backend storage'
+        required: false
+        type: string
+        default: 'IaC_For_Edge'
+      backend-storage-account:
+        description: 'Storage account for Terraform backend'
+        required: false
+        type: string
+        default: 'iacforedgetf'
+      backend-container:
+        description: 'Container for Terraform state file'
+        required: false
+        type: string
+        default: 'iacforedgetf'
+      backend-key:
+        description: 'Key for Terraform state file'
+        required: false
+        type: string
+        default: 'edge-ai.tfstate'
+      backend-location:
+        description: 'Location for backend resources'
+        required: false
+        type: string
+        default: 'eastus'
+      test-apply:
+        description: 'Whether to perform a test apply'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  # Job to validate and test Terraform configurations
+  terraform-test:
+    name: Terraform Configuration Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # Process working directory: extract paths and check for CI folders
+      - name: Process working directories
+        id: workingDirProcessor
+        shell: bash
+        run: |
+          FOLDER_PATH="${{ inputs.working-directory }}"
+
+          # Extract folder name components for cleaner references
+          FOLDER_BASENAME=$(basename "$FOLDER_PATH")
+          echo "folderBasename=$FOLDER_BASENAME" >> $GITHUB_OUTPUT
+          echo "Folder basename: $FOLDER_BASENAME"
+
+          # Create path-safe version (replace slashes with underscores)
+          FOLDER_PATH_SAFE=$(echo "$FOLDER_PATH" | tr '/' '_')
+          echo "folderPathSafe=$FOLDER_PATH_SAFE" >> $GITHUB_OUTPUT
+          echo "Path-safe folder name: $FOLDER_PATH_SAFE"
+
+          # Source directories should have a 'ci' folder - check if it exists
+          if [[ "$FOLDER_PATH" == src/* && -d "$GITHUB_WORKSPACE/$FOLDER_PATH/ci" ]]; then
+            CI_WORKING_DIRECTORY="$GITHUB_WORKSPACE/$FOLDER_PATH/ci/terraform"
+            echo "ciFolderExists=true" >> $GITHUB_OUTPUT
+            echo "terraformCIWorkingDir=$CI_WORKING_DIRECTORY" >> $GITHUB_OUTPUT
+            echo "Setting CI working directory to: $CI_WORKING_DIRECTORY"
+          else
+            # set the ci working directory to the terraform folder
+            CI_WORKING_DIRECTORY="$GITHUB_WORKSPACE/$FOLDER_PATH/terraform"
+            echo "ciFolderExists=false" >> $GITHUB_OUTPUT
+            echo "terraformCIWorkingDir=$CI_WORKING_DIRECTORY" >> $GITHUB_OUTPUT
+            echo "Setting CI working directory to: $CI_WORKING_DIRECTORY"
+          fi
+
+          # Set the default working directory
+          WORKING_DIRECTORY="$GITHUB_WORKSPACE/$FOLDER_PATH/terraform"
+          echo "terraformWorkingDir=$WORKING_DIRECTORY" >> $GITHUB_OUTPUT
+          echo "Setting working directory to: $WORKING_DIRECTORY"
+
+          # Check if the tests folder exists in the current working directory
+          if [[ -d "$GITHUB_WORKSPACE/$FOLDER_PATH/terraform/tests" ]]; then
+            echo "tfTestsExist=true" >> $GITHUB_OUTPUT
+          else
+            echo "tfTestsExist=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          enable-AzPSSession: true
+
+      - name: Get secrets from Key Vault
+        uses: azure/get-keyvault-secrets@v1
+        with:
+          keyvault: ${{ inputs.keyvault-name }}
+          secrets: '*'
+        id: azure-keyvault-secrets
+        if: inputs.keyvault-name != ''
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ inputs.terraform-version }}
+          cli_config_credentials_token: ${{ secrets.TERRAFORM_API_TOKEN }}
+
+      - name: Terraform Format Check
+        id: fmt
+        run: terraform fmt -check -recursive
+        working-directory: ${{ steps.workingDirProcessor.outputs.terraformWorkingDir }}
+        continue-on-error: true
+
+      # Initialize Terraform in CI directory if it exists
+      - name: Terraform Init - CI
+        id: init-ci
+        if: steps.workingDirProcessor.outputs.ciFolderExists == 'true'
+        run: |
+          BACKEND_ARGS=""
+          if [ "${{ inputs.backend-config }}" != "{}" ]; then
+            BACKEND_CONFIG=$(echo '${{ inputs.backend-config }}' | jq -r 'to_entries | map("-backend-config=\"\(.key)=\(.value)\"") | join(" ")')
+            BACKEND_ARGS="$BACKEND_CONFIG"
+          else
+            BACKEND_ARGS="-backend-config=resource_group_name=${{ inputs.backend-resource-group }} \
+                          -backend-config=storage_account_name=${{ inputs.backend-storage-account }} \
+                          -backend-config=container_name=${{ inputs.backend-container }} \
+                          -backend-config=key=${{ inputs.backend-key }}"
+          fi
+
+          terraform init $BACKEND_ARGS
+        working-directory: ${{ steps.workingDirProcessor.outputs.terraformCIWorkingDir }}
+        shell: bash
+
+      # Initialize Terraform in main working directory
+      - name: Terraform Init - Tests
+        id: init
+        run: |
+          BACKEND_ARGS=""
+          if [ "${{ inputs.backend-config }}" != "{}" ]; then
+            BACKEND_CONFIG=$(echo '${{ inputs.backend-config }}' | jq -r 'to_entries | map("-backend-config=\"\(.key)=\(.value)\"") | join(" ")')
+            BACKEND_ARGS="$BACKEND_CONFIG"
+          else
+            BACKEND_ARGS="-backend-config=resource_group_name=${{ inputs.backend-resource-group }} \
+                          -backend-config=storage_account_name=${{ inputs.backend-storage-account }} \
+                          -backend-config=container_name=${{ inputs.backend-container }} \
+                          -backend-config=key=${{ inputs.backend-key }}"
+          fi
+
+          terraform init $BACKEND_ARGS
+        working-directory: ${{ steps.workingDirProcessor.outputs.terraformWorkingDir }}
+        shell: bash
+
+      # Check TF Provider versions - call the existing script
+      - name: Terraform Provider version check
+        id: provider-check
+        if: steps.workingDirProcessor.outputs.ciFolderExists == 'true'
+        run: |
+          # Determine issue type based on breakBuild parameter
+          if [[ "${{ inputs.break-build-on-provider-mismatch }}" == "true" ]]; then
+            issue_type="error"
+          else
+            issue_type="warning"
+          fi
+
+          # Call the existing script to check provider versions
+          version_check_results=$(./scripts/tf-provider-version-check.sh -f ${{ steps.workingDirProcessor.outputs.terraformCIWorkingDir }})
+
+          # Parse the JSON results and create GitHub warnings/errors
+          echo "$version_check_results" | jq -c '.[]' | while read -r result; do
+            folder=$(echo "$result" | jq -r '.folder')
+            provider=$(echo "$result" | jq -r '.provider')
+            current_version=$(echo "$result" | jq -r '.current_version')
+            latest_version=$(echo "$result" | jq -r '.latest_version')
+
+            # Check if the current version does not match the latest version
+            if [[ "$current_version" != "$latest_version" ]]; then
+              echo "::$issue_type::Version mismatch in $folder for provider $provider: current version is $current_version, but latest version is $latest_version."
+            fi
+          done
+
+          # Exit with error if any mismatches were found and breakBuild is true
+          if [[ "$has_mismatch" == "true" && "${{ inputs.break-build-on-provider-mismatch }}" == "true" ]]; then
+            exit 1
+          fi
+        shell: bash
+        continue-on-error: ${{ !inputs.break-build-on-provider-mismatch }}
+
+      # Run Terraform Validate to ensure TF files are valid
+      - name: Terraform Validate
+        id: validate
+        run: terraform validate -no-color
+        working-directory: ${{ steps.workingDirProcessor.outputs.terraformCIWorkingDir }}
+        if: steps.workingDirProcessor.outputs.ciFolderExists == 'true'
+
+      # Parse variables.tf and build command options
+      - name: Parse variables.tf and build commandOptions
+        id: parseVariables
+        run: |
+          # Find the variables file
+          variables_file="${{ steps.workingDirProcessor.outputs.terraformCIWorkingDir }}/variables.tf"
+
+          # Start with base command options
+          command_options="-out=${{ github.workspace }}/${{ github.run_id }}.${{ steps.workingDirProcessor.outputs.folderPathSafe }}.tfplan -detailed-exitcode"
+
+          # If variables file exists, parse it
+          if [ -f "$variables_file" ]; then
+            required_vars=$(grep -E 'variable "[^"]+" \{' $variables_file | awk -F'"' '{print $2}')
+
+            # Check environment variables for matching variables
+            for env_var in $(printenv | awk -F= '{print $1}' | grep "^TF_VAR_"); do
+              var_name=${env_var#TF_VAR_}
+              var_name_lower=$(echo $var_name | tr '[:upper:]' '[:lower:]')
+
+              if echo "$required_vars" | grep -q "^${var_name_lower}$"; then
+                command_options="$command_options -var ${var_name_lower}=${!env_var}"
+              fi
+            done
+
+            # Special case for Custom Locations OID
+            if [[ -n "${{ steps.azure-keyvault-secrets.outputs.CUSTOM-LOCATIONS-OID }}" ]]; then
+              if echo "$required_vars" | grep -q "^custom_locations_oid$"; then
+                command_options="$command_options -var custom_locations_oid=${{ steps.azure-keyvault-secrets.outputs.CUSTOM-LOCATIONS-OID }}"
+              fi
+            fi
+
+            echo "Command options: $command_options"
+          fi
+
+          echo "options=$command_options" >> $GITHUB_OUTPUT
+        shell: bash
+        if: steps.workingDirProcessor.outputs.ciFolderExists == 'true'
+
+      # Run Terraform Plan with detailed output options
+      - name: Terraform Plan
+        id: plan
+        run: |
+          VARS_ARGS=""
+          if [ -n "${{ inputs.terraform-vars-file }}" ] && [ -f "${{ inputs.terraform-vars-file }}" ]; then
+            VARS_ARGS="-var-file=${{ inputs.terraform-vars-file }}"
+          fi
+
+          terraform plan $VARS_ARGS ${{ steps.parseVariables.outputs.options }}
+        working-directory: ${{ steps.workingDirProcessor.outputs.terraformCIWorkingDir }}
+        if: steps.workingDirProcessor.outputs.ciFolderExists == 'true'
+        continue-on-error: true
+
+      - name: Terraform Plan Status
+        if: steps.plan.outcome == 'failure'
+        run: exit 1
+
+      - name: Setup Node.js for test processing
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22.x'
+        if: steps.workingDirProcessor.outputs.tfTestsExist == 'true'
+
+      # Run Terraform Tests
+      - name: Run Terraform Tests
+        id: test
+        if: steps.workingDirProcessor.outputs.tfTestsExist == 'true'
+        run: |
+          # Export subscription ID for Terraform tests
+          export ARM_SUBSCRIPTION_ID=$(az account show --query id -o tsv)
+
+          # Define log file path
+          log_file="${{ github.workspace }}/${{ steps.workingDirProcessor.outputs.folderPathSafe }}_test_output.log"
+          echo "Writing Terraform test output to $log_file"
+
+          # Run tests with custom_locations_oid variable if available
+          if [[ -n "${{ steps.azure-keyvault-secrets.outputs.CUSTOM-LOCATIONS-OID }}" ]]; then
+            terraform test -json -var custom_locations_oid=${{ steps.azure-keyvault-secrets.outputs.CUSTOM-LOCATIONS-OID }} > $log_file
+          else
+            terraform test -json > $log_file
+          fi
+
+          # Output test results to console
+          while IFS= read -r line; do
+            echo "$line" | jq -r '"\(.["@timestamp"]) .... \(.["@message"])"'
+          done < "$log_file"
+
+          # Check if tests passed
+          last_line=$(tail -n 1 "$log_file")
+          if echo "$last_line" | jq -e '.["@message"]' | grep -q "Success"; then
+            echo "Terraform tests passed."
+            echo "test_status=passed" >> $GITHUB_OUTPUT
+          else
+            echo "Terraform tests failed."
+            echo "test_status=failed" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+          echo "log_file=$log_file" >> $GITHUB_OUTPUT
+        working-directory: ${{ steps.workingDirProcessor.outputs.terraformWorkingDir }}
+        shell: bash
+
+      # Install the tftest-to-junitxml NPM package
+      - name: Install tftest-to-junitxml
+        if: steps.test.outcome == 'success' && steps.workingDirProcessor.outputs.tfTestsExist == 'true'
+        run: |
+          # Check for newer versions
+          CURRENT_VERSION="0.2.0"
+          echo "Current version of tftest-to-junitxml: $CURRENT_VERSION"
+
+          # Pin latest version
+          npm install -g tftest-to-junitxml@$CURRENT_VERSION
+
+          # Query npm registry for latest version
+          LATEST_VERSION=$(npm view tftest-to-junitxml version)
+          echo "Latest version: $LATEST_VERSION"
+
+          # Compare versions and log a warning if newer version exists
+          if [ "$CURRENT_VERSION" != "$LATEST_VERSION" ]; then
+            echo "::warning::A newer version of tftest-to-junitxml exists: $LATEST_VERSION. Consider updating from current version: $CURRENT_VERSION"
+          else
+            echo "Using the latest version of tftest-to-junitxml: $CURRENT_VERSION"
+          fi
+
+      # Convert the Terraform test output to JUnit XML
+      - name: Convert Terraform test output to JUnit XML
+        if: steps.test.outcome == 'success' && steps.workingDirProcessor.outputs.tfTestsExist == 'true'
+        run: |
+          npx tftest-to-junitxml "${{ steps.test.outputs.log_file }}"
+
+      # Publish the Terraform test results to GitHub
+      # - name: Publish Test Results
+      #   uses: EnricoMi/publish-unit-test-result-action@v2
+      #   if: always() && steps.workingDirProcessor.outputs.tfTestsExist == 'true'
+      #   with:
+      #     files: TEST-terraform.xml
+      #     check_name: "${{ steps.workingDirProcessor.outputs.folderPathSafe }} Test Results"
+
+      - name: Upload Terraform Plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.workingDirProcessor.outputs.folderPathSafe }}-terraform-plan
+          path: ${{ github.workspace }}/${{ github.run_id }}.${{ steps.workingDirProcessor.outputs.folderPathSafe }}.tfplan
+          retention-days: 5
+          if-no-files-found: ignore
+
+      - name: Upload Terraform Test Output
+        uses: actions/upload-artifact@v4
+        if: steps.workingDirProcessor.outputs.tfTestsExist == 'true'
+        with:
+          name: ${{ steps.workingDirProcessor.outputs.folderPathSafe }}-test-output
+          path: ${{ steps.test.outputs.log_file }}
+          retention-days: 5
+          if-no-files-found: ignore

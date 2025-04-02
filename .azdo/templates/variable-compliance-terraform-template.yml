@@ -1,5 +1,41 @@
-# Template for checking Terraform variable definition compliance across modules
-# This template ensures consistent variable definitions throughout the codebase
+# Terraform Variable Compliance Check Template
+#
+# Purpose:
+# This template ensures consistent variable definitions across all Terraform modules
+# in the repository. It detects inconsistencies in variable types, defaults, and descriptions
+# that could lead to unexpected behavior in deployments.
+#
+# Functionality:
+# - Scans all Terraform modules for variable definitions
+# - Compares variables with the same name across different modules
+# - Identifies inconsistencies in type definitions, default values, or descriptions
+# - Reports findings as warnings or errors in the pipeline
+#
+# Parameters:
+# - dependsOn: Jobs that this job depends on
+# - displayName: Display name for this job
+# - condition: Condition for running this job
+# - terraformDocsVersion: Version of terraform-docs to install
+# - breakBuild: When true, variable inconsistencies fail the build instead of just warnings
+# - pool: Azure DevOps agent pool configuration
+#
+# Usage Examples:
+# ```yaml
+# # Basic usage with warnings only:
+# - template: .azdo/templates/variable-compliance-terraform-template.yml
+#   parameters:
+#     dependsOn: PreviousJob
+#     displayName: "Check Terraform Variable Consistency"
+#
+# # Strict enforcement that breaks the build:
+# - template: .azdo/templates/variable-compliance-terraform-template.yml
+#   parameters:
+#     dependsOn: [Lint, TerraformInit]
+#     breakBuild: true
+# ```
+#
+# This template is important for ensuring consistency across modules and preventing
+# hard-to-debug issues that arise from inconsistent variable definitions.
 ---
 parameters:
   # Dependencies for this job
@@ -61,7 +97,7 @@ jobs:
           # Check if we got valid JSON results
           if echo "$variable_check_results" | jq empty 2>/dev/null; then
             # Determine issue type based on breakBuild parameter
-            if [[ "${{ parameters.breakBuild }}" == "true" ]]; then
+            if [[ "$(echo ${{ parameters.breakBuild }} | tr '[:upper:]' '[:lower:]')" == "true" ]]; then
               issue_type="error"
             else
               issue_type="warning"

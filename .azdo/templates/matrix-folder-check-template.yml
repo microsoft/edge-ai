@@ -1,29 +1,31 @@
 # Matrix Folder Check Template
 #
 # Purpose:
-# This template checks for changes in the blueprints & src directory structure and creates dynamic outputs
-# that drive conditional execution in downstream jobs. It's primarily used to determine which
+# This template detects changes in the repository's directory structure and creates
+# dynamic outputs that drive conditional execution in downstream jobs. It determines which
 # components have been modified and need testing.
 #
 # Functionality:
 # - Detects changes in shell scripts (.sh) in the subscription setup folder
 # - Detects changes in PowerShell scripts (.ps1) in the subscription setup folder
-# - Creates a dynamic matrix of Terraform folders that have changed (used for testing both blueprints and the src directory)
+# - Creates a dynamic matrix of Terraform folders that have changed
 # - Creates a dynamic matrix of Bicep folders that have changed
 # - Optionally can return all folders containing Terraform or Bicep files, not just those with changes
+# - Uses the detect-folder-changes.sh script to efficiently identify changes
 #
 # Parameters:
 # - dependsOn: Jobs that this job depends on
 # - displayName: Display name for this job
 # - condition: Condition for running this job
-# - includeAllFolders: When true, returns all folders containing Terraform or Bicep files regardless of changes
+# - includeAllFolders: When true, returns all folders containing Terraform and Bicep files
 #
 # Output Variables:
-# - matrixBuildFolderCheckTask.changesInRpEnablementShell: true/false if shell scripts changed
-# - matrixBuildFolderCheckTask.changesInRpEnablementPwsh: true/false if PowerShell scripts changed
-# - matrixBuildFolderCheckTask.changesInInstall: true/false if any Terraform or Bicep files changed
-# - matrixBuildFolderCheckTask.changedTFFolders: JSON object with all identified TF folder names (changed folders or all folders depending on includeAllFolders setting)
-# - matrixBuildFolderCheckTask.changedBicepFolders: JSON object with all identified Bicep folder names (changed folders or all folders depending on includeAllFolders setting)
+# - matrixBuildFolderCheckTask.changesInRpEnablementShell: true/false if shell scripts changed in subscription setup
+# - matrixBuildFolderCheckTask.changesInRpEnablementPwsh: true/false if PowerShell scripts changed in subscription setup
+# - matrixBuildFolderCheckTask.changesInTfInstall: true/false if any Terraform files changed
+# - matrixBuildFolderCheckTask.changedTFFolders: JSON object with Terraform folder names (changed or all depending on parameters)
+# - matrixBuildFolderCheckTask.changesInBicepInstall: true/false if any Bicep files changed
+# - matrixBuildFolderCheckTask.changedBicepFolders: JSON object with Bicep folder names (changed or all depending on parameters)
 #
 # Usage Examples:
 # ```yaml
@@ -40,7 +42,6 @@
 #     dependsOn: PreviousJob
 #     displayName: "Check all component folders"
 #     includeAllFolders: true
-# ```
 #
 # The output of this template is used by downstream jobs to conditionally run tests only
 # on components that have changed (or all components when includeAllFolders is true),
@@ -76,123 +77,75 @@ jobs:
       vmImage: ubuntu-latest
     steps:
       # Checkout repo and set fetchDepth to 0 to get all history
-      # In large codebases, this can be slow, but it's necessary to get all the history
       - checkout: self
         fetchDepth: "0"
         clean: true
 
-      # Check for changes in the src directory
+      # Use the detect-folder-changes.sh script instead of inline bash
       - bash: |
+          # Echo parameters for debugging
+          echo "Debug: includeAllFolders = ${{ parameters.includeAllFolders }}"
 
-          echo "Checking for changes in the ./src/000-subscription folder..."
-          # Get the list of changed files between the current branch and main
-          changed_files=$(git diff --name-only --diff-filter=ACMRT origin/main...HEAD)
+          # Initialize parameters string
+          params=""
 
-          # check if shell files in subscription setup folder have changed
-          if echo "$changed_files" | grep -q 'src/000-subscription/.*\.sh$'; then
-            echo "Changes detected in the ./src/000-subscription folder shell files."
-            echo "##vso[task.setvariable variable=changesInRpEnablementShell;isOutput=true]true"
-          else
-            echo "No changes detected in the ./src/000-subscription folder shell files."
-            echo "##vso[task.setvariable variable=changesInRpEnablementShell;isOutput=true]false"
+          # Add parameters based on conditions
+          if [[ "$(echo ${{ parameters.includeAllFolders }} | tr '[:upper:]' '[:lower:]')" == "true" ]]; then
+            echo "Debug: Adding --include-all-folders parameter"
+            params="--include-all-folders"
           fi
 
-          # check if Pwsh files in subscription setup folder have changed
-          if echo "$changed_files" | grep -q 'src/000-subscription/.*\.ps1$'; then
-            echo "Changes detected in the ./src/000-subscription folder pwsh files."
-            echo "##vso[task.setvariable variable=changesInRpEnablementPwsh;isOutput=true]true"
+          # Log the parameters
+          echo "Debug: Final parameters = [$params]"
+          echo "Running detect-folder-changes.sh with parameters: $params"
+
+          # Run the script and capture its JSON output
+          script_output=$(bash ./scripts/build/detect-folder-changes.sh $params)
+          echo "Script completed successfully"
+
+          # Echo the raw script output for debugging
+          echo "======== RAW SCRIPT OUTPUT ========"
+          echo "$script_output"
+          echo "======== END RAW SCRIPT OUTPUT ========"
+
+          # Parse the JSON output using jq and set pipeline variables
+          shell_changes=$(echo "$script_output" | jq -r '.subscription.shell_changes')
+          pwsh_changes=$(echo "$script_output" | jq -r '.subscription.powershell_changes')
+          tf_has_changes=$(echo "$script_output" | jq -r '.terraform.has_changes')
+          tf_folders=$(echo "$script_output" | jq -c '.terraform.folders')
+          bicep_has_changes=$(echo "$script_output" | jq -r '.bicep.has_changes')
+          bicep_folders=$(echo "$script_output" | jq -c '.bicep.folders')
+
+          # Echo folders objects directly for debugging
+          echo "======== TERRAFORM FOLDERS ========"
+          echo "$tf_folders"
+          echo "======== END TERRAFORM FOLDERS ========"
+
+          echo "======== BICEP FOLDERS ========"
+          echo "$bicep_folders"
+          echo "======== END BICEP FOLDERS ========"
+
+          # Set output variables for downstream jobs
+          echo "##vso[task.setvariable variable=changesInRpEnablementShell;isOutput=true]$shell_changes"
+          echo "##vso[task.setvariable variable=changesInRpEnablementPwsh;isOutput=true]$pwsh_changes"
+          echo "##vso[task.setvariable variable=changesInTfInstall;isOutput=true]$tf_has_changes"
+          echo "##vso[task.setvariable variable=changesInBicepInstall;isOutput=true]$bicep_has_changes"
+
+          # Set the terraform folders output (will be 'none' if no changes)
+          if [ "$tf_has_changes" = "true" ]; then
+            echo "Changes detected in Terraform folders"
+            echo "##vso[task.setvariable variable=changedTfFolders;isOutput=true]$tf_folders"
           else
-            echo "No changes detected in the ./src/000-subscription folder pwsh files."
-            echo "##vso[task.setvariable variable=changesInRpEnablementPwsh;isOutput=true]false"
-          fi
-
-          # Check if Terraform files, in any src directory that has tf files, have changed
-          # This command will create a JSON object with the first-level folder names as keys
-          # which will be used to create a matrix of jobs to run Terraform tasks for each folder
-          # see the Azure DevOps documentation for more information on matrix jobs using JSON objects
-          # https://learn.microsoft.com/azure/devops/pipelines/yaml-schema/jobs-job-strategy?view=azure-pipelines#remarks
-          # This will output a JSON object as follows:
-          # {
-          #   "src/005-onboard-reqs": {
-          #     "folderName": "src/005-onboard-reqs"
-          #   },
-          #   "src/010-vm-host": {
-          #     "folderName": "src/010-vm-host"
-          #   },
-          #   "src/-cncf-cluster": {
-          #     "folderName": "src/020-cncf-cluster"
-          #   },
-          #   "src/030-iot-ops-cloud-reqs": {
-          #     "folderName": "src/030-iot-ops-cloud-reqs"
-          #   },
-          #   "src/040-iot-ops": {
-          #     "folderName": "src/040-iot-ops"
-          #   },
-          #   "blueprints/full-single-cluster": {
-          #     "folderName": "blueprints/full-single-cluster"
-          #   }
-          # }
-          echo "Checking for changes in the first-level folders under src with .tf, .tfvars, .tfstate, or .hcl file changes..."
-          echo "Parameter includeAllFolders is set to: ${{ parameters.includeAllFolders }}"
-
-          # Convert the parameter value to lowercase for case-insensitive comparison
-          includeAllFoldersLower=$(echo "${{ parameters.includeAllFolders }}" | tr '[:upper:]' '[:lower:]')
-
-          if [ "$includeAllFoldersLower" = "true" ]; then
-            echo "Including all folders that contain Terraform files, not just changed ones."
-
-            # Find all folders that contain Terraform files
-            changed_tf_folders=$(find src blueprints -type f \( -name "*.tf" -o -name "*.tfvars" -o -name "*.tfstate" -o -name "*.hcl" \) | # Find all Terraform files
-              awk -F'/' '{if ($1=="src") print $1"/"$2; else if ($1=="blueprints") print $1"/"$2}' | # Extract folder names with path prefix for blueprints
-              sort -u | # Remove all duplicates and sort
-              jq -R -s -c 'split("\n") | # Convert the newline-separated list into a JSON array
-              map(select(length > 0)) | # Remove all empty entries
-              map({key: ., value: {folderName: .}}) | # Create JSON objects with folder name as keys, the keys are used to populate the AzDO job name
-              from_entries') # Convert entries to a JSON object
-            # Find all folders that contain Bicep files
-            changed_bicep_folders=$(find src blueprints -type f \( -name "*.bicep" \) | # Find all Bicep files
-              awk -F'/' '{if ($1=="src") print $1"/"$2; else if ($1=="blueprints") print $1"/"$2}' | # Extract folder names with path prefix for blueprints
-              sort -u | # Remove all duplicates and sort
-              jq -R -s -c 'split("\n") | # Convert the newline-separated list into a JSON array
-              map(select(length > 0)) | # Remove all empty entries
-              map({key: ., value: {folderName: .}}) | # Create JSON objects with folder name as keys, the keys are used to populate the AzDO job name
-              from_entries') # Convert entries to a JSON object
-          else
-            changed_tf_folders=$(echo "$changed_files" |  # Get the list of changed files
-              grep -E '(src/[^/]+/|blueprints/[^/]+/).*\.(tf|tfvars|tfstate|hcl)$' |  # Filter for .tf, .tfvars, .tfstate, or .hcl files in src or blueprints directory
-              awk -F'/' '{if ($1=="src") print $1"/"$2; else if ($1=="blueprints") print $1"/"$2}' |  # Extract folder names with path prefix for blueprints
-              sort -u |  # Remove all duplicates and sort
-              jq -R -s -c 'split("\n") |  # Convert the newline-separated list into a JSON array
-              map(select(length > 0)) |  # Remove all empty entries
-              map({key: ., value: {folderName: .}}) |  # Create JSON objects with folder name as keys, the keys are used to populate the AzDO job name
-              from_entries')  # Convert entries to a JSON object
-            changed_bicep_folders=$(echo "$changed_files" |  # Get the list of changed files
-              grep -E '(src/[^/]+/|blueprints/[^/]+/).*\.(bicep)$' |  # Filter for .bicep files in src or blueprints directory
-              awk -F'/' '{if ($1=="src") print $1"/"$2; else if ($1=="blueprints") print $1"/"$2}' |  # Extract folder names with path prefix for blueprints
-              sort -u |  # Remove all duplicates and sort
-              jq -R -s -c 'split("\n") |  # Convert the newline-separated list into a JSON array
-              map(select(length > 0)) |  # Remove all empty entries
-              map({key: ., value: {folderName: .}}) |  # Create JSON objects with folder name as keys, the keys are used to populate the AzDO job name
-              from_entries')  # Convert entries to a JSON object
-          fi
-
-          if [ "$(echo $changed_tf_folders | jq 'length')" -ne 0 ]; then
-            echo "Changes detected in the following Terraform folders: $changed_tf_folders"
-            echo "##vso[task.setvariable variable=changesInTfInstall;isOutput=true]true"
-            echo "##vso[task.setvariable variable=changedTfFolders;isOutput=true]$changed_tf_folders"
-          else
-            echo "No changes detected in the first-level folders under src and blueprints with .tf, .tfvars, .tfstate, or .hcl file changes."
-            echo "##vso[task.setvariable variable=changesInTfInstall;isOutput=true]false"
+            echo "No changes detected in Terraform folders"
             echo "##vso[task.setvariable variable=changedTfFolders;isOutput=true]none"
           fi
 
-          if [ "$(echo $changed_bicep_folders | jq 'length')" -ne 0 ]; then
-            echo "Changes detected in the following Bicep folders: $changed_bicep_folders"
-            echo "##vso[task.setvariable variable=changesInBicepInstall;isOutput=true]true"
-            echo "##vso[task.setvariable variable=changedBicepFolders;isOutput=true]$changed_bicep_folders"
+          # Set the bicep folders output (will be 'none' if no changes)
+          if [ "$bicep_has_changes" = "true" ]; then
+            echo "Changes detected in Bicep folders"
+            echo "##vso[task.setvariable variable=changedBicepFolders;isOutput=true]$bicep_folders"
           else
-            echo "No changes detected in the first-level folders under src & blueprints with .bicep file changes."
-            echo "##vso[task.setvariable variable=changesBicepInInstall;isOutput=true]false"
+            echo "No changes detected in Bicep folders"
             echo "##vso[task.setvariable variable=changedBicepFolders;isOutput=true]none"
           fi
 

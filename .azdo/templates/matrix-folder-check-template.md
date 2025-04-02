@@ -21,25 +21,27 @@ optimizing pipeline execution time and resources.
 - **Conditional Output Generation**: Produces output variables that can be used to conditionally run downstream jobs
 - **Blueprint and Component Support**: Works with both component directories in `./src` and `./blueprint` directories
 - **JSON Matrix Generation**: Creates properly formatted JSON for Azure DevOps matrix strategies
-- **Full Directory Support**: Optional ability to include all folders containing Terraform files, not just those with changes
+- **Full Directory Support**: Optional ability to include all folders containing Terraform and Bicep files, not just those with changes
 
 ## Parameters
 
-| Parameter           | Type    | Required | Default                                | Description                                                                      |
-|---------------------|---------|----------|----------------------------------------|----------------------------------------------------------------------------------|
-| `dependsOn`         | object  | No       | `[]`                                   | Specifies which jobs this job depends on                                         |
-| `displayName`       | string  | No       | `'Check for changes in src directory'` | Custom display name for the job                                                  |
-| `condition`         | string  | No       | `succeeded()`                          | Condition that determines when this job runs                                     |
-| `includeAllFolders` | boolean | No       | `false`                                | When true, returns all folders with Terraform files, not just those with changes |
+| Parameter           | Type    | Required | Default                                | Description                                                                          |
+|---------------------|---------|----------|----------------------------------------|--------------------------------------------------------------------------------------|
+| `dependsOn`         | object  | No       | `[]`                                   | Specifies which jobs this job depends on                                             |
+| `displayName`       | string  | No       | `'Check for changes in src directory'` | Custom display name for the job                                                      |
+| `condition`         | string  | No       | `succeeded()`                          | Condition that determines when this job runs                                         |
+| `includeAllFolders` | boolean | No       | `false`                                | When true, returns all folders with Terraform and Bicep files, not just changed ones |
 
 ## Outputs
 
-| Output Variable              | Description                                                                                           | Example                                                                                                |
-|------------------------------|-------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------|
-| `changesInRpEnablementShell` | Indicates if shell scripts changed in subscription setup                                              | `dependencies.MatrixBuildFolderCheck.outputs['matrixBuildFolderCheckTask.changesInRpEnablementShell']` |
-| `changesInRpEnablementPwsh`  | Indicates if PowerShell scripts changed in subscription setup                                         | `dependencies.MatrixBuildFolderCheck.outputs['matrixBuildFolderCheckTask.changesInRpEnablementPwsh']`  |
-| `changesInInstall`           | Indicates if any Terraform files changed                                                              | `dependencies.MatrixBuildFolderCheck.outputs['matrixBuildFolderCheckTask.changesInInstall']`           |
-| `changedTFFolders`           | JSON object with folder names (changed folders or all folders depending on includeAllFolders setting) | `dependencies.MatrixBuildFolderCheck.outputs['matrixBuildFolderCheckTask.changedTFFolders']`           |
+| Output Variable              | Description                                                                                      | Example                                                                                                |
+|------------------------------|--------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------|
+| `changesInRpEnablementShell` | Indicates if shell scripts changed in subscription setup                                         | `dependencies.MatrixBuildFolderCheck.outputs['matrixBuildFolderCheckTask.changesInRpEnablementShell']` |
+| `changesInRpEnablementPwsh`  | Indicates if PowerShell scripts changed in subscription setup                                    | `dependencies.MatrixBuildFolderCheck.outputs['matrixBuildFolderCheckTask.changesInRpEnablementPwsh']`  |
+| `changesInTfInstall`         | Indicates if any Terraform or Bicep files changed (true if either has changes)                   | `dependencies.MatrixBuildFolderCheck.outputs['matrixBuildFolderCheckTask.changesInTfInstall']`         |
+| `changedTfFolders`           | JSON object with Terraform folder names (changed folders or all folders depending on parameters) | `dependencies.MatrixBuildFolderCheck.outputs['matrixBuildFolderCheckTask.changedTfFolders']`           |
+| `changesInBicepInstall`      | Indicates if any Bicep files changed                                                             | `dependencies.MatrixBuildFolderCheck.outputs['matrixBuildFolderCheckTask.changesInBicepInstall']`      |
+| `changedBicepFolders`        | JSON object with Bicep folder names (changed folders or all folders depending on parameters)     | `dependencies.MatrixBuildFolderCheck.outputs['matrixBuildFolderCheckTask.changedBicepFolders']`        |
 
 ## Dependencies
 
@@ -76,11 +78,11 @@ jobs:
 ### Including All Folders
 
 ```yaml
-# Implementation that includes all folders with Terraform files
+# Implementation that includes all folders with Terraform and Bicep files
 jobs:
   - template: .azdo/templates/matrix-folder-check-template.yml
     parameters:
-      displayName: "Include All Terraform Components"
+      displayName: "Include All Components"
       includeAllFolders: true
 ```
 
@@ -89,19 +91,24 @@ jobs:
 The template executes a series of steps to identify changes and create structured outputs:
 
 1. **Repository Checkout**: Checks out the repository with full history (`fetchDepth: 0`)
-2. **Change Detection**: Uses `git diff` to compare the current branch with main
-3. **Shell Script Detection**: Searches for changes in `.sh` files in the subscription setup folder
-4. **PowerShell Script Detection**: Searches for changes in `.ps1` files in the subscription setup folder
-5. **Terraform File Detection**: Identifies changes in `.tf`, `.tfvars`, `.tfstate`, or `.hcl` files
-   - If `includeAllFolders` is true, finds all folders containing Terraform files instead of only changed ones
-6. **Matrix Generation**: Creates a JSON object with folder names as keys for matrix-based job execution
+2. **Change Detection**: Uses the `detect-folder-changes.sh` script to process changes
+3. **Output Processing**: Extracts values from the script's JSON output and sets them as pipeline variables
+
+The script handles:
+
+- Comparing the current branch with main using `git diff`
+- Searching for changes in `.sh` files in the subscription setup folder
+- Searching for changes in `.ps1` files in the subscription setup folder
+- Identifying changes in `.tf`, `.tfvars`, `.tfstate`, or `.hcl` files
+- Creating a JSON object with folder names for matrix-based job execution
 
 ### Key Components
 
-- **Git Diff Command**: Uses `git diff --name-only --diff-filter=ACMRT origin/main...HEAD` to find changed files
-- **Folder Name Extraction**: Parses file paths to extract the first-level directory names
-- **Directory Scanning**: When `includeAllFolders` is true, uses `find` to locate all directories containing Terraform files
-- **JSON Formatting**: Uses jq to convert the list of folders into a properly formatted JSON object
+- **External Script**: Uses `./scripts/build/detect-folder-changes.sh` for efficient change detection
+- **Script Parameters**:
+  - `--include-all-folders`: When provided, returns all folders with Terraform and Bicep files, not just changed ones
+  - `--base-branch`: Allows specifying a different base branch (defaults to origin/main)
+- **JSON Output Processing**: Parses the structured JSON response from the script to extract relevant values
 - **Variable Output**: Sets Azure DevOps variables with the `isOutput=true` flag for downstream job consumption
 
 ### Error Handling
@@ -153,14 +160,14 @@ jobs:
       - script: echo "Testing PowerShell scripts in subscription setup folder"
 ```
 
-### Example 3: Testing All Terraform Components
+### Example 3: Testing All Components
 
 ```yaml
-# Run tests on all Terraform components regardless of changes
+# Run tests on all Terraform and Bicep components regardless of changes
 jobs:
   - template: .azdo/templates/matrix-folder-check-template.yml
     parameters:
-      displayName: "Get All Terraform Components"
+      displayName: "Get All Components"
       includeAllFolders: true
 
   - job: TestAllComponents
@@ -183,28 +190,17 @@ Common issues and their solutions:
 
 2. **JSON Format Issues**:
    - **Symptom**: Azure DevOps complains about matrix format
-   - **Solution**: Verify the jq command is correctly generating valid JSON for Azure DevOps matrices
+   - **Solution**: Verify the script is generating valid JSON for Azure DevOps matrices
 
-3. **Git History Issues**:
+3. **Script Execution Issues**:
+   - **Symptom**: The pipeline fails with script execution errors
+   - **Solution**: Ensure the detect-folder-changes.sh script has execute permissions and is properly located at ./scripts/build/detect-folder-changes.sh
+
+4. **Git History Issues**:
    - **Symptom**: Change detection isn't finding changes that you know exist
    - **Solution**: Ensure the repository is checked out with `fetchDepth: 0` to get full history
    - **Alternative**: Use `includeAllFolders: true` to bypass change detection entirely
 
-4. **Variable Access Errors**:
+5. **Variable Access Errors**:
    - **Symptom**: Downstream jobs can't access the output variables
    - **Solution**: Ensure you're referencing the variables correctly with the full path, including task name
-
-## Related Templates
-
-- Terraform Cluster Test Template: [YAML](./cluster-test-terraform-template.yml) | [Documentation](./cluster-test-terraform-template.md) - Uses the matrix to run Terraform tests
-- Resource Provider Tests Template: [YAML](./resource-provider-tests-template.yml) | [Documentation](./resource-provider-tests-template.md) - Uses shell and PowerShell change detection
-- Variable Compliance Terraform Template: [YAML](./variable-compliance-terraform-template.yml) | [Documentation](./variable-compliance-terraform-template.md) - Validates Terraform variable consistency
-
-## Learn More
-
-- [Azure DevOps Matrix Strategy](https://learn.microsoft.com/azure/devops/pipelines/yaml-schema/jobs-job-strategy)
-- [Dynamic Matrix Generation](https://learn.microsoft.com/azure/devops/pipelines/process/runtime-parameters)
-- [Git Diff Documentation](https://git-scm.com/docs/git-diff)
-- [jq Manual](https://stedolan.github.io/jq/manual/)
-- [Azure DevOps Pipeline Variables](https://learn.microsoft.com/azure/devops/pipelines/process/variables)
-- [Repository Structure Guide](/README.md)
