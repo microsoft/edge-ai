@@ -1,3 +1,6 @@
+metadata name = 'Secret Store Extension Key Vault Module'
+metadata description = 'Creates an Azure Key Vault for use with the Secret Sync Extension to securely store and synchronize secrets.'
+
 import * as core from '../types.core.bicep'
 
 @description('The common component configuration.')

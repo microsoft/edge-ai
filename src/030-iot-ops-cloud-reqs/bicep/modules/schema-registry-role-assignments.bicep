@@ -1,3 +1,6 @@
+metadata name = 'Schema Registry Role Assignments Module'
+metadata description = 'Configures necessary RBAC permissions for Schema Registry to access its storage container.'
+
 @description('The name for the Storage Account used by the Schema Registry.')
 param storageAccountName string
 

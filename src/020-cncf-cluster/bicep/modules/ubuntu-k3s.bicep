@@ -1,3 +1,6 @@
+metadata name = 'Ubuntu K3s Module'
+metadata description = 'Configures K3s Kubernetes clusters on Ubuntu virtual machines and connects them to Azure Arc.'
+
 import * as core from '../types.core.bicep'
 
 @description('The common component configuration.')

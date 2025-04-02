@@ -1,3 +1,6 @@
+metadata name = 'IoT Operations Initialization Module'
+metadata description = 'Initializes and configures the required Arc extensions for Azure IoT Operations including Secret Store, Open Service Mesh, Container Storage, and IoT Operations Platform.'
+
 import * as types from '../types.bicep'
 
 @description('The settings for the Secret Store Extension.')

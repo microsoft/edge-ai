@@ -1,8 +1,5 @@
-/**
- * # Onboard Infrastructure Requirements
- *
- * Creates the required resources needed for an edge IaC deployment.
- */
+metadata name = 'Onboard Infrastructure Prerequisites'
+metadata description = 'Creates the required resources needed for an edge IaC deployment.'
 
 import * as core from './types.core.bicep'
 import * as types from './types.bicep'

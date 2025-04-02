@@ -13,6 +13,9 @@ Azure DevOps build system for managing and validating the project's IaC.
     - [tf-vars-compliance-check.py](#tf-vars-compliance-checkpy)
     - [tf-provider-version-check.sh](#tf-provider-version-checksh)
     - [install-terraform-docs.sh](#install-terraform-docssh)
+  - [Bicep Documentation and Validation Scripts](#bicep-documentation-and-validation-scripts)
+    - [generate-bicep-docs.py](#generate-bicep-docspy)
+    - [update-all-bicep-docs.sh](#update-all-bicep-docssh)
   - [Azure IoT Operations Scripts](#azure-iot-operations-scripts)
     - [aio-version-checker.py](#aio-version-checkerpy)
   - [Documentation and Link Validation Scripts](#documentation-and-link-validation-scripts)
@@ -80,6 +83,37 @@ Installs the terraform-docs tool at a specific version.
   - `-h`: Display help message
 - **Build Integration**: Used by the [docs-check-terraform-template.yml](../.azdo/docs-check-terraform-template.yml) in the DocsCheck job
 - **When to Use**: When setting up a new development environment or updating the terraform-docs version
+
+## Bicep Documentation and Validation Scripts
+
+### generate-bicep-docs.py
+
+Python script that generates standardized markdown documentation for Bicep modules by parsing ARM JSON output.
+
+- **Usage**:
+  - Run `pip install -r requirements.txt` (to install module `mdutils`)
+  - Run `python3 generate-bicep-docs.py <arm_json_file> <output_md_file>`
+- **Arguments**:
+  - `arm_json_file`: Path to the ARM JSON file (compiled Bicep)
+  - `output_md_file`: Path where the generated markdown documentation will be saved
+  - `--modules-nesting-level`: Specify the nesting level for modules (default: 1)
+- **Dependencies**:
+  - Python 3.x
+  - Install Python dependencies: `pip install -r requirements.txt`
+- **Build Integration**: Called by update-all-bicep-docs.sh
+- **When to Use**: Typically not called directly, but used by update-all-bicep-docs.sh when regenerating documentation
+
+### update-all-bicep-docs.sh
+
+Updates Bicep documentation across all components in the repository.
+
+- **Usage**: `./update-all-bicep-docs.sh [directory1 directory2 ...]`
+- **Dependencies**:
+  - Azure CLI with Bicep extension
+  - Python 3.x with `generate-bicep-docs.py` script
+- **When to Use**: After making changes to Bicep modules to keep documentation current
+- **Best Practice**: Run this script before submitting PRs that include Bicep changes to ensure documentation is up-to-date,
+  also run `npm run mdlint-fix` to fix any markdown linting issues
 
 ## Azure IoT Operations Scripts
 

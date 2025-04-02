@@ -1,3 +1,6 @@
+metadata name = 'Network Module'
+metadata description = 'Creates virtual network, subnet, and network security group resources for VM deployments.'
+
 import * as core from '../types.core.bicep'
 
 @description('The common component configuration.')

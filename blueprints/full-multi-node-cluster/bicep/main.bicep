@@ -1,8 +1,6 @@
-/*
-  Full Multi-node Cluster Blueprint - Main Orchestration File
-  This blueprint deploys a complete end-to-end environment for Azure IoT Operations
-  on a multi-node, Arc-enabled Kubernetes cluster.
-*/
+metadata name = 'Full Multi-node Cluster Blueprint'
+metadata description = 'Deploys a complete end-to-end environment for Azure IoT Operations on a multi-node, Arc-enabled Kubernetes cluster.'
+
 import * as core from './types.core.bicep'
 
 /*

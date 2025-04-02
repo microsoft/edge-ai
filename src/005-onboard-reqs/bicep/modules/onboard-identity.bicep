@@ -1,3 +1,6 @@
+metadata name = 'Onboard Identity Module'
+metadata description = 'Creates an identity (User Assigned or Service Principal) with necessary permissions for Azure Arc onboarding.'
+
 import * as core from '../types.core.bicep'
 import * as types from '../types.bicep'
 

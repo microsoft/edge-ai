@@ -32,6 +32,25 @@ src/
   - `/bicep` directory for implementation, `/bicep/modules` for reusable modules
   - `/ci/bicep` directory for CI/CD pipeline configuration wrappers
 
+## File Metadata
+
+Every `main.bicep` and module `resources-name-a.bicep` file must include the following metadata:
+
+1. A `metadata.name` field that includes the component name
+2. A `metadata description` field that includes a description of the component
+
+Example:
+
+```bicep
+// In main.bicep
+metadata name = 'Component or Blueprint Name'
+metadata description = 'Description of what this component does and how it works.'
+
+// Rest of bicep code follows...
+```
+
+This ensures consistent documentation across all components and makes the purpose of each module clear both in the code and when generating docs.
+
 ## Type system
 
 Use a robust type system to improve project maintainability, the `Common` type system is used across all components, from file `types.core.bicep`:

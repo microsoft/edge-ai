@@ -666,6 +666,8 @@ mcra
 mcsb
 mcsd
 mcse
+mdlint
+mdutils
 messaage
 metastore
 mgmt
@@ -1128,6 +1130,7 @@ spns
 spoelstra
 sqlcmd
 sreedhar
+srns
 srtp
 ssas
 ssdl

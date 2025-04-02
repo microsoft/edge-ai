@@ -1,3 +1,6 @@
+metadata name = 'Schema Registry Storage Account Module'
+metadata description = 'Creates a secure storage account and blob container for storing schemas used by Azure IoT Operations.'
+
 import * as core from '../types.core.bicep'
 import * as types from '../types.bicep'
 

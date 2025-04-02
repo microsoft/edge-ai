@@ -1,3 +1,6 @@
+metadata name = 'IoT Operations Instance Post-Deployment Module'
+metadata description = 'Configures federated identity credentials for Azure IoT Operations and Secret Sync Extension service accounts and sets up Key Vault Secret Provider Class.'
+
 import * as core from '../types.core.bicep'
 
 @description('The common component configuration.')

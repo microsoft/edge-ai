@@ -1,3 +1,6 @@
+metadata name = 'IoT Operations Instance Module'
+metadata description = 'Deploys Azure IoT Operations instance, broker, authentication, listeners, and data flow components on an Azure Arc-enabled Kubernetes cluster.'
+
 import * as core from '../types.core.bicep'
 import * as types from '../types.bicep'
 

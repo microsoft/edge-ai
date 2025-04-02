@@ -1,10 +1,5 @@
-/**
- * # CNCF Cluster
- *
- * Sets up and deploys a script to a VM host that will setup the K3S cluster and optionally cluster nodes,
- * Arc connect the cluster, Add cluster admins to the cluster, enable workload identity,
- * install extensions for cluster connect and custom locations.
- */
+metadata name = 'CNCF Cluster Component'
+metadata description = 'Sets up and deploys a script to a VM host that will setup the K3S cluster and optionally cluster nodes, Arc connect the cluster, Add cluster admins to the cluster, enable workload identity, install extensions for cluster connect and custom locations.'
 
 extension microsoftGraphV1
 

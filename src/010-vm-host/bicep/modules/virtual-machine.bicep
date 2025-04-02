@@ -1,3 +1,6 @@
+metadata name = 'Virtual Machine Module'
+metadata description = 'Creates a Linux virtual machine with networking components for Azure IoT Operations deployments.'
+
 import * as core from '../types.core.bicep'
 import * as types from '../types.bicep'
 
