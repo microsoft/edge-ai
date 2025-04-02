@@ -17,6 +17,12 @@ variable "location" {
   description = "Location for all resources in this module"
 }
 
+variable "capacity_id" {
+  type        = string
+  description = "The capacity ID for the Fabric workspace"
+  default     = null
+}
+
 variable "instance" {
   type        = string
   description = "Instance identifier for naming resources: 001, 002, etc..."
@@ -43,6 +49,30 @@ variable "custom_locations_oid" {
     ```
 EOF
   default     = null
+}
+
+variable "should_create_fabric_workspace" {
+  type        = bool
+  description = "Whether to create a Microsoft Fabric workspace"
+  default     = false
+}
+
+variable "should_create_fabric_capacity" {
+  type        = bool
+  description = "Whether to create a Microsoft Fabric capacity"
+  default     = false
+}
+
+variable "should_create_fabric_lakehouse" {
+  type        = bool
+  description = "Whether to create a Microsoft Fabric lakehouse"
+  default     = false
+}
+
+variable "should_create_fabric_eventstream" {
+  type        = bool
+  description = "Whether to create a Microsoft Fabric database"
+  default     = false
 }
 
 variable "should_create_anonymous_broker_listener" {

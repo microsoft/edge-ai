@@ -22,3 +22,12 @@ output "data_lake_filesystem_name" {
   description = "The name for the Data Lake Gen2 Filesystem."
   value       = try(module.data_lake[0].filesystem_name, null)
 }
+
+output "fabric_capacity" {
+  description = "Fabric capacity details"
+  value = {
+    id   = module.fabric_capacity.capacity_id
+    name = module.fabric_capacity.capacity_name
+    sku  = module.fabric_capacity.capacity_sku
+  }
+}

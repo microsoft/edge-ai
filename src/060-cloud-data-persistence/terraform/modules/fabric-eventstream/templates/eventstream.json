@@ -1,0 +1,59 @@
+{
+  "sources": [
+    {
+      "id": "adecbee6-b675-45f2-a5f3-0e573b79c0d0",
+      "name": "AzureEventHub",
+      "type": "AzureEventHub",
+      "properties": {
+        "dataConnectionId": "75507a5c-6caf-4282-a2c4-81ce2ac09c4f",
+        "consumerGroupName": "$Default",
+        "inputSerialization": {
+          "type": "Json",
+          "properties": {
+            "encoding": "UTF8"
+          }
+        }
+      }
+    }
+  ],
+  "destinations": [
+    {
+      "id": "c6f3b42c-bc3a-4399-a4f1-d8c6f24de1cc",
+      "name": "mb-dev-essdestination",
+      "type": "Lakehouse",
+      "properties": {
+        "workspaceId": "${WorkspaceID}",
+        "itemId": "${LakehouseID}",
+        "schema": "",
+        "deltaTable": "raw_stream_data",
+        "inputSerialization": {
+          "type": "Json",
+          "properties": {
+            "encoding": "UTF8"
+          }
+        }
+      },
+      "inputNodes": [
+        {
+          "name": "eventStream"
+        }
+      ],
+      "inputSchemas": []
+    }
+  ],
+  "streams": [
+    {
+      "id": "35df4e92-d9de-4cab-8b8c-dfb5490a3a67",
+      "name": "eventStream",
+      "type": "DefaultStream",
+      "properties": {},
+      "inputNodes": [
+        {
+          "name": "AzureEventHub"
+        }
+      ]
+    }
+  ],
+  "operators": [],
+  "compatibilityLevel": "1.0"
+}

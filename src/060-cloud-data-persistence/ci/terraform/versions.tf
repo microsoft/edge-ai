@@ -8,6 +8,10 @@ terraform {
       source  = "Azure/azapi"
       version = ">= 2.2.0"
     }
+    fabric = {
+      source  = "microsoft/fabric"
+      version = "0.1.0-rc.2"
+    }
   }
   required_version = ">= 1.9.8, < 2.0"
 }
@@ -15,4 +19,9 @@ terraform {
 provider "azurerm" {
   storage_use_azuread = true
   features {}
+}
+
+provider "fabric" {
+  # Enable preview features required for pre-release
+  preview = true
 }
