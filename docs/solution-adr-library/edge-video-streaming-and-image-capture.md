@@ -13,7 +13,7 @@ Author: **Alain Uyidi**
 
 ## Context
 
-Customers require a secure and efficient solution to stream and capture video from edge-attached cameras for tasks such as anomaly detection, archiving live or captured media, and performing related operations. This includes capabilities like buffering, recording, and taking snapshots for various media endpoints, as well as integrating with MQTT-based interfaces through the AIO [Media Connector](https://learn.microsoft.com/en-us/azure/iot-operations/discover-manage-assets/overview-media-connector).
+Customers require a secure and efficient solution to stream and capture video from edge-attached cameras for tasks such as anomaly detection, archiving live or captured media, and performing related operations. This includes capabilities like buffering, recording, and taking snapshots for various media endpoints, as well as integrating with MQTT-based interfaces through the AIO [Media Connector](https://learn.microsoft.com/azure/iot-operations/discover-manage-assets/overview-media-connector).
 This solution focuses on enabling the following:
 
 - Securely creating and managing edge-attached media sources as system assets, including defining asset endpoints and credentials for accessing media sources like IP cameras.
@@ -58,7 +58,7 @@ Data flow:
 
 (4) - Media Connector is subscribed to the 'clips-fs/snapshots-fs' topic, receives JSON with the storage configuration.
 
-(4) - Media Connector starts saving clips/snapshots to a persisted volume with unbacked [Azure Container Storage enabled by Azure Arc](https://learn.microsoft.com/en-us/azure/azure-arc/container-storage/overview) (ACSA)
+(4) - Media Connector starts saving clips/snapshots to a persisted volume with unbacked [Azure Container Storage enabled by Azure Arc](https://learn.microsoft.com/azure/azure-arc/container-storage/overview) (ACSA)
 
 ### 2.2 Move files from unbacked to backed ACSA for confirmed events.
 
@@ -96,7 +96,7 @@ Data flow:
 
 ## Decision
 
-Based on the features available for to securely interact and operate an edge-attached camera provided by the [Media Connector](https://learn.microsoft.com/en-us/azure/iot-operations/discover-manage-assets/overview-media-connector). The connector deploys to an Arc-enabled Kubernetes cluster on the edge as part of an Azure IoT Operations deployment.
+Based on the features available for to securely interact and operate an edge-attached camera provided by the [Media Connector](https://learn.microsoft.com/azure/iot-operations/discover-manage-assets/overview-media-connector). The connector deploys to an Arc-enabled Kubernetes cluster on the edge as part of an Azure IoT Operations deployment.
 
 ## Decision Drivers (optional)
 
@@ -105,7 +105,7 @@ could allow for additional analysis and better confidence of whether the capture
 
 In addition, an mRPC request can be sent to the Media Connector to enable a live feed. This live feed is transmitted to a [MediaMTX Media Server](https://github.com/bluenviron/mediamtx) in the cloud and displayed in a UI.
 
-The chosen approach lends itself to be used simultaneous with other components such as [Azure Container Storage enabled by Azure Arc](https://learn.microsoft.com/en-us/azure/azure-arc/container-storage/overview) (ACSA) which moves clips associated with the event timeframe from local shared storage to cloud ingest storage. These clips are then synchronized with Azure Blob Storage in the cloud.
+The chosen approach lends itself to be used simultaneous with other components such as [Azure Container Storage enabled by Azure Arc](https://learn.microsoft.com/azure/azure-arc/container-storage/overview) (ACSA) which moves clips associated with the event timeframe from local shared storage to cloud ingest storage. These clips are then synchronized with Azure Blob Storage in the cloud.
 
 ## Considered Options (optional)
 
