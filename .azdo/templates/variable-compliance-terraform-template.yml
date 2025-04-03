@@ -53,7 +53,7 @@ parameters:
   # Version of terraform-docs to install
   - name: terraformDocsVersion
     type: string
-    default: 'v0.16.0'
+    default: 'v0.19.0'
   # Whether to break the build on compliance issues (true) or just show warnings (false)
   - name: breakBuild
     type: boolean

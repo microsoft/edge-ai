@@ -31,7 +31,7 @@ remains clean and maintainable.
 | `dependsOn`            | object  | No       | `[]`                                                            | Job dependencies, typically pointing to the preceding job                    |
 | `displayName`          | string  | No       | `'Terraform Variable Compliance Check'`                         | Custom display name for the job in the pipeline                              |
 | `condition`            | string  | No       | `succeeded()`                                                   | Execution condition determining when this template should run                |
-| `terraformDocsVersion` | string  | No       | `'v0.16.0'`                                                     | Version of terraform-docs to use for parsing variables                       |
+| `terraformDocsVersion` | string  | No       | `'v0.19.0'`                                                     | Version of terraform-docs to use for parsing variables                       |
 | `breakBuild`           | boolean | No       | `false`                                                         | Whether to treat inconsistent variables as errors (true) or warnings (false) |
 | `pool`                 | object  | No       | `{ name: 'ai-on-edge-managed-pool', vmImage: 'ubuntu-latest' }` | Agent pool configuration                                                     |
 
@@ -72,7 +72,7 @@ This template depends on the following:
     dependsOn: [MegaLinter]
     displayName: "Variable Definition Compliance"
     condition: succeeded('MegaLinter')
-    terraformDocsVersion: "v0.16.0"
+    terraformDocsVersion: "v0.19.0"
     breakBuild: true
     pool:
       name: 'custom-pool'

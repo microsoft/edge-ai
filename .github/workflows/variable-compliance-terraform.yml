@@ -27,7 +27,7 @@
 # name: Validate Variables in CI
 # uses: ./.github/workflows/variable-compliance-terraform.yml
 # with:
-#   terraform_docs_version: 'v0.16.0'
+#   terraform_docs_version: 'v0.19.0'
 #   break_build: true
 # ```
 #
@@ -42,7 +42,7 @@ on: # yamllint disable-line rule:truthy
       terraform_docs_version:
         description: 'Version of terraform-docs to use'
         required: false
-        default: 'v0.16.0'
+        default: 'v0.19.0'
       break_build:
         description: 'Fail workflow on inconsistencies'
         required: false
@@ -57,7 +57,7 @@ on: # yamllint disable-line rule:truthy
         description: 'Version of terraform-docs to use'
         required: false
         type: string
-        default: 'v0.16.0'
+        default: 'v0.19.0'
       break_build:
         description: 'Fail workflow on inconsistencies'
         required: false
@@ -89,7 +89,7 @@ jobs:
       # Install terraform-docs
       - name: Install terraform-docs
         env:
-          TERRAFORM_DOCS_VERSION: ${{ inputs.terraform_docs_version || 'v0.16.0' }}
+          TERRAFORM_DOCS_VERSION: ${{ inputs.terraform_docs_version || 'v0.19.0' }}
         run: |
           curl -sSLo ./terraform-docs.tar.gz https://github.com/terraform-docs/terraform-docs/releases/download/${TERRAFORM_DOCS_VERSION}/terraform-docs-${TERRAFORM_DOCS_VERSION}-linux-amd64.tar.gz
           tar -xzf terraform-docs.tar.gz terraform-docs
