@@ -18,7 +18,7 @@ The Terraform Variable Compliance workflow analyzes all Terraform files in the r
 
 | Parameter                | Type   | Required | Default   | Description                                                                   |
 |--------------------------|--------|----------|-----------|-------------------------------------------------------------------------------|
-| `terraform_docs_version` | string | No       | `v0.16.0` | Version of terraform-docs to use for parsing Terraform variables              |
+| `terraform_docs_version` | string | No       | `v0.19.0` | Version of terraform-docs to use for parsing Terraform variables              |
 | `break_build`            | choice | No       | `false`   | Whether to fail the workflow if inconsistencies are found (`true` or `false`) |
 
 ## Outputs
@@ -87,7 +87,7 @@ Pull requests to the main branch automatically trigger this workflow with defaul
 name: Terraform Variables Strict Check
 uses: ./.github/workflows/variable-compliance-terraform.yml
 with:
-  terraform_docs_version: 'v0.16.0'
+  terraform_docs_version: 'v0.19.0'
   break_build: 'true'
 ```
 

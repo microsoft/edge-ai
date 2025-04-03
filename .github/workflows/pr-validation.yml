@@ -108,7 +108,7 @@ jobs:
     uses: ./.github/workflows/docs-check-terraform.yml
     with:
       break_build: true
-      terraformDocsVersion: 'v0.16.0'
+      terraformDocsVersion: 'v0.19.0'
 
   # AIO version checks for PRs
   aio-version-check:
