@@ -70,10 +70,10 @@ The following are a selection of categories identified by the MLCommons AI Safet
 
 We evaluated multiple models based on False Positive Rate (FPR), False Negative Rate (FNR), Latency (P50, P99), and Setup Complexity:
 
-| Model | FPR | FNR | Latency (P50/P99) | Setup Complexity | Notes |
-|--------|------|------|------------------|-----------------|-------|
-| Llama-Guard-3-1B | 0.61% | 19% | 0.02s / 0.04s | Low | Selected for its balance of accuracy, speed, and ease of setup. |
-| Llama-Guard-3-8B | 0.2% | 38% | 0.07s / 0.11s | High | Higher accuracy but significantly higher FNR and slower latency. |
+| Model            | FPR   | FNR | Latency (P50/P99) | Setup Complexity | Notes                                                            |
+|------------------|-------|-----|-------------------|------------------|------------------------------------------------------------------|
+| Llama-Guard-3-1B | 0.61% | 19% | 0.02s / 0.04s     | Low              | Selected for its balance of accuracy, speed, and ease of setup.  |
+| Llama-Guard-3-8B | 0.2%  | 38% | 0.07s / 0.11s     | High             | Higher accuracy but significantly higher FNR and slower latency. |
 
 Based on this comparison, Llama-Guard-3-1B was chosen due to its low latency, reasonable FPR/FNR, and ease of deployment in an offline environment.
 
@@ -81,14 +81,14 @@ Based on this comparison, Llama-Guard-3-1B was chosen due to its low latency, re
 
 We evaluated multiple datasets to determine which ones are best suited for testing content moderation in a disconnected environment.
 
-| Dataset | Rows | Categories | License | Notes |
-|---------|------|-----------|---------|-------|
-| [ai-safety-institute/AgentHarm](https://huggingface.co/datasets/ai-safety-institute/AgentHarm?library=datasets) | 416 | ['Disinformation', 'Harassment', 'Drugs', 'Fraud', 'Hate', 'Cybercrime', 'Sexual', 'Copyright'] | MIT | Selected for content safety evaluation. |
-| [Deepset Prompt Injection](https://huggingface.co/datasets/deepset/prompt-injections) | 662 | Prompt Injection | Apache 2.0 | Not used in this phase (only relevant for security). |
-| [xTRam1/safe-guard-prompt-injection](https://huggingface.co/datasets/xTRam1/safe-guard-prompt-injection) | 10,296 | Prompt Injection | Unknown | Not selected due to lack of licensing information. |
-| [Babelscape/ALERT](https://huggingface.co/datasets/Babelscape/ALERT) | 44,000 | 6 macro / 32 micro categories | CC BY-NC-SA 4.0 | Rejected due to restrictive license. |
-| [Anthropic/hh-rlhf](https://huggingface.co/datasets/Anthropic/hh-rlhf) | Unknown | Human preference (helpfulness/harmlessness) | MIT | Rejected due to potential bias (used for LLM fine-tuning). |
-| [Hate Speech and Offensive Language Dataset](https://www.kaggle.com/datasets/mrmorj/hate-speech-and-offensive-language-dataset) | 25,000 | Hate Speech, Offensive, Neutral | CC0 (Public Domain) | Not used due to domain mismatch (Twitter-based). |
+| Dataset                                                                                                                         | Rows    | Categories                                                                                      | License             | Notes                                                      |
+|---------------------------------------------------------------------------------------------------------------------------------|---------|-------------------------------------------------------------------------------------------------|---------------------|------------------------------------------------------------|
+| [ai-safety-institute/AgentHarm](https://huggingface.co/datasets/ai-safety-institute/AgentHarm?library=datasets)                 | 416     | ['Disinformation', 'Harassment', 'Drugs', 'Fraud', 'Hate', 'Cybercrime', 'Sexual', 'Copyright'] | MIT                 | Selected for content safety evaluation.                    |
+| [Deepset Prompt Injection](https://huggingface.co/datasets/deepset/prompt-injections)                                           | 662     | Prompt Injection                                                                                | Apache 2.0          | Not used in this phase (only relevant for security).       |
+| [xTRam1/safe-guard-prompt-injection](https://huggingface.co/datasets/xTRam1/safe-guard-prompt-injection)                        | 10,296  | Prompt Injection                                                                                | Unknown             | Not selected due to lack of licensing information.         |
+| [Babelscape/ALERT](https://huggingface.co/datasets/Babelscape/ALERT)                                                            | 44,000  | 6 macro / 32 micro categories                                                                   | CC BY-NC-SA 4.0     | Rejected due to restrictive license.                       |
+| [Anthropic/hh-rlhf](https://huggingface.co/datasets/Anthropic/hh-rlhf)                                                          | Unknown | Human preference (helpfulness/harmlessness)                                                     | MIT                 | Rejected due to potential bias (used for LLM fine-tuning). |
+| [Hate Speech and Offensive Language Dataset](https://www.kaggle.com/datasets/mrmorj/hate-speech-and-offensive-language-dataset) | 25,000  | Hate Speech, Offensive, Neutral                                                                 | CC0 (Public Domain) | Not used due to domain mismatch (Twitter-based).           |
 
 [Azure AI Safety Adversarial Simulator](https://learn.microsoft.com/azure/ai-studio/how-to/develop/simulator-interaction-data#supported-adversarial-simulation-scenarios) is included in the table, however it is not dataset but rather a tool.
 
