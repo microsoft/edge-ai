@@ -44,7 +44,7 @@ Data flow:
 
 This scenario covers use case when an anomaly is detected and subsequently confirmed using additional deterministic logic, an OT team member seeks to further review snapshots and video clips of the anomaly for deeper analysis.
 
-### 2.1 Trigger to start saving snapshots and clips to the Edge.
+### 2.1 Trigger to start saving snapshots and clips to the Edge
 
 ![scenario-2-1-diagram](./media/media-scenario-2-1.drawio.png)
 
@@ -60,7 +60,7 @@ Data flow:
 
 (4) - Media Connector starts saving clips/snapshots to a persisted volume with unbacked [Azure Container Storage enabled by Azure Arc](https://learn.microsoft.com/azure/azure-arc/container-storage/overview) (ACSA)
 
-### 2.2 Move files from unbacked to backed ACSA for confirmed events.
+### 2.2 Move files from unbacked to backed ACSA for confirmed events
 
 ![scenario-2-2-diagram](./media//media-scenario-2-2.drawio.png)
 
@@ -76,7 +76,7 @@ Data flow:
 
 (5) - The files in ACSA Cloud backed persisted volume is then synced to Azure Blob Storage.
 
-### 2.3 Retrieve clips and snapshots for a specified start time and duration.
+### 2.3 Retrieve clips and snapshots for a specified start time and duration
 
 ![scenario-2-3-diagram](./media/media-scenario-2-3.drawio.png)
 

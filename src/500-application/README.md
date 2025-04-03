@@ -22,7 +22,7 @@ To add a new application to this repository, follow these guidelines:
 
 Your application should include the following structure:
 
-```
+```text
 5xx-your-application-name/
 ├── README.md                  # Description of your application
 ├── Dockerfile                 # Only if you have a single service
@@ -42,45 +42,44 @@ Your application should include the following structure:
 ### Docker and Containerization
 
 1. **Dockerfile**: Each application must contain at least one `Dockerfile` for building service images.
+    - For a single-service application, place the `Dockerfile` at the root of your application directory.
+    - For multi-service applications, place each `Dockerfile` within its respective service directory under `services/`.
+    - **Use multi-stage builds where possible** to keep images small and secure. This approach separates the build
+      environment from the runtime environment.
 
-- For a single-service application, place the `Dockerfile` at the root of your application directory.
-- For multi-service applications, place each `Dockerfile` within its respective service directory under `services/`.
-- **Use multi-stage builds where possible** to keep images small and secure. This approach separates the build
-  environment from the runtime environment.
+    Example of a multi-stage Dockerfile:
 
-Example of a multi-stage Dockerfile:
+    ```dockerfile
+    # Build stage
+    FROM python:3.9-slim AS builder
 
-```dockerfile
-# Build stage
-FROM python:3.9-slim AS builder
+    WORKDIR /app
 
-WORKDIR /app
+    # Install build dependencies
+    RUN apt-get update && apt-get install -y --no-install-recommends \
+        build-essential \
+        && rm -rf /var/lib/apt/lists/*
 
-# Install build dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
+    # Copy and install requirements
+    COPY requirements.txt .
+    RUN pip wheel --no-cache-dir --wheel-dir /app/wheels -r requirements.txt
 
-# Copy and install requirements
-COPY requirements.txt .
-RUN pip wheel --no-cache-dir --wheel-dir /app/wheels -r requirements.txt
+    # Runtime stage
+    FROM python:3.9-slim
 
-# Runtime stage
-FROM python:3.9-slim
+    WORKDIR /app
 
-WORKDIR /app
+    # Copy wheels from builder stage
+    COPY --from=builder /app/wheels /wheels
+    RUN pip install --no-cache-dir --no-index --find-links=/wheels/ /wheels/* \
+        && rm -rf /wheels
 
-# Copy wheels from builder stage
-COPY --from=builder /app/wheels /wheels
-RUN pip install --no-cache-dir --no-index --find-links=/wheels/ /wheels/* \
-    && rm -rf /wheels
+    # Copy application code
+    COPY . .
 
-# Copy application code
-COPY . .
-
-# Run the application
-CMD ["python", "app.py"]
-```
+    # Run the application
+    CMD ["python", "app.py"]
+    ```
 
 2. **docker-compose.yaml**: Include a `docker-compose.yaml` file at the root of your application for local development
    and testing. This should enable running your complete application with `docker compose up`.
@@ -103,11 +102,10 @@ If your application requires Helm deployment:
 ### Documentation
 
 1. Include a descriptive `README.md` at the root of your application folder explaining:
-
-- Purpose of the application
-- How to build and run it
-- Configuration options
-- Any dependencies
+    - Purpose of the application
+    - How to build and run it
+    - Configuration options
+    - Any dependencies
 
 2. Place additional documentation in the `docs/` folder.
 

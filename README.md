@@ -47,12 +47,12 @@ Then, get started bootstrapping Arc-enabled AIO environments:
    use [this project's integrated dev container](./.devcontainer/README.md).
 3. Login to the Azure Portal.
 4. From a terminal:
-  - `cd ./src/000-subscription`
-  - Run `./register-azure-providers.sh <providers-file>` to prepare your subscription
-  - Follow instructions in the [./src/005-onboard-reqs README](./src/005-onboard-reqs/README.md)
-  - Deploy the IaC:
-    - Select a `full-*` _blueprint_ from the [blueprints](./blueprints/README.md) directory and follow deployment
-      instructions located in the root blueprint folder.
+    1. `cd ./src/000-subscription`
+    2. Run `./register-azure-providers.sh <providers-file>` to prepare your subscription
+5. Follow instructions in the [./src/005-onboard-reqs README](./src/005-onboard-reqs/README.md)
+6. Deploy the IaC:
+    1. Select a _blueprint_ from the [blueprints](./blueprints/README.md) directory.
+    2. Ask Copilot to guide you through blueprint deployment (see below) or follow the deployment instructions located in the root blueprint folder.
 
 **Optionally**, this repository includes scripts to individually deploy each and every component. Follow the
 instructions located at [./src/README.md](./src/README.md) for details.
