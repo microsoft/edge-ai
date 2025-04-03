@@ -172,4 +172,4 @@ jobs:
 - [GitHub Actions Matrix Strategy](https://docs.github.com/en/actions/using-jobs/using-a-matrix-for-your-jobs)
 - [GitHub Actions Workflow Reuse](https://docs.github.com/en/actions/using-workflows/reusing-workflows)
 - [jq Manual](https://stedolan.github.io/jq/manual/)
-- [Azure Bicep Documentation](https://docs.microsoft.com/en-us/azure/azure-resource-manager/bicep/)
+- [Azure Bicep Documentation](https://docs.microsoft.com/azure/azure-resource-manager/bicep/)
