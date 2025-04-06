@@ -1,36 +1,50 @@
 # Source Code Structure
 
-The source code for this project is organized into discrete steps optimized for enterprise
-deployments of Arc-enabled Azure IoT Operations solutions, and takes project execution
-phases into account. When a project first kicks off, pass the `000-subscription` IaC off
-to Azure subscription managers to ensure that all resource providers are pre-registered
-before work begins. Physical plant engineers can layer up `010`, `020` and `040` for on
-premises cluster set-up. And so on.
+The source code for this project is organized into discrete categories optimized for enterprise
+deployments of Arc-enabled Azure IoT Operations solutions. The components are grouped by their
+deployment location (cloud vs. edge) and purpose, taking project execution phases into account.
+When a project first kicks off, pass the `azure-resource-providers` scripts off to Azure subscription
+managers to ensure that all resource providers are pre-registered before work begins.
+Cloud infrastructure teams can handle the `000-cloud` components, while physical plant
+engineers can deploy the `100-edge` components for on-premises cluster set-up.
 
-1. [(000)](./000-subscription/README.md) Run-once scripts for Arc & AIO resource provider enablement in subscriptions,
-   if necessary
-2. [(005)](./005-onboard-reqs/README.md) Resource Groups, Site Management (optional), Role assignments/permissions for
-   Arc onboarding
-3. [(010)](./010-vm-host/README.md) VM/host provisioning, with configurable host operating system (initially limited to
-   Ubuntu)
-4. [(020)](./020-cncf-cluster/README.md) Installation of a CNCF cluster that is AIO compatible (initially limited to
-   K3s) and Arc enablement of target clusters, workload identity
-5. [(030)](./030-iot-ops-cloud-reqs/README.md) Cloud resource provisioning for Azure Key Vault, Storage Accounts, Schema
-   Registry, Container Registry, and User Assigned Managed Identity
-6. [(040)](./040-iot-ops/README.md) AIO deployment of core infrastructure components (MQ Broker, Edge Storage
-   Accelerator, Secrets Sync Controller, Workload Identity Federation, OpenTelemetry Collector, OPC UA Simulator)
-7. [(050)](./050-messaging/README.md) Cloud resource provisioning for cloud communication (MQTT protocol head for Event
-   Grid (topic spaces, topics and cert-based authentication), Event Hubs, Service Bus, Relay, etc.)
-8. [(060)](./060-cloud-data-persistence/README.md) Cloud resource provisioning for data/event storage (Fabric by means
-   of RTI, Data Lakes, Warehouses, etc.)
-9. [(070)](./070-observability/README.md) Cloud resource provisioning for Azure Monitor and Container Insights
-10. [(080)](./080-iot-ops-utility/README.md) AIO deployment of additionally selected components (OTEL Collector (Phase
-    2), OPC UA, AKRI, Strato, FluxCD/Argo)
-11. [(500)](./500-application/README.md) Custom workloads and applications, including a basic Inference Pipeline,
-    TIG/TICK stacks, InfluxDB Data Historian, reference data backup from cloud to edge, etc.
-12. [(samples/dataflows-acsa-egmqtt-bidirectional)](./samples/dataflows-acsa-egmqtt-bidirectional/README.md) Sample that
-    provides assets with Azure IoT Operations Dataflows and supported infrastructure creation to manage `AIO MQTT->ACSA`
-    and `AIO MQTT-> Event Grid` bidirectional data flow.
+## Cloud Infrastructure (000-cloud)
+
+1. [(000-cloud/000-resource-group)](./000-cloud/000-resource-group/README.md) - Resource Groups for all Azure resources
+2. [(000-cloud/010-security-identity)](./000-cloud/010-security-identity/README.md) - Identity and security resources
+   including Key Vault, Managed Identities, and role assignments
+3. [(000-cloud/020-observability)](./000-cloud/020-observability/README.md) - Cloud-side monitoring and observability
+   resources
+4. [(000-cloud/030-data)](./000-cloud/030-data/README.md) - Data storage and Schema Registry resources
+5. [(000-cloud/031-fabric)](./000-cloud/031-fabric/README.md) - Microsoft Fabric resources for data warehousing and
+   analytics
+6. [(000-cloud/040-messaging)](./000-cloud/040-messaging/README.md) - Event Grid, Event Hubs, Service Bus and messaging
+   resources
+7. [(000-cloud/050-vm-host)](./000-cloud/050-vm-host/README.md) - VM provisioning resources with configurable host
+   operating system
+
+## Edge Infrastructure (100-edge)
+
+1. [(100-edge/100-cncf-cluster)](./100-edge/100-cncf-cluster/README.md) - Installation of a CNCF cluster that is AIO
+   compatible (initially limited to K3s) and Arc enablement of target clusters, workload identity
+2. [(100-edge/110-iot-ops)](./100-edge/110-iot-ops/README.md) - AIO deployment of core infrastructure components (MQ
+   Broker, Edge Storage Accelerator, Secrets Sync Controller, Workload Identity Federation, OpenTelemetry Collector,
+   etc.)
+3. [(100-edge/120-observability)](./100-edge/120-observability/README.md) - Edge-specific observability components and
+   monitoring tools
+4. [(100-edge/130-messaging)](./100-edge/130-messaging/README.md) - Edge messaging components and data routing
+   capabilities
+
+## Applications & Utilities
+
+1. [(500-application)](./500-application/README.md) - Custom workloads and applications, including a basic Inference
+   Pipeline, TIG/TICK stacks, InfluxDB Data Historian, reference data backup from cloud to edge, etc.
+2. [(900-tools-utilities)](./900-tools-utilities/README.md) - Utility scripts, tools, and supporting resources for edge
+   deployments
+3. [(samples/dataflows-acsa-egmqtt-bidirectional)](./samples/dataflows-acsa-egmqtt-bidirectional/README.md) - Sample
+   that provides assets with Azure IoT Operations Dataflows and supported infrastructure creation
+4. [(azure-resource-providers)](./azure-resource-providers/README.md) - Scripts to register required Azure resource
+   providers for AIO and Arc in your subscription
 
 ## Prerequisites
 
@@ -200,7 +214,8 @@ terraform test
 ## Bicep Components - Getting Started
 
 Each component directory that contains Bicep IaC will have a corresponding `bicep` directory with Bicep templates.
-Similar to Terraform modules, these templates are designed to be reusable building blocks for your infrastructure deployments.
+Similar to Terraform modules, these templates are designed to be reusable building blocks for your infrastructure
+deployments.
 
 ### Bicep - Local CI
 
@@ -209,7 +224,8 @@ The following steps are for manual local deployment of Bicep components.
 #### Bicep - Prerequisites
 
 - [Azure CLI](https://docs.microsoft.com/cli/azure/install-azure-cli)
-- [Bicep CLI](https://docs.microsoft.com/azure/azure-resource-manager/bicep/install) (included in recent Azure CLI versions)
+- [Bicep CLI](https://docs.microsoft.com/azure/azure-resource-manager/bicep/install) (included in recent Azure CLI
+  versions)
 
 #### Bicep - Create Resources
 
@@ -285,10 +301,12 @@ az group delete --name $RESOURCE_GROUP_NAME --no-wait
 ### Bicep - Generating Docs
 
 To simplify doc generation, this directory makes use of scripts to generate documentation for Bicep modules.
-To generate docs for new modules or re-generate docs for existing modules, run the following command from the root of this repository:
+To generate docs for new modules or re-generate docs for existing modules, run the following command from the root of
+this repository:
 
 ```sh
 ./scripts/update-all-bicep-docs.sh
 ```
 
-This generates documentation based on the configuration defined in the repository, using the metadata from your Bicep files.
+This generates documentation based on the configuration defined in the repository, using the metadata from your Bicep
+files.

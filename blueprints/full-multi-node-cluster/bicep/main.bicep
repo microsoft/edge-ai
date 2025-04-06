@@ -3,15 +3,21 @@ metadata description = 'Deploys a complete end-to-end environment for Azure IoT 
 
 import * as core from './types.core.bicep'
 
+targetScope = 'subscription'
+
 /*
   Common Parameters
 */
 @description('The common component configuration.')
 param common core.Common
 
+@description('The name for the resource group. If not provided, a default name will be generated.')
+param resourceGroupName string = 'rg-${common.resourcePrefix}-${common.environment}-${common.instance}'
+
 /*
   Virtual Machine Parameters
 */
+
 @secure()
 @description('Password used for the host VM.')
 param adminPassword string
@@ -37,58 +43,71 @@ param hostMachineCount int = 3
 /*
   Modules
 */
-// Deploy onboard requirements (identity for Arc onboarding)
-module onboardReqs '../../../src/005-onboard-reqs/bicep/main.bicep' = {
-  name: 'onboardReqs'
+
+module cloudResourceGroup '../../../src/000-cloud/000-resource-group/bicep/main.bicep' = {
+  name: '${deployment().name}-cloudResourceGroup'
   params: {
     common: common
   }
 }
 
-// Deploy VM hosts
-module vmHost '../../../src/010-vm-host/bicep/main.bicep' = {
-  name: 'vmHost'
+module cloudSecurityIdentity '../../../src/000-cloud/010-security-identity/bicep/main.bicep' = {
+  name: '${deployment().name}-cloudSecurityIdentity'
+  scope: resourceGroup(resourceGroupName)
+  dependsOn: [cloudResourceGroup]
   params: {
     common: common
-    arcOnboardingUserAssignedIdentityId: onboardReqs.outputs.arcOnboardingUserManagedIdentityId
+  }
+}
+
+module cloudData '../../../src/000-cloud/030-data/bicep/main.bicep' = {
+  name: '${deployment().name}-cloudData'
+  scope: resourceGroup(resourceGroupName)
+  dependsOn: [cloudResourceGroup]
+  params: {
+    common: common
+  }
+}
+
+module cloudVmHost '../../../src/000-cloud/050-vm-host/bicep/main.bicep' = {
+  name: '${deployment().name}-cloudVmHost'
+  scope: resourceGroup(resourceGroupName)
+  dependsOn: [cloudResourceGroup]
+  params: {
+    common: common
     adminPassword: adminPassword
     vmCount: hostMachineCount
+    arcOnboardingIdentityName: cloudSecurityIdentity.outputs.arcOnboardingIdentityName!
   }
 }
 
-// Deploy CNCF cluster with K3s
-module cncfCluster '../../../src/020-cncf-cluster/bicep/main.bicep' = {
-  name: 'cncfCluster'
+module edgeCncfCluster '../../../src/100-edge/100-cncf-cluster/bicep/main.bicep' = {
+  name: '${deployment().name}-edgeCncfCluster'
+  scope: resourceGroup(resourceGroupName)
+  dependsOn: [cloudResourceGroup]
   params: {
     common: common
-    clusterServerVirtualMachineName: vmHost.outputs.vmNames[0]
-    clusterNodeVirtualMachineNames: skip(vmHost.outputs.vmNames, 1)
+    clusterServerVirtualMachineName: cloudVmHost.outputs.vmNames[0]
+    clusterNodeVirtualMachineNames: skip(cloudVmHost.outputs.vmNames, 1)
     shouldGenerateServerToken: true
-    clusterServerIp: vmHost.outputs.privateIpAddresses[0]
+    clusterServerIp: cloudVmHost.outputs.privateIpAddresses[0]
     shouldGetCustomLocationsOid: shouldGetCustomLocationsOid
     customLocationsOid: customLocationsOid
+    arcOnboardingIdentityName: cloudSecurityIdentity.outputs.arcOnboardingIdentityName!
   }
 }
 
-// Deploy IoT Ops cloud requirements
-module iotOpsCloudReqs '../../../src/030-iot-ops-cloud-reqs/bicep/main.bicep' = {
-  name: 'iotOpsCloudReqs'
+module edgeIotOps '../../../src/100-edge/110-iot-ops/bicep/main.bicep' = {
+  name: '${deployment().name}-edgeIotOps'
+  scope: resourceGroup(resourceGroupName)
+  dependsOn: [cloudResourceGroup]
   params: {
     common: common
-  }
-}
-
-// Deploy Azure IoT Operations
-module iotOps '../../../src/040-iot-ops/bicep/main.bicep' = {
-  name: 'iotOps'
-  params: {
-    common: common
-    arcConnectedClusterName: cncfCluster.outputs.connectedClusterName
-    schemaRegistryId: iotOpsCloudReqs.outputs.adrSchemaRegistryId
-    aioUserAssignedIdentityId: iotOpsCloudReqs.outputs.aioUamiId
-    aioUserAssignedIdentityName: iotOpsCloudReqs.outputs.aioUamiName
-    sseKeyVaultName: iotOpsCloudReqs.outputs.sseKeyVaultName
-    sseUserAssignedIdentityName: iotOpsCloudReqs.outputs.sseUamiName
+    arcConnectedClusterName: edgeCncfCluster.outputs.connectedClusterName
+    schemaRegistryName: cloudData.outputs.schemaRegistryName
+    aioIdentityName: cloudSecurityIdentity.outputs.aioIdentityName
+    sseKeyVaultName: cloudSecurityIdentity.outputs.keyVaultName!
+    sseIdentityName: cloudSecurityIdentity.outputs.sseIdentityName
   }
 }
 
@@ -96,10 +115,10 @@ module iotOps '../../../src/040-iot-ops/bicep/main.bicep' = {
   Outputs
 */
 @description('The name of the Arc Connected Cluster.')
-output arcConnectedClusterName string = cncfCluster.outputs.connectedClusterName
+output arcConnectedClusterName string = edgeCncfCluster.outputs.connectedClusterName
 
 @description('The VM username for SSH access.')
-output vmUsername string = vmHost.outputs.adminUsername
+output vmUsername string = cloudVmHost.outputs.adminUsername
 
 @description('The names of all virtual machines deployed.')
-output vmNames array = vmHost.outputs.vmNames
+output vmNames array = cloudVmHost.outputs.vmNames

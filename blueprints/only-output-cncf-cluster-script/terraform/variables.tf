@@ -69,6 +69,12 @@ variable "should_add_current_user_cluster_admin" {
   default     = true
 }
 
+variable "should_assign_roles" {
+  description = "Whether to assign Key Vault roles to identity or service principal."
+  type        = bool
+  default     = false
+}
+
 variable "cluster_admin_oid" {
   type        = string
   description = "The Object ID that will be given cluster-admin permissions with the new cluster. (Otherwise, current logged in user if 'should_add_current_user_cluster_admin=true')"

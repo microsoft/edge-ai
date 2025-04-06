@@ -13,7 +13,7 @@
 
 | Name | Source | Version |
 |------|--------|---------|
-| cncf\_cluster\_install | ../../../src/020-cncf-cluster/terraform | n/a |
+| edge\_cncf\_cluster | ../../../src/100-edge/100-cncf-cluster/terraform | n/a |
 
 ## Inputs
 

@@ -17,13 +17,6 @@ variable "location" {
   description = "Location for all resources in this module"
 }
 
-variable "instance" {
-  type        = string
-  description = "Instance identifier for naming resources: 001, 002, etc..."
-  default     = "001"
-}
-
-
 variable "should_get_custom_locations_oid" {
   type        = bool
   description = <<-EOF
@@ -50,4 +43,16 @@ variable "host_machine_count" {
   type        = number
   description = "The number of host machines for the cluster. (The first host machine will be the cluster server)"
   default     = 3
+}
+
+variable "should_create_fabric" {
+  description = "Whether to create Fabric components."
+  type        = bool
+  default     = false
+}
+
+variable "should_create_anonymous_broker_listener" {
+  type        = string
+  description = "Whether to enable an insecure anonymous AIO MQ Broker Listener. (Should only be used for dev or test environments)"
+  default     = false
 }

@@ -24,7 +24,7 @@ The primary objective of this repository is to provide production ready IaC for 
 repository provides Terraform for building edge and cloud infrastructure, with a Bicep implementation on the roadmap
 for delivery in Q2 CY2025.
 
-If you are in need of Quickstarts for Azure IoT Operations or example implementations, they  can be found in official
+If you are in need of Quickstarts for Azure IoT Operations or example implementations, they can be found in official
 Azure documentation:
 
 - [Azure IoT Operations - Quickstart](https://learn.microsoft.com/azure/iot-operations/get-started-end-to-end-sample/quickstart-deploy)
@@ -38,13 +38,15 @@ project's [wiki](https://dev.azure.com/ai-at-the-edge-flagship-accelerator/edge-
 before you use the IaC (Terraform) in this repository. Then, get started bootstrapping Arc-enabled AIO environments:
 
 1. [Cloning this repository locally](https://learn.microsoft.com/azure/devops/repos/git/clone?view=azure-devops&tabs=visual-studio-2022#get-the-clone-url-of-an-azure-repos-git-repo)
-2. [Install pre-requisites](../src/README.md#prerequisites) or use [this project's integrated dev container](../.devcontainer/README.md).
+2. [Install pre-requisites](../src/README.md#prerequisites) or
+   use [this project's integrated dev container](../.devcontainer/README.md).
 3. Login to the Azure Portal.
 4. From a terminal:
-    - `cd ./src/000-subscription`
-    - Run `./register-azure-providers.sh` to prepare your subscription
-    - Follow instructions in the [./src/005-onboarding-reqs README](../src/005-onboard-reqs/README.md)
-    - Run `./operate-all-terraform.sh` from the `./src` directory
+
+- `cd ./src/000-subscription`
+- Run `./register-azure-providers.sh` to prepare your subscription
+- Follow instructions in the [./src/005-onboarding-reqs README](../src/005-onboard-reqs/README.md)
+- Run `./operate-all-terraform.sh` from the `./src` directory
 
 ### Video Demonstration
 
@@ -66,21 +68,52 @@ Learn about key architectural approaches or find introductions to key edge techn
 
 This project is a composable library of fine-grained, production ready IaC that can be easily layered to fit
 nearly any operational model, from small, single machine systems, to orchestrated, globally-distributed solutions.
-The project uses a decimal system to organize IaC, scripts, and supplementary resources, which can be collated in myriad ways to meet operational requirements:
+The project uses a decimal system to organize IaC, scripts, and supplementary resources, which can be collated in a
+myriad of ways to meet operational requirements. Refer to [blueprints](./blueprints) for example "full scenario" level
+deployments, to help build your understanding and knowledge of how best to leverage this repository.
 
-| Folder                                                                    | Description                                                                                                                                                                              |
-|---------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [000-subscription](../src/000-subscription/README.md)                     | Run-once scripts for Arc & AIO resource provider enablement in subscriptions, if necessary                                                                                               |
-| [005-onboard-reqs](../src/005-onboard-reqs/README.md)                     | Resource Groups, Site Management (optional), Role assignments/permissions for Arc onboarding                                                                                             |
-| [010-vm-host](../src/010-vm-host/README.md)                               | VM/host provisioning, with configurable host operating system (initially limited to Ubuntu)                                                                                              |
-| [020-cncf-cluster](../src/020-cncf-cluster/README.md)                     | Installation of a CNCF cluster that is AIO compatible (initially limited to K3s) and Arc enablement of target clusters, enable workload identity                                         |
-| [030-iot-ops-cloud](../src/030-iot-ops-cloud-reqs/README.md)              | Cloud resource provisioning for Azure Key Vault, Schema Registry, Storage Accounts, Container Registry, and User Assigned Managed Identity                                               |
-| [040-iot-ops](../src/040-iot-ops/README.md)                               | AIO deployment of core infrastructure components (MQ Broker, Edge Storage Accelerator, Secrets Sync Controller, Workload Identity Federation, OpenTelemetry Collector, OPC UA simulator) |
-| [050-messaging](../src/050-messaging/README.md)                           | Cloud resource provisioning for cloud communication (MQTT protocol head for Event Grid (topic spaces, topics and cert-based authentication), Event Hubs, Service Bus, Relay, etc.)       |
-| [060-cloud-data-persistence](../src/060-cloud-data-persistence/README.md) | Cloud resource provisioning for data/event storage (Fabric by means of RTI, Data Lakes, Warehouses, etc.)                                                                                |
-| [070-observability](../src/070-observability/README.md)                   | Cloud resource provisioning for Azure Monitor and Container Insights                                                                                                                     |
-| [080-iot-ops-utility](../src/080-iot-ops-utility/README.md)               | AIO deployment of additionally selected components (OTEL Collector (Phase 2), OPC UA, AKRI, Strato, FluxCD/Argo)                                                                         |
-| 090                                                                       | Customer defined custom workloads, and pre-built solution accelerators such as TIG/TICK stacks, InfluxDB Data Historian, reference data backup from cloud to edge, etc.                  |
+#### Components
+
+Components for this composable architecture are located under the [src](./src) directory of this repository. Each
+component is organized as a separate module that can be used individually, duplicated to where it's required, or
+pulled in as a dependency.
+
+Each component directory includes the different forms of IaC that's supported as folders, e.g. Terraform and Bicep.
+Additionally, a `ci` directory is included for verification and deployment within this repository's build
+system. This directory can also be referenced as an example for a straightforward deployment, typically only including
+default variables and assumes that prior requirements have been deployed from other component directories.
+
+The components are organized into categories based on their purpose and deployment location:
+
+##### Cloud Infrastructure (000-cloud)
+
+| Folder                                                                   | Description                                                                                   |
+|--------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------|
+| [000-resource-group](./src/000-cloud/000-resource-group/README.md)       | Resource Groups for all Azure resources                                                       |
+| [010-security-identity](./src/000-cloud/010-security-identity/README.md) | Identity and security resources including Key Vault, Managed Identities, and role assignments |
+| [020-observability](./src/000-cloud/020-observability/README.md)         | Cloud-side monitoring and observability resources                                             |
+| [030-data](./src/000-cloud/030-data/README.md)                           | Data storage and Schema Registry resources                                                    |
+| [031-fabric](./src/000-cloud/031-fabric/README.md)                       | Microsoft Fabric resources for data warehousing and analytics                                 |
+| [040-messaging](./src/000-cloud/040-messaging/README.md)                 | Event Grid, Event Hubs, Service Bus and messaging resources                                   |
+| [050-vm-host](./src/000-cloud/050-vm-host/README.md)                     | VM provisioning resources with configurable host operating system                             |
+
+##### Edge Infrastructure (100-edge)
+
+| Folder                                                          | Description                                                                                                                                                                  |
+|-----------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [100-cncf-cluster](./src/100-edge/100-cncf-cluster/README.md)   | Installation of a CNCF cluster that is AIO compatible (initially limited to K3s) and Arc enablement of target clusters, workload identity                                    |
+| [110-iot-ops](./src/100-edge/110-iot-ops/README.md)             | AIO deployment of core infrastructure components (MQ Broker, Edge Storage Accelerator, Secrets Sync Controller, Workload Identity Federation, OpenTelemetry Collector, etc.) |
+| [120-observability](./src/100-edge/120-observability/README.md) | Edge-specific observability components and monitoring tools                                                                                                                  |
+| [130-messaging](./src/100-edge/130-messaging/README.md)         | Edge messaging components and data routing capabilities                                                                                                                      |
+
+##### Applications & Samples
+
+| Folder                                                                                                     | Description                                                                                                                                    |
+|------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------|
+| [500-application](./src/500-application/README.md)                                                         | Custom workloads and applications, including a basic Inference Pipeline, TIG/TICK stacks, InfluxDB Data Historian, reference data backup, etc. |
+| [900-tools-utilities](./src/900-tools-utilities/README.md)                                                 | Utility scripts, tools, and supporting resources for edge deployments                                                                          |
+| [samples/dataflows-acsa-egmqtt-bidirectional](./src/samples/dataflows-acsa-egmqtt-bidirectional/README.md) | Sample that provides assets with Azure IoT Operations Dataflows and supported infrastructure creation                                          |
+| [azure-resource-providers](./src/azure-resource-providers/README.md)                                       | Scripts to register required Azure resource providers for AIO and Arc in your subscription                                                     |
 
 ### Using this project
 
@@ -101,13 +134,17 @@ The Terraform, scripts, and documentation in this repository can provide you the
 - Subscription resources to support all "in-the-box" components of an Azure IoT Operations (AIO) solution
 - Deployment of a cloud-hosted VM, sized and provisioned specifically for developing AIO solutions
 - Deployment of a development-ready K3s cluster with all the basic AIO components installed
-- [Integrated support for Azure Managed Identities](../src/010-vm-host/terraform/README.md)
-- [Integrated support for "Bring-Your-Own" certificates](../src/040-iot-ops/terraform/README.md#create_resources) (and intermediate certificates) for intra-cluster TLS
-- [A robust, matrix'ed IaC build system](../azure-pipelines.yml) with integrated testing and validation, to ensure your IaC deploys as you expect it to
+- [Integrated support for Azure Managed Identities](./src/000-cloud/050-vm-host/terraform/README.md)
+- [Integrated support for "Bring-Your-Own" certificates](./src/100-edge/110-iot-ops/terraform/README.md#create_resources) (and
+  intermediate certificates) for intra-cluster TLS
+- [A robust, matrix'ed IaC build system](../azure-pipelines.yml) with integrated testing and validation, to ensure your
+  IaC deploys as you expect it to
 - Auto-validation and auto-generation of Terraform Plans to support expedited CISO/Security/DevOps team approvals
-- [A library of common "Architectural Decision Records" (ADRs)](./solution-adr-library/README.md), ready to be modified to document your solution's requirements and the decisions you've made along the way
+- [A library of common "Architectural Decision Records" (ADRs)](./solution-adr-library/README.md), ready to be modified
+  to document your solution's requirements and the decisions you've made along the way
 - [A library of technology papers](./solution-technology-paper-library/README.md) to upskill your peers
-- [A well-stocked development container](../.devcontainer) for you to take the IaC for your "AI on the Edge Solutions" to production with confidence, repeatability, and reliability your organization deserves
+- [A well-stocked development container](../.devcontainer) for you to take the IaC for your "AI on the Edge Solutions"
+  to production with confidence, repeatability, and reliability your organization deserves
 
 ### Contribute
 
@@ -118,7 +155,8 @@ Users and project developers can contribute to make this solution better in seve
 - [Review the project's Contributing doc](../CONTRIBUTING.md)
 - [Contribute an ADR](./solution-adr-library/README.md#contribute) from your engagement
 - [Contribute a Security Plan](./solution-security-plan-library/README.md#contribute) from your engagement
-- [Find a user story or task from the backlog](https://dev.azure.com/ai-at-the-edge-flagship-accelerator/IaC%20for%20the%20Edge/_sprints/taskboard/IaC%20for%20the%20Edge%20Team/IaC%20for%20the%20Edge/***REMOVED***) and help move the accelerator forward
+- [Find a user story or task from the backlog](https://dev.azure.com/ai-at-the-edge-flagship-accelerator/IaC%20for%20the%20Edge/_sprints/taskboard/IaC%20for%20the%20Edge%20Team/IaC%20for%20the%20Edge/***REMOVED***)
+  and help move the accelerator forward
 
 #### Build and Test
 
@@ -128,7 +166,8 @@ Pull requests made to the repository go through a through build process includin
 in some cases deployment validation. After raising a PR, the build process with begin evaluating your
 contribution. If errors arise from the build, please attend to them as soon as you can.
 
-The project includes a [package.json script set](../package.json) that can be quite useful in development, and is worth a review.
+The project includes a [package.json script set](../package.json) that can be quite useful in development, and is worth
+a review.
 
 #### ADR Process
 
@@ -139,9 +178,14 @@ acceptance is performed via sign-off from 3/5ths of the project's leads defined 
 
 ADRs move through a process that includes the following states:
 
-- Draft - for all ADRs under development and in a drafting phase. May be committed to the main branch directly by project leads, but must be done via branches for community members
-- Proposed - for all ADRs that have been reviewed by the ADR sign-off team (project leads), this phase indicates the ADR is now open for discussion amongst the broad project community for feedback.
-- Accepted - for all ADRs that have completed the community RFC process. ADRs in this state have been ratified/accepted by the project community and may move to implementation.
-- Deprecated - for all ADRs that are no longer relevant to the solution or have been superseded by more comprehensive ADRs; this is inclusive of retired components or features, but will be retained in perpetuity for historical context.
+- Draft - for all ADRs under development and in a drafting phase. May be committed to the main branch directly by
+  project leads, but must be done via branches for community members
+- Proposed - for all ADRs that have been reviewed by the ADR sign-off team (project leads), this phase indicates the ADR
+  is now open for discussion amongst the broad project community for feedback.
+- Accepted - for all ADRs that have completed the community RFC process. ADRs in this state have been ratified/accepted
+  by the project community and may move to implementation.
+- Deprecated - for all ADRs that are no longer relevant to the solution or have been superseded by more comprehensive
+  ADRs; this is inclusive of retired components or features, but will be retained in perpetuity for historical context.
 
-Please see [ADR README](../Project%20ADRs/README.MD) for a more detailed explanation of the ADR process flow and how to author and progress your ideas for this project, through to implementation.
+Please see [ADR README](../Project%20ADRs/README.MD) for a more detailed explanation of the ADR process flow and how to
+author and progress your ideas for this project, through to implementation.
