@@ -52,7 +52,8 @@ Then, get started bootstrapping Arc-enabled AIO environments:
 5. Follow instructions in the [./src/005-onboard-reqs README](./src/005-onboard-reqs/README.md)
 6. Deploy the IaC:
     1. Select a _blueprint_ from the [blueprints](./blueprints/README.md) directory.
-    2. Ask Copilot to guide you through blueprint deployment (see below) or follow the deployment instructions located in the root blueprint folder.
+    2. Ask Copilot to guide you through blueprint deployment (see below) or follow the deployment instructions located in
+        the root blueprint folder.
 
 **Optionally**, this repository includes scripts to individually deploy each and every component. Follow the
 instructions located at [./src/README.md](./src/README.md) for details.
@@ -122,25 +123,37 @@ Additionally, a `ci` directory is included for verification and deployment withi
 system. This directory can also be referenced as an example for a straightforward deployment, typically only including
 default variables and assumes that prior requirements have been deployed from other component directories.
 
-| Folder                                                                   | Description                                                                                                                                                                              |
-|--------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [000-subscription](./src/000-subscription/README.md)                     | Run-once scripts for Arc & AIO resource provider enablement in subscriptions, if necessary                                                                                               |
-| [005-onboard-reqs](./src/005-onboard-reqs/README.md)                     | Resource Groups, Site Management (optional), Role assignments/permissions for Arc onboarding                                                                                             |
-| [010-vm-host](./src/010-vm-host/README.md)                               | VM/host provisioning, with configurable host operating system (initially limited to Ubuntu)                                                                                              |
-| [020-cncf-cluster](./src/020-cncf-cluster/README.md)                     | Installation of a CNCF cluster that is AIO compatible (initially limited to K3s) and Arc enablement of target clusters, enable workload identity                                         |
-| [030-iot-ops-cloud](./src/030-iot-ops-cloud-reqs/README.md)              | Cloud resource provisioning for Azure Key Vault, Schema Registry, Storage Accounts, Container Registry, and User Assigned Managed Identity                                               |
-| [040-iot-ops](./src/040-iot-ops/README.md)                               | AIO deployment of core infrastructure components (MQ Broker, Edge Storage Accelerator, Secrets Sync Controller, Workload Identity Federation, OpenTelemetry Collector, OPC UA simulator) |
-| [050-messaging](./src/050-messaging/README.md)                           | Cloud resource provisioning for cloud communication (MQTT protocol head for Event Grid (topic spaces, topics and cert-based authentication), Event Hubs, Service Bus, Relay, etc.)       |
-| [060-cloud-data-persistence](./src/060-cloud-data-persistence/README.md) | Cloud resource provisioning for data/event storage (Fabric by means of RTI, Data Lakes, Warehouses, etc.)                                                                                |
-| [070-observability](./src/070-observability/README.md)                   | Cloud resource provisioning for Azure Monitor and Container Insights                                                                                                                     |
-| [080-iot-ops-utility](./src/080-iot-ops-utility/README.md)               | AIO deployment of additionally selected components (OTEL Collector (Phase 2), OPC UA, AKRI, Strato, FluxCD/Argo)                                                                         |
-| [500-application](./src/500-application/README.md)                       | Custom workloads and applications, including a basic Inference Pipeline, TIG/TICK stacks, InfluxDB Data Historian, reference data backup from cloud to edge, etc.                        |
+The components are organized into categories based on their purpose and deployment location:
 
-#### Blueprints
+##### Cloud Infrastructure (000-cloud)
 
-This project includes _blueprints_ that can be used as reference for deploying specific edge scenarios. Blueprints
-are located in the [blueprints](./blueprints) folder and are organized by the supported IaC framework being used,
-which includes Terraform, Bicep, and script-based.
+| Folder                                                                   | Description                                                                                   |
+|--------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------|
+| [000-resource-group](./src/000-cloud/000-resource-group/README.md)       | Resource Groups for all Azure resources                                                       |
+| [010-security-identity](./src/000-cloud/010-security-identity/README.md) | Identity and security resources including Key Vault, Managed Identities, and role assignments |
+| [020-observability](./src/000-cloud/020-observability/README.md)         | Cloud-side monitoring and observability resources                                             |
+| [030-data](./src/000-cloud/030-data/README.md)                           | Data storage and Schema Registry resources                                                    |
+| [031-fabric](./src/000-cloud/031-fabric/README.md)                       | Microsoft Fabric resources for data warehousing and analytics                                 |
+| [040-messaging](./src/000-cloud/040-messaging/README.md)                 | Event Grid, Event Hubs, Service Bus and messaging resources                                   |
+| [050-vm-host](./src/000-cloud/050-vm-host/README.md)                     | VM provisioning resources with configurable host operating system                             |
+
+##### Edge Infrastructure (100-edge)
+
+| Folder                                                          | Description                                                                                                                                                                  |
+|-----------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [100-cncf-cluster](./src/100-edge/100-cncf-cluster/README.md)   | Installation of a CNCF cluster that is AIO compatible (initially limited to K3s) and Arc enablement of target clusters, workload identity                                    |
+| [110-iot-ops](./src/100-edge/110-iot-ops/README.md)             | AIO deployment of core infrastructure components (MQ Broker, Edge Storage Accelerator, Secrets Sync Controller, Workload Identity Federation, OpenTelemetry Collector, etc.) |
+| [120-observability](./src/100-edge/120-observability/README.md) | Edge-specific observability components and monitoring tools                                                                                                                  |
+| [130-messaging](./src/100-edge/130-messaging/README.md)         | Edge messaging components and data routing capabilities                                                                                                                      |
+
+##### Applications & Samples
+
+| Folder                                                                                                     | Description                                                                                                                                    |
+|------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------|
+| [500-application](./src/500-application/README.md)                                                         | Custom workloads and applications, including a basic Inference Pipeline, TIG/TICK stacks, InfluxDB Data Historian, reference data backup, etc. |
+| [900-tools-utilities](./src/900-tools-utilities/README.md)                                                 | Utility scripts, tools, and supporting resources for edge deployments                                                                          |
+| [samples/dataflows-acsa-egmqtt-bidirectional](./src/samples/dataflows-acsa-egmqtt-bidirectional/README.md) | Sample that provides assets with Azure IoT Operations Dataflows and supported infrastructure creation                                          |
+| [azure-resource-providers](./src/azure-resource-providers/README.md)                                       | Scripts to register required Azure resource providers for AIO and Arc in your subscription                                                     |
 
 ### Using this project
 
@@ -162,8 +175,8 @@ The Terraform, scripts, and documentation in this repository can provide you the
 - Subscription resources supporting all "in-the-box" components of an Azure IoT Operations (AIO) solution
 - Deployment of a cloud-hosted VM, sized and provisioned specifically for developing AIO solutions
 - Deployment of a development-ready K3s cluster with all the basic AIO components installed
-- [Integrated support for Azure Managed Identities](./src/010-vm-host/terraform/README.md)
-- [Integrated support for "Bring-Your-Own" certificates](./src/040-iot-ops/terraform/README.md#create_resources) (and
+- [Integrated support for Azure Managed Identities](./src/000-cloud/050-vm-host/terraform/README.md)
+- [Integrated support for "Bring-Your-Own" certificates](./src/100-edge/110-iot-ops/terraform/README.md#create_resources) (and
   intermediate certificates) for intra-cluster TLS
 - [A robust, matrix'ed IaC build system](./azure-pipelines.yml) with integrated testing and validation, to ensure your
   IaC deploys as you expect it to

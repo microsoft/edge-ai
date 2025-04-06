@@ -1,89 +1,129 @@
-module "onboard_requirements" {
-  source = "../../../src/005-onboard-reqs/terraform"
+module "cloud_resource_group" {
+  source = "../../../src/000-cloud/000-resource-group/terraform"
+
+  tags = {
+    blueprint = "full-single-cluster"
+  }
+  environment     = var.environment
+  location        = var.location
+  resource_prefix = var.resource_prefix
+}
+
+module "cloud_security_identity" {
+  source = "../../../src/000-cloud/010-security-identity/terraform"
+
+  environment     = var.environment
+  location        = var.location
+  resource_prefix = var.resource_prefix
+
+  aio_resource_group = module.cloud_resource_group.resource_group
+}
+
+module "cloud_observability" {
+  source = "../../../src/000-cloud/020-observability/terraform"
 
   environment     = var.environment
   resource_prefix = var.resource_prefix
   location        = var.location
-  instance        = var.instance
+
+  azmon_resource_group = module.cloud_resource_group.resource_group
 }
 
-module "vm_host" {
-  source = "../../../src/010-vm-host/terraform"
+module "cloud_data" {
+  source = "../../../src/000-cloud/030-data/terraform"
 
-  resource_prefix                       = var.resource_prefix
-  environment                           = var.environment
-  instance                              = var.instance
-  location                              = var.location
-  aio_resource_group                    = module.onboard_requirements.resource_group
-  arc_onboarding_user_assigned_identity = module.onboard_requirements.arc_onboarding_user_assigned_identity
-  vm_count                              = var.host_machine_count
+  environment     = var.environment
+  location        = var.location
+  resource_prefix = var.resource_prefix
+
+  resource_group = module.cloud_resource_group.resource_group
 }
 
-module "cncf_cluster_install" {
-  source = "../../../src/020-cncf-cluster/terraform"
+module "cloud_fabric" {
+  source = "../../../src/000-cloud/031-fabric/terraform"
 
-  environment                          = var.environment
-  instance                             = var.instance
-  resource_prefix                      = var.resource_prefix
-  aio_resource_group                   = module.onboard_requirements.resource_group
-  cluster_server_virtual_machine       = module.vm_host.virtual_machines[0]
-  cluster_node_virtual_machines        = slice(module.vm_host.virtual_machines, 1, length(module.vm_host.virtual_machines))
-  should_generate_cluster_server_token = true
-  cluster_server_ip                    = module.vm_host.private_ips[0]
-  custom_locations_oid                 = var.custom_locations_oid
-  should_get_custom_locations_oid      = var.should_get_custom_locations_oid
+  environment     = var.environment
+  location        = var.location
+  resource_prefix = var.resource_prefix
+
+  resource_group                   = module.cloud_resource_group.resource_group
+  should_create_fabric_capacity    = var.should_create_fabric
+  should_create_fabric_eventstream = var.should_create_fabric
+  should_create_fabric_lakehouse   = var.should_create_fabric
+  should_create_fabric_workspace   = var.should_create_fabric
+  // eventhub_endpoint = module.cloud_messaging.event_hub. fill_in
 }
 
-module "iot_ops_cloud_requirements" {
-  source = "../../../src/030-iot-ops-cloud-reqs/terraform"
+module "cloud_messaging" {
+  source = "../../../src/000-cloud/040-messaging/terraform"
 
-  resource_prefix    = var.resource_prefix
+  resource_group  = module.cloud_resource_group.resource_group
+  aio_identity    = module.cloud_security_identity.aio_identity
+  environment     = var.environment
+  resource_prefix = var.resource_prefix
+}
+
+module "cloud_vm_host" {
+  source = "../../../src/000-cloud/050-vm-host/terraform"
+
   environment        = var.environment
-  instance           = var.instance
-  aio_resource_group = module.onboard_requirements.resource_group
+  location           = var.location
+  resource_prefix    = var.resource_prefix
+  host_machine_count = var.host_machine_count
+
+  resource_group          = module.cloud_resource_group.resource_group
+  arc_onboarding_identity = module.cloud_security_identity.arc_onboarding_identity
 }
 
-module "iot_ops_install" {
-  source = "../../../src/040-iot-ops/terraform"
+module "edge_cncf_cluster" {
+  source = "../../../src/100-edge/100-cncf-cluster/terraform"
 
-  aio_resource_group         = module.onboard_requirements.resource_group
-  arc_connected_cluster      = module.cncf_cluster_install.arc_connected_cluster
-  adr_schema_registry        = module.iot_ops_cloud_requirements.adr_schema_registry
-  aio_user_assigned_identity = module.iot_ops_cloud_requirements.aio_user_assigned_identity
-  sse_key_vault              = module.iot_ops_cloud_requirements.sse_key_vault
-  sse_user_assigned_identity = module.iot_ops_cloud_requirements.sse_user_assigned_identity
+  environment     = var.environment
+  resource_prefix = var.resource_prefix
+
+  resource_group                 = module.cloud_resource_group.resource_group
+  arc_onboarding_identity        = module.cloud_security_identity.arc_onboarding_identity
+  arc_onboarding_sp              = module.cloud_security_identity.arc_onboarding_sp
+  cluster_server_virtual_machine = module.cloud_vm_host.virtual_machines[0]
+  cluster_node_virtual_machines  = slice(module.cloud_vm_host.virtual_machines, 1, length(module.cloud_vm_host.virtual_machines))
+
+  should_get_custom_locations_oid = var.should_get_custom_locations_oid
+  custom_locations_oid            = var.custom_locations_oid
 }
 
-module "messaging" {
-  source = "../../../src/050-messaging/terraform"
+module "edge_iot_ops" {
+  source = "../../../src/100-edge/110-iot-ops/terraform"
 
-  resource_prefix            = var.resource_prefix
-  environment                = var.environment
-  instance                   = var.instance
-  aio_resource_group         = module.onboard_requirements.resource_group
-  aio_user_assigned_identity = module.iot_ops_cloud_requirements.aio_user_assigned_identity
-  aio_custom_locations       = module.iot_ops_install.custom_locations
-  aio_instance               = module.iot_ops_install.aio_instance
-  aio_dataflow_profile       = module.iot_ops_install.aio_dataflow_profile
+  adr_schema_registry   = module.cloud_data.schema_registry
+  resource_group        = module.cloud_resource_group.resource_group
+  aio_identity          = module.cloud_security_identity.aio_identity
+  arc_connected_cluster = module.edge_cncf_cluster.arc_connected_cluster
+  secret_sync_key_vault = module.cloud_security_identity.key_vault
+  secret_sync_identity  = module.cloud_security_identity.secret_sync_identity
+
+  should_create_anonymous_broker_listener = var.should_create_anonymous_broker_listener
 }
 
-module "observability" {
-  source = "../../../src/070-observability/terraform"
+module "edge_observability" {
+  source = "../../../src/100-edge/120-observability/terraform"
 
-  environment          = var.environment
-  resource_prefix      = var.resource_prefix
-  instance             = var.instance
-  azmon_resource_group = module.onboard_requirements.resource_group
+  aio_azure_managed_grafana        = module.cloud_observability.azure_managed_grafana
+  aio_azure_monitor_workspace      = module.cloud_observability.azure_monitor_workspace
+  aio_log_analytics_workspace      = module.cloud_observability.log_analytics_workspace
+  aio_logs_data_collection_rule    = module.cloud_observability.logs_data_collection_rule
+  aio_metrics_data_collection_rule = module.cloud_observability.metrics_data_collection_rule
+  resource_group                   = module.cloud_resource_group.resource_group
+  arc_connected_cluster            = module.edge_cncf_cluster.arc_connected_cluster
 }
 
-module "iot_ops_utilities" {
-  source = "../../../src/080-iot-ops-utility/terraform"
+module "edge_messaging" {
+  source = "../../../src/100-edge/130-messaging/terraform"
 
-  aio_resource_group               = module.onboard_requirements.resource_group
-  arc_connected_cluster            = module.cncf_cluster_install.arc_connected_cluster
-  aio_azure_monitor_workspace      = module.observability.azure_monitor_workspace
-  aio_log_analytics_workspace      = module.observability.log_analytics_workspace
-  aio_azure_managed_grafana        = module.observability.azure_managed_grafana
-  aio_logs_data_collection_rule    = module.observability.logs_data_collection_rule
-  aio_metrics_data_collection_rule = module.observability.metrics_data_collection_rule
+  environment     = var.environment
+  resource_prefix = var.resource_prefix
+
+  aio_custom_locations = module.edge_iot_ops.custom_locations
+  aio_dataflow_profile = module.edge_iot_ops.aio_dataflow_profile
+  aio_instance         = module.edge_iot_ops.aio_instance
+  aio_identity         = module.cloud_security_identity.aio_identity
 }

@@ -1,62 +1,175 @@
-# Bicep IaC conventions
+# Bicep Infrastructure as Code (IaC) Conventions and Best Practices
 
-You are expert in Azure Bicep IaC conventions and best practices. When writing Bicep, always validate suggestions and code against the following guidelines.
-You understand this project by looking at the [README.md](../../README.md), `CONTRIBUTING.md` and `coding conventions` files.
-First look at `bicep conventions` for general Bicep coding standards.
-When converting from Terraform to Bicep, you can propose to use Bash scripts to cover for Terraform's features of `local-exec` and `remote-exec` provisioners.
-When converting from Terraform to Bicep, use /module directory for reusable modules, but don't introduce one if the original terraform does not use it.
-You can use `az` cli commands to cover for the `local-exec` and `remote-exec` provisioners in Terraform, where `az cli` commands are used.
-Use Bicep idiomatic syntax and features, such as `@description()` decorators, `@export()` decorators, and `@secure()` decorators.
+You are an expert in Bicep Infrastructure as Code (IaC) with deep knowledge of Azure resources. When writing or evaluating Bicep code, always follow the conventions in this document.
 
-## Source Components Structure Components and Modules (`/src`)
+## Repository Structure
 
-Component directory structure:
+This repository is organized with the following key directories:
 
-```plaintext
-src/
-  000-componentname/                   # Component with numerical prefix
-    bicep/                         # Bicep implementation
-      main.bicep                   # Main orchestration file
-      types.bicep                  # Component-specific types with defaults
-      types.core.bicep             # Core shared types (Common)
-      modules/                     # Resource modules
-        resources-name-a.bicep     # Individual modules
-        resource-name-b.bicep      # Individual modules
-    ci/
-      bicep/
-        main.bicep                 # CI wrapper for deployment
+1. **Source Components** (`/src`) - Individual reusable infrastructure components:
+   - `000-cloud/` - Cloud-based resources (Resource Groups, Identity, Storage, etc.)
+   - `100-edge/` - Edge-based resources (IoT Operations, CNCF clusters, etc.)
+   - `500-application/` - Application resources and source code
+   - `900-tools-utilities/` - Tools and utilities (YAML, Helm charts, etc.)
+
+2. **Blueprints** (`/blueprints`) - End-to-end solutions that combine components:
+   - `full-single-node-cluster/` - Single-node AIO deployment
+   - `full-multi-node-cluster/` - Multi-node HA AIO deployment
+   - `only-output-cncf-cluster-script/` - Script-only deployment
+
+## Module Types: Component Modules vs. Internal Modules
+
+### Component Modules
+
+Component Modules are the top-level, standalone modules that provide a specific capability or resource set within the repository. They are located under `src/000-grouping/000-component/bicep`, where `000-grouping` is the meta grouping (like `cloud` or `edge`), and `000-component` is the Component Module.
+
+**Characteristics of Component Modules:**
+
+- Located directly under a component directory in `/src` (e.g., `/src/100-edge/110-iot-ops/bicep/`)
+- Exposed to be called from **Blueprint** modules
+- Represent a complete, self-contained functional unit (e.g., Resource Group, CNCF Cluster, IoT Ops)
+- Can use their own Internal Modules but NEVER reference other Component Modules
+- Usually deployed in a specific order based on their directory naming
+- Have comprehensive metadata and documentation
+- May include a corresponding `ci/bicep` directory for CI/CD pipeline integration
+
+**Example Component Module path:**
+
+```plain
+/src/100-edge/110-iot-ops/bicep/
 ```
 
-- Components use decimal naming for deployment order: `000-subscription`, `010-vm-host`
-- Each component must include:
-  - `/bicep` directory for implementation, `/bicep/modules` for reusable modules
-  - `/ci/bicep` directory for CI/CD pipeline configuration wrappers
+### Internal Modules
 
-## File Metadata
+Internal Modules are subordinate, reusable modules that are only used within their parent Component Module. They help organize and modularize the Component Module's implementation.
 
-Every `main.bicep` and module `resources-name-a.bicep` file must include the following metadata:
+**Characteristics of Internal Modules:**
 
-1. A `metadata.name` field that includes the component name
-2. A `metadata description` field that includes a description of the component
+- Located in the `modules` subdirectory of a Component Module (e.g., `/src/100-edge/110-iot-ops/bicep/modules/iot-ops-instance.bicep`)
+- NEVER called directly from Blueprints or other Component Modules
+- Only called from their parent Component Module
+- Implement specific functionality within the scope of their parent Component
+- Have narrower scope and focused responsibility
+- Include metadata name and description at the top of the file
 
-Example:
+**Example Internal Module path:**
+
+```plain
+/src/100-edge/110-iot-ops/bicep/modules/iot-ops-instance.bicep
+```
+
+### CI Bicep Directories
+
+CI Bicep directories are wrapper directories used for CI/CD integration that leverage Component Modules:
+
+**Characteristics of CI Bicep Directories:**
+
+- Located at `<component>/ci/bicep/` (e.g., `/src/100-edge/110-iot-ops/ci/bicep/`)
+- Contains simple code that calls the parent Component Module with default/test configurations
+- Used for individual component testing and verification in CI/CD pipelines
+- Acts as a thin wrapper for the component, not setting up test resources
+
+Example `ci/main.bicep` that only requires common parameters:
 
 ```bicep
-// In main.bicep
+import * as core from '../../bicep/types.core.bicep'
+
+/*
+  Common Parameters
+*/
+
+@description('The common component configuration.')
+param common core.Common
+
+/*
+  Modules
+*/
+
+module iotOpsCloudReqs '../../bicep/main.bicep' = {
+  name: '${deployment().name}-ci'
+  params: {
+    common: common
+  }
+}
+```
+
+## Component Structure
+
+Each component follows a decimal naming convention for deployment order (e.g., `000-resource-group`, `110-iot-ops`):
+
+```plain
+src/
+  100-edge/
+    110-iot-ops/
+      bicep/               # This is a COMPONENT MODULE
+        main.bicep         # Main orchestration file
+        types.bicep        # Component-specific types with defaults
+        types.core.bicep   # Core shared types (Common)
+        modules/
+          iot-ops-init.bicep          # This is an INTERNAL MODULE
+          iot-ops-instance.bicep      # This is an INTERNAL MODULE
+          iot-ops-instance-post.bicep # This is an INTERNAL MODULE
+          role-assignment.bicep       # This is an INTERNAL MODULE
+      ci/
+        bicep/             # This is a CI BICEP DIRECTORY
+          main.bicep       # CI wrapper for deployment
+```
+
+### Component Files Organization
+
+ALWAYS use consistent file organization:
+
+1. `main.bicep` - Primary resource definitions and orchestration
+2. `types.core.bicep` - Core type definitions (e.g., Common type)
+3. `types.bicep` - Component-specific type definitions and defaults
+4. `modules/` - Directory containing internal modules
+
+## Blueprint Structure
+
+Blueprints compose multiple source components into complete solutions:
+
+```plain
+blueprints/
+  full-multi-node-cluster/
+    bicep/               # This is a BLUEPRINT MODULE
+      main.bicep         # Calls multiple COMPONENT MODULES but NEVER INTERNAL MODULES
+      types.core.bicep   # Core types for the blueprint
+    README.md
+```
+
+Each blueprint includes:
+
+- `main.bicep` - Main orchestration calling source components
+- `types.core.bicep` - Core type definitions
+- `README.md` - Deployment instructions
+
+## Bicep Coding Conventions
+
+### General Conventions
+
+- ALWAYS use `kebab-case` for file and folder names
+- ALWAYS use `camelCase` for parameter names and `PascalCase` for type names
+- ALWAYS add metadata information at the top of each file
+- NEVER use hardcoded values for resource names, locations, etc.
+- ALWAYS use the `@description()` decorator for all parameters and types
+- ALWAYS organize your file with clear section headers using `/*` comments
+- ALWAYS use `??` and/or `.?` instead of ternary operators with `empty()` or checks for null.
+
+### Metadata and Documentation
+
+Every Bicep file must include metadata at the top:
+
+```bicep
 metadata name = 'Component or Blueprint Name'
 metadata description = 'Description of what this component does and how it works.'
-
-// Rest of bicep code follows...
 ```
 
-This ensures consistent documentation across all components and makes the purpose of each module clear both in the code and when generating docs.
+### Type System
 
-## Type system
-
-Use a robust type system to improve project maintainability, the `Common` type system is used across all components, from file `types.core.bicep`:
+Use a robust type system with the `Common` type in all components:
 
 ```bicep
-// In types.core.bicep
+// Example from types.core.bicep
 @export()
 @description('Common settings for the components.')
 type Common = {
@@ -74,131 +187,87 @@ type Common = {
 }
 ```
 
-- Define complex types with defaults in `types.bicep`
-- Use the `@export()` decorator for types that will be used across modules
-- Add detailed descriptions to all types and their properties
-- Use nullable properties with `?` when appropriate
-- Always create default objects with default values for complex types
-- For resources that require version tracking, use complex types
-- Avoid creating custom object types for existing Azure resources - instead reference resources by name and use the `existing` keyword
-
-Follow this type pattern to maintain consistent versioning across infrastructure:
+For component-specific types, provide comprehensive type definitions with clear descriptions and defaults:
 
 ```bicep
-// In types.bicep
-
+// Example from types.bicep
 @export()
-@description('The settings for the Azure IoT Operations Platform Extension.')
-type AioPlatformExtension = {
+@description('The settings for the Azure IoT Operations Extension.')
+type AioExtension = {
   @description('The common settings for the extension.')
   release: Release
 
   settings: {
-    @description('Whether or not to install managers for trust in the cluster.')
-    installCertManager: bool?
+    @description('The namespace in the cluster where Azure IoT Operations will be installed.')
+    namespace: string
+
+    @description('The distro for Kubernetes for the cluster.')
+    kubernetesDistro: 'K3s' | 'K8s' | 'MicroK8s'
+
+    @description('The length of time in minutes before an operation for an agent timesout.')
+    agentOperationTimeoutInMinutes: int
   }
 }
 
 @export()
-var aioPlatformExtensionDefaults = {
+var aioExtensionDefaults = {
   release: {
-    version: '0.7.6'
-    train: 'preview'
+    version: '1.0.9'
+    train: 'stable'
   }
   settings: {
-    installCertManager: true
+    namespace: 'azure-iot-operations'
+    kubernetesDistro: 'K3s'
+    agentOperationTimeoutInMinutes: 120
   }
 }
 ```
 
-Implementation example:
+### Resource Structure
+
+Resources should follow this organization:
+
+1. Metadata and imports at the top
+2. Common parameters
+3. Component-specific parameters grouped by functionality
+4. Local variables
+5. Resources and modules
+6. Outputs
+
+Example:
 
 ```bicep
-// In main.bicep
-import * as types from './types.bicep'
+metadata name = 'Azure IoT Operations'
+metadata description = 'Deploys Azure IoT Operations extensions, instances, and configurations on Azure Arc-enabled Kubernetes clusters.'
 
-@description('The settings for the Azure IoT Operations Platform Extension.')
-param aioPlatformConfig types.AioPlatformExtension = types.aioPlatformExtensionDefaults
-//...
-
-resource aioPlatform 'Microsoft.KubernetesConfiguration/extensions@2023-05-01' = {
-  scope: arcConnectedCluster
-  name: 'azure-iot-operations-platform'
-  properties: {
-    extensionType: 'microsoft.iotoperations.platform'
-    version: aioPlatformConfig.release.version
-    releaseTrain: aioPlatformConfig.release.train
-    autoUpgradeMinorVersion: false
-  }
-}
-```
-
-## Resource References
-
-Always use the Bicep `existing` keyword to reference existing resources rather than passing resource IDs as strings:
-
-```bicep
-// Preferred approach
-@description('The user assigned managed identity name.')
-param userAssignedIdentityName string
-
-// Reference existing resource
-resource userAssignedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' existing = {
-  name: userAssignedIdentityName
-}
-
-// Access properties directly
-var principalId = userAssignedIdentity.properties.principalId
-
-// NOT recommended - passing IDs as strings
-// param userAssignedIdentityId string  // Avoid this approach
-```
-
-- This approach validates that resources exist at deployment time
-- It improves maintainability by requiring fewer parameters
-- It makes dependencies between resources more explicit
-- Access resource properties using dot notation (e.g., `resource.property`)
-- Use the `scope` property when resources are in different resource groups
-
-### Parameters
-
-Parameter ordering: always put common and complex types at the top, followed by module parameters
-Parameters are always sorted alphabetically within their sections
-Group related parameters under commented section headers
-Always add `@description()` to every parameter
-Allow multiline descriptions to keep them readable
-Use consistent naming: `resourceName`, `shouldCreateResource`, see for example [types.bicep](../../src/040-iot-ops/bicep/types.bicep)
-Provide sensible defaults when appropriate
-Parameter defaults should only be provided at the top level, not at the module
-Parameters should be simple types, with or without defaults
-Use string interpolation for naming resources that includes Common type properties
-Use resourceGroup() function instead of passing resource group objects as parameters
-
-Example for parameters and section headings in `main.bicep` files, which calls two modules (storage and schema registry):
-
-```bicep
-// In main.bicep
 import * as core from './types.core.bicep'
 import * as types from './types.bicep'
+
+/*
+  Common Parameters
+*/
 
 @description('The common component configuration.')
 param common core.Common
 
+@description('The resource name for the Arc connected cluster.')
+param arcConnectedClusterName string
+
 /*
-  Storage Account for Schema Registry Parameters
+  Azure IoT Operations Init Parameters
 */
 
-@description('Whether or not to create a new Storage Account for the ADR Schema Registry.')
-param shouldCreateStorageAccount bool = true
+@description('The settings for the Azure IoT Operations Platform Extension.')
+param aioPlatformConfig types.AioPlatformExtension = types.aioPlatformExtensionDefaults
 
-@description('The name for the Resource Group for the Storage Account.')
-param storageAccountResourceGroupName string = resourceGroup().name
+/*
+  Storage Account Parameters
+*/
 
-@description('The settings for the new Storage Account.')
-param storageAccountSettings types.StorageAccountSettings = {
-  replicationType: 'LRS'
-  tier: 'Standard'
-}
+@description('The name for the Storage Account used by the Schema Registry.')
+param storageAccountName string = shouldCreateStorageAccount
+  ? 'st${uniqueString(resourceGroup().id)}'
+  : fail('storageAccountName required when shouldCreateStorageAccount is false')
 
 /*
   Schema Registry Parameters
@@ -207,137 +276,199 @@ param storageAccountSettings types.StorageAccountSettings = {
 @description('The name for the ADR Schema Registry.')
 param schemaRegistryName string = 'sr-${common.resourcePrefix}-${common.environment}-${common.instance}'
 
-@description('''
-The ADLS Gen2 namespace for the ADR Schema Registry.
-This is an example of a multi-line description.
-''')
+@description('The ADLS Gen2 namespace for the ADR Schema Registry.')
 param schemaRegistryNamespace string = 'srns-${common.resourcePrefix}-${common.environment}-${common.instance}'
-
-```
-
-## Modules
-
-Each module imports necessary type definitions
-Always include the `common` parameter
-Use consistent output naming: `resourceNameId`, `resourceName`
-Consistently pass the `common` parameter to all modules
-Use conditional deployment when appropriate
-Set appropriate `dependsOn` relationships
-
-### Naming Conventions
-
-Resource names use kebab-case: `'resource-name-with-hyphens'`
-Use the safe access (.?) operator. For example `${common.?instance}`
-Parameters use camelCase: `paramName`
-Types use PascalCase: `CommonType`
-Output names match resource names with descriptive suffixes: `resourceNameId`
-Match outputs to module interfaces when used by dependent modules
-Apply rfc2119 to all variable names when applicable
-
-### Resources
-
-Nest child resources under parent resource scope when possible
-Use conditional deployment when appropriate
-
-```bicep
-// In main.bicep
-
-resource parentResource 'Microsoft.ResourceType/parentResourceType@2024-01-01' = {
-  name: 'parentResourceName'
-  location: 'location'
-
-  resource childResource 'childResourceType' = {
-    name: 'childResourceName'
-    properties: {
-      // Child resource properties
-    }
-  }
-}
-```
-
-### CI setup
-
-Include a proper `ci/bicep/main.bicep` wrapper that creates necessary type definitions and passes parameters correctly to the main module
-Imports the necessary type definitions
-Defines all parameters that the main component expects
-Simply wraps the main bicep component without creating test resources
-CI bicep file acts as a thin wrapper for the component, it is not setting up test resources
-
-```bicep
-// In ci/bicep/main.bicep - as example
-import * as core from '../../bicep/types.core.bicep'
-import * as types from '../../bicep/types.bicep'
-
-@description('The common component configuration.')
-param common core.Common
-
-/*
-  Virtual Machine Parameters
-*/
-
-@description('The number of host VMs to create if a multi-node cluster is needed.')
-param vmCount int = 2
-
-@description('Size of the VM')
-param vmSkuSize string = 'Standard_D8s_v3'
 
 /*
   Modules
 */
 
-module iotOpsCloudReqs '../../bicep/main.bicep' = {
-  name: '${common.resourcePrefix}-iotOpsCloudReqs'
+module exampleInternalModule 'modules/example-internal-module.bicep' = {
+  name: '${deployment().name}-exampleInternalModule'
   params: {
+    aioPlatformConfig: aioPlatformConfig
     common: common
+    storageAccountName: storageAccountName
+    schemaRegistryName: schemaRegistryName
+    schemaRegistryNamespace: schemaRegistryNamespace
+    storageAccountContainerUrl: 'https://${storageAccountName}.blob.${environment().suffixes.storage}/${schemaContainerName}'
+  }
+}
+
+/*
+  Outputs
+*/
+
+@description('The ADR Schema Registry Name.')
+output schemaRegistryName string? = exampleInternalModule.?outputs.schemaRegistryName
+
+@description('The Storage Account Name.')
+output storageAccountName string = exampleInternalModule.?outputs.storageAccountName ?? storageAccountName
+```
+
+### Module and Component Relationships
+
+IMPORTANT RULES:
+
+- Component Modules (e.g., `/src/100-edge/110-iot-ops/bicep/`) NEVER reference other Component Modules
+- Component Modules NEVER reference other Component Modules' Internal Modules
+- Component Modules ONLY reference their own Internal Modules
+- Internal Modules (e.g., `/src/100-edge/110-iot-ops/bicep/modules/iot-ops-instance.bicep`) NEVER reference other Component Modules
+- Internal Modules NEVER reference other Component Modules' Internal Modules
+- Blueprint Modules (e.g., `/blueprints/full-multi-node-cluster/bicep/`) ONLY reference Component Modules, NEVER Internal Modules
+
+### Parameters Conventions
+
+- Group parameters with clear section headers:
+
+```bicep
+/*
+  Azure IoT Operations Init Parameters
+*/
+
+@description('The settings for the Azure IoT Operations Platform Extension.')
+param aioPlatformConfig types.AioPlatformExtension = types.aioPlatformExtensionDefaults
+
+@description('The settings for the Azure Container Store for Azure Arc Extension.')
+param containerStorageConfig types.ContainerStorageExtension = types.containerStorageExtensionDefaults
+
+/*
+  Azure IoT Operations Instance Parameters
+*/
+
+@description('The settings for the Azure IoT Operations Extension.')
+param aioExtensionConfig types.AioExtension = types.aioExtensionDefaults
+
+@description('Whether or not to deploy the Custom Locations Resource Sync Rules for the Azure IoT Operations resources.')
+param shouldDeployResourceSyncRules bool = true
+```
+
+- Follow these guidelines:
+  - ALWAYS provide descriptive `@description()` that ends with a period
+  - ALWAYS alphabetically sort parameters within each grouping
+  - Boolean parameters SHOULD start with `should` or `is`
+  - Required parameters SHOULD NOT have defaults
+  - ALWAYS use the safe access operator `.?` for accessing nullable properties
+  - NEVER default a parameter to `''` empty string
+  - ALWAYS use `?` for parameters that can be empty or null
+
+### Resource Deployment Conventions
+
+When defining module deployments:
+
+1. Use conditional deployments with `if` statements when appropriate
+2. Name modules with meaningful, consistent names
+3. Reference dependent modules' outputs properly
+
+Example:
+
+```bicep
+module roleAssignment 'modules/role-assignment.bicep' = if (shouldAssignKeyVaultRoles) {
+  name: '${deployment().name}-roleAssignment'
+  params: {
+    keyVaultName: sseKeyVaultName
+    sseUserAssignedIdentityName: sseIdentityName
+  }
+}
+
+module iotOpsInstance 'modules/iot-ops-instance.bicep' = {
+  name: '${deployment().name}-iotOpsInstance'
+  params: {
+    aioDataFlowInstanceConfig: aioDataFlowInstanceConfig
+    aioExtensionConfig: aioExtensionConfig
+    aioInstanceName: aioInstanceName
+    aioMqBrokerConfig: aioMqBrokerConfig
+    aioPlatformExtensionId: iotOpsInit.outputs.aioPlatformExtensionId
+    arcConnectedClusterName: arcConnectedClusterName
+    // ... additional parameters ...
   }
 }
 ```
 
-## Comment sections in Bicep files
+### Outputs Conventions
 
-When writing Bicep files, use the following format for section headers:
+- ALWAYS provide helpful descriptions with `@description()`
+- ALWAYS use conditional expressions for outputs that depend on conditional resources
+- ALWAYS ensure outputs match the expected format for consumer modules
+
+Example:
 
 ```bicep
-/*
-  Section Name
-*/
+@description('The ID of the Azure IoT Operations Platform Extension.')
+output aioPlatformExtensionId string = aioPlatformExtension.id
+
+@description('The ID of the Secret Store Extension.')
+output secretStoreExtensionId string = secretStoreExtension.id
+
+@description('The ID of the deployed Azure IoT Operations MQ Broker instance.')
+output aioMqBrokerId string = shouldDeployResourceSyncRules ? mqBroker.id : ''
 ```
 
-Key points:
+### Resource Naming Conventions
 
-- Use a single line comment start (/*) and end (*/)
-- Include two spaces of indentation for the section name
-- No asterisks (*) on each line
-- Leave a blank line after the section header
-- Use consistent capitalization for section names (Title Case)
-- Common sections: Common Parameters, Resources, Variables, Modules, Outputs
-- Group parameters logically under domain-specific section headers
+- ALWAYS use Azure resource naming conventions
+- ALWAYS follow this pattern: `<resource-abbreviation>-${common.resourcePrefix}-${common.environment}-${common.instance}`
+- Examples:
+  - `id-${common.resourcePrefix}-arc-${common.environment}-${common.instance}` for User Assigned Identity
+  - `kv-${common.resourcePrefix}-${common.environment}-${common.instance}` for Key Vault
 
-## Blueprints Structure (`/blueprints`)
+## Bicep DOs and DON'Ts
 
-### Purpose and Conventions
+### DO
 
-- Blueprints combine multiple components from `/src` to create deployable solutions
-- Use descriptive names reflecting their purpose (e.g. `full-single-cluster`)
+- DO use the `@export()` decorator for types that will be used across modules
+- DO use the `@description()` decorator for all types, parameters, and outputs
+- DO use nullable properties with `?` for optional values
+- DO use the safe access operator `.?` when accessing potentially null properties
+- DO create default objects with default values for complex types
+- DO use conditional deployments with `if` statements for optional resources
+- DO use `${deployment().name}` prefix for module names to ensure uniqueness
+- DO use section headers with `/*` comments to organize your code
+- DO include comments for important logic or implementation details
+- DO validate inputs when appropriate, especially for security-sensitive parameters
+- DO use `Name` parameters instead of `Id` parameters for referencing existing resources
 
-Conventions:
+### DON'T
 
-- When generating a blueprint, always validate the referenced components in `/src` exist in Bicep
-- Always put the blueprint in the `/blueprints` directory
-- When generating README.md files for blueprints, always validate parameters are specific to the blueprint
+- DON'T use hardcoded values for resource names, locations, etc.
+- DON'T reference resources by ID strings when you can use symbolic references
+- DON'T create overly complex parameter structures without proper defaults
+- DON'T use the `latest` API version for resources - always specify a specific version
+- DON'T reference modules in ways that violate the module relationship rules
+- DON'T omit metadata or descriptions for parameters, types, and outputs
+- DON'T create circular dependencies between modules
+- DON'T duplicate type definitions across modules - use imports instead
 
-## Critical Rules (Always Follow)
+## Pre-Implementation Checklist
 
-- ALWAYS alphabetically sort parameters, per header grouping, but do this in sections: common and complex types at the top, then module parameters
-  ❌ BAD: Leaving new unordered
-  ✓ GOOD: Reordering the complete variable list alphabetically
+Before making ANY changes to Bicep code, ask yourself:
 
-## Implementation Checklist
+- [ ] Am I working on a Component Module, an Internal Module, or a Blueprint?
+  - Component Module: Located directly under `/src/000-grouping/000-component/bicep/`
+  - Internal Module: Located under `/src/000-grouping/000-component/bicep/modules/module-name.bicep`
+  - Blueprint: Located under `/blueprints/blueprint-name/bicep/`
+- [ ] Am I following the correct file structure for this module type?
+- [ ] Will my module references follow the module relationship rules?
+- [ ] Are my parameters organized with appropriate groupings?
+- [ ] Does my module use the correct naming conventions?
+- [ ] Have I defined all required types in their appropriate files?
+- [ ] Am I using the Common type correctly for resource naming and location?
+- [ ] Are my dependencies correctly ordered to prevent deployment failures?
 
-Before finalizing code changes, verify:
+## Post-Implementation Checklist
 
-- [ ] Have all parameters been alphabetically sorted in ALL types files?
-- [ ] Have you organized any new files in the correct Directory Organization?
-- [ ] Have you ensured not to use `latest` API version? Always pin to a specific API version to avoid unexpected changes when Azure updates the resource provider API.
-- [ ] Have you adopted the same module or main structure as the original Terraform when converting between languages?
-- [ ] When converting from Terraform, ensure you adopted the same module or main structure as the original Terraform, adopt passing in the same parameters as the original Terraform variables.
+After completing ALL changes, verify:
+
+- [ ] Does every file have proper metadata (name, description)?
+- [ ] Are all types properly defined with `@export()` and `@description()`?
+- [ ] Are parameters properly organized with clear section headers?
+- [ ] Are parameters properly sorted alphabetically within sections?
+- [ ] Are resources using proper naming conventions with the Common type properties?
+- [ ] Are all parameters properly documented with `@description()`?
+- [ ] Are conditional resources properly implemented with `if` conditions?
+- [ ] Are module references correct and following relationship rules?
+- [ ] Are outputs properly documented and returning the expected values?
+- [ ] Am I using specific API versions for all resources?
+- [ ] Are there any circular dependencies between modules?
+- [ ] Are complex types defined with proper defaults in the types.bicep file?
+- [ ] Is commented code removed and documentation updated?
