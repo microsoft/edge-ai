@@ -1,18 +1,31 @@
 #!/usr/bin/env python3
 
 """
-Bicep Documentation Generator
+Bicep Documentation Generator with Jinja2
 
-This script generates documentation for Bicep modules by parsing the ARM JSON output
-of Bicep files. The script creates standardized markdown documentation with information
-about parameters, resources, modules, user-defined types, and outputs.
+This script generates documentation for Bicep modules using Jinja2 templates.
+It parses ARM JSON output of Bicep files and creates standardized markdown
+documentation based on a template.
 
 Example usage:
-    python generate-bicep-docs.py ./src/005-onboard-reqs/bicep/main.json ./src/005-onboard-reqs/README.md
+    # Basic usage with default template
+    python generate-bicep-docs-jinja.py ./src/005-onboard-reqs/bicep/main.json ./src/005-onboard-reqs/README.md
+
+    # Using a custom template
+    python generate-bicep-docs-jinja.py ./src/005-onboard-reqs/bicep/main.json ./src/005-onboard-reqs/README.md -t ./templates/custom-template.md
+
+    # Specifying nesting level for module processing
+    python generate-bicep-docs-jinja.py ./src/005-onboard-reqs/bicep/main.json ./src/005-onboard-reqs/README.md -n 2
+
+    # Enable verbose output
+    python generate-bicep-docs-jinja.py ./src/005-onboard-reqs/bicep/main.json ./src/005-onboard-reqs/README.md -v
 
 Args:
     arm_json_file: Path to the ARM JSON file (compiled Bicep)
     output_md_file: Path where the generated markdown documentation will be saved
+    -t, --template-file: Optional path to a custom Jinja2 template file (default: ./templates/bicep-docs-template.md.template)
+    -n, --modules-nesting-level: Optional maximum number of nested module levels to process (default: 1)
+    -v, --verbose: Enable verbose output with additional processing information
 
 Exit Codes:
     0 - Success
@@ -21,18 +34,23 @@ Exit Codes:
 
 import argparse
 import json
-import os
 import sys
 import re
+from pathlib import Path
 from typing import Dict, List, Any
-from mdutils.mdutils import MdUtils
+from jinja2 import Environment, FileSystemLoader, Template
 
 
 def parse_arguments() -> argparse.Namespace:
     """Parse and return command line arguments."""
     parser = argparse.ArgumentParser(
-        description="Generate documentation for Bicep modules from ARM JSON output."
+        description="Generate documentation for Bicep modules from ARM JSON output using Jinja2 templates."
     )
+
+    # Get the directory of the current script for relative path resolution
+    script_dir = Path(__file__).parent
+    default_template_path = script_dir / \
+        "templates" / "bicep-docs-template.md.template"
 
     # Required arguments
     parser.add_argument(
@@ -43,6 +61,11 @@ def parse_arguments() -> argparse.Namespace:
         "output_md_file",
         help="Path where the generated markdown documentation will be saved"
     )
+    parser.add_argument(
+        "-t", "--template-file",
+        default=str(default_template_path),
+        help="Path to the Jinja2 template file for documentation (default: ./templates/bicep-docs-template.md.template)"
+    )
 
     # Optional arguments
     parser.add_argument(
@@ -51,16 +74,24 @@ def parse_arguments() -> argparse.Namespace:
         default=1,
         help="Maximum number of nested module levels to process (default: 1)"
     )
+    parser.add_argument(
+        "-v", "--verbose",
+        action="store_true",
+        help="Enable verbose output with additional processing information"
+    )
 
-    return parser.parse_args()
+    args = parser.parse_args()
+
+    return args
 
 
-def load_json_file(file_path: str) -> Dict[str, Any]:
+def load_json_file(file_path: str, verbose: bool = False) -> Dict[str, Any]:
     """
     Load JSON data from file.
 
     Args:
         file_path: Path to the JSON file
+        verbose: Whether to output additional information
 
     Returns:
         Dictionary containing the JSON data
@@ -70,8 +101,18 @@ def load_json_file(file_path: str) -> Dict[str, Any]:
         json.JSONDecodeError: If the file isn't valid JSON
     """
     try:
-        with open(file_path, 'r', encoding='utf-8') as file:
-            return json.load(file)
+        if verbose:
+            print(f"Loading JSON file: {file_path}")
+
+        path = Path(file_path)  # Convert to Path object
+        with path.open('r', encoding='utf-8') as file:
+            data = json.load(file)
+
+            if verbose:
+                print(
+                    f"JSON file loaded successfully: {len(data)} top-level keys found")
+
+            return data
     except FileNotFoundError:
         print(f"Error: File not found: {file_path}")
         sys.exit(1)
@@ -139,14 +180,27 @@ def extract_parameters(json_data: Dict[str, Any]) -> List[Dict[str, Any]]:
         elif "type" in param_info:
             param_data["type"] = param_info["type"]
 
-        # Extract description
+        # Extract description and sanitize markdown within it
         if "metadata" in param_info and "description" in param_info["metadata"]:
-            param_data["description"] = param_info["metadata"]["description"]
+            description = param_info["metadata"]["description"]
+            # Preserve markdown formatting but ensure it renders properly in tables
+            param_data["description"] = description
 
         # Check if there's a default value
         if "defaultValue" in param_info:
-            param_data["default"] = json.dumps(param_info["defaultValue"])
-            param_data["required"] = False
+            try:
+                default_value = param_info["defaultValue"]
+                # Format boolean values as markdown `true` or `false`
+                if isinstance(default_value, bool):
+                    default_value = "`true`" if default_value else "`false`"
+                # Remove surrounding quotes if the default value is a string
+                elif isinstance(default_value, str) and default_value.startswith('"') and default_value.endswith('"'):
+                    default_value = default_value[1:-1]
+                param_data["default"] = default_value
+                param_data["required"] = False
+            except (TypeError, ValueError):
+                param_data["default"] = str(param_info["defaultValue"])
+                param_data["required"] = False
 
         # Check if the parameter is nullable
         if "nullable" in param_info and param_info["nullable"]:
@@ -258,11 +312,15 @@ def extract_modules(json_data: Dict[str, Any], max_nested_level: int = 1, curren
                         # Check if there's a default value
                         if "defaultValue" in param_info:
                             try:
-                                param_data["default"] = json.dumps(param_info["defaultValue"])
+                                default_value = param_info["defaultValue"]
+                                # Remove surrounding quotes if the default value is a string
+                                if isinstance(default_value, str) and default_value.startswith('"') and default_value.endswith('"'):
+                                    default_value = default_value[1:-1]
+                                param_data["default"] = default_value
                                 param_data["required"] = False
                             except (TypeError, ValueError):
-                                # Handle case where defaultValue isn't serializable
-                                param_data["default"] = str(param_info["defaultValue"])
+                                param_data["default"] = str(
+                                    param_info["defaultValue"])
                                 param_data["required"] = False
 
                         mod_data["parameters"].append(param_data)
@@ -274,7 +332,6 @@ def extract_modules(json_data: Dict[str, Any], max_nested_level: int = 1, curren
                             "name": res_name,
                             "type": "",
                             "api_version": "",
-                            "condition": "true"
                         }
 
                         if "type" in res_info:
@@ -282,9 +339,6 @@ def extract_modules(json_data: Dict[str, Any], max_nested_level: int = 1, curren
 
                         if "apiVersion" in res_info:
                             res_data["api_version"] = res_info["apiVersion"]
-
-                        if "condition" in res_info:
-                            res_data["condition"] = res_info["condition"]
 
                         mod_data["resources"].append(res_data)
 
@@ -309,7 +363,8 @@ def extract_modules(json_data: Dict[str, Any], max_nested_level: int = 1, curren
                 # Recursively process nested modules if not at max depth
                 if current_level < max_nested_level and "resources" in template:
                     # Add nested modules with a namespace prefix to show hierarchy
-                    nested_modules = extract_modules(template, max_nested_level, current_level + 1)
+                    nested_modules = extract_modules(
+                        template, max_nested_level, current_level + 1)
 
                     for nested_module in nested_modules:
                         # Update name to show nesting hierarchy
@@ -324,7 +379,8 @@ def extract_modules(json_data: Dict[str, Any], max_nested_level: int = 1, curren
 
                 for param_name, param_value in module_params.items():
                     if "value" in param_value:
-                        mod_data["parameter_values"][param_name] = json.dumps(param_value["value"])
+                        mod_data["parameter_values"][param_name] = json.dumps(
+                            param_value["value"])
 
             modules.append(mod_data)
 
@@ -417,6 +473,41 @@ def extract_outputs(json_data: Dict[str, Any]) -> List[Dict[str, Any]]:
     return outputs
 
 
+def load_jinja_template(template_path: str) -> Template:
+    """
+    Load a Jinja2 template from file.
+
+    Args:
+        template_path: Path to the Jinja2 template file
+
+    Returns:
+        Loaded Jinja2 template object
+
+    Raises:
+        FileNotFoundError: If the template file doesn't exist
+    """
+    try:
+        # Convert to Path object
+        path = Path(template_path)
+
+        # Get template directory and filename
+        template_dir = path.parent
+        template_file = path.name
+
+        # Create Jinja2 environment with custom filters
+        env = Environment(loader=FileSystemLoader(template_dir))
+
+        # Add custom filter for handling inline code as <pre><code> blocks
+        env.filters['format_description_for_table'] = format_description_for_table
+
+        # Return the template
+        return env.get_template(template_file)
+    except FileNotFoundError:
+        # Cannot continue
+        print(f"Error: Template file not found: {template_path}")
+        sys.exit(1)
+
+
 def format_description_for_table(description: str) -> str:
     """
     Format a description string to display properly in a markdown table.
@@ -443,7 +534,8 @@ def format_description_for_table(description: str) -> str:
         return formatted_code
 
     # Replace code blocks first
-    result = re.sub(code_block_pattern, code_block_replacement, description, flags=re.DOTALL)
+    result = re.sub(code_block_pattern, code_block_replacement,
+                    description, flags=re.DOTALL)
 
     # Then replace regular newlines with breaks for other parts of the text
     result = result.replace('\n', '<br>')
@@ -451,237 +543,59 @@ def format_description_for_table(description: str) -> str:
     return result
 
 
-def generate_markdown(metadata: Dict[str, str],
-                     parameters: List[Dict[str, Any]],
-                     resources: List[Dict[str, Any]],
-                     modules: List[Dict[str, Any]],
-                     types: Dict[str, Dict[str, Any]],
-                     outputs: List[Dict[str, Any]]) -> str:
+def render_markdown(template: Template, context: Dict[str, Any], verbose: bool = False) -> str:
     """
-    Generate markdown documentation from extracted data using mdutils.
+    Render the Jinja2 template with the provided context.
 
     Args:
-        metadata: Dictionary with module metadata
-        parameters: List of parameter dictionaries
-        resources: List of resource dictionaries
-        modules: List of module dictionaries
-        types: Dictionary of user-defined types
-        outputs: List of output dictionaries
+        template: The Jinja2 template object
+        context: Dictionary with variables to render in the template
+        verbose: Whether to output additional information
 
     Returns:
-        Generated markdown content as string
+        The rendered markdown content
     """
-    # Create the markdown object with the module name as title
-    title = metadata.get('name', 'Bicep Module')
-    md_file = MdUtils(file_name='', title='')  # We'll write to a string, not a file
+    if verbose:
+        print("Rendering markdown with Jinja2 template...")
+        print(f"Template context contains {len(context)} variables:")
+        for key, value in context.items():
+            if isinstance(value, list):
+                print(f"  - {key}: List with {len(value)} items")
+            elif isinstance(value, dict):
+                print(f"  - {key}: Dictionary with {len(value)} items")
+            else:
+                print(f"  - {key}: {type(value).__name__}")
 
-    # Add special headers for the beginning
-    header_text = "<!-- BEGIN_BICEP_DOCS -->\n<!-- markdown-table-prettify-ignore-start -->\n<!-- markdownlint-disable MD033 -->"
-    md_file.new_header(level=1, title=title, add_table_of_contents=False)
-
-    # Add description if available
-    if "description" in metadata:
-        md_file.new_line(metadata['description'])
-        md_file.new_line('')
-
-    # Parameters section
-    if parameters:
-        md_file.new_header(level=2, title="Parameters", add_table_of_contents=False)
-
-        # Create parameters table
-        param_table_data = ["Name", "Description", "Type", "Default", "Required"]
-
-        for param in parameters:
-            default_value = param.get("default", "n/a")
-            if default_value == "n/a" or default_value is None:
-                default_value = "n/a"
-            elif isinstance(default_value, str):
-                if default_value.startswith('"') and default_value.endswith('"'):
-                    default_value = default_value[1:-1]  # Remove quotes for display
-
-            param_table_data.extend([
-                param.get('name', ''),
-                format_description_for_table(param.get('description', '')),
-                param.get('type', ''),
-                default_value,
-                'yes' if param.get('required', True) else 'no'
-            ])
-
-        md_file.new_table(columns=5, rows=len(parameters)+1, text=param_table_data, text_align='left')
-
-    # Resources section
-    if resources:
-        md_file.new_header(level=2, title="Resources", add_table_of_contents=False)
-
-        # Filter out conditionally excluded resources
-        filtered_resources = [res for res in resources if res.get("condition", "true") != "false"]
-
-        if filtered_resources:
-            # Create resources table
-            resources_table_data = ["Name", "Type", "API Version"]
-
-            for res in filtered_resources:
-                resources_table_data.extend([
-                    res.get('name', ''),
-                    res.get('type', ''),
-                    res.get('api_version', '')
-                ])
-
-            md_file.new_table(columns=3, rows=len(filtered_resources)+1, text=resources_table_data, text_align='left')
-
-    # Modules section
-    if modules:
-        md_file.new_header(level=2, title="Modules", add_table_of_contents=False)
-
-        # Create modules table
-        modules_table_data = ["Name", "Description"]
-
-        for mod in modules:
-            modules_table_data.extend([
-                mod.get('name', ''),
-                mod.get('description', '')
-            ])
-
-        md_file.new_table(columns=2, rows=len(modules)+1, text=modules_table_data, text_align='left')
-
-        # Detailed modules sections
-        md_file.new_header(level=2, title="Module Details", add_table_of_contents=False)
-
-        for mod in modules:
-            mod_name = mod.get('name', '')
-            md_file.new_header(level=3, title=mod_name, add_table_of_contents=False)
-
-            if mod.get('description', ''):
-                md_file.new_line(mod['description'])
-                md_file.new_line('')
-
-            # Module parameters
-            if mod.get('parameters', []):
-                md_file.new_header(level=4, title=f"Parameters for {mod_name}", add_table_of_contents=False)
-
-                # Create module parameters table
-                mod_params_table_data = ["Name", "Description", "Type", "Default", "Required"]
-
-                for param in mod['parameters']:
-                    default_value = param.get("default", "n/a")
-                    if default_value == "n/a" or default_value is None:
-                        default_value = "n/a"
-                    elif isinstance(default_value, str):
-                        if default_value.startswith('"') and default_value.endswith('"'):
-                            default_value = default_value[1:-1]  # Remove quotes for display
-
-                    mod_params_table_data.extend([
-                        param.get('name', ''),
-                        format_description_for_table(param.get('description', '')),
-                        param.get('type', ''),
-                        default_value,
-                        'yes' if param.get('required', True) else 'no'
-                    ])
-
-                md_file.new_table(columns=5, rows=len(mod['parameters'])+1, text=mod_params_table_data, text_align='left')
-
-            # Module resources
-            if mod.get('resources', []):
-                md_file.new_header(level=4, title=f"Resources for {mod_name}", add_table_of_contents=False)
-
-                # Create module resources table
-                mod_resources_table_data = ["Name", "Type", "API Version"]
-
-                for res in mod['resources']:
-                    mod_resources_table_data.extend([
-                        res.get('name', ''),
-                        res.get('type', ''),
-                        res.get('api_version', '')
-                    ])
-
-                md_file.new_table(columns=3, rows=len(mod['resources'])+1, text=mod_resources_table_data, text_align='left')
-
-            # Module outputs
-            if mod.get('outputs', []):
-                md_file.new_header(level=4, title=f"Outputs for {mod_name}", add_table_of_contents=False)
-
-                # Create module outputs table
-                mod_outputs_table_data = ["Name", "Type", "Description"]
-
-                for output in mod['outputs']:
-                    mod_outputs_table_data.extend([
-                        output.get('name', ''),
-                        output.get('type', ''),
-                        output.get('description', '')
-                    ])
-
-                md_file.new_table(columns=3, rows=len(mod['outputs'])+1, text=mod_outputs_table_data, text_align='left')
-
-    # User-defined types section
-    if types:
-        md_file.new_header(level=2, title="User Defined Types", add_table_of_contents=False)
-
-        for type_name, type_info in types.items():
-            md_file.new_header(level=3, title=f"`{type_name}`", add_table_of_contents=False)
-
-            if type_info.get("description"):
-                # md_file.new_paragraph(type_info["description"])
-                md_file.new_line(type_info['description'])
-                md_file.new_line('')
-
-            if type_info.get("properties"):
-                # Create type properties table
-                type_props_table_data = ["Property", "Type", "Description"]
-
-                for prop_name, prop_info in type_info["properties"].items():
-                    type_props_table_data.extend([
-                        prop_name,
-                        prop_info.get('type', ''),
-                        prop_info.get('description', '')
-                    ])
-
-                md_file.new_table(columns=3, rows=len(type_info["properties"])+1, text=type_props_table_data, text_align='left')
-
-    # Outputs section
-    if outputs:
-        md_file.new_header(level=2, title="Outputs", add_table_of_contents=False)
-
-        # Create outputs table
-        outputs_table_data = ["Name", "Type", "Description"]
-
-        for output in outputs:
-            outputs_table_data.extend([
-                output.get('name', ''),
-                output.get('type', ''),
-                output.get('description', '')
-            ])
-
-        md_file.new_table(columns=3, rows=len(outputs)+1, text=outputs_table_data, text_align='left')
-
-    # Get markdown content
-    markdown_content = md_file.get_md_text()
-
-    # Add special footer
-    footer_text = "\n<!-- markdown-table-prettify-ignore-end -->\n<!-- END_BICEP_DOCS -->\n"
-
-    # Combine header, content, and footer
-    return header_text + markdown_content + footer_text
+    return template.render(**context)
 
 
-def save_markdown(content: str, output_path: str) -> None:
+def save_markdown(content: str, output_path: str, verbose: bool = False) -> None:
     """
     Save markdown content to a file.
 
     Args:
         content: Markdown content to save
         output_path: Path where the file should be saved
+        verbose: Whether to output additional information
 
     Raises:
         IOError: If there's an error writing to the file
     """
     try:
-        # Create directory if it doesn't exist
-        output_dir = os.path.dirname(output_path)
-        if output_dir and not os.path.exists(output_dir):
-            os.makedirs(output_dir)
+        # Convert to Path object
+        path = Path(output_path)
 
-        with open(output_path, 'w', encoding='utf-8') as file:
-            file.write(content)
+        if verbose:
+            print(f"Saving markdown file to: {path}")
+
+        # Create directory if it doesn't exist
+        if path.parent and not path.parent.exists():
+            if verbose:
+                print(f"Creating directory: {path.parent}")
+            path.parent.mkdir(parents=True, exist_ok=True)
+
+        # Write content to file
+        path.write_text(content, encoding='utf-8')
 
         print(f"Documentation successfully written to {output_path}")
     except IOError as e:
@@ -696,16 +610,25 @@ def main() -> int:
     Returns:
         Exit code (0 for success, non-zero for failure)
     """
-
     # Parse command line arguments
     args = parse_arguments()
 
+    if args.verbose:
+        print("Verbose mode enabled")
+        print(f"ARM JSON file: {args.arm_json_file}")
+        print(f"Output markdown file: {args.output_md_file}")
+        print(f"Template file: {args.template_file}")
+        print(f"Module nesting level: {args.modules_nesting_level}")
+
     # Load ARM JSON file
-    json_data = load_json_file(args.arm_json_file)
+    json_data = load_json_file(args.arm_json_file, verbose=args.verbose)
 
     # Convert user-provided 1-based nesting level to 0-based max_nested_level
     # Ensure value is at least 0
     max_nested_level = max(0, args.modules_nesting_level - 1)
+
+    if args.verbose:
+        print("\nExtracting data from ARM JSON file...")
 
     # Extract data from JSON
     metadata = extract_metadata(json_data)
@@ -715,13 +638,56 @@ def main() -> int:
     types = extract_user_defined_types(json_data)
     outputs = extract_outputs(json_data)
 
-    # Generate markdown
-    generated_content = generate_markdown(
-        metadata, parameters, resources, modules, types, outputs
-    )
+    if args.verbose:
+        print(f"\nExtracted metadata: {json.dumps(metadata, indent=2)}")
+        print(f"Extracted {len(parameters)} parameters")
+        print(f"Extracted {len(resources)} resources")
+        print(
+            f"Extracted {len(modules)} modules (with nesting level {args.modules_nesting_level})")
+        print(f"Extracted {len(types)} user-defined types")
+        print(f"Extracted {len(outputs)} outputs")
+
+    # Filter resources to exclude conditionally false ones
+    filtered_resources = [res for res in resources if res.get(
+        "condition", "true") != "false"]
+
+    if args.verbose:
+        excluded_count = len(resources) - len(filtered_resources)
+        if excluded_count > 0:
+            print(
+                f"Filtered out {excluded_count} conditionally false resources")
+
+    # Load the Jinja template
+    if args.verbose:
+        print(f"\nLoading Jinja2 template from: {args.template_file}")
+    template = load_jinja_template(args.template_file)
+
+    # Prepare the context for the template
+    context = {
+        "metadata": metadata,
+        "parameters": parameters,
+        "resources": resources,
+        "filtered_resources": filtered_resources,
+        "modules": modules,
+        "types": types,
+        "outputs": outputs
+    }
+
+    # Render the markdown using the template
+    rendered_markdown = render_markdown(
+        template, context, verbose=args.verbose)
+
+    if args.verbose:
+        print(
+            f"\nRendered markdown document with {len(rendered_markdown)} characters")
 
     # Save to output file
-    save_markdown(generated_content, args.output_md_file)
+    if args.verbose:
+        print(f"Saving markdown to: {args.output_md_file}")
+    save_markdown(rendered_markdown, args.output_md_file, verbose=args.verbose)
+
+    if args.verbose:
+        print("Documentation generation completed successfully!")
 
     return 0
 

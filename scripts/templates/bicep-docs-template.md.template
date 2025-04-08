@@ -1,0 +1,68 @@
+<!-- BEGIN_BICEP_DOCS -->
+<!-- markdown-table-prettify-ignore-start -->
+<!-- markdownlint-disable MD033 -->
+
+# {{ metadata.get('name', 'Bicep Module') }}
+
+{{ metadata.get('description', '') }}
+{% if parameters %}
+## Parameters
+
+|Name|Description|Type|Default|Required|
+| :--- | :--- | :--- | :--- | :--- |
+{% for param in parameters %}|{{ param.name }}|{{ param.description | format_description_for_table }}|`{{ param.type }}`|{{ param.default if param.default != "n/a" else "n/a" }}|{{ "yes" if param.required else "no" }}|
+{% endfor %}{% endif %}{% if filtered_resources %}
+## Resources
+
+|Name|Type|API Version|
+| :--- | :--- | :--- |
+{% for res in filtered_resources %}|{{ res.name }}|`{{ res.type }}`|{{ res.api_version }}|
+{% endfor %}{% endif %}{% if modules %}
+## Modules
+
+|Name|Description|
+| :--- | :--- |
+{% for mod in modules %}|{{ mod.name }}|{{ mod.description | format_description_for_table }}|
+{% endfor %}{% endif %}{% if modules %}
+## Module Details
+{% for mod in modules %}
+### {{ mod.name }}
+
+{{ mod.description }}
+{% if mod.parameters %}
+#### Parameters for {{ mod.name }}
+
+|Name|Description|Type|Default|Required|
+| :--- | :--- | :--- | :--- | :--- |
+{% for param in mod.parameters %}|{{ param.name }}|{{ param.description | format_description_for_table }}|`{{ param.type }}`|{{ param.default if param.default != "n/a" else "n/a" }}|{{ "yes" if param.required else "no" }}|
+{% endfor %}{% endif %}{% if mod.resources %}
+#### Resources for {{ mod.name }}
+
+|Name|Type|API Version|
+| :--- | :--- | :--- |
+{% for res in mod.resources %}|{{ res.name }}|`{{ res.type }}`|{{ res.api_version }}|
+{% endfor %}{% endif %}{% if mod.outputs %}
+#### Outputs for {{ mod.name }}
+
+|Name|Type|Description|
+| :--- | :--- | :--- |
+{% for output in mod.outputs %}|{{ output.name }}|`{{ output.type }}`|{{ output.description | format_description_for_table }}|
+{% endfor %}{% endif %}{% endfor %}{% endif %}{% if types %}
+## User Defined Types
+{% for type_name, type_info in types.items() %}
+### `{{ type_name }}`
+
+{{ type_info.description }}
+{% if type_info.properties %}
+|Property|Type|Description|
+| :--- | :--- | :--- |
+{% for prop_name, prop_info in type_info.properties.items() %}|{{ prop_name }}|`{{ prop_info.type }}`|{{ prop_info.description | format_description_for_table }}|
+{% endfor %}{% endif %}{% endfor %}{% endif %}{% if outputs %}
+## Outputs
+
+|Name|Type|Description|
+| :--- | :--- | :--- |
+{% for output in outputs %}|{{ output.name }}|`{{ output.type }}`|{{ output.description | format_description_for_table }}|
+{% endfor %}{% endif %}
+<!-- markdown-table-prettify-ignore-end -->
+<!-- END_BICEP_DOCS -->

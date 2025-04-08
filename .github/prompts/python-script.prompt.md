@@ -1,371 +1,464 @@
-# Python Script Conventions
+# Python Script Conventions and Best Practices
 
-You are an expert in Python scripting best practices and conventions. When writing Python scripts for this project, always follow these guidelines.
-You understand this project by looking at the [README.md](../../README.md), `CONTRIBUTING.md` and other coding convention files.
-These conventions apply specifically to utility scripts in the `./scripts` directory, not full Python applications.
+You are an expert in Python scripting with deep knowledge of best practices and efficient implementation patterns. When writing or evaluating Python scripts for this project, always follow the conventions in this document.
 
-## Script Structure and Organization
+## Repository Structure
 
-Scripts should follow this general structure:
+This repository contains Python scripts primarily in the `/scripts` directory, serving as utility tools for various infrastructure and deployment tasks. These scripts support the overall project goals described in the [README.md](../../README.md).
+
+## Script Types: Utility Scripts vs. Application Scripts
+
+### Utility Scripts
+
+Utility Scripts are single-file command-line tools designed for specific administrative or automation tasks within the project infrastructure.
+
+**Characteristics of Utility Scripts:**
+
+- Located in the `/scripts` directory
+- Designed to be executed directly from the command line
+- Focused on specific tasks like validation, transformation, or deployment assistance
+- Self-contained with minimal external dependencies
+- Include proper argument parsing and error handling
+- Always executable with appropriate permissions and shebang line
+
+**Example Utility Script path:**
+
+```plain
+/scripts/aio-version-checker.py
+```
+
+### Application Scripts
+
+Application Scripts are components of larger Python applications or modules that work together to provide more complex functionality.
+
+**Characteristics of Application Scripts:**
+
+- Part of a larger Python package structure
+- Follow standard Python module patterns
+- May be imported by other Python modules
+- Include appropriate `__init__.py` files for package structure
+- Have broader scope and may involve complex dependencies
+- More extensive documentation and API references
+
+## Script Structure
+
+Each Python script follows a consistent structure for maintainability and readability:
+
+```plain
+├── scripts/
+│   ├── example-script.py        # Utility Script
+│   ├── script-group/
+│   │   ├── specialized-tool.py  # Specialized Utility Script
+```
+
+### Script File Organization
+
+ALWAYS use consistent file organization:
+
+1. Shebang line and file encoding
+2. Module-level docstring describing purpose and usage
+3. Imports (standard library, third-party, local) grouped and alphabetized
+4. Constants and global variables
+5. Class definitions
+6. Function definitions
+7. Main function and entry point
+
+## Python Script Coding Conventions
+
+### General Conventions
+
+- ALWAYS use `kebab-case` for file and folder names
+- ALWAYS use `snake_case` for function and variable names
+- ALWAYS use `PascalCase` for class names
+- ALWAYS use `UPPER_SNAKE_CASE` for constants
+- ALWAYS format code according to PEP 8 standards
+- NEVER use deprecated functions or modules
+- ALWAYS include comprehensive docstrings in triple quotes
+- ALWAYS set shebang line to `#!/usr/bin/env python3` for executables
+- ALWAYS implement a `-v/--verbose` flag for command-line tools
+
+### Script Structure Order
+
+Scripts should follow this order:
+
+1. Shebang line and encoding
+2. Module docstring
+3. Imports (grouped and sorted)
+4. Constants
+5. Class definitions
+6. Function definitions
+7. Main entry point
+
+Example:
 
 ```python
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 """
-Brief description of the script's purpose.
+# Example Script
 
-Detailed explanation including:
-- What the script does
-- Key features and functionality
-- Example usage instructions
-- Dependencies
-- Exit codes and their meaning
+Provides utility functions for validating infrastructure configurations.
+Detailed description of what this script does and how to use it.
+
+## Usage:
+    python3 example-script.py --input-file config.json --validate
+
+## Exit Codes:
+    0 - Success
+    1 - Invalid input file
+    2 - Validation errors found
+    3 - Unexpected error
 """
 
-import standard_libraries  # Alphabetized
-import more_standard_libraries
-
-import third_party_libraries  # Alphabetized
-import more_third_party_libraries
-
-import local_modules  # Alphabetized
-
-
-def main():
-    """Main function docstring explaining functionality."""
-    # Initialize variables and parse arguments
-    # Execute main logic
-    # Handle output
-    # Return appropriate exit code
-
-
-def supporting_function(param1, param2):
-    """
-    Supporting function docstring.
-
-    Args:
-        param1: Description of param1
-        param2: Description of param2
-
-    Returns:
-        Description of return value
-
-    Raises:
-        ExceptionType: When and why this exception might be raised
-    """
-    # Function implementation
-    return result
-
-
-if __name__ == "__main__":
-    main()
-```
-
-- Scripts should be standalone and executable from the command line
-- Place shebang line `#!/usr/bin/env python3` at the top of each script
-- Include comprehensive docstrings in triple quotes at the module level
-- Place imports at the top, grouped and alphabetized by type (standard library, third-party, local)
-- Define a `main()` function to contain the primary script logic
-- Include the `if __name__ == "__main__":` idiom to allow both direct execution and importing
-
-## Command Line Arguments
-
-Use `argparse` for command line argument handling:
-
-```python
+# Standard library imports
 import argparse
-
-def parse_arguments():
-    """Parse and return command line arguments."""
-    parser = argparse.ArgumentParser(
-        description="Description of the script's purpose."
-    )
-
-    # Required arguments
-    parser.add_argument("required_arg", help="Description of required argument")
-
-    # Optional arguments
-    parser.add_argument("-o", "--optional", help="Description of optional argument")
-    parser.add_argument("-v", "--verbose", action="store_true",
-                        help="Increase output verbosity")
-
-    # Arguments with default values
-    parser.add_argument("-n", "--number", type=int, default=10,
-                        help="Number of items (default: %(default)s)")
-
-    return parser.parse_args()
-```
-
-- Use meaningful argument names with both short (`-v`) and long (`--verbose`) versions when appropriate
-- Include helpful descriptions for each argument
-- Set appropriate types and default values
-- Group related arguments logically
-- Always include help documentation
-
-## Error Handling and Logging
-
-Implement robust error handling:
-
-```python
+import json
 import logging
+import os
 import sys
+from pathlib import Path
+from typing import Dict, List, Optional
+
+# Third-party imports
+import yaml
+
+# Constants defined at module level
+DEFAULT_CONFIG_PATH = os.path.expanduser("~/.config/example")
+LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    format=LOG_FORMAT,
     datefmt="%Y-%m-%d %H:%M:%S"
 )
 logger = logging.getLogger(__name__)
 
-def main():
-    """Main function with error handling."""
+
+def parse_arguments() -> argparse.Namespace:
+    """Parse and return command line arguments."""
+    parser = argparse.ArgumentParser(
+        description="Validate infrastructure configurations."
+    )
+
+    # Required arguments
+    parser.add_argument("--input-file", required=True,
+                        help="Path to configuration file to validate.")
+
+    # Optional arguments
+    parser.add_argument("--validate", action="store_true",
+                        help="Perform validation on the input file.")
+    parser.add_argument("--verbose", "-v", action="store_true",
+                        help="Enable verbose output.")
+
+    return parser.parse_args()
+
+
+def load_config_file(file_path: str) -> Dict:
+    """
+    Load configuration from file.
+
+    Args:
+        file_path: Path to configuration file
+
+    Returns:
+        Dictionary containing configuration data
+
+    Raises:
+        FileNotFoundError: If file doesn't exist
+        json.JSONDecodeError: If JSON file is invalid
+    """
+    file_path = Path(file_path)
+
+    if not file_path.exists():
+        logger.error(f"Configuration file not found: {file_path}")
+        raise FileNotFoundError(f"File not found: {file_path}")
+
+    with open(file_path, 'r', encoding='utf-8') as f:
+        if file_path.suffix.lower() == '.json':
+            return json.load(f)
+        elif file_path.suffix.lower() in ('.yaml', '.yml'):
+            return yaml.safe_load(f)
+        else:
+            logger.error(f"Unsupported file format: {file_path.suffix}")
+            raise ValueError(f"Unsupported file format: {file_path.suffix}")
+
+
+def main() -> int:
+    """Main entry point for the script."""
     try:
-        # Script logic here
+        args = parse_arguments()
+
+        # Configure logging based on verbosity
         if args.verbose:
             logger.setLevel(logging.DEBUG)
             logger.debug("Debug logging enabled")
 
-        # Potentially raising exceptions
-        result = risky_operation()
-        logger.info(f"Operation completed: {result}")
+        # Load configuration
+        config = load_config_file(args.input_file)
+        logger.info(f"Successfully loaded configuration from {args.input_file}")
+
+        # Perform validation if requested
+        if args.validate:
+            # Validation logic here
+            logger.info("Validation completed successfully")
+
+        return 0
 
     except FileNotFoundError as e:
-        logger.error(f"Required file not found: {e}")
+        logger.error(f"File error: {e}")
         return 1
-    except PermissionError:
-        logger.error("Insufficient permissions to perform operation")
+    except json.JSONDecodeError as e:
+        logger.error(f"Invalid JSON in configuration file: {e}")
+        return 1
+    except ValueError as e:
+        logger.error(f"Validation error: {e}")
         return 2
     except Exception as e:
         logger.exception(f"Unexpected error: {e}")
         return 3
 
-    return 0
 
 if __name__ == "__main__":
     sys.exit(main())
 ```
 
-- Use appropriate logging levels (`DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`)
-- Configure logging with helpful formatting
-- Handle exceptions specifically with meaningful error messages
-- Return appropriate exit codes from `main()` function
-- Use `sys.exit(main())` to ensure the script terminates with the correct exit code
+### Function and Class Conventions
 
-## Code Style and PEP 8
+IMPORTANT RULES:
 
-Follow PEP 8 conventions with these specific guidelines:
+- Functions SHOULD do one thing and do it well
+- Functions SHOULD be less than 50 lines of code
+- Classes SHOULD follow the Single Responsibility Principle
+- Class methods SHOULD follow the same rules as functions
+- Avoid deeply nested functions and classes
 
-- Line length: Limit lines to 88 characters (aligned with black formatter)
-- Indentation: Use 4 spaces per indentation level
-- Imports: One per line, grouped and alphabetically ordered
-- String quotes: Prefer double quotes for docstrings, single quotes for simple strings
-- Function names: Use lowercase with underscores (`snake_case`)
-- Variable names: Use lowercase with underscores (`snake_case`)
-- Constants: Use uppercase with underscores (`UPPER_SNAKE_CASE`)
-- Comments: Begin with `#` (hash and space) and use complete sentences
-- Docstrings: Include for all public modules, functions, classes, and methods
-- Follow Pythonic approach for boolean checks
+### Argument Parsing Conventions
 
-## Type Hints
+- ALWAYS use `argparse` for command-line scripts
+- ALWAYS provide descriptive help text for each argument
+- ALWAYS group related arguments together
+- ALWAYS handle required and optional arguments appropriately
+- ALWAYS validate argument values
 
-Use type hints for function parameters and return values:
+Example:
 
 ```python
-from typing import Dict, List, Optional, Tuple, Union
+def parse_arguments():
+    """Parse and return command line arguments."""
+    parser = argparse.ArgumentParser(
+        description="Process data files and generate reports."
+    )
 
-def process_data(input_file: str, max_items: Optional[int] = None) -> Dict[str, List[str]]:
+    # Input/output arguments
+    io_group = parser.add_argument_group("Input/Output Options")
+    io_group.add_argument("--input-dir", required=True,
+                        help="Directory containing input files.")
+    io_group.add_argument("--output-file",
+                        help="Path to output file (default: output.json).")
+
+    # Processing options
+    proc_group = parser.add_argument_group("Processing Options")
+    proc_group.add_argument("--max-depth", type=int, default=3,
+                          help="Maximum directory depth to process (default: 3).")
+    proc_group.add_argument("--include-hidden", action="store_true",
+                          help="Include hidden files in processing.")
+
+    # Logging options
+    log_group = parser.add_argument_group("Logging Options")
+    log_group.add_argument("--verbose", "-v", action="store_true",
+                         help="Enable verbose output.")
+    log_group.add_argument("--quiet", "-q", action="store_true",
+                         help="Suppress all output except errors.")
+
+    return parser.parse_args()
+```
+
+### Verbosity Control Conventions
+
+- ALWAYS implement a `-v/--verbose` argument for utility scripts
+- ALWAYS use `logging` module configured based on verbosity level
+- ALWAYS provide appropriate debug output when verbose mode is enabled
+- ALWAYS use different logging levels appropriately (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+
+Example verbosity implementation:
+
+```python
+def parse_arguments() -> argparse.Namespace:
+    """Parse and return command line arguments."""
+    parser = argparse.ArgumentParser(
+        description="Process infrastructure configuration files."
+    )
+
+    # Required arguments
+    parser.add_argument("--config-file", required=True,
+                       help="Path to configuration file to process.")
+
+    # Verbosity options
+    parser.add_argument("--verbose", "-v", action="store_true",
+                       help="Enable verbose output")
+    parser.add_argument("--quiet", "-q", action="store_true",
+                       help="Suppress all output except errors")
+
+    return parser.parse_args()
+
+def configure_logging(verbose: bool, quiet: bool) -> None:
     """
-    Process data from input file.
+    Configure logging based on verbosity level.
 
     Args:
-        input_file: Path to input file
-        max_items: Maximum items to process, or None for all items
-
-    Returns:
-        Dictionary containing processed data
+        verbose: Whether to enable verbose (debug) logging
+        quiet: Whether to suppress all output except errors
     """
-    result: Dict[str, List[str]] = {}
-    # Implementation
-    return result
-```
+    # Set default format
+    log_format = "%(levelname)s: %(message)s"
 
-- Use the `typing` module for complex types
-- Include type hints for function parameters and return values
-- Use `Optional[Type]` for parameters that may be `None`
-- Use `Union[Type1, Type2]` for parameters that may be multiple types
-- Add type declarations for complex variables within functions
-
-## File Operations
-
-Follow these best practices for file operations:
-
-```python
-import os
-from pathlib import Path
-
-# Use context managers for file operations
-def read_data(file_path: str) -> List[str]:
-    """Read lines from file."""
-    with open(file_path, 'r', encoding='utf-8') as file:
-        return file.read().splitlines()
-
-# Use pathlib for path manipulations
-def ensure_output_directory(output_dir: str) -> Path:
-    """Ensure output directory exists."""
-    path = Path(output_dir)
-    path.mkdir(parents=True, exist_ok=True)
-    return path
-```
-
-- Always use context managers (`with` statement) when working with files
-- Specify encoding explicitly (`utf-8` recommended)
-- Use `pathlib` for path manipulations instead of `os.path`
-- Handle file-related exceptions specifically
-- Check file existence and permissions before operations
-
-## Subprocess Execution
-
-Use `subprocess` module with these guidelines:
-
-```python
-import subprocess
-from subprocess import PIPE, CalledProcessError
-
-def run_command(command: List[str], verbose: bool = False) -> str:
-    """Run command and return output."""
-    try:
-        if verbose:
-            print(f"Running command: {' '.join(command)}")
-
-        result = subprocess.run(
-            command,
-            check=True,
-            text=True,
-            stdout=PIPE,
-            stderr=PIPE
+    # Configure based on verbosity
+    if quiet:
+        logging.basicConfig(level=logging.ERROR, format=log_format)
+    elif verbose:
+        logging.basicConfig(
+            level=logging.DEBUG,
+            format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
         )
-        return result.stdout
-    except CalledProcessError as e:
-        print(f"Command failed with exit code {e.returncode}")
-        print(f"Error output: {e.stderr}")
-        raise
-```
+    else:
+        logging.basicConfig(level=logging.INFO, format=log_format)
 
-- Use `subprocess.run()` rather than older functions
-- Pass commands as lists to avoid shell injection vulnerabilities
-- Set `check=True` to raise exceptions on non-zero exit codes
-- Use `text=True` to get string output instead of bytes
-- Capture both `stdout` and `stderr`
-- Handle `CalledProcessError` exceptions properly
+    # Get logger for this module
+    logger = logging.getLogger(__name__)
 
-## JSON Handling
+    # Log verbosity configuration
+    if verbose:
+        logger.debug("Verbose logging enabled")
+        logger.debug(f"Python version: {sys.version}")
+        logger.debug(f"Platform: {sys.platform}")
 
-Process JSON data with appropriate error handling:
-
-```python
-import json
-
-def load_json(file_path: str) -> dict:
-    """Load JSON data from file."""
+def main() -> int:
+    """Main entry point for the script."""
     try:
-        with open(file_path, 'r', encoding='utf-8') as file:
-            return json.load(file)
-    except json.JSONDecodeError as e:
-        print(f"Invalid JSON in {file_path}: {e}")
-        raise
+        # Parse arguments
+        args = parse_arguments()
 
-def save_json(data: dict, file_path: str, indent: int = 2) -> None:
-    """Save data as formatted JSON."""
-    with open(file_path, 'w', encoding='utf-8') as file:
-        json.dump(data, file, indent=indent, ensure_ascii=False)
+        # Configure logging based on verbosity
+        configure_logging(args.verbose, args.quiet)
+        logger = logging.getLogger(__name__)
+
+        # Process configuration file
+        if args.verbose:
+            logger.debug(f"Loading configuration from {args.config_file}")
+            logger.debug(f"Using options: {vars(args)}")
+
+        config = load_config_file(args.config_file)
+
+        if args.verbose:
+            logger.debug(f"Configuration loaded successfully")
+
+        # Process the configuration
+        result = process_config(config)
+
+        if args.verbose:
+            logger.debug(f"Processing completed with {len(result)} items")
+
+        logger.info("Operation completed successfully")
+        return 0
+
+    except FileNotFoundError as e:
+        logger.error(f"File not found: {e}")
+        return 1
+    except json.JSONDecodeError as e:
+        logger.error(f"Invalid JSON in configuration: {e}")
+        return 2
+    except Exception as e:
+        logger.exception(f"Unexpected error: {e}")
+        return 99
 ```
 
-- Use context managers for file operations
-- Handle `JSONDecodeError` exceptions specifically
-- Set `indent` for human-readable output
-- Use `ensure_ascii=False` to preserve non-ASCII characters
+### Error Handling Conventions
 
-## Testing and Verification
+- ALWAYS use specific exception types, not bare `except:`
+- ALWAYS provide meaningful error messages
+- ALWAYS use logging with appropriate levels
+- ALWAYS return meaningful exit codes from scripts
+- NEVER swallow exceptions without good reason
 
-Include basic self-tests or verification steps:
+Example:
 
 ```python
-def verify_prerequisites() -> bool:
-    """Verify all prerequisites are met."""
-    missing = []
-
-    # Check for required commands
-    for cmd in ['git', 'terraform']:
-        if not shutil.which(cmd):
-            missing.append(cmd)
-
-    # Check for required environment variables
-    for env_var in ['API_KEY', 'USER_ID']:
-        if env_var not in os.environ:
-            missing.append(f"Environment variable {env_var}")
-
-    if missing:
-        print("Missing prerequisites:")
-        for item in missing:
-            print(f"  - {item}")
-        return False
-    return True
-
-def self_test() -> bool:
-    """Run self-tests."""
-    # Implement quick sanity checks
-    return True
-
-if __name__ == "__main__":
-    if not verify_prerequisites():
-        sys.exit(1)
-    if not self_test():
-        print("Self-test failed")
-        sys.exit(1)
-    sys.exit(main())
+try:
+    config = load_config(config_path)
+    validate_config(config)
+except FileNotFoundError as e:
+    logger.error(f"Configuration file not found: {e}")
+    return 1
+except PermissionError as e:
+    logger.error(f"Permission denied accessing file: {e}")
+    return 2
+except json.JSONDecodeError as e:
+    logger.error(f"Invalid JSON in configuration file: {e}")
+    return 3
+except ValidationError as e:
+    logger.error(f"Configuration validation failed: {e}")
+    return 4
+except Exception as e:
+    logger.exception(f"Unexpected error: {e}")
+    return 99
 ```
 
-- Include prerequisite checks for required commands and environment variables
-- Add simple self-tests for core functionality
-- Exit with appropriate error codes if prerequisites or tests fail
+### File Operations Conventions
 
-## Examples from the Repository
+- ALWAYS use context managers (`with` statement) for file operations
+- ALWAYS specify file encoding explicitly (usually `utf-8`)
+- ALWAYS use `pathlib.Path` for path manipulations instead of string operations
+- ALWAYS handle file-related exceptions specifically
 
-The repository contains several examples that demonstrate these conventions:
+## Python Script DOs and DON'Ts
 
-### Example: Structured Error Handling and JSON Output
+### DO
 
-From [link-lang-check.py](../../scripts/link-lang-check.py):
+- DO use type hints for function parameters and return values
+- DO use docstrings for all public functions, classes, and modules
+- DO use logging instead of print statements
+- DO handle exceptions appropriately with specific exception types
+- DO validate user input and function parameters
+- DO follow PEP 8 style guidelines
+- DO use context managers for resource management
 
-### Example: Class-Based Organization
+### DON'T
 
-From [tf-vars-compliance-check.py](../../scripts/tf-vars-compliance-check.py):
+- DON'T use global variables for function communication
+- DON'T use bare `except:` statements without specifying exception types
+- DON'T use `os.system()`, `os.popen()` or other shell invocation functions
+- DON'T include hardcoded paths or credentials in scripts
+- DON'T mix string formatting styles (stick with f-strings for Python 3.6+)
+- DON'T reinvent standard library functionality
 
-## Critical Rules (Always Follow)
+## Pre-Implementation Checklist
 
-- ALWAYS check for Python 3.8+ compatibility
-- ALWAYS include comprehensive docstrings for modules, classes, and functions
-- ALWAYS handle exceptions appropriately and provide meaningful error messages
-- ALWAYS use context managers for file operations
-- ALWAYS specify character encoding explicitly in file operations
-- ALWAYS include proper argument parsing for command line scripts
-- ALWAYS return appropriate exit codes from scripts
-- NEVER use bare `except:` statements without specifying exception types
-- NEVER use `os.system()` or other functions that invoke the shell directly
+Before making ANY changes to Python script code, ask yourself:
 
-## Implementation Checklist
+- [ ] What type of script am I working on (Utility, Application)?
+- [ ] Have I included proper docstrings for the module and all functions?
+- [ ] Have I included appropriate error handling for expected issues?
+- [ ] Are my imports properly organized and grouped?
+- [ ] Do I need command-line argument processing?
+- [ ] Have I included type hints for function parameters and return values?
+- [ ] Will my file operations properly handle non-ASCII text?
+- [ ] Have I considered security implications (input validation, shell injection)?
 
-Before finalizing script changes, verify:
+## Post-Implementation Checklist
 
-- [ ] Does the script include a proper shebang line?
+After completing ALL changes, verify:
+
 - [ ] Does the script have comprehensive docstrings?
-- [ ] Are imports properly grouped and alphabetized?
-- [ ] Is argument parsing robust with clear help documentation?
-- [ ] Are errors handled properly with appropriate exit codes?
+- [ ] Are all functions properly type-hinted?
+- [ ] Is error handling robust with appropriate exit codes?
 - [ ] Is logging configured appropriately for the script's purpose?
 - [ ] Are file operations using context managers and explicit encodings?
-- [ ] Do all functions have appropriate type hints?
 - [ ] Does the code follow PEP 8 style guidelines?
-- [ ] Is there a `main()` function and `if __name__ == "__main__":` idiom?
-- [ ] Have prerequisite checks been included if needed?
+- [ ] Is there a `main()` function and proper entry point?
+- [ ] Have I tested the script with valid and invalid inputs?
+- [ ] Are there any unnecessary dependencies that could be removed?
+- [ ] Is the code properly formatted and consistent with project style?
+- [ ] Are there any hardcoded values that should be arguments or constants?
+- [ ] Have I verified the script works on the target Python version?
