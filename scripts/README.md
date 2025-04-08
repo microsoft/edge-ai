@@ -91,17 +91,34 @@ Installs the terraform-docs tool at a specific version.
 Python script that generates standardized markdown documentation for Bicep modules by parsing ARM JSON output.
 
 - **Usage**:
-  - Run `pip install -r requirements.txt` (to install module `mdutils`)
-  - Run `python3 generate-bicep-docs.py <arm_json_file> <output_md_file>`
+  - Run `pip install -r requirements.txt` (to install module dependencies)
+  - Run `python3 generate-bicep-docs.py <arm_json_file> <output_md_file> [-t <template_file>] [-n <nesting_level>]`
 - **Arguments**:
   - `arm_json_file`: Path to the ARM JSON file (compiled Bicep)
   - `output_md_file`: Path where the generated markdown documentation will be saved
-  - `--modules-nesting-level`: Specify the nesting level for modules (default: 1)
+  - `-t, --template-file`: Optional path to a custom Jinja2 template file (default: ./templates/bicep-docs-template.md.template)
+  - `-n, --modules-nesting-level`: Optional maximum number of nested module levels to process (default: 1)
+- **Example Usage**:
+
+  ```sh
+  # Basic usage with default template
+  python generate-bicep-docs.py ./src/005-onboard-reqs/bicep/main.json ./src/005-onboard-reqs/README.md
+
+  # Using a custom template
+  python generate-bicep-docs.py ./src/005-onboard-reqs/bicep/main.json ./src/005-onboard-reqs/README.md -t ./templates/custom-template.md
+
+  # Specifying nesting level for module processing
+  python generate-bicep-docs.py ./src/005-onboard-reqs/bicep/main.json ./src/005-onboard-reqs/README.md -n 2
+  ```
+
 - **Dependencies**:
   - Python 3.x
-  - Install Python dependencies: `pip install -r requirements.txt`
+  - Required packages: `jinja2` (for templating)
 - **Build Integration**: Called by update-all-bicep-docs.sh
 - **When to Use**: Typically not called directly, but used by update-all-bicep-docs.sh when regenerating documentation
+- **Best Practice**:
+  - When generating docs for complex Bicep modules, consider creating a custom Jinja2 template
+  - Templates can be customized to highlight specific aspects of your modules (parameters, outputs, nested resources)
 
 ### update-all-bicep-docs.sh
 
@@ -110,7 +127,7 @@ Updates Bicep documentation across all components in the repository.
 - **Usage**: `./update-all-bicep-docs.sh [directory1 directory2 ...]`
 - **Dependencies**:
   - Azure CLI with Bicep extension
-  - Python 3.x with `generate-bicep-docs.py` script
+  - Python 3.x with `generate-bicep-docs.py` script and its dependencies installed
 - **When to Use**: After making changes to Bicep modules to keep documentation current
 - **Best Practice**: Run this script before submitting PRs that include Bicep changes to ensure documentation is up-to-date,
   also run `npm run mdlint-fix` to fix any markdown linting issues

@@ -49,13 +49,13 @@ if [ ! -f "$python_script_path" ]; then
 fi
 
 # Check if az CLI is installed
-if ! command -v az &> /dev/null; then
+if ! command -v az &>/dev/null; then
     echo "Error: Azure CLI (az) is not installed. Please install it first."
     exit 1
 fi
 
 # Check if bicep extension is installed
-if ! az bicep version &> /dev/null; then
+if ! az bicep version &>/dev/null; then
     echo "Installing Azure Bicep extension..."
     az bicep install
 fi
@@ -117,7 +117,7 @@ for dir in "${DIRS[@]}"; do
 
         # Build the Bicep file to ARM JSON
         if az bicep build --file "$absolute_bicep_file" --outfile "$json_file" --no-restore; then
-           echo "✅ Successfully built ARM template: $json_file"
+            echo "✅ Successfully built ARM template: $json_file"
 
             # Generate documentation using the Python script
             if python3 "$python_script_path" "$json_file" "$readme_file" --modules-nesting-level 1; then

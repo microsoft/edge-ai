@@ -188,4 +188,5 @@ var aioDataFlowInstanceDefaults = {
 }
 
 @export()
+@description('The source of trust for Azure IoT Operations certificates.')
 type TrustSource = 'SelfSigned' | 'CustomerManaged'
