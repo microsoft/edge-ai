@@ -1,13 +1,8 @@
 <!-- BEGIN_TF_DOCS -->
 <!-- markdown-table-prettify-ignore-start -->
-# Azure Key Vault Module for DevOps Infrastructure
+# Azure Container Registry for Accelerator
 
-Creates an Azure Key Vault with private endpoint connectivity:
-
-- Key Vault with RBAC authorization enabled
-- Private endpoint for secure network access
-- Private DNS A record for name resolution
-- Public network access disabled for enhanced security
+Create a Container Registry to host the artifacts for the Accelerator
 
 ## Requirements
 
@@ -25,7 +20,7 @@ Creates an Azure Key Vault with private endpoint connectivity:
 
 | Name | Type |
 |------|------|
-| [azurerm_key_vault.key_vault](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault) | resource |
+| [azurerm_container_registry.acr](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/container_registry) | resource |
 | [azurerm_private_dns_a_record.a_record](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_dns_a_record) | resource |
 | [azurerm_private_dns_zone.dns_zone](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_dns_zone) | resource |
 | [azurerm_private_dns_zone_virtual_network_link.vnet_link](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_dns_zone_virtual_network_link) | resource |
@@ -35,19 +30,19 @@ Creates an Azure Key Vault with private endpoint connectivity:
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| dns\_zone | Private DNS zone for Key Vault private endpoint. | ```object({ name = string })``` | n/a | yes |
+| dns\_zone | Private DNS zone for the Azure Container Registry private endpoint. | ```object({ name = string })``` | n/a | yes |
 | environment | Environment for all resources in this module: dev, test, or prod. | `string` | n/a | yes |
 | instance | Instance identifier for naming resources: 001, 002, etc. | `string` | n/a | yes |
 | resource\_group | Resource group for all resources in this module. | ```object({ name = string location = string })``` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module. | `string` | n/a | yes |
-| snet\_kv | Subnet for the Key Vault private endpoint. | ```object({ id = string })``` | n/a | yes |
-| tenant\_id | Tenant Id for the Azure Key Vault. | `string` | n/a | yes |
+| snet\_acr | Subnet for the Azure Container Registry private endpoint. | ```object({ id = string })``` | n/a | yes |
 | vnet | Virtual Network for Key Vault Private DNS Zone. | ```object({ name = string })``` | n/a | yes |
+| sku | SKU for the Azure Container Registry. Options are Basic, Standard, Premium. Default is Premium because of the need for private endpoints. | `string` | `"Premium"` | no |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| key\_vault | The Key Vault resource created by this module. |
+| acr | The Azure Container Registry resource created by this module. |
 <!-- markdown-table-prettify-ignore-end -->
 <!-- END_TF_DOCS -->

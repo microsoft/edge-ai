@@ -6,6 +6,26 @@ variable "resource_group" {
   })
 }
 
+variable "snet_acr" {
+  description = "Subnet for the Azure Container Registry private endpoint."
+  type = object({
+    id = string
+  })
+}
+
+variable "vnet" {
+  description = "Virtual Network for Container Registry Private DNS Zone."
+  type = object({
+    id = string
+  })
+}
+
+variable "sku" {
+  type        = string
+  description = "SKU for the Azure Container Registry. Options are Basic, Standard, Premium. Default is Premium because of the need for private endpoints."
+  default     = "Premium"
+}
+
 variable "environment" {
   type        = string
   description = "Environment for all resources in this module: dev, test, or prod."
@@ -23,18 +43,4 @@ variable "resource_prefix" {
 variable "instance" {
   type        = string
   description = "Instance identifier for naming resources: 001, 002, etc."
-}
-
-variable "storage_account" {
-  type = object({
-    name             = string
-    tier             = string
-    replication_type = string
-  })
-  default = {
-    name             = ""
-    tier             = "Standard"
-    replication_type = "LRS"
-  }
-  description = "Storage account name, tier and replication_type for the Storage Account to be created. Defaults to a randomly generated name, \"Standard\" tier and \"LRS\" replication_type."
 }

@@ -1,4 +1,5 @@
 variable "resource_group" {
+  description = "Resource group for all resources in this module."
   type = object({
     name     = string
     location = string
@@ -6,12 +7,21 @@ variable "resource_group" {
 }
 
 variable "key_vault" {
+  description = "Key Vault to assign role permissions for the managed identity."
   type = object({
     id = string
   })
 }
 
 variable "storage_account" {
+  description = "Storage Account to assign role permissions for the managed identity."
+  type = object({
+    id = string
+  })
+}
+
+variable "acr" {
+  description = "Azure Container Registry to assign role permissions for the managed identity."
   type = object({
     id = string
   })
@@ -19,12 +29,12 @@ variable "storage_account" {
 
 variable "environment" {
   type        = string
-  description = "Environment for all resources in this module: dev, test, or prod"
+  description = "Environment for all resources in this module: dev, test, or prod."
 }
 
 variable "resource_prefix" {
   type        = string
-  description = "Prefix for all resources in this module"
+  description = "Prefix for all resources in this module."
   validation {
     condition     = length(var.resource_prefix) > 0 && can(regex("^[a-zA-Z](?:-?[a-zA-Z0-9])*$", var.resource_prefix))
     error_message = "Resource prefix must not be empty, must only contain alphanumeric characters and dashes. Must start with an alphabetic character."
@@ -33,5 +43,5 @@ variable "resource_prefix" {
 
 variable "instance" {
   type        = string
-  description = "Instance identifier for naming resources: 001, 002, etc..."
+  description = "Instance identifier for naming resources: 001, 002, etc."
 }

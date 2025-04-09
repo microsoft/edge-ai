@@ -32,13 +32,13 @@ resource "azapi_resource" "managed_devops_pool" {
   body = {
     properties = {
       devCenterProjectResourceId = azurerm_dev_center_project.dev_center_project.id
-      maximumConcurrency         = 4
+      maximumConcurrency         = 2
       organizationProfile = {
         kind = "AzureDevOps"
         organizations = [{
           url         = "https://dev.azure.com/${local.azdo_org_name}"
           projects    = []
-          parallelism = 4
+          parallelism = 2
         }]
       }
       agentProfile = {

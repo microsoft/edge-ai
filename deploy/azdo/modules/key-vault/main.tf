@@ -1,8 +1,12 @@
 /**
- * # Azure Key Vault for Accelerator
+ * # Azure Key Vault Module for DevOps Infrastructure
  *
- * Create or use an existing a Key Vault for Accelerator
+ * Creates an Azure Key Vault with private endpoint connectivity:
  *
+ * - Key Vault with RBAC authorization enabled
+ * - Private endpoint for secure network access
+ * - Private DNS A record for name resolution
+ * - Public network access disabled for enhanced security
  */
 
 resource "azurerm_key_vault" "key_vault" {
@@ -36,12 +40,11 @@ resource "azurerm_private_dns_zone" "dns_zone" {
 }
 
 resource "azurerm_private_dns_zone_virtual_network_link" "vnet_link" {
-  name                  = "vnet-pzl-${var.resource_prefix}-${var.environment}-${var.instance}"
+  name                  = "vnet-pzl-kv-${var.resource_prefix}-${var.environment}-${var.instance}"
   resource_group_name   = var.resource_group.name
   private_dns_zone_name = azurerm_private_dns_zone.dns_zone.name
   virtual_network_id    = var.vnet.id
-  registration_enabled  = true
-
+  registration_enabled  = false
 }
 
 resource "azurerm_private_dns_a_record" "a_record" {

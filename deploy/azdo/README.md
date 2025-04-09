@@ -1,8 +1,16 @@
 <!-- BEGIN_TF_DOCS -->
 <!-- markdown-table-prettify-ignore-start -->
-# Azure Key Vault for Secret Sync Extension
+# Azure DevOps Infrastructure Module
 
-Create or use and existing a Key Vault for Secret Sync Extension
+Creates or uses existing Azure resources for Azure DevOps integration:
+
+- Resource Group
+- Virtual Network with subnets for Key Vault, ACR, and DevOps agent pool
+- Storage Account
+- Key Vault with private endpoint
+- Container Registry with private endpoint
+- DevOps Managed Pool
+- User Assigned Managed Identity with appropriate role assignments
 
 ## Requirements
 
@@ -30,9 +38,10 @@ Create or use and existing a Key Vault for Secret Sync Extension
 
 | Name | Source | Version |
 |------|--------|---------|
+| acr | ./modules/container-registry | n/a |
 | identity | ./modules/identity | n/a |
 | key\_vault | ./modules/key-vault | n/a |
-| managed\_pool | ./modules/managed-pool | n/a |
+| managed\_pool | ./modules/devops-infra-pool | n/a |
 | network | ./modules/network | n/a |
 | storage\_account | ./modules/storage-account | n/a |
 
@@ -40,10 +49,10 @@ Create or use and existing a Key Vault for Secret Sync Extension
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| environment | Environment for all resources in this module: dev, test, or prod | `string` | n/a | yes |
-| location | Location for all resources in this module | `string` | n/a | yes |
-| resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
-| instance | Instance identifier for naming resources: 001, 002, etc... | `string` | `"001"` | no |
-| resource\_group\_name | Name of the resource group to create or use | `string` | `null` | no |
+| environment | Environment for all resources in this module: dev, test, or prod. | `string` | n/a | yes |
+| location | Location for all resources in this module. | `string` | n/a | yes |
+| resource\_prefix | Prefix for all resources in this module. | `string` | n/a | yes |
+| instance | Instance identifier for naming resources: 001, 002, etc. | `string` | `"001"` | no |
+| resource\_group\_name | Name of the resource group to create or use. | `string` | `null` | no |
 <!-- markdown-table-prettify-ignore-end -->
 <!-- END_TF_DOCS -->

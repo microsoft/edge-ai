@@ -1,3 +1,4 @@
 output "storage_account" {
-  value = azurerm_storage_account.store
+  description = "The Storage Account resource created by this module."
+  value       = azurerm_storage_account.store
 }
