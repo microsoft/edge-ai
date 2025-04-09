@@ -72,8 +72,10 @@ stages:
               echo "Remote URL: $remoteUrl"
               git remote remove origin
               git remote add origin $remoteUrl
-              echo "Source branch: $(Build.SourceBranch)"
-              git push --force origin $(Build.SourceBranch):refs/heads/azdo-$(Build.BuildId)
+              echo "Switching to a new temporary branch to leave the detached mode"
+              git switch -c azdo-$(Build.BuildId)
+              echo "$(git branch --all)"
+              git push --force origin azdo-$(Build.BuildId):azdo-$(Build.BuildId)
               git remote remove origin
               echo "Pushed branch azdo-$(Build.BuildId) to GitHub"
 
