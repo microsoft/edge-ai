@@ -249,33 +249,33 @@ variable "resource_prefix" {
 ```
 
 1. **Naming Convention**:
-    - Variable names MUST use `snake_case`
-    - Variable names MUST be descriptive and indicate purpose
-    - Environment-specific variables MUST be prefixed with `env_` (e.g., `env_name`)
-    - Common concept variables MUST use consistent names across modules
-    - Boolean variables SHOULD start with `should_` or `is_`
+   - Variable names MUST use `snake_case`
+   - Variable names MUST be descriptive and indicate purpose
+   - Environment-specific variables MUST be prefixed with `env_` (e.g., `env_name`)
+   - Common concept variables MUST use consistent names across modules
+   - Boolean variables SHOULD start with `should_` or `is_`
 2. **Documentation**:
-    - Descriptions MUST end with a period
-    - Descriptions MUST explain the purpose, expected format, and constraints
-    - For complex variables, descriptions SHOULD include examples
+   - Descriptions MUST end with a period
+   - Descriptions MUST explain the purpose, expected format, and constraints
+   - For complex variables, descriptions SHOULD include examples
 3. **Type Constraints**:
-    - Variables MUST specify their type
-    - Specific subtypes SHOULD be used where applicable (e.g., `list(string)` instead of just `list`)
-    - Complex types MUST use `object()` with clear attribute definitions
+   - Variables MUST specify their type
+   - Specific subtypes SHOULD be used where applicable (e.g., `list(string)` instead of just `list`)
+   - Complex types MUST use `object()` with clear attribute definitions
 4. **Default Values**:
-    - Optional variables SHOULD provide sensible defaults
-    - Required variables MUST NOT have defaults
-    - Required status MUST be clearly documented
-    - Internal Modules MUST NOT have defaults
+   - Optional variables SHOULD provide sensible defaults
+   - Required variables MUST NOT have defaults
+   - Required status MUST be clearly documented
+   - Internal Modules MUST NOT have defaults
 5. **Validation Rules**:
-    - Important constraints SHOULD include validation rules
-    - Validation error messages MUST clearly guide the user
-    - Validation rules MUST be tested in module tests
+   - Important constraints SHOULD include validation rules
+   - Validation error messages MUST clearly guide the user
+   - Validation rules MUST be tested in module tests
 6. **Variable Files**:
-    - Variables MUST be organized in `variables.tf`, `variables.core.tf`, `variables.deps.tf`, or
-        `variables.<internal-module>.tf`
-    - Environment-specific values SHOULD use `.tfvars` files
-    - Sensitive values MUST NEVER be committed in `.tfvars` files
+   - Variables MUST be organized in `variables.tf`, `variables.core.tf`, `variables.deps.tf`, or
+     `variables.<internal-module>.tf`
+   - Environment-specific values SHOULD use `.tfvars` files
+   - Sensitive values MUST NEVER be committed in `.tfvars` files
 
 #### Terraform Style Guide
 
@@ -308,25 +308,25 @@ param location string = resourceGroup().location
 ```
 
 1. **Naming Convention**:
-    - Parameter names MUST use `camelCase`
-    - Parameter names MUST be descriptive and indicate purpose
-    - Type names MUST use `PascalCase`
-    - Resource names MUST use `kebab-case`
-    - Common concept parameters MUST use consistent names across modules
+   - Parameter names MUST use `camelCase`
+   - Parameter names MUST be descriptive and indicate purpose
+   - Type names MUST use `PascalCase`
+   - Resource names MUST use `kebab-case`
+   - Common concept parameters MUST use consistent names across modules
 2. **Documentation**:
-    - All parameters MUST use the `@description()` decorator
-    - Descriptions MUST explain the purpose, expected format, and constraints
+   - All parameters MUST use the `@description()` decorator
+   - Descriptions MUST explain the purpose, expected format, and constraints
 3. **Type Constraints**:
-    - All parameters MUST specify their type
-    - Parameters SHOULD use decorators like `@minLength()`, `@maxLength()`, `@allowed()` for validation
-    - Constraint violations MUST produce clear error messages
+   - All parameters MUST specify their type
+   - Parameters SHOULD use decorators like `@minLength()`, `@maxLength()`, `@allowed()` for validation
+   - Constraint violations MUST produce clear error messages
 4. **Default Values**:
-    - Optional parameters SHOULD provide sensible defaults
-    - Required parameters MUST NOT have defaults
-    - Context-aware defaults (e.g., `resourceGroup().location`) SHOULD be used when appropriate
+   - Optional parameters SHOULD provide sensible defaults
+   - Required parameters MUST NOT have defaults
+   - Context-aware defaults (e.g., `resourceGroup().location`) SHOULD be used when appropriate
 5. **Parameter Files**:
-    - Environment-specific values SHOULD use parameter files (`.parameters.json`)
-    - Sensitive values MUST NEVER be committed in parameter files
+   - Environment-specific values SHOULD use parameter files (`.parameters.json`)
+   - Sensitive values MUST NEVER be committed in parameter files
 
 ## Git Workflow
 
@@ -431,10 +431,10 @@ Our repository uses automated reviewer assignment based on the areas of the code
 
 1. Reviewer groups will be automatically assigned based on the directories and components modified
 2. The following specialist teams are configured:
-    - **IaC Team (Terraform)**: Changes to core Terraform infrastructure modules
-    - **IaC Team (Bicep)**: Changes to core Bicep infrastructure modules
-    - **Security Reviewers**: Changes to security related folders
-    - **TPM Reviewers**: Significant documentation changes including ADRs & tech papers
+   - **IaC Team (Terraform)**: Changes to core Terraform infrastructure modules
+   - **IaC Team (Bicep)**: Changes to core Bicep infrastructure modules
+   - **Security Reviewers**: Changes to security related folders
+   - **TPM Reviewers**: Significant documentation changes including ADRs & tech papers
 3. Contributors MUST NOT manually remove automatically assigned reviewers
 4. Contributors MAY add additional reviewers if needed for specific expertise or perspective
 
@@ -451,7 +451,8 @@ Our repository uses automated reviewer assignment based on the areas of the code
 
 The CI pipeline includes checks to ensure documentation is up-to-date:
 
-- `TerraformDocsCheck` verifies that Terraform documentation is current
+- `DocsCheckTerraform` verifies that Terraform documentation is current
+- `DocsCheckBicep` verifies that Bicep documentation is current
 - Documentation changes MUST be included in the same PR as the related code changes
 
 ### Wiki Auto-Publishing

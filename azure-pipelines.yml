@@ -206,6 +206,14 @@ stages:
           condition: succeeded()
           breakBuild: false  # Only show warnings by default
 
+      # Use the docs check template for Bicep files
+      - template: .azdo/templates/docs-check-bicep-template.yml
+        parameters:
+          dependsOn: MegaLinter
+          displayName: "Bicep Documentation Quality Check"
+          condition: succeeded()
+          breakBuild: false  # Only show warnings by default
+
       # Use the aio-version-checker-template.yml template for checking AIO component versions
       - template: .azdo/templates/aio-version-checker-template.yml
         parameters:
@@ -218,7 +226,7 @@ stages:
       # Use the matrix-folder-check-template.yml to check for changes in src directory
       - template: .azdo/templates/matrix-folder-check-template.yml
         parameters:
-          dependsOn: DocsCheck
+          dependsOn: [DocsCheckTerraform, DocsCheckBicep]
           displayName: "Check for changes in src directory"
           condition: succeeded()
           includeAllFolders: false  # Only check folders with changes for PR builds

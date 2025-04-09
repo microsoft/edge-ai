@@ -96,11 +96,20 @@ jobs:
       github_comment_reporter: false
     secrets: inherit
 
-  # Call docs-check workflow
-  docs-check-main:
-    name: Documentation Check
+  # Call docs-check-terraform workflow
+  docs-check-terraform-main:
+    name: Terraform Documentation Check
     needs: [mega-linter-main]
-    uses: ./.github/workflows/docs-check.yml
+    uses: ./.github/workflows/docs-check-terraform.yml
+    with:
+      break_build: false
+    secrets: inherit
+
+  # Call docs-check-bicep workflow
+  docs-check-bicep-main:
+    name: Bicep Documentation Check
+    needs: [mega-linter-main]
+    uses: ./.github/workflows/docs-check-bicep.yml
     with:
       break_build: false
     secrets: inherit
@@ -108,7 +117,7 @@ jobs:
   # Pages deployment for main branch (replaces wiki update)
   deploy-pages-main:
     name: Deploy Documentation (Main)
-    needs: [docs-check-main]
+    needs: [docs-check-terraform-main, docs-check-bicep-main]
     # Only deploy if there are documentation changes
     if: success()
     uses: ./.github/workflows/pages-deploy.yml

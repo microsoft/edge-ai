@@ -56,7 +56,7 @@ These scripts are defined in the `package.json` file in the project root and pro
 Run ALL linters (when running in the Dev Container, use the special `-devcontainer` scripts versions to prevent Bicep linter from generating `.JSON` files in repo):
 
 ```sh
-npm run lint-devcontainer"
+npm run lint-devcontainer
 ```
 
 To fix basic linting issues, run the following:

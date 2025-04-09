@@ -16,6 +16,7 @@ Azure DevOps build system for managing and validating the project's IaC.
   - [Bicep Documentation and Validation Scripts](#bicep-documentation-and-validation-scripts)
     - [generate-bicep-docs.py](#generate-bicep-docspy)
     - [update-all-bicep-docs.sh](#update-all-bicep-docssh)
+    - [bicep-docs-check.sh](#bicep-docs-checksh)
   - [Azure IoT Operations Scripts](#azure-iot-operations-scripts)
     - [aio-version-checker.py](#aio-version-checkerpy)
   - [Documentation and Link Validation Scripts](#documentation-and-link-validation-scripts)
@@ -37,7 +38,7 @@ Updates Terraform documentation across all modules.
 
 - **Usage**: `./update-all-terraform-docs.sh`
 - **Dependencies**: Requires terraform-docs to be installed (see `./install-terraform-docs.sh`)
-- **Build Integration**: Called by tf-docs-check.sh during the DocsCheck job
+- **Build Integration**: Called by tf-docs-check.sh during the DocsCheckTerraform job
 - **When to Use**: After making changes to Terraform variable definitions or outputs
 - **Best Practice**: Always run this script after making Terraform changes to keep documentation current
 
@@ -47,7 +48,7 @@ Verifies that Terraform documentation is up-to-date.
 
 - **Usage**: `./tf-docs-check.sh`
 - **Returns**: Boolean indicating if documentation needs updates
-- **Build Integration**: Used by the [docs-check-terraform-template.yml](../.azdo/docs-check-terraform-template.yml) in the DocsCheck job
+- **Build Integration**: Used by the [docs-check-terraform-template.yml](../.azdo/docs-check-terraform-template.yml) in the DocsCheckTerraform job
 - **When to Use**: Before submitting PRs to ensure documentation matches code
 
 ### tf-vars-compliance-check.py
@@ -81,7 +82,7 @@ Installs the terraform-docs tool at a specific version.
 - **Flags**:
   - `-v version`: Specify terraform-docs version (default: v0.19.0)
   - `-h`: Display help message
-- **Build Integration**: Used by the [docs-check-terraform-template.yml](../.azdo/docs-check-terraform-template.yml) in the DocsCheck job
+- **Build Integration**: Used by the [docs-check-terraform-template.yml](../.azdo/docs-check-terraform-template.yml) in the DocsCheckTerraform job
 - **When to Use**: When setting up a new development environment or updating the terraform-docs version
 
 ## Bicep Documentation and Validation Scripts
@@ -114,7 +115,7 @@ Python script that generates standardized markdown documentation for Bicep modul
 - **Dependencies**:
   - Python 3.x
   - Required packages: `jinja2` (for templating)
-- **Build Integration**: Called by update-all-bicep-docs.sh
+- **Build Integration**: Called by `update-all-bicep-docs.sh`
 - **When to Use**: Typically not called directly, but used by update-all-bicep-docs.sh when regenerating documentation
 - **Best Practice**:
   - When generating docs for complex Bicep modules, consider creating a custom Jinja2 template
@@ -131,6 +132,28 @@ Updates Bicep documentation across all components in the repository.
 - **When to Use**: After making changes to Bicep modules to keep documentation current
 - **Best Practice**: Run this script before submitting PRs that include Bicep changes to ensure documentation is up-to-date,
   also run `npm run mdlint-fix` to fix any markdown linting issues
+
+### bicep-docs-check.sh
+
+Verifies that Bicep documentation is up-to-date by comparing the current documentation with what would be generated.
+
+- **Usage**: `./bicep-docs-check.sh`
+- **Dependencies**:
+  - Azure CLI with Bicep extension
+  - Python 3.x with dependencies installed for generate-bicep-docs.py
+- **Returns**: Exit code 0 if documentation is up-to-date, non-zero otherwise
+- **Build Integration**: Used by the [docs-check-bicep-template.yml](../.azdo/docs-check-bicep-template.yml) in the DocsCheckBicep job
+- **When to Use**: Before submitting PRs to ensure Bicep documentation matches the current state of Bicep modules
+- **Best Practice**:
+  - Run this script as part of your pre-commit workflow when changing Bicep files
+  - If documentation is out of date, run `./update-all-bicep-docs.sh` to update it
+  - Review generated documentation changes before committing to ensure they reflect your intended module changes
+
+The script works by:
+
+1. Running `update-all-bicep-docs.sh` to generate the latest documentation for `/src/*/bicep/` and `./blueprints/*/bicep/`
+2. Comparing the generated documentation with the existing documentation
+3. Reporting any differences found
 
 ## Azure IoT Operations Scripts
 
@@ -160,7 +183,9 @@ Finds and optionally fixes URLs with language path segments ('en-us').
   - Fix links and remove 'en-us': `python3 link-lang-check.py -f`
   - Fix links with verbose output: `python3 link-lang-check.py -f -v`
 - **Returns**: JSON array of detected links with file paths and line numbers (in search mode)
-- **Build Integration**: Used by the [docs-check-terraform-template.yml](../.azdo/docs-check-terraform-template.yml) in the DocsCheck job
+- **Build Integration**:
+  - Used by the [docs-check-terraform-template.yml](../.azdo/docs-check-terraform-template.yml) in the DocsCheckTerraform job
+  - Used by the [docs-check-bicep-template.yml](../.azdo/docs-check-bicep-template.yml) in the DocsCheckBicep job
 - **When to Use**: Run before submitting PRs to ensure links don't contain language-specific paths which can cause internationalization issues
 
 ### wiki-build.sh
