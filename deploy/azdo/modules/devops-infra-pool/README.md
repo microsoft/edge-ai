@@ -29,10 +29,11 @@ Create a Dev Center and Project to host a Managed DevOps Pool for Accelerator
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| environment | Environment for all resources in this module: dev, test, or prod | `string` | n/a | yes |
-| instance | Instance identifier for naming resources: 001, 002, etc... | `string` | n/a | yes |
-| resource\_group | n/a | ```object({ id = string name = string location = string })``` | n/a | yes |
-| resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
-| snet\_pool | n/a | ```object({ id = string })``` | n/a | yes |
+| environment | Environment for all resources in this module: dev, test, or prod. | `string` | n/a | yes |
+| instance | Instance identifier for naming resources: 001, 002, etc. | `string` | n/a | yes |
+| resource\_group | Resource group for all resources in this module. | ```object({ id = string name = string location = string })``` | n/a | yes |
+| resource\_prefix | Prefix for all resources in this module. | `string` | n/a | yes |
+| snet\_pool | Subnet for the Azure DevOps agent pool. | ```object({ id = string })``` | n/a | yes |
+| azdo\_org\_name | Azure DevOps organization name. | `string` | `null` | no |
 <!-- markdown-table-prettify-ignore-end -->
 <!-- END_TF_DOCS -->

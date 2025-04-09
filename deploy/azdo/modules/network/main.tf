@@ -1,8 +1,12 @@
 /**
- * # Azure Virtual Network for Accelerator
+ * # Azure DevOps Network Module
  *
- * Create or use an existing Virtual Network for Accelerator
+ * Creates the networking infrastructure required for Azure DevOps infrastructure:
  *
+ * - Virtual Network with dedicated subnets for Key Vault, DevOps Agent Pool, and Container Registry
+ * - Network Security Group with appropriate associations
+ * - Private DNS Zone with VNet link
+ * - Network role assignments for DevOps service principals
  */
 
 data "azuread_service_principal" "service_principal" {
@@ -47,6 +51,11 @@ resource "azurerm_subnet_network_security_group_association" "snet_nsg_pool" {
   network_security_group_id = azurerm_network_security_group.nsg.id
 }
 
+resource "azurerm_subnet_network_security_group_association" "snet_nsg_acr" {
+  subnet_id                 = azurerm_subnet.snet_acr.id
+  network_security_group_id = azurerm_network_security_group.nsg.id
+}
+
 resource "azurerm_subnet" "snet_kv" {
   name                 = "snet-keyvault"
   resource_group_name  = var.resource_group.name
@@ -66,4 +75,11 @@ resource "azurerm_subnet" "snet_pool" {
       actions = ["Microsoft.Network/virtualNetworks/subnets/join/action"]
     }
   }
+}
+
+resource "azurerm_subnet" "snet_acr" {
+  name                 = "snet-acr"
+  resource_group_name  = var.resource_group.name
+  virtual_network_name = azurerm_virtual_network.vnet.name
+  address_prefixes     = ["10.0.3.0/24"]
 }

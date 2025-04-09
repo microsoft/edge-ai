@@ -27,16 +27,16 @@ Create a Storage Account for Accelerator
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| environment | Environment for all resources in this module: dev, test, or prod | `string` | n/a | yes |
-| instance | Instance identifier for naming resources: 001, 002, etc... | `string` | n/a | yes |
-| resource\_group | n/a | ```object({ name = string location = string })``` | n/a | yes |
-| resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
-| storage\_account | Storage account name, tier and replication\_type for the Storage Account to be created. Defaults to a randomly generated name, "Standard" tier and "LRS" replication\_type | ```object({ name = string tier = string replication_type = string })``` | ```{ "name": "", "replication_type": "LRS", "tier": "Standard" }``` | no |
+| environment | Environment for all resources in this module: dev, test, or prod. | `string` | n/a | yes |
+| instance | Instance identifier for naming resources: 001, 002, etc. | `string` | n/a | yes |
+| resource\_group | Resource group for all resources in this module. | ```object({ name = string location = string })``` | n/a | yes |
+| resource\_prefix | Prefix for all resources in this module. | `string` | n/a | yes |
+| storage\_account | Storage account name, tier and replication\_type for the Storage Account to be created. Defaults to a randomly generated name, "Standard" tier and "LRS" replication\_type. | ```object({ name = string tier = string replication_type = string })``` | ```{ "name": "", "replication_type": "LRS", "tier": "Standard" }``` | no |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| storage\_account | n/a |
+| storage\_account | The Storage Account resource created by this module. |
 <!-- markdown-table-prettify-ignore-end -->
 <!-- END_TF_DOCS -->
