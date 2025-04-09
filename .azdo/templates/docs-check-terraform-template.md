@@ -1,4 +1,4 @@
-# Documentation Check Template
+# Terraform Documentation Check Template
 
 This template provides automated tools for validating documentation quality across the
 repository, ensuring Terraform documentation is consistent with the code and
@@ -72,8 +72,8 @@ This template depends on the following:
     terraformDocsVersion: "v0.17.0"
     breakBuild: true
     pool:
-      name: 'custom-pool'
-      vmImage: 'ubuntu-latest'
+      name: "custom-pool"
+      vmImage: "ubuntu-latest"
 ```
 
 ## Implementation Details
@@ -81,6 +81,7 @@ This template depends on the following:
 The template executes two main validation processes:
 
 1. **Terraform Documentation Check**:
+
    - Installs terraform-docs using the specified version
    - Runs the `tf-docs-check.sh` script to detect outdated documentation
    - Generates warnings or errors if documentation needs updating
@@ -150,14 +151,17 @@ stages:
 Common issues and their solutions:
 
 1. **Missing terraform-docs**:
+
    - **Symptom**: Build fails with errors about terraform-docs not being available
    - **Solution**: Ensure the `install-terraform-docs.sh` script is in the correct location and has execute permissions
 
 2. **Outdated Terraform Documentation**:
+
    - **Symptom**: Build warns or fails with "Terraform auto-gen documentation needs to be updated"
    - **Solution**: Run `./scripts/update-all-terraform-docs.sh` locally, commit the changes, and push
 
 3. **URLs with Language Paths**:
+
    - **Symptom**: Build warns or fails with "URL contains language path segment (en-us)"
    - **Solution**: Either manually edit the links to remove 'en-us/' or run `python3 scripts/link-lang-check.py -f` to automatically fix all occurrences
 

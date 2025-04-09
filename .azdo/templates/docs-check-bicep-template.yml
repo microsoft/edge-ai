@@ -1,11 +1,11 @@
-# Terraform Documentation Compliance Check Template
+# Bicep Documentation Compliance Check Template
 #
 # Purpose:
-# This template validates that all Terraform documentation is properly maintained and up-to-date with the code.
+# This template validates that all Bicep documentation is properly maintained and up-to-date with the code.
 # It enforces documentation standards and helps ensure consistent documentation across the codebase.
 #
 # Checks performed:
-# 1. Verifies Terraform module documentation is current using terraform-docs
+# 1. Verifies Bicep module documentation is current using custom documentation generator
 # 2. Ensures links in documentation don't contain language-specific paths (e.g., 'en-us')
 #
 # Usage:
@@ -20,15 +20,11 @@ parameters:
   # Display name for the job
   - name: displayName
     type: string
-    default: 'Terraform Documentation Check'
+    default: 'Bicep Documentation Check'
   # Condition for when this job should run
   - name: condition
     type: string
     default: 'succeeded()'
-  # Version of terraform-docs to install
-  - name: terraformDocsVersion
-    type: string
-    default: 'v0.19.0'
   # Whether to break the build on compliance issues (true) or just show warnings (false)
   - name: breakBuild
     type: boolean
@@ -41,7 +37,7 @@ parameters:
       vmImage: 'ubuntu-latest'
 
 jobs:
-  - job: DocsCheckTerraform
+  - job: DocsCheckBicep
     displayName: ${{ parameters.displayName }}
     dependsOn: ${{ parameters.dependsOn }}
     condition: ${{ parameters.condition }}
@@ -53,29 +49,51 @@ jobs:
       - checkout: self
         clean: true
 
-      # Add Python setup task
+      # Set up Python environment
       - task: UsePythonVersion@0
         inputs:
           versionSpec: '3.11'
           addToPath: true
         displayName: "Setup Python 3.11"
 
-      # Install terraform-docs using the shared script with new parameter format
+      # Install required Python packages
       - bash: |
-          ./scripts/install-terraform-docs.sh -v "${{ parameters.terraformDocsVersion }}"
-        displayName: Install terraform-docs
+          # Install dependencies from requirements.txt if it exists
+          if [ -f ./requirements.txt ]; then
+            python -m pip install --upgrade pip
+            pip install -r ./requirements.txt
+          else
+            # Fallback to installing just what's needed
+            pip install requests jinja2
+          fi
+        displayName: "Install Python Dependencies"
         condition: and( not(failed()), not(canceled()) )
 
-      # Check for terraform docs changes
+      # Verify Azure CLI with Bicep extension
       - bash: |
+          # Check if Azure CLI is installed
+          if ! command -v az &>/dev/null; then
+            echo "Azure CLI is not installed. Installing now..."
+            curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+          fi
 
-          # Call tf-docs-check.sh script to check for changes
-          readme_changed=$(tail -n 1 $(System.DefaultWorkingDirectory)/scripts/tf-docs-check.sh)
+          # Install/update Bicep extension
+          echo "Installing/updating Bicep extension..."
+          az bicep install
+          az bicep version
+        displayName: "Verify Azure CLI with Bicep Extension"
+        condition: and( not(failed()), not(canceled()) )
 
-          # Check if there are any changes in the Terraform documentation
-          if [ "$readme_changed" = true ]; then
-            echo "Updates are required for Terraform documentation."
-            echo "Please go into the project's scripts directory, run the update-all-terraform-docs.sh script, and commit changes."
+      # Check for Bicep docs changes
+      - bash: |
+          # Run the bicep-docs-check.sh script to check for changes
+          ./scripts/bicep-docs-check.sh
+          docs_changed=$(tail -n 1 <($(System.DefaultWorkingDirectory)/scripts/bicep-docs-check.sh))
+
+          # Check if there are any changes in the Bicep documentation
+          if [ "$docs_changed" = true ]; then
+            echo "Updates are required for Bicep documentation."
+            echo "Please go into the project's scripts directory, run the update-all-bicep-docs.sh script and commit changes."
 
             if [[ "$(echo ${{ parameters.breakBuild }} | tr '[:upper:]' '[:lower:]')" == "true" ]]; then
               issue_type="error"
@@ -83,19 +101,17 @@ jobs:
               issue_type="warning"
             fi
 
-            echo "##vso[task.logissue type=$issue_type]Terraform auto-gen documentation needs to be updated. Please run the update-all-terraform-docs.sh script and commit the changes."
+            echo "##vso[task.logissue type=$issue_type]Bicep auto-gen documentation needs to be updated. Please run the scripts/update-all-bicep-docs.sh script and commit the changes."
             exit 1
           else
-            echo "No updates detected in the Terraform documentation."
+            echo "No updates detected in the Bicep documentation."
           fi
-
-        displayName: Check for changes in terraform docs
+        displayName: "Check for changes in Bicep docs"
         workingDirectory: $(System.DefaultWorkingDirectory)
         condition: and( not(failed()), not(canceled()) )
 
       # Check for en-us links in docs
       - bash: |
-
           # Run the link-lang-check.py script to find en-us URLs
           echo "Checking for language path segments (en-us) in links..."
           links_json=$(python3 $(System.DefaultWorkingDirectory)/scripts/link-lang-check.py)
@@ -131,7 +147,6 @@ jobs:
             echo "Error parsing output from link-lang-check.py script"
             echo "$links_json"
           fi
-
-        displayName: Check for language path segments in links
+        displayName: "Check for language path segments in links"
         workingDirectory: $(System.DefaultWorkingDirectory)
         condition: and( not(failed()), not(canceled()) )

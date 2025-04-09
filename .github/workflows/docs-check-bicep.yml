@@ -1,18 +1,17 @@
-# Terraform Documentation Compliance Check Workflow
+# Bicep Documentation Compliance Check Workflow
 #
 # Purpose:
 # This workflow validates documentation standards across the codebase to ensure
-# all Terraform modules are properly documented and documentation stays in sync with code.
+# all Bicep modules are properly documented and documentation stays in sync with code.
 #
 # Functionality:
-# - Verifies Terraform module documentation is current using terraform-docs
+# - Verifies Bicep module documentation is current using custom documentation generator
 # - Identifies and reports links containing language-specific paths (e.g., 'en-us')
 #   which may become outdated when documentation is updated for different languages
 # - Creates GitHub annotations for issues found
 # - Generates a summary report of findings
 #
 # Parameters:
-# - TERRAFORM_DOCS_VERSION: Version of terraform-docs to use for checking documentation
 # - BREAK_BUILD: Controls whether to fail the workflow on documentation issues
 #
 # Output Variables:
@@ -21,14 +20,14 @@
 # Usage Examples:
 # ```yaml
 # # Basic validation with warnings:
-# name: Check Terraform Documentation
-# uses: ./.github/workflows/docs-check-terraform.yml
+# name: Check Bicep Documentation
+# uses: ./.github/workflows/docs-check-bicep.yml
 # with:
 #   break_build: false
 #
 # # Strict validation (fail build on issues):
-# name: Validate Terraform Documentation
-# uses: ./.github/workflows/docs-check-terraform.yml
+# name: Validate Bicep Documentation
+# uses: ./.github/workflows/docs-check-bicep.yml
 # with:
 #   break_build: true
 # ```
@@ -36,7 +35,7 @@
 # This workflow helps maintain accurate and consistent documentation across the codebase,
 # improving usability and reducing onboarding time for new contributors.
 ---
-name: Terraform Docs Check
+name: Bicep Docs Check
 
 on: # yamllint disable-line rule:truthy
   workflow_dispatch:  # Allow manual triggering and being called from ci-cd.yml
@@ -46,11 +45,6 @@ on: # yamllint disable-line rule:truthy
         required: false
         default: false
         type: boolean
-      terraformDocsVersion:
-        description: 'Version of terraform-docs to use'
-        required: false
-        default: 'v0.19.0'
-        type: string
   workflow_call:  # Allow being called from other workflows
     inputs:
       break_build:
@@ -58,19 +52,13 @@ on: # yamllint disable-line rule:truthy
         required: false
         default: false
         type: boolean
-      terraformDocsVersion:
-        description: 'Version of terraform-docs to use'
-        required: false
-        default: 'v0.19.0'
-        type: string
 
 jobs:
-  docs-check-terraform:
-    name: Terraform Documentation Compliance Check
+  docs-check-bicep:
+    name: Bicep Documentation Compliance Check
     runs-on: ubuntu-latest
 
     env:
-      TERRAFORM_DOCS_VERSION: ${{ inputs.terraformDocsVersion || github.event.inputs.terraformDocsVersion }}
       BREAK_BUILD: ${{ inputs.break_build || github.event.inputs.break_build || 'false' }}  # Support both workflow_call and workflow_dispatch
 
     steps:
@@ -84,40 +72,60 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install terraform-docs
+      - name: Install Python Dependencies
         run: |
-          ./scripts/install-terraform-docs.sh -v "${{ env.TERRAFORM_DOCS_VERSION }}"
+          # Install dependencies from requirements.txt if it exists
+          if [ -f ./requirements.txt ]; then
+            python -m pip install --upgrade pip
+            pip install -r ./requirements.txt
+          else
+            # Fallback to installing just what's needed
+            pip install requests jinja2
+          fi
         shell: bash
 
-      - name: Check for changes in documentation
-        id: docs-check-terraform
+      - name: Setup Azure CLI with Bicep
         run: |
+          # Check if Azure CLI is installed
+          if ! command -v az &>/dev/null; then
+            echo "Azure CLI is not installed. Installing now..."
+            curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+          fi
 
-          # Call tf-docs-check.sh script to check for changes
-          ./scripts/tf-docs-check.sh
-          readme_changed=$(tail -n 1 $(pwd)/scripts/tf-docs-check.sh)
+          # Install/update Bicep extension
+          echo "Installing/updating Bicep extension..."
+          az bicep install
+          az bicep version
+        shell: bash
 
-          # Check if there are any changes in the documentation
-          if [ "$readme_changed" = true ]; then
-            echo "Updates are required for documentation."
-            echo "Please go into the project's src directory, run the update-all-terraform-docs.sh script, and commit changes."
+      - name: Check for changes in Bicep documentation
+        id: docs-check-bicep
+        run: |
+          # Run the bicep-docs-check.sh script and capture its output
+          output=$(./scripts/bicep-docs-check.sh)
 
-            echo "::warning::Documentation needs to be updated. Please run the update-all-terraform-docs.sh script and commit the changes."
+          # Get the last line which contains the true/false result
+          docs_changed=$(echo "$output" | tail -n 1)
+
+          # Check if there are any changes in the Bicep documentation
+          if [ "$docs_changed" = true ]; then
+            echo "Updates are required for Bicep documentation."
+            echo "Please go into the project's scripts directory, run the update-all-bicep-docs.sh script and commit changes."
+
+            echo "::warning::Bicep auto-gen documentation needs to be updated. Please run the scripts/update-all-bicep-docs.sh script and commit the changes."
 
             if [[ "${{ env.BREAK_BUILD }}" == "true" ]]; then
-              echo "::error::Documentation needs to be updated. Please run the update-all-terraform-docs.sh script and commit the changes."
+              echo "::error::Bicep auto-gen documentation needs to be updated. Please run the scripts/update-all-bicep-docs.sh script and commit the changes."
               exit 1
             fi
           else
-            echo "No updates detected in the documentation."
+            echo "No updates detected in the Bicep documentation."
           fi
-
         shell: bash
 
       - name: Check for language path segments in links
         id: link-lang-check
         run: |
-
           # Run the link-lang-check.py script to find en-us URLs
           echo "Checking for language path segments (en-us) in links..."
           links_json=$(python3 $(pwd)/scripts/link-lang-check.py)
@@ -156,5 +164,4 @@ jobs:
             echo "$links_json"
             echo "::warning::Error parsing output from link-lang-check.py script"
           fi
-
         shell: bash
