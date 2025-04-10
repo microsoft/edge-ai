@@ -101,14 +101,24 @@ jobs:
     with:
       github_comment_reporter: true
 
-  # Documentation checks for PRs
-  docs-check:
-    name: Documentation Check
+  # Call docs-check-terraform for PR validation
+  docs-check-terraform:
+    name: Terraform Documentation Check
     needs: [mega-linter]
     uses: ./.github/workflows/docs-check-terraform.yml
     with:
       break_build: true
       terraformDocsVersion: 'v0.19.0'
+    secrets: inherit
+
+  # Call docs-check-bicep workflow
+  docs-check-bicep:
+    name: Bicep Documentation Check
+    needs: [mega-linter]
+    uses: ./.github/workflows/docs-check-bicep.yml
+    with:
+      break_build: true
+    secrets: inherit
 
   # AIO version checks for PRs
   aio-version-check:
