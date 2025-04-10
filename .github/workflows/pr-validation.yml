@@ -132,7 +132,7 @@ jobs:
   # Use reusable workflow to detect detailed changes and create folder matrix
   matrix-changes:
     name: Detect Matrix Changes
-    needs: [docs-check]
+    needs: [docs-check-terraform, docs-check-bicep]
     uses: ./.github/workflows/matrix-folder-check.yml
     with:
       displayName: 'Detect component changes for PR validation'
