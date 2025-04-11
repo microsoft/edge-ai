@@ -14,14 +14,44 @@ import * as core from './types.core.bicep'
 param common core.Common
 
 /*
-  Azure Arc Parameters
+  Key Vault Parameters
+*/
+
+@description('The name of the Key Vault to save the scripts to.')
+param keyVaultName string
+
+@description('The resource group name where the Key Vault is located. Defaults to the current resource group.')
+param keyVaultResourceGroupName string = resourceGroup().name
+
+/*
+  Cluster Parameters
 */
 
 @description('The resource name for the Arc connected cluster.')
 param arcConnectedClusterName string = 'arck-${common.resourcePrefix}-${common.environment}-${common.instance}'
 
+@description('The server virtual machines name.')
+@minLength(3)
+param clusterServerVirtualMachineName string?
+
+@description('The node virtual machines names.')
+param clusterNodeVirtualMachineNames string[]?
+
+@description('Username used for the host machines that will be given kube-config settings on setup. (Otherwise, resource_prefix if it exists as a user)')
+param clusterServerHostMachineUsername string = common.resourcePrefix
+
+@description('The IP address for the server for the cluster. (Needed for mult-node cluster)')
+param clusterServerIp string?
+
+@description('The token that will be given to the server for the cluster or used by agent nodes.')
+param serverToken string?
+
 @description('The Object ID that will be given cluster-admin permissions.')
 param clusterAdminOid string?
+
+/*
+  Azure Arc Parameters
+*/
 
 @description('''
 The object id of the Custom Locations Entra ID application for your tenant.
@@ -33,6 +63,9 @@ Can be retrieved using:
   ```
 ''')
 param customLocationsOid string?
+
+@description('Whether to get Custom Locations Object ID using Azure APIs.')
+param shouldGetCustomLocationsOid bool = true
 
 @description('Whether to assign roles for Arc Onboarding.')
 param shouldAssignRoles bool = true
@@ -50,6 +83,10 @@ param arcOnboardingSpClientSecret string?
 @description('The resource name for the identity used for Arc onboarding.')
 param arcOnboardingIdentityName string?
 
+/*
+  Arc Configuration Parameters
+*/
+
 @description('Whether to add the current user as a cluster admin.')
 param shouldAddCurrentUserClusterAdmin bool = true
 
@@ -57,30 +94,11 @@ param shouldAddCurrentUserClusterAdmin bool = true
 param shouldEnableArcAutoUpgrade bool = common.environment != 'prod'
 
 /*
-  Cluster Parameters
+  Deployment Configuration Parameters
 */
-
-@description('The node virtual machines names.')
-param clusterNodeVirtualMachineNames string[] = []
-
-@description('The server virtual machines name.')
-@minLength(3)
-param clusterServerVirtualMachineName string
-
-@description('Username used for the host machines that will be given kube-config settings on setup. (Otherwise, resource_prefix if it exists as a user)')
-param clusterServerHostMachineUsername string = common.resourcePrefix
-
-@description('The IP address for the server for the cluster. (Needed for mult-node cluster)')
-param clusterServerIp string?
-
-@description('The token that will be given to the server for the cluster or used by agent nodes.')
-param serverToken string?
 
 @description('Whether to deploy the scripts to the VM.')
 param shouldDeployScriptToVm bool = true
-
-@description('Whether to get Custom Locations Object ID using Azure APIs.')
-param shouldGetCustomLocationsOid bool = true
 
 @description('Should generate token used by the server.')
 param shouldGenerateServerToken bool = false
@@ -95,15 +113,24 @@ param shouldSkipInstallingAzCli bool = false
   Variables
 */
 
+var arcOnboardingPrincipalId = arcOnboardingIdentity.?properties.principalId ?? arcOnboardingSpPrincipalId ?? fail('Either arcOnboardingIdentityName or arcOnboardingSpPrincipalId is required')
+
 // Get the token value either from the generated token or the provided parameter
 // This is not optimal, but customer can provide their own token via parameter
 var clusterServerToken = serverToken ?? (shouldGenerateServerToken
-  ? substring('${uniqueString(clusterServerVirtualMachineName)}-${uniqueString(resourceGroup().id)}', 0, 24)
+  ? substring('${uniqueString(clusterServerVirtualMachineName ?? 'dev')}-${uniqueString(resourceGroup().id)}', 0, 24)
   : null)
+
+var clusterServerScriptSecretName = ubuntuK3s.outputs.clusterServerScriptSecretName
+var clusterNodeScriptSecretName = ubuntuK3s.outputs.clusterNodeScriptSecretName
 
 /*
   Resources
 */
+
+resource arcOnboardingIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2024-11-30' existing = if (!empty(arcOnboardingIdentityName)) {
+  name: arcOnboardingIdentityName!
+}
 
 resource customLocationsServicePrincipal 'Microsoft.Graph/servicePrincipals@v1.0' existing = if (shouldGetCustomLocationsOid && empty(customLocationsOid)) {
   // The service principal for Custom Locations in tenant
@@ -114,19 +141,9 @@ resource customLocationsServicePrincipal 'Microsoft.Graph/servicePrincipals@v1.0
   Modules
 */
 
-module roleAssignment './modules/arc-onboarding-role-assignment.bicep' = if (shouldAssignRoles) {
-  name: '${deployment()}-arcOnboardingRoleAssignment'
-  params: {
-    arcOnboardingIdentityName: arcOnboardingIdentityName
-    arcOnboardingSpPrincipalId: arcOnboardingSpPrincipalId
-  }
-}
-
 module ubuntuK3s './modules/ubuntu-k3s.bicep' = {
   name: '${deployment()}-ubuntuK3s'
-  dependsOn: [
-    roleAssignment
-  ]
+  scope: resourceGroup(keyVaultResourceGroupName)
   params: {
     common: common
     arcResourceName: arcConnectedClusterName
@@ -136,14 +153,53 @@ module ubuntuK3s './modules/ubuntu-k3s.bicep' = {
     shouldEnableArcAutoUpgrade: shouldEnableArcAutoUpgrade
     arcOnboardingSpClientId: arcOnboardingSpClientId
     arcOnboardingSpClientSecret: arcOnboardingSpClientSecret
-    clusterServerVirtualMachineName: clusterServerVirtualMachineName
-    clusterNodeVirtualMachineNames: clusterNodeVirtualMachineNames
     clusterServerIp: clusterServerIp ?? ''
     clusterServerToken: clusterServerToken
-    shouldDeployScriptToVm: shouldDeployScriptToVm
     shouldSkipAzCliLogin: shouldSkipAzCliLogin
     shouldSkipInstallingAzCli: shouldSkipInstallingAzCli
     clusterServerHostMachineUsername: clusterServerHostMachineUsername
+    keyVaultName: keyVaultName
+  }
+}
+
+/*
+  Role Assignments
+*/
+
+module roleAssignment './modules/arc-onboarding-role-assignment.bicep' = if (shouldAssignRoles) {
+  name: '${deployment()}-arcOnboardingRoleAssignment'
+  params: {
+    arcOnboardingPrincipalId: arcOnboardingPrincipalId
+  }
+}
+
+module keyVaultRoleAssignments './modules/key-vault-role-assignment.bicep' = if (shouldAssignRoles) {
+  name: '${deployment().name}-keyVaultRoleAssignments'
+  scope: resourceGroup(keyVaultResourceGroupName)
+  params: {
+    keyVaultName: keyVaultName
+    arcOnboardingPrincipalId: arcOnboardingPrincipalId
+    serverScriptSecretName: clusterServerScriptSecretName
+    nodeScriptSecretName: clusterNodeScriptSecretName
+  }
+}
+
+/*
+  Deploy Script
+*/
+
+module deployScriptsToVm './modules/deploy-scripts-to-vm.bicep' = if (shouldDeployScriptToVm) {
+  name: '${deployment().name}-deployScriptsToVm'
+  dependsOn: [
+    roleAssignment
+    keyVaultRoleAssignments
+  ]
+  params: {
+    common: common
+    clusterServerVirtualMachineName: clusterServerVirtualMachineName ?? fail('At least "clusterServerVirtualMachineName" required when "shouldDeployScriptToVm" is true')
+    clusterNodeVirtualMachineNames: clusterNodeVirtualMachineNames ?? []
+    clusterServerScript: ubuntuK3s.outputs.clusterServerScript
+    clusterNodeScript: ubuntuK3s.outputs.clusterNodeScript
   }
 }
 
@@ -159,3 +215,15 @@ output connectedClusterResourceGroupName string = resourceGroup().name
 
 @description('Azure Arc proxy command for accessing the cluster')
 output azureArcProxyCommand string = 'az connectedk8s proxy -n ${arcConnectedClusterName} -g ${resourceGroup().name}'
+
+@description('The name of the Key Vault secret containing the server script')
+output clusterServerScriptSecretName string = clusterServerScriptSecretName
+
+@description('The name of the Key Vault secret containing the node script')
+output clusterNodeScriptSecretName string = clusterNodeScriptSecretName
+
+@description('The AZ CLI command to get the cluster server script from Key Vault')
+output clusterServerScriptSecretShowCommand string = 'az keyvault secret show --name "${clusterServerScriptSecretName}" --vault-name "${keyVaultName}" --query "value" -o tsv > ${clusterServerScriptSecretName}.sh && chmod +x ${clusterServerScriptSecretName}.sh'
+
+@description('The AZ CLI command to get the cluster node script from Key Vault')
+output clusterNodeScriptSecretShowCommand string = 'az keyvault secret show --name "${clusterNodeScriptSecretName}" --vault-name "${keyVaultName}" --query "value" -o tsv > ${clusterNodeScriptSecretName}.sh && chmod +x ${clusterNodeScriptSecretName}.sh'

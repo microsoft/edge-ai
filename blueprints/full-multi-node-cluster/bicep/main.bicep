@@ -94,6 +94,7 @@ module edgeCncfCluster '../../../src/100-edge/100-cncf-cluster/bicep/main.bicep'
     shouldGetCustomLocationsOid: shouldGetCustomLocationsOid
     customLocationsOid: customLocationsOid
     arcOnboardingIdentityName: cloudSecurityIdentity.outputs.arcOnboardingIdentityName!
+    keyVaultName: cloudSecurityIdentity.outputs.keyVaultName!
   }
 }
 

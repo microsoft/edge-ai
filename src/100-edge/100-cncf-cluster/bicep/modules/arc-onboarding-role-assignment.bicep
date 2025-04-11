@@ -3,25 +3,15 @@ metadata description = 'Assigns the required Kubernetes Cluster - Azure Arc Onbo
 
 import * as core from '../types.core.bicep'
 
-@description('The resource name for the identity used for Arc onboarding.')
-param arcOnboardingIdentityName string?
-
-@description('Service Principal Object Id used when assigning roles for Arc onboarding.')
-param arcOnboardingSpPrincipalId string?
+@description('The Principal ID for the identity that will be assigned the Arc Onboarding role.')
+param arcOnboardingPrincipalId string
 
 /*
   Resources
 */
 
-resource arcOnboardingIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2024-11-30' existing = if (!empty(arcOnboardingIdentityName)) {
-  name: arcOnboardingIdentityName!
-}
-
-var arcOnboardingPrincipalName = arcOnboardingIdentityName ?? arcOnboardingSpPrincipalId ?? fail('Either arcOnboardingIdentityName or arcOnboardingSpPrincipalId is required')
-var arcOnboardingPrincipalId = arcOnboardingIdentity.?properties.principalId ?? arcOnboardingSpPrincipalId
-
 resource arcOnboardingRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(resourceGroup().id, arcOnboardingPrincipalName, '34e09817-6cbe-4d01-b1a2-e0eac5743d41')
+  name: guid(resourceGroup().id, arcOnboardingPrincipalId, '34e09817-6cbe-4d01-b1a2-e0eac5743d41')
   properties: {
     principalId: arcOnboardingPrincipalId
     roleDefinitionId: subscriptionResourceId(

@@ -1,6 +1,7 @@
 {
     "experimentalFeaturesEnabled": {
-        "extensibility": true
+        "extensibility": true,
+        "secureOutputs": true
     },
     // specify an alias for the version of the v1.0 dynamic types package you want to use
     "extensions": {
