@@ -3,15 +3,16 @@ metadata description = 'Configures K3s Kubernetes clusters on Ubuntu virtual mac
 
 import * as core from '../types.core.bicep'
 
+/*
+  Common Parameters
+*/
+
 @description('The common component configuration.')
 param common core.Common
 
-@description('The server virtual machines name.')
-@minLength(3)
-param clusterServerVirtualMachineName string
-
-@description('The node virtual machines names.')
-param clusterNodeVirtualMachineNames string[]
+/*
+  Azure Arc Parameters
+*/
 
 @description('The name of the Azure Arc resource.')
 param arcResourceName string
@@ -33,12 +34,20 @@ param customLocationsOid string
 @description('Whether to enable auto-upgrades for Arc agents.')
 param shouldEnableArcAutoUpgrade bool
 
+/*
+  Arc Onboarding Parameters
+*/
+
 @description('The Service Principal Client ID for Arc onboarding.')
 param arcOnboardingSpClientId string?
 
 @description('The Service Principal Client Secret for Arc onboarding.')
 @secure()
 param arcOnboardingSpClientSecret string?
+
+/*
+  Cluster Configuration Parameters
+*/
 
 @description('The Object ID that will be given cluster-admin permissions.')
 param clusterAdminOid string?
@@ -53,14 +62,24 @@ param clusterServerIp string?
 @secure()
 param clusterServerToken string?
 
-@description('Should deploy the scripts to the VM.')
-param shouldDeployScriptToVm bool
+/*
+  Deployment Configuration Parameters
+*/
 
 @description('Should skip login process with Azure CLI on the server.')
 param shouldSkipAzCliLogin bool
 
 @description('Should skip downloading and installing Azure CLI on the server.')
 param shouldSkipInstallingAzCli bool
+
+@description('The name of the Key Vault to save the scripts to.')
+param keyVaultName string
+
+@description('The name for the server script secret in Key Vault.')
+param serverScriptSecretName string = 'cluster-server-ubuntu-k3s'
+
+@description('The name for the node script secret in Key Vault.')
+param nodeScriptSecretName string = 'cluster-node-ubuntu-k3s'
 
 /*
   Local variables
@@ -138,57 +157,47 @@ var joinedNodeEnvironmentVariablesString = join(nodeEnvironmentVariablesString, 
 // Every loadTextContent results in the contents of the file being loaded into a variable that's then built into the
 // ARM that's ultimately deployed. Reduce the number of loadTextContent calls to one to prevent any future issues.
 var scriptFileContents = loadTextContent('../../scripts/k3s-device-setup.sh')
-var effectiveClusterServerScript = base64('#!/usr/bin/env bash\n\n${joinedServerEnvironmentVariablesString}\n\n${scriptFileContents}')
-var effectiveClusterNodeScript = base64('#!/usr/bin/env bash\n\n${joinedNodeEnvironmentVariablesString}\n\n${scriptFileContents}')
+var effectiveClusterServerScript = '#!/usr/bin/env bash\n\n${joinedServerEnvironmentVariablesString}\n\n${scriptFileContents}'
+var effectiveClusterNodeScript = '#!/usr/bin/env bash\n\n${joinedNodeEnvironmentVariablesString}\n\n${scriptFileContents}'
 
 /*
   Resources
 */
 
-resource clusterServerVirtualMachine 'Microsoft.Compute/virtualMachines@2024-11-01' existing = if (shouldDeployScriptToVm) {
-  name: clusterServerVirtualMachineName
+resource keyVault 'Microsoft.KeyVault/vaults@2024-11-01' existing = {
+  name: keyVaultName
 
-  resource linuxServerScriptSetup 'extensions' = {
-    name: 'linux-cluster-server-setup'
-    location: common.location
+  resource serverScriptSecret 'secrets' = {
+    name: serverScriptSecretName
     properties: {
-      publisher: 'Microsoft.Azure.Extensions'
-      type: 'CustomScript'
-      typeHandlerVersion: '2.1'
-      autoUpgradeMinorVersion: false
-      suppressFailures: false
-      enableAutomaticUpgrade: false
-      settings: {}
-      protectedSettings: {
-        script: effectiveClusterServerScript
-      }
+      value: effectiveClusterServerScript
+      contentType: 'text/plain'
+    }
+  }
+
+  resource nodeScriptSecret 'secrets' = {
+    name: nodeScriptSecretName
+    properties: {
+      value: effectiveClusterNodeScript
+      contentType: 'text/plain'
     }
   }
 }
 
-// deploy VM extension for node setup
-resource clusterNodeVirtualMachines 'Microsoft.Compute/virtualMachines@2024-11-01' existing = [
-  for (clusterNodeVirtualMachineName, index) in clusterNodeVirtualMachineNames: {
-    name: clusterNodeVirtualMachineName
-  }
-]
+/*
+  Outputs
+*/
 
-resource linuxNodeScriptSetup 'Microsoft.Compute/virtualMachines/extensions@2024-11-01' = [
-  for (clusterNodeVirtualMachineName, index) in clusterNodeVirtualMachineNames: {
-    name: 'linux-cluster-node-setup'
-    location: common.location
-    parent: clusterNodeVirtualMachines[index]
-    dependsOn: [clusterServerVirtualMachine::linuxServerScriptSetup]
+@description('The script for setting up the host machine for the cluster server.')
+@secure()
+output clusterServerScript string = effectiveClusterServerScript
 
-    properties: {
-      publisher: 'Microsoft.Azure.Extensions'
-      type: 'CustomScript'
-      typeHandlerVersion: '2.1'
-      autoUpgradeMinorVersion: false
-      settings: {}
-      protectedSettings: {
-        script: effectiveClusterNodeScript
-      }
-    }
-  }
-]
+@description('The script for setting up the host machine for the cluster node.')
+@secure()
+output clusterNodeScript string = effectiveClusterNodeScript
+
+@description('The Key Vault Secret name for the script for setting up the host machine for the cluster server.')
+output clusterServerScriptSecretName string = keyVault::serverScriptSecret.name
+
+@description('The Key Vault Secret name for the script for setting up the host machine for the cluster node.')
+output clusterNodeScriptSecretName string = keyVault::nodeScriptSecret.name

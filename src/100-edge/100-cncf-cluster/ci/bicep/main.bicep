@@ -32,6 +32,12 @@ param serverToken string?
 @description('Should generate token used by the server.')
 param shouldGenerateServerToken bool = false
 
+@description('The name of the Key Vault to save the scripts to.')
+param keyVaultName string = 'kv-${common.resourcePrefix}-${common.environment}-${common.instance}'
+
+@description('The resource group name where the Key Vault is located. Defaults to the deployment resource group.')
+param keyVaultResourceGroupName string = resourceGroup().name
+
 // Deploy the CNCF cluster module
 module cncfCluster '../../bicep/main.bicep' = {
   name: '${common.resourcePrefix}-cncf-cluster'
@@ -45,5 +51,7 @@ module cncfCluster '../../bicep/main.bicep' = {
     serverToken: serverToken
     shouldGenerateServerToken: shouldGenerateServerToken
     arcOnboardingIdentityName: arcOnboardingIdentityName
+    keyVaultName: keyVaultName
+    keyVaultResourceGroupName: keyVaultResourceGroupName
   }
 }
