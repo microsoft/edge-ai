@@ -93,16 +93,20 @@ module schemaRegistryRoleAssignment 'modules/schema-registry-role-assignment.bic
 */
 
 @description('The ADR Schema Registry Name.')
-output schemaRegistryName string = schemaRegistry.?outputs.schemaRegistryName ?? ''
+output schemaRegistryName string = shouldCreateSchemaRegistry ? schemaRegistry.outputs.schemaRegistryName : ''
 
 @description('The ADR Schema Registry ID.')
-output schemaRegistryId string = schemaRegistry.?outputs.schemaRegistryId ?? ''
+output schemaRegistryId string = shouldCreateSchemaRegistry ? schemaRegistry.outputs.schemaRegistryId : ''
 
 @description('The Storage Account Name.')
-output storageAccountName string = storageAccount.?outputs.storageAccountName ?? storageAccountName
+output storageAccountName string = shouldCreateSchemaRegistry
+  ? storageAccount.outputs.storageAccountName
+  : storageAccountName
 
 @description('The Storage Account ID.')
-output storageAccountId string = storageAccount.?outputs.storageAccountId ?? ''
+output storageAccountId string = shouldCreateStorageAccount ? storageAccount.outputs.storageAccountId : ''
 
 @description('The Schema Container Name.')
-output schemaContainerName string = storageAccount.?outputs.schemaContainerName ?? schemaContainerName
+output schemaContainerName string = shouldCreateStorageAccount
+  ? storageAccount.outputs.schemaContainerName
+  : schemaContainerName

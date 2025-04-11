@@ -72,7 +72,9 @@ output storageAccountId string = storageAccount.id
 output primaryBlobEndpoint string = storageAccount.properties.primaryEndpoints.blob
 
 @description('The name of the schema container.')
-output schemaContainerName string = storageAccount::blobService::container.?name ?? schemaContainerName
+output schemaContainerName string = shouldCreateSchemaContainer
+  ? storageAccount::blobService::container.name
+  : schemaContainerName
 
 @description('The resource ID of the schema container, or null if not created.')
-output schemaContainerId string? = storageAccount::blobService::container.?id ?? null
+output schemaContainerId string? = shouldCreateSchemaContainer ? storageAccount::blobService::container.id : null

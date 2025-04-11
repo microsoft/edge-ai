@@ -65,10 +65,10 @@ module keyVault 'modules/key-vault.bicep' = if (shouldCreateKeyVault) {
 */
 
 @description('The name of the Secret Store Extension Key Vault.')
-output keyVaultName string? = keyVault.?outputs.keyVaultName
+output keyVaultName string? = shouldCreateKeyVault ? keyVault.outputs.keyVaultName : null
 
 @description('The resource ID of the Secret Store Extension Key Vault.')
-output keyVaultId string? = keyVault.?outputs.keyVaultId
+output keyVaultId string? = shouldCreateKeyVault ? keyVault.outputs.keyVaultId : null
 
 @description('The Secret Store Extension User Assigned Managed Identity name.')
 output sseIdentityName string = identity.outputs.sseIdentityName
