@@ -280,6 +280,14 @@ param schemaRegistryName string = 'sr-${common.resourcePrefix}-${common.environm
 param schemaRegistryNamespace string = 'srns-${common.resourcePrefix}-${common.environment}-${common.instance}'
 
 /*
+ Resources
+*/
+
+resource example 'example@1.2.3' = if (shouldCreateExample) {
+  name: 'example-name'
+}
+
+/*
   Modules
 */
 
@@ -300,10 +308,13 @@ module exampleInternalModule 'modules/example-internal-module.bicep' = {
 */
 
 @description('The ADR Schema Registry Name.')
-output schemaRegistryName string? = exampleInternalModule.?outputs.schemaRegistryName
+output exampleOutputValue string? = shouldCreateExample ? example.properties.value : null
+
+@description('The ADR Schema Registry Name.')
+output schemaRegistryName string? = exampleInternalModule.outputs.schemaRegistryName
 
 @description('The Storage Account Name.')
-output storageAccountName string = exampleInternalModule.?outputs.storageAccountName ?? storageAccountName
+output storageAccountName string = exampleInternalModule.outputs.storageAccountName ?? storageAccountName
 ```
 
 ### Module and Component Relationships

@@ -142,7 +142,7 @@ resource customLocationsServicePrincipal 'Microsoft.Graph/servicePrincipals@v1.0
 */
 
 module ubuntuK3s './modules/ubuntu-k3s.bicep' = {
-  name: '${deployment()}-ubuntuK3s'
+  name: '${deployment().name}-ubuntuK3s'
   scope: resourceGroup(keyVaultResourceGroupName)
   params: {
     common: common
@@ -167,7 +167,7 @@ module ubuntuK3s './modules/ubuntu-k3s.bicep' = {
 */
 
 module roleAssignment './modules/arc-onboarding-role-assignment.bicep' = if (shouldAssignRoles) {
-  name: '${deployment()}-arcOnboardingRoleAssignment'
+  name: '${deployment().name}-arcOnboardingRoleAssignment'
   params: {
     arcOnboardingPrincipalId: arcOnboardingPrincipalId
   }

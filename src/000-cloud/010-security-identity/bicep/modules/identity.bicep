@@ -82,10 +82,10 @@ output aioIdentityId string = aioIdentity.id
 output aioIdentityPrincipalId string = aioIdentity.properties.principalId
 
 @description('The User Assigned Managed Identity ID with "Kubernetes Cluster - Azure Arc Onboarding" permissions.')
-output arcOnboardingIdentityId string? = arcOnboardingIdentity.?id
+output arcOnboardingIdentityId string? = enableUami ? arcOnboardingIdentity.id : null
 
 @description('The User Assigned Managed Identity name with "Kubernetes Cluster - Azure Arc Onboarding" permissions.')
-output arcOnboardingIdentityName string? = arcOnboardingIdentity.?name
+output arcOnboardingIdentityName string? = enableUami ? arcOnboardingIdentity.name : null
 
 @description('The Service Principal App (Client) ID with "Kubernetes Cluster - Azure Arc Onboarding" permissions.')
-output servicePrincipalClientId string? = arcOnboardingClientSp.?appId
+output servicePrincipalClientId string? = enableSp ? arcOnboardingClientSp.appId : null
