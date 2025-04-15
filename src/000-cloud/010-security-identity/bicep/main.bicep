@@ -2,7 +2,6 @@ metadata name = 'IoT Operations Cloud Requirements Component'
 metadata description = 'Provisions cloud resources required for Azure IoT Operations including Schema Registry, Storage Account, Key Vault, and User Assigned Managed Identities.'
 
 import * as core from './types.core.bicep'
-import * as types from './types.bicep'
 
 /*
   Common Parameters
@@ -15,8 +14,8 @@ param common core.Common
   Identity Parameters
 */
 
-@description('Settings for the onboarding identity.')
-param onboardIdentityConfig types.OnboardIdentitySettings = types.onboardIdentityDefaults
+@description('Whether to create a User Assigned Managed Identity for onboarding a cluster to Azure Arc.')
+param shouldCreateArcOnboardingUami bool = true
 
 /*
   Key Vault Parameters
@@ -45,7 +44,7 @@ module identity 'modules/identity.bicep' = {
   name: '${deployment().name}-identity'
   params: {
     common: common
-    identityType: onboardIdentityConfig.identityType
+    shouldCreateArcOnboardingUami: shouldCreateArcOnboardingUami
   }
 }
 
@@ -93,6 +92,3 @@ output arcOnboardingIdentityId string? = identity.outputs.?arcOnboardingIdentity
 
 @description('The User Assigned Managed Identity name with "Kubernetes Cluster - Azure Arc Onboarding" permissions.')
 output arcOnboardingIdentityName string? = identity.outputs.?arcOnboardingIdentityName
-
-@description('The Service Principal App (Client) ID with "Kubernetes Cluster - Azure Arc Onboarding" permissions.')
-output servicePrincipalClientId string? = identity.outputs.?servicePrincipalClientId

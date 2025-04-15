@@ -93,6 +93,7 @@ Beyond the basic required variables, this blueprint supports advanced customizat
 | `common.instance`        | Deployment instance number   | `"001"`  | For multiple deployments                                             |
 | `hostMachineCount`       | Deployment instance number   | `3`      | First host is server, others are workers                             |
 | `adminPassword`          | A password for SSH to the VM | Required | **Important**: always pass this inline, never store in `.bicepparam` |
+| `customLocationsOid`     | Custom Locations OID         | Required | Retrieved from Azure CLI command `az ad sp show --id <OID>`          |
 
 For additional configuration options, review the parameters in `main.bicep`.
 
@@ -141,22 +142,16 @@ terraform apply
 
 ## Bicep Deployment Instructions
 
-### 1. Create a Resource Group
+### 1. Login into Azure and get Custom Locations OID
 
-First, create a resource group to contain all deployed resources:
+First, ensure you are logged into your subscription and retrieve the Custom Locations OID:
 
-```bash
+```sh
 # Set your Azure subscription
 az account set --subscription <subscription-id>
 
-# Define variables
-LOCATION="eastus2"
-RESOURCE_PREFIX="myprefix"
-ENVIRONMENT="dev"
-RG_NAME="${RESOURCE_PREFIX}-${ENVIRONMENT}-001"
-
-# Create resource group
-az group create --name $RG_NAME --location $LOCATION
+# Get the custom locations OID
+az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv
 ```
 
 ### 2. Create a Parameters File
@@ -176,7 +171,10 @@ param common = {
 }
 
 // This is not optimal, to be replaced by KeyVault usage in future
+@secure()
 param adminPassword = 'YourSecurePassword123!' // Replace with a secure password
+
+param customLocationsOid = 'YourRetrievedOID' // Replace with the OID retrieved from the previous step
 
 ```
 
@@ -184,10 +182,7 @@ param adminPassword = 'YourSecurePassword123!' // Replace with a secure password
 
 ```bash
 # Deploy using the Azure CLI
-az deployment group create \
-  --name full-multi-node-cluster \
-  --resource-group "$RG_NAME" \
-  --parameters ./main.bicepparam
+az deployment sub create --name <uniquename-prefix> --location northeurope --parameters ./main.bicepparam
 ```
 
 ## Access Deployed Resources
@@ -253,7 +248,9 @@ terraform destroy -var-file=terraform.tfvars
 ### Bicep Cleanup
 
 ```bash
-az group delete --name <resource-group-name> --no-wait
+RG_NAME="rg-<common.resource_prefix>-<common.environment>-<common.instance>"
+# Delete the resource group and all its resources
+az group delete --name "$RG_NAME"
 ```
 
 ## Deployment Troubleshooting

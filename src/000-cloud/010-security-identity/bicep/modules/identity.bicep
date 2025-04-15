@@ -1,10 +1,7 @@
 metadata name = 'User Assigned Managed Identity Module'
-metadata description = 'Creates user-assigned managed identities for Secret Store Extension and Azure IoT Operations components.'
+metadata description = 'Creates user-assigned managed identities for Secret Store Extension, Azure IoT Operations components and optionally Arc onboarding.'
 
 import * as core from '../types.core.bicep'
-import * as types from '../types.bicep'
-
-extension microsoftGraphV1
 
 /*
   Common Parameters
@@ -17,34 +14,14 @@ param common core.Common
   Identity Parameters
 */
 
-@description('The identity type to use for onboarding the cluster to Azure Arc.')
-param identityType types.OnboardIdentityType
-
-/*
-  Local Variables
-*/
-
-var enableUami = toLower(identityType) == 'id'
-var enableSp = toLower(identityType) == 'sp'
-var servicePrincipalAppName = 'sp-${common.resourcePrefix}-arc-${common.environment}-${common.instance}'
+@description('Whether to create a User Assigned Managed Identity for onboarding a cluster to Azure Arc.')
+param shouldCreateArcOnboardingUami bool
 
 /*
   Resources
 */
 
-resource arcOnboardingApp 'Microsoft.Graph/applications@v1.0' = if (enableSp) {
-  uniqueName: servicePrincipalAppName
-  displayName: servicePrincipalAppName
-}
-
-// Note: generating SP client (addPassword) secret is not supported with Bicep MS Graph Types - and likely will never be.
-// See [GH issue](https://github.com/microsoftgraph/msgraph-bicep-types/issues/38)
-// In deployments, the secret will need to be generated with CLI or other means, and passed as a parameter to the next module, so we are not outputing it.
-resource arcOnboardingClientSp 'Microsoft.Graph/servicePrincipals@v1.0' = if (enableSp) {
-  appId: arcOnboardingApp.appId
-}
-
-resource arcOnboardingIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = if (enableUami) {
+resource arcOnboardingIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = if (shouldCreateArcOnboardingUami) {
   name: 'id-${common.resourcePrefix}-arc-${common.environment}-${common.instance}'
   location: common.location
 }
@@ -82,10 +59,7 @@ output aioIdentityId string = aioIdentity.id
 output aioIdentityPrincipalId string = aioIdentity.properties.principalId
 
 @description('The User Assigned Managed Identity ID with "Kubernetes Cluster - Azure Arc Onboarding" permissions.')
-output arcOnboardingIdentityId string? = enableUami ? arcOnboardingIdentity.id : null
+output arcOnboardingIdentityId string? = shouldCreateArcOnboardingUami ? arcOnboardingIdentity.id : null
 
 @description('The User Assigned Managed Identity name with "Kubernetes Cluster - Azure Arc Onboarding" permissions.')
-output arcOnboardingIdentityName string? = enableUami ? arcOnboardingIdentity.name : null
-
-@description('The Service Principal App (Client) ID with "Kubernetes Cluster - Azure Arc Onboarding" permissions.')
-output servicePrincipalClientId string? = enableSp ? arcOnboardingClientSp.appId : null
+output arcOnboardingIdentityName string? = shouldCreateArcOnboardingUami ? arcOnboardingIdentity.name : null

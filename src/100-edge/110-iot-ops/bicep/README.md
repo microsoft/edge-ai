@@ -67,10 +67,8 @@ Assigns roles for Secret Sync to access Key Vault.
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|sseKeyVault|`Microsoft.KeyVault/vaults`|2023-07-01|
-|sseIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2023-01-31|
-|keyVaultReaderSseUami|`Microsoft.Authorization/roleAssignments`|2022-04-01|
-|keyVaultSecretsUserSseUami|`Microsoft.Authorization/roleAssignments`|2022-04-01|
+|[guid(resourceGroup().id, parameters('sseUserAssignedIdentityName'), '21090545-7ca7-4776-b22c-e363652d74d2')]|`Microsoft.Authorization/roleAssignments`|2022-04-01|
+|[guid(resourceGroup().id, parameters('sseUserAssignedIdentityName'), '4633458b-17de-408a-b874-0445c86b69e6')]|`Microsoft.Authorization/roleAssignments`|2022-04-01|
 
 ### iotOpsInit
 

@@ -114,10 +114,7 @@ Creates role assignments for the Schema Registry to access the storage account.
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|storageAccount::blobService::container|`Microsoft.Storage/storageAccounts/blobServices/containers`|2024-01-01|
-|storageAccount::blobService|`Microsoft.Storage/storageAccounts/blobServices`|2024-01-01|
-|storageAccount|`Microsoft.Storage/storageAccounts`|2024-01-01|
-|roleAssignment|`Microsoft.Authorization/roleAssignments`|2022-04-01|
+|[guid(parameters('schemaBlobContainerName'), parameters('schemaRegistryPrincipalId'), variables('storageBlobDataContributorRoleId'))]|`Microsoft.Authorization/roleAssignments`|2022-04-01|
 
 #### Outputs for schemaRegistryRoleAssignment
 

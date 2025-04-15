@@ -2,7 +2,10 @@
 
 ## Overview
 
-This directory contains Terraform configurations that generate scripts for setting up and configuring CNCF-compatible Kubernetes clusters. Unlike the full deployment blueprint, this option only outputs the necessary scripts without executing them.
+This directory contains Terraform and Bicep configurations that generate scripts for setting up and configuring CNCF-compatible Kubernetes clusters. Unlike the full deployment blueprint, this option only outputs the necessary scripts without executing them.
+
+There is a Terraform implementation that generates the scripts and outputs them to a local directory.
+In the Bicep implementation, the scripts are generated and stored in a key vault secret.
 
 ## Terraform Structure
 
@@ -19,7 +22,7 @@ This blueprint is structured as follows:
 - `template_file` data sources for template processing
 - `null_resource` for any additional processing
 
-## Input Variables
+### Input Variables
 
 | Variable             | Description                         | Default          | Required |
 |----------------------|-------------------------------------|------------------|:--------:|
@@ -29,15 +32,13 @@ This blueprint is structured as follows:
 | `operating_system`   | Target OS for scripts (ubuntu/rhel) | `"ubuntu"`       |    no    |
 | ...                  | ...                                 | ...              |   ...    |
 
-## Generated Scripts
+### Generated Scripts
 
 This blueprint produces the following scripts:
 
-1. **Cluster Setup** (`setup-cluster.sh`): Creates the CNCF-compatible Kubernetes cluster
-2. **Configuration** (`configure-cluster.sh`): Applies post-installation configuration
-3. **Validation** (`validate-cluster.sh`): Verifies successful cluster deployment
+**Cluster Setup** (`setup-cluster.sh`): Creates the CNCF-compatible Kubernetes cluster and Arc-enables the cluster
 
-## Usage
+### Terraform Usage
 
 Use these Terraform configurations when you want to:
 
@@ -63,7 +64,7 @@ chmod +x setup-cluster.sh
 ./setup-cluster.sh
 ```
 
-## Script Customization
+### Script Customization
 
 The generated scripts can be customized by modifying the Terraform variables:
 
@@ -74,11 +75,33 @@ node_count = 3
 kubernetes_version = "v1.27.3+k3s1"
 ```
 
-## Contents
+### Contents
 
 - Terraform configurations for generating cluster setup scripts
 - Output templates for CNCF cluster configuration
 - Variable definitions for customizing script generation
+
+## Bicep Structure
+
+### Bicep Configuration
+
+For Bicep deployments, create a `main.bicepparam` file with the necessary parameters:
+
+```bicep
+// Example main.bicepparam
+using './bicep/main.bicep'
+
+param common = {
+  resourcePrefix: 'myprefix'
+  location: 'eastus2'
+  environment: 'dev'
+  instance: '001'
+}
+
+param keyVaultName = 'your-key-vault'
+param keyVaultResourceGroup = 'your-key-vault-rg' // if different from the resource group which will be created
+param customLocationsOid = '' // OID of the custom location service principal
+```
 
 ## Related Resources
 

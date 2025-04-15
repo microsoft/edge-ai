@@ -13,8 +13,7 @@ Deploys a complete end-to-end environment for Azure IoT Operations on a multi-no
 |common|The common component configuration.|`[_1.Common](#user-defined-types)`|n/a|yes|
 |resourceGroupName|The name for the resource group. If not provided, a default name will be generated.|`string`|[format('rg-{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]|no|
 |adminPassword|Password used for the host VM.|`securestring`|n/a|yes|
-|shouldGetCustomLocationsOid|Flag to determine if the custom locations OID should be retrieved.|`bool`|`true`|no|
-|customLocationsOid|The object id of the Custom Locations Entra ID application for your tenant.<br>If none is provided, the script will attempt to retrieve this requiring 'Application.Read.All' or 'Directory.Read.All' permissions.<br>Can be retrieved using:<br><br>  <pre><code class="language-sh">  az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv<br>  </code></pre><br>|`string`|n/a|no|
+|customLocationsOid|The object id of the Custom Locations Entra ID application for your tenant.<br>Can be retrieved using:<br><br>  <pre><code class="language-sh">  az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv<br>  </code></pre><br>|`string`|n/a|yes|
 |hostMachineCount|The number of host VMs to create for the cluster. (The first host VM will be the cluster server)|`int`|3|no|
 
 ## Resources
@@ -36,7 +35,7 @@ Deploys a complete end-to-end environment for Azure IoT Operations on a multi-no
 |cloudSecurityIdentity|Provisions cloud resources required for Azure IoT Operations including Schema Registry, Storage Account, Key Vault, and User Assigned Managed Identities.|
 |cloudData|Creates storage resources including Azure Storage Account and Schema Registry for data in the Edge AI solution.|
 |cloudVmHost|Provisions virtual machines and networking infrastructure for hosting Azure IoT Operations edge deployments.|
-|edgeCncfCluster|Sets up and deploys a script to a VM host that will setup the K3S cluster and optionally cluster nodes,<br>Arc connect the cluster, Add cluster admins to the cluster, enable workload identity, install extensions for cluster connect and custom locations.|
+|edgeCncfCluster|This module provisions and deploys automation scripts to a VM host that create and configure a K3s Kubernetes cluster with Arc connectivity.<br>The scripts handle primary and secondary node(s) setup, cluster administration, workload identity enablement, and installation of required Azure Arc extensions.|
 |edgeIotOps|Deploys Azure IoT Operations extensions, instances, and configurations on Azure Arc-enabled Kubernetes clusters.|
 
 ## Module Details
@@ -75,8 +74,8 @@ Provisions cloud resources required for Azure IoT Operations including Schema Re
 
 |Name|Description|Type|Default|Required|
 | :--- | :--- | :--- | :--- | :--- |
-|common|The common component configuration.|`[_2.Common](#user-defined-types)`|n/a|yes|
-|onboardIdentityConfig|Settings for the onboarding identity.|`[_1.OnboardIdentitySettings](#user-defined-types)`|[variables('_1.onboardIdentityDefaults')]|no|
+|common|The common component configuration.|`[_1.Common](#user-defined-types)`|n/a|yes|
+|shouldCreateArcOnboardingUami|Whether to create a User Assigned Managed Identity for onboarding a cluster to Azure Arc.|`bool`|True|no|
 |shouldCreateKeyVault|Whether or not to create a new Key Vault for the Secret Sync Extension.|`bool`|True|no|
 |keyVaultName|The name of the Key Vault.|`string`|[format('kv-{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]|no|
 |keyVaultResourceGroupName|The name for the Resource Group for the Key Vault.|`string`|[resourceGroup().name]|no|
@@ -104,7 +103,6 @@ Provisions cloud resources required for Azure IoT Operations including Schema Re
 |aioIdentityPrincipalId|`string`|The Azure IoT Operations User Assigned Managed Identity Principal ID.|
 |arcOnboardingIdentityId|`string`|The User Assigned Managed Identity ID with "Kubernetes Cluster - Azure Arc Onboarding" permissions.|
 |arcOnboardingIdentityName|`string`|The User Assigned Managed Identity name with "Kubernetes Cluster - Azure Arc Onboarding" permissions.|
-|servicePrincipalClientId|`string`|The Service Principal App (Client) ID with "Kubernetes Cluster - Azure Arc Onboarding" permissions.|
 
 ### cloudData
 
@@ -153,9 +151,9 @@ Provisions virtual machines and networking infrastructure for hosting Azure IoT 
 | :--- | :--- | :--- | :--- | :--- |
 |common|The common component configuration.|`[_2.Common](#user-defined-types)`|n/a|yes|
 |adminPassword|The admin password for the VM.|`securestring`|n/a|yes|
-|arcOnboardingIdentityName|The user-assigned identity for Arc onboarding.|`string`|n/a|yes|
+|arcOnboardingIdentityName|The user-assigned identity for Arc onboarding.|`string`|n/a|no|
 |storageProfile|The storage profile for the VM.|`[_1.StorageProfile](#user-defined-types)`|[variables('_1.storageProfileDefaults')]|no|
-|vmUsername|Username used for the host VM that will be given kube-config settings on setup. (Otherwise, resource_prefix if it exists as a user)|`string`|n/a|yes|
+|vmUsername|Username used for the host VM that will be given kube-config settings on setup. (Otherwise, resource_prefix if it exists as a user)|`string`|n/a|no|
 |vmCount|The number of host VMs to create if a multi-node cluster is needed.|`int`|1|no|
 |vmSkuSize|Size of the VM|`string`|Standard_D8s_v3|no|
 
@@ -179,31 +177,32 @@ Provisions virtual machines and networking infrastructure for hosting Azure IoT 
 
 ### edgeCncfCluster
 
-Sets up and deploys a script to a VM host that will setup the K3S cluster and optionally cluster nodes,
-Arc connect the cluster, Add cluster admins to the cluster, enable workload identity, install extensions for cluster connect and custom locations.
+This module provisions and deploys automation scripts to a VM host that create and configure a K3s Kubernetes cluster with Arc connectivity.
+The scripts handle primary and secondary node(s) setup, cluster administration, workload identity enablement, and installation of required Azure Arc extensions.
 
 #### Parameters for edgeCncfCluster
 
 |Name|Description|Type|Default|Required|
 | :--- | :--- | :--- | :--- | :--- |
 |common|The common component configuration.|`[_1.Common](#user-defined-types)`|n/a|yes|
+|keyVaultName|The name of the Key Vault to save the scripts to.|`string`|n/a|yes|
+|keyVaultResourceGroupName|The resource group name where the Key Vault is located. Defaults to the current resource group.|`string`|[resourceGroup().name]|no|
 |arcConnectedClusterName|The resource name for the Arc connected cluster.|`string`|[format('arck-{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]|no|
-|clusterAdminOid|The Object ID that will be given cluster-admin permissions.|`string`|n/a|yes|
-|customLocationsOid|The object id of the Custom Locations Entra ID application for your tenant.<br>If none is provided, the script will attempt to retrieve this requiring 'Application.Read.All' or 'Directory.Read.All' permissions.<br>Can be retrieved using:<br><br>  <pre><code class="language-sh">  az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv<br>  </code></pre><br>|`string`|n/a|yes|
+|clusterServerVirtualMachineName|The server virtual machines name.|`string`|n/a|no|
+|clusterNodeVirtualMachineNames|The node virtual machines names.|`array`|n/a|no|
+|clusterServerHostMachineUsername|Username used for the host machines that will be given kube-config settings on setup. (Otherwise, resource_prefix if it exists as a user)|`string`|[parameters('common').resourcePrefix]|no|
+|clusterServerIp|The IP address for the server for the cluster. (Needed for mult-node cluster)|`string`|n/a|no|
+|serverToken|The token that will be given to the server for the cluster or used by agent nodes.|`string`|n/a|no|
+|clusterAdminOid|The Object ID that will be given cluster-admin permissions.|`string`|n/a|no|
+|customLocationsOid|The object id of the Custom Locations Entra ID application for your tenant.<br>Can be retrieved using:<br><br>  <pre><code class="language-sh">  az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv<br>  </code></pre><br>|`string`|n/a|yes|
 |shouldAssignRoles|Whether to assign roles for Arc Onboarding.|`bool`|True|no|
-|arcOnboardingSpPrincipalId|Service Principal Object Id used when assigning roles for Arc onboarding.|`string`|n/a|yes|
-|arcOnboardingSpClientId|Service Principal Client ID with Kubernetes Cluster - Azure Arc Onboarding permissions.|`string`|n/a|yes|
-|arcOnboardingSpClientSecret|The Service Principal Client Secret for Arc onboarding.|`securestring`|n/a|yes|
-|arcOnboardingIdentityName|The resource name for the identity used for Arc onboarding.|`string`|n/a|yes|
+|arcOnboardingSpPrincipalId|Service Principal Object Id used when assigning roles for Arc onboarding.|`string`|n/a|no|
+|arcOnboardingSpClientId|Service Principal Client ID with Kubernetes Cluster - Azure Arc Onboarding permissions.|`string`|n/a|no|
+|arcOnboardingSpClientSecret|The Service Principal Client Secret for Arc onboarding.|`securestring`|n/a|no|
+|arcOnboardingIdentityName|The resource name for the identity used for Arc onboarding.|`string`|n/a|no|
 |shouldAddCurrentUserClusterAdmin|Whether to add the current user as a cluster admin.|`bool`|True|no|
 |shouldEnableArcAutoUpgrade|Whether to enable auto-upgrade for Azure Arc agents.|`bool`|[not(equals(parameters('common').environment, 'prod'))]|no|
-|clusterNodeVirtualMachineNames|The node virtual machines names.|`array`|[]|no|
-|clusterServerVirtualMachineName|The server virtual machines name.|`string`|n/a|yes|
-|clusterServerHostMachineUsername|Username used for the host machines that will be given kube-config settings on setup. (Otherwise, resource_prefix if it exists as a user)|`string`|[parameters('common').resourcePrefix]|no|
-|clusterServerIp|The IP address for the server for the cluster. (Needed for mult-node cluster)|`string`|n/a|yes|
-|serverToken|The token that will be given to the server for the cluster or used by agent nodes.|`string`|n/a|yes|
 |shouldDeployScriptToVm|Whether to deploy the scripts to the VM.|`bool`|True|no|
-|shouldGetCustomLocationsOid|Whether to get Custom Locations Object ID using Azure APIs.|`bool`|True|no|
 |shouldGenerateServerToken|Should generate token used by the server.|`bool`|False|no|
 |shouldSkipAzCliLogin|Should skip login process with Azure CLI on the server.|`bool`|False|no|
 |shouldSkipInstallingAzCli|Should skip downloading and installing Azure CLI on the server.|`bool`|False|no|
@@ -212,9 +211,11 @@ Arc connect the cluster, Add cluster admins to the cluster, enable workload iden
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|customLocationsServicePrincipal|`Microsoft.Graph/servicePrincipals@v1.0`||
-|roleAssignment|`Microsoft.Resources/deployments`|2022-09-01|
+|arcOnboardingIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2024-11-30|
 |ubuntuK3s|`Microsoft.Resources/deployments`|2022-09-01|
+|roleAssignment|`Microsoft.Resources/deployments`|2022-09-01|
+|keyVaultRoleAssignments|`Microsoft.Resources/deployments`|2022-09-01|
+|deployScriptsToVm|`Microsoft.Resources/deployments`|2022-09-01|
 
 #### Outputs for edgeCncfCluster
 
@@ -223,6 +224,10 @@ Arc connect the cluster, Add cluster admins to the cluster, enable workload iden
 |connectedClusterName|`string`|The connected cluster name|
 |connectedClusterResourceGroupName|`string`|The connected cluster resource group name|
 |azureArcProxyCommand|`string`|Azure Arc proxy command for accessing the cluster|
+|clusterServerScriptSecretName|`string`|The name of the Key Vault secret containing the server script|
+|clusterNodeScriptSecretName|`string`|The name of the Key Vault secret containing the node script|
+|clusterServerScriptSecretShowCommand|`string`|The AZ CLI command to get the cluster server script from Key Vault|
+|clusterNodeScriptSecretShowCommand|`string`|The AZ CLI command to get the cluster node script from Key Vault|
 
 ### edgeIotOps
 

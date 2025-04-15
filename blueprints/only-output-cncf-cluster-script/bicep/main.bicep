@@ -40,19 +40,15 @@ param clusterAdminOid string?
   Azure Arc Parameters
 */
 
-@description('Whether to get Custom Locations Object ID using Azure APIs.')
-param shouldGetCustomLocationsOid bool = true
-
 @description('''
 The object id of the Custom Locations Entra ID application for your tenant.
-If none is provided, the script will attempt to retrieve this requiring 'Application.Read.All' or 'Directory.Read.All' permissions.
 Can be retrieved using:
 
   ```sh
   az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv
   ```
 ''')
-param customLocationsOid string?
+param customLocationsOid string
 
 /*
   Role Assignment Parameters
@@ -88,7 +84,6 @@ module edgeCncfCluster '../../../src/100-edge/100-cncf-cluster/bicep/main.bicep'
     shouldGenerateServerToken: shouldGenerateServerToken
     serverToken: serverToken
     clusterAdminOid: clusterAdminOid
-    shouldGetCustomLocationsOid: shouldGetCustomLocationsOid
     customLocationsOid: customLocationsOid
     shouldAssignRoles: shouldAssignRoles
     arcOnboardingSpPrincipalId: arcOnboardingSpPrincipalId

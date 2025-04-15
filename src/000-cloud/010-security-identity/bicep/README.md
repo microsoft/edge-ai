@@ -10,8 +10,8 @@ Provisions cloud resources required for Azure IoT Operations including Schema Re
 
 |Name|Description|Type|Default|Required|
 | :--- | :--- | :--- | :--- | :--- |
-|common|The common component configuration.|`[_2.Common](#user-defined-types)`|n/a|yes|
-|onboardIdentityConfig|Settings for the onboarding identity.|`[_1.OnboardIdentitySettings](#user-defined-types)`|[variables('_1.onboardIdentityDefaults')]|no|
+|common|The common component configuration.|`[_1.Common](#user-defined-types)`|n/a|yes|
+|shouldCreateArcOnboardingUami|Whether to create a User Assigned Managed Identity for onboarding a cluster to Azure Arc.|`bool`|`true`|no|
 |shouldCreateKeyVault|Whether or not to create a new Key Vault for the Secret Sync Extension.|`bool`|`true`|no|
 |keyVaultName|The name of the Key Vault.|`string`|[format('kv-{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]|no|
 |keyVaultResourceGroupName|The name for the Resource Group for the Key Vault.|`string`|[resourceGroup().name]|no|
@@ -29,28 +29,26 @@ Provisions cloud resources required for Azure IoT Operations including Schema Re
 
 |Name|Description|
 | :--- | :--- |
-|identity|Creates user-assigned managed identities for Secret Store Extension and Azure IoT Operations components.|
+|identity|Creates user-assigned managed identities for Secret Store Extension, Azure IoT Operations components and optionally Arc onboarding.|
 |keyVault|Creates an Azure Key Vault for use with the Secret Sync Extension to securely store and synchronize secrets.|
 
 ## Module Details
 
 ### identity
 
-Creates user-assigned managed identities for Secret Store Extension and Azure IoT Operations components.
+Creates user-assigned managed identities for Secret Store Extension, Azure IoT Operations components and optionally Arc onboarding.
 
 #### Parameters for identity
 
 |Name|Description|Type|Default|Required|
 | :--- | :--- | :--- | :--- | :--- |
-|common|The common component configuration.|`[_2.Common](#user-defined-types)`|n/a|yes|
-|identityType|The identity type to use for onboarding the cluster to Azure Arc.|`[_1.OnboardIdentityType](#user-defined-types)`|n/a|yes|
+|common|The common component configuration.|`[_1.Common](#user-defined-types)`|n/a|yes|
+|shouldCreateArcOnboardingUami|Whether to create a User Assigned Managed Identity for onboarding a cluster to Azure Arc.|`bool`|n/a|yes|
 
 #### Resources for identity
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|arcOnboardingApp|`Microsoft.Graph/applications@v1.0`||
-|arcOnboardingClientSp|`Microsoft.Graph/servicePrincipals@v1.0`||
 |arcOnboardingIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2023-01-31|
 |sseIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2023-01-31|
 |aioIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2023-01-31|
@@ -67,7 +65,6 @@ Creates user-assigned managed identities for Secret Store Extension and Azure Io
 |aioIdentityPrincipalId|`string`|The Azure IoT Operations User Assigned Managed Identity Principal ID.|
 |arcOnboardingIdentityId|`string`|The User Assigned Managed Identity ID with "Kubernetes Cluster - Azure Arc Onboarding" permissions.|
 |arcOnboardingIdentityName|`string`|The User Assigned Managed Identity name with "Kubernetes Cluster - Azure Arc Onboarding" permissions.|
-|servicePrincipalClientId|`string`|The Service Principal App (Client) ID with "Kubernetes Cluster - Azure Arc Onboarding" permissions.|
 
 ### keyVault
 
@@ -98,29 +95,7 @@ Creates an Azure Key Vault for use with the Secret Sync Extension to securely st
 
 ## User Defined Types
 
-### `_1.OnboardIdentitySettings`
-
-Settings for onboarding identity creation.
-
-|Property|Type|Description|
-| :--- | :--- | :--- |
-|shouldCreate|`bool`|Whether or not to create either a User Assigned Managed Identity or Service Principal to be used with onboarding a cluster to Azure Arc.|
-|identityType|`[_1.OnboardIdentityType](#user-defined-types)`|Identity type to use for onboarding the cluster to Azure Arc.|
-
-### `_1.OnboardIdentityType`
-
-Identity type to use for onboarding the cluster to Azure Arc. Allowed values: "id" (User Assigned Managed Identity) or "sp" (Service Principal).
-
-### `_1.StorageAccountSettings`
-
-Settings for the Storage Account.
-
-|Property|Type|Description|
-| :--- | :--- | :--- |
-|tier|`string`|Tier for the Storage Account.|
-|replicationType|`string`|Replication Type for the Storage Account.|
-
-### `_2.Common`
+### `_1.Common`
 
 Common settings for the components.
 
@@ -145,7 +120,6 @@ Common settings for the components.
 |aioIdentityPrincipalId|`string`|The Azure IoT Operations User Assigned Managed Identity Principal ID.|
 |arcOnboardingIdentityId|`string`|The User Assigned Managed Identity ID with "Kubernetes Cluster - Azure Arc Onboarding" permissions.|
 |arcOnboardingIdentityName|`string`|The User Assigned Managed Identity name with "Kubernetes Cluster - Azure Arc Onboarding" permissions.|
-|servicePrincipalClientId|`string`|The Service Principal App (Client) ID with "Kubernetes Cluster - Azure Arc Onboarding" permissions.|
 
 <!-- markdown-table-prettify-ignore-end -->
 <!-- END_BICEP_DOCS -->

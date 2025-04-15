@@ -102,10 +102,7 @@ jobs:
         id: docs-check-bicep
         run: |
           # Run the bicep-docs-check.sh script and capture its output
-          output=$(./scripts/bicep-docs-check.sh)
-
-          # Get the last line which contains the true/false result
-          docs_changed=$(echo "$output" | tail -n 1)
+          docs_changed=$(tail -n 1 $(pwd)/scripts/bicep-docs-check.sh)
 
           # Check if there are any changes in the Bicep documentation
           if [ "$docs_changed" = true ]; then

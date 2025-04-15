@@ -74,11 +74,11 @@ Creates a Linux virtual machine with networking components for Azure IoT Operati
 |common|The common component configuration.|`[_2.Common](#user-defined-types)`|n/a|yes|
 |storageProfile|The storage profile for the VM.|`[_1.StorageProfile](#user-defined-types)`|[variables('_1.storageProfileDefaults')]|no|
 |adminPassword|The admin password for the VM.|`securestring`|n/a|yes|
-|arcOnboardingIdentityName|The user-assigned identity for Arc onboarding.|`string`|n/a|yes|
+|arcOnboardingIdentityName|The user-assigned identity for Arc onboarding.|`string`|n/a|no|
 |subnetId|The subnet ID to connect the VM to.|`string`|n/a|yes|
 |vmIndex|The VM index for naming purposes.|`int`|0|no|
 |vmSkuSize|Size of the VM|`string`|Standard_D8s_v3|no|
-|vmUsername|Username used for the host VM that will be given kube-config settings on setup. (Otherwise, resource_prefix if it exists as a user)|`string`|n/a|yes|
+|vmUsername|Username used for the host VM that will be given kube-config settings on setup. (Otherwise, resource_prefix if it exists as a user)|`string`|n/a|no|
 
 #### Resources for virtualMachine
 
