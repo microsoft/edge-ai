@@ -323,24 +323,58 @@ def extract_modules(json_data: Dict[str, Any], max_nested_level: int = 1, curren
                                     param_info["defaultValue"])
                                 param_data["required"] = False
 
+                        if "nullable" in param_info and param_info["nullable"]:
+                            param_data["required"] = False
+
                         mod_data["parameters"].append(param_data)
 
                 # Extract module resources
                 if "resources" in template:
-                    for res_name, res_info in template["resources"].items():
-                        res_data = {
-                            "name": res_name,
-                            "type": "",
-                            "api_version": "",
-                        }
+                    # Handle both dictionary-style and object-style resources
+                    resources_data = template["resources"]
+                    if isinstance(resources_data, dict):
+                        # Process dictionary-style resources (with .items())
+                        for res_name, res_info in resources_data.items():
+                            res_data = {
+                                "name": res_name,
+                                "type": "",
+                                "api_version": "",
+                            }
 
-                        if "type" in res_info:
-                            res_data["type"] = res_info["type"]
+                            if "type" in res_info:
+                                res_data["type"] = res_info["type"]
 
-                        if "apiVersion" in res_info:
-                            res_data["api_version"] = res_info["apiVersion"]
+                            if "apiVersion" in res_info:
+                                res_data["api_version"] = res_info["apiVersion"]
 
-                        mod_data["resources"].append(res_data)
+                            mod_data["resources"].append(res_data)
+                    elif isinstance(resources_data, list):
+                        # Process array-style resources
+                        for res_info in resources_data:
+                            res_name = res_info.get("name", "unnamed-resource")
+                            res_data = {
+                                "name": res_name,
+                                "type": res_info.get("type", ""),
+                                "api_version": res_info.get("apiVersion", ""),
+                            }
+                            mod_data["resources"].append(res_data)
+                    else:
+                        # Bicep-style object resources with direct properties
+                        for res_name in resources_data:
+                            res_info = resources_data[res_name]
+                            res_data = {
+                                "name": res_name,
+                                "type": "",
+                                "api_version": "",
+                            }
+
+                            if "type" in res_info:
+                                res_data["type"] = res_info["type"]
+
+                            if "apiVersion" in res_info:
+                                res_data["api_version"] = res_info["apiVersion"]
+
+                            mod_data["resources"].append(res_data)
 
                 # Extract module outputs
                 if "outputs" in template:

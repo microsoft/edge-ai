@@ -87,7 +87,6 @@ jobs:
       # Check for Bicep docs changes
       - bash: |
           # Run the bicep-docs-check.sh script to check for changes
-          ./scripts/bicep-docs-check.sh
           docs_changed=$(tail -n 1 <($(System.DefaultWorkingDirectory)/scripts/bicep-docs-check.sh))
 
           # Check if there are any changes in the Bicep documentation

@@ -1,8 +1,6 @@
 metadata name = 'CNCF Cluster Component'
-metadata description = '''Sets up and deploys a script to a VM host that will setup the K3S cluster and optionally cluster nodes,
-Arc connect the cluster, Add cluster admins to the cluster, enable workload identity, install extensions for cluster connect and custom locations.'''
-
-extension microsoftGraphV1
+metadata description = '''This module provisions and deploys automation scripts to a VM host that create and configure a K3s Kubernetes cluster with Arc connectivity.
+The scripts handle primary and secondary node(s) setup, cluster administration, workload identity enablement, and installation of required Azure Arc extensions.'''
 
 import * as core from './types.core.bicep'
 
@@ -55,17 +53,13 @@ param clusterAdminOid string?
 
 @description('''
 The object id of the Custom Locations Entra ID application for your tenant.
-If none is provided, the script will attempt to retrieve this requiring 'Application.Read.All' or 'Directory.Read.All' permissions.
 Can be retrieved using:
 
   ```sh
   az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv
   ```
 ''')
-param customLocationsOid string?
-
-@description('Whether to get Custom Locations Object ID using Azure APIs.')
-param shouldGetCustomLocationsOid bool = true
+param customLocationsOid string
 
 @description('Whether to assign roles for Arc Onboarding.')
 param shouldAssignRoles bool = true
@@ -132,11 +126,6 @@ resource arcOnboardingIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities
   name: arcOnboardingIdentityName!
 }
 
-resource customLocationsServicePrincipal 'Microsoft.Graph/servicePrincipals@v1.0' existing = if (shouldGetCustomLocationsOid && empty(customLocationsOid)) {
-  // The service principal for Custom Locations in tenant
-  appId: 'bc313c14-388c-4e7d-a58e-70017303ee3b' // gitleaks:allow
-}
-
 /*
   Modules
 */
@@ -149,7 +138,7 @@ module ubuntuK3s './modules/ubuntu-k3s.bicep' = {
     arcResourceName: arcConnectedClusterName
     arcTenantId: tenant().tenantId
     clusterAdminOid: clusterAdminOid ?? (shouldAddCurrentUserClusterAdmin ? deployer().objectId : null)
-    customLocationsOid: customLocationsOid ?? customLocationsServicePrincipal.?id
+    customLocationsOid: customLocationsOid
     shouldEnableArcAutoUpgrade: shouldEnableArcAutoUpgrade
     arcOnboardingSpClientId: arcOnboardingSpClientId
     arcOnboardingSpClientSecret: arcOnboardingSpClientSecret

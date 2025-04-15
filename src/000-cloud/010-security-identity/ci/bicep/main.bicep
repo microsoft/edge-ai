@@ -1,5 +1,4 @@
 import * as core from '../../bicep/types.core.bicep'
-import * as types from '../../bicep/types.bicep'
 
 /*
   Common Parameters

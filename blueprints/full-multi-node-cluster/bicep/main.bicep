@@ -22,19 +22,15 @@ param resourceGroupName string = 'rg-${common.resourcePrefix}-${common.environme
 @description('Password used for the host VM.')
 param adminPassword string
 
-@description('Flag to determine if the custom locations OID should be retrieved.')
-param shouldGetCustomLocationsOid bool = true
-
 @description('''
 The object id of the Custom Locations Entra ID application for your tenant.
-If none is provided, the script will attempt to retrieve this requiring 'Application.Read.All' or 'Directory.Read.All' permissions.
 Can be retrieved using:
 
   ```sh
   az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv
   ```
 ''')
-param customLocationsOid string?
+param customLocationsOid string
 
 @description('The number of host VMs to create for the cluster. (The first host VM will be the cluster server)')
 @minValue(2)
@@ -91,7 +87,6 @@ module edgeCncfCluster '../../../src/100-edge/100-cncf-cluster/bicep/main.bicep'
     clusterNodeVirtualMachineNames: skip(cloudVmHost.outputs.vmNames, 1)
     shouldGenerateServerToken: true
     clusterServerIp: cloudVmHost.outputs.privateIpAddresses[0]
-    shouldGetCustomLocationsOid: shouldGetCustomLocationsOid
     customLocationsOid: customLocationsOid
     arcOnboardingIdentityName: cloudSecurityIdentity.outputs.arcOnboardingIdentityName!
     keyVaultName: cloudSecurityIdentity.outputs.keyVaultName!

@@ -140,30 +140,24 @@ terraform apply
 
 ## Bicep Deployment Instructions
 
-### 1. Create a Resource Group
+### 1. Login into Azure and get Custom Locations OID
 
-First, create a resource group to contain all deployed resources:
+First, ensure you are logged into your subscription and retrieve the Custom Locations OID:
 
 ```sh
 # Set your Azure subscription
 az account set --subscription <subscription-id>
 
-# Define variables
-LOCATION="eastus2"
-RESOURCE_PREFIX="myprefix"
-ENVIRONMENT="dev"
-RG_NAME="${RESOURCE_PREFIX}-${ENVIRONMENT}-001"
-
-# Create resource group
-az group create --name $RG_NAME --location $LOCATION
+# Get the custom locations OID
+az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv
 ```
 
 ### 2. Create a Parameters File
 
-Create a file named `main.bicepparam` in the root of the `full-single-cluster` directory with your deployment parameters:
+Create a file named `main.bicepparam` in the root of the `full-single-node-cluster` directory with your deployment parameters:
 
 ```bicep
-// Parameters for full-single-cluster blueprint
+// Parameters for full-single-node-cluster blueprint
 using './bicep/main.bicep'
 
 // Required parameters
@@ -178,15 +172,15 @@ param common = {
 @secure()
 param adminPassword = 'YourSecurePassword123!' // Replace with a secure password
 
+param customLocationsOid = 'YourRetrievedOID' // Replace with the OID retrieved from the previous step
+
 ```
 
 ### 3. Deploy Resources with Bicep
 
 ```sh
 # Deploy using the Azure CLI
-az deployment group create \
-  --resource-group "$RG_NAME" \
-  --parameters ./main.bicepparam
+az deployment sub create --name <uniquename-prefix> --location northeurope --parameters ./main.bicepparam
 ```
 
 ## Access Deployed Resources
@@ -246,7 +240,9 @@ terraform destroy -var-file=terraform.tfvars
 When finished with your deployment:
 
 ```sh
-az group delete --name $RG_NAME --no-wait
+RG_NAME="rg-<common.resource_prefix>-<common.environment>-<common.instance>"
+# Delete the resource group and all its resources
+az group delete --name "$RG_NAME"
 ```
 
 ## Terraform Deployment Troubleshooting
