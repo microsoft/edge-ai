@@ -90,6 +90,7 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+      statuses: write
     uses: ./.github/workflows/megalinter.yml
     with:
       validate_all_codebase: true
