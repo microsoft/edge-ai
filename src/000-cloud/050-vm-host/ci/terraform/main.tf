@@ -3,7 +3,7 @@
 resource "terraform_data" "defer" {
   input = {
     resource_group_name                       = "rg-${var.resource_prefix}-${var.environment}-${var.instance}"
-    arc_onboarding_user_managed_identity_name = "id-${var.resource_prefix}-${var.environment}-arc-aio-${var.instance}"
+    arc_onboarding_user_managed_identity_name = "id-${var.resource_prefix}-aio-${var.environment}-${var.instance}"
   }
 }
 
