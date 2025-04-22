@@ -51,6 +51,7 @@
 		"datacontenttype",
 		"dataschema",
 		"Demir",
+		"donotreply",
 		"ectd",
 		"egmqtt",
 		"Entra",
@@ -91,7 +92,8 @@
 		"Terrascan",
 		"tfstate",
 		"thermodyanmics",
-		"UAMI"
+		"UAMI",
+		"xychart"
 	],
 	"dictionaryDefinitions": [
 		{
