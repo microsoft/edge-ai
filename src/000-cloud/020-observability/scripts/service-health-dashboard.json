@@ -1,0 +1,2030 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard"
+        },
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": 98,
+"links": [
+  {
+    "asDropdown": false,
+    "icon": "external link",
+    "includeVars": true,
+    "keepTime": true,
+    "tags": [
+      "overview"
+    ],
+    "targetBlank": false,
+    "title": "Overview",
+    "tooltip": "",
+    "type": "dashboards",
+    "url": ""
+  }
+],
+  "liveNow": false,
+  "panels": [
+    {
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 54,
+      "title": "Azure Edge",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "default": false,
+        "type": "prometheus",
+        "uid": "$datasource_uid"
+      },
+      "description": "Checks if *_route_replication_correctness is available, if not - returns 404. The End-to-End health checks if any messages are lost and 404s if the messages are not available.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "fillOpacity": 60,
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineWidth": 0,
+            "spanNulls": false
+          },
+          "links": [
+            {
+              "targetBlank": true,
+              "title": "Show details for ${component_text} ${__field.labels._}",
+              "url": "${__field.labels.url}?${__all_variables}&${__url_time_range}"
+            }
+          ],
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#7f7f7f",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "yellow",
+                "value": 0.5
+              },
+              {
+                "color": "green",
+                "value": 1
+              },
+              {
+                "color": "#7f7f7f",
+                "value": 404
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "MQ Overall Health"
+            },
+            "properties": [
+              {
+                "id": "custom.lineWidth",
+                "value": 1
+              },
+              {
+                "id": "links"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 1
+      },
+      "id": 40,
+      "options": {
+        "alignValue": "left",
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "mergeValues": false,
+        "rowHeight": 0.72,
+        "showValue": "never",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource_uid"
+          },
+          "editorMode": "code",
+          "expr": "label_replace(min(\r\n    label_replace(label_replace((\r\n        min(aio_broker_publish_route_replication_correctness{cluster=\"$cluster\", instance=~\"$namespace\"}) or vector(404))\r\n        ,\"url\",\"/d/bf5237d2-7deb-4144-aa46-41e1c1629b30/aio-service-mq-publish\",\"\",\"\")\r\n        ,\"_\",\"Publish health\",\"\",\"\") or \r\n    label_replace(label_replace((\r\n        min(aio_broker_subscribe_route_replication_correctness{cluster=\"$cluster\", instance=~\"$namespace\"}) or vector(404))\r\n        ,\"url\",\"/d/b5d606dc-a841-4ec0-b7c5-4f1d37c4e877/aio-service-mq-subscribe\",\"\",\"\")\r\n        ,\"_\",\"Subscribe health\",\"\",\"\") or \r\n    label_replace(label_replace((\r\n        min(aio_broker_unsubscribe_route_replication_correctness{cluster=\"$cluster\", instance=~\"$namespace\"}) or vector(404))\r\n        ,\"url\",\"/d/d2a068a7-e4f0-40cc-bba9-29a263a38c58/aio-service-mq-unsubscribe\",\"\",\"\")\r\n        ,\"_\",\"Unsubscribe health\",\"\",\"\") or \r\n    label_replace(label_replace((\r\n        min(\r\n            1 - min(\r\n                0 * sgn(\r\n                    sum(aio_broker_message_delivery_check_total_messages_lost{cluster=\"$cluster\", instance=~\"$namespace\"})\r\n                <= 0) or\r\n                1 * sgn(\r\n                    sum(aio_broker_message_delivery_check_total_messages_lost{cluster=\"$cluster\", instance=~\"$namespace\"})\r\n                > 0)) or vector(0)>0\r\n        ) or vector(404))\r\n        ,\"url\",\"/d/c84357d6-e4ef-4459-8348-6049269ace5c/aio-service-mq-payload-check\",\"\",\"\")\r\n        ,\"_\",\"End-to-end health\",\"\",\"\") or \r\n    vector(0) > 0 # Tail; not shown\r\n),\"_\",\"MQ Overall Health\",\"\",\"\")",
+          "hide": false,
+          "legendFormat": "{{_}}",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource_uid"
+          },
+          "editorMode": "code",
+          "expr": "#label_replace(min(\r\n    label_replace(label_replace((\r\n        min(aio_broker_publish_route_replication_correctness{cluster=\"$cluster\", instance=~\"$namespace\"}) or vector(404))\r\n        ,\"url\",\"/d/bf5237d2-7deb-4144-aa46-41e1c1629b30/aio-service-mq-publish\",\"\",\"\")\r\n        ,\"_\",\"Publish health\",\"\",\"\") or \r\n    label_replace(label_replace((\r\n        min(aio_broker_subscribe_route_replication_correctness{cluster=\"$cluster\", instance=~\"$namespace\"}) or vector(404))\r\n        ,\"url\",\"/d/b5d606dc-a841-4ec0-b7c5-4f1d37c4e877/aio-service-mq-subscribe\",\"\",\"\")\r\n        ,\"_\",\"Subscribe health\",\"\",\"\") or \r\n    label_replace(label_replace((\r\n        min(aio_broker_unsubscribe_route_replication_correctness{cluster=\"$cluster\", instance=~\"$namespace\"}) or vector(404))\r\n        ,\"url\",\"/d/d2a068a7-e4f0-40cc-bba9-29a263a38c58/aio-service-mq-unsubscribe\",\"\",\"\")\r\n        ,\"_\",\"Unsubscribe health\",\"\",\"\") or \r\n    label_replace(label_replace((\r\n        min(\r\n            1 - min(\r\n                0 * sgn(\r\n                    sum(aio_broker_message_delivery_check_total_messages_lost{cluster=\"$cluster\", instance=~\"$namespace\"})\r\n                <= 0) or\r\n                1 * sgn(\r\n                    sum(aio_broker_message_delivery_check_total_messages_lost{cluster=\"$cluster\", instance=~\"$namespace\"})\r\n                > 0)) or vector(0)>0\r\n        ) or vector(404))\r\n        ,\"url\",\"/d/c84357d6-e4ef-4459-8348-6049269ace5c/aio-service-mq-payload-check\",\"\",\"\")\r\n        ,\"_\",\"End-to-end health\",\"\",\"\") or \r\n    vector(0) > 0 # Tail; not shown\r\n#),\"_\",\"MQ Overall Health\",\"\",\"\")",
+          "hide": false,
+          "legendFormat": "{{_}}",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "title": "Azure Edge Scenario Health",
+      "type": "state-timeline"
+    },
+    {
+      "datasource": {
+        "default": false,
+        "type": "prometheus",
+        "uid": "$datasource_uid"
+      },
+      "description": "Authentication and Authorization failures check if the rate of authentication/authorization failures are less than 20 over 2 minute periods. Backpressure and QoS0 check if the ratio of the packets/messages is less than 5% over a 30 minute period. Broker overall health returns red if any of the others contain failures.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "fillOpacity": 60,
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineWidth": 0,
+            "spanNulls": false
+          },
+          "links": [
+            {
+              "targetBlank": true,
+              "title": "Show details for ${component_text} ${__field.labels._}",
+              "url": "${__field.labels.url}?${__all_variables}&${__url_time_range}"
+            }
+          ],
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#7f7f7f",
+                "value": null
+              },
+              {
+                "color": "semi-dark-red",
+                "value": 0
+              },
+              {
+                "color": "yellow",
+                "value": 0.5
+              },
+              {
+                "color": "semi-dark-green",
+                "value": 1
+              },
+              {
+                "color": "#7f7f7f",
+                "value": 404
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "MQ Overall Health"
+            },
+            "properties": [
+              {
+                "id": "custom.lineWidth",
+                "value": 1
+              },
+              {
+                "id": "links"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 1
+      },
+      "id": 35,
+      "options": {
+        "alignValue": "left",
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "mergeValues": false,
+        "rowHeight": 0.72,
+        "showValue": "never",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource_uid"
+          },
+          "editorMode": "code",
+          "expr": "label_replace(min(\r\n    label_replace(label_replace(\r\n        (1 - min(\r\n            1 * sgn(\r\n                sum(\r\n                    rate(aio_broker_authentication_failures{cluster=\"$cluster\", instance=~\"$namespace\", category!=\"broker_selftest\"}[2m])\r\n                    )\r\n            <= 20) or\r\n            0 * sgn(\r\n                sum(\r\n                    rate(aio_broker_authentication_failures{cluster=\"$cluster\", instance=~\"$namespace\", category!=\"broker_selftest\"}[2m])\r\n                    )\r\n            > 20)) or vector(0)>0)\r\n        ,\"url\",\"/d/f41cdbe5-4075-4f05-aeb2-a34b5b46571c/aio-service-broker-connect\",\"\",\"\")\r\n        ,\"_\",\"Authentication failures\",\"\",\"\") or\r\n    label_replace(label_replace(\r\n        (1 - min(\r\n            1 * sgn(\r\n                sum(\r\n                    rate(aio_broker_authorization_deny{cluster=\"$cluster\", instance=~\"$namespace\", category!=\"broker_selftest\"}[2m])\r\n                    )\r\n            <= 20) or\r\n            0 * sgn(\r\n                sum(\r\n                    rate(aio_broker_authorization_deny{cluster=\"$cluster\", instance=~\"$namespace\", category!=\"broker_selftest\"}[2m])\r\n                    )\r\n            > 20)) or vector(0)>0)\r\n        ,\"url\",\"/d/c4c37068-3940-40ba-8c20-67b3ce4923e2/aio-service-broker-connect\",\"\",\"\")\r\n        ,\"_\",\"Authorization failures\",\"\",\"\") or        \r\n    label_replace(label_replace(\r\n        (1 - min(\r\n            1 * sgn(\r\n                sum(rate(aio_broker_backpressure_packets_rejected{cluster=\"$cluster\", instance=~\"$namespace\", category!=\"broker_selftest\"}[2m])) / \r\n                sum(quantile_over_time(.95, rate(aio_broker_publishes_received{cluster=\"$cluster\", instance=~\"$namespace\"}[2m])[30m:]))\r\n            <= 0.05) or\r\n            0 * sgn(\r\n                sum(rate(aio_broker_backpressure_packets_rejected{cluster=\"$cluster\", instance=~\"$namespace\", category!=\"broker_selftest\"}[2m])) / \r\n                sum(quantile_over_time(.95, rate(aio_broker_publishes_received{cluster=\"$cluster\", instance=~\"$namespace\"}[2m])[30m:]))\r\n            > 0.05)) or vector(0)>0)\r\n        ,\"url\",\"/d/eb3949b9-da3a-4b9e-8573-beb5507617a9/aio-service-broker-clusterperf\",\"\",\"\")\r\n        ,\"_\",\"Backpressure\",\"\",\"\") or\r\n    label_replace(label_replace(\r\n        (1 - min(\r\n            1 * sgn(\r\n                sum(rate(aio_broker_qos0_messages_dropped{pod_type=\"BE\", cluster=\"$cluster\", instance=~\"$namespace\", category!=\"broker_selftest\"}[2m])) / \r\n                sum(quantile_over_time(.95, rate(aio_broker_publishes_received{cluster=\"$cluster\", instance=~\"$namespace\"}[2m])[30m:]))\r\n            <= 0.05) or\r\n            0 * sgn(\r\n                sum(rate(aio_broker_qos0_messages_dropped{cluster=\"$cluster\", instance=~\"$namespace\", category!=\"broker_selftest\"}[2m])) / \r\n                sum(quantile_over_time(.95, rate(aio_broker_publishes_received{cluster=\"$cluster\", instance=~\"$namespace\"}[2m])[30m:]))\r\n            > 0.05)) or vector(0)>0)\r\n        ,\"url\",\"/d/eb3949b9-da3a-4b9e-8573-beb5507617a9/aio-service-broker-clusterperf\",\"\",\"\")\r\n        ,\"_\",\"Dropped QoS0 Msgs\",\"\",\"\") or\r\n    vector(404) # Tail; not shown\r\n),\"_\",\"Broker Overall Health\",\"\",\"\")\r\n",
+          "hide": false,
+          "legendFormat": "{{_}}",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource_uid"
+          },
+          "editorMode": "code",
+          "expr": "#label_replace(min(\r\n    label_replace(label_replace(\r\n        (1 - min(\r\n            1 * sgn(\r\n                sum(\r\n                    rate(aio_broker_authentication_failures{cluster=\"$cluster\", instance=~\"$namespace\", category!=\"broker_selftest\"}[2m])\r\n                    )\r\n            <= 20) or\r\n            0 * sgn(\r\n                sum(\r\n                    rate(aio_broker_authentication_failures{cluster=\"$cluster\", instance=~\"$namespace\", category!=\"broker_selftest\"}[2m])\r\n                    )\r\n            > 20)) or vector(404))\r\n        ,\"url\",\"/d/f41cdbe5-4075-4f05-aeb2-a34b5b46571c/aio-service-broker-connect\",\"\",\"\")\r\n        ,\"_\",\"Authentication failures\",\"\",\"\") or\r\n    label_replace(label_replace(\r\n        (1 - min(\r\n            1 * sgn(\r\n                sum(\r\n                    rate(aio_broker_authorization_deny{cluster=\"$cluster\", instance=~\"$namespace\", category!=\"broker_selftest\"}[2m])\r\n                    )\r\n            <= 20) or\r\n            0 * sgn(\r\n                sum(\r\n                    rate(aio_broker_authorization_deny{cluster=\"$cluster\", instance=~\"$namespace\", category!=\"broker_selftest\"}[2m])\r\n                    )\r\n            > 20)) or vector(404))\r\n        ,\"url\",\"/d/f41cdbe5-4075-4f05-aeb2-a34b5b46571c/aio-service-broker-connect\",\"\",\"\")\r\n        ,\"_\",\"Authorization failures\",\"\",\"\") or        \r\n    label_replace(label_replace(\r\n        (1 - min(\r\n            1 * sgn(\r\n                sum(rate(aio_broker_backpressure_packets_rejected{cluster=\"$cluster\", instance=~\"$namespace\", category!=\"broker_selftest\"}[2m])) / \r\n                sum(quantile_over_time(.95, rate(aio_broker_publishes_received{cluster=\"$cluster\", instance=~\"$namespace\"}[2m])[30m:]))\r\n            <= 0.05) or\r\n            0 * sgn(\r\n                sum(rate(aio_broker_backpressure_packets_rejected{cluster=\"$cluster\", instance=~\"$namespace\", category!=\"broker_selftest\"}[2m])) / \r\n                sum(quantile_over_time(.95, rate(aio_broker_publishes_received{cluster=\"$cluster\", instance=~\"$namespace\"}[2m])[30m:]))\r\n            > 0.05)) or vector(404))\r\n        ,\"url\",\"/d/eb3949b9-da3a-4b9e-8573-beb5507617a9/aio-service-broker-clusterperf\",\"\",\"\")\r\n        ,\"_\",\"Backpressure\",\"\",\"\") or\r\n    label_replace(label_replace(\r\n        (1 - min(\r\n            1 * sgn(\r\n                sum(rate(aio_broker_qos0_messages_dropped{cluster=\"$cluster\", instance=~\"$namespace\", category!=\"broker_selftest\"}[2m])) / \r\n                sum(quantile_over_time(.95, rate(aio_broker_publishes_received{cluster=\"$cluster\", instance=~\"$namespace\"}[2m])[30m:]))\r\n            <= 0.05) or\r\n            0 * sgn(\r\n                sum(rate(aio_broker_qos0_messages_dropped{cluster=\"$cluster\", instance=~\"$namespace\", category!=\"broker_selftest\"}[2m])) / \r\n                sum(quantile_over_time(.95, rate(aio_broker_publishes_received{cluster=\"$cluster\", instance=~\"$namespace\"}[2m])[30m:]))\r\n            > 0.05)) or vector(404))\r\n        ,\"url\",\"/d/eb3949b9-da3a-4b9e-8573-beb5507617a9/aio-service-broker-clusterperf\",\"\",\"\")\r\n        ,\"_\",\"Dropped QoS0 Msgs\",\"\",\"\") or\r\n    vector(0) > 0 # Tail; not shown\r\n#),\"_\",\"broker Overall Health\",\"\",\"\")",
+          "hide": false,
+          "legendFormat": "{{_}}",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "title": "Azure Edge Service Health",
+      "type": "state-timeline"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 9
+      },
+      "id": 53,
+      "panels": [],
+      "title": "AIO",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "default": false,
+        "type": "prometheus",
+        "uid": "$datasource_uid"
+      },
+      "description": "Checks the connectors, dataflows, and brokers, and returns red if errors are found, 404s if no messages, and green if there are messages and no errors.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "fillOpacity": 70,
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineWidth": 0,
+            "spanNulls": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "purple",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              },
+              {
+                "color": "#505050",
+                "value": 404
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 10
+      },
+      "id": 43,
+      "options": {
+        "alignValue": "left",
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "mergeValues": true,
+        "rowHeight": 0.9,
+        "showValue": "auto",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.2.2+security-01",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource_uid"
+          },
+          "editorMode": "code",
+          "expr": "label_replace(min(\r\n    0 * sgn(count (0 <\r\n        rate(aio_opc_mqtt_message_publishing_duration_count{\r\n            cluster=\"$cluster\",aio_opc_mqtt_publish_result!~\"(success|nomatchingsubscribers)\"\r\n        }[5m:1m])\r\n    )) or\r\n    0 * sgn(count (0 <\r\n        rate(aio_opc_session_connect_duration_count{\r\n            cluster=\"$cluster\",aio_opc_module_type=\"opcua-connector\",aio_opc_connect_result!=\"success\"\r\n        }[5m:1m])\r\n    )) or\r\n    sgn(0 < count( # Healthy activity\r\n        rate(aio_opc_mqtt_message_publishing_duration_count{\r\n            cluster=\"$cluster\",aio_opc_mqtt_publish_result=~\"(success|nomatchingsubscribers)\"\r\n        }[5m:1m]))\r\n    ) or\r\n    vector(0)>0 or vector(404)\r\n),\"_\",\"Connectors\",\"\",\"\")\r\n\r\n",
+          "instant": false,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource_uid"
+          },
+          "editorMode": "code",
+          "expr": "label_replace(min(\r\n    0 * (count(0 < rate(aio_dataflow_errors{cluster='$cluster'}[5m:1m]))) or # Errors\r\n    1 * sgn(count(0 < rate(aio_dataflow_messages_sent{cluster='$cluster'}[5m:1m]))) or # Activity\r\n    vector(0) > 0 or vector(404)\r\n),\"_\",\"Dataflows\",\"\",\"\")",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource_uid"
+          },
+          "editorMode": "code",
+          "expr": "label_replace(min(\r\n  # NEW Broker\r\n  label_replace(min(\r\n    0 * sgn(sum(rate(aio_broker_authentication_failures{cluster=\"$cluster\", instance=~\"$namespace\"}[2m])) > 0) or\r\n    1 * sgn(sum(rate(aio_broker_authentication_failures{cluster=\"$cluster\", instance=~\"$namespace\"}[2m])) ) or\r\n    vector(0)>0)\r\n    ,\"_\",\"Authentication failures\",\"\",\"\") or\r\n  label_replace(min(\r\n    0 * sgn(sum(rate(aio_broker_qos0_messages_dropped{pod_type=\"BE\",cluster=\"$cluster\", instance=~\"$namespace\"}[2m])) > 0) or\r\n    1 * sgn(sum(rate(aio_broker_qos0_messages_dropped{pod_type=\"BE\",cluster=\"$cluster\", instance=~\"$namespace\"}[2m])) ) or\r\n    vector(0)>0)\r\n    ,\"_\",\"Dropped QoS0 Msgs\",\"\",\"\") or\r\n  label_replace(\r\n    0 * max(kube_pod_status_phase{cluster=\"$cluster\", namespace=~\"$namespace\", pod=~\"aio-broker-upgrade-status-job.*\", phase=~\"failed\"} == 1) or\r\n    1 * max(kube_job_status_succeeded{cluster=\"$cluster\", namespace=~\"$namespace\", job_name=~\"aio-broker-upgrade-status-job.*\"} == 1) or vector(404)\r\n    ,\"_\",\"Upgrade failures\",\"\",\"\") or  \r\n  vector(404) # Tail; not shown\r\n),\"_\",\"Broker\",\"\",\"\")",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "C"
+        }
+      ],
+      "title": "AIO Service Health",
+      "type": "state-timeline"
+    },
+    {
+      "datasource": {
+        "default": false,
+        "type": "prometheus",
+        "uid": "$datasource_uid"
+      },
+      "description": "Akri health is based on pod readiness percentage, Broker health is based on replication correctness and if there are lost messages.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "fillOpacity": 70,
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineWidth": 0,
+            "spanNulls": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#505050",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              },
+              {
+                "color": "#505050",
+                "value": 404
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 10
+      },
+      "id": 55,
+      "options": {
+        "alignValue": "left",
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "mergeValues": true,
+        "rowHeight": 0.9,
+        "showValue": "auto",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource_uid"
+          },
+          "editorMode": "code",
+          "expr": "label_replace(min(\r\navg(label_join( # Workload ready percents (for deployment, daemonset, and statefulset)\r\n    label_replace(label_join(\r\n       kube_deployment_status_replicas_ready{cluster=\"$cluster\",namespace=~\".*\",deployment=~\"^aio-akri-agent.*\"} or\r\n       kube_daemonset_status_number_ready{cluster=\"$cluster\",namespace=~\".*\",daemonset=~\"^aio-akri-agent.*\"} or\r\n       kube_statefulset_status_replicas_ready{cluster=\"$cluster\",namespace=~\".*\",statefulset=~\"^aio-akri-agent.*\"}\r\n       ,\"workloadName\", \"\", \"deployment\", \"daemonset\", \"statefulset\")\r\n       ,\"workloadType\", \"$1\", \"__name__\", \"kube_(.*)_status_.*\")\r\n /\r\n  label_replace(label_join(\r\n        kube_daemonset_status_desired_number_scheduled{cluster=\"$cluster\",namespace=~\".*\",daemonset=~\"^aio-akri-agent.*\"} or\r\n        kube_deployment_spec_replicas{cluster=\"$cluster\",namespace=~\".*\",deployment=~\"^aio-akri-agent.*\"} or\r\n        kube_statefulset_status_replicas{cluster=\"$cluster\",namespace=~\".*\",statefulset=~\"^aio-akri-agent.*\"}\r\n        ,\"workloadName\", \"\", \"deployment\", \"daemonset\", \"statefulset\")\r\n        ,\"workloadType\", \"$1\", \"__name__\", \"kube_(.*)_(status|spec)_.*\")\r\n  ,\"workload\", \":\", \"workloadType\", \"workloadName\")\r\n) by (workload) >=0 \r\n) or vector(-1),\"_\",\"Akri Health\",\"\",\"\")",
+          "instant": false,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource_uid"
+          },
+          "editorMode": "code",
+          "expr": "label_replace(min(\r\n    label_replace(label_replace((\r\n        min(aio_broker_publish_route_replication_correctness{cluster=\"$cluster\"}) or vector(404))\r\n        ,\"url\",\"/d/THdxxxh4z/e4k-publish\",\"\",\"\")\r\n        ,\"_\",\"Publish health\",\"\",\"\") or \r\n    label_replace(label_replace((\r\n        min(aio_broker_subscribe_route_replication_correctness{cluster=\"$cluster\"}) or vector(404))\r\n        ,\"url\",\"/d/d0318b5a-4afa-47e3-975f-6b1d2d783849/e4k-subscribe\",\"\",\"\")\r\n        ,\"_\",\"Subscribe health\",\"\",\"\") or \r\n    label_replace(label_replace((\r\n        min(aio_broker_unsubscribe_route_replication_correctness{cluster=\"$cluster\"}) or vector(404))\r\n        ,\"url\",\"/d/d2a068a7-e4f0-40cc-bba9-29a263a38c58/aio-service-broker-unsubscribe\",\"\",\"\")\r\n        ,\"_\",\"Unsubscribe health\",\"\",\"\") or \r\n    label_replace(label_replace((\r\n        min(\r\n            1 - min(\r\n                0 * sgn(\r\n                    sum(aio_broker_payload_check_total_messages_lost{cluster=\"$cluster\"})\r\n                <= 0) or\r\n                1 * sgn(\r\n                    sum(aio_broker_payload_check_total_messages_lost{cluster=\"$cluster\"})\r\n                > 0)) or vector(0)>0\r\n        ) or vector(404))\r\n        ,\"url\",\"/d/c84357d6-e4ef-4459-8348-6049269ace5c/aio-service-broker-payload-check\",\"\",\"\")\r\n        ,\"_\",\"End-to-end health\",\"\",\"\") or         \r\n    vector(0) > 0 # Tail; not shown\r\n),\"_\",\"Broker Health\",\"\",\"\")",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "title": "AIO Scenario Health",
+      "type": "state-timeline"
+    },
+    {
+      "datasource": {
+        "default": false,
+        "type": "prometheus",
+        "uid": "$datasource_uid"
+      },
+    "description": "The average percentage of messages delivered over the given period of time",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "links": [],
+          "mappings": [],
+          "max": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "#EAB839",
+                "value": 0.8
+              },
+              {
+                "color": "blue",
+                "value": 0.98
+              }
+            ]
+          },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 18
+      },
+      "id": 45,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "fields": "/^Value$/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.2+security-01",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource_uid"
+          },
+          "editorMode": "code",
+          "expr": "1 - min(\r\n    0 * sgn(\r\n        sum(aio_broker_message_delivery_check_total_messages_lost{cluster=\"$cluster\", instance=~\"$namespace\"})\r\n    <= 0) or\r\n    1 * sgn(\r\n        sum(aio_broker_message_delivery_check_total_messages_lost{cluster=\"$cluster\", instance=~\"$namespace\"})\r\n    > 0)) or vector(0)",
+          "format": "table",
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Broker overall messages delivered",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": false,
+        "type": "prometheus",
+        "uid": "$datasource_uid"
+      },
+      "description": "Subscribe route's self test client is replicated correctly",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+        "links": [],
+          "mappings": [],
+          "max": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "#EAB839",
+                "value": 0.8
+              },
+              {
+                "color": "blue",
+                "value": 0.98
+              }
+            ]
+          },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 18
+      },
+      "id": 49,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "fields": "/^Value$/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.2+security-01",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource_uid"
+          },
+          "editorMode": "code",
+          "expr": "aio_broker_subscribe_route_replication_correctness{cluster=\"$cluster\", instance=~\"$namespace\"}",
+          "format": "table",
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Broker subscribe health [%]",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": false,
+        "type": "prometheus",
+        "uid": "$datasource_uid"
+      },
+      "description": "Number of sessions connected to the broker.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+      "y": 18
+      },
+      "id": 44,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource_uid"
+          },
+          "editorMode": "code",
+          "expr": "sum by(_)(\r\n    label_replace(\r\n        aio_broker_connected_sessions{cluster='$cluster'}\r\n    ,'_','sessions','','')\r\n)\r\n",
+          "instant": false,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "AIO Broker Connected Sessions",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "default": false,
+        "type": "prometheus",
+        "uid": "$datasource_uid"
+      },
+      "description": "Unsubscribe route's self test client is replicated correctly",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+        "links": [],
+          "mappings": [],
+          "max": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "#EAB839",
+                "value": 0.8
+              },
+              {
+                "color": "blue",
+                "value": 0.98
+              }
+            ]
+          },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+      "y": 22
+      },
+      "id": 50,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "fields": "/^Value$/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.2+security-01",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource_uid"
+          },
+          "editorMode": "code",
+          "expr": "aio_broker_unsubscribe_route_replication_correctness{cluster=\"$cluster\", instance=~\"$namespace\"}",
+          "format": "table",
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Broker unsubscribe health [%]",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": false,
+        "type": "prometheus",
+        "uid": "$datasource_uid"
+      },
+      "description": "Publish route's self test client is replicated correctly",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+        "links": [],
+          "mappings": [],
+          "max": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "#EAB839",
+                "value": 0.8
+              },
+              {
+                "color": "blue",
+                "value": 0.98
+              }
+            ]
+          },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+      "y": 22
+      },
+      "id": 48,
+      "options": {
+        "colorMode": "background",
+      "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "fields": "/^Value$/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.2+security-01",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource_uid"
+          },
+          "editorMode": "code",
+          "expr": "aio_broker_publish_route_replication_correctness{cluster=\"$cluster\", instance=~\"$namespace\"}",
+          "format": "table",
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Broker publish health [%]",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": false,
+        "type": "prometheus",
+        "uid": "$datasource_uid"
+      },
+      "description": "Visualization of the success rate of messages delivered, grouped by topic.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "axisSoftMax": 101,
+            "axisSoftMin": 0,
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": ".Overall"
+            },
+            "properties": [
+              {
+                "id": "custom.lineWidth",
+                "value": 4
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+      "y": 26
+      },
+      "id": 51,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource_uid"
+          },
+          "editorMode": "code",
+          "expr": "label_replace(\r\n    (\r\n        sum(aio_broker_publish_route_replication_correctness{cluster=\"$cluster\"}) +\r\n        sum(aio_broker_subscribe_route_replication_correctness{cluster=\"$cluster\"}) +\r\n        sum(aio_broker_unsubscribe_route_replication_correctness{cluster=\"$cluster\"}) +\r\n        sum(\r\n            (1 - min(\r\n            0 * sgn(\r\n                sum(aio_broker_payload_check_total_messages_lost{cluster=\"$cluster\"})\r\n            <= 0) or\r\n            1 * sgn(\r\n                sum(aio_broker_payload_check_total_messages_lost{cluster=\"$cluster\"})\r\n            > 0)) or vector(0))\r\n            ) +\r\n    0) / (\r\n        count(aio_broker_publish_route_replication_correctness{cluster=\"$cluster\"}) +\r\n        count(aio_broker_subscribe_route_replication_correctness{cluster=\"$cluster\"}) +\r\n        count(aio_broker_unsubscribe_route_replication_correctness{cluster=\"$cluster\"}) +\r\n        count(\r\n            (1 - min(\r\n            0 * sgn(\r\n                sum(aio_broker_payload_check_total_messages_lost{cluster=\"$cluster\"})\r\n            <= 0) or\r\n            1 * sgn(\r\n                sum(aio_broker_payload_check_total_messages_lost{cluster=\"$cluster\"})\r\n            > 0)) or vector(0))\r\n            ) +\r\n    0)\r\n    ,\"_\",\".Overall\",\"\",\"\") * 100 or\r\nlabel_replace(\r\n    sum(aio_broker_publish_route_replication_correctness{cluster=\"$cluster\"}) / \r\n    count(aio_broker_publish_route_replication_correctness{cluster=\"$cluster\"})\r\n    ,\"_\",\"Publish\",\"\",\"\") * 100 or\r\nlabel_replace(\r\n    sum(aio_broker_subscribe_route_replication_correctness{cluster=\"$cluster\"}) / \r\n    count(aio_broker_subscribe_route_replication_correctness{cluster=\"$cluster\"})\r\n    ,\"_\",\"Subscribe\",\"\",\"\") * 100 or\r\nlabel_replace(\r\n    sum(aio_broker_unsubscribe_route_replication_correctness{cluster=\"$cluster\"}) / \r\n    count(aio_broker_unsubscribe_route_replication_correctness{cluster=\"$cluster\"})\r\n    ,\"_\",\"Unsubscribe\",\"\",\"\") * 100 or    \r\nlabel_replace(\r\n    sum(\r\n        (1 - min(\r\n            0 * sgn(\r\n                sum(aio_broker_payload_check_total_messages_lost{cluster=\"$cluster\"})\r\n            <= 0) or\r\n            1 * sgn(\r\n                sum(aio_broker_payload_check_total_messages_lost{cluster=\"$cluster\"})\r\n            > 0)) or vector(0))\r\n    ) / \r\n    count(\r\n        (1 - min(\r\n            0 * sgn(\r\n                sum(aio_broker_payload_check_total_messages_lost{cluster=\"$cluster\"})\r\n            <= 0) or\r\n            1 * sgn(\r\n                sum(aio_broker_payload_check_total_messages_lost{cluster=\"$cluster\"})\r\n            > 0)) or vector(0))    \r\n    )\r\n    ,\"_\",\"End-to-end\",\"\",\"\") * 100 or\r\n#label_replace(vector(1),\"_\",\"TODO: Success Rate\",\"\",\"\") or\r\nvector(0) > 0",
+          "hide": false,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Broker messages delivered success rate",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "default": false,
+        "type": "prometheus",
+        "uid": "$datasource_uid"
+      },
+      "description": "Broker inbound messages per second grouped by category",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "dark-orange",
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Inbound messages / s"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "blue",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "__systemRef": "hideSeriesFrom",
+            "matcher": {
+              "id": "byNames",
+              "options": {
+                "mode": "exclude",
+                "names": [
+                  "broker_selftest"
+                ],
+                "prefix": "All except:",
+                "readOnly": true
+              }
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": true
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+      "y": 26
+      },
+      "id": 36,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "9.1.7",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource_uid"
+          },
+          "editorMode": "code",
+          "exemplar": true,
+          "expr": "sum by (category) (rate(aio_broker_publishes_received{cluster=\"$cluster\", instance=~\"$namespace\"}[$__rate_interval]))",
+          "interval": "",
+          "legendFormat": "{{category}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Broker Inbound messages / s",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "default": false,
+        "type": "prometheus",
+        "uid": "$datasource_uid"
+      },
+      "description": "Monitors the amount of dataflow messages being sent, bucketed based on endpoint type and dataflowID.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+      "y": 34
+      },
+      "id": 41,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource_uid"
+          },
+          "editorMode": "code",
+          "expr": "sum by(_)(\r\n    label_replace(label_join(\r\n        increase(aio_dataflow_messages_sent{cluster='$cluster'}[5m:1m]),\r\n        '_',',','endpointtype','dataflowid'),'_','sent ($1) $2','_','^(.*),(.*)$')\r\n)",
+          "instant": false,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Dataflows Messages Sent by EndPointType and DataflowId [$cluster]",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "default": false,
+        "type": "prometheus",
+        "uid": "$datasource_uid"
+      },
+      "description": "Broker outbound messages per second grouped by category",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "blue",
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "min": 0,
+          "noValue": "null",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+      "y": 34
+      },
+      "id": 39,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "9.1.7",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource_uid"
+          },
+          "editorMode": "code",
+          "exemplar": true,
+          "expr": "sum by (category) (rate(aio_broker_publishes_sent{cluster=\"$cluster\", instance=~\"$namespace\"}[$__rate_interval]))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "{{category}}",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "title": "Broker Outbound messages / s",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+      "y": 42
+    },
+    "id": 52,
+    "panels": [],
+    "title": "mqtt",
+    "type": "row"
+  },
+  {
+    "datasource": {
+      "default": false,
+      "type": "prometheus",
+      "uid": "$datasource_uid"
+    },
+    "description": "Checks for breaches of SLO. It will be red if auth failures > 20, auth denials > 20, rejected backpressure packets < 0.05, dropped QoS0 packets < 0.05.",
+    "fieldConfig": {
+      "defaults": {
+        "color": {
+          "mode": "thresholds"
+        },
+        "custom": {
+          "fillOpacity": 82,
+          "hideFrom": {
+            "legend": false,
+            "tooltip": false,
+            "viz": false
+          },
+          "insertNulls": false,
+          "lineWidth": 0,
+          "spanNulls": false
+        },
+        "links": [],
+        "mappings": [],
+        "thresholds": {
+          "mode": "absolute",
+          "steps": [
+            {
+              "color": "#505050",
+              "value": null
+            },
+            {
+              "color": "red",
+              "value": 0
+            },
+            {
+              "color": "yellow",
+              "value": 0.5
+            },
+            {
+              "color": "green",
+              "value": 1
+            },
+            {
+              "color": "#505050",
+              "value": 404
+            }
+          ]
+        }
+      },
+      "overrides": [
+        {
+          "matcher": {
+            "id": "byName",
+            "options": "MessageQueue SLO"
+          },
+          "properties": [
+            {
+              "id": "links",
+              "value": [
+                {
+                  "targetBlank": true,
+                  "title": "Click for details on ${__field.labels._}",
+                  "url": "/d/e2e98c97-7655-44d1-b8f3-5008b7f6ffbb/aio-health-service-mq?${__all_variables}&${__url_time_range}"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "matcher": {
+            "id": "byName",
+            "options": "DataProcessor SLO"
+          },
+          "properties": [
+            {
+              "id": "links",
+              "value": [
+                {
+                  "targetBlank": true,
+                  "title": "Click for details on ${__field.labels._}",
+                  "url": "/d/e7f4802e-d73b-4f06-a84c-715cdc42fb36/aio-health-service-dp?${__all_variables}&${__url_time_range}"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "matcher": {
+            "id": "byName",
+            "options": "OPCUA SLO"
+          },
+          "properties": [
+            {
+              "id": "links",
+              "value": [
+                {
+                  "targetBlank": true,
+                  "title": "Click for details on ${__field.labels._}",
+                  "url": "/d/ba43ff7a-e741-4965-b430-c9d4bf1757a6/aio-health-service-opcua?${__all_variables}&${__url_time_range}"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "gridPos": {
+      "h": 4,
+      "w": 24,
+      "x": 0,
+      "y": 43
+    },
+    "id": 33,
+    "maxPerRow": 12,
+    "options": {
+      "alignValue": "left",
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom",
+        "showLegend": false
+      },
+      "mergeValues": true,
+      "rowHeight": 0.72,
+      "showValue": "never",
+      "tooltip": {
+        "mode": "single",
+        "sort": "none"
+      }
+    },
+    "repeat": "cluster",
+    "repeatDirection": "h",
+    "targets": [
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "$datasource_uid"
+        },
+        "editorMode": "code",
+        "expr": "label_replace(min(\r\n    label_replace(label_replace(\r\n        (1 - min(\r\n            1 * sgn(\r\n                sum(\r\n                    rate(aio_broker_authentication_failures{cluster=\"$cluster\", instance=~\"$namespace\", category!=\"broker_selftest\"}[2m])\r\n                    )\r\n            <= 20) or\r\n            0 * sgn(\r\n                sum(\r\n                    rate(aio_broker_authentication_failures{cluster=\"$cluster\", instance=~\"$namespace\", category!=\"broker_selftest\"}[2m])\r\n                    )\r\n            > 20)) or vector(404))\r\n        ,\"url\",\"/d/f5a5c523-2cb6-42d8-b23f-06b0227fe40b/e4k-connect\",\"\",\"\")\r\n        ,\"_\",\"Authentication failures\",\"\",\"\") or\r\n    label_replace(label_replace(\r\n        (1 - min(\r\n            1 * sgn(\r\n                sum(\r\n                    rate(aio_broker_authorization_deny{cluster=\"$cluster\", instance=~\"$namespace\", category!=\"broker_selftest\"}[2m])\r\n                    )\r\n            <= 20) or\r\n            0 * sgn(\r\n                sum(\r\n                    rate(aio_broker_authorization_deny{cluster=\"$cluster\", instance=~\"$namespace\", category!=\"broker_selftest\"}[2m])\r\n                    )\r\n            > 20)) or vector(404))\r\n        ,\"url\",\"/d/f5a5c523-2cb6-42d8-b23f-06b0227fe40b/e4k-connect\",\"\",\"\")\r\n        ,\"_\",\"Authorization failures\",\"\",\"\") or        \r\n    label_replace(label_replace(\r\n        (1 - min(\r\n            1 * sgn(\r\n                sum(rate(aio_broker_backpressure_packets_rejected{pod_type=\"BE\", cluster=\"$cluster\", instance=~\"$namespace\", category!=\"broker_selftest\"}[2m])) / \r\n                sum(quantile_over_time(.95, rate(aio_broker_publishes_received{pod_type=\"FE\", cluster=\"$cluster\", instance=~\"$namespace\"}[2m])[30m:]))\r\n            <= 0.05) or\r\n            0 * sgn(\r\n                sum(rate(aio_broker_backpressure_packets_rejected{pod_type=\"BE\", cluster=\"$cluster\", instance=~\"$namespace\", category!=\"broker_selftest\"}[2m])) / \r\n                sum(quantile_over_time(.95, rate(aio_broker_publishes_received{pod_type=\"FE\", cluster=\"$cluster\", instance=~\"$namespace\"}[2m])[30m:]))\r\n            <= 0.05)) or vector(404))\r\n        ,\"url\",\"/d/E19etH24z/e4k-cluster-perf\",\"\",\"\")\r\n        ,\"_\",\"Backpressure\",\"\",\"\") or\r\n    label_replace(label_replace(\r\n        (1 - min(\r\n            1 * sgn(\r\n                sum(rate(aio_broker_qos0_messages_dropped{pod_type=\"BE\", cluster=\"$cluster\", instance=~\"$namespace\", category!=\"broker_selftest\"}[2m])) / \r\n                sum(quantile_over_time(.95, rate(aio_broker_publishes_received{pod_type=\"FE\", cluster=\"$cluster\", instance=~\"$namespace\"}[2m])[30m:]))\r\n            <= 0.05) or\r\n            0 * sgn(\r\n                sum(rate(aio_broker_qos0_messages_dropped{pod_type=\"BE\", cluster=\"$cluster\", instance=~\"$namespace\", category!=\"broker_selftest\"}[2m])) / \r\n                sum(quantile_over_time(.95, rate(aio_broker_publishes_received{pod_type=\"FE\", cluster=\"$cluster\", instance=~\"$namespace\"}[2m])[30m:]))\r\n            > 0.05)) or vector(404))\r\n        ,\"url\",\"/d/eb3949b9-da3a-4b9e-8573-beb5507617a9/aio-service-broker-clusterperf\",\"\",\"\")\r\n        ,\"_\",\"Dropped QoS0 Msgs\",\"\",\"\") or\r\n    vector(0) > 0 # Tail; not shown\r\n),\"_\",\"Mqtt Broker SLO\",\"\",\"\")",
+        "hide": false,
+        "legendFormat": "__auto",
+        "range": true,
+        "refId": "MQ"
+      }
+    ],
+    "title": "Mqtt Broker SLO",
+    "type": "state-timeline"
+  },
+  {
+    "collapsed": false,
+    "gridPos": {
+      "h": 1,
+      "w": 24,
+      "x": 0,
+      "y": 47
+      },
+      "id": 42,
+      "panels": [],
+      "title": "Kubernetes",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource_uid"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "fillOpacity": 70,
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineWidth": 0,
+            "spanNulls": false
+          },
+          "links": [
+            {
+              "targetBlank": true,
+              "title": "Click for more details (health-infra-cluster)",
+              "url": "/d/e159191f-81f2-4443-af47-fe7cd4da23f8/health-infra-cluster?${__all_variables}&${__url_time_range}"
+            }
+          ],
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#808080",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "yellow",
+                "value": 0.5
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 24,
+        "x": 0,
+      "y": 48
+      },
+      "id": 14,
+      "links": [
+        {
+          "targetBlank": true,
+          "title": "Click for more details (health-infra-cluster)",
+          "url": "/d/e159191f-81f2-4443-af47-fe7cd4da23f8/health-infra-cluster?${__all_variables}&${__url_time_range}"
+        },
+        {
+          "targetBlank": true,
+          "title": "Open K8s / Compute Resources / Cluster",
+          "url": "/d/efa86fd1d0c121a26444b636a3f56738/kubernetes-compute-resources-cluster?${cluster:queryparam}&${__url_time_range}"
+        }
+      ],
+      "maxPerRow": 12,
+      "options": {
+        "alignValue": "left",
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "mergeValues": false,
+        "rowHeight": 0.9,
+        "showValue": "never",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "repeat": "cluster",
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource_uid"
+          },
+          "editorMode": "code",
+          "expr": "# Node Health Status\r\n####################\r\n# RED (0) if no nodes ready without pressure\r\n# YELLOW (0.5) if at least one node not ready or with pressure\r\n# Green (1.0) otherwise\r\nlabel_replace(\r\n  sum(\r\n    max by (node) (kube_node_status_condition{cluster=\"$cluster\",condition=\"ready\",status=\"false\"} > 0) * 0 or\r\n    max by (node) (kube_node_status_condition{cluster=\"$cluster\",condition!=\"ready\",status=\"true\"} > 0) * 0.5 or\r\n    max by (node) (kube_node_status_condition{cluster=\"$cluster\",condition=\"ready\",status=\"true\"} > 0) * 1\r\n  ) / sum(kube_node_info{cluster=\"$cluster\"})\r\n  ,\"_\",\"Node Readiness\",\"\",\"\")\r\n#or label_replace(sum(kube_node_info),\"_\",\"Node Total Count\",\"\",\"\")\r\n#or label_replace(sum(kube_node_status_condition{condition=\"Ready\",status=\"true\"}),\"_\",\"Node Ready Count\",\"\",\"\")\r\n#or label_replace( sum(max by (node) (kube_node_status_condition{condition!=\"Ready\",status=\"true\"})),\"_\", \"Node Pressure Count\",\"\",\"\")\r\n#or label_replace(max by (node) (kube_node_status_condition{condition=\"Ready\",status=\"false\"}),\"_\",\"Node Ready Count\",\"\",\"\")\r\n#or label_replace(max by (node) (kube_node_status_condition{condition!=\"Ready\",status=\"true\"}),\"_\", \"Node Pressure Count\",\"\",\"\")\r\n#or label_replace(sum(sgn(\r\n#   max by (node) (kube_node_status_condition{condition=\"Ready\",status=\"false\"})\r\n# + max by (node) (kube_node_status_condition{condition!=\"Ready\",status=\"true\"})\r\n#  )),\"_\",\"Unhealthy Node Count\",\"\",\"\")",
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource_uid"
+          },
+          "editorMode": "code",
+          "expr": "#############################\r\n# Node CPU Health\r\nlabel_replace(min(\r\n# BEGIN inner query\r\nmin by(_)(label_replace(vector(0)>0\r\n    or 0.0 * sgn(\r\n        100 - ((avg by (instance) (rate(node_cpu_seconds_total{cluster=\"$cluster\",mode=\"idle\"}[5m])) \r\n              + avg by (instance) (rate(node_cpu_seconds_total{cluster=\"$cluster\",mode=\"iowait\"}[5m]))\r\n        ) * 100) > $nodeThresholdRed)\r\n    or 0.5 * sgn(\r\n        100 - ((avg by (instance) (rate(node_cpu_seconds_total{cluster=\"$cluster\",mode=\"idle\"}[5m])) \r\n              + avg by (instance) (rate(node_cpu_seconds_total{cluster=\"$cluster\",mode=\"iowait\"}[5m]))\r\n        ) * 100) > $nodeThresholdYellow)\r\n    or 1.0 * sgn(sum by (instance)(node_cpu_seconds_total{cluster=\"$cluster\"} > 0))\r\n    or -1 * sgn(max by (instance) (label_replace(kube_node_info{cluster=\"$cluster\"},\"instance\",\"$1\",\"node\",\"(.*)\")))\r\n    ,\"_\",\"$1\",\"instance\",\"(.*)\"))\r\n# END inner query\r\n),\"_\",\"Node CPU\", \"\",\"\")",
+          "hide": false,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource_uid"
+          },
+          "editorMode": "code",
+          "expr": "#############################\r\n# Node Memory Health\r\nlabel_replace(min(\r\n# BEGIN inner query\r\nmin by(_)(label_replace(vector(0)>0\r\n    or 0.0 * sgn(\r\n        (100 * sum by (instance)(node_memory_MemTotal_bytes{cluster=\"$cluster\"} - (node_memory_MemFree_bytes{cluster=\"$cluster\"} + node_memory_Buffers_bytes{cluster=\"$cluster\"} + node_memory_Cached_bytes{cluster=\"$cluster\"})) / sum by(instance) (node_memory_MemTotal_bytes{cluster=\"$cluster\"})) > $nodeThresholdRed)\r\n    or 0.5 * sgn(\r\n        (100 * sum by (instance)(node_memory_MemTotal_bytes{cluster=\"$cluster\"} - (node_memory_MemFree_bytes{cluster=\"$cluster\"} + node_memory_Buffers_bytes{cluster=\"$cluster\"} + node_memory_Cached_bytes{cluster=\"$cluster\"})) / sum by(instance) (node_memory_MemTotal_bytes{cluster=\"$cluster\"})) > $nodeThresholdYellow)\r\n    or 1.0 * sgn(sum by (instance)(node_memory_MemTotal_bytes{cluster=\"$cluster\"} > 0))\r\n    or -1 * sgn(max by (instance) (label_replace(kube_node_info{cluster=\"$cluster\"},\"instance\",\"$1\",\"node\",\"(.*)\")))\r\n,\"_\",\"$1\",\"instance\",\"(.*)\"))\r\n# END inner query\r\n),\"_\",\"Node Memory\", \"\",\"\")",
+          "hide": false,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource_uid"
+          },
+          "editorMode": "code",
+          "expr": "#############################\r\n# Disk Usage Health\r\nlabel_replace(min(\r\n# BEGIN inner query\r\nmin by(node)(label_replace(vector(0)>0\r\n  or 0.0 * sgn(max by(instance) (100 - (100 * node_filesystem_avail_bytes{cluster=\"$cluster\"} \r\n            / node_filesystem_size_bytes{cluster=\"$cluster\"}) > 10) > $nodeThresholdRed)\r\n  or 0.5 * sgn(max by(instance) (100 - (100 * node_filesystem_avail_bytes{cluster=\"$cluster\"} \r\n            / node_filesystem_size_bytes{cluster=\"$cluster\"}) > 10) > $nodeThresholdYellow)\r\n  or 1.0 * sgn(max by(instance) (100 - (100 * node_filesystem_avail_bytes{cluster=\"$cluster\"} \r\n            / node_filesystem_size_bytes{cluster=\"$cluster\"})))\r\n,\"node\",\"$1\",\"instance\",\"(.*)\"))\r\nor max by (node) (kube_node_info{cluster=\"$cluster\"}) * -1 # Baseline by node\r\n# END inner query\r\n),\"_\",\"Node Disk\", \"\",\"\")",
+          "hide": false,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "D"
+        }
+      ],
+      "title": "Kubernetes Node Health",
+      "transparent": true,
+      "type": "state-timeline"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource_uid"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "fillOpacity": 70,
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineWidth": 0,
+            "spanNulls": false
+          },
+          "links": [
+            {
+              "targetBlank": true,
+              "title": "Click for more details (health-infra-workload)",
+              "url": "/d/E5cCeHj4z/health-infra-workload?${__all_variables}&${__url_time_range}"
+            }
+          ],
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#505050",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "yellow",
+                "value": 0.5
+              },
+              {
+                "color": "green",
+                "value": 1
+              },
+              {
+                "color": "#505050",
+                "value": 404
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 24,
+        "x": 0,
+        "y": 52
+      },
+      "id": 9,
+      "links": [
+        {
+          "targetBlank": true,
+          "title": "Click for more details (health-infra-workload)",
+          "url": "/d/E5cCeHj4z/health-infra-workload?${__all_variables}&${__url_time_range}"
+        },
+        {
+          "targetBlank": true,
+          "title": "Open K8s / Compute Resources / Namespace (Workloads)",
+          "url": "/d/a87fb0d919ec0ea5f6543124e16c6738/kubernetes-compute-resources-namespace-workloads?${cluster:queryparam}&${__url_time_range}"
+        }
+      ],
+      "maxPerRow": 12,
+      "options": {
+        "alignValue": "left",
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "mergeValues": false,
+        "rowHeight": 0.9,
+        "showValue": "never",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "repeat": "cluster",
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource_uid"
+          },
+          "editorMode": "code",
+          "expr": "## Workload Readiness health\r\n############################\r\nlabel_replace(min(\r\navg(label_join( # Workload ready percents (for deployment, daemonset, and statefulset)\r\n    label_replace(label_join(\r\n        kube_deployment_status_replicas_ready{cluster=\"$cluster\",namespace=~\"$namespace\"} or\r\n        kube_daemonset_status_number_ready{cluster=\"$cluster\",namespace=~\"$namespacem\"} or\r\n        kube_statefulset_status_replicas_ready{cluster=\"$cluster\",namespace=~\"$namespace\"}\r\n        ,\"workloadName\", \"\", \"deployment\", \"daemonset\", \"statefulset\")\r\n        ,\"workloadType\", \"$1\", \"__name__\", \"kube_(.*)_status_.*\")\r\n  / label_replace(label_join(\r\n        kube_daemonset_status_desired_number_scheduled{cluster=\"$cluster\",namespace=~\"$namespace\"} or\r\n        kube_deployment_spec_replicas{cluster=\"$cluster\",namespace=~\"$namespace\"} or\r\n        kube_statefulset_status_replicas{cluster=\"$cluster\",namespace=~\"$namespace\"}\r\n        ,\"workloadName\", \"\", \"deployment\", \"daemonset\", \"statefulset\")\r\n        ,\"workloadType\", \"$1\", \"__name__\", \"kube_(.*)_(status|spec)_.*\")\r\n  ,\"workload\", \":\", \"workloadType\", \"workloadName\")\r\n) by (workload) >=0 \r\n) or vector(404),\"_\",\"AIO Workload Readiness\",\"\",\"\")",
+          "hide": false,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource_uid"
+          },
+          "editorMode": "code",
+          "expr": "## Container Restart Health:\r\n############################\r\nlabel_replace(\r\n  sgn(sum_over_time(sum(rate(\r\n    kube_pod_container_status_restarts_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[10m:1m]\r\n    )*60)[1h:]) > 5) * 0.0 # RED: Cumulative restarts over X(5) time greater than Y(1h)\r\n  or (max(rate(\r\n    kube_pod_container_status_restarts_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[5m:1m]\r\n    )*60*5) > 0) * 0.5 # YELLOW: restarts detected but below Red threshold\r\n  or sgn(max(\r\n    kube_pod_container_status_restarts_total{cluster=\"$cluster\",namespace=~\"$namespace\"}\r\n    + 1 >= 0))\r\n  #or vector(1) # Healthy\r\n  ,\"_\",\"AIO Container Restarts\",\"\",\"\")\r\n## uncomment below to t-shoot this health metric\r\n# or label_replace(sum_over_time(sum(rate(kube_pod_container_status_restarts_total{cluster=\"$cluster\"}[10m:1m])*60)[1h:]),\"_\",\"Total-restarts-over-time\",\"\",\"\")\r\n# or label_replace((max(rate(kube_pod_container_status_restarts_total{cluster=\"$cluster\"}[5m:1m])*60*5) without (__name__,uid,instance,job) > 0),\"_\",\"restart\",\"\",\"\") # Base query for counting restarts\r\n",
+          "hide": false,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource_uid"
+          },
+          "editorMode": "code",
+          "expr": "## Container CPU top-level health\r\n################################\r\nlabel_replace(\r\nmin(sgn( # Check for throttling > N indicating container is exceeding its CPU limits\r\n      rate(container_cpu_cfs_throttled_periods_total{cluster=\"$cluster\",namespace=~\"$namespace\",container!=\"\"}[10m]) \r\n    / rate(container_cpu_cfs_periods_total{cluster=\"$cluster\",namespace=~\"$namespace\",container!=\"\"}[10m])\r\n    >= 0.60) # If throttle create is greater than this percentage, we'll multiply sgn by 0.5 to show as error (or warning depending on threshold coloring)\r\n    ) # by (namespace,container) # These are commented out for top-level\r\n    * 0.0\r\nor\r\nmin(sgn( # Check for throttling > N indicating container is exceeding its CPU limits\r\n      rate(container_cpu_cfs_throttled_periods_total{cluster=\"$cluster\",namespace=~\"$namespace\",container!=\"\"}[10m]) \r\n    / rate(container_cpu_cfs_periods_total{cluster=\"$cluster\",namespace=~\"$namespace\",container!=\"\"}[10m])\r\n    >= 0.40) # If throttle create is greater than this percentage, we'll multiply sgn by 0.5 to show as error (or warning depending on threshold coloring)\r\n    ) # by (namespace,container) # These are commented out for top-level\r\n    * 0.5\r\nor\r\nmin( # Check to see if container is missing CPU Limits configuration\r\n    sgn(min(kube_pod_container_resource_limits{cluster=\"$cluster\",namespace=~\"$namespace\",container!=\"\",resource=\"cpu\"}) by (namespace,container))\r\n    or # if resource limit missing, we or to below to show namespace/container using CPU without limit as a zero to indicate red\r\n    sgn(min(container_cpu_usage_seconds_total{cluster=\"$cluster\",namespace=~\"$namespace\",container!=\"\"}) by (namespace,container))\r\n    # * 0 # TEMPORARILY DISABLING RED FOR MISSING LIMITS\r\n    ) #by (namespace,container) # These are commented out for top-level\r\n,\"_\",\"AIO Container CPU\",\"\",\"\")",
+          "hide": false,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource_uid"
+          },
+          "editorMode": "code",
+          "expr": "## Container Memory Health:\r\n###########################\r\nlabel_replace(\r\nmin( # Look for high memory utilization\r\n    0.0 * sgn((\r\n        max(container_memory_working_set_bytes{cluster=\"$cluster\",namespace=~\"$namespace\",container!=\"\"}) by (namespace,container)\r\n      / min(kube_pod_container_resource_limits{cluster=\"$cluster\",namespace=~\"$namespace\",container!=\"\",resource=\"memory\"}) by (namespace, container)\r\n    ) >= .95) or # show health state of 0 if container memory utilization >= 95%\r\n    0.5 * sgn((\r\n        max(container_memory_working_set_bytes{cluster=\"$cluster\",namespace=~\"$namespace\",container!=\"\"}) by (namespace,container)\r\n      / min(kube_pod_container_resource_limits{cluster=\"$cluster\",namespace=~\"$namespace\",container!=\"\",resource=\"memory\"}) by (namespace, container)\r\n    ) >= .80) or # show health state of 0.5 if container memory utilization >= 80%\r\n    vector(0)>0\r\n) #by (container) \r\nor\r\nmin( # Look for missing limits which we will show as 0 if missing\r\n    sgn(min(kube_pod_container_resource_limits{cluster=\"$cluster\",namespace=~\"$namespace\",container!=\"\",resource=\"memory\"}) by (namespace,container))\r\n    or # if resource limit missing, we or to below to show namespace/container using CPU without limit as a zero to indicate red\r\n    sgn(min(container_memory_working_set_bytes{cluster=\"$cluster\",namespace=~\"$namespace\",container!=\"\"}) by (namespace,container))\r\n    # * 0 # TEMPORARILY DISABLING RED FOR MISSING LIMITS\r\n) #by (container) \r\n,\"_\",\"AIO Container Memory\",\"\",\"\")",
+          "hide": false,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "D"
+        }
+      ],
+      "title": "Kubernetes Workload Health",
+      "transparent": true,
+      "type": "state-timeline"
+    }
+  ],
+  "refresh": "",
+  "revision": 1,
+  "schemaVersion": 39,
+"tags": [
+  "health",
+  "shared"
+],
+  "templating": {
+    "list": [
+      {
+        "hide": 0,
+        "includeAll": false,
+        "multi": false,
+        "name": "datasource_uid",
+        "options": [],
+        "query": "prometheus",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "$datasource_uid"
+        },
+        "definition": "kube_node_status_condition",
+        "description": "AIO cluster(s) to view",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Cluster",
+        "multi": true,
+        "name": "cluster",
+        "options": [],
+        "query": {
+          "query": "kube_node_status_condition",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 2,
+        "regex": "/.*cluster=\"([^\"]*).*/",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "hide": 0,
+        "includeAll": false,
+        "multi": false,
+        "name": "namespace",
+        "options": [],
+        "query": "azure-iot-operations",
+        "queryValue": "",
+        "skipUrlSync": false,
+        "type": "custom"
+      },
+      {
+        "hide": 2,
+        "name": "aio_dp_self_test_pipeline",
+        "query": ".*self-test-pipeline.*",
+        "skipUrlSync": false,
+        "type": "constant"
+      },
+      {
+        "hide": 2,
+        "name": "bf_latency_threshold_ms",
+        "query": "500",
+        "skipUrlSync": false,
+        "type": "constant"
+      },
+      {
+        "hide": 2,
+        "name": "aio_opc_latency_threshold_ms",
+        "query": "5000",
+        "skipUrlSync": false,
+        "type": "constant"
+      },
+      {
+        "description": "Threshold in percent (1-100) for determining red/error health state for node-level resources",
+        "hide": 2,
+        "name": "nodeThresholdRed",
+        "query": "90",
+        "skipUrlSync": false,
+        "type": "constant"
+      },
+      {
+        "description": "Threshold in percent (1-100) for determining yellow/warning health state for node-level resources",
+        "hide": 2,
+        "name": "nodeThresholdYellow",
+        "query": "80",
+        "skipUrlSync": false,
+        "type": "constant"
+      },
+      {
+        "description": "Success Rate goal for SLOs; below this value is considered missed SLO",
+        "hide": 2,
+        "name": "opc_slo_sr_goal",
+        "query": "99.999",
+        "skipUrlSync": false,
+        "type": "constant"
+      },
+      {
+        "description": "Latency goal for SLOs (in milliseconds); above this value is considered missed SLO",
+        "hide": 2,
+        "name": "opc_slo_publish_latency_ms_goal",
+        "query": "5000",
+        "skipUrlSync": false,
+        "type": "constant"
+      },
+      {
+        "description": "Latency goal for SLOs (in milliseconds); above this value is considered missed SLO",
+        "hide": 2,
+        "name": "opc_slo_connect_latency_ms_goal",
+        "query": "3000",
+        "skipUrlSync": false,
+        "type": "constant"
+      },
+      {
+        "description": "Latency threshold for health signal",
+        "hide": 2,
+        "name": "orc_latency_threshold_ms",
+        "query": "60000",
+        "skipUrlSync": false,
+        "type": "constant"
+      },
+      {
+        "hide": 2,
+        "name": "aio_dp_error_threshold",
+        "query": "20",
+        "skipUrlSync": false,
+        "type": "constant"
+      },
+      {
+        "description": "",
+        "hide": 2,
+        "name": "aio_dp_nats_utilization_threshold",
+        "query": "0.90",
+        "skipUrlSync": false,
+        "type": "constant"
+      },
+      {
+        "hide": 2,
+        "name": "aio_dp_error_rate",
+        "query": "0.05",
+        "skipUrlSync": false,
+        "type": "constant"
+      },
+      {
+        "hide": 2,
+        "name": "aio_dp_latency_threshold_ms",
+        "query": "5000",
+        "skipUrlSync": false,
+        "type": "constant"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Service Health",
+  "uid": "c4c37068-3940-40ba-8c20-67b3ce4923e2",
+"version": 35,
+  "weekStart": ""
+}
