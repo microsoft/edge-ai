@@ -25,6 +25,9 @@ Azure DevOps build system for managing and validating the project's IaC.
   - [GitHub Integration Scripts](#github-integration-scripts)
     - [github/create-pr.sh](#githubcreate-prsh)
     - [github/access-tokens-url.sh](#githubaccess-tokens-urlsh)
+  - [Community Analysis Scripts](#community-analysis-scripts)
+    - [community/get-azure-devops-prs.ps1](#communityget-azure-devops-prsps1)
+    - [community/modules/AzDO](#communitymodulesazdo)
   - [Test Framework Scripts](#test-framework-scripts)
     - [Invoke-Pester.ps1](#invoke-pesterps1)
   - [Error Handling](#error-handling)
@@ -221,6 +224,44 @@ Gets the access tokens URL for a GitHub App installation.
 - **Returns**: URL for obtaining access tokens
 - **Build Integration**: Used in conjunction with create-pr.sh for GitHub integration
 - **When to Use**: Part of the GitHub synchronization process, generally used by CI/CD
+
+## Community Analysis Scripts
+
+### community/get-azure-devops-prs.ps1
+
+PowerShell script for analyzing Azure DevOps pull request data and generating comprehensive reports.
+
+- **Usage**: `./community/get-azure-devops-prs.ps1 [-Organization <string>] [-Project <string>] [-Repository <string>] [-ReportOutputPath <string>] [-UseExistingJsonData] [-JsonDataPath <string>]`
+- **Arguments**:
+  - `-Organization`: Azure DevOps organization name (default: "ai-at-the-edge-flagship-accelerator")
+  - `-Project`: Azure DevOps project name (default: "edge-ai")
+  - `-Repository`: Repository name to analyze (default: "edge-ai")
+  - `-ReportOutputPath`: Directory to save reports (default: "./docs")
+  - `-UseExistingJsonData`: Use existing JSON data instead of API call (switch)
+  - `-JsonDataPath`: Path to JSON file for import/export (default: "./pr-data.json")
+- **Returns**: Comprehensive markdown report with PR metrics and contribution analytics
+- **Build Integration**: Can be used in pipelines to create periodic project reports
+- **Dependencies**:
+  - PowerShell 7.0+
+  - Azure DevOps PAT
+- **When to Use**: For analyzing team performance, contribution patterns, and development metrics
+
+### community/modules/AzDO
+
+Directory containing PowerShell modules used by the PR analysis script.
+
+- **Key Module Files**:
+  - `AzDO.psd1`: Main module manifest
+  - `AzDO-Auth.psm1`: Authentication and security functions
+  - `AzDO-API.psm1`: Core API interaction
+  - `AzDO-DataCollection.psm1`: PR data collection
+  - `AzDO-DataProcessing.psm1`: Metrics generation
+  - `AzDO-Main.psm1`: Main workflow orchestration
+  - `AzDO-ReportGeneration.psm1`: Report formatting
+  - `AzDO-ReportTypes.psm1`: Report data structure definitions
+  - `AzDO-Types.psm1`: Data structure type definitions
+- **Build Integration**: Used by get-azure-devops-prs.ps1 as supporting libraries
+- **When to Use**: Reference for extending the PR analysis functionality with custom metrics or reports
 
 ## Test Framework Scripts
 
