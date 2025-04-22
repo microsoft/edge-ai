@@ -41,7 +41,7 @@ engineers can deploy the `100-edge` components for on-premises cluster set-up.
    Pipeline, TIG/TICK stacks, InfluxDB Data Historian, reference data backup from cloud to edge, etc.
 2. [(900-tools-utilities)](./900-tools-utilities/README.md) - Utility scripts, tools, and supporting resources for edge
    deployments
-3. [(samples/dataflows-acsa-egmqtt-bidirectional)](./samples/dataflows-acsa-egmqtt-bidirectional/README.md) - Sample
+3. [(starter-kit/dataflows-acsa-egmqtt-bidirectional)](./starter-kit/dataflows-acsa-egmqtt-bidirectional/README.md) - Sample
    that provides assets with Azure IoT Operations Dataflows and supported infrastructure creation
 4. [(azure-resource-providers)](./azure-resource-providers/README.md) - Scripts to register required Azure resource
    providers for AIO and Arc in your subscription
