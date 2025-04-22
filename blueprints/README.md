@@ -49,13 +49,37 @@ Each blueprint in this repository follows a consistent structure:
     az login # --tenant <tenant-id>
     ```
 
-2. Navigate to your chosen blueprint directory:
+2. **IMPORTANT**: Register required Azure resource providers before proceeding. These scripts need to be run once per subscription to ensure all necessary provider services are available:
+
+   **Using Bash:**
+
+   ```sh
+   # Navigate to the resource providers directory
+   cd ./src/azure-resource-providers
+
+   # Run the registration script
+   ./register-all-providers.sh
+   ```
+
+   **Using PowerShell:**
+
+   ```powershell
+   # Navigate to the resource providers directory
+   cd \src\azure-resource-providers
+
+   # Run the registration script (will prompt for confirmation)
+   .\Register-AllProviders.ps1
+   ```
+
+   This step is critical as Azure IoT Operations and Arc-enabled Kubernetes require several resource providers that might not be registered by default in your subscription.
+
+3. Navigate to your chosen blueprint directory:
 
    ```sh
    cd ./full-single-cluster
    ```
 
-3. Set up required environment variables:
+4. Set up required environment variables:
 
    - **ARM_SUBSCRIPTION_ID** -- The Azure Subscription ID target for this deployment (required to be set for the Terraform tasks below)
 
@@ -65,7 +89,7 @@ Each blueprint in this repository follows a consistent structure:
    export ARM_SUBSCRIPTION_ID="$current_subscription_id"
    ```
 
-4. Create a `terraform.tfvars` file with the following minimum configuration:
+5. Create a `terraform.tfvars` file with the following minimum configuration:
 
    ```hcl
    # Required, environment hosting resource: "dev", "prod", "test", etc...
@@ -80,7 +104,7 @@ Each blueprint in this repository follows a consistent structure:
 
    > **NOTE**: To have Terraform automatically use your variables, you can name your tfvars file `terraform.auto.tfvars`. Terraform will use variables from any `*.auto.tfvars` files located in the same deployment folder.
 
-5. Initialize and apply Terraform:
+6. Initialize and apply Terraform:
 
    ```sh
    # Pulls down providers and modules, initializes state and backend
@@ -90,7 +114,7 @@ Each blueprint in this repository follows a consistent structure:
    terraform apply -var-file=terraform.tfvars # Add '-auto-approve' to skip confirmation
    ```
 
-6. Wait for the deployments to complete with the message:
+7. Wait for the deployments to complete with the message:
 
    ```txt
    Apply complete! Resources: *** added, *** changed, *** destroyed.
