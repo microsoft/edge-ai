@@ -12,6 +12,7 @@
 		"ghcr.io/devcontainers/features/azure-cli:1": {
 			"extensions": "connectedk8s,k8s-extension,azure-iot-ops"
 		},
+		"ghcr.io/devcontainers/features/dotnet:2": {},
 		"ghcr.io/devcontainers/features/github-cli:1": {},
 		"ghcr.io/devcontainers-contrib/features/pipx-package:1": {},
 		"ghcr.io/devcontainers-contrib/features/pre-commit:2": {},
