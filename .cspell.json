@@ -73,6 +73,7 @@
 		"megalinter",
 		"mosquitto",
 		"NNPI",
+		"notebookutils",
 		"OID",
 		"opcplc",
 		"Outfeed",
