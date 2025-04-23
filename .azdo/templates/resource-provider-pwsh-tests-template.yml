@@ -53,7 +53,7 @@ parameters:
   # Working directory containing the scripts to test
   - name: workingDirectory
     type: string
-    default: $(System.DefaultWorkingDirectory)/src/000-subscription
+    default: $(System.DefaultWorkingDirectory)/src/azure-resource-providers
   # PowerShell test results output path
   - name: pwshTestResultsOutput
     type: string
@@ -75,7 +75,7 @@ jobs:
 
       # Run Pester tests for the resource provider scripts
       - bash: |
-          pwsh ./scripts/Invoke-Pester.ps1 -Path ./src/000-subscription -OutputFile $(testResultsOutput)
+          pwsh ./scripts/Invoke-Pester.ps1 -Path ./src/azure-resource-providers -OutputFile $(testResultsOutput)
         displayName: "Run pester"
         workingDirectory: $(System.DefaultWorkingDirectory)
 

@@ -237,7 +237,7 @@ stages:
           dependsOn: MatrixBuildFolderCheck
           pwshScriptCondition: eq(dependencies.MatrixBuildFolderCheck.outputs['matrixBuildFolderCheckTask.changesInRpEnablementPwsh'], 'true')
           azureServiceConnection: azdo-ai-for-edge-iac-for-edge
-          workingDirectory: $(System.DefaultWorkingDirectory)/src/000-subscription
+          workingDirectory: $(System.DefaultWorkingDirectory)/src/azure-resource-providers
           pwshTestResultsOutput: $(System.DefaultWorkingDirectory)/PWSH-TEST-RESULTS.xml
 
       # Use template for Terraform variable compliance checking

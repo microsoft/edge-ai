@@ -16,10 +16,10 @@ This workflow is designed to run Pester tests against PowerShell scripts that ma
 
 ## Parameters
 
-| Parameter             | Type   | Required | Default                   | Description                                                |
-|-----------------------|--------|----------|---------------------------|------------------------------------------------------------|
-| `working-directory`   | string | No       | `'src/000-subscription'`  | Directory containing the resource provider scripts to test |
-| `test-results-output` | string | No       | `'PWSH-TEST-RESULTS.xml'` | Path to output PowerShell test results in NUnit format     |
+| Parameter             | Type   | Required | Default                          | Description                                                |
+|-----------------------|--------|----------|----------------------------------|------------------------------------------------------------|
+| `working-directory`   | string | No       | `'src/azure-resource-providers'` | Directory containing the resource provider scripts to test |
+| `test-results-output` | string | No       | `'PWSH-TEST-RESULTS.xml'`        | Path to output PowerShell test results in NUnit format     |
 
 ## Outputs
 
@@ -90,7 +90,7 @@ pwsh-provider-tests:
   if: needs.changes.outputs.changesInRpEnablementPwsh == 'true'
   uses: ./.github/workflows/resource-provider-pwsh-tests.yml
   with:
-    working-directory: 'src/000-subscription'
+    working-directory: 'src/azure-resource-providers'
     test-results-output: 'PWSH-TEST-RESULTS.xml'
 ```
 
@@ -102,7 +102,7 @@ pwsh-provider-tests-main:
   name: PowerShell Provider Tests (Main)
   uses: ./.github/workflows/resource-provider-pwsh-tests.yml
   with:
-    working-directory: 'src/000-subscription'
+    working-directory: 'src/azure-resource-providers'
     test-results-output: 'main-pwsh-test-results.xml'
 ```
 

@@ -26,7 +26,7 @@
 #   if: needs.changes.outputs.changesInRpEnablementPwsh == 'true'
 #   uses: ./.github/workflows/resource-provider-pwsh-tests.yml
 #   with:
-#     working-directory: 'src/000-subscription'
+#     working-directory: 'src/azure-resource-providers'
 #     test-results-output: 'PWSH-TEST-RESULTS.xml'
 #
 # # Usage in main workflow with custom path:
@@ -49,7 +49,7 @@ on: # yamllint disable-line rule:truthy
         description: 'Directory containing the resource provider scripts'
         required: false
         type: string
-        default: 'src/000-subscription'
+        default: 'src/azure-resource-providers'
       test-results-output:
         description: 'Path to output PowerShell test results'
         required: false

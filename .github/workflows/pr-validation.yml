@@ -145,7 +145,7 @@ jobs:
     if: needs.matrix-changes.outputs.changesInRpEnablementPwsh == 'true'
     uses: ./.github/workflows/resource-provider-pwsh-tests.yml
     with:
-      working-directory: 'src/000-subscription'
+      working-directory: 'src/azure-resource-providers'
       test-results-output: 'PWSH-TEST-RESULTS.xml'
     secrets: inherit
 
