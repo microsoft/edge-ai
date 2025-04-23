@@ -102,13 +102,13 @@ TERRAFORM_FOLDERS="{}" # Initialize with an empty JSON object instead of "none"
 BICEP_HAS_CHANGES=false
 BICEP_FOLDERS="{}" # Initialize with an empty JSON object instead of "none"
 
-# Check if shell files in subscription setup folder have changed
-if echo "$changed_files" | grep -q 'src/000-subscription/.*\.sh$'; then
+# Check if shell files in subscription provider setup folder have changed
+if echo "$changed_files" | grep -q 'src/azure-resource-providers/.*\.sh$'; then
   SUBSCRIPTION_SHELL_CHANGES=true
 fi
 
-# Check if PowerShell files in subscription setup folder have changed
-if echo "$changed_files" | grep -q 'src/000-subscription/.*\.ps1$'; then
+# Check if PowerShell files in subscription provider setup folder have changed
+if echo "$changed_files" | grep -q 'src/azure-resource-providers/.*\.ps1$'; then
   SUBSCRIPTION_PWSH_CHANGES=true
 fi
 

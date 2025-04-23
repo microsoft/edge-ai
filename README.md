@@ -46,7 +46,7 @@ Then, get started bootstrapping Arc-enabled AIO environments:
 2. Use [this project's integrated dev container](./.devcontainer/README.md).
 3. Login with Azure CLI and set your subscription context.
 4. From a terminal:
-    1. `cd ./src/000-subscription`
+    1. `cd ./src/azure-resource-providers`
     2. Run `./register-azure-providers.sh <providers-file>` to prepare your subscription
 5. Follow instructions in the [./src/azure-resource-providers/README](./src/azure-resource-providers/README.md) to
    register the required Azure resource providers for AIO and Arc in your subscription.

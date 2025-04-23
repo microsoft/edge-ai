@@ -23,7 +23,7 @@ The Resource Provider Testing Template validates the functionality of scripts th
 | `dependsOn`              | string | No       | `MatrixBuildFolderCheck`                                                                                          | Job this template depends on                   |
 | `pwshScriptCondition`    | string | No       | `eq(dependencies.MatrixBuildFolderCheck.outputs['matrixBuildFolderCheckTask.changesInRpEnablementPwsh'], 'true')` | Condition to run PowerShell script tests       |
 | `azureServiceConnection` | string | No       | `azdo-ai-for-edge-iac-for-edge`                                                                                   | Azure service connection to use                |
-| `workingDirectory`       | string | No       | `$(System.DefaultWorkingDirectory)/src/000-subscription`                                                          | Directory containing resource provider scripts |
+| `workingDirectory`       | string | No       | `$(System.DefaultWorkingDirectory)/src/azure-resource-providers`                                                  | Directory containing resource provider scripts |
 | `pwshTestResultsOutput`  | string | No       | `$(System.DefaultWorkingDirectory)/PWSH-TEST-RESULTS.xml`                                                         | Path for PowerShell test results output        |
 
 ## Outputs
@@ -132,7 +132,7 @@ jobs:
       dependsOn: MatrixBuildFolderCheck
       pwshScriptCondition: eq(dependencies.MatrixBuildFolderCheck.outputs['matrixBuildFolderCheckTask.changesInRpEnablementPwsh'], 'true')
       azureServiceConnection: azdo-ai-for-edge-iac-for-edge
-      workingDirectory: $(System.DefaultWorkingDirectory)/src/000-subscription
+      workingDirectory: $(System.DefaultWorkingDirectory)/src/azure-resource-providers
 ```
 
 ## Troubleshooting
