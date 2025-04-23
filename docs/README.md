@@ -37,16 +37,10 @@ While enhanced documentation is under development, please start by reviewing thi
 project's [wiki](https://dev.azure.com/ai-at-the-edge-flagship-accelerator/edge-ai/_wiki/wikis/Edge%20AI/5/)
 before you use the IaC (Terraform) in this repository. Then, get started bootstrapping Arc-enabled AIO environments:
 
-1. [Cloning this repository locally](https://learn.microsoft.com/azure/devops/repos/git/clone?view=azure-devops&tabs=visual-studio-2022#get-the-clone-url-of-an-azure-repos-git-repo)
-2. [Install pre-requisites](../src/README.md#prerequisites) or
-   use [this project's integrated dev container](../.devcontainer/README.md).
-3. Login to the Azure Portal.
-4. From a terminal:
+> **You must complete all [prerequisites and environment setup](../README.md#getting-started-and-environment-setup) before running these steps.**
+> Ensure your Azure CLI is logged in and your subscription context is set correctly.
 
-- `cd ./src/000-subscription`
-- Run `./register-azure-providers.sh` to prepare your subscription
-- Follow instructions in the [./src/005-onboarding-reqs README](../src/005-onboard-reqs/README.md)
-- Run `./operate-all-terraform.sh` from the `./src` directory
+Review the documentation for getting started deploying Terraform or Bicep based components under [`./src`](../src/README.md) or [`./blueprints`](../blueprints/README.md).
 
 ### Video Demonstration
 

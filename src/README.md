@@ -46,22 +46,10 @@ engineers can deploy the `100-edge` components for on-premises cluster set-up.
 4. [(azure-resource-providers)](./azure-resource-providers/README.md) - Scripts to register required Azure resource
    providers for AIO and Arc in your subscription
 
-## Prerequisites
+## Prerequisites and Setting Up Your Environment
 
-- [Azure CLI](https://docs.microsoft.com/cli/azure/install-azure-cli?view=azure-cli-latest)
-- An Azure subscription
-- [Visual Studio Code](https://code.visualstudio.com/)
-- A Linux-based development environment or a [Windows system with WSL](https://code.visualstudio.com/docs/remote/wsl)
-
-> NOTE: We highly suggest using [this project's integrated dev container](./.devcontainer/README.md) to get started
-> quickly particularly with Windows-bases systems.
-
-Login to Azure CLI using the below command:
-
-```sh
-# Login to Azure CLI, optionally specify the tenant-id
-az login # --tenant <tenant-id>
-```
+> Please refer to the [Root README](../README.md) for a complete list of prerequisites and setup instructions, ensure your Azure CLI is correctly configured with your subscription context set correctly.
+> For a step-by-step guide with details, follow the instructions [Getting Started and Prerequisites Setup](../README.md#getting-started-and-environment-setup).
 
 ## Terraform Components - Getting Started
 
@@ -81,19 +69,12 @@ be used in a CI system for module verification.
 
 The following steps are for `ci` deployment completed from a local machine.
 
-#### Terraform - Prerequisites
+#### ⚠️ Terraform Prerequisites Required Before Proceeding
 
-- [Terraform](https://developer.hashicorp.com/terraform/install)
-- [Azure CLI](https://docs.microsoft.com/cli/azure/install-azure-cli)
+> **You must complete all [prerequisites and environment setup](../README.md#getting-started-and-environment-setup) before running these steps.**
+> Ensure your Azure CLI is logged in and your subscription context is set correctly.
 
 #### Terraform - Create Resources
-
-Login to Azure CLI using the below command:
-
-```sh
-# Optionally, specify the tenant-id or tenant login
-az login # --tenant <tenant>.onmicrosoft.com
-```
 
 Set up terraform settings and apply them:
 
@@ -221,20 +202,12 @@ deployments.
 
 The following steps are for manual local deployment of Bicep components.
 
-#### Bicep - Prerequisites
+#### ⚠️ Bicep Prerequisites Required Before Proceeding
 
-- [Azure CLI](https://docs.microsoft.com/cli/azure/install-azure-cli)
-- [Bicep CLI](https://docs.microsoft.com/azure/azure-resource-manager/bicep/install) (included in recent Azure CLI
-  versions)
+> **You must complete all [prerequisites and environment setup](../README.md#getting-started-and-environment-setup) before running these steps.**
+> Ensure your Azure CLI is logged in and your subscription context is set correctly.
 
 #### Bicep - Create Resources
-
-Login to Azure CLI using the below command:
-
-```sh
-# Optionally, specify the tenant-id or tenant login
-az login # --tenant <tenant>.onmicrosoft.com
-```
 
 Set up Bicep parameters and deploy:
 
