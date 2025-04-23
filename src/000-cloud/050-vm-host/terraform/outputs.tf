@@ -44,3 +44,13 @@ output "virtual_machines" {
   value     = module.virtual_machine[*].virtual_machine
   sensitive = true
 }
+
+output "network_security_group" {
+  value       = module.virtual_network.network_security_group
+  description = "The created network security group"
+}
+
+output "virtual_network" {
+  value       = module.virtual_network.virtual_network
+  description = "The created virtual network"
+}

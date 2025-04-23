@@ -36,5 +36,12 @@ Creates the data collection rule associations required to link the right data fo
 | aio\_resource\_group | n/a | ```object({ name = string id = string location = string })``` | n/a | yes |
 | arc\_connected\_cluster | n/a | ```object({ name = string id = string location = string })``` | n/a | yes |
 | scrape\_interval | Interval to scrape metrics from the cluster | `string` | n/a | yes |
+
+## Outputs
+
+| Name | Description |
+|------|-------------|
+| logs\_data\_collection\_rule\_association | The logs data collection rule association resource. |
+| metrics\_data\_collection\_rule\_association | The metrics data collection rule association resource. |
 <!-- markdown-table-prettify-ignore-end -->
 <!-- END_TF_DOCS -->

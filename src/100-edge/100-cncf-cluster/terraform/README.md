@@ -58,6 +58,7 @@ install extensions for cluster connect and custom locations.
 | instance | Instance identifier for naming resources: 001, 002, etc... | `string` | `"001"` | no |
 | script\_output\_filepath | The location of where to write out the script file. (Otherwise, '{path.root}/out') | `string` | `null` | no |
 | should\_add\_current\_user\_cluster\_admin | Gives the current logged in user cluster-admin permissions with the new cluster. | `bool` | `true` | no |
+| should\_assign\_roles | Whether to assign Key Vault roles to identity or service principal. | `bool` | `true` | no |
 | should\_deploy\_script\_to\_vm | Should deploy the scripts to the provided Azure VMs. | `bool` | `true` | no |
 | should\_enable\_arc\_auto\_upgrade | Enable or disable auto-upgrades of Arc agents. (Otherwise, 'false' for 'env=prod' else 'true' for all other envs). | `bool` | `null` | no |
 | should\_generate\_cluster\_server\_token | Should generate token used by the server. ('cluster\_server\_token' must be null if this is 'true') | `bool` | `false` | no |

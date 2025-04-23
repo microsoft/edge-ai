@@ -38,7 +38,8 @@ Deploys virtual network resources for VM hosts
 
 | Name | Description |
 |------|-------------|
-| network\_security\_group\_id | The ID of the created network security group |
+| network\_security\_group | The created network security group |
 | subnet\_id | The ID of the created subnet |
+| virtual\_network | The created virtual network |
 <!-- markdown-table-prettify-ignore-end -->
 <!-- END_TF_DOCS -->
