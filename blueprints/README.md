@@ -14,6 +14,7 @@ to build complex multi-stage solutions that meet your specific requirements.
 | [Full Single Cluster](./full-single-cluster/README.md)                  | Complete deployment of Azure IoT Operations on a single-node, Arc-enabled Kubernetes cluster |
 | [Full Multi-node Cluster](./full-single-cluster/README.md)              | Complete deployment of Azure IoT Operations on a multi-node, Arc-enabled Kubernetes cluster  |
 | [CNCF Cluster Script Only](./only-output-cncf-cluster-script/README.md) | Generates scripts for cluster creation without deploying resources                           |
+| [Azure Fabric Environment](./fabric/terraform/README.md)                | Provisions Azure Fabric environment  *Terraform only currently*                              |
 | *More coming soon...*                                                   |                                                                                              |
 
 ## Terraform Architecture
@@ -31,23 +32,112 @@ Each blueprint in this repository follows a consistent structure:
 - **Full Single Cluster**: Best for development, testing, and proof-of-concept deployments
 - **Full Multi-node Cluster**: Recommended for general purpose lab and production-grade deployments requiring high availability
 - **CNCF Cluster Script Only**: Ideal for environments with existing infrastructure or custom deployment processes
+- **Azure Fabric Environment**: For users looking to provision Azure Fabric environments with options to deploy Lakehouse, EventStream, and Fabric workspace
 
 ## Prerequisites
 
 **IMPORTANT:** We highly suggest using [this project's integrated dev container](./.devcontainer/README.md) to get started quickly with Windows-based systems and also works well with nix-compatible environments.
 
-- [Azure CLI](https://docs.microsoft.com/cli/azure/install-azure-cli?view=azure-cli-latest)
-- An Azure subscription
-- [Visual Studio Code](https://code.visualstudio.com/)
-- [Terraform](https://developer.hashicorp.com/terraform/install)
-- A Linux-based development environment or a [Windows system with WSL](https://code.visualstudio.com/docs/remote/wsl)
+Refer to the Environment Setup section in the [Root README](../README.md#getting-started-and-prerequisites-setup) for detailed instructions on setting up your environment.
 
-1. Login to Azure CLI using the below command:
+## Detailed Deployment Workflow
 
-    ```sh
-    # Login to Azure CLI, optionally specify the tenant-id
-    az login # --tenant <tenant-id>
-    ```
+### Getting Started with Terraform
+
+#### ⚠️ Terraform Prerequisites Required Before Proceeding
+
+> **You must complete all [prerequisites and environment setup](../README.md#getting-started-and-environment-setup) before running these steps.**
+> Ensure your Azure CLI is logged in and your subscription context is set correctly.
+
+1. **IMPORTANT**: Register required Azure resource providers before proceeding. These scripts need to be run once per subscription to ensure all necessary provider services are available:
+
+   **Using Bash:**
+
+   ```sh
+   # Navigate to the resource providers directory
+   cd ./src/azure-resource-providers
+
+   # Run the registration script
+   ./register-all-providers.sh
+   ```
+
+   **Using PowerShell:**
+
+   ```powershell
+   # Navigate to the resource providers directory
+   cd \src\azure-resource-providers
+
+   # Run the registration script (will prompt for confirmation)
+   .\Register-AllProviders.ps1
+   ```
+
+   This step is critical as Azure IoT Operations and Arc-enabled Kubernetes require several resource providers that might not be registered by default in your subscription.
+
+2. Navigate to your chosen blueprint directory:
+
+   ```sh
+   cd ./full-single-node-cluster
+   ```
+
+3. Set up required environment variables:
+
+   - **ARM_SUBSCRIPTION_ID** -- The Azure Subscription ID target for this deployment (required to be set for the Terraform tasks below)
+
+   ```sh
+   # Dynamically get the Subscription ID or manually get and pass to ARM_SUBSCRIPTION_ID
+   current_subscription_id=$(az account show --query id -o tsv)
+   export ARM_SUBSCRIPTION_ID="$current_subscription_id"
+   ```
+
+4. Create a `terraform.tfvars` file with the following minimum configuration:
+
+   ```hcl
+   # Required, environment hosting resource: "dev", "prod", "test", etc...
+   environment     = "<environment>"
+   # Required, short unique alphanumeric string: "sample123", "plantwa", "uniquestring", etc...
+   resource_prefix = "<resource-prefix>"
+   # Required, region location: "eastus2", "westus3", etc...
+   location        = "<location>"
+   # Optional, instance/replica number: "001", "002", etc...
+   instance        = "<instance>"
+   ```
+
+   > **NOTE**: To have Terraform automatically use your variables, you can name your tfvars file `terraform.auto.tfvars`. Terraform will use variables from any `*.auto.tfvars` files located in the same deployment folder.
+
+5. Initialize and apply Terraform:
+
+   ```sh
+   # Pulls down providers and modules, initializes state and backend
+   terraform init # Use '-update -reconfigure' if provider or backend updates are required
+
+   # Preview changes before applying
+   terraform plan -var-file=terraform.tfvars
+
+   # Review resource change list, then deploy
+   terraform apply -var-file=terraform.tfvars # Add '-auto-approve' to skip confirmation
+   ```
+
+6. Wait for the deployments to complete with the message:
+
+   ```txt
+   Apply complete! Resources: *** added, *** changed, *** destroyed.
+   ```
+
+### Getting Started with Bicep
+
+Bicep provides an alternative Infrastructure as Code (IaC) approach that's native to Azure. Follow these steps to deploy blueprints using Bicep:
+
+#### ⚠️ Bicep Prerequisites Required Before Proceeding
+
+> **You must complete all [prerequisites and environment setup](../README.md#getting-started-and-environment-setup) before running these steps.**
+> Ensure your Azure CLI is logged in and your subscription context is set correctly.
+
+1. Use the Azure CLI to get the Custom Locations OID:
+
+   ```sh
+   # Get the custom locations OID
+   az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv
+   ```
 
 2. **IMPORTANT**: Register required Azure resource providers before proceeding. These scripts need to be run once per subscription to ensure all necessary provider services are available:
 
@@ -76,48 +166,74 @@ Each blueprint in this repository follows a consistent structure:
 3. Navigate to your chosen blueprint directory:
 
    ```sh
-   cd ./full-single-cluster
+   cd ./full-single-node-cluster
    ```
 
-4. Set up required environment variables:
-
-   - **ARM_SUBSCRIPTION_ID** -- The Azure Subscription ID target for this deployment (required to be set for the Terraform tasks below)
+4. Check that the Bicep CLI is installed or install it:
 
    ```sh
-   # Dynamically get the Subscription ID or manually get and pass to ARM_SUBSCRIPTION_ID
-   current_subscription_id=$(az account show --query id -o tsv)
-   export ARM_SUBSCRIPTION_ID="$current_subscription_id"
+   # Verify Bicep installation (included in recent Azure CLI versions)
+   az bicep version
+
+   # If not installed:
+   az bicep install
    ```
 
-5. Create a `terraform.tfvars` file with the following minimum configuration:
+5. Create a parameters file for your deployment:
 
-   ```hcl
-   # Required, environment hosting resource: "dev", "prod", "test", etc...
-   environment     = "<environment>"
-   # Required, short unique alphanumeric string: "sample123", "plantwa", "uniquestring", etc...
-   resource_prefix = "<resource-prefix>"
-   # Required, region location: "eastus2", "westus3", etc...
-   location        = "<location>"
-   # Optional, instance/replica number: "001", "002", etc...
-   instance        = "<instance>"
+   Create a file named `main.bicepparam` in the root of the blueprint directory (e.g., `full-single-node-cluster`) with your deployment parameters:
+
+   ```bicep
+   // Parameters for blueprint deployment
+   using './bicep/main.bicep'
+
+   // Required parameters
+   param common = {
+     resourcePrefix: 'myprefix'     // Replace with a unique prefix
+     location: 'eastus2'            // Replace with your Azure region
+     environment: 'dev'             // 'dev', 'test', or 'prod'
+     instance: '001'
+   }
+
+   // This is not optimal, to be replaced by KeyVault usage in future
+   @secure()
+   param adminPassword = 'YourSecurePassword123!' // Replace with a secure password
+
+   param customLocationsOid = 'YourRetrievedOID' // Replace with the OID retrieved from the previous step
    ```
 
-   > **NOTE**: To have Terraform automatically use your variables, you can name your tfvars file `terraform.auto.tfvars`. Terraform will use variables from any `*.auto.tfvars` files located in the same deployment folder.
-
-6. Initialize and apply Terraform:
+6. Deploy the Bicep template:
 
    ```sh
-   # Pulls down providers and modules, initializes state and backend
-   terraform init # Use '-update -reconfigure' if provider or backend updates are required
-
-   # Review resource change list, then deploy
-   terraform apply -var-file=terraform.tfvars # Add '-auto-approve' to skip confirmation
+   # Deploy using the Azure CLI at the subscription level
+   az deployment sub create --name <uniquename-prefix> --location <location> --parameters ./main.bicepparam
    ```
 
-7. Wait for the deployments to complete with the message:
+7. Monitor deployment progress:
 
-   ```txt
-   Apply complete! Resources: *** added, *** changed, *** destroyed.
+   You can check the deployment status in the Azure portal or using the Azure CLI:
+
+   ```sh
+   # Get the resource group name (after deployment starts)
+   RG_NAME="rg-<resource_prefix>-<environment>-<instance>"
+
+   # List resources in the resource group
+   az resource list --resource-group $RG_NAME -o table
+   ```
+
+8. Access Deployed Resources:
+
+   After successful deployment:
+
+   ```sh
+   # Access the Kubernetes cluster (in one prompt)
+   az connectedk8s proxy -n <cluster-name> -g $RG_NAME
+
+   # View AIO resources (in a separate prompt)
+   kubectl get pods -n azure-iot-operations
+
+   # Check cluster node status
+   kubectl get nodes -o wide
    ```
 
 ## Common Terraform Commands

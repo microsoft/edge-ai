@@ -33,7 +33,7 @@ Azure documentation:
 - [Azure IoT Operations (AIO) documentation](https://learn.microsoft.com/azure/iot-operations/overview-iot-operations)
 - [Azure Arc Jumpstart Agora Manufacturing Scenario](https://azurearcjumpstart.com/azure_jumpstart_ag/contoso_motors#overview).
 
-## Getting Started
+## Quick Getting Started on Existing Developer Environments
 
 Check out the
 project's [wiki](https://dev.azure.com/ai-at-the-edge-flagship-accelerator/edge-ai/_wiki/wikis/Edge%20AI/5/), or after
@@ -43,13 +43,13 @@ Copilot chat and ask `@workspace What should I know before I use this repository
 Then, get started bootstrapping Arc-enabled AIO environments:
 
 1. [Cloning this repository locally](https://learn.microsoft.com/azure/devops/repos/git/clone?view=azure-devops&tabs=visual-studio-2022#get-the-clone-url-of-an-azure-repos-git-repo)
-2. [Install pre-requisites](./blueprints/README.md) or
-   use [this project's integrated dev container](./.devcontainer/README.md).
-3. Login to the Azure Portal.
+2. Use [this project's integrated dev container](./.devcontainer/README.md).
+3. Login with Azure CLI and set your subscription context.
 4. From a terminal:
     1. `cd ./src/000-subscription`
     2. Run `./register-azure-providers.sh <providers-file>` to prepare your subscription
-5. Follow instructions in the [./src/005-onboard-reqs README](./src/005-onboard-reqs/README.md)
+5. Follow instructions in the [./src/azure-resource-providers/README](./src/azure-resource-providers/README.md) to
+   register the required Azure resource providers for AIO and Arc in your subscription.
 6. Deploy the IaC:
     1. Select a _blueprint_ from the [blueprints](./blueprints/README.md) directory.
     2. Ask Copilot to guide you through blueprint deployment (see below) or follow the deployment instructions located in
@@ -65,6 +65,159 @@ and extra prompting in this repo to run the deployment steps listed above.)
 ### Video Demonstration
 
 [See our demonstration of using IaC for Edge on your next project](https://microsoft-my.sharepoint.com/:v:/p/allengreaves/ERH-llkJDNdAoPNnGciRIVcBUmuCON1lkx3zfaXgDthX8g?e=oRRx8f)
+
+## Getting Started and Prerequisites Setup
+
+This sections provides a _How-To_ guide on getting started with Edge-AI.
+
+### Environment Setup Guide
+
+#### Option 1: Using Dev Container 🚀 (highly recommended)
+
+The simplest way to get started is using our pre-configured development container:
+
+1. **Install Prerequisites**
+   - [VS Code](https://code.visualstudio.com/) or [VS Code Insiders for using experimental Copilot features](https://code.visualstudio.com/insiders/)
+   - [VS Code Dev Containers Extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
+   - [GitHub Copilot Extension](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot) (requires subscription)
+   - [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+
+    **Docker System Requirements**
+
+    Ensure your local Docker installation has adequate resources allocated:
+
+    | Resource | Minimum Requirement | Recommended        |
+    |----------|---------------------|--------------------|
+    | CPU      | 4 cores             | 8+ cores           |
+    | RAM      | 8 GB                | 16+ GB             |
+    | Storage  | 50 GB free space    | 100+ GB free space |
+
+2. **Clone this repository to your local machine**
+
+   ```bash
+   git clone https://ai-at-the-edge-flagship-accelerator@dev.azure.com/ai-at-the-edge-flagship-accelerator/edge-ai/_git/edge-ai
+   cd edge-ai
+   ```
+
+3. **Open the Repository in VS Code**
+
+   - Open the cloned repository in VS Code Insiders
+
+   ```bash
+   code-insiders .
+   # Or VS Code GA version:
+   code .
+   ```
+
+   - Click the popup to "Reopen in Container". If the popup doesn't appear, press `Ctrl+Shift+P` (or `Cmd+Shift+P` on Mac) and select "Dev Containers: Reopen in Container"
+   - The container will automatically install all required tools and dependencies
+   - For any issues with Dev Container setup, refer to the [official documentation](https://code.visualstudio.com/docs/devcontainers/containers) for Dev Containers in VS Code
+
+#### Option 2: Configure Your Own Environment
+
+If you prefer not to use the Dev Container, make sure you have a Linux environment set up.
+
+> **For Windows Users Only:**
+> If you are using Windows, we recommend using the Windows Subsystem for Linux (WSL 2) to run the scripts and any IaC commands. This is because some of the scripts and commands require a Bash terminal and WSL 2 offers this functionality.
+>
+> - **Install WSL 2:**
+>   Follow the [official WSL installation guide](https://docs.microsoft.com/windows/wsl/install)
+>
+> - **Choose a Linux Distribution:**
+>   We recommend using Ubuntu as your Linux distribution
+
+1. **Install Required Tools and Prerequisites**
+   - [Azure CLI](https://docs.microsoft.com/cli/azure/install-azure-cli), ensure you have the latest version
+   - Bicep CLI is included as part of Azure CLI. To upgrade to the latest version [Bicep tools with Azure CLI](https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/install#azure-cli)
+   - [Azure CLI extensions](https://learn.microsoft.com/cli/azure/azure-cli-extensions-overview) `amg`, `azure-iot-ops`, `connectedk8s`, `k8s-extension`
+   - [Terraform](https://developer.hashicorp.com/terraform/install)
+   - [Git](https://git-scm.com/downloads)
+   - CLI tools for Kubernetes (`kubectl`, `helm`)
+   - You might also need to manually install some of the VS Code extensions, please review the selection of extensions under `customizations.extensions` in
+   `.devcontainer/devcontainer.json` and install them in your local VS Code instance
+   - To run some of the linting or build scripts you may need to install Node.js, NPM, Python and PowerShell
+
+### Quick Start Deployment Guide
+
+1. **Azure CLI Authentication**
+
+   ```bash
+   # Login to Azure CLI, selecting the correct tenant if needed
+   az login --tenant your-tenant-id.onmicrosoft.com
+
+   # Set the subscription context
+   # If you have multiple subscriptions the command will prompt you to select the subscription for your context
+   # To set it manually:
+   az account set --subscription "your-subscription-name-or-id"
+   ```
+
+2. **Register Required Azure Resource Providers**
+   **IMPORTANT**: These scripts need to be run once per subscription to ensure all necessary provider services are available
+
+   ```bash
+   # Navigate to resource providers directory
+   cd ./src/azure-resource-providers
+
+   # Register all required providers
+   ./register-azure-providers.sh azure-providers.txt
+   ```
+
+3. **Blueprint Initialization for Terraform**
+
+   ```bash
+   # Navigate to your chosen blueprint directory
+   cd ./blueprints/full-single-node-cluster
+
+   # Set required environment variable for Terraform
+   export ARM_SUBSCRIPTION_ID=$(az account show --query id -o tsv)
+
+   # Create terraform.tfvars file with required parameters
+   cat > terraform.tfvars << EOF
+   environment     = "dev"
+   resource_prefix = "myproject"
+   location        = "eastus2"
+   instance        = "001"
+   EOF
+
+4. **Terraform Deployment**
+
+   ```bash
+   # Initialize and apply Terraform
+   terraform init
+   terraform apply -var-file=terraform.tfvars
+   ```
+
+### GitHub Copilot for Assistance
+
+Use these Copilot prompts to get help throughout your deployment:
+
+1. For environment setup help:
+
+   ```text
+   I'm new to this repository and need to set up my development environment.
+   Can you walk me through setting up VS Code, Docker, and the dev container?
+   ```
+
+2. For Azure CLI configuration:
+
+   ```text
+   I need to configure Azure CLI to access my tenant and subscription.
+   Please guide me through the steps.
+   ```
+
+3. For blueprint deployment:
+
+   ```text
+   I want to deploy the full-single-node-cluster blueprint.
+   Can you help me create the terraform.tfvars file and run the necessary commands?
+   ```
+
+4. For troubleshooting help:
+
+   ```text
+   I'm getting an error when running terraform apply.
+   Can you help me understand what's happening and how to fix it?
+   ```
 
 ## ADR Library
 
@@ -163,7 +316,7 @@ production deployments; or 2) cloning the repository and all its automation to h
 solution for your IaC. Feel free to pick and choose which components are needed or necessary to help start or
 extend your project.
 
-For running the IaC to bootstrap environments, please refer to the [Getting Started](#getting-started)
+For running the IaC to bootstrap environments, please refer to the [Quick Getting Started](#quick-getting-started-on-existing-developer-environments)
 documentation. For using this repository and its automation to have a complete CI/CD system for your
 IaC, please review the [build pipelines ReadMe](./.azdo/README.md) and reach out to the
 [Microsoft ISE Edge Computing Technical Domain team](mailto:ectd@microsoft.com) if you need support.
