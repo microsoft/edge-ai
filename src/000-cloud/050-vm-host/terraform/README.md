@@ -51,6 +51,7 @@ Deploys one or more Linux VMs for Arc-connected K3s cluster
 | Name | Description |
 |------|-------------|
 | linux\_virtual\_machine\_name | n/a |
+| network\_security\_group | The created network security group |
 | private\_ips | n/a |
 | public\_fqdns | n/a |
 | public\_ips | n/a |
@@ -60,6 +61,7 @@ Deploys one or more Linux VMs for Arc-connected K3s cluster
 | ssh\_public\_key | The SSH public key for all VMs |
 | username | n/a |
 | virtual\_machines | n/a |
+| virtual\_network | The created virtual network |
 | vm\_id | n/a |
 <!-- markdown-table-prettify-ignore-end -->
 <!-- END_TF_DOCS -->

@@ -75,6 +75,19 @@ module "cloud_vm_host" {
   arc_onboarding_identity = module.cloud_security_identity.arc_onboarding_identity
 }
 
+module "cloud_aks_acr" {
+  source = "../../../src/000-cloud/060-aks-acr/terraform"
+
+  environment     = var.environment
+  resource_prefix = var.resource_prefix
+  location        = var.location
+
+  resource_group = module.cloud_resource_group.resource_group
+
+  network_security_group = module.cloud_vm_host.network_security_group
+  virtual_network        = module.cloud_vm_host.virtual_network
+}
+
 module "edge_cncf_cluster" {
   source = "../../../src/100-edge/100-cncf-cluster/terraform"
 

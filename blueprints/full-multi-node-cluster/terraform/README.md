@@ -16,6 +16,7 @@
 
 | Name | Source | Version |
 |------|--------|---------|
+| cloud\_aks\_acr | ../../../src/000-cloud/060-aks-acr/terraform | n/a |
 | cloud\_data | ../../../src/000-cloud/030-data/terraform | n/a |
 | cloud\_fabric | ../../../src/000-cloud/031-fabric/terraform | n/a |
 | cloud\_messaging | ../../../src/000-cloud/040-messaging/terraform | n/a |

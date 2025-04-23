@@ -176,17 +176,17 @@ run "test_optional_parameters" {
   command = plan
 
   variables {
-    resource_prefix                      = run.setup_tests.resource_prefix
-    environment                          = "test"
-    resource_group                       = run.setup_tests.aio_resource_group
-    cluster_server_virtual_machine       = run.setup_tests.aio_virtual_machine
-    should_get_custom_locations_oid      = false
-    should_deploy_script_to_vm           = false
-    should_assign_roles                  = false
-    arc_onboarding_sp                    = run.setup_tests.mock_sp
-    custom_locations_oid                 = run.setup_tests.mock_custom_locations_oid
-    should_skip_az_cli_login             = true
-    should_skip_installing_az_cli        = true
+    resource_prefix                       = run.setup_tests.resource_prefix
+    environment                           = "test"
+    resource_group                        = run.setup_tests.aio_resource_group
+    cluster_server_virtual_machine        = run.setup_tests.aio_virtual_machine
+    should_get_custom_locations_oid       = false
+    should_deploy_script_to_vm            = false
+    should_assign_roles                   = false
+    arc_onboarding_sp                     = run.setup_tests.mock_sp
+    custom_locations_oid                  = run.setup_tests.mock_custom_locations_oid
+    should_skip_az_cli_login              = true
+    should_skip_installing_az_cli         = true
     should_add_current_user_cluster_admin = false
   }
 

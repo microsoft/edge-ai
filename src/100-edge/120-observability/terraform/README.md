@@ -31,5 +31,12 @@ Creates resources needed for additional utilities and features.
 | arc\_connected\_cluster | n/a | ```object({ name = string id = string location = string })``` | n/a | yes |
 | resource\_group | n/a | ```object({ name = string id = string location = string })``` | n/a | yes |
 | scrape\_interval | Interval to scrape metrics from the cluster, valid values are between 1m and 30m (PT1M and PT30M). | `string` | `"PT1M"` | no |
+
+## Outputs
+
+| Name | Description |
+|------|-------------|
+| cluster\_extensions | The cluster extensions for observability. |
+| rule\_associations | The data collection rule associations for observability. |
 <!-- markdown-table-prettify-ignore-end -->
 <!-- END_TF_DOCS -->

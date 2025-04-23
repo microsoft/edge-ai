@@ -31,5 +31,12 @@ Creates the cluster extensions required to expose cluster and container metrics.
 | aio\_azure\_monitor\_workspace | n/a | ```object({ id = string })``` | n/a | yes |
 | aio\_log\_analytics\_workspace | n/a | ```object({ id = string workspace_id = string primary_shared_key = string })``` | n/a | yes |
 | arc\_connected\_cluster | n/a | ```object({ name = string id = string location = string })``` | n/a | yes |
+
+## Outputs
+
+| Name | Description |
+|------|-------------|
+| container\_logs | The container logs extension resource. |
+| container\_metrics | The container metrics extension resource. |
 <!-- markdown-table-prettify-ignore-end -->
 <!-- END_TF_DOCS -->
