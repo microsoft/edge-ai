@@ -115,7 +115,7 @@ The simplest way to get started is using our pre-configured development containe
 
 #### Option 2: Configure Your Own Environment
 
-If you prefer not to use the Dev Container, make sure you have a Linux environment set up.
+If you prefer not to use the Dev Container, make sure you have a Linux environment set up and install all of the required tools and prerequisites listed below before proceeding with the deployment steps.
 
 > **For Windows Users Only:**
 > If you are using Windows, we recommend using the Windows Subsystem for Linux (WSL 2) to run the scripts and any IaC commands. This is because some of the scripts and commands require a Bash terminal and WSL 2 offers this functionality.
@@ -132,14 +132,17 @@ If you prefer not to use the Dev Container, make sure you have a Linux environme
    - [Azure CLI extensions](https://learn.microsoft.com/cli/azure/azure-cli-extensions-overview) `amg`, `azure-iot-ops`, `connectedk8s`, `k8s-extension`
    - [Terraform](https://developer.hashicorp.com/terraform/install)
    - [Git](https://git-scm.com/downloads)
-   - CLI tools for Kubernetes (`kubectl`, `helm`)
+   - CLI tools for Kubernetes (`kubectl`, `helm`). Without `kubectl` CLI, deployments will fail.
+   > ⚠️ **Note:** Without `kubectl` CLI, some of Terraform deployments will fail.
    - You might also need to manually install some of the VS Code extensions, please review the selection of extensions under `customizations.extensions` in
-   `.devcontainer/devcontainer.json` and install them in your local VS Code instance
+   `.devcontainer/devcontainer.json` and install them in your local VS Code instance.
    - To run some of the linting or build scripts you may need to install Node.js, NPM, Python and PowerShell
 
 ### Quick Start Deployment Guide
 
 1. **Azure CLI Authentication**
+
+   ⚠️ Ensure you have access to Azure subscription with _Owner_ or _Contributor_ permissions access.
 
    ```bash
    # Login to Azure CLI, selecting the correct tenant if needed

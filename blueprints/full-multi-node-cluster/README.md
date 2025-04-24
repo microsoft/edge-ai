@@ -99,11 +99,12 @@ For additional configuration options, review the parameters in `main.bicep`.
 
 ## Prerequisites
 
-- Azure subscription with Owner or Contributor access
-- Azure CLI installed (version 2.60.0 or later)
-- For Terraform: Terraform installed (version 1.9.8 or later)
-- For Bicep: Bicep CLI version 0.34.0 or later
-- Git installed
+**IMPORTANT:** We highly suggest using [this project's integrated dev container](./.devcontainer/README.md) to get started quickly with Windows-based systems and also works well with nix-compatible environments.
+
+Refer to the Environment Setup section in the [Root README](../README.md#getting-started-and-prerequisites-setup) for detailed instructions on setting up your environment.
+
+Additionally, ensure you have the following prerequisites:
+
 - Sufficient quota for multiple VMs in your target region
 
 ## Terraform Deployment Instructions
