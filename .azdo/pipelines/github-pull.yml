@@ -16,6 +16,9 @@
 # - Can be configured to authenticate with private repositories when needed
 # - Maintains repository structure for downstream pipeline steps
 #
+# Parameters:
+# - isEnterpriseGitHub: Boolean to determine if the GitHub repository is internal or public
+#
 # Key Parameters:
 # - repoUrl: The GitHub repository URL to pull from
 # - targetPath: Where to clone the repository in the workspace
@@ -25,6 +28,10 @@
 # GitHub sync pipeline
 ---
 trigger: none
+parameters:
+  - name: isEnterpriseGitHub
+    type: boolean
+    default: true
 variables:
   - group: 'ai-on-edge-secrets'
 pool:
@@ -43,10 +50,17 @@ stages:
 
           # Create GitHub access token
           - bash: |
+              githubAppClientId=$(echo $(github-app-client-id))
+              echo "$(github-app-private-key)" > ./github-app-private-key.pem
+
+              if [[ ! ${{ parameters.isEnterpriseGitHub }} ]]; then
+                echo "Using public GitHub"
+                githubAppClientId=$(github-app-edge-ai-client-id)
+                echo "$(github-app-edge-ai-private-key)" > ./github-app-private-key.pem
+              fi
 
               echo "Generating Github JWT Token"
-              echo "$(github-app-private-key)" > ./github-app-private-key.pem
-              token=$(bash $(System.DefaultWorkingDirectory)/scripts/github/jwt-token.sh $(github-app-client-id) ./github-app-private-key.pem)
+              token=$(bash $(System.DefaultWorkingDirectory)/scripts/github/jwt-token.sh $githubAppClientId ./github-app-private-key.pem)
 
               echo "Generating Github Access Tokens Url"
               url=$(bash $(System.DefaultWorkingDirectory)/scripts/github/access-tokens-url.sh $token)
@@ -60,13 +74,19 @@ stages:
 
           # Clone GitHub repo
           - bash: |
+              githubUrl=$(githubRepoUrl)
 
-              remoteUrl=$(echo $(githubRepoUrl) | sed "s|__token__|$(installationToken)|g")
+              if [[ ! ${{ parameters.isEnterpriseGitHub }} ]]; then
+                echo "Using public GitHub"
+                githubUrl=$(github-edge-ai-repo-url)
+              fi
+
+              remoteUrl=$(echo $githubUrl | sed "s|__token__|$(installationToken)|g")
               git clone $remoteUrl
 
               cd Iac-for-the-Edge
               git remote remove origin
-              git remote add origin $(azdoRepoUrl)
+              git remote add origin $(azdo-edge-ai-repo-url)
               git -c http.extraheader="AUTHORIZATION: bearer $(System.AccessToken)" fetch origin main
 
             displayName: "Pull from GitHub"
