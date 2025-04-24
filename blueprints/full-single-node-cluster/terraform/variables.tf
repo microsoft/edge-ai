@@ -50,3 +50,15 @@ variable "should_create_anonymous_broker_listener" {
   description = "Whether to enable an insecure anonymous AIO MQ Broker Listener. (Should only be used for dev or test environments)"
   default     = false
 }
+
+variable "should_create_aks" {
+  type        = bool
+  description = "Should create Azure Kubernetes Service. Default is false."
+  default     = false
+}
+
+variable "should_create_private_endpoint" {
+  type        = bool
+  description = "Should create a private endpoint for the Azure Container Registry. Default is false."
+  default     = false
+}

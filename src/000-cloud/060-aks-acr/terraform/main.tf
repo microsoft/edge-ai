@@ -38,6 +38,8 @@ module "container_registry" {
 }
 
 module "aks_cluster" {
+  count = var.should_create_aks ? 1 : 0
+
   source = "./modules/aks-cluster"
 
   // Resource dependencies first
