@@ -77,6 +77,9 @@ module "cloud_aks_acr" {
 
   network_security_group = module.cloud_vm_host.network_security_group
   virtual_network        = module.cloud_vm_host.virtual_network
+
+  should_create_private_endpoint = var.should_create_private_endpoint
+  should_create_aks              = var.should_create_aks
 }
 
 module "edge_cncf_cluster" {

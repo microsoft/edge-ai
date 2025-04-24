@@ -31,6 +31,7 @@
 | instance | Instance identifier for naming resources: 001, 002, etc... | `string` | `"001"` | no |
 | node\_count | Number of nodes for the agent pool in the AKS cluster. | `number` | `1` | no |
 | node\_vm\_size | VM size for the agent pool in the AKS cluster. Default is Standard\_D8ds\_v5. | `string` | `"Standard_D8ds_v5"` | no |
+| should\_create\_aks | Should create Azure Kubernetes Service. Default is false. | `bool` | `false` | no |
 | should\_create\_private\_endpoint | Should create a private endpoint for the Azure Container Registry. Default is false. | `bool` | `false` | no |
 | sku | SKU for the Azure Container Registry. Options are Basic, Standard, Premium. Default is Premium because of the need for private endpoints. | `string` | `"Premium"` | no |
 

@@ -1,6 +1,6 @@
 output "aks" {
   description = "The Azure Kubernetes Service resource created by this module."
-  value       = module.aks_cluster.aks
+  value       = length(module.aks_cluster) > 0 ? module.aks_cluster[0].aks : null
 }
 
 output "acr" {

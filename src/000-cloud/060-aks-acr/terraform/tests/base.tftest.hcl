@@ -43,8 +43,8 @@ run "create_default_configuration" {
   }
 
   assert {
-    condition     = module.aks_cluster.aks.name == "aks-${var.resource_prefix}-${var.environment}-${var.instance}"
-    error_message = "Azure Kubernetes Service name does not match expected pattern"
+    condition     = length(module.aks_cluster) == 0
+    error_message = "Azure Kubernetes Service should NOT be created when should_create_aks is false"
   }
 }
 
@@ -60,6 +60,7 @@ run "create_non_default_configuration" {
     network_security_group         = run.setup_tests.network_security_group
     virtual_network                = run.setup_tests.virtual_network
     should_create_private_endpoint = true
+    should_create_aks              = true
     sku                            = "Basic"
     node_count                     = 3
     node_vm_size                   = "Standard_DS2_v2"
@@ -72,17 +73,17 @@ run "create_non_default_configuration" {
   }
 
   assert {
-    condition     = module.aks_cluster.aks.default_node_pool[0].node_count == 3
+    condition     = module.aks_cluster[0].aks.default_node_pool[0].node_count == 3
     error_message = "AKS node count does not match expected value"
   }
 
   assert {
-    condition     = module.aks_cluster.aks.default_node_pool[0].vm_size == "Standard_DS2_v2"
+    condition     = module.aks_cluster[0].aks.default_node_pool[0].vm_size == "Standard_DS2_v2"
     error_message = "AKS VM size does not match expected value"
   }
 
   assert {
-    condition     = module.aks_cluster.aks.dns_prefix == "dns-prefix"
+    condition     = module.aks_cluster[0].aks.dns_prefix == "dns-prefix"
     error_message = "AKS DNS prefix does not match expected value"
   }
 }
