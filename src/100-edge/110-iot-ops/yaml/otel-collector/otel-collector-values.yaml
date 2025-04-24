@@ -37,7 +37,9 @@ config:
           - prometheus
       logs: null
       traces: null
-    telemetry: null
+    telemetry:
+      metrics:
+        readers:
   extensions:
     memory_ballast:
       size_mib: 0
