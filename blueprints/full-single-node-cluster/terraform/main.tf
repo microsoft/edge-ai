@@ -134,4 +134,6 @@ module "edge_messaging" {
   aio_dataflow_profile = module.edge_iot_ops.aio_dataflow_profile
   aio_instance         = module.edge_iot_ops.aio_instance
   aio_identity         = module.cloud_security_identity.aio_identity
+  event_grid           = module.cloud_messaging.event_grid
+  event_hub            = module.cloud_messaging.event_hub
 }
