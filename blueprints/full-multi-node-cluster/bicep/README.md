@@ -22,6 +22,7 @@ Deploys a complete end-to-end environment for Azure IoT Operations on a multi-no
 | :--- | :--- | :--- |
 |cloudResourceGroup|`Microsoft.Resources/deployments`|2022-09-01|
 |cloudSecurityIdentity|`Microsoft.Resources/deployments`|2022-09-01|
+|cloudObservability|`Microsoft.Resources/deployments`|2022-09-01|
 |cloudData|`Microsoft.Resources/deployments`|2022-09-01|
 |cloudVmHost|`Microsoft.Resources/deployments`|2022-09-01|
 |edgeCncfCluster|`Microsoft.Resources/deployments`|2022-09-01|
@@ -33,6 +34,7 @@ Deploys a complete end-to-end environment for Azure IoT Operations on a multi-no
 | :--- | :--- |
 |cloudResourceGroup|Creates the required resources needed for an edge IaC deployment.|
 |cloudSecurityIdentity|Provisions cloud resources required for Azure IoT Operations including Schema Registry, Storage Account, Key Vault, and User Assigned Managed Identities.|
+|cloudObservability|Deploys Azure observability resources including Azure Monitor Workspace, Log Analytics Workspace, Azure Managed Grafana, and Data Collection Rules for container monitoring and metrics collection.|
 |cloudData|Creates storage resources including Azure Storage Account and Schema Registry for data in the Edge AI solution.|
 |cloudVmHost|Provisions virtual machines and networking infrastructure for hosting Azure IoT Operations edge deployments.|
 |edgeCncfCluster|This module provisions and deploys automation scripts to a VM host that create and configure a K3s Kubernetes cluster with Arc connectivity.<br>The scripts handle primary and secondary node(s) setup, cluster administration, workload identity enablement, and installation of required Azure Arc extensions.|
@@ -103,6 +105,45 @@ Provisions cloud resources required for Azure IoT Operations including Schema Re
 |aioIdentityPrincipalId|`string`|The Azure IoT Operations User Assigned Managed Identity Principal ID.|
 |arcOnboardingIdentityId|`string`|The User Assigned Managed Identity ID with "Kubernetes Cluster - Azure Arc Onboarding" permissions.|
 |arcOnboardingIdentityName|`string`|The User Assigned Managed Identity name with "Kubernetes Cluster - Azure Arc Onboarding" permissions.|
+
+### cloudObservability
+
+Deploys Azure observability resources including Azure Monitor Workspace, Log Analytics Workspace, Azure Managed Grafana, and Data Collection Rules for container monitoring and metrics collection.
+
+#### Parameters for cloudObservability
+
+|Name|Description|Type|Default|Required|
+| :--- | :--- | :--- | :--- | :--- |
+|common|The common component configuration.|`[_1.Common](#user-defined-types)`|n/a|yes|
+|tags|Additional tags to add to the resources.|`object`|{}|no|
+|logRetentionInDays|Log Analytics Workspace retention in days|`int`|30|no|
+|dailyQuotaInGb|Log Analytics Workspace daily quota in GB|`int`|10|no|
+|grafanaMajorVersion|Grafana major version|`string`|10|no|
+|logsDataCollectionRuleNamespaces|List of cluster namespaces to be exposed in the log analytics workspace|`array`|['kube-system', 'gatekeeper-system', 'azure-arc', 'azure-iot-operations']|no|
+|logsDataCollectionRuleStreams|List of streams to be enabled in the log analytics workspace|`array`|['Microsoft-ContainerLog', 'Microsoft-ContainerLogV2', 'Microsoft-KubeEvents', 'Microsoft-KubePodInventory', 'Microsoft-KubeNodeInventory', 'Microsoft-KubePVInventory', 'Microsoft-KubeServices', 'Microsoft-KubeMonAgentEvents', 'Microsoft-InsightsMetrics', 'Microsoft-ContainerInventory', 'Microsoft-ContainerNodeInventory', 'Microsoft-Perf']|no|
+
+#### Resources for cloudObservability
+
+|Name|Type|API Version|
+| :--- | :--- | :--- |
+|monitorWorkspace|`Microsoft.Monitor/accounts`|2023-04-03|
+|logAnalytics|`Microsoft.OperationalInsights/workspaces`|2025-02-01|
+|grafana|`Microsoft.Dashboard/grafana`|2024-10-01|
+|containerInsightsSolution|`Microsoft.OperationsManagement/solutions`|2015-11-01-preview|
+|grafanaLogsReaderRole|`Microsoft.Authorization/roleAssignments`|2022-04-01|
+|grafanaMetricsReaderRole|`Microsoft.Authorization/roleAssignments`|2022-04-01|
+|dataCollectionEndpoint|`Microsoft.Insights/dataCollectionEndpoints`|2023-03-11|
+|logsDataCollectionRule|`Microsoft.Insights/dataCollectionRules`|2023-03-11|
+|metricsDataCollectionRule|`Microsoft.Insights/dataCollectionRules`|2023-03-11|
+
+#### Outputs for cloudObservability
+
+|Name|Type|Description|
+| :--- | :--- | :--- |
+|monitorWorkspaceName|`string`|The Azure Monitor Workspace name.|
+|logAnalyticsName|`string`|The Log Analytics Workspace name.|
+|logAnalyticsId|`string`|The Log Analytics Workspace ID.|
+|grafanaName|`string`|The Azure Managed Grafana name.|
 
 ### cloudData
 

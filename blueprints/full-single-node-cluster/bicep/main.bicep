@@ -64,6 +64,15 @@ module cloudSecurityIdentity '../../../src/000-cloud/010-security-identity/bicep
   }
 }
 
+module cloudObservability '../../../src/000-cloud/020-observability/bicep/main.bicep' = {
+  name: '${deployment().name}-cloudObservability'
+  scope: resourceGroup(resourceGroupName)
+  dependsOn: [cloudResourceGroup]
+  params: {
+    common: common
+  }
+}
+
 module cloudData '../../../src/000-cloud/030-data/bicep/main.bicep' = {
   name: '${deployment().name}-cloudData'
   scope: resourceGroup(resourceGroupName)

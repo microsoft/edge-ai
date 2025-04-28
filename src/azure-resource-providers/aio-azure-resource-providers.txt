@@ -9,3 +9,4 @@ Microsoft.Monitor
 Microsoft.Dashboard
 Microsoft.Insights
 Microsoft.OperationalInsights
+Microsoft.OperationsManagement
