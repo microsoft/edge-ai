@@ -83,6 +83,9 @@ jobs:
       # Using a basic dependency check with built-in security scanning
       - name: Dependency Review
         uses: actions/dependency-review-action@v3
+        with:
+          head-ref: refs/heads/main
+          base-ref: refs/heads/main
 
   # MegaLinter job for main branch
   mega-linter-main:
