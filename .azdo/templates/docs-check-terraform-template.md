@@ -180,5 +180,4 @@ Common issues and their solutions:
 - [Terraform Docs Documentation](https://terraform-docs.io/)
 - [Microsoft Internationalization Guidelines](https://learn.microsoft.com/style-guide/global-communications/)
 - [Azure DevOps Pipeline Templates](https://learn.microsoft.com/azure/devops/pipelines/process/templates)
-- [Terraform Documentation Best Practices](https://www.terraform.io/docs/extend/best-practices/documentation.html)
 - [Azure DevOps YAML Schema](https://learn.microsoft.com/azure/devops/pipelines/yaml-schema/)

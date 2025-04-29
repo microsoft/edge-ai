@@ -21,7 +21,7 @@ This is a large multi-faceted repo, so as you work in it, help the user ramp up 
 
 ## Build a new Blueprint
 
-- Blueprints are defined in the [blueprints](../blueprints/) directory. [Blueprints README](../blueprints/README.md). Use an existing Blueprint as a starting point, usually [full-single-cluster](../blueprints/terraform/full-single-cluster/) and add/remove as needed.
+- Blueprints are defined in the [blueprints](../blueprints/) directory. [Blueprints README](../blueprints/README.md). Use an existing Blueprint as a starting point, usually [full-single-snode-cluster](../blueprints/full-single-node-cluster/terraform/) and add/remove as needed.
 - When building a new Blueprint, use the existing building blocks in `/src`.
 
 ## Terraform

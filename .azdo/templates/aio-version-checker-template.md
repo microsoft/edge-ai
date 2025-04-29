@@ -143,7 +143,7 @@ Common issues and their solutions:
 
 - MegaLinter Template: [YAML](./megalinter-template.yml) | [Documentation](./megalinter-template.md) - Provides code linting and quality checks before version checking
 - Matrix Folder Check Template: [YAML](./matrix-folder-check-template.yml) | [Documentation](./matrix-folder-check-template.md) - Detects changes in the repository structure for downstream testing
-- Docs Check Template: [YAML](.azdo/docs-check-terraform-template.yml) | [Documentation](./docs-check-terraform-template.md) - Validates documentation quality and consistency
+- Docs Check Template: [YAML](./docs-check-terraform-template.yml) | [Documentation](./docs-check-terraform-template.md) - Validates documentation quality and consistency
 
 ## Learn More
 

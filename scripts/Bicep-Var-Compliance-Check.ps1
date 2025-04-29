@@ -113,7 +113,7 @@ function Convert-BicepToArmTemplate {
     [OutputType([System.String])]
     param (
         [Parameter(Mandatory = $true, Position = 0)]
-        [ValidateScript({Test-Path $_ -PathType Leaf})]
+        [ValidateScript({ Test-Path $_ -PathType Leaf })]
         [string]$BicepFilePath
     )
 
@@ -131,7 +131,8 @@ function Convert-BicepToArmTemplate {
         $relativePath = [System.IO.Path]::GetDirectoryName($BicepFilePath).Replace($PWD.Path, "").TrimStart("/\")
         $targetDir = if ([string]::IsNullOrEmpty($relativePath)) {
             $rootArmDirectory
-        } else {
+        }
+        else {
             $armStructurePath = Join-Path -Path $rootArmDirectory -ChildPath $relativePath
             if (-not (Test-Path -Path $armStructurePath -PathType Container)) {
                 New-Item -Path $armStructurePath -ItemType Directory -Force | Out-Null
@@ -262,7 +263,8 @@ function Get-BicepVariableFromJson {
                 $variableType = $parameter.type
                 $defaultValue = if ($parameter.PSObject.Properties.Name -contains "defaultValue") {
                     $parameter.defaultValue | ConvertTo-Json -Depth 5 -Compress
-                } else {
+                }
+                else {
                     $null
                 }
 
@@ -276,19 +278,20 @@ function Get-BicepVariableFromJson {
                 # Use the line number found in the original Bicep file, or 0 if not found
                 $lineNumber = if ($paramLineNumbers.ContainsKey($variableName)) {
                     $paramLineNumbers[$variableName]
-                } else {
+                }
+                else {
                     0
                 }
 
                 $results += [PSCustomObject]@{
-                    Name = $variableName
-                    Type = $variableType
-                    DefaultValue = $defaultValue
-                    Description = $description
-                    FilePath = $BicepFilePath
+                    Name             = $variableName
+                    Type             = $variableType
+                    DefaultValue     = $defaultValue
+                    Description      = $description
+                    FilePath         = $BicepFilePath
                     RepoRelativePath = $repoPath
-                    LineNumber = $lineNumber
-                    ElementType = "parameter"
+                    LineNumber       = $lineNumber
+                    ElementType      = "parameter"
                 }
             }
         }
@@ -303,17 +306,23 @@ function Get-BicepVariableFromJson {
                 # Variables don't have a type in ARM templates, so we'll infer from the value
                 $variableType = if ($null -eq $variable) {
                     "null"
-                } elseif ($variable -is [bool]) {
+                }
+                elseif ($variable -is [bool]) {
                     "bool"
-                } elseif ($variable -is [int]) {
+                }
+                elseif ($variable -is [int]) {
                     "int"
-                } elseif ($variable -is [string]) {
+                }
+                elseif ($variable -is [string]) {
                     "string"
-                } elseif ($variable -is [array]) {
+                }
+                elseif ($variable -is [array]) {
                     "array"
-                } elseif ($variable -is [PSCustomObject]) {
+                }
+                elseif ($variable -is [PSCustomObject]) {
                     "object"
-                } else {
+                }
+                else {
                     "unknown"
                 }
 
@@ -326,19 +335,20 @@ function Get-BicepVariableFromJson {
                 # Use the line number found in the original Bicep file, or 0 if not found
                 $lineNumber = if ($varLineNumbers.ContainsKey($variableName)) {
                     $varLineNumbers[$variableName]
-                } else {
+                }
+                else {
                     0
                 }
 
                 $results += [PSCustomObject]@{
-                    Name = $variableName
-                    Type = $variableType
-                    DefaultValue = $defaultValue
-                    Description = $description
-                    FilePath = $BicepFilePath
+                    Name             = $variableName
+                    Type             = $variableType
+                    DefaultValue     = $defaultValue
+                    Description      = $description
+                    FilePath         = $BicepFilePath
                     RepoRelativePath = $repoPath
-                    LineNumber = $lineNumber
-                    ElementType = "variable"
+                    LineNumber       = $lineNumber
+                    ElementType      = "variable"
                 }
             }
         }
@@ -421,7 +431,7 @@ function Compare-BicepVariable {
 
             # Create location object with file path and line number
             $location = [PSCustomObject]@{
-                file = $var.RepoRelativePath
+                file       = $var.RepoRelativePath
                 lineNumber = $var.LineNumber
             }
             $locations += $location
@@ -444,10 +454,10 @@ function Compare-BicepVariable {
     $inconsistencies = @()
     foreach ($varName in $varDifferences.Keys) {
         $inconsistencies += [PSCustomObject]@{
-            variable = $varName
+            variable    = $varName
             differences = $varDifferences[$varName]
-            files = $varFiles[$varName]
-            locations = $varLocations[$varName]
+            files       = $varFiles[$varName]
+            locations   = $varLocations[$varName]
         }
     }
 
@@ -487,7 +497,8 @@ foreach ($file in $bicepFiles) {
 
             Write-Verbose "Processed $($fileVariables.Count) variables from $file"
 
-        } else {
+        }
+        else {
             Write-Warning "Failed to convert Bicep file to ARM template: $file"
         }
     }

@@ -164,6 +164,7 @@ Common issues and their solutions:
 ## Learn More
 
 - [MegaLinter Documentation](https://megalinter.github.io/)
-- [Available Linters](https://megalinter.github.io/latest/supported-linters/)
-- [Azure DevOps Integration Guide](https://megalinter.github.io/latest/azure-pipelines/)
-- [Configuration Options](https://megalinter.github.io/latest/configuration/)
+- [Available Linters](https://megalinter.io/latest/supported-linters/)
+- [Configuration Options](https://megalinter.io/latest/configuration/)
+- [Azure DevOps Pipeline Templates](https://learn.microsoft.com/azure/devops/pipelines/process/templates)
+- [Docker Caching Best Practices](https://docs.docker.com/build/cache/)

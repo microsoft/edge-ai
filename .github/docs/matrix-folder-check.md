@@ -165,7 +165,7 @@ jobs:
 ## Related Workflows
 
 - [Cluster Terraform Testing Workflow](./cluster-test-terraform.md) - Uses the matrix output from this workflow
-- [Bicep Validation Workflow](./bicep-validation.md) - Validates Bicep templates based on detected changes
+- [Bicep Validation Workflow](./docs-check-bicep.md) - Validates Bicep templates based on detected changes
 
 ## Learn More
 

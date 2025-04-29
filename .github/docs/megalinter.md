@@ -120,12 +120,13 @@ Common issues and their solutions:
 
 ## Related Workflows
 
-- Variable Compliance Terraform: [YAML](../.github/workflows/variable-compliance-terraform.yml) | [Documentation](./.github/docs/variable-compliance-terraform.md) - Checks Terraform variable consistency
-- Docs Check: [YAML](../.github/workflows/docs-check.yml) | [Documentation](./.github/docs/docs-check.md) - Ensures documentation quality
+- Variable Compliance Terraform: [YAML](../workflows/variable-compliance-terraform.yml) | [Documentation](./variable-compliance-terraform.md) - Checks Terraform variable consistency
+- Docs Check (Terraform): [YAML](../workflows/docs-check-terraform.yml) | [Documentation](./docs-check-terraform.md) - Ensures documentation quality
+- Docs Check (Bicep): [YAML](../workflows/docs-check-bicep.yml) | [Documentation](./docs-check-bicep.md) - Ensures documentation quality
 
 ## Learn More
 
 - [MegaLinter Documentation](https://megalinter.io)
-- [MegaLinter Configuration Options](https://megalinter.io/configuration/)
+- [MegaLinter Configuration Options](https://megalinter.io/latest/configuration/)
 - [GitHub Actions Documentation](https://docs.github.com/en/actions)
 - [Repository Structure Guide](/README.md)
