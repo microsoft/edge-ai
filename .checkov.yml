@@ -1,0 +1,57 @@
+---
+# Checkov configuration file
+# This file configures which frameworks to use for security scanning
+
+# Specify the frameworks to include - make sure Terraform and Bicep are first
+framework:
+  # Primary IaC frameworks we need to scan
+  - terraform
+  - bicep
+
+  # Core IaC frameworks
+  - arm
+  - kubernetes
+  - helm
+  - kustomize
+  - dockerfile
+  - ansible
+
+  # CI/CD pipelines
+  - github_actions
+  - azure_pipelines
+
+  # API and service configuration
+  - openapi
+  - serverless
+
+  # Security-focused scanners
+  - secrets
+
+  # Additional formats
+  - json
+  - yaml
+
+# # Output format configuration
+output:
+  - junitxml
+  - json
+
+# Specific checks to skip (commented out by default - uncomment and add checks as needed)
+# skip-check:
+#   # Example Azure security checks that might be skipped in dev environments
+#   - CKV_AZURE_2    # Ensure that all Azure Storage accounts disallow public access
+#   - CKV_AZURE_35   # Ensure default network access rule for Storage Accounts is set to deny
+#   - CKV_AZURE_43   # Ensure the Storage Account default network access rule is set to deny
+#
+#   # Example Kubernetes checks that might be skipped in dev environments
+#   - CKV_K8S_38     # Ensure containers mount a root filesystem as read-only
+#   - CKV_K8S_40     # Containers should not run as the root user
+#
+#   # Example Docker checks that might be skipped during development
+#   - CKV_DOCKER_2   # Ensure that HEALTHCHECK instructions have been added to container images
+#
+#   # Example general security checks
+#   - CKV_SECRET_6   # Base64 High Entropy String
+
+# Enable evaluation of variables
+evaluate-variables: true

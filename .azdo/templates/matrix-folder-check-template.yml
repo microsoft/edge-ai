@@ -48,6 +48,10 @@
 # improving pipeline efficiency.
 ---
 parameters:
+  # Job name for this instance of the template
+  - name: jobName
+    type: string
+    default: 'MatrixBuildFolderCheck'  # Default for backward compatibility
   # Dependencies for this job
   - name: dependsOn
     type: object
@@ -68,7 +72,7 @@ parameters:
     default: false
 
 jobs:
-  - job: MatrixBuildFolderCheck
+  - job: ${{ parameters.jobName }}
     displayName: ${{ parameters.displayName }}
     dependsOn: ${{ parameters.dependsOn }}
     condition: ${{ parameters.condition }}

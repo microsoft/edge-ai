@@ -47,6 +47,18 @@ npm run mdlint-fix
 
 # Run spell check
 npm run cspell
+
+# Run security scanning on changed folders only
+npm run checkov-changes
+
+# Run security scanning on all folders
+npm run checkov-all
+
+# Check for language-specific links
+npm run link-check
+
+# Fix language-specific links
+npm run link-fix
 ```
 
 These scripts are defined in the `package.json` file in the project root and provide shortcuts to the underlying tools configured specifically for this project.
@@ -96,6 +108,28 @@ npm run cspell
 > **NOTE**
 >
 > If cspell detects an unknown word which should be ignored, add the word to the excluded word dictionary file `cspell-cse.txt`. If you think it's a common computing word, you can make a PR against [the cspell software terms dictionary](https://github.com/streetsidesoftware/cspell-dicts/tree/main/dictionaries/software-terms/src)
+
+### Security Scanning
+
+The project includes integration with Checkov, a static code analysis tool for infrastructure-as-code (IaC) that helps identify security and compliance issues.
+
+Two scanning modes are available:
+
+```sh
+# Scan only folders with detected changes
+npm run checkov-changes
+
+# Scan all folders in the repository
+npm run checkov-all
+```
+
+The scanning process:
+
+1. Detects which folders have changed (or includes all folders with the `-IncludeAllFolders` flag)
+2. Runs Checkov security scanner on those folders
+3. Aggregates results into a JUnit XML report file at `./checkov-results/code-analysis.xml`
+
+This helps identify potential security issues early in the development process.
 
 ## Updates
 

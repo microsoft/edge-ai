@@ -32,8 +32,8 @@ trigger:
 
 # Add parameters section for manual trigger option
 parameters:
-  - name: runMegalinterCacheUpdate
-    displayName: 'Run MegaLinter Cache Update'
+  - name: RunSecurityUpdateScanning
+    displayName: 'Run Security and Update Scanning'
     type: boolean
     default: false
 
@@ -47,11 +47,9 @@ schedules:
 
 # set isMain to true if the branch is main to trigger main stage
 # set isScheduled to true if the build is scheduled to trigger
-# define the Megalinter cache path for the pipeline
 variables:
   isMain: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
   isScheduled: $[eq(variables['Build.Reason'], 'Schedule')]
-  MegalinterCachePath: "/mnt/storage/sdc/cache/images/megalinter"
 
 # Define the default pool for the entire pipeline. This is a
 # Managed DevOps Pool with Ubuntu 2022 and WIndows 2022 agents
@@ -60,76 +58,54 @@ pool:
   vmImage: ubuntu-latest
 
 stages:
-  # Daily scheduled build to update the MegaLinter cache
+  # Daily scheduled build to run security and update scanning
   - stage: Scheduled
-    displayName: Megalinter Scheduled Caching
-    condition: or(eq(variables.isScheduled, true), eq(${{ parameters.runMegalinterCacheUpdate }}, true))
+    displayName: Security and Updates Scanning
+    condition: or(eq(variables.isScheduled, true), eq(${{ parameters.RunSecurityUpdateScanning }}, true))
     jobs:
-      - job: UpdateMegaLinterCache
-        displayName: "Update MegaLinter Cache"
-        pool:
-          name: ai-on-edge-managed-pool
-          vmImage: ubuntu-latest
-          # Make a demand for the data drive on this agent to ensure
-          # we can pull megalinter from the cache
-          demands:
-            - WorkFolder -equals /mnt/storage/sdc/
+      # Run Checkov security scanning directly with the PowerShell script approach
+      - template: .azdo/templates/checkov-template.yml
+        parameters:
+          agentPool: 'ubuntu-latest'
 
-        steps:
-          # Clear the cache directory ahead of the refresh
-          - script: |
+      # Use the aio-version-checker-template.yml template for checking AIO component versions
+      - template: .azdo/templates/aio-version-checker-template.yml
+        parameters:
+          dependsOn: []
+          displayName: "AIO Version Check"
+          condition: succeeded()
+          iacType: all  # Check all supported file types (currently only Terraform and Bicep files)
+          breakBuild: false  # Only show warnings by default
 
-              # Clear the cache data directory ahead of the refresh
-              echo "Clearing Megalinter Cache Directory... $(MegalinterCachePath)"
-              rm -rf $(MegalinterCachePath)
-              echo "Creating Megalinter Cache Directory... $(MegalinterCachePath)"
-              mkdir -p $(MegalinterCachePath)
+      # Use the matrix-folder-check-template.yml to check all folders in src directory for scheduled scans
+      - template: .azdo/templates/matrix-folder-check-template.yml
+        parameters:
+          jobName: ScheduledComponentsFolderCheck  # Unique job name for scheduled instance
+          dependsOn: []
+          displayName: "Check all folders in src directory"
+          condition: succeeded()
+          includeAllFolders: true  # Check all folders for scheduled builds
 
-            displayName: "Clear Megalinter Cache Directory"
-
-          # Pull MegaLinter docker image
-          - script: |
-              echo "Pulling MegaLinter Docker image..."
-              docker pull oxsecurity/megalinter:v8
-            displayName: "Pull MegaLinter"
-
-          # Save MegaLinter docker image to cache
-          - script: |
-              echo "Saving Megalinter Docker image to cache..."
-              docker save oxsecurity/megalinter:v8 -o $(MegalinterCachePath)/megalinterv8-cache.tar
-            displayName: "Save MegaLinter Docker Image to Cache"
+      # Use the cluster-test-terraform-template.yml template for Terraform testing in scheduled runs
+      - template: .azdo/templates/cluster-test-terraform-template.yml
+        parameters:
+          dependsOn: ScheduledComponentsFolderCheck
+          displayName: "Scheduled Terraform Component Test"
+          condition: eq(dependencies.ScheduledComponentsFolderCheck.outputs['matrixBuildFolderCheckTask.changesInTfInstall'], 'true')
+          matrixVariable: dependencies.ScheduledComponentsFolderCheck.outputs['matrixBuildFolderCheckTask.changedTfFolders']
+          azureServiceConnection: azdo-ai-for-edge-iac-for-edge
+          breakBuild: true
 
   - stage: Main
     displayName: Main Build
-    # dependsOn: string | [ string ]
     # Run the main build process only if the build is not scheduled and is the main branch
     condition: and(eq(variables.isMain, true), eq(variables.isScheduled, false))
-    # pool: string | pool
-    # variables: { string: string } | [ variable | variableReference ]
     jobs:
-      - job: DependencyScan
-        pool:
-          name: ai-on-edge-managed-pool
-          vmImage: ubuntu-latest
-        steps:
-          # Checkout repo
-          - checkout: self
-            clean: true
-
-          # Initialize dependency scan and fail the build if it does not pass
-          - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
-            displayName: "Component Detection"
-            inputs:
-              failOnAlert: true
-
-      # Use the megaLinter-template.yml to run MeagaLinter
-      # This job will only run if the DependencyScan job passes.
+      # Use the megaLinter-template.yml to run MegaLinter
       - template: .azdo/templates/megalinter-template.yml
         parameters:
-          dependsOn: DependencyScan
           displayName: "Run MegaLinter"
           condition: succeeded()
-          megalinterCachePath: $(MegalinterCachePath)
           # for main do not report results as there's no PR to report to
           enableAzureReporter: false
 
@@ -147,57 +123,20 @@ stages:
 
   - stage: PR
     displayName: PR Build Process
-    # dependsOn: string | [ string ]
     # Run the PR build process only if the build is not scheduled and not the main branch
     condition: and(eq(variables.isMain, false), eq(variables.isScheduled, false))
-    # pool: string | pool
-    # variables: { string: string } | [ variable | variableReference ]
     jobs:
-      # Ensure a clean workspace for the PR build process
-      - job: PrePRCleanup
-        displayName: Pre-PR Workspace Cleanup
-        pool:
-          name: ai-on-edge-managed-pool
-          vmImage: ubuntu-latest
-        steps:
-          - task: DeleteFiles@1
-            displayName: "Delete files from $(Agent.WorkFolder)"
-            inputs:
-              SourceFolder: "$(Agent.WorkFolder)"
-
-      # Run Dependency Scan based on the MSFT vss governance build task.
-      # A version of this task is also auto injected by corporate policy.
-      # It's declared here to make it explicit in the pipeline.
-      - job: DependencyScan
-        pool:
-          name: ai-on-edge-managed-pool
-          vmImage: ubuntu-latest
-        dependsOn:
-          - PrePRCleanup
-        steps:
-          # Checkout repo
-          - checkout: self
-            clean: true
-
-          # Initialize dependency scan and fail the build if it does not pass
-          - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
-            displayName: "Component Detection"
-            inputs:
-              failOnAlert: true
-
       # Use the MegaLinter template for PR builds with Azure reporter enabled
       - template: .azdo/templates/megalinter-template.yml
         parameters:
-          dependsOn: DependencyScan
+          dependsOn: []
           displayName: "Run MegaLinter"
           condition: succeeded()
-          megalinterCachePath: $(MegalinterCachePath)
           # for PR builds, enable the Azure reporter to report results
-          # to the PR and set the pull request ID and source repo URI
+          # to the PR and set the pull request ID and source repo URIs
           enableAzureReporter: true
           pullRequestId: $(System.PullRequest.PullRequestId)
           sourceRepoUri: $(System.PullRequest.SourceRepositoryURI)
-
       # Use the docs check template for PR builds
       - template: .azdo/templates/docs-check-terraform-template.yml
         parameters:
@@ -205,7 +144,6 @@ stages:
           displayName: "Terraform Documentation Quality Check"
           condition: succeeded()
           breakBuild: false  # Only show warnings by default
-
       # Use the docs check template for Bicep files
       - template: .azdo/templates/docs-check-bicep-template.yml
         parameters:
@@ -213,55 +151,42 @@ stages:
           displayName: "Bicep Documentation Quality Check"
           condition: succeeded()
           breakBuild: false  # Only show warnings by default
-
-      # Use the aio-version-checker-template.yml template for checking AIO component versions
-      - template: .azdo/templates/aio-version-checker-template.yml
-        parameters:
-          dependsOn: MegaLinter
-          displayName: "AIO Version Check"
-          condition: succeeded()
-          iacType: all  # Check all supported file types (currently only Terraform and Bicep files)
-          breakBuild: false  # Only show warnings by default
-
       # Use the matrix-folder-check-template.yml to check for changes in src directory
       - template: .azdo/templates/matrix-folder-check-template.yml
         parameters:
+          jobName: ComponentChangesFolderCheck  # Add unique job name for this instance
           dependsOn: [DocsCheckTerraform, DocsCheckBicep]
           displayName: "Check for changes in src directory"
           condition: succeeded()
           includeAllFolders: false  # Only check folders with changes for PR builds
-
       # Use the resource-provider-pwsh-tests-template.yml template for Resource Provider testing jobs
       - template: .azdo/templates/resource-provider-pwsh-tests-template.yml
         parameters:
-          dependsOn: MatrixBuildFolderCheck
-          pwshScriptCondition: eq(dependencies.MatrixBuildFolderCheck.outputs['matrixBuildFolderCheckTask.changesInRpEnablementPwsh'], 'true')
+          dependsOn: ComponentChangesFolderCheck  # Updated to reference the unique job name
+          pwshScriptCondition: eq(dependencies.ComponentChangesFolderCheck.outputs['matrixBuildFolderCheckTask.changesInRpEnablementPwsh'], 'true')
           azureServiceConnection: azdo-ai-for-edge-iac-for-edge
           workingDirectory: $(System.DefaultWorkingDirectory)/src/azure-resource-providers
           pwshTestResultsOutput: $(System.DefaultWorkingDirectory)/PWSH-TEST-RESULTS.xml
-
       # Use template for Terraform variable compliance checking
       - template: .azdo/templates/variable-compliance-terraform-template.yml
         parameters:
-          dependsOn: MatrixBuildFolderCheck
+          dependsOn: ComponentChangesFolderCheck  # Updated to reference the unique job name
           displayName: "Check Terraform Variable Consistency"
           condition: succeeded()
           breakBuild: false  # Only show warnings by default
-
       # Use template for Bicep variable compliance checking
       - template: .azdo/templates/variable-compliance-bicep-template.yml
         parameters:
-          dependsOn: MatrixBuildFolderCheck
+          dependsOn: ComponentChangesFolderCheck  # Updated to reference the unique job name
           displayName: "Check Bicep Variable Consistency"
           condition: succeeded()
           breakBuild: false  # Only show warnings by default
-
       # Use the cluster-test-terraform-template.yml template for Terraform testing
       - template: .azdo/templates/cluster-test-terraform-template.yml
         parameters:
-          dependsOn: MatrixBuildFolderCheck
+          dependsOn: ComponentChangesFolderCheck
           displayName: "Terraform Component Test"
-          condition: eq(dependencies.MatrixBuildFolderCheck.outputs['matrixBuildFolderCheckTask.changesInTfInstall'], 'true')
-          matrixVariable: dependencies.MatrixBuildFolderCheck.outputs['matrixBuildFolderCheckTask.changedTfFolders']
+          condition: eq(dependencies.ComponentChangesFolderCheck.outputs['matrixBuildFolderCheckTask.changesInTfInstall'], 'true')
+          matrixVariable: dependencies.ComponentChangesFolderCheck.outputs['matrixBuildFolderCheckTask.changedTfFolders']
           azureServiceConnection: azdo-ai-for-edge-iac-for-edge
           breakBuild: true

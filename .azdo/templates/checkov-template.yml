@@ -1,0 +1,99 @@
+# Checkov Security Scanner Template
+#
+# Purpose:
+# This template integrates Checkov security scanning into the pipeline to detect misconfigurations
+# and security issues in Infrastructure as Code (IaC) files, specifically Terraform and Bicep.
+#
+# Functionality:
+# - Detects folders containing Terraform and Bicep files for scanning
+# - Runs Checkov using the version already installed by Run-Checkov.ps1
+# - Publishes scan results as test reports and pipeline artifacts
+# - Aggregates results from multiple folders into a combined report
+#
+# Parameters:
+# - agentPool: Azure DevOps agent pool to use for scanning
+# - dependsOn: Jobs that this job depends on
+#
+# Output Variables:
+# - None directly from this template
+#
+# Usage Examples:
+# ```yaml
+# # Basic usage scanning all IaC types:
+# - template: .azdo/templates/checkov-template.yml
+#
+# # With dependencies and custom agent pool:
+# - template: .azdo/templates/checkov-template.yml
+#   parameters:
+#     agentPool: 'custom-pool'
+#     dependsOn: ['previousJob']
+# ```
+#
+# Security scanning is a critical step in the CI/CD pipeline to identify potential
+# vulnerabilities and compliance issues before IaC is deployed to production.
+---
+parameters:
+  - name: agentPool
+    type: string
+    default: 'ubuntu-latest'
+  - name: dependsOn
+    type: object
+    default: []
+
+jobs:
+  - job: checkov_scan
+    displayName: 'Checkov Security Scan'
+    dependsOn: ${{ parameters.dependsOn }}
+    pool:
+      vmImage: ${{ parameters.agentPool }}
+    steps:
+      - checkout: self
+
+      - task: UsePythonVersion@0
+        inputs:
+          versionSpec: '3.9'
+
+      - task: PowerShell@2
+        displayName: 'Detect Folders With IaC Files'
+        inputs:
+          targetType: 'inline'
+          script: |
+
+            # Execute the folder detection script and capture the output directly
+            Write-Host "Detecting folders with IaC files..."
+
+            # Capture the JSON string output directly from the script
+            & "$(Build.SourcesDirectory)/scripts/Detect-Folder-Changes.ps1" -IncludeAllFolders | `
+              & "$(Build.SourcesDirectory)/scripts/Run-Checkov.ps1" `
+                -OutputFolder "$(Build.SourcesDirectory)/checkov-results" `
+                -OutputFile "code-analysis.xml"
+
+            # Check if the output file exists and report its size
+            $outputFilePath = Join-Path "$(Build.SourcesDirectory)/checkov-results" "code-analysis.xml"
+            if (Test-Path $outputFilePath) {
+              $fileInfo = Get-Item $outputFilePath
+              Write-Host "Generated Checkov results file: $outputFilePath (Size: $($fileInfo.Length) bytes)"
+            } else {
+              Write-Warning "No output file generated at $outputFilePath"
+            }
+
+          pwsh: true
+          errorActionPreference: 'continue'
+        name: checkovAnalysis
+
+      - task: PublishTestResults@2
+        displayName: 'Publish Checkov Results'
+        inputs:
+          testResultsFormat: 'JUnit'
+          testResultsFiles: '$(Build.SourcesDirectory)/checkov-results/code-analysis.xml'
+          testRunTitle: 'Checkov Security Scan - Aggregated Results'
+          mergeTestResults: false
+          failTaskOnFailedTests: false
+        continueOnError: true
+
+      - task: PublishPipelineArtifact@1
+        displayName: 'Publish Checkov Results Artifacts'
+        inputs:
+          targetPath: '$(Build.SourcesDirectory)/checkov-results'
+          artifactName: 'checkov-results'
+        continueOnError: true

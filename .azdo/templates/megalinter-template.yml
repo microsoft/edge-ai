@@ -6,7 +6,7 @@
 # the repository.
 #
 # Functionality:
-# - Restores MegaLinter from cache or pulls it from Docker registry
+# - Pulls MegaLinter from Docker registry
 # - Executes MegaLinter against the codebase with customizable configurations
 # - Optionally posts comments on pull requests with linting results
 # - Publishes linting reports as pipeline artifacts
@@ -15,7 +15,6 @@
 # - dependsOn: Jobs that this job depends on
 # - displayName: Display name for this job
 # - condition: Condition for running this job
-# - megalinterCachePath: Path to the MegaLinter cache
 # - enableAzureReporter: When true, posts results as comments on Azure DevOps PRs
 # - pullRequestId: ID of the pull request (required for PR comments)
 # - sourceRepoUri: URI of the source repository (required for PR comments)
@@ -51,10 +50,6 @@ parameters:
   - name: condition
     type: string
     default: succeeded()
-  # Path to the MegaLinter cache
-  - name: megalinterCachePath
-    type: string
-    default: '/mnt/storage/sdc/cache/images/megalinter'
   # Enable or disable Azure Reporter
   - name: enableAzureReporter
     type: boolean
@@ -76,34 +71,19 @@ jobs:
     pool:
       name: ai-on-edge-managed-pool
       vmImage: ubuntu-latest
-      demands:
-        - WorkFolder -equals /mnt/storage/sdc/megalinter/
 
     steps:
       # Checkout repo
       - checkout: self
         clean: true
 
-      # Attempt to restore MegaLinter from the cache otherwise pull it
       - script: |
 
-          # Check if the cache directory exists
-          if [ -d "${{ parameters.megalinterCachePath }}" ]; then
-            # Check if the cache file exists
-            if [ -f "${{ parameters.megalinterCachePath }}/megalinterv8-cache.tar" ]; then
-              echo "Loading MegaLinter from cache..."
-              docker load -i ${{ parameters.megalinterCachePath }}/megalinterv8-cache.tar
-            # If the cache file does not exist, pull the MegaLinter image
-            else
-              echo "Megalinter cache not found. Pulling MegaLinter from Docker registry..."
-              docker pull oxsecurity/megalinter:v8
-            fi
-          else
-            echo "Cache directory ${{ parameters.megalinterCachePath }} does not exist. Pulling MegaLinter from Docker registry..."
-            docker pull oxsecurity/megalinter:v8
-          fi
+          # Pull MegaLinter from Docker registry
+          echo "Pulling MegaLinter from Docker registry..."
+          docker pull oxsecurity/megalinter:v8
 
-        displayName: MegaLinter Cache Restore
+        displayName: MegaLinter Pull
         condition: not(canceled())
 
       # Run MegaLinter with different configurations based on Azure Reporter setting
@@ -144,56 +124,3 @@ jobs:
         inputs:
           targetPath: "$(System.DefaultWorkingDirectory)/megalinter-reports/"
           artifactName: MegaLinterReport
-
-  # Cleanup job to remove files in /mnt/storage/sdc/ except for the MegaLinter cache tar file
-  - job: CleanupStorage
-    dependsOn: MegaLinter
-    displayName: 'Clean up Storage Directory'
-    condition: always()
-    pool:
-      name: ai-on-edge-managed-pool
-      vmImage: ubuntu-latest
-      demands:
-        - WorkFolder -equals /mnt/storage/sdc/
-    steps:
-      - script: |
-
-          echo "=== Storage Metrics Before Cleanup ==="
-          echo "Total disk space:"
-          df -h /mnt/storage/sdc
-          echo "MegaLinter directory size:"
-          du -sh /mnt/storage/sdc/megalinter 2>/dev/null || echo "Directory not found"
-          echo "Cache directory size:"
-          du -sh ${{ parameters.megalinterCachePath }} 2>/dev/null || echo "Directory not found"
-
-          echo "=== Starting Cleanup ==="
-
-          # Ensure the cache directory exists
-          mkdir -p ${{ parameters.megalinterCachePath }}
-
-          # Clean up the megalinter directory but preserve the cache
-          if [ -d "/mnt/storage/sdc/megalinter" ]; then
-            find /mnt/storage/sdc/megalinter -mindepth 1 -not -path "${{ parameters.megalinterCachePath }}*" -exec rm -rf {} \; 2>/dev/null || true
-            echo "Removed all files in /mnt/storage/sdc/megalinter except cache"
-          else
-            echo "MegaLinter directory does not exist, nothing to clean"
-          fi
-
-          # Make sure we don't have excessive cache files
-          if [ -d "${{ parameters.megalinterCachePath }}" ]; then
-            # Keep only the latest megalinter cache file
-            find ${{ parameters.megalinterCachePath }} -type f -not -name "megalinterv8-cache.tar" -delete 2>/dev/null || true
-            echo "Removed old cache files"
-          fi
-
-          echo "=== Storage Metrics After Cleanup ==="
-          echo "Total disk space:"
-          df -h /mnt/storage/sdc
-          echo "MegaLinter directory size:"
-          du -sh /mnt/storage/sdc/megalinter 2>/dev/null || echo "Directory not found"
-          echo "Cache directory size:"
-          du -sh ${{ parameters.megalinterCachePath }} 2>/dev/null || echo "Directory not found"
-
-          echo "=== Cleanup Complete ==="
-        displayName: 'Collect Metrics and Clean MegaLinter Storage'
-        condition: not(canceled())

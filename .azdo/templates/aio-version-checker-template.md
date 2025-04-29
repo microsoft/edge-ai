@@ -23,13 +23,13 @@ issues during deployments.
 
 ## Parameters
 
-| Parameter     | Type    | Required | Default                          | Description                                                              |
-|---------------|---------|----------|----------------------------------|--------------------------------------------------------------------------|
-| `displayName` | string  | No       | `"Check AIO Component Versions"` | Display name for the job                                                 |
-| `dependsOn`   | string  | No       | `""`                             | Name of the job this depends on                                          |
-| `condition`   | string  | No       | `succeeded()`                    | Condition under which this job will run                                  |
-| `iacType`     | string  | No       | `"all"`                          | Type of IaC files to check: "terraform", "bicep", or "all"               |
-| `breakBuild`  | boolean | No       | `false`                          | Whether to treat version mismatches as errors (true) or warnings (false) |
+| Parameter     | Type         | Required | Default                          | Description                                                              |
+|---------------|--------------|----------|----------------------------------|--------------------------------------------------------------------------|
+| `displayName` | string       | No       | `"Check AIO Component Versions"` | Display name for the job                                                 |
+| `dependsOn`   | object array | No       | `[]`                             | Array of jobs this job depends on                                        |
+| `condition`   | string       | No       | `succeeded()`                    | Condition under which this job will run                                  |
+| `iacType`     | string       | No       | `"all"`                          | Type of IaC files to check: "terraform", "bicep", or "all"               |
+| `breakBuild`  | boolean      | No       | `false`                          | Whether to treat version mismatches as errors (true) or warnings (false) |
 
 ## Outputs
 
@@ -59,7 +59,7 @@ This template depends on the following:
 - template: .azdo/templates/aio-version-checker-template.yml
   parameters:
     displayName: "Check AIO Component Versions"
-    dependsOn: PreviousJob
+    dependsOn: [PreviousJob1, AnotherJob]
     condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
     iacType: all
     breakBuild: true
@@ -97,18 +97,21 @@ The version checker verifies these components:
 
 ## Examples
 
-### Example 1: Basic Check
+### Example 1: Basic Check with No Dependencies
 
 ```yaml
 - template: .azdo/templates/aio-version-checker-template.yml
+  parameters:
+    dependsOn: []
 ```
 
-### Example 2: Check Only Terraform Files
+### Example 2: Check Only Terraform Files with Dependencies
 
 ```yaml
 - template: .azdo/templates/aio-version-checker-template.yml
   parameters:
     displayName: "Check Terraform AIO Versions"
+    dependsOn: [Linting, UnitTests]
     iacType: terraform
 ```
 
@@ -118,6 +121,7 @@ The version checker verifies these components:
 - template: .azdo/templates/aio-version-checker-template.yml
   parameters:
     displayName: "Strict AIO Version Check"
+    dependsOn: [PrepStep]
     iacType: both
     breakBuild: true
 ```
