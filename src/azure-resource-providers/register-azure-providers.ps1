@@ -24,7 +24,7 @@
     Version: 1.0
 #>
 
-Param (
+param (
     [Parameter(Mandatory)]
     [string]$filePath
 )
@@ -66,9 +66,10 @@ function Test-Cli-Install {
 
     if ($azCliPath) {
         Write-Output "Azure CLI is installed. Path: $($azCliPath.Path)"
-    } else {
+    }
+    else {
         Write-Output "Azure CLI is not installed. Please install Azure CLI at https://aka.ms/azurecli."
-    exit 1
+        exit 1
     }
 }
 

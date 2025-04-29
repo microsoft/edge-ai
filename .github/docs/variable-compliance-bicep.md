@@ -103,9 +103,10 @@ Common issues and their solutions:
 
 ## Related Workflows
 
-- Variable Compliance Terraform: [YAML](../.github/workflows/variable-compliance-terraform.yml) | [Documentation](./variable-compliance-terraform.md) - Similar functionality but for Terraform files
-- Docs Check: [YAML](../.github/workflows/docs-check.yml) | [Documentation](./docs-check.md) - Ensures documentation quality
-- AIO Version Checker: [YAML](../.github/workflows/aio-version-checker.yml) | [Documentation](./aio-version-checker.md) - Validates Azure IoT Operations component versions
+- Variable Compliance Terraform: [YAML](../workflows/variable-compliance-terraform.yml) | [Documentation](./variable-compliance-terraform.md) - Similar functionality but for Terraform files
+- Docs Check (Terraform): [YAML](../workflows/docs-check-terraform.yml) | [Documentation](./docs-check-terraform.md) - Ensures documentation quality
+- Docs Check (Bicep): [YAML](../workflows/docs-check-bicep.yml) | [Documentation](./docs-check-bicep.md) - Ensures documentation quality
+- AIO Version Checker: [YAML](../workflows/aio-version-checker.yml) | [Documentation](./aio-version-checker.md) - Validates Azure IoT Operations component versions
 
 ## Learn More
 

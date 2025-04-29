@@ -238,4 +238,4 @@ Common issues and their solutions:
 - [Terraform Documentation](https://www.terraform.io/docs)
 - [Terraform Testing Best Practices](https://www.terraform.io/docs/extend/testing/index.html)
 - [Repository Structure Guide](/README.md)
-- [Azure DevOps Test Results Publishing](https://learn.microsoft.com/azure/devops/pipelines/test/review-test-results-after-running-tests)
+- [Azure DevOps Test Results Publishing](https://learn.microsoft.com/azure/devops/pipelines/test/review-continuous-test-results-after-build)

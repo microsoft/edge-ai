@@ -121,8 +121,8 @@ Common issues and their solutions:
 
 ## Related Templates
 
-- PR Validation Workflow: [YAML](../.github/workflows/pr-validation.yml) | [Documentation](./pr-validation.md) - Uses this template conditionally for PR validation
-- Main Branch CI/CD: [YAML](../.github/workflows/main.yml) | [Documentation](./main.md) - Can also use this template for regular validation
+- PR Validation Workflow: [YAML](../workflows/pr-validation.yml) | [Documentation](./pr-validation.md) - Uses this template conditionally for PR validation
+- Main Branch CI/CD: [YAML](../workflows/main.yml) | [Documentation](./main.md) - Can also use this template for regular validation
 
 ## Learn More
 

@@ -106,8 +106,9 @@ Common issues and their solutions:
 
 ## Related Workflows
 
-- Docs Check: [YAML](../.github/workflows/docs-check.yml) | [Documentation](./.github/docs/docs-check.md) - Also ensures documentation quality
-- MegaLinter: [YAML](../.github/workflows/mega-linter.yml) | [Documentation](./.github/docs/mega-linter.md) - Provides broader code quality checks
+- Docs Check Bicep: [YAML](../workflows/docs-check-bicep.yml) | [Documentation](./docs-check-bicep.md) - Also ensures documentation quality
+- Docs Check Terraform: [YAML](../workflows/docs-check-terraform.yml) | [Documentation](./docs-check-terraform.md) - Also ensures documentation quality
+- MegaLinter: [YAML](../workflows/megalinter.yml) | [Documentation](./megalinter.md) - Provides broader code quality checks
 
 ## Learn More
 

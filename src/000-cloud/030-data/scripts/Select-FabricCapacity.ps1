@@ -18,7 +18,8 @@ Write-Host "Authenticating with Azure CLI..." -ForegroundColor Blue
 try {
     # Just check if the command succeeds without storing the result
     az account show | Out-Null
-} catch {
+}
+catch {
     Write-Host "You need to log in to Azure first." -ForegroundColor Yellow
     az login
 }
@@ -36,7 +37,7 @@ $token = az account get-access-token --resource "https://api.fabric.microsoft.co
 # Call the Fabric API to list capacities
 $headers = @{
     "Authorization" = "Bearer $token"
-    "Content-Type" = "application/json"
+    "Content-Type"  = "application/json"
 }
 
 $response = Invoke-RestMethod -Uri "https://api.fabric.microsoft.com/v1/capacities" -Headers $headers -Method Get
@@ -58,7 +59,8 @@ if ($null -eq $response.value -or $response.value.Count -eq 0) {
         Set-Content -Path "$OutputDir/$OutputFile" -Value "capacity_id = `"`""
         Write-Host "Configuration set to use Fabric free tier." -ForegroundColor Green
         return
-    } else {
+    }
+    else {
         Write-Host "Operation cancelled."
         exit 1
     }
@@ -114,7 +116,8 @@ if ($totalAvailable -eq 0) {
         Set-Content -Path "$OutputDir/$OutputFile" -Value "capacity_id = `"`""
         Write-Host "Configuration set to use Fabric free tier." -ForegroundColor Green
         return
-    } else {
+    }
+    else {
         Write-Host "Operation cancelled."
         exit 1
     }
@@ -128,10 +131,12 @@ $selection = Read-Host
 if ($selection -eq "0") {
     $selectedId = ""
     Write-Host "Using Fabric free tier (no capacity)." -ForegroundColor Green
-} elseif ([int]::TryParse($selection, [ref]$null) -and [int]$selection -ge 1 -and [int]$selection -lt $count) {
+}
+elseif ([int]::TryParse($selection, [ref]$null) -and [int]$selection -ge 1 -and [int]$selection -lt $count) {
     $selectedId = $capacityIds[[int]$selection]
     Write-Host "Selected capacity: $selectedId" -ForegroundColor Green
-} else {
+}
+else {
     Write-Host "Invalid selection." -ForegroundColor Red
     exit 1
 }

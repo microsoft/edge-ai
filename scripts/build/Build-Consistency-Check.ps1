@@ -67,10 +67,10 @@ function Compare-FileContent {
     $githubContent = Get-Content -Path $GitHubFilePath -Raw
 
     $results = @{
-        AzDoFile = (Split-Path -Leaf $AzDoFilePath)
-        GitHubFile = (Split-Path -Leaf $GitHubFilePath)
+        AzDoFile             = (Split-Path -Leaf $AzDoFilePath)
+        GitHubFile           = (Split-Path -Leaf $GitHubFilePath)
         ParameterDifferences = @()
-        StepDifferences = @()
+        StepDifferences      = @()
     }
 
     # Extract parameters from AzDo template
@@ -99,7 +99,7 @@ function Compare-FileContent {
 
     if ($azDoParamsNotInGitHub.Count -gt 0 -or $githubInputsNotInAzDo.Count -gt 0) {
         $results.ParameterDifferences = @{
-            OnlyInAzDo = $azDoParamsNotInGitHub
+            OnlyInAzDo   = $azDoParamsNotInGitHub
             OnlyInGitHub = $githubInputsNotInAzDo
         }
     }
@@ -110,8 +110,8 @@ function Compare-FileContent {
     $sizeDifferencePercent = [Math]::Abs(($azDoSize - $githubSize) / [Math]::Max($azDoSize, 1)) * 100
 
     $results.ContentSimilarity = @{
-        AzDoSize = $azDoSize
-        GitHubSize = $githubSize
+        AzDoSize          = $azDoSize
+        GitHubSize        = $githubSize
         DifferencePercent = $sizeDifferencePercent
     }
 
@@ -179,13 +179,13 @@ foreach ($baseName in $allBaseNames) {
         $contentComparison = Compare-FileContent -AzDoFilePath $azDoFile.FullName -GitHubFilePath $githubFile.FullName
 
         $result = @{
-            BaseName = $baseName
-            AzDoFile = $azDoFile.Name
-            GitHubFile = $githubFile.Name
-            AzDoNamingCorrect = $azDoNamingCorrect
+            BaseName            = $baseName
+            AzDoFile            = $azDoFile.Name
+            GitHubFile          = $githubFile.Name
+            AzDoNamingCorrect   = $azDoNamingCorrect
             GitHubNamingCorrect = $githubNamingCorrect
-            ContentComparison = $contentComparison
-            Status = if ($azDoNamingCorrect -and $githubNamingCorrect) { "Consistent" } else { "InconsistentNaming" }
+            ContentComparison   = $contentComparison
+            Status              = if ($azDoNamingCorrect -and $githubNamingCorrect) { "Consistent" } else { "InconsistentNaming" }
         }
 
         if (-not ($azDoNamingCorrect -and $githubNamingCorrect)) {
@@ -217,12 +217,12 @@ foreach ($baseName in $allBaseNames) {
         $missingFiles++
 
         $result = @{
-            BaseName = $baseName
-            AzDoFile = if ($hasAzDo) { $azDoBaseNames[$baseName].Name } else { "Missing" }
-            GitHubFile = if ($hasGitHub) { $githubBaseNames[$baseName].Name } else { "Missing" }
-            AzDoNamingCorrect = if ($hasAzDo) { $azDoBaseNames[$baseName].Name -eq "$baseName-template.yml" } else { $false }
+            BaseName            = $baseName
+            AzDoFile            = if ($hasAzDo) { $azDoBaseNames[$baseName].Name } else { "Missing" }
+            GitHubFile          = if ($hasGitHub) { $githubBaseNames[$baseName].Name } else { "Missing" }
+            AzDoNamingCorrect   = if ($hasAzDo) { $azDoBaseNames[$baseName].Name -eq "$baseName-template.yml" } else { $false }
             GitHubNamingCorrect = if ($hasGitHub) { $githubBaseNames[$baseName].Name -eq "$baseName.yml" } else { $false }
-            Status = $status
+            Status              = $status
         }
 
         # Display results
@@ -259,7 +259,8 @@ Write-Host "Files missing in one system: $missingFiles" -ForegroundColor $(if ($
 if ($inconsistentFiles -gt 0 -or $missingFiles -gt 0) {
     Write-Host "`n❌ Inconsistencies found. Please review and align Azure DevOps templates with GitHub workflows." -ForegroundColor Red
     exit 1
-} else {
+}
+else {
     Write-Host "`n✅ All files are consistent between Azure DevOps and GitHub." -ForegroundColor Green
     exit 0
 }

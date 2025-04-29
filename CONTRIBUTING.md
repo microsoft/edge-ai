@@ -62,7 +62,7 @@ We will then take care of the issue as soon as possible.
 A good bug report shouldn't leave others needing to chase you up for more information. Therefore, we ask you to investigate carefully, collect information and describe the issue in detail in your report. Please complete the following steps in advance to help us fix any potential bug as fast as possible.
 
 - Make sure that you are using the latest version of the project.
-- Determine if your bug is really a bug and not an error on your side e.g. using incompatible environment components/versions (Make sure that you have read the [documentation](/docs/README.md). If you are looking for support, you might want to check [this section](#i-have-a-question)).
+- Determine if your bug is really a bug and not an error on your side e.g. using incompatible environment components/versions (Make sure that you have read the [documentation](./docs/README.md). If you are looking for support, you might want to check [this section](#i-have-a-question)).
 - To see if other users have experienced (and potentially already solved) the same issue you are having, check if there is not already a bug report existing for your bug or error in the [bug tracker](https://dev.azure.com/ai-at-the-edge-flagship-accelerator/IaC%20for%20the%20Edge/_queries/query/a8d3e164-fe33-43a9-83c3-b60c4c51934d/).
 - Also make sure to search the internet (including internal and external Stack Overflow) to see if users outside of the GitHub community have discussed the issue.
 - Collect information about the bug:
@@ -107,7 +107,7 @@ Enhancement suggestions are tracked as [Azure DevOps Features](https://dev.azure
 - Use a **clear and descriptive title** for the issue to identify the suggestion.
 - Provide a **step-by-step description of the suggested enhancement** in as many details as possible.
 - **Describe the current behavior** and **explain which behavior you expected to see instead** and why. At this point you can also tell which alternatives do not work for you.
-- You may want to **include screenshots and animated GIFs** which help you demonstrate the steps or point out the part which the suggestion is related to. You can use [this tool](https://www.cockos.com/licecap/) to record GIFs on macOS and Windows, and [this tool](https://github.com/colinkeenan/silentcast) or [this tool](https://github.com/GNOME/byzanz) on Linux.
+- You may want to **include screenshots and animated GIFs** which help you demonstrate the steps or point out the part which the suggestion is related to. You can use [this tool](https://www.cockos.com/licecap/) to record GIFs on macOS and Windows, and [this tool](https://github.com/colinkeenan/silentcast) or [this tool](http://git.gnome.org/browse/byzanz/) on Linux.
 - **Explain why this enhancement would be useful** to most CONTRIBUTING.md users. You may also want to point out the other projects that solved it better and which could serve as inspiration.
 
 ### Your First Code Contribution
@@ -130,7 +130,7 @@ If you see issues with the documentation, please follow the [your first code con
 
 This project uses MegaLinter with numerous custom configured linters. These linters can be run locally to ensure that code reads the same across the project.
 
-For detailed information about our MegaLinter configuration, integration with our CI/CD pipeline, and available linters, please refer to our [MegaLinter documentation](/.azdo/megalinter.md).
+For detailed information about our MegaLinter configuration, integration with our CI/CD pipeline, and available linters, please refer to our [MegaLinter documentation](./.azdo/templates/megalinter-template.md).
 
 ### Development Environment
 
@@ -149,7 +149,7 @@ Refer to the [DevContainer README](./.devcontainer/README.md) for detailed infor
 
 ### Coding Conventions
 
-For detailed information about our coding standards, please refer to the [Coding Conventions](/docs/coding-conventions.md) document, which includes:
+For detailed information about our coding standards, please refer to the [Coding Conventions](./docs/coding-conventions.md) document, which includes:
 
 - Infrastructure as Code standards (Terraform and Bicep)
 - Git workflow practices including Conventional Commits

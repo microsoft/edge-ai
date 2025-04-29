@@ -172,7 +172,6 @@ Common issues and their solutions:
 ## Learn More
 
 - [Terraform Variable Syntax](https://www.terraform.io/language/values/variables)
-- [Terraform Documentation Best Practices](https://www.terraform.io/docs/extend/best-practices/documentation.html)
 - [terraform-docs Documentation](https://terraform-docs.io/)
 - [Azure DevOps Pipeline Templates](https://learn.microsoft.com/azure/devops/pipelines/process/templates)
 - [Reusable Infrastructure as Code](https://learn.microsoft.com/azure/architecture/framework/devops/automation-infrastructure)

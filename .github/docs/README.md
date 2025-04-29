@@ -88,18 +88,18 @@ These core workflows typically call the template workflows above in a specific s
 
 The following reusable template workflows are available in the `.github/workflows` directory:
 
-| Workflow                      | Purpose                                                                   | Documentation                                               |
-|-------------------------------|---------------------------------------------------------------------------|-------------------------------------------------------------|
-| `megalinter.yml`              | Provides linting capabilities across multiple languages and file formats  | [Workflow Documentation](./docs/megalinter.md)              |
-| `terraform-validation.yml`    | Runs Terraform init, validate, plan and tests on component folders        | [Workflow Documentation](./docs/terraform-validation.md)    |
-| `dependency-check.yml`        | Checks dependencies for vulnerabilities and update opportunities          | [Workflow Documentation](./docs/dependency-check.md)        |
-| `docs-check-terraform.yml`    | Validates documentation quality including Terraform docs and URL checks   | [Workflow Documentation](./docs/docs-check-terraform.md)    |
-| `version-checker.yml`         | Checks component versions against latest available releases               | [Workflow Documentation](./docs/version-checker.md)         |
-| `matrix-folder-check.yml`     | Creates dynamic matrices of changed folders for downstream jobs           | [Workflow Documentation](./docs/matrix-folder-check.md)     |
-| `wiki-update.yml`             | Updates documentation from repository markdown files                      | [Workflow Documentation](./docs/wiki-update.md)             |
-| `resource-provider-tests.yml` | Validates Azure resource provider registration scripts                    | [Workflow Documentation](./docs/resource-provider-tests.md) |
-| `variable-compliance.yml`     | Ensures consistent Terraform variable definitions across modules          | [Workflow Documentation](./docs/variable-compliance.md)     |
-| `cluster-test-terraform.yml`  | Performs comprehensive testing of Terraform modules against real clusters | [Workflow Documentation](./docs/cluster-test-terraform.md)  |
+| Workflow                            | Purpose                                                                   | Documentation                                                |
+|-------------------------------------|---------------------------------------------------------------------------|--------------------------------------------------------------|
+| `aio-version-checker.yml`           | Checks component versions against latest available releases               | [Workflow Documentation](./aio-version-checker.md)           |
+| `cluster-test-terraform.yml`        | Performs comprehensive testing of Terraform modules against real clusters | [Workflow Documentation](./cluster-test-terraform.md)        |
+| `docs-check-bicep.yml`              | Validates documentation quality including Bicep docs and URL checks       | [Workflow Documentation](./docs-check-bicep.md)              |
+| `docs-check-terraform.yml`          | Validates documentation quality including Terraform docs and URL checks   | [Workflow Documentation](./docs-check-terraform.md)          |
+| `matrix-folder-check.yml`           | Creates dynamic matrices of changed folders for downstream jobs           | [Workflow Documentation](./matrix-folder-check.md)           |
+| `megalinter.yml`                    | Provides linting capabilities across multiple languages and file formats  | [Workflow Documentation](./megalinter.md)                    |
+| `pages-deploy.yml`                  | Deploys documentation to GitHub Pages                                     | [Workflow Documentation](./pages-deploy.md)                  |
+| `resource-provider-pwsh-tests.yml`  | Validates Azure resource provider registration scripts                    | [Workflow Documentation](./resource-provider-pwsh-tests.md)  |
+| `variable-compliance-bicep.yml`     | Ensures consistent Bicep variable definitions across modules              | [Workflow Documentation](./variable-compliance-bicep.md)     |
+| `variable-compliance-terraform.yml` | Ensures consistent Terraform variable definitions across modules          | [Workflow Documentation](./variable-compliance-terraform.md) |
 
 > **Note:** All workflow documentation follows a standardized format that includes overview,
 > features, parameters, usage examples, implementation details, and troubleshooting sections.
@@ -109,10 +109,10 @@ The following reusable template workflows are available in the `.github/workflow
 
 The repository includes two primary workflows that orchestrate the overall CI/CD process:
 
-| Workflow            | Trigger                             | Purpose                                                 | Documentation                                          |
-|---------------------|-------------------------------------|---------------------------------------------------------|--------------------------------------------------------|
-| `main.yml`          | Push to main branch, manual trigger | Complete validation and deployment to environments      | [Workflow Documentation](./workflows/main.md)          |
-| `pr-validation.yml` | Pull requests to main branch        | Validates changes before merging to ensure code quality | [Workflow Documentation](./workflows/pr-validation.md) |
+| Workflow            | Trigger                             | Purpose                                                 | Documentation                                |
+|---------------------|-------------------------------------|---------------------------------------------------------|----------------------------------------------|
+| `main.yml`          | Push to main branch, manual trigger | Complete validation and deployment to environments      | [Workflow Documentation](./main.md)          |
+| `pr-validation.yml` | Pull requests to main branch        | Validates changes before merging to ensure code quality | [Workflow Documentation](./pr-validation.md) |
 
 #### Documentation Template
 
