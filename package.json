@@ -10,7 +10,11 @@
 		"tf-docs": "./src/update-all-terraform-docs.sh",
 		"lint-devcontainer": "mega-linter-runner --env \"'BICEP_BICEP_LINTER_ARGUMENTS=--outdir ./megalinter-reports'\"",
 		"lint-fix-devcontainer": "mega-linter-runner --env \"'BICEP_BICEP_LINTER_ARGUMENTS=--outdir ./megalinter-reports'\" --fix",
-		"format-tables": "find . -name '*.md' -not -path '*/node_modules/*' -not -path '*/megalinter-reports/*' -print0 | xargs -0 markdown-table-formatter"
+		"format-tables": "find . -name '*.md' -not -path '*/node_modules/*' -not -path '*/megalinter-reports/*' -print0 | xargs -0 markdown-table-formatter",
+		"checkov-changes": "pwsh -Command \"& $PWD/scripts/Detect-Folder-Changes.ps1 | & $PWD/scripts/Run-Checkov.ps1 -OutputFolder './checkov-results' -OutputFile 'code-analysis.xml'\"",
+		"checkov-all": "pwsh -Command \"& $PWD/scripts/Detect-Folder-Changes.ps1 -IncludeAllFolders | & $PWD/scripts/Run-Checkov.ps1 -OutputFolder './checkov-results' -OutputFile 'code-analysis.xml'\"",
+		"link-check": "python ./scripts/link-lang-check.py",
+		"link-fix": "python ./scripts/link-lang-check.py -f"
 	},
 	"dependencies": {
 		"markdown-table-formatter": "1.6.1",

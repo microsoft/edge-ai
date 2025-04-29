@@ -17,6 +17,9 @@ Azure DevOps build system for managing and validating the project's IaC.
     - [generate-bicep-docs.py](#generate-bicep-docspy)
     - [update-all-bicep-docs.sh](#update-all-bicep-docssh)
     - [bicep-docs-check.sh](#bicep-docs-checksh)
+  - [Security Scanning Scripts](#security-scanning-scripts)
+    - [Detect-Folder-Changes.ps1](#detect-folder-changesps1)
+    - [Run-Checkov.ps1](#run-checkovps1)
   - [Azure IoT Operations Scripts](#azure-iot-operations-scripts)
     - [aio-version-checker.py](#aio-version-checkerpy)
   - [Documentation and Link Validation Scripts](#documentation-and-link-validation-scripts)
@@ -157,6 +160,56 @@ The script works by:
 1. Running `update-all-bicep-docs.sh` to generate the latest documentation for `/src/*/bicep/` and `./blueprints/*/bicep/`
 2. Comparing the generated documentation with the existing documentation
 3. Reporting any differences found
+
+## Security Scanning Scripts
+
+### Detect-Folder-Changes.ps1
+
+PowerShell script that detects changes in repository folders and files, providing structured JSON output for security scanning.
+
+- **Usage**:
+  - Basic usage: `.\Detect-Folder-Changes.ps1`
+  - Include all folders (not just changed): `.\Detect-Folder-Changes.ps1 -IncludeAllFolders`
+  - Compare against a different branch: `.\Detect-Folder-Changes.ps1 -BaseBranch origin/develop`
+  - Write output to file: `.\Detect-Folder-Changes.ps1 -OutputFile "folder-changes.json"`
+- **Returns**: JSON structure identifying which components have been modified
+- **Build Integration**: Typically piped into Run-Checkov.ps1 for security scanning
+- **When to Use**: Before running security scans to focus the scan on changed components
+- **Best Practice**:
+  - Use with pipeline integration to only scan changed files in PRs
+  - Use with -IncludeAllFolders for periodic full scans
+
+The script detects:
+
+- Changes in shell/PowerShell scripts in the subscription setup folder
+- Terraform folders containing modified files
+- Bicep folders containing modified files
+
+### Run-Checkov.ps1
+
+PowerShell script that runs Checkov security scanner on folders identified by Detect-Folder-Changes.ps1 and aggregates results.
+
+- **Usage**:
+  - Via pipeline: `.\Detect-Folder-Changes.ps1 | .\Run-Checkov.ps1`
+  - With explicit JSON: `.\Run-Checkov.ps1 -InputJson $jsonData`
+  - With custom output: `.\Run-Checkov.ps1 -OutputFolder "./security-reports" -OutputFile "security-results.xml"`
+  - Using existing data: `.\Run-Checkov.ps1 -UseExistingData -OutputFolder "./checkov-results"`
+- **Returns**: Path to the aggregated JUnit XML report file
+- **Build Integration**:
+  - npm script: `npm run checkov-changes` scans only changed folders
+  - npm script: `npm run checkov-all` scans all folders
+- **When to Use**: During development and in CI/CD pipelines to identify security issues in IaC
+- **Dependencies**: Requires Checkov to be installed via pip
+- **Best Practice**:
+  - Run before committing changes to identify security issues early
+  - Use the generated reports to track security posture over time
+
+The script performs these actions:
+
+1. Processes JSON output from Detect-Folder-Changes.ps1
+2. Runs Checkov security scanner on identified folders
+3. Aggregates results into a single JUnit XML file
+4. Deduplicates redundant findings in the final report
 
 ## Azure IoT Operations Scripts
 

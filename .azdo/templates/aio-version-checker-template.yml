@@ -13,7 +13,7 @@
 #
 # Parameters:
 # - displayName: Display name for this job
-# - dependsOn: Jobs that this job depends on
+# - dependsOn: Jobs that this job depends on (array)
 # - condition: Condition for running this job
 # - iacType: IaC type to check (terraform, bicep, or all)
 # - breakBuild: When true, version mismatches fail the build
@@ -23,12 +23,12 @@
 # # Basic usage checking all IaC types:
 # - template: .azdo/templates/aio-version-checker-template.yml
 #   parameters:
-#     dependsOn: PreviousJob
+#     dependsOn: []
 #
 # # Check only Terraform files with strict validation:
 # - template: .azdo/templates/aio-version-checker-template.yml
 #   parameters:
-#     dependsOn: Lint
+#     dependsOn: [PreviousJob1, PreviousJob2]
 #     iacType: terraform
 #     breakBuild: true
 # ```
@@ -41,10 +41,10 @@ parameters:
   - name: displayName
     type: string
     default: "Check AIO Component Versions"
-  # Dependencies for this job
+  # Dependencies for this job (array)
   - name: dependsOn
-    type: string
-    default: ""
+    type: object
+    default: []
   # Condition for when to run this job
   - name: condition
     type: string
