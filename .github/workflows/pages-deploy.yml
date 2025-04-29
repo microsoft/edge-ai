@@ -81,6 +81,18 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
+      # copy _config.yml to docs folder from root to gh pages source folder 'docs'
+      - name: Copy additional file
+        run: |
+          # Copy file from source to destination
+          cp ./_config.yml ./docs/_config.yml
+
+      - name: Build with Jekyll
+        uses: actions/jekyll-build-pages@v1
+        with:
+          source: ./docs
+          destination: ./_site
+
       # If you use a documentation generator like MkDocs, Jekyll, etc.
       # add the build steps here
       # Example for MkDocs:
@@ -101,7 +113,7 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           # Adjust this path to match your documentation output directory
-          path: './docs'
+          path: './_site'
 
   deploy:
     name: Deploy to GitHub Pages
