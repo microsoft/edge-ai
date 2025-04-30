@@ -12,27 +12,30 @@ The scripts handle primary and secondary node(s) setup, cluster administration, 
 |Name|Description|Type|Default|Required|
 | :--- | :--- | :--- | :--- | :--- |
 |common|The common component configuration.|`[_1.Common](#user-defined-types)`|n/a|yes|
-|keyVaultName|The name of the Key Vault to save the scripts to.|`string`|n/a|yes|
-|keyVaultResourceGroupName|The resource group name where the Key Vault is located. Defaults to the current resource group.|`string`|[resourceGroup().name]|no|
 |arcConnectedClusterName|The resource name for the Arc connected cluster.|`string`|[format('arck-{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]|no|
-|clusterServerVirtualMachineName|The server virtual machines name.|`string`|n/a|no|
-|clusterNodeVirtualMachineNames|The node virtual machines names.|`array`|n/a|no|
-|clusterServerHostMachineUsername|Username used for the host machines that will be given kube-config settings on setup. (Otherwise, resource_prefix if it exists as a user)|`string`|[parameters('common').resourcePrefix]|no|
-|clusterServerIp|The IP address for the server for the cluster. (Needed for mult-node cluster)|`string`|n/a|no|
-|serverToken|The token that will be given to the server for the cluster or used by agent nodes.|`string`|n/a|no|
-|clusterAdminOid|The Object ID that will be given cluster-admin permissions.|`string`|n/a|no|
-|customLocationsOid|The object id of the Custom Locations Entra ID application for your tenant.<br>Can be retrieved using:<br><br>  <pre><code class="language-sh">  az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv<br>  </code></pre><br>|`string`|n/a|yes|
-|shouldAssignRoles|Whether to assign roles for Arc Onboarding.|`bool`|`true`|no|
-|arcOnboardingSpPrincipalId|Service Principal Object Id used when assigning roles for Arc onboarding.|`string`|n/a|no|
 |arcOnboardingSpClientId|Service Principal Client ID with Kubernetes Cluster - Azure Arc Onboarding permissions.|`string`|n/a|no|
 |arcOnboardingSpClientSecret|The Service Principal Client Secret for Arc onboarding.|`securestring`|n/a|no|
+|arcOnboardingSpPrincipalId|Service Principal Object Id used when assigning roles for Arc onboarding.|`string`|n/a|no|
 |arcOnboardingIdentityName|The resource name for the identity used for Arc onboarding.|`string`|n/a|no|
+|customLocationsOid|The object id of the Custom Locations Entra ID application for your tenant.<br>Can be retrieved using:<br><br>  <pre><code class="language-sh">  az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv<br>  </code></pre><br>|`string`|n/a|yes|
 |shouldAddCurrentUserClusterAdmin|Whether to add the current user as a cluster admin.|`bool`|`true`|no|
 |shouldEnableArcAutoUpgrade|Whether to enable auto-upgrade for Azure Arc agents.|`bool`|[not(equals(parameters('common').environment, 'prod'))]|no|
+|clusterAdminOid|The Object ID that will be given cluster-admin permissions.|`string`|n/a|no|
+|clusterNodeVirtualMachineNames|The node virtual machines names.|`array`|n/a|no|
+|clusterServerVirtualMachineName|The server virtual machines name.|`string`|n/a|no|
+|clusterServerHostMachineUsername|Username used for the host machines that will be given kube-config settings on setup. (Otherwise, resource_prefix if it exists as a user)|`string`|[parameters('common').resourcePrefix]|no|
+|clusterServerIp|The IP address for the server for the cluster. (Needed for mult-node cluster)|`string`|n/a|no|
+|serverToken|The token that will be given to the server for the cluster or used by agent nodes.|`securestring`|n/a|no|
+|shouldAssignRoles|Whether to assign roles for Arc Onboarding.|`bool`|`true`|no|
 |shouldDeployScriptToVm|Whether to deploy the scripts to the VM.|`bool`|`true`|no|
-|shouldGenerateServerToken|Should generate token used by the server.|`bool`|`false`|no|
-|shouldSkipAzCliLogin|Should skip login process with Azure CLI on the server.|`bool`|`false`|no|
 |shouldSkipInstallingAzCli|Should skip downloading and installing Azure CLI on the server.|`bool`|`false`|no|
+|shouldSkipAzCliLogin|Should skip login process with Azure CLI on the server.|`bool`|`false`|no|
+|deployUserTokenSecretName|The name for the deploy user token secret in Key Vault.|`string`|deploy-user-token|no|
+|deployKeyVaultName|The name of the Key Vault that will have scripts and secrets for deployment.|`string`|n/a|yes|
+|deployKeyVaultResourceGroupName|The resource group name where the Key Vault is located. Defaults to the current resource group.|`string`|[resourceGroup().name]|no|
+|k3sTokenSecretName|The name for the K3s token secret in Key Vault.|`string`|k3s-server-token|no|
+|nodeScriptSecretName|The name for the node script secret in Key Vault.|`string`|cluster-node-ubuntu-k3s|no|
+|serverScriptSecretName|The name for the server script secret in Key Vault.|`string`|cluster-server-ubuntu-k3s|no|
 
 ## Resources
 
@@ -73,12 +76,15 @@ Configures K3s Kubernetes clusters on Ubuntu virtual machines and connects them 
 |clusterAdminOid|The Object ID that will be given cluster-admin permissions.|`string`|n/a|no|
 |clusterServerHostMachineUsername|Username for the host machine with kube-config settings.|`string`|n/a|yes|
 |clusterServerIp|The IP address for the server for the cluster. (Needed for mult-node cluster)|`string`|n/a|no|
-|clusterServerToken|The token for the K3s cluster.|`securestring`|n/a|no|
+|deployAdminOid|The Object ID that will be given deployment admin permissions.|`string`|n/a|no|
+|serverToken|The token that will be given to the server for the cluster or used by agent nodes.|`securestring`|n/a|no|
+|deployUserTokenSecretName|The name for the deploy user token secret in Key Vault.|`string`|n/a|yes|
+|keyVaultName|The name of the Key Vault to save the scripts to.|`string`|n/a|yes|
+|k3sTokenSecretName|The name for the K3s token secret in Key Vault.|`string`|n/a|yes|
+|nodeScriptSecretName|The name for the node script secret in Key Vault.|`string`|n/a|yes|
+|serverScriptSecretName|The name for the server script secret in Key Vault.|`string`|n/a|yes|
 |shouldSkipAzCliLogin|Should skip login process with Azure CLI on the server.|`bool`|n/a|yes|
 |shouldSkipInstallingAzCli|Should skip downloading and installing Azure CLI on the server.|`bool`|n/a|yes|
-|keyVaultName|The name of the Key Vault to save the scripts to.|`string`|n/a|yes|
-|serverScriptSecretName|The name for the server script secret in Key Vault.|`string`|cluster-server-ubuntu-k3s|no|
-|nodeScriptSecretName|The name for the node script secret in Key Vault.|`string`|cluster-node-ubuntu-k3s|no|
 
 #### Resources for ubuntuK3s
 
@@ -127,15 +133,16 @@ Assigns appropriate roles to access Key Vault secrets.
 
 |Name|Description|Type|Default|Required|
 | :--- | :--- | :--- | :--- | :--- |
-|keyVaultName|The name of the Key Vault containing the scripts.|`string`|n/a|yes|
 |arcOnboardingPrincipalId|The principal ID of the Arc identity that needs access to the secrets.|`string`|n/a|yes|
-|serverScriptSecretName|The name for the server script secret in Key Vault.|`string`|n/a|yes|
+|keyVaultName|The name of the Key Vault containing the scripts.|`string`|n/a|yes|
 |nodeScriptSecretName|The name for the node script secret in Key Vault.|`string`|n/a|yes|
+|serverScriptSecretName|The name for the server script secret in Key Vault.|`string`|n/a|yes|
 
 #### Resources for keyVaultRoleAssignments
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
+|[guid(resourceGroup().id, parameters('arcOnboardingPrincipalId'), 'b86a8fe4-44ce-4948-aee5-eccb2c155cd7')]|`Microsoft.Authorization/roleAssignments`|2022-04-01|
 |[guid(resourceGroup().id, parameters('arcOnboardingPrincipalId'), parameters('serverScriptSecretName'), '21090545-7ca7-4776-b22c-e363652d74d2')]|`Microsoft.Authorization/roleAssignments`|2022-04-01|
 |[guid(resourceGroup().id, parameters('arcOnboardingPrincipalId'), parameters('serverScriptSecretName'), '4633458b-17de-408a-b874-0445c86b69e6')]|`Microsoft.Authorization/roleAssignments`|2022-04-01|
 |[guid(resourceGroup().id, parameters('arcOnboardingPrincipalId'), parameters('nodeScriptSecretName'), '21090545-7ca7-4776-b22c-e363652d74d2')]|`Microsoft.Authorization/roleAssignments`|2022-04-01|
@@ -150,10 +157,10 @@ Deploys a script to a virtual machine using the CustomScript extension.
 |Name|Description|Type|Default|Required|
 | :--- | :--- | :--- | :--- | :--- |
 |common|The common component configuration.|`[_1.Common](#user-defined-types)`|n/a|yes|
-|clusterServerVirtualMachineName|The server virtual machines name.|`string`|n/a|yes|
 |clusterNodeVirtualMachineNames|The node virtual machines names.|`array`|n/a|yes|
-|clusterServerScript|The script for setting up the host machine for the cluster server.|`securestring`|n/a|yes|
 |clusterNodeScript|The script for setting up the host machine for the cluster node.|`securestring`|n/a|yes|
+|clusterServerVirtualMachineName|The server virtual machines name.|`string`|n/a|yes|
+|clusterServerScript|The script for setting up the host machine for the cluster server.|`securestring`|n/a|yes|
 
 #### Resources for deployScriptsToVm
 

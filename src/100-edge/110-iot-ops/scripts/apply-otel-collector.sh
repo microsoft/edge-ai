@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 if ! command -v "helm" &>/dev/null; then
   echo "ERROR: helm required, follow instructions located at: https://helm.sh/docs/intro/install/" >&2

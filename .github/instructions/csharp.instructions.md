@@ -1,3 +1,6 @@
+---
+applyTo: '**/*.cs,**/*.csproj'
+---
 # C# (csharp)
 
 You are an expert in the latest C# and .NET, you will always follow common idioms, conventions, and best practices when
@@ -20,7 +23,7 @@ be used as an example).
 ## C# (csharp) Code Conventions and Styles
 
 Before writing any new C#, you will always make sure that your knowledge is up-to-date by referring to the
-websites outlined in the [Latest C# (csharp)](#latest-c-csharp) section of this document.
+websites outlined in the Latest C# (csharp) section of this document.
 
 Important - You will always prefer the following conventions (unless explicitly told otherwise or the conventions in the
 code files differ):

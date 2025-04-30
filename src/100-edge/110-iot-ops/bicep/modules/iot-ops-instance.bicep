@@ -4,39 +4,19 @@ metadata description = 'Deploys Azure IoT Operations instance, broker, authentic
 import * as core from '../types.core.bicep'
 import * as types from '../types.bicep'
 
+/*
+  Common Parameters
+*/
+
 @description('The common component configuration.')
 param common core.Common
 
 @description('Name of the existing arc-enabled cluster where AIO will be deployed.')
 param arcConnectedClusterName string
 
-@description('The settings for the Azure IoT Operations Extension.')
-param aioExtensionConfig types.AioExtension
-
-@description('The resource ID for the Secret Store Extension.')
-#disable-next-line secure-secrets-in-params
-param secretStoreExtensionId string
-
-@description('The resource ID for the Azure IoT Operations Platform Extension.')
-param aioPlatformExtensionId string
-
-@description('Whether or not to deploy the Custom Locations Resource Sync Rules for the Azure IoT Operations resources.')
-param shouldDeployResourceSyncRules bool
-
-@description('The settings for the Azure IoT Operations MQ Broker.')
-param aioMqBrokerConfig types.AioMqBroker
-
-@description('Whether to enable an insecure anonymous AIO MQ Broker Listener. (Should only be used for dev or test environments)')
-param shouldCreateAnonymousBrokerListener bool = false
-
-@description('Configuration for the insecure anonymous AIO MQ Broker Listener.')
-param brokerListenerAnonymousConfig types.AioMqBrokerAnonymous
-
-@description('The settings for Azure IoT Operations Data Flow Instances.')
-param aioDataFlowInstanceConfig types.AioDataFlowInstance
-
-@description('The name for the Custom Locations resource.')
-param customLocationName string
+/*
+  Azure IoT Operations Extension Parameters
+*/
 
 @description('The name for the Azure IoT Operations Instance resource.')
 param aioInstanceName string
@@ -44,14 +24,69 @@ param aioInstanceName string
 @description('The resource name for the User Assigned Identity for Azure IoT Operations.')
 param aioIdentityName string
 
+@description('The settings for the Azure IoT Operations Extension.')
+param aioExtensionConfig types.AioExtension
+
+@description('The resource ID for the Azure IoT Operations Platform Extension.')
+param aioPlatformExtensionId string
+
+/*
+  Security and Trust Parameters
+*/
+
+@description('The resource ID for the Secret Store Extension.')
+#disable-next-line secure-secrets-in-params
+param secretStoreExtensionId string
+
+@description('The source for trust for Azure IoT Operations.')
+param trustSource types.TrustSource
+
+@description('The trust settings for Azure IoT Operations.')
+param trustIssuerSettings types.TrustSettingsConfig?
+
+/*
+  Integration Parameters
+*/
+
 @description('The resource name for the ADR Schema Registry for Azure IoT Operations.')
 param schemaRegistryName string
 
 @description('Whether or not to enable the Open Telemetry Collector for Azure IoT Operations.')
 param shouldEnableOtelCollector bool
 
-@description('The source for trust for Azure IoT Operations.')
-param trustSource types.TrustSource
+/*
+  Messaging Parameters
+*/
+
+@description('Configuration for the insecure anonymous AIO MQ Broker Listener.')
+param brokerListenerAnonymousConfig types.AioMqBrokerAnonymous
+
+@description('The settings for the Azure IoT Operations MQ Broker.')
+param aioMqBrokerConfig types.AioMqBroker
+
+@description('Whether to enable an insecure anonymous AIO MQ Broker Listener. (Should only be used for dev or test environments)')
+param shouldCreateAnonymousBrokerListener bool = false
+
+/*
+  Data Flow Parameters
+*/
+
+@description('The settings for Azure IoT Operations Data Flow Instances.')
+param aioDataFlowInstanceConfig types.AioDataFlowInstance
+
+/*
+  Custom Location Parameters
+*/
+
+@description('The name for the Custom Locations resource.')
+param customLocationName string
+
+@description('Whether or not to deploy the Custom Locations Resource Sync Rules for the Azure IoT Operations resources.')
+param shouldDeployResourceSyncRules bool
+
+/*
+  Variables
+*/
 
 var metrics = {
   enabled: shouldEnableOtelCollector
@@ -64,7 +99,7 @@ var metrics = {
 // For now, only support self signed cert and trust until customer managed has been implemented
 var selfSignedIssuerName = '${aioExtensionConfig.settings.namespace}-aio-certificate-issuer'
 var selfSignedConfigMapName = '${aioExtensionConfig.settings.namespace}-aio-ca-trust-bundle'
-var trust = {
+var trust = trustIssuerSettings ?? {
   issuerName: selfSignedIssuerName
   issuerKind: 'ClusterIssuer'
   configMapName: selfSignedConfigMapName
@@ -72,6 +107,10 @@ var trust = {
 }
 
 var aioMqBrokerAddress = 'mqtts://${aioMqBrokerConfig.brokerListenerServiceName}.${aioExtensionConfig.settings.namespace}:${aioMqBrokerConfig.brokerListenerPort}'
+
+/*
+  Resources
+*/
 
 resource aioIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' existing = {
   name: aioIdentityName
@@ -337,14 +376,72 @@ resource dataFlowEndpoint 'Microsoft.IoTOperations/instances/dataflowEndpoints@2
   }
 }
 
+/*
+  Outputs
+*/
+
+@description('The name of the deployed Azure IoT Operations Instance.')
 output aioInstanceName string = aioInstance.name
+
+@description('The ID of the deployed Azure IoT Operations Instance.')
 output aioInstanceId string = aioInstance.id
 
+@description('The name of the deployed Custom Location resource.')
 output customLocationName string = customLocation.name
+
+@description('The ID of the deployed Custom Location resource.')
 output customLocationId string = customLocation.id
 
+@description('The name of the deployed Azure IoT Operations Data Flow Profile.')
 output dataFlowProfileName string = dataFlowProfile.name
+
+@description('The ID of the deployed Azure IoT Operations Data Flow Profile.')
 output dataFlowProfileId string = dataFlowProfile.id
 
+@description('The name of the deployed Azure IoT Operations Data Flow Endpoint.')
 output dataFlowEndpointName string = dataFlowEndpoint.name
-output dataFlowEndPointId string = dataFlowEndpoint.id
+
+@description('The ID of the deployed Azure IoT Operations Data Flow Endpoint.')
+output dataFlowEndpointId string = dataFlowEndpoint.id
+
+@description('The name of the deployed IoT Operations Extension.')
+output aioExtensionName string = aioExtension.name
+
+@description('The ID of the deployed IoT Operations Extension.')
+output aioExtensionId string = aioExtension.id
+
+@description('The name of the deployed Anonymous Broker Listener, if created.')
+output brokerListenerAnonymousName string = shouldCreateAnonymousBrokerListener ? brokerListenerAnonymous.name : ''
+
+@description('The ID of the deployed Anonymous Broker Listener, if created.')
+output brokerListenerAnonymousId string = shouldCreateAnonymousBrokerListener ? brokerListenerAnonymous.id : ''
+
+@description('The name of the deployed AIO Broker Sync Rule, if created.')
+output aioSyncRuleName string = shouldDeployResourceSyncRules ? aioSyncRule.name : ''
+
+@description('The ID of the deployed AIO Broker Sync Rule, if created.')
+output aioSyncRuleId string = shouldDeployResourceSyncRules ? aioSyncRule.id : ''
+
+@description('The name of the deployed ADR Sync Rule, if created.')
+output adrSyncRuleName string = shouldDeployResourceSyncRules ? adrSyncRule.name : ''
+
+@description('The ID of the deployed ADR Sync Rule, if created.')
+output adrSyncRuleId string = shouldDeployResourceSyncRules ? adrSyncRule.id : ''
+
+@description('The name of the deployed AIO MQ Broker.')
+output brokerName string = broker.name
+
+@description('The ID of the deployed AIO MQ Broker.')
+output brokerId string = broker.id
+
+@description('The name of the deployed AIO MQ Broker Authentication.')
+output brokerAuthnName string = brokerAuthn.name
+
+@description('The ID of the deployed AIO MQ Broker Authentication.')
+output brokerAuthnId string = brokerAuthn.id
+
+@description('The name of the deployed AIO MQ Broker Listener.')
+output brokerListenerName string = brokerListener.name
+
+@description('The ID of the deployed AIO MQ Broker Listener.')
+output brokerListenerId string = brokerListener.id

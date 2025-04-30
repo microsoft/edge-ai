@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Set error handling to continue on errors
 set +e
@@ -36,7 +36,12 @@ start_proxy() {
   kube_config_file=$(mktemp -t "${TF_CONNECTED_CLUSTER_NAME}.XXX")
   # Start proxy in its own process group with -m
   set -m
-  az connectedk8s proxy -n "$TF_CONNECTED_CLUSTER_NAME" -g "$TF_RESOURCE_GROUP_NAME" --port 9800 --file "$kube_config_file" >/dev/null &
+  if [[ $DEPLOY_USER_TOKEN_SECRET ]]; then
+    echo "Getting Deploy User Token..."
+    K8S_PROXY_TOKEN=" --token $(az keyvault secret show --name "$DEPLOY_USER_TOKEN_SECRET" --vault-name "$DEPLOY_KEY_VAULT_NAME" --query "value" -o tsv)"
+    echo "Got Deploy User Token..."
+  fi
+  az connectedk8s proxy -n "$TF_CONNECTED_CLUSTER_NAME" -g "$TF_RESOURCE_GROUP_NAME" --port 9800 --file "$kube_config_file""$K8S_PROXY_TOKEN" >/dev/null &
   export proxy_pid=$!
   proxy_pgid=$(ps -o pgid= -p $proxy_pid | tr -d ' ')
   export proxy_pgid

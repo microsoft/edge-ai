@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 kube_config_file=${kube_config_file:-}
 if [ -z "$kube_config_file" ]; then

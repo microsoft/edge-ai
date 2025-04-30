@@ -22,10 +22,8 @@ param customLocationsOid string
 param clusterServerIp string?
 
 @description('The token that will be given to the server for the cluster or used by agent nodes.')
+@secure()
 param serverToken string?
-
-@description('Should generate token used by the server.')
-param shouldGenerateServerToken bool = false
 
 @description('The name of the Key Vault to save the scripts to.')
 param keyVaultName string = 'kv-${common.resourcePrefix}-${common.environment}-${common.instance}'
@@ -43,9 +41,8 @@ module cncfCluster '../../bicep/main.bicep' = {
     clusterNodeVirtualMachineNames: clusterNodeVirtualMachineNames
     clusterServerIp: clusterServerIp
     serverToken: serverToken
-    shouldGenerateServerToken: shouldGenerateServerToken
     arcOnboardingIdentityName: arcOnboardingIdentityName
-    keyVaultName: keyVaultName
-    keyVaultResourceGroupName: keyVaultResourceGroupName
+    deployKeyVaultName: keyVaultName
+    deployKeyVaultResourceGroupName: keyVaultResourceGroupName
   }
 }

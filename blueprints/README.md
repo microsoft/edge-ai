@@ -89,18 +89,42 @@ Refer to the Environment Setup section in the [Root README](../README.md#getting
    export ARM_SUBSCRIPTION_ID="$current_subscription_id"
    ```
 
-4. Create a `terraform.tfvars` file with the following minimum configuration:
+4. Generate a `terraform.tfvars` file using terraform-docs:
+
+   ```sh
+   # Navigate to the blueprint's terraform directory
+   cd ./terraform
+
+   # Generate the tfvars file
+   terraform-docs tfvars hcl .
+   ```
+
+   If terraform-docs is not installed, you'll need to install it:
+
+   ```sh
+   # Install terraform-docs - macOS
+   brew install terraform-docs
+
+   # Install terraform-docs - Linux
+   ./scripts/install-terraform-docs.sh
+   ```
+
+   Or visit the [terraform-docs installation page](https://terraform-docs.io/user-guide/installation/) for more options.
+
+   The generated output will look like this:
 
    ```hcl
    # Required, environment hosting resource: "dev", "prod", "test", etc...
-   environment     = "<environment>"
+   environment     = ""
    # Required, short unique alphanumeric string: "sample123", "plantwa", "uniquestring", etc...
-   resource_prefix = "<resource-prefix>"
+   resource_prefix = ""
    # Required, region location: "eastus2", "westus3", etc...
-   location        = "<location>"
+   location        = ""
    # Optional, instance/replica number: "001", "002", etc...
-   instance        = "<instance>"
+   instance        = "001"
    ```
+
+   Copy this output to a file named `terraform.tfvars` and fill in the required values.
 
    > **NOTE**: To have Terraform automatically use your variables, you can name your tfvars file `terraform.auto.tfvars`. Terraform will use variables from any `*.auto.tfvars` files located in the same deployment folder.
 
@@ -166,7 +190,7 @@ Bicep provides an alternative Infrastructure as Code (IaC) approach that's nativ
 3. Navigate to your chosen blueprint directory:
 
    ```sh
-   cd ./full-single-node-cluster
+   cd ./full-single-node-cluster/bicep
    ```
 
 4. Check that the Bicep CLI is installed or install it:
@@ -181,11 +205,11 @@ Bicep provides an alternative Infrastructure as Code (IaC) approach that's nativ
 
 5. Create a parameters file for your deployment:
 
-   Create a file named `main.bicepparam` in the root of the blueprint directory (e.g., `full-single-node-cluster`) with your deployment parameters:
+   Create a file named `main.bicepparam` in `bicep` sub-folder of blueprint directory (e.g., `full-single-node-cluster/bicep`) with your deployment parameters:
 
    ```bicep
    // Parameters for blueprint deployment
-   using './bicep/main.bicep'
+   using 'main.bicep'
 
    // Required parameters
    param common = {

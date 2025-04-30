@@ -15,21 +15,28 @@ locals {
     ARC_RESOURCE_GROUP_NAME = var.aio_resource_group.name
     ARC_RESOURCE_NAME       = var.arc_resource_name
 
-    K3S_URL              = coalesce(local.cluster_server_url, "$${K3S_URL}")
-    K3S_TOKEN            = try(coalesce(var.cluster_server_token, random_string.cluster_server_token[0].result), "$${K3S_TOKEN}")
-    K3S_VERSION          = "$${K3S_VERSION}"
-    ARC_AUTO_UPGRADE     = coalesce(var.should_enable_arc_auto_upgrade, lower(var.environment) != "prod")
-    ARC_SP_CLIENT_ID     = coalesce(try(var.arc_onboarding_sp.client_id, null), "$${ARC_SP_CLIENT_ID}")
-    ARC_SP_SECRET        = coalesce(try(var.arc_onboarding_sp.client_secret, null), "$${ARC_SP_SECRET}")
-    ARC_TENANT_ID        = var.arc_tenant_id
-    AZ_CLI_VER           = "$${AZ_CLI_VER}"
-    AZ_CONNECTEDK8S_VER  = "$${AZ_CONNECTEDK8S_VER}"
-    CUSTOM_LOCATIONS_OID = var.custom_locations_oid
-    DEVICE_USERNAME      = var.cluster_server_host_machine_username
-    SKIP_INSTALL_AZ_CLI  = var.should_skip_installing_az_cli ? "true" : "$${SKIP_INSTALL_AZ_CLI}"
-    SKIP_AZ_LOGIN        = var.should_skip_az_cli_login ? "true" : "$${SKIP_AZ_LOGIN}"
-    SKIP_INSTALL_K3S     = "$${SKIP_INSTALL_K3S}"
-    SKIP_INSTALL_KUBECTL = "$${SKIP_INSTALL_KUBECTL}"
+    K3S_URL     = coalesce(local.cluster_server_url, "$${K3S_URL}")
+    K3S_TOKEN   = try(coalesce(var.cluster_server_token, random_string.cluster_server_token[0].result), "$${K3S_TOKEN}")
+    K3S_VERSION = "$${K3S_VERSION}"
+
+    // TODO: Support AKV in Terraform for token secrets, must add role assignments for AKV to arc onboarding identity.
+    AKV_NAME             = "$${AKV_NAME}"
+    AKV_K3S_TOKEN_SECRET = "$${AKV_K3S_TOKEN_SECRET}"
+
+    AKV_DEPLOY_SAT_SECRET = "$${AKV_DEPLOY_SAT_SECRET}" // Skip assuming ARM DeploymentScripts will not be used with Terraform.
+    ARC_AUTO_UPGRADE      = coalesce(var.should_enable_arc_auto_upgrade, lower(var.environment) != "prod")
+    ARC_SP_CLIENT_ID      = coalesce(try(var.arc_onboarding_sp.client_id, null), "$${ARC_SP_CLIENT_ID}")
+    ARC_SP_SECRET         = coalesce(try(var.arc_onboarding_sp.client_secret, null), "$${ARC_SP_SECRET}")
+    ARC_TENANT_ID         = var.arc_tenant_id
+    AZ_CLI_VER            = "$${AZ_CLI_VER}"
+    AZ_CONNECTEDK8S_VER   = "$${AZ_CONNECTEDK8S_VER}"
+    CUSTOM_LOCATIONS_OID  = var.custom_locations_oid
+    DEVICE_USERNAME       = var.cluster_server_host_machine_username
+    SKIP_INSTALL_AZ_CLI   = var.should_skip_installing_az_cli ? "true" : "$${SKIP_INSTALL_AZ_CLI}"
+    SKIP_AZ_LOGIN         = var.should_skip_az_cli_login ? "true" : "$${SKIP_AZ_LOGIN}"
+    SKIP_INSTALL_K3S      = "$${SKIP_INSTALL_K3S}"
+    SKIP_INSTALL_KUBECTL  = "$${SKIP_INSTALL_KUBECTL}"
+    SKIP_DEPLOY_SAT       = "true" // Skip assuming ARM DeploymentScripts will not be used with Terraform.
   }
 
   # Server specific environment variables for the k3s node setup.

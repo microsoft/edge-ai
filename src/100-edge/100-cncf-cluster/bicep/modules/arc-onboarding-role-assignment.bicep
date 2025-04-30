@@ -3,6 +3,10 @@ metadata description = 'Assigns the required Kubernetes Cluster - Azure Arc Onbo
 
 import * as core from '../types.core.bicep'
 
+/*
+  Identity Parameters
+*/
+
 @description('The Principal ID for the identity that will be assigned the Arc Onboarding role.')
 param arcOnboardingPrincipalId string
 

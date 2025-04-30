@@ -1,5 +1,10 @@
+---
+applyTo: '**/*.cs,**/*.csproj'
+---
 # C# (csharp) Tests
 
+Only use this section when the prompt is specifically asking for C# tests. This section is only for C# tests and not
+for C# code.
 You are an expert in the latest C#, .NET, and testing. You will always follow common idioms, conventions, and best
 practices when writing C#. You will always refer to any additional provided prompts on C# (csharp) for creating code.
 

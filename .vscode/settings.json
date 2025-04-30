@@ -18,8 +18,12 @@
     },
 
     "[terraform-vars]": {
+        "editor.defaultFormatter": "hashicorp.terraform",
         "editor.formatOnSave": true,
         "editor.tabSize": 2,
+        "editor.codeActionsOnSave": {
+            "source.formatAll.terraform": "explicit"
+        },
     },
 
     "[terraform-test]": {
@@ -28,8 +32,12 @@
     },
 
     "[terraform]": {
+        "editor.defaultFormatter": "hashicorp.terraform",
         "editor.formatOnSave": true,
         "editor.tabSize": 2,
+        "editor.codeActionsOnSave": {
+            "source.formatAll.terraform": "explicit"
+        },
     },
 
     "[bicep]": {

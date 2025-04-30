@@ -36,6 +36,11 @@ resource aioIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-3
   location: common.location
 }
 
+resource deployIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
+  name: 'id-${common.resourcePrefix}-deploy-${common.environment}-${common.instance}'
+  location: common.location
+}
+
 /*
   Outputs
 */
@@ -57,6 +62,15 @@ output aioIdentityId string = aioIdentity.id
 
 @description('The Azure IoT Operations User Assigned Managed Identity Principal ID.')
 output aioIdentityPrincipalId string = aioIdentity.properties.principalId
+
+@description('The Deployment User Assigned Managed Identity name.')
+output deployIdentityName string = deployIdentity.name
+
+@description('The Deployment User Assigned Managed Identity ID.')
+output deployIdentityId string = deployIdentity.id
+
+@description('The Deployment User Assigned Managed Identity Principal ID.')
+output deployIdentityPrincipalId string = deployIdentity.properties.principalId
 
 @description('The User Assigned Managed Identity ID with "Kubernetes Cluster - Azure Arc Onboarding" permissions.')
 output arcOnboardingIdentityId string? = shouldCreateArcOnboardingUami ? arcOnboardingIdentity.id : null

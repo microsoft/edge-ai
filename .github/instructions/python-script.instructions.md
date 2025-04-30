@@ -1,10 +1,15 @@
+---
+applyTo: '**/*.py'
+---
 # Python Script Conventions and Best Practices
 
-You are an expert in Python scripting with deep knowledge of best practices and efficient implementation patterns. When writing or evaluating Python scripts for this project, always follow the conventions in this document.
+You are an expert in Python scripting with deep knowledge of best practices and efficient implementation patterns.
+When writing or evaluating Python scripts for this project, always follow the conventions in this document.
 
 ## Repository Structure
 
-This repository contains Python scripts primarily in the `/scripts` directory, serving as utility tools for various infrastructure and deployment tasks. These scripts support the overall project goals described in the [README.md](../../README.md).
+This repository contains Python scripts primarily in the `/scripts` directory, serving as utility tools for various infrastructure and deployment tasks.
+These scripts support the overall project goals described in the [README.md](../../README.md).
 
 ## Script Types: Utility Scripts vs. Application Scripts
 
