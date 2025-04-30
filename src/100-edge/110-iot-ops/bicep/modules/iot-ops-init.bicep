@@ -3,25 +3,29 @@ metadata description = 'Initializes and configures the required Arc extensions f
 
 import * as types from '../types.bicep'
 
-@description('The settings for the Secret Store Extension.')
-#disable-next-line secure-secrets-in-params
-param secretStoreConfig types.SecretStoreExtension
-
-@description('The settings for the Open Service Mesh Extension.')
-param openServiceMeshConfig types.OpenServiceMeshExtension
-
-@description('The settings for the Azure Container Store for Azure Arc Extension.')
-param containerStorageConfig types.ContainerStorageExtension
-
-@description('The settings for the Azure IoT Operations Platform Extension.')
-param aioPlatformConfig types.AioPlatformExtension
+/*
+  Parameters
+*/
 
 @description('The resource name for the Arc connected cluster.')
 param arcConnectedClusterName string
 
-resource arcConnectedCluster 'Microsoft.Kubernetes/connectedClusters@2021-03-01' existing = {
-  name: arcConnectedClusterName
-}
+@description('The settings for the Azure Container Store for Azure Arc Extension.')
+param containerStorageConfig types.ContainerStorageExtension
+
+@description('The settings for the Open Service Mesh Extension.')
+param openServiceMeshConfig types.OpenServiceMeshExtension
+
+@description('The settings for the Azure IoT Operations Platform Extension.')
+param aioPlatformConfig types.AioPlatformExtension
+
+@description('The settings for the Secret Store Extension.')
+#disable-next-line secure-secrets-in-params
+param secretStoreConfig types.SecretStoreExtension
+
+/*
+  Variables
+*/
 
 // Setup ACSA StorageClass based on either provided StorageClass, Fault Tolerance Enabled, or the
 // default StorageClass provided by local-path.
@@ -38,26 +42,32 @@ var faultToleranceConfig = containerStorageConfig.settings.faultToleranceEnabled
     }
   : {}
 
-resource secretStore 'Microsoft.KubernetesConfiguration/extensions@2023-05-01' = {
+/*
+  Resources
+*/
+
+resource arcConnectedCluster 'Microsoft.Kubernetes/connectedClusters@2021-03-01' existing = {
+  name: arcConnectedClusterName
+}
+
+resource aioPlatform 'Microsoft.KubernetesConfiguration/extensions@2023-05-01' = {
   scope: arcConnectedCluster
-  // 'azure-secret-store' is the required extension name for SSE.
-  name: 'azure-secret-store'
-  identity: {
-    type: 'SystemAssigned'
-  }
+  name: 'azure-iot-operations-platform'
   properties: {
-    extensionType: 'microsoft.azure.secretstore'
-    version: secretStoreConfig.release.version
-    releaseTrain: secretStoreConfig.release.train
+    extensionType: 'microsoft.iotoperations.platform'
+    version: aioPlatformConfig.release.version
+    releaseTrain: aioPlatformConfig.release.train
     autoUpgradeMinorVersion: false
+    scope: {
+      cluster: {
+        releaseNamespace: 'cert-manager'
+      }
+    }
     configurationSettings: {
-      rotationPollIntervalInSeconds: '120'
-      'validatingAdmissionPolicies.applyPolicies': 'false'
+      installCertManager: '${aioPlatformConfig.settings.?installCertManager ?? true}'
+      installTrustManager: '${aioPlatformConfig.settings.?installCertManager ?? true}'
     }
   }
-  dependsOn: [
-    aioPlatform
-  ]
 }
 
 resource openServiceMesh 'Microsoft.KubernetesConfiguration/extensions@2023-05-01' = {
@@ -103,27 +113,52 @@ resource containerStorage 'Microsoft.KubernetesConfiguration/extensions@2023-05-
   ]
 }
 
-resource aioPlatform 'Microsoft.KubernetesConfiguration/extensions@2023-05-01' = {
+resource secretStore 'Microsoft.KubernetesConfiguration/extensions@2023-05-01' = {
   scope: arcConnectedCluster
-  name: 'azure-iot-operations-platform'
+  // 'azure-secret-store' is the required extension name for SSE.
+  name: 'azure-secret-store'
+  identity: {
+    type: 'SystemAssigned'
+  }
   properties: {
-    extensionType: 'microsoft.iotoperations.platform'
-    version: aioPlatformConfig.release.version
-    releaseTrain: aioPlatformConfig.release.train
+    extensionType: 'microsoft.azure.secretstore'
+    version: secretStoreConfig.release.version
+    releaseTrain: secretStoreConfig.release.train
     autoUpgradeMinorVersion: false
-    scope: {
-      cluster: {
-        releaseNamespace: 'cert-manager'
-      }
-    }
     configurationSettings: {
-      installCertManager: '${aioPlatformConfig.settings.?installCertManager ?? true}'
-      installTrustManager: '${aioPlatformConfig.settings.?installCertManager ?? true}'
+      rotationPollIntervalInSeconds: '120'
+      'validatingAdmissionPolicies.applyPolicies': 'false'
     }
   }
+  dependsOn: [
+    aioPlatform
+  ]
 }
 
+/*
+  Outputs
+*/
+
+@description('The ID of the Container Storage Extension.')
 output containerStorageExtensionId string = containerStorage.id
+
+@description('The name of the Container Storage Extension.')
+output containerStorageExtensionName string = containerStorage.name
+
+@description('The ID of the Secret Store Extension.')
 output secretStoreExtensionId string = secretStore.id
+
+@description('The name of the Secret Store Extension.')
+output secretStoreExtensionName string = secretStore.name
+
+@description('The ID of the Open Service Mesh Extension.')
 output openServiceMeshExtensionId string = openServiceMesh.id
+
+@description('The name of the Open Service Mesh Extension.')
+output openServiceMeshExtensionName string = openServiceMesh.name
+
+@description('The ID of the Azure IoT Operations Platform Extension.')
 output aioPlatformExtensionId string = aioPlatform.id
+
+@description('The name of the Azure IoT Operations Platform Extension.')
+output aioPlatformExtensionName string = aioPlatform.name

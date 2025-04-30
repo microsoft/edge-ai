@@ -1,3 +1,6 @@
+---
+applyTo: '**/*.tf*'
+---
 # Terraform IaC Conventions and Best Practices
 
 You are an expert in Terraform Infrastructure as Code (IaC) with deep knowledge of Azure resources provided by the `azurerm`, `azapi`, and `azuread` providers. When writing or evaluating Terraform code, always follow the conventions in this document.
@@ -6,13 +9,13 @@ You are an expert in Terraform Infrastructure as Code (IaC) with deep knowledge 
 
 This repository is organized with the following key directories:
 
-1. **Source Components** (`/src`) - Individual reusable infrastructure components:
+1. **Source Components** (`src/`) - Individual reusable infrastructure components:
    - `000-cloud/` - Cloud-based resources (Storage, Identity, Observability, etc.)
    - `100-edge/` - Edge-based resources (IoT Operations, CNCF clusters, etc.)
    - `500-application/` - Application resources and source code
    - `900-tools-utilities/` - Tools and utilities (YAML, Helm charts, etc.)
 
-2. **Blueprints** (`/blueprints`) - End-to-end solutions that combine components:
+2. **Blueprints** (`blueprints/`) - End-to-end solutions that combine components:
    - `full-single-node-cluster/` - Single-node AIO deployment
    - `full-multi-node-cluster/` - Multi-node HA AIO deployment
    - `only-output-cncf-cluster-script/` - Script-only deployment
@@ -25,7 +28,7 @@ Component Modules are the top-level, standalone modules that provide a specific 
 
 **Characteristics of Component Modules:**
 
-- Located directly under a component directory in `/src` (e.g., `/src/000-cloud/010-security-identity/terraform/`)
+- Located directly under a component directory in `src/` (e.g., `src/000-cloud/010-security-identity/terraform/`)
 - Exposed to be called from **Blueprint** modules
 - Represent a complete, self-contained functional unit (e.g., VM Host, CNCF Cluster, IoT Ops)
 - Can use their own Internal Modules but NEVER reference other Component Modules
@@ -36,7 +39,7 @@ Component Modules are the top-level, standalone modules that provide a specific 
 **Example Component Module path:**
 
 ```plain
-/src/000-cloud/030-data/terraform/
+src/000-cloud/030-data/terraform/
 ```
 
 ### Internal Modules
@@ -45,7 +48,7 @@ Internal Modules are subordinate, reusable modules that are only used within the
 
 **Characteristics of Internal Modules:**
 
-- Located in the `modules` subdirectory of a Component Module (e.g., `/src/000-cloud/030-data/terraform/modules/storage-account/`)
+- Located in the `modules` subdirectory of a Component Module (e.g., `src/000-cloud/030-data/terraform/modules/storage-account/`)
 - NEVER called directly from Blueprints or other Component Modules
 - Only called from their parent Component Module
 - Implement specific functionality within the scope of their parent Component
@@ -56,7 +59,7 @@ Internal Modules are subordinate, reusable modules that are only used within the
 **Example Internal Module path:**
 
 ```plain
-/src/000-cloud/030-data/terraform/modules/storage-account/
+src/000-cloud/030-data/terraform/modules/storage-account/
 ```
 
 ### CI Terraform Directories
@@ -65,7 +68,7 @@ CI Terraform directories are wrapper directories used for CI/CD integration that
 
 **Characteristics of CI Terraform Directories:**
 
-- Located at `<component>/ci/terraform/` (e.g., `/src/000-cloud/030-data/ci/terraform/`)
+- Located at `<component>/ci/terraform/` (e.g., `src/000-cloud/030-data/ci/terraform/`)
 - Contains simple code that calls the parent Component Module with default/test configurations
 - Used for individual component testing and verification in CI/CD pipelines
 - May include additional configuration specific to CI/CD integration
@@ -203,13 +206,13 @@ module "example_internal_module" {
 
 IMPORTANT RULES:
 
-- Component Modules (e.g., `/src/000-cloud/010-security-identity/terraform/`) NEVER reference other Component Modules
+- Component Modules (e.g., `src/000-cloud/010-security-identity/terraform/`) NEVER reference other Component Modules
 - Component Modules NEVER reference other Component Modules' Internal Modules
 - Component Modules ONLY reference their own Internal Modules
-- Internal Modules (e.g., `/src/000-cloud/010-security-identity/terraform/modules/key-vault/`) NEVER reference other Component Modules
+- Internal Modules (e.g., `src/000-cloud/010-security-identity/terraform/modules/key-vault/`) NEVER reference other Component Modules
 - Internal Modules NEVER reference other Component Modules' Internal Modules
 - Internal Modules NEVER reference other Internal Modules
-- Blueprint Modules (e.g., `/blueprints/full-single-node-cluster/terraform/`) ONLY reference Component Modules, NEVER Internal Modules
+- Blueprint Modules (e.g., `blueprints/full-single-node-cluster/terraform/`) ONLY reference Component Modules, NEVER Internal Modules
 
 ### Variables Conventions
 
@@ -327,9 +330,9 @@ output "key_vault" {
 Before making ANY changes to Terraform code, ask yourself:
 
 - [ ] Am I working on a Component Module, an Internal Module, or a Blueprint?
-  - Component Module: Located directly under `/src/000-grouping/000-component/terraform/`
-  - Internal Module: Located under `/src/000-grouping/000-component/terraform/modules/module-name/`
-  - Blueprint: Located under `/blueprints/blueprint-name/terraform/`
+  - Component Module: Located directly under `src/000-grouping/000-component/terraform/`
+  - Internal Module: Located under `src/000-grouping/000-component/terraform/modules/module-name/`
+  - Blueprint: Located under `blueprints/blueprint-name/terraform/`
 - [ ] Am I following the correct file structure for this module type?
 - [ ] Will my module references follow the module relationship rules?
 - [ ] Are my variables organized in the appropriate files?

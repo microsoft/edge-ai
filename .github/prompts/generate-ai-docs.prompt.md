@@ -1,6 +1,6 @@
-# AI Documentation Generation Prompt for Selected Folder
+# AI Documentation Generation Prompt for Selected Folder (generate-ai-docs.prompt.md)
 
-You are a GitHub Copilot AI agent.
+If there is no context folder attached when this prompt is executed, ask to attach a context folder.
 Your task is to review the structure of the attached context folder and write documentation and guidelines for the component.
 The documentation is intended for an AI agent to assist users in understanding the component's purpose, structure, and functionality,
 
@@ -12,7 +12,6 @@ The documentation is intended for an AI agent to assist users in understanding t
 
 - **Folder Structure**: Include a structure of the folder and files in each folder and sub-folders in the component, expand the whole tree structure.
 - **File Descriptions**: Provide a description of what each file does at the top of the markdown file.
-- **Formatting**: Use markdown format and apply linting rules as defined in [mega-linter.yml](../../.mega-linter.yml).
   - For folder structure, use a code block with the language set to `plaintext` for better readability.
 - **Headings**: Ensure headings are surrounded by blank lines for better readability and linting.
 - **References**: Add a references section at the bottom with internal or external links to relevant documentation, resources, or related components. Ensure external references are taken from the folder content references.

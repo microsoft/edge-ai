@@ -7,9 +7,11 @@ This document outlines resources within our repository that enhance AI-assisted 
 - [AI-Assisted Engineering Resources](#ai-assisted-engineering-resources)
   - [Table of Contents](#table-of-contents)
   - [GitHub Copilot Instructions](#github-copilot-instructions)
-  - [Copilot Prompt Files](#copilot-prompt-files)
-  - [Azure Copilot for Bicep (and Terraform)](#azure-copilot-for-bicep-and-terraform)
+  - [Custom GitHub Copilot Instruction Files](#custom-github-copilot-instruction-files)
+  - [Copilot Reusable Prompt Files](#copilot-reusable-prompt-files)
   - [Copilot for Commit Messages](#copilot-for-commit-messages)
+  - [Copilot for Pull Requests - Reusable Prompt File](#copilot-for-pull-requests---reusable-prompt-file)
+  - [Azure Copilot for Bicep (and Terraform)](#azure-copilot-for-bicep-and-terraform)
   - [Project Structure and Conventions](#project-structure-and-conventions)
   - [Documentation Resources](#documentation-resources)
   - [Template Files and Examples](#template-files-and-examples)
@@ -22,27 +24,27 @@ This document outlines resources within our repository that enhance AI-assisted 
 
 The repository contains dedicated instructions for GitHub Copilot in [.github/copilot-instructions.md](/.github/copilot-instructions.md). These instructions help Copilot provide more contextually relevant suggestions by outlining:
 
-- Repository orientation guidance (links, tips, and explanations)
+- Repository orientation guidance
 - Parameter handling best practices (asking questions rather than making assumptions)
+- Components structure
 - Solution deployment workflows using Blueprints
-- Component and Blueprint development patterns
-- Terraform best practices specific to this project
 
-## Copilot Prompt Files
+## Custom GitHub Copilot Instruction Files
 
-The repository includes dedicated guidance in [copilot-prompt-files.md](./copilot-prompt-files.md) that explains how to effectively use GitHub Copilot with specific prompts to optimize AI usage when contributing to this project. Review the document for detailed instructions on setting up and using prompt files.
+The repository includes dedicated guidance in [copilot-instructions-files.md](./copilot-instructions-files.md) that explains how to effectively use GitHub Copilot with specific instructions to optimize AI usage when contributing to this project. Review the document for detailed instructions on using custom instruction files.
+The Custom Instructions files provide detailed instructions and guidance for Copilot to use when working on __specific__ tasks or types of activities
 
-The specialized prompt files in the [.github/prompts](/.github/prompts/) directory provide language-specific guidance to GitHub Copilot for IaC Terraform and Bicep development, as well as documentation generation. These prompt files are designed to enhance the AI's understanding of the project's structure, conventions, and best practices.
+## Copilot Reusable Prompt Files
 
-## Azure Copilot for Bicep (and Terraform)
+The repository includes reusable prompt files located in the `/.github/prompt-files` folder.
+These files provide specific reusable prompts for Copilot to use when working on __specific__ tasks or types of activities.
 
-We recommend installing the [Azure Copilot (Preview)](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.copilot) extension for Visual Studio Code.
-This extension provides additional context and suggestions for Bicep and Terraform files.
+The reusable prompts are typically useful for common tasks, for example when getting started with the repo,
+when deploying your first blueprint, or when creating a pull request.
 
-This extension extends the current GitHub Copilot Chat experience by providing more accurate suggestions and context-aware assistance for Bicep files.
-While some models in Edits mode may generate incorrect Bicep code, we have seen good results in improving the code by interacting with the Azure Copilot.
-
-To use the extension, ensure you are in Chat/Ask mode and start your chat prompt with `@azure`.
+- First, ensure your chat context is set to a new Chat.
+- To use a reusable prompt file, use the Command Palette: __Chat: Run prompt > Select the prompt {file}__ command.
+- The agent will automatically start executing and you can interact with the agent to refine the task or answer questions.
 
 ## Copilot for Commit Messages
 
@@ -53,23 +55,42 @@ This repository contains specific instructions for using GitHub Copilot to assis
 
 Leverage Copilot when creating your commit messages: open the *Source Control panel* > click the  *Generate Commit Message with Copilot 🌟* and edit as desired before committing.
 
+## Copilot for Pull Requests - Reusable Prompt File
+
+This repository contains specific instructions for Copilot to generate pull request descriptions for use within your pull requests.
+
+- Ensure you have a new Chat context open (click the `+` sign or __Chat: New Chat__).
+- To create your pull request description, use the Command Palette: __Chat: Run prompt > Select the prompt named {pr}__ command.
+- Copilot will honor the prompt and start working on executing a script to generate the pull request description.
+- Use the generated `pr.md` file at the root of this repository as the pull request description. This file will never be committed to git.
+
+## Azure Copilot for Bicep (and Terraform)
+
+We recommend installing the [GitHub Copilot for Azure (Preview)](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azure-github-copilot) extension for Visual Studio Code.
+This extension provides additional context and suggestions for Bicep and Terraform files, or when working with Azure resources.
+
+This extension extends the current GitHub Copilot Chat experience by providing more accurate suggestions and context-aware assistance for Bicep files.
+
+The latest version includes Agent specific tools you can add into your context such as the very useful `#azureRetrieveMsLearnDocumentations`
+to retrieve Microsoft Learn documentation for Azure resources and up to date API information.
+
 ## Project Structure and Conventions
 
 Our [Coding Conventions](./coding-conventions.md) document provides comprehensive guidance that helps Copilot understand the project structure and expected code patterns. Key aspects include:
 
-1. **Folder Structure and Naming Conventions**:
+1. __Folder Structure and Naming Conventions__:
    - Root-level organization (`/src`, `/blueprints`, `/docs`, etc.)
    - Source component organization with decimal naming (e.g., `000-subscription`, `010-vm-host`)
    - Blueprint structure and documentation requirements
    - Script and workflow organization
 
-2. **Infrastructure as Code Standards**:
+2. __Infrastructure as Code Standards__:
    - Terraform module organization and variable definition patterns
    - Bicep conventions and parameter definitions
    - Testing requirements and patterns
    - Documentation expectations for IaC components
 
-3. **Git Workflow Practices**:
+3. __Git Workflow Practices__:
    - Conventional commits format
    - Pull request conventions
    - Work item association guidelines
@@ -80,15 +101,15 @@ These conventions provide Copilot with a structured understanding of how code sh
 
 The project includes several types of documentation that help Copilot understand the system architecture and implementation details:
 
-1. **Component Documentation**: Each component in `/src` includes a `README.md` that explains its purpose, usage, and configuration options.
+1. __Component Documentation__: Each component in `/src` includes a `README.md` that explains its purpose, usage, and configuration options.
 
-2. **Blueprint Documentation**: Each blueprint in `/blueprints` contains deployment instructions and parameter requirements.
+2. __Blueprint Documentation__: Each blueprint in `/blueprints` contains deployment instructions and parameter requirements.
 
-3. **Architectural Decision Records (ADRs)**: Located in `/docs`, these provide context on significant architectural decisions.
+3. __Architectural Decision Records (ADRs)__: Located in `/docs`, these provide context on significant architectural decisions.
 
-4. **Technical Specifications**: These include diagrams and detailed implementation guidance.
+4. __Technical Specifications__: These include diagrams and detailed implementation guidance.
 
-5. **Auto-Generated Documentation**: The repository uses tools like `terraform-docs` to maintain consistent documentation across modules.
+5. __Auto-Generated Documentation__: The repository uses tools like `terraform-docs` to maintain consistent documentation across modules.
 
 Copilot can reference these resources to understand implementation patterns, expected configurations, and architectural constraints when making suggestions.
 
@@ -96,13 +117,13 @@ Copilot can reference these resources to understand implementation patterns, exp
 
 The project contains various template files and examples that help Copilot understand expected patterns:
 
-1. **Terraform Module Templates**: Example implementations in `/src` demonstrate proper module structure, variable definitions, and output formatting.
+1. __Terraform Module Templates__: Example implementations in `/src` demonstrate proper module structure, variable definitions, and output formatting.
 
-2. **Blueprint Templates**: Examples in `/blueprints` show how components are composed into complete solutions.
+2. __Blueprint Templates__: Examples in `/blueprints` show how components are composed into complete solutions.
 
-3. **CI/CD Templates**: Pipeline definitions in `/.azdo` and `/.github/workflows` demonstrate expected automation patterns.
+3. __CI/CD Templates__: Pipeline definitions in `/.azdo` and `/.github/workflows` demonstrate expected automation patterns.
 
-4. **Issue and PR Templates**: These define expected formats for contributions.
+4. __Issue and PR Templates__: These define expected formats for contributions.
 
 These templates provide concrete examples that help Copilot generate code and documentation that follows established project patterns.
 
@@ -114,14 +135,14 @@ This section describes a real-world process used in this project to generate com
 
 The following process was used to create consistent, comprehensive documentation for build templates:
 
-1. **Template Extraction and Context Setup**:
+1. __Template Extraction and Context Setup__:
    - Extract the template from the main build into a new file
    - Prepare context by adding three files to the editor:
      - The template file (YAML)
      - An empty markdown document (for Copilot to write into)
      - The azure-pipelines file that uses the template
 
-2. **Initial Documentation Generation**:
+2. __Initial Documentation Generation__:
    - Use this specific prompt for Copilot:
 
      ```text
@@ -131,7 +152,7 @@ The following process was used to create consistent, comprehensive documentation
    - Let Copilot draft the markdown documentation
    - Repeat this process for each template being documented
 
-3. **Documentation Template Creation**:
+3. __Documentation Template Creation__:
    - After generating all individual docs, provide the entire `.azdo` folder as context
    - Use this prompt:
 
@@ -142,7 +163,7 @@ The following process was used to create consistent, comprehensive documentation
    - Edit the resulting template for clarity and consistency
    - Store the template in the `.azdo/templates` folder
 
-4. **Standardizing Documentation**:
+4. __Standardizing Documentation__:
    - For each previously generated document, use this prompt:
 
      ```text
@@ -151,7 +172,7 @@ The following process was used to create consistent, comprehensive documentation
 
    - This ensures all documentation follows the same structure and formatting
 
-5. **Cross-Referencing Related Templates**:
+5. __Cross-Referencing Related Templates__:
    - Add a "Related Templates" section to the template
    - Use this prompt to generate cross-references:
 
@@ -165,11 +186,11 @@ The following process was used to create consistent, comprehensive documentation
 
 This approach delivered several key benefits:
 
-1. **Consistency**: All documentation follows the same structure and style
-2. **Comprehensiveness**: Each template's documentation covers parameters, inputs, outputs, and usage examples
-3. **Efficiency**: Generated documentation from code context without manual effort
-4. **Improved Navigation**: Cross-references between related templates enhance discoverability
-5. **Sustainability**: The process can be repeated as new templates are added
+1. __Consistency__: All documentation follows the same structure and style
+2. __Comprehensiveness__: Each template's documentation covers parameters, inputs, outputs, and usage examples
+3. __Efficiency__: Generated documentation from code context without manual effort
+4. __Improved Navigation__: Cross-references between related templates enhance discoverability
+5. __Sustainability__: The process can be repeated as new templates are added
 
 This process demonstrates how Copilot can be used as an effective documentation assistant when provided with appropriate context and clear prompts.
 
@@ -177,26 +198,30 @@ This process demonstrates how Copilot can be used as an effective documentation 
 
 To maximize the effectiveness of GitHub Copilot when working with this repository:
 
-1. **Start with Context**: Begin your prompts by referencing specific files, components, or patterns you want to follow.
+1. __Create a Plan Document First__: Before diving into implementation, work with Copilot to create a markdown plan document that outlines the steps, files to modify, and approach for your task. This provides clarity and structure before any code changes are made.
 
-2. **Be Specific About Standards**: When requesting code, explicitly mention you want to follow the project's coding conventions.
+2. __Iterate on the Plan__: Refine the plan document with Copilot by asking clarifying questions, adding more details, and validating the proposed approach against project standards and constraints.
 
-3. **Request Explanations**: Ask Copilot to explain the purpose and structure of generated code, particularly for complex infrastructure components.
+3. __Execute According to the Plan__: Once your plan is finalized, use it as a guide when asking Copilot to implement specific parts of the solution, referencing the plan document for context and to maintain focus.
 
-4. **Validate Generated Code**: Always review and test code generated by AI tools before committing or deploying.
+4. __Start with Context__: When implementing each step of your plan, begin your prompts by referencing specific files, components, or patterns you want to follow.
 
-5. **Iterative Refinement**: Use follow-up prompts to refine generated code that doesn't fully meet requirements.
+5. __Be Specific About Standards__: When requesting code, explicitly mention you want to follow the project's coding conventions as outlined in your plan.
 
-6. **Reference Documentation**: Ask Copilot to incorporate specific patterns from existing documentation or templates.
+6. __Request Explanations__: Ask Copilot to explain the purpose and structure of generated code, particularly for complex infrastructure components, ensuring it aligns with your plan.
 
-7. **Use Appropriate Prompt Files**: Select the language-specific prompt file (Terraform or Bicep) when working on related components.
+7. __Include Multiple Files as Context__: When working on complex features identified in your plan, include related files as context to help Copilot understand dependencies and patterns.
 
-8. **Include Multiple Files as Context**: When working on complex features, include related files as context to help Copilot understand dependencies and patterns.
+8. __Reference Documentation__: Ask Copilot to incorporate specific patterns from existing documentation or templates that you've identified in your planning phase.
 
-9. **Specify Model Preferences**: For certain tasks, experiment with different AI models as they may have different strengths.
+9. __Validate Generated Code__: Always review and test code generated by AI tools against your plan before committing or deploying.
 
-10. **Check for Convention Compliance**: Always verify that generated code follows alphabetical ordering of variables and other project standards.
+10. __Iterative Refinement__: Use follow-up prompts to refine generated code that doesn't fully meet requirements or deviates from your plan.
 
-11. **Iterate and re-experiment**: AI models as well as GitHub Copilot features are constantly evolving! Keep experimenting and be curious about iterating on similar tasks as new features and models become available.
+11. __Use Appropriate Instructions Files__: Select the language-specific instructions file (Terraform or Bicep) when working on related components as identified in your plan.
 
-By leveraging these resources effectively, GitHub Copilot can help accelerate development while maintaining consistency with project standards and architectural patterns.
+12. __Check for Convention Compliance__: Always verify that generated code follows alphabetical ordering of variables and other project standards specified in your plan.
+
+13. __Update Your Plan as Needed__: As implementation progresses, update your plan document to reflect changes in approach or additional requirements discovered during development.
+
+14. __Iterate and re-experiment__: AI models as well as GitHub Copilot features are constantly evolving! Keep experimenting and be curious about iterating on similar tasks as new features and models become available.

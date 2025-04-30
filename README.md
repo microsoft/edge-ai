@@ -169,24 +169,42 @@ If you prefer not to use the Dev Container, make sure you have a Linux environme
 
    ```bash
    # Navigate to your chosen blueprint directory
-   cd ./blueprints/full-single-node-cluster
+   cd ./blueprints/full-single-node-cluster/terraform
 
    # Set required environment variable for Terraform
    export ARM_SUBSCRIPTION_ID=$(az account show --query id -o tsv)
 
-   # Create terraform.tfvars file with required parameters
-   cat > terraform.tfvars << EOF
+   # Generate terraform.tfvars template using terraform-docs
+   terraform-docs tfvars hcl . > terraform.tfvars
+
+   # If terraform-docs is not installed, install it:
+   # On macOS: brew install terraform-docs
+   # On Linux: ../../../scripts/install-terraform-docs.sh
+   # Or follow installation guide at: https://terraform-docs.io/user-guide/installation/
+
+   # Edit the generated terraform.tfvars file to fill in the required values
+   nano terraform.tfvars
+   ```
+
+   The file should contain values for at least these required parameters:
+
+   ```hcl
    environment     = "dev"
    resource_prefix = "myproject"
    location        = "eastus2"
    instance        = "001"
-   EOF
+   ```
 
 4. **Terraform Deployment**
 
    ```bash
-   # Initialize and apply Terraform
+   # Initialize Terraform
    terraform init
+
+   # Preview changes before applying
+   terraform plan -var-file=terraform.tfvars
+
+   # Apply the Terraform configuration
    terraform apply -var-file=terraform.tfvars
    ```
 

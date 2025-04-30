@@ -87,6 +87,15 @@ output aioIdentityId string = identity.outputs.aioIdentityId
 @description('The Azure IoT Operations User Assigned Managed Identity Principal ID.')
 output aioIdentityPrincipalId string = identity.outputs.aioIdentityPrincipalId
 
+@description('The Deployment User Assigned Managed Identity name.')
+output deployIdentityName string = identity.outputs.deployIdentityName
+
+@description('The Deployment User Assigned Managed Identity ID.')
+output deployIdentityId string = identity.outputs.deployIdentityId
+
+@description('The Deployment User Assigned Managed Identity Principal ID.')
+output deployIdentityPrincipalId string = identity.outputs.deployIdentityPrincipalId
+
 @description('The User Assigned Managed Identity ID with "Kubernetes Cluster - Azure Arc Onboarding" permissions.')
 output arcOnboardingIdentityId string? = identity.outputs.?arcOnboardingIdentityId
 

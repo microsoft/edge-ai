@@ -1,4 +1,7 @@
-# Bicep Infrastructure as Code (IaC) Conventions and Best Practices
+---
+applyTo: '**/*.bicep*'
+---
+# Bicep IaC Conventions and Best Practices
 
 You are an expert in Bicep Infrastructure as Code (IaC) with deep knowledge of Azure resources. When writing or evaluating Bicep code, always follow the conventions in this document.
 
@@ -6,13 +9,13 @@ You are an expert in Bicep Infrastructure as Code (IaC) with deep knowledge of A
 
 This repository is organized with the following key directories:
 
-1. **Source Components** (`/src`) - Individual reusable infrastructure components:
+1. **Source Components** (`src/`) - Individual reusable infrastructure components:
    - `000-cloud/` - Cloud-based resources (Resource Groups, Identity, Storage, etc.)
    - `100-edge/` - Edge-based resources (IoT Operations, CNCF clusters, etc.)
    - `500-application/` - Application resources and source code
    - `900-tools-utilities/` - Tools and utilities (YAML, Helm charts, etc.)
 
-2. **Blueprints** (`/blueprints`) - End-to-end solutions that combine components:
+2. **Blueprints** (`blueprints/`) - End-to-end solutions that combine components:
    - `full-single-node-cluster/` - Single-node AIO deployment
    - `full-multi-node-cluster/` - Multi-node HA AIO deployment
    - `only-output-cncf-cluster-script/` - Script-only deployment
@@ -25,7 +28,7 @@ Component Modules are the top-level, standalone modules that provide a specific 
 
 **Characteristics of Component Modules:**
 
-- Located directly under a component directory in `/src` (e.g., `/src/100-edge/110-iot-ops/bicep/`)
+- Located directly under a component directory in `src/` (e.g., `src/100-edge/110-iot-ops/bicep/`)
 - Exposed to be called from **Blueprint** modules
 - Represent a complete, self-contained functional unit (e.g., Resource Group, CNCF Cluster, IoT Ops)
 - Can use their own Internal Modules but NEVER reference other Component Modules
@@ -36,7 +39,7 @@ Component Modules are the top-level, standalone modules that provide a specific 
 **Example Component Module path:**
 
 ```plain
-/src/100-edge/110-iot-ops/bicep/
+src/100-edge/110-iot-ops/bicep/
 ```
 
 ### Internal Modules
@@ -45,9 +48,8 @@ Internal Modules are subordinate, reusable modules that are only used within the
 
 **Characteristics of Internal Modules:**
 
-- Located in the `modules` subdirectory of a Component Module (e.g., `/src/100-edge/110-iot-ops/bicep/modules/iot-ops-instance.bicep`)
+- Located in the `modules` subdirectory of a Component Module (e.g., `src/100-edge/110-iot-ops/bicep/modules/iot-ops-instance.bicep`)
 - NEVER called directly from Blueprints or other Component Modules
-- Only called from their parent Component Module
 - Implement specific functionality within the scope of their parent Component
 - Have narrower scope and focused responsibility
 - Include metadata name and description at the top of the file
@@ -55,7 +57,7 @@ Internal Modules are subordinate, reusable modules that are only used within the
 **Example Internal Module path:**
 
 ```plain
-/src/100-edge/110-iot-ops/bicep/modules/iot-ops-instance.bicep
+src/100-edge/110-iot-ops/bicep/modules/iot-ops-instance.bicep
 ```
 
 ### CI Bicep Directories
@@ -64,7 +66,7 @@ CI Bicep directories are wrapper directories used for CI/CD integration that lev
 
 **Characteristics of CI Bicep Directories:**
 
-- Located at `<component>/ci/bicep/` (e.g., `/src/100-edge/110-iot-ops/ci/bicep/`)
+- Located at `<component>/ci/bicep/` (e.g., `src/100-edge/110-iot-ops/ci/bicep/`)
 - Contains simple code that calls the parent Component Module with default/test configurations
 - Used for individual component testing and verification in CI/CD pipelines
 - Acts as a thin wrapper for the component, not setting up test resources
@@ -144,6 +146,39 @@ Each blueprint includes:
 - `README.md` - Deployment instructions
 
 ## Bicep Coding Conventions
+
+- ALWAYS use the same API version for the same resource, the `@2023-01-31` part is the API version
+- ALWAYS use the existing API version for the same resource
+- ALWAYS use the latest API version for the same resource, as an example:
+  - If the following code exists in the codebase:
+
+  ```bicep
+  resource sseIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2024-11-30' = {
+  }
+
+  // Somewhere else in the codebase...
+  resource aioIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
+  }
+  ```
+
+  - Then the code should be updated to the following:
+
+  ```bicep
+  resource sseIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2024-11-30' = {
+  }
+
+  // Somewhere else in the codebase...
+  resource aioIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2024-11-30' = {
+  }
+  ```
+
+- ALWAYS search the codebase for existing Bicep resources to use as a reference when editing
+  - WHEN no reference exists, it is important to always use that latest Bicep ARM API reference and version
+    - Use VS Code's API Tooling for getting the ARM reference and version information
+    - Fallback to navigating and completely reading in the web pages (excluding images) for the following template, `https://learn.microsoft.com/azure/templates/{provider-namespace}/{resource-type}` for the latest Bicep ARM API reference and version
+      - e.g., `https://learn.microsoft.com/azure/templates/microsoft.managedidentity/userassignedidentities`
+- ALWAYS after making edits, verify VS Codes's information, warnings, and errors for Bicep
+  - ALWAYS make any and all corrections, if unable, fallback to these prompt instructions
 
 ### General Conventions
 
@@ -292,7 +327,7 @@ resource example 'example@1.2.3' = if (shouldCreateExample) {
 */
 
 module exampleInternalModule 'modules/example-internal-module.bicep' = {
-  name: '${deployment().name}-exampleInternalModule'
+  name: '${deployment().name}-eim0'
   params: {
     aioPlatformConfig: aioPlatformConfig
     common: common
@@ -321,12 +356,12 @@ output storageAccountName string = exampleInternalModule.outputs.storageAccountN
 
 IMPORTANT RULES:
 
-- Component Modules (e.g., `/src/100-edge/110-iot-ops/bicep/`) NEVER reference other Component Modules
+- Component Modules (e.g., `src/100-edge/110-iot-ops/bicep/`) NEVER reference other Component Modules
 - Component Modules NEVER reference other Component Modules' Internal Modules
 - Component Modules ONLY reference their own Internal Modules
-- Internal Modules (e.g., `/src/100-edge/110-iot-ops/bicep/modules/iot-ops-instance.bicep`) NEVER reference other Component Modules
+- Internal Modules (e.g., `src/100-edge/110-iot-ops/bicep/modules/iot-ops-instance.bicep`) NEVER reference other Component Modules
 - Internal Modules NEVER reference other Component Modules' Internal Modules
-- Blueprint Modules (e.g., `/blueprints/full-multi-node-cluster/bicep/`) ONLY reference Component Modules, NEVER Internal Modules
+- Blueprint Modules (e.g., `blueprints/full-multi-node-cluster/bicep/`) ONLY reference Component Modules, NEVER Internal Modules
 
 ### Parameters Conventions
 
@@ -375,7 +410,7 @@ Example:
 
 ```bicep
 module roleAssignment 'modules/role-assignment.bicep' = if (shouldAssignKeyVaultRoles) {
-  name: '${deployment().name}-roleAssignment'
+  name: '${deployment().name}-ra0'
   params: {
     keyVaultName: sseKeyVaultName
     sseUserAssignedIdentityName: sseIdentityName
@@ -383,7 +418,7 @@ module roleAssignment 'modules/role-assignment.bicep' = if (shouldAssignKeyVault
 }
 
 module iotOpsInstance 'modules/iot-ops-instance.bicep' = {
-  name: '${deployment().name}-iotOpsInstance'
+  name: '${deployment().name}-ioi1'
   params: {
     aioDataFlowInstanceConfig: aioDataFlowInstanceConfig
     aioExtensionConfig: aioExtensionConfig
@@ -433,7 +468,7 @@ output aioMqBrokerId string = shouldDeployResourceSyncRules ? mqBroker.id : ''
 - DO use the safe access operator `.?` when accessing potentially null properties
 - DO create default objects with default values for complex types
 - DO use conditional deployments with `if` statements for optional resources
-- DO use `${deployment().name}` prefix for module names to ensure uniqueness
+- DO use `${deployment().name}` prefix for module names and acronym followed by order number for uniqueness
 - DO use section headers with `/*` comments to organize your code
 - DO include comments for important logic or implementation details
 - DO validate inputs when appropriate, especially for security-sensitive parameters
@@ -455,9 +490,9 @@ output aioMqBrokerId string = shouldDeployResourceSyncRules ? mqBroker.id : ''
 Before making ANY changes to Bicep code, ask yourself:
 
 - [ ] Am I working on a Component Module, an Internal Module, or a Blueprint?
-  - Component Module: Located directly under `/src/000-grouping/000-component/bicep/`
-  - Internal Module: Located under `/src/000-grouping/000-component/bicep/modules/module-name.bicep`
-  - Blueprint: Located under `/blueprints/blueprint-name/bicep/`
+  - Component Module: Located directly under `src/000-grouping/000-component/bicep/`
+  - Internal Module: Located under `src/000-grouping/000-component/bicep/modules/module-name.bicep`
+  - Blueprint: Located under `blueprints/blueprint-name/bicep/`
 - [ ] Am I following the correct file structure for this module type?
 - [ ] Will my module references follow the module relationship rules?
 - [ ] Are my parameters organized with appropriate groupings?

@@ -1,23 +1,31 @@
 metadata name = 'Key Vault Role Assignment Module'
 metadata description = 'Assigns appropriate roles to access Key Vault secrets.'
 
-@description('The name of the Key Vault containing the scripts.')
-param keyVaultName string
+/*
+  Identity Parameters
+*/
 
 @description('The principal ID of the Arc identity that needs access to the secrets.')
 param arcOnboardingPrincipalId string
 
-@description('The name for the server script secret in Key Vault.')
-param serverScriptSecretName string
+/*
+  Key Vault Parameters
+*/
+
+@description('The name of the Key Vault containing the scripts.')
+param keyVaultName string
 
 @description('The name for the node script secret in Key Vault.')
 param nodeScriptSecretName string
+
+@description('The name for the server script secret in Key Vault.')
+param serverScriptSecretName string
 
 /*
   Resources
 */
 
-resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' existing = {
+resource keyVault 'Microsoft.KeyVault/vaults@2024-11-01' existing = {
   name: keyVaultName
 
   resource serverScriptSecret 'secrets' existing = {
@@ -26,6 +34,21 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' existing = {
 
   resource nodeScriptSecret 'secrets' existing = {
     name: nodeScriptSecretName
+  }
+}
+
+// Key Vault Secrets Officer role at the vault level
+resource keyVaultSecretsOfficerRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(resourceGroup().id, arcOnboardingPrincipalId, 'b86a8fe4-44ce-4948-aee5-eccb2c155cd7')
+  scope: keyVault
+  properties: {
+    // https://learn.microsoft.com/azure/role-based-access-control/built-in-roles/security#key-vault-secrets-officer
+    roleDefinitionId: subscriptionResourceId(
+      'Microsoft.Authorization/roleDefinitions',
+      'b86a8fe4-44ce-4948-aee5-eccb2c155cd7'
+    )
+    principalId: arcOnboardingPrincipalId
+    principalType: 'ServicePrincipal'
   }
 }
 

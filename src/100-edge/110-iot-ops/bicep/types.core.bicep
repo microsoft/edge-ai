@@ -8,8 +8,8 @@ type Common = {
   location: string
 
   @description('Environment for all resources in this module: dev, test, or prod')
-  environment: string?
+  environment: string
 
   @description('Instance identifier for naming resources: 001, 002, etc...')
-  instance: string?
+  instance: string
 }

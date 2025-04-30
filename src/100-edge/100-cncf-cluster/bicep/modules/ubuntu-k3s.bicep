@@ -58,9 +58,31 @@ param clusterServerHostMachineUsername string
 @description('The IP address for the server for the cluster. (Needed for mult-node cluster)')
 param clusterServerIp string?
 
-@description('The token for the K3s cluster.')
+@description('The Object ID that will be given deployment admin permissions.')
+param deployAdminOid string?
+
+@description('The token that will be given to the server for the cluster or used by agent nodes.')
 @secure()
-param clusterServerToken string?
+param serverToken string?
+
+/*
+  Key Vault Parameters
+*/
+
+@description('The name for the deploy user token secret in Key Vault.')
+param deployUserTokenSecretName string
+
+@description('The name of the Key Vault to save the scripts to.')
+param keyVaultName string
+
+@description('The name for the K3s token secret in Key Vault.')
+param k3sTokenSecretName string
+
+@description('The name for the node script secret in Key Vault.')
+param nodeScriptSecretName string
+
+@description('The name for the server script secret in Key Vault.')
+param serverScriptSecretName string
 
 /*
   Deployment Configuration Parameters
@@ -72,15 +94,6 @@ param shouldSkipAzCliLogin bool
 @description('Should skip downloading and installing Azure CLI on the server.')
 param shouldSkipInstallingAzCli bool
 
-@description('The name of the Key Vault to save the scripts to.')
-param keyVaultName string
-
-@description('The name for the server script secret in Key Vault.')
-param serverScriptSecretName string = 'cluster-server-ubuntu-k3s'
-
-@description('The name for the node script secret in Key Vault.')
-param nodeScriptSecretName string = 'cluster-node-ubuntu-k3s'
-
 /*
   Local variables
 */
@@ -89,14 +102,16 @@ var clusterServerUrl = !empty(clusterServerIp) ? 'https://${clusterServerIp}:644
 
 var serverEnvVars = {
   K3S_NODE_TYPE: 'server'
-  CLUSTER_ADMIN_OID: clusterAdminOid ?? '\${CLUSTER_ADMIN_OID}'
-  SKIP_ARC_CONNECT: '\${SKIP_ARC_CONNECT}'
+  CLUSTER_ADMIN_OID: clusterAdminOid
+  SKIP_ARC_CONNECT: ''
+  DEPLOY_ADMIN_OID: deployAdminOid
 }
 
 var nodeEnvVars = {
   K3S_NODE_TYPE: 'agent'
-  CLUSTER_ADMIN_OID: '\${CLUSTER_ADMIN_OID}'
+  CLUSTER_ADMIN_OID: ''
   SKIP_ARC_CONNECT: 'true'
+  DEPLOY_ADMIN_OID: ''
 }
 
 // Define default environment variables
@@ -104,61 +119,47 @@ var defaultEnvVars = {
   ENVIRONMENT: common.environment
   ARC_RESOURCE_GROUP_NAME: resourceGroup().name
   ARC_RESOURCE_NAME: arcResourceName
-  K3S_URL: clusterServerUrl ?? '\${K3S_URL}'
-  K3S_TOKEN: clusterServerToken ?? '\${K3S_TOKEN}'
-  K3S_VERSION: '\${K3S_VERSION}'
+  K3S_URL: clusterServerUrl
+  K3S_TOKEN: serverToken ?? ''
+  K3S_VERSION: ''
+  AKV_NAME: keyVaultName
+  AKV_K3S_TOKEN_SECRET: k3sTokenSecretName
+  AKV_DEPLOY_SAT_SECRET: deployUserTokenSecretName
   ARC_AUTO_UPGRADE: string(shouldEnableArcAutoUpgrade)
-  ARC_SP_CLIENT_ID: arcOnboardingSpClientId ?? '\${ARC_SP_CLIENT_ID}'
-  ARC_SP_SECRET: arcOnboardingSpClientSecret ?? '\${ARC_SP_SECRET}'
+  ARC_SP_CLIENT_ID: arcOnboardingSpClientId
+  ARC_SP_SECRET: arcOnboardingSpClientSecret
   ARC_TENANT_ID: arcTenantId
-  AZ_CLI_VER: '\${AZ_CLI_VER}'
-  AZ_CONNECTEDK8S_VER: '\${AZ_CONNECTEDK8S_VER}'
-  CUSTOM_LOCATIONS_OID: customLocationsOid ?? '\${CUSTOM_LOCATIONS_OID}'
+  AZ_CLI_VER: ''
+  AZ_CONNECTEDK8S_VER: ''
+  CUSTOM_LOCATIONS_OID: customLocationsOid ?? ''
   DEVICE_USERNAME: clusterServerHostMachineUsername
-  SKIP_INSTALL_AZ_CLI: shouldSkipInstallingAzCli ? 'true' : '\${SKIP_INSTALL_AZ_CLI}'
-  SKIP_AZ_LOGIN: shouldSkipAzCliLogin ? 'true' : '\${SKIP_AZ_LOGIN}'
-  SKIP_INSTALL_K3S: '\${SKIP_INSTALL_K3S}'
-  SKIP_INSTALL_KUBECTL: '\${SKIP_INSTALL_KUBECTL}'
+  SKIP_INSTALL_AZ_CLI: shouldSkipInstallingAzCli ? 'true' : ''
+  SKIP_AZ_LOGIN: shouldSkipAzCliLogin ? 'true' : ''
+  SKIP_INSTALL_K3S: ''
+  SKIP_INSTALL_KUBECTL: ''
 }
 
-var defaultEnvVarsArray = [
-  for item in items(defaultEnvVars): {
-    name: item.key
-    value: item.value
-  }
-]
+// Resolve server env variable assignments.
+var combinedServerEnvVars = union(defaultEnvVars, serverEnvVars)
+var serverEnvVarStrings = map(
+  filter(items(combinedServerEnvVars), envVar => !empty(envVar.value)),
+  envVar => '${envVar.key}="${envVar.value}";'
+)
+var resolvedServerEnvVarsString = join(serverEnvVarStrings, '\n')
 
-var nodeEnvVarsArray = [
-  for item in items(nodeEnvVars): {
-    name: item.key
-    value: item.value
-  }
-]
-
-var serverEnvVarsArray = [
-  for item in items(serverEnvVars): {
-    name: item.key
-    value: item.value
-  }
-]
-
-// Join the initial arrays
-var nodeEnvironmentVariablesArray = union(defaultEnvVarsArray, nodeEnvVarsArray)
-var serverEnvironmentVariablesArray = union(defaultEnvVarsArray, serverEnvVarsArray)
-
-// Convert to variable with export strings and joined
-var serverEnvironmentVariablesString = [
-  for envVar in serverEnvironmentVariablesArray: '${envVar.name}="${envVar.value}";'
-]
-var joinedServerEnvironmentVariablesString = join(serverEnvironmentVariablesString, '\n')
-var nodeEnvironmentVariablesString = [for envVar in nodeEnvironmentVariablesArray: '${envVar.name}="${envVar.value}";']
-var joinedNodeEnvironmentVariablesString = join(nodeEnvironmentVariablesString, '\n')
+// Resolve node env variable assignments.
+var combinedNodeEnvVars = union(defaultEnvVars, nodeEnvVars)
+var nodeEnvVarStrings = map(
+  filter(items(combinedNodeEnvVars), envVar => !empty(envVar.value)),
+  envVar => '${envVar.key}="${envVar.value}";'
+)
+var resolvedNodeEnvVarsString = join(nodeEnvVarStrings, '\n')
 
 // Every loadTextContent results in the contents of the file being loaded into a variable that's then built into the
 // ARM that's ultimately deployed. Reduce the number of loadTextContent calls to one to prevent any future issues.
-var scriptFileContents = loadTextContent('../../scripts/k3s-device-setup.sh')
-var effectiveClusterServerScript = '#!/usr/bin/env bash\n\n${joinedServerEnvironmentVariablesString}\n\n${scriptFileContents}'
-var effectiveClusterNodeScript = '#!/usr/bin/env bash\n\n${joinedNodeEnvironmentVariablesString}\n\n${scriptFileContents}'
+var scriptFileContents = replace(loadTextContent('../../scripts/k3s-device-setup.sh'), '\r\n', '\n')
+var effectiveClusterServerScript = '#!/usr/bin/env bash\n\n${resolvedServerEnvVarsString}\n\n${scriptFileContents}'
+var effectiveClusterNodeScript = '#!/usr/bin/env bash\n\n${resolvedNodeEnvVarsString}\n\n${scriptFileContents}'
 
 /*
   Resources
@@ -182,6 +183,9 @@ resource keyVault 'Microsoft.KeyVault/vaults@2024-11-01' existing = {
       contentType: 'text/plain'
     }
   }
+
+  // Add secret for server token and deploy user token when @onlyIfNotExist() is supported.
+  // Update role assignment to only give secrets officer scoped to these secrets.
 }
 
 /*

@@ -52,6 +52,7 @@ Creates user-assigned managed identities for Secret Store Extension, Azure IoT O
 |arcOnboardingIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2023-01-31|
 |sseIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2023-01-31|
 |aioIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2023-01-31|
+|deployIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2023-01-31|
 
 #### Outputs for identity
 
@@ -63,6 +64,9 @@ Creates user-assigned managed identities for Secret Store Extension, Azure IoT O
 |aioIdentityName|`string`|The Azure IoT Operations User Assigned Managed Identity name.|
 |aioIdentityId|`string`|The Azure IoT Operations User Assigned Managed Identity ID.|
 |aioIdentityPrincipalId|`string`|The Azure IoT Operations User Assigned Managed Identity Principal ID.|
+|deployIdentityName|`string`|The Deployment User Assigned Managed Identity name.|
+|deployIdentityId|`string`|The Deployment User Assigned Managed Identity ID.|
+|deployIdentityPrincipalId|`string`|The Deployment User Assigned Managed Identity Principal ID.|
 |arcOnboardingIdentityId|`string`|The User Assigned Managed Identity ID with "Kubernetes Cluster - Azure Arc Onboarding" permissions.|
 |arcOnboardingIdentityName|`string`|The User Assigned Managed Identity name with "Kubernetes Cluster - Azure Arc Onboarding" permissions.|
 
@@ -118,6 +122,9 @@ Common settings for the components.
 |aioIdentityName|`string`|The Azure IoT Operations User Assigned Managed Identity name.|
 |aioIdentityId|`string`|The Azure IoT Operations User Assigned Managed Identity ID.|
 |aioIdentityPrincipalId|`string`|The Azure IoT Operations User Assigned Managed Identity Principal ID.|
+|deployIdentityName|`string`|The Deployment User Assigned Managed Identity name.|
+|deployIdentityId|`string`|The Deployment User Assigned Managed Identity ID.|
+|deployIdentityPrincipalId|`string`|The Deployment User Assigned Managed Identity Principal ID.|
 |arcOnboardingIdentityId|`string`|The User Assigned Managed Identity ID with "Kubernetes Cluster - Azure Arc Onboarding" permissions.|
 |arcOnboardingIdentityName|`string`|The User Assigned Managed Identity name with "Kubernetes Cluster - Azure Arc Onboarding" permissions.|
 

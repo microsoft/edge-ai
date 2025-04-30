@@ -10,11 +10,13 @@ Deploys a complete end-to-end environment for Azure IoT Operations on a single-n
 
 |Name|Description|Type|Default|Required|
 | :--- | :--- | :--- | :--- | :--- |
-|common|The common component configuration.|`[_1.Common](#user-defined-types)`|n/a|yes|
+|common|The common component configuration.|`[_2.Common](#user-defined-types)`|n/a|yes|
 |resourceGroupName|The name for the resource group. If not provided, a default name will be generated.|`string`|[format('rg-{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]|no|
 |adminPassword|Password used for the host VM.|`securestring`|n/a|yes|
 |customLocationsOid|The object id of the Custom Locations Entra ID application for your tenant.<br>Can be retrieved using:<br><br>  <pre><code class="language-sh">  az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv<br>  </code></pre><br>|`string`|n/a|yes|
 |shouldCreateAnonymousBrokerListener|Whether to enable an insecure anonymous AIO MQ Broker Listener. (Should only be used for dev or test environments)|`bool`|`false`|no|
+|shouldInitAio|Whether to deploy the Azure IoT Operations initial connected cluster resources, Secret Sync, ACSA, OSM, AIO Platform.|`bool`|`true`|no|
+|shouldDeployAio|Whether to deploy an Azure IoT Operations Instance and all of its required components into the connected cluster.|`bool`|`true`|no|
 
 ## Resources
 
@@ -103,6 +105,9 @@ Provisions cloud resources required for Azure IoT Operations including Schema Re
 |aioIdentityName|`string`|The Azure IoT Operations User Assigned Managed Identity name.|
 |aioIdentityId|`string`|The Azure IoT Operations User Assigned Managed Identity ID.|
 |aioIdentityPrincipalId|`string`|The Azure IoT Operations User Assigned Managed Identity Principal ID.|
+|deployIdentityName|`string`|The Deployment User Assigned Managed Identity name.|
+|deployIdentityId|`string`|The Deployment User Assigned Managed Identity ID.|
+|deployIdentityPrincipalId|`string`|The Deployment User Assigned Managed Identity Principal ID.|
 |arcOnboardingIdentityId|`string`|The User Assigned Managed Identity ID with "Kubernetes Cluster - Azure Arc Onboarding" permissions.|
 |arcOnboardingIdentityName|`string`|The User Assigned Managed Identity name with "Kubernetes Cluster - Azure Arc Onboarding" permissions.|
 
@@ -226,27 +231,30 @@ The scripts handle primary and secondary node(s) setup, cluster administration, 
 |Name|Description|Type|Default|Required|
 | :--- | :--- | :--- | :--- | :--- |
 |common|The common component configuration.|`[_1.Common](#user-defined-types)`|n/a|yes|
-|keyVaultName|The name of the Key Vault to save the scripts to.|`string`|n/a|yes|
-|keyVaultResourceGroupName|The resource group name where the Key Vault is located. Defaults to the current resource group.|`string`|[resourceGroup().name]|no|
 |arcConnectedClusterName|The resource name for the Arc connected cluster.|`string`|[format('arck-{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]|no|
-|clusterServerVirtualMachineName|The server virtual machines name.|`string`|n/a|no|
-|clusterNodeVirtualMachineNames|The node virtual machines names.|`array`|n/a|no|
-|clusterServerHostMachineUsername|Username used for the host machines that will be given kube-config settings on setup. (Otherwise, resource_prefix if it exists as a user)|`string`|[parameters('common').resourcePrefix]|no|
-|clusterServerIp|The IP address for the server for the cluster. (Needed for mult-node cluster)|`string`|n/a|no|
-|serverToken|The token that will be given to the server for the cluster or used by agent nodes.|`string`|n/a|no|
-|clusterAdminOid|The Object ID that will be given cluster-admin permissions.|`string`|n/a|no|
-|customLocationsOid|The object id of the Custom Locations Entra ID application for your tenant.<br>Can be retrieved using:<br><br>  <pre><code class="language-sh">  az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv<br>  </code></pre><br>|`string`|n/a|yes|
-|shouldAssignRoles|Whether to assign roles for Arc Onboarding.|`bool`|True|no|
-|arcOnboardingSpPrincipalId|Service Principal Object Id used when assigning roles for Arc onboarding.|`string`|n/a|no|
 |arcOnboardingSpClientId|Service Principal Client ID with Kubernetes Cluster - Azure Arc Onboarding permissions.|`string`|n/a|no|
 |arcOnboardingSpClientSecret|The Service Principal Client Secret for Arc onboarding.|`securestring`|n/a|no|
+|arcOnboardingSpPrincipalId|Service Principal Object Id used when assigning roles for Arc onboarding.|`string`|n/a|no|
 |arcOnboardingIdentityName|The resource name for the identity used for Arc onboarding.|`string`|n/a|no|
+|customLocationsOid|The object id of the Custom Locations Entra ID application for your tenant.<br>Can be retrieved using:<br><br>  <pre><code class="language-sh">  az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv<br>  </code></pre><br>|`string`|n/a|yes|
 |shouldAddCurrentUserClusterAdmin|Whether to add the current user as a cluster admin.|`bool`|True|no|
 |shouldEnableArcAutoUpgrade|Whether to enable auto-upgrade for Azure Arc agents.|`bool`|[not(equals(parameters('common').environment, 'prod'))]|no|
+|clusterAdminOid|The Object ID that will be given cluster-admin permissions.|`string`|n/a|no|
+|clusterNodeVirtualMachineNames|The node virtual machines names.|`array`|n/a|no|
+|clusterServerVirtualMachineName|The server virtual machines name.|`string`|n/a|no|
+|clusterServerHostMachineUsername|Username used for the host machines that will be given kube-config settings on setup. (Otherwise, resource_prefix if it exists as a user)|`string`|[parameters('common').resourcePrefix]|no|
+|clusterServerIp|The IP address for the server for the cluster. (Needed for mult-node cluster)|`string`|n/a|no|
+|serverToken|The token that will be given to the server for the cluster or used by agent nodes.|`securestring`|n/a|no|
+|shouldAssignRoles|Whether to assign roles for Arc Onboarding.|`bool`|True|no|
 |shouldDeployScriptToVm|Whether to deploy the scripts to the VM.|`bool`|True|no|
-|shouldGenerateServerToken|Should generate token used by the server.|`bool`|False|no|
-|shouldSkipAzCliLogin|Should skip login process with Azure CLI on the server.|`bool`|False|no|
 |shouldSkipInstallingAzCli|Should skip downloading and installing Azure CLI on the server.|`bool`|False|no|
+|shouldSkipAzCliLogin|Should skip login process with Azure CLI on the server.|`bool`|False|no|
+|deployUserTokenSecretName|The name for the deploy user token secret in Key Vault.|`string`|deploy-user-token|no|
+|deployKeyVaultName|The name of the Key Vault that will have scripts and secrets for deployment.|`string`|n/a|yes|
+|deployKeyVaultResourceGroupName|The resource group name where the Key Vault is located. Defaults to the current resource group.|`string`|[resourceGroup().name]|no|
+|k3sTokenSecretName|The name for the K3s token secret in Key Vault.|`string`|k3s-server-token|no|
+|nodeScriptSecretName|The name for the node script secret in Key Vault.|`string`|cluster-node-ubuntu-k3s|no|
+|serverScriptSecretName|The name for the server script secret in Key Vault.|`string`|cluster-server-ubuntu-k3s|no|
 
 #### Resources for edgeCncfCluster
 
@@ -280,38 +288,254 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 | :--- | :--- | :--- | :--- | :--- |
 |common|The common component configuration.|`[_2.Common](#user-defined-types)`|n/a|yes|
 |arcConnectedClusterName|The resource name for the Arc connected cluster.|`string`|n/a|yes|
-|aioPlatformConfig|The settings for the Azure IoT Operations Platform Extension.|`[_1.AioPlatformExtension](#user-defined-types)`|[variables('_1.aioPlatformExtensionDefaults')]|no|
 |containerStorageConfig|The settings for the Azure Container Store for Azure Arc Extension.|`[_1.ContainerStorageExtension](#user-defined-types)`|[variables('_1.containerStorageExtensionDefaults')]|no|
 |openServiceMeshConfig|The settings for the Open Service Mesh Extension.|`[_1.OpenServiceMeshExtension](#user-defined-types)`|[variables('_1.openServiceMeshExtensionDefaults')]|no|
+|aioPlatformConfig|The settings for the Azure IoT Operations Platform Extension.|`[_1.AioPlatformExtension](#user-defined-types)`|[variables('_1.aioPlatformExtensionDefaults')]|no|
 |secretStoreConfig|The settings for the Secret Store Extension.|`[_1.SecretStoreExtension](#user-defined-types)`|[variables('_1.secretStoreExtensionDefaults')]|no|
-|aioExtensionConfig|The settings for the Azure IoT Operations Extension.|`[_1.AioExtension](#user-defined-types)`|[variables('_1.aioExtensionDefaults')]|no|
-|shouldDeployResourceSyncRules|Whether or not to deploy the Custom Locations Resource Sync Rules for the Azure IoT Operations resources.|`bool`|True|no|
-|aioMqBrokerConfig|The settings for the Azure IoT Operations MQ Broker.|`[_1.AioMqBroker](#user-defined-types)`|[variables('_1.aioMqBrokerDefaults')]|no|
-|shouldCreateAnonymousBrokerListener|Whether to enable an insecure anonymous AIO MQ Broker Listener. (Should only be used for dev or test environments)|`bool`|False|no|
-|brokerListenerAnonymousConfig|Configuration for the insecure anonymous AIO MQ Broker Listener.|`[_1.AioMqBrokerAnonymous](#user-defined-types)`|[variables('_1.aioMqBrokerAnonymousDefaults')]|no|
-|aioDataFlowInstanceConfig|The settings for Azure IoT Operations Data Flow Instances.|`[_1.AioDataFlowInstance](#user-defined-types)`|[variables('_1.aioDataFlowInstanceDefaults')]|no|
-|customLocationName|The name for the Custom Locations resource.|`string`|[format('{0}-cl', parameters('arcConnectedClusterName'))]|no|
-|aioInstanceName|The name for the Azure IoT Operations Instance resource.|`string`|[format('{0}-ops-instance', parameters('arcConnectedClusterName'))]|no|
+|shouldInitAio|Whether to deploy the Azure IoT Operations initial connected cluster resources, Secret Sync, ACSA, OSM, AIO Platform.|`bool`|True|no|
 |aioIdentityName|The name of the User Assigned Managed Identity for Azure IoT Operations.|`string`|n/a|yes|
+|aioExtensionConfig|The settings for the Azure IoT Operations Extension.|`[_1.AioExtension](#user-defined-types)`|[variables('_1.aioExtensionDefaults')]|no|
+|aioInstanceName|The name for the Azure IoT Operations Instance resource.|`string`|[format('{0}-ops-instance', parameters('arcConnectedClusterName'))]|no|
+|aioDataFlowInstanceConfig|The settings for Azure IoT Operations Data Flow Instances.|`[_1.AioDataFlowInstance](#user-defined-types)`|[variables('_1.aioDataFlowInstanceDefaults')]|no|
+|aioMqBrokerConfig|The settings for the Azure IoT Operations MQ Broker.|`[_1.AioMqBroker](#user-defined-types)`|[variables('_1.aioMqBrokerDefaults')]|no|
+|brokerListenerAnonymousConfig|Configuration for the insecure anonymous AIO MQ Broker Listener.|`[_1.AioMqBrokerAnonymous](#user-defined-types)`|[variables('_1.aioMqBrokerAnonymousDefaults')]|no|
 |schemaRegistryName|The resource name for the ADR Schema Registry for Azure IoT Operations.|`string`|n/a|yes|
-|shouldEnableOtelCollector|Whether or not to enable the Open Telemetry Collector for Azure IoT Operations.|`bool`|False|no|
-|trustSource|The source for trust for Azure IoT Operations.|`[_1.TrustSource](#user-defined-types)`|SelfSigned|no|
-|shouldAssignKeyVaultRoles|Whether to assign roles for Key Vault to the provided Secret Sync Identity.|`bool`|True|no|
+|shouldDeployAio|Whether to deploy an Azure IoT Operations Instance and all of its required components into the connected cluster.|`bool`|True|no|
+|shouldDeployResourceSyncRules|Whether or not to deploy the Custom Locations Resource Sync Rules for the Azure IoT Operations resources.|`bool`|True|no|
+|shouldCreateAnonymousBrokerListener|Whether to enable an insecure anonymous AIO MQ Broker Listener. (Should only be used for dev or test environments)|`bool`|False|no|
+|shouldEnableOtelCollector|Whether or not to enable the Open Telemetry Collector for Azure IoT Operations.|`bool`|True|no|
+|shouldEnableOpcUaSimulator|Whether or not to enable the OPC UA Simulator for Azure IoT Operations.|`bool`|True|no|
+|shouldEnableOpcUaSimulatorAsset|Whether or not to create the OPC UA Simulator ADR Asset for Azure IoT Operations.|`bool`|[parameters('shouldEnableOpcUaSimulator')]|no|
+|customLocationName|The name for the Custom Locations resource.|`string`|[format('{0}-cl', parameters('arcConnectedClusterName'))]|no|
+|trustIssuerSettings|The trust issuer settings for Customer Managed Azure IoT Operations Settings.|`[_1.TrustIssuerConfig](#user-defined-types)`|{'trustSource': 'SelfSigned'}|no|
+|sseKeyVaultName|The name of the Key Vault for Secret Sync. (Required when providing sseIdentityName)|`string`|n/a|yes|
 |sseIdentityName|The name of the User Assigned Managed Identity for Secret Sync.|`string`|n/a|yes|
-|sseKeyVaultName|The name of the Key Vault for Secret Sync. (Required when providing sseUserManagedIdentityName)|`string`|n/a|yes|
+|sseKeyVaultResourceGroupName|The name of the Resource Group for the Key Vault for Secret Sync. (Required when providing sseIdentityName)|`string`|[resourceGroup().name]|no|
+|shouldAssignSseKeyVaultRoles|Whether to assign roles for Key Vault to the provided Secret Sync Identity.|`bool`|True|no|
+|shouldAssignDeployIdentityRoles|Whether to assign roles to the deploy identity.|`bool`|[not(empty(parameters('deployIdentityName')))]|no|
+|deployIdentityName|The resource name for a managed identity that will be given deployment admin permissions.|`string`|n/a|no|
+|shouldDeployAioDeploymentScripts|Whether to deploy DeploymentScripts for Azure IoT Operations.|`bool`|False|no|
+|deployKeyVaultName|The name of the Key Vault that will have scripts and secrets for deployment.|`string`|[parameters('sseKeyVaultName')]|no|
+|deployKeyVaultResourceGroupName|The resource group name where the Key Vault is located. Defaults to the current resource group.|`string`|[parameters('sseKeyVaultResourceGroupName')]|no|
+|deployUserTokenSecretName|The name for the deploy user token secret in Key Vault.|`string`|deploy-user-token|no|
+|deploymentScriptsSecretNamePrefix|The prefix used with constructing the secret name that will have the deployment script.|`string`|[format('{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]|no|
+|shouldAddDeployScriptsToKeyVault|Whether to add the deploy scripts for DeploymentScripts to Key Vault as secrets. (Required for DeploymentScripts)|`bool`|False|no|
 
 #### Resources for edgeIotOps
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|roleAssignment|`Microsoft.Resources/deployments`|2022-09-01|
+|deployIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2023-01-31|
+|sseIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2023-01-31|
+|deployArcK8sRoleAssignments|`Microsoft.Resources/deployments`|2022-09-01|
+|deployKeyVaultRoleAssignments|`Microsoft.Resources/deployments`|2022-09-01|
+|sseKeyVaultRoleAssignments|`Microsoft.Resources/deployments`|2022-09-01|
 |iotOpsInit|`Microsoft.Resources/deployments`|2022-09-01|
+|postInitScriptsSecrets|`Microsoft.Resources/deployments`|2022-09-01|
+|postInitScripts|`Microsoft.Resources/deployments`|2022-09-01|
 |iotOpsInstance|`Microsoft.Resources/deployments`|2022-09-01|
 |iotOpsInstancePost|`Microsoft.Resources/deployments`|2022-09-01|
+|postInstanceScriptsSecrets|`Microsoft.Resources/deployments`|2022-09-01|
+|postInstanceScripts|`Microsoft.Resources/deployments`|2022-09-01|
+|opcUaSimulator|`Microsoft.Resources/deployments`|2022-09-01|
+
+#### Outputs for edgeIotOps
+
+|Name|Type|Description|
+| :--- | :--- | :--- |
+|containerStorageExtensionId|`string`|The ID of the Container Storage Extension.|
+|containerStorageExtensionName|`string`|The name of the Container Storage Extension.|
+|openServiceMeshExtensionId|`string`|The ID of the Open Service Mesh Extension.|
+|openServiceMeshExtensionName|`string`|The name of the Open Service Mesh Extension.|
+|aioPlatformExtensionId|`string`|The ID of the Azure IoT Operations Platform Extension.|
+|aioPlatformExtensionName|`string`|The name of the Azure IoT Operations Platform Extension.|
+|secretStoreExtensionId|`string`|The ID of the Secret Store Extension.|
+|secretStoreExtensionName|`string`|The name of the Secret Store Extension.|
+|customLocationId|`string`|The ID of the deployed Custom Location.|
+|customLocationName|`string`|The name of the deployed Custom Location.|
+|aioInstanceId|`string`|The ID of the deployed Azure IoT Operations instance.|
+|aioInstanceName|`string`|The name of the deployed Azure IoT Operations instance.|
+|dataFlowProfileId|`string`|The ID of the deployed Azure IoT Operations Data Flow Profile.|
+|dataFlowProfileName|`string`|The name of the deployed Azure IoT Operations Data Flow Profile.|
+|dataFlowEndpointId|`string`|The ID of the deployed Azure IoT Operations Data Flow Endpoint.|
+|dataFlowEndpointName|`string`|The name of the deployed Azure IoT Operations Data Flow Endpoint.|
 
 ## User Defined Types
 
-### `_1.Common`
+### `_1.AioCaConfig`
+
+Configuration for Azure IoT Operations Certificate Authority.
+
+|Property|Type|Description|
+| :--- | :--- | :--- |
+|rootCaCertPem|`securestring`|The PEM-formatted root CA certificate.|
+|caCertChainPem|`securestring`|The PEM-formatted CA certificate chain.|
+|caKeyPem|`securestring`|The PEM-formatted CA private key.|
+
+### `_1.AioDataFlowInstance`
+
+The settings for Azure IoT Operations Data Flow Instances.
+
+|Property|Type|Description|
+| :--- | :--- | :--- |
+|count|`int`|The number of data flow instances.|
+
+### `_1.AioExtension`
+
+The settings for the Azure IoT Operations Extension.
+
+|Property|Type|Description|
+| :--- | :--- | :--- |
+|release|`[_1.Release](#user-defined-types)`|The common settings for the extension.|
+|settings|`object`||
+
+### `_1.AioMqBroker`
+
+The settings for the Azure IoT Operations MQ Broker.
+
+|Property|Type|Description|
+| :--- | :--- | :--- |
+|brokerListenerServiceName|`string`|The service name for the broker listener.|
+|brokerListenerPort|`int`|The port for the broker listener.|
+|serviceAccountAudience|`string`|The audience for the service account.|
+|frontendReplicas|`int`|The number of frontend replicas for the broker.|
+|frontendWorkers|`int`|The number of frontend workers for the broker.|
+|backendRedundancyFactor|`int`|The redundancy factor for the backend of the broker.|
+|backendWorkers|`int`|The number of backend workers for the broker.|
+|backendPartitions|`int`|The number of partitions for the backend of the broker.|
+|memoryProfile|`string`|The memory profile for the broker (Low, Medium, High).|
+|serviceType|`string`|The service type for the broker (ClusterIP, LoadBalancer, NodePort).|
+
+### `_1.AioMqBrokerAnonymous`
+
+Configuration for the insecure anonymous AIO MQ Broker Listener.
+
+|Property|Type|Description|
+| :--- | :--- | :--- |
+|serviceName|`string`|The service name for the anonymous broker listener.|
+|port|`int`|The port for the anonymous broker listener.|
+|nodePort|`int`|The node port for the anonymous broker listener.|
+
+### `_1.AioPlatformExtension`
+
+The settings for the Azure IoT Operations Platform Extension.
+
+|Property|Type|Description|
+| :--- | :--- | :--- |
+|release|`[_1.Release](#user-defined-types)`|The common settings for the extension.|
+|settings|`object`||
+
+### `_1.ContainerStorageExtension`
+
+The settings for the Azure Container Store for Azure Arc Extension.
+
+|Property|Type|Description|
+| :--- | :--- | :--- |
+|release|`[_1.Release](#user-defined-types)`|The common settings for the extension.|
+|settings|`object`||
+
+### `_1.CustomerManagedByoIssuerConfig`
+
+|Property|Type|Description|
+| :--- | :--- | :--- |
+|trustSource|`string`||
+|trustSettings|`[_1.TrustSettingsConfig](#user-defined-types)`|The trust settings for Azure IoT Operations.|
+
+### `_1.CustomerManagedGenerateIssuerConfig`
+
+|Property|Type|Description|
+| :--- | :--- | :--- |
+|trustSource|`string`||
+|aioCa|`[_1.AioCaConfig](#user-defined-types)`|The CA certificate, chain, and key for Azure IoT Operations.|
+
+### `_1.IncludeFileConfig`
+
+Additional file configuration for deployment scripts.
+
+|Property|Type|Description|
+| :--- | :--- | :--- |
+|name|`string`|The name of the file to create.|
+|content|`securestring`|The content of the file to create.|
+
+### `_1.OpenServiceMeshExtension`
+
+The settings for the Open Service Mesh Extension.
+
+|Property|Type|Description|
+| :--- | :--- | :--- |
+|release|`[_1.Release](#user-defined-types)`|The common settings for the extension.|
+
+### `_1.Release`
+
+The common settings for Azure Arc Extensions.
+
+|Property|Type|Description|
+| :--- | :--- | :--- |
+|version|`string`|The version of the extension.|
+|train|`string`|The release train that has the version to deploy (ex., "preview", "stable").|
+
+### `_1.ScriptConfig`
+
+Script configuration for deployment scripts.
+
+|Property|Type|Description|
+| :--- | :--- | :--- |
+|content|`securestring`|The script content to be executed.|
+|env|`array`|Environment variables for the script.|
+
+### `_1.ScriptEnvironmentVariable`
+
+Environment variable configuration for scripts.
+
+|Property|Type|Description|
+| :--- | :--- | :--- |
+|name|`string`|The name of the environment variable.|
+|value|`string`|The value of the environment variable.|
+|secureValue|`securestring`|The secure value of the environment variable.|
+
+### `_1.ScriptWithFilesConfig`
+
+The script and additional configuration files for deployment scripts.
+
+|Property|Type|Description|
+| :--- | :--- | :--- |
+|scripts|`array`|The script configuration for deployment scripts.|
+|includeFiles|`array`|The additional file configuration for deployment scripts.s|
+
+### `_1.SecretStoreExtension`
+
+The settings for the Secret Store Extension.
+
+|Property|Type|Description|
+| :--- | :--- | :--- |
+|release|`[_1.Release](#user-defined-types)`|The common settings for the extension.|
+
+### `_1.SelfSignedIssuerConfig`
+
+|Property|Type|Description|
+| :--- | :--- | :--- |
+|trustSource|`string`||
+
+### `_1.TrustConfigSource`
+
+The config source of trust for how to use or generate Azure IoT Operations certificates.
+
+### `_1.TrustIssuerConfig`
+
+### `_1.TrustSettingsConfig`
+
+|Property|Type|Description|
+| :--- | :--- | :--- |
+|issuerName|`string`||
+|issuerKind|`string`||
+|configMapName|`string`||
+|configMapKey|`string`||
+
+### `_1.TrustSource`
+
+The source of trust for Azure IoT Operations certificates.
+
+### `_2.Common`
 
 Common settings for the components.
 
@@ -326,9 +550,21 @@ Common settings for the components.
 
 |Name|Type|Description|
 | :--- | :--- | :--- |
-|arcConnectedClusterName|`string`|The name of the Arc Connected Cluster.|
-|vmUsername|`string`|The VM username for SSH access.|
-|vmNames|`array`|The names of all virtual machines deployed.|
+|arcConnectedClusterName|`string`|The name of the Arc-enabled Kubernetes cluster that was connected to Azure. This can be used to reference the cluster in other deployments.|
+|vmUsername|`string`|The administrative username that can be used to SSH into the deployed virtual machines.|
+|vmNames|`array`|An array containing the names of all virtual machines that were deployed as part of this blueprint.|
+|aioPlatformExtensionId|`string`|The ID of the Azure IoT Operations Platform Extension.|
+|aioPlatformExtensionName|`string`|The name of the Azure IoT Operations Platform Extension.|
+|secretStoreExtensionId|`string`|The ID of the Secret Store Extension.|
+|secretStoreExtensionName|`string`|The name of the Secret Store Extension.|
+|customLocationId|`string`|The ID of the deployed Custom Location.|
+|customLocationName|`string`|The name of the deployed Custom Location.|
+|aioInstanceId|`string`|The ID of the deployed Azure IoT Operations instance.|
+|aioInstanceName|`string`|The name of the deployed Azure IoT Operations instance.|
+|dataFlowProfileId|`string`|The ID of the deployed Azure IoT Operations Data Flow Profile.|
+|dataFlowProfileName|`string`|The name of the deployed Azure IoT Operations Data Flow Profile.|
+|dataFlowEndpointId|`string`|The ID of the deployed Azure IoT Operations Data Flow Endpoint.|
+|dataFlowEndpointName|`string`|The name of the deployed Azure IoT Operations Data Flow Endpoint.|
 
 <!-- markdown-table-prettify-ignore-end -->
 <!-- END_BICEP_DOCS -->

@@ -427,3 +427,7 @@ venv/
 
 # Mac finder files
 .DS_Store
+
+# Generated PR from Copilot
+pr.md
+pr-reference.xml

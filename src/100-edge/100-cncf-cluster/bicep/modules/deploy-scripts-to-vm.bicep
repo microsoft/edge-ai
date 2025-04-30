@@ -3,22 +3,30 @@ metadata description = 'Deploys a script to a virtual machine using the CustomSc
 
 import * as core from '../types.core.bicep'
 
+/*
+  Common Parameters
+*/
+
 @description('The common component configuration.')
 param common core.Common
 
-@description('The server virtual machines name.')
-param clusterServerVirtualMachineName string
+/*
+  Cluster Parameters
+*/
 
 @description('The node virtual machines names.')
 param clusterNodeVirtualMachineNames string[]
 
-@description('The script for setting up the host machine for the cluster server.')
-@secure()
-param clusterServerScript string
-
 @description('The script for setting up the host machine for the cluster node.')
 @secure()
 param clusterNodeScript string
+
+@description('The server virtual machines name.')
+param clusterServerVirtualMachineName string
+
+@description('The script for setting up the host machine for the cluster server.')
+@secure()
+param clusterServerScript string
 
 /*
   Resources
