@@ -254,7 +254,7 @@ By default, platform and custom metrics are stored for 93 days. Prometheus metri
 
 #### Logs and Traces
 
-By default, Log Analytics workspaces have a data retention period of 30 days. This retention policy is configurable. Based on the nature of the solution and feedback from ***REMOVED***, a retention period of 93 days will be configured for this solution.
+By default, Log Analytics workspaces have a data retention period of 30 days. This retention policy is configurable. Based on the nature of the solution and customer feedback, a retention period of 93 days will be configured for this solution.
 
 ### Alerting
 
