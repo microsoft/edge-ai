@@ -149,8 +149,7 @@ Users and project developers can contribute to make this solution better in seve
 - [Review the project's Contributing doc](../CONTRIBUTING.md)
 - [Contribute an ADR](./solution-adr-library/README.md#contribute) from your engagement
 - [Contribute a Security Plan](./solution-security-plan-library/README.md#contribute) from your engagement
-- [Find a user story or task from the backlog](https://dev.azure.com/ai-at-the-edge-flagship-accelerator/IaC%20for%20the%20Edge/_sprints/taskboard/IaC%20for%20the%20Edge%20Team/IaC%20for%20the%20Edge/***REMOVED***)
-  and help move the accelerator forward
+- Find a user story, issue or task from the backlog and make a contribution
 
 #### Build and Test
 

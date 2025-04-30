@@ -371,8 +371,7 @@ Users and project developers can contribute to make this solution better in seve
 - [Review the project's Contributing doc](./CONTRIBUTING.md)
 - [Contribute an ADR](./docs/solution-adr-library/README.md#contribute) from your engagement
 - [Contribute a Security Plan](./docs/solution-security-plan-library/README.md#contribute) from your engagement
-- Pick up from the backlog
-  a [#GoodFirstIssue or a #GoodFirstStory](https://dev.azure.com/ai-at-the-edge-flagship-accelerator/IaC%20for%20the%20Edge/_queries/query/?tempQueryId=a44d85ba-bc5b-43fc-954d-78e15bc8f68f)
+- Pick up something from the backlog by searching for #GoodFirstIssue or a #GoodFirstStory
   and help move this accelerator forward
 
 #### Build and Test
