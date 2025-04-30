@@ -136,3 +136,74 @@ The following resources will be created when using the assets available under th
     ```bash
     mosquitto_pub --host aio-broker --port 18883 --message "test payload" --topic "metrics/aio/machine-status" --debug --cafile /var/run/certs/ca.crt -D CONNECT authentication-method 'K8S-SAT' -D CONNECT authentication-data $(cat /var/run/secrets/tokens/broker-sat)
     ```
+
+## Customizing Edge Subvolume Ingestion Policy
+
+The edge subvolumes created in this sample use the default ingestion policy (`edgeingestpolicy-default`) for synchronizing data between the edge device and Azure blob storage. You can customize this behavior by creating your own ingestion policy.
+
+### Creating a Custom Ingestion Policy
+
+1. Create a YAML file for your custom ingestion policy (e.g., `custom-ingest-policy.yaml`):
+
+    ```yaml
+    apiVersion: arccontainerstorage.azure.net/v1
+    kind: EdgeIngestPolicy
+    metadata:
+      name: my-custom-ingest-policy
+    spec:
+      schedule: "*/10 * * * *"      # Cron expression (every 10 minutes in this example)
+      maxBandwidthInMbps: 10        # Maximum bandwidth limit in Mbps
+      maxFilesToUpload: 100         # Maximum number of files to upload per sync
+      maxFilesToDelete: 50          # Maximum number of files to delete per sync
+      includedPaths:                # Paths to include (optional)
+        - "*.json"
+        - "data/*.csv"
+      excludedPaths:                # Paths to exclude (optional)
+        - "*.tmp"
+        - "temp/*"
+      priority: 10                  # Priority level (higher number = higher priority)
+    ```
+
+2. Apply the custom ingestion policy to your Kubernetes cluster:
+
+    ```bash
+    kubectl apply -f custom-ingest-policy.yaml -n azure-iot-operations
+    ```
+
+3. Update your EdgeSubvolume YAML to reference your custom policy. You can modify the `create-blob-storage.sh` script or apply the change directly:
+
+    ```yaml
+    apiVersion: "arccontainerstorage.azure.net/v1"
+    kind: EdgeSubvolume
+    metadata:
+      name: ${SUBVOLUME_NAME}
+    spec:
+      edgevolume: ${EDGE_VOLUME_NAME}
+      path: ${PATH}
+      auth:
+        authType: MANAGED_IDENTITY
+      storageaccountendpoint: "https://${STORAGE_ACCOUNT_NAME}.blob.core.windows.net/"
+      container: ${CONTAINER_NAME}
+      ingestPolicy: my-custom-ingest-policy  # Reference your custom policy here
+    ```
+
+### Key Ingestion Policy Parameters
+
+| Parameter            | Description                       | Default                |
+|----------------------|-----------------------------------|------------------------|
+| `schedule`           | Cron expression for sync schedule | `"0 * * * *"` (hourly) |
+| `maxBandwidthInMbps` | Maximum bandwidth for uploads     | Unlimited              |
+| `maxFilesToUpload`   | Maximum files to upload per sync  | 1000                   |
+| `maxFilesToDelete`   | Maximum files to delete per sync  | 1000                   |
+| `includedPaths`      | File patterns to include          | All files              |
+| `excludedPaths`      | File patterns to exclude          | None                   |
+| `priority`           | Sync task priority                | 0                      |
+
+### Common Cron Expression Examples
+
+- Every 5 minutes: `*/5 * * * *`
+- Every hour at minute 30: `30 * * * *`
+- Every day at midnight: `0 0 * * *`
+- Every Monday at 9 AM: `0 9 * * 1`
+
+For more information on EdgeIngestPolicy options, refer to the [Azure Arc-enabled Kubernetes Storage documentation](https://learn.microsoft.com/azure/azure-arc/container-storage/cloud-ingest-edge-volume-configuration?tabs=portal#optional-modify-the-ingestpolicy-from-the-default).
