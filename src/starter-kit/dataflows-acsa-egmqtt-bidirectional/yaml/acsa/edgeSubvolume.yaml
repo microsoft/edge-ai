@@ -10,4 +10,4 @@ spec:
     authType: MANAGED_IDENTITY
   storageaccountendpoint: "https://{STORAGE_ACCOUNT_NAME}.blob.core.windows.net/"
   container: {CONTAINER_NAME}
-  ingestPolicy: edgeingestpolicy-default # Optional: See the following instructions if you want to update the ingestPolicy with your own configuration
+  ingestPolicy: edgeingestpolicy-default # Optional: see the instructions in the </src/starter-kit/dataflows-acsa-egmqtt-bidirectional/README.md> to create a custom ingest policy
