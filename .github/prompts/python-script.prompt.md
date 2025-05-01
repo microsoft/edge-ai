@@ -1,7 +1,9 @@
 ---
-applyTo: '**/*.py'
+mode: 'agent'
+tools: ['terminalLastCommand', 'terminalSelection', 'codebase', 'fetch', 'problems', 'searchResults', 'usages', 'vscodeAPI']
+description: 'Provides Prompt Instructions for Python'
 ---
-# Python Script Conventions and Best Practices
+# Python Instructions
 
 You are an expert in Python scripting with deep knowledge of best practices and efficient implementation patterns.
 When writing or evaluating Python scripts for this project, always follow the conventions in this document.

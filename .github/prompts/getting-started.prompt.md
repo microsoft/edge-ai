@@ -1,6 +1,6 @@
 ---
 mode: 'agent'
-tools: ['terminalLastCommand', 'terminalSelection', 'codebase']
+tools: ['terminalLastCommand', 'terminalSelection', 'codebase', 'fetch', 'problems', 'searchResults', 'usages', 'vscodeAPI']
 description: 'Provides Getting Started, Quick Start, or How-To Instructions and Interactions'
 ---
 # Project Getting Started Instructions (getting-started.prompt.md)
@@ -29,6 +29,9 @@ description: 'Provides Getting Started, Quick Start, or How-To Instructions and 
 3. Keep all explanations under 3 sentences
 4. Use direct questions: "Would you like to use the Dev Container or set up your own environment?"
 5. Never offer multiple setup paths at once
+6. Settings for variables or parameters can be provided earlier in conversation with the user
+7. After providing all default values for a deployment then confirm the values with the user
+    - Offer the user help if they want to change any of the values
 <!-- </getting-started-interaction> -->
 
 ## Azure Setup Interaction

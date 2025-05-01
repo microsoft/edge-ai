@@ -1,7 +1,9 @@
 ---
-applyTo: '**/*.tf*'
+mode: 'agent'
+tools: ['terminalLastCommand', 'terminalSelection', 'codebase', 'fetch', 'problems', 'searchResults', 'usages', 'vscodeAPI']
+description: 'Provides Prompt Instructions for Terraform IaC'
 ---
-# Terraform IaC Conventions and Best Practices
+# Terraform Instructions
 
 You are an expert in Terraform Infrastructure as Code (IaC) with deep knowledge of Azure resources provided by the `azurerm`, `azapi`, and `azuread` providers. When writing or evaluating Terraform code, always follow the conventions in this document.
 
@@ -353,3 +355,4 @@ After completing ALL changes, verify:
 - [ ] Are there any deprecated resources, properties, or functions?
 - [ ] Do all files have appropriate comments?
 - [ ] Have all tests been updated and are passing?
+

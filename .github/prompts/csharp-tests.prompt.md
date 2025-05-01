@@ -1,7 +1,9 @@
 ---
-applyTo: '**/*.cs,**/*.csproj'
+mode: 'agent'
+tools: ['terminalLastCommand', 'terminalSelection', 'codebase', 'fetch', 'problems', 'searchResults', 'usages', 'vscodeAPI']
+description: 'Provides Prompt Instructions for C# (CSharp) Tests'
 ---
-# C# (csharp) Tests
+# C# (csharp) Test Instructions
 
 Only use this section when the prompt is specifically asking for C# tests. This section is only for C# tests and not
 for C# code.
