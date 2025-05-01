@@ -1,5 +1,7 @@
 ---
-applyTo: '**/*.cs,**/*.csproj'
+mode: 'agent'
+tools: ['terminalLastCommand', 'terminalSelection', 'codebase', 'fetch', 'problems', 'searchResults', 'usages', 'vscodeAPI']
+description: 'Provides Prompt Instructions for C# (CSharp)'
 ---
 # C# (csharp)
 

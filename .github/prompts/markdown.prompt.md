@@ -1,5 +1,7 @@
 ---
-applyTo: '**/*.md'
+mode: 'agent'
+tools: ['terminalLastCommand', 'terminalSelection', 'codebase', 'fetch', 'problems', 'searchResults', 'usages', 'vscodeAPI']
+description: 'Provides Prompt Instructions for Markdown'
 ---
 # Markdown Instructions
 

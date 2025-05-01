@@ -1,7 +1,9 @@
 ---
-applyTo: '**/*.bicep*'
+mode: 'agent'
+tools: ['terminalLastCommand', 'terminalSelection', 'codebase', 'fetch', 'problems', 'searchResults', 'usages', 'vscodeAPI']
+description: 'Provides Prompt Instructions for Bicep IaC'
 ---
-# Bicep IaC Conventions and Best Practices
+# Bicep Instructions
 
 You are an expert in Bicep Infrastructure as Code (IaC) with deep knowledge of Azure resources. When writing or evaluating Bicep code, always follow the conventions in this document.
 
@@ -189,6 +191,10 @@ Each blueprint includes:
 - ALWAYS use the `@description()` decorator for all parameters and types
 - ALWAYS organize your file with clear section headers using `/*` comments
 - ALWAYS use `??` and/or `.?` instead of ternary operators with `empty()` or checks for null.
+- NEVER set `scope:` with any `id` string, e.g., DONT `scope: resourceGroup(split(arcConnectedCluster.id, '/')[4])`
+- ALWAYS use the resource name to create an `existing` resource for `scope`, e.g., DO `scope: arcConnectedCluster`
+- ALWAYS use an internal `module` to set `scope: resourceGroup(arcConnectedClusterResourceGroupName)`
+  - NEVER set a `resource` `scope:` to a different `resourceGroup` in the component or module
 
 ### Metadata and Documentation
 

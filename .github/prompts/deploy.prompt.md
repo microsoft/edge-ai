@@ -1,3 +1,8 @@
+---
+mode: 'agent'
+tools: ['terminalLastCommand', 'terminalSelection', 'codebase', 'fetch', 'problems', 'searchResults', 'usages', 'vscodeAPI']
+description: 'Provides Prompt Instructions for Deploying Solution or Deploying Blueprints'
+---
 # Deploy Solution or Blueprint Instructions (deploy.prompt.md)
 
 **MANDATORY**: Completely READ all of #file:../../blueprints/README.md
