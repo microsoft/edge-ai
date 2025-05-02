@@ -18,9 +18,43 @@ variable "operations_config" {
   default = {
     namespace                      = "azure-iot-operations"
     kubernetesDistro               = "K3s"
-    version                        = "1.0.9"
+    version                        = "1.1.19"
     train                          = "stable"
     agentOperationTimeoutInMinutes = 120
+  }
+}
+
+variable "aio_features" {
+  description = "AIO Instance features with mode ('Stable', 'Preview', 'Disabled') and settings ('Enabled', 'Disabled')."
+  type = map(object({
+    mode     = optional(string)
+    settings = optional(map(string))
+  }))
+  default = null
+
+  validation {
+    condition = var.aio_features == null ? true : alltrue([
+      for feature_name, feature in coalesce(var.aio_features, {}) :
+      try(
+        feature.mode == null ? true : contains(["Stable", "Preview", "Disabled"], feature.mode),
+        true
+      )
+    ])
+    error_message = "Feature mode must be one of: 'Stable', 'Preview', or 'Disabled'."
+  }
+
+  validation {
+    condition = var.aio_features == null ? true : alltrue([
+      for feature_name, feature in coalesce(var.aio_features, {}) :
+      try(
+        feature.settings == null ? true : alltrue([
+          for setting_name, setting_value in feature.settings :
+          contains(["Enabled", "Disabled"], setting_value)
+        ]),
+        true
+      )
+    ])
+    error_message = "Feature settings values must be either 'Enabled' or 'Disabled'."
   }
 }
 

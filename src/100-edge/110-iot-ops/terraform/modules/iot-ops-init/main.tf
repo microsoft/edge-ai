@@ -8,12 +8,13 @@
 locals {
   default_storage_class    = var.edge_storage_accelerator.faultToleranceEnabled ? "acstor-arccontainerstorage-storage-pool" : "default,local-path"
   kubernetes_storage_class = var.edge_storage_accelerator.diskStorageClass != "" ? var.edge_storage_accelerator.diskStorageClass : local.default_storage_class
+  diskMountPoint           = coalesce(var.edge_storage_accelerator.diskMountPoint, "/mnt")
 
   container_storage_settings = var.edge_storage_accelerator.faultToleranceEnabled ? {
     "edgeStorageConfiguration.create"               = "true"
     "feature.diskStorageClass"                      = local.kubernetes_storage_class
     "acstorConfiguration.create"                    = "true"
-    "acstorConfiguration.properties.diskMountPoint" = "/mnt"
+    "acstorConfiguration.properties.diskMountPoint" = local.diskMountPoint
     } : {
     "edgeStorageConfiguration.create" = "true"
     "feature.diskStorageClass"        = local.kubernetes_storage_class

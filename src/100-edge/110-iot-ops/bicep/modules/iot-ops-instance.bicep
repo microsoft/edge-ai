@@ -30,6 +30,8 @@ param aioExtensionConfig types.AioExtension
 @description('The resource ID for the Azure IoT Operations Platform Extension.')
 param aioPlatformExtensionId string
 
+param aioFeatures types.AioFeatures?
+
 /*
   Security and Trust Parameters
 */
@@ -147,7 +149,6 @@ resource aioExtension 'Microsoft.KubernetesConfiguration/extensions@2023-05-01' 
       'connectors.values.mqttBroker.serviceAccountTokenAudience': aioMqBrokerConfig.serviceAccountAudience
       'connectors.values.opcPlcSimulation.deploy': 'false'
       'connectors.values.opcPlcSimulation.autoAcceptUntrustedCertificates': 'false'
-      'connectors.values.discoveryHandler.enabled': 'false'
       'adr.values.Microsoft.CustomLocation.ServiceAccount': 'default'
       'akri.values.webhookConfiguration.enabled': 'false'
       'akri.values.certManagerWebhookCertificate.enabled': 'false'
@@ -223,7 +224,7 @@ resource adrSyncRule 'Microsoft.ExtendedLocation/customLocations/resourceSyncRul
   ]
 }
 
-resource aioInstance 'Microsoft.IoTOperations/instances@2024-11-01' = {
+resource aioInstance 'Microsoft.IoTOperations/instances@2025-04-01' = {
   name: aioInstanceName
   location: common.location
   extendedLocation: {
@@ -236,14 +237,22 @@ resource aioInstance 'Microsoft.IoTOperations/instances@2024-11-01' = {
       '${aioIdentity.id}': {}
     }
   }
-  properties: {
-    schemaRegistryRef: {
-      resourceId: schemaRegistry.id
-    }
-  }
+  properties: union(
+    {
+      description: 'An AIO instance.'
+      schemaRegistryRef: {
+        resourceId: schemaRegistry.id
+      }
+    },
+    aioFeatures == null
+      ? {}
+      : {
+          features: aioFeatures
+        }
+  )
 }
 
-resource broker 'Microsoft.IoTOperations/instances/brokers@2024-11-01' = {
+resource broker 'Microsoft.IoTOperations/instances/brokers@2025-04-01' = {
   parent: aioInstance
   name: 'default'
   extendedLocation: {
@@ -269,7 +278,7 @@ resource broker 'Microsoft.IoTOperations/instances/brokers@2024-11-01' = {
   }
 }
 
-resource brokerAuthn 'Microsoft.IoTOperations/instances/brokers/authentications@2024-11-01' = {
+resource brokerAuthn 'Microsoft.IoTOperations/instances/brokers/authentications@2025-04-01' = {
   parent: broker
   name: 'default'
   extendedLocation: {
@@ -288,7 +297,7 @@ resource brokerAuthn 'Microsoft.IoTOperations/instances/brokers/authentications@
   }
 }
 
-resource brokerListener 'Microsoft.IoTOperations/instances/brokers/listeners@2024-11-01' = {
+resource brokerListener 'Microsoft.IoTOperations/instances/brokers/listeners@2025-04-01' = {
   parent: broker
   name: 'default'
   extendedLocation: {
@@ -317,7 +326,7 @@ resource brokerListener 'Microsoft.IoTOperations/instances/brokers/listeners@202
   }
 }
 
-resource brokerListenerAnonymous 'Microsoft.IoTOperations/instances/brokers/listeners@2024-11-01' = if (shouldCreateAnonymousBrokerListener) {
+resource brokerListenerAnonymous 'Microsoft.IoTOperations/instances/brokers/listeners@2025-04-01' = if (shouldCreateAnonymousBrokerListener) {
   parent: broker
   name: 'default-anon'
   extendedLocation: {
@@ -339,7 +348,7 @@ resource brokerListenerAnonymous 'Microsoft.IoTOperations/instances/brokers/list
   ]
 }
 
-resource dataFlowProfile 'Microsoft.IoTOperations/instances/dataflowProfiles@2024-11-01' = {
+resource dataFlowProfile 'Microsoft.IoTOperations/instances/dataflowProfiles@2025-04-01' = {
   parent: aioInstance
   name: 'default'
   extendedLocation: {
@@ -351,7 +360,7 @@ resource dataFlowProfile 'Microsoft.IoTOperations/instances/dataflowProfiles@202
   }
 }
 
-resource dataFlowEndpoint 'Microsoft.IoTOperations/instances/dataflowEndpoints@2024-11-01' = {
+resource dataFlowEndpoint 'Microsoft.IoTOperations/instances/dataflowEndpoints@2025-04-01' = {
   parent: aioInstance
   name: 'default'
   extendedLocation: {

@@ -44,6 +44,9 @@ param aioIdentityName string
 @description('The settings for the Azure IoT Operations Extension.')
 param aioExtensionConfig types.AioExtension = types.aioExtensionDefaults
 
+@description('AIO Instance features.')
+param aioFeatures types.AioFeatures?
+
 @description('The name for the Azure IoT Operations Instance resource.')
 param aioInstanceName string = '${arcConnectedClusterName}-ops-instance'
 
@@ -264,6 +267,7 @@ module iotOpsInstance 'modules/iot-ops-instance.bicep' = if (shouldDeployAio) {
     aioExtensionConfig: aioExtensionConfig
     aioIdentityName: aioIdentityName
     aioInstanceName: aioInstanceName
+    aioFeatures: aioFeatures
     aioMqBrokerConfig: aioMqBrokerConfig
     aioPlatformExtensionId: iotOpsInit.outputs.aioPlatformExtensionId
     arcConnectedClusterName: arcConnectedClusterName

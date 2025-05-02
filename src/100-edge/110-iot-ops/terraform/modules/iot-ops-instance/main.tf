@@ -6,7 +6,7 @@
  */
 
 locals {
-  # AIO Instance 
+  # AIO Instance
   selfsigned_issuer_name    = "${var.operations_config.namespace}-aio-certificate-issuer"
   selfsigned_configmap_name = "${var.operations_config.namespace}-aio-ca-trust-bundle"
 
@@ -48,7 +48,6 @@ resource "azurerm_arc_kubernetes_cluster_extension" "iot_operations" {
     "connectors.values.mqttBroker.serviceAccountTokenAudience"             = var.mqtt_broker_config.serviceAccountAudience
     "connectors.values.opcPlcSimulation.deploy"                            = "false"
     "connectors.values.opcPlcSimulation.autoAcceptUntrustedCertificates"   = "false"
-    "connectors.values.discoveryHandler.enabled"                           = "false"
     "adr.values.Microsoft.CustomLocation.ServiceAccount"                   = "default"
     "akri.values.webhookConfiguration.enabled"                             = "false"
     "akri.values.certManagerWebhookCertificate.enabled"                    = "false"
@@ -139,7 +138,7 @@ resource "azapi_resource" "aio_device_registry_sync_rule" {
 }
 
 resource "azapi_resource" "instance" {
-  type      = "Microsoft.IoTOperations/instances@2024-11-01"
+  type      = "Microsoft.IoTOperations/instances@2025-04-01"
   name      = local.aio_instance_name
   location  = var.connected_cluster_location
   parent_id = var.resource_group_id
@@ -156,13 +155,16 @@ resource "azapi_resource" "instance" {
       schemaRegistryRef = {
         resourceId = var.schema_registry_id
       }
+      features = try(var.aio_features, null)
     }
   }
   response_export_values = ["name", "id"]
+
+  schema_validation_enabled = false # Disable schema validation for azapi_resource for 2025-04-01 until azapi provider supports it
 }
 
 resource "azapi_resource" "broker" {
-  type      = "Microsoft.IoTOperations/instances/brokers@2024-11-01"
+  type      = "Microsoft.IoTOperations/instances/brokers@2025-04-01"
   name      = "default"
   parent_id = azapi_resource.instance.id
   body = {
@@ -189,10 +191,12 @@ resource "azapi_resource" "broker" {
     }
   }
   depends_on = [azapi_resource.custom_location, azapi_resource.instance]
+
+  schema_validation_enabled = false # Disable schema validation for azapi_resource for 2025-04-01 until azapi provider supports it
 }
 
 resource "azapi_resource" "broker_authn" {
-  type      = "Microsoft.IoTOperations/instances/brokers/authentications@2024-11-01"
+  type      = "Microsoft.IoTOperations/instances/brokers/authentications@2025-04-01"
   name      = "default"
   parent_id = azapi_resource.broker.id
   body = {
@@ -212,10 +216,12 @@ resource "azapi_resource" "broker_authn" {
     }
   }
   depends_on = [azapi_resource.custom_location, azapi_resource.broker]
+
+  schema_validation_enabled = false # Disable schema validation for azapi_resource for 2025-04-01 until azapi provider supports it
 }
 
 resource "azapi_resource" "broker_listener" {
-  type      = "Microsoft.IoTOperations/instances/brokers/listeners@2024-11-01"
+  type      = "Microsoft.IoTOperations/instances/brokers/listeners@2025-04-01"
   name      = "default"
   parent_id = azapi_resource.broker.id
   body = {
@@ -245,12 +251,14 @@ resource "azapi_resource" "broker_listener" {
     }
   }
   depends_on = [azapi_resource.custom_location, azapi_resource.broker, azapi_resource.broker_authn]
+
+  schema_validation_enabled = false # Disable schema validation for azapi_resource for 2025-04-01 until azapi provider supports it
 }
 
 resource "azapi_resource" "broker_listener_anonymous" {
   count = var.should_create_anonymous_broker_listener ? 1 : 0
 
-  type      = "Microsoft.IoTOperations/instances/brokers/listeners@2024-11-01"
+  type      = "Microsoft.IoTOperations/instances/brokers/listeners@2025-04-01"
   name      = "default-anon"
   parent_id = azapi_resource.broker.id
   body = {
@@ -270,10 +278,12 @@ resource "azapi_resource" "broker_listener_anonymous" {
     }
   }
   depends_on = [azapi_resource.custom_location, azapi_resource.broker, azapi_resource.broker_authn]
+
+  schema_validation_enabled = false # Disable schema validation for azapi_resource for 2025-04-01 until azapi provider supports it
 }
 
 resource "azapi_resource" "data_profiles" {
-  type      = "Microsoft.IoTOperations/instances/dataflowProfiles@2024-11-01"
+  type      = "Microsoft.IoTOperations/instances/dataflowProfiles@2025-04-01"
   name      = "default"
   parent_id = azapi_resource.instance.id
   body = {
@@ -287,10 +297,12 @@ resource "azapi_resource" "data_profiles" {
   }
   depends_on             = [azapi_resource.custom_location, azapi_resource.instance]
   response_export_values = ["name", "id"]
+
+  schema_validation_enabled = false # Disable schema validation for azapi_resource for 2025-04-01 until azapi provider supports it
 }
 
 resource "azapi_resource" "data_endpoint" {
-  type      = "Microsoft.IoTOperations/instances/dataflowEndpoints@2024-11-01"
+  type      = "Microsoft.IoTOperations/instances/dataflowEndpoints@2025-04-01"
   name      = "default"
   parent_id = azapi_resource.instance.id
   body = {
@@ -316,4 +328,6 @@ resource "azapi_resource" "data_endpoint" {
     }
   }
   depends_on = [azapi_resource.custom_location, azapi_resource.instance]
+
+  schema_validation_enabled = false # Disable schema validation for azapi_resource for 2025-04-01 until azapi provider supports it
 }

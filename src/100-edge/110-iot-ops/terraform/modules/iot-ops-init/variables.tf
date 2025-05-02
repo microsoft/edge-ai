@@ -31,6 +31,7 @@ variable "edge_storage_accelerator" {
     train                 = string
     diskStorageClass      = string
     faultToleranceEnabled = bool
+    diskMountPoint        = string
   })
 }
 

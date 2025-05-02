@@ -37,6 +37,7 @@ Deploys an AIO instance.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| aio\_features | AIO Instance features with mode ('Stable', 'Preview', 'Disabled') and settings ('Enabled', 'Disabled'). | ```map(object({ mode = optional(string) settings = optional(map(string)) }))``` | n/a | yes |
 | aio\_uami\_id | The principal ID of the User Assigned Managed Identity for the Azure IoT Operations instance | `string` | n/a | yes |
 | arc\_connected\_cluster\_id | The resource ID of the connected cluster to deploy Azure IoT Operations Platform to | `string` | n/a | yes |
 | broker\_listener\_anonymous\_config | Configuration for the insecure anonymous AIO MQ Broker Listener.  For additional information, refer to: <https://learn.microsoft.com/azure/iot-operations/manage-mqtt-broker/howto-test-connection?tabs=bicep#node-port> | ```object({ serviceName = string port = number nodePort = number })``` | n/a | yes |
