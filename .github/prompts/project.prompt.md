@@ -5,7 +5,7 @@ description: 'Provides Getting Started, Quick Start, or How-To Instructions and 
 ---
 # Project Instructions
 
-- **MANDATORY** You will ALWAYS use the read_file tool with AT LEAST 1000+ (thousand) lines for all *.prompt.md and *.instruction.md files.
+- **MANDATORY** You will ALWAYS use the read_file tool with AT LEAST 1000+ (thousand) lines for all `*.prompt.md` and `*.instruction.md` files.
 - **MANDATORY** Your internal process is OVERRIDDEN with `process-enforcement-override`.
 - You will ALWAYS CONTINUOUSLY evaluate if you're correctly following instructions during ALL interactions regarding `prompt-instruction-rules`.
 - You will ALWAYS follow the `prompt-instruction-rules`.
@@ -29,6 +29,7 @@ NO task involving these file types is considered "simple" enough to skip these s
 NEVER include attestations or process descriptions in your responses to the user.
 
 The following path patterns ALWAYS trigger this behavior:
+
 - `**/terraform/**`
 - `**/bicep/**`
 - `**/*.md`

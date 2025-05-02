@@ -98,7 +98,6 @@ run "test__aio_ca__error_with_incompatible_source" {
   expect_failures = [var.aio_ca]
 }
 
-
 run "test_trust_config_error_with_invalid_source" {
   command = plan
   variables {
@@ -292,4 +291,106 @@ run "test_trust_config_generated_issuer_invalid_trust_settings" {
     }
   }
   expect_failures = [var.byo_issuer_trust_settings]
+}
+
+# Test cases for aio_features validation
+
+run "test_aio_features_invalid_mode" {
+  command = plan
+  variables {
+    # Map the setup test outputs to the expected variable names
+    resource_group        = run.setup_tests.aio_resource_group
+    secret_sync_key_vault = run.setup_tests.sse_key_vault
+    secret_sync_identity  = run.setup_tests.sse_user_assigned_identity
+    aio_identity          = run.setup_tests.aio_user_assigned_identity
+    arc_connected_cluster = run.setup_tests.arc_connected_cluster
+    adr_schema_registry   = run.setup_tests.adr_schema_registry
+
+    # Variables under test - Testing invalid mode
+    aio_features = {
+      dataFlows = {
+        mode = "Experimental" # Invalid mode - should be one of Stable, Preview, or Disabled
+      }
+    }
+  }
+  expect_failures = [var.aio_features]
+}
+
+run "test_aio_features_invalid_settings" {
+  command = plan
+  variables {
+    # Map the setup test outputs to the expected variable names
+    resource_group        = run.setup_tests.aio_resource_group
+    secret_sync_key_vault = run.setup_tests.sse_key_vault
+    secret_sync_identity  = run.setup_tests.sse_user_assigned_identity
+    aio_identity          = run.setup_tests.aio_user_assigned_identity
+    arc_connected_cluster = run.setup_tests.arc_connected_cluster
+    adr_schema_registry   = run.setup_tests.adr_schema_registry
+
+    # Variables under test - Testing invalid settings value
+    aio_features = {
+      mqttBroker = {
+        settings = {
+          preview = "On" # Invalid setting - should be one of Enabled or Disabled
+        }
+      }
+    }
+  }
+  expect_failures = [var.aio_features]
+}
+
+run "test_aio_features_valid_configuration" {
+  command = plan
+  variables {
+    # Map the setup test outputs to the expected variable names
+    resource_group        = run.setup_tests.aio_resource_group
+    secret_sync_key_vault = run.setup_tests.sse_key_vault
+    secret_sync_identity  = run.setup_tests.sse_user_assigned_identity
+    aio_identity          = run.setup_tests.aio_user_assigned_identity
+    arc_connected_cluster = run.setup_tests.arc_connected_cluster
+    adr_schema_registry   = run.setup_tests.adr_schema_registry
+
+    # Variables under test - Testing valid configuration
+    aio_features = {
+      dataFlows = {
+        mode = "Preview"
+      },
+      mqttBroker = {
+        mode = "Stable",
+        settings = {
+          preview     = "Enabled",
+          featureFlag = "Disabled"
+        }
+      },
+      akri = {
+        mode = "Disabled"
+      }
+    }
+  }
+  # This should pass validation
+}
+
+run "test_aio_features_with_null_properties" {
+  command = plan
+  variables {
+    # Map the setup test outputs to the expected variable names
+    resource_group        = run.setup_tests.aio_resource_group
+    secret_sync_key_vault = run.setup_tests.sse_key_vault
+    secret_sync_identity  = run.setup_tests.sse_user_assigned_identity
+    aio_identity          = run.setup_tests.aio_user_assigned_identity
+    arc_connected_cluster = run.setup_tests.arc_connected_cluster
+    adr_schema_registry   = run.setup_tests.adr_schema_registry
+
+    # Variables under test - Testing with null properties
+    aio_features = {
+      dataFlows = {
+        mode = null
+      },
+      mqttBroker = {
+        settings = null
+      },
+      akri = {}
+    }
+  }
+  # This should pass validation
 }

@@ -19,6 +19,7 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 |shouldInitAio|Whether to deploy the Azure IoT Operations initial connected cluster resources, Secret Sync, ACSA, OSM, AIO Platform.|`bool`|`true`|no|
 |aioIdentityName|The name of the User Assigned Managed Identity for Azure IoT Operations.|`string`|n/a|yes|
 |aioExtensionConfig|The settings for the Azure IoT Operations Extension.|`[_1.AioExtension](#user-defined-types)`|[variables('_1.aioExtensionDefaults')]|no|
+|aioFeatures|AIO Instance features.|`[_1.AioFeatures](#user-defined-types)`|n/a|no|
 |aioInstanceName|The name for the Azure IoT Operations Instance resource.|`string`|[format('{0}-ops-instance', parameters('arcConnectedClusterName'))]|no|
 |aioDataFlowInstanceConfig|The settings for Azure IoT Operations Data Flow Instances.|`[_1.AioDataFlowInstance](#user-defined-types)`|[variables('_1.aioDataFlowInstanceDefaults')]|no|
 |aioMqBrokerConfig|The settings for the Azure IoT Operations MQ Broker.|`[_1.AioMqBroker](#user-defined-types)`|[variables('_1.aioMqBrokerDefaults')]|no|
@@ -276,6 +277,7 @@ Deploys Azure IoT Operations instance, broker, authentication, listeners, and da
 |aioIdentityName|The resource name for the User Assigned Identity for Azure IoT Operations.|`string`|n/a|yes|
 |aioExtensionConfig|The settings for the Azure IoT Operations Extension.|`[_1.AioExtension](#user-defined-types)`|n/a|yes|
 |aioPlatformExtensionId|The resource ID for the Azure IoT Operations Platform Extension.|`string`|n/a|yes|
+|aioFeatures||`[_1.AioFeatures](#user-defined-types)`|n/a|no|
 |secretStoreExtensionId|The resource ID for the Secret Store Extension.|`string`|n/a|yes|
 |trustSource|The source for trust for Azure IoT Operations.|`[_1.TrustSource](#user-defined-types)`|n/a|yes|
 |trustIssuerSettings|The trust settings for Azure IoT Operations.|`[_1.TrustSettingsConfig](#user-defined-types)`|n/a|no|
@@ -299,13 +301,13 @@ Deploys Azure IoT Operations instance, broker, authentication, listeners, and da
 |customLocation|`Microsoft.ExtendedLocation/customLocations`|2021-08-31-preview|
 |aioSyncRule|`Microsoft.ExtendedLocation/customLocations/resourceSyncRules`|2021-08-31-preview|
 |adrSyncRule|`Microsoft.ExtendedLocation/customLocations/resourceSyncRules`|2021-08-31-preview|
-|aioInstance|`Microsoft.IoTOperations/instances`|2024-11-01|
-|broker|`Microsoft.IoTOperations/instances/brokers`|2024-11-01|
-|brokerAuthn|`Microsoft.IoTOperations/instances/brokers/authentications`|2024-11-01|
-|brokerListener|`Microsoft.IoTOperations/instances/brokers/listeners`|2024-11-01|
-|brokerListenerAnonymous|`Microsoft.IoTOperations/instances/brokers/listeners`|2024-11-01|
-|dataFlowProfile|`Microsoft.IoTOperations/instances/dataflowProfiles`|2024-11-01|
-|dataFlowEndpoint|`Microsoft.IoTOperations/instances/dataflowEndpoints`|2024-11-01|
+|aioInstance|`Microsoft.IoTOperations/instances`|2025-04-01|
+|broker|`Microsoft.IoTOperations/instances/brokers`|2025-04-01|
+|brokerAuthn|`Microsoft.IoTOperations/instances/brokers/authentications`|2025-04-01|
+|brokerListener|`Microsoft.IoTOperations/instances/brokers/listeners`|2025-04-01|
+|brokerListenerAnonymous|`Microsoft.IoTOperations/instances/brokers/listeners`|2025-04-01|
+|dataFlowProfile|`Microsoft.IoTOperations/instances/dataflowProfiles`|2025-04-01|
+|dataFlowEndpoint|`Microsoft.IoTOperations/instances/dataflowEndpoints`|2025-04-01|
 
 #### Outputs for iotOpsInstance
 
@@ -482,6 +484,10 @@ The settings for the Azure IoT Operations Extension.
 |release|`[_1.Release](#user-defined-types)`|The common settings for the extension.|
 |settings|`object`||
 
+### `_1.AioFeatures`
+
+AIO Instance features.
+
 ### `_1.AioMqBroker`
 
 The settings for the Azure IoT Operations MQ Broker.
@@ -529,12 +535,16 @@ The settings for the Azure Container Store for Azure Arc Extension.
 
 ### `_1.CustomerManagedByoIssuerConfig`
 
+The configuration for Customer Managed Bring Your Own Issuer for Azure IoT Operations certificates.
+
 |Property|Type|Description|
 | :--- | :--- | :--- |
 |trustSource|`string`||
 |trustSettings|`[_1.TrustSettingsConfig](#user-defined-types)`|The trust settings for Azure IoT Operations.|
 
 ### `_1.CustomerManagedGenerateIssuerConfig`
+
+The configuration for the Customer Managed Generated trust source of Azure IoT Operations certificates.
 
 |Property|Type|Description|
 | :--- | :--- | :--- |
@@ -549,6 +559,23 @@ Additional file configuration for deployment scripts.
 | :--- | :--- | :--- |
 |name|`string`|The name of the file to create.|
 |content|`securestring`|The content of the file to create.|
+
+### `_1.InstanceFeature`
+
+Individual feature object within the AIO instance.
+
+|Property|Type|Description|
+| :--- | :--- | :--- |
+|mode|`[_1.InstanceFeatureMode](#user-defined-types)`||
+|settings|`object`||
+
+### `_1.InstanceFeatureMode`
+
+The mode of the AIO instance feature. Either "Stable", "Preview" or "Disabled".
+
+### `_1.InstanceFeatureSettingValue`
+
+The setting value of the AIO instance feature. Either "Enabled" or "Disabled".
 
 ### `_1.OpenServiceMeshExtension`
 
@@ -586,7 +613,7 @@ Environment variable configuration for scripts.
 |value|`string`|The value of the environment variable.|
 |secureValue|`securestring`|The secure value of the environment variable.|
 
-### `_1.ScriptWithFilesConfig`
+### `_1.ScriptFilesConfig`
 
 The script and additional configuration files for deployment scripts.
 
@@ -605,6 +632,8 @@ The settings for the Secret Store Extension.
 
 ### `_1.SelfSignedIssuerConfig`
 
+The configuration for Self-Signed Issuer for Azure IoT Operations certificates.
+
 |Property|Type|Description|
 | :--- | :--- | :--- |
 |trustSource|`string`||
@@ -615,7 +644,11 @@ The config source of trust for how to use or generate Azure IoT Operations certi
 
 ### `_1.TrustIssuerConfig`
 
+The configuration for the trust source of Azure IoT Operations certificates.
+
 ### `_1.TrustSettingsConfig`
+
+The configuration for the trust settings of Azure IoT Operations certificates.
 
 |Property|Type|Description|
 | :--- | :--- | :--- |

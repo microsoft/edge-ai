@@ -34,11 +34,12 @@ var defaultStorageClass = containerStorageConfig.settings.faultToleranceEnabled
   : 'default,local-path'
 
 var kubernetesStorageClass = containerStorageConfig.settings.?diskStorageClass ?? defaultStorageClass
+var diskMountPoint = containerStorageConfig.settings.?diskMountPoint ?? '/mnt'
 
 var faultToleranceConfig = containerStorageConfig.settings.faultToleranceEnabled
   ? {
       'acstorConfiguration.create': 'true'
-      'acstorConfiguration.properties.diskMountPoint': '/mnt'
+      'acstorConfiguration.properties.diskMountPoint': diskMountPoint
     }
   : {}
 

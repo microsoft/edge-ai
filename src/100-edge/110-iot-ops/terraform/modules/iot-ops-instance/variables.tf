@@ -38,6 +38,40 @@ variable "operations_config" {
   })
 }
 
+variable "aio_features" {
+  description = "AIO Instance features with mode ('Stable', 'Preview', 'Disabled') and settings ('Enabled', 'Disabled')."
+  type = map(object({
+    mode     = optional(string)
+    settings = optional(map(string))
+  }))
+  default = null
+
+  validation {
+    condition = var.aio_features == null ? true : alltrue([
+      for feature_name, feature in coalesce(var.aio_features, {}) :
+      try(
+        feature.mode == null ? true : contains(["Stable", "Preview", "Disabled"], feature.mode),
+        true
+      )
+    ])
+    error_message = "Feature mode must be one of: 'Stable', 'Preview', or 'Disabled'."
+  }
+
+  validation {
+    condition = var.aio_features == null ? true : alltrue([
+      for feature_name, feature in coalesce(var.aio_features, {}) :
+      try(
+        feature.settings == null ? true : alltrue([
+          for setting_name, setting_value in feature.settings :
+          contains(["Enabled", "Disabled"], setting_value)
+        ]),
+        true
+      )
+    ])
+    error_message = "Feature settings values must be either 'Enabled' or 'Disabled'."
+  }
+}
+
 variable "schema_registry_id" {
   type        = string
   description = "The resource ID of the schema registry for Azure IoT Operations instance"

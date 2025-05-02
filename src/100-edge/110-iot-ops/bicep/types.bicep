@@ -26,7 +26,7 @@ type SecretStoreExtension = {
 @export()
 var secretStoreExtensionDefaults = {
   release: {
-    version: '0.6.7'
+    version: '0.8.2'
     train: 'preview'
   }
 }
@@ -58,13 +58,16 @@ type ContainerStorageExtension = {
 
     @description('The storage class for the cluster. (Otherwise, "acstor-arccontainerstorage-storage-pool" for fault tolerant storage else "default,local-path")')
     diskStorageClass: string?
+
+    @description('The disk mount point for the cluster when using fault tolerant storage. (Otherwise: "/mnt" when using fault tolerant storage)')
+    diskMountPoint: string?
   }
 }
 
 @export()
 var containerStorageExtensionDefaults = {
   release: {
-    version: '2.2.2'
+    version: '2.4.0'
     train: 'stable'
   }
   settings: {
@@ -87,7 +90,7 @@ type AioPlatformExtension = {
 @export()
 var aioPlatformExtensionDefaults = {
   release: {
-    version: '0.7.6'
+    version: '0.7.12'
     train: 'preview'
   }
   settings: {
@@ -116,7 +119,7 @@ type AioExtension = {
 @export()
 var aioExtensionDefaults = {
   release: {
-    version: '1.0.9'
+    version: '1.1.19'
     train: 'stable'
   }
   settings: {
@@ -125,6 +128,27 @@ var aioExtensionDefaults = {
     agentOperationTimeoutInMinutes: 120
   }
 }
+
+@description('AIO Instance features.')
+@export()
+type AioFeatures = {
+  @description('Object of features')
+  *: InstanceFeature
+}
+
+@description('Individual feature object within the AIO instance.')
+type InstanceFeature = {
+  mode: InstanceFeatureMode?
+  settings: {
+    *: InstanceFeatureSettingValue
+  }
+}
+
+@description('The mode of the AIO instance feature. Either "Stable", "Preview" or "Disabled".')
+type InstanceFeatureMode = 'Stable' | 'Preview' | 'Disabled'
+
+@description('The setting value of the AIO instance feature. Either "Enabled" or "Disabled".')
+type InstanceFeatureSettingValue = 'Enabled' | 'Disabled'
 
 @export()
 @description('The settings for the Azure IoT Operations MQ Broker.')
@@ -215,6 +239,7 @@ type TrustSource = 'SelfSigned' | 'CustomerManaged'
 type TrustConfigSource = 'SelfSigned' | 'CustomerManagedByoIssuer' | 'CustomerManagedGenerateIssuer'
 
 @export()
+@description('The configuration for the Customer Managed Generated trust source of Azure IoT Operations certificates.')
 type CustomerManagedGenerateIssuerConfig = {
   trustSource: 'CustomerManagedGenerateIssuer'
 
@@ -223,6 +248,7 @@ type CustomerManagedGenerateIssuerConfig = {
 }
 
 @export()
+@description('The configuration for Customer Managed Bring Your Own Issuer for Azure IoT Operations certificates.')
 type CustomerManagedByoIssuerConfig = {
   trustSource: 'CustomerManagedByoIssuer'
 
@@ -231,11 +257,13 @@ type CustomerManagedByoIssuerConfig = {
 }
 
 @export()
+@description('The configuration for Self-Signed Issuer for Azure IoT Operations certificates.')
 type SelfSignedIssuerConfig = {
   trustSource: 'SelfSigned'
 }
 
 @export()
+@description('The configuration for the trust source of Azure IoT Operations certificates.')
 @discriminator('trustSource')
 type TrustIssuerConfig = SelfSignedIssuerConfig | CustomerManagedByoIssuerConfig | CustomerManagedGenerateIssuerConfig
 
@@ -256,6 +284,7 @@ type AioCaConfig = {
 }
 
 @export()
+@description('The configuration for the trust settings of Azure IoT Operations certificates.')
 type TrustSettingsConfig = {
   issuerName: string
   issuerKind: string

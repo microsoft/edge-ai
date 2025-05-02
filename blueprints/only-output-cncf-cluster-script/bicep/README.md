@@ -19,7 +19,6 @@ Generates scripts for Azure IoT Operations CNCF cluster creation without deployi
 |customLocationsOid|The object id of the Custom Locations Entra ID application for your tenant.<br>Can be retrieved using:<br><br>  <pre><code class="language-sh">  az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv<br>  </code></pre><br>|`string`|n/a|yes|
 |shouldEnableArcAutoUpgrade|Whether to enable auto-upgrade for Azure Arc agents.|`bool`|[not(equals(parameters('common').environment, 'prod'))]|no|
 |shouldAssignRoles|Whether to assign roles for Arc Onboarding.|`bool`|`true`|no|
-|shouldGetCustomLocationsOid|Whether to get Custom Locations Object ID using Azure APIs.|`bool`|`true`|no|
 |clusterAdminOid|The Object ID that will be given cluster-admin permissions.|`string`|n/a|no|
 |clusterNodeVirtualMachineNames|The names of the VMs for the cluster nodes. (Only needed if wanting this blueprint to deploy the scripts)|`array`|n/a|no|
 |clusterServerIp|The IP address for the server for the cluster. (Needed for multi-node cluster)|`string`|n/a|no|

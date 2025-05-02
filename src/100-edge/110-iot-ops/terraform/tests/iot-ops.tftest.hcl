@@ -173,6 +173,51 @@ run "create_with_opc_ua_simulator" {
   }
 }
 
+# Test specific features configuration
+run "create_with_features_configured" {
+  command = plan
+  variables {
+    resource_group        = run.setup_tests.aio_resource_group
+    secret_sync_key_vault = run.setup_tests.sse_key_vault
+    secret_sync_identity  = run.setup_tests.sse_user_assigned_identity
+    aio_identity          = run.setup_tests.aio_user_assigned_identity
+    adr_schema_registry   = run.setup_tests.adr_schema_registry
+    arc_connected_cluster = run.setup_tests.arc_connected_cluster
+    aio_features = {
+      dataFlows = {
+        mode = "Disabled"
+      }
+      mqttBroker = {
+        settings = {
+          preview = "Enabled"
+        }
+      }
+      akri = {
+        mode = "Preview"
+      }
+    }
+  }
+
+  # Assert that features are correctly passed to the module
+  assert {
+    condition     = var.aio_features.dataFlows.mode == "Disabled"
+    error_message = "dataFlows feature mode should be set to Disabled"
+  }
+  assert {
+    condition     = var.aio_features.mqttBroker.settings.preview == "Enabled"
+    error_message = "mqttBroker feature settings.preview should be set to Enabled"
+  }
+  assert {
+    condition     = var.aio_features.akri.mode == "Preview"
+    error_message = "akri feature mode should be set to Preview"
+  }
+
+  assert {
+    condition     = var.aio_features.mqttBroker.settings.preview == "Enabled"
+    error_message = "mqttBroker preview setting should be Enabled"
+  }
+}
+
 # Test OpenTelemetry collector enabled
 run "create_with_otel_collector" {
   command = plan

@@ -109,6 +109,7 @@ src/
         main.bicep         # Main orchestration file
         types.bicep        # Component-specific types with defaults
         types.core.bicep   # Core shared types (Common)
+        README.md          # README file component /bicep directory is automatically generated, never by AI
         modules/
           iot-ops-init.bicep          # This is an INTERNAL MODULE
           iot-ops-instance.bicep      # This is an INTERNAL MODULE
@@ -221,10 +222,10 @@ type Common = {
   location: string
 
   @description('Environment for all resources in this module: dev, test, or prod')
-  environment: string?
+  environment: string
 
   @description('Instance identifier for naming resources: 001, 002, etc...')
-  instance: string?
+  instance: string
 }
 ```
 
@@ -395,6 +396,24 @@ param aioExtensionConfig types.AioExtension = types.aioExtensionDefaults
 param shouldDeployResourceSyncRules bool = true
 ```
 
+- For existing resources, prefer name parameters over complex object types:
+
+```bicep
+// PREFERRED: Use a simple name parameter with existing resource
+@description('The name of the User Assigned Managed Identity for Arc Onboarding.')
+param arcOnboardingIdentityName string?
+
+resource arcOnboardingIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2024-11-30' existing = if (!empty(arcOnboardingIdentityName)) {
+  name: arcOnboardingIdentityName!
+}
+
+// NOT PREFERRED: Complex object type approach
+@description('The Azure Identity for Arc Onboarding.')
+param arcOnboardingIdentity ArcIdentity
+
+// This requires defining and passing complex types when simple name would suffice
+```
+
 - Follow these guidelines:
   - ALWAYS provide descriptive `@description()` that ends with a period
   - ALWAYS alphabetically sort parameters within each grouping
@@ -403,6 +422,7 @@ param shouldDeployResourceSyncRules bool = true
   - ALWAYS use the safe access operator `.?` for accessing nullable properties
   - NEVER default a parameter to `''` empty string
   - ALWAYS use `?` for parameters that can be empty or null
+  - PREFER name parameters for existing resources instead of complex object types when possible
 
 ### Resource Deployment Conventions
 
@@ -479,6 +499,18 @@ output aioMqBrokerId string = shouldDeployResourceSyncRules ? mqBroker.id : ''
 - DO include comments for important logic or implementation details
 - DO validate inputs when appropriate, especially for security-sensitive parameters
 - DO use `Name` parameters instead of `Id` parameters for referencing existing resources
+- DO prefer simple name parameters with existing resources over complex object parameters
+
+  ```bicep
+  // PREFERRED:
+  param identityName string?
+  resource identity '...@2024-11-30' existing = if (!empty(identityName)) {
+    name: identityName!
+  }
+
+  // AVOID:
+  param identity object // Complex type requiring multiple properties
+  ```
 
 ### DON'T
 
@@ -490,6 +522,23 @@ output aioMqBrokerId string = shouldDeployResourceSyncRules ? mqBroker.id : ''
 - DON'T omit metadata or descriptions for parameters, types, and outputs
 - DON'T create circular dependencies between modules
 - DON'T duplicate type definitions across modules - use imports instead
+- DON'T use complex object parameters when a simple name parameter with an existing resource would suffice
+
+  ```bicep
+  // AVOID THIS:
+  param identity object = {
+    id: ''
+    principalId: ''
+    tenantId: ''
+    clientId: ''
+  }
+
+  // USE THIS INSTEAD:
+  param identityName string?
+  resource identity '...@2024-11-30' existing = if (!empty(identityName)) {
+    name: identityName!
+  }
+  ```
 
 ## Pre-Implementation Checklist
 

@@ -130,6 +130,7 @@ module "iot_ops_instance" {
   platform_cluster_extension_id           = module.iot_ops_init.platform_cluster_extension_id
   enable_otel_collector                   = var.should_enable_otel_collector
   aio_uami_id                             = var.aio_identity.id
+  aio_features                            = var.aio_features
   should_create_anonymous_broker_listener = var.should_create_anonymous_broker_listener
   broker_listener_anonymous_config        = var.broker_listener_anonymous_config
 }
