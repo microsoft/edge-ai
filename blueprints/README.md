@@ -34,52 +34,26 @@ Each blueprint in this repository follows a consistent structure:
 - **CNCF Cluster Script Only**: Ideal for environments with existing infrastructure or custom deployment processes
 - **Azure Fabric Environment**: For users looking to provision Azure Fabric environments with options to deploy Lakehouse, EventStream, and Fabric workspace
 
-## Prerequisites
+## Detailed Deployment Workflow
+
+### Prerequisites
 
 **IMPORTANT:** We highly suggest using [this project's integrated dev container](./.devcontainer/README.md) to get started quickly with Windows-based systems and also works well with nix-compatible environments.
 
 Refer to the Environment Setup section in the [Root README](../README.md#getting-started-and-prerequisites-setup) for detailed instructions on setting up your environment.
 
-## Detailed Deployment Workflow
+Ensure your Azure CLI is logged in and your subscription context is set correctly.
 
-### Getting Started with Terraform
+### Getting Started and Deploying with Terraform
 
-#### ⚠️ Terraform Prerequisites Required Before Proceeding
-
-> **You must complete all [prerequisites and environment setup](../README.md#getting-started-and-environment-setup) before running these steps.**
-> Ensure your Azure CLI is logged in and your subscription context is set correctly.
-
-1. **IMPORTANT**: Register required Azure resource providers before proceeding. These scripts need to be run once per subscription to ensure all necessary provider services are available:
-
-   **Using Bash:**
+1. Navigate to your chosen blueprint directory, as an example:
 
    ```sh
-   # Navigate to the resource providers directory
-   cd ./src/azure-resource-providers
-
-   # Run the registration script
-   ./register-all-providers.sh
+   # Navigate to the terraform directory
+   cd ./full-single-node-cluster/terraform
    ```
 
-   **Using PowerShell:**
-
-   ```powershell
-   # Navigate to the resource providers directory
-   cd \src\azure-resource-providers
-
-   # Run the registration script (will prompt for confirmation)
-   .\Register-AllProviders.ps1
-   ```
-
-   This step is critical as Azure IoT Operations and Arc-enabled Kubernetes require several resource providers that might not be registered by default in your subscription.
-
-2. Navigate to your chosen blueprint directory:
-
-   ```sh
-   cd ./full-single-node-cluster
-   ```
-
-3. Set up required environment variables:
+2. Set up required environment variables:
 
    - **ARM_SUBSCRIPTION_ID** -- The Azure Subscription ID target for this deployment (required to be set for the Terraform tasks below)
 
@@ -89,12 +63,9 @@ Refer to the Environment Setup section in the [Root README](../README.md#getting
    export ARM_SUBSCRIPTION_ID="$current_subscription_id"
    ```
 
-4. Generate a `terraform.tfvars` file using terraform-docs:
+3. Generate a `terraform.tfvars` file using terraform-docs:
 
    ```sh
-   # Navigate to the blueprint's terraform directory
-   cd ./terraform
-
    # Generate the tfvars file
    terraform-docs tfvars hcl .
    ```
@@ -111,89 +82,63 @@ Refer to the Environment Setup section in the [Root README](../README.md#getting
 
    Or visit the [terraform-docs installation page](https://terraform-docs.io/user-guide/installation/) for more options.
 
-   The generated output will look like this:
+   The generated output will look similar to the following:
 
-   ```hcl
-   # Required, environment hosting resource: "dev", "prod", "test", etc...
-   environment     = ""
-   # Required, short unique alphanumeric string: "sample123", "plantwa", "uniquestring", etc...
-   resource_prefix = ""
-   # Required, region location: "eastus2", "westus3", etc...
-   location        = ""
-   # Optional, instance/replica number: "001", "002", etc...
-   instance        = "001"
+   ```terraform
+   # Required variables
+   environment     = "dev"                 # Environment type (dev, test, prod)
+   resource_prefix = "myprefix"            # Short unique prefix for resource naming
+   location        = "eastus2"             # Azure region location
+   # Optional (recommended) variables
+   instance        = "001"                 # Deployment instance number
    ```
 
-   Copy this output to a file named `terraform.tfvars` and fill in the required values.
+   Copy this output to a file named `terraform.tfvars` and fill in any required values.
+   Update any optional values that you want to change as well.
 
    > **NOTE**: To have Terraform automatically use your variables, you can name your tfvars file `terraform.auto.tfvars`. Terraform will use variables from any `*.auto.tfvars` files located in the same deployment folder.
 
-5. Initialize and apply Terraform:
+4. Initialize and apply Terraform:
 
    ```sh
    # Pulls down providers and modules, initializes state and backend
-   terraform init # Use '-update -reconfigure' if provider or backend updates are required
+   terraform init -upgrade # Use '-reconfigure' if backend for tfstate needs to be reconfigured
 
    # Preview changes before applying
-   terraform plan -var-file=terraform.tfvars
+   terraform plan -var-file=terraform.tfvars  # Use -var-file if not using *.auto.tfvars file
 
    # Review resource change list, then deploy
    terraform apply -var-file=terraform.tfvars # Add '-auto-approve' to skip confirmation
    ```
 
-6. Wait for the deployments to complete with the message:
+5. Wait for the deployments to complete, an example successful deployment message looks like the following:
 
    ```txt
    Apply complete! Resources: *** added, *** changed, *** destroyed.
    ```
 
-### Getting Started with Bicep
+### Getting Started and Deploying with Bicep
 
 Bicep provides an alternative Infrastructure as Code (IaC) approach that's native to Azure. Follow these steps to deploy blueprints using Bicep:
 
-#### ⚠️ Bicep Prerequisites Required Before Proceeding
-
-> **You must complete all [prerequisites and environment setup](../README.md#getting-started-and-environment-setup) before running these steps.**
-> Ensure your Azure CLI is logged in and your subscription context is set correctly.
-
-1. Use the Azure CLI to get the Custom Locations OID:
+1. Navigate to your chosen blueprint directory, as an example:
 
    ```sh
-   # Get the custom locations OID
-   az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv
-   ```
-
-2. **IMPORTANT**: Register required Azure resource providers before proceeding. These scripts need to be run once per subscription to ensure all necessary provider services are available:
-
-   **Using Bash:**
-
-   ```sh
-   # Navigate to the resource providers directory
-   cd ./src/azure-resource-providers
-
-   # Run the registration script
-   ./register-all-providers.sh
-   ```
-
-   **Using PowerShell:**
-
-   ```powershell
-   # Navigate to the resource providers directory
-   cd \src\azure-resource-providers
-
-   # Run the registration script (will prompt for confirmation)
-   .\Register-AllProviders.ps1
-   ```
-
-   This step is critical as Azure IoT Operations and Arc-enabled Kubernetes require several resource providers that might not be registered by default in your subscription.
-
-3. Navigate to your chosen blueprint directory:
-
-   ```sh
+   # Navigate to the terraform directory
    cd ./full-single-node-cluster/bicep
    ```
 
-4. Check that the Bicep CLI is installed or install it:
+2. Use the Azure CLI to get the Custom Locations OID:
+
+   ```sh
+   # Get the custom locations OID and export it as an environment variable
+   export CUSTOM_LOCATIONS_OID=$(az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv)
+
+   # Verify the environment variable is set correctly
+   echo $CUSTOM_LOCATIONS_OID
+   ```
+
+3. Check that the Bicep CLI is installed or install it:
 
    ```sh
    # Verify Bicep installation (included in recent Azure CLI versions)
@@ -203,62 +148,199 @@ Bicep provides an alternative Infrastructure as Code (IaC) approach that's nativ
    az bicep install
    ```
 
-5. Create a parameters file for your deployment:
+4. Create a parameters file for your deployment:
 
-   Create a file named `main.bicepparam` in `bicep` sub-folder of blueprint directory (e.g., `full-single-node-cluster/bicep`) with your deployment parameters:
+   Generate a parameters file using the Azure CLI's Bicep parameter generation feature:
+
+   ```sh
+   # Generate the parameters file template
+   az bicep generate-params --file main.bicep --output-format bicepparam --include-params all > main.bicepparam
+   ```
+
+   Edit the generated `main.bicepparam` file to customize your deployment parameters:
 
    ```bicep
-   // Parameters for blueprint deployment
-   using 'main.bicep'
+   // Parameters for full-single-node-cluster blueprint
+   using './main.bicep'
 
-   // Required parameters
+   // Required parameters for the common object
    param common = {
-     resourcePrefix: 'myprefix'     // Replace with a unique prefix
+     resourcePrefix: 'prf01a2'     // Keep short (max 8 chars) to avoid resource naming issues
      location: 'eastus2'            // Replace with your Azure region
      environment: 'dev'             // 'dev', 'test', or 'prod'
-     instance: '001'
+     instance: '001'                // For multiple deployments
    }
 
    // This is not optimal, to be replaced by KeyVault usage in future
    @secure()
    param adminPassword = 'YourSecurePassword123!' // Replace with a secure password
 
-   param customLocationsOid = 'YourRetrievedOID' // Replace with the OID retrieved from the previous step
+   // When customeLocationsOid is required:
+   param customLocationsOid = readEnvironmentVariable('CUSTOM_LOCATIONS_OID') // Read from environment variable
+
+   // Any additional parameters with defaults, example:
+   param resourceGroupName = 'rg-${common.resourcePrefix}-${common.environment}-${common.instance}'
+   param shouldCreateAnonymousBrokerListener = false // Set to true only for dev/test environments
+   param shouldInitAio = true // Deploy the Azure IoT Operations initial connected cluster resources
+   param shouldDeployAio = true // Deploy an Azure IoT Operations Instance
    ```
 
-6. Deploy the Bicep template:
+5. Deploy Resources with Bicep:
 
    ```sh
-   # Deploy using the Azure CLI at the subscription level
-   az deployment sub create --name <uniquename-prefix> --location <location> --parameters ./main.bicepparam
+   # Deploy using the Azure CLI at the subscription level, keep deployment_name less than 8 characters:
+   az deployment sub create --name {deployment_name} --location {location} --parameters ./main.bicepparam
+
+   # Deploy using the Azure CLI at the resource group level, keep deployment_name less than 8 characters:
+   RG_NAME="rg-{resource_prefix}-{environment}-{instance}"
+   az deployment group create -g $RG_NAME --name {deployment_name} --parameters ./main.bicepparam
    ```
 
-7. Monitor deployment progress:
+   > **Note**: When deploying with a `customLocationsOid`, ensure the CUSTOM_LOCATIONS_OID environment variable is set in your current shell session before running the deployment command.
+
+6. Monitor deployment progress:
 
    You can check the deployment status in the Azure portal or using the Azure CLI:
 
    ```sh
    # Get the resource group name (after deployment starts)
-   RG_NAME="rg-<resource_prefix>-<environment>-<instance>"
+   RG_NAME="rg-{resource_prefix}-{environment}-{instance}"
 
    # List resources in the resource group
    az resource list --resource-group $RG_NAME -o table
    ```
 
-8. Access Deployed Resources:
+### Accessing Deployed Resources
 
-   After successful deployment:
+After a successful deployment, you will want to verify your resources have been deployed correctly.
+You can do this by listing all resources in the resource group to check that they've been deployed successfully:
 
-   ```sh
-   # Access the Kubernetes cluster (in one prompt)
-   az connectedk8s proxy -n <cluster-name> -g $RG_NAME
+```sh
+# Get the resource group name (after deployment starts)
+RG_NAME="rg-{resource_prefix}-{environment}-{instance}"
 
-   # View AIO resources (in a separate prompt)
-   kubectl get pods -n azure-iot-operations
+# List resources in the resource group
+az resource list --resource-group $RG_NAME -o table
+```
 
-   # Check cluster node status
-   kubectl get nodes -o wide
-   ```
+#### Any Arc Connected Cluster Deployment
+
+After a successful deployment, verify you can connect to the cluster and that there are pods:
+
+```sh
+# Get the arc connected cluster name after deployment, default looks like the following:
+ARC_CONNECTED_CLUSTER_NAME="arck-{resource_prefix}-{environment}-{instance}"
+
+# Access the Kubernetes cluster (in one prompt)
+az connectedk8s proxy -n $ARC_CONNECTED_CLUSTER_NAME -g $RG_NAME
+
+# View AIO resources (in a separate prompt)
+kubectl get pods -n azure-iot-operations
+
+# Check cluster node status
+kubectl get nodes -o wide
+```
+
+#### Any Key Vault Stored Resources (Such as Scripts)
+
+After a successful deployment, for any resources stored in Key Vault that you may want to retrieve locally for
+verification or as a result of a blueprint. Check the output from the deployment framework for specifics on what
+to download.
+
+Here is also how you will typically follow this process, using cluster setup scripts as an example:
+
+```bash
+# Get the Key Vault name after deployment, default looks like the following:
+KV_NAME="kv-{resource_prefix}-{environment}-{instance}"
+
+# Retrieve scripts from Key Vault and save to local files
+az keyvault secret show --name cluster-server-ubuntu-k3s --vault-name $KV_NAME --query value -o tsv > cluster-server-ubuntu-k3s.sh
+az keyvault secret show --name cluster-node-ubuntu-k3s --vault-name $KV_NAME --query value -o tsv > cluster-node-ubuntu-k3s.sh
+
+# Make scripts executable
+chmod +x cluster-server-ubuntu-k3s.sh cluster-node-ubuntu-k3s.sh
+```
+
+### Deployment Cleanup
+
+It is recommend that you either use the Azure Portal or AZ CLI commands for deleting deployed resources. If you've deploy a Resource Group with resources in it, then the quickest way to clean up resources is to delete the resource group.
+
+The following is an example using AZ CLI:
+
+```bash
+# Delete the resource group and all its resources
+az group delete --name "$RG_NAME"
+```
+
+### Deployment Troubleshooting
+
+Deployment duration for multi-node clusters will be longer than single-node deployments. Be patient during the provisioning process.
+
+#### Terraform Troubleshooting
+
+Terraform can fail if resources already exist that are not properly in its state, use the following to correct terraform state:
+
+```sh
+# List resources in the current state file
+terraform state list
+
+# Show details of a specific resource in state, example:
+terraform state show 'module.edge_iot_ops.azurerm_arc_kubernetes_cluster_extension.iot_operations'
+
+# Remove a resource from state (doesn't delete the actual resource), example:
+terraform state rm 'module.edge_iot_ops.azurerm_arc_kubernetes_cluster_extension.iot_operations'
+
+# Import an existing Azure resource into your Terraform state
+# For Arc-enabled K8s cluster, example:
+terraform import 'module.edge_cncf_cluster.azurerm_kubernetes_cluster.arc_cluster' \
+  /subscriptions/{subscription_id}/resourceGroups/{resource_group}/providers/Microsoft.Kubernetes/connectedClusters/{cluster_name}
+
+# Update state to match the real infrastructure without making changes
+terraform refresh
+
+# Remove all resources from state (useful when you want to start fresh without destroying resources)
+terraform state rm $(terraform state list)
+
+# Move a resource within your state (useful for refactoring), example:
+terraform state mv 'module.old_name.azurerm_resource.example' 'module.new_name.azurerm_resource.example'
+```
+
+#### Bicep Troubleshooting
+
+Bicep uses the actual deployed resources in Azure, any correction needed to deployed resources must be done directly with bicep or AZ CLI commands:
+
+```sh
+# Get deployment status and errors
+az deployment sub show --name {deployment_name} --query "properties.error" -o json
+
+# List all deployments at subscription level
+az deployment sub list --query "[].{Name:name, State:properties.provisioningState}" -o table
+
+# Get detailed information about a specific resource
+az resource show --resource-group $RG_NAME --name {resource_name} --resource-type {resource_type}
+
+# Delete a specific resource without deleting the whole resource group
+az resource delete --resource-group $RG_NAME --name {resource_name} --resource-type {resource_type}
+
+# View deployment operations for troubleshooting
+az deployment sub operation list --name {deployment_name}
+
+# Export a deployed resource group as a template for comparison or backup
+az group export --name $RG_NAME > exported-resources.json
+
+# Export all child resources of a specific parent resource (useful for nested resources)
+az resource list --parent "subscriptions/{subscription_id}/resourceGroups/{resource_group}/providers/{provider}/{resource-type}/{parent-resource}" -o json > child-resources.json
+```
+
+#### Common Issues
+
+- **Node joining failures**: Multi-node deployments with worker nodes that fail to join the cluster, verify networking connectivity between VMs
+- **Terraform timeouts**: Multi-node deployments may require increased timeouts for resource creation, increase timeout and retry the deployment.
+- **Arc-enabled Kubernetes issues**: Arc connection issues may occur during first deployment, attempt retrying the deployment.
+- **Custom Locations OID**: Verify correct OID for your tenant. This can vary between Azure AD instances and permissions.
+- **VM size availability**: Ensure the chosen VM size is available in your selected region
+- **Bicep deployment name too long**: Ensure that the original deployment name is roughly 5-8 characters long, this name is used for additional deployments throughout the process.
+- **Resource name issues**: Ensure the provided resource prefix does not include anything other than alphanumeric characters. Also ensure your resource prefix is at most 8 characters long. Additional, pick a resource prefix that is likely to be unique, add 4 unique characters to the end of your resource prefix if needed.
 
 ## Common Terraform Commands
 

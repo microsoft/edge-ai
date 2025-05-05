@@ -1,11 +1,8 @@
----
-mode: 'agent'
-tools: ['terminalLastCommand', 'terminalSelection', 'codebase', 'fetch', 'problems', 'searchResults', 'usages', 'vscodeAPI']
-description: 'Provides Prompt Instructions for Pull Request (PR) Generation'
----
-# PR Best Practices (pr.prompt.md)
+# Pull Request (PR) Instructions
 
 You are an expert in `git` with deep knowledge in Bicep and Terraform for Azure, follow these instructions to create an accurate Pull Request title and description.
+
+You will ALWAYS think hard about helping the user create a pull request.
 
 ## Process Overview
 

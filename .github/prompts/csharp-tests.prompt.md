@@ -3,266 +3,43 @@ mode: 'agent'
 tools: ['terminalLastCommand', 'terminalSelection', 'codebase', 'fetch', 'problems', 'searchResults', 'usages', 'vscodeAPI']
 description: 'Provides Prompt Instructions for C# (CSharp) Tests'
 ---
-# C# (csharp) Test Instructions
+# C# (CSharp) Tests Instructions
 
-Only use this section when the prompt is specifically asking for C# tests. This section is only for C# tests and not
-for C# code.
-You are an expert in the latest C#, .NET, and testing. You will always follow common idioms, conventions, and best
-practices when writing C#. You will always refer to any additional provided prompts on C# (csharp) for creating code.
+You will ALWAYS think hard about C# (csharp) test instructions and established conventions
 
-- All tests for C# will go in a `*.Tests` project that's next to the project being tested.
-- All tests will always use `XUnit`.
-- Tests will use the latest `Moq` library when needed for mocking out functionality.
-- All tests will follow `BDD` style conventions for test naming and structure, examples are given below.
-- Tests should only focus on the behaviors of the class and not internal functionality unless it has a behavior similar
-  to (but not only) "throws an exception on invalid json returned from prediction".
+- **CRITICAL**: You MUST ALWAYS read in `csharp-tests-instructions`
+- You will ALWAYS understand all guidelines and follow them precisely
+- You will ALWAYS read the complete C# (CSharp) Tests documentation from the required prompt file
 
-## C# (csharp) Test Structure
+<!-- <csharp-tests-instructions> -->
+## Required Reading Process
 
-The structure of the tests will look like the following:
+When working with C# (CSharp) Tests files or C# (CSharp) Tests-related contexts:
 
-- The name of the test file will match the class that's being tested. As an example `PipelineServiceTests`.
-- Every test will be a method and will attempt to test one behavior at a time in a `Given`, `When`, `Then` format. In
-  the tests themselves this will be `arrange`, `act`, `assert`.
-- The tests themselves should always follow the format `(GivenSomething)_(WhenSomething)_ActingCall_Assertion`, an
-  example of this would be `WhenValidRequest_ProcessDataAsync_ReturnsParsedResponse`, `ProcessDataAsync` is the
-  `ActingCall` and `ReturnsParsedResponse` a small precise description of the `Assertion`.
-- One assert per test is preferred, though related assertions validating the same behavior are acceptable.
-- `logger` is **never** tested or validated.
+1. You must read the prompt file: `**/copilot/csharp-tests.md`
+2. You must read ALL lines from this file
+3. You must read a MINIMUM of 1000 lines from this file
+4. You must FOLLOW ALL instructions contained in this file
 
-## Test Organization
+### Required Prompt File Details
 
-- Member fields should be organized at the top of the class in alphabetical order.
-- Fields should be `readonly` when possible.
-- The service under test should always be named `sut`.
-- Helper methods should appear after the constructor but before test methods.
-- Test methods should be grouped logically by behavior and ordered alphabetically within those groups.
-- Mock setup should typically be done in the constructor for common setup and in individual test methods for specific
-  behavior.
+| Requirement         | Value                        |
+|---------------------|------------------------------|
+| Prompt File Path    | `**/copilot/csharp-tests.md` |
+| Read All Lines      | Required                     |
+| Minimum Lines       | 1000                         |
+| Follow Instructions | Required                     |
+<!-- </csharp-tests-instructions> -->
 
-## Test Examples
+## Implementation Requirements
 
-An example test class looks similar to this:
+When implementing any C# (CSharp) Tests-related functionality:
 
-```csharp
-// Always include the name of the class/service under test when naming your test classes.
-public class EndpointDataProcessorTests
-{
-    // Mocks and test data should be near the top of the class and alphabetically sorted.
-    private readonly string endpointUri = "https://test-endpoint.com/predict";
-    private readonly FakeSinkData expectedSinkData;
-    private readonly HttpClient httpClient;
-    private readonly Mock<HttpMessageHandler> httpMessageHandlerMock;
-    private readonly Mock<ILogger<EndpointDataProcessor<FakeSourceData, FakeSinkData>>> loggerMock;
-    private readonly Mock<IOptions<InferencePipelineOptions>> optionsMock;
-    private readonly FakeSourceData sourceData;
-    private readonly EndpointDataProcessor<FakeSourceData, FakeSinkData> sut;
+- You must have read the complete C# (CSharp) Tests documentation before proceeding
+- You must adhere to all guidelines provided in the C# (CSharp) Tests documentation
+- You must implement all instructions exactly as specified
 
-    // Constructors should always be used for any common test initialization.
-    public EndpointDataProcessorTests()
-    {
-        loggerMock = new Mock<ILogger<EndpointDataProcessor<FakeSourceData, FakeSinkData>>>();
+## Purpose
 
-        // Always keep the Setup for Mocks as close to the Mock as possible.
-        optionsMock = new Mock<IOptions<InferencePipelineOptions>>();
-        optionsMock.Setup(o => o.Value).Returns(new InferencePipelineOptions
-        {
-            EndpointUri = endpointUri,
-            SourceTopic = "source/topic",
-            SinkTopic = "sink/topic"
-        });
-
-        httpMessageHandlerMock = new Mock<HttpMessageHandler>();
-        httpClient = new HttpClient(httpMessageHandlerMock.Object);
-
-        // Always initialize test data in constructor when used in multiple tests.
-        sourceData = new FakeSourceData { Id = 42, Name = "Test Data" };
-        expectedSinkData = new FakeSinkData { Result = "Processed", Score = 0.95 };
-
-        // Always create the service under test (sut) in the constructor.
-        sut = new EndpointDataProcessor<FakeSourceData, FakeSinkData>(
-            loggerMock.Object,
-            optionsMock.Object,
-            httpClient);
-    }
-
-    // Helper methods should be placed between constructor and test methods.
-    private void SendAsyncSetup(HttpResponseMessage responseMessage)
-    {
-        httpMessageHandlerMock
-            .Protected()
-            .Setup<Task<HttpResponseMessage>>(
-                "SendAsync",
-                ItExpr.IsAny<HttpRequestMessage>(),
-                ItExpr.IsAny<CancellationToken>())
-            .ReturnsAsync(responseMessage);
-    }
-
-    [Fact]
-    public async Task WhenValidRequest_ProcessDataAsync_ReturnsParsedResponse()
-    {
-        // Arrange
-        var responseContent = JsonSerializer.Serialize(expectedSinkData);
-        // Helper methods should always be preferred when creating the same/similar logic for testing.
-        SendAsyncSetup(new HttpResponseMessage
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = new StringContent(responseContent)
-        });
-
-        // Act
-        var actual = await sut.ProcessDataAsync(sourceData, CancellationToken.None);
-
-        // Assert
-        Assert.NotNull(actual);
-        Assert.Equivalent(expectedSinkData, actual);
-    }
-
-    [Fact]
-    public async Task WhenNonSuccessfulStatusCode_ProcessDataAsync_ThrowsHttpRequestException()
-    {
-        // Arrange
-        var errorResponse = "Testing internal server error";
-        SendAsyncSetup(new HttpResponseMessage
-        {
-            StatusCode = HttpStatusCode.InternalServerError,
-            Content = new StringContent(errorResponse)
-        });
-
-        // Act & Assert
-        var exception = await Assert.ThrowsAsync<HttpRequestException>(
-            () => sut.ProcessDataAsync(sourceData, CancellationToken.None)
-        );
-
-        Assert.Contains("500", exception.Message);
-    }
-
-    // Fake models should be in the class that's using them for testing.
-    public class FakeSourceData
-    {
-        public int Id { get; set; }
-        public string? Name { get; set; }
-    }
-
-    public class FakeSinkData
-    {
-        public string? Result { get; set; }
-        public double Score { get; set; }
-    }
-}
-```
-
-## Lifecycle Interfaces in Test Classes
-
-- When a test class needs setup/teardown before and after each test, implement the `IAsyncLifetime` interface.
-- The `InitializeAsync` method is called before each test to set up prerequisites.
-- The `DisposeAsync` method is called after each test for cleanup.
-
-```csharp
-public class PipelineService_WhenReceivingOneTests : PipelineServiceTestsBase, IAsyncLifetime
-{
-    private readonly CancellationTokenSource cancellationTokenSource;
-    private readonly FakeSinkData sinkData;
-    private readonly FakeSourceData sourceData;
-
-    public PipelineService_WhenReceivingOneTests()
-    {
-        sourceData = new FakeSourceData { Id = 1, Name = "Test" };
-        sinkData = new FakeSinkData { Result = "Processed", Score = 0.95 };
-        cancellationTokenSource = new CancellationTokenSource();
-    }
-
-    public async ValueTask InitializeAsync()
-    {
-        // Setup async code that runs before each test.
-        await sut.StartAsync(cancellationTokenSource.Token);
-    }
-
-    public ValueTask DisposeAsync()
-    {
-        // Cleanup async code that runs after each test.
-        return ValueTask.CompletedTask;
-    }
-
-    [Fact]
-    public async Task WhenValidData_OnTelemetryReceived_SendsToSink()
-    {
-        // Arrange
-        dataProcessorMock
-            .Setup(p =>
-                p.ProcessDataAsync(It.IsAny<FakeSourceData?>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(sinkData);
-
-        // Act
-        await OnTelemetryReceived(sourceData);
-
-        // Assert
-        sinkSenderMock.Verify(s => s.SendTelemetryAsync(
-                // Verify only what's needed for the assertion.
-                It.Is<FakeSinkData>(actual => sinkData == actual),
-                It.IsAny<Dictionary<string, string>>(),
-                It.IsAny<MqttQualityOfServiceLevel>(),
-                It.IsAny<TimeSpan?>(),
-                It.IsAny<CancellationToken>()),
-            Times.Once);
-    }
-}
-```
-
-## Reusing Test Context
-
-- A test can have a base class that contains common test setup and test data.
-- When a base class is needed then the base class will always have `*TestsBase` as a class name.
-- There will always be an implementing class for the test base class that has at least one test.
-- A base class for tests will only ever be created when there are more than one implementing test classes.
-- Additional implementing test class will always have the format `ClassUnderTest_(Given/When)Something`, the test class
-  should provide additional setup for when something is `Given` about a series of tests or `When` the same thing happens
-  to a series of tests. An example would be `PipelineService_WhenReceivingOneMessage`, `PipelineService` is the
-  `ClassUnderTest` and `When` `ReceivingOneMessage` is something that is happening to all the tests in this class.
-
-## Test Base Classes
-
-- Base classes should contain shared setup logic and helper methods used by multiple derived test classes.
-- The base class should have protected members that derived classes can access.
-- Fields in the base class should be ordered alphabetically for consistency.
-
-```csharp
-public abstract class PipelineServiceTestsBase
-{
-    protected readonly Mock<IPipelineDataProcessor<FakeSourceData, FakeSinkData>> dataProcessorMock;
-    protected readonly Mock<IHostApplicationLifetime> lifetimeMock;
-    protected readonly Mock<ILogger<PipelineService<FakeSourceData, FakeSinkData>>> loggerMock;
-    protected readonly Mock<ISinkSenderFactory<FakeSinkData>> sinkSenderFactoryMock;
-    protected readonly Mock<ISinkSender<FakeSinkData>> sinkSenderMock;
-    protected readonly Mock<ISourceReceiverFactory<FakeSourceData>> sourceReceiverFactoryMock;
-    protected readonly Mock<ISourceReceiver<FakeSourceData>> sourceReceiverMock;
-    protected readonly PipelineService<FakeSourceData, FakeSinkData> sut;
-
-    protected Func<string, FakeSourceData, IncomingTelemetryMetadata, Task> capturedOnTelemetryReceived =
-        (_, _, _) => Task.CompletedTask;
-
-    protected PipelineServiceTestsBase()
-    {
-        // Common setup code used by derived test classes.
-    }
-
-    // Helper methods available to all derived test classes.
-    protected async Task OnTelemetryReceived(FakeSourceData sourceData, string senderId = "test-sender-id")
-    {
-        // Implementation of helper method.
-    }
-
-    // Fake models for testing also used by derived classes when needed.
-    public class FakeSourceData
-    {
-        public int Id { get; set; }
-        public string? Name { get; set; }
-    }
-
-    public class FakeSinkData
-    {
-        public string? Result { get; set; }
-        public double Score { get; set; }
-    }
-}
-```
+This document provides comprehensive prompt instructions for C# (CSharp) Tests implementation that ensure consistency, proper
+ adherence to architectural principles, and alignment with established practices.
