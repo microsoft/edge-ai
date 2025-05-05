@@ -1,0 +1,116 @@
+---
+services:
+
+  mosquitto-broker:
+    image: eclipse-mosquitto
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - "./resources/mosquitto.local.conf:/mosquitto/config/mosquitto.conf"
+    networks:
+      - rust-telemetry
+
+  sender:
+    build:
+      context: ./services/sender
+      dockerfile: Dockerfile
+      args:
+        - USE_REPLACE_WITH=false  # Don't redirect crates.io for local development
+    environment:
+      # AIO MQTT connection settings
+      AIO_MQTT_USE_TLS: "false" # Note: Disabling not recommended for production
+      AIO_MQTT_CLIENT_ID: "telemetry-sender"
+      AIO_BROKER_HOSTNAME: "mosquitto-broker"
+      AIO_BROKER_TCP_PORT: "1883"
+      TOPIC: "sample/telemetry"
+      # OpenTelemetry configuration
+      OTEL_SERVICE_NAME: "telemetry.sender"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4317"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+      OTEL_TRACES_SAMPLER: "always_on"
+      # Logging
+      RUST_LOG: "info,opentelemetry=debug"
+
+    depends_on:
+      - mosquitto-broker
+      - otel-collector
+    networks:
+      - rust-telemetry
+
+  receiver:
+    build:
+      context: ./services/receiver
+      dockerfile: Dockerfile
+      args:
+        - USE_REPLACE_WITH=false  # Don't redirect crates.io for local development
+    environment:
+      # MQTT connection settings
+      AIO_MQTT_USE_TLS: "false"
+      AIO_MQTT_CLIENT_ID: "telemetry-receiver"
+      AIO_BROKER_HOSTNAME: "mosquitto-broker"
+      AIO_BROKER_TCP_PORT: "1883"
+      TOPIC: "sample/telemetry"
+      # OpenTelemetry configuration
+      OTEL_SERVICE_NAME: "telemetry.receiver"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4317"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+      OTEL_TRACES_SAMPLER: "always_on"
+      # Logging
+      RUST_LOG: "info,opentelemetry=debug"
+
+    depends_on:
+      - mosquitto-broker
+      - otel-collector
+    networks:
+      - rust-telemetry
+
+  # OpenTelemetry collector for observability
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    container_name: otel-collector
+    restart: unless-stopped
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    # To use Azure Monitor, uncomment below and set AZURE_MONITOR_CONNECTION_STRING
+    # environment:
+    #   - AZURE_MONITOR_CONNECTION_STRING=${AZURE_MONITOR_CONNECTION_STRING:-}
+    volumes:
+      - ./resources/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - "13133:13133" # Health check
+      - "1777:1777"   # pprof
+      - "55679:55679" # zPages
+    depends_on:
+      grafana-otel:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:13133"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+    networks:
+      - rust-telemetry
+
+  # Grafana OTEL-LGTM stack (Loki, Grafana, Tempo, Mimir)
+  grafana-otel:
+    image: grafana/otel-lgtm:latest
+    container_name: grafana-otel
+    restart: unless-stopped
+    ports:
+      - "3000:3000"    # Grafana UI
+      - "4317:4317"    # OTLP gRPC
+      - "4318:4318"    # OTLP HTTP
+    environment:
+      - OTEL_LGTM_LOGS=true
+      - OTEL_LGTM_METRICS=true
+      - OTEL_LGTM_TRACES=true
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - rust-telemetry
+
+networks:
+  rust-telemetry: null

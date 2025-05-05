@@ -1,0 +1,61 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch:
+    # Increase timeout and send_batch_size for debugging
+    timeout: 10s
+    send_batch_size: 10
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 100
+    spike_limit_mib: 10
+  resource:
+    attributes:
+      - key: service.name
+        value: "rust-telemetry"
+        action: upsert
+
+exporters:
+  debug: {}
+  otlp:
+    endpoint: grafana-otel:4317
+    tls:
+      insecure: true
+  # Azure Monitor exporter - commented out, uncomment and add connection string if needed
+  # azuremonitor:
+  #   connection_string: <INSERT-CONNECTION_STRING>
+extensions:
+  health_check:
+    endpoint: 0.0.0.0:13133
+  pprof:
+    endpoint: 0.0.0.0:1777
+  zpages:
+    endpoint: 0.0.0.0:55679
+
+service:
+  extensions: [health_check, pprof, zpages]
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, batch, resource]
+      exporters: [debug, otlp]
+    # Azure Monitor pipeline - commented out, uncomment if using Azure Monitor
+    # traces/azuremonitor:
+    #   receivers: [otlp]
+    #   processors: [memory_limiter, batch, resource]
+    #   exporters: [azuremonitor]
+
+    metrics:
+      receivers: [otlp]
+      processors: [memory_limiter, batch, resource]
+      exporters: [debug, otlp]
+    logs:
+      receivers: [otlp]
+      processors: [memory_limiter, batch, resource]
+      exporters: [debug, otlp]
