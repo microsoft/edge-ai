@@ -10,13 +10,13 @@ Storage Blob Data Contributor Role Assignment.
 | Name | Version |
 |------|---------|
 | terraform | >= 1.9.8, < 2.0 |
-| azapi | >= 2.2.0 |
+| azapi | >= 2.3.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| azapi | >= 2.2.0 |
+| azapi | >= 2.3.0 |
 | azurerm | n/a |
 
 ## Resources

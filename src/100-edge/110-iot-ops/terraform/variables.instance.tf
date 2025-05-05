@@ -91,7 +91,7 @@ variable "dataflow_instance_count" {
   description = "Number of dataflow instances. Defaults to 1."
 }
 
-variable "deploy_resource_sync_rules" {
+variable "should_deploy_resource_sync_rules" {
   type        = bool
   default     = false
   description = "Deploys resource sync rules if set to true"
