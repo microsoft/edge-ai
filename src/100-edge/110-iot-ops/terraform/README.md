@@ -11,7 +11,7 @@ Instance can be created, and after.
 | Name | Version |
 |------|---------|
 | terraform | >= 1.9.8, < 2.0 |
-| azapi | >= 2.2.0 |
+| azapi | >= 2.3.0 |
 | azurerm | >= 4.8.0 |
 
 ## Modules
@@ -38,12 +38,11 @@ Instance can be created, and after.
 | secret\_sync\_identity | n/a | ```object({ id = string client_id = string principal_id = string })``` | n/a | yes |
 | secret\_sync\_key\_vault | Azure Key Vault ID to use with Secret Sync Extension. | ```object({ name = string id = string })``` | n/a | yes |
 | aio\_ca | CA certificate for the MQTT broker, can be either Root CA or Root CA with any number of Intermediate CAs. If not provided, a self-signed Root CA with a intermediate will be generated. Only valid when Trust Source is set to CustomerManaged | ```object({ root_ca_cert_pem = string ca_cert_chain_pem = string ca_key_pem = string })``` | `null` | no |
-| aio\_features | AIO Instance features with mode ('Stable', 'Preview', 'Disabled') and settings ('Enabled', 'Disabled') | ```map(object({ mode = optional(string) settings = optional(map(string)) }))``` | `null` | no |
+| aio\_features | AIO Instance features with mode ('Stable', 'Preview', 'Disabled') and settings ('Enabled', 'Disabled'). | ```map(object({ mode = optional(string) settings = optional(map(string)) }))``` | `null` | no |
 | aio\_platform\_config | Install cert-manager and trust-manager extensions | ```object({ install_cert_manager = bool install_trust_manager = bool })``` | ```{ "install_cert_manager": true, "install_trust_manager": true }``` | no |
 | broker\_listener\_anonymous\_config | Configuration for the insecure anonymous AIO MQ Broker Listener.  For additional information, refer to: <https://learn.microsoft.com/azure/iot-operations/manage-mqtt-broker/howto-test-connection?tabs=bicep#node-port> | ```object({ serviceName = string port = number nodePort = number })``` | ```{ "nodePort": 31884, "port": 18884, "serviceName": "aio-broker-anon" }``` | no |
 | byo\_issuer\_trust\_settings | Settings for CustomerManagedByoIssuer (Bring Your Own Issuer) trust configuration | ```object({ issuer_name = string issuer_kind = string configmap_name = string configmap_key = string })``` | `null` | no |
 | dataflow\_instance\_count | Number of dataflow instances. Defaults to 1. | `number` | `1` | no |
-| deploy\_resource\_sync\_rules | Deploys resource sync rules if set to true | `bool` | `false` | no |
 | edge\_storage\_accelerator | n/a | ```object({ version = string train = string diskStorageClass = string faultToleranceEnabled = bool diskMountPoint = string })``` | ```{ "diskMountPoint": "/mnt", "diskStorageClass": "", "faultToleranceEnabled": false, "train": "stable", "version": "2.4.0" }``` | no |
 | enable\_instance\_secret\_sync | Whether to enable secret sync on the Azure IoT Operations instance | `bool` | `true` | no |
 | enable\_opc\_ua\_simulator | Deploy OPC UA Simulator to the cluster | `bool` | `true` | no |
@@ -54,6 +53,7 @@ Instance can be created, and after.
 | secret\_sync\_controller | n/a | ```object({ version = string train = string })``` | ```{ "train": "preview", "version": "0.8.2" }``` | no |
 | should\_assign\_key\_vault\_roles | Whether to assign Key Vault roles to provided Secret Sync identity | `bool` | `true` | no |
 | should\_create\_anonymous\_broker\_listener | Whether to enable an insecure anonymous AIO MQ Broker Listener. (Should only be used for dev or test environments) | `string` | `false` | no |
+| should\_deploy\_resource\_sync\_rules | Deploys resource sync rules if set to true | `bool` | `false` | no |
 | should\_enable\_otel\_collector | Deploy the OpenTelemetry Collector and Azure Monitor ConfigMap (optionally used) | `bool` | `true` | no |
 | trust\_config\_source | TrustConfig source must be one of 'SelfSigned', 'CustomerManagedByoIssuer' or 'CustomerManagedGenerateIssuer'. Defaults to SelfSigned. When choosing CustomerManagedGenerateIssuer, ensure connectedk8s proxy is enabled on the cluster for current user. When choosing CustomerManagedByoIssuer, ensure an Issuer and ConfigMap resources exist in the cluster. | `string` | `"SelfSigned"` | no |
 

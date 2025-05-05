@@ -10,7 +10,7 @@ Creates a new Azure Monitor Workspace, Log Analytics Workspace and Azure Managed
 | Name | Version |
 |------|---------|
 | terraform | >= 1.9.8, < 2.0 |
-| azapi | >= 2.2.0 |
+| azapi | >= 2.3.0 |
 | azurerm | >= 4.8.0 |
 
 ## Providers

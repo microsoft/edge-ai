@@ -124,11 +124,11 @@ module "iot_ops_instance" {
   schema_registry_id                      = var.adr_schema_registry.id
   mqtt_broker_config                      = var.mqtt_broker_config
   dataflow_instance_count                 = var.dataflow_instance_count
-  deploy_resource_sync_rules              = var.deploy_resource_sync_rules
+  should_deploy_resource_sync_rules       = var.should_deploy_resource_sync_rules
   customer_managed_trust_settings         = local.customer_managed_trust_settings
   secret_store_cluster_extension_id       = module.iot_ops_init.secret_store_extension_cluster_id
   platform_cluster_extension_id           = module.iot_ops_init.platform_cluster_extension_id
-  enable_otel_collector                   = var.should_enable_otel_collector
+  should_enable_otel_collector            = var.should_enable_otel_collector
   aio_uami_id                             = var.aio_identity.id
   aio_features                            = var.aio_features
   should_create_anonymous_broker_listener = var.should_create_anonymous_broker_listener

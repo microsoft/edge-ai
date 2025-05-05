@@ -92,7 +92,7 @@ variable "mqtt_broker_config" {
   })
 }
 
-variable "deploy_resource_sync_rules" {
+variable "should_deploy_resource_sync_rules" {
   type        = bool
   description = "Deploys resource sync rules if set to true"
 }
@@ -122,7 +122,7 @@ variable "platform_cluster_extension_id" {
   description = "The resource ID of the AIO Platform cluster extension"
 }
 
-variable "enable_otel_collector" {
+variable "should_enable_otel_collector" {
   type        = bool
   description = "Deploy the OpenTelemetry Collector and Azure Monitor ConfigMap (optionally used)"
 }

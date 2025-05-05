@@ -7,7 +7,7 @@
 | Name | Version |
 |------|---------|
 | terraform | >= 1.9.8, < 2.0 |
-| azapi | >= 2.2.0 |
+| azapi | >= 2.3.0 |
 | azuread | >= 3.0.2 |
 | azurerm | >= 4.8.0 |
 | fabric | 0.1.0-rc.2 |

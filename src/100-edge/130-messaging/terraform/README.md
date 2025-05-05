@@ -7,7 +7,7 @@
 | Name | Version |
 |------|---------|
 | terraform | >= 1.9.8, < 2.0 |
-| azapi | >= 2.2.0 |
+| azapi | >= 2.3.0 |
 | azurerm | >= 4.8.0 |
 
 ## Modules

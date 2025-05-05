@@ -24,8 +24,8 @@ locals {
   mqtt_broker_address = "mqtts://${var.mqtt_broker_config.brokerListenerServiceName}.${var.operations_config.namespace}:${var.mqtt_broker_config.brokerListenerPort}"
 
   metrics = {
-    enabled               = var.enable_otel_collector
-    otelCollectorAddress  = var.enable_otel_collector ? "aio-otel-collector.${var.operations_config.namespace}.svc.cluster.local:4317" : ""
+    enabled               = var.should_enable_otel_collector
+    otelCollectorAddress  = var.should_enable_otel_collector ? "aio-otel-collector.${var.operations_config.namespace}.svc.cluster.local:4317" : ""
     exportIntervalSeconds = 60
   }
 }
@@ -94,12 +94,9 @@ resource "azapi_resource" "custom_location" {
 
 resource "azapi_resource" "aio_sync_rule" {
   type      = "Microsoft.ExtendedLocation/customLocations/resourceSyncRules@2021-08-31-preview"
-  name      = "${azapi_resource.custom_location.name}/${azapi_resource.custom_location.name}-broker-sync"
+  name      = "${azapi_resource.custom_location.name}-broker-sync"
   location  = var.connected_cluster_location
-  parent_id = var.resource_group_id
-  identity {
-    type = "SystemAssigned"
-  }
+  parent_id = azapi_resource.custom_location.id
   body = {
     properties = {
       priority = 400
@@ -111,17 +108,15 @@ resource "azapi_resource" "aio_sync_rule" {
       targetResourceGroup = var.resource_group_id
     }
   }
-  count = var.deploy_resource_sync_rules ? 1 : 0
+  count = var.should_deploy_resource_sync_rules ? 1 : 0
 }
 
 resource "azapi_resource" "aio_device_registry_sync_rule" {
   type      = "Microsoft.ExtendedLocation/customLocations/resourceSyncRules@2021-08-31-preview"
-  name      = "${azapi_resource.custom_location.name}/${azapi_resource.custom_location.name}-adr-sync"
+  name      = "${azapi_resource.custom_location.name}-adr-sync"
   location  = var.connected_cluster_location
-  parent_id = var.resource_group_id
-  identity {
-    type = "SystemAssigned"
-  }
+  parent_id = azapi_resource.custom_location.id
+
   body = {
     properties = {
       priority = 200
@@ -133,8 +128,7 @@ resource "azapi_resource" "aio_device_registry_sync_rule" {
       targetResourceGroup = var.resource_group_id
     }
   }
-  depends_on = [azapi_resource.aio_sync_rule]
-  count      = var.deploy_resource_sync_rules ? 1 : 0
+  count = var.should_deploy_resource_sync_rules ? 1 : 0
 }
 
 resource "azapi_resource" "instance" {
