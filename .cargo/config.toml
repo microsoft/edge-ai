@@ -1,0 +1,9 @@
+[registries]
+aio-sdks = { index = "sparse+https://pkgs.dev.azure.com/azure-iot-sdks/iot-operations/_packaging/preview/Cargo/index/" }
+
+# This section is required to satisfy the CFS0042/FixCargoConfig validator
+[source.crates-io]
+replace-with = "aio-sdks"
+
+# Note: Docker builds use a different config that does NOT include the replace-with directive
+# as it causes authentication issues with the Azure Artifacts feed for public packages

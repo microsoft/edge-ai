@@ -1,0 +1,4 @@
+[workspace]
+members = ["./src/500-application/501-rust-telemetry/services/receiver", "./src/500-application/501-rust-telemetry/services/sender"]
+resolver = "2"
+
