@@ -47,7 +47,7 @@ Then, get started bootstrapping Arc-enabled AIO environments:
 3. Login with Azure CLI and set your subscription context.
 4. From a terminal:
     1. `cd ./src/azure-resource-providers`
-    2. Run `./register-azure-providers.sh <providers-file>` to prepare your subscription
+    2. Run `./register-azure-providers.sh` or `.\Register-AllProviders.ps1` to prepare your subscription
 5. Follow instructions in the [./src/azure-resource-providers/README](./src/azure-resource-providers/README.md) to
    register the required Azure resource providers for AIO and Arc in your subscription.
 6. Deploy the IaC:
@@ -155,15 +155,30 @@ If you prefer not to use the Dev Container, make sure you have a Linux environme
    ```
 
 2. **Register Required Azure Resource Providers**
-   **IMPORTANT**: These scripts need to be run once per subscription to ensure all necessary provider services are available
 
-   ```bash
-   # Navigate to resource providers directory
+   **IMPORTANT**: Register required Azure resource providers before proceeding. These scripts need to be run once per subscription to ensure all necessary provider services are available:
+
+   **Using Bash:**
+
+   ```sh
+   # Navigate to the resource providers directory
    cd ./src/azure-resource-providers
 
-   # Register all required providers
-   ./register-azure-providers.sh azure-providers.txt
+   # Run the registration script
+   ./register-all-providers.sh
    ```
+
+   **Using PowerShell:**
+
+   ```powershell
+   # Navigate to the resource providers directory
+   cd \src\azure-resource-providers
+
+   # Run the registration script (will prompt for confirmation)
+   .\Register-AllProviders.ps1
+   ```
+
+   This step is critical as Azure IoT Operations and Arc-enabled Kubernetes require several resource providers that might not be registered by default in your subscription.
 
 3. **Blueprint Initialization for Terraform**
 
@@ -190,7 +205,7 @@ If you prefer not to use the Dev Container, make sure you have a Linux environme
 
    ```hcl
    environment     = "dev"
-   resource_prefix = "myproject"
+   resource_prefix = "myproj01" # Keep short (max 8 chars recommended) to avoid resource naming issues with Key Vault and other services
    location        = "eastus2"
    instance        = "001"
    ```

@@ -58,111 +58,14 @@ For additional configuration options, review the parameters in `main.bicep`.
 
 ## Prerequisites
 
-**IMPORTANT:** We highly suggest using [this project's integrated dev container](./.devcontainer/README.md) to get started quickly with Windows-based systems and also works well with nix-compatible environments.
+Ensure you have the following prerequisites:
 
-Refer to the Environment Setup section in the [Root README](../README.md#getting-started-and-prerequisites-setup) for detailed instructions on setting up your environment.
+- Registered resource providers (see deployment instructions)
+- Appropriate permissions to create resources
 
-## Bicep Deployment Instructions
+## Deploy Blueprint
 
-```sh
-# Navigate to the bicep directory
-cd ./bicep
-```
-
-### 1. Create a Parameters File
-
-Generate a parameters file using the Azure CLI Bicep extension:
-
-```sh
-# Navigate to the bicep directory if not already there
-cd ./bicep
-
-# Generate a complete parameters file with all available parameters
-az bicep generate-params --file main.bicep --output-format bicepparam --include-params all > main.bicepparam
-```
-
-Edit the generated `main.bicepparam` file to set your deployment values:
-
-```bicep
-// Parameters for only-cloud-single-node-cluster blueprint
-using './main.bicep'
-
-// Required common parameters
-param common = {
-  resourcePrefix: 'myprefix'     // Replace with a unique prefix
-  location: 'eastus2'            // Replace with your Azure region
-  environment: 'dev'             // 'dev', 'test', or 'prod'
-  instance: '001'                // For multiple deployments
-}
-
-// Optional: Override the default resource group name
-param resourceGroupName = 'rg-${common.resourcePrefix}-${common.environment}-${common.instance}'
-
-// Required: VM admin password (required for SSH access)
-@secure()
-param adminPassword = '' // Replace with a secure password - DO NOT STORE IN FILE
-```
-
-### 2. Deploy Resources with Bicep
-
-```sh
-# Deploy using the Azure CLI
-az deployment sub create --name <uniquename-prefix> --location <location> --parameters ./main.bicepparam
-```
-
-## Access Deployed Resources
-
-After successful deployment:
-
-1. **Access the VM Host**:
-
-   ```sh
-   # Get the public IP of the VM
-   RG_NAME="rg-<resource_prefix>-<environment>-<instance>"
-   VM_NAME=$(az vm list -g $RG_NAME --query "[0].name" -o tsv)
-   VM_IP=$(az vm show -d -g $RG_NAME -n $VM_NAME --query publicIps -o tsv)
-
-   # SSH to the VM
-   ssh <admin-username>@$VM_IP
-   ```
-
-## Post-Deployment Tasks
-
-### Next Steps
-
-After deploying the cloud infrastructure, you can:
-
-1. **Install and configure a Kubernetes cluster** on the VM host
-2. **Connect the cluster to Azure Arc**
-3. **Deploy Azure IoT Operations** components
-4. **Configure additional observability and messaging** components
-
-### Monitoring the Deployment
-
-View deployed resources and their status:
-
-```bash
-RG_NAME="rg-<resource_prefix>-<environment>-<instance>"
-az resource list --resource-group $RG_NAME -o table
-```
-
-## Cleanup
-
-When finished with your deployment:
-
-```sh
-RG_NAME="rg-<resource_prefix>-<environment>-<instance>"
-# Delete the resource group and all its resources
-az group delete --name "$RG_NAME"
-```
-
-## Deployment Troubleshooting
-
-### Common Issues
-
-- **Resource Deployment Failures**: Ensure you have registered all required resource providers in your subscription.
-- **VM Creation Issues**: Check that your VM size is available in the selected region. Modify the parameters if needed.
-- **Quota Limitations**: Some deployments may encounter quota limitations. Request quota increases if necessary.
+Follow detailed deployment instructions from the blueprints README.md, [Detailed Deployment Workflow](../README.md#detailed-deployment-workflow)
 
 ## Related Blueprints
 
