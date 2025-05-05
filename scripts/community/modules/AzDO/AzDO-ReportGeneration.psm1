@@ -23,7 +23,7 @@ function Get-ReportSummary {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory=$true)]
-        [AzDOReportSummary]$Summary
+        [AzDOReportSummary]$Summary # Corrected type
     )
 
     Write-Verbose "Starting Get-ReportSummary function"
@@ -74,7 +74,7 @@ function Get-PRMetricsByInterval {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory=$true)]
-        [PRMetricsIntervalData]$MetricsData
+        [PRMetricsIntervalData]$MetricsData # Corrected type
     )
 
     Write-Verbose "Starting Get-PRMetricsByInterval function"
@@ -192,13 +192,13 @@ function Get-SLOComplianceTableContent {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory=$true)]
-        [SLOComplianceItem[]]$SLOComplianceData,
+        [SLOComplianceItem[]]$SLOComplianceData, # Corrected type
 
         [Parameter(Mandatory=$false)]
         [int]$SLOHours = 48,
 
         [Parameter(Mandatory=$false)]
-        [ChartData]$WeeklyCompletionMetrics
+        [ChartData]$WeeklyCompletionMetrics # Corrected type
     )
 
     Write-Verbose "Starting Get-SLOComplianceTableContent function with $($SLOComplianceData.Count) items"
@@ -301,13 +301,13 @@ function Get-ContributorSummary {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory=$true)]
-        [ContributorMetrics[]]$Contributors,
+        [ContributorMetrics[]]$Contributors, # Corrected type
 
         [Parameter(Mandatory=$true)]
-        [ReturningContributorMetric]$ContributorReturnMetrics,
+        [ReturningContributorMetric]$ContributorReturnMetrics, # Corrected type
 
         [Parameter(Mandatory=$true)]
-        [ReviewerMetrics[]]$ReviewerMetrics,
+        [ReviewerMetrics[]]$ReviewerMetrics, # Corrected type
 
         [Parameter(Mandatory=$false)]
         [int]$MonthsToShow = 3
@@ -462,7 +462,7 @@ function Format-FileExtensionTable {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory=$true)]
-        [FileExtensionSummary]$Summary
+        [FileExtensionSummary]$Summary # Corrected type
     )
 
     Write-Verbose "Starting Format-FileExtensionTable function with $($Summary.Extensions.Count) extensions"
@@ -511,7 +511,7 @@ function Get-FocusAreaSection {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory=$true)]
-        [FocusAreaMetrics]$FocusAreaMetrics
+        [FocusAreaMetrics]$FocusAreaMetrics # Corrected type
     )
 
     Write-Verbose "Starting Get-FocusAreaSection function with $($FocusAreaMetrics.Areas.Count) focus areas"
@@ -519,13 +519,9 @@ function Get-FocusAreaSection {
     # Define color palette for the chart - use the colors from the ColorMap in the order of FocusAreaMetrics.Areas
     $areaColors = @()
     foreach ($area in $FocusAreaMetrics.Areas) {
-        if ($FocusAreaMetrics.ColorMap.ContainsKey($area)) {
-            $areaColors += $FocusAreaMetrics.ColorMap[$area]
-            Write-Verbose "Using color $($FocusAreaMetrics.ColorMap[$area]) for area: $area"
-        } else {
-            $areaColors += "#000000" # Default color for unknown areas
-            Write-Verbose "No color found for area: $area, using default black"
-        }
+        # Removed null check - assume colors exist in ColorMap
+        $areaColors += $FocusAreaMetrics.ColorMap[$area]
+        Write-Verbose "Using color $($FocusAreaMetrics.ColorMap[$area]) for area: $area"
     }
     $colorPalette = $areaColors -join ", "
     Write-Verbose "Color palette: $colorPalette"
@@ -648,12 +644,23 @@ function Get-MermaidChart {
     # Triple backtick for code blocks
     $tripleBacktick = '```'
 
-    # Simply include the init directive regardless - if it's empty, it won't affect the output
+    # --- Start Change ---
+    # Conditionally add title based on chart type
+    $titleLine = ""
+    if ($type -ne "sankey-beta") {
+        $titleLine = "    title `"$title`""
+    } else {
+        Write-Verbose "Sankey-beta chart type detected, omitting title line."
+        # Optionally, add title as a comment if needed for context, though Mermaid won't render it.
+        # $titleLine = "    %% Title: $title"
+    }
+
+    # Build the chart string
     return @"
 $tripleBacktick mermaid
 $init
 $type
-    title "$title"
+$titleLine
 $content
 $tripleBacktick
 "@
@@ -942,6 +949,107 @@ This analysis covers pull request activity for the $Project project in the $Orga
     return $header
 }
 
+function Get-IndustryBacklogSankeySection {
+    <#
+    .SYNOPSIS
+    Creates a markdown section with a Mermaid Sankey diagram showing industry pillars, scenarios, capabilities, and features.
+
+    .DESCRIPTION
+    Generates a formatted markdown section with a Mermaid Sankey diagram visualizing the flow from
+    industry pillars through scenarios and capabilities to backlog features using the simple CSV format.
+
+    .PARAMETER SankeyData
+    An object containing Nodes and Links arrays for the Sankey diagram.
+
+    .EXAMPLE
+    $sankeyData = Get-BacklogHierarchySankeyObject -BacklogCollection $collection
+    $sankeySection = Get-IndustryBacklogSankeySection -SankeyData $sankeyData
+    #>
+    [OutputType([System.String])]
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true)]
+        [IndustryBacklogSankey]$SankeyData
+    )
+
+    Write-Host "Starting Get-IndustryBacklogSankeySection function with $($SankeyData.Links.Count) links"
+
+    # Create a lookup for node names based on ID - no need to check for nulls
+    $nodeNameLookup = @{}
+    foreach ($node in $SankeyData.Nodes) {
+        $nodeNameLookup[$node.Id] = $node.Name
+        Write-Verbose "Added node to lookup: ID=$($node.Id), Name=$($node.Name), Type=$($node.Type)"
+    }
+
+    # Generate link data lines with proper format for Mermaid Sankey
+    $linkDataLines = @()
+    foreach ($link in $SankeyData.Links) {
+        Write-Host "Processing link: Source=$($link.Source), Target=$($link.Target), Value=$($link.Value)"
+        # Get source and target node names from lookup
+        $sourceName = $nodeNameLookup[$link.Source]
+        $targetName = $nodeNameLookup[$link.Target]
+
+        # Handle special characters and quotes in names
+        $sourceName = $sourceName -replace '"', '\"'
+        $targetName = $targetName -replace '"', '\"'
+
+        # Format as required by Mermaid sankey-beta: Source,Target,Value
+        # Node names with spaces or special characters must be in quotes
+        if ($sourceName -match '\s' -or $sourceName -match '[,"]') {
+            $sourceName = """$sourceName"""
+        }
+        if ($targetName -match '\s' -or $targetName -match '[,"]') {
+            $targetName = """$targetName"""
+        }
+
+        # Add formatted line with quoted names and value
+        $linkDataLines += "$sourceName,$targetName,$($link.Value)"
+
+        Write-Verbose "Added link: $sourceName -> $targetName ($($link.Value))"
+    }
+
+    # Define the triple backtick variable
+    $tripleBacktick = '```'
+
+    # Create the Mermaid block with proper formatting using the variable
+    # Add HTML div wrapper with style attribute to control width
+    $mermaidBlock = @"
+$tripleBacktick mermaid
+
+---
+config:
+  sankey:
+    showValues: false
+    width: 1200
+    height: 1400
+---
+sankey-beta
+
+$($linkDataLines -join "`n")
+$tripleBacktick
+"@
+
+    # Create the complete markdown section
+    $markdown = @"
+## Industry Backlog Visualization
+
+The following Sankey diagram visualizes the flow from scenarios through capabilities to specific backlog features.
+
+Scenarios are weighted by the number of industry customers requiring them, and capabilities are weighted by the number of scenarios they support.
+
+| | **Scenarios** | **Capabilities** | **Features** | |
+|:-:|:------------------------------------------:|:--------------------------------------------:|:------------------------------------------:|:-:|
+|   | &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; | &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; | &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; |   |
+
+$mermaidBlock
+
+*Note: Link widths represent the strength of relationships between connected items. The diagram shows the complex relationships between scenarios, capabilities, and features in the product backlog.*
+"@
+
+    Write-Verbose "Completed Get-IndustryBacklogSankeySection function"
+    return $markdown
+}
+
 # Export all functions from this module in a single statement
 Write-Verbose "Exporting AzDO-ReportGeneration module functions"
 Export-ModuleMember -Function @(
@@ -952,7 +1060,8 @@ Export-ModuleMember -Function @(
     'Format-FileExtensionTable',
     'Get-FocusAreaSection',
     'Get-CopilotImpactSection',
-    'Get-MermaidChart',
+    'Get-MermaidChart', # Keep exporting if needed elsewhere
     'Get-ReportFooter',
-    'Get-ReportHeader'
+    'Get-ReportHeader',
+    'Get-IndustryBacklogSankeySection'
 )

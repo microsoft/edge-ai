@@ -1,5 +1,7 @@
 # Import the AzDO-Types module
 using module "./AzDO-Types.psm1"
+# Import ReportTypes for IndustryBacklogCollection
+using module "./AzDO-ReportTypes.psm1"
 
 function Get-RepositoryId {
     <#
@@ -27,10 +29,10 @@ function Get-RepositoryId {
         [AzDOApiParameters]$Params
     )
 
-    # Validate parameters
+    # Validate parameters - no need for null check
     if (-not $Params.Validate()) {
         Write-Error "Invalid API parameters provided"
-        return $null
+        return ""
     }
 
     # If the repository is a name, look it up
@@ -46,11 +48,11 @@ function Get-RepositoryId {
             return $targetRepo.id
         } else {
             Write-Warning "Could not find '$($Params.Repository)' repository."
-            return $null
+            return ""
         }
     } catch {
         Write-Warning "Error retrieving repositories: $_"
-        return $null
+        return ""
     }
 }
 function Get-PullRequestList {
@@ -114,11 +116,7 @@ function Get-PullRequestList {
         Write-Verbose "Retrieving pull requests from: $queryUrl"
         $pullRequestsResponse = Get-AzureDevOpsItem -Uri $queryUrl -Headers $Params.Headers -MaxResults $MaxPRs
 
-        if ($null -eq $pullRequestsResponse -or $pullRequestsResponse.Count -eq 0) {
-            Write-Warning "No pull requests found with status '$Status'."
-            return [AzDOPullRequest[]]@()
-        }
-
+        # Remove null check, assume we always get data
         Write-Verbose "Retrieved $($pullRequestsResponse.value.Count) pull requests."
 
         [AzDOPullRequest[]]$prs = @()
@@ -228,16 +226,13 @@ function Get-PullRequestCommitList {
         # Create an empty commit list
         $commitList = [AzDOPullRequestCommit[]]@()
 
-        # Iterate through commits and add them to the list
-        if ($commitsResponse.value -and $commitsResponse.value.Count -gt 0) {
+        # Iterate through commits and add them to the list - removed null check
+        foreach ($commitData in $commitsResponse.value) {
+            # Create a new commit object for each commit
+            $commit = [AzDOPullRequestCommit]::new($commitData)
+            $commitList += $commit
 
-            foreach ($commitData in $commitsResponse.value) {
-                # Create a new commit object for each commit
-                $commit = [AzDOPullRequestCommit]::new($commitData)
-                $commitList += $commit
-
-                Write-Verbose "Added commit: $($commit.CommitId) by $($commit.Author)"
-            }
+            Write-Verbose "Added commit: $($commit.CommitId) by $($commit.Author)"
         }
 
         Write-Verbose "Retrieved $($commitList.Count) commits for PR ID: $PullRequestId"
@@ -294,54 +289,47 @@ function Get-PullRequestReviewerList {
         # Create a typed collection of reviewer objects
         [AzDOPullRequestReviewer[]]$reviewers = @()
 
-        # Check if we got valid reviewer data
-        if ($reviewersResponse -and $reviewersResponse.PSObject.Properties.Name -contains "value") {
-            # Translate vote values to readable status
-            $voteStatusMap = @{
-                10 = "Approved"
-                5 = "Approved with suggestions"
-                0 = "No vote"
-                -5 = "Waiting for author"
-                -10 = "Rejected"
+        # Check if we got valid reviewer data - removed null check
+        # Translate vote values to readable status
+        $voteStatusMap = @{
+            10 = "Approved"
+            5 = "Approved with suggestions"
+            0 = "No vote"
+            -5 = "Waiting for author"
+            -10 = "Rejected"
+        }
+
+        foreach ($reviewerData in $reviewersResponse.value) {
+            # Create new reviewer object
+            $reviewer = [AzDOPullRequestReviewer]::new()
+            $reviewer.Id = $reviewerData.id
+            $reviewer.DisplayName = $reviewerData.displayName
+            $reviewer.UniqueName = $reviewerData.uniqueName
+
+            # Set vote value and status
+            $voteValue = $reviewerData.vote ?? 0
+            $reviewer.VoteValue = $voteValue
+
+            $reviewer.VoteStatus = $voteStatusMap[$voteValue] ?? $voteStatusMap[0]
+
+            # Set additional properties
+            $reviewer.IsRequired = $reviewerData.isRequired
+            $reviewer.HasDeclined = $reviewerData.hasDeclined
+
+            # Try to parse vote date if it exists
+            if ($reviewerData.votedFor) {
+                $reviewer.VoteDate = [DateTime]::Parse($reviewerData.votedFor)
             }
 
-            foreach ($reviewerData in $reviewersResponse.value) {
-                if ($null -eq $reviewerData) { continue }
-
-                # Create new reviewer object
-                $reviewer = [AzDOPullRequestReviewer]::new()
-                $reviewer.Id = $reviewerData.id
-                $reviewer.DisplayName = $reviewerData.displayName
-                $reviewer.UniqueName = $reviewerData.uniqueName
-
-                # Set vote value and status
-                $voteValue = if ($null -ne $reviewerData.PSObject.Properties['vote']) { $reviewerData.vote } else { 0 }
-                $reviewer.VoteValue = $voteValue
-
-                $reviewer.VoteStatus = $voteStatusMap[0]  # Always use "No vote" from the map for any unknown values
-
-                # Set additional properties
-                $reviewer.IsRequired = if ($reviewerData.PSObject.Properties['isRequired']) { $reviewerData.isRequired -eq $true } else { $false }
-                $reviewer.HasDeclined = if ($reviewerData.PSObject.Properties['hasDeclined']) { $reviewerData.hasDeclined -eq $true } else { $false }
-
-                # Try to parse vote date if it exists (Azure DevOps doesn't directly provide this)
-                if ($reviewerData.PSObject.Properties['votedFor'] -and $reviewerData.votedFor) {
-                    try {
-                        $reviewer.VoteDate = [DateTime]::Parse($reviewerData.votedFor)
-                    } catch {
-                        $reviewer.VoteDate = $null
-                    }
-                }
-
-                # Add to collection with type checking
-                $reviewers += $reviewer
-            }
+            # Add to collection with type checking
+            $reviewers += $reviewer
         }
 
         return [AzDOPullRequestReviewer[]]$reviewers
     }
     catch {
         Write-Warning "Error retrieving reviewers for PR ID: $PullRequestId. Error: $_"
+        return [AzDOPullRequestReviewer[]]@()
     }
 }
 
@@ -387,20 +375,15 @@ function Get-AzDOPullRequestThread {
         # Get thread data
         $threadsResponse = Invoke-AzureDevOpsApi -Uri $threadsUrl -Method "GET" -Headers $Params.Headers
 
-        # Check if we have valid data
-        if ($null -eq $threadsResponse -or $null -eq $threadsResponse.value) {
-            Write-Verbose "No threads found for PR ID: $PullRequestId"
-            return [AzDOPullRequestThread[]]@()
-        }
+        # Removed null check for response - assume data is present
+        Write-Verbose "Processing threads for PR ID: $PullRequestId"
 
         # Create thread collection
         $threads = [AzDOPullRequestThread[]]@()
 
         # Process each thread
         foreach ($threadData in $threadsResponse.value) {
-            if ($null -eq $threadData) { continue }
-
-            # Create thread object using constructor instead of manual property setting
+            # Create thread object using constructor
             try {
                 $thread = [AzDOPullRequestThread]::new($threadData)
                 $threads += $thread
@@ -641,19 +624,14 @@ function Get-PullRequestWorkItem {
         # Get work items data
         $workItemsResponse = Invoke-AzureDevOpsApi -Uri $workItemsUrl -Method "GET" -Headers $Params.Headers
 
-        # Check if we have valid data
-        if ($null -eq $workItemsResponse -or $null -eq $workItemsResponse.value) {
-            Write-Verbose "No work items found for PR ID: $PullRequestId"
-            return [AzDOWorkItemReference[]]@()
-        }
+        # Removed null check - assume valid data
+        Write-Verbose "Processing work items for PR ID: $PullRequestId"
 
         # Create work item collection
         $workItems = [AzDOWorkItemReference[]]@()
 
         # Process each work item
         foreach ($workItemRef in $workItemsResponse.value) {
-            if ($null -eq $workItemRef) { continue }
-
             # Create work item reference object
             $workItem = [AzDOWorkItemReference]::new()
             $workItem.Id = $workItemRef.id
@@ -717,11 +695,7 @@ function Get-WorkItemDetail {
         # Get work item data
         $workItemResponse = Invoke-AzureDevOpsApi -Uri $workItemUrl -Method "GET" -Headers $Params.Headers
 
-        # Check if we have valid data
-        if ($null -eq $workItemResponse) {
-            Write-Verbose "No work item found for ID: $WorkItemId"
-            return $null
-        }
+        # Removed null check - assume data exists
 
         # Create work item object
         $workItem = [AzDOWorkItem]::new()
@@ -730,35 +704,18 @@ function Get-WorkItemDetail {
         $workItem.Url = $workItemResponse.url
 
         # Extract common fields
-        if ($workItemResponse.fields) {
-            $workItem.WorkItemType = $workItemResponse.fields.'System.WorkItemType'
-            $workItem.Title = $workItemResponse.fields.'System.Title'
-            $workItem.State = $workItemResponse.fields.'System.State'
-            $workItem.CreatedBy = $workItemResponse.fields.'System.CreatedBy'
-            $workItem.AssignedTo = $workItemResponse.fields.'System.AssignedTo'
+        # Parse dates when parsing fields - removed null checks
+        $workItem.WorkItemType = $workItemResponse.fields.'System.WorkItemType'
+        $workItem.Title = $workItemResponse.fields.'System.Title'
+        $workItem.State = $workItemResponse.fields.'System.State'
+        $workItem.CreatedBy = $workItemResponse.fields.'System.CreatedBy'
+        $workItem.AssignedTo = $workItemResponse.fields.'System.AssignedTo'
 
-            # Try to parse dates
-            if ($workItemResponse.fields.'System.CreatedDate') {
-                try {
-                    $workItem.CreatedDate = [DateTime]::Parse($workItemResponse.fields.'System.CreatedDate')
-                } catch {
-                    $workItem.CreatedDate = $null
-                }
-            }
+        $workItem.CreatedDate = [DateTime]::Parse($workItemResponse.fields.'System.CreatedDate')
+        $workItem.ChangedDate = [DateTime]::Parse($workItemResponse.fields.'System.ChangedDate')
 
-            if ($workItemResponse.fields.'System.ChangedDate') {
-                try {
-                    $workItem.ChangedDate = [DateTime]::Parse($workItemResponse.fields.'System.ChangedDate')
-                } catch {
-                    $workItem.ChangedDate = $null
-                }
-            }
-        }
-
-        # Store relations if available
-        if ($workItemResponse.relations) {
-            $workItem.Relations = $workItemResponse.relations
-        }
+        # Store relations
+        $workItem.Relations = $workItemResponse.relations
 
         return $workItem
     }
@@ -807,22 +764,12 @@ function Get-PullRequestWorkItemDetail {
     )
 
     try {
-        # Get repository ID
-        $repositoryId = Get-RepositoryId -Params $Params
-        if (-not $repositoryId) {
-            Write-Error "Failed to get repository ID for '$($Params.Repository)'"
-            return [AzDOWorkItem[]]@()
-        }
 
         # Get work item references from the PR
         Write-Verbose "Getting work item references for PR #$PullRequestId"
         $workItemRefs = Get-PullRequestWorkItem -Params $Params -PullRequestId $PullRequestId
 
-        if ($workItemRefs.Count -eq 0) {
-            Write-Verbose "No work items found associated with PR #$PullRequestId"
-            return [AzDOWorkItem[]]@()
-        }
-
+        # Removed null check for workItemRefs - assume they exist
         Write-Verbose "Found $($workItemRefs.Count) work items associated with PR #$PullRequestId"
 
         # Create result collection
@@ -831,29 +778,16 @@ function Get-PullRequestWorkItemDetail {
         # Get detailed information for each work item if requested
         if ($IncludeDetails) {
             foreach ($workItemRef in $workItemRefs) {
-                if ($null -eq $workItemRef.WorkItemId) {
-                    Write-Warning "Work item reference does not contain a valid work item ID. Skipping."
-                    continue
-                }
-
                 Write-Verbose "Getting details for work item #$($workItemRef.WorkItemId)"
                 [AzDOWorkItem]$workItemDetail = Get-WorkItemDetail -Params $Params -WorkItemId $workItemRef.WorkItemId
-
-                if ($null -ne $workItemDetail) {
-                    $workItems += $workItemDetail
-                }
+                $workItems += $workItemDetail
             }
         } else {
             # If details not requested, create basic work item objects from references
             foreach ($workItemRef in $workItemRefs) {
-                if ($null -eq $workItemRef.WorkItemId) {
-                    continue
-                }
-
                 $basicWorkItem = [AzDOWorkItem]::new()
                 $basicWorkItem.Id = $workItemRef.WorkItemId
                 $basicWorkItem.Url = $workItemRef.Url
-
                 $workItems += $basicWorkItem
             }
         }
@@ -897,7 +831,6 @@ function Get-MainBranchFileExtension {
 
     try {
 
-
         # Initialize extension categorization
         $extensionCategories = @{
             "JavaScript/TypeScript" = @('.js', '.jsx', '.ts', '.tsx')
@@ -923,9 +856,27 @@ function Get-MainBranchFileExtension {
         }
 
         # Initialize results hashtable
-        $results = @{}
-        foreach ($category in $extensionCategories.Keys) {
-            $results[$category] = 0
+        $results = @{
+            "JavaScript/TypeScript" = 0
+            "Python" = 0
+            "C#" = 0
+            "Java" = 0
+            "Go" = 0
+            "Rust" = 0
+            "C/C++" = 0
+            "Shell Scripts" = 0
+            "HTML/CSS" = 0
+            "Documentation (Markdown)" = 0
+            "JSON" = 0
+            "YAML" = 0
+            "XML" = 0
+            "SQL" = 0
+            "Bicep/ARM Templates" = 0
+            "Terraform" = 0
+            "Docker" = 0
+            "Configuration Files" = 0
+            "PowerShell" = 0
+            "Other" = 0
         }
 
         # Get all files in repository
@@ -973,7 +924,308 @@ function Get-MainBranchFileExtension {
     }
 }
 
-# Export the functions
+function Get-IndustryBacklogItemsFromAzDO {
+    <#
+    .SYNOPSIS
+    Retrieves industry backlog items from Azure DevOps.
+
+    .DESCRIPTION
+    Retrieves industry pillars, scenarios, capabilities, and related features from Azure DevOps.
+
+    .PARAMETER Organization
+    The Azure DevOps organization name.
+
+    .PARAMETER Project
+    The Azure DevOps project name.
+
+    .PARAMETER AuthHeader
+    The authentication header for API calls.
+
+    .OUTPUTS
+    IndustryBacklogCollection. An object containing the industry backlog hierarchy.
+    #>
+    [CmdletBinding()]
+    [OutputType([IndustryBacklogCollection])]
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$Organization,
+
+        [Parameter(Mandatory=$true)]
+        [string]$Project,
+
+        [Parameter(Mandatory=$true)]
+        [hashtable]$AuthHeader
+    )
+
+    Write-Host "Starting Get-IndustryBacklogItemsFromAzDO function for $Organization/$Project"
+
+    # Initialize collection for backlog items
+    $backlogItems = [IndustryBacklogCollection]::new()
+
+    # Get Industry Pillars
+    Write-Host "Executing WIQL query for Industry Pillars"
+    $pillarsQuery = @{
+        query = "SELECT [System.Id], [System.WorkItemType], [System.Title], [System.State], [System.Tags], [System.Parent], [System.Description]
+FROM WorkItems
+WHERE [System.WorkItemType] = 'Industry Pillar'
+AND [System.State] NOT IN ('Removed', 'Deleted')
+ORDER BY [System.Title]"
+    }
+
+    # Pass the hashtable directly instead of converting to JSON
+    $pillarsQueryResult = Invoke-AzureDevOpsApi -Uri "https://dev.azure.com/$Organization/$Project/_apis/wit/wiql?api-version=7.0" -Method "POST" -Body $pillarsQuery -Headers $AuthHeader
+
+    if ($pillarsQueryResult -and $pillarsQueryResult.workItems) {
+        $pillarIds = $pillarsQueryResult.workItems.id -join ","
+        Write-Host "Retrieved $($pillarsQueryResult.workItems.Count) Industry Pillars"
+
+        if ($pillarIds) {
+            $pillarDetails = Invoke-AzureDevOpsApi -Uri "https://dev.azure.com/$Organization/$Project/_apis/wit/workitems?ids=$pillarIds&api-version=7.0&`$expand=relations" -Method "GET" -Headers $AuthHeader
+
+            if ($pillarDetails -and $pillarDetails.value) {
+                foreach ($pillar in $pillarDetails.value) {
+                    # Add pillar to collection
+                    $p = [PillarWorkItem]::new()
+                    $p.Id = $pillar.id
+                    $p.Title = $pillar.fields.'System.Title'
+                    $p.Description = $pillar.fields.'System.Description'
+                    $p.State = $pillar.fields.'System.State'
+                    $p.Tags = $pillar.fields.'System.Tags'
+                    $p.Description = $pillar.fields.'System.Description'
+                    $backlogItems.Pillars += $p
+                }
+                Write-Host "Added $($pillarDetails.value.Count) Industry Pillars to collection"
+            }
+        }
+    }
+
+    # Get Scenarios
+    Write-Host "Executing WIQL query for Scenarios"
+    $scenariosQuery = @{
+        query = "SELECT [System.Id], [System.WorkItemType], [System.Title], [System.State], [System.Tags], [System.Parent], [System.Description]
+FROM WorkItems
+WHERE [System.WorkItemType] = 'Scenario'
+AND [System.State] NOT IN ('Removed', 'Deleted')
+ORDER BY [System.Title]"
+    }
+
+    # Pass the hashtable directly instead of converting to JSON
+    $scenariosQueryResult = Invoke-AzureDevOpsApi -Uri "https://dev.azure.com/$Organization/$Project/_apis/wit/wiql?api-version=7.0" -Method "POST" -Body $scenariosQuery -Headers $AuthHeader
+
+    if ($scenariosQueryResult -and $scenariosQueryResult.workItems) {
+        $scenarioIds = $scenariosQueryResult.workItems.id -join ","
+        Write-Host "Retrieved $($scenariosQueryResult.workItems.Count) Scenarios"
+
+        if ($scenarioIds) {
+            $scenarioDetails = Invoke-AzureDevOpsApi -Uri "https://dev.azure.com/$Organization/$Project/_apis/wit/workitems?ids=$scenarioIds&api-version=7.0&`$expand=relations" -Method "GET" -Headers $AuthHeader
+
+            if ($scenarioDetails -and $scenarioDetails.value) {
+                foreach ($scenario in $scenarioDetails.value) {
+                    # Add scenario to collection
+                    $s = [ScenarioWorkItem]::new()
+                    $s.Id = $scenario.id
+                    $s.Title = $scenario.fields.'System.Title'
+                    $s.Description = $scenario.fields.'System.Description'
+                    $s.Tags = $scenario.fields.'System.Tags' -split ';' | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne '' }
+
+                    # Link scenario to pillar if parent relation exists
+                    if ($scenario.relations) {
+                        foreach ($relation in $scenario.relations) {
+                            if ($relation.attributes.name -eq "Parent") {
+                                $parentId = $relation.url.Split('/')[-1]
+                                $s.ParentId = $parentId
+                            }
+                        }
+                    }
+                    $backlogItems.Scenarios += $s
+                }
+                Write-Host "Added $($scenarioDetails.value.Count) Scenarios to collection"
+            }
+        }
+    }
+
+    # Get Capabilities - Updated query to ensure we get all fields needed including custom fields
+    Write-Host "Executing WIQL query for Capabilities"
+    $capabilitiesQuery = @{
+        query = "SELECT [System.Id], [System.WorkItemType], [System.Title], [System.State], [System.Tags],
+       [System.Parent], [Custom.ScenarioList], [System.Description]
+FROM WorkItems
+WHERE [System.WorkItemType] = 'Capability'
+AND [System.State] NOT IN ('Removed', 'Deleted')
+ORDER BY [System.Title]"
+    }
+
+    # Pass the hashtable directly instead of converting to JSON
+    $capabilitiesQueryResult = Invoke-AzureDevOpsApi -Uri "https://dev.azure.com/$Organization/$Project/_apis/wit/wiql?api-version=7.0" -Method "POST" -Body $capabilitiesQuery -Headers $AuthHeader
+
+    if ($capabilitiesQueryResult -and $capabilitiesQueryResult.workItems) {
+        Write-Host "Found $($capabilitiesQueryResult.workItems.Count) capabilities from WIQL query"
+
+        # Create collection to hold unique feature IDs
+        $featureIds = [System.Collections.Generic.HashSet[string]]::new()
+
+        # Capture all capability IDs returned from WIQL query
+        $capabilityIds = $capabilitiesQueryResult.workItems.id -join ","
+        Write-Host "Capability IDs from WIQL: $capabilityIds"
+
+        if ($capabilityIds) {
+            # Get detailed data for all capabilities
+            $detailsUri = "https://dev.azure.com/$Organization/$Project/_apis/wit/workitems?ids=$capabilityIds&api-version=7.0&`$expand=relations"
+            Write-Host "Getting capability details from: $detailsUri"
+            $capabilityDetails = Invoke-AzureDevOpsApi -Uri $detailsUri -Method "GET" -Headers $AuthHeader
+
+            if ($capabilityDetails -and $capabilityDetails.value) {
+                Write-Host "Retrieved $($capabilityDetails.value.Count) capability details"
+
+                # Loop through each capability to process its data
+                foreach ($capability in $capabilityDetails.value) {
+                    # Log capability information
+                    Write-Host "Processing capability: #$($capability.id) - $($capability.fields.'System.Title')"
+
+                    # Add capability to collection
+                    $capabilityItem = [CapabilityWorkItem]::new()
+                    $capabilityItem.Id = $capability.id
+                    $capabilityItem.Title = $capability.fields.'System.Title'
+                    $capabilityItem.Description = $capability.fields.'System.Description'
+
+                    # Link capability to scenarios from Custom.ScenarioList if it exists
+                    if ($capability.fields.'Custom.ScenarioList') {
+                        # Add the System.Web assembly if not already loaded
+                        if (-not ([System.Management.Automation.PSTypeName]'System.Web.HttpUtility').Type) {
+                            Add-Type -AssemblyName System.Web
+                        }
+
+                        # Decode the entire ScenarioList string first to handle any HTML entities in the entire field
+                        $decodedScenarioListString = [System.Web.HttpUtility]::HtmlDecode($capability.fields.'Custom.ScenarioList')
+                        $scenarioList = $decodedScenarioListString -split ';'
+
+                        Write-Host "Found ScenarioList field with $($scenarioList.Count) scenarios"
+                        foreach ($scenarioId in $scenarioList) {
+                            $scenarioId = $scenarioId.Trim()
+                            if ($scenarioId) {
+                                # The scenarioId should already be decoded from above, but decode again to be sure
+                                $decodedScenarioId = [System.Web.HttpUtility]::HtmlDecode($scenarioId)
+                                $capabilityItem.ScenarioList += $decodedScenarioId
+
+                                # Use the decoded ID in the output message
+                                Write-Host "  Linked capability #$($capability.id) to scenario #$decodedScenarioId"
+                            }
+                        }
+                    } else {
+                        Write-Host "  No Custom.ScenarioList field found for capability #$($capability.id)"
+                    }
+
+                    $backlogItems.Capabilities += $capabilityItem
+
+                    # Extract feature IDs from relations
+                    if ($capability.relations) {
+                        Write-Host "  Found $($capability.relations.Count) relations for capability #$($capability.id)"
+
+                        # Debug output all relations to see what we're getting
+                        foreach ($relation in $capability.relations) {
+                            Write-Host "  Relation: Type=$($relation.rel), URL=$($relation.url)"
+                        }
+
+                        foreach ($relation in $capability.relations) {
+                            # Check if relation is related link and is a Feature work item
+                            if ($relation.rel -eq "System.LinkTypes.Related" -or
+                                $relation.rel -eq "System.LinkTypes.Dependency-Forward" -or
+                                $relation.rel -eq "System.LinkTypes.Dependency-Reverse") {
+
+                                # Extract the work item ID from the URL
+                                $workItemId = $relation.url.Split('/')[-1]
+                                Write-Host "  Found related work item: $workItemId from relation type: $($relation.rel)"
+
+                                # Add to feature IDs collection for later lookup
+                                $featureIds.Add($workItemId) | Out-Null
+                                Write-Host "  Added work item #$workItemId to feature IDs collection"
+                            } else {
+                                Write-Host "  Relation type $($relation.rel) not tracked for features"
+                            }
+                        }
+                    } else {
+                        Write-Host "  No relations found for capability #$($capability.id)"
+                    }
+                }
+
+                Write-Host "Added $($capabilityDetails.value.Count) Capabilities to collection"
+                Write-Host "Found $($featureIds.Count) unique related Feature IDs"
+
+                # Get feature details if we found any related features
+                if ($featureIds.Count -gt 0) {
+                    $featureIdsStr = $featureIds -join ","
+                    Write-Host "Getting details for features: $featureIdsStr"
+
+                    $featureDetails = Invoke-AzureDevOpsApi -Uri "https://dev.azure.com/$Organization/$Project/_apis/wit/workitems?ids=$featureIdsStr&api-version=7.0&`$expand=relations" -Method "GET" -Headers $AuthHeader
+
+                    if ($featureDetails -and $featureDetails.value) {
+                        Write-Host "Retrieved $($featureDetails.value.Count) features"
+
+                        foreach ($feature in $featureDetails.value) {
+                            # Check if it's a Feature work item type
+                            if ($feature.fields.'System.WorkItemType' -eq 'Feature') {
+                                Write-Host "Processing Feature #$($feature.id): $($feature.fields.'System.Title')"
+                                $f = [FeatureWorkItem]::new()
+                                $f.ID = $feature.id
+                                $f.Title = $feature.fields.'System.Title'
+                                $f.Description = $feature.fields.'System.Description'
+
+                                # Link feature back to capabilities based on relations
+                                if ($feature.relations) {
+                                    Write-Host "  Feature #$($feature.id) has $($feature.relations.Count) relations"
+
+                                    foreach ($relation in $feature.relations) {
+                                        if ($relation.rel -eq "System.LinkTypes.Related" -or
+                                            $relation.rel -eq "System.LinkTypes.Dependency-Forward" -or
+                                            $relation.rel -eq "System.LinkTypes.Dependency-Reverse") {
+
+                                            $relatedItemId = $relation.url.Split('/')[-1]
+                                            Write-Host "  Feature has relation to work item #$relatedItemId"
+
+                                            # Check if this related item is a capability we know about
+                                            if ($capabilityDetails.value.id -contains $relatedItemId) {
+                                                $f.ParentCapabilityId += $relatedItemId
+                                                Write-Host "  Linked Feature #$($feature.id) to Capability #$relatedItemId"
+                                            } else {
+                                                Write-Host "  Work item #$relatedItemId is not a known capability"
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    Write-Host "  No relations found for Feature #$($feature.id)"
+                                }
+
+                                $backlogItems.Features += $f
+                            } else {
+                                Write-Host "Work item #$($feature.id) is not a Feature (Type: $($feature.fields.'System.WorkItemType'))"
+                            }
+                        }
+                        Write-Host "Added $($featureDetails.value.Count) Features to collection"
+                    } else {
+                        Write-Host "No feature details retrieved or empty response"
+                    }
+                } else {
+                    Write-Host "No related features found for capabilities."
+                }
+            } else {
+                Write-Host "No capability details retrieved or empty response"
+            }
+        } else {
+            Write-Host "No capability IDs found in the WIQL result"
+        }
+    } else {
+        Write-Host "No capabilities found in WIQL query result"
+    }
+
+    Write-Host "Completed industry backlog collection with:"
+    Write-Host "  - Pillars: $($backlogItems.Pillars.Count)"
+    Write-Host "  - Scenarios: $($backlogItems.Scenarios.Count)"
+    Write-Host "  - Capabilities: $($backlogItems.Capabilities.Count)"
+    Write-Host "  - Features: $($backlogItems.Features.Count)"
+    return $backlogItems
+}
+
+# Export all functions from this module
 Export-ModuleMember -Function @(
     'Get-MainBranchPRMetric',
     'Get-MainBranchFileExtension',
@@ -984,5 +1236,6 @@ Export-ModuleMember -Function @(
     'Get-AzDOPullRequestThread',
     'Get-PullRequestWorkItem',
     'Get-WorkItemDetail',
-    'Get-PullRequestWorkItemDetail'
+    'Get-PullRequestWorkItemDetail',
+    'Get-IndustryBacklogItemsFromAzDO'
 )
