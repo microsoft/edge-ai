@@ -1187,7 +1187,7 @@ function Get-PRComplexityChartData {
         $avgFilesChanged += [Math]::Round($monthAvgFiles, 2)
         $avgDaysToComplete += [Math]::Round($monthAvgDays, 2)
         $filesPerDay += [Math]::Round($monthFilesPerDay, 2)
-        $linesPerDay += [Math]::Round($monthLinesPerDay, 2)  # Add lines per day
+        $linesPerDay += [Math]::Round($monthLinesPerDay, 2)  # Add the lines per day to the constructor
         $contributorCounts += $monthContributorCount
     }
 
@@ -1854,9 +1854,9 @@ function Get-CopilotImpactMetric {
         CompletionDaysSum = 0
         FilesChangedSum = 0
         LinesChangedSum = 0
-        CommentCountSum = 0
-        ApprovalCountSum = 0
-        RejectionCountSum = 0
+        CommentCount = 0
+        ApprovalCount = 0
+        RejectionCount = 0
     }
 
     # Process each PR to separate before/after metrics
@@ -2114,10 +2114,10 @@ function Get-FocusAreaMetric {
     [OutputType([FocusAreaMetrics])]
     param(
         [Parameter(Mandatory=$true)]
-        [Array]$PullRequests,
+        [object[]]$PullRequests,
 
         [Parameter(Mandatory=$true)]
-        [FileExtensionData[]]$FileExtensions,
+        [System.Collections.Hashtable]$FileExtensions,  # This needs a hashtable but you're passing FileExtensionData objects
 
         [Parameter(Mandatory=$false)]
         [int]$MonthsToInclude = 7
@@ -2146,7 +2146,8 @@ function Get-FocusAreaMetric {
     Write-Verbose "Processing file extension data to enhance categorization"
     foreach ($ext in $FileExtensions) {
         # Map file types to tech categories if possible
-        if ($fileTypeToCategory.ContainsKey($ext.FileType)) {
+        # Not all files in the repository have extensions. (e.g. license and docker files)
+        if ($null -ne $ext.FileType -and $fileTypeToCategory.ContainsKey($ext.FileType)) {
             $categoryName = $fileTypeToCategory[$ext.FileType]
             Write-Verbose "Mapped file type $($ext.FileType) to category $categoryName with ${$ext.PRChangesCount} PR changes"
         }
@@ -2329,6 +2330,148 @@ function Get-FocusAreaMetric {
     return $result
 }
 
+function Get-BacklogHierarchySankeyObject {
+    <#
+    .SYNOPSIS
+    Creates a Sankey diagram object from a backlog hierarchy.
+
+    .DESCRIPTION
+    Takes an IndustryBacklogCollection object and converts it to a Sankey diagram object with nodes and links.
+
+    .PARAMETER BacklogCollection
+    The IndustryBacklogCollection object containing pillars, scenarios, capabilities, and features.
+
+    .OUTPUTS
+    IndustryBacklogSankey. An object with nodes and links for a Sankey diagram.
+    #>
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory=$true)]
+        [IndustryBacklogCollection]$BacklogCollection
+    )
+
+    Write-Host "Starting Get-BacklogHierarchySankeyObject function with IndustryBacklogCollection"
+
+    # Initialize Sankey object
+    $sankeyData = [IndustryBacklogSankey]::new()
+
+    # Add nodes for pillars, scenarios, capabilities, and features
+    foreach ($pillar in $BacklogCollection.Pillars) {
+        $nodeId = "P_$($pillar.Id)"
+        $node = [SankeyNode]::new()
+        $node.Id = $nodeId
+        $node.Name = $pillar.Title
+        $node.Type = "Pillar"
+        $sankeyData.AddNode($node)
+        Write-Host "Added Pillar node: $($pillar.Title) ($nodeId)"
+    }
+
+    foreach ($scenario in $BacklogCollection.Scenarios) {
+        $nodeId = "S_$($scenario.Id)"
+        $node = [SankeyNode]::new()
+        $node.id = $nodeId
+        $node.Name = $scenario.Title
+        $node.Type = "Scenario"
+        $sankeyData.AddNode($node)
+        Write-Host "Added Scenario node: $($scenario.Title) ($nodeId)"
+    }
+
+    foreach ($capability in $BacklogCollection.Capabilities) {
+        $nodeId = "C_$($capability.Id)"
+        $node = [SankeyNode]::new()
+        $node.Id = $nodeId
+        $node.Name = $capability.Title
+        $node.Type = "Capability"
+        $sankeyData.AddNode($node)
+        Write-Host "Added Capability node: $($capability.Title) ($nodeId)"
+    }
+
+    foreach ($feature in $BacklogCollection.Features) {
+        $nodeId = "F_$($feature.Id)"
+        $node = [SankeyNode]::new()
+        $node.Id = $nodeId
+        $node.Name = $feature.Title
+        $node.Type = "Feature"
+        $sankeyData.AddNode($node)
+        Write-Host "Added Feature node: $($feature.Title) ($nodeId)"
+    }
+
+    # Local value to store total customers per scenario based on the count of tags
+    # on the scenario object
+    $totalCustomersPerScenario = @{}  # Initialize as an empty hashtable
+
+    foreach ($scenario in $BacklogCollection.Scenarios) {
+        if ($scenario.Tags -and $scenario.Tags.Count -gt 0) {
+            Write-Host "Processing Scenario $($scenario.Id) with tags: $($scenario.Tags -join ', ')"
+            # Add 1 customer for each tag in the scenario
+            foreach ($tag in $scenario.Tags) {
+                if ($totalCustomersPerScenario.ContainsKey($scenario.Id)) {
+                    $totalCustomersPerScenario[$scenario.Id]++
+                } else {
+                    $totalCustomersPerScenario[$scenario.Id] = 1
+                }
+            }
+        }
+    }
+
+    # Local value to store the total link count per capability
+    $totalLinksPerCapability = @{}
+
+    # Add links from Scenarios to Capabilities
+    foreach ($capability in $BacklogCollection.Capabilities) {
+        if ($capability.ScenarioList -and $capability.ScenarioList.Count -gt 0) {
+            Write-Host "Processing Capability $($capability.Id) with scenarios: $($capability.ScenarioList -join ', ')"
+            foreach ($scenarioName in $capability.ScenarioList) {
+                Write-Host "Processing Scenario $scenarioName for Capability $($capability.Id)"
+                # Ensure scenarioId is a simple ID, not a concatenated string
+                foreach($scenario in $BacklogCollection.Scenarios) {
+                    if ($scenario.Title -eq $scenarioName) {
+                        $sourceNodeId = "S_$($scenario.Id)"
+                        $targetNodeId = "C_$($capability.Id)"
+                        $link = [SankeyLink]::new()
+                        $link.Source = $sourceNodeId
+                        $link.Target = $targetNodeId
+                        $link.Value = $totalCustomersPerScenario[$scenario.Id]
+                        $sankeyData.AddLink($link)
+                        Write-Host "Added link: Scenario $scenarioId -> Capability $($capability.Id)"
+                    }
+                }
+                # Add 1 link to the total count for this capability
+                if ($totalLinksPerCapability.ContainsKey($capability.Id)) {
+                    $totalLinksPerCapability[$capability.Id]++
+                } else {
+                    $totalLinksPerCapability[$capability.Id] = 1
+                }
+            }
+        }
+    }
+
+    Write-Host "Total links per capability: $($totalLinksPerCapability | Out-String)"
+
+    # Add links from Capabilities to Features
+    foreach ($feature in $BacklogCollection.Features) {
+        foreach($parentCapabilityId in $feature.ParentCapabilityId) {
+            $sourceNodeId = "C_$($parentCapabilityId)"
+            $targetNodeId = "F_$($feature.Id)"
+            $link = [SankeyLink]::new()
+            $link.Source = $sourceNodeId
+            $link.Target = $targetNodeId
+            $link.Value = $totalLinksPerCapability[$parentCapabilityId]
+            $sankeyData.AddLink($link)
+            Write-Host "Added link: Capability $($feature.ParentCapabilityId) -> Feature $($feature.Id)"
+        }
+    }
+
+    # Output the Sankey data in JSON format for debugging
+    $sankeyJson = $sankeyData | ConvertTo-Json -Depth 10
+    Write-Host "--- Sankey Data (JSON) ---"
+    Write-Host $sankeyJson
+    Write-Host "--------------------------"
+
+    Write-Host "Generated Sankey data with $($sankeyData.Nodes.Count) nodes and $($sankeyData.Links.Count) links"
+    return $sankeyData
+}
+
 # Export all functions from this module
 Export-ModuleMember -Function @(
     'Get-FileExtensionMetric',
@@ -2344,5 +2487,6 @@ Export-ModuleMember -Function @(
     'Get-ReviewerMetricData',
     'Get-CopilotImpactMetric',
     'Get-FocusAreaMetric',
-    'Get-FileExtensionSummary'  # Added new function to exports
+    'Get-FileExtensionSummary',
+    'Get-BacklogHierarchySankeyObject'
 )

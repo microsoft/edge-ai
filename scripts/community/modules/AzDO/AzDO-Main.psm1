@@ -85,14 +85,11 @@ function Get-Report {
         # Set the repository ID if provided
         $azDOApiParameters.RepositoryId = Get-RepositoryId -Params $azDOApiParameters
 
-        # Get all basic PR information first - this retrieves the list of all PRs with minimal data
+        # Get all basic PR information first
         Write-Host "Phase 1: Retrieving basic PR information..." -ForegroundColor Cyan
         $pullRequests = Get-PullRequestList -Params $azDOApiParameters
 
-        if (-not $pullRequests -or $pullRequests.Count -eq 0) {
-            Write-Warning "No pull requests found with the specified criteria."
-        }
-
+        # Removed null check for pullRequests - assume we always have PRs
         Write-Host "Retrieved $($pullRequests.Count) pull requests. Now collecting detailed information..." -ForegroundColor Green
 
         # Step 2: Collect detailed information for each PR sequentially
@@ -104,9 +101,6 @@ function Get-Report {
         $counter = 0
 
         foreach ($pr in $pullRequests) {
-            # Skip null or incomplete PRs
-            if ($null -eq $pr) { continue }
-
             # Update progress counter
             $counter++
             $percent = [Math]::Round(($counter / $total) * 100, 0)
@@ -124,10 +118,6 @@ function Get-Report {
             # Get detailed PR statistics with error handling
             try {
                 $prId = $pr.pullRequestId
-                if ($null -eq $prId) {
-                    Write-Warning "Skipping PR with null ID"
-                    continue
-                }
 
                 # Get the repository path (current directory) for Git-based metrics fallback
                 $repoPath = Get-Location
@@ -243,23 +233,39 @@ function Get-Report {
 
     # Initialize file extensions hashtable
     Write-Host "Generating local repository analytics..." -ForegroundColor Cyan
-    $mainBranchFileExtensions = Get-MainBranchFileExtension
-    $fileExtensions = Get-FileExtensionMetric -PullRequest $enhancedPRs -FileExtensions $mainBranchFileExtensions
+    $repoPath = Get-Location # Get the current repository path
+    $mainBranchFileExtensions = Get-MainBranchFileExtension -RepoPath $repoPath
+    if ($null -eq $mainBranchFileExtensions) {
+        Write-Warning "No file extension data retrieved from the local repository"
+        $mainBranchFileExtensions = @{} # Initialize empty hashtable to avoid null
+    }
+
+    # Process the file extensions to get metrics
+    $fileExtensions = Get-FileExtensionMetric -PullRequests $enhancedPRs -FileExtensions $mainBranchFileExtensions
     $fileExtensionSummary = Get-FileExtensionSummary -FileExtensions $fileExtensions
 
-    # Calculate report summary using the data processing function instead of hardcoded values
+    # Get the industry backlog data
+    Write-Host "Retrieving industry backlog data..." -ForegroundColor Cyan
+    # Call Get-IndustryBacklogItemsFromAzDO directly
+    $industryBacklogHierarchy = Get-IndustryBacklogItemsFromAzDO -Organization $Organization -Project $Project -AuthHeader $AuthHeader
+
+    # Generate the Sankey visualization - always assume we have sufficient data
+    [IndustryBacklogSankey]$industryBacklogSankeyData = Get-BacklogHierarchySankeyObject -BacklogCollection $industryBacklogHierarchy
+    Write-Host "Generated Sankey data with $($industryBacklogSankeyData.Nodes.Count) nodes and $($industryBacklogSankeyData.Links.Count) links"
+
+    # Calculate report summary using the data processing function
     $reportSummary = Get-AzDOReportSummary -PullRequests $enhancedPRs
     Write-Verbose "Report summary generated: $($reportSummary.CompletedCount) completed, $($reportSummary.ActiveCount) active, $($reportSummary.AbandonedCount) abandoned"
 
-    # Calculate monthly PR metrics using the new function
+    # Calculate monthly PR metrics
     $monthlyPRMetrics = Get-PRMonthlyMetric -PullRequests $enhancedPRs
     $createdPRsData = $monthlyPRMetrics.CreatedPRs
     $completedPRsData = $monthlyPRMetrics.CompletedPRs
 
-    # Calculate weekly completion metrics using the new function
+    # Calculate weekly completion metrics
     $weeklyCompletionMetrics = Get-PRWeeklyMetric -PullRequests $enhancedPRs
 
-    # Calculate PR Size metrics using the new function
+    # Calculate PR Size metrics
     $prSizeMetrics = Get-PRSizeMetric -PullRequests $enhancedPRs
 
     # Calculate PR completion time distribution
@@ -310,7 +316,7 @@ function Get-Report {
 
     # Calculate focus area metrics
     Write-Host "Calculating focus area metrics..." -ForegroundColor Cyan
-    $focusAreaMetrics = Get-FocusAreaMetric -PullRequests $enhancedPRs -FileExtensions $fileExtensions -MonthsToInclude 7
+    $focusAreaMetrics = Get-FocusAreaMetric -PullRequests $enhancedPRs -FileExtensions $mainBranchFileExtensions -MonthsToInclude 8
 
     Write-Host "Phase 6: Generating Markdown report..." -ForegroundColor Cyan
 
@@ -323,7 +329,7 @@ function Get-Report {
     # 2. Summary statistics
     $markdownParts += Get-ReportSummary -Summary $reportSummary
 
-    # 3. PR Metrics by Interval (Monthly activity, Weekly completion, PR Size impact, Completion time distribution)
+    # 3. PR Metrics by Interval
     $markdownParts += Get-PRMetricsByInterval -MetricsData $metricsData
 
     # 4. SLO Compliance Trend
@@ -342,8 +348,12 @@ function Get-Report {
     # 8. Focus Area Section - Ensure the chart data is not null
     $markdownParts += Get-FocusAreaSection -FocusAreaMetrics $focusAreaMetrics
 
-    # 9. Report Footer
-    $markdownParts += Get-ReportFooter -CompletedCount 194 -ActiveCount 5 -AbandonedCount 27 -Project "edge-ai"
+    # 9. Industry Backlog Sankey Diagram
+    # Generate the Sankey diagram section using the converted data
+    $markdownParts += Get-IndustryBacklogSankeySection -SankeyData $industryBacklogSankeyData
+
+    # 10. Report Footer
+    $markdownParts += Get-ReportFooter -CompletedCount $reportSummary.CompletedCount -ActiveCount $reportSummary.ActiveCount -AbandonedCount $reportSummary.AbandonedCount -Project "edge-ai"
 
     # Join all parts and save to markdown file
     $mdPath = Join-Path -Path $ReportOutputPath -ChildPath "contributions.md"

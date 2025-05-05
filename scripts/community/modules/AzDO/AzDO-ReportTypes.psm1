@@ -497,4 +497,57 @@ class ReviewerMetrics {
     }
 }
 
+# Class to represent a node in the Sankey diagram
+class SankeyNode {
+    [string]$Id
+    [string]$Name
+    [string]$Type # e.g., Pillar, Scenario, Capability, Feature
+    [string]$Category # e.g., Core IaC, Application Bundles (for Features)
+
+    SankeyNode() {}
+
+    SankeyNode([string]$Id, [string]$Name, [string]$Type, [string]$Category = "") {
+        $this.Id = $Id
+        $this.Name = $Name
+        $this.Type = $Type
+        $this.Category = $Category
+    }
+}
+
+# Class for Sankey diagram links
+class SankeyLink {
+    [string]$Source
+    [string]$Target
+    [int]$Value
+
+    # Default constructor
+    SankeyLink() {}
+
+    # Constructor with source, target, and value
+    SankeyLink([string]$Source, [string]$Target, [int]$Value) {
+        $this.Source = $Source
+        $this.Target = $Target
+        $this.Value = $Value
+    }
+}
+
+# Class to hold the data for the Industry Backlog Sankey diagram
+class IndustryBacklogSankey {
+    [SankeyNode[]]$Nodes
+    [SankeyLink[]]$Links
+
+    IndustryBacklogSankey() {
+        $this.Nodes = @()
+        $this.Links = @()
+    }
+
+    [void] AddNode([SankeyNode]$Node) {
+        $this.Nodes += $Node
+    }
+
+    [void] AddLink([SankeyLink]$Link) {
+        $this.Links += $Link
+    }
+}
+
 Export-ModuleMember -Variable *

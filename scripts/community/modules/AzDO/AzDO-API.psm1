@@ -47,31 +47,71 @@ function Invoke-AzureDevOpsApi {
     )
 
     try {
+
+        Write-Verbose "Entering Invoke-AzureDevOpsApi try block for URI: $Uri"
+
         Write-Verbose "Making API call to: $Uri with method: $Method"
         $params = @{
-            Uri     = $Uri
-            Method  = $Method
-            Headers = $Headers
+            Uri         = $Uri
+            Method      = $Method
+            Headers     = $Headers
             ContentType = "application/json"
             ErrorAction = "Stop"
         }
 
-        # Add body for POST/PATCH requests if provided, POST is required for some API calls
+        # Add body for POST/PATCH requests if provided
         if ($Body -and ($Method -eq "POST" -or $Method -eq "PATCH")) {
+
+            Write-Verbose "Preparing body for $Method request."
+
             $jsonBody = $Body | ConvertTo-Json -Depth 10
+            Write-Verbose "Request Body (JSON): $jsonBody"
             $params.Add("Body", $jsonBody)
         }
 
         # Make the API call
+
+        Write-Verbose "Executing Invoke-RestMethod with parameters: $($params | ConvertTo-Json -Depth 2 -Compress)"
+
         $response = Invoke-RestMethod @params
+
+        Write-Verbose "Invoke-RestMethod completed successfully."
+
         return $response
     }
     catch {
-        $statusCode = $_.Exception.Response.StatusCode.value__
-        $message = $_.Exception.Message
 
-        # Throw a custom error with more information
-        throw "Azure DevOps API call failed (Status code: $statusCode): $message. Details: $detailedMessage"
+        # General catch block to capture any error during the try block
+        $errorMessage = "Error in Invoke-AzureDevOpsApi for URI: $Uri.`nMethod: $Method.`n"
+        $detailedMessage = ""
+        $statusCode = "N/A"
+
+        # Check if it's a WebException to get more details
+        if ($_.Exception -is [System.Net.WebException] -and $_.Exception.Response) {
+            $statusCode = [int]$_.Exception.Response.StatusCode
+            $errorMessage += "Status Code: $statusCode.`n"
+            try {
+                $responseStream = $_.Exception.Response.GetResponseStream()
+                $streamReader = New-Object System.IO.StreamReader($responseStream)
+                $detailedMessage = $streamReader.ReadToEnd()
+                $streamReader.Close()
+                $responseStream.Close()
+                $errorMessage += "Response Body: $detailedMessage"
+            } catch {
+                $errorMessage += "Failed to read error response body: $($_.Exception.Message)"
+            }
+        } else {
+            # Handle other types of exceptions
+            $errorMessage += "Exception Type: $($_.Exception.GetType().FullName).`n"
+            $errorMessage += "Error Message: $($_.Exception.Message)"
+        }
+
+        # Include script stack trace for better debugging
+        $errorMessage += "`nScriptStackTrace: $($_.ScriptStackTrace)"
+
+        # Throw the consolidated error message
+        throw $errorMessage
+
     }
 }
 

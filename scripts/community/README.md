@@ -97,6 +97,13 @@ graph TD
 
 ### Examples
 
+**Set PAT token via environment variable (replace `YOUR_PAT_TOKEN_HERE` and verify the variable name used by the script):**
+
+```powershell
+$env:AZDO_PAT = "YOUR_PAT_TOKEN_HERE"
+.\get-azure-devops-prs.ps1
+```
+
 **Basic usage:**
 
 ```powershell
@@ -126,6 +133,7 @@ The script generates a comprehensive markdown report (`contributions.md`) in the
 5. **Contributor Trends** - Team contribution breakdown and comparison
 6. **File Types** - Analysis of file types modified in PRs
 7. **Focus Areas** - Team focus areas based on code changes
+8. **Industry Backlog Visualization** - Sankey diagram showing relationships between scenarios, capabilities, and features
 
 ### Metrics Included
 
@@ -136,6 +144,7 @@ The script generates a comprehensive markdown report (`contributions.md`) in the
 - Contributor activity patterns
 - Review thoroughness (comments per PR)
 - GitHub Copilot impact metrics
+- Backlog item relationships and priorities
 
 ## Troubleshooting
 
