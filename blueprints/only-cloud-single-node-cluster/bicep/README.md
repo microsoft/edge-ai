@@ -20,7 +20,9 @@ Deploys a complete end-to-end environment for Azure IoT Operations on a single-n
 | :--- | :--- | :--- |
 |cloudResourceGroup|`Microsoft.Resources/deployments`|2022-09-01|
 |cloudSecurityIdentity|`Microsoft.Resources/deployments`|2022-09-01|
+|cloudObservability|`Microsoft.Resources/deployments`|2022-09-01|
 |cloudData|`Microsoft.Resources/deployments`|2022-09-01|
+|cloudMessaging|`Microsoft.Resources/deployments`|2022-09-01|
 |cloudVmHost|`Microsoft.Resources/deployments`|2022-09-01|
 
 ## Modules
@@ -29,7 +31,9 @@ Deploys a complete end-to-end environment for Azure IoT Operations on a single-n
 | :--- | :--- |
 |cloudResourceGroup|Creates the required resources needed for an edge IaC deployment.|
 |cloudSecurityIdentity|Provisions cloud resources required for Azure IoT Operations including Schema Registry, Storage Account, Key Vault, and User Assigned Managed Identities.|
+|cloudObservability|Deploys Azure observability resources including Azure Monitor Workspace, Log Analytics Workspace, Azure Managed Grafana, and Data Collection Rules for container monitoring and metrics collection.|
 |cloudData|Creates storage resources including Azure Storage Account and Schema Registry for data in the Edge AI solution.|
+|cloudMessaging|Deploys Azure cloud messaging resources including Event Hubs, Service Bus, and Event Grid for IoT edge solution communication.|
 |cloudVmHost|Provisions virtual machines and networking infrastructure for hosting Azure IoT Operations edge deployments.|
 
 ## Module Details
@@ -101,6 +105,45 @@ Provisions cloud resources required for Azure IoT Operations including Schema Re
 |arcOnboardingIdentityId|`string`|The User Assigned Managed Identity ID with "Kubernetes Cluster - Azure Arc Onboarding" permissions.|
 |arcOnboardingIdentityName|`string`|The User Assigned Managed Identity name with "Kubernetes Cluster - Azure Arc Onboarding" permissions.|
 
+### cloudObservability
+
+Deploys Azure observability resources including Azure Monitor Workspace, Log Analytics Workspace, Azure Managed Grafana, and Data Collection Rules for container monitoring and metrics collection.
+
+#### Parameters for cloudObservability
+
+|Name|Description|Type|Default|Required|
+| :--- | :--- | :--- | :--- | :--- |
+|common|The common component configuration.|`[_1.Common](#user-defined-types)`|n/a|yes|
+|tags|Additional tags to add to the resources.|`object`|{}|no|
+|logRetentionInDays|Log Analytics Workspace retention in days|`int`|30|no|
+|dailyQuotaInGb|Log Analytics Workspace daily quota in GB|`int`|10|no|
+|grafanaMajorVersion|Grafana major version|`string`|10|no|
+|logsDataCollectionRuleNamespaces|List of cluster namespaces to be exposed in the log analytics workspace|`array`|['kube-system', 'gatekeeper-system', 'azure-arc', 'azure-iot-operations']|no|
+|logsDataCollectionRuleStreams|List of streams to be enabled in the log analytics workspace|`array`|['Microsoft-ContainerLog', 'Microsoft-ContainerLogV2', 'Microsoft-KubeEvents', 'Microsoft-KubePodInventory', 'Microsoft-KubeNodeInventory', 'Microsoft-KubePVInventory', 'Microsoft-KubeServices', 'Microsoft-KubeMonAgentEvents', 'Microsoft-InsightsMetrics', 'Microsoft-ContainerInventory', 'Microsoft-ContainerNodeInventory', 'Microsoft-Perf']|no|
+
+#### Resources for cloudObservability
+
+|Name|Type|API Version|
+| :--- | :--- | :--- |
+|monitorWorkspace|`Microsoft.Monitor/accounts`|2023-04-03|
+|logAnalytics|`Microsoft.OperationalInsights/workspaces`|2025-02-01|
+|grafana|`Microsoft.Dashboard/grafana`|2024-10-01|
+|containerInsightsSolution|`Microsoft.OperationsManagement/solutions`|2015-11-01-preview|
+|grafanaLogsReaderRole|`Microsoft.Authorization/roleAssignments`|2022-04-01|
+|grafanaMetricsReaderRole|`Microsoft.Authorization/roleAssignments`|2022-04-01|
+|dataCollectionEndpoint|`Microsoft.Insights/dataCollectionEndpoints`|2023-03-11|
+|logsDataCollectionRule|`Microsoft.Insights/dataCollectionRules`|2023-03-11|
+|metricsDataCollectionRule|`Microsoft.Insights/dataCollectionRules`|2023-03-11|
+
+#### Outputs for cloudObservability
+
+|Name|Type|Description|
+| :--- | :--- | :--- |
+|monitorWorkspaceName|`string`|The Azure Monitor Workspace name.|
+|logAnalyticsName|`string`|The Log Analytics Workspace name.|
+|logAnalyticsId|`string`|The Log Analytics Workspace ID.|
+|grafanaName|`string`|The Azure Managed Grafana name.|
+
 ### cloudData
 
 Creates storage resources including Azure Storage Account and Schema Registry for data in the Edge AI solution.
@@ -137,6 +180,39 @@ Creates storage resources including Azure Storage Account and Schema Registry fo
 |storageAccountName|`string`|The Storage Account Name.|
 |storageAccountId|`string`|The Storage Account ID.|
 |schemaContainerName|`string`|The Schema Container Name.|
+
+### cloudMessaging
+
+Deploys Azure cloud messaging resources including Event Hubs, Service Bus, and Event Grid for IoT edge solution communication.
+
+#### Parameters for cloudMessaging
+
+|Name|Description|Type|Default|Required|
+| :--- | :--- | :--- | :--- | :--- |
+|common|The common component configuration.|`[_2.Common](#user-defined-types)`|n/a|yes|
+|tags|Additional tags to add to the resources.|`object`|{}|no|
+|aioIdentity|The User-Assigned Managed Identity for Azure IoT Operations.|`[_1.AIOIdentity](#user-defined-types)`|n/a|yes|
+|shouldCreateEventHubs|Whether to create Event Hubs resources.|`bool`|True|no|
+|eventHubsConfig|The configuration for the Event Hubs Namespace.|`[_1.EventHubsConfig](#user-defined-types)`|n/a|no|
+|shouldCreateEventGrid|Whether to create Event Grid resources.|`bool`|True|no|
+|eventGridConfig|The configuration for the Event Grid Domain.|`[_1.EventGridConfig](#user-defined-types)`|n/a|no|
+
+#### Resources for cloudMessaging
+
+|Name|Type|API Version|
+| :--- | :--- | :--- |
+|eventHubs|`Microsoft.Resources/deployments`|2022-09-01|
+|eventGrid|`Microsoft.Resources/deployments`|2022-09-01|
+
+#### Outputs for cloudMessaging
+
+|Name|Type|Description|
+| :--- | :--- | :--- |
+|eventHubsNamespaceName|`string`|The Event Hubs Namespace name.|
+|eventHubsNamespaceId|`string`|The Event Hubs Namespace ID.|
+|eventHubNames|`array`|The list of Event Hub names created in the namespace.|
+|eventGridTopicNames|`string`|The Event Grid topic name created.|
+|eventGridMqttEndpoint|`string`|The Event Grid endpoint URL for MQTT connections|
 
 ### cloudVmHost
 

@@ -43,8 +43,8 @@ module cloudSecurityIdentity '../../../src/000-cloud/010-security-identity/bicep
   }
 }
 
-module cloudData '../../../src/000-cloud/030-data/bicep/main.bicep' = {
-  name: '${deployment().name}-cd2'
+module cloudObservability '../../../src/000-cloud/020-observability/bicep/main.bicep' = {
+  name: '${deployment().name}-co2'
   scope: resourceGroup(resourceGroupName)
   dependsOn: [cloudResourceGroup]
   params: {
@@ -52,8 +52,27 @@ module cloudData '../../../src/000-cloud/030-data/bicep/main.bicep' = {
   }
 }
 
+module cloudData '../../../src/000-cloud/030-data/bicep/main.bicep' = {
+  name: '${deployment().name}-cd3'
+  scope: resourceGroup(resourceGroupName)
+  dependsOn: [cloudResourceGroup]
+  params: {
+    common: common
+  }
+}
+
+module cloudMessaging '../../../src/000-cloud/040-messaging/bicep/main.bicep' = {
+  name: '${deployment().name}-cm4'
+  scope: resourceGroup(resourceGroupName)
+  dependsOn: [cloudResourceGroup]
+  params: {
+    common: common
+    aioIdentityName: cloudSecurityIdentity.outputs.aioIdentityName
+  }
+}
+
 module cloudVmHost '../../../src/000-cloud/050-vm-host/bicep/main.bicep' = {
-  name: '${deployment().name}-cvh3'
+  name: '${deployment().name}-cvh5'
   scope: resourceGroup(resourceGroupName)
   dependsOn: [cloudResourceGroup]
   params: {

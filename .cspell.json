@@ -62,6 +62,7 @@
 		"eventgrid",
 		"Eventhouse",
 		"eventhub",
+		"eventhubs",
 		"FAISS",
 		"FIDAP",
 		"firewalld",

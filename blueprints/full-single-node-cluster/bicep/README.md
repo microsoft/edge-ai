@@ -26,6 +26,7 @@ Deploys a complete end-to-end environment for Azure IoT Operations on a single-n
 |cloudSecurityIdentity|`Microsoft.Resources/deployments`|2022-09-01|
 |cloudObservability|`Microsoft.Resources/deployments`|2022-09-01|
 |cloudData|`Microsoft.Resources/deployments`|2022-09-01|
+|cloudMessaging|`Microsoft.Resources/deployments`|2022-09-01|
 |cloudVmHost|`Microsoft.Resources/deployments`|2022-09-01|
 |edgeCncfCluster|`Microsoft.Resources/deployments`|2022-09-01|
 |edgeIotOps|`Microsoft.Resources/deployments`|2022-09-01|
@@ -38,6 +39,7 @@ Deploys a complete end-to-end environment for Azure IoT Operations on a single-n
 |cloudSecurityIdentity|Provisions cloud resources required for Azure IoT Operations including Schema Registry, Storage Account, Key Vault, and User Assigned Managed Identities.|
 |cloudObservability|Deploys Azure observability resources including Azure Monitor Workspace, Log Analytics Workspace, Azure Managed Grafana, and Data Collection Rules for container monitoring and metrics collection.|
 |cloudData|Creates storage resources including Azure Storage Account and Schema Registry for data in the Edge AI solution.|
+|cloudMessaging|Deploys Azure cloud messaging resources including Event Hubs and Event Grid for IoT edge solution communication.|
 |cloudVmHost|Provisions virtual machines and networking infrastructure for hosting Azure IoT Operations edge deployments.|
 |edgeCncfCluster|This module provisions and deploys automation scripts to a VM host that create and configure a K3s Kubernetes cluster with Arc connectivity.<br>The scripts handle primary and secondary node(s) setup, cluster administration, workload identity enablement, and installation of required Azure Arc extensions.|
 |edgeIotOps|Deploys Azure IoT Operations extensions, instances, and configurations on Azure Arc-enabled Kubernetes clusters.|
@@ -186,6 +188,39 @@ Creates storage resources including Azure Storage Account and Schema Registry fo
 |storageAccountName|`string`|The Storage Account Name.|
 |storageAccountId|`string`|The Storage Account ID.|
 |schemaContainerName|`string`|The Schema Container Name.|
+
+### cloudMessaging
+
+Deploys Azure cloud messaging resources including Event Hubs, Service Bus, and Event Grid for IoT edge solution communication.
+
+#### Parameters for cloudMessaging
+
+|Name|Description|Type|Default|Required|
+| :--- | :--- | :--- | :--- | :--- |
+|common|The common component configuration.|`[_2.Common](#user-defined-types)`|n/a|yes|
+|tags|Additional tags to add to the resources.|`object`|{}|no|
+|aioIdentity|The User-Assigned Managed Identity for Azure IoT Operations.|`[_1.AIOIdentity](#user-defined-types)`|n/a|yes|
+|shouldCreateEventHubs|Whether to create Event Hubs resources.|`bool`|True|no|
+|eventHubsConfig|The configuration for the Event Hubs Namespace.|`[_1.EventHubsConfig](#user-defined-types)`|n/a|no|
+|shouldCreateEventGrid|Whether to create Event Grid resources.|`bool`|True|no|
+|eventGridConfig|The configuration for the Event Grid Domain.|`[_1.EventGridConfig](#user-defined-types)`|n/a|no|
+
+#### Resources for cloudMessaging
+
+|Name|Type|API Version|
+| :--- | :--- | :--- |
+|eventHubs|`Microsoft.Resources/deployments`|2022-09-01|
+|eventGrid|`Microsoft.Resources/deployments`|2022-09-01|
+
+#### Outputs for cloudMessaging
+
+|Name|Type|Description|
+| :--- | :--- | :--- |
+|eventHubsNamespaceName|`string`|The Event Hubs Namespace name.|
+|eventHubsNamespaceId|`string`|The Event Hubs Namespace ID.|
+|eventHubNames|`array`|The list of Event Hub names created in the namespace.|
+|eventGridTopicNames|`string`|The Event Grid topic name created.|
+|eventGridMqttEndpoint|`string`|The Event Grid endpoint URL for MQTT connections|
 
 ### cloudVmHost
 
