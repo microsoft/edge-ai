@@ -113,6 +113,16 @@ module cloudData '../../../src/000-cloud/030-data/bicep/main.bicep' = {
   }
 }
 
+module cloudMessaging '../../../src/000-cloud/040-messaging/bicep/main.bicep' = {
+  name: '${deployment().name}-cm4'
+  scope: resourceGroup(resourceGroupName)
+  dependsOn: [cloudResourceGroup]
+  params: {
+    common: common
+    aioIdentityName: cloudSecurityIdentity.outputs.aioIdentityName
+  }
+}
+
 module cloudVmHost '../../../src/000-cloud/050-vm-host/bicep/main.bicep' = {
   name: '${deployment().name}-cvh3'
   scope: resourceGroup(resourceGroupName)
