@@ -20,6 +20,31 @@ variable "resource_prefix" {
  * Optional Variables
  */
 
+variable "aio_resource_group_name" {
+  type        = string
+  description = <<-EOF
+    The name of the Resource Group that will be used to connect the new cluster to Azure Arc.
+    (Otherwise, 'rg-{var.resource_prefix}-{var.environment}-{var.instance}' Does not need to exist for output script)"
+EOF
+  default     = null
+}
+
+variable "arc_onboarding_identity_name" {
+  description = "The Principal ID for the identity that will be used for onboarding the cluster to Arc."
+  type        = string
+  default     = null
+}
+
+variable "arc_onboarding_sp" {
+  type = object({
+    client_id     = string
+    object_id     = string
+    client_secret = string
+  })
+  sensitive = true
+  default   = null
+}
+
 variable "instance" {
   type        = string
   description = "Instance identifier for naming resources: 001, 002, etc..."
@@ -82,13 +107,13 @@ variable "cluster_admin_oid" {
 }
 
 variable "should_output_cluster_server_script" {
-  type        = string
+  type        = bool
   description = "Whether to write out the script for setting up the cluster server host machine."
   default     = true
 }
 
 variable "should_output_cluster_node_script" {
-  type        = string
+  type        = bool
   description = "Whether to write out the script for setting up cluster node host machines. (Needed for multi-node clusters)"
   default     = false
 }
@@ -97,4 +122,32 @@ variable "script_output_filepath" {
   type        = string
   description = "The location of where to write out the script file. (Otherwise, '{path.root}/out')"
   default     = null
+}
+
+/*
+ * Optional - Key Vault Parameters
+ */
+
+variable "should_upload_to_key_vault" {
+  type        = bool
+  description = "Whether to upload the scripts to Key Vault as secrets."
+  default     = false
+}
+
+variable "key_vault_name" {
+  type        = string
+  description = "The name of the Key Vault to store script secrets. If not provided, defaults to 'kv-{resource_prefix}-{environment}-{instance}'."
+  default     = null
+}
+
+variable "server_script_secret_name" {
+  type        = string
+  description = "The name of the key vault secret for the server script."
+  default     = "cluster-server-ubuntu-k3s"
+}
+
+variable "node_script_secret_name" {
+  type        = string
+  description = "The name of the key vault secret for the node script."
+  default     = "cluster-node-ubuntu-k3s"
 }

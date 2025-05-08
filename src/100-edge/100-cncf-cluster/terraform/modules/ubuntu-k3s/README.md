@@ -26,6 +26,8 @@ along with installing extensions for cluster connect and custom locations.
 
 | Name | Type |
 |------|------|
+| [azurerm_key_vault_secret.node_script](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) | resource |
+| [azurerm_key_vault_secret.server_script](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) | resource |
 | [azurerm_virtual_machine_extension.linux_cluster_node_setup](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_machine_extension) | resource |
 | [azurerm_virtual_machine_extension.linux_cluster_server_setup](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_machine_extension) | resource |
 | [local_sensitive_file.cluster_node_setup_script](https://registry.terraform.io/providers/hashicorp/local/latest/docs/resources/sensitive_file) | resource |
@@ -48,7 +50,9 @@ along with installing extensions for cluster connect and custom locations.
 | cluster\_server\_virtual\_machine | n/a | ```object({ id = string })``` | n/a | yes |
 | custom\_locations\_oid | The object id of the Custom Locations Entra ID application for your tenant. If none is provided, the script will attempt to retrieve this requiring 'Application.Read.All' or 'Directory.Read.All' permissions. ```sh az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv``` | `string` | n/a | yes |
 | environment | Environment for all resources in this module: dev, test, or prod | `string` | n/a | yes |
+| node\_script\_secret\_name | The name of the key vault secret for the node script. | `string` | n/a | yes |
 | script\_output\_filepath | The location of where to write out the script file. (Otherwise, '{path.root}/out') | `string` | n/a | yes |
+| server\_script\_secret\_name | The name of the key vault secret for the server script. | `string` | n/a | yes |
 | should\_deploy\_script\_to\_vm | Should deploy the scripts to the provided Azure VMs. | `bool` | n/a | yes |
 | should\_enable\_arc\_auto\_upgrade | Enable or disable auto-upgrades of Arc agents. (Otherwise, 'false' for 'env=prod' else 'true' for all other envs). | `bool` | n/a | yes |
 | should\_generate\_cluster\_server\_token | Should generate token used by the server. ('cluster\_server\_token' must be null if this is 'true') | `bool` | n/a | yes |
@@ -56,11 +60,17 @@ along with installing extensions for cluster connect and custom locations.
 | should\_output\_cluster\_server\_script | Whether to write out the script for setting up the cluster server host machine. | `bool` | n/a | yes |
 | should\_skip\_az\_cli\_login | Should skip login process with Azure CLI on the server. (Skipping assumes 'az login' has been completed prior to script execution) | `bool` | n/a | yes |
 | should\_skip\_installing\_az\_cli | Should skip downloading and installing Azure CLI on the server. (Skipping assumes the server will already have the Azure CLI) | `bool` | n/a | yes |
+| should\_upload\_to\_key\_vault | Whether to upload the scripts to Key Vault as secrets. | `bool` | n/a | yes |
+| key\_vault | The Key Vault object containing id, name, and vault\_uri properties. | ```object({ id = string name = string vault_uri = string })``` | `null` | no |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
 | cluster\_server\_token | The token used by the server in the cluster for node authentication. ('null' if the server is responsible for generating the token) |
+| node\_script\_secret\_download\_command | Az CLI command to download the node script secret. |
+| node\_script\_secret\_name | The name of the key vault secret containing the node script. |
+| server\_script\_secret\_download\_command | Az CLI command to download the server script secret. |
+| server\_script\_secret\_name | The name of the key vault secret containing the server script. |
 <!-- markdown-table-prettify-ignore-end -->
 <!-- END_TF_DOCS -->

@@ -45,6 +45,28 @@ variable "should_assign_roles" {
 }
 
 /*
+ * Optional - Key Vault Parameters
+ */
+
+variable "should_upload_to_key_vault" {
+  type        = bool
+  description = "Whether to upload the scripts to Key Vault as secrets."
+  default     = true
+}
+
+variable "server_script_secret_name" {
+  type        = string
+  description = "The name of the key vault secret for the server script."
+  default     = "cluster-server-ubuntu-k3s"
+}
+
+variable "node_script_secret_name" {
+  type        = string
+  description = "The name of the key vault secret for the node script."
+  default     = "cluster-node-ubuntu-k3s"
+}
+
+/*
  * Optional - Azure Arc Parameters
  */
 

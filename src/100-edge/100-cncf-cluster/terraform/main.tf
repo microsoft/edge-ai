@@ -12,6 +12,10 @@ locals {
   current_user_oid     = var.should_add_current_user_cluster_admin ? data.azurerm_client_config.current.object_id : null
 }
 
+/*
+ * Data Sources
+ */
+
 data "azurerm_client_config" "current" {
 }
 
@@ -22,6 +26,10 @@ data "azuread_service_principal" "custom_locations" {
   client_id = "bc313c14-388c-4e7d-a58e-70017303ee3b" #gitleaks:allow
 }
 
+/*
+ * Role Assignments
+ */
+
 resource "azurerm_role_assignment" "connected_machine_onboarding" {
   count = var.should_assign_roles ? 1 : 0
 
@@ -31,6 +39,24 @@ resource "azurerm_role_assignment" "connected_machine_onboarding" {
   // BUG: Role is never created for a new SP w/o this field: https://github.com/hashicorp/terraform-provider-azurerm/issues/11417
   skip_service_principal_aad_check = true
 }
+
+/*
+ * Key Vault Role Assignments
+ */
+
+module "key_vault_role_assignment" {
+  source = "./modules/key-vault-role-assignment"
+  count  = alltrue([var.should_assign_roles, var.should_upload_to_key_vault, var.key_vault != null]) ? 1 : 0
+
+  key_vault                   = var.key_vault
+  arc_onboarding_principal_id = try(var.arc_onboarding_identity.principal_id, var.arc_onboarding_sp.object_id)
+  server_script_secret_name   = var.server_script_secret_name
+  node_script_secret_name     = var.node_script_secret_name
+}
+
+/*
+ * Ubuntu K3s Cluster Setup
+ */
 
 module "ubuntu_k3s" {
   source = "./modules/ubuntu-k3s"
@@ -57,6 +83,10 @@ module "ubuntu_k3s" {
   should_skip_az_cli_login             = var.should_skip_az_cli_login
   should_skip_installing_az_cli        = var.should_skip_installing_az_cli
   cluster_server_host_machine_username = coalesce(var.cluster_server_host_machine_username, var.resource_prefix)
+  key_vault                            = var.key_vault
+  should_upload_to_key_vault           = var.should_upload_to_key_vault
+  server_script_secret_name            = var.server_script_secret_name
+  node_script_secret_name              = var.node_script_secret_name
 }
 
 data "azapi_resource" "arc_connected_cluster" {

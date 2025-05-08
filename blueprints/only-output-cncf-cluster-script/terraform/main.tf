@@ -1,11 +1,30 @@
+/**
+ * # CNCF Cluster Script Output Blueprint
+ *
+ * This blueprint is designed to output the CNCF cluster server and node scripts that can be used
+ * to set up a Kubernetes cluster. It supports writing scripts to files locally and/or uploading
+ * them to Key Vault as secrets for secure storage and retrieval.
+ */
+
 locals {
   aio_resource_group_name = coalesce(var.aio_resource_group_name, "rg-${var.resource_prefix}-${var.environment}-${var.instance}")
+
+  // Determine key vault name using convention if not provided
+  key_vault_name = coalesce(var.key_vault_name, "kv-${var.resource_prefix}-${var.environment}-${var.instance}")
 }
 
 data "azurerm_user_assigned_identity" "arc" {
   count = var.arc_onboarding_identity_name != null ? 1 : 0
 
   name                = var.arc_onboarding_identity_name
+  resource_group_name = local.aio_resource_group_name
+}
+
+// Look up Key Vault by name when needed for uploading scripts
+data "azurerm_key_vault" "scripts" {
+  count = var.should_upload_to_key_vault ? 1 : 0
+
+  name                = local.key_vault_name
   resource_group_name = local.aio_resource_group_name
 }
 
@@ -16,11 +35,11 @@ module "edge_cncf_cluster" {
   should_output_cluster_node_script   = var.should_output_cluster_node_script
   should_deploy_script_to_vm          = false
 
-  arc_onboarding_identity               = try(data.azurerm_user_assigned_identity.arc[0].principal_id, null)
+  arc_onboarding_identity               = try(data.azurerm_user_assigned_identity.arc[0], null)
   arc_onboarding_sp                     = var.arc_onboarding_sp
   environment                           = var.environment
   resource_prefix                       = var.resource_prefix
-  resource_group                        = { name : local.aio_resource_group_name }
+  resource_group                        = { name = local.aio_resource_group_name }
   cluster_server_host_machine_username  = var.cluster_server_host_machine_username
   custom_locations_oid                  = var.custom_locations_oid
   should_enable_arc_auto_upgrade        = var.enable_arc_auto_upgrade
@@ -29,4 +48,10 @@ module "edge_cncf_cluster" {
   cluster_admin_oid                     = var.cluster_admin_oid
   script_output_filepath                = var.script_output_filepath
   should_get_custom_locations_oid       = var.should_get_custom_locations_oid
+
+  // Key Vault related parameters
+  should_upload_to_key_vault = var.should_upload_to_key_vault
+  key_vault                  = try(data.azurerm_key_vault.scripts[0], null)
+  server_script_secret_name  = var.server_script_secret_name
+  node_script_secret_name    = var.node_script_secret_name
 }
