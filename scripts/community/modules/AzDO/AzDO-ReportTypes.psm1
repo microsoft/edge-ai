@@ -482,19 +482,6 @@ class ReviewerMetrics {
         $this.Comments = 0
         $this.PRsReviewed = 0
     }
-
-    # Constructor with all properties
-    ReviewerMetrics(
-        [string]$reviewer,
-        [int]$approvals,
-        [int]$comments,
-        [int]$prsReviewed
-    ) {
-        $this.Reviewer = $reviewer
-        $this.Approvals = $approvals
-        $this.Comments = $comments
-        $this.PRsReviewed = $prsReviewed
-    }
 }
 
 # Class to represent a node in the Sankey diagram
@@ -534,19 +521,24 @@ class SankeyLink {
 # Class to hold the data for the Industry Backlog Sankey diagram
 class IndustryBacklogSankey {
     [SankeyNode[]]$Nodes
-    [SankeyLink[]]$Links
+    [SankeyLink[]]$ScenarioLinks
+    [SankeyLink[]]$CapabilityLinks
 
     IndustryBacklogSankey() {
         $this.Nodes = @()
-        $this.Links = @()
+        $this.ScenarioLinks = @() # Ensure initialized
+        $this.CapabilityLinks = @() # Ensure initialized
     }
 
     [void] AddNode([SankeyNode]$Node) {
         $this.Nodes += $Node
     }
 
-    [void] AddLink([SankeyLink]$Link) {
-        $this.Links += $Link
+    [void] AddCapabilityLink([SankeyLink]$Link) {
+        $this.CapabilityLinks += $Link
+    }
+    [void] AddScenarioLink([SankeyLink]$Link) {
+        $this.ScenarioLinks += $Link
     }
 }
 

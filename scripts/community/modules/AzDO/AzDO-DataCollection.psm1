@@ -316,11 +316,6 @@ function Get-PullRequestReviewerList {
             $reviewer.IsRequired = $reviewerData.isRequired
             $reviewer.HasDeclined = $reviewerData.hasDeclined
 
-            # Try to parse vote date if it exists
-            if ($reviewerData.votedFor) {
-                $reviewer.VoteDate = [DateTime]::Parse($reviewerData.votedFor)
-            }
-
             # Add to collection with type checking
             $reviewers += $reviewer
         }
