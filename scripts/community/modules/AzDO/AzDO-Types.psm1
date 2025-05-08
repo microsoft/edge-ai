@@ -142,7 +142,6 @@ class AzDOPullRequestReviewer {
     [string]$VoteStatus
     [bool]$IsRequired
     [bool]$HasDeclined
-    [DateTime]$VoteDate
 
     AzDOPullRequestReviewer() {
         # Default constructor

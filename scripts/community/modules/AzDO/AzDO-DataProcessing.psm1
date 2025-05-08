@@ -899,23 +899,6 @@ function Get-PRFirstResponseSLOMetric {
         $earliestResponse = $null
         $earliestResponseSource = "None"
 
-        # Check reviewer votes
-        if ($pr.Reviewers -and $pr.Reviewers.Count -gt 0) {
-            foreach ($reviewer in $pr.Reviewers) {
-                if ($reviewer.VotedDate -and $reviewer.Vote -ne 0) { # 0 means no vote
-                    $voteDate = $reviewer.VotedDate
-                    if ($voteDate -is [string]) {
-                        $voteDate = [DateTime]::Parse($voteDate)
-                    }
-
-                    if ($null -eq $earliestResponse -or $voteDate -lt $earliestResponse) {
-                        $earliestResponse = $voteDate
-                        $earliestResponseSource = "Vote by $($reviewer.DisplayName)"
-                    }
-                }
-            }
-        }
-
         # Check thread comments - with improved thread handling
         if ($pr.Threads -and $pr.Threads.Count -gt 0) {
             foreach ($thread in $pr.Threads) {
@@ -1506,8 +1489,8 @@ function Get-ReviewerMetricData {
 
     Write-Verbose "Starting Get-ReviewerMetricData function"
 
-    # Initialize hashtable to collect reviewer data
-    $reviewerData = @{}
+    # Create ReviewerMetrics objects
+    $reviewerMetrics = @()
 
     # Process each PR
     foreach ($pr in $PullRequests) {
@@ -1517,9 +1500,7 @@ function Get-ReviewerMetricData {
             continue
         }
 
-        # Get PR creation date for response time calculations
-        $prCreationDate = [DateTime]::Parse($pr.CreatedDate)
-        Write-Verbose "Processing PR #$($pr.ID) created on $prCreationDate with $($pr.Reviewers.Count) reviewers"
+        Write-Verbose "Processing PR #$($pr.ID) with $($pr.Reviewers.Count) reviewers"
 
         # Process each reviewer for this PR
         foreach ($reviewer in $pr.Reviewers) {
@@ -1536,93 +1517,29 @@ function Get-ReviewerMetricData {
 
             $reviewerName = $reviewer.DisplayName
 
-            # Initialize reviewer entry if not exists
-            if (-not $reviewerData.ContainsKey($reviewerName)) {
-                $reviewerData[$reviewerName] = @{
-                    Approvals = 0
-                    Comments = 0
-                    TotalResponseTimeHours = 0
-                    ResponseTimesCount = 0
-                    PRsReviewed = @()
-                    PRsWithEngagement = 0
-                }
-                Write-Verbose "Added new reviewer to tracking: $reviewerName"
+            if (-not ($reviewerMetrics | Where-Object { $_.Reviewer -eq $reviewerName })) {
+                Write-Verbose "Adding new reviewer metric for $reviewerName"
+                $reviewerMetric = [ReviewerMetrics]::new()
+                $reviewerMetric.Reviewer = $reviewerName
+                $reviewerMetrics += $reviewerMetric
             }
 
-            # Track this PR as reviewed
-            if (-not $reviewerData[$reviewerName].PRsReviewed.Contains($pr.ID)) {
-                $reviewerData[$reviewerName].PRsReviewed += $pr.ID
+            $rm = $reviewerMetrics | Where-Object { $_.Reviewer -eq $reviewerName }
+
+            if ($null -eq $rm) {
+                Write-Verbose "Reviewer metric not found for $reviewerName"
+                continue
+            }
+            # Directly access the standardized Vote property
+            if ($reviewer.VoteValue -ge 5) {
+                Write-Verbose "Adding approval for reviewer $reviewerName"
+                $rm.Approvals += 1
             }
 
-            # Handle votes - checking all possible property paths and structures
-            $hasVote = $false
-            $voteValue = 0
-
-            # Try direct Vote property (case-sensitive variations)
-            if ($null -ne $reviewer.PSObject.Properties['Vote']) {
-                $voteValue = $reviewer.Vote
-                $hasVote = $true
-                Write-Verbose "Found direct Vote property: $voteValue for $reviewerName on PR #$($pr.ID)"
-            }
-            elseif ($null -ne $reviewer.PSObject.Properties['vote']) {
-                $voteValue = $reviewer.vote
-                $hasVote = $true
-                Write-Verbose "Found lowercase vote property: $voteValue for $reviewerName on PR #$($pr.ID)"
-            }
-
-            # Try deeper vote structure
-            elseif ($null -ne $reviewer.PSObject.Properties['reviewerVote']) {
-                $voteValue = $reviewer.reviewerVote
-                $hasVote = $true
-                Write-Verbose "Found reviewerVote property: $voteValue for $reviewerName on PR #$($pr.ID)"
-            }
-
-            # Also look for votes in system comments in Threads
-            if (-not $hasVote -and $null -ne $pr.Threads) {
-                foreach ($thread in $pr.Threads) {
-                    if ($null -eq $thread -or $null -eq $thread.Comments) { continue }
-
-                    # Look through comments for system vote comments
-                    $comments = if ($thread.Comments -is [array]) { $thread.Comments } else { @($thread.Comments) }
-                    foreach ($comment in $comments) {
-                        if ($null -eq $comment) { continue }
-
-                        # Check for system comments with vote information
-                        if ($comment.CommentType -eq "system" -and
-                            $comment.AuthorDisplayName -eq $reviewerName -and
-                            $comment.Content -match "$([regex]::Escape($reviewerName)) voted (\d+)") {
-
-                            $voteValue = [int]$Matches[1]
-                            $hasVote = $true
-                            Write-Verbose "Found system comment vote: $voteValue for $reviewerName on PR #$($pr.ID)"
-                            break
-                        }
-                    }
-
-                    if ($hasVote) { break }
-                }
-            }
-
-            # Normalize vote values - Azure DevOps uses 10=approve, 5=approve with suggestions, 0=no vote, -5=waiting, -10=rejected
-            if ($hasVote -and $voteValue -ne 0) {
-                if ($voteValue -ge 5) {
-                    $reviewerData[$reviewerName].Approvals++
-                    $reviewerData[$reviewerName].PRsWithEngagement++
-                    Write-Verbose "Counted approval for $reviewerName on PR #$($pr.ID) with vote value $voteValue"
-                }
-                elseif ($voteValue -ne 0) {
-                    # Even non-approval votes count as engagement
-                    $reviewerData[$reviewerName].PRsWithEngagement++
-                    Write-Verbose "Counted non-approval vote engagement for $reviewerName on PR #$($pr.ID) with vote value $voteValue"
-                }
-            }
 
             # Enhanced thread and comment processing
             if ($null -ne $pr.Threads) {
                 Write-Verbose "Processing $($pr.Threads.Count) threads for PR #$($pr.ID)"
-
-                # Track if we found any comments for this reviewer in this PR
-                $foundComments = $false
 
                 foreach ($thread in $pr.Threads) {
                     # Skip null threads
@@ -1636,39 +1553,6 @@ function Get-ReviewerMetricData {
                         $comments = $thread.comments
                         Write-Verbose "Found comments array (lowercase) with $($comments.Count) items"
                     }
-                    elseif ($null -ne $thread.Comments -and $thread.Comments -is [Array]) {
-                        $comments = $thread.Comments
-                        Write-Verbose "Found Comments array (uppercase) with $($comments.Count) items"
-                    }
-                    # Handle case where comments is a property with a value collection
-                    elseif ($null -ne $thread.PSObject.Properties['comments'] -and
-                           $null -ne $thread.comments.PSObject.Properties['value']) {
-                        $comments = $thread.comments.value
-                        Write-Verbose "Found comments.value collection with $($comments.Count) items"
-                    }
-                    elseif ($null -ne $thread.Comments -and $null -ne $thread.Comments.PSObject.Properties['value']) {
-                        $comments = $thread.Comments.value
-                        Write-Verbose "Found Comments.value collection with $($comments.Count) items"
-                    }
-                    # Last resort - try to cast to array
-                    elseif ($null -ne $thread.PSObject.Properties['comments']) {
-                        try {
-                            $comments = @($thread.comments)
-                            Write-Verbose "Cast comments to array with $($comments.Count) items"
-                        }
-                        catch {
-                            Write-Verbose "Failed to cast comments to array"
-                        }
-                    }
-                    elseif ($null -ne $thread.PSObject.Properties['Comments']) {
-                        try {
-                            $comments = @($thread.Comments)
-                            Write-Verbose "Cast Comments to array with $($comments.Count) items"
-                        }
-                        catch {
-                            Write-Verbose "Failed to cast Comments to array"
-                        }
-                    }
 
                     # Process comments if we found any
                     if ($null -ne $comments -and $comments.Count -gt 0) {
@@ -1677,128 +1561,33 @@ function Get-ReviewerMetricData {
                         foreach ($comment in $comments) {
                             if ($null -eq $comment) { continue }
 
-                            # Get author name using various possible property paths
-                            $authorName = $null
-
-                            # Check if this is a properly typed AzDOPullRequestComment object
-                            if ($comment.GetType().Name -eq 'AzDOPullRequestComment') {
-                                # Use strongly typed properties directly
-                                $authorName = $comment.AuthorDisplayName
-                                $commentType = $comment.CommentType
-                                $commentDate = $comment.CreatedDate
-                            }
-                            else {
-                                # Handle as PSObject with dynamic properties (legacy/API raw data)
-                                if ($null -ne $comment.PSObject.Properties['author'] -and $null -ne $comment.author.PSObject.Properties['displayName']) {
-                                    $authorName = $comment.author.displayName
-                                }
-                                elseif ($null -ne $comment.PSObject.Properties['Author'] -and $null -ne $comment.Author.PSObject.Properties['DisplayName']) {
-                                    $authorName = $comment.Author.DisplayName
-                                }
-                                elseif ($null -ne $comment.PSObject.Properties['createdBy'] -and $null -ne $comment.createdBy.PSObject.Properties['displayName']) {
-                                    $authorName = $comment.createdBy.displayName
-                                }
-                                elseif ($null -ne $comment.PSObject.Properties['AuthorDisplayName']) {
-                                    $authorName = $comment.AuthorDisplayName
-                                }
-
-                                # Get comment type - used to filter system comments
-                                $commentType = if ($null -ne $comment.PSObject.Properties['CommentType']) {
-                                    $comment.CommentType
-                                } elseif ($null -ne $comment.PSObject.Properties['commentType']) {
-                                    $comment.commentType
-                                } else {
-                                    ""
-                                }
-
-                                # Extract comment date for timing calculations
-                                $commentDate = $null
-                                if ($null -ne $comment.PSObject.Properties['publishedDate']) {
-                                    $commentDate = $comment.publishedDate
-                                }
-                                elseif ($null -ne $comment.PSObject.Properties['PublishedDate']) {
-                                    $commentDate = $comment.PublishedDate
-                                }
-                                elseif ($null -ne $comment.PSObject.Properties['createdDate']) {
-                                    $commentDate = $comment.createdDate
-                                }
-
-                                # Convert string date to DateTime if needed
-                                if ($commentDate -is [string]) {
-                                    try {
-                                        $commentDate = [DateTime]::Parse($commentDate)
-                                    }
-                                    catch {
-                                        $commentDate = $null
-                                        Write-Verbose "Failed to parse comment date"
-                                    }
-                                }
-                            }
-
                             # Skip system comments - now applies consistent filtering
-                            if ($commentType -eq "system") {
+                            # Assuming $comment has a property 'commentType' (standard in AzDO API)
+                            if ($comment.commentType -eq "system") {
+                                Write-Verbose "Skipping System comment"
                                 continue
                             }
 
-                            # If we found a comment by this reviewer
-                            if ($null -ne $authorName -and $authorName -eq $reviewerName) {
-                                $reviewerData[$reviewerName].Comments++
-                                $foundComments = $true
-                                Write-Verbose "Found comment by $reviewerName on PR #$($pr.ID)"
-
-                                # Calculate response time once per PR/reviewer if we have valid dates
-                                if ($null -ne $commentDate -and $null -ne $prCreationDate) {
-                                    try {
-                                        $responseTime = $commentDate - $prCreationDate
-                                        $reviewerData[$reviewerName].TotalResponseTimeHours += $responseTime.TotalHours
-                                        $reviewerData[$reviewerName].ResponseTimesCount++
-                                        Write-Verbose "Response time for $($reviewerName): $($responseTime.TotalHours) hours"
-
-                                        # Only track one response time per PR/reviewer combination
-                                        break
-                                    }
-                                    catch {
-                                        Write-Warning "Error calculating response time for PR #$($pr.ID): $_"
-                                    }
-                                }
+                            Write-Verbose "Processing comment from: $($comment.author.displayName)"
+                            if ($rm.Reviewer -eq $comment.author.displayName) {
+                                Write-Verbose "Found comment by reviewer $reviewerName in PR #$($pr.ID)"
+                                $rm.Comments += 1
                             }
+
                         }
                     }
                 }
+            }
 
-                # If we found comments, mark as engaged
-                if ($foundComments) {
-                    $reviewerData[$reviewerName].PRsWithEngagement++
-                    Write-Verbose "Marked PR #$($pr.ID) as having engagement from $reviewerName due to comments"
-                }
+            if($reviewer.Comments -or $reviewer.Vote -ne 0){
+                Write-Verbose "Adding PR reviewed for reviewer $reviewerName"
+                $rm.PRsReviewed += 1
             }
         }
     }
 
-    # Create ReviewerMetrics objects
-    $reviewerMetrics = @()
-
-    Write-Verbose "Creating ReviewerMetrics objects for $($reviewerData.Keys.Count) reviewers"
-    foreach ($reviewer in $reviewerData.Keys) {
-        $data = $reviewerData[$reviewer]
-
-        # Calculate metrics - with minimum default values to ensure non-zero quality scores
-        $prsReviewedCount = $data.PRsReviewed.Count
-
-        # Create ReviewerMetrics object
-        $reviewerMetric = [ReviewerMetrics]::new(
-            $reviewer,
-            $data.Approvals,
-            $data.Comments,
-            $prsReviewedCount
-        )
-
-        $reviewerMetrics += $reviewerMetric
-        Write-Verbose "Created metrics for $($reviewer): Reviewed $prsReviewedCount PRs"
-    }
-
     # Sort by number of approvals (descending)
-    $sortedReviewerMetrics = $reviewerMetrics | Sort-Object -Property Approvals -Descending
+    $sortedReviewerMetrics = $reviewerMetrics | Where-Object { ($_.Approvals -gt 0) -and ($_.Comments -gt 0) } | Sort-Object -Property Approvals -Descending
 
     Write-Verbose "Returning metrics for $($sortedReviewerMetrics.Count) reviewers"
     return $sortedReviewerMetrics
@@ -2432,7 +2221,7 @@ function Get-BacklogHierarchySankeyObject {
                         $link.Source = $sourceNodeId
                         $link.Target = $targetNodeId
                         $link.Value = $totalCustomersPerScenario[$scenario.Id]
-                        $sankeyData.AddLink($link)
+                        $sankeyData.AddScenarioLink($link)
                         Write-Host "Added link: Scenario $scenarioId -> Capability $($capability.Id)"
                     }
                 }
@@ -2457,7 +2246,7 @@ function Get-BacklogHierarchySankeyObject {
             $link.Source = $sourceNodeId
             $link.Target = $targetNodeId
             $link.Value = $totalLinksPerCapability[$parentCapabilityId]
-            $sankeyData.AddLink($link)
+            $sankeyData.AddCapabilityLink($link)
             Write-Host "Added link: Capability $($feature.ParentCapabilityId) -> Feature $($feature.Id)"
         }
     }

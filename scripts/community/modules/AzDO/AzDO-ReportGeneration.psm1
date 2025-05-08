@@ -371,6 +371,7 @@ Over the past $recentMonths months:
 - **Total Unique Contributors**: $totalUniqueContributors
 - **New Contributors**: $totalNewRecent ($newContributorPercent%)
 - **Returning Contributors**: $totalReturningRecent ($([Math]::Round(100 - $newContributorPercent, 1))%)
+- **Total Unique Reviewers**: $($ReviewerMetrics.Count)
 
 ### Contributors
 
@@ -387,7 +388,7 @@ $(
         $contributorRows += "| $($contributor.Contributor) | $($contributor.PRs) | $($contributor.FilesChanged) | $($contributor.LinesAdded) | $($contributor.LinesDeleted) | $($contributor.WorkItemsClosed) |"
     }
 
-    Write-Verbose "30 contributors extracted from array"
+    Write-Verbose "Contributors extracted from array: $($topContributors.Count) contributors"
     $contributorRows -join "`n"
 )
 
@@ -396,21 +397,22 @@ $(
 | Reviewer | Approvals | Comments |
 |----------|-----------|----------|
 $(
-    # Get top reviewers sorted by Reviewer name alphabetically, excluding those with 0 approvals
-    $topReviewers = $ReviewerMetrics | Where-Object { $_.Approvals -gt 0 } | Sort-Object -Property Reviewer | Select-Object -First 20
+    # Get top reviewers sorted by Reviewer name alphabetically.
+    # The filter 'Where-Object { ($_.Approvals -gt 0) -or ($_.Comments -gt 0) }' was removed to display all reviewers from ReviewerMetrics.
+    $topReviewers = $ReviewerMetrics | Sort-Object -Property Reviewer
     $reviewerRows = @()
-
+    # Updated verbose message to reflect that all reviewers from metrics are being processed.
+    Write-Verbose "Processing all $($topReviewers.Count) reviewers found in ReviewerMetrics for table display."
     foreach ($reviewer in $topReviewers) {
+        Write-Verbose "Processing Reviewer: $($reviewer.Reviewer)"
         # Create a formatted row for each reviewer (without the Tagged in Reviews column)
         $reviewerRows += "| $($reviewer.Reviewer) | $($reviewer.Approvals) | $($reviewer.Comments) |"
     }
 
-    Write-Verbose "Reviewers extracted from array"
+    Write-Verbose "Reviewers extracted from array: $($topReviewers.Count) reviewers"
     $reviewerRows -join "`n"
 )
-
 <!-- cspell:enable -->
-
 ## Contributor Trends
 
 The contributor retention rate (returning vs. new) suggests a $(if ($newContributorPercent -gt 20) { "growing, but potentially less stable" } else { "stable, experienced" }) contributor base.
@@ -952,18 +954,22 @@ This analysis covers pull request activity for the $Project project in the $Orga
 function Get-IndustryBacklogSankeySection {
     <#
     .SYNOPSIS
-    Creates a markdown section with a Mermaid Sankey diagram showing industry pillars, scenarios, capabilities, and features.
+    Creates a markdown section with three Mermaid Sankey diagrams showing industry scenarios,
+    capabilities, and features, segmented by scenario priority.
 
     .DESCRIPTION
-    Generates a formatted markdown section with a Mermaid Sankey diagram visualizing the flow from
-    industry pillars through scenarios and capabilities to backlog features using the simple CSV format.
+    Generates a formatted markdown section with three Mermaid Sankey diagrams:
+    1. Top 5 scenarios (by customer weighting) and their related capabilities and features.
+    2. Other scenarios with customer weighting (value >= 1) and their related items.
+    3. Scenarios with no direct customer weighting (value = 0) and their related items.
 
     .PARAMETER SankeyData
-    An object containing Nodes and Links arrays for the Sankey diagram.
+    An IndustryBacklogSankey object containing Nodes, ScenarioLinks (Scenario to Capability),
+    and CapabilityLinks (Capability to Feature).
 
     .EXAMPLE
-    $sankeyData = Get-BacklogHierarchySankeyObject -BacklogCollection $collection
-    $sankeySection = Get-IndustryBacklogSankeySection -SankeyData $sankeyData
+    # $SankeyData would be populated by Get-BacklogHierarchySankeyObject
+    $sankeySection = Get-IndustryBacklogSankeySection -SankeyData $SankeyData
     #>
     [OutputType([System.String])]
     [CmdletBinding()]
@@ -972,48 +978,36 @@ function Get-IndustryBacklogSankeySection {
         [IndustryBacklogSankey]$SankeyData
     )
 
-    Write-Host "Starting Get-IndustryBacklogSankeySection function with $($SankeyData.Links.Count) links"
+    Write-Verbose "Starting Get-IndustryBacklogSankeySection function. ScenarioLinks: $($SankeyData.ScenarioLinks.Count), CapabilityLinks: $($SankeyData.CapabilityLinks.Count)."
 
-    # Create a lookup for node names based on ID - no need to check for nulls
-    $nodeNameLookup = @{}
-    foreach ($node in $SankeyData.Nodes) {
-        $nodeNameLookup[$node.Id] = $node.Name
-        Write-Verbose "Added node to lookup: ID=$($node.Id), Name=$($node.Name), Type=$($node.Type)"
-    }
+    # Helper function to format a single Sankey chart
+    function Format-SingleSankeyChart {
+        param(
+            [SankeyLink[]]$Links,
+            [hashtable]$NodeNameLookup,
+            [string]$ChartTitle
+        )
 
-    # Generate link data lines with proper format for Mermaid Sankey
-    $linkDataLines = @()
-    foreach ($link in $SankeyData.Links) {
-        Write-Host "Processing link: Source=$($link.Source), Target=$($link.Target), Value=$($link.Value)"
-        # Get source and target node names from lookup
-        $sourceName = $nodeNameLookup[$link.Source]
-        $targetName = $nodeNameLookup[$link.Target]
-
-        # Handle special characters and quotes in names
-        $sourceName = $sourceName -replace '"', '\"'
-        $targetName = $targetName -replace '"', '\"'
-
-        # Format as required by Mermaid sankey-beta: Source,Target,Value
-        # Node names with spaces or special characters must be in quotes
-        if ($sourceName -match '\s' -or $sourceName -match '[,"]') {
-            $sourceName = """$sourceName"""
-        }
-        if ($targetName -match '\s' -or $targetName -match '[,"]') {
-            $targetName = """$targetName"""
+        if ($null -eq $Links -or $Links.Count -eq 0) {
+            return "_No data available for $ChartTitle._"
         }
 
-        # Add formatted line with quoted names and value
-        $linkDataLines += "$sourceName,$targetName,$($link.Value)"
+        $linkDataLines = @()
+        foreach ($link in $Links) {
+            $sourceName = $NodeNameLookup[$link.Source]
+            $targetName = $NodeNameLookup[$link.Target]
 
-        Write-Verbose "Added link: $sourceName -> $targetName ($($link.Value))"
-    }
+            $sourceName = $sourceName -replace '"', '\"'
+            $targetName = $targetName -replace '"', '\"'
 
-    # Define the triple backtick variable
-    $tripleBacktick = '```'
+            if ($sourceName -match '\s' -or $sourceName -match '[,"]') { $sourceName = """$sourceName""" }
+            if ($targetName -match '\s' -or $targetName -match '[,"]') { $targetName = """$targetName""" }
 
-    # Create the Mermaid block with proper formatting using the variable
-    # Add HTML div wrapper with style attribute to control width
-    $mermaidBlock = @"
+            $linkDataLines += "$sourceName,$targetName,$($link.Value)"
+        }
+
+        $tripleBacktick = '```'
+        return @"
 $tripleBacktick mermaid
 
 ---
@@ -1021,29 +1015,100 @@ config:
   sankey:
     showValues: false
     width: 1200
-    height: 1400
+    height: 1400 # Consider making height dynamic or adjusting per chart
 ---
 sankey-beta
-
+%% $ChartTitle - Mermaid does not render title for sankey-beta directly in diagram
 $($linkDataLines -join "`n")
 $tripleBacktick
 "@
+    }
 
-    # Create the complete markdown section
+    # Create a lookup for node names
+    $nodeNameLookup = @{}
+    foreach ($node in $SankeyData.Nodes) {
+        $nodeNameLookup[$node.Id] = $node.Name
+    }
+
+    # Calculate total value for each scenario by summing its link values
+    $scenarioAggregatedValues = $SankeyData.ScenarioLinks | Group-Object -Property Source | ForEach-Object {
+        [PSCustomObject]@{
+            ScenarioId = $_.Name # Group-Object puts the grouped property value in Name
+            TotalValue = ($_.Group | Measure-Object -Property Value -Sum).Sum
+        }
+    }
+    Write-Verbose "Aggregated scenario values. Count: $($scenarioAggregatedValues.Count)"
+
+    # Identify top 5 scenarios by their total aggregated value
+    $top5ScenarioIds = $scenarioAggregatedValues | Sort-Object -Property TotalValue -Descending | Select-Object -First 5 | Select-Object -ExpandProperty ScenarioId
+    Write-Verbose "Identified Top 5 Scenario IDs based on aggregated value: $($top5ScenarioIds -join ', ')"
+
+    # --- Chart 1: Top 5 Scenarios ---
+    Write-Verbose "Generating Chart 1: Top 5 Scenarios (based on aggregated scenario value)"
+    # Get all scenario links that belong to these top 5 scenarios
+    $top5ScenarioLinks = $SankeyData.ScenarioLinks | Where-Object { $top5ScenarioIds -contains $_.Source }
+
+    $top5CapabilityIds = $top5ScenarioLinks.Target | Select-Object -Unique
+    $top5CapabilityLinks = $SankeyData.CapabilityLinks | Where-Object { $top5CapabilityIds -contains $_.Source }
+    $chart1Links = @($top5ScenarioLinks) + @($top5CapabilityLinks)
+    $chart1Title = "Top 5 Scenarios (by Customer Weighting)"
+    $chart1Mermaid = Format-SingleSankeyChart -Links $chart1Links -NodeNameLookup $nodeNameLookup -ChartTitle $chart1Title
+
+    # --- Chart 2: Remainder Scenarios (Value >= 1) ---
+    Write-Verbose "Generating Chart 2: Other Prioritized Scenarios (Customer Weighting >= 1, Excluding Top 5)"
+    # Filter from original $SankeyData.ScenarioLinks, excluding the actual top 5 scenarios and ensuring value is >= 2
+    $remainderScenarioLinks = $SankeyData.ScenarioLinks | Where-Object { $_.Value -ge 2 -and $_.Source -notin $top5ScenarioIds }
+    $remainderCapabilityIds = ($remainderScenarioLinks.Target | Select-Object -Unique)
+    $remainderCapabilityLinks = $SankeyData.CapabilityLinks | Where-Object { $remainderCapabilityIds -contains $_.Source }
+    $chart2Links = @($remainderScenarioLinks) + @($remainderCapabilityLinks)
+    $chart2Title = "Other Scenarios (Customer Weighting >= 2, Excluding Top 5)"
+    $chart2Mermaid = Format-SingleSankeyChart -Links $chart2Links -NodeNameLookup $nodeNameLookup -ChartTitle $chart2Title
+
+    # --- Chart 3: Zero Value Scenarios ---
+    Write-Verbose "Generating Chart 3: Scenarios with No Direct Customer Weighting (Value <= 1)"
+    $zeroValueScenarioLinks = $SankeyData.ScenarioLinks | Where-Object { $_.Value -le 1 }
+    $zeroValueCapabilityIds = ($zeroValueScenarioLinks.Target | Select-Object -Unique)
+    $zeroValueCapabilityLinks = $SankeyData.CapabilityLinks | Where-Object { $zeroValueCapabilityIds -contains $_.Source }
+    $chart3Links = @($zeroValueScenarioLinks) + @($zeroValueCapabilityLinks)
+    $chart3Title = "Scenarios with No Direct Customer Weighting (Value <= 1)"
+    $chart3Mermaid = Format-SingleSankeyChart -Links $chart3Links -NodeNameLookup $nodeNameLookup -ChartTitle $chart3Title
+
+    # Assemble the complete markdown section
     $markdown = @"
 ## Industry Backlog Visualization
 
-The following Sankey diagram visualizes the flow from scenarios through capabilities to specific backlog features.
+The following Sankey diagrams visualize the flow from scenarios through capabilities to specific backlog features, segmented by scenario priority.
 
-Scenarios are weighted by the number of industry customers requiring them, and capabilities are weighted by the number of scenarios they support.
+The line weights in these diagrams are calculated as follows:
 
-| | **Scenarios** | **Capabilities** | **Features** | |
-|:-:|:------------------------------------------:|:--------------------------------------------:|:------------------------------------------:|:-:|
-|   | &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; | &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; | &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; |   |
+- **Scenario to Capability**: The weight of a link from a Scenario to a Capability represents the total number of customers for that Scenario. This weighting is determined by the number of distinct customer tags associated with the Scenario.
+- **Capability to Feature**: The weight of a link from a Capability to a Feature represents the sum of all incoming link weights to that Capability from its connected Scenarios. This effectively shows the aggregated customer demand flowing through the Capability to its Features.
 
-$mermaidBlock
+### $chart1Title
 
-*Note: Link widths represent the strength of relationships between connected items. The diagram shows the complex relationships between scenarios, capabilities, and features in the product backlog.*
+Scenarios are weighted by the number of industry customers requiring them. This chart shows the top 5 scenarios.
+
+Scenario -> Capability -> Implementation/Feature
+
+$chart1Mermaid
+
+### $chart2Title
+
+This chart shows other scenarios that have a customer use weighting of 1 or more, excluding the top 5.
+
+Scenario -> Capability -> Implementation/Feature
+
+$chart2Mermaid
+
+### $chart3Title
+
+This chart shows scenarios with no direct customer use weighting (value of 0), and all their related capabilities and features.
+
+Scenario -> Capability -> Implementation/Feature
+
+$chart3Mermaid
+
+*Note: Link widths represent the strength of relationships between connected items. The diagrams show the complex relationships between scenarios, capabilities, and features in the product backlog.*
 "@
 
     Write-Verbose "Completed Get-IndustryBacklogSankeySection function"

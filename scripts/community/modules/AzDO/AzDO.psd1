@@ -45,52 +45,56 @@
     # Functions to export from this module
     FunctionsToExport = @(
         # Auth functions
-        'Get-AzureDevOpsPAT',
         'Get-AzureDevOpsAuthHeader',
+        'Get-AzureDevOpsPAT',
 
         # API functions
         'Get-AzureDevOpsItem',
         'Invoke-AzureDevOpsApi',
 
         # Data Collection functions
-        'Get-RepositoryId',
-        'Get-PullRequestList',
         'Get-AzDOPullRequestThread',
-        'Get-PullRequestWorkItemDetail',
-        'Get-PullRequestCommitList',
-        'Get-PullRequestReviewerList',
-        'Get-AzDOMainBranchMetric',
-        'Get-AzDORepositoryMetric',
+        'Get-IndustryBacklogItemsFromAzDO', # New
         'Get-MainBranchFileExtension',
+        'Get-MainBranchPRMetric',           # Renamed from Get-AzDOMainBranchMetric
+        'Get-PullRequestCommitList',
+        'Get-PullRequestList',
+        'Get-PullRequestReviewerList',
+        'Get-PullRequestWorkItem',          # New
+        'Get-PullRequestWorkItemDetail',
+        'Get-RepositoryId',
+        'Get-WorkItemDetail',               # New
+                                            # Get-AzDORepositoryMetric removed
 
         # Data Processing functions
+        'Get-AzDOReportSummary',
+        'Get-ContributorMetricData',
+        'Get-ContributorReturnMetric',
+        'Get-CopilotImpactMetric',
         'Get-FileExtensionMetric',
         'Get-FileExtensionSummary',
-        'Get-AzDOReportSummary',
-        'Get-PRMonthlyMetric',
-        'Get-PRWeeklyMetric',
-        'Get-PRSizeMetric',
+        'Get-FocusAreaMetric',
+        'Get-PRComplexityChartData',
         'Get-PRCompletionTimeDistribution',
         'Get-PRFirstResponseSLOMetric',
-        'Get-PRComplexityChartData',
-        'Get-ContributorReturnMetric',
-        'Get-ContributorMetricData',
+        'Get-PRMonthlyMetric',
+        'Get-PRSizeMetric',
+        'Get-PRWeeklyMetric',
         'Get-ReviewerMetricData',
-        'Get-CopilotImpactMetric',
-        'Get-FocusAreaMetric',
 
         # Report Generation functions
-        'Get-ReportSummary',
-        'Get-PRMetricsByInterval',
-        'Get-SLOComplianceTableContent',
-        'Get-ContributorSummary',
         'Format-FileExtensionTable',
-        'Get-FocusAreaSection',
-        'Get-PRComplexityChart',
-        'Get-MermaidChart',
         'Get-CopilotImpactSection',
+        'Get-ContributorSummary',
+        'Get-FocusAreaSection',
+        'Get-IndustryBacklogSankeySection', # New
+        'Get-MermaidChart',
+        'Get-PRComplexityChart',
+        'Get-PRMetricsByInterval',
         'Get-ReportFooter',
         'Get-ReportHeader',
+        'Get-ReportSummary',
+        'Get-SLOComplianceTableContent',
 
         # Main processing functions
         'Get-Report'
