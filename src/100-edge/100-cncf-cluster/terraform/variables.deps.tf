@@ -49,3 +49,18 @@ variable "arc_onboarding_sp" {
   sensitive = true
   default   = null
 }
+
+variable "key_vault" {
+  type = object({
+    id        = string
+    name      = string
+    vault_uri = string
+  })
+  description = "The Key Vault object containing id, name, and vault_uri properties."
+  default     = null
+
+  validation {
+    condition     = !var.should_upload_to_key_vault || var.key_vault != null
+    error_message = "'key_vault' is required when 'should_upload_to_key_vault' is true"
+  }
+}

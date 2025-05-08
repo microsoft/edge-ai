@@ -36,6 +36,7 @@ install extensions for cluster connect and custom locations.
 
 | Name | Source | Version |
 |------|--------|---------|
+| key\_vault\_role\_assignment | ./modules/key-vault-role-assignment | n/a |
 | ubuntu\_k3s | ./modules/ubuntu-k3s | n/a |
 
 ## Inputs
@@ -56,7 +57,10 @@ install extensions for cluster connect and custom locations.
 | cluster\_server\_virtual\_machine | n/a | ```object({ id = string })``` | `null` | no |
 | custom\_locations\_oid | The object id of the Custom Locations Entra ID application for your tenant. If none is provided, the script will attempt to retrieve this requiring 'Application.Read.All' or 'Directory.Read.All' permissions. ```sh az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv``` | `string` | `null` | no |
 | instance | Instance identifier for naming resources: 001, 002, etc... | `string` | `"001"` | no |
+| key\_vault | The Key Vault object containing id, name, and vault\_uri properties. | ```object({ id = string name = string vault_uri = string })``` | `null` | no |
+| node\_script\_secret\_name | The name of the key vault secret for the node script. | `string` | `"cluster-node-ubuntu-k3s"` | no |
 | script\_output\_filepath | The location of where to write out the script file. (Otherwise, '{path.root}/out') | `string` | `null` | no |
+| server\_script\_secret\_name | The name of the key vault secret for the server script. | `string` | `"cluster-server-ubuntu-k3s"` | no |
 | should\_add\_current\_user\_cluster\_admin | Gives the current logged in user cluster-admin permissions with the new cluster. | `bool` | `true` | no |
 | should\_assign\_roles | Whether to assign Key Vault roles to identity or service principal. | `bool` | `true` | no |
 | should\_deploy\_script\_to\_vm | Should deploy the scripts to the provided Azure VMs. | `bool` | `true` | no |
@@ -66,15 +70,20 @@ install extensions for cluster connect and custom locations.
 | should\_output\_cluster\_server\_script | Whether to write out the script for setting up the cluster server host machine. | `bool` | `false` | no |
 | should\_skip\_az\_cli\_login | Should skip login process with Azure CLI on the server. (Skipping assumes 'az login' has been completed prior to script execution) | `bool` | `false` | no |
 | should\_skip\_installing\_az\_cli | Should skip downloading and installing Azure CLI on the server. (Skipping assumes the server will already have the Azure CLI) | `bool` | `false` | no |
+| should\_upload\_to\_key\_vault | Whether to upload the scripts to Key Vault as secrets. | `bool` | `true` | no |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| arc\_connected\_cluster | n/a |
-| azure\_arc\_proxy\_command | n/a |
-| connected\_cluster\_name | n/a |
-| connected\_cluster\_resource\_group\_name | n/a |
+| arc\_connected\_cluster | The Arc resource for the connected cluster. |
+| azure\_arc\_proxy\_command | The AZ CLI command to Arc Connect Proxy to the cluster. |
+| connected\_cluster\_name | The name of the Arc connected cluster. |
+| connected\_cluster\_resource\_group\_name | The name of the resource group containing the Arc connected cluster. |
+| node\_script\_secret\_download\_command | Az CLI command to download the node script secret. |
+| node\_script\_secret\_name | The name of the key vault secret containing the node script. |
+| server\_script\_secret\_download\_command | Az CLI command to download the server script secret. |
+| server\_script\_secret\_name | The name of the key vault secret containing the server script. |
 | server\_token | The token used by the server in the k3s cluster. ('null' if the server is responsible for generating the token) |
 <!-- markdown-table-prettify-ignore-end -->
 <!-- END_TF_DOCS -->

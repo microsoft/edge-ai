@@ -4,6 +4,7 @@ resource "terraform_data" "defer" {
   input = {
     resource_group_name       = "rg-${var.resource_prefix}-${var.environment}-${var.instance}"
     arc_onboard_identity_name = "id-${var.resource_prefix}-arc-${var.environment}-${var.instance}"
+    key_vault_name            = "kv-${var.resource_prefix}-${var.environment}-${var.instance}"
   }
 }
 
@@ -21,6 +22,11 @@ data "azurerm_user_assigned_identity" "arc" {
   resource_group_name = data.azurerm_resource_group.aio.name
 }
 
+data "azurerm_key_vault" "aio" {
+  name                = terraform_data.defer.output.key_vault_name
+  resource_group_name = data.azurerm_resource_group.aio.name
+}
+
 module "ci" {
   source = "../../terraform"
 
@@ -32,4 +38,5 @@ module "ci" {
   cluster_server_virtual_machine  = data.azurerm_virtual_machine.aio
   should_get_custom_locations_oid = var.should_get_custom_locations_oid
   arc_onboarding_identity         = data.azurerm_user_assigned_identity.arc
+  key_vault                       = data.azurerm_key_vault.aio
 }

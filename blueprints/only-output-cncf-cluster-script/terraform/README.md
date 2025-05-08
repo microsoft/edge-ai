@@ -1,6 +1,10 @@
 <!-- BEGIN_TF_DOCS -->
 <!-- markdown-table-prettify-ignore-start -->
-# Terraform IaC
+# CNCF Cluster Script Output Blueprint
+
+This blueprint is designed to output the CNCF cluster server and node scripts that can be used
+to set up a Kubernetes cluster. It supports writing scripts to files locally and/or uploading
+them to Key Vault as secrets for secure storage and retrieval.
 
 ## Requirements
 
@@ -19,6 +23,7 @@
 
 | Name | Type |
 |------|------|
+| [azurerm_key_vault.scripts](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/key_vault) | data source |
 | [azurerm_user_assigned_identity.arc](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/user_assigned_identity) | data source |
 
 ## Modules
@@ -41,11 +46,15 @@
 | custom\_locations\_oid | The object id of the Custom Locations Entra ID application for your tenant. If none is provided, the script will attempt to retrieve this requiring 'Application.Read.All' or 'Directory.Read.All' permissions. ```sh az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv``` | `string` | `null` | no |
 | enable\_arc\_auto\_upgrade | Enable or disable auto-upgrades of Arc agents. (Otherwise, 'false' for 'env=prod' else 'true' for all other envs). | `bool` | `null` | no |
 | instance | Instance identifier for naming resources: 001, 002, etc... | `string` | `"001"` | no |
+| key\_vault\_name | The name of the Key Vault to store script secrets. If not provided, defaults to 'kv-{resource\_prefix}-{environment}-{instance}'. | `string` | `null` | no |
+| node\_script\_secret\_name | The name of the key vault secret for the node script. | `string` | `"cluster-node-ubuntu-k3s"` | no |
 | script\_output\_filepath | The location of where to write out the script file. (Otherwise, '{path.root}/out') | `string` | `null` | no |
+| server\_script\_secret\_name | The name of the key vault secret for the server script. | `string` | `"cluster-server-ubuntu-k3s"` | no |
 | should\_add\_current\_user\_cluster\_admin | Gives the current logged in user cluster-admin permissions with the new cluster. | `bool` | `true` | no |
 | should\_assign\_roles | Whether to assign Key Vault roles to identity or service principal. | `bool` | `false` | no |
 | should\_get\_custom\_locations\_oid | Whether to get Custom Locations Object ID using Terraform's azuread provider. (Otherwise, provided by 'custom\_locations\_oid' or `az connectedk8s enable-features` for custom-locations on cluster setup if not provided.) | `bool` | `true` | no |
-| should\_output\_cluster\_node\_script | Whether to write out the script for setting up cluster node host machines. (Needed for multi-node clusters) | `string` | `false` | no |
-| should\_output\_cluster\_server\_script | Whether to write out the script for setting up the cluster server host machine. | `string` | `true` | no |
+| should\_output\_cluster\_node\_script | Whether to write out the script for setting up cluster node host machines. (Needed for multi-node clusters) | `bool` | `false` | no |
+| should\_output\_cluster\_server\_script | Whether to write out the script for setting up the cluster server host machine. | `bool` | `true` | no |
+| should\_upload\_to\_key\_vault | Whether to upload the scripts to Key Vault as secrets. | `bool` | `false` | no |
 <!-- markdown-table-prettify-ignore-end -->
 <!-- END_TF_DOCS -->

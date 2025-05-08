@@ -99,6 +99,32 @@ resource "local_sensitive_file" "cluster_node_setup_script" {
   file_permission = "755"
 }
 
+/*
+ * Key Vault Secrets
+ */
+
+// Create Key Vault Secret for Server Script
+resource "azurerm_key_vault_secret" "server_script" {
+  count = var.should_upload_to_key_vault && var.key_vault != null ? 1 : 0
+
+  name         = var.server_script_secret_name
+  value        = local.script_server_rendered
+  key_vault_id = var.key_vault.id
+}
+
+// Create Key Vault Secret for Node Script
+resource "azurerm_key_vault_secret" "node_script" {
+  count = var.should_upload_to_key_vault && var.key_vault != null ? 1 : 0
+
+  name         = var.node_script_secret_name
+  value        = local.script_node_rendered
+  key_vault_id = var.key_vault.id
+}
+
+/*
+ * Virtual Machine Extensions
+ */
+
 resource "azurerm_virtual_machine_extension" "linux_cluster_server_setup" {
   count = var.should_deploy_script_to_vm ? 1 : 0
 

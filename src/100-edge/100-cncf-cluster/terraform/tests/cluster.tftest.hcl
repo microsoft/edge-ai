@@ -24,6 +24,7 @@ run "create_default_cluster" {
     should_assign_roles             = false
     arc_onboarding_sp               = run.setup_tests.mock_sp
     custom_locations_oid            = run.setup_tests.mock_custom_locations_oid
+    key_vault                       = run.setup_tests.key_vault
   }
 
   # Assertions for the default configuration
@@ -52,6 +53,7 @@ run "create_default_cluster_with_sp" {
     should_assign_roles             = true
     arc_onboarding_sp               = run.setup_tests.mock_sp
     custom_locations_oid            = run.setup_tests.mock_custom_locations_oid
+    key_vault                       = run.setup_tests.key_vault
   }
 
   # Assertions for the default configuration
@@ -90,6 +92,7 @@ run "create_default_cluster_with_identity" {
     should_assign_roles             = true
     arc_onboarding_identity         = run.setup_tests.mock_identity
     custom_locations_oid            = run.setup_tests.mock_custom_locations_oid
+    key_vault                       = run.setup_tests.key_vault
   }
 
   # Assertions for the default configuration with managed identity
@@ -126,6 +129,7 @@ run "create_non_default_cluster" {
     should_deploy_script_to_vm           = true
     should_assign_roles                  = true
     cluster_admin_oid                    = run.setup_tests.mock_cluster_admin_oid
+    key_vault                            = run.setup_tests.key_vault
   }
 
   # Assertions for custom configuration
@@ -157,6 +161,7 @@ run "create_multi_node_cluster" {
     should_deploy_script_to_vm      = true
     should_assign_roles             = false
     arc_onboarding_sp               = run.setup_tests.mock_sp
+    key_vault                       = run.setup_tests.key_vault
   }
 
   # Assertions for multi-node cluster configuration
@@ -188,6 +193,7 @@ run "test_optional_parameters" {
     should_skip_az_cli_login              = true
     should_skip_installing_az_cli         = true
     should_add_current_user_cluster_admin = false
+    key_vault                             = run.setup_tests.key_vault
   }
 
   # Assertions for optional parameters

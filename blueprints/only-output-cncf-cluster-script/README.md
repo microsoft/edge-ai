@@ -33,6 +33,8 @@ Both implementations create two types of scripts:
 | `should_output_cluster_server_script` | Whether to output the server script          | `true`                            |    no    |
 | `should_output_cluster_node_script`   | Whether to output the node script            | `false`                           |    no    |
 | `script_output_filepath`              | Path to output script files                  | `"./out"`                         |    no    |
+| `should_upload_to_key_vault`          | Upload scripts to Key Vault as secrets       | `false`                           |    no    |
+| `key_vault_name`                      | Name of the Key Vault                        | `"kv-{prefix}-{env}-{instance}"`  |    no    |
 
 ## Bicep Structure
 
@@ -58,7 +60,9 @@ Both implementations create two types of scripts:
 
 Ensure you have the following prerequisites:
 
-- A Key Vault to store scripts (via another blueprint or manually)
+- If using `should_upload_to_key_vault=true`:
+  - An existing Key Vault in your resource group (will be automatically found using naming convention if not specified)
+  - Or specify a custom Key Vault name with `key_vault_name`
 - Appropriate permissions to create resources
 
 ## Deploy Blueprint
