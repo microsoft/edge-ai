@@ -105,18 +105,18 @@ resource "local_sensitive_file" "cluster_node_setup_script" {
 
 // Create Key Vault Secret for Server Script
 resource "azurerm_key_vault_secret" "server_script" {
-  count = var.should_upload_to_key_vault && var.key_vault != null ? 1 : 0
+  count = var.should_upload_to_key_vault ? 1 : 0
 
-  name         = var.server_script_secret_name
+  name         = "ubuntu-k3s-server-script"
   value        = local.script_server_rendered
   key_vault_id = var.key_vault.id
 }
 
 // Create Key Vault Secret for Node Script
 resource "azurerm_key_vault_secret" "node_script" {
-  count = var.should_upload_to_key_vault && var.key_vault != null ? 1 : 0
+  count = var.should_upload_to_key_vault ? 1 : 0
 
-  name         = var.node_script_secret_name
+  name         = "ubuntu-k3s-node-script"
   value        = local.script_node_rendered
   key_vault_id = var.key_vault.id
 }
@@ -125,40 +125,38 @@ resource "azurerm_key_vault_secret" "node_script" {
  * Virtual Machine Extensions
  */
 
-resource "azurerm_virtual_machine_extension" "linux_cluster_server_setup" {
-  count = var.should_deploy_script_to_vm ? 1 : 0
+module "cluster_server_script_deployment" {
+  source = "../vm-script-deployment"
+  count  = var.should_deploy_script_to_vm ? 1 : 0
 
-  name                        = "linux-cluster-server-setup"
-  virtual_machine_id          = var.cluster_server_virtual_machine.id
-  publisher                   = "Microsoft.Azure.Extensions"
-  type                        = "CustomScript"
-  type_handler_version        = "2.1"
-  automatic_upgrade_enabled   = false
-  auto_upgrade_minor_version  = false
-  failure_suppression_enabled = false
-  protected_settings          = <<SETTINGS
-  {
-    "script": "${base64encode(local.script_server_rendered)}"
-  }
-  SETTINGS
+  depends_on = [azurerm_key_vault_secret.server_script]
+
+  extension_name     = "linux-cluster-server-setup"
+  virtual_machine_id = try(var.cluster_server_virtual_machine.id, null)
+  script_content     = var.should_use_script_from_secrets_for_deploy ? local.script_server_rendered : null
+
+  // Key Vault script deployment parameters
+  should_use_script_from_secrets_for_deploy = var.should_use_script_from_secrets_for_deploy
+  kubernetes_distro                         = "k3s"
+  node_type                                 = "server"
+  secret_name_prefix                        = var.key_vault_script_secret_prefix
+  key_vault                                 = var.key_vault
 }
 
-resource "azurerm_virtual_machine_extension" "linux_cluster_node_setup" {
-  count = var.should_deploy_script_to_vm ? try(length(var.cluster_node_virtual_machines), 0) : 0
+module "cluster_node_script_deployment" {
+  source = "../vm-script-deployment"
+  count  = var.should_deploy_script_to_vm ? try(length(var.cluster_node_virtual_machines), 0) : 0
 
-  depends_on = [azurerm_virtual_machine_extension.linux_cluster_server_setup]
+  depends_on = [module.cluster_server_script_deployment, azurerm_key_vault_secret.node_script]
 
-  name                        = "linux-cluster-node-setup"
-  virtual_machine_id          = var.cluster_node_virtual_machines[count.index].id
-  publisher                   = "Microsoft.Azure.Extensions"
-  type                        = "CustomScript"
-  type_handler_version        = "2.1"
-  automatic_upgrade_enabled   = false
-  auto_upgrade_minor_version  = false
-  failure_suppression_enabled = false
-  protected_settings          = <<SETTINGS
-  {
-    "script": "${base64encode(local.script_node_rendered)}"
-  }
-  SETTINGS
+  extension_name     = "linux-cluster-node-setup"
+  virtual_machine_id = try(var.cluster_node_virtual_machines[count.index].id, null)
+  script_content     = var.should_use_script_from_secrets_for_deploy ? local.script_node_rendered : null
+
+  // Key Vault script deployment parameters
+  should_use_script_from_secrets_for_deploy = var.should_use_script_from_secrets_for_deploy
+  kubernetes_distro                         = "k3s"
+  node_type                                 = "node"
+  secret_name_prefix                        = var.key_vault_script_secret_prefix
+  key_vault                                 = var.key_vault
 }

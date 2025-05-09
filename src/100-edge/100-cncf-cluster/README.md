@@ -8,6 +8,24 @@ This script has been tested on the following operating systems:
 
 - Azure Virtual Machine with Ubuntu 22.04 LTS
 
+## Key Features
+
+### Script Deployment Options
+
+This component now supports two methods for deploying scripts to VMs:
+
+1. **Direct Script Deployment**: The default method where the script content is embedded directly in the VM extension.
+2. **Key Vault Script Retrieval**: A more flexible method where scripts are downloaded from Azure Key Vault at runtime using the `deploy-script-secrets.sh` script.
+
+The Key Vault Script Retrieval method offers the following advantages:
+
+- Scripts can be updated in Key Vault without redeploying infrastructure
+- Script content is securely stored and retrieved only when needed
+- Different scripts can be deployed based on OS type and node type
+- Sensitive information in scripts is more secure
+
+To enable Key Vault Script Retrieval, set the variable `should_use_script_from_secrets_for_deploy` to `true` in your Terraform configuration. This is enabled by default.
+
 ## Terraform
 
 Refer to [Terraform Components - Getting Started](../README.md#terraform-components---getting-started) for

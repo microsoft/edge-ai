@@ -139,15 +139,3 @@ variable "key_vault_name" {
   description = "The name of the Key Vault to store script secrets. If not provided, defaults to 'kv-{resource_prefix}-{environment}-{instance}'."
   default     = null
 }
-
-variable "server_script_secret_name" {
-  type        = string
-  description = "The name of the key vault secret for the server script."
-  default     = "cluster-server-ubuntu-k3s"
-}
-
-variable "node_script_secret_name" {
-  type        = string
-  description = "The name of the key vault secret for the node script."
-  default     = "cluster-node-ubuntu-k3s"
-}

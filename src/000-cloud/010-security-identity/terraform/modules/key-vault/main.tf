@@ -32,3 +32,15 @@ resource "azurerm_role_assignment" "user_key_vault_secrets_officer" {
   role_definition_name = "Key Vault Secrets Officer"
   principal_id         = var.key_vault_admin_principal_id
 }
+
+// Needed to prevent creating Secrets without the Role Assignment already configured.
+resource "terraform_data" "defer" {
+  input = {
+    key_vault = {
+      id        = azurerm_key_vault.new.id
+      name      = azurerm_key_vault.new.name
+      vault_uri = azurerm_key_vault.new.vault_uri
+    }
+  }
+  depends_on = [azurerm_role_assignment.user_key_vault_secrets_officer]
+}

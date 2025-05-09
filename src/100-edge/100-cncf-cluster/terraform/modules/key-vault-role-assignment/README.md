@@ -22,9 +22,7 @@ Assigns Azure RBAC roles for Key Vault access
 | Name | Type |
 |------|------|
 | [azurerm_role_assignment.key_vault_reader](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) | resource |
-| [azurerm_role_assignment.node_script_secrets_user](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) | resource |
 | [azurerm_role_assignment.secrets_officer](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) | resource |
-| [azurerm_role_assignment.server_script_secrets_user](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) | resource |
 
 ## Inputs
 
@@ -32,7 +30,5 @@ Assigns Azure RBAC roles for Key Vault access
 |------|-------------|------|---------|:--------:|
 | arc\_onboarding\_principal\_id | The Principal ID for the identity or service principal that will be used for onboarding the cluster to Arc. | `string` | n/a | yes |
 | key\_vault | The Key Vault object containing id, name, and vault\_uri properties. | ```object({ id = string name = string vault_uri = string })``` | n/a | yes |
-| node\_script\_secret\_name | The name of the key vault secret containing the node script. | `string` | n/a | yes |
-| server\_script\_secret\_name | The name of the key vault secret containing the server script. | `string` | n/a | yes |
 <!-- markdown-table-prettify-ignore-end -->
 <!-- END_TF_DOCS -->

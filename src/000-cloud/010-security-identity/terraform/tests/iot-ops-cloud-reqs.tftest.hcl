@@ -26,7 +26,7 @@ run "create_default_configuration" {
   }
 
   assert {
-    condition     = module.key_vault[0].key_vault != null
+    condition     = module.key_vault[0] != null
     error_message = "Key vault should be created with default configuration"
   }
 
@@ -52,7 +52,7 @@ run "create_custom_key_vault_configuration" {
   }
 
   assert {
-    condition     = module.key_vault[0].key_vault != null
+    condition     = module.key_vault[0] != null
     error_message = "Key vault should be created with custom configuration"
   }
 }

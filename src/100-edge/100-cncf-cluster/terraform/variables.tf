@@ -14,6 +14,18 @@ EOF
  * Optional Variables
  */
 
+variable "should_use_script_from_secrets_for_deploy" {
+  type        = bool
+  description = "Whether to use the deploy-script-secrets.sh script to fetch and execute deployment scripts from Key Vault."
+  default     = true
+}
+
+variable "key_vault_script_secret_prefix" {
+  type        = string
+  description = "Optional prefix for the Key Vault script secret name when should_use_script_from_secrets_for_deploy is true."
+  default     = ""
+}
+
 variable "should_deploy_script_to_vm" {
   type        = bool
   description = "Should deploy the scripts to the provided Azure VMs."
@@ -52,18 +64,6 @@ variable "should_upload_to_key_vault" {
   type        = bool
   description = "Whether to upload the scripts to Key Vault as secrets."
   default     = true
-}
-
-variable "server_script_secret_name" {
-  type        = string
-  description = "The name of the key vault secret for the server script."
-  default     = "cluster-server-ubuntu-k3s"
-}
-
-variable "node_script_secret_name" {
-  type        = string
-  description = "The name of the key vault secret for the node script."
-  default     = "cluster-node-ubuntu-k3s"
 }
 
 /*

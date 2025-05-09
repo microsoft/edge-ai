@@ -21,17 +21,3 @@ resource "azurerm_role_assignment" "key_vault_reader" {
   role_definition_name = "Key Vault Reader"
   principal_id         = var.arc_onboarding_principal_id
 }
-
-// Assign Secrets User role for server script
-resource "azurerm_role_assignment" "server_script_secrets_user" {
-  scope                = "${var.key_vault.id}/secrets/${var.server_script_secret_name}"
-  role_definition_name = "Key Vault Secrets User"
-  principal_id         = var.arc_onboarding_principal_id
-}
-
-// Assign Secrets User role for node script
-resource "azurerm_role_assignment" "node_script_secrets_user" {
-  scope                = "${var.key_vault.id}/secrets/${var.node_script_secret_name}"
-  role_definition_name = "Key Vault Secrets User"
-  principal_id         = var.arc_onboarding_principal_id
-}

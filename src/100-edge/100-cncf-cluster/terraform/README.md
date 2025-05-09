@@ -58,9 +58,8 @@ install extensions for cluster connect and custom locations.
 | custom\_locations\_oid | The object id of the Custom Locations Entra ID application for your tenant. If none is provided, the script will attempt to retrieve this requiring 'Application.Read.All' or 'Directory.Read.All' permissions. ```sh az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv``` | `string` | `null` | no |
 | instance | Instance identifier for naming resources: 001, 002, etc... | `string` | `"001"` | no |
 | key\_vault | The Key Vault object containing id, name, and vault\_uri properties. | ```object({ id = string name = string vault_uri = string })``` | `null` | no |
-| node\_script\_secret\_name | The name of the key vault secret for the node script. | `string` | `"cluster-node-ubuntu-k3s"` | no |
+| key\_vault\_script\_secret\_prefix | Optional prefix for the Key Vault script secret name when should\_use\_script\_from\_secrets\_for\_deploy is true. | `string` | `""` | no |
 | script\_output\_filepath | The location of where to write out the script file. (Otherwise, '{path.root}/out') | `string` | `null` | no |
-| server\_script\_secret\_name | The name of the key vault secret for the server script. | `string` | `"cluster-server-ubuntu-k3s"` | no |
 | should\_add\_current\_user\_cluster\_admin | Gives the current logged in user cluster-admin permissions with the new cluster. | `bool` | `true` | no |
 | should\_assign\_roles | Whether to assign Key Vault roles to identity or service principal. | `bool` | `true` | no |
 | should\_deploy\_script\_to\_vm | Should deploy the scripts to the provided Azure VMs. | `bool` | `true` | no |
@@ -71,6 +70,7 @@ install extensions for cluster connect and custom locations.
 | should\_skip\_az\_cli\_login | Should skip login process with Azure CLI on the server. (Skipping assumes 'az login' has been completed prior to script execution) | `bool` | `false` | no |
 | should\_skip\_installing\_az\_cli | Should skip downloading and installing Azure CLI on the server. (Skipping assumes the server will already have the Azure CLI) | `bool` | `false` | no |
 | should\_upload\_to\_key\_vault | Whether to upload the scripts to Key Vault as secrets. | `bool` | `true` | no |
+| should\_use\_script\_from\_secrets\_for\_deploy | Whether to use the deploy-script-secrets.sh script to fetch and execute deployment scripts from Key Vault. | `bool` | `true` | no |
 
 ## Outputs
 

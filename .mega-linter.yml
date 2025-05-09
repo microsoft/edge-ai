@@ -103,6 +103,7 @@ MARKDOWN_MARKDOWN_TABLE_FORMATTER_DISABLE_ERRORS: false
 
 # Markdown Linter configuration - treat warnings as errors
 MARKDOWN_MARKDOWNLINT_DISABLE_ERRORS: false
+MARKDOWN_MARKDOWNLINT_FILTER_REGEX_EXCLUDE: '(\.copilot-tracking/.*|\.github/prompts/.*|\.github/instructions/.*)'
 
 # Terraform Format configuration
 TERRAFORM_TERRAFORM_FMT_DISABLE_ERRORS: false
