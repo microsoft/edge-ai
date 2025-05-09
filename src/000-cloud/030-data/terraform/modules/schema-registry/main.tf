@@ -56,3 +56,14 @@ resource "azurerm_role_assignment" "registry_storage_contributor" {
   // BUG: Role is never created for a new SP w/o this field: https://github.com/hashicorp/terraform-provider-azurerm/issues/11417
   skip_service_principal_aad_check = true
 }
+
+// Needed to prevent using the schema registry before role assignment configured.
+resource "terraform_data" "defer" {
+  input = {
+    schema_registry = {
+      id   = azapi_resource.schema_registry.output.id
+      name = azapi_resource.schema_registry.output.name
+    }
+  }
+  depends_on = [azurerm_role_assignment.registry_storage_contributor]
+}

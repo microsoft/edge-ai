@@ -52,6 +52,4 @@ module "edge_cncf_cluster" {
   // Key Vault related parameters
   should_upload_to_key_vault = var.should_upload_to_key_vault
   key_vault                  = try(data.azurerm_key_vault.scripts[0], null)
-  server_script_secret_name  = var.server_script_secret_name
-  node_script_secret_name    = var.node_script_secret_name
 }

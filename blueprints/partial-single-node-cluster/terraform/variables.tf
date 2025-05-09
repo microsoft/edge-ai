@@ -1,3 +1,7 @@
+/*
+ * Required Variables
+ */
+
 variable "environment" {
   type        = string
   description = "Environment for all resources in this module: dev, test, or prod"
@@ -14,10 +18,23 @@ variable "resource_prefix" {
 
 variable "location" {
   type        = string
-  description = "Location for all resources in this module"
+  description = "Azure region where resources will be deployed"
 }
 
-// CNCF Cluster General Parameters
+/*
+ * Optional Variables - General
+ */
+
+variable "instance" {
+  type        = string
+  description = "Instance identifier for naming resources: 001, 002, etc..."
+  default     = "001"
+}
+
+/*
+ * Optional Variables - CNCF Cluster
+ */
+
 variable "should_get_custom_locations_oid" {
   type        = bool
   description = <<-EOF
@@ -38,34 +55,4 @@ variable "custom_locations_oid" {
     ```
 EOF
   default     = null
-}
-
-variable "host_machine_count" {
-  type        = number
-  description = "The number of host machines for the cluster. (The first host machine will be the cluster server)"
-  default     = 3
-}
-
-variable "should_create_fabric" {
-  description = "Whether to create Fabric components."
-  type        = bool
-  default     = false
-}
-
-variable "should_create_anonymous_broker_listener" {
-  type        = string
-  description = "Whether to enable an insecure anonymous AIO MQ Broker Listener. (Should only be used for dev or test environments)"
-  default     = false
-}
-
-variable "should_create_aks" {
-  type        = bool
-  description = "Should create Azure Kubernetes Service. Default is false."
-  default     = false
-}
-
-variable "should_create_private_endpoint" {
-  type        = bool
-  description = "Should create a private endpoint for the Azure Container Registry. Default is false."
-  default     = false
 }

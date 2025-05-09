@@ -39,4 +39,8 @@ module "ci" {
   should_get_custom_locations_oid = var.should_get_custom_locations_oid
   arc_onboarding_identity         = data.azurerm_user_assigned_identity.arc
   key_vault                       = data.azurerm_key_vault.aio
+
+  // Script deployment from Key Vault parameters
+  should_use_script_from_secrets_for_deploy = var.should_use_script_from_secrets_for_deploy
+  key_vault_script_secret_prefix            = var.key_vault_script_secret_prefix
 }

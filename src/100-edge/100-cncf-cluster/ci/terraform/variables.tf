@@ -26,6 +26,22 @@ variable "instance" {
   default     = "001"
 }
 
+/*
+ * Optional - Script Deployment Parameters
+ */
+
+variable "should_use_script_from_secrets_for_deploy" {
+  type        = bool
+  description = "Whether to use the deploy-script-secrets.sh script to fetch and execute deployment scripts from Key Vault."
+  default     = true
+}
+
+variable "key_vault_script_secret_prefix" {
+  type        = string
+  description = "Optional prefix for the Key Vault script secret name when should_use_script_from_secrets_for_deploy is true."
+  default     = ""
+}
+
 variable "should_get_custom_locations_oid" {
   type        = bool
   description = <<-EOF

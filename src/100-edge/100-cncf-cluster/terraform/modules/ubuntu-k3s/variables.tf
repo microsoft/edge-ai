@@ -23,22 +23,26 @@ variable "should_output_cluster_server_script" {
 }
 
 /*
+ * Optional - Key Vault Script Deployment Parameters
+ */
+
+variable "should_use_script_from_secrets_for_deploy" {
+  type        = bool
+  description = "Whether to use the deploy-script-secrets.sh script to fetch and execute deployment scripts from Key Vault."
+}
+
+variable "key_vault_script_secret_prefix" {
+  type        = string
+  description = "Optional prefix for the Key Vault script secret name when should_use_script_from_secrets_for_deploy is true."
+}
+
+/*
  * Optional - Key Vault Parameters
  */
 
 variable "should_upload_to_key_vault" {
   type        = bool
   description = "Whether to upload the scripts to Key Vault as secrets."
-}
-
-variable "server_script_secret_name" {
-  type        = string
-  description = "The name of the key vault secret for the server script."
-}
-
-variable "node_script_secret_name" {
-  type        = string
-  description = "The name of the key vault secret for the node script."
 }
 
 /*

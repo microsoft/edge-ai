@@ -15,6 +15,7 @@ Create or use and existing a Key Vault for Secret Sync Extension
 | Name | Version |
 |------|---------|
 | azurerm | n/a |
+| terraform | n/a |
 
 ## Resources
 
@@ -22,6 +23,7 @@ Create or use and existing a Key Vault for Secret Sync Extension
 |------|------|
 | [azurerm_key_vault.new](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault) | resource |
 | [azurerm_role_assignment.user_key_vault_secrets_officer](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) | resource |
+| [terraform_data.defer](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data) | resource |
 | [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/client_config) | data source |
 
 ## Inputs

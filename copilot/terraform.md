@@ -138,6 +138,7 @@ src/
             main.tf
             variables.tf  # Variables for this internal module, has no defaults
             outputs.tf    # Outputs to be used by component to call other internal modules or just output
+            versions.tf   # Required terraform providers for this component (follow other modules versions.tf for examples)
       ci/
         terraform/        # This is a CI TERRAFORM DIRECTORY
           main.tf         # CI wrapper for deployment
@@ -338,6 +339,7 @@ For all `main.tf` files, follow this consistent organization:
 1. **Required**: Markdown formatted `/** */` comment at the top that includes:
    - Name of the component or internal module as a Title
    - Description of the component or internal module
+   - This comment at the top MUST ONLY BE IN `main.tf` files
 2. Local variables in one `locals` block, grouped by functionality
 3. `data` resources, grouped by functionality
 4. `resource` resources, grouped by functionality

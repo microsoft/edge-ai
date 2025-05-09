@@ -107,6 +107,9 @@ module "edge_cncf_cluster" {
 
   should_get_custom_locations_oid = var.should_get_custom_locations_oid
   custom_locations_oid            = var.custom_locations_oid
+
+  // Key Vault for script retrieval
+  key_vault = module.cloud_security_identity.key_vault
 }
 
 module "edge_iot_ops" {

@@ -33,7 +33,7 @@ data "azuread_service_principal" "custom_locations" {
 resource "azurerm_role_assignment" "connected_machine_onboarding" {
   count = var.should_assign_roles ? 1 : 0
 
-  principal_id         = try(var.arc_onboarding_identity.principal_id, var.arc_onboarding_sp.object_id)
+  principal_id         = try(var.arc_onboarding_identity.principal_id, var.arc_onboarding_sp.object_id, null)
   role_definition_name = "Kubernetes Cluster - Azure Arc Onboarding"
   scope                = var.resource_group.id
   // BUG: Role is never created for a new SP w/o this field: https://github.com/hashicorp/terraform-provider-azurerm/issues/11417
@@ -46,12 +46,10 @@ resource "azurerm_role_assignment" "connected_machine_onboarding" {
 
 module "key_vault_role_assignment" {
   source = "./modules/key-vault-role-assignment"
-  count  = alltrue([var.should_assign_roles, var.should_upload_to_key_vault, var.key_vault != null]) ? 1 : 0
+  count  = alltrue([var.should_assign_roles, var.should_upload_to_key_vault]) ? 1 : 0
 
   key_vault                   = var.key_vault
-  arc_onboarding_principal_id = try(var.arc_onboarding_identity.principal_id, var.arc_onboarding_sp.object_id)
-  server_script_secret_name   = var.server_script_secret_name
-  node_script_secret_name     = var.node_script_secret_name
+  arc_onboarding_principal_id = try(var.arc_onboarding_identity.principal_id, var.arc_onboarding_sp.object_id, null)
 }
 
 /*
@@ -61,32 +59,32 @@ module "key_vault_role_assignment" {
 module "ubuntu_k3s" {
   source = "./modules/ubuntu-k3s"
 
-  depends_on = [azurerm_role_assignment.connected_machine_onboarding]
+  depends_on = [azurerm_role_assignment.connected_machine_onboarding, module.key_vault_role_assignment]
 
-  aio_resource_group                   = var.resource_group
-  arc_onboarding_sp                    = var.arc_onboarding_sp
-  arc_resource_name                    = local.arc_resource_name
-  arc_tenant_id                        = data.azurerm_client_config.current.tenant_id
-  cluster_admin_oid                    = try(coalesce(var.cluster_admin_oid, local.current_user_oid), null)
-  custom_locations_oid                 = local.custom_locations_oid
-  should_enable_arc_auto_upgrade       = var.should_enable_arc_auto_upgrade
-  environment                          = var.environment
-  cluster_node_virtual_machines        = var.cluster_node_virtual_machines
-  cluster_server_ip                    = var.cluster_server_ip
-  cluster_server_token                 = var.cluster_server_token
-  cluster_server_virtual_machine       = var.cluster_server_virtual_machine
-  script_output_filepath               = var.script_output_filepath
-  should_deploy_script_to_vm           = var.should_deploy_script_to_vm
-  should_generate_cluster_server_token = var.should_generate_cluster_server_token
-  should_output_cluster_node_script    = var.should_output_cluster_node_script
-  should_output_cluster_server_script  = var.should_output_cluster_server_script
-  should_skip_az_cli_login             = var.should_skip_az_cli_login
-  should_skip_installing_az_cli        = var.should_skip_installing_az_cli
-  cluster_server_host_machine_username = coalesce(var.cluster_server_host_machine_username, var.resource_prefix)
-  key_vault                            = var.key_vault
-  should_upload_to_key_vault           = var.should_upload_to_key_vault
-  server_script_secret_name            = var.server_script_secret_name
-  node_script_secret_name              = var.node_script_secret_name
+  aio_resource_group                        = var.resource_group
+  arc_onboarding_sp                         = var.arc_onboarding_sp
+  arc_resource_name                         = local.arc_resource_name
+  arc_tenant_id                             = data.azurerm_client_config.current.tenant_id
+  cluster_admin_oid                         = try(coalesce(var.cluster_admin_oid, local.current_user_oid), null)
+  custom_locations_oid                      = local.custom_locations_oid
+  should_enable_arc_auto_upgrade            = var.should_enable_arc_auto_upgrade
+  environment                               = var.environment
+  cluster_node_virtual_machines             = var.cluster_node_virtual_machines
+  cluster_server_ip                         = var.cluster_server_ip
+  cluster_server_token                      = var.cluster_server_token
+  cluster_server_virtual_machine            = var.cluster_server_virtual_machine
+  script_output_filepath                    = var.script_output_filepath
+  should_deploy_script_to_vm                = var.should_deploy_script_to_vm
+  should_generate_cluster_server_token      = var.should_generate_cluster_server_token
+  should_output_cluster_node_script         = var.should_output_cluster_node_script
+  should_output_cluster_server_script       = var.should_output_cluster_server_script
+  should_skip_az_cli_login                  = var.should_skip_az_cli_login
+  should_skip_installing_az_cli             = var.should_skip_installing_az_cli
+  cluster_server_host_machine_username      = coalesce(var.cluster_server_host_machine_username, var.resource_prefix)
+  key_vault                                 = var.key_vault
+  should_upload_to_key_vault                = var.should_upload_to_key_vault
+  should_use_script_from_secrets_for_deploy = var.should_use_script_from_secrets_for_deploy
+  key_vault_script_secret_prefix            = var.key_vault_script_secret_prefix
 }
 
 data "azapi_resource" "arc_connected_cluster" {
