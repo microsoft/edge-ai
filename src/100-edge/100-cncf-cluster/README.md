@@ -37,11 +37,31 @@ Learn more about the required configuration by reading the [./terraform/README.m
 
 ### Virtual Machine extension
 
+Refer to [Custom Script Linux - Troubleshooting](https://learn.microsoft.com/en-us/azure/virtual-machines/extensions/custom-script-linux#troubleshooting)
+for detailed troubleshooting information.
+
+```sh
+# Go into super-user for accessing all information without needing `sudo`
+sudo su
+```
+
+List the custom-script directory for `stdout` and `stderr` files:
+
+```sh
+sudo ls -l /var/lib/waagent/custom-script/download/0/
+```
+
 Check the VM extension logs for errors, ensure you SSH into the machine:
 
 ```sh
-sudo su
-cat /var/lib/waagent/Microsoft.Azure.Extensions.CustomScript-2.1.10/status/0.status
+# Linux Agent logs, may or may not exist:
+sudo cat /var/log/waagent.log
+
+# Azure Script Extension logs:
+sudo cat /var/log/azure/custom-script/handler.log
+
+#  Additional status logs:
+sudo cat /var/lib/waagent/Microsoft.Azure.Extensions.CustomScript-2.1.10/status/0.status
 ```
 
 Check the VM extension `stdout` and `stderr` logs:
@@ -49,6 +69,16 @@ Check the VM extension `stdout` and `stderr` logs:
 ```sh
 sudo cat /var/lib/waagent/custom-script/download/0/stdout
 sudo cat /var/lib/waagent/custom-script/download/0/stderr
+```
+
+Check the logs for the services if they managed to start:
+
+```sh
+# Logs for k3s.service
+sudo journalctl -u k3s
+
+# Logs for k3s-agent.service
+sudo journalctl -u k3s-agent
 ```
 
 ## Script prerequisites

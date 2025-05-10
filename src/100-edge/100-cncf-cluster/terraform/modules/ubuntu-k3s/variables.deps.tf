@@ -13,18 +13,6 @@ variable "aio_resource_group" {
  * Optional Variables
  */
 
-variable "cluster_server_virtual_machine" {
-  type = object({
-    id = string
-  })
-}
-
-variable "cluster_node_virtual_machines" {
-  type = list(object({
-    id = string
-  }))
-}
-
 variable "arc_onboarding_sp" {
   type = object({
     client_id     = string

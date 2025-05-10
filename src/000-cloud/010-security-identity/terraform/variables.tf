@@ -38,13 +38,14 @@ variable "onboard_identity_type" {
 
     - id
     - sp
+    - skip
 EOF
   type        = string
   default     = "id"
 
   validation {
-    condition     = contains(["id", "sp"], var.onboard_identity_type)
-    error_message = "Only ['id', 'sp'] allowed for 'onboard_identity_type'"
+    condition     = contains(["id", "sp", "skip"], var.onboard_identity_type)
+    error_message = "Only ['id', 'sp', 'skip'] allowed for 'onboard_identity_type'"
   }
 }
 

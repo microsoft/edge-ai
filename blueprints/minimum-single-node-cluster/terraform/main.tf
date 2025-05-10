@@ -69,13 +69,15 @@ module "edge_cncf_cluster" {
   resource_prefix = var.resource_prefix
   instance        = var.instance
 
-  resource_group                 = module.cloud_resource_group.resource_group
-  arc_onboarding_identity        = module.cloud_security_identity.arc_onboarding_identity
-  arc_onboarding_sp              = module.cloud_security_identity.arc_onboarding_sp
-  cluster_server_virtual_machine = module.cloud_vm_host.virtual_machines[0]
+  resource_group          = module.cloud_resource_group.resource_group
+  arc_onboarding_identity = module.cloud_security_identity.arc_onboarding_identity
+  arc_onboarding_sp       = module.cloud_security_identity.arc_onboarding_sp
+  cluster_server_machine  = module.cloud_vm_host.virtual_machines[0]
 
   should_get_custom_locations_oid = var.should_get_custom_locations_oid
   custom_locations_oid            = var.custom_locations_oid
+
+  key_vault = module.cloud_security_identity.key_vault
 }
 
 module "edge_iot_ops" {

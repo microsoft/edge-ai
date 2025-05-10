@@ -50,6 +50,12 @@ variable "should_output_cluster_server_script" {
   default     = false
 }
 
+variable "should_deploy_arc_machines" {
+  type        = bool
+  description = "Should deploy to Arc-connected servers instead of Azure VMs. When true, machine_id refers to an Arc-connected server ID."
+  default     = false
+}
+
 variable "should_assign_roles" {
   description = "Whether to assign Key Vault roles to identity or service principal."
   type        = bool

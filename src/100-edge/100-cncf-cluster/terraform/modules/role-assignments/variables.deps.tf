@@ -10,3 +10,9 @@ variable "key_vault" {
   })
   description = "The Key Vault object containing id, name, and vault_uri properties."
 }
+
+variable "resource_group" {
+  type = object({
+    id = string
+  })
+}

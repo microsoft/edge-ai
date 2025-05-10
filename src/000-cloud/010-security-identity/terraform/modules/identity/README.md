@@ -35,7 +35,7 @@ Create User Assigned Managed Identities for Azure IoT Operations and assign role
 |------|-------------|------|---------|:--------:|
 | environment | Environment for all resources in this module: dev, test, or prod | `string` | n/a | yes |
 | location | Location for all resources in this module | `string` | n/a | yes |
-| onboard\_identity\_type | Identity type to use for onboarding the cluster to Azure Arc.  Allowed values:  - id - sp | `string` | n/a | yes |
+| onboard\_identity\_type | Identity type to use for onboarding the cluster to Azure Arc.  Allowed values:  - id - sp - skip | `string` | n/a | yes |
 | resource\_group | n/a | ```object({ id = string name = string })``` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
 | instance | Instance identifier for naming resources: 001, 002, etc... | `string` | `"001"` | no |

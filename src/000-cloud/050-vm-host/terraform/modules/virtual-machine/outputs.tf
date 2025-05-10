@@ -20,8 +20,9 @@ output "vm_id" {
 
 output "virtual_machine" {
   value = {
-    id   = azurerm_linux_virtual_machine.aio_edge.id
-    name = azurerm_linux_virtual_machine.aio_edge.name
+    id       = azurerm_linux_virtual_machine.aio_edge.id
+    name     = azurerm_linux_virtual_machine.aio_edge.name
+    location = azurerm_linux_virtual_machine.aio_edge.location
   }
   description = "The complete VM resource"
   sensitive   = true
