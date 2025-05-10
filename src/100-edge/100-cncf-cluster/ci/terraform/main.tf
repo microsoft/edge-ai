@@ -35,7 +35,7 @@ module "ci" {
   resource_prefix                 = var.resource_prefix
   custom_locations_oid            = var.custom_locations_oid
   resource_group                  = data.azurerm_resource_group.aio
-  cluster_server_virtual_machine  = data.azurerm_virtual_machine.aio
+  cluster_server_machine          = data.azurerm_virtual_machine.aio
   should_get_custom_locations_oid = var.should_get_custom_locations_oid
   arc_onboarding_identity         = data.azurerm_user_assigned_identity.arc
   key_vault                       = data.azurerm_key_vault.aio

@@ -13,18 +13,26 @@ variable "resource_group" {
  * Optional Variables
  */
 
-variable "cluster_server_virtual_machine" {
+variable "cluster_server_machine" {
   type = object({
-    id = string
+    id       = string
+    location = string
   })
   default = null
 }
 
-variable "cluster_node_virtual_machines" {
+variable "cluster_node_machine" {
   type = list(object({
-    id = string
+    id       = string
+    location = string
   }))
   default = null
+}
+
+variable "arc_onboarding_principal_ids" {
+  type        = list(string)
+  description = "The Principal IDs for a pre-existing identity that will be used for onboarding the cluster to Arc."
+  default     = null
 }
 
 variable "arc_onboarding_identity" {
@@ -35,8 +43,13 @@ variable "arc_onboarding_identity" {
   default = null
 
   validation {
-    condition     = !var.should_assign_roles || anytrue([var.arc_onboarding_identity != null, var.arc_onboarding_sp != null])
-    error_message = "Either 'arc_onboarding_identity' or 'arc_onboarding_sp' required when should_assign_roles is 'true'"
+    condition     = !var.should_assign_roles || anytrue([var.arc_onboarding_identity != null, var.arc_onboarding_sp != null, var.arc_onboarding_principal_ids != null])
+    error_message = "Either 'arc_onboarding_identity', 'arc_onboarding_sp', or 'arc_onboarding_principal_ids' required when should_assign_roles is 'true'"
+  }
+
+  validation {
+    condition     = !var.should_assign_roles || (sum([var.arc_onboarding_identity != null ? 1 : 0, var.arc_onboarding_sp != null ? 1 : 0, var.arc_onboarding_principal_ids != null ? 1 : 0]) <= 1)
+    error_message = "Only one of 'arc_onboarding_identity', 'arc_onboarding_sp', or 'arc_onboarding_principal_ids' can be provided"
   }
 }
 

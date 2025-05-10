@@ -7,9 +7,11 @@
  */
 
 locals {
-  arc_resource_name    = "arck-${var.resource_prefix}-${var.environment}-${var.instance}"
-  custom_locations_oid = try(coalesce(var.custom_locations_oid, data.azuread_service_principal.custom_locations[0].object_id), "")
-  current_user_oid     = var.should_add_current_user_cluster_admin ? data.azurerm_client_config.current.object_id : null
+  arc_resource_name            = "arck-${var.resource_prefix}-${var.environment}-${var.instance}"
+  custom_locations_oid         = try(coalesce(var.custom_locations_oid), data.azuread_service_principal.custom_locations[0].object_id, "")
+  current_user_oid             = var.should_add_current_user_cluster_admin ? data.azurerm_client_config.current.object_id : null
+  should_use_principal_ids     = var.arc_onboarding_principal_ids != null
+  arc_onboarding_principal_ids = local.should_use_principal_ids ? var.arc_onboarding_principal_ids : [try(var.arc_onboarding_identity.principal_id, var.arc_onboarding_sp.object_id, null)]
 }
 
 /*
@@ -30,26 +32,14 @@ data "azuread_service_principal" "custom_locations" {
  * Role Assignments
  */
 
-resource "azurerm_role_assignment" "connected_machine_onboarding" {
-  count = var.should_assign_roles ? 1 : 0
+module "role_assignments" {
+  source = "./modules/role-assignments"
+  count  = var.should_assign_roles ? 1 : 0
 
-  principal_id         = try(var.arc_onboarding_identity.principal_id, var.arc_onboarding_sp.object_id, null)
-  role_definition_name = "Kubernetes Cluster - Azure Arc Onboarding"
-  scope                = var.resource_group.id
-  // BUG: Role is never created for a new SP w/o this field: https://github.com/hashicorp/terraform-provider-azurerm/issues/11417
-  skip_service_principal_aad_check = true
-}
-
-/*
- * Key Vault Role Assignments
- */
-
-module "key_vault_role_assignment" {
-  source = "./modules/key-vault-role-assignment"
-  count  = alltrue([var.should_assign_roles, var.should_upload_to_key_vault]) ? 1 : 0
-
-  key_vault                   = var.key_vault
-  arc_onboarding_principal_id = try(var.arc_onboarding_identity.principal_id, var.arc_onboarding_sp.object_id, null)
+  resource_group               = var.resource_group
+  key_vault                    = var.key_vault
+  should_upload_to_key_vault   = var.should_upload_to_key_vault
+  arc_onboarding_principal_ids = local.arc_onboarding_principal_ids
 }
 
 /*
@@ -59,7 +49,7 @@ module "key_vault_role_assignment" {
 module "ubuntu_k3s" {
   source = "./modules/ubuntu-k3s"
 
-  depends_on = [azurerm_role_assignment.connected_machine_onboarding, module.key_vault_role_assignment]
+  depends_on = [module.role_assignments]
 
   aio_resource_group                        = var.resource_group
   arc_onboarding_sp                         = var.arc_onboarding_sp
@@ -69,12 +59,9 @@ module "ubuntu_k3s" {
   custom_locations_oid                      = local.custom_locations_oid
   should_enable_arc_auto_upgrade            = var.should_enable_arc_auto_upgrade
   environment                               = var.environment
-  cluster_node_virtual_machines             = var.cluster_node_virtual_machines
   cluster_server_ip                         = var.cluster_server_ip
   cluster_server_token                      = var.cluster_server_token
-  cluster_server_virtual_machine            = var.cluster_server_virtual_machine
   script_output_filepath                    = var.script_output_filepath
-  should_deploy_script_to_vm                = var.should_deploy_script_to_vm
   should_generate_cluster_server_token      = var.should_generate_cluster_server_token
   should_output_cluster_node_script         = var.should_output_cluster_node_script
   should_output_cluster_server_script       = var.should_output_cluster_server_script
@@ -84,7 +71,6 @@ module "ubuntu_k3s" {
   key_vault                                 = var.key_vault
   should_upload_to_key_vault                = var.should_upload_to_key_vault
   should_use_script_from_secrets_for_deploy = var.should_use_script_from_secrets_for_deploy
-  key_vault_script_secret_prefix            = var.key_vault_script_secret_prefix
 }
 
 data "azapi_resource" "arc_connected_cluster" {
@@ -94,7 +80,89 @@ data "azapi_resource" "arc_connected_cluster" {
   parent_id = var.resource_group.id
   name      = local.arc_resource_name
 
-  depends_on = [module.ubuntu_k3s]
+  depends_on = [module.cluster_server_script_deployment, module.cluster_server_arc_script_deployment]
 
   response_export_values = ["name", "id", "location", "properties.oidcIssuerProfile.issuerUrl"]
+}
+
+/*
+ * Virtual Machine Extensions
+ */
+
+module "cluster_server_script_deployment" {
+  source = "./modules/vm-script-deployment"
+  count  = var.should_deploy_script_to_vm && !var.should_deploy_arc_machines ? 1 : 0
+
+  depends_on = [module.ubuntu_k3s]
+
+  extension_name = "linux-cluster-server-setup"
+  machine_id     = try(var.cluster_server_machine.id, null)
+  script_content = module.ubuntu_k3s.server_script_content
+
+  // Key Vault script deployment parameters
+  should_use_script_from_secrets_for_deploy = var.should_use_script_from_secrets_for_deploy
+  kubernetes_distro                         = "k3s"
+  node_type                                 = "server"
+  secret_name_prefix                        = var.key_vault_script_secret_prefix
+  key_vault                                 = var.key_vault
+}
+
+module "cluster_node_script_deployment" {
+  source = "./modules/vm-script-deployment"
+  count  = var.should_deploy_script_to_vm && !var.should_deploy_arc_machines ? try(length(var.cluster_node_machine), 0) : 0
+
+  depends_on = [module.cluster_server_script_deployment, module.ubuntu_k3s]
+
+  extension_name = "linux-cluster-node-setup"
+  machine_id     = try(var.cluster_node_machine[count.index].id, null)
+  script_content = module.ubuntu_k3s.node_script_content
+
+  // Key Vault script deployment parameters
+  should_use_script_from_secrets_for_deploy = var.should_use_script_from_secrets_for_deploy
+  kubernetes_distro                         = "k3s"
+  node_type                                 = "node"
+  secret_name_prefix                        = var.key_vault_script_secret_prefix
+  key_vault                                 = var.key_vault
+}
+
+/*
+ * Arc-Connected Server Extensions
+ */
+
+module "cluster_server_arc_script_deployment" {
+  source = "./modules/arc-server-script-deployment"
+  count  = var.should_deploy_arc_machines ? 1 : 0
+
+  depends_on = [module.ubuntu_k3s]
+
+  extension_name = "linux-cluster-server-setup"
+  arc_machine_id = var.cluster_server_machine.id
+  location       = var.cluster_server_machine.location
+  script_content = module.ubuntu_k3s.server_script_content
+
+  // Key Vault script deployment parameters
+  should_use_script_from_secrets_for_deploy = var.should_use_script_from_secrets_for_deploy
+  kubernetes_distro                         = "k3s"
+  node_type                                 = "server"
+  secret_name_prefix                        = var.key_vault_script_secret_prefix
+  key_vault                                 = var.key_vault
+}
+
+module "cluster_node_arc_script_deployment" {
+  source = "./modules/arc-server-script-deployment"
+  count  = var.should_deploy_arc_machines ? try(length(var.cluster_node_machine), 0) : 0
+
+  depends_on = [module.cluster_server_arc_script_deployment, module.ubuntu_k3s]
+
+  extension_name = "linux-cluster-node-setup"
+  arc_machine_id = var.cluster_node_machine[count.index].id
+  location       = var.cluster_node_machine[count.index].location
+  script_content = module.ubuntu_k3s.node_script_content
+
+  // Key Vault script deployment parameters
+  should_use_script_from_secrets_for_deploy = var.should_use_script_from_secrets_for_deploy
+  kubernetes_distro                         = "k3s"
+  node_type                                 = "node"
+  secret_name_prefix                        = var.key_vault_script_secret_prefix
+  key_vault                                 = var.key_vault
 }

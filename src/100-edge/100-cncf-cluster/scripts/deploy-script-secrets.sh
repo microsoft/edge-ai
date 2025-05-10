@@ -148,6 +148,6 @@ chmod +x "$SCRIPT_PATH"
 
 # Execute the downloaded script
 log "Executing the downloaded script..."
-eval "bash $SCRIPT_PATH"
+sudo bash "$SCRIPT_PATH"
 
 log "Script execution completed successfully"

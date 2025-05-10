@@ -7,5 +7,6 @@ variable "onboard_identity_type" {
 
     - id
     - sp
+    - skip
 EOF
 }

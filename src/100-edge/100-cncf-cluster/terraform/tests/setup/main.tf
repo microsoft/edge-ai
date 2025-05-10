@@ -14,12 +14,6 @@ locals {
   resource_prefix      = "a${random_string.prefix.id}"
   resource_group_name  = "rg-${local.resource_prefix}"
   resource_group_id    = "${local.subscription_id_part}/resourceGroups/${local.resource_group_name}"
-  virtual_machine_name = "vm-${local.resource_prefix}"
-  virtual_machine_id   = "${local.resource_group_id}/providers/Microsoft.Compute/virtualMachines/${local.virtual_machine_name}"
-
-  # Additional mocks for node VMs
-  node_vm_names = ["vm-node1-${local.resource_prefix}", "vm-node2-${local.resource_prefix}"]
-  node_vm_ids   = [for name in local.node_vm_names : "${local.resource_group_id}/providers/Microsoft.Compute/virtualMachines/${name}"]
 
   # Mock identity for Arc onboarding
   identity_name = "id-${local.resource_prefix}-arc"
@@ -42,20 +36,6 @@ output "aio_resource_group" {
     id       = local.resource_group_id
     location = local.location
   }
-}
-
-output "aio_virtual_machine" {
-  value = {
-    name = local.virtual_machine_name
-    id   = local.virtual_machine_id
-  }
-}
-
-output "aio_node_virtual_machines" {
-  value = [for i, name in local.node_vm_names : {
-    name = name
-    id   = local.node_vm_ids[i]
-  }]
 }
 
 output "mock_sp" {
@@ -86,5 +66,12 @@ output "key_vault" {
     id        = "${local.resource_group_id}/providers/Microsoft.KeyVault/vaults/mock-key-vault"
     name      = "mock-key-vault"
     vault_uri = "mock-key-vault-uri"
+  }
+}
+
+output "cluster_server_machine" {
+  value = {
+    id       = "${local.resource_group_id}/providers/Microsoft.Compute/virtualMachines/mock-vm"
+    location = local.location
   }
 }

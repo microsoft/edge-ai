@@ -2,15 +2,19 @@
  * Required Machine Variables
  */
 
-variable "machine_id" {
+variable "arc_machine_id" {
   type        = string
-  description = "The ID of the machine (VM or Arc-connected server) to deploy the script to."
+  description = "The ID of the Azure Arc-connected machine to deploy the script to."
 }
 
+variable "location" {
+  type        = string
+  description = "The Azure region where the Arc-connected machine is registered."
+}
 
 variable "os_type" {
   type        = string
-  description = "The OS type of the virtual machine (currently only 'linux' is supported)."
+  description = "The OS type of the machine (currently only 'linux' is supported)."
   default     = "linux"
 
   validation {
@@ -21,7 +25,7 @@ variable "os_type" {
 
 variable "extension_name" {
   type        = string
-  description = "The name of the VM extension."
+  description = "The name of the Arc machine extension."
 }
 
 /*
@@ -68,3 +72,8 @@ variable "key_vault" {
   description = "The Key Vault object containing id, name, and vault_uri properties."
   default     = null
 }
+
+/*
+ * Authentication Variables
+ */
+

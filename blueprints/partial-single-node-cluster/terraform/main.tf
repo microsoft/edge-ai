@@ -6,6 +6,7 @@
  * such as IoT Ops, Observability, or Messaging.
  *
  * This blueprint will:
+ *
  * 1. Deploy required cloud components (Resource Group, Security/Identity, VM Host)
  * 2. Deploy the CNCF cluster using scripts from Key Vault
  * 3. Ensure proper role assignments for Key Vault access
@@ -58,11 +59,12 @@ module "edge_cncf_cluster" {
   resource_prefix = var.resource_prefix
   instance        = var.instance
 
-  resource_group                 = module.cloud_resource_group.resource_group
-  arc_onboarding_identity        = module.cloud_security_identity.arc_onboarding_identity
-  arc_onboarding_sp              = module.cloud_security_identity.arc_onboarding_sp
-  cluster_server_virtual_machine = module.cloud_vm_host.virtual_machines[0]
+  resource_group          = module.cloud_resource_group.resource_group
+  arc_onboarding_identity = module.cloud_security_identity.arc_onboarding_identity
+  arc_onboarding_sp       = module.cloud_security_identity.arc_onboarding_sp
+  cluster_server_machine  = module.cloud_vm_host.virtual_machines[0]
 
+  should_deploy_arc_machines      = false
   should_get_custom_locations_oid = var.should_get_custom_locations_oid
   custom_locations_oid            = var.custom_locations_oid
 

@@ -17,6 +17,9 @@ You will ALWAYS think hard about helping the user create a pull request.
 
          # Include markdown files if requested (by leaving off --no-md-diff).
          ./scripts/pr-ref-gen.sh
+
+         # Based off a different branch.
+         ./scripts/pr-ref-gen.sh --no-md-diff --base-branch {full_branch_name}
          ```
 
       - Note the total line count from the output (e.g., "Lines: 7641")

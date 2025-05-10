@@ -32,13 +32,6 @@ along with installing extensions for cluster connect and custom locations.
 | [local_sensitive_file.cluster_server_setup_script](https://registry.terraform.io/providers/hashicorp/local/latest/docs/resources/sensitive_file) | resource |
 | [random_string.cluster_server_token](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/string) | resource |
 
-## Modules
-
-| Name | Source | Version |
-|------|--------|---------|
-| cluster\_node\_script\_deployment | ../vm-script-deployment | n/a |
-| cluster\_server\_script\_deployment | ../vm-script-deployment | n/a |
-
 ## Inputs
 
 | Name | Description | Type | Default | Required |
@@ -48,16 +41,12 @@ along with installing extensions for cluster connect and custom locations.
 | arc\_resource\_name | The name of the new Azure Arc resource. | `string` | n/a | yes |
 | arc\_tenant\_id | The ID of the Tenant for the new Azure Arc resource. | `string` | n/a | yes |
 | cluster\_admin\_oid | The Object ID that will be given cluster-admin permissions with the new cluster. (Otherwise, current logged in user if 'should\_add\_current\_user\_cluster\_admin=true') | `string` | n/a | yes |
-| cluster\_node\_virtual\_machines | n/a | ```list(object({ id = string }))``` | n/a | yes |
 | cluster\_server\_host\_machine\_username | Username used for the host machines that will be given kube-config settings on setup. (Otherwise, 'resource\_prefix' if it exists as a user) | `string` | n/a | yes |
 | cluster\_server\_ip | The IP address for the server for the cluster. (Needed for mult-node cluster) | `string` | n/a | yes |
 | cluster\_server\_token | The token that will be given to the server for the cluster or used by the agent nodes to connect them to the cluster. (ex. <https://docs.k3s.io/cli/token>) | `string` | n/a | yes |
-| cluster\_server\_virtual\_machine | n/a | ```object({ id = string })``` | n/a | yes |
 | custom\_locations\_oid | The object id of the Custom Locations Entra ID application for your tenant. If none is provided, the script will attempt to retrieve this requiring 'Application.Read.All' or 'Directory.Read.All' permissions. ```sh az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv``` | `string` | n/a | yes |
 | environment | Environment for all resources in this module: dev, test, or prod | `string` | n/a | yes |
-| key\_vault\_script\_secret\_prefix | Optional prefix for the Key Vault script secret name when should\_use\_script\_from\_secrets\_for\_deploy is true. | `string` | n/a | yes |
 | script\_output\_filepath | The location of where to write out the script file. (Otherwise, '{path.root}/out') | `string` | n/a | yes |
-| should\_deploy\_script\_to\_vm | Should deploy the scripts to the provided Azure VMs. | `bool` | n/a | yes |
 | should\_enable\_arc\_auto\_upgrade | Enable or disable auto-upgrades of Arc agents. (Otherwise, 'false' for 'env=prod' else 'true' for all other envs). | `bool` | n/a | yes |
 | should\_generate\_cluster\_server\_token | Should generate token used by the server. ('cluster\_server\_token' must be null if this is 'true') | `bool` | n/a | yes |
 | should\_output\_cluster\_node\_script | Whether to write out the script for setting up cluster node host machines. (Needed for multi-node clusters) | `bool` | n/a | yes |
@@ -73,8 +62,10 @@ along with installing extensions for cluster connect and custom locations.
 | Name | Description |
 |------|-------------|
 | cluster\_server\_token | The token used by the server in the cluster for node authentication. ('null' if the server is responsible for generating the token) |
+| node\_script\_content | The content of the node setup script. |
 | node\_script\_secret\_download\_command | Az CLI command to download the node script secret. |
 | node\_script\_secret\_name | The name of the secret for the cluster node script. |
+| server\_script\_content | The content of the server setup script. |
 | server\_script\_secret\_download\_command | Az CLI command to download the server script secret. |
 | server\_script\_secret\_name | The name of the secret for the cluster server script. |
 <!-- markdown-table-prettify-ignore-end -->

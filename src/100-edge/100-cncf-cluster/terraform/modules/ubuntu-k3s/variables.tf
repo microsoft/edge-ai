@@ -2,11 +2,6 @@
  * Optional
  */
 
-variable "should_deploy_script_to_vm" {
-  type        = bool
-  description = "Should deploy the scripts to the provided Azure VMs."
-}
-
 variable "script_output_filepath" {
   type        = string
   description = "The location of where to write out the script file. (Otherwise, '{path.root}/out')"
@@ -29,11 +24,6 @@ variable "should_output_cluster_server_script" {
 variable "should_use_script_from_secrets_for_deploy" {
   type        = bool
   description = "Whether to use the deploy-script-secrets.sh script to fetch and execute deployment scripts from Key Vault."
-}
-
-variable "key_vault_script_secret_prefix" {
-  type        = string
-  description = "Optional prefix for the Key Vault script secret name when should_use_script_from_secrets_for_deploy is true."
 }
 
 /*

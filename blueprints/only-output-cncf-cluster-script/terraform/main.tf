@@ -35,6 +35,8 @@ module "edge_cncf_cluster" {
   should_output_cluster_node_script   = var.should_output_cluster_node_script
   should_deploy_script_to_vm          = false
 
+  should_deploy_arc_machines = false
+
   arc_onboarding_identity               = try(data.azurerm_user_assigned_identity.arc[0], null)
   arc_onboarding_sp                     = var.arc_onboarding_sp
   environment                           = var.environment

@@ -183,8 +183,8 @@ blueprints/
 - ALWAYS search the codebase for existing Terraform resources to use as a reference when editing
 - When no reference exists:
   1. Use the `#fetch` tool with the HashiCorp Registry to find the latest documentation for the resource:
-     - Example URL format: `https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/{resource_name}`
-     - Example: `https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/container_registry`
+     - Example URL format: `https://raw.githubusercontent.com/hashicorp/terraform-provider-azurerm/main/website/docs/r/{resource_name}.html.markdown`
+     - Example: `https://raw.githubusercontent.com/hashicorp/terraform-provider-azurerm/main/website/docs/r/arc_machine_extension.html.markdown`
   2. Always check for deprecated fields and use the latest recommended properties
   3. Check for any specific provider version requirements
   4. Review examples to understand common usage patterns

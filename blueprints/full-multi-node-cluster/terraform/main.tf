@@ -97,16 +97,17 @@ module "edge_cncf_cluster" {
   environment     = var.environment
   resource_prefix = var.resource_prefix
 
-  resource_group                       = module.cloud_resource_group.resource_group
-  arc_onboarding_identity              = module.cloud_security_identity.arc_onboarding_identity
-  arc_onboarding_sp                    = module.cloud_security_identity.arc_onboarding_sp
-  cluster_server_virtual_machine       = module.cloud_vm_host.virtual_machines[0]
-  cluster_node_virtual_machines        = slice(module.cloud_vm_host.virtual_machines, 1, length(module.cloud_vm_host.virtual_machines))
-  cluster_server_ip                    = module.cloud_vm_host.private_ips[0]
-  should_generate_cluster_server_token = true
+  resource_group          = module.cloud_resource_group.resource_group
+  arc_onboarding_identity = module.cloud_security_identity.arc_onboarding_identity
+  arc_onboarding_sp       = module.cloud_security_identity.arc_onboarding_sp
+  cluster_server_machine  = module.cloud_vm_host.virtual_machines[0]
+  cluster_node_machine    = slice(module.cloud_vm_host.virtual_machines, 1, length(module.cloud_vm_host.virtual_machines))
+  cluster_server_ip       = module.cloud_vm_host.private_ips[0]
 
-  should_get_custom_locations_oid = var.should_get_custom_locations_oid
-  custom_locations_oid            = var.custom_locations_oid
+  should_deploy_arc_machines           = false
+  should_generate_cluster_server_token = true
+  should_get_custom_locations_oid      = var.should_get_custom_locations_oid
+  custom_locations_oid                 = var.custom_locations_oid
 
   // Key Vault for script retrieval
   key_vault = module.cloud_security_identity.key_vault
