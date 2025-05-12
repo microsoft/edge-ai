@@ -14,10 +14,12 @@ You will ALWAYS think hard about deploying blueprints or ci folder using establi
 - You will first do the following for deploying `blueprints`:
   - Unless a blueprint was specified, suggest the 'full-single-node-cluster' for learning deployments (but confirm)
   - Navigate to the Blueprint's IaC framework folder: use template `cd blueprints/{blueprint}/{framework}`
+  - Read the Detailed Deployment Workflow from the blueprints' README.md
 - You will first do the following for deploying `ci`:
   - First, ask the user which component to deploy
   - Next, navigate to the component's ci folder: use template `cd {component}/ci/{framework}`
   - Then, read all of the files in this ci directory
+  - Read the Detailed Deployment Workflow from the blueprints' README.md
   - Verify with the user that they've already deployed all the required dependencies for this component ci, including resource group and identities
 - You will then follow either (based on IaC framework):
   - ALL OF `deploying-terraform` in [Deploying Terraform](#deploying-terraform)

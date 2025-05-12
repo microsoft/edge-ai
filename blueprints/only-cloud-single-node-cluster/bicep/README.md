@@ -118,6 +118,7 @@ Deploys Azure observability resources including Azure Monitor Workspace, Log Ana
 |logRetentionInDays|Log Analytics Workspace retention in days|`int`|30|no|
 |dailyQuotaInGb|Log Analytics Workspace daily quota in GB|`int`|10|no|
 |grafanaMajorVersion|Grafana major version|`string`|10|no|
+|grafanaAdminPrincipalId|The principalId (objectId) of the user or service principal to assign the Grafana Admin role.|`string`|n/a|no|
 |logsDataCollectionRuleNamespaces|List of cluster namespaces to be exposed in the log analytics workspace|`array`|['kube-system', 'gatekeeper-system', 'azure-arc', 'azure-iot-operations']|no|
 |logsDataCollectionRuleStreams|List of streams to be enabled in the log analytics workspace|`array`|['Microsoft-ContainerLog', 'Microsoft-ContainerLogV2', 'Microsoft-KubeEvents', 'Microsoft-KubePodInventory', 'Microsoft-KubeNodeInventory', 'Microsoft-KubePVInventory', 'Microsoft-KubeServices', 'Microsoft-KubeMonAgentEvents', 'Microsoft-InsightsMetrics', 'Microsoft-ContainerInventory', 'Microsoft-ContainerNodeInventory', 'Microsoft-Perf']|no|
 
@@ -131,6 +132,7 @@ Deploys Azure observability resources including Azure Monitor Workspace, Log Ana
 |containerInsightsSolution|`Microsoft.OperationsManagement/solutions`|2015-11-01-preview|
 |grafanaLogsReaderRole|`Microsoft.Authorization/roleAssignments`|2022-04-01|
 |grafanaMetricsReaderRole|`Microsoft.Authorization/roleAssignments`|2022-04-01|
+|grafanaAdminRole|`Microsoft.Authorization/roleAssignments`|2022-04-01|
 |dataCollectionEndpoint|`Microsoft.Insights/dataCollectionEndpoints`|2023-03-11|
 |logsDataCollectionRule|`Microsoft.Insights/dataCollectionRules`|2023-03-11|
 |metricsDataCollectionRule|`Microsoft.Insights/dataCollectionRules`|2023-03-11|
@@ -143,6 +145,8 @@ Deploys Azure observability resources including Azure Monitor Workspace, Log Ana
 |logAnalyticsName|`string`|The Log Analytics Workspace name.|
 |logAnalyticsId|`string`|The Log Analytics Workspace ID.|
 |grafanaName|`string`|The Azure Managed Grafana name.|
+|metricsDataCollectionRuleName|`string`|The metrics data collection rule name.|
+|logsDataCollectionRuleName|`string`|The logs data collection rule name.|
 
 ### cloudData
 
@@ -191,9 +195,9 @@ Deploys Azure cloud messaging resources including Event Hubs, Service Bus, and E
 | :--- | :--- | :--- | :--- | :--- |
 |common|The common component configuration.|`[_2.Common](#user-defined-types)`|n/a|yes|
 |tags|Additional tags to add to the resources.|`object`|{}|no|
-|aioIdentity|The User-Assigned Managed Identity for Azure IoT Operations.|`[_1.AIOIdentity](#user-defined-types)`|n/a|yes|
-|shouldCreateEventHubs|Whether to create Event Hubs resources.|`bool`|True|no|
-|eventHubsConfig|The configuration for the Event Hubs Namespace.|`[_1.EventHubsConfig](#user-defined-types)`|n/a|no|
+|aioIdentityName|The User-Assigned Managed Identity for Azure IoT Operations.|`string`|n/a|yes|
+|shouldCreateEventHub|Whether to create Event Hubs resources.|`bool`|True|no|
+|eventHubConfig|The configuration for the Event Hubs Namespace.|`[_1.EventHubConfig](#user-defined-types)`|n/a|no|
 |shouldCreateEventGrid|Whether to create Event Grid resources.|`bool`|True|no|
 |eventGridConfig|The configuration for the Event Grid Domain.|`[_1.EventGridConfig](#user-defined-types)`|n/a|no|
 
@@ -201,18 +205,20 @@ Deploys Azure cloud messaging resources including Event Hubs, Service Bus, and E
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|eventHubs|`Microsoft.Resources/deployments`|2022-09-01|
+|eventHub|`Microsoft.Resources/deployments`|2022-09-01|
 |eventGrid|`Microsoft.Resources/deployments`|2022-09-01|
 
 #### Outputs for cloudMessaging
 
 |Name|Type|Description|
 | :--- | :--- | :--- |
-|eventHubsNamespaceName|`string`|The Event Hubs Namespace name.|
-|eventHubsNamespaceId|`string`|The Event Hubs Namespace ID.|
+|eventHubNamespaceName|`string`|The Event Hubs Namespace name.|
+|eventHubNamespaceId|`string`|The Event Hubs Namespace ID.|
 |eventHubNames|`array`|The list of Event Hub names created in the namespace.|
 |eventGridTopicNames|`string`|The Event Grid topic name created.|
 |eventGridMqttEndpoint|`string`|The Event Grid endpoint URL for MQTT connections|
+|eventHubConfig|`object`|The Event Hub configuration object for edge messaging.|
+|eventGridConfig|`object`|The Event Grid configuration object for edge messaging.|
 
 ### cloudVmHost
 

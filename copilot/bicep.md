@@ -119,6 +119,7 @@ blueprints/
 - DO use the existing API version when modifying existing resources
 - DO use the latest API version for new resources
 - DO update resources to use the latest API version when making significant changes
+- DO use the tool `#azureBicepGetResourceSchema` to get the latest API version
 
 Example of API version standardization:
 

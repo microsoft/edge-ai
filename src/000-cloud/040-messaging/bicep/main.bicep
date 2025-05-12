@@ -88,3 +88,20 @@ output eventGridTopicNames string = shouldCreateEventGrid ? eventGrid.outputs.to
 
 @description('The Event Grid endpoint URL for MQTT connections')
 output eventGridMqttEndpoint string = shouldCreateEventGrid ? eventGrid.outputs.mqttEndpoint : ''
+
+@description('The Event Hub configuration object for edge messaging.')
+output eventHubConfig object = shouldCreateEventHub
+  ? {
+      namespaceName: eventHub.outputs.namespaceName
+      eventHubName: length(eventHub.outputs.eventHubNames) > 0 ? eventHub.outputs.eventHubNames[0] : ''
+    }
+  : {}
+
+@description('The Event Grid configuration object for edge messaging.')
+output eventGridConfig object = shouldCreateEventGrid
+  ? {
+      name: eventGrid.outputs.namespaceName
+      topicName: eventGrid.outputs.topicSpaceName
+      endpoint: eventGrid.outputs.mqttEndpoint
+    }
+  : {}

@@ -183,6 +183,40 @@ module edgeIotOps '../../../src/100-edge/110-iot-ops/bicep/main.bicep' = {
   }
 }
 
+module edgeObservability '../../../src/100-edge/120-observability/bicep/main.bicep' = {
+  name: '${deployment().name}-edgeObservability'
+  scope: resourceGroup(resourceGroupName)
+  dependsOn: [cloudResourceGroup]
+  params: {
+    arcConnectedClusterName: edgeCncfCluster.outputs.connectedClusterName
+    azureMonitorWorkspaceName: cloudObservability.outputs.monitorWorkspaceName
+    logAnalyticsWorkspaceName: cloudObservability.outputs.logAnalyticsName
+    azureManagedGrafanaName: cloudObservability.outputs.grafanaName
+    metricsDataCollectionRuleName: cloudObservability.outputs.metricsDataCollectionRuleName
+    logsDataCollectionRuleName: cloudObservability.outputs.logsDataCollectionRuleName
+  }
+}
+
+module edgeMessaging '../../../src/100-edge/130-messaging/bicep/main.bicep' = {
+  name: '${deployment().name}-edgeMessaging'
+  scope: resourceGroup(resourceGroupName)
+  dependsOn: [cloudResourceGroup]
+  params: {
+    // Common parameters
+    common: common
+
+    // Resource references
+    aioIdentityName: cloudSecurityIdentity.outputs.aioIdentityName
+    aioCustomLocationName: edgeIotOps.outputs.customLocationName
+    aioInstanceName: edgeIotOps.outputs.aioInstanceName
+    aioDataflowProfileName: edgeIotOps.outputs.dataFlowProfileName
+
+    // Optional event hub and event grid parameters passed from cloud messaging
+    eventHub: cloudMessaging.outputs.eventHubConfig
+    eventGrid: cloudMessaging.outputs.eventGridConfig
+  }
+}
+
 /*
   Outputs
 */
