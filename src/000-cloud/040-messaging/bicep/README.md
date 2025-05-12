@@ -12,9 +12,9 @@ Deploys Azure cloud messaging resources including Event Hubs, Service Bus, and E
 | :--- | :--- | :--- | :--- | :--- |
 |common|The common component configuration.|`[_2.Common](#user-defined-types)`|n/a|yes|
 |tags|Additional tags to add to the resources.|`object`|{}|no|
-|aioIdentity|The User-Assigned Managed Identity for Azure IoT Operations.|`[_1.AIOIdentity](#user-defined-types)`|n/a|yes|
-|shouldCreateEventHubs|Whether to create Event Hubs resources.|`bool`|`true`|no|
-|eventHubsConfig|The configuration for the Event Hubs Namespace.|`[_1.EventHubsConfig](#user-defined-types)`|n/a|no|
+|aioIdentityName|The User-Assigned Managed Identity for Azure IoT Operations.|`string`|n/a|yes|
+|shouldCreateEventHub|Whether to create Event Hubs resources.|`bool`|`true`|no|
+|eventHubConfig|The configuration for the Event Hubs Namespace.|`[_1.EventHubConfig](#user-defined-types)`|n/a|no|
 |shouldCreateEventGrid|Whether to create Event Grid resources.|`bool`|`true`|no|
 |eventGridConfig|The configuration for the Event Grid Domain.|`[_1.EventGridConfig](#user-defined-types)`|n/a|no|
 
@@ -22,40 +22,41 @@ Deploys Azure cloud messaging resources including Event Hubs, Service Bus, and E
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|eventHubs|`Microsoft.Resources/deployments`|2022-09-01|
+|eventHub|`Microsoft.Resources/deployments`|2022-09-01|
 |eventGrid|`Microsoft.Resources/deployments`|2022-09-01|
 
 ## Modules
 
 |Name|Description|
 | :--- | :--- |
-|eventHubs|Deploys Azure Event Hubs Namespace with Event Hubs, partitions, and consumer groups.|
+|eventHub|Deploys Azure Event Hubs Namespace with Event Hubs, partitions, and consumer groups.|
 |eventGrid|Deploys Azure Event Grid Domain with topics and event subscriptions.|
 
 ## Module Details
 
-### eventHubs
+### eventHub
 
 Deploys Azure Event Hubs Namespace with Event Hubs, partitions, and consumer groups.
 
-#### Parameters for eventHubs
+#### Parameters for eventHub
 
 |Name|Description|Type|Default|Required|
 | :--- | :--- | :--- | :--- | :--- |
 |common|The common component configuration.|`[_2.Common](#user-defined-types)`|n/a|yes|
-|eventHubsConfig|The Event Hubs configuration.|`[_1.EventHubsConfig](#user-defined-types)`|{'sku': 'Standard', 'capacity': 1, 'eventHubs': [{'name': "[format('evh-{0}-aio-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]", 'messageRetentionInDays': 1, 'partitionCount': 1}]}|no|
+|eventHubConfig|The Event Hubs configuration.|`[_1.EventHubConfig](#user-defined-types)`|{'sku': 'Standard', 'capacity': 1, 'eventHubs': [{'name': "[format('evh-{0}-aio-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]", 'messageRetentionInDays': 1, 'partitionCount': 1}]}|no|
 |tags|Additional tags to add to the resources.|`object`|{}|no|
-|aioUamiPrincipalId|Principal ID of the User Assigned Managed Identity for the Azure IoT Operations instance|`string`|n/a|yes|
+|aioIdentityName|The Azure IoT Operations User Assigned Managed Identity name.|`string`|n/a|yes|
 
-#### Resources for eventHubs
+#### Resources for eventHub
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|eventHubsNamespace|`Microsoft.EventHub/namespaces`|2024-05-01-preview|
-|eventHub|`Microsoft.EventHub/namespaces/eventhubs`|2024-05-01-preview|
+|aioIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2024-11-30|
+|eventHubNamespace|`Microsoft.EventHub/namespaces`|2024-05-01-preview|
+|eventHubs|`Microsoft.EventHub/namespaces/eventhubs`|2024-05-01-preview|
 |dataSenderRoleAssignment|`Microsoft.Authorization/roleAssignments`|2022-04-01|
 
-#### Outputs for eventHubs
+#### Outputs for eventHub
 
 |Name|Type|Description|
 | :--- | :--- | :--- |
@@ -74,12 +75,13 @@ Deploys Azure Event Grid Domain with topics and event subscriptions.
 |common|The common component configuration.|`[_2.Common](#user-defined-types)`|n/a|yes|
 |eventGridConfig|The Event Grid configuration.|`[_1.EventGridConfig](#user-defined-types)`|{'capacity': 1, 'eventGridMaxClientSessionsPerAuthName': 8, 'topicTemplates': ['default']}|no|
 |tags|Additional tags to add to the resources.|`object`|{}|no|
-|aioUamiPrincipalId|Principal ID of the User Assigned Managed Identity for the Azure IoT Operations instance|`string`|n/a|yes|
+|aioIdentityName|The Azure IoT Operations User Assigned Managed Identity name.|`string`|n/a|yes|
 
 #### Resources for eventGrid
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
+|aioIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2024-11-30|
 |eventGridNamespace|`Microsoft.EventGrid/namespaces`|2025-02-15|
 |topicSpace|`Microsoft.EventGrid/namespaces/topicSpaces`|2025-02-15|
 |dataSenderRoleAssignment|`Microsoft.Authorization/roleAssignments`|2022-04-01|
@@ -96,17 +98,6 @@ Deploys Azure Event Grid Domain with topics and event subscriptions.
 
 ## User Defined Types
 
-### `_1.AIOIdentity`
-
-The User-Assigned Managed Identity for Azure IoT Operations.
-
-|Property|Type|Description|
-| :--- | :--- | :--- |
-|id|`string`|The id of the User-Assigned Managed Identity for Azure IoT Operations.|
-|principalId|`string`|The Principal ID of the User-Assigned Managed Identity for Azure IoT Operations.|
-|tenantId|`string`|The tenant ID of the User-Assigned Managed Identity for Azure IoT Operations.|
-|clientId|`string`|The client ID of the User-Assigned Managed Identity for Azure IoT Operations.|
-
 ### `_1.EventGridConfig`
 
 The configuration for Event Grid Domain.
@@ -117,7 +108,7 @@ The configuration for Event Grid Domain.
 |eventGridMaxClientSessionsPerAuthName|`int`|Specifies the maximum number of client sessions per authentication name. Valid values are from 3 to 100. This parameter should be greater than the number of dataflows|
 |topicTemplates|`array`|The topic templates for Event Grid namespace topic spaces.|
 
-### `_1.EventHubsConfig`
+### `_1.EventHubConfig`
 
 The configuration for Event Hubs Namespace.
 
@@ -142,11 +133,13 @@ Common settings for the components.
 
 |Name|Type|Description|
 | :--- | :--- | :--- |
-|eventHubsNamespaceName|`string`|The Event Hubs Namespace name.|
-|eventHubsNamespaceId|`string`|The Event Hubs Namespace ID.|
+|eventHubNamespaceName|`string`|The Event Hubs Namespace name.|
+|eventHubNamespaceId|`string`|The Event Hubs Namespace ID.|
 |eventHubNames|`array`|The list of Event Hub names created in the namespace.|
 |eventGridTopicNames|`string`|The Event Grid topic name created.|
 |eventGridMqttEndpoint|`string`|The Event Grid endpoint URL for MQTT connections|
+|eventHubConfig|`object`|The Event Hub configuration object for edge messaging.|
+|eventGridConfig|`object`|The Event Grid configuration object for edge messaging.|
 
 <!-- markdown-table-prettify-ignore-end -->
 <!-- END_BICEP_DOCS -->

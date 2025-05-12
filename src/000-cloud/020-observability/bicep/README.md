@@ -15,6 +15,7 @@ Deploys Azure observability resources including Azure Monitor Workspace, Log Ana
 |logRetentionInDays|Log Analytics Workspace retention in days|`int`|30|no|
 |dailyQuotaInGb|Log Analytics Workspace daily quota in GB|`int`|10|no|
 |grafanaMajorVersion|Grafana major version|`string`|10|no|
+|grafanaAdminPrincipalId|The principalId (objectId) of the user or service principal to assign the Grafana Admin role.|`string`|n/a|no|
 |logsDataCollectionRuleNamespaces|List of cluster namespaces to be exposed in the log analytics workspace|`array`|['kube-system', 'gatekeeper-system', 'azure-arc', 'azure-iot-operations']|no|
 |logsDataCollectionRuleStreams|List of streams to be enabled in the log analytics workspace|`array`|['Microsoft-ContainerLog', 'Microsoft-ContainerLogV2', 'Microsoft-KubeEvents', 'Microsoft-KubePodInventory', 'Microsoft-KubeNodeInventory', 'Microsoft-KubePVInventory', 'Microsoft-KubeServices', 'Microsoft-KubeMonAgentEvents', 'Microsoft-InsightsMetrics', 'Microsoft-ContainerInventory', 'Microsoft-ContainerNodeInventory', 'Microsoft-Perf']|no|
 
@@ -28,6 +29,7 @@ Deploys Azure observability resources including Azure Monitor Workspace, Log Ana
 |containerInsightsSolution|`Microsoft.OperationsManagement/solutions`|2015-11-01-preview|
 |grafanaLogsReaderRole|`Microsoft.Authorization/roleAssignments`|2022-04-01|
 |grafanaMetricsReaderRole|`Microsoft.Authorization/roleAssignments`|2022-04-01|
+|grafanaAdminRole|`Microsoft.Authorization/roleAssignments`|2022-04-01|
 |dataCollectionEndpoint|`Microsoft.Insights/dataCollectionEndpoints`|2023-03-11|
 |logsDataCollectionRule|`Microsoft.Insights/dataCollectionRules`|2023-03-11|
 |metricsDataCollectionRule|`Microsoft.Insights/dataCollectionRules`|2023-03-11|
@@ -53,6 +55,8 @@ Common settings for the components.
 |logAnalyticsName|`string`|The Log Analytics Workspace name.|
 |logAnalyticsId|`string`|The Log Analytics Workspace ID.|
 |grafanaName|`string`|The Azure Managed Grafana name.|
+|metricsDataCollectionRuleName|`string`|The metrics data collection rule name.|
+|logsDataCollectionRuleName|`string`|The logs data collection rule name.|
 
 <!-- markdown-table-prettify-ignore-end -->
 <!-- END_BICEP_DOCS -->

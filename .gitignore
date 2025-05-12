@@ -431,3 +431,6 @@ venv/
 # Generated PR from Copilot
 pr.md
 pr-reference.xml
+
+# GitHub Copilot
+**/.copilot-tracking/

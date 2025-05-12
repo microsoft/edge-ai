@@ -73,7 +73,7 @@ var shouldEnableOpcUaSimulator = false
 
 // Currently disable setting shouldDeployAioDeploymentScripts, remove when DeploymentScripts supports AZ CLI 2.71+ (post May 4)
 // @description('Whether or not to enable the OPC UA Simulator Asset for Azure IoT Operations.')
-// param shouldEnableOpcUaSimulatorAsset bool = true
+// param shouldEnableOpcUaSimulatorAsset bool = false
 var shouldEnableOpcUaSimulatorAsset = false
 
 /*
@@ -181,6 +181,40 @@ module edgeIotOps '../../../src/100-edge/110-iot-ops/bicep/main.bicep' = {
     // Deployment Identity and Script Parameters
     deployIdentityName: cloudSecurityIdentity.outputs.deployIdentityName
     shouldDeployAioDeploymentScripts: shouldDeployAioDeploymentScripts
+  }
+}
+
+module edgeObservability '../../../src/100-edge/120-observability/bicep/main.bicep' = {
+  name: '${deployment().name}-eo6'
+  scope: resourceGroup(resourceGroupName)
+  dependsOn: [cloudResourceGroup]
+  params: {
+    arcConnectedClusterName: edgeCncfCluster.outputs.connectedClusterName
+    azureMonitorWorkspaceName: cloudObservability.outputs.monitorWorkspaceName
+    logAnalyticsWorkspaceName: cloudObservability.outputs.logAnalyticsName
+    azureManagedGrafanaName: cloudObservability.outputs.grafanaName
+    metricsDataCollectionRuleName: cloudObservability.outputs.metricsDataCollectionRuleName
+    logsDataCollectionRuleName: cloudObservability.outputs.logsDataCollectionRuleName
+  }
+}
+
+module edgeMessaging '../../../src/100-edge/130-messaging/bicep/main.bicep' = {
+  name: '${deployment().name}-em7'
+  scope: resourceGroup(resourceGroupName)
+  dependsOn: [cloudResourceGroup]
+  params: {
+    // Common parameters
+    common: common
+
+    // Resource references
+    aioIdentityName: cloudSecurityIdentity.outputs.aioIdentityName
+    aioCustomLocationName: edgeIotOps.outputs.customLocationName
+    aioInstanceName: edgeIotOps.outputs.aioInstanceName
+    aioDataflowProfileName: edgeIotOps.outputs.dataFlowProfileName
+
+    // Optional event hub and event grid parameters passed from cloud messaging
+    eventHub: cloudMessaging.outputs.eventHubConfig
+    eventGrid: cloudMessaging.outputs.eventGridConfig
   }
 }
 

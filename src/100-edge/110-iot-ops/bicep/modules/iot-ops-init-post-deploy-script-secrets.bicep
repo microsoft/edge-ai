@@ -44,7 +44,7 @@ param sseKeyVaultName string
 param sseIdentityName string
 
 @description('The trust issuer settings for Customer Managed Azure IoT Operations Settings.')
-param trustIssuerSettings types.CustomerManagedGenerateIssuerConfig
+param trustIssuerSettings types.TrustIssuerConfig
 
 /*
   OpenTelemetry Collector Parameters

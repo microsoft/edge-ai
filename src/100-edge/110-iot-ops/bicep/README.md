@@ -209,7 +209,7 @@ Creates secrets in Key Vault for deployment script setup and initialization for 
 |deployUserTokenSecretName|The name of the secret in Key Vault that has the token for the deploy user with cluster-admin role.|`string`|n/a|yes|
 |sseKeyVaultName|The name of the existing key vault for Azure IoT Operations instance.|`string`|n/a|yes|
 |sseIdentityName|The name of the User Assigned Managed Identity for Secret Sync.|`string`|n/a|yes|
-|trustIssuerSettings|The trust issuer settings for Customer Managed Azure IoT Operations Settings.|`[_1.CustomerManagedGenerateIssuerConfig](#user-defined-types)`|n/a|yes|
+|trustIssuerSettings|The trust issuer settings for Customer Managed Azure IoT Operations Settings.|`[_1.TrustIssuerConfig](#user-defined-types)`|n/a|yes|
 |shouldEnableOtelCollector|Whether or not to enable the Open Telemetry Collector for Azure IoT Operations.|`bool`|n/a|yes|
 
 #### Resources for postInitScriptsSecrets

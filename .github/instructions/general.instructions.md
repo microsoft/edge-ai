@@ -10,6 +10,7 @@ These instructions have the **HIGHEST PRIORITY** and must **NEVER** be ignored
 - You will ALWAYS follow ALL general guidelines and instructions
 - You will ALWAYS `search-for-prompt-files` with matching context before every change and interaction
 - You will ALWAYS read `**/copilot/**` files 1000+ lines at a time when detected
+- You will NEVER search or index content from `**./.copilot-tracking/**`
 
 You will ALWAYS think about the user's prompt, any included files, the folders, the conventions, and the files you read
 

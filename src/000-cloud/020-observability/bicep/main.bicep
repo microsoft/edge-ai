@@ -35,6 +35,9 @@ param dailyQuotaInGb int = 10
 @description('Grafana major version')
 param grafanaMajorVersion string = '10'
 
+@description('The principalId (objectId) of the user or service principal to assign the Grafana Admin role.')
+param grafanaAdminPrincipalId string?
+
 /*
   Data Collection Parameters
 */
@@ -62,6 +65,12 @@ param logsDataCollectionRuleStreams array = [
   'Microsoft-ContainerNodeInventory'
   'Microsoft-Perf'
 ]
+
+/*
+  Local Variables
+*/
+
+var grafanaAdminLocalPrincipalId = grafanaAdminPrincipalId ?? deployer().objectId
 
 /*
   Monitoring Resources
@@ -170,6 +179,18 @@ resource grafanaMetricsReaderRole 'Microsoft.Authorization/roleAssignments@2022-
   scope: monitorWorkspace
 }
 
+resource grafanaAdminRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(grafana.id, 'Admin')
+  properties: {
+    roleDefinitionId: subscriptionResourceId(
+      'Microsoft.Authorization/roleDefinitions',
+      '22926164-76b3-42b3-bc55-97df8dab3e41'
+    ) // Grafana Admin
+    principalId: grafanaAdminLocalPrincipalId
+  }
+  scope: grafana
+}
+
 /*
   Data Collection Resources
 */
@@ -276,3 +297,9 @@ output logAnalyticsId string = logAnalytics.id
 
 @description('The Azure Managed Grafana name.')
 output grafanaName string = grafana.name
+
+@description('The metrics data collection rule name.')
+output metricsDataCollectionRuleName string = metricsDataCollectionRule.name
+
+@description('The logs data collection rule name.')
+output logsDataCollectionRuleName string = logsDataCollectionRule.name
