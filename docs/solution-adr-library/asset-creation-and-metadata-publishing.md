@@ -80,9 +80,12 @@ A shell script can be used to implement the following steps in an efficient way:
     - Publish the payload to the MQTT broker via
 
         ```sh
-        kubectl exec  mqtt-client -n azure-iot-operations -- \
-        mqttui -b mqtts://aio-mq-dmqtt-frontend:8883 -u '$sat' \
-        --password $mqttClientPassword --insecure publish "$metaTopicName" "$metaValue"
+        kubectl exec  mqtt-client -n azure-iot-operations -- sh -c \
+        "mqttui -b mqtts://aio-broker.azure-iot-operations:18883 \
+               -u 'K8S-SAT' \
+               --password \$(cat /var/run/secrets/tokens/mq-sat) \
+               --insecure \
+               publish \"<metaTopicName>\" \"<metaValue>\""
         ```
 
 Meta data will be published to the MQTT broker and stored in the Enterprise UNS (Corp/L4).
