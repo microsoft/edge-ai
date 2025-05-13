@@ -1,0 +1,2584 @@
+{
+    "annotations": {
+        "list": [
+            {
+                "builtIn": 1,
+                "datasource": {
+                    "type": "grafana",
+                    "uid": "-- Grafana --"
+                },
+                "enable": true,
+                "hide": true,
+                "iconColor": "rgba(0, 211, 255, 1)",
+                "name": "Annotations & Alerts",
+                "type": "dashboard"
+            }
+        ]
+    },
+    "editable": true,
+    "fiscalYearStartMonth": 0,
+    "graphTooltip": 0,
+    "id": null,
+    "links": [
+        {
+            "asDropdown": false,
+            "icon": "external link",
+            "includeVars": true,
+            "keepTime": true,
+            "tags": [
+                "overview"
+            ],
+            "targetBlank": false,
+            "title": "Overview",
+            "tooltip": "",
+            "type": "dashboards",
+            "url": ""
+        }
+    ],
+    "panels": [
+        {
+            "collapsed": false,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 0
+            },
+            "id": 31,
+            "panels": [],
+            "title": "Light Edge",
+            "type": "row"
+        },
+        {
+            "datasource": {
+                "default": false,
+                "type": "grafana-azure-monitor-datasource",
+                "uid": "${ds}"
+            },
+            "description": "Device latency",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "continuous-GrYlRd"
+                    },
+                    "fieldMinMax": true,
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "blue",
+                                "value": null
+                            }
+                        ]
+                    },
+                    "unit": "ms"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 5,
+                "w": 24,
+                "x": 0,
+                "y": 1
+            },
+            "id": 52,
+            "maxPerRow": 4,
+            "options": {
+                "displayMode": "lcd",
+                "maxVizHeight": 300,
+                "minVizHeight": 16,
+                "minVizWidth": 8,
+                "namePlacement": "auto",
+                "orientation": "horizontal",
+                "reduceOptions": {
+                    "calcs": [],
+                    "fields": "",
+                    "values": true
+                },
+                "showUnfilled": true,
+                "sizing": "auto",
+                "valueMode": "color"
+            },
+            "pluginVersion": "11.2.2+security-01",
+            "repeatDirection": "h",
+            "targets": [
+                {
+                    "azureLogAnalytics": {
+                        "dashboardTime": true,
+                        "query": "AppDependencies\n| summarize avgDuration=avg(DurationMs) by AppRoleName\n| project AppRoleName, avgDuration",
+                        "resources": [
+                            "$lgws"
+                        ],
+                        "resultFormat": "logs",
+                        "timeColumn": "TimeGenerated"
+                    },
+                    "datasource": {
+                        "type": "grafana-azure-monitor-datasource",
+                        "uid": "${ds}"
+                    },
+                    "hide": false,
+                    "queryType": "Azure Log Analytics",
+                    "refId": "B"
+                }
+            ],
+            "title": "Average Device Latency",
+            "type": "bargauge"
+        },
+        {
+            "datasource": {
+                "default": false,
+                "type": "grafana-azure-monitor-datasource",
+                "uid": "${ds}"
+            },
+            "description": "Device latency overtime",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "continuous-GrYlRd"
+                    },
+                    "custom": {
+                        "axisBorderShow": false,
+                        "axisCenteredZero": false,
+                        "axisColorMode": "text",
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "barAlignment": 0,
+                        "barWidthFactor": 0.6,
+                        "drawStyle": "line",
+                        "fillOpacity": 0,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "insertNulls": 3600000,
+                        "lineInterpolation": "smooth",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "auto",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "fieldMinMax": false,
+                    "mappings": [],
+                    "noValue": "-",
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "blue",
+                                "value": null
+                            }
+                        ]
+                    },
+                    "unit": "ms"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 24,
+                "x": 0,
+                "y": 6
+            },
+            "id": 26,
+            "maxPerRow": 4,
+            "options": {
+                "legend": {
+                    "calcs": [
+                        "mean"
+                    ],
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "timezone": [
+                    "browser"
+                ],
+                "tooltip": {
+                    "mode": "single",
+                    "sort": "none"
+                }
+            },
+            "pluginVersion": "11.2.2+security-01",
+            "repeat": "device",
+            "repeatDirection": "h",
+            "targets": [
+                {
+                    "azureLogAnalytics": {
+                        "dashboardTime": false,
+                        "query": "AppDependencies\n| where AppRoleName==$device\n| summarize avgDuration=avg(DurationMs) by AppRoleName, TimeGenerated\n| project AppRoleName, avgDuration, TimeGenerated\n| order by TimeGenerated asc ",
+                        "resources": [
+                            "$lgws"
+                        ],
+                        "resultFormat": "logs"
+                    },
+                    "datasource": {
+                        "type": "grafana-azure-monitor-datasource",
+                        "uid": "${ds}"
+                    },
+                    "queryType": "Azure Log Analytics",
+                    "refId": "B"
+                }
+            ],
+            "title": "$device Average Device Latency",
+            "type": "timeseries"
+        },
+        {
+            "collapsed": false,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 14
+            },
+            "id": 30,
+            "panels": [],
+            "title": "Medium Edge",
+            "type": "row"
+        },
+        {
+            "datasource": {
+                "default": false,
+                "type": "grafana-azure-monitor-datasource",
+                "uid": "${ds}"
+            },
+            "description": "Total time outs recorded in this namespace",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        }
+                    },
+                    "fieldMinMax": false,
+                    "mappings": []
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 9,
+                "w": 13,
+                "x": 0,
+                "y": 15
+            },
+            "id": 50,
+            "options": {
+                "displayLabels": [
+                    "name",
+                    "percent"
+                ],
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "right",
+                    "showLegend": true,
+                    "values": [
+                        "value",
+                        "percent"
+                    ]
+                },
+                "pieType": "donut",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "/^Timeouts$/",
+                    "values": true
+                },
+                "tooltip": {
+                    "mode": "single",
+                    "sort": "none"
+                }
+            },
+            "pluginVersion": "11.2.2+security-01",
+            "targets": [
+                {
+                    "azureLogAnalytics": {
+                        "dashboardTime": false,
+                        "query": "ContainerLogV2\n| where _ResourceId contains \"${cluster}\"\n| where PodNamespace==(\"$LogPodNameSpace\") and LogMessage contains \"Timed Out\"\n| extend Image=tostring(KubernetesMetadata[\"image\"])\n| summarize Timeouts=count() by Image",
+                        "resources": [
+                            "$lgws"
+                        ],
+                        "resultFormat": "logs",
+                        "timeColumn": "TimeGenerated"
+                    },
+                    "datasource": {
+                        "type": "grafana-azure-monitor-datasource",
+                        "uid": "azure-monitor-oob"
+                    },
+                    "hide": false,
+                    "queryType": "Azure Log Analytics",
+                    "refId": "TimeOut Count"
+                }
+            ],
+            "title": "All Timeouts in $cluster - $LogPodNameSpace namespace ",
+            "type": "piechart"
+        },
+        {
+            "datasource": {
+                "default": false,
+                "type": "grafana-azure-monitor-datasource",
+                "uid": "${ds}"
+            },
+            "description": "Total Container Timeout for the time range of dashboard  \n       ${__from:date:YYYY-MM-DD} -\n       ${__to:date:YYYY-MM-DD}",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        }
+                    },
+                    "fieldMinMax": false,
+                    "mappings": []
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 7,
+                "w": 11,
+                "x": 13,
+                "y": 15
+            },
+            "id": 55,
+            "options": {
+                "displayLabels": [
+                    "name",
+                    "percent"
+                ],
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "right",
+                    "showLegend": true,
+                    "values": [
+                        "value",
+                        "percent"
+                    ]
+                },
+                "pieType": "donut",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "/^Timeouts$/",
+                    "values": true
+                },
+                "tooltip": {
+                    "mode": "single",
+                    "sort": "none"
+                }
+            },
+            "pluginVersion": "11.2.2+security-01",
+            "targets": [
+                {
+                    "azureLogAnalytics": {
+                        "dashboardTime": true,
+                        "query": "ContainerLogV2\n| where _ResourceId contains \"${cluster}\" and PodNamespace==(\"$LogPodNameSpace\") and LogMessage contains \"Timed Out\"\n| summarize Timeouts=count() by ContainerName",
+                        "resources": [
+                            "$lgws"
+                        ],
+                        "resultFormat": "logs",
+                        "timeColumn": "TimeGenerated"
+                    },
+                    "datasource": {
+                        "type": "grafana-azure-monitor-datasource",
+                        "uid": "azure-monitor-oob"
+                    },
+                    "hide": false,
+                    "queryType": "Azure Log Analytics",
+                    "refId": "TimeOut Count"
+                }
+            ],
+            "title": "Container timeouts $cluster - $LogPodNameSpace (${__from:date:YYYY-MM-DD} - ${__to:date:YYYY-MM-DD})",
+            "type": "piechart"
+        },
+        {
+            "datasource": {
+                "default": false,
+                "type": "grafana-azure-monitor-datasource",
+                "uid": "${ds}"
+            },
+            "description": "Timeouts observed in each namespace. Seperated by k8s Image reporting the error. ",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "custom": {
+                        "align": "auto",
+                        "cellOptions": {
+                            "type": "auto"
+                        },
+                        "inspect": false
+                    },
+                    "fieldMinMax": false,
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "#EAB839",
+                                "value": 50
+                            },
+                            {
+                                "color": "red",
+                                "value": 100
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 5,
+                "w": 11,
+                "x": 13,
+                "y": 22
+            },
+            "id": 45,
+            "options": {
+                "cellHeight": "sm",
+                "footer": {
+                    "countRows": false,
+                    "fields": "",
+                    "reducer": [
+                        "sum"
+                    ],
+                    "show": false
+                },
+                "showHeader": true
+            },
+            "pluginVersion": "11.2.2+security-01",
+            "targets": [
+                {
+                    "azureLogAnalytics": {
+                        "dashboardTime": true,
+                        "query": "ContainerLogV2\n| where PodNamespace==(\"$LogPodNameSpace\") and LogMessage contains \"Timed Out\"\n| extend Image=tostring(KubernetesMetadata[\"image\"])\n| summarize Timeouts=count() by Image\n| order by Timeouts desc ",
+                        "resources": [
+                            "$lgws"
+                        ],
+                        "resultFormat": "logs",
+                        "timeColumn": "TimeGenerated"
+                    },
+                    "datasource": {
+                        "type": "grafana-azure-monitor-datasource",
+                        "uid": "azure-monitor-oob"
+                    },
+                    "hide": false,
+                    "queryType": "Azure Log Analytics",
+                    "refId": "TimeOut Count"
+                }
+            ],
+            "title": "Image timeouts in $LogPodNameSpace (${__from:date:YYYY-MM-DD} - ${__to:date:YYYY-MM-DD})",
+            "type": "table"
+        },
+        {
+            "datasource": {
+                "default": false,
+                "type": "grafana-azure-monitor-datasource",
+                "uid": "${ds}"
+            },
+            "description": "Image time outs over the last 7 day span. ",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        }
+                    },
+                    "fieldMinMax": false,
+                    "mappings": []
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 7,
+                "w": 13,
+                "x": 0,
+                "y": 24
+            },
+            "id": 48,
+            "options": {
+                "displayLabels": [
+                    "percent"
+                ],
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "right",
+                    "showLegend": true,
+                    "values": [
+                        "value",
+                        "percent"
+                    ]
+                },
+                "pieType": "donut",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": true
+                },
+                "tooltip": {
+                    "mode": "single",
+                    "sort": "none"
+                }
+            },
+            "pluginVersion": "11.2.2+security-01",
+            "targets": [
+                {
+                    "azureLogAnalytics": {
+                        "dashboardTime": false,
+                        "query": "ContainerLogV2\n| where _ResourceId contains \"${cluster}\"\n| where PodNamespace==(\"$LogPodNameSpace\") and LogMessage contains \"Timed Out\" and TimeGenerated > ago(7d)\n| extend Image=tostring(KubernetesMetadata[\"image\"])\n| summarize Timeouts=count() by bin(TimeGenerated, 7d), Image",
+                        "resources": [
+                            "$lgws"
+                        ],
+                        "resultFormat": "logs",
+                        "timeColumn": "TimeGenerated"
+                    },
+                    "datasource": {
+                        "type": "grafana-azure-monitor-datasource",
+                        "uid": "azure-monitor-oob"
+                    },
+                    "hide": false,
+                    "queryType": "Azure Log Analytics",
+                    "refId": "TimeOut Count"
+                }
+            ],
+            "title": "Image timeouts from the last 7days in $LogPodNameSpace namespace",
+            "type": "piechart"
+        },
+        {
+            "datasource": {
+                "default": false,
+                "type": "grafana-azure-monitor-datasource",
+                "uid": "${ds}"
+            },
+            "description": "Timeouts observed in each namespace. Seperated by k8s Pods reporting the error. ",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "custom": {
+                        "align": "auto",
+                        "cellOptions": {
+                            "type": "auto"
+                        },
+                        "inspect": false
+                    },
+                    "fieldMinMax": false,
+                    "mappings": [],
+                    "min": 0,
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            }
+                        ]
+                    },
+                    "unit": "none"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 5,
+                "w": 11,
+                "x": 13,
+                "y": 27
+            },
+            "id": 49,
+            "options": {
+                "cellHeight": "sm",
+                "footer": {
+                    "countRows": false,
+                    "fields": "",
+                    "reducer": [
+                        "sum"
+                    ],
+                    "show": false
+                },
+                "showHeader": true
+            },
+            "pluginVersion": "11.2.2+security-01",
+            "targets": [
+                {
+                    "azureLogAnalytics": {
+                        "dashboardTime": true,
+                        "query": "ContainerLogV2\n| where _ResourceId contains \"${cluster}\"\n| where PodNamespace==(\"$LogPodNameSpace\") and LogMessage contains \"Timed Out\"\n| summarize Timeouts=count() by PodName\n| order by Timeouts desc ",
+                        "resources": [
+                            "$lgws"
+                        ],
+                        "resultFormat": "logs",
+                        "timeColumn": "TimeGenerated"
+                    },
+                    "datasource": {
+                        "type": "grafana-azure-monitor-datasource",
+                        "uid": "azure-monitor-oob"
+                    },
+                    "hide": false,
+                    "queryType": "Azure Log Analytics",
+                    "refId": "TimeOut Count"
+                }
+            ],
+            "title": "Pod timeouts in $LogPodNameSpace (${__from:date:YYYY-MM-DD} - ${__to:date:YYYY-MM-DD})",
+            "type": "table"
+        },
+        {
+            "datasource": {
+                "default": false,
+                "type": "grafana-azure-monitor-datasource",
+                "uid": "${ds}"
+            },
+            "description": "",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "custom": {
+                        "axisBorderShow": false,
+                        "axisCenteredZero": false,
+                        "axisColorMode": "text",
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "fillOpacity": 80,
+                        "gradientMode": "opacity",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "lineWidth": 1,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "area"
+                        }
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "#EAB839",
+                                "value": 5
+                            },
+                            {
+                                "color": "red",
+                                "value": 10
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 9,
+                "w": 13,
+                "x": 0,
+                "y": 31
+            },
+            "id": 43,
+            "options": {
+                "barRadius": 0.25,
+                "barWidth": 0.78,
+                "colorByField": "count_",
+                "fullHighlight": true,
+                "groupWidth": 0.7,
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "orientation": "horizontal",
+                "showValue": "auto",
+                "stacking": "none",
+                "tooltip": {
+                    "mode": "single",
+                    "sort": "none"
+                },
+                "xTickLabelRotation": 0,
+                "xTickLabelSpacing": -300
+            },
+            "pluginVersion": "11.2.2+security-01",
+            "targets": [
+                {
+                    "azureLogAnalytics": {
+                        "dashboardTime": false,
+                        "query": "AppDependencies\n| where ResultCode == 2 and Success == false and TimeGenerated > ago(7d)\n| extend ServiceName=tostring(Properties[\"service.name\"])\n| summarize count() by bin(TimeGenerated,1d), ServiceName\n| order by TimeGenerated asc",
+                        "resources": [
+                            "$lgws"
+                        ],
+                        "resultFormat": "table",
+                        "timeColumn": "TimeGenerated"
+                    },
+                    "datasource": {
+                        "type": "grafana-azure-monitor-datasource",
+                        "uid": "${ds}"
+                    },
+                    "hide": false,
+                    "queryType": "Azure Log Analytics",
+                    "refId": "B"
+                }
+            ],
+            "title": "Service Failures in the last 7 days",
+            "type": "barchart"
+        },
+        {
+            "datasource": {
+                "default": false,
+                "type": "grafana-azure-monitor-datasource",
+                "uid": "${ds}"
+            },
+            "description": "Image timeouts across cluster in within the provided window, all values from the above tables should be represented here. ",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "custom": {
+                        "align": "auto",
+                        "cellOptions": {
+                            "type": "auto"
+                        },
+                        "inspect": true
+                    },
+                    "fieldMinMax": false,
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "#EAB839",
+                                "value": 50
+                            },
+                            {
+                                "color": "red",
+                                "value": 100
+                            }
+                        ]
+                    }
+                },
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "TenantId"
+                        },
+                        "properties": [
+                            {
+                                "id": "custom.width",
+                                "value": 199
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "KubernetesMetadata"
+                        },
+                        "properties": [
+                            {
+                                "id": "custom.width",
+                                "value": 565
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "Image"
+                        },
+                        "properties": [
+                            {
+                                "id": "custom.width",
+                                "value": 343
+                            }
+                        ]
+                    }
+                ]
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 11,
+                "x": 13,
+                "y": 32
+            },
+            "id": 53,
+            "options": {
+                "cellHeight": "sm",
+                "footer": {
+                    "countRows": false,
+                    "fields": "",
+                    "reducer": [
+                        "sum"
+                    ],
+                    "show": false
+                },
+                "showHeader": true,
+                "sortBy": []
+            },
+            "pluginVersion": "11.2.2+security-01",
+            "targets": [
+                {
+                    "azureLogAnalytics": {
+                        "dashboardTime": true,
+                        "query": "ContainerLogV2\n| where _ResourceId contains \"${cluster}\" and LogMessage contains \"Timed Out\"\n| extend Image=tostring(KubernetesMetadata[\"image\"])\n| summarize Timeouts=count() by Image, ContainerName\n| order by Timeouts desc \n",
+                        "resources": [
+                            "$lgws"
+                        ],
+                        "resultFormat": "table",
+                        "timeColumn": "TimeGenerated"
+                    },
+                    "datasource": {
+                        "type": "grafana-azure-monitor-datasource",
+                        "uid": "azure-monitor-oob"
+                    },
+                    "hide": false,
+                    "queryType": "Azure Log Analytics",
+                    "refId": "TimeOut Count"
+                }
+            ],
+            "title": "Timeout totals per image in $cluster (${__from:date:YYYY-MM-DD} - ${__to:date:YYYY-MM-DD})",
+            "type": "table"
+        },
+        {
+            "datasource": {
+                "default": false,
+                "type": "grafana-azure-monitor-datasource",
+                "uid": "${ds}"
+            },
+            "description": "Timeouts by Container for the past 24hrs.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        }
+                    },
+                    "fieldMinMax": false,
+                    "links": [
+                        {
+                            "targetBlank": true,
+                            "title": "View Latency Dashboard",
+                            "url": "/d/behpnpky3i0w0c/latency?orgId=1&${__url_time_range}&${__all_variables}"
+                        }
+                    ],
+                    "mappings": []
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 9,
+                "w": 13,
+                "x": 0,
+                "y": 40
+            },
+            "id": 51,
+            "options": {
+                "displayLabels": [
+                    "percent"
+                ],
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "right",
+                    "showLegend": true,
+                    "values": [
+                        "value",
+                        "percent"
+                    ]
+                },
+                "pieType": "donut",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": true
+                },
+                "tooltip": {
+                    "mode": "single",
+                    "sort": "none"
+                }
+            },
+            "pluginVersion": "11.2.2+security-01",
+            "targets": [
+                {
+                    "azureLogAnalytics": {
+                        "dashboardTime": false,
+                        "query": "ContainerLogV2\n| where _ResourceId contains \"${cluster}\" and LogMessage contains \"Timed Out\" and TimeGenerated > ago(24h)\n| summarize Timeouts=count() by ContainerName",
+                        "resources": [
+                            "$lgws"
+                        ],
+                        "resultFormat": "logs",
+                        "timeColumn": "TimeGenerated"
+                    },
+                    "datasource": {
+                        "type": "grafana-azure-monitor-datasource",
+                        "uid": "${ds}"
+                    },
+                    "hide": false,
+                    "queryType": "Azure Log Analytics",
+                    "refId": "TimeOut Count"
+                }
+            ],
+            "title": "Container Timeouts in $cluster (24h)",
+            "type": "piechart"
+        },
+        {
+            "datasource": {
+                "name": "${pds}",
+                "type": "prometheus",
+                "uid": "${pds}"
+            },
+            "description": "Broker latency across all its actions. \nConnection, Publish, Subscribe, Unsubscribe",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "continuous-GrYlRd"
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "red",
+                                "value": 80
+                            }
+                        ]
+                    },
+                    "unit": "ms"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 24,
+                "x": 0,
+                "y": 49
+            },
+            "id": 35,
+            "options": {
+                "displayMode": "lcd",
+                "maxVizHeight": 300,
+                "minVizHeight": 16,
+                "minVizWidth": 8,
+                "namePlacement": "auto",
+                "orientation": "horizontal",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "showUnfilled": true,
+                "sizing": "auto",
+                "valueMode": "color"
+            },
+            "pluginVersion": "11.2.2+security-01",
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${pds}"
+                    },
+                    "editorMode": "code",
+                    "expr": "label_replace((avg by (cluster)(aio_broker_connect_latency_route_ms{cluster=~\"$cluster\"})), \"custom_label\", \"connect\", \"cluster\", \"$cluster\")",
+                    "hide": false,
+                    "instant": false,
+                    "legendFormat": "{{custom_label}}",
+                    "range": true,
+                    "refId": "connection"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${pds}"
+                    },
+                    "editorMode": "code",
+                    "expr": "label_replace((avg by (cluster)(aio_broker_publish_latency_route_ms{cluster=~\"$cluster\"})), \"custom_label\", \"publish\", \"cluster\", \"$cluster\")",
+                    "hide": false,
+                    "instant": false,
+                    "legendFormat": "{{custom_label}}",
+                    "range": true,
+                    "refId": "publish"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${pds}"
+                    },
+                    "editorMode": "code",
+                    "expr": "label_replace((avg by (cluster)(aio_broker_message_delivery_check_latency_last_value_ms{cluster=\"$cluster\"})),\"custom_label\", \"message delivery\", \"cluster\", \"$cluster\")",
+                    "hide": false,
+                    "instant": false,
+                    "legendFormat": "{{custom_label}}",
+                    "range": true,
+                    "refId": "delivery"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${pds}"
+                    },
+                    "editorMode": "code",
+                    "expr": "label_replace((avg by (cluster)(aio_broker_subscribe_latency_route_ms{cluster=~\"$cluster\"})), \"custom_label\", \"subscribe\", \"cluster\", \"$cluster\")",
+                    "hide": false,
+                    "instant": false,
+                    "legendFormat": "{{custom_label}}",
+                    "range": true,
+                    "refId": "subscribe"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${pds}"
+                    },
+                    "editorMode": "code",
+                    "expr": "label_replace((avg by (cluster)(aio_broker_unsubscribe_latency_route_ms{cluster=~\"$cluster\"})), \"custom_label\", \"unsubscribe\", \"cluster\", \"$cluster\")",
+                    "hide": false,
+                    "instant": false,
+                    "legendFormat": "{{custom_label}}",
+                    "range": true,
+                    "refId": "unsubscribe"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${pds}"
+                    },
+                    "editorMode": "code",
+                    "expr": "label_replace((avg by (cluster) (aio_broker_ping_latency_route_ms{cluster=~\"$cluster\"})), \"custom_label\", \"ping\", \"cluster\", \"$cluster\")",
+                    "format": "time_series",
+                    "instant": false,
+                    "legendFormat": "{{custom_label}}",
+                    "range": true,
+                    "refId": "ping"
+                }
+            ],
+            "title": "$cluster MQTT Broker average latency",
+            "type": "bargauge"
+        },
+        {
+            "datasource": {
+                "name": "${pds}",
+                "type": "prometheus",
+                "uid": "${pds}"
+            },
+            "description": "broker connection latency trend.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisBorderShow": false,
+                        "axisCenteredZero": false,
+                        "axisColorMode": "text",
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "barAlignment": 0,
+                        "barWidthFactor": 0.6,
+                        "drawStyle": "line",
+                        "fillOpacity": 4,
+                        "gradientMode": "hue",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "insertNulls": false,
+                        "lineInterpolation": "smooth",
+                        "lineWidth": 1,
+                        "pointSize": 16,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "auto",
+                        "spanNulls": true,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "red",
+                                "value": 80
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 9,
+                "w": 11,
+                "x": 0,
+                "y": 57
+            },
+            "id": 36,
+            "interval": "600s",
+            "options": {
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "none"
+                }
+            },
+            "pluginVersion": "11.2.2+security-01",
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${pds}"
+                    },
+                    "editorMode": "code",
+                    "expr": "label_replace(aio_broker_connect_latency_last_value_ms{cluster=\"$cluster\"},\"last_value\", \"$cluster: Broker connection last value\", \"cluster\", \"$cluster\")",
+                    "hide": false,
+                    "instant": false,
+                    "legendFormat": "{{last_value}}",
+                    "range": true,
+                    "refId": "A"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${pds}"
+                    },
+                    "editorMode": "code",
+                    "expr": "label_replace(aio_broker_connect_latency_mu_ms{cluster=\"$cluster\"},\"mean_latency\", \"$cluster: Broker mean connection latency\", \"cluster\", \"$cluster\")",
+                    "hide": false,
+                    "instant": false,
+                    "legendFormat": "{{mean_latency}}",
+                    "range": true,
+                    "refId": "C"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${pds}"
+                    },
+                    "editorMode": "code",
+                    "expr": "label_replace(aio_broker_connect_latency_sigma_ms{cluster=\"$cluster\"},\"std_deviation\", \"$cluster: Broker latency standard deviation\", \"cluster\", \"$cluster\")",
+                    "hide": false,
+                    "instant": false,
+                    "legendFormat": "{{std_deviation}}",
+                    "range": true,
+                    "refId": "D"
+                }
+            ],
+            "title": "$cluster Broker connection latency",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "name": "${pds}",
+                "type": "prometheus",
+                "uid": "${pds}"
+            },
+            "description": "Average Broker latency across all its actions over time:\nConnection, Publish, Message Delivery, Subscribe, Unsubscribe",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisBorderShow": false,
+                        "axisCenteredZero": false,
+                        "axisColorMode": "text",
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "barAlignment": 0,
+                        "barWidthFactor": 0.6,
+                        "drawStyle": "line",
+                        "fillOpacity": 0,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "insertNulls": false,
+                        "lineInterpolation": "smooth",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "auto",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "red",
+                                "value": 80
+                            }
+                        ]
+                    },
+                    "unit": "ms"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 9,
+                "w": 13,
+                "x": 11,
+                "y": 57
+            },
+            "id": 54,
+            "options": {
+                "legend": {
+                    "calcs": [
+                        "mean"
+                    ],
+                    "displayMode": "list",
+                    "placement": "right",
+                    "showLegend": true
+                },
+                "timezone": [
+                    "browser"
+                ],
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "pluginVersion": "11.2.2+security-01",
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${pds}"
+                    },
+                    "editorMode": "code",
+                    "expr": "label_replace((avg by (cluster)(aio_broker_connect_latency_route_ms{cluster=~\"$cluster\"})), \"custom_label\", \"connect\", \"cluster\", \"$cluster\")",
+                    "hide": false,
+                    "instant": false,
+                    "legendFormat": "{{custom_label}}",
+                    "range": true,
+                    "refId": "connection"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${pds}"
+                    },
+                    "editorMode": "code",
+                    "expr": "label_replace((avg by (cluster)(aio_broker_publish_latency_route_ms{cluster=~\"$cluster\"})), \"custom_label\", \"publish\", \"cluster\", \"$cluster\")",
+                    "hide": false,
+                    "instant": false,
+                    "legendFormat": "{{custom_label}}",
+                    "range": true,
+                    "refId": "publish"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${pds}"
+                    },
+                    "editorMode": "code",
+                    "expr": "label_replace((avg by (cluster)(aio_broker_message_delivery_check_latency_last_value_ms{cluster=\"$cluster\"})),\"custom_label\", \"message delivery\", \"cluster\", \"$cluster\")",
+                    "hide": false,
+                    "instant": false,
+                    "legendFormat": "{{custom_label}}",
+                    "range": true,
+                    "refId": "delivery"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${pds}"
+                    },
+                    "editorMode": "code",
+                    "expr": "label_replace((avg by (cluster)(aio_broker_subscribe_latency_route_ms{cluster=~\"$cluster\"})), \"custom_label\", \"subscribe\", \"cluster\", \"$cluster\")",
+                    "hide": false,
+                    "instant": false,
+                    "legendFormat": "{{custom_label}}",
+                    "range": true,
+                    "refId": "subscribe"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${pds}"
+                    },
+                    "editorMode": "code",
+                    "expr": "label_replace((avg by (cluster)(aio_broker_unsubscribe_latency_route_ms{cluster=~\"$cluster\"})), \"custom_label\", \"unsubscribe\", \"cluster\", \"$cluster\")",
+                    "hide": false,
+                    "instant": false,
+                    "legendFormat": "{{custom_label}}",
+                    "range": true,
+                    "refId": "unsubscribe"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${pds}"
+                    },
+                    "editorMode": "code",
+                    "expr": "label_replace((avg by (cluster) (aio_broker_ping_latency_route_ms{cluster=~\"$cluster\"})), \"custom_label\", \"ping\", \"cluster\", \"$cluster\")",
+                    "format": "time_series",
+                    "instant": false,
+                    "legendFormat": "{{custom_label}}",
+                    "range": true,
+                    "refId": "ping"
+                }
+            ],
+            "title": "$cluster MQTT Broker action latency overtime",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "default": false,
+                "type": "grafana-azure-monitor-datasource",
+                "uid": "$ds"
+            },
+            "description": "storage account connectivity latency",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "custom": {
+                        "align": "auto",
+                        "cellOptions": {
+                            "type": "auto"
+                        },
+                        "filterable": false,
+                        "inspect": false
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "blue",
+                                "value": null
+                            }
+                        ]
+                    },
+                    "unit": "ms"
+                },
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "Mean"
+                        },
+                        "properties": [
+                            {
+                                "id": "custom.cellOptions",
+                                "value": {
+                                    "mode": "lcd",
+                                    "type": "gauge"
+                                }
+                            },
+                            {
+                                "id": "color",
+                                "value": {
+                                    "mode": "continuous-GrYlRd"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "Max"
+                        },
+                        "properties": [
+                            {
+                                "id": "custom.cellOptions",
+                                "value": {
+                                    "mode": "gradient",
+                                    "type": "gauge"
+                                }
+                            },
+                            {
+                                "id": "color",
+                                "value": {
+                                    "fixedColor": "red",
+                                    "mode": "continuous-GrYlRd"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "Min"
+                        },
+                        "properties": [
+                            {
+                                "id": "custom.cellOptions",
+                                "value": {
+                                    "mode": "gradient",
+                                    "type": "gauge"
+                                }
+                            },
+                            {
+                                "id": "color",
+                                "value": {
+                                    "fixedColor": "green",
+                                    "mode": "continuous-GrYlRd"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "Field"
+                        },
+                        "properties": [
+                            {
+                                "id": "displayName",
+                                "value": "Latency"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "gridPos": {
+                "h": 9,
+                "w": 11,
+                "x": 0,
+                "y": 66
+            },
+            "id": 34,
+            "options": {
+                "cellHeight": "sm",
+                "footer": {
+                    "countRows": false,
+                    "fields": "",
+                    "reducer": [
+                        "sum"
+                    ],
+                    "show": false
+                },
+                "showHeader": true
+            },
+            "pluginVersion": "11.2.2+security-01",
+            "targets": [
+                {
+                    "appInsights": {
+                        "dimension": [],
+                        "metricName": "select",
+                        "timeGrain": "auto"
+                    },
+                    "azureLogAnalytics": {
+                        "dashboardTime": false,
+                        "query": "//change this example to create your own time series query\n<table name>                                                              //the table to query (e.g. Usage, Heartbeat, Perf)\n| where $__timeFilter(TimeGenerated)                                      //this is a macro used to show the full chart’s time range, choose the datetime column here\n| summarize count() by <group by column>, bin(TimeGenerated, $__interval) //change “group by column” to a column in your table, such as “Computer”. The $__interval macro is used to auto-select the time grain. Can also use 1h, 5m etc.\n| order by TimeGenerated asc",
+                        "resultFormat": "time_series",
+                        "workspace": "00000000-0000-0000-0000-000000000000"
+                    },
+                    "azureMonitor": {
+                        "aggOptions": [
+                            "Average",
+                            "Minimum",
+                            "Maximum"
+                        ],
+                        "aggregation": "Average",
+                        "allowedTimeGrainsMs": [
+                            60000,
+                            300000,
+                            900000,
+                            1800000,
+                            3600000,
+                            21600000,
+                            43200000,
+                            86400000
+                        ],
+                        "dimensionFilters": [],
+                        "dimensions": [
+                            {
+                                "text": "Geo type",
+                                "value": "GeoType"
+                            },
+                            {
+                                "text": "API name",
+                                "value": "ApiName"
+                            },
+                            {
+                                "text": "Authentication",
+                                "value": "Authentication"
+                            }
+                        ],
+                        "metricDefinition": "$ns",
+                        "metricName": "SuccessE2ELatency",
+                        "metricNamespace": "microsoft.storage/storageaccounts",
+                        "resources": [
+                            {
+                                "metricNamespace": "microsoft.storage/storageaccounts",
+                                "resourceGroup": "$rg",
+                                "resourceName": "$storage",
+                                "subscription": "$sub"
+                            }
+                        ],
+                        "timeGrain": "auto",
+                        "timeGrains": [
+                            {
+                                "text": "auto",
+                                "value": "auto"
+                            },
+                            {
+                                "text": "1 minute",
+                                "value": "PT1M"
+                            },
+                            {
+                                "text": "5 minutes",
+                                "value": "PT5M"
+                            },
+                            {
+                                "text": "15 minutes",
+                                "value": "PT15M"
+                            },
+                            {
+                                "text": "30 minutes",
+                                "value": "PT30M"
+                            },
+                            {
+                                "text": "1 hour",
+                                "value": "PT1H"
+                            },
+                            {
+                                "text": "6 hours",
+                                "value": "PT6H"
+                            },
+                            {
+                                "text": "12 hours",
+                                "value": "PT12H"
+                            },
+                            {
+                                "text": "1 day",
+                                "value": "P1D"
+                            }
+                        ],
+                        "top": "100"
+                    },
+                    "datasource": {
+                        "uid": "$ds"
+                    },
+                    "insightsAnalytics": {
+                        "query": "",
+                        "resultFormat": "time_series"
+                    },
+                    "queryType": "Azure Monitor",
+                    "refId": "A",
+                    "subscription": "$sub"
+                },
+                {
+                    "appInsights": {
+                        "dimension": [],
+                        "metricName": "select",
+                        "timeGrain": "auto"
+                    },
+                    "azureLogAnalytics": {
+                        "dashboardTime": false,
+                        "query": "//change this example to create your own time series query\n<table name>                                                              //the table to query (e.g. Usage, Heartbeat, Perf)\n| where $__timeFilter(TimeGenerated)                                      //this is a macro used to show the full chart’s time range, choose the datetime column here\n| summarize count() by <group by column>, bin(TimeGenerated, $__interval) //change “group by column” to a column in your table, such as “Computer”. The $__interval macro is used to auto-select the time grain. Can also use 1h, 5m etc.\n| order by TimeGenerated asc",
+                        "resultFormat": "time_series",
+                        "workspace": "00000000-0000-0000-0000-000000000000"
+                    },
+                    "azureMonitor": {
+                        "aggOptions": [
+                            "Average",
+                            "Minimum",
+                            "Maximum"
+                        ],
+                        "aggregation": "Average",
+                        "allowedTimeGrainsMs": [
+                            60000,
+                            300000,
+                            900000,
+                            1800000,
+                            3600000,
+                            21600000,
+                            43200000,
+                            86400000
+                        ],
+                        "dimensionFilters": [],
+                        "dimensions": [
+                            {
+                                "text": "Geo type",
+                                "value": "GeoType"
+                            },
+                            {
+                                "text": "API name",
+                                "value": "ApiName"
+                            },
+                            {
+                                "text": "Authentication",
+                                "value": "Authentication"
+                            }
+                        ],
+                        "metricDefinition": "$ns",
+                        "metricName": "SuccessServerLatency",
+                        "metricNamespace": "microsoft.storage/storageaccounts",
+                        "resources": [
+                            {
+                                "metricNamespace": "Microsoft.Storage/storageAccounts",
+                                "resourceGroup": "$rg",
+                                "resourceName": "$storage",
+                                "subscription": "$sub"
+                            }
+                        ],
+                        "timeGrain": "auto",
+                        "timeGrains": [
+                            {
+                                "text": "auto",
+                                "value": "auto"
+                            },
+                            {
+                                "text": "1 minute",
+                                "value": "PT1M"
+                            },
+                            {
+                                "text": "5 minutes",
+                                "value": "PT5M"
+                            },
+                            {
+                                "text": "15 minutes",
+                                "value": "PT15M"
+                            },
+                            {
+                                "text": "30 minutes",
+                                "value": "PT30M"
+                            },
+                            {
+                                "text": "1 hour",
+                                "value": "PT1H"
+                            },
+                            {
+                                "text": "6 hours",
+                                "value": "PT6H"
+                            },
+                            {
+                                "text": "12 hours",
+                                "value": "PT12H"
+                            },
+                            {
+                                "text": "1 day",
+                                "value": "P1D"
+                            }
+                        ],
+                        "top": "100"
+                    },
+                    "datasource": {
+                        "uid": "$ds"
+                    },
+                    "hide": false,
+                    "insightsAnalytics": {
+                        "query": "",
+                        "resultFormat": "time_series"
+                    },
+                    "queryType": "Azure Monitor",
+                    "refId": "B",
+                    "subscription": "$sub"
+                },
+                {
+                    "appInsights": {
+                        "dimension": [],
+                        "metricName": "select",
+                        "timeGrain": "auto"
+                    },
+                    "azureLogAnalytics": {
+                        "dashboardTime": false,
+                        "query": "//change this example to create your own time series query\n<table name>                                                              //the table to query (e.g. Usage, Heartbeat, Perf)\n| where $__timeFilter(TimeGenerated)                                      //this is a macro used to show the full chart’s time range, choose the datetime column here\n| summarize count() by <group by column>, bin(TimeGenerated, $__interval) //change “group by column” to a column in your table, such as “Computer”. The $__interval macro is used to auto-select the time grain. Can also use 1h, 5m etc.\n| order by TimeGenerated asc",
+                        "resultFormat": "time_series",
+                        "workspace": "00000000-0000-0000-0000-000000000000"
+                    },
+                    "azureMonitor": {
+                        "aggOptions": [
+                            "Average",
+                            "Minimum",
+                            "Maximum"
+                        ],
+                        "aggregation": "Average",
+                        "allowedTimeGrainsMs": [
+                            60000,
+                            300000,
+                            900000,
+                            1800000,
+                            3600000,
+                            21600000,
+                            43200000,
+                            86400000
+                        ],
+                        "dimensionFilters": [],
+                        "dimensions": [
+                            {
+                                "text": "Geo type",
+                                "value": "GeoType"
+                            },
+                            {
+                                "text": "API name",
+                                "value": "ApiName"
+                            },
+                            {
+                                "text": "Authentication",
+                                "value": "Authentication"
+                            }
+                        ],
+                        "metricDefinition": "$ns",
+                        "metricName": "Ingress",
+                        "metricNamespace": "microsoft.storage/storageaccounts",
+                        "resources": [
+                            {
+                                "metricNamespace": "Microsoft.Storage/storageAccounts",
+                                "resourceGroup": "$rg",
+                                "resourceName": "$storage",
+                                "subscription": "$sub"
+                            }
+                        ],
+                        "timeGrain": "auto",
+                        "timeGrains": [
+                            {
+                                "text": "auto",
+                                "value": "auto"
+                            },
+                            {
+                                "text": "1 minute",
+                                "value": "PT1M"
+                            },
+                            {
+                                "text": "5 minutes",
+                                "value": "PT5M"
+                            },
+                            {
+                                "text": "15 minutes",
+                                "value": "PT15M"
+                            },
+                            {
+                                "text": "30 minutes",
+                                "value": "PT30M"
+                            },
+                            {
+                                "text": "1 hour",
+                                "value": "PT1H"
+                            },
+                            {
+                                "text": "6 hours",
+                                "value": "PT6H"
+                            },
+                            {
+                                "text": "12 hours",
+                                "value": "PT12H"
+                            },
+                            {
+                                "text": "1 day",
+                                "value": "P1D"
+                            }
+                        ],
+                        "top": "100"
+                    },
+                    "datasource": {
+                        "uid": "$ds"
+                    },
+                    "hide": false,
+                    "insightsAnalytics": {
+                        "query": "",
+                        "resultFormat": "time_series"
+                    },
+                    "queryType": "Azure Monitor",
+                    "refId": "C",
+                    "subscription": "$sub"
+                },
+                {
+                    "appInsights": {
+                        "dimension": [],
+                        "metricName": "select",
+                        "timeGrain": "auto"
+                    },
+                    "azureLogAnalytics": {
+                        "dashboardTime": false,
+                        "query": "//change this example to create your own time series query\n<table name>                                                              //the table to query (e.g. Usage, Heartbeat, Perf)\n| where $__timeFilter(TimeGenerated)                                      //this is a macro used to show the full chart’s time range, choose the datetime column here\n| summarize count() by <group by column>, bin(TimeGenerated, $__interval) //change “group by column” to a column in your table, such as “Computer”. The $__interval macro is used to auto-select the time grain. Can also use 1h, 5m etc.\n| order by TimeGenerated asc",
+                        "resultFormat": "time_series",
+                        "workspace": "00000000-0000-0000-0000-000000000000"
+                    },
+                    "azureMonitor": {
+                        "aggOptions": [
+                            "Average",
+                            "Minimum",
+                            "Maximum"
+                        ],
+                        "aggregation": "Average",
+                        "allowedTimeGrainsMs": [
+                            60000,
+                            300000,
+                            900000,
+                            1800000,
+                            3600000,
+                            21600000,
+                            43200000,
+                            86400000
+                        ],
+                        "dimensionFilters": [],
+                        "dimensions": [
+                            {
+                                "text": "Geo type",
+                                "value": "GeoType"
+                            },
+                            {
+                                "text": "API name",
+                                "value": "ApiName"
+                            },
+                            {
+                                "text": "Authentication",
+                                "value": "Authentication"
+                            }
+                        ],
+                        "metricDefinition": "$ns",
+                        "metricName": "Egress",
+                        "metricNamespace": "microsoft.storage/storageaccounts",
+                        "resources": [
+                            {
+                                "metricNamespace": "Microsoft.Storage/storageAccounts",
+                                "resourceGroup": "$rg",
+                                "resourceName": "$storage",
+                                "subscription": "$sub"
+                            }
+                        ],
+                        "timeGrain": "auto",
+                        "timeGrains": [
+                            {
+                                "text": "auto",
+                                "value": "auto"
+                            },
+                            {
+                                "text": "1 minute",
+                                "value": "PT1M"
+                            },
+                            {
+                                "text": "5 minutes",
+                                "value": "PT5M"
+                            },
+                            {
+                                "text": "15 minutes",
+                                "value": "PT15M"
+                            },
+                            {
+                                "text": "30 minutes",
+                                "value": "PT30M"
+                            },
+                            {
+                                "text": "1 hour",
+                                "value": "PT1H"
+                            },
+                            {
+                                "text": "6 hours",
+                                "value": "PT6H"
+                            },
+                            {
+                                "text": "12 hours",
+                                "value": "PT12H"
+                            },
+                            {
+                                "text": "1 day",
+                                "value": "P1D"
+                            }
+                        ],
+                        "top": "100"
+                    },
+                    "datasource": {
+                        "uid": "$ds"
+                    },
+                    "hide": false,
+                    "insightsAnalytics": {
+                        "query": "",
+                        "resultFormat": "time_series"
+                    },
+                    "queryType": "Azure Monitor",
+                    "refId": "D",
+                    "subscription": "$sub"
+                }
+            ],
+            "title": "Storage Latency",
+            "transformations": [
+                {
+                    "id": "reduce",
+                    "options": {
+                        "includeTimeField": false,
+                        "mode": "seriesToRows",
+                        "reducers": [
+                            "mean",
+                            "max",
+                            "min"
+                        ]
+                    }
+                },
+                {
+                    "id": "sortBy",
+                    "options": {
+                        "fields": {},
+                        "sort": [
+                            {
+                                "desc": true,
+                                "field": "Mean"
+                            }
+                        ]
+                    }
+                }
+            ],
+            "type": "table"
+        },
+        {
+            "collapsed": false,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 75
+            },
+            "id": 28,
+            "panels": [],
+            "title": "Cloud",
+            "type": "row"
+        },
+        {
+            "datasource": {
+                "name": "${pds}",
+                "type": "prometheus",
+                "uid": "${pds}"
+            },
+            "description": "Calculated Average route latency for rest client requests.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "continuous-GrYlRd"
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "red",
+                                "value": 80
+                            }
+                        ]
+                    },
+                    "unit": "s"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 8,
+                "x": 0,
+                "y": 76
+            },
+            "id": 39,
+            "interval": "60s",
+            "options": {
+                "displayMode": "lcd",
+                "maxVizHeight": 300,
+                "minVizHeight": 16,
+                "minVizWidth": 8,
+                "namePlacement": "auto",
+                "orientation": "horizontal",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "showUnfilled": true,
+                "sizing": "auto",
+                "valueMode": "color"
+            },
+            "pluginVersion": "11.2.2+security-01",
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${pds}"
+                    },
+                    "editorMode": "code",
+                    "expr": "sum(rest_client_request_duration_seconds_sum)by (verb) / sum(rest_client_request_duration_seconds_count) by (verb)",
+                    "hide": false,
+                    "instant": false,
+                    "legendFormat": "__auto",
+                    "range": true,
+                    "refId": "A"
+                }
+            ],
+            "title": "Rest Client Duration / Count (Average Latency)",
+            "type": "bargauge"
+        },
+        {
+            "datasource": {
+                "name": "${pds}",
+                "type": "prometheus",
+                "uid": "${pds}"
+            },
+            "description": "Client request trends scope to hourly intervals",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisBorderShow": false,
+                        "axisCenteredZero": false,
+                        "axisColorMode": "text",
+                        "axisGridShow": false,
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "barAlignment": -1,
+                        "barWidthFactor": 0.6,
+                        "drawStyle": "line",
+                        "fillOpacity": 30,
+                        "gradientMode": "opacity",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "insertNulls": false,
+                        "lineInterpolation": "smooth",
+                        "lineStyle": {
+                            "fill": "solid"
+                        },
+                        "lineWidth": 2,
+                        "pointSize": 7,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "auto",
+                        "spanNulls": true,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "fieldMinMax": false,
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            }
+                        ]
+                    },
+                    "unit": "s"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 8,
+                "x": 8,
+                "y": 76
+            },
+            "id": 40,
+            "interval": "6000s",
+            "options": {
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "hidden",
+                    "placement": "right",
+                    "showLegend": false
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${pds}"
+                    },
+                    "editorMode": "code",
+                    "expr": "sum(rate(rest_client_request_duration_seconds_sum[$__rate_interval]))by (verb) / sum(rate(rest_client_request_duration_seconds_count[$__rate_interval])) by (verb)",
+                    "instant": false,
+                    "legendFormat": "__auto",
+                    "range": true,
+                    "refId": "A"
+                }
+            ],
+            "title": "Rest Client Hourly latency trends per route",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "name": "${pds}",
+                "type": "prometheus",
+                "uid": "${pds}"
+            },
+            "description": "95% of Rest Client calls fall into this trend with some outliers",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "fixedColor": "red",
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "fillOpacity": 34,
+                        "gradientMode": "hue",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "lineWidth": 4,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "normal"
+                        }
+                    },
+                    "displayName": "95%",
+                    "fieldMinMax": false,
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            }
+                        ]
+                    },
+                    "unit": "s"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 8,
+                "x": 16,
+                "y": 76
+            },
+            "id": 42,
+            "options": {
+                "combine": false,
+                "legend": {
+                    "calcs": [
+                        "mean"
+                    ],
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "mode": "single",
+                    "sort": "none"
+                }
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${pds}"
+                    },
+                    "editorMode": "code",
+                    "expr": "histogram_quantile(0.50, sum(rate(rest_client_request_duration_seconds_bucket[$__rate_interval])) by (le))",
+                    "hide": true,
+                    "instant": false,
+                    "legendFormat": "__auto",
+                    "range": true,
+                    "refId": "A"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${pds}"
+                    },
+                    "editorMode": "code",
+                    "expr": "histogram_quantile(.10, sum(rate(rest_client_request_duration_seconds_bucket[$__rate_interval])) by (le))",
+                    "hide": true,
+                    "instant": false,
+                    "legendFormat": "__auto",
+                    "range": true,
+                    "refId": "B"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${pds}"
+                    },
+                    "editorMode": "code",
+                    "expr": "histogram_quantile(0.95, sum(rate(rest_client_request_duration_seconds_bucket[$__rate_interval])) by (le))",
+                    "hide": false,
+                    "instant": false,
+                    "legendFormat": "__auto",
+                    "range": true,
+                    "refId": "C"
+                }
+            ],
+            "title": "95% of Rest Client Request",
+            "type": "histogram"
+        }
+    ],
+    "refresh": "",
+    "schemaVersion": 39,
+    "tags": [
+        "latency"
+    ],
+    "templating": {
+        "list": [
+            {
+                "hide": 0,
+                "includeAll": false,
+                "label": "Datasource",
+                "multi": false,
+                "name": "ds",
+                "options": [],
+                "query": "grafana-azure-monitor-datasource",
+                "queryValue": "",
+                "refresh": 1,
+                "regex": "",
+                "skipUrlSync": false,
+                "type": "datasource"
+            },
+            {
+                "hide": 2,
+                "includeAll": false,
+                "label": "prometheus data source",
+                "multi": false,
+                "name": "pds",
+                "options": [],
+                "query": "prometheus",
+                "refresh": 1,
+                "regex": "",
+                "skipUrlSync": false,
+                "type": "datasource"
+            },
+            {
+                "datasource": {
+                    "type": "grafana-azure-monitor-datasource",
+                    "uid": "${ds}"
+                },
+                "definition": "",
+                "description": "Current Subscription to use with Dashboard",
+                "hide": 0,
+                "includeAll": false,
+                "label": "Subscription",
+                "multi": false,
+                "name": "sub",
+                "options": [],
+                "query": {
+                    "azureLogAnalytics": {
+                        "query": "",
+                        "resources": []
+                    },
+                    "queryType": "Azure Subscriptions",
+                    "refId": "A"
+                },
+                "refresh": 1,
+                "regex": "",
+                "skipUrlSync": false,
+                "sort": 1,
+                "type": "query"
+            },
+            {
+                "datasource": {
+                    "type": "grafana-azure-monitor-datasource",
+                    "uid": "${ds}"
+                },
+                "definition": "",
+                "hide": 0,
+                "includeAll": false,
+                "label": "Resource Group",
+                "multi": false,
+                "name": "rg",
+                "options": [],
+                "query": {
+                    "azureLogAnalytics": {
+                        "query": "",
+                        "resources": []
+                    },
+                    "queryType": "Azure Resource Groups",
+                    "refId": "A",
+                    "subscription": "$sub"
+                },
+                "refresh": 1,
+                "regex": "",
+                "skipUrlSync": false,
+                "sort": 5,
+                "type": "query"
+            },
+            {
+                "datasource": {
+                    "type": "grafana-azure-monitor-datasource",
+                    "uid": "${ds}"
+                },
+                "definition": "",
+                "hide": 0,
+                "includeAll": false,
+                "label": "AppInsight",
+                "multi": false,
+                "name": "appinsight",
+                "options": [],
+                "query": {
+                    "azureLogAnalytics": {
+                        "query": "",
+                        "resources": []
+                    },
+                    "namespace": "microsoft.insights/components",
+                    "queryType": "Azure Resource Names",
+                    "refId": "A",
+                    "resourceGroup": "$rg",
+                    "subscription": "$sub"
+                },
+                "refresh": 1,
+                "regex": "",
+                "skipUrlSync": false,
+                "sort": 5,
+                "type": "query"
+            },
+            {
+                "hide": 2,
+                "includeAll": false,
+                "multi": false,
+                "name": "aiuri",
+                "options": [],
+                "query": "/subscriptions/$sub/resourceGroups/$rg/providers/microsoft.insights/components/$appinsight",
+                "skipUrlSync": false,
+                "type": "custom"
+            },
+            {
+                "datasource": {
+                    "type": "grafana-azure-monitor-datasource",
+                    "uid": "${ds}"
+                },
+                "definition": "",
+                "description": "Log Analytics workspace name",
+                "hide": 0,
+                "includeAll": false,
+                "label": "Log Analytics workspace",
+                "multi": false,
+                "name": "lgws",
+                "options": [],
+                "query": {
+                    "azureLogAnalytics": {
+                        "query": "",
+                        "resources": []
+                    },
+                    "queryType": "Azure Workspaces",
+                    "refId": "A",
+                    "subscription": "$sub"
+                },
+                "refresh": 1,
+                "regex": "",
+                "skipUrlSync": false,
+                "sort": 5,
+                "type": "query"
+            },
+            {
+                "datasource": {
+                    "type": "grafana-azure-monitor-datasource",
+                    "uid": "${ds}"
+                },
+                "definition": "",
+                "hide": 0,
+                "includeAll": false,
+                "label": "Storage Account",
+                "multi": false,
+                "name": "storage",
+                "options": [],
+                "query": {
+                    "azureLogAnalytics": {
+                        "query": "",
+                        "resources": []
+                    },
+                    "namespace": "microsoft.storage/storageaccounts",
+                    "queryType": "Azure Resource Names",
+                    "refId": "A",
+                    "resourceGroup": "$rg",
+                    "subscription": "$sub"
+                },
+                "refresh": 2,
+                "regex": "",
+                "skipUrlSync": false,
+                "sort": 0,
+                "type": "query"
+            },
+            {
+                "datasource": {
+                    "type": "grafana-azure-monitor-datasource",
+                    "uid": "${ds}"
+                },
+                "definition": "",
+                "description": "Name of Device which you want observability on.",
+                "hide": 0,
+                "includeAll": false,
+                "label": "Device Name",
+                "multi": true,
+                "name": "device",
+                "options": [],
+                "query": {
+                    "azureLogAnalytics": {
+                        "dashboardTime": true,
+                        "query": "AppDependencies\n| distinct AppRoleName",
+                        "resources": [
+                            "$lgws"
+                        ],
+                        "timeColumn": "TimeGenerated"
+                    },
+                    "queryType": "Azure Log Analytics",
+                    "refId": "A"
+                },
+                "refresh": 2,
+                "regex": "",
+                "skipUrlSync": false,
+                "sort": 1,
+                "type": "query"
+            },
+            {
+                "datasource": {
+                    "type": "prometheus",
+                    "uid": "${pds}"
+                },
+                "definition": "kube_node_status_condition",
+                "hide": 0,
+                "includeAll": false,
+                "multi": false,
+                "name": "cluster",
+                "options": [],
+                "query": {
+                    "qryType": 4,
+                    "query": "kube_node_status_condition",
+                    "refId": "PrometheusVariableQueryEditor-VariableQuery"
+                },
+                "refresh": 2,
+                "regex": "/.*cluster=\"([^\"]*).*/",
+                "skipUrlSync": false,
+                "sort": 0,
+                "type": "query"
+            },
+            {
+                "datasource": {
+                    "type": "grafana-azure-monitor-datasource",
+                    "uid": "${ds}"
+                },
+                "definition": "",
+                "hide": 0,
+                "includeAll": false,
+                "label": "Pod Namespace",
+                "multi": false,
+                "name": "LogPodNameSpace",
+                "options": [],
+                "query": {
+                    "azureLogAnalytics": {
+                        "dashboardTime": true,
+                        "query": "ContainerLogV2\n| distinct PodNamespace",
+                        "resources": [
+                            "$lgws"
+                        ],
+                        "timeColumn": "TimeGenerated"
+                    },
+                    "queryType": "Azure Log Analytics",
+                    "refId": "A"
+                },
+                "refresh": 2,
+                "regex": "",
+                "skipUrlSync": false,
+                "sort": 0,
+                "type": "query"
+            }
+        ]
+    },
+    "time": {
+        "from": "now-24h",
+        "to": "now"
+    },
+    "timepicker": {},
+    "timezone": "browser",
+    "title": "Latency",
+    "uid": "behpnpky3i0w0c",
+    "version": 123,
+    "weekStart": ""
+}
