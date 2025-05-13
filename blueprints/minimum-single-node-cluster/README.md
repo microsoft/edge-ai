@@ -36,6 +36,15 @@ To minimize resource usage, the following components are excluded:
    - Diagnostic settings
    - High availability features
 
+## Implementation Options
+
+This blueprint is available in two implementation options:
+
+- **Terraform** - Infrastructure as Code using HashiCorp Terraform
+- **Bicep** - Infrastructure as Code using Azure Bicep
+
+Choose the implementation that best fits your team's expertise and existing pipelines.
+
 ## Terraform Structure
 
 This blueprint consists of the following key components:
@@ -71,6 +80,43 @@ Beyond the basic required variables, this blueprint supports these key configura
 | `should_create_anonymous_broker_listener` | Enable anonymous MQTT listener     | `false`  | For dev/test only, not secure for production               |
 
 For additional configuration options, review the variables in `variables.tf`.
+
+## Bicep Structure
+
+This blueprint also provides a Bicep implementation with the following components:
+
+- **Main Template** (`bicep/main.bicep`): The primary deployment template that orchestrates the overall solution
+- **Types Definition** (`bicep/types.core.bicep`): Defines core parameter types and structures used throughout the deployment
+
+The Bicep implementation follows the same architecture as the Terraform version, providing a native Azure Resource Manager (ARM) approach to deploying the same resources with minimal resource consumption.
+
+### Key Modules Used in Bicep
+
+| Module                  | Purpose                             | Source Location                                      |
+|-------------------------|-------------------------------------|------------------------------------------------------|
+| `cloudResourceGroup`    | Creates the resource group          | `../../../src/000-cloud/000-resource-group/bicep`    |
+| `cloudSecurityIdentity` | Handles identity and security       | `../../../src/000-cloud/010-security-identity/bicep` |
+| `cloudData`             | Creates data storage resources      | `../../../src/000-cloud/030-data/bicep`              |
+| `cloudVmHost`           | Creates the VM host for the cluster | `../../../src/000-cloud/050-vm-host/bicep`           |
+| `edgeCncfCluster`       | Deploys K3s Kubernetes cluster      | `../../../src/100-edge/100-cncf-cluster/bicep`       |
+| `edgeIotOps`            | Installs Azure IoT Operations       | `../../../src/100-edge/110-iot-ops/bicep`            |
+
+### Parameter Reference in Bicep
+
+The Bicep implementation uses a streamlined parameter approach with a `Common` object type:
+
+| Parameter                             | Description                    | Default        | Notes                                                      |
+|---------------------------------------|--------------------------------|----------------|------------------------------------------------------------|
+| `common.resourcePrefix`               | Prefix for resource naming     | Required       | Short unique alphanumeric string (max 8 chars recommended) |
+| `common.location`                     | Azure region location          | Required       | "eastus2", "westus3", etc.                                 |
+| `common.environment`                  | Environment type               | Required       | "dev", "test", "prod", etc.                                |
+| `common.instance`                     | Deployment instance number     | Required       | For multiple deployments                                   |
+| `resourceGroupName`                   | Resource group name            | Auto-generated | Uses pattern: `rg-{prefix}-{environment}-{instance}`       |
+| `adminPassword`                       | VM admin password              | Required       | **Important**: always pass this securely                   |
+| `customLocationsOid`                  | Custom Locations SP Object ID  | Required       | Needed for Arc custom locations feature                    |
+| `shouldCreateAnonymousBrokerListener` | Enable anonymous MQTT listener | `false`        | For dev/test only                                          |
+| `shouldInitAio`                       | Deploy initial AIO components  | `true`         | Controls deployment of initial AIO components              |
+| `shouldDeployAio`                     | Deploy AIO instance components | `true`         | Controls deployment of AIO instance components             |
 
 ## Prerequisites
 
