@@ -2,12 +2,12 @@
 apiVersion: "arccontainerstorage.azure.net/v1"
 kind: EdgeSubvolume
 metadata:
-  name: {SUBVOLUME_NAME}
+  name: ${SUBVOLUME_NAME}
 spec:
-  edgevolume: {EDGE_VOLUME_NAME}
-  path: {PATH}
+  edgevolume: ${EDGE_VOLUME_NAME}
+  path: ${PATH_VALUE}
   auth:
     authType: MANAGED_IDENTITY
-  storageaccountendpoint: "https://{STORAGE_ACCOUNT_NAME}.blob.core.windows.net/"
-  container: {CONTAINER_NAME}
+  storageaccountendpoint: "https://${STORAGE_ACCOUNT_NAME}.blob.core.windows.net/"
+  container: ${CONTAINER_NAME}
   ingestPolicy: edgeingestpolicy-default # Optional: see the instructions in the </src/starter-kit/dataflows-acsa-egmqtt-bidirectional/README.md> to create a custom ingest policy

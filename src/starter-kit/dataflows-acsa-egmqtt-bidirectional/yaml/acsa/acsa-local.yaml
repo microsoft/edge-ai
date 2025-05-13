@@ -3,7 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: acsa-local-viewer-deployment
-  namespace: {NAMESPACE}
+  namespace: ${NAMESPACE}
 spec:
   replicas: 1
   selector:
@@ -43,4 +43,4 @@ spec:
         - name: acsa-volume
           persistentVolumeClaim:
             ### This claimName must refer to your PVC metadata::name from lsevPVC.yaml.
-            claimName: {ACSA_UNBACKED_PVC_NAME}
+            claimName: ${ACSA_UNBACKED_PVC_NAME}

@@ -55,8 +55,7 @@ module "cloud_vm_host" {
   resource_group          = module.cloud_resource_group.resource_group
   arc_onboarding_identity = module.cloud_security_identity.arc_onboarding_identity
 
-  // Minimize resource usage - set smaller VM size
-  vm_sku_size = "Standard_D4s_v3"
+  vm_sku_size = var.vm_sku_size
 
   // Only create a single VM
   host_machine_count = 1

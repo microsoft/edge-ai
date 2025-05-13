@@ -12,20 +12,18 @@ replace_placeholders_in_template_and_apply() {
     local dataSource="$4"
     local dataDestination="$5"
 
-    # Escape special characters in variables so sed will know how to replace them
-    local escapedDataSource
-    escapedDataSource=$(echo "$dataSource" | sed 's/\//\\\//g')
-    local escapedDataDestination
-    escapedDataDestination=$(echo "$dataDestination" | sed 's/\//\\\//g')
+    # Export variables for envsubst
+    export UNIQUE_POSTFIX=$uniquePostfix
+    export ENDPOINT_NAME=$endpointName
+    export DATA_SOURCE=$dataSource
+    export DATA_DESTINATION=$dataDestination
 
-    sed -e "s/{UNIQUE_POSTFIX}/$uniquePostfix/g" \
-        -e "s/{ENDPOINT_NAME}/$endpointName/g" \
-        -e "s/{DATA_SOURCE}/$escapedDataSource/g" \
-        -e "s/{DATA_DESTINATION}/$escapedDataDestination/g" \
-        ../yaml/"$templatePathName".yaml | kubectl apply -f -
+    # Apply the template using envsubst
+    apply_template_with_envsubst "../yaml/${templatePathName}.yaml" | kubectl apply -f -
 }
 
 verify_kubectl_installed
+verify_envsubst_installed
 test_kubeapi_connection_with_retry
 navigate_to_scripts_dir
 
@@ -49,13 +47,17 @@ kubectl apply -f ../yaml/profiles/df-profile.yaml
 acsaUnbackedEndpointName="acsa-unbacked"
 acsaCloudBackedEndpointName="acsa-cloud-backed"
 
-sed -e "s/{PVC_NAME}/$ACSA_UNBACKED_AIO_PVC_NAME/g" \
-    -e "s/{ENDPOINT_NAME}/$acsaUnbackedEndpointName/g" \
-    ../yaml/endpoints/acsa-df-endpoint.yaml | kubectl apply -f -
+# Export variables for unbacked endpoint
+export PVC_NAME=$ACSA_UNBACKED_AIO_PVC_NAME
+export ENDPOINT_NAME=$acsaUnbackedEndpointName
+# Apply the template using envsubst
+apply_template_with_envsubst "../yaml/endpoints/acsa-df-endpoint.yaml" | kubectl apply -f -
 
-sed -e "s/{PVC_NAME}/$ACSA_CLOUD_BACKED_AIO_PVC_NAME/g" \
-    -e "s/{ENDPOINT_NAME}/$acsaCloudBackedEndpointName/g" \
-    ../yaml/endpoints/acsa-df-endpoint.yaml | kubectl apply -f -
+# Export variables for cloud-backed endpoint
+export PVC_NAME=$ACSA_CLOUD_BACKED_AIO_PVC_NAME
+export ENDPOINT_NAME=$acsaCloudBackedEndpointName
+# Apply the template using envsubst
+apply_template_with_envsubst "../yaml/endpoints/acsa-df-endpoint.yaml" | kubectl apply -f -
 
 ## Dataflows creation
 mqttFileSystemTemplate="mqtt-file-system/mqtt-to-file-system-df"
@@ -71,19 +73,23 @@ replace_placeholders_in_template_and_apply "$mqttFileSystemTemplate" "$acsaUnbac
 
 ### Machine status to cloud backed
 machineStatusMqttTopic="metrics/aio/machine-status"
-replace_placeholders_in_template_and_apply "$mqttFileSystemTemplate"  "$acsaCloudBackedEndpointName-$METRIC1_TOPIC_PATH_NAME" "$acsaCloudBackedEndpointName" "$machineStatusMqttTopic" "$METRIC1_TOPIC_PATH_NAME"
+replace_placeholders_in_template_and_apply "$mqttFileSystemTemplate" "$acsaCloudBackedEndpointName-$METRIC1_TOPIC_PATH_NAME" "$acsaCloudBackedEndpointName" "$machineStatusMqttTopic" "$METRIC1_TOPIC_PATH_NAME"
 
 ### Total counter to cloud backed
 totalCounterMqttTopic="metrics/aio/total-counter"
-replace_placeholders_in_template_and_apply "$mqttFileSystemTemplate"  "$acsaCloudBackedEndpointName-$METRIC2_TOPIC_PATH_NAME" "$acsaCloudBackedEndpointName" "$totalCounterMqttTopic" "$METRIC2_TOPIC_PATH_NAME"
+replace_placeholders_in_template_and_apply "$mqttFileSystemTemplate" "$acsaCloudBackedEndpointName-$METRIC2_TOPIC_PATH_NAME" "$acsaCloudBackedEndpointName" "$totalCounterMqttTopic" "$METRIC2_TOPIC_PATH_NAME"
 
 # MQTT to Event Grid bidirectional dataflow
 ## Endpoints creation
 eventGridEndpointName="eventgrid-${EVENT_GRID_NAMESPACE_NAME}"
-sed -e "s/{EVENT_GRID_NAMESPACE}/$EVENT_GRID_NAMESPACE_NAME/g" \
-    -e "s/{LOCATION}/$LOCATION/g" \
-    -e "s/{ENDPOINT_NAME}/$eventGridEndpointName/g" \
-    ../yaml/endpoints/eventgrid-df-endpoint.yaml | kubectl apply -f -
+
+# Export variables for eventgrid endpoint
+export EVENT_GRID_NAMESPACE=$EVENT_GRID_NAMESPACE_NAME
+export LOCATION=$LOCATION
+export ENDPOINT_NAME=$eventGridEndpointName
+
+# Apply the template using envsubst
+apply_template_with_envsubst "../yaml/endpoints/eventgrid-df-endpoint.yaml" | kubectl apply -f -
 
 ## Dataflows creation
 mqttEventGridTemplate="mqtt-cloud/mqtt-to-event-grid-df"

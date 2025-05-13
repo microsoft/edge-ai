@@ -32,7 +32,11 @@ The following resources will be created when using the assets available under th
     az login # --tenant <tenant-id>
     ```
 
-- A Kubernetes cluster with the Azure IoT Operations installed. You can follow the following tutorials to cover this prerequisite: [Creating a cluster](../../020-cncf-cluster/README.md), [installing AIO prerequisites](../../030-iot-ops-cloud-reqs/README.md), and [installing AIO](../../040-iot-ops/README.md).
+- A Kubernetes cluster with the Azure IoT Operations installed. We recommend using the [blueprints/minimum-single-node-cluster](../../../blueprints/minimum-single-node-cluster/README.md) blueprint for this sample:
+  - The minimum recommended VM size is 8 GB of RAM, with 16 GB of RAM being preferred for optimal performance, for this sample we suggest using `Standard_D8s_v3` VM size.
+  - Follow the blueprint documentation for deployment instructions
+
+  Alternatively, you can follow these tutorials: [Creating a cluster](../../020-cncf-cluster/README.md), [installing AIO prerequisites](../../030-iot-ops-cloud-reqs/README.md), and [installing AIO](../../040-iot-ops/README.md).
 - [kubectl](https://k8s-docs.netlify.app/en/docs/tasks/tools/install-kubectl/) command-line tool installed and configured to connect to your Kubernetes cluster
 - Access to Arc enabled Kubernetes cluster with a [proxy configured](https://learn.microsoft.com/cli/azure/connectedk8s?view=azure-cli-latest#az-connectedk8s-proxy)
 - An MQTT client such as `mosquitto_pub` for testing the connection
@@ -60,7 +64,16 @@ The following resources will be created when using the assets available under th
 - Navigate to the scripts directory:
 
     ```bash
-    cd src/samples/dataflows-acsa-egmqtt-bidirectional/scripts
+    cd src/starter-kit/dataflows-acsa-egmqtt-bidirectional/scripts
+    ```
+
+- Ensure you have your `kubectl` context set to the Azure Arc enabled Kubernetes cluster where AIO is installed:
+
+    ```bash
+    kubectl config use-context <context-name>
+
+    # Or if using the blueprint, use the following command in a separate terminal:
+    az connectedk8s proxy --resource-group $RESOURCE_GROUP --name $CLUSTER_NAME
     ```
 
 - Deploy Persistent Volume Claims for Azure Container Storage enabled by Azure-Arc (ACSA):

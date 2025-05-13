@@ -60,8 +60,19 @@ EOF
   default     = null
 }
 
+/*
+ * Optional Variables
+ */
+
 variable "should_create_anonymous_broker_listener" {
   type        = string
   description = "Whether to enable an insecure anonymous AIO MQ Broker Listener. (Should only be used for dev or test environments)"
   default     = false
+}
+
+variable "vm_sku_size" {
+  type        = string
+  description = "Size of the VM"
+  // Minimize resource usage - set smaller VM size
+  default = "Standard_D4_v3"
 }
