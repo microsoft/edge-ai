@@ -16,6 +16,11 @@ module "event_hubs" {
   resource_group_name   = var.resource_group.name
   location              = var.resource_group.location
   aio_uami_principal_id = var.aio_identity.principal_id
+
+  # Pass custom configuration parameters
+  capacity          = var.event_hub_capacity
+  message_retention = var.event_hub_message_retention
+  partition_count   = var.event_hub_partition_count
 }
 
 module "event_grid" {
@@ -29,4 +34,9 @@ module "event_grid" {
   resource_group_name   = var.resource_group.name
   location              = var.resource_group.location
   aio_uami_principal_id = var.aio_identity.principal_id
+
+  # Pass custom configuration parameters
+  capacity                                     = var.event_grid_capacity
+  event_grid_max_client_sessions_per_auth_name = var.event_grid_max_client_sessions
+  topic_name                                   = var.event_grid_topic_name
 }
