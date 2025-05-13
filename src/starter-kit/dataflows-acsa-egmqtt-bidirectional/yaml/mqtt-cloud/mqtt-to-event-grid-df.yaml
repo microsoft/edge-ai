@@ -2,7 +2,7 @@
 apiVersion: connectivity.iotoperations.azure.com/v1
 kind: Dataflow
 metadata:
-  name: mqtt-to-event-grid-df-{UNIQUE_POSTFIX}
+  name: mqtt-to-event-grid-df-${UNIQUE_POSTFIX}
   namespace: azure-iot-operations
 spec:
   profileRef: df-profile
@@ -13,10 +13,10 @@ spec:
       sourceSettings:
         endpointRef: default
         dataSources:
-          - {DATA_SOURCE}
+          - ${DATA_SOURCE}
         serializationFormat: Json
     - operationType: destination
       name: event-grid-destination
       destinationSettings:
-        endpointRef: {ENDPOINT_NAME}
-        dataDestination: {DATA_DESTINATION}
+        endpointRef: ${ENDPOINT_NAME}
+        dataDestination: ${DATA_DESTINATION}

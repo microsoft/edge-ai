@@ -337,12 +337,12 @@ The components are organized into categories based on their purpose and deployme
 
 ##### Applications & Samples
 
-| Folder                                                                                                     | Description                                                                                                                                    |
-|------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------|
-| [500-application](./src/500-application/README.md)                                                         | Custom workloads and applications, including a basic Inference Pipeline, TIG/TICK stacks, InfluxDB Data Historian, reference data backup, etc. |
-| [900-tools-utilities](./src/900-tools-utilities/README.md)                                                 | Utility scripts, tools, and supporting resources for edge deployments                                                                          |
-| [samples/dataflows-acsa-egmqtt-bidirectional](./src/samples/dataflows-acsa-egmqtt-bidirectional/README.md) | Sample that provides assets with Azure IoT Operations Dataflows and supported infrastructure creation                                          |
-| [azure-resource-providers](./src/azure-resource-providers/README.md)                                       | Scripts to register required Azure resource providers for AIO and Arc in your subscription                                                     |
+| Folder                                                                                                             | Description                                                                                                                                    |
+|--------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------|
+| [500-application](./src/500-application/README.md)                                                                 | Custom workloads and applications, including a basic Inference Pipeline, TIG/TICK stacks, InfluxDB Data Historian, reference data backup, etc. |
+| [900-tools-utilities](./src/900-tools-utilities/README.md)                                                         | Utility scripts, tools, and supporting resources for edge deployments                                                                          |
+| [starter-kit/dataflows-acsa-egmqtt-bidirectional](./src/starter-kit/dataflows-acsa-egmqtt-bidirectional/README.md) | Sample that provides assets with Azure IoT Operations Dataflows and supported infrastructure creation                                          |
+| [azure-resource-providers](./src/azure-resource-providers/README.md)                                               | Scripts to register required Azure resource providers for AIO and Arc in your subscription                                                     |
 
 ### Using this project
 

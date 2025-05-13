@@ -2,9 +2,9 @@
 apiVersion: connectivity.iotoperations.azure.com/v1
 kind: DataflowEndpoint
 metadata:
-  name: {ENDPOINT_NAME}
+  name: ${ENDPOINT_NAME}
   namespace: azure-iot-operations
 spec:
   endpointType: localStorage
   localStorageSettings:
-    persistentVolumeClaimRef: {PVC_NAME}
+    persistentVolumeClaimRef: ${PVC_NAME}

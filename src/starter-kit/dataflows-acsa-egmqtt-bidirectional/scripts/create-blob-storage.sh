@@ -9,6 +9,7 @@ source ./utils/common.sh
 
 verify_kubectl_installed
 verify_azcli_installed
+verify_envsubst_installed
 test_kubeapi_connection_with_retry
 
 check_env_var "RESOURCE_GROUP"
@@ -23,17 +24,17 @@ METRIC3_TOPIC_TEMPLATE_NAME=${METRIC3_TOPIC_TEMPLATE_NAME:-"devices-health"}
 navigate_to_scripts_dir
 
 wait_for_edge_volume() {
-  local edgeVolumeName=$1
+    local edgeVolumeName=$1
 
-  echo "Waiting for edge volume $edgeVolumeName to be deployed..."
-  kubectl wait --for=jsonpath='{.status.state}'="deployed" edgevolumes/"$edgeVolumeName" --timeout=120s
+    echo "Waiting for edge volume $edgeVolumeName to be deployed..."
+    kubectl wait --for=jsonpath='{.status.state}'="deployed" edgevolumes/"$edgeVolumeName" --timeout=120s
 }
 
 # Create a storage account
 echo "Creating storage account $STORAGE_ACCOUNT_NAME in resource group $RESOURCE_GROUP..."
 az storage account create --name "$STORAGE_ACCOUNT_NAME" --resource-group "$RESOURCE_GROUP" --location "$LOCATION" --sku Standard_RAGRS --kind StorageV2 --min-tls-version TLS1_2 --allow-blob-public-access false --enable-hierarchical-namespace
 
-# Create role assigment to be able to contribute to the storage account
+# Create role assignment to be able to contribute to the storage account
 subscriptionId=$(az account show --query id --output tsv)
 
 az ad signed-in-user show --query id -o tsv | az role assignment create \
@@ -52,9 +53,9 @@ acsaExtensionIdentity=$(az k8s-extension list --cluster-name "$CLUSTER_NAME" --r
 echo "Assigning the Storage Blob Data Owner role to the ACSA extension principal..."
 
 az role assignment create \
-  --assignee "$acsaExtensionIdentity" \
-  --role "Storage Blob Data Owner" \
-  --scope /subscriptions/"$subscriptionId"/resourceGroups/"$RESOURCE_GROUP"/providers/Microsoft.Storage/storageAccounts/"$STORAGE_ACCOUNT_NAME"
+    --assignee "$acsaExtensionIdentity" \
+    --role "Storage Blob Data Owner" \
+    --scope /subscriptions/"$subscriptionId"/resourceGroups/"$RESOURCE_GROUP"/providers/Microsoft.Storage/storageAccounts/"$STORAGE_ACCOUNT_NAME"
 
 # Create a container in the storage account to store total counter metric
 totalCouterContainerName=$METRIC2_TOPIC_PATH_NAME
@@ -76,28 +77,29 @@ edgeVolumeAioName=$ACSA_CLOUD_BACKED_AIO_PVC_NAME
 # Wait until Edge Volume is deployed
 wait_for_edge_volume "$edgeVolumeAioName"
 
-# Updtate the edge volume with the new subvolumes to connect to the storage account
+# Update the edge volume with the new subvolumes to connect to the storage account
 totalCouterPath=$METRIC2_TOPIC_PATH_NAME
 echo "Adding subvolume $totalCouterPath to edge volume $edgeVolumeAioName to sync with storage account $STORAGE_ACCOUNT_NAME"
 
-sed -e "s/{SUBVOLUME_NAME}/$totalCouterPath/g" \
-    -e "s/{EDGE_VOLUME_NAME}/$edgeVolumeAioName/g" \
-    -e "s/{PATH}/$totalCouterPath/g" \
-    -e "s/{STORAGE_ACCOUNT_NAME}/$STORAGE_ACCOUNT_NAME/g" \
-    -e "s/{CONTAINER_NAME}/$totalCouterContainerName/g" \
-    ../yaml/acsa/edgeSubvolume.yaml | kubectl apply -f -
+export SUBVOLUME_NAME=$totalCouterPath
+export EDGE_VOLUME_NAME=$edgeVolumeAioName
+export PATH_VALUE=$totalCouterPath # Using PATH_VALUE instead of PATH to avoid conflicts with system PATH
+export STORAGE_ACCOUNT_NAME=$STORAGE_ACCOUNT_NAME
+export CONTAINER_NAME=$totalCouterContainerName
 
+apply_template_with_envsubst "../yaml/acsa/edgeSubvolume.yaml" | kubectl apply -f -
 
-# Updtate the edge volume with the new subvolumes to connect to the storage account
+# Update the edge volume with the new subvolumes to connect to the storage account
 machineStatusPath=$METRIC1_TOPIC_PATH_NAME
 echo "Adding subvolume $machineStatusPath to edge volume $edgeVolumeAioName to sync with storage account $STORAGE_ACCOUNT_NAME"
 
-sed -e "s/{SUBVOLUME_NAME}/$machineStatusPath/g" \
-    -e "s/{EDGE_VOLUME_NAME}/$edgeVolumeAioName/g" \
-    -e "s/{PATH}/$machineStatusPath/g" \
-    -e "s/{STORAGE_ACCOUNT_NAME}/$STORAGE_ACCOUNT_NAME/g" \
-    -e "s/{CONTAINER_NAME}/$machineStatusContainerName/g" \
-    ../yaml/acsa/edgeSubvolume.yaml | kubectl apply -f -
+export SUBVOLUME_NAME=$machineStatusPath
+export EDGE_VOLUME_NAME=$edgeVolumeAioName
+export PATH_VALUE=$machineStatusPath # Using PATH_VALUE instead of PATH to avoid conflicts with system PATH
+export STORAGE_ACCOUNT_NAME=$STORAGE_ACCOUNT_NAME
+export CONTAINER_NAME=$machineStatusContainerName
+
+apply_template_with_envsubst "../yaml/acsa/edgeSubvolume.yaml" | kubectl apply -f -
 
 kubectl get edgevolume "$edgeVolumeAioName" -o json
 
