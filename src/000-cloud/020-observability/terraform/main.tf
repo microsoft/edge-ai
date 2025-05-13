@@ -6,7 +6,8 @@
  */
 
 locals {
-  grafana_admin_principal_id = coalesce(var.grafana_admin_principal_id, data.azurerm_client_config.current.object_id)
+  grafana_admin_principal_id      = coalesce(var.grafana_admin_principal_id, data.azurerm_client_config.current.object_id)
+  grafana_monitoring_reader_scope = "/subscriptions/${data.azurerm_client_config.current.subscription_id}"
 }
 
 data "azurerm_client_config" "current" {}
@@ -43,6 +44,14 @@ resource "azurerm_log_analytics_solution" "monitor" {
     publisher = "Microsoft"
     product   = "OMSGallery/ContainerInsights"
   }
+}
+
+resource "azurerm_application_insights" "app_insights" {
+  name                = "ai-${var.resource_prefix}-${var.environment}-${var.instance}"
+  location            = var.location
+  resource_group_name = var.azmon_resource_group.name
+  workspace_id        = azurerm_log_analytics_workspace.monitor.id
+  application_type    = "web"
 }
 
 resource "azurerm_dashboard_grafana" "monitor" {
@@ -86,6 +95,12 @@ resource "azurerm_role_assignment" "grafana_metrics_reader" {
   principal_id         = azurerm_dashboard_grafana.monitor.identity[0].principal_id
 }
 
+resource "azurerm_role_assignment" "grafana_monitoring_reader" {
+  scope                = local.grafana_monitoring_reader_scope
+  role_definition_name = "Monitoring Reader"
+  principal_id         = azurerm_dashboard_grafana.monitor.identity[0].principal_id
+}
+
 # import grafana dashboard for AIO
 resource "terraform_data" "apply_scripts" {
   count = var.grafana_admin_principal_id != "" ? 1 : 0
@@ -97,7 +112,15 @@ resource "terraform_data" "apply_scripts" {
   ]
 
   provisioner "local-exec" {
-    command = "az grafana dashboard import -g ${var.azmon_resource_group.name} -n ${azurerm_dashboard_grafana.monitor.name} --definition https://raw.githubusercontent.com/Azure/azure-iot-operations/refs/heads/main/samples/grafana-dashboard/aio.sample.json"
+    command = <<-EOT
+      # Import dashboards from local files
+      for dashboard in ../../../src/000-cloud/020-observability/scripts/*.json; do
+        az grafana dashboard import -g ${var.azmon_resource_group.name} -n ${azurerm_dashboard_grafana.monitor.name} --definition $dashboard
+      done
+
+      # Import dashboard from GitHub
+      az grafana dashboard import -g ${var.azmon_resource_group.name} -n ${azurerm_dashboard_grafana.monitor.name} --definition https://raw.githubusercontent.com/Azure/azure-iot-operations/refs/heads/main/samples/grafana-dashboard/aio.sample.json
+    EOT
   }
 }
 
