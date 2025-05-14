@@ -432,5 +432,4 @@ venv/
 pr.md
 pr-reference.xml
 
-# GitHub Copilot
-**/.copilot-tracking/
+.copilot-tracking/

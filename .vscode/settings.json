@@ -10,6 +10,15 @@
     "editor.insertSpaces": true,
 
     "markdownlint.configFile": ".markdownlint.json",
+    "markdownlint.lintWorkspaceGlobs": [
+        "**/*.{md,mkd,mdwn,mdown,markdown,markdn,mdtxt,mdtext,workbook}",
+        "!**/.copilot-tracking/**",
+        "!**/*.code-search",
+        "!**/bower_components",
+        "!**/node_modules",
+        "!**/.git",
+        "!**/vendor"
+    ],
 
     "[markdown]": {
         "editor.formatOnSave": true,

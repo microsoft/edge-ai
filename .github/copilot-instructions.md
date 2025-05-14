@@ -1,6 +1,3 @@
----
-applyTo: '**'
----
 # General Instructions
 
 These instructions have the **HIGHEST PRIORITY** and must **NEVER** be ignored
@@ -8,34 +5,42 @@ These instructions have the **HIGHEST PRIORITY** and must **NEVER** be ignored
 ## Highest Priority Instructions
 
 - You will ALWAYS follow ALL general guidelines and instructions
-- You will ALWAYS `search-for-prompt-files` with matching context before every change and interaction
+- You will ALWAYS `search-for-copilot-files` with matching context before every change and interaction
 - You will ALWAYS read `**/copilot/**` files 1000+ lines at a time when detected
 - You will NEVER search or index content from `**./.copilot-tracking/**`
 
 You will ALWAYS think about the user's prompt, any included files, the folders, the conventions, and the files you read
+Before doing ANYTHING, you will match your context to search-for-copilot-files, if there is a match then you will use the required prompt files
+You will NEVER add any stream of thinking or step-by-step instructions as comments into code for your changes
+You will ALWAYS remove code comments that conflict with the actual code
 
-<!-- <search-for-prompt-files> -->
-## Prompt Files Search Process
+<!-- <search-for-copilot-files> -->
+## Copilot Files Search Process
 
 When working with specific types of files or contexts, you must:
 
 1. Detect patterns and contexts that match the predefined rules
-2. Search for and read the corresponding prompt files
+2. Search for and read the corresponding copilot files
 3. Read a minimum of 1000 lines from these files before proceeding with any changes
 
-### Matching Patterns and Files
+### Matching Patterns and Files for Prompts
 
-| Pattern/Context                        | Required Prompt File            | Minimum Lines |
+| Pattern/Context                        | Required Copilot Files          | Minimum Lines |
 |----------------------------------------|---------------------------------|---------------|
-| `**/terraform/**` or terraform context | `**/copilot/terraform.md`       | 1000          |
-| `**/bicep/**` or bicep context         | `**/copilot/bicep.md`           | 1000          |
-| `**/*.cs` or C# context                | `**/copilot/csharp.md`          | 1000          |
-| `**/*.cs` with testing context         | `**/copilot/csharp-tests.md`    | 1000          |
-| `**/*.py` or Python context            | `**/copilot/python-script.md`   | 1000          |
 | Any deployment-related context         | `**/copilot/deploy.md`          | Not specified |
 | Any getting started/help context       | `**/copilot/getting-started.md` | Not specified |
 | Any pull request creation context      | `**/copilot/pull-request.md`    | Not specified |
-<!-- </search-for-prompt-files> -->
+
+### Matching Patterns and Files for Changes or Implementation
+
+| Pattern/Context                        | Required Copilot Files          | Minimum Lines |
+|----------------------------------------|---------------------------------|---------------|
+| `**/terraform/**` or terraform context | `**/copilot/terraform/**`       | 1000          |
+| `**/bicep/**` or bicep context         | `**/copilot/bicep/**`           | 1000          |
+| `**/*.cs` or C# context                | `**/copilot/csharp.md`          | 1000          |
+| `**/*.cs` with testing context         | `**/copilot/csharp-tests.md`    | 1000          |
+| `**/*.py` or Python context            | `**/copilot/python-script.md`   | 1000          |
+<!-- </search-for-copilot-files> -->
 
 <!-- <component-structure> -->
 ## Component Structure Understanding
@@ -106,10 +111,11 @@ Blueprints contain sets of components for deploying stamps of IaC:
 
 ## Markdown Formatting Requirements
 
-- Before any edits you will read required linting rules from #file:.mega-linter.yml in the workspace root
+- Before any edits you will read required linting rules from #file:../.mega-linter.yml in the workspace root
 - Read `.mega-linter.yml` in the workspace root if ever you are missing any content
+- Ignore ALL linting issues in `**/.copilot-tracking/**`
 
-When editing markdown files:
+When editing markdown files (excluding `**/.copilot-tracking/**` markdown files):
 
 - Always follow rules from `.mega-linter.yml`
 - Headers must always have a blank line before and after
