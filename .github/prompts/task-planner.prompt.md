@@ -32,31 +32,41 @@ When you are given a plan-file or a notes-file, you will ALWAYS do the following
 The planning process involves creating and updating the plan-file and notes-file based on the task.
 
 1. Before taking any action, you will do the following:
-   - You will verify that you were given a task file or a prompt that has all of the relevant information needed to complete a task.
-   - Otherwise, you will ask the user:
-     - "What is the task you want to accomplish? Please attach any relevant information to the conversation."
-     - The user can attach a task file, instruction files, relevant project files, or a prompt.
+
+- You will verify that you were given a task file or a prompt that has all of the relevant information needed to complete a task.
+- Otherwise, you will ask the user:
+  - "What is the task you want to accomplish? Please attach any relevant information to the conversation."
+    - The user can attach a task file, instruction files, relevant project files, or a prompt.
+
 2. If needed, create the plan-file with the title section matching the user's task.
-3. If the user has not yet provided any task or plan title and details, pause and ask the user to provide the task details before continuing.
-4. Verify that you have answers for all of these questions, otherwise, discover the information yourself and ask the user when needed:
-   - Do I know the expected outcome of the task?
-   - Do I have the full scope of the task?
-   - Do I know all specific requirements or constraints?
-   - Do I know all resources or references that I should consider?
-   - Do I have all examples that I can refer to?
-   - Do I know all external references or tools to use when researching and implementing this task?
-   - Do I know all specific tools and technologies when implementing this task?
-   - Do I know all of the files the should be changed?
-   - Do I know all of the files that I should create?
-   - Do I know all of the coding conventions and best practices that I need to follow for the task?
-   - Do I have all of the information to implement the task?
-5. Follow update the plan-file accordingly.
-6. Verify the plan-file includes required to complete the task.
-7. Repeat steps 3-5 of the planning-process until the plan-file includes everything required to complete the task.
-8. Inform the user that the plan-file and notes-file are ready for review.
-9. Review any and all updated information in the plan-file or notes-file, for any updated information you will repeat steps 3-5 of the planning-process until the plan-file includes everything required to complete the task.
-10. Inform the user that they can `/clear` their context if needed, and that they can now provide the plan-file and notes-file along with the task-planner.prompt.md to implement the plan.
-11. You will await any further instruction from the user.
+
+3. Verify that you have answers for all of these questions, otherwise, discover the information yourself and ask the user when needed:
+
+- Do I know the expected outcome of the task?
+- Do I have the full scope of the task?
+- Do I know all specific requirements or constraints?
+- Do I know all resources or references that I should consider?
+- Do I have all examples that I can refer to?
+- Do I know all external references or tools to use when researching and implementing this task?
+- Do I know all specific tools and technologies when implementing this task?
+- Do I know all of the files the should be changed?
+- Do I know all of the files that I should create?
+- Do I know all of the coding conventions and best practices that I need to follow for the task?
+- Do I have all of the information to implement the task?
+
+4. Follow update the plan-file accordingly.
+
+5. Verify the plan-file includes required to complete the task.
+
+6. Repeat steps 3-5 of the planning-process until the plan-file includes everything required to complete the task.
+
+7. Inform the user that the plan-file and notes-file are ready for review.
+
+8. Review any and all updated information in the plan-file or notes-file, for any updated information you will repeat steps 3-5 of the planning-process until the plan-file includes everything required to complete the task.
+
+9. Inform the user that they can `/clear` their context if needed, and that they can now provide the plan-file and notes-file along with the task-planner.prompt.md to implement the plan.
+
+10. You will await any further instruction from the user.
 <!-- </planning-process> -->
 
 ## Plan File
@@ -97,16 +107,16 @@ The purpose of the coding notes-file is to keep track of all changes for the tas
    - Completed on: <current UTC date and time>
    - Completed by: <name of the person who completed the phase, not Copilot>
 
-   ### Major files added, updated, removed
+   ### Phase <phase-number>: Major files added, updated, removed
    <list of files and brief summary of changes>
 
-   ### Major features added, updated, removed
+   ### Phase <phase-number>: Major features added, updated, removed
    <list of features and brief summary of changes>
 
-   ### Patterns, abstractions, data structures, algorithms, etc.
+   ### Phase <phase-number>: Patterns, abstractions, data structures, algorithms, etc.
    <list of patterns, abstractions, data structures, algorithms, etc. and brief summary of changes>
 
-   ### Governing design principles
+   ### Phase <phase-number>: Governing design principles
    <list of design principles and brief summary of changes>
    ```
 <!-- </notes-entry-template> -->

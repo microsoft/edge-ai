@@ -100,10 +100,11 @@ AZURE_COMMENT_REPORTER: true
 
 # Markdown Table Formatter configuration - treat warnings as errors
 MARKDOWN_MARKDOWN_TABLE_FORMATTER_DISABLE_ERRORS: false
+MARKDOWN_MARKDOWN_TABLE_FORMATTER_FILTER_REGEX_EXCLUDE: '(\.copilot-tracking/.*|\.github/prompts/.*|\.github/instructions/.*|\.github/copilot-instructions.md)'
 
 # Markdown Linter configuration - treat warnings as errors
 MARKDOWN_MARKDOWNLINT_DISABLE_ERRORS: false
-MARKDOWN_MARKDOWNLINT_FILTER_REGEX_EXCLUDE: '(\.copilot-tracking/.*|\.github/prompts/.*|\.github/instructions/.*)'
+MARKDOWN_MARKDOWNLINT_FILTER_REGEX_EXCLUDE: '(\.copilot-tracking/.*|\.github/prompts/.*|\.github/instructions/.*|\.github/copilot-instructions.md)'
 
 # Terraform Format configuration
 TERRAFORM_TERRAFORM_FMT_DISABLE_ERRORS: false
