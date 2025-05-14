@@ -83,6 +83,8 @@
         "tag:yaml.org,2002:python/object/apply:pymdownx.slugs.slugify mapping"
     ],
     "github.copilot.chat.codeGeneration.useInstructionFiles": true,
+    "github.copilot.chat.agent.thinkingTool": true,
+    "github.copilot.chat.codesearch.enabled": true,
     "github.copilot.chat.commitMessageGeneration.instructions": [
         {
             "text": "Use Conventional Commit Messages."
