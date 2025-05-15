@@ -412,9 +412,11 @@ def extract_modules(json_data: Dict[str, Any], max_nested_level: int = 1, curren
                 mod_data["parameter_values"] = {}
 
                 for param_name, param_value in module_params.items():
-                    if "value" in param_value:
-                        mod_data["parameter_values"][param_name] = json.dumps(
-                            param_value["value"])
+                    # Fix: param_value may be a dict or a direct value
+                    if isinstance(param_value, dict) and "value" in param_value:
+                        mod_data["parameter_values"][param_name] = json.dumps(param_value["value"])
+                    else:
+                        mod_data["parameter_values"][param_name] = json.dumps(param_value)
 
             modules.append(mod_data)
 
