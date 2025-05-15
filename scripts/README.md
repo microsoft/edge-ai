@@ -22,6 +22,8 @@ Azure DevOps build system for managing and validating the project's IaC.
     - [Run-Checkov.ps1](#run-checkovps1)
   - [Azure IoT Operations Scripts](#azure-iot-operations-scripts)
     - [aio-version-checker.py](#aio-version-checkerpy)
+  - [Blueprint Deployment Preparation Scripts](#blueprint-deployment-preparation-scripts)
+    - [location-check.sh](#location-checksh)
   - [Documentation and Link Validation Scripts](#documentation-and-link-validation-scripts)
     - [link-lang-check.py](#link-lang-checkpy)
     - [wiki-build.sh](#wiki-buildsh)
@@ -226,6 +228,18 @@ Validates Azure IoT Operations component versions against latest available.
 - **Build Integration**: Used by the [aio-version-checker-template.yml](../.azdo/aio-version-checker-template.yml) job
 - **When to Use**: Run periodically to check if AIO components use the currently released versions
 - **Dependencies**: Requires Python packages: hcl2, requests
+
+## Blueprint Deployment Preparation Scripts
+
+### location-check.sh
+
+Uses a chosen blueprint to crawl all referenced modules, create a list of deployed resources, and find the intersection of all resources' allowed Azure locations.
+
+- **Usage**: `./location-check.sh`
+- **Returns**: List of all blueprint resources and list of all possible locations for blueprint
+- **When to use**: Optionally run to assist in choosing a location for blueprint deployment
+- **Dependencies**: grep, sort, comm (all 3 should be standard tooling), az
+- **Notes**: Only bicep deployment files are supported at current
 
 ## Documentation and Link Validation Scripts
 
