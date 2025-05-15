@@ -125,7 +125,7 @@ Bicep provides an alternative Infrastructure as Code (IaC) approach that's nativ
 1. Navigate to your chosen blueprint directory, as an example:
 
    ```sh
-   # Navigate to the terraform directory
+   # Navigate to the bicep directory
    cd ./full-single-node-cluster/bicep
    ```
 
@@ -186,7 +186,21 @@ Bicep provides an alternative Infrastructure as Code (IaC) approach that's nativ
    param shouldDeployAio = true // Deploy an Azure IoT Operations Instance
    ```
 
-5. Deploy Resources with Bicep:
+5. (Optional) Determine available Azure locations:
+
+   Navigate to the `scripts` directory:
+
+   ```sh
+   cd ../../../scripts
+   ```
+
+   Run the `location-check.sh` script:
+
+   ```sh
+   ./location-check.sh --blueprint {blueprint_name} --method bicep
+   ```
+
+6. Deploy Resources with Bicep:
 
    ```sh
    # Deploy using the Azure CLI at the subscription level, keep deployment_name less than 8 characters:
@@ -199,7 +213,7 @@ Bicep provides an alternative Infrastructure as Code (IaC) approach that's nativ
 
    > **Note**: When deploying with a `customLocationsOid`, ensure the CUSTOM_LOCATIONS_OID environment variable is set in your current shell session before running the deployment command.
 
-6. Monitor deployment progress:
+7. Monitor deployment progress:
 
    You can check the deployment status in the Azure portal or using the Azure CLI:
 
