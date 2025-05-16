@@ -64,6 +64,8 @@ module virtualMachine 'modules/virtual-machine.bicep' = [
 * Outputs
 */
 
+output networkSecurityGroupId string = network.outputs.networkSecurityGroupId
+output virtualNetworkName string = network.outputs.virtualNetworkName
 output adminUsername string = virtualMachine[0].outputs.adminUsername
 output privateIpAddresses array = [for i in range(0, vmCount): virtualMachine[i].outputs.privateIpAddress]
 output publicFqdns array = [for i in range(0, vmCount): virtualMachine[i].outputs.publicFqdn]

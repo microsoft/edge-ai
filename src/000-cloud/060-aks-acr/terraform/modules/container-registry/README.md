@@ -35,7 +35,7 @@ Deploys Azure Container Registry with a private endpoint and private DNS zone.
 | location | Location for all resources in this module. | `string` | n/a | yes |
 | resource\_group | Resource group for all resources in this module. | ```object({ name = string })``` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module. | `string` | n/a | yes |
-| should\_create\_private\_endpoint | Should create a private endpoint for the Azure Container Registry. Default is false. | `bool` | n/a | yes |
+| should\_create\_acr\_private\_endpoint | Should create a private endpoint for the Azure Container Registry. Default is false. | `bool` | n/a | yes |
 | sku | SKU for the Azure Container Registry. Options are Basic, Standard, Premium. Default is Premium because of the need for private endpoints. | `string` | n/a | yes |
 | snet\_acr | Subnet for the Azure Container Registry private endpoint. | ```object({ id = string })``` | n/a | yes |
 | vnet | Virtual Network for Container Registry Private DNS Zone. | ```object({ id = string })``` | n/a | yes |

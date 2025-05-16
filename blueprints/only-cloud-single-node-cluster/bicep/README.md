@@ -13,6 +13,8 @@ Deploys a complete end-to-end environment for Azure IoT Operations on a single-n
 |common|The common component configuration.|`[_1.Common](#user-defined-types)`|n/a|yes|
 |resourceGroupName|The name for the resource group. If not provided, a default name will be generated.|`string`|[format('rg-{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]|no|
 |adminPassword|Password used for the host VM.|`securestring`|n/a|yes|
+|shouldCreateAcrPrivateEndpoint|Whether to create a private endpoint for the Azure Container Registry.|`bool`|`false`|no|
+|shouldCreateAks|Whether to create an Azure Kubernetes Service cluster.|`bool`|`false`|no|
 
 ## Resources
 
@@ -24,6 +26,7 @@ Deploys a complete end-to-end environment for Azure IoT Operations on a single-n
 |cloudData|`Microsoft.Resources/deployments`|2022-09-01|
 |cloudMessaging|`Microsoft.Resources/deployments`|2022-09-01|
 |cloudVmHost|`Microsoft.Resources/deployments`|2022-09-01|
+|cloudAksAcr|`Microsoft.Resources/deployments`|2022-09-01|
 
 ## Modules
 
@@ -35,6 +38,7 @@ Deploys a complete end-to-end environment for Azure IoT Operations on a single-n
 |cloudData|Creates storage resources including Azure Storage Account and Schema Registry for data in the Edge AI solution.|
 |cloudMessaging|Deploys Azure cloud messaging resources including Event Hubs, Service Bus, and Event Grid for IoT edge solution communication.|
 |cloudVmHost|Provisions virtual machines and networking infrastructure for hosting Azure IoT Operations edge deployments.|
+|cloudAksAcr|Deploys Azure Container Registry (ACR) and optionally Azure Kubernetes Service (AKS) resources.|
 
 ## Module Details
 
@@ -247,12 +251,45 @@ Provisions virtual machines and networking infrastructure for hosting Azure IoT 
 
 |Name|Type|Description|
 | :--- | :--- | :--- |
+|networkSecurityGroupId|`string`||
+|virtualNetworkName|`string`||
 |adminUsername|`string`||
 |privateIpAddresses|`array`||
 |publicFqdns|`array`||
 |publicIpAddresses|`array`||
 |vmIds|`array`||
 |vmNames|`array`||
+
+### cloudAksAcr
+
+Deploys Azure Container Registry (ACR) and optionally Azure Kubernetes Service (AKS) resources.
+
+#### Parameters for cloudAksAcr
+
+|Name|Description|Type|Default|Required|
+| :--- | :--- | :--- | :--- | :--- |
+|common|The common component configuration.|`[_2.Common](#user-defined-types)`|n/a|yes|
+|virtualNetworkName|Virtual network name for subnet creation.|`string`|n/a|yes|
+|networkSecurityGroupId|Network security group ID to apply to the subnets.|`string`|n/a|yes|
+|shouldCreateAcrPrivateEndpoint|Whether to create a private endpoint for the Azure Container Registry.|`bool`|False|no|
+|containerRegistryConfig|The settings for the Azure Container Registry.|`[_1.ContainerRegistry](#user-defined-types)`|[variables('_1.containerRegistryDefaults')]|no|
+|shouldCreateAks|Whether to create an Azure Kubernetes Service cluster.|`bool`|False|no|
+|kubernetesClusterConfig|The settings for the Azure Kubernetes Service cluster.|`[_1.KubernetesCluster](#user-defined-types)`|[variables('_1.kubernetesClusterDefaults')]|no|
+
+#### Resources for cloudAksAcr
+
+|Name|Type|API Version|
+| :--- | :--- | :--- |
+|network|`Microsoft.Resources/deployments`|2022-09-01|
+|containerRegistry|`Microsoft.Resources/deployments`|2022-09-01|
+|aksCluster|`Microsoft.Resources/deployments`|2022-09-01|
+
+#### Outputs for cloudAksAcr
+
+|Name|Type|Description|
+| :--- | :--- | :--- |
+|aksName|`string`|The AKS cluster name.|
+|acrName|`string`|The Azure Container Registry name.|
 
 ## User Defined Types
 
@@ -273,6 +310,8 @@ Common settings for the components.
 | :--- | :--- | :--- |
 |vmUsername|`string`|The VM username for SSH access.|
 |vmNames|`array`|The names of all virtual machines deployed.|
+|aksName|`string`|The AKS cluster name.|
+|acrName|`string`|The Azure Container Registry name.|
 |keyVaultName|`string`|The name of the Secret Store Extension Key Vault.|
 |sseIdentityName|`string`|The Secret Store Extension User Assigned Managed Identity name.|
 |aioIdentityName|`string`|The Azure IoT Operations User Assigned Managed Identity name.|

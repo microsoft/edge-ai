@@ -36,7 +36,7 @@ Deploys virtual network resources for ACR and AKS
 | network\_security\_group | n/a | ```object({ id = string })``` | n/a | yes |
 | resource\_group | n/a | ```object({ name = string })``` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module. | `string` | n/a | yes |
-| should\_create\_private\_endpoint | Should create a private endpoint for the Azure Container Registry. Default is false. | `bool` | n/a | yes |
+| should\_create\_acr\_private\_endpoint | Should create a private endpoint for the Azure Container Registry. Default is false. | `bool` | n/a | yes |
 | virtual\_network | n/a | ```object({ name = string })``` | n/a | yes |
 
 ## Outputs
