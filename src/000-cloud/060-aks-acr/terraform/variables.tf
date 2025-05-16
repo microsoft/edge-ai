@@ -8,7 +8,7 @@ variable "should_create_aks" {
   default     = false
 }
 
-variable "should_create_private_endpoint" {
+variable "should_create_acr_private_endpoint" {
   type        = bool
   description = "Should create a private endpoint for the Azure Container Registry. Default is false."
   default     = false

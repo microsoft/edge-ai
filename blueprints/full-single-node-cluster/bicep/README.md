@@ -13,6 +13,8 @@ Deploys a complete end-to-end environment for Azure IoT Operations on a single-n
 |common|The common component configuration.|`[_2.Common](#user-defined-types)`|n/a|yes|
 |resourceGroupName|The name for the resource group. If not provided, a default name will be generated.|`string`|[format('rg-{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]|no|
 |adminPassword|Password used for the host VM.|`securestring`|n/a|yes|
+|shouldCreateAcrPrivateEndpoint|Whether to create a private endpoint for the Azure Container Registry.|`bool`|`false`|no|
+|shouldCreateAks|Whether to create an Azure Kubernetes Service cluster.|`bool`|`false`|no|
 |customLocationsOid|The object id of the Custom Locations Entra ID application for your tenant.<br>Can be retrieved using:<br><br>  <pre><code class="language-sh">  az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv<br>  </code></pre><br>|`string`|n/a|yes|
 |shouldCreateAnonymousBrokerListener|Whether to enable an insecure anonymous AIO MQ Broker Listener. (Should only be used for dev or test environments)|`bool`|`false`|no|
 |shouldInitAio|Whether to deploy the Azure IoT Operations initial connected cluster resources, Secret Sync, ACSA, OSM, AIO Platform.|`bool`|`true`|no|
@@ -28,6 +30,7 @@ Deploys a complete end-to-end environment for Azure IoT Operations on a single-n
 |cloudData|`Microsoft.Resources/deployments`|2022-09-01|
 |cloudMessaging|`Microsoft.Resources/deployments`|2022-09-01|
 |cloudVmHost|`Microsoft.Resources/deployments`|2022-09-01|
+|cloudAksAcr|`Microsoft.Resources/deployments`|2022-09-01|
 |edgeCncfCluster|`Microsoft.Resources/deployments`|2022-09-01|
 |edgeIotOps|`Microsoft.Resources/deployments`|2022-09-01|
 |edgeObservability|`Microsoft.Resources/deployments`|2022-09-01|
@@ -43,6 +46,7 @@ Deploys a complete end-to-end environment for Azure IoT Operations on a single-n
 |cloudData|Creates storage resources including Azure Storage Account and Schema Registry for data in the Edge AI solution.|
 |cloudMessaging|Deploys Azure cloud messaging resources including Event Hubs, Service Bus, and Event Grid for IoT edge solution communication.|
 |cloudVmHost|Provisions virtual machines and networking infrastructure for hosting Azure IoT Operations edge deployments.|
+|cloudAksAcr|Deploys Azure Container Registry (ACR) and optionally Azure Kubernetes Service (AKS) resources.|
 |edgeCncfCluster|This module provisions and deploys automation scripts to a VM host that create and configure a K3s Kubernetes cluster with Arc connectivity.<br>The scripts handle primary and secondary node(s) setup, cluster administration, workload identity enablement, and installation of required Azure Arc extensions.|
 |edgeIotOps|Deploys Azure IoT Operations extensions, instances, and configurations on Azure Arc-enabled Kubernetes clusters.|
 |edgeObservability|Deploys observability resources including cluster extensions for metrics and logs collection, and rule groups for monitoring.|
@@ -259,12 +263,45 @@ Provisions virtual machines and networking infrastructure for hosting Azure IoT 
 
 |Name|Type|Description|
 | :--- | :--- | :--- |
+|networkSecurityGroupId|`string`||
+|virtualNetworkName|`string`||
 |adminUsername|`string`||
 |privateIpAddresses|`array`||
 |publicFqdns|`array`||
 |publicIpAddresses|`array`||
 |vmIds|`array`||
 |vmNames|`array`||
+
+### cloudAksAcr
+
+Deploys Azure Container Registry (ACR) and optionally Azure Kubernetes Service (AKS) resources.
+
+#### Parameters for cloudAksAcr
+
+|Name|Description|Type|Default|Required|
+| :--- | :--- | :--- | :--- | :--- |
+|common|The common component configuration.|`[_2.Common](#user-defined-types)`|n/a|yes|
+|virtualNetworkName|Virtual network name for subnet creation.|`string`|n/a|yes|
+|networkSecurityGroupId|Network security group ID to apply to the subnets.|`string`|n/a|yes|
+|shouldCreateAcrPrivateEndpoint|Whether to create a private endpoint for the Azure Container Registry.|`bool`|False|no|
+|containerRegistryConfig|The settings for the Azure Container Registry.|`[_1.ContainerRegistry](#user-defined-types)`|[variables('_1.containerRegistryDefaults')]|no|
+|shouldCreateAks|Whether to create an Azure Kubernetes Service cluster.|`bool`|False|no|
+|kubernetesClusterConfig|The settings for the Azure Kubernetes Service cluster.|`[_1.KubernetesCluster](#user-defined-types)`|[variables('_1.kubernetesClusterDefaults')]|no|
+
+#### Resources for cloudAksAcr
+
+|Name|Type|API Version|
+| :--- | :--- | :--- |
+|network|`Microsoft.Resources/deployments`|2022-09-01|
+|containerRegistry|`Microsoft.Resources/deployments`|2022-09-01|
+|aksCluster|`Microsoft.Resources/deployments`|2022-09-01|
+
+#### Outputs for cloudAksAcr
+
+|Name|Type|Description|
+| :--- | :--- | :--- |
+|aksName|`string`|The AKS cluster name.|
+|acrName|`string`|The Azure Container Registry name.|
 
 ### edgeCncfCluster
 
@@ -687,6 +724,8 @@ Common settings for the components.
 |arcConnectedClusterName|`string`|The name of the Arc-enabled Kubernetes cluster that was connected to Azure. This can be used to reference the cluster in other deployments.|
 |vmUsername|`string`|The administrative username that can be used to SSH into the deployed virtual machines.|
 |vmNames|`array`|An array containing the names of all virtual machines that were deployed as part of this blueprint.|
+|aksName|`string`|The AKS cluster name.|
+|acrName|`string`|The Azure Container Registry name.|
 |aioPlatformExtensionId|`string`|The ID of the Azure IoT Operations Platform Extension.|
 |aioPlatformExtensionName|`string`|The name of the Azure IoT Operations Platform Extension.|
 |secretStoreExtensionId|`string`|The ID of the Secret Store Extension.|

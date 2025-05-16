@@ -25,6 +25,20 @@ param resourceGroupName string = 'rg-${common.resourcePrefix}-${common.environme
 param adminPassword string
 
 /*
+  Container Registry Parameters
+*/
+
+@description('Whether to create a private endpoint for the Azure Container Registry.')
+param shouldCreateAcrPrivateEndpoint bool = false
+
+/*
+  Azure Kubernetes Service Parameters
+*/
+
+@description('Whether to create an Azure Kubernetes Service cluster.')
+param shouldCreateAks bool = false
+
+/*
   CNCF Arc cluster parameters
 */
 
@@ -135,6 +149,19 @@ module cloudVmHost '../../../src/000-cloud/050-vm-host/bicep/main.bicep' = {
   }
 }
 
+module cloudAksAcr '../../../src/000-cloud/060-aks-acr/bicep/main.bicep' = {
+  name: '${deployment().name}-cvh3'
+  scope: resourceGroup(resourceGroupName)
+  dependsOn: [cloudResourceGroup]
+  params: {
+    common: common
+    virtualNetworkName: cloudVmHost.outputs.virtualNetworkName
+    networkSecurityGroupId: cloudVmHost.outputs.networkSecurityGroupId
+    shouldCreateAcrPrivateEndpoint: shouldCreateAcrPrivateEndpoint
+    shouldCreateAks: shouldCreateAks
+  }
+}
+
 module edgeCncfCluster '../../../src/100-edge/100-cncf-cluster/bicep/main.bicep' = {
   name: '${deployment().name}-ecc4'
   scope: resourceGroup(resourceGroupName)
@@ -230,6 +257,12 @@ output vmUsername string = cloudVmHost.outputs.adminUsername
 
 @description('An array containing the names of all virtual machines that were deployed as part of this blueprint.')
 output vmNames array = cloudVmHost.outputs.vmNames
+
+@description('The AKS cluster name.')
+output aksName string = cloudAksAcr.outputs.aksName
+
+@description('The Azure Container Registry name.')
+output acrName string = cloudAksAcr.outputs.acrName
 
 @description('The ID of the Azure IoT Operations Platform Extension.')
 output aioPlatformExtensionId string = edgeIotOps.outputs.aioPlatformExtensionId

@@ -24,6 +24,20 @@ param resourceGroupName string = 'rg-${common.resourcePrefix}-${common.environme
 param adminPassword string
 
 /*
+  Container Registry Parameters
+*/
+
+@description('Whether to create a private endpoint for the Azure Container Registry.')
+param shouldCreateAcrPrivateEndpoint bool = false
+
+/*
+  Azure Kubernetes Service Parameters
+*/
+
+@description('Whether to create an Azure Kubernetes Service cluster.')
+param shouldCreateAks bool = false
+
+/*
   Modules
 */
 
@@ -82,6 +96,19 @@ module cloudVmHost '../../../src/000-cloud/050-vm-host/bicep/main.bicep' = {
   }
 }
 
+module cloudAksAcr '../../../src/000-cloud/060-aks-acr/bicep/main.bicep' = {
+  name: '${deployment().name}-cvh3'
+  scope: resourceGroup(resourceGroupName)
+  dependsOn: [cloudResourceGroup]
+  params: {
+    common: common
+    virtualNetworkName: cloudVmHost.outputs.virtualNetworkName
+    networkSecurityGroupId: cloudVmHost.outputs.networkSecurityGroupId
+    shouldCreateAcrPrivateEndpoint: shouldCreateAcrPrivateEndpoint
+    shouldCreateAks: shouldCreateAks
+  }
+}
+
 /*
   Outputs
 */
@@ -91,6 +118,12 @@ output vmUsername string = cloudVmHost.outputs.adminUsername
 
 @description('The names of all virtual machines deployed.')
 output vmNames array = cloudVmHost.outputs.vmNames
+
+@description('The AKS cluster name.')
+output aksName string = cloudAksAcr.outputs.aksName
+
+@description('The Azure Container Registry name.')
+output acrName string = cloudAksAcr.outputs.acrName
 
 @description('The name of the Secret Store Extension Key Vault.')
 output keyVaultName string = cloudSecurityIdentity.outputs.keyVaultName!

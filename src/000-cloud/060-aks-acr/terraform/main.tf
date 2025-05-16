@@ -14,7 +14,7 @@ module "network" {
   instance        = var.instance
 
   // optional parameters
-  should_create_private_endpoint = var.should_create_private_endpoint
+  should_create_acr_private_endpoint = var.should_create_acr_private_endpoint
 
 }
 
@@ -33,8 +33,8 @@ module "container_registry" {
   instance        = var.instance
 
   // optional parameters
-  should_create_private_endpoint = var.should_create_private_endpoint
-  sku                            = var.sku
+  should_create_acr_private_endpoint = var.should_create_acr_private_endpoint
+  sku                                = var.sku
 }
 
 module "aks_cluster" {

@@ -30,6 +30,7 @@
 	"words": [
 		"AAOS",
 		"ACMRT",
+		"acrpull",
 		"acsa",
 		"ACSA",
 		"agentpool",
@@ -75,6 +76,7 @@
 		"jspx",
 		"junitxml",
 		"Kalypso",
+		"kubeletidentity",
 		"Kyverno",
 		"logissue",
 		"megalinter",

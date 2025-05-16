@@ -14,7 +14,7 @@ resource "azurerm_container_registry" "acr" {
 }
 
 resource "azurerm_private_endpoint" "pep" {
-  count = var.should_create_private_endpoint ? 1 : 0
+  count = var.should_create_acr_private_endpoint ? 1 : 0
 
   name                = "pep-${azurerm_container_registry.acr.name}"
   location            = var.location
@@ -30,14 +30,14 @@ resource "azurerm_private_endpoint" "pep" {
 }
 
 resource "azurerm_private_dns_zone" "dns_zone" {
-  count = var.should_create_private_endpoint ? 1 : 0
+  count = var.should_create_acr_private_endpoint ? 1 : 0
 
   name                = "privatelink.azurecr.io"
   resource_group_name = var.resource_group.name
 }
 
 resource "azurerm_private_dns_zone_virtual_network_link" "vnet_link" {
-  count = var.should_create_private_endpoint ? 1 : 0
+  count = var.should_create_acr_private_endpoint ? 1 : 0
 
   name                  = "vnet-pzl-acr-${var.resource_prefix}-${var.environment}-${var.instance}"
   resource_group_name   = var.resource_group.name
@@ -47,7 +47,7 @@ resource "azurerm_private_dns_zone_virtual_network_link" "vnet_link" {
 }
 
 resource "azurerm_private_dns_a_record" "a_record" {
-  count = var.should_create_private_endpoint ? 1 : 0
+  count = var.should_create_acr_private_endpoint ? 1 : 0
 
   name                = azurerm_container_registry.acr.name
   zone_name           = azurerm_private_dns_zone.dns_zone[0].name

@@ -126,6 +126,8 @@ Common settings for the components.
 
 |Name|Type|Description|
 | :--- | :--- | :--- |
+|networkSecurityGroupId|`string`||
+|virtualNetworkName|`string`||
 |adminUsername|`string`||
 |privateIpAddresses|`array`||
 |publicFqdns|`array`||
