@@ -10,7 +10,7 @@
 | azapi | >= 2.3.0 |
 | azuread | >= 3.0.2 |
 | azurerm | >= 4.8.0 |
-| fabric | 0.1.0-rc.2 |
+| fabric | 1.1.0 |
 
 ## Modules
 

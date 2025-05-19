@@ -6,7 +6,7 @@ terraform {
     }
     fabric = {
       source  = "microsoft/fabric"
-      version = "0.1.0-rc.2" # Updated to specified version
+      version = "1.1.0" # Updated to specified version
     }
   }
   required_version = ">= 1.9.8, < 2.0.0"
