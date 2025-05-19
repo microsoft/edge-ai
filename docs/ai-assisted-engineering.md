@@ -7,10 +7,14 @@ This document outlines resources within our repository that enhance AI-assisted 
 - [AI-Assisted Engineering Resources](#ai-assisted-engineering-resources)
   - [Table of Contents](#table-of-contents)
   - [GitHub Copilot Instructions](#github-copilot-instructions)
-  - [Copilot Reusable Prompt Files](#copilot-reusable-prompt-files)
-  - [Copilot for Pull Requests - Reusable Prompt File](#copilot-for-pull-requests---reusable-prompt-file)
-  - [Copilot for Commit Messages](#copilot-for-commit-messages)
-  - [Azure Copilot for Bicep (and Terraform)](#azure-copilot-for-bicep-and-terraform)
+  - [GitHub Copilot Reusable Prompt Files](#github-copilot-reusable-prompt-files)
+  - [GitHub Copilot Reusable Prompt Files: Pull Requests](#github-copilot-reusable-prompt-files-pull-requests)
+  - [GitHub Copilot Reusable Prompt Files: AI Assisted Task Planner and Implementer](#github-copilot-reusable-prompt-files-ai-assisted-task-planner-and-implementer)
+    - [Using the Task Planner](#using-the-task-planner)
+    - [Using the Task Implementer](#using-the-task-implementer)
+    - [Best Practices](#best-practices)
+  - [GitHub Copilot for Commit Messages](#github-copilot-for-commit-messages)
+  - [GitHub Copilot for Azure (Preview) Extension](#github-copilot-for-azure-preview-extension)
   - [Project Structure and Conventions](#project-structure-and-conventions)
   - [Documentation Resources](#documentation-resources)
   - [Template Files and Examples](#template-files-and-examples)
@@ -21,7 +25,7 @@ This document outlines resources within our repository that enhance AI-assisted 
 
 ## GitHub Copilot Instructions
 
-The repository also uses a general instructions approach found in [.github/instructions/general.instructions.md](/.github/instructions/general.instructions.md). This high-priority instruction file provides:
+The repository also uses a general custom instructions approach found in [.github/copilot-instructions.md](../.github/copilot-instructions.md). This high-priority instruction file provides and applies at avery request:
 
 - Global guidance that applies across the entire codebase
 - Automatic context-aware prompt file discovery based on file patterns
@@ -29,7 +33,7 @@ The repository also uses a general instructions approach found in [.github/instr
 - Markdown formatting requirements for consistent documentation
 - Automatic integration with GitHub Copilot to ensure all code changes follow project conventions
 
-## Copilot Reusable Prompt Files
+## GitHub Copilot Reusable Prompt Files
 
 The repository includes reusable prompt files located in the `/.github/prompts` folder.
 These files provide specific reusable prompts for Copilot to use when working on __specific__ tasks or types of activities.
@@ -37,20 +41,90 @@ These files provide specific reusable prompts for Copilot to use when working on
 The reusable prompts are typically useful for common tasks, for example when getting started with the repo,
 when deploying your first blueprint, or when creating a pull request.
 
-- First, ensure your chat context is set to a new Chat in Agent mode.
-- To use a reusable prompt file, use the Command Palette: __Chat: Run prompt > Select the prompt {file}__ command.
+- First, ensure your chat context is set to a new Chat in __Agent__ mode.
+- There are different ways of executing the reusable prompt files:
+  - Use the Command Palette: __Chat: Run prompt > Select the prompt {file}__ command.
+  - Type `/` in the chat input field and select the prompt file you want to use.
+  - Type `/` in the chat input field and select the prompt file you want to use, and add specific parameters and details to the prompt.
 - The agent will automatically start executing and you can interact with the agent to refine the task or answer questions.
 
-## Copilot for Pull Requests - Reusable Prompt File
+## GitHub Copilot Reusable Prompt Files: Pull Requests
 
-This repository contains specific instructions for Copilot to generate pull request descriptions for use within your pull requests.
+This repository contains specific instructions for Copilot to generate complete pull request description.
 
 - Ensure you have a new Chat context open (click the `+` sign or __Chat: New Chat__).
-- To create your pull request description, use the Command Palette: __Chat: Run prompt > Select the prompt named {pull-request}__ command.
-- Copilot will honor the prompt and start working on executing a script to generate the pull request description.
-- Use the generated `pr.md` file at the root of this repository as the pull request description. This file will never be committed to git.
+- Invoke the prompt and pass in optional arguments if desired:
+  - Type `/pull-request` directly in the chat input field to generate a standard pull request description
+  - Type `/pull-request includeMarkdown=true` to generate a pull request description which includes changes to Markdown files
+  - Type `/pull-request branch=feat/branch-name` to generate a pull request description which compares to a specific branch (`main` by default)
+- Use the generated `pr.md` file at the root of this repository as the pull request description. This file will not be committed to git.
 
-## Copilot for Commit Messages
+## GitHub Copilot Reusable Prompt Files: AI Assisted Task Planner and Implementer
+
+Documenting and detailing a plan for a unit of work is an effective way to leverage GitHub Copilot to accelerate development tasks.
+By creating structured plans with specific phases, files to modify, libraries to use, and required tools, you provide Copilot with the context needed to assist efficiently.
+
+The repository includes two reusable prompt files to help with planning and implementing tasks:
+
+1. `task-planner`: Creates a structured markdown plan and accompanying notes file
+2. `task-implementer`: Executes the plan and tracks progress through each phase, keeping notes on progress and decisions made
+
+Both prompt files are stored in the `.github/prompts` directory and work together to provide a complete workflow for AI-assisted task planning and execution.
+
+Both of these prompt files are extended with a set of custom instructions to apply in plan and task creation and implementation.
+The custom instructions file can be found in [`.github/instructions/task-plan.instructions.md`](../.github/instructions/task-plan.instructions.md) directory.
+
+### Using the Task Planner
+
+The Task Planner helps you create a detailed plan with clear phases, objectives, and implementation details before doing any coding:
+
+1. Start with a clean chat context by creating a new chat (click the `+` sign or select __Chat: New Chat__)
+2. Invoke the prompt through one of these methods:
+   - Run the Command Palette command: __Chat: Run Prompt__ and select `task-planner`
+   - Type `/task-planner` directly in the chat input field with additional prompting
+
+3. Follow the conversation flow as the Task Planner guides you through creating:
+   - A task plan markdown file with structured phases and tasks
+   - A notes file to track progress and document decisions
+
+4. Answer the planner's questions about your task's title, phases, objectives, resources needed, and implementation details
+5. The files are stored in `./.copilot-tracking/` (excluded from git) to serve as your personal scratchpad
+
+### Using the Task Implementer
+
+Once you have your plan ready, use the Task Implementer to execute it:
+
+1. Create a new chat session for a clean context
+2. Select the desired plan markdown file as your context from the `./.copilot-tracking/plans` folder, make sure it's selected as 'Current file' in chat context
+3. Invoke the implementer prompt via the chat input field, different options are available:
+   - Type `/task-implementer` in the chat input field, you will be asked for more details
+   - Provide additional phase parameters: `/task-implementer phase=2` or `/task-implementer phase=2 task=1`
+
+4. The implementer will:
+   - Read your task plan
+   - Execute phases and tasks as defined in the plan, depending on the context or parameters provided
+   - Implement changes in the codebase according to the plan
+   - Update the notes file with progress and results
+   - Pause after each phase for your review and approval
+
+Alternatively, you can select your task plan markdown file as your Chat context and ask Copilot to execute it directly:
+
+```text
+Execute the plan and start with Phase 1. Stop after completing Phase 1 and wait for my approval before proceeding to Phase 2.
+```
+
+### Best Practices
+
+- Use Claude Sonnet 3.7 model when available for optimal results
+- Be specific in your plan about files to modify, libraries to use, and implementation details
+- Break complex tasks into clear, manageable phases
+- Pause between phases to review progress and make adjustments
+- Manually edit the task plan file as needed before implementation
+- Request that the agent document decisions, challenges, and solutions in the notes file
+
+The `.copilot-tracking` folder is intentionally excluded from git, providing a private workspace for your AI-assisted development process without cluttering your repository.
+
+## GitHub Copilot for Commit Messages
 
 This repository contains specific instructions for using GitHub Copilot to assist with commit messages, see [./.vscode/settings.json](./.vscode/settings.json) section `github.copilot.chat.commitMessageGeneration.instructions`.
 
@@ -59,15 +133,22 @@ This repository contains specific instructions for using GitHub Copilot to assis
 
 Leverage Copilot when creating your commit messages: open the *Source Control panel* > click the  *Generate Commit Message with Copilot 🌟* and edit as desired before committing.
 
-## Azure Copilot for Bicep (and Terraform)
+## GitHub Copilot for Azure (Preview) Extension
 
-We recommend installing the [GitHub Copilot for Azure (Preview)](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azure-github-copilot) extension for Visual Studio Code.
+When using the Dev Container the extension [GitHub Copilot for Azure (Preview)](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azure-github-copilot) for Visual Studio Code will be automatically installed.
 This extension provides additional context and suggestions for Bicep and Terraform files, or when working with Azure resources.
+It also extends the current GitHub Copilot Chat experience by providing more accurate suggestions and context-aware assistance for Bicep files.
 
-This extension extends the current GitHub Copilot Chat experience by providing more accurate suggestions and context-aware assistance for Bicep files.
+Especially useful is the addition of Agent aware tools using the `#azure...` tag in your prompts to get Azure-specific suggestions and context.
 
-The latest version includes Agent specific tools you can add into your context such as the very useful `#azureRetrieveMsLearnDocumentations`
-to retrieve Microsoft Learn documentation for Azure resources and up to date API information.
+A few valuable examples when working with IaC files are:
+
+- When working with Bicep files, use `#azureBicepGetResourceSchema` to get the latest resource schema for Azure resources.
+- When working with Terraform files, use `#azureTerraformBestPractices`.
+- Generic prompts that require Azure Microsoft Learn documentation can be grounded with up to date information by using `#azureRetrieveMsLearnDocumentations` to get the latest documentation for Azure resources.
+
+Additionally, the extension also provides tools that interact with Azure resources and help you manage your Azure resources directly from Visual Studio Code.
+This provides help when troubleshooting deployments, including the deployment of blueprints in this repository.
 
 ## Project Structure and Conventions
 
@@ -209,14 +290,16 @@ To maximize the effectiveness of GitHub Copilot when working with this repositor
 
 8. __Reference Documentation__: Ask Copilot to incorporate specific patterns from existing documentation or templates that you've identified in your planning phase.
 
-9. __Validate Generated Code__: Always review and test code generated by AI tools against your plan before committing or deploying.
+9. __Reference Copilot Tools for Updated Grounding__: Research the tools you can use to extend Copilot. Use tools such as `#githubRepo owner/repo-name` for GitHub based public docs, or a custom MCP server to ground Copilot with the latest documentation from external resources.
 
-10. __Iterative Refinement__: Use follow-up prompts to refine generated code that doesn't fully meet requirements or deviates from your plan.
+10. __Validate Generated Code__: Always review and test code generated by AI tools against your plan before committing or deploying.
 
-11. __Use Appropriate Instructions Files__: Select the language-specific instructions file (Terraform or Bicep) when working on related components as identified in your plan.
+11. __Iterative Refinement__: Use follow-up prompts to refine generated code that doesn't fully meet requirements or deviates from your plan.
 
-12. __Check for Convention Compliance__: Always verify that generated code follows alphabetical ordering of variables and other project standards specified in your plan.
+12. __Use Appropriate Instructions Files__: Select the language-specific instructions file when working on related components as identified in your plan.
 
-13. __Update Your Plan as Needed__: As implementation progresses, update your plan document to reflect changes in approach or additional requirements discovered during development.
+13. __Check for Convention Compliance__: Always verify that generated code follows alphabetical ordering of variables and other project standards specified in your plan.
 
-14. __Iterate and re-experiment__: AI models as well as GitHub Copilot features are constantly evolving! Keep experimenting and be curious about iterating on similar tasks as new features and models become available.
+14. __Update Your Plan as Needed__: As implementation progresses, update your plan document to reflect changes in approach or additional requirements discovered during development.
+
+15. __Iterate and re-experiment__: AI models as well as GitHub Copilot features are constantly evolving! Keep experimenting and be curious about iterating on similar tasks as new features and models become available.
