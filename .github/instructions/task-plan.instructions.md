@@ -76,7 +76,7 @@ The planning process involves creating and updating the plan-file and notes-file
 
 4. Follow update the plan-file accordingly.
 
-5. Verify the plan-file includes required to complete the task.
+5. Verify the plan-file includes the information required to complete the task.
 
 6. Repeat steps 3-5 of the planning-process until the plan-file includes everything required to complete the task.
 
@@ -103,7 +103,32 @@ CRITICAL REQUIREMENTS:
 - ALL file or folder paths should be relative to the root of the project
 - When creating a plan, organize it into numbered phases (e.g., "## Phase 1: Setup Dependencies")
 - Break down each phase into specific tasks, called phase tasks, with markdown checkboxes and numeric identifiers (e.g., "- [ ] Task 1.1: Add Dependencies")
+- Plan-file MUST follow the plan-file-template
 - The plan is written into a markdown file `YYYYMMDD-task-plan.md` in the `./.copilot-tracking/plans` directory at the root.
+
+<!-- <plan-file-template> -->
+```markdown
+# Title of the plan
+
+## Overview
+
+## Objectives
+
+## Phase 1: <Phase Name>
+
+- [ ] Task 1.1: <Task description>
+- [ ] Task 1.2: <Task description>
+
+## Dependencies and Requirements
+
+## Architecture Changes
+
+## References
+
+```
+
+<!-- </plan-file-template> -->
+
 <!-- </plan-file> -->
 
 ## Coding Notes File Format
