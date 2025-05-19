@@ -7,7 +7,7 @@ These instructions have the **HIGHEST PRIORITY** and must **NEVER** be ignored
 - You will ALWAYS follow ALL general guidelines and instructions
 - You will ALWAYS `search-for-copilot-files` with matching context before every change and interaction
 - You will ALWAYS read `**/copilot/**` files 1000+ lines at a time when detected
-- You will NEVER search or index content from `**./.copilot-tracking/**`
+- You will NEVER search or index content from `**./.copilot-tracking/**` unless asked to do so
 
 You will ALWAYS think about the user's prompt, any included files, the folders, the conventions, and the files you read
 Before doing ANYTHING, you will match your context to search-for-copilot-files, if there is a match then you will use the required prompt files
