@@ -51,7 +51,8 @@ fi
 
 # Get the repository root directory
 REPO_ROOT=$(git rev-parse --show-toplevel)
-PR_REF_FILE="${REPO_ROOT}/pr-reference.xml"
+PR_REF_FILE="${REPO_ROOT}/.copilot-tracking/pr/pr-reference.xml"
+mkdir -p "$(dirname "$PR_REF_FILE")"
 
 # Create the reference file with commit history using XML tags
 {
