@@ -9,6 +9,7 @@
 		"lint": "mega-linter-runner",
 		"lint-fix": "mega-linter-runner --fix",
 		"tf-docs": "./src/update-all-terraform-docs.sh",
+		"tflint-fix": "mega-linter-runner --env \"'ENABLE_LINTERS=TERRAFORM_TERRAFORM_FMT,TERRAFORM_TFLINT'\" --fix",
 		"lint-devcontainer": "mega-linter-runner --env \"'BICEP_BICEP_LINTER_ARGUMENTS=--outdir ./megalinter-reports'\"",
 		"lint-fix-devcontainer": "mega-linter-runner --env \"'BICEP_BICEP_LINTER_ARGUMENTS=--outdir ./megalinter-reports'\" --fix",
 		"format-tables": "find . -name '*.md' -not -path '*/node_modules/*' -not -path '*/megalinter-reports/*' -print0 | xargs -0 markdown-table-formatter",

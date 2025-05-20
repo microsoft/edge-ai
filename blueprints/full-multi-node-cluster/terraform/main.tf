@@ -120,6 +120,8 @@ module "edge_cncf_cluster" {
 module "edge_iot_ops" {
   source = "../../../src/100-edge/110-iot-ops/terraform"
 
+  depends_on = [module.edge_cncf_cluster]
+
   adr_schema_registry   = module.cloud_data.schema_registry
   resource_group        = module.cloud_resource_group.resource_group
   aio_identity          = module.cloud_security_identity.aio_identity
@@ -133,6 +135,8 @@ module "edge_iot_ops" {
 module "edge_observability" {
   source = "../../../src/100-edge/120-observability/terraform"
 
+  depends_on = [module.edge_iot_ops]
+
   aio_azure_managed_grafana        = module.cloud_observability.azure_managed_grafana
   aio_azure_monitor_workspace      = module.cloud_observability.azure_monitor_workspace
   aio_log_analytics_workspace      = module.cloud_observability.log_analytics_workspace
@@ -144,6 +148,8 @@ module "edge_observability" {
 
 module "edge_messaging" {
   source = "../../../src/100-edge/130-messaging/terraform"
+
+  depends_on = [module.edge_iot_ops]
 
   environment     = var.environment
   resource_prefix = var.resource_prefix
