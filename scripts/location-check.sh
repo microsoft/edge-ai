@@ -35,7 +35,7 @@ bicep_get_resources () {
     mapfile -t -O "${#resources[@]}" resources < <(bicep_get_resources "$directory/$module")
   done
 
-  for resource in "${resources[@]}"; do echo "${resource}"; done
+  for resource in "${resources[@]}"; do echo "$resource"; done
 }
 
 # =============================================================================
@@ -62,7 +62,7 @@ terraform_get_resources() {
     mapfile -t -O "${#resources[@]}" resources < <(terraform_get_resources "$directory/$module")
   done
 
-  for resource in "${resources[@]}"; do echo "${resource}"; done
+  for resource in "${resources[@]}"; do echo "$resource"; done
 }
 
 # =============================================================================
@@ -176,7 +176,7 @@ fi
 # =============================================================================
 echo ">>> Resources found"
 echo "================================================================"
-for resource in "${resources[@]}"; do echo "${resource}"; done
+for resource in "${resources[@]}"; do echo "$resource"; done
 echo "================================================================"
 
 # =============================================================================
@@ -195,29 +195,29 @@ fi
 echo
 echo "Finding workable locations..."
 
-az account list-locations --query "[].displayName" -o tsv \
-  | sort > "regions.txt"
+mapfile -t locations < <(az account list-locations --query "[].displayName" -o tsv \
+  | sort)
 
 for resource in "${resources[@]}"
 do
   namespace=$(echo "$resource" | cut -d "/" -f 1 -)
   resourceType=$(echo "$resource" | cut -d "/" -f 2 -)
 
-  cp "regions.txt" "oldRegions.txt"
-
-  az provider show --namespace "$namespace" \
+  mapfile -t newLocations < <(az provider show --namespace "$namespace" \
     --query "resourceTypes[?resourceType=='$resourceType'].locations | [0]" \
     --out tsv \
-    | sort > "newRegions.txt"
+    | sort)
 
-  # roleAssignments etc have no regions, and should be ignored
-  if [[ $(wc -l "newRegions.txt" | cut -d " " -f 1 -) -eq 0 ]]
+  # roleAssignments etc have no locations, and should be ignored
+  if [[ ${#newLocations[@]} -eq 0 ]]
   then
     continue
   fi
 
   # intersection of two files
-  comm -12 "oldRegions.txt" "newRegions.txt" > "regions.txt"
+  mapfile -t locations < <(comm -12 \
+    <(for location in "${locations[@]}"; do echo "$location"; done) \
+    <(for location in "${newLocations[@]}"; do echo "$location"; done) )
 done
 
 # =============================================================================
@@ -225,11 +225,10 @@ done
 # =============================================================================
 echo "================================================================"
 echo
-echo ">>> Available regions"
+echo ">>> Available locations"
 echo "================================================================"
-cat regions.txt
+for location in "${locations[@]}"; do echo "$location"; done | tee locations.txt
 
 echo "================================================================"
 echo
-echo "Regions written to $(pwd)/regions.txt"
-rm oldRegions.txt newRegions.txt
+echo "Locations written to $(pwd)/locations.txt"
