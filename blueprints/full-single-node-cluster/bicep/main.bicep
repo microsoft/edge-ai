@@ -221,7 +221,7 @@ module edgeIotOps '../../../src/100-edge/110-iot-ops/bicep/main.bicep' = {
 module edgeObservability '../../../src/100-edge/120-observability/bicep/main.bicep' = {
   name: '${deployment().name}-eo6'
   scope: resourceGroup(resourceGroupName)
-  dependsOn: [cloudResourceGroup]
+  dependsOn: [cloudResourceGroup, edgeIotOps]
   params: {
     arcConnectedClusterName: edgeCncfCluster.outputs.connectedClusterName
     azureMonitorWorkspaceName: cloudObservability.outputs.monitorWorkspaceName

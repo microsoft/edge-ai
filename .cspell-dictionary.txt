@@ -1204,6 +1204,7 @@ testcase
 testcases
 testdata
 tflite
+tflint
 tfvars
 tfvc
 the phone company
