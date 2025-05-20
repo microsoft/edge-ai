@@ -17,7 +17,7 @@ You WILL ALWAYS maintain a detailed tracking plan throughout the entire process.
 ## Process Overview
 
 1. **Plan File Creation**:
-   - You WILL create a plan file in `.copilot-tracking/plans/` folder.
+   - You WILL create a plan file in `.copilot-tracking/prompts/` folder.
    - The filename WILL follow the pattern `{{basename ${input:toPath}}}.plan.md`.
    - You WILL print the file path of this new plan in the conversation.
 
@@ -107,7 +107,7 @@ You WILL ALWAYS maintain a detailed tracking plan throughout the entire process.
 <!-- <process> -->
 
 1. **Plan Creation and Initial Setup**:
-   1.1. Create a plan file in `.copilot-tracking/plans/` using the pattern `{{basename ${input:toPath}}}.plan.md`.
+   1.1. Create a plan file in `.copilot-tracking/prompts/` using the pattern `{{basename ${input:toPath}}}.plan.md`.
    1.2. Print the file path of this new plan in the conversation.
    1.3. Add an overview section describing the goals of this prompt creation/update.
    1.4. List all files that will need to be read and analyzed.
@@ -218,7 +218,7 @@ Here's how you would follow this prompt to create a new prompt file:
 
 1. First, create the plan file and report it to the user:
    ```
-   I've created a plan file at `.copilot-tracking/plans/bicep-types.plan.md`
+   I've created a plan file at `.copilot-tracking/prompts/bicep-types.plan.md`
    ```
 
 2. After analyzing the source files, update the plan and mention it:

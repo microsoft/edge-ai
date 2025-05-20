@@ -77,9 +77,9 @@ mkdir -p "$(dirname "$PR_REF_FILE")"
   echo "  <full_diff>"
   # Exclude prompts and this file from diff history
   if [ "$NO_MD_DIFF" = true ]; then
-    git --no-pager diff "${BASE_BRANCH}" -- ':!.github/copilot-instructions.md' ':!.github/prompts/*' ':!.vscode/settings.json' ':!scripts/pr-ref-gen.sh' ':!*.md'
+    git --no-pager diff "${BASE_BRANCH}" -- ':!*.md'
   else
-    git --no-pager diff "${BASE_BRANCH}" -- ':!.github/copilot-instructions.md' ':!.github/prompts/*' ':!.vscode/settings.json' ':!scripts/pr-ref-gen.sh'
+    git --no-pager diff "${BASE_BRANCH}"
   fi
   echo "  </full_diff>"
   echo "</commit_history>"
