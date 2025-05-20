@@ -7,6 +7,10 @@ module "cloud_resource_group" {
   environment     = var.environment
   location        = var.location
   resource_prefix = var.resource_prefix
+
+  # Optional parameters for using an existing resource group
+  use_existing_resource_group = var.use_existing_resource_group
+  resource_group_name         = var.resource_group_name
 }
 
 module "cloud_security_identity" {

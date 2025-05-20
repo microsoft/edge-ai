@@ -46,13 +46,15 @@ This blueprint consists of the following key components:
 
 Beyond the basic required variables, this blueprint supports advanced customization:
 
-| Variable                | Description                  | Default  | Notes                                                                |
-|-------------------------|------------------------------|----------|----------------------------------------------------------------------|
-| `common.environment`    | Environment type             | Required | "dev", "test", "prod", etc.                                          |
-| `common.resourcePrefix` | Prefix for resource naming   | Required | Short unique alphanumeric string                                     |
-| `common.location`       | Azure region location        | Required | "eastus2", "westus3", etc.                                           |
-| `common.instance`       | Deployment instance number   | `"001"`  | For multiple deployments                                             |
-| `adminPassword`         | A password for SSH to the VM | Required | **Important**: always pass this inline, never store in `.bicepparam` |
+| Variable                   | Description                     | Default   | Notes                                                                |
+|----------------------------|---------------------------------|-----------|----------------------------------------------------------------------|
+| `common.environment`       | Environment type                | Required  | "dev", "test", "prod", etc.                                          |
+| `useExistingResourceGroup` | Use existing resource group     | `false`   | When true, looks up a resource group instead of creating it          |
+| `resourceGroupName`        | Name of existing resource group | Generated | When empty, name is generated from common parameters                 |
+| `common.resourcePrefix`    | Prefix for resource naming      | Required  | Short unique alphanumeric string                                     |
+| `common.location`          | Azure region location           | Required  | "eastus2", "westus3", etc.                                           |
+| `common.instance`          | Deployment instance number      | `"001"`   | For multiple deployments                                             |
+| `adminPassword`            | A password for SSH to the VM    | Required  | **Important**: always pass this inline, never store in `.bicepparam` |
 
 For additional configuration options, review the parameters in `main.bicep`.
 

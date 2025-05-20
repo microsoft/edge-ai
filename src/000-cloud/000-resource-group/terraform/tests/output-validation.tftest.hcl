@@ -23,13 +23,13 @@ run "verify_outputs_with_default_naming" {
 
   # Verify the resource group name matches the expected pattern
   assert {
-    condition     = azurerm_resource_group.new.name == "rg-${run.setup_tests.resource_prefix}-dev-001"
+    condition     = azurerm_resource_group.new[0].name == "rg-${run.setup_tests.resource_prefix}-dev-001"
     error_message = "Resource group name doesn't match expected pattern"
   }
 
   # Verify the resource group location matches the input location
   assert {
-    condition     = azurerm_resource_group.new.location == "eastus2"
+    condition     = azurerm_resource_group.new[0].location == "eastus2"
     error_message = "Resource group location doesn't match input location"
   }
 
@@ -50,13 +50,13 @@ run "verify_outputs_with_custom_naming" {
 
   # Verify the resource group name matches the custom name
   assert {
-    condition     = azurerm_resource_group.new.name == "custom-rg-name"
+    condition     = azurerm_resource_group.new[0].name == "custom-rg-name"
     error_message = "Resource group name doesn't match custom name"
   }
 
   # Verify the resource group location matches the input location
   assert {
-    condition     = azurerm_resource_group.new.location == "westus2"
+    condition     = azurerm_resource_group.new[0].location == "westus2"
     error_message = "Resource group location doesn't match input location"
   }
 
@@ -76,7 +76,7 @@ run "verify_outputs_with_different_location" {
 
   # Verify the resource group location matches the input location
   assert {
-    condition     = azurerm_resource_group.new.location == "centralus"
+    condition     = azurerm_resource_group.new[0].location == "centralus"
     error_message = "Resource group location doesn't reflect the centralus location"
   }
 }

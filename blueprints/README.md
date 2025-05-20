@@ -11,9 +11,9 @@ to build complex multi-stage solutions that meet your specific requirements.
 
 | Blueprint                                                               | Description                                                                                                                                        |
 |-------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------|
-| [Minimum Single Cluster](./full-single-cluster/README.md)               | Minimum deployment of Azure IoT Operations on a single-node, Arc-enabled Kubernetes cluster, omitting observability, messaging, and ACR components |
-| [Full Single Cluster](./full-single-cluster/README.md)                  | Complete deployment of Azure IoT Operations on a single-node, Arc-enabled Kubernetes cluster                                                       |
-| [Full Multi-node Cluster](./full-single-cluster/README.md)              | Complete deployment of Azure IoT Operations on a multi-node, Arc-enabled Kubernetes cluster                                                        |
+| [Minimum Single Cluster](./minimum-single-node-cluster/README.md)       | Minimum deployment of Azure IoT Operations on a single-node, Arc-enabled Kubernetes cluster, omitting observability, messaging, and ACR components |
+| [Full Single Cluster](./full-single-node-cluster/README.md)             | Complete deployment of Azure IoT Operations on a single-node, Arc-enabled Kubernetes cluster                                                       |
+| [Full Multi-node Cluster](./full-multi-node-cluster/README.md)          | Complete deployment of Azure IoT Operations on a multi-node, Arc-enabled Kubernetes cluster                                                        |
 | [CNCF Cluster Script Only](./only-output-cncf-cluster-script/README.md) | Generates scripts for cluster creation without deploying resources                                                                                 |
 | [Azure Fabric Environment](./fabric/terraform/README.md)                | Provisions Azure Fabric environment  *Terraform only currently*                                                                                    |
 | *More coming soon...*                                                   |                                                                                                                                                    |
@@ -34,6 +34,37 @@ Each blueprint in this repository follows a consistent structure:
 - **Full Multi-node Cluster**: Recommended for general purpose lab and production-grade deployments requiring high availability
 - **CNCF Cluster Script Only**: Ideal for environments with existing infrastructure or custom deployment processes
 - **Azure Fabric Environment**: For users looking to provision Azure Fabric environments with options to deploy Lakehouse, EventStream, and Fabric workspace
+
+## Using Existing Resource Groups
+
+All blueprints support deploying to existing resource groups rather than creating new ones.
+
+### Terraform Implementation
+
+To use an existing resource group with Terraform:
+
+```sh
+terraform apply -var="use_existing_resource_group=true" -var="resource_group_name=your-existing-rg"
+```
+
+### Bicep Implementation
+
+To use an existing resource group with Bicep:
+
+```sh
+az deployment sub create --name deploy1 --location eastus \
+  --template-file ./main.bicep \
+  --parameters useExistingResourceGroup=true resourceGroupName=your-existing-rg
+```
+
+### Important Considerations
+
+When using an existing resource group:
+
+- Ensure it's in the same region specified in your deployment parameters
+- Verify you have appropriate permissions to deploy resources within it
+- Be aware that name conflicts may occur with existing resources
+- The existing resource group's location will be used for resources that are location-sensitive
 
 ## Detailed Deployment Workflow
 
@@ -112,6 +143,8 @@ Ensure your Azure CLI is logged in and your subscription context is set correctl
    terraform apply -var-file=terraform.tfvars # Add '-auto-approve' to skip confirmation
    ```
 
+   > **Note**: To deploy to an existing resource group instead of creating a new one, add `-var="use_existing_resource_group=true" -var="resource_group_name=your-existing-rg"` to your apply command.
+
 5. Wait for the deployments to complete, an example successful deployment message looks like the following:
 
    ```txt
@@ -184,7 +217,10 @@ Bicep provides an alternative Infrastructure as Code (IaC) approach that's nativ
    param shouldCreateAnonymousBrokerListener = false // Set to true only for dev/test environments
    param shouldInitAio = true // Deploy the Azure IoT Operations initial connected cluster resources
    param shouldDeployAio = true // Deploy an Azure IoT Operations Instance
+   param useExistingResourceGroup = false // Set to true to use an existing resource group instead of creating a new one
    ```
+
+   > **Note**: When setting `useExistingResourceGroup` to `true`, ensure the resource group already exists or your deployment will fail.
 
 5. (Optional) Determine available Azure locations:
 
@@ -356,6 +392,7 @@ az resource list --parent "subscriptions/{subscription_id}/resourceGroups/{resou
 - **VM size availability**: Ensure the chosen VM size is available in your selected region
 - **Bicep deployment name too long**: Ensure that the original deployment name is roughly 5-8 characters long, this name is used for additional deployments throughout the process.
 - **Resource name issues**: Ensure the provided resource prefix does not include anything other than alphanumeric characters. Also ensure your resource prefix is at most 8 characters long. Additional, pick a resource prefix that is likely to be unique, add 4 unique characters to the end of your resource prefix if needed.
+- **Existing resource group issues**: When using the existing resource group feature, make sure the resource group exists before deployment.
 
 ## Common Terraform Commands
 

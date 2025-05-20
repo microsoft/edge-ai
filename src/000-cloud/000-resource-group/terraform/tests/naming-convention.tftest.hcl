@@ -23,7 +23,7 @@ run "naming_with_different_environments" {
   }
 
   assert {
-    condition     = azurerm_resource_group.new.name == "rg-${run.setup_tests.resource_prefix}-prod-001"
+    condition     = azurerm_resource_group.new[0].name == "rg-${run.setup_tests.resource_prefix}-prod-001"
     error_message = "Resource group name should follow convention with environment = prod"
   }
 }
@@ -41,7 +41,7 @@ run "naming_with_different_instance" {
   }
 
   assert {
-    condition     = azurerm_resource_group.new.name == "rg-${run.setup_tests.resource_prefix}-dev-007"
+    condition     = azurerm_resource_group.new[0].name == "rg-${run.setup_tests.resource_prefix}-dev-007"
     error_message = "Resource group name should follow convention with instance = 007"
   }
 }
@@ -59,7 +59,7 @@ run "naming_with_short_prefix" {
   }
 
   assert {
-    condition     = azurerm_resource_group.new.name == "rg-ai-test-001"
+    condition     = azurerm_resource_group.new[0].name == "rg-ai-test-001"
     error_message = "Resource group name should follow convention with short prefix"
   }
 }
@@ -77,7 +77,7 @@ run "naming_with_longer_prefix" {
   }
 
   assert {
-    condition     = azurerm_resource_group.new.name == "rg-aiedgeaccel-test-001"
+    condition     = azurerm_resource_group.new[0].name == "rg-aiedgeaccel-test-001"
     error_message = "Resource group name should follow convention with longer prefix"
   }
 }
@@ -95,7 +95,7 @@ run "naming_with_hyphenated_prefix" {
   }
 
   assert {
-    condition     = azurerm_resource_group.new.name == "rg-ai-edge-test-001"
+    condition     = azurerm_resource_group.new[0].name == "rg-ai-edge-test-001"
     error_message = "Resource group name should follow convention with hyphenated prefix"
   }
 }

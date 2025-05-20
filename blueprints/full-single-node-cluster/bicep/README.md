@@ -12,6 +12,7 @@ Deploys a complete end-to-end environment for Azure IoT Operations on a single-n
 | :--- | :--- | :--- | :--- | :--- |
 |common|The common component configuration.|`[_2.Common](#user-defined-types)`|n/a|yes|
 |resourceGroupName|The name for the resource group. If not provided, a default name will be generated.|`string`|[format('rg-{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]|no|
+|useExistingResourceGroup|Whether to use an existing resource group instead of creating a new one.|`bool`|`false`|no|
 |adminPassword|Password used for the host VM.|`securestring`|n/a|yes|
 |shouldCreateAcrPrivateEndpoint|Whether to create a private endpoint for the Azure Container Registry.|`bool`|`false`|no|
 |shouldCreateAks|Whether to create an Azure Kubernetes Service cluster.|`bool`|`false`|no|
@@ -64,13 +65,15 @@ Creates the required resources needed for an edge IaC deployment.
 | :--- | :--- | :--- | :--- | :--- |
 |common|The common component configuration.|`[_1.Common](#user-defined-types)`|n/a|yes|
 |resourceGroupName|The name for the resource group. If not provided, a default name will be generated.|`string`|[format('rg-{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]|no|
+|useExistingResourceGroup|Whether to use an existing resource group instead of creating a new one.|`bool`|False|no|
 |tags|Additional tags to add to the resources.|`object`|{}|no|
 
 #### Resources for cloudResourceGroup
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|resourceGroup|`Microsoft.Resources/resourceGroups`|2022-09-01|
+|newResourceGroup|`Microsoft.Resources/resourceGroups`|2022-09-01|
+|existingResourceGroup|`Microsoft.Resources/resourceGroups`|2022-09-01|
 
 #### Outputs for cloudResourceGroup
 

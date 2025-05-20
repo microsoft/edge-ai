@@ -23,17 +23,17 @@ run "default_tags_only" {
   }
 
   assert {
-    condition     = length(keys(azurerm_resource_group.new.tags)) == 2
+    condition     = length(keys(azurerm_resource_group.new[0].tags)) == 2
     error_message = "Default tags count should be 2 (Environment and Instance)"
   }
 
   assert {
-    condition     = azurerm_resource_group.new.tags["Environment"] == "dev"
+    condition     = azurerm_resource_group.new[0].tags["Environment"] == "dev"
     error_message = "Default Environment tag is not set correctly"
   }
 
   assert {
-    condition     = azurerm_resource_group.new.tags["Instance"] == "002"
+    condition     = azurerm_resource_group.new[0].tags["Instance"] == "002"
     error_message = "Default Instance tag is not set correctly"
   }
 }
@@ -55,32 +55,32 @@ run "merged_custom_and_default_tags" {
   }
 
   assert {
-    condition     = length(keys(azurerm_resource_group.new.tags)) == 5
+    condition     = length(keys(azurerm_resource_group.new[0].tags)) == 5
     error_message = "Tags count should be 5 (2 default + 3 custom)"
   }
 
   assert {
-    condition     = azurerm_resource_group.new.tags["Environment"] == "test"
+    condition     = azurerm_resource_group.new[0].tags["Environment"] == "test"
     error_message = "Default Environment tag is not set correctly"
   }
 
   assert {
-    condition     = azurerm_resource_group.new.tags["Instance"] == "003"
+    condition     = azurerm_resource_group.new[0].tags["Instance"] == "003"
     error_message = "Default Instance tag is not set correctly"
   }
 
   assert {
-    condition     = azurerm_resource_group.new.tags["Department"] == "Engineering"
+    condition     = azurerm_resource_group.new[0].tags["Department"] == "Engineering"
     error_message = "Custom Department tag is not applied"
   }
 
   assert {
-    condition     = azurerm_resource_group.new.tags["CostCenter"] == "12345"
+    condition     = azurerm_resource_group.new[0].tags["CostCenter"] == "12345"
     error_message = "Custom CostCenter tag is not applied"
   }
 
   assert {
-    condition     = azurerm_resource_group.new.tags["Application"] == "EdgeAI"
+    condition     = azurerm_resource_group.new[0].tags["Application"] == "EdgeAI"
     error_message = "Custom Application tag is not applied"
   }
 }
@@ -103,22 +103,22 @@ run "override_default_tags" {
   }
 
   assert {
-    condition     = length(keys(azurerm_resource_group.new.tags)) == 3
+    condition     = length(keys(azurerm_resource_group.new[0].tags)) == 3
     error_message = "Tags count should be 3 (2 default with 1 override + 1 custom)"
   }
 
   assert {
-    condition     = azurerm_resource_group.new.tags["Environment"] == "Production"
+    condition     = azurerm_resource_group.new[0].tags["Environment"] == "Production"
     error_message = "Custom tag should override default Environment tag"
   }
 
   assert {
-    condition     = azurerm_resource_group.new.tags["Instance"] == "001"
+    condition     = azurerm_resource_group.new[0].tags["Instance"] == "001"
     error_message = "Default Instance tag is not set correctly"
   }
 
   assert {
-    condition     = azurerm_resource_group.new.tags["Owner"] == "DevOps"
+    condition     = azurerm_resource_group.new[0].tags["Owner"] == "DevOps"
     error_message = "Custom Owner tag is not applied"
   }
 }
@@ -136,17 +136,17 @@ run "empty_custom_tags" {
   }
 
   assert {
-    condition     = length(keys(azurerm_resource_group.new.tags)) == 2
+    condition     = length(keys(azurerm_resource_group.new[0].tags)) == 2
     error_message = "Default tags count should be 2 when empty custom tags provided"
   }
 
   assert {
-    condition     = azurerm_resource_group.new.tags["Environment"] == "dev"
+    condition     = azurerm_resource_group.new[0].tags["Environment"] == "dev"
     error_message = "Default Environment tag is not set correctly"
   }
 
   assert {
-    condition     = azurerm_resource_group.new.tags["Instance"] == "004"
+    condition     = azurerm_resource_group.new[0].tags["Instance"] == "004"
     error_message = "Default Instance tag is not set correctly"
   }
 }
