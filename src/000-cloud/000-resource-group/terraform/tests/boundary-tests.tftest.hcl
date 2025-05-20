@@ -22,7 +22,7 @@ run "valid_resource_prefix_with_hyphen" {
   }
 
   assert {
-    condition     = azurerm_resource_group.new.name == "rg-edge-ai-dev-001"
+    condition     = azurerm_resource_group.new[0].name == "rg-edge-ai-dev-001"
     error_message = "Resource group name should be created correctly with hyphenated resource_prefix"
   }
 }
@@ -39,7 +39,7 @@ run "valid_resource_prefix_with_all_allowed_chars" {
   }
 
   assert {
-    condition     = azurerm_resource_group.new.name == "rg-a1-b2-c3-test-002"
+    condition     = azurerm_resource_group.new[0].name == "rg-a1-b2-c3-test-002"
     error_message = "Resource group name should be created correctly with alphanumeric and hyphen resource_prefix"
   }
 }
@@ -56,7 +56,7 @@ run "valid_resource_prefix_with_uppercase" {
   }
 
   assert {
-    condition     = azurerm_resource_group.new.name == "rg-EdgeAI-prod-003"
+    condition     = azurerm_resource_group.new[0].name == "rg-EdgeAI-prod-003"
     error_message = "Resource group name should be created correctly with uppercase in resource_prefix"
   }
 }
@@ -73,7 +73,7 @@ run "valid_min_length_instance" {
   }
 
   assert {
-    condition     = azurerm_resource_group.new.name == "rg-${run.setup_tests.resource_prefix}-dev-1"
+    condition     = azurerm_resource_group.new[0].name == "rg-${run.setup_tests.resource_prefix}-dev-1"
     error_message = "Resource group name should be created correctly with minimal length instance"
   }
 }
@@ -91,7 +91,7 @@ run "valid_location_different_formats" {
   }
 
   assert {
-    condition     = azurerm_resource_group.new.location == "eastus"
+    condition     = azurerm_resource_group.new[0].location == "eastus"
     error_message = "Resource group location should match the provided location exactly"
   }
 }

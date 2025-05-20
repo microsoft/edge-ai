@@ -16,6 +16,9 @@ param common core.Common
 @description('The name for the resource group. If not provided, a default name will be generated.')
 param resourceGroupName string = 'rg-${common.resourcePrefix}-${common.environment}-${common.instance}'
 
+@description('Whether to use an existing resource group instead of creating a new one.')
+param useExistingResourceGroup bool = false
+
 /*
   Virtual Machine Parameters
 */
@@ -75,6 +78,8 @@ param shouldDeployAio bool = true
 // param shouldDeployAioDeploymentScripts bool = false
 var shouldDeployAioDeploymentScripts = false
 
+// No additional resource group parameters needed
+
 // Currently disable setting shouldDeployAioDeploymentScripts, remove when DeploymentScripts supports AZ CLI 2.71+ (post May 4)
 // @description('Whether or not to enable the Open Telemetry Collector for Azure IoT Operations.')
 // param shouldEnableOtelCollector bool = true
@@ -98,6 +103,8 @@ module cloudResourceGroup '../../../src/000-cloud/000-resource-group/bicep/main.
   name: '${deployment().name}-crg0'
   params: {
     common: common
+    useExistingResourceGroup: useExistingResourceGroup
+    resourceGroupName: !empty(resourceGroupName) ? resourceGroupName : null
   }
 }
 

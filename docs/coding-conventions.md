@@ -212,7 +212,7 @@ We use [MegaLinter](https://megalinter.github.io/) as our comprehensive linting 
 all languages and file types in the repository.
 
 For detailed information about our MegaLinter configuration, integration with our CI/CD pipeline, and how to use it in
-your development workflow, please refer to our [MegaLinter documentation](/.azdo/megalinter.md).
+your development workflow, please refer to our [MegaLinter documentation](/.azdo/templates/megalinter-template.md).
 
 This includes:
 

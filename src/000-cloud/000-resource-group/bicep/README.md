@@ -12,13 +12,15 @@ Creates the required resources needed for an edge IaC deployment.
 | :--- | :--- | :--- | :--- | :--- |
 |common|The common component configuration.|`[_1.Common](#user-defined-types)`|n/a|yes|
 |resourceGroupName|The name for the resource group. If not provided, a default name will be generated.|`string`|[format('rg-{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]|no|
+|useExistingResourceGroup|Whether to use an existing resource group instead of creating a new one.|`bool`|`false`|no|
 |tags|Additional tags to add to the resources.|`object`|{}|no|
 
 ## Resources
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|resourceGroup|`Microsoft.Resources/resourceGroups`|2022-09-01|
+|newResourceGroup|`Microsoft.Resources/resourceGroups`|2022-09-01|
+|existingResourceGroup|`Microsoft.Resources/resourceGroups`|2022-09-01|
 
 ## User Defined Types
 

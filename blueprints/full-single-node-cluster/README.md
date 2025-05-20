@@ -55,15 +55,17 @@ This blueprint consists of the following key components:
 
 Beyond the basic required variables, this blueprint supports advanced customization:
 
-| Variable                                  | Description                        | Default  | Notes                                                      |
-|-------------------------------------------|------------------------------------|----------|------------------------------------------------------------|
-| `environment`                             | Environment type                   | Required | "dev", "test", "prod", etc.                                |
-| `resource_prefix`                         | Prefix for resource naming         | Required | Short unique alphanumeric string (max 8 chars recommended) |
-| `location`                                | Azure region location              | Required | "eastus2", "westus3", etc.                                 |
-| `instance`                                | Deployment instance number         | `"001"`  | For multiple deployments                                   |
-| `should_get_custom_locations_oid`         | Auto-retrieve Custom Locations OID | `true`   | Set to false when providing custom_locations_oid           |
-| `custom_locations_oid`                    | Custom Locations SP Object ID      | `null`   | Required for Arc custom locations                          |
-| `should_create_anonymous_broker_listener` | Enable anonymous MQTT listener     | `false`  | For dev/test only, not secure for production               |
+| Variable                                  | Description                        | Default  | Notes                                                       |
+|-------------------------------------------|------------------------------------|----------|-------------------------------------------------------------|
+| `environment`                             | Environment type                   | Required | "dev", "test", "prod", etc.                                 |
+| `resource_prefix`                         | Prefix for resource naming         | Required | Short unique alphanumeric string (max 8 chars recommended)  |
+| `use_existing_resource_group`             | Use existing resource group        | `false`  | When true, looks up a resource group instead of creating it |
+| `resource_group_name`                     | Name of resource group             | `null`   | When null, name is generated from prefix, env, and instance |
+| `location`                                | Azure region location              | Required | "eastus2", "westus3", etc.                                  |
+| `instance`                                | Deployment instance number         | `"001"`  | For multiple deployments                                    |
+| `should_get_custom_locations_oid`         | Auto-retrieve Custom Locations OID | `true`   | Set to false when providing custom_locations_oid            |
+| `custom_locations_oid`                    | Custom Locations SP Object ID      | `null`   | Required for Arc custom locations                           |
+| `should_create_anonymous_broker_listener` | Enable anonymous MQTT listener     | `false`  | For dev/test only, not secure for production                |
 
 For additional configuration options, review the variables in `variables.tf`.
 
@@ -89,18 +91,20 @@ The Bicep implementation follows the same architecture as the Terraform version,
 
 ## Parameter Reference in Bicep
 
-The Bicep implementation uses a streamlined parameter approach with a `Common` object type:
+The Bicep implementation uses a streamlined parameter approach with a `Common` object type and additional parameters:
 
-| Parameter                             | Description                    | Default        | Notes                                                      |
-|---------------------------------------|--------------------------------|----------------|------------------------------------------------------------|
-| `common.resourcePrefix`               | Prefix for resource naming     | Required       | Short unique alphanumeric string (max 8 chars recommended) |
-| `common.location`                     | Azure region location          | Required       | "eastus2", "westus3", etc.                                 |
-| `common.environment`                  | Environment type               | Required       | "dev", "test", "prod", etc.                                |
-| `common.instance`                     | Deployment instance number     | Required       | For multiple deployments                                   |
-| `resourceGroupName`                   | Resource group name            | Auto-generated | Uses pattern: `rg-{prefix}-{environment}-{instance}`       |
-| `adminPassword`                       | VM admin password              | Required       | **Important**: always pass this securely                   |
-| `customLocationsOid`                  | Custom Locations SP Object ID  | Required       | Needed for Arc custom locations feature                    |
-| `shouldCreateAnonymousBrokerListener` | Enable anonymous MQTT listener | `false`        | For dev/test only                                          |
+| Parameter                             | Description                    | Default        | Notes                                                       |
+|---------------------------------------|--------------------------------|----------------|-------------------------------------------------------------|
+| `common.resourcePrefix`               | Prefix for resource naming     | Required       | Short unique alphanumeric string (max 8 chars recommended)  |
+| `common.location`                     | Azure region location          | Required       | "eastus2", "westus3", etc.                                  |
+| `common.environment`                  | Environment type               | Required       | "dev", "test", "prod", etc.                                 |
+| `common.instance`                     | Deployment instance number     | Required       | For multiple deployments                                    |
+| `useExistingResourceGroup`            | Use existing resource group    | `false`        | When true, looks up a resource group instead of creating it |
+| `resourceGroupName`                   | Name of resource group         | Generated      | When empty, name is generated from common parameters        |
+| `resourceGroupName`                   | Resource group name            | Auto-generated | Uses pattern: `rg-{prefix}-{environment}-{instance}`        |
+| `adminPassword`                       | VM admin password              | Required       | **Important**: always pass this securely                    |
+| `customLocationsOid`                  | Custom Locations SP Object ID  | Required       | Needed for Arc custom locations feature                     |
+| `shouldCreateAnonymousBrokerListener` | Enable anonymous MQTT listener | `false`        | For dev/test only                                           |
 
 ## Prerequisites
 

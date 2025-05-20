@@ -63,6 +63,8 @@ Beyond the basic required variables, this blueprint supports advanced customizat
 | `environment`                             | Environment type                      | Required | "dev", "test", "prod", etc.              |
 | `resource_prefix`                         | Prefix for resource naming            | Required | Short unique alphanumeric string         |
 | `location`                                | Azure region location                 | Required | "eastus2", "westus3", etc.               |
+| `use_existing_resource_group`             | Use existing resource group           | `false`  | When true, looks up a resource group     |
+| `resource_group_name`                     | Name of existing resource group       | `null`   | When null, name is generated             |
 | `host_machine_count`                      | Number of VM hosts for the cluster    | `3`      | First host is server, others are workers |
 | `custom_locations_oid`                    | Custom Locations object ID            | `null`   | Retrieved via Azure CLI if not provided  |
 | `should_create_anonymous_broker_listener` | Enable anonymous MQTT broker listener | `false`  | For testing only - insecure              |
@@ -94,18 +96,20 @@ This blueprint consists of the following key components:
 
 Beyond the basic required variables, this blueprint supports advanced customization:
 
-| Variable                              | Description                           | Default  | Notes                                                                |
-|---------------------------------------|---------------------------------------|----------|----------------------------------------------------------------------|
-| `common.environment`                  | Environment type                      | Required | "dev", "test", "prod", etc.                                          |
-| `common.resourcePrefix`               | Prefix for resource naming            | Required | Short unique alphanumeric string                                     |
-| `common.location`                     | Azure region location                 | Required | "eastus2", "westus3", etc.                                           |
-| `common.instance`                     | Deployment instance number            | `"001"`  | For multiple deployments                                             |
-| `hostMachineCount`                    | Number of VM hosts for the cluster    | `3`      | Minimum 2 hosts required (`@minValue(2)`)                            |
-| `adminPassword`                       | Password for SSH to the VMs           | Required | **Important**: always pass this inline, never store in `.bicepparam` |
-| `customLocationsOid`                  | Custom Locations OID                  | Required | Retrieved from Azure CLI command `az ad sp show --id <ID>`           |
-| `shouldCreateAnonymousBrokerListener` | Enable anonymous MQTT broker listener | `false`  | For testing only - insecure                                          |
-| `shouldInitAio`                       | Deploy AIO initial resources          | `true`   | Platform components, Secret Sync, extensions                         |
-| `shouldDeployAio`                     | Deploy AIO instance and components    | `true`   | MQ Broker, Data Flow, Assets, etc.                                   |
+| Variable                              | Description                           | Default   | Notes                                                                |
+|---------------------------------------|---------------------------------------|-----------|----------------------------------------------------------------------|
+| `common.environment`                  | Environment type                      | Required  | "dev", "test", "prod", etc.                                          |
+| `common.resourcePrefix`               | Prefix for resource naming            | Required  | Short unique alphanumeric string                                     |
+| `common.location`                     | Azure region location                 | Required  | "eastus2", "westus3", etc.                                           |
+| `useExistingResourceGroup`            | Use existing resource group           | `false`   | When true, looks up a resource group instead of creating it          |
+| `resourceGroupName`                   | Name of existing resource group       | Generated | When empty, name is generated from common parameters                 |
+| `common.instance`                     | Deployment instance number            | `"001"`   | For multiple deployments                                             |
+| `hostMachineCount`                    | Number of VM hosts for the cluster    | `3`       | Minimum 2 hosts required (`@minValue(2)`)                            |
+| `adminPassword`                       | Password for SSH to the VMs           | Required  | **Important**: always pass this inline, never store in `.bicepparam` |
+| `customLocationsOid`                  | Custom Locations OID                  | Required  | Retrieved from Azure CLI command `az ad sp show --id <ID>`           |
+| `shouldCreateAnonymousBrokerListener` | Enable anonymous MQTT broker listener | `false`   | For testing only - insecure                                          |
+| `shouldInitAio`                       | Deploy AIO initial resources          | `true`    | Platform components, Secret Sync, extensions                         |
+| `shouldDeployAio`                     | Deploy AIO instance and components    | `true`    | MQ Broker, Data Flow, Assets, etc.                                   |
 
 For additional configuration options, review the parameters in `main.bicep`.
 

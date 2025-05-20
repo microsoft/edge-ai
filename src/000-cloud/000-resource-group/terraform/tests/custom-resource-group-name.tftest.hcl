@@ -23,7 +23,7 @@ run "custom_resource_group_name_simple" {
   }
 
   assert {
-    condition     = azurerm_resource_group.new.name == "my-custom-rg"
+    condition     = azurerm_resource_group.new[0].name == "my-custom-rg"
     error_message = "Custom resource group name (simple) was not used"
   }
 }
@@ -41,7 +41,7 @@ run "custom_resource_group_name_with_special_chars" {
   }
 
   assert {
-    condition     = azurerm_resource_group.new.name == "rg_edge-ai_test-002"
+    condition     = azurerm_resource_group.new[0].name == "rg_edge-ai_test-002"
     error_message = "Custom resource group name (with special chars) was not used"
   }
 }
@@ -59,7 +59,7 @@ run "custom_resource_group_name_with_pattern_parts" {
   }
 
   assert {
-    condition     = azurerm_resource_group.new.name == "rg-custom-${run.setup_tests.resource_prefix}-prod"
+    condition     = azurerm_resource_group.new[0].name == "rg-custom-${run.setup_tests.resource_prefix}-prod"
     error_message = "Custom resource group name (with pattern parts) was not used"
   }
 }
@@ -77,7 +77,7 @@ run "empty_resource_group_name" {
   }
 
   assert {
-    condition     = azurerm_resource_group.new.name == "rg-${run.setup_tests.resource_prefix}-dev-004"
+    condition     = azurerm_resource_group.new[0].name == "rg-${run.setup_tests.resource_prefix}-dev-004"
     error_message = "Empty resource group name should fall back to default pattern"
   }
 }
@@ -95,7 +95,7 @@ run "null_resource_group_name" {
   }
 
   assert {
-    condition     = azurerm_resource_group.new.name == "rg-${run.setup_tests.resource_prefix}-test-005"
+    condition     = azurerm_resource_group.new[0].name == "rg-${run.setup_tests.resource_prefix}-test-005"
     error_message = "Null resource group name should fall back to default pattern"
   }
 }
