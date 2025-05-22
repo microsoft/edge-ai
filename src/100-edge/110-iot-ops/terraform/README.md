@@ -12,6 +12,7 @@ Instance can be created, and after.
 |------|---------|
 | terraform | >= 1.9.8, < 2.0 |
 | azapi | >= 2.3.0 |
+| azuread | >= 3.0.2 |
 | azurerm | >= 4.8.0 |
 
 ## Modules
@@ -24,6 +25,7 @@ Instance can be created, and after.
 | iot\_ops\_init | ./modules/iot-ops-init | n/a |
 | iot\_ops\_instance | ./modules/iot-ops-instance | n/a |
 | iot\_ops\_instance\_post | ./modules/iot-ops-instance-post | n/a |
+| k8\_bridge\_role\_assignment | ./modules/role-assignment-post | n/a |
 | opc\_ua\_simulator | ./modules/opc-ua-simulator | n/a |
 | role\_assignments | ./modules/role-assignment | n/a |
 
@@ -46,7 +48,9 @@ Instance can be created, and after.
 | edge\_storage\_accelerator | n/a | ```object({ version = string train = string diskStorageClass = string faultToleranceEnabled = bool diskMountPoint = string })``` | ```{ "diskMountPoint": "/mnt", "diskStorageClass": "", "faultToleranceEnabled": false, "train": "stable", "version": "2.4.0" }``` | no |
 | enable\_instance\_secret\_sync | Whether to enable secret sync on the Azure IoT Operations instance | `bool` | `true` | no |
 | enable\_opc\_ua\_simulator | Deploy OPC UA Simulator to the cluster | `bool` | `true` | no |
+| k8s\_bridge\_principal\_id | Optional. The principal ID of the K8 Bridge for Azure IoT Operations. Required only if enable\_asset\_discovery=true and automatic retrieval fails. If null and enable\_asset\_discovery=true, will be automatically retrieved using the service principal data source.  Can be retrieved manually using: ```sh az ad sp list --display-name "K8 Bridge" --query "[0].appId" -o tsv``` | `string` | `null` | no |
 | mqtt\_broker\_config | n/a | ```object({ brokerListenerServiceName = string brokerListenerPort = number serviceAccountAudience = string frontendReplicas = number frontendWorkers = number backendRedundancyFactor = number backendWorkers = number backendPartitions = number memoryProfile = string serviceType = string })``` | ```{ "backendPartitions": 1, "backendRedundancyFactor": 2, "backendWorkers": 1, "brokerListenerPort": 18883, "brokerListenerServiceName": "aio-broker", "frontendReplicas": 1, "frontendWorkers": 1, "memoryProfile": "Low", "serviceAccountAudience": "aio-internal", "serviceType": "ClusterIp" }``` | no |
+| opc\_sim\_additional\_config\_string | Custom additionalConfiguration string for the Asset Endpoint Profile. If provided, this takes precedence over should\_enable\_opc\_sim\_asset\_discovery setting. | `string` | `""` | no |
 | open\_service\_mesh | n/a | ```object({ version = string train = string })``` | ```{ "train": "stable", "version": "1.2.10" }``` | no |
 | operations\_config | n/a | ```object({ namespace = string kubernetesDistro = string version = string train = string agentOperationTimeoutInMinutes = number })``` | ```{ "agentOperationTimeoutInMinutes": 120, "kubernetesDistro": "K3s", "namespace": "azure-iot-operations", "train": "stable", "version": "1.1.19" }``` | no |
 | platform | n/a | ```object({ version = string train = string })``` | ```{ "train": "preview", "version": "0.7.12" }``` | no |
@@ -54,6 +58,7 @@ Instance can be created, and after.
 | should\_assign\_key\_vault\_roles | Whether to assign Key Vault roles to provided Secret Sync identity | `bool` | `true` | no |
 | should\_create\_anonymous\_broker\_listener | Whether to enable an insecure anonymous AIO MQ Broker Listener. (Should only be used for dev or test environments) | `string` | `false` | no |
 | should\_deploy\_resource\_sync\_rules | Deploys resource sync rules if set to true | `bool` | `false` | no |
+| should\_enable\_opc\_sim\_asset\_discovery | Whether to enable the Asset Discovery preview feature for OPC UA simulator. This will add the value of `{"runAssetDiscovery":true}` to the additionalConfiguration for the Asset Endpoint Profile. | `bool` | `false` | no |
 | should\_enable\_otel\_collector | Deploy the OpenTelemetry Collector and Azure Monitor ConfigMap (optionally used) | `bool` | `true` | no |
 | trust\_config\_source | TrustConfig source must be one of 'SelfSigned', 'CustomerManagedByoIssuer' or 'CustomerManagedGenerateIssuer'. Defaults to SelfSigned. When choosing CustomerManagedGenerateIssuer, ensure connectedk8s proxy is enabled on the cluster for current user. When choosing CustomerManagedByoIssuer, ensure an Issuer and ConfigMap resources exist in the cluster. | `string` | `"SelfSigned"` | no |
 

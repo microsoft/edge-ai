@@ -130,6 +130,8 @@ module "edge_iot_ops" {
   secret_sync_identity  = module.cloud_security_identity.secret_sync_identity
 
   should_create_anonymous_broker_listener = var.should_create_anonymous_broker_listener
+  should_enable_opc_sim_asset_discovery   = var.should_enable_opc_sim_asset_discovery
+  aio_features                            = var.aio_features
 }
 
 module "edge_observability" {

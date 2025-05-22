@@ -5,6 +5,10 @@
  *
  */
 
+locals {
+  opc_sim_enable_asset_json = jsonencode(var.should_enable_opc_sim_asset_discovery ? { runAssetDiscovery = true } : null)
+}
+
 module "aio_apply_scripts_pre_instance" {
   source = "../apply-scripts"
 
@@ -33,6 +37,7 @@ resource "azapi_resource" "asset_endpoint" {
       authentication = {
         method = "Anonymous"
       }
+      additionalConfiguration = try(coalesce(var.opc_sim_additional_config_string, local.opc_sim_enable_asset_json, null))
     }
   }
 }
