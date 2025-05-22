@@ -15,6 +15,7 @@ This blueprint deploys:
 4. Cloud resources required by AIO (Key Vault, Storage, etc.)
 5. Azure IoT Operations components (MQTT Broker, Data Processor, etc.)
 6. Optional messaging and observability components
+7. Optional Preview Connectors for asset discovery (in Terraform only)
 
 The resulting architecture provides a unified edge-to-cloud solution with secure communication, data processing capabilities, and comprehensive monitoring.
 
@@ -45,7 +46,8 @@ This blueprint consists of the following key components:
 | `cloud_observability`     | Sets up monitoring infrastructure       | `../../../src/000-cloud/020-observability/terraform`     |
 | `cloud_data`              | Creates data storage resources          | `../../../src/000-cloud/030-data/terraform`              |
 | `cloud_messaging`         | Sets up messaging infrastructure        | `../../../src/000-cloud/040-messaging/terraform`         |
-| `edge_vm_host`            | Creates the VM host for the cluster     | `../../../src/100-edge/050-vm-host/terraform`            |
+| `cloud_vm_host`           | Creates the VM host for the cluster     | `../../../src/000-cloud/050-vm-host/terraform`           |
+| `cloud_aks_acr`           | Deploys AKS and/or ACR                  | `../../../src/000-cloud/060-aks-acr/terraform`           |
 | `edge_cncf_cluster`       | Deploys K3s Kubernetes cluster          | `../../../src/100-edge/100-cncf-cluster/terraform`       |
 | `edge_iot_ops`            | Installs Azure IoT Operations           | `../../../src/100-edge/110-iot-ops/terraform`            |
 | `edge_observability`      | Sets up edge monitoring                 | `../../../src/100-edge/120-observability/terraform`      |
@@ -66,8 +68,27 @@ Beyond the basic required variables, this blueprint supports advanced customizat
 | `should_get_custom_locations_oid`         | Auto-retrieve Custom Locations OID | `true`   | Set to false when providing custom_locations_oid            |
 | `custom_locations_oid`                    | Custom Locations SP Object ID      | `null`   | Required for Arc custom locations                           |
 | `should_create_anonymous_broker_listener` | Enable anonymous MQTT listener     | `false`  | For dev/test only, not secure for production                |
+| `should_create_aks`                       | Create Azure Kubernetes Service    | `false`  | When true, deploys AKS in addition to the K3s cluster       |
+| `should_create_acr_private_endpoint`      | Enable ACR private endpoint        | `false`  | Creates a private endpoint for the Azure Container Registry |
+| `should_enable_opc_sim_asset_discovery`   | Enable asset discovery             | `false`  | Enables preview feature for OPC UA simulator assets         |
+| `aio_features`                            | AIO feature configurations         | `null`   | Map of feature settings for Azure IoT Operations            |
 
 For additional configuration options, review the variables in `variables.tf`.
+
+> Note: The `aio_features` variable is a map that allows you to specify feature flags for Azure IoT Operations. This can be used to enable or disable specific features based on your deployment needs. For example, you can use the following format of variables to enable the preview feature [OPC UA asset discovery](https://learn.microsoft.com/azure/iot-operations/discover-manage-assets/howto-autodetect-opc-ua-assets-use-akri):
+
+```hcl
+should_enable_opc_sim_asset_discovery = true
+
+aio_features = {
+  connectors = {
+    settings = {
+      preview = "Enabled"
+    }
+  }
+}
+
+```
 
 ## Bicep Structure
 

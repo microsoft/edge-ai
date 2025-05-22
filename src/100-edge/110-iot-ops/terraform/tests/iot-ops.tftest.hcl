@@ -184,6 +184,11 @@ run "create_with_features_configured" {
     adr_schema_registry   = run.setup_tests.adr_schema_registry
     arc_connected_cluster = run.setup_tests.arc_connected_cluster
     aio_features = {
+      connectors = {
+        settings = {
+          preview = "Enabled"
+        }
+      }
       dataFlows = {
         mode = "Disabled"
       }
@@ -215,6 +220,10 @@ run "create_with_features_configured" {
   assert {
     condition     = var.aio_features.mqttBroker.settings.preview == "Enabled"
     error_message = "mqttBroker preview setting should be Enabled"
+  }
+  assert {
+    condition     = var.aio_features.connectors.settings.preview == "Enabled"
+    error_message = "connectors preview setting should be Enabled"
   }
 }
 

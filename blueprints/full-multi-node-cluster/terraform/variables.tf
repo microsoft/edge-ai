@@ -81,3 +81,43 @@ variable "should_create_acr_private_endpoint" {
   description = "Should create a private endpoint for the Azure Container Registry. Default is false."
   default     = false
 }
+
+variable "aio_features" {
+  description = "AIO Instance features with mode ('Stable', 'Preview', 'Disabled') and settings ('Enabled', 'Disabled')."
+  type = map(object({
+    mode     = optional(string)
+    settings = optional(map(string))
+  }))
+  default = null
+
+  validation {
+    condition = var.aio_features == null ? true : alltrue([
+      for feature_name, feature in coalesce(var.aio_features, {}) :
+      try(
+        feature.mode == null ? true : contains(["Stable", "Preview", "Disabled"], feature.mode),
+        true
+      )
+    ])
+    error_message = "Feature mode must be one of: 'Stable', 'Preview', or 'Disabled'."
+  }
+
+  validation {
+    condition = var.aio_features == null ? true : alltrue([
+      for feature_name, feature in coalesce(var.aio_features, {}) :
+      try(
+        feature.settings == null ? true : alltrue([
+          for setting_name, setting_value in feature.settings :
+          contains(["Enabled", "Disabled"], setting_value)
+        ]),
+        true
+      )
+    ])
+    error_message = "Feature settings values must be either 'Enabled' or 'Disabled'."
+  }
+}
+
+variable "should_enable_opc_sim_asset_discovery" {
+  type        = bool
+  default     = false
+  description = "Whether to enable the Asset Discovery preview feature for OPC UA simulator. This will add the value of `{\"runAssetDiscovery\":true}` to the additionalConfiguration for the Asset Endpoint Profile."
+}

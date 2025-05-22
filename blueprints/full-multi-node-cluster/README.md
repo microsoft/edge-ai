@@ -58,21 +58,38 @@ This blueprint consists of the following key components:
 
 Beyond the basic required variables, this blueprint supports advanced customization:
 
-| Variable                                  | Description                           | Default  | Notes                                    |
-|-------------------------------------------|---------------------------------------|----------|------------------------------------------|
-| `environment`                             | Environment type                      | Required | "dev", "test", "prod", etc.              |
-| `resource_prefix`                         | Prefix for resource naming            | Required | Short unique alphanumeric string         |
-| `location`                                | Azure region location                 | Required | "eastus2", "westus3", etc.               |
-| `use_existing_resource_group`             | Use existing resource group           | `false`  | When true, looks up a resource group     |
-| `resource_group_name`                     | Name of existing resource group       | `null`   | When null, name is generated             |
-| `host_machine_count`                      | Number of VM hosts for the cluster    | `3`      | First host is server, others are workers |
-| `custom_locations_oid`                    | Custom Locations object ID            | `null`   | Retrieved via Azure CLI if not provided  |
-| `should_create_anonymous_broker_listener` | Enable anonymous MQTT broker listener | `false`  | For testing only - insecure              |
-| `should_create_fabric`                    | Deploy Microsoft Fabric resources     | `false`  | Optional data analytics components       |
-| `should_create_aks`                       | Deploy Azure Kubernetes Service       | `false`  | Optional alternative to K3s              |
-| `should_create_private_endpoint`          | Use private endpoint for ACR          | `false`  | Enhanced security option                 |
+| Variable                                  | Description                           | Default  | Notes                                       |
+|-------------------------------------------|---------------------------------------|----------|---------------------------------------------|
+| `environment`                             | Environment type                      | Required | "dev", "test", "prod", etc.                 |
+| `resource_prefix`                         | Prefix for resource naming            | Required | Short unique alphanumeric string            |
+| `location`                                | Azure region location                 | Required | "eastus2", "westus3", etc.                  |
+| `use_existing_resource_group`             | Use existing resource group           | `false`  | When true, looks up a resource group        |
+| `resource_group_name`                     | Name of existing resource group       | `null`   | When null, name is generated                |
+| `host_machine_count`                      | Number of VM hosts for the cluster    | `3`      | First host is server, others are workers    |
+| `custom_locations_oid`                    | Custom Locations object ID            | `null`   | Retrieved via Azure CLI if not provided     |
+| `should_create_anonymous_broker_listener` | Enable anonymous MQTT broker listener | `false`  | For testing only - insecure                 |
+| `should_create_fabric`                    | Deploy Microsoft Fabric resources     | `false`  | Optional data analytics components          |
+| `should_create_aks`                       | Deploy Azure Kubernetes Service       | `false`  | Optional alternative to K3s                 |
+| `should_create_acr_private_endpoint`      | Use private endpoint for ACR          | `false`  | Enhanced security option                    |
+| `should_enable_opc_sim_asset_discovery`   | Enable Asset Discovery feature        | `false`  | Preview feature for OPC UA simulator assets |
+| `aio_features`                            | AIO feature configurations            | `null`   | Configure Azure IoT Operations features     |
 
 For additional configuration options, review the variables in `variables.tf`.
+
+> Note: The `aio_features` variable is a map that allows you to specify feature flags for Azure IoT Operations. This can be used to enable or disable specific features based on your deployment needs. For example, you can use the following format of variables to enable the preview feature [OPC UA asset discovery](https://learn.microsoft.com/azure/iot-operations/discover-manage-assets/howto-autodetect-opc-ua-assets-use-akri):
+
+```hcl
+should_enable_opc_sim_asset_discovery = true
+
+aio_features = {
+  connectors = {
+    settings = {
+      preview = "Enabled"
+    }
+  }
+}
+
+```
 
 ## Bicep Structure
 
