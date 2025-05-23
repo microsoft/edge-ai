@@ -109,10 +109,8 @@ fi
 
 # Log in to Azure if not skipped
 if [ -z "$SKIP_AZ_LOGIN" ]; then
-  # Check if already logged in
-  if ! az account show &>/dev/null; then
-    log "Logging in to Azure using managed identity..."
-    az login --identity || err "Failed to login with managed identity"
+  if ! az login --identity; then
+    err "Failed to login with managed identity"
   else
     log "Already logged in to Azure"
   fi
@@ -131,16 +129,16 @@ else
   SECRET_NAME="${OS_TYPE}-${KUBERNETES_DISTRO}-${NODE_TYPE}-script"
 fi
 
-log "Looking for secret: $SECRET_NAME in Key Vault: $KEY_VAULT_NAME"
-
 # Path to the downloaded script
 SCRIPT_PATH="./$SECRET_NAME.sh"
 trap 'rm "$SCRIPT_PATH"' EXIT
 
+log "Downloading script: az keyvault secret download --vault-name $KEY_VAULT_NAME --name $SECRET_NAME --file $SCRIPT_PATH"
+
 # Download the script from Key Vault
-log "Downloading script from Key Vault..."
 if ! az keyvault secret download --vault-name "$KEY_VAULT_NAME" --name "$SECRET_NAME" --file "$SCRIPT_PATH"; then
-  err "Failed to download script from Key Vault. Please check if the secret exists and you have proper permissions."
+  log "First attempt to download script failed... Retrying..."
+  az keyvault secret download --vault-name "$KEY_VAULT_NAME" --name "$SECRET_NAME" --file "$SCRIPT_PATH"
 fi
 
 # Make the script executable
