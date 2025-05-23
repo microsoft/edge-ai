@@ -41,6 +41,7 @@
 | should\_create\_acr\_private\_endpoint | Should create a private endpoint for the Azure Container Registry. Default is false. | `bool` | `false` | no |
 | should\_create\_aks | Should create Azure Kubernetes Service. Default is false. | `bool` | `false` | no |
 | should\_create\_anonymous\_broker\_listener | Whether to enable an insecure anonymous AIO MQ Broker Listener. (Should only be used for dev or test environments) | `string` | `false` | no |
+| should\_deploy\_resource\_sync\_rules | Deploys resource sync rules if set to true | `bool` | `false` | no |
 | should\_enable\_opc\_sim\_asset\_discovery | Whether to enable the Asset Discovery preview feature for OPC UA simulator. This will add the value of `{"runAssetDiscovery":true}` to the additionalConfiguration for the Asset Endpoint Profile. | `bool` | `false` | no |
 | should\_get\_custom\_locations\_oid | Whether to get Custom Locations Object ID using Terraform's azuread provider. (Otherwise, provided by 'custom\_locations\_oid' or `az connectedk8s enable-features` for custom-locations on cluster setup if not provided.) | `bool` | `true` | no |
 | use\_existing\_resource\_group | Whether to use an existing resource group instead of creating a new one. When true, the component will look up a resource group with the specified or generated name instead of creating it. | `bool` | `false` | no |

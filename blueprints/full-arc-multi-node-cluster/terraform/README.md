@@ -18,11 +18,13 @@ Deploys a full deployment with (almost) all components onto Arc enabled Servers.
 | Name | Version |
 |------|---------|
 | azurerm | >= 4.8.0 |
+| terraform | n/a |
 
 ## Resources
 
 | Name | Type |
 |------|------|
+| [terraform_data.defer](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data) | resource |
 | [azurerm_arc_machine.machines](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/arc_machine) | data source |
 
 ## Modules
@@ -43,20 +45,20 @@ Deploys a full deployment with (almost) all components onto Arc enabled Servers.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| arc\_machine\_count | The number of arc machines that will be in the cluster. | `number` | n/a | yes |
-| arc\_machine\_name\_prefix | The prefix for the arc machine names. | `string` | n/a | yes |
-| arc\_machine\_resource\_group\_name | The name of the Resource Group for the arc machines. | `string` | n/a | yes |
-| cluster\_server\_host\_machine\_username | The username for the cluster server that will be given kubectl access. | `string` | n/a | yes |
-| cluster\_server\_ip | The IP Address for the cluster server that the cluster nodes will use to connect. | `string` | n/a | yes |
-| custom\_locations\_oid | The object id of the Custom Locations Entra ID application for your tenant. If none is provided, the script will attempt to retrieve this requiring 'Application.Read.All' or 'Directory.Read.All' permissions. ```sh az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv``` | `string` | n/a | yes |
 | environment | Environment for all resources in this module: e.g., dev, test, prod, etc. | `string` | n/a | yes |
 | location | Location for all resources in this module. | `string` | n/a | yes |
-| resource\_group\_name | The name of the Resource Group that will be created for the resources. | `string` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module. | `string` | n/a | yes |
-| should\_get\_custom\_locations\_oid | Whether to get Custom Locations Object ID using Terraform's azuread provider. (Otherwise, provided by 'custom\_locations\_oid' or `az connectedk8s enable-features` for custom-locations on cluster setup if not provided.) | `bool` | n/a | yes |
+| arc\_machine\_count | The number of arc machines that will be in the cluster. | `number` | `2` | no |
+| arc\_machine\_name\_prefix | The prefix for the arc machine names. | `string` | `null` | no |
+| arc\_machine\_resource\_group\_name | The name of the Resource Group for the arc machines. | `string` | `null` | no |
+| cluster\_server\_host\_machine\_username | The username for the cluster server that will be given kubectl access. | `string` | `null` | no |
+| cluster\_server\_ip | The IP Address for the cluster server that the cluster nodes will use to connect. | `string` | `null` | no |
+| custom\_locations\_oid | The object id of the Custom Locations Entra ID application for your tenant. If none is provided, the script will attempt to retrieve this requiring 'Application.Read.All' or 'Directory.Read.All' permissions. ```sh az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv``` | `string` | `null` | no |
+| resource\_group\_name | The name of the Resource Group that will be created for the resources. | `string` | `null` | no |
 | resource\_group\_tags | The tags to add to the resources. | `map(string)` | `null` | no |
 | should\_create\_anonymous\_broker\_listener | Whether to enable an insecure anonymous AIO MQ Broker Listener. Should only be used for dev or test environments. | `bool` | `false` | no |
 | should\_enable\_opc\_ua\_simulator | Whether to deploy the OPC UA Simulator to the cluster | `bool` | `true` | no |
 | should\_enable\_otel\_collector | Whether to deploy the OpenTelemetry Collector and Azure Monitor ConfigMap (optionally used) | `bool` | `true` | no |
+| should\_get\_custom\_locations\_oid | Whether to get Custom Locations Object ID using Terraform's azuread provider. (Otherwise, provided by 'custom\_locations\_oid' or `az connectedk8s enable-features` for custom-locations on cluster setup if not provided.) | `bool` | `true` | no |
 <!-- markdown-table-prettify-ignore-end -->
 <!-- END_TF_DOCS -->
