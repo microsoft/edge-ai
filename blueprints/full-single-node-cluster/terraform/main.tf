@@ -118,6 +118,7 @@ module "edge_iot_ops" {
   secret_sync_key_vault = module.cloud_security_identity.key_vault
   secret_sync_identity  = module.cloud_security_identity.secret_sync_identity
 
+  should_deploy_resource_sync_rules       = var.should_deploy_resource_sync_rules
   should_create_anonymous_broker_listener = var.should_create_anonymous_broker_listener
   should_enable_opc_sim_asset_discovery   = var.should_enable_opc_sim_asset_discovery
   aio_features                            = var.aio_features

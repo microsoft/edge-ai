@@ -80,6 +80,7 @@ For additional configuration options, review the variables in `variables.tf`.
 
 ```hcl
 should_enable_opc_sim_asset_discovery = true
+should_deploy_resource_sync_rules     = true
 
 aio_features = {
   connectors = {

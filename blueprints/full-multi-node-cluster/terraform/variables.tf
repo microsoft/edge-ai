@@ -121,3 +121,9 @@ variable "should_enable_opc_sim_asset_discovery" {
   default     = false
   description = "Whether to enable the Asset Discovery preview feature for OPC UA simulator. This will add the value of `{\"runAssetDiscovery\":true}` to the additionalConfiguration for the Asset Endpoint Profile."
 }
+
+variable "should_deploy_resource_sync_rules" {
+  type        = bool
+  default     = false
+  description = "Deploys resource sync rules if set to true"
+}
