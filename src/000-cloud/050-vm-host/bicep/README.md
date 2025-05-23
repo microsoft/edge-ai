@@ -17,11 +17,13 @@ Provisions virtual machines and networking infrastructure for hosting Azure IoT 
 |vmUsername|Username used for the host VM that will be given kube-config settings on setup. (Otherwise, resource_prefix if it exists as a user)|`string`|n/a|no|
 |vmCount|The number of host VMs to create if a multi-node cluster is needed.|`int`|1|no|
 |vmSkuSize|Size of the VM|`string`|Standard_D8s_v3|no|
+|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|`false`|no|
 
 ## Resources
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
+|attribution|`Microsoft.Resources/deployments`|2020-06-01|
 |network|`Microsoft.Resources/deployments`|2022-09-01|
 |virtualMachine|`Microsoft.Resources/deployments`|2022-09-01|
 
@@ -29,10 +31,13 @@ Provisions virtual machines and networking infrastructure for hosting Azure IoT 
 
 |Name|Description|
 | :--- | :--- |
+|attribution||
 |network|Creates virtual network, subnet, and network security group resources for VM deployments.|
 |virtualMachine|Creates a Linux virtual machine with networking components for Azure IoT Operations deployments.|
 
 ## Module Details
+
+### attribution
 
 ### network
 

@@ -19,6 +19,9 @@ param resourceGroupName string = 'rg-${common.resourcePrefix}-${common.environme
 @description('Whether to use an existing resource group instead of creating a new one.')
 param useExistingResourceGroup bool = false
 
+@description('Whether to opt-out of telemetry. Set to true to disable telemetry.')
+param telemetry_opt_out bool = false
+
 /*
   Virtual Machine Parameters
 */
@@ -94,6 +97,22 @@ var shouldEnableOpcUaSimulator = false
 // @description('Whether or not to enable the OPC UA Simulator Asset for Azure IoT Operations.')
 // param shouldEnableOpcUaSimulatorAsset bool = false
 var shouldEnableOpcUaSimulatorAsset = false
+
+/*
+  Resources
+*/
+
+resource attribution 'Microsoft.Resources/deployments@2020-06-01' = if (!telemetry_opt_out) {
+  name: 'pid-acce1e78-0375-4637-a593-86aa36dcfeac'
+  properties: {
+    mode: 'Incremental'
+    template: {
+      '$schema': 'https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#'
+      contentVersion: '1.0.0.0'
+      resources: []
+    }
+  }
+}
 
 /*
   Modules

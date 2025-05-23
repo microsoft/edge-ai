@@ -11,6 +11,7 @@ Deploys Azure IoT Operations on an existing Arc-enabled Kubernetes cluster witho
 |Name|Description|Type|Default|Required|
 | :--- | :--- | :--- | :--- | :--- |
 |common|The common component configuration.|`[_2.Common](#user-defined-types)`|n/a|yes|
+|telemetry_opt_out|Whether to opt-out of telemetry. Set to true to disable telemetry.|`bool`|`false`|no|
 |customLocationName|The name for the Custom Locations resource.|`string`|[format('{0}-cl', parameters('arcConnectedClusterName'))]|no|
 |sseIdentityName|The name of the User Assigned Managed Identity for Secret Sync Extension.|`string`|[format('id-{0}-sse-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]|no|
 |sseKeyVaultName|The name of the Key Vault for Secret Sync Extension. Required when providing sseIdentityName.|`string`|[format('kv-{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]|no|
@@ -35,15 +36,19 @@ Deploys Azure IoT Operations on an existing Arc-enabled Kubernetes cluster witho
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
+|attribution|`Microsoft.Resources/deployments`|2020-06-01|
 |edgeIotOps|`Microsoft.Resources/deployments`|2022-09-01|
 
 ## Modules
 
 |Name|Description|
 | :--- | :--- |
+|attribution||
 |edgeIotOps|Deploys Azure IoT Operations extensions, instances, and configurations on Azure Arc-enabled Kubernetes clusters.|
 
 ## Module Details
+
+### attribution
 
 ### edgeIotOps
 
@@ -88,11 +93,13 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 |deployUserTokenSecretName|The name for the deploy user token secret in Key Vault.|`string`|deploy-user-token|no|
 |deploymentScriptsSecretNamePrefix|The prefix used with constructing the secret name that will have the deployment script.|`string`|[format('{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]|no|
 |shouldAddDeployScriptsToKeyVault|Whether to add the deploy scripts for DeploymentScripts to Key Vault as secrets. (Required for DeploymentScripts)|`bool`|False|no|
+|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|False|no|
 
 #### Resources for edgeIotOps
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
+|attribution|`Microsoft.Resources/deployments`|2020-06-01|
 |deployIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2023-01-31|
 |sseIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2023-01-31|
 |deployArcK8sRoleAssignments|`Microsoft.Resources/deployments`|2022-09-01|

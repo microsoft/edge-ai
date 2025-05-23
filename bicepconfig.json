@@ -1,5 +1,28 @@
 {
+    "cloud": {
+        "currentProfile": "AzureCloud"
+    },
+    "moduleAliases": {
+        "ts": {},
+        "br": {}
+    },
+    "analyzers": {
+        "core": {
+            "verbose": false,
+            "enabled": true,
+            "rules": {
+                "no-unused-params": {
+                    "level": "warning"
+                },
+                "no-unused-vars": {
+                    "level": "warning"
+                },
+                "no-deployments-resources": {
+                    "level": "off"
+                }
+            }
+        }
+    },
     "experimentalFeaturesEnabled": {
-        "secureOutputs": true
     }
 }
