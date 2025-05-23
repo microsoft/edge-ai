@@ -15,6 +15,9 @@ param common core.Common
 @description('The name for the resource group. If not provided, a default name will be generated.')
 param resourceGroupName string = 'rg-${common.resourcePrefix}-${common.environment}-${common.instance}'
 
+@description('Whether to opt-out of telemetry. Set to true to disable telemetry.')
+param telemetry_opt_out bool = false
+
 /*
   Virtual Machine Parameters
 */
@@ -49,6 +52,22 @@ param shouldInitAio bool = true
 
 @description('Whether to deploy an Azure IoT Operations Instance and all of its required components into the connected cluster.')
 param shouldDeployAio bool = true
+
+/*
+  Resources
+*/
+
+resource attribution 'Microsoft.Resources/deployments@2020-06-01' = if (!telemetry_opt_out) {
+  name: 'pid-acce1e78-0375-4637-a593-86aa36dcfeac'
+  properties: {
+    mode: 'Incremental'
+    template: {
+      '$schema': 'https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#'
+      contentVersion: '1.0.0.0'
+      resources: []
+    }
+  }
+}
 
 /*
   Modules

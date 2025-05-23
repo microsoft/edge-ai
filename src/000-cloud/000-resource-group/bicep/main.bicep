@@ -22,6 +22,9 @@ param resourceGroupName string = 'rg-${common.resourcePrefix}-${common.environme
 @description('Whether to use an existing resource group instead of creating a new one.')
 param useExistingResourceGroup bool = false
 
+@description('Whether to opt out of telemetry data collection.')
+param telemetry_opt_out bool = false
+
 @description('Additional tags to add to the resources.')
 param tags object = {}
 
@@ -37,6 +40,18 @@ var defaultTags = {
 /*
   Resources
 */
+
+resource attribution 'Microsoft.Resources/deployments@2020-06-01' = if (!telemetry_opt_out) {
+  name: 'pid-acce1e78-0375-4637-a593-86aa36dcfeac'
+  properties: {
+    mode: 'Incremental'
+    template: {
+      '$schema': 'https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#'
+      contentVersion: '1.0.0.0'
+      resources: []
+    }
+  }
+}
 
 // Create new resource group if useExistingResourceGroup is false
 resource newResourceGroup 'Microsoft.Resources/resourceGroups@2022-09-01' = if (!useExistingResourceGroup) {

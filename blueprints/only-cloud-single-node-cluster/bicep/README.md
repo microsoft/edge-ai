@@ -13,6 +13,7 @@ Deploys a complete end-to-end environment for Azure IoT Operations on a single-n
 |common|The common component configuration.|`[_1.Common](#user-defined-types)`|n/a|yes|
 |resourceGroupName|The name for the resource group. If not provided, a default name will be generated.|`string`|[format('rg-{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]|no|
 |useExistingResourceGroup|Whether to use an existing resource group instead of creating a new one.|`bool`|`false`|no|
+|telemetry_opt_out|Whether to opt-out of telemetry. Set to true to disable telemetry.|`bool`|`false`|no|
 |adminPassword|Password used for the host VM.|`securestring`|n/a|yes|
 |shouldCreateAcrPrivateEndpoint|Whether to create a private endpoint for the Azure Container Registry.|`bool`|`false`|no|
 |shouldCreateAks|Whether to create an Azure Kubernetes Service cluster.|`bool`|`false`|no|
@@ -21,6 +22,7 @@ Deploys a complete end-to-end environment for Azure IoT Operations on a single-n
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
+|attribution|`Microsoft.Resources/deployments`|2020-06-01|
 |cloudResourceGroup|`Microsoft.Resources/deployments`|2022-09-01|
 |cloudSecurityIdentity|`Microsoft.Resources/deployments`|2022-09-01|
 |cloudObservability|`Microsoft.Resources/deployments`|2022-09-01|
@@ -33,6 +35,7 @@ Deploys a complete end-to-end environment for Azure IoT Operations on a single-n
 
 |Name|Description|
 | :--- | :--- |
+|attribution||
 |cloudResourceGroup|Creates the required resources needed for an edge IaC deployment.|
 |cloudSecurityIdentity|Provisions cloud resources required for Azure IoT Operations including Schema Registry, Storage Account, Key Vault, and User Assigned Managed Identities.|
 |cloudObservability|Deploys Azure observability resources including Azure Monitor Workspace, Log Analytics Workspace, Azure Managed Grafana, and Data Collection Rules for container monitoring and metrics collection.|
@@ -42,6 +45,8 @@ Deploys a complete end-to-end environment for Azure IoT Operations on a single-n
 |cloudAksAcr|Deploys Azure Container Registry (ACR) and optionally Azure Kubernetes Service (AKS) resources.|
 
 ## Module Details
+
+### attribution
 
 ### cloudResourceGroup
 
@@ -54,12 +59,14 @@ Creates the required resources needed for an edge IaC deployment.
 |common|The common component configuration.|`[_1.Common](#user-defined-types)`|n/a|yes|
 |resourceGroupName|The name for the resource group. If not provided, a default name will be generated.|`string`|[format('rg-{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]|no|
 |useExistingResourceGroup|Whether to use an existing resource group instead of creating a new one.|`bool`|False|no|
+|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|False|no|
 |tags|Additional tags to add to the resources.|`object`|{}|no|
 
 #### Resources for cloudResourceGroup
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
+|attribution|`Microsoft.Resources/deployments`|2020-06-01|
 |newResourceGroup|`Microsoft.Resources/resourceGroups`|2022-09-01|
 |existingResourceGroup|`Microsoft.Resources/resourceGroups`|2022-09-01|
 
@@ -86,11 +93,13 @@ Provisions cloud resources required for Azure IoT Operations including Schema Re
 |keyVaultResourceGroupName|The name for the Resource Group for the Key Vault.|`string`|[resourceGroup().name]|no|
 |shouldAssignAdminUserRole|Whether or not to create a role assignment for an admin user.|`bool`|True|no|
 |adminUserObjectId|The Object ID for an admin user that will be granted the "Key Vault Secrets Officer" role.|`string`|[deployer().objectId]|no|
+|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|False|no|
 
 #### Resources for cloudSecurityIdentity
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
+|attribution|`Microsoft.Resources/deployments`|2020-06-01|
 |identity|`Microsoft.Resources/deployments`|2022-09-01|
 |keyVault|`Microsoft.Resources/deployments`|2022-09-01|
 
@@ -128,11 +137,13 @@ Deploys Azure observability resources including Azure Monitor Workspace, Log Ana
 |grafanaAdminPrincipalId|The principalId (objectId) of the user or service principal to assign the Grafana Admin role.|`string`|n/a|no|
 |logsDataCollectionRuleNamespaces|List of cluster namespaces to be exposed in the log analytics workspace|`array`|['kube-system', 'gatekeeper-system', 'azure-arc', 'azure-iot-operations']|no|
 |logsDataCollectionRuleStreams|List of streams to be enabled in the log analytics workspace|`array`|['Microsoft-ContainerLog', 'Microsoft-ContainerLogV2', 'Microsoft-KubeEvents', 'Microsoft-KubePodInventory', 'Microsoft-KubeNodeInventory', 'Microsoft-KubePVInventory', 'Microsoft-KubeServices', 'Microsoft-KubeMonAgentEvents', 'Microsoft-InsightsMetrics', 'Microsoft-ContainerInventory', 'Microsoft-ContainerNodeInventory', 'Microsoft-Perf']|no|
+|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|False|no|
 
 #### Resources for cloudObservability
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
+|attribution|`Microsoft.Resources/deployments`|2020-06-01|
 |monitorWorkspace|`Microsoft.Monitor/accounts`|2023-04-03|
 |logAnalytics|`Microsoft.OperationalInsights/workspaces`|2025-02-01|
 |grafana|`Microsoft.Dashboard/grafana`|2024-10-01|
@@ -173,11 +184,13 @@ Creates storage resources including Azure Storage Account and Schema Registry fo
 |schemaContainerName|The name for the Blob Container for schemas.|`string`|schemas|no|
 |schemaRegistryName|The name for the ADR Schema Registry.|`string`|[format('sr-{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]|no|
 |schemaRegistryNamespace|The ADLS Gen2 namespace for the ADR Schema Registry.|`string`|[format('srns-{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]|no|
+|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|False|no|
 
 #### Resources for cloudData
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
+|attribution|`Microsoft.Resources/deployments`|2020-06-01|
 |storageAccount|`Microsoft.Resources/deployments`|2022-09-01|
 |schemaRegistry|`Microsoft.Resources/deployments`|2022-09-01|
 |schemaRegistryRoleAssignment|`Microsoft.Resources/deployments`|2022-09-01|
@@ -207,11 +220,13 @@ Deploys Azure cloud messaging resources including Event Hubs, Service Bus, and E
 |eventHubConfig|The configuration for the Event Hubs Namespace.|`[_1.EventHubConfig](#user-defined-types)`|n/a|no|
 |shouldCreateEventGrid|Whether to create Event Grid resources.|`bool`|True|no|
 |eventGridConfig|The configuration for the Event Grid Domain.|`[_1.EventGridConfig](#user-defined-types)`|n/a|no|
+|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|False|no|
 
 #### Resources for cloudMessaging
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
+|attribution|`Microsoft.Resources/deployments`|2020-06-01|
 |eventHub|`Microsoft.Resources/deployments`|2022-09-01|
 |eventGrid|`Microsoft.Resources/deployments`|2022-09-01|
 
@@ -242,11 +257,13 @@ Provisions virtual machines and networking infrastructure for hosting Azure IoT 
 |vmUsername|Username used for the host VM that will be given kube-config settings on setup. (Otherwise, resource_prefix if it exists as a user)|`string`|n/a|no|
 |vmCount|The number of host VMs to create if a multi-node cluster is needed.|`int`|1|no|
 |vmSkuSize|Size of the VM|`string`|Standard_D8s_v3|no|
+|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|False|no|
 
 #### Resources for cloudVmHost
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
+|attribution|`Microsoft.Resources/deployments`|2020-06-01|
 |network|`Microsoft.Resources/deployments`|2022-09-01|
 |virtualMachine|`Microsoft.Resources/deployments`|2022-09-01|
 
@@ -278,11 +295,13 @@ Deploys Azure Container Registry (ACR) and optionally Azure Kubernetes Service (
 |containerRegistryConfig|The settings for the Azure Container Registry.|`[_1.ContainerRegistry](#user-defined-types)`|[variables('_1.containerRegistryDefaults')]|no|
 |shouldCreateAks|Whether to create an Azure Kubernetes Service cluster.|`bool`|False|no|
 |kubernetesClusterConfig|The settings for the Azure Kubernetes Service cluster.|`[_1.KubernetesCluster](#user-defined-types)`|[variables('_1.kubernetesClusterDefaults')]|no|
+|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|False|no|
 
 #### Resources for cloudAksAcr
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
+|attribution|`Microsoft.Resources/deployments`|2020-06-01|
 |network|`Microsoft.Resources/deployments`|2022-09-01|
 |containerRegistry|`Microsoft.Resources/deployments`|2022-09-01|
 |aksCluster|`Microsoft.Resources/deployments`|2022-09-01|

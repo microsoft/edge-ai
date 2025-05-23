@@ -17,11 +17,13 @@ Deploys Azure Container Registry (ACR) and optionally Azure Kubernetes Service (
 |containerRegistryConfig|The settings for the Azure Container Registry.|`[_1.ContainerRegistry](#user-defined-types)`|[variables('_1.containerRegistryDefaults')]|no|
 |shouldCreateAks|Whether to create an Azure Kubernetes Service cluster.|`bool`|`false`|no|
 |kubernetesClusterConfig|The settings for the Azure Kubernetes Service cluster.|`[_1.KubernetesCluster](#user-defined-types)`|[variables('_1.kubernetesClusterDefaults')]|no|
+|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|`false`|no|
 
 ## Resources
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
+|attribution|`Microsoft.Resources/deployments`|2020-06-01|
 |network|`Microsoft.Resources/deployments`|2022-09-01|
 |containerRegistry|`Microsoft.Resources/deployments`|2022-09-01|
 |aksCluster|`Microsoft.Resources/deployments`|2022-09-01|
@@ -30,11 +32,14 @@ Deploys Azure Container Registry (ACR) and optionally Azure Kubernetes Service (
 
 |Name|Description|
 | :--- | :--- |
+|attribution||
 |network|Creates subnets for AKS and ACR private endpoints in an existing Virtual Network.|
 |containerRegistry|Deploys an Azure Container Registry with optional private endpoint.|
 |aksCluster|Deploys an Azure Kubernetes Service (AKS) cluster with integration to Azure Container Registry.|
 
 ## Module Details
+
+### attribution
 
 ### network
 

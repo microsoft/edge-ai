@@ -10,6 +10,9 @@ import * as core from './types.core.bicep'
 @description('The common component configuration.')
 param common core.Common
 
+@description('Whether to opt-out of telemetry. Set to true to disable telemetry.')
+param telemetry_opt_out bool = false
+
 /*
   Azure Arc Parameters
 */
@@ -106,6 +109,22 @@ param shouldSkipAzCliLogin bool = false
 
 @description('Should skip downloading and installing Azure CLI on the server.')
 param shouldSkipInstallingAzCli bool = false
+
+/*
+  Resources
+*/
+
+resource attribution 'Microsoft.Resources/deployments@2020-06-01' = if (!telemetry_opt_out) {
+  name: 'pid-acce1e78-0375-4637-a593-86aa36dcfeac'
+  properties: {
+    mode: 'Incremental'
+    template: {
+      '$schema': 'https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#'
+      contentVersion: '1.0.0.0'
+      resources: []
+    }
+  }
+}
 
 /*
   Modules

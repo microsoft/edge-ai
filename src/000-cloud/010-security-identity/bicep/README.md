@@ -17,11 +17,13 @@ Provisions cloud resources required for Azure IoT Operations including Schema Re
 |keyVaultResourceGroupName|The name for the Resource Group for the Key Vault.|`string`|[resourceGroup().name]|no|
 |shouldAssignAdminUserRole|Whether or not to create a role assignment for an admin user.|`bool`|`true`|no|
 |adminUserObjectId|The Object ID for an admin user that will be granted the "Key Vault Secrets Officer" role.|`string`|[deployer().objectId]|no|
+|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|`false`|no|
 
 ## Resources
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
+|attribution|`Microsoft.Resources/deployments`|2020-06-01|
 |identity|`Microsoft.Resources/deployments`|2022-09-01|
 |keyVault|`Microsoft.Resources/deployments`|2022-09-01|
 
@@ -29,10 +31,13 @@ Provisions cloud resources required for Azure IoT Operations including Schema Re
 
 |Name|Description|
 | :--- | :--- |
+|attribution||
 |identity|Creates user-assigned managed identities for Secret Store Extension, Azure IoT Operations components and optionally Arc onboarding.|
 |keyVault|Creates an Azure Key Vault for use with the Secret Sync Extension to securely store and synchronize secrets.|
 
 ## Module Details
+
+### attribution
 
 ### identity
 

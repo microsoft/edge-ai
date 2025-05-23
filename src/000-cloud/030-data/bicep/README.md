@@ -20,11 +20,13 @@ Creates storage resources including Azure Storage Account and Schema Registry fo
 |schemaContainerName|The name for the Blob Container for schemas.|`string`|schemas|no|
 |schemaRegistryName|The name for the ADR Schema Registry.|`string`|[format('sr-{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]|no|
 |schemaRegistryNamespace|The ADLS Gen2 namespace for the ADR Schema Registry.|`string`|[format('srns-{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]|no|
+|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|`false`|no|
 
 ## Resources
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
+|attribution|`Microsoft.Resources/deployments`|2020-06-01|
 |storageAccount|`Microsoft.Resources/deployments`|2022-09-01|
 |schemaRegistry|`Microsoft.Resources/deployments`|2022-09-01|
 |schemaRegistryRoleAssignment|`Microsoft.Resources/deployments`|2022-09-01|
@@ -33,11 +35,14 @@ Creates storage resources including Azure Storage Account and Schema Registry fo
 
 |Name|Description|
 | :--- | :--- |
+|attribution||
 |storageAccount|Creates an Azure Storage Account and blob container for storing schemas.|
 |schemaRegistry|Creates an Azure Device Registry (ADR) Schema Registry for storing and managing device schemas.|
 |schemaRegistryRoleAssignment|Creates role assignments for the Schema Registry to access the storage account.|
 
 ## Module Details
+
+### attribution
 
 ### storageAccount
 

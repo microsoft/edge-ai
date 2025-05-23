@@ -72,6 +72,25 @@ param logsDataCollectionRuleStreams array = [
 
 var grafanaAdminLocalPrincipalId = grafanaAdminPrincipalId ?? deployer().objectId
 
+@description('Whether to opt out of telemetry data collection.')
+param telemetry_opt_out bool = false
+
+/*
+  Resources
+*/
+
+resource attribution 'Microsoft.Resources/deployments@2020-06-01' = if (!telemetry_opt_out) {
+  name: 'pid-acce1e78-0375-4637-a593-86aa36dcfeac'
+  properties: {
+    mode: 'Incremental'
+    template: {
+      '$schema': 'https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#'
+      contentVersion: '1.0.0.0'
+      resources: []
+    }
+  }
+}
+
 /*
   Monitoring Resources
 */

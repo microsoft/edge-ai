@@ -17,11 +17,13 @@ Deploys Azure cloud messaging resources including Event Hubs, Service Bus, and E
 |eventHubConfig|The configuration for the Event Hubs Namespace.|`[_1.EventHubConfig](#user-defined-types)`|n/a|no|
 |shouldCreateEventGrid|Whether to create Event Grid resources.|`bool`|`true`|no|
 |eventGridConfig|The configuration for the Event Grid Domain.|`[_1.EventGridConfig](#user-defined-types)`|n/a|no|
+|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|`false`|no|
 
 ## Resources
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
+|attribution|`Microsoft.Resources/deployments`|2020-06-01|
 |eventHub|`Microsoft.Resources/deployments`|2022-09-01|
 |eventGrid|`Microsoft.Resources/deployments`|2022-09-01|
 
@@ -29,10 +31,13 @@ Deploys Azure cloud messaging resources including Event Hubs, Service Bus, and E
 
 |Name|Description|
 | :--- | :--- |
+|attribution||
 |eventHub|Deploys Azure Event Hubs Namespace with Event Hubs, partitions, and consumer groups.|
 |eventGrid|Deploys Azure Event Grid Domain with topics and event subscriptions.|
 
 ## Module Details
+
+### attribution
 
 ### eventHub
 

@@ -18,11 +18,13 @@ Deploys Dataflow endpoints and dataflows for Azure IoT Operations messaging inte
 |assetName|The name of the Azure IoT Operations Device Registry Asset resource to send its data from edge to cloud.|`string`|oven|no|
 |eventHub|Values for the existing Event Hub namespace and Event Hub. If not provided, Event Hub dataflow will not be created.|`[_1.EventHub](#user-defined-types)`|n/a|no|
 |eventGrid|Values for the existing Event Grid. If not provided, Event Grid dataflow will not be created.|`[_1.EventGrid](#user-defined-types)`|n/a|no|
+|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|`false`|no|
 
 ## Resources
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
+|attribution|`Microsoft.Resources/deployments`|2020-06-01|
 |aioIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2023-01-31|
 |aioCustomLocation|`Microsoft.ExtendedLocation/customLocations`|2021-08-31-preview|
 |eventHubDataflow|`Microsoft.Resources/deployments`|2022-09-01|
@@ -32,10 +34,13 @@ Deploys Dataflow endpoints and dataflows for Azure IoT Operations messaging inte
 
 |Name|Description|
 | :--- | :--- |
+|attribution||
 |eventHubDataflow|Provisions the ARM based data flow endpoint and data flow for Event Hub, requires Asset.|
 |eventGridDataflow|Provisions the ARM based data flow endpoint and data flow for Event Grid, requires Asset.|
 
 ## Module Details
+
+### attribution
 
 ### eventHubDataflow
 

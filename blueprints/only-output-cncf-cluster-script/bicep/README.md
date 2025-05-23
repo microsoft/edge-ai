@@ -11,6 +11,7 @@ Generates scripts for Azure IoT Operations CNCF cluster creation without deployi
 |Name|Description|Type|Default|Required|
 | :--- | :--- | :--- | :--- | :--- |
 |common|The common component configuration.|`[_1.Common](#user-defined-types)`|n/a|yes|
+|telemetry_opt_out|Whether to opt-out of telemetry. Set to true to disable telemetry.|`bool`|`false`|no|
 |arcConnectedClusterName|The resource name for the Arc connected cluster.|`string`|[format('arck-{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]|no|
 |arcOnboardingIdentityName|The resource name for the identity used for Arc onboarding.|`string`|[format('id-{0}-arc-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]|no|
 |arcOnboardingSpClientId|Service Principal Client ID with Kubernetes Cluster - Azure Arc Onboarding permissions.|`string`|n/a|no|
@@ -40,15 +41,19 @@ Generates scripts for Azure IoT Operations CNCF cluster creation without deployi
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
+|attribution|`Microsoft.Resources/deployments`|2020-06-01|
 |edgeCncfCluster|`Microsoft.Resources/deployments`|2022-09-01|
 
 ## Modules
 
 |Name|Description|
 | :--- | :--- |
+|attribution||
 |edgeCncfCluster|This module provisions and deploys automation scripts to a VM host that create and configure a K3s Kubernetes cluster with Arc connectivity.<br>The scripts handle primary and secondary node(s) setup, cluster administration, workload identity enablement, and installation of required Azure Arc extensions.|
 
 ## Module Details
+
+### attribution
 
 ### edgeCncfCluster
 
@@ -84,11 +89,13 @@ The scripts handle primary and secondary node(s) setup, cluster administration, 
 |k3sTokenSecretName|The name for the K3s token secret in Key Vault.|`string`|k3s-server-token|no|
 |nodeScriptSecretName|The name for the node script secret in Key Vault.|`string`|cluster-node-ubuntu-k3s|no|
 |serverScriptSecretName|The name for the server script secret in Key Vault.|`string`|cluster-server-ubuntu-k3s|no|
+|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|False|no|
 
 #### Resources for edgeCncfCluster
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
+|attribution|`Microsoft.Resources/deployments`|2020-06-01|
 |arcOnboardingIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2024-11-30|
 |ubuntuK3s|`Microsoft.Resources/deployments`|2022-09-01|
 |roleAssignment|`Microsoft.Resources/deployments`|2022-09-01|
