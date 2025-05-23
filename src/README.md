@@ -74,6 +74,8 @@ The following steps are for `ci` deployment completed from a local machine.
 > **You must complete all [prerequisites and environment setup](../README.md#getting-started-and-environment-setup) before running these steps.**
 > Ensure your Azure CLI is logged in and your subscription context is set correctly.
 
+**Note on Telemetry:** If you wish to opt-out of sending telemetry data to Microsoft when deploying Azure resources with Terraform, you can set the environment variable `ARM_DISABLE_TERRAFORM_PARTNER_ID=true` before running any `terraform` commands.
+
 #### Terraform - Create Resources
 
 Set up terraform settings and apply them:

@@ -182,6 +182,8 @@ If you prefer not to use the Dev Container, make sure you have a Linux environme
 
 3. **Blueprint Initialization for Terraform**
 
+   **Note on Telemetry:** If you wish to opt-out of sending telemetry data to Microsoft when deploying Azure resources with Terraform, you can set the environment variable `ARM_DISABLE_TERRAFORM_PARTNER_ID=true` before running any `terraform` commands.
+
    ```bash
    # Navigate to your chosen blueprint directory
    cd ./blueprints/full-single-node-cluster/terraform

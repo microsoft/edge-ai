@@ -18,6 +18,7 @@ terraform {
 
 provider "azurerm" {
   storage_use_azuread = true
+  partner_id          = "acce1e78-0375-4637-a593-86aa36dcfeac"
   features {}
 }
 
