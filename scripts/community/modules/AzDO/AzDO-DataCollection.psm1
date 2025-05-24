@@ -3,6 +3,368 @@ using module "./AzDO-Types.psm1"
 # Import ReportTypes for IndustryBacklogCollection
 using module "./AzDO-ReportTypes.psm1"
 
+function Get-MainBranchPRMetric {
+    <#
+    .SYNOPSIS
+    Retrieves pull request metrics from the main branch history when Azure DevOps API fails.
+
+    .DESCRIPTION
+    When the Azure DevOps API fails to provide file change data for PRs, this function can
+    extract metrics from the Git commit history on the main branch using the squashed commits.
+    Implements multiple strategies for finding the corresponding commit on main branch.
+
+    .PARAMETER PullRequestId
+    The ID of the pull request.
+
+    .PARAMETER PullRequestStatus
+    The status of the pull request.
+
+    .PARAMETER PullRequestClosedDate
+    The closed date of the pull request.
+
+    .PARAMETER PullRequestTitle
+    The title of the pull request.
+
+    .PARAMETER PullRequestSourceBranch
+    The source branch of the pull request.
+
+    .PARAMETER RepositoryPath
+    The path to the local Git repository.
+
+    .PARAMETER MainBranch
+    The name of the main branch. Default is 'main'.
+
+    .PARAMETER MergeCommitSha
+    Optional merge commit SHA from Azure DevOps API.
+
+    .EXAMPLE
+    $metrics = Get-MainBranchPRMetric -PullRequestId 123 -PullRequestStatus "completed" -PullRequestClosedDate "2025-05-23" -PullRequestTitle "feat: add logging" -PullRequestSourceBranch "feature/logging" -RepositoryPath "/path/to/repo"
+
+    .NOTES
+    This function is designed as a fallback for when Azure DevOps API fails to provide metrics.
+    Implements enhanced logging and diagnostics as per troubleshooting plan Phase A.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true)]
+        [object]$PullRequestId,
+
+        [Parameter(Mandatory=$true)]
+        [object]$PullRequestStatus,
+
+        [Parameter(Mandatory=$true)]
+        [object]$PullRequestClosedDate,
+
+        [Parameter(Mandatory=$true)]
+        [object]$PullRequestTitle,
+
+        [Parameter(Mandatory=$true)]
+        [object]$PullRequestSourceBranch,
+
+        [Parameter(Mandatory=$true)]
+        [string]$RepositoryPath,
+
+        [Parameter(Mandatory=$false)]
+        [string]$MainBranch = "main",
+
+        [Parameter(Mandatory=$false)]
+        [string]$MergeCommitSha = $null
+    )
+
+    # PHASE A LOGGING: PR Details at the beginning
+    Write-Verbose "=== PR COMMIT MATCHING START ==="
+    Write-Verbose "PR_DETAILS: Processing PR #$PullRequestId"
+    Write-Verbose "PR_DETAILS: - Title: '$PullRequestTitle'"
+    Write-Verbose "PR_DETAILS: - Status: $PullRequestStatus"
+    Write-Verbose "PR_DETAILS: - ClosedDate: $PullRequestClosedDate"
+    Write-Verbose "PR_DETAILS: - SourceBranch: $PullRequestSourceBranch"
+    Write-Verbose "PR_DETAILS: - RepositoryPath: $RepositoryPath"
+    Write-Verbose "PR_DETAILS: - MainBranch: $MainBranch"
+    if ($MergeCommitSha) {
+        Write-Verbose "PR_DETAILS: - MergeCommitSha: $MergeCommitSha"
+    } else {
+        Write-Verbose "PR_DETAILS: - MergeCommitSha: NOT PROVIDED"
+    }
+
+    # Skip PRs that aren't completed
+    if ($PullRequestStatus -ne "completed" -or $null -eq $PullRequestClosedDate) {
+        Write-Verbose "PR_SKIP: PR #$PullRequestId is not completed or has no closed date. Skipping."
+        return [PullRequestFileChangeMetric]::new(0,0,0)
+    }
+
+    # Store current location
+    $currentLocation = Get-Location
+    $commitSha = $null
+
+    try {
+        # Navigate to repo path
+        Set-Location -Path $RepositoryPath
+
+        # STRATEGY 1: Try mergeCommitSha from PR Object
+        if ($MergeCommitSha) {
+            Write-Verbose "STRATEGY_1: Attempting to use mergeCommitSha: $MergeCommitSha"
+
+            # Check if commit exists locally
+            try {
+                $gitRevParseCmd = @("git", "-C", $RepositoryPath, "rev-parse", "--verify", $MergeCommitSha)
+                Write-Verbose "STRATEGY_1: Executing: $($gitRevParseCmd -join ' ')"
+                $revParseResult = & $gitRevParseCmd[0] $gitRevParseCmd[1..($gitRevParseCmd.Length-1)] 2>$null
+
+                if ($revParseResult) {
+                    Write-Verbose "STRATEGY_1: Commit exists locally: $revParseResult"
+
+                    # Check if commit is on main branch
+                    $gitBranchContainsCmd = @("git", "-C", $RepositoryPath, "branch", "--contains", $MergeCommitSha)
+                    Write-Verbose "STRATEGY_1: Executing: $($gitBranchContainsCmd -join ' ')"
+                    $branchContainsResult = & $gitBranchContainsCmd[0] $gitBranchContainsCmd[1..($gitBranchContainsCmd.Length-1)] 2>$null
+                    Write-Verbose "STRATEGY_1: Branch contains result: '$branchContainsResult'"
+
+                    if ($branchContainsResult -and $branchContainsResult -match $MainBranch) {
+                        Write-Verbose "STRATEGY_1: SUCCESS - MergeCommitSha is on main branch"
+                        $commitSha = $MergeCommitSha
+                    } else {
+                        Write-Verbose "STRATEGY_1: FAILURE - MergeCommitSha not on main branch"
+                    }
+                } else {
+                    Write-Verbose "STRATEGY_1: FAILURE - MergeCommitSha not found locally"
+                }
+            } catch {
+                Write-Verbose "STRATEGY_1: ERROR - Git command failed: $_"
+            }
+        } else {
+            Write-Verbose "STRATEGY_1: SKIPPED - No mergeCommitSha provided"
+        }
+
+        # STRATEGY 2: Try Find-CommitByExactTitle if Strategy 1 failed
+        if (-not $commitSha) {
+            Write-Verbose "STRATEGY_2: Attempting Find-CommitByExactTitle"
+
+            # Parse completion date and set search window
+            $completionDate = [datetime]::Parse($PullRequestClosedDate)
+            $searchStart = $completionDate.AddDays(-7)  # As per troubleshooting plan
+            $searchEnd = $completionDate.AddDays(2)     # As per troubleshooting plan
+
+            Write-Verbose "STRATEGY_2: Search window: $($searchStart.ToString('yyyy-MM-dd')) to $($searchEnd.ToString('yyyy-MM-dd'))"
+
+            # Log parameters being passed to Find-CommitByExactTitle
+            Write-Verbose "STRATEGY_2: Parameters for Find-CommitByExactTitle:"
+            Write-Verbose "STRATEGY_2: - RepoPath: $RepositoryPath"
+            Write-Verbose "STRATEGY_2: - CommitTitle: '$PullRequestTitle'"
+            Write-Verbose "STRATEGY_2: - BranchName: $MainBranch"
+            Write-Verbose "STRATEGY_2: - SinceDate: $($searchStart.ToString('yyyy-MM-dd'))"
+            Write-Verbose "STRATEGY_2: - UntilDate: $($searchEnd.ToString('yyyy-MM-dd'))"
+
+            $commitSha = Find-CommitByExactTitle -RepoPath $RepositoryPath -CommitTitle $PullRequestTitle -BranchName $MainBranch -SinceDate $searchStart -UntilDate $searchEnd
+
+            if ($commitSha) {
+                Write-Verbose "STRATEGY_2: SUCCESS - Found commit: $commitSha"
+            } else {
+                Write-Verbose "STRATEGY_2: FAILURE - No exact title match found"
+            }
+        }
+
+        # STRATEGY 3: Try "Merged PR" prefix variation if Strategy 2 failed
+        if (-not $commitSha) {
+            Write-Verbose "STRATEGY_3: Attempting 'Merged PR' prefix variation"
+
+            $completionDate = [datetime]::Parse($PullRequestClosedDate)
+            $searchStart = $completionDate.AddDays(-7)
+            $searchEnd = $completionDate.AddDays(2)
+
+            # Try common "Merged PR" patterns
+            $mergedPrTitle = "Merged PR $($PullRequestId): $PullRequestTitle"
+            Write-Verbose "STRATEGY_3: Trying merged PR title: '$mergedPrTitle'"
+
+            $commitSha = Find-CommitByExactTitle -RepoPath $RepositoryPath -CommitTitle $mergedPrTitle -BranchName $MainBranch -SinceDate $searchStart -UntilDate $searchEnd
+
+            if ($commitSha) {
+                Write-Verbose "STRATEGY_3: SUCCESS - Found commit with merged PR prefix: $commitSha"
+            } else {
+                Write-Verbose "STRATEGY_3: FAILURE - No merged PR prefix match found"
+            }
+        }
+
+        # STRATEGY 4: Try git grep approach for "Merged PR" pattern if Strategy 3 failed
+        if (-not $commitSha) {
+            Write-Verbose "STRATEGY_4: Attempting git grep for 'Merged PR $PullRequestId' pattern"
+
+            try {
+                # Use git log with grep to find commits containing the PR ID in "Merged PR" format
+                # Use flexible pattern that matches "Merged PR {ID}" anywhere in the commit message
+                $gitGrepCmd = @("git", "-C", $RepositoryPath, "log", $MainBranch, "--grep=Merged PR $PullRequestId", "--pretty=format:%H", "--max-count=1")
+                Write-Verbose "STRATEGY_4: Executing: $($gitGrepCmd -join ' ')"
+
+                $grepResult = & $gitGrepCmd[0] $gitGrepCmd[1..($gitGrepCmd.Length-1)]
+
+                if ($grepResult) {
+                    $commitSha = $grepResult.Trim()
+                    Write-Verbose "STRATEGY_4: SUCCESS - Found commit via git grep: $commitSha"
+
+                    # Verify the commit is actually on the main branch
+                    $gitBranchContainsCmd = @("git", "-C", $RepositoryPath, "merge-base", "--is-ancestor", $commitSha, $MainBranch)
+                    Write-Verbose "STRATEGY_4: Verifying commit is on main branch: $($gitBranchContainsCmd -join ' ')"
+
+                    $null = & $gitBranchContainsCmd[0] $gitBranchContainsCmd[1..($gitBranchContainsCmd.Length-1)]
+                    if ($LASTEXITCODE -eq 0) {
+                        Write-Verbose "STRATEGY_4: VERIFIED - Commit is on main branch"
+                    } else {
+                        Write-Verbose "STRATEGY_4: WARNING - Commit found but not on main branch, clearing commitSha"
+                        $commitSha = $null
+                    }
+                } else {
+                    Write-Verbose "STRATEGY_4: FAILURE - No commit found with git grep"
+                }
+            } catch {
+                Write-Verbose "STRATEGY_4: ERROR - Git grep command failed: $_"
+            }
+        }
+
+        # If we found a commit, get the metrics
+        if ($commitSha) {
+            Write-Verbose "COMMIT_FOUND: Processing metrics for commit: $commitSha"
+
+            # Get metrics for this commit
+            $diffOutput = & git show --numstat --format="%H" $commitSha
+
+            # Initialize metrics
+            $additions = 0
+            $deletions = 0
+            $filesChanged = 0
+            $detailedFiles = @()
+
+            # Process numstat output
+            foreach ($line in $diffOutput) {
+                if ($line -match '^\s*(\d+)\s+(\d+)\s+(.+)$') {
+                    $additions += [int]$Matches[1]
+                    $deletions += [int]$Matches[2]
+                    $filesChanged++
+                    $detailedFiles += $Matches[3]
+                }
+            }
+
+            if ($filesChanged -gt 0) {
+                Write-Verbose "METRICS_SUCCESS: $filesChanged files, +$additions, -$deletions"
+
+                # Create a new metrics object
+                $metrics = [PullRequestFileChangeMetric]::new($filesChanged, $additions, $deletions)
+
+                # Add detailed files to the metrics object
+                foreach ($file in $detailedFiles) {
+                    $metrics.AddDetailedFile($file)
+                }
+
+                Write-Verbose "=== PR COMMIT MATCHING SUCCESS ==="
+                return $metrics
+            } else {
+                Write-Verbose "METRICS_WARNING: No file changes detected in commit $commitSha"
+            }
+        } else {
+            # PHASE A LOGGING: Overall failure message
+            Write-Warning "COMMIT_NOT_FOUND: PR #$PullRequestId '$PullRequestTitle' - No corresponding commit identified on main."
+            Write-Verbose "=== PR COMMIT MATCHING FAILED ==="
+        }
+    }
+    catch {
+        Write-Warning "Error processing PR #$($PullRequestId): $_"
+        Write-Verbose "=== PR COMMIT MATCHING ERROR ==="
+    }
+    finally {
+        # Return to original location
+        Set-Location -Path $currentLocation
+    }
+
+    return [PullRequestFileChangeMetric]::new(0,0,0)
+}
+
+function Find-CommitByExactTitle {
+    <#
+    .SYNOPSIS
+    Searches for a commit on a specific branch with an exact title match within a date range.
+
+    .DESCRIPTION
+    This function searches through git commit history on a specified branch to find a commit
+    with a title that exactly matches the provided commit title. The search is constrained
+    to a specific date range to improve performance and accuracy. This is primarily used
+    as part of the PR commit matching strategy when trying to find the corresponding
+    main branch commit for a completed pull request.
+
+    .PARAMETER RepoPath
+    The path to the local Git repository where the search will be performed.
+
+    .PARAMETER CommitTitle
+    The exact commit title to search for. The title will be regex-escaped before searching.
+
+    .PARAMETER BranchName
+    The name of the git branch to search within (e.g., 'main', 'develop').
+
+    .PARAMETER SinceDate
+    The earliest date to include in the search. Commits before this date will be ignored.
+
+    .PARAMETER UntilDate
+    The latest date to include in the search. Commits after this date will be ignored.
+
+    .OUTPUTS
+    System.String
+    Returns the commit SHA (hash) if an exact match is found, or $null if no match is found.
+
+    .EXAMPLE
+    $commitSha = Find-CommitByExactTitle -RepoPath "/path/to/repo" -CommitTitle "fix: resolve authentication issue" -BranchName "main" -SinceDate (Get-Date).AddDays(-7) -UntilDate (Get-Date)
+
+    .EXAMPLE
+    $since = [datetime]::Parse("2025-05-01")
+    $until = [datetime]::Parse("2025-05-31")
+    $sha = Find-CommitByExactTitle -RepoPath "C:\MyRepo" -CommitTitle "feat: add new feature" -BranchName "main" -SinceDate $since -UntilDate $until
+
+    .NOTES
+    - The function uses regex escaping on the commit title to handle special characters safely
+    - Enhanced logging is included for troubleshooting PR commit matching issues
+    - The search uses git's --grep option with exact match anchors (^ and $)
+    - Only the first matching commit is returned (--max-count=1)
+    - This function is part of the enhanced PR commit matching strategy implementation
+    #>
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true)][string]$RepoPath,
+        [Parameter(Mandatory = $true)][string]$CommitTitle,
+        [Parameter(Mandatory = $true)][string]$BranchName,
+        [Parameter(Mandatory = $true)][datetime]$SinceDate,
+        [Parameter(Mandatory = $true)][datetime]$UntilDate
+    )
+
+    # PHASE A LOGGING: Log function entry and parameters
+    Write-Verbose "FIND_EXACT_TITLE: Starting search with parameters:"
+    Write-Verbose "FIND_EXACT_TITLE: - RepoPath: $RepoPath"
+    Write-Verbose "FIND_EXACT_TITLE: - CommitTitle: '$CommitTitle'"
+    Write-Verbose "FIND_EXACT_TITLE: - BranchName: $BranchName"
+    Write-Verbose "FIND_EXACT_TITLE: - SinceDate: $($SinceDate.ToString('yyyy-MM-dd'))"
+    Write-Verbose "FIND_EXACT_TITLE: - UntilDate: $($UntilDate.ToString('yyyy-MM-dd'))"
+
+    $escapedTitle = [regex]::Escape($CommitTitle)
+    Write-Verbose "FIND_EXACT_TITLE: Escaped title: '$escapedTitle'"
+
+    # PHASE A LOGGING: Build and log the exact git command
+    $gitCmd = @("git", "-C", $RepoPath, "log", $BranchName, "--grep=^$escapedTitle$", "--pretty=format:%H", "--since=$($SinceDate.ToString('yyyy-MM-dd'))", "--until=$($UntilDate.ToString('yyyy-MM-dd'))", "--max-count=1")
+    Write-Verbose "FIND_EXACT_TITLE: Executing git command: $($gitCmd -join ' ')"
+
+    try {
+        $commitSha = & $gitCmd[0] $gitCmd[1..($gitCmd.Length-1)]
+        Write-Verbose "FIND_EXACT_TITLE: Git command output: '$commitSha'"
+
+        if ($commitSha) {
+            $trimmedSha = $commitSha.Trim()
+            Write-Verbose "FIND_EXACT_TITLE: SUCCESS - Found commit SHA: $trimmedSha"
+            return $trimmedSha
+        } else {
+            Write-Verbose "FIND_EXACT_TITLE: FAILURE - No commit found with exact title match"
+            return $null
+        }
+    }
+    catch {
+        Write-Verbose "FIND_EXACT_TITLE: ERROR - Git command failed: $_"
+        return $null
+    }
+}
+
 function Get-RepositoryId {
     <#
     .SYNOPSIS
@@ -394,186 +756,6 @@ function Get-AzDOPullRequestThread {
         Write-Warning "Error retrieving threads for PR ID: $PullRequestId. Error: $_"
         return [AzDOPullRequestThread[]]@()
     }
-}
-
-function Get-MainBranchPRMetric {
-    <#
-    .SYNOPSIS
-    Retrieves pull request metrics from the main branch history when Azure DevOps API fails.
-
-    .DESCRIPTION
-    When the Azure DevOps API fails to provide file change data for PRs, this function can
-    extract metrics from the Git commit history on the main branch using the squashed commits.
-
-    .PARAMETER PullRequest
-    A pull request object with metadata.
-
-    .PARAMETER RepositoryPath
-    The path to the local Git repository.
-
-    .PARAMETER MainBranch
-    The name of the main branch. Default is 'main'.
-
-    .EXAMPLE
-    $updatedPR = Get-MainBranchPRMetric -PullRequest $pr -RepositoryPath "/path/to/repo" -MainBranch "main"
-
-    .NOTES
-    This function is designed as a fallback for when Azure DevOps API fails to provide metrics.
-    #>
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory=$true)]
-        [object]$PullRequestId,
-
-        [Parameter(Mandatory=$true)]
-        [object]$PullRequestStatus,
-
-        [Parameter(Mandatory=$true)]
-        [object]$PullRequestClosedDate,
-
-        [Parameter(Mandatory=$true)]
-        [object]$PullRequestTitle,
-
-        [Parameter(Mandatory=$true)]
-        [object]$PullRequestSourceBranch,
-
-        [Parameter(Mandatory=$true)]
-        [string]$RepositoryPath,
-
-        [Parameter(Mandatory=$false)]
-        [string]$MainBranch = "main"
-    )
-
-    # Skip PRs that aren't completed
-    if ($PullRequestStatus -ne "completed" -or $null -eq $PullRequestClosedDate) {
-        Write-Verbose "PR #$($PullRequestID) is not completed. Skipping."
-        return $PullRequest
-    }
-
-    Write-Verbose "Processing PR #$($PullRequestID): $($PullRequestTitle)"
-
-    # Store current location
-    $currentLocation = Get-Location
-
-    try {
-        # Navigate to repo path
-        Set-Location -Path $RepositoryPath
-
-        # Parse completion date
-        $completionDate = [datetime]::Parse($PullRequestClosedDate)
-
-        # We'll search for commits around the completion date
-        $searchStart = $completionDate.AddDays(-3)
-        $searchEnd = $completionDate.AddDays(3)
-        $searchStartISO = $searchStart.ToString("yyyy-MM-dd")
-        $searchEndISO = $searchEnd.ToString("yyyy-MM-dd")
-
-        Write-Verbose "Searching for commits between $searchStartISO and $searchEndISO for PR: $($PullRequestTitle)"
-
-        # Extract keywords from PR title and source branch
-        $titleKeywords = $PullRequestTitle -split ' ' | Where-Object { $_.Length -gt 4 -and $_ -notmatch '^(the|and|for|with|from|this|that)$' }
-        $sourceBranchName = $PullRequestSourceBranch -split '/' | Select-Object -Last 1
-
-        # Search for commits in the date range
-        $possibleCommits = & git log --format="%H|%s|%ci" --after="$searchStartISO" --before="$searchEndISO" $MainBranch
-
-        $bestMatch = $null
-        $bestScore = 0
-
-        # Score each commit based on title and branch matches
-        foreach ($commit in $possibleCommits) {
-            $parts = $commit -split '\|'
-            if ($parts.Count -ge 2) {
-                $commitId = $parts[0]
-                $commitMsg = $parts[1]
-
-                # Calculate match score
-                $score = 0
-
-                # Check for exact PR title
-                if ($commitMsg -match [regex]::Escape($PullRequestTitle)) {
-                    $score += 10
-                }
-
-                # Check for source branch name
-                if ($commitMsg -match [regex]::Escape($sourceBranchName) -or
-                    $commitMsg -match [regex]::Escape($PullRequestSourceBranch)) {
-                    $score += 5
-                }
-
-                # Check for title keywords
-                foreach ($keyword in $titleKeywords) {
-                    if ($commitMsg -match [regex]::Escape($keyword)) {
-                        $score += 1
-                    }
-                }
-
-                # Update best match if this is better
-                if ($score -gt $bestScore) {
-                    $bestScore = $score
-                    $bestMatch = $commitId
-                }
-            }
-        }
-
-        # If we found a good match, get the metrics
-        if ($bestScore -ge 2 -and $bestMatch) {
-            Write-Verbose "Found matching commit: $bestMatch with score $bestScore"
-
-            # Get metrics for this commit
-            # For a squashed merge, we compare with the parent commit
-            $commitInfo = & git show --format="%P" $bestMatch
-            if ($commitInfo -and $commitInfo[0]) {
-                $parentCommit = $commitInfo[0]
-                Write-Verbose "Found parent commit: $parentCommit"
-
-                # Get numstat output
-                $diffOutput = & git show --numstat --format="%H" $bestMatch
-
-                # Initialize metrics
-                $additions = 0
-                $deletions = 0
-                $filesChanged = 0
-                $detailedFiles = @()
-
-                # Process numstat output
-                foreach ($line in $diffOutput) {
-                    if ($line -match '^\s*(\d+)\s+(\d+)\s+(.+)$') {
-                        $additions += [int]$Matches[1]
-                        $deletions += [int]$Matches[2]
-                        $filesChanged++
-                        $detailedFiles += $Matches[3]
-                    }
-                }
-
-                # Update PR with metrics using our new PullRequestFileChangeMetric type
-                if ($filesChanged -gt 0) {
-                    Write-Verbose "  Updated metrics: $filesChanged files, +$additions, -$deletions"
-
-                    # Create a new metrics object
-                    $metrics = [PullRequestFileChangeMetric]::new($filesChanged, $additions, $deletions)
-
-                    # Add detailed files to the metrics object
-                    foreach ($file in $detailedFiles) {
-                        $metrics.AddDetailedFile($file)
-                    }
-                }
-                return $metrics
-            }
-        }
-        else {
-            Write-Warning "No matching commit found for PR #$($PullRequestID)"
-        }
-    }
-    catch {
-        Write-Warning "Error processing PR #$($PullRequestID): $_"
-    }
-    finally {
-        # Return to original location
-        Set-Location -Path $currentLocation
-    }
-
-    return [PullRequestFileChangeMetric]::new(0,0,0)
 }
 
 function Get-PullRequestWorkItem {
@@ -1232,5 +1414,6 @@ Export-ModuleMember -Function @(
     'Get-PullRequestWorkItem',
     'Get-WorkItemDetail',
     'Get-PullRequestWorkItemDetail',
-    'Get-IndustryBacklogItemsFromAzDO'
+    'Get-IndustryBacklogItemsFromAzDO',
+    'Test-PRCommitMatching'
 )

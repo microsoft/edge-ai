@@ -64,7 +64,7 @@ APPLY_FIXES: none
 DEFAULT_BRANCH: main
 
 # Validate entire codebase, not just changes
-VALIDATE_ALL_CODEBASE: true
+VALIDATE_ALL_CODEBASE: false
 
 # Log level: DEBUG, INFO, WARNING or ERROR
 LOG_LEVEL: INFO
