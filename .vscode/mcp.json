@@ -1,0 +1,14 @@
+{
+  "servers": {
+    // Terraform MCP Server: https://github.com/hashicorp/terraform-mcp-server
+    "terraform": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "hashicorp/terraform-mcp-server"
+      ]
+    }
+  }
+}
