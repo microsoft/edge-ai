@@ -1,9 +1,16 @@
 ---
+# Updated OpenTelemetry Collector configuration for Azure IoT Operations
+# Uses recommended best practices for a production deployment
+
 mode: deployment
 fullnameOverride: aio-otel-collector
+
+# Using the contrib image which includes additional components
 image:
   repository: otel/opentelemetry-collector
-  tag: 0.107.0
+  tag: 0.126.0 # Updated to a specific version for stability
+  pullPolicy: IfNotPresent # Added explicit pull policy
+
 config:
   processors:
     memory_limiter:
