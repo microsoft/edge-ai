@@ -1,6 +1,12 @@
-provider "azurerm" {
-  storage_use_azuread = true
-  features {}
+mock_provider "azurerm" {
+  override_resource {
+    target = azurerm_resource_group.this
+    values = {
+      id       = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg"
+      name     = "test-rg"
+      location = "eastus"
+    }
+  }
 }
 
 # Call the setup module to create a random resource prefix
@@ -202,5 +208,108 @@ run "verify_custom_event_grid_configuration" {
   assert {
     condition     = module.event_grid[0].event_grid.topic_name == var.event_grid_topic_name
     error_message = "Event Grid topic name should be set to custom value ${var.event_grid_topic_name}"
+  }
+}
+
+# Test Azure Functions configuration parameters
+run "verify_azure_functions_configuration" {
+  command = plan
+
+  variables {
+    resource_prefix = run.setup_tests.resource_prefix
+    environment     = "test"
+    resource_group  = run.setup_tests.resource_group
+    aio_identity    = run.setup_tests.aio_identity
+    instance        = "004"
+
+    should_create_azure_functions = true
+    should_create_event_hubs      = false
+    should_create_event_grid      = false
+  }
+
+  # Verify the App Service Plan has been created
+  assert {
+    condition     = contains(keys(module.app_service_plan[0]), "app_service_plan")
+    error_message = "App Service Plan should be created with default configuration"
+  }
+
+  # Verify the Azure Functions has been created
+  assert {
+    condition     = contains(keys(module.azure_functions[0]), "function_app")
+    error_message = "Azure Functions should be created with default configuration"
+  }
+
+  # Verify the App Service Plan is configured with default OS type and SKU
+  assert {
+    condition     = module.app_service_plan[0].app_service_plan.os_type == "Linux"
+    error_message = "App Service Plan should be configured with default OS type of Linux"
+  }
+
+  assert {
+    condition     = module.app_service_plan[0].app_service_plan.sku_name == "B1"
+    error_message = "App Service Plan should be configured with default SKU of B1"
+  }
+
+  # Verify the Function App is configured with default node version
+  assert {
+    condition     = module.azure_functions[0].function_app.os_type == "Linux"
+    error_message = "Function App should be configured with Linux OS type matching the App Service Plan"
+  }
+}
+
+# Test Azure Functions with custom configuration parameters
+run "verify_custom_azure_functions_configuration" {
+  command = plan
+
+  variables {
+    resource_prefix = run.setup_tests.resource_prefix
+    environment     = "test"
+    resource_group  = run.setup_tests.resource_group
+    aio_identity    = run.setup_tests.aio_identity
+    instance        = "005"
+
+    should_create_azure_functions = true
+    should_create_event_hubs      = false
+    should_create_event_grid      = false
+
+    # These will override the defaults in the main module
+    app_service_plan_os_type  = "Windows"
+    app_service_plan_sku_name = "EP1"
+    function_node_version     = "~20"
+    function_app_settings = {
+      "CUSTOM_SETTING" = "test_value"
+    }
+    function_cors_allowed_origins     = ["https://example.com"]
+    function_cors_support_credentials = true
+  }
+
+  # Verify an App Service Plan module is created
+  assert {
+    condition     = length(module.app_service_plan) == 1
+    error_message = "There should be one App Service Plan module created"
+  }
+
+  # Verify an Azure Functions module is created
+  assert {
+    condition     = length(module.azure_functions) == 1
+    error_message = "There should be one Azure Functions module created"
+  }
+
+  # Verify the custom OS type is passed to the module
+  assert {
+    condition     = module.app_service_plan[0].app_service_plan.os_type == var.app_service_plan_os_type
+    error_message = "App Service Plan OS type should be set to custom value ${var.app_service_plan_os_type}"
+  }
+
+  # Verify the custom SKU name is passed to the module
+  assert {
+    condition     = module.app_service_plan[0].app_service_plan.sku_name == var.app_service_plan_sku_name
+    error_message = "App Service Plan SKU name should be set to custom value ${var.app_service_plan_sku_name}"
+  }
+
+  # Verify the Function App OS type matches the App Service Plan
+  assert {
+    condition     = module.azure_functions[0].function_app.os_type == var.app_service_plan_os_type
+    error_message = "Function App OS type should match App Service Plan OS type ${var.app_service_plan_os_type}"
   }
 }

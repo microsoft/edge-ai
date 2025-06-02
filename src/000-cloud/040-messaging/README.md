@@ -6,6 +6,8 @@ This includes the following:
 
 - Azure Event Hubs
 - Azure Event Grid
+- Azure App Service Plan
+- Azure Functions
 - Example Azure Dataflow
 - Roles and Permissions for these resources
 

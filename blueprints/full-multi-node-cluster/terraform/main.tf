@@ -65,6 +65,8 @@ module "cloud_messaging" {
   aio_identity    = module.cloud_security_identity.aio_identity
   environment     = var.environment
   resource_prefix = var.resource_prefix
+
+  should_create_azure_functions = var.should_create_azure_functions
 }
 
 module "cloud_vm_host" {

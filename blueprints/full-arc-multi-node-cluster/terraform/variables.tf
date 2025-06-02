@@ -69,6 +69,12 @@ variable "should_enable_otel_collector" {
   default     = true
 }
 
+variable "should_create_azure_functions" {
+  type        = bool
+  description = "Whether to create Azure Functions for the cluster"
+  default     = false
+}
+
 /*
  * Cluster Server Parameters - Required
  */

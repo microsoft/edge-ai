@@ -1,6 +1,12 @@
-provider "azurerm" {
-  storage_use_azuread = true
-  features {}
+mock_provider "azurerm" {
+  override_resource {
+    target = azurerm_resource_group.this
+    values = {
+      id       = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg"
+      name     = "test-rg"
+      location = "eastus"
+    }
+  }
 }
 
 # Call the setup module to create a random resource prefix

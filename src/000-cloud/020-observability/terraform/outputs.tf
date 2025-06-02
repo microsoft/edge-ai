@@ -23,3 +23,9 @@ output "metrics_data_collection_rule" {
 
   sensitive = true
 }
+
+output "application_insights" {
+  description = "The Application Insights resource object with connection details for monitoring applications."
+  value       = module.application_insights.application_insights
+  sensitive   = true
+}

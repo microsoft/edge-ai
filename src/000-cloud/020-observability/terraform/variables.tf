@@ -39,3 +39,25 @@ variable "logs_data_collection_rule_streams" {
   type        = list(string)
   default     = ["Microsoft-ContainerLog", "Microsoft-ContainerLogV2", "Microsoft-KubeEvents", "Microsoft-KubePodInventory", "Microsoft-KubeNodeInventory", "Microsoft-KubePVInventory", "Microsoft-KubeServices", "Microsoft-KubeMonAgentEvents", "Microsoft-InsightsMetrics", "Microsoft-ContainerInventory", "Microsoft-ContainerNodeInventory", "Microsoft-Perf"]
 }
+
+/*
+ * Application Insights Configuration - Optional
+ */
+
+variable "app_insights_application_type" {
+  type        = string
+  description = "The type of application being monitored by Application Insights."
+  default     = "web"
+}
+
+variable "app_insights_retention_in_days" {
+  type        = number
+  description = "The retention period in days for Application Insights data."
+  default     = 30
+}
+
+variable "tags" {
+  type        = map(string)
+  description = "Tags to apply to all resources."
+  default     = {}
+}

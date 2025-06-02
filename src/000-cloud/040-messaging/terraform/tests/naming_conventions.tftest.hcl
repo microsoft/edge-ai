@@ -1,6 +1,12 @@
-provider "azurerm" {
-  storage_use_azuread = true
-  features {}
+mock_provider "azurerm" {
+  override_resource {
+    target = azurerm_resource_group.this
+    values = {
+      id       = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg"
+      name     = "test-rg"
+      location = "eastus"
+    }
+  }
 }
 
 # Call the setup module to create a random resource prefix
@@ -75,5 +81,52 @@ run "verify_event_grid_naming" {
   assert {
     condition     = can(regex("evgns-testpre-test-aio-002.*", module.event_grid[0].event_grid.endpoint))
     error_message = "Event Grid endpoint should contain the namespace name matching pattern 'evgns-{resource_prefix}-{environment}-aio-{instance}'"
+  }
+}
+
+# Test Azure Functions naming conventions
+run "verify_azure_functions_naming" {
+  command = plan
+
+  variables {
+    resource_prefix = "testpre"
+    environment     = "test"
+    resource_group  = run.setup_tests.resource_group
+    aio_identity    = run.setup_tests.aio_identity
+    instance        = "003"
+
+    should_create_azure_functions = true
+    should_create_event_hubs      = false
+    should_create_event_grid      = false
+  }
+
+  # Verify the App Service Plan module is created
+  assert {
+    condition     = length(module.app_service_plan) == 1
+    error_message = "The App Service Plan module should be created"
+  }
+
+  # Verify the Azure Functions module is created
+  assert {
+    condition     = length(module.azure_functions) == 1
+    error_message = "The Azure Functions module should be created"
+  }
+
+  # Verify the App Service Plan name follows the correct pattern
+  assert {
+    condition     = module.app_service_plan[0].app_service_plan.name == "asp-testpre-test-003"
+    error_message = "App Service Plan should follow the naming pattern 'asp-{resource_prefix}-{environment}-{instance}'"
+  }
+
+  # Verify the Function App name follows the correct pattern
+  assert {
+    condition     = module.azure_functions[0].function_app.name == "func-testpre-test-003"
+    error_message = "Function App should follow the naming pattern 'func-{resource_prefix}-{environment}-{instance}'"
+  }
+
+  # Verify the Storage Account name follows the correct pattern
+  assert {
+    condition     = module.azure_functions[0].storage_account.name == "sttestpretestfn003"
+    error_message = "Storage Account should follow the naming pattern 'st{resource_prefix}{environment}fn{instance}'"
   }
 }
