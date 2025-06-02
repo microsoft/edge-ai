@@ -46,12 +46,20 @@ resource "azurerm_log_analytics_solution" "monitor" {
   }
 }
 
-resource "azurerm_application_insights" "app_insights" {
-  name                = "ai-${var.resource_prefix}-${var.environment}-${var.instance}"
-  location            = var.location
-  resource_group_name = var.azmon_resource_group.name
-  workspace_id        = azurerm_log_analytics_workspace.monitor.id
-  application_type    = "web"
+module "application_insights" {
+  source = "./modules/application-insights"
+
+  resource_prefix            = var.resource_prefix
+  environment                = var.environment
+  instance_suffix            = var.instance
+  location                   = var.location
+  resource_group_name        = var.azmon_resource_group.name
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.monitor.id
+
+  application_type  = var.app_insights_application_type
+  retention_in_days = var.app_insights_retention_in_days
+
+  tags = var.tags
 }
 
 resource "azurerm_dashboard_grafana" "monitor" {

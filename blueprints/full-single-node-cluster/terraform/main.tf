@@ -55,6 +55,8 @@ module "cloud_messaging" {
   environment     = var.environment
   resource_prefix = var.resource_prefix
   instance        = var.instance
+
+  should_create_azure_functions = var.should_create_azure_functions
 }
 
 module "cloud_vm_host" {

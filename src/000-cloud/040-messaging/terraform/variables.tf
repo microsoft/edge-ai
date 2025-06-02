@@ -14,6 +14,12 @@ variable "should_create_event_grid" {
   default     = true
 }
 
+variable "should_create_azure_functions" {
+  description = "Whether to create the Azure Functions resources including App Service Plan."
+  type        = bool
+  default     = false
+}
+
 # Event Hub configuration parameters
 variable "event_hub_capacity" {
   description = "Specifies the Capacity / Throughput Units for Event Hub namespace."
@@ -50,4 +56,48 @@ variable "event_grid_topic_name" {
   description = "Topic template name to create in the Event Grid namespace."
   type        = string
   default     = "default"
+}
+
+# App Service Plan configuration parameters
+variable "app_service_plan_os_type" {
+  description = "The operating system type for the App Service Plan."
+  type        = string
+  default     = "Linux"
+}
+
+variable "app_service_plan_sku_name" {
+  description = "The SKU name for the App Service Plan."
+  type        = string
+  default     = "B1"
+}
+
+# Azure Functions configuration parameters
+variable "function_app_settings" {
+  description = "A map of key-value pairs for App Settings."
+  type        = map(string)
+  default     = {}
+}
+
+variable "function_cors_allowed_origins" {
+  description = "A list of origins that should be allowed to make cross-origin calls."
+  type        = list(string)
+  default     = ["*"]
+}
+
+variable "function_cors_support_credentials" {
+  description = "Whether CORS requests with credentials are allowed."
+  type        = bool
+  default     = false
+}
+
+variable "function_node_version" {
+  description = "The version of Node.js to use."
+  type        = string
+  default     = "18"
+}
+
+variable "tags" {
+  description = "Tags to apply to all resources."
+  type        = map(string)
+  default     = {}
 }

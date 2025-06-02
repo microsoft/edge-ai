@@ -77,6 +77,8 @@ module "cloud_messaging" {
 
   resource_group = module.cloud_resource_group.resource_group
   aio_identity   = module.cloud_security_identity.aio_identity
+
+  should_create_azure_functions = var.should_create_azure_functions
 }
 
 /*

@@ -127,3 +127,9 @@ variable "should_deploy_resource_sync_rules" {
   default     = false
   description = "Deploys resource sync rules if set to true"
 }
+
+variable "should_create_azure_functions" {
+  type        = bool
+  description = "Whether to create Azure Functions for the cluster"
+  default     = false
+}
