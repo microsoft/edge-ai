@@ -1,0 +1,103 @@
+---
+services:
+
+  mosquitto-broker:
+    image: eclipse-mosquitto
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - "./resources/mosquitto.local.conf:/mosquitto/config/mosquitto.conf"
+    networks:
+      - rust-http-connector
+
+  broker:
+    build:
+      context: ./services/broker
+      dockerfile: Dockerfile
+      args:
+        - USE_REPLACE_WITH=false  # Don't redirect crates.io for local development
+    environment:
+      # AIO MQTT connection settings
+      AIO_MQTT_USE_TLS: "false" # Note: Disabling not recommended for production
+      AIO_MQTT_CLIENT_ID: "sensor-broker"
+      AIO_BROKER_HOSTNAME: "mosquitto-broker"
+      AIO_BROKER_TCP_PORT: 1883
+      HTTP_DEVICE_ENDPOINT: "http://device-simulator:8080/sensor/data"
+      DEVICE_ID: "DHT11-001"
+      POLLING_INTERVAL: "10"
+      MQ_ERROR_TOPIC: "sample/temperature/error"
+      MQ_DATA_TOPIC: "sample/temperature/current"
+      # Logging
+      RUST_LOG: "info"
+      JSON_SCHEMA: >
+        {"$schema":"http://json-schema.org/draft-07/schema#",
+        "type":"object",
+        "properties":{
+          "timestamp":{"type":"string","pattern":"^\\d{4}/\\d{2}/\\d{2} \\d{2}:\\d{2}:\\d{2}$"},
+          "temperature":{
+            "type":"object",
+            "properties":{
+              "celsius":{"type":"number","minimum":15.0,"maximum":35.0},
+              "fahrenheit":{"type":"number","minimum":59.0,"maximum":95.0}
+            },
+            "required":["celsius","fahrenheit"],
+            "additionalProperties":false
+          },
+          "humidity":{
+            "type":"object",
+            "properties":{
+              "percent":{"type":"number","minimum":20.0,"maximum":90.0}
+            },
+            "required":["percent"],
+            "additionalProperties":false
+          }
+        },
+        "required":["timestamp","temperature","humidity"],
+        "additionalProperties":false
+        }
+    depends_on:
+      - mosquitto-broker
+    networks:
+      - rust-http-connector
+
+  subscriber:
+    build:
+      context: ./services/subscriber
+      dockerfile: Dockerfile
+      args:
+        - USE_REPLACE_WITH=false  # Don't redirect crates.io for local development
+    environment:
+      # MQTT connection settings
+      AIO_MQTT_USE_TLS: "false" # Note: Disabling not recommended for production
+      AIO_MQTT_CLIENT_ID: "broker-subscriber"
+      AIO_BROKER_HOSTNAME: "mosquitto-broker"
+      AIO_BROKER_TCP_PORT: 1883
+      MQ_DATA_TOPIC: "sample/temperature/current"
+      MQ_ERROR_TOPIC: "sample/temperature/error"
+      # Logging
+      RUST_LOG: "info"
+
+    depends_on:
+      - mosquitto-broker
+    networks:
+      - rust-http-connector
+
+  # Device Simulator for temperature and humidity
+  device-simulator:
+    build:
+      context: ./services/sensor-simulator
+      dockerfile: Dockerfile
+      args:
+        - USE_REPLACE_WITH=false  # Don't redirect crates.io for local development
+    ports:
+      - "8080:8080" # Health check, temperature and humidity data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://device-simulator:8080/sensor/data"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+    networks:
+      - rust-http-connector
+networks:
+  rust-http-connector: null
