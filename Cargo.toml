@@ -1,4 +1,4 @@
 [workspace]
-members = ["./src/500-application/501-rust-telemetry/services/receiver", "./src/500-application/501-rust-telemetry/services/sender"]
+members = ["./src/500-application/501-rust-telemetry/services/receiver", "./src/500-application/501-rust-telemetry/services/sender","./src/500-application/502-rust-http-connector/services/broker","./src/500-application/502-rust-http-connector/services/subscriber"]
 resolver = "2"
 

@@ -1,0 +1,17 @@
+[package]
+name = "subscriber"
+version = "0.1.0"
+edition = "2021"
+
+# We don't need the [[bin]] section as the binary name will default to the package name
+# when there's a src/main.rs file
+
+[dependencies]
+# Core async runtime
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tokio = { version = "1.14.0", features = ["full"] }
+azure_iot_operations_mqtt = { version = "0.9.0", registry = "aio-sdks" }
+
+[registries]
+aio-sdks = { index = "sparse+https://pkgs.dev.azure.com/azure-iot-sdks/iot-operations/_packaging/preview/Cargo/index/" }
