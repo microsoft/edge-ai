@@ -21,56 +21,38 @@
 # =============================================================================
 
 # STAGE 1: Builder - Compiles the Rust application
-FROM --platform=$BUILDPLATFORM tonistiigi/xx:master AS xx
-FROM --platform=$BUILDPLATFORM rust:slim-bookworm AS builder
-RUN rustup update stable && \
-    rustup component add rustfmt
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/cbl-mariner/base/rust:1.72 AS builder
 
-COPY --from=xx / /
+WORKDIR /usr/src/app
 
-# Install OpenSSL development libraries, C compiler, curl, CA certificates, kernel headers, and other build dependencies
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    libssl-dev=3.0.16-1~deb12u1 \
-    pkg-config=1.8.1-1 \
-    gcc=4:12.2.0-3 \
-    make=4.3-4.1 \
-    binutils=2.40-2 \
-    libc6-dev=2.36-9+deb12u10 \
-    curl=7.88.1-10+deb12u12 \
-    ca-certificates=20230311 \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+COPY ./Cargo.toml ./Cargo.toml
+COPY ./.cargo/config.toml ./.cargo/config.toml
+
+# Install build dependencies for Rust compilation
+RUN tdnf update -y && \
+    tdnf install -y pkgconfig openssl-devel
 
 # Set shell options for better error handling with pipes
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-# Install Rust toolchain
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y \
-    --profile minimal \
-    --default-toolchain 1.86.0 \
-    --component rustc,cargo,rust-std
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 
-# Add Rust binaries to PATH
-ENV PATH="/root/.cargo/bin:${PATH}"
+RUN rustup update stable && \
+    rustup component add rustfmt
 
 ARG USE_REPLACE_WITH=false
 
-# Now build your Rust app
-WORKDIR /usr/src/app
+# Build the Rust application in release mode
 COPY ./src ./src
-COPY ./Cargo.toml ./Cargo.toml
-COPY ./.cargo ./.cargo
 RUN cargo build --release
 
 # STAGE 2: Runtime - Creates the minimal production image
-FROM --platform=$BUILDPLATFORM rust:slim-bookworm
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/cbl-mariner/base/core:2.0
 
-# Install runtime dependencies and create a non-root user
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    ca-certificates=20230311 \
-    passwd=1:4.13+dfsg1-1+deb12u1 \
-    && apt-get clean && rm -rf /var/lib/apt/lists/* && \
+# Install runtime dependencies and create non-root user
+RUN tdnf update -y && \
+    tdnf install -y ca-certificates util-linux wget systemd shadow-utils && \
+    tdnf clean all && \
     groupadd -r appuser && useradd -r -g appuser appuser
 
 WORKDIR /app
@@ -82,7 +64,7 @@ COPY --from=builder /usr/src/app/target/release/http-connector /app/http-connect
 RUN chown appuser:appuser /app/http-connector && \
     chmod +x /app/http-connector
 
-# Use non-root user
+# Use non-root user for security
 USER appuser
 
 # Set entrypoint
