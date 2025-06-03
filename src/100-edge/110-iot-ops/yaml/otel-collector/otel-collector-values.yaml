@@ -48,8 +48,8 @@ config:
       metrics:
         readers:
   extensions:
-    memory_ballast:
-      size_mib: 0
+    health_check:
+      endpoint: 0.0.0.0:13133
 resources:
   limits:
     cpu: '100m'
