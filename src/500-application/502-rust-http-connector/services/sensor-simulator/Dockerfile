@@ -1,35 +1,35 @@
-# Dockerfile for building and running the device-sensor.py Flask sensor simulator.
-# Uses a multi-stage build to create a minimal Python runtime image with pre-built dependencies.
+# =============================================================================
+# Sensor Simulator Dockerfile
+#
+# This Dockerfile builds a lightweight container for the Flask-based sensor simulator application.
+# The application simulates device sensor data and exposes an HTTP endpoint for data retrieval.
+# Uses a multi-stage build to optimize the final image size by caching Python dependencies.
+# =============================================================================
 
-# Stage 1: Build stage
-FROM python:3.9-slim AS builder
+# STAGE 1: Builder - Builds Python wheels for dependencies
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/cbl-mariner/base/python:3.9 AS builder
 
 WORKDIR /app
 
-# Install build dependencies with pinned version
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential=12.9 \
-    && rm -rf /var/lib/apt/lists/*
-
-# Copy and install requirements
+# Build Python wheels for faster installation in runtime stage
 COPY src/requirements.txt .
 RUN pip wheel --no-cache-dir --wheel-dir /wheels -r requirements.txt
 
-# Stage 2: Runtime stage
-FROM python:3.9-slim
+# STAGE 2: Runtime - Creates the minimal production image
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/cbl-mariner/base/python:3.9
 
 WORKDIR /app
 
-# Copy wheels from builder stage and install dependencies
+# Install Python dependencies from pre-built wheels
 COPY --from=builder /wheels /wheels
 RUN pip install --no-cache-dir --no-index --find-links=/wheels/ Flask \
     && rm -rf /wheels
 
-# Copy application code
+# Copy application source code
 COPY src/ .
 
-# Expose port
+# Expose Flask application port
 EXPOSE 8080
 
-# Run the application
-CMD ["python", "device-sensor.py"]
+# Run the sensor simulator application
+CMD ["python3", "device-sensor.py"]
