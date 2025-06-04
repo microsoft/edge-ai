@@ -86,31 +86,3 @@ variable "should_assign_key_vault_roles" {
   type        = bool
   default     = true
 }
-
-variable "k8s_bridge_principal_id" {
-  type        = string
-  default     = null
-  description = <<EOT
-Optional. The principal ID of the K8 Bridge for Azure IoT Operations.
-Required only if enable_asset_discovery=true and automatic retrieval fails.
-If null and enable_asset_discovery=true, will be automatically retrieved using the service principal data source.
-
-Can be retrieved manually using:
-
-  ```sh
-  az ad sp list --display-name "K8 Bridge" --query "[0].appId" -o tsv
-  ```
-EOT
-}
-
-variable "should_enable_opc_sim_asset_discovery" {
-  type        = bool
-  default     = false
-  description = "Whether to enable the Asset Discovery preview feature for OPC UA simulator. This will add the value of `{\"runAssetDiscovery\":true}` to the additionalConfiguration for the Asset Endpoint Profile."
-}
-
-variable "opc_sim_additional_config_string" {
-  type        = string
-  default     = ""
-  description = "Custom additionalConfiguration string for the Asset Endpoint Profile. If provided, this takes precedence over should_enable_opc_sim_asset_discovery setting."
-}

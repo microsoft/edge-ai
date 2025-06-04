@@ -122,8 +122,23 @@ module "edge_iot_ops" {
 
   should_deploy_resource_sync_rules       = var.should_deploy_resource_sync_rules
   should_create_anonymous_broker_listener = var.should_create_anonymous_broker_listener
-  should_enable_opc_sim_asset_discovery   = var.should_enable_opc_sim_asset_discovery
-  aio_features                            = var.aio_features
+
+  aio_features            = var.aio_features
+  enable_opc_ua_simulator = var.should_enable_opc_ua_simulator
+}
+
+module "edge_assets" {
+  source = "../../../src/100-edge/111-assets/terraform"
+
+  depends_on = [module.edge_iot_ops]
+
+  location           = var.location
+  resource_group     = module.cloud_resource_group.resource_group
+  custom_location_id = module.edge_iot_ops.custom_location_id
+
+  should_create_default_asset = var.should_enable_opc_ua_simulator
+  asset_endpoint_profiles     = var.asset_endpoint_profiles
+  assets                      = var.assets
 }
 
 module "edge_observability" {

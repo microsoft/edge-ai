@@ -97,3 +97,18 @@ module "edge_iot_ops" {
   enable_opc_ua_simulator      = false
   should_enable_otel_collector = false
 }
+
+module "edge_assets" {
+  source = "../../../src/100-edge/111-assets/terraform"
+
+  depends_on = [module.edge_iot_ops]
+
+  location           = var.location
+  resource_group     = module.cloud_resource_group.resource_group
+  custom_location_id = module.edge_iot_ops.custom_location_id
+
+  should_create_default_asset = false
+  asset_endpoint_profiles     = var.asset_endpoint_profiles
+  assets                      = var.assets
+}
+

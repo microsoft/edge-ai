@@ -116,16 +116,60 @@ variable "aio_features" {
   }
 }
 
-variable "should_enable_opc_sim_asset_discovery" {
-  type        = bool
-  default     = false
-  description = "Whether to enable the Asset Discovery preview feature for OPC UA simulator. This will add the value of `{\"runAssetDiscovery\":true}` to the additionalConfiguration for the Asset Endpoint Profile."
-}
-
 variable "should_deploy_resource_sync_rules" {
   type        = bool
   default     = false
   description = "Deploys resource sync rules if set to true"
+}
+
+variable "should_enable_opc_ua_simulator" {
+  type        = bool
+  description = "Should create an OPC UA Simulator. Default is false."
+  default     = false
+}
+
+variable "asset_endpoint_profiles" {
+  type = list(object({
+    name                  = string
+    target_address        = string
+    endpoint_profile_type = optional(string)
+    method                = optional(string)
+
+    should_enable_opc_sim_asset_discovery = optional(bool)
+    opc_sim_additional_config_string      = optional(string)
+  }))
+  description = "List of asset endpoint profiles to create. Otherwise, an empty list."
+  default     = []
+}
+
+variable "assets" {
+  type = list(object({
+    asset_endpoint_profile_ref = string
+    datasets = optional(list(object({
+      data_points = list(object({
+        data_point_configuration = optional(string)
+        data_source              = string
+        name                     = string
+        observability_mode       = optional(string)
+      }))
+      name = string
+    })), [])
+    default_datasets_configuration = optional(string)
+    description                    = optional(string)
+    display_name                   = optional(string)
+    documentation_uri              = optional(string)
+    enabled                        = optional(bool)
+    hardware_revision              = optional(string)
+    manufacturer                   = optional(string)
+    manufacturer_uri               = optional(string)
+    model                          = optional(string)
+    name                           = string
+    product_code                   = optional(string)
+    serial_number                  = optional(string)
+    software_revision              = optional(string)
+  }))
+  description = "List of assets to create. Otherwise, an empty list."
+  default     = []
 }
 
 variable "should_create_azure_functions" {
