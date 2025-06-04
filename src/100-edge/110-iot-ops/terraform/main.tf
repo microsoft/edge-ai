@@ -151,19 +151,6 @@ module "iot_ops_instance_post" {
 }
 
 /*
- * K8 Bridge Role Assignment
- */
-module "k8_bridge_role_assignment" {
-  source = "./modules/role-assignment-post"
-  count  = var.should_enable_opc_sim_asset_discovery ? 1 : 0
-
-  k8s_bridge_principal_id = var.k8s_bridge_principal_id
-  custom_location_id      = module.iot_ops_instance.custom_location_id
-
-  depends_on = [module.iot_ops_instance]
-}
-
-/*
  * OPC UA Simulator
  */
 
@@ -174,10 +161,6 @@ module "opc_ua_simulator" {
 
   depends_on = [module.iot_ops_instance_post]
 
-  location                              = var.resource_group.location
-  resource_group                        = var.resource_group
-  connected_cluster_name                = var.arc_connected_cluster.name
-  custom_location_id                    = module.iot_ops_instance.custom_location_id
-  should_enable_opc_sim_asset_discovery = var.should_enable_opc_sim_asset_discovery
-  opc_sim_additional_config_string      = var.opc_sim_additional_config_string
+  resource_group         = var.resource_group
+  connected_cluster_name = var.arc_connected_cluster.name
 }

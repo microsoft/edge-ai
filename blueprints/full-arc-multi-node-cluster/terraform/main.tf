@@ -133,6 +133,20 @@ module "edge_iot_ops" {
   enable_opc_ua_simulator                 = var.should_enable_opc_ua_simulator
 }
 
+module "edge_assets" {
+  source = "../../../src/100-edge/111-assets/terraform"
+
+  depends_on = [module.edge_iot_ops]
+
+  location           = var.location
+  resource_group     = module.cloud_resource_group.resource_group
+  custom_location_id = module.edge_iot_ops.custom_location_id
+
+  should_create_default_asset = var.should_enable_opc_ua_simulator
+  asset_endpoint_profiles     = var.asset_endpoint_profiles
+  assets                      = var.assets
+}
+
 /*
  * Edge Observability Components
  */
