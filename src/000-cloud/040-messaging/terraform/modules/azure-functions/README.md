@@ -29,17 +29,17 @@ This module creates the Function App with necessary configuration for messaging 
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| app\_service\_plan | The App Service Plan object containing id and os_type. | `object({ id = string, os_type = string })` | n/a | yes |
+| app\_service\_plan | The App Service Plan object containing id and os\_type. | ```object({ id = string os_type = string })``` | n/a | yes |
+| app\_settings | A map of key-value pairs for App Settings. | `map(string)` | n/a | yes |
+| cors\_allowed\_origins | A list of origins that should be allowed to make cross-origin calls. | `list(string)` | n/a | yes |
+| cors\_support\_credentials | Whether CORS requests with credentials are allowed. | `bool` | n/a | yes |
 | environment | Environment for all resources in this module: dev, test, or prod. | `string` | n/a | yes |
 | instance | Instance identifier for naming resources: 001, 002, etc. | `string` | n/a | yes |
 | location | Location for all resources in this module. | `string` | n/a | yes |
+| node\_version | The version of Node.js to use. | `string` | n/a | yes |
 | resource\_group\_name | The name for the resource group. | `string` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module. | `string` | n/a | yes |
-| app\_settings | A map of key-value pairs for App Settings. | `map(string)` | `{}` | no |
-| cors\_allowed\_origins | A list of origins that should be allowed to make cross-origin calls. | `list(string)` | `["*"]` | no |
-| cors\_support\_credentials | Whether CORS requests with credentials are allowed. | `bool` | `false` | no |
-| node\_version | The version of Node.js to use. | `string` | `"18"` | no |
-| tags | Tags to apply to all resources. | `map(string)` | `{}` | no |
+| tags | Tags to apply to all resources. | `map(string)` | n/a | yes |
 
 ## Outputs
 

@@ -1,95 +1,48 @@
-# Application Insights Module
+<!-- BEGIN_TF_DOCS -->
+<!-- markdown-table-prettify-ignore-start -->
+# Application Insights
 
-This Terraform module creates an Azure Application Insights instance designed for monitoring applications, specifically optimized for Azure Functions integration.
-
-## Features
-
-- **Application Monitoring**: Comprehensive telemetry collection and performance tracking
-- **Azure Functions Integration**: Optimized configuration for Function App monitoring
-- **Log Analytics Integration**: Connected to Log Analytics Workspace for centralized logging
-- **Configurable Settings**: Flexible retention, sampling, and security configurations
-- **Connection String Output**: Provides connection details for application integration
-
-## Usage
-
-```terraform
-module "application_insights" {
-  source = "./modules/application-insights"
-
-  # Required parameters
-  resource_prefix              = "myapp"
-  environment                  = "dev"
-  instance_suffix              = "fn"
-  location                     = "East US"
-  resource_group_name          = "rg-myapp-dev-001"
-  log_analytics_workspace_id   = "/subscriptions/.../workspaces/log-myapp-dev-001"
-
-  # Application configuration
-  application_type                              = "web"
-  retention_in_days                            = 30
-  daily_data_cap_in_gb                         = 1
-  sampling_percentage                          = 100
-  should_disable_daily_data_cap_notifications  = false
-  should_disable_ip_masking                    = false
-  should_disable_local_authentication          = false
-  should_enable_internet_ingestion             = true
-  should_enable_internet_query                 = true
-  should_force_customer_storage_for_profiler   = false
-
-  tags = {
-    Environment = "dev"
-    Purpose     = "monitoring"
-  }
-}
-```
-
-## Integration with Azure Functions
-
-To connect this Application Insights instance to Azure Functions, use the connection string output:
-
-```terraform
-module "azure_functions" {
-  source = "../messaging/modules/azure-functions"
-
-  # ... other parameters ...
-
-  app_settings = {
-    "APPLICATIONINSIGHTS_CONNECTION_STRING" = module.application_insights.application_insights.connection_string
-    "ApplicationInsightsAgent_EXTENSION_VERSION" = "~3"
-    # ... other app settings ...
-  }
-}
-```
-
-## Outputs
-
-- `application_insights`: Complete Application Insights resource object including:
-  - `id`: Resource ID
-  - `name`: Resource name
-  - `instrumentation_key`: Legacy instrumentation key
-  - `connection_string`: Modern connection string for application integration
-  - `app_id`: Application ID for API access
-  - Additional metadata fields
+Creates an Azure Application Insights instance for monitoring applications,
+specifically designed to integrate with Azure Functions and other application services.
+This module provides comprehensive monitoring capabilities including telemetry collection,
+performance tracking, and diagnostic insights.
 
 ## Requirements
 
-- Azure subscription with Application Insights service available
-- Existing Log Analytics Workspace
-- Terraform >= 1.9.8
-- AzureRM provider >= 4.8.0
+| Name | Version |
+|------|---------|
+| terraform | >= 1.9.8, < 2.0 |
 
-## Application Types
+## Providers
 
-Supported application types:
+| Name | Version |
+|------|---------|
+| azurerm | n/a |
 
-- `web`: Web applications and services (default for Azure Functions)
-- `java`: Java applications
-- `MobileCenter`: Mobile applications
-- `other`: General applications
+## Resources
 
-## Security Considerations
+| Name | Type |
+|------|------|
+| [azurerm_application_insights.app_insights](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/application_insights) | resource |
 
-- Connection string contains sensitive authentication information
-- IP masking can be disabled for development environments but should be enabled in production
-- Internet ingestion and query access should be configured based on security requirements
-- Local authentication can be disabled to enforce Azure AD authentication
+## Inputs
+
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|:--------:|
+| application\_type | The type of application being monitored. | `string` | n/a | yes |
+| environment | Environment for all resources in this module: dev, test, or prod. | `string` | n/a | yes |
+| instance\_suffix | Instance suffix for naming resources: fn, web, api, etc. | `string` | n/a | yes |
+| location | Location for all resources in this module. | `string` | n/a | yes |
+| log\_analytics\_workspace\_id | The ID of the Log Analytics Workspace to associate with Application Insights. | `string` | n/a | yes |
+| resource\_group\_name | The name for the resource group. | `string` | n/a | yes |
+| resource\_prefix | Prefix for all resources in this module. | `string` | n/a | yes |
+| retention\_in\_days | The retention period in days for Application Insights data. | `number` | n/a | yes |
+| tags | Tags to apply to all resources. | `map(string)` | n/a | yes |
+
+## Outputs
+
+| Name | Description |
+|------|-------------|
+| application\_insights | The Application Insights resource object with connection details for monitoring applications. |
+<!-- markdown-table-prettify-ignore-end -->
+<!-- END_TF_DOCS -->

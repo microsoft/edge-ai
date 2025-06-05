@@ -24,7 +24,6 @@ Creates a new Azure Monitor Workspace, Log Analytics Workspace and Azure Managed
 
 | Name | Type |
 |------|------|
-| [azurerm_application_insights.app_insights](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/application_insights) | resource |
 | [azurerm_dashboard_grafana.monitor](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/dashboard_grafana) | resource |
 | [azurerm_log_analytics_solution.monitor](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/log_analytics_solution) | resource |
 | [azurerm_log_analytics_workspace.monitor](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/log_analytics_workspace) | resource |
@@ -39,6 +38,12 @@ Creates a new Azure Monitor Workspace, Log Analytics Workspace and Azure Managed
 | [terraform_data.apply_scripts](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data) | resource |
 | [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/client_config) | data source |
 
+## Modules
+
+| Name | Source | Version |
+|------|--------|---------|
+| application\_insights | ./modules/application-insights | n/a |
+
 ## Inputs
 
 | Name | Description | Type | Default | Required |
@@ -47,6 +52,8 @@ Creates a new Azure Monitor Workspace, Log Analytics Workspace and Azure Managed
 | environment | Environment for all resources in this module: dev, test, or prod | `string` | n/a | yes |
 | location | Location for all resources in this module | `string` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
+| app\_insights\_application\_type | The type of application being monitored by Application Insights. | `string` | `"web"` | no |
+| app\_insights\_retention\_in\_days | The retention period in days for Application Insights data. | `number` | `30` | no |
 | daily\_quota\_in\_gb | Daily quota to write logs in log analytics | `number` | `10` | no |
 | grafana\_admin\_principal\_id | Object id of a user to grant grafana admin access to. Leave blank to not grant access to any users | `string` | `null` | no |
 | grafana\_major\_version | Major version of grafana to use | `string` | `"10"` | no |
@@ -54,11 +61,13 @@ Creates a new Azure Monitor Workspace, Log Analytics Workspace and Azure Managed
 | log\_retention\_in\_days | Duration to retain logs in log analytics | `number` | `30` | no |
 | logs\_data\_collection\_rule\_namespaces | List of cluster namespaces to be exposed in the log analytics workspace | `list(string)` | ```[ "kube-system", "gatekeeper-system", "azure-arc", "azure-iot-operations" ]``` | no |
 | logs\_data\_collection\_rule\_streams | List of streams to be enabled in the log analytics workspace | `list(string)` | ```[ "Microsoft-ContainerLog", "Microsoft-ContainerLogV2", "Microsoft-KubeEvents", "Microsoft-KubePodInventory", "Microsoft-KubeNodeInventory", "Microsoft-KubePVInventory", "Microsoft-KubeServices", "Microsoft-KubeMonAgentEvents", "Microsoft-InsightsMetrics", "Microsoft-ContainerInventory", "Microsoft-ContainerNodeInventory", "Microsoft-Perf" ]``` | no |
+| tags | Tags to apply to all resources. | `map(string)` | `{}` | no |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
+| application\_insights | The Application Insights resource object with connection details for monitoring applications. |
 | azure\_managed\_grafana | n/a |
 | azure\_monitor\_workspace | n/a |
 | log\_analytics\_workspace | n/a |

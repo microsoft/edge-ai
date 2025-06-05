@@ -24,12 +24,12 @@ variable "location" {
 
 variable "asset_endpoint_profiles" {
   type = list(object({
-    endpoint_profile_type                 = optional(string)
-    method                                = optional(string)
-    name                                  = string
-    opc_sim_additional_config_string      = optional(string)
-    should_enable_opc_sim_asset_discovery = optional(bool)
-    target_address                        = string
+    endpoint_profile_type             = optional(string)
+    method                            = optional(string)
+    name                              = string
+    opc_additional_config_string      = optional(string)
+    should_enable_opc_asset_discovery = optional(bool)
+    target_address                    = string
   }))
   description = "List of asset endpoint profiles to create. Otherwise, an empty list."
   default     = []

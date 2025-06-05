@@ -65,10 +65,10 @@ locals {
       endpoint_profile_type = coalesce(profile.endpoint_profile_type, "Microsoft.OpcUa")
       method                = coalesce(profile.method, "Anonymous")
       name                  = profile.name
-      opc_sim_additional_config_string = try(
+      opc_additional_config_string = try(
         coalesce(
-          profile.opc_sim_additional_config_string,
-          coalesce(profile.should_enable_opc_sim_asset_discovery, false) ? jsonencode({ runAssetDiscovery = true }) : null
+          profile.opc_additional_config_string,
+          coalesce(profile.should_enable_opc_asset_discovery, false) ? jsonencode({ runAssetDiscovery = true }) : null
         ),
         null
       )
@@ -116,7 +116,7 @@ locals {
     for profile in concat(
       var.should_create_default_asset ? [local.default_asset_endpoint_profile] : [],
       var.asset_endpoint_profiles
-    ) : try(profile.should_enable_opc_sim_asset_discovery, false)
+    ) : try(profile.should_enable_opc_asset_discovery, false)
   ])
 }
 
@@ -136,7 +136,7 @@ resource "azapi_resource" "asset_endpoint_profile" {
       name = var.custom_location_id
     }
     properties = {
-      additionalConfiguration = each.value.opc_sim_additional_config_string
+      additionalConfiguration = each.value.opc_additional_config_string
       authentication = {
         method = each.value.method
       }

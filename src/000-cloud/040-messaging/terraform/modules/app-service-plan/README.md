@@ -30,12 +30,11 @@ This module provides the compute infrastructure needed for serverless and web ap
 | environment | Environment for all resources in this module: dev, test, or prod. | `string` | n/a | yes |
 | instance | Instance identifier for naming resources: 001, 002, etc. | `string` | n/a | yes |
 | location | Location for all resources in this module. | `string` | n/a | yes |
+| os\_type | The operating system type for the App Service Plan. | `string` | n/a | yes |
 | resource\_group\_name | The name for the resource group. | `string` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module. | `string` | n/a | yes |
-| os\_type | The operating system type for the App Service Plan. | `string` | `"Linux"` | no |
-| sku\_name | The SKU name for the App Service Plan. | `string` | `"B1"` | no |
-| tags | Tags to apply to all resources. | `map(string)` | `{}` | no |
-| worker\_count | The number of Workers (instances) to be allocated. | `number` | `null` | no |
+| sku\_name | The SKU name for the App Service Plan. | `string` | n/a | yes |
+| tags | Tags to apply to all resources. | `map(string)` | n/a | yes |
 
 ## Outputs
 
