@@ -86,8 +86,8 @@ variable "asset_endpoint_profiles" {
     endpoint_profile_type = optional(string)
     method                = optional(string)
 
-    should_enable_opc_sim_asset_discovery = optional(bool)
-    opc_sim_additional_config_string      = optional(string)
+    should_enable_opc_asset_discovery = optional(bool)
+    opc_additional_config_string      = optional(string)
   }))
   description = "List of asset endpoint profiles to create. Otherwise, an empty list."
   default     = []
