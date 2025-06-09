@@ -25,11 +25,11 @@ When working with specific types of files or contexts, you must:
 
 ### Matching Patterns and Files for Prompts
 
-| Pattern/Context                   | Required Copilot Files               | Minimum Lines |
-|-----------------------------------|--------------------------------------|---------------|
-| Any deployment-related context    | `**/copilot/deploy.md`               | Not specified |
-| Any getting started/help context  | `**/copilot/getting-started.md`      | Not specified |
-| Any pull request creation context | `**/.github/prompts/pull-request.md` | Not specified |
+| Pattern/Context                | Required Copilot Files       | Minimum Lines |
+|--------------------------------|------------------------------|---------------|
+| Any deployment-related context | `./prompts/deploy.prompt.md` | 1000          |
+| Any getting started/help context  | `./prompts/getting-started.prompt.md | 1000          |
+| Any pull request creation context | `./prompts/pull-request.md`          | 1000          |
 
 ### Matching Patterns and Files for Changes or Implementation
 

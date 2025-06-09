@@ -22,7 +22,7 @@ data "azurerm_client_config" "current" {
 }
 
 data "azuread_service_principal" "custom_locations" {
-  count = alltrue([var.should_get_custom_locations_oid, var.custom_locations_oid == null]) ? 1 : 0
+  count = alltrue([var.should_get_custom_locations_oid, try(length(var.custom_locations_oid), 0) == 0]) ? 1 : 0
 
   // ref: https://learn.microsoft.com/azure/iot-operations/deploy-iot-ops/howto-prepare-cluster?tabs=ubuntu#arc-enable-your-cluster
   client_id = "bc313c14-388c-4e7d-a58e-70017303ee3b" #gitleaks:allow

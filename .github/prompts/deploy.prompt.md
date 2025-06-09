@@ -1,6 +1,5 @@
 ---
 mode: 'agent'
-tools: ['terminalLastCommand', 'terminalSelection', 'codebase', 'fetch', 'problems', 'searchResults', 'usages', 'vscodeAPI']
 description: 'Provides Prompt Instructions for Deploying Solution or Deploying Blueprints'
 ---
 # Deploy Solution, CI, or Blueprint, Instructions
@@ -23,12 +22,12 @@ When working with Deploy files or Deploy-related contexts:
 
 ### Required Prompt File Details
 
-| Requirement         | Value                  |
-|---------------------|------------------------|
-| Prompt File Path    | `**/copilot/deploy.md` |
-| Read All Lines      | Required               |
-| Minimum Lines       | 1000                   |
-| Follow Instructions | Required               |
+| Requirement         | Value                         |
+|---------------------|-------------------------------|
+| Prompt File Path    | #file:../../copilot/deploy.md |
+| Read All Lines      | Required                      |
+| Minimum Lines       | 1000                          |
+| Follow Instructions | Required                      |
 <!-- </deploy-instructions> -->
 
 ## Implementation Requirements

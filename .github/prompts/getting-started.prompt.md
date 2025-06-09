@@ -1,6 +1,5 @@
 ---
 mode: 'agent'
-tools: ['terminalLastCommand', 'terminalSelection', 'codebase', 'fetch', 'problems', 'searchResults', 'usages', 'vscodeAPI']
 description: 'Provides Getting Started, Quick Start, or How-To Instructions and Interactions'
 ---
 # Project Getting Started Instructions
@@ -23,12 +22,12 @@ When working with Getting Started files or Getting Started-related contexts:
 
 ### Required Prompt File Details
 
-| Requirement         | Value                           |
-|---------------------|---------------------------------|
-| Prompt File Path    | `**/copilot/getting-started.md` |
-| Read All Lines      | Required                        |
-| Minimum Lines       | 1000                            |
-| Follow Instructions | Required                        |
+| Requirement         | Value                                  |
+|---------------------|----------------------------------------|
+| Prompt File Path    | #file:../../copilot/getting-started.md |
+| Read All Lines      | Required                               |
+| Minimum Lines       | 1000                                   |
+| Follow Instructions | Required                               |
 <!-- </getting-started-instructions> -->
 
 ## Implementation Requirements
