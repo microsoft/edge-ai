@@ -308,9 +308,11 @@ jobs:
             # secretes will be automatically masked by AzDO
             echo $command_options
           fi
-          echo "##vso[task.setvariable variable=commandOptions;isOutput=true]$command_options"
+          echo "##vso[task.setvariable variable=commandOptions;issecret=true;isOutput=true]$command_options"
         displayName: "Parse variables.tf and build commandOptions"
         name: parseVariables
+        env:
+          TF_VAR_CUSTOM_LOCATIONS_OID: $(TF_VAR_CUSTOM_LOCATIONS_OID)
         condition: and( not(failed()), not(canceled()) )
 
       # Run Terraform Plan for reporting
