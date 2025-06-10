@@ -106,14 +106,24 @@ module cloudData '../../../src/000-cloud/030-data/bicep/main.bicep' = {
   }
 }
 
-module cloudVmHost '../../../src/000-cloud/050-vm-host/bicep/main.bicep' = {
-  name: '${deployment().name}-cvh3'
+module cloudNetworking '../../../src/000-cloud/050-networking/bicep/main.bicep' = {
+  name: '${deployment().name}-cn3'
+  scope: resourceGroup(resourceGroupName)
+  dependsOn: [cloudResourceGroup]
+  params: {
+    common: common
+  }
+}
+
+module cloudVmHost '../../../src/000-cloud/051-vm-host/bicep/main.bicep' = {
+  name: '${deployment().name}-cvh4'
   scope: resourceGroup(resourceGroupName)
   dependsOn: [cloudResourceGroup]
   params: {
     common: common
     adminPassword: adminPassword
     arcOnboardingIdentityName: cloudSecurityIdentity.outputs.arcOnboardingIdentityName!
+    subnetId: cloudNetworking.outputs.subnetId
     // Minimize resource usage - set smaller VM size
     vmSkuSize: 'Standard_D4s_v3'
     // Only create a single VM

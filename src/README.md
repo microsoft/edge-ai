@@ -20,7 +20,7 @@ engineers can deploy the `100-edge` components for on-premises cluster set-up.
    analytics
 6. [(000-cloud/040-messaging)](./000-cloud/040-messaging/README.md) - Event Grid, Event Hubs, Service Bus and messaging
    resources
-7. [(000-cloud/050-vm-host)](./000-cloud/050-vm-host/README.md) - VM provisioning resources with configurable host
+7. [(000-cloud/051-vm-host)](./000-cloud/051-vm-host/README.md) - VM provisioning resources with configurable host
    operating system
 
 ## Edge Infrastructure (100-edge)

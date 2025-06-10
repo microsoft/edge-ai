@@ -40,7 +40,7 @@ This blueprint consists of the following key components:
 | `cloudResourceGroup`    | Creates the resource group              | `../../../src/000-cloud/000-resource-group/bicep`    |
 | `cloudSecurityIdentity` | Sets up security and identity resources | `../../../src/000-cloud/010-security-identity/bicep` |
 | `cloudData`             | Creates data storage resources          | `../../../src/000-cloud/030-data/bicep`              |
-| `cloudVmHost`           | Provisions the VM host                  | `../../../src/000-cloud/050-vm-host/bicep`           |
+| `cloudVmHost`           | Provisions the VM host                  | `../../../src/000-cloud/051-vm-host/bicep`           |
 
 ## Variable Reference in Bicep
 

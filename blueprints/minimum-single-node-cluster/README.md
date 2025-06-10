@@ -61,7 +61,7 @@ This blueprint consists of the following key components:
 | `cloud_resource_group`    | Creates resource groups                 | `../../../src/000-cloud/000-resource-group/terraform`    |
 | `cloud_security_identity` | Handles identity and security resources | `../../../src/000-cloud/010-security-identity/terraform` |
 | `cloud_data`              | Creates data storage resources          | `../../../src/000-cloud/030-data/terraform`              |
-| `cloud_vm_host`           | Creates the VM host for the cluster     | `../../../src/000-cloud/050-vm-host/terraform`           |
+| `cloud_vm_host`           | Creates the VM host for the cluster     | `../../../src/000-cloud/051-vm-host/terraform`           |
 | `edge_cncf_cluster`       | Deploys K3s Kubernetes cluster          | `../../../src/100-edge/100-cncf-cluster/terraform`       |
 | `edge_iot_ops`            | Installs Azure IoT Operations           | `../../../src/100-edge/110-iot-ops/terraform`            |
 
@@ -97,7 +97,7 @@ The Bicep implementation follows the same architecture as the Terraform version,
 | `cloudResourceGroup`    | Creates the resource group          | `../../../src/000-cloud/000-resource-group/bicep`    |
 | `cloudSecurityIdentity` | Handles identity and security       | `../../../src/000-cloud/010-security-identity/bicep` |
 | `cloudData`             | Creates data storage resources      | `../../../src/000-cloud/030-data/bicep`              |
-| `cloudVmHost`           | Creates the VM host for the cluster | `../../../src/000-cloud/050-vm-host/bicep`           |
+| `cloudVmHost`           | Creates the VM host for the cluster | `../../../src/000-cloud/051-vm-host/bicep`           |
 | `edgeCncfCluster`       | Deploys K3s Kubernetes cluster      | `../../../src/100-edge/100-cncf-cluster/bicep`       |
 | `edgeIotOps`            | Installs Azure IoT Operations       | `../../../src/100-edge/110-iot-ops/bicep`            |
 

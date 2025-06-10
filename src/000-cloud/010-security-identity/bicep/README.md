@@ -37,7 +37,7 @@ Provisions cloud resources required for Azure IoT Operations including Schema Re
 
 ## Module Details
 
-### attribution
+### attributions
 
 ### identity
 

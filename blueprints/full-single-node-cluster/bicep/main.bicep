@@ -164,25 +164,35 @@ module cloudMessaging '../../../src/000-cloud/040-messaging/bicep/main.bicep' = 
   }
 }
 
-module cloudVmHost '../../../src/000-cloud/050-vm-host/bicep/main.bicep' = {
-  name: '${deployment().name}-cvh3'
+module cloudNetworking '../../../src/000-cloud/050-networking/bicep/main.bicep' = {
+  name: '${deployment().name}-cn3'
+  scope: resourceGroup(resourceGroupName)
+  dependsOn: [cloudResourceGroup]
+  params: {
+    common: common
+  }
+}
+
+module cloudVmHost '../../../src/000-cloud/051-vm-host/bicep/main.bicep' = {
+  name: '${deployment().name}-cvh4'
   scope: resourceGroup(resourceGroupName)
   dependsOn: [cloudResourceGroup]
   params: {
     common: common
     adminPassword: adminPassword
     arcOnboardingIdentityName: cloudSecurityIdentity.outputs.arcOnboardingIdentityName!
+    subnetId: cloudNetworking.outputs.subnetId
   }
 }
 
 module cloudAksAcr '../../../src/000-cloud/060-aks-acr/bicep/main.bicep' = {
-  name: '${deployment().name}-cvh3'
+  name: '${deployment().name}-caa5'
   scope: resourceGroup(resourceGroupName)
   dependsOn: [cloudResourceGroup]
   params: {
     common: common
-    virtualNetworkName: cloudVmHost.outputs.virtualNetworkName
-    networkSecurityGroupId: cloudVmHost.outputs.networkSecurityGroupId
+    virtualNetworkName: cloudNetworking.outputs.virtualNetworkName
+    networkSecurityGroupId: cloudNetworking.outputs.networkSecurityGroupId
     shouldCreateAcrPrivateEndpoint: shouldCreateAcrPrivateEndpoint
     shouldCreateAks: shouldCreateAks
   }

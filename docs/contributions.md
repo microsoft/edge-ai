@@ -364,7 +364,7 @@ sankey-beta
 "Predictive Maintenance","Stamp Architecture Deployment",8
 "Quality Process Optimization & Automation","Stamp Architecture Deployment",7
 "Yield Process Optimization","Stamp Architecture Deployment",6
-"Azure VM Host Infrastructure","Cloud Virtual Machine Host(s) (050-vm-host)",10
+"Azure VM Host Infrastructure","Cloud Virtual Machine Host(s) (051-vm-host)",10
 "Cloud Container Platform Infrastructure","Cloud AKS Cluster and ACR (060-aks-acr)",9
 "OCP UA Closed-Loop Control","Cloud AKS Cluster and ACR (060-aks-acr)",9
 "Cloud Data Platform","Cloud Data Persistence (030-data)",33
@@ -541,7 +541,7 @@ sankey-beta
 "Logistics Optimization & Automation","Stamp Architecture Deployment",2
 "Packaging Line Performance Optimization","Stamp Architecture Deployment",3
 "Semi-Autonomous Cell","Stamp Architecture Deployment",2
-"Azure VM Host Infrastructure","Cloud Virtual Machine Host(s) (050-vm-host)",10
+"Azure VM Host Infrastructure","Cloud Virtual Machine Host(s) (051-vm-host)",10
 "Cloud Container Platform Infrastructure","Cloud AKS Cluster and ACR (060-aks-acr)",9
 "OCP UA Closed-Loop Control","Cloud AKS Cluster and ACR (060-aks-acr)",9
 "Cloud Data Platform","Cloud Data Persistence (030-data)",33
@@ -736,7 +736,7 @@ sankey-beta
 "Virtual Training","Stamp Architecture Deployment",0
 "Waste Circular Economy","Stamp Architecture Deployment",0
 "Water Usage Optimization","Stamp Architecture Deployment",1
-"Azure VM Host Infrastructure","Cloud Virtual Machine Host(s) (050-vm-host)",10
+"Azure VM Host Infrastructure","Cloud Virtual Machine Host(s) (051-vm-host)",10
 "OCP UA Closed-Loop Control","Cloud AKS Cluster and ACR (060-aks-acr)",9
 "Cloud Data Platform","Cloud Data Persistence (030-data)",33
 "Cloud Messaging and Event Infrastructure","Edge Messaging & Data Routing (130-messaging)",33
