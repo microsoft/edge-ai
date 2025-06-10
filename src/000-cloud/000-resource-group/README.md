@@ -30,7 +30,6 @@ module "cloud_resource_group" {
   resource_prefix = var.resource_prefix
 
   // Specify an existing resource group
-  use_existing_resource_group = true
   resource_group_name         = "my-existing-resource-group" // Optional: If not specified, the default name format will be used
 }
 ```
@@ -52,7 +51,7 @@ module cloudResourceGroup '../../../src/000-cloud/000-resource-group/bicep/main.
 
 ### Error Handling
 
-When `use_existing_resource_group` is set to `true` (Terraform) or `useExistingResourceGroup` is set to `true` (Bicep):
+When `useExistingResourceGroup` is set to `true` (Bicep):
 
 - The component will attempt to look up the resource group with the provided name (or the generated name if none is specified)
 - If the resource group doesn't exist, deployment will fail with an error message indicating the resource group couldn't be found

@@ -63,7 +63,6 @@ Beyond the basic required variables, this blueprint supports advanced customizat
 | `environment`                             | Environment type                      | Required | "dev", "test", "prod", etc.                 |
 | `resource_prefix`                         | Prefix for resource naming            | Required | Short unique alphanumeric string            |
 | `location`                                | Azure region location                 | Required | "eastus2", "westus3", etc.                  |
-| `use_existing_resource_group`             | Use existing resource group           | `false`  | When true, looks up a resource group        |
 | `resource_group_name`                     | Name of existing resource group       | `null`   | When null, name is generated                |
 | `host_machine_count`                      | Number of VM hosts for the cluster    | `3`      | First host is server, others are workers    |
 | `custom_locations_oid`                    | Custom Locations object ID            | `null`   | Retrieved via Azure CLI if not provided     |
