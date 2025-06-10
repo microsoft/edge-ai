@@ -1,3 +1,10 @@
+/**
+ * # Full Single Node Cluster Blueprint
+ *
+ * This blueprint deploys a complete Azure IoT Operations environment with all cloud and edge components
+ * for a single-node cluster deployment, including observability, messaging, and data management.
+ */
+
 module "cloud_resource_group" {
   source = "../../../src/000-cloud/000-resource-group/terraform"
 
@@ -9,7 +16,7 @@ module "cloud_resource_group" {
   resource_prefix = var.resource_prefix
   instance        = var.instance
 
-  # Optional parameters for using an existing resource group
+  // Optional parameters for using an existing resource group
   resource_group_name = var.resource_group_name
 }
 
@@ -58,8 +65,19 @@ module "cloud_messaging" {
   should_create_azure_functions = var.should_create_azure_functions
 }
 
+module "cloud_networking" {
+  source = "../../../src/000-cloud/050-networking/terraform"
+
+  environment     = var.environment
+  location        = var.location
+  resource_prefix = var.resource_prefix
+  instance        = var.instance
+
+  resource_group = module.cloud_resource_group.resource_group
+}
+
 module "cloud_vm_host" {
-  source = "../../../src/000-cloud/050-vm-host/terraform"
+  source = "../../../src/000-cloud/051-vm-host/terraform"
 
   environment     = var.environment
   location        = var.location
@@ -67,6 +85,7 @@ module "cloud_vm_host" {
   instance        = var.instance
 
   resource_group          = module.cloud_resource_group.resource_group
+  subnet_id               = module.cloud_networking.subnet_id
   arc_onboarding_identity = module.cloud_security_identity.arc_onboarding_identity
 }
 
@@ -80,8 +99,8 @@ module "cloud_aks_acr" {
 
   resource_group = module.cloud_resource_group.resource_group
 
-  network_security_group = module.cloud_vm_host.network_security_group
-  virtual_network        = module.cloud_vm_host.virtual_network
+  network_security_group = module.cloud_networking.network_security_group
+  virtual_network        = module.cloud_networking.virtual_network
 
   should_create_acr_private_endpoint = var.should_create_acr_private_endpoint
   should_create_aks                  = var.should_create_aks

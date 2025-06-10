@@ -36,8 +36,19 @@ module "cloud_security_identity" {
   aio_resource_group = module.cloud_resource_group.resource_group
 }
 
+module "cloud_networking" {
+  source = "../../../src/000-cloud/050-networking/terraform"
+
+  environment     = var.environment
+  location        = var.location
+  resource_prefix = var.resource_prefix
+  instance        = var.instance
+
+  resource_group = module.cloud_resource_group.resource_group
+}
+
 module "cloud_vm_host" {
-  source = "../../../src/000-cloud/050-vm-host/terraform"
+  source = "../../../src/000-cloud/051-vm-host/terraform"
 
   environment     = var.environment
   resource_prefix = var.resource_prefix
@@ -45,6 +56,7 @@ module "cloud_vm_host" {
   location        = var.location
 
   resource_group          = module.cloud_resource_group.resource_group
+  subnet_id               = module.cloud_networking.subnet_id
   arc_onboarding_identity = module.cloud_security_identity.arc_onboarding_identity
 }
 

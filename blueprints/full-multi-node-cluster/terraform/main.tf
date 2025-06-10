@@ -68,8 +68,19 @@ module "cloud_messaging" {
   should_create_azure_functions = var.should_create_azure_functions
 }
 
+module "cloud_networking" {
+  source = "../../../src/000-cloud/050-networking/terraform"
+
+  environment     = var.environment
+  location        = var.location
+  resource_prefix = var.resource_prefix
+  instance        = "001"
+
+  resource_group = module.cloud_resource_group.resource_group
+}
+
 module "cloud_vm_host" {
-  source = "../../../src/000-cloud/050-vm-host/terraform"
+  source = "../../../src/000-cloud/051-vm-host/terraform"
 
   environment        = var.environment
   location           = var.location
@@ -77,6 +88,7 @@ module "cloud_vm_host" {
   host_machine_count = var.host_machine_count
 
   resource_group          = module.cloud_resource_group.resource_group
+  subnet_id               = module.cloud_networking.subnet_id
   arc_onboarding_identity = module.cloud_security_identity.arc_onboarding_identity
 }
 
@@ -89,8 +101,8 @@ module "cloud_aks_acr" {
 
   resource_group = module.cloud_resource_group.resource_group
 
-  network_security_group = module.cloud_vm_host.network_security_group
-  virtual_network        = module.cloud_vm_host.virtual_network
+  network_security_group = module.cloud_networking.network_security_group
+  virtual_network        = module.cloud_networking.virtual_network
 
   should_create_acr_private_endpoint = var.should_create_acr_private_endpoint
   should_create_aks                  = var.should_create_aks

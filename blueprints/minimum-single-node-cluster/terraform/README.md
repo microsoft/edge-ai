@@ -20,9 +20,11 @@ It includes only the essential components and minimizes resource usage.
 | Name | Source | Version |
 |------|--------|---------|
 | cloud\_data | ../../../src/000-cloud/030-data/terraform | n/a |
+| cloud\_networking | ../../../src/000-cloud/050-networking/terraform | n/a |
 | cloud\_resource\_group | ../../../src/000-cloud/000-resource-group/terraform | n/a |
 | cloud\_security\_identity | ../../../src/000-cloud/010-security-identity/terraform | n/a |
-| cloud\_vm\_host | ../../../src/000-cloud/050-vm-host/terraform | n/a |
+| cloud\_vm\_host | ../../../src/000-cloud/051-vm-host/terraform | n/a |
+| edge\_assets | ../../../src/100-edge/111-assets/terraform | n/a |
 | edge\_assets | ../../../src/100-edge/111-assets/terraform | n/a |
 | edge\_cncf\_cluster | ../../../src/100-edge/100-cncf-cluster/terraform | n/a |
 | edge\_iot\_ops | ../../../src/100-edge/110-iot-ops/terraform | n/a |

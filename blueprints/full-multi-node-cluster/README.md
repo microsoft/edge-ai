@@ -47,7 +47,7 @@ This blueprint consists of the following key components:
 | `cloud_data`              | Creates data storage resources            | `../../../src/000-cloud/030-data/terraform`              |
 | `cloud_fabric`            | Provisions Microsoft Fabric resources     | `../../../src/000-cloud/031-fabric/terraform`            |
 | `cloud_messaging`         | Deploys messaging components              | `../../../src/000-cloud/040-messaging/terraform`         |
-| `cloud_vm_host`           | Creates multiple VM hosts for the cluster | `../../../src/000-cloud/050-vm-host/terraform`           |
+| `cloud_vm_host`           | Creates multiple VM hosts for the cluster | `../../../src/000-cloud/051-vm-host/terraform`           |
 | `cloud_aks_acr`           | Optional AKS and ACR resources            | `../../../src/000-cloud/060-aks-acr/terraform`           |
 | `edge_cncf_cluster`       | Deploys multi-node K3s Kubernetes cluster | `../../../src/100-edge/100-cncf-cluster/terraform`       |
 | `edge_iot_ops`            | Installs Azure IoT Operations             | `../../../src/100-edge/110-iot-ops/terraform`            |
@@ -105,7 +105,7 @@ This blueprint consists of the following key components:
 | `cloudResourceGroup`    | Creates resource groups                   | `../../../src/000-cloud/000-resource-group/bicep`    |
 | `cloudSecurityIdentity` | Manages identities and security resources | `../../../src/000-cloud/010-security-identity/bicep` |
 | `cloudData`             | Creates data storage resources            | `../../../src/000-cloud/030-data/bicep`              |
-| `cloudVmHost`           | Creates multiple VM hosts for the cluster | `../../../src/000-cloud/050-vm-host/bicep`           |
+| `cloudVmHost`           | Creates multiple VM hosts for the cluster | `../../../src/000-cloud/051-vm-host/bicep`           |
 | `edgeCncfCluster`       | Deploys multi-node K3s Kubernetes cluster | `../../../src/100-edge/100-cncf-cluster/bicep`       |
 | `edgeIotOps`            | Installs Azure IoT Operations             | `../../../src/100-edge/110-iot-ops/bicep`            |
 

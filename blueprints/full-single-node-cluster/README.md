@@ -46,7 +46,7 @@ This blueprint consists of the following key components:
 | `cloud_observability`     | Sets up monitoring infrastructure       | `../../../src/000-cloud/020-observability/terraform`     |
 | `cloud_data`              | Creates data storage resources          | `../../../src/000-cloud/030-data/terraform`              |
 | `cloud_messaging`         | Sets up messaging infrastructure        | `../../../src/000-cloud/040-messaging/terraform`         |
-| `cloud_vm_host`           | Creates the VM host for the cluster     | `../../../src/000-cloud/050-vm-host/terraform`           |
+| `cloud_vm_host`           | Creates the VM host for the cluster     | `../../../src/000-cloud/051-vm-host/terraform`           |
 | `cloud_aks_acr`           | Deploys AKS and/or ACR                  | `../../../src/000-cloud/060-aks-acr/terraform`           |
 | `edge_cncf_cluster`       | Deploys K3s Kubernetes cluster          | `../../../src/100-edge/100-cncf-cluster/terraform`       |
 | `edge_iot_ops`            | Installs Azure IoT Operations           | `../../../src/100-edge/110-iot-ops/terraform`            |
@@ -106,7 +106,7 @@ The Bicep implementation follows the same architecture as the Terraform version,
 | `resourceGroup`         | Creates the resource group          | Inline resource in main.bicep                        |
 | `cloudResourceGroup`    | Sets up cloud resources             | `../../../src/000-cloud/000-resource-group/bicep`    |
 | `cloudSecurityIdentity` | Handles identity and security       | `../../../src/000-cloud/010-security-identity/bicep` |
-| `edgeVmHost`            | Creates the VM host for the cluster | `../../../src/100-edge/050-vm-host/bicep`            |
+| `edgeVmHost`            | Creates the VM host for the cluster | `../../../src/100-edge/051-vm-host/bicep`            |
 | `edgeCncfCluster`       | Deploys K3s Kubernetes cluster      | `../../../src/100-edge/100-cncf-cluster/bicep`       |
 | `edgeIotOps`            | Installs Azure IoT Operations       | `../../../src/100-edge/110-iot-ops/bicep`            |
 

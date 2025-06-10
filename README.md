@@ -326,7 +326,7 @@ The components are organized into categories based on their purpose and deployme
 | [030-data](./src/000-cloud/030-data/README.md)                           | Data storage and Schema Registry resources                                                    |
 | [031-fabric](./src/000-cloud/031-fabric/README.md)                       | Microsoft Fabric resources for data warehousing and analytics                                 |
 | [040-messaging](./src/000-cloud/040-messaging/README.md)                 | Event Grid, Event Hubs, Service Bus and messaging resources                                   |
-| [050-vm-host](./src/000-cloud/050-vm-host/README.md)                     | VM provisioning resources with configurable host operating system                             |
+| [051-vm-host](./src/000-cloud/051-vm-host/README.md)                     | VM provisioning resources with configurable host operating system                             |
 
 ##### Edge Infrastructure (100-edge)
 
@@ -366,7 +366,7 @@ The Terraform, scripts, and documentation in this repository can provide you the
 - Subscription resources supporting all "in-the-box" components of an Azure IoT Operations (AIO) solution
 - Deployment of a cloud-hosted VM, sized and provisioned specifically for developing AIO solutions
 - Deployment of a development-ready K3s cluster with all the basic AIO components installed
-- [Integrated support for Azure Managed Identities](./src/000-cloud/050-vm-host/terraform/README.md)
+- [Integrated support for Azure Managed Identities](./src/000-cloud/051-vm-host/terraform/README.md)
 - [Integrated support for "Bring-Your-Own" certificates](./src/100-edge/110-iot-ops/terraform/README.md#create_resources) (and
   intermediate certificates) for intra-cluster TLS
 - [A robust, matrix'ed IaC build system](./azure-pipelines.yml) with integrated testing and validation, to ensure your

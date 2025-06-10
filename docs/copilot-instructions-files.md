@@ -43,14 +43,14 @@ The following process was used to create a Bicep IaC for a component that only e
    - Click __Add Context__ > __Instructions__ and select the `bicep` file. The instruction reference will be shown in the chat context area.
    - Select __Add Context__ again, then choose _Files & Folders_ and type in `030-iot-ops-cloud-reqs` to select this component to set the context for the conversation.
    - This component already contains a Bicep implementation, so you can use the existing Bicep files as a reference for the new component.
-   - Select __Add Context__ again, then choose _Files & Folders_ and type `050-vm-host` to select the sub-folder `./src/000-cloud/050-vm-host` and set context for the conversation. This is the component you want to convert from Terraform to Bicep (purely as an example).
+   - Select __Add Context__ again, then choose _Files & Folders_ and type `051-vm-host` to select the sub-folder `./src/000-cloud/051-vm-host` and set context for the conversation. This is the component you want to convert from Terraform to Bicep (purely as an example).
 
 2. __Initial Bicep Generation__:
 
    - Use this specific prompt for Copilot:
 
      ```text
-     Look at bicep in 030-iot-ops-cloud-reqs, learn and follow guidelines, create a bicep version of 010-vm-host converting from terraform in ./src/000-cloud/050-vm-host/bicep. Follow the bicep instruction guidance for conventions.
+     Look at bicep in 030-iot-ops-cloud-reqs, learn and follow guidelines, create a bicep version of 010-vm-host converting from terraform in ./src/000-cloud/051-vm-host/bicep. Follow the bicep instruction guidance for conventions.
      ```
 
    - The attached instruction file ensures Copilot follows your team's Bicep coding standards automatically.
@@ -83,20 +83,20 @@ The following process was used to create a Bicep IaC for a component that only e
 
 ### Example Prompts with Context for Terraform
 
-The following process was used to add a `tags` variable to the component `./src/000-cloud/050-vm-host/terraform`:
+The following process was used to add a `tags` variable to the component `./src/000-cloud/051-vm-host/terraform`:
 
 1. __Context Setup__:
 
    - Select __Agent__ mode, a model like _Claude 3.7 Sonnet_ or similar.
    - Ensure you select the right instructions file in the chat context (`terraform`). The instructions file reference will be shown in the chat context textbox.
-   - Choose __Add Context > Files & Folders__ and type in `050-vm-host` to the Chat textbox to set the context for the prompt. This is the component you want to modify.
+   - Choose __Add Context > Files & Folders__ and type in `051-vm-host` to the Chat textbox to set the context for the prompt. This is the component you want to modify.
 
 2. __Initial Terraform Generation__:
 
    - Use this specific prompt for Copilot:
 
      ```text
-     Add a tags variable to the 050-vm-host/terraform component, add a test for this in ./tests/, include passing it in ./ci/ and include the tags variable in each resource that supports it.
+     Add a tags variable to the 051-vm-host/terraform component, add a test for this in ./tests/, include passing it in ./ci/ and include the tags variable in each resource that supports it.
      ```
 
    - Depending on your Edits or Agent mode, Copilot will either generate the Terraform files or start a step-by-step process to create several files.

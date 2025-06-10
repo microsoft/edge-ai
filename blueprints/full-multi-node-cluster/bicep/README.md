@@ -33,6 +33,7 @@ Deploys a complete end-to-end environment for Azure IoT Operations on a multi-no
 |cloudObservability|`Microsoft.Resources/deployments`|2022-09-01|
 |cloudData|`Microsoft.Resources/deployments`|2022-09-01|
 |cloudMessaging|`Microsoft.Resources/deployments`|2022-09-01|
+|cloudNetworking|`Microsoft.Resources/deployments`|2022-09-01|
 |cloudVmHost|`Microsoft.Resources/deployments`|2022-09-01|
 |cloudAksAcr|`Microsoft.Resources/deployments`|2022-09-01|
 |edgeCncfCluster|`Microsoft.Resources/deployments`|2022-09-01|
@@ -50,6 +51,7 @@ Deploys a complete end-to-end environment for Azure IoT Operations on a multi-no
 |cloudObservability|Deploys Azure observability resources including Azure Monitor Workspace, Log Analytics Workspace, Azure Managed Grafana, and Data Collection Rules for container monitoring and metrics collection.|
 |cloudData|Creates storage resources including Azure Storage Account and Schema Registry for data in the Edge AI solution.|
 |cloudMessaging|Deploys Azure cloud messaging resources including Event Hubs, Service Bus, and Event Grid for IoT edge solution communication.|
+|cloudNetworking|Creates virtual network, subnet, and network security group resources for Azure deployments.|
 |cloudVmHost|Provisions virtual machines and networking infrastructure for hosting Azure IoT Operations edge deployments.|
 |cloudAksAcr|Deploys Azure Container Registry (ACR) and optionally Azure Kubernetes Service (AKS) resources.|
 |edgeCncfCluster|This module provisions and deploys automation scripts to a VM host that create and configure a K3s Kubernetes cluster with Arc connectivity.<br>The scripts handle primary and secondary node(s) setup, cluster administration, workload identity enablement, and installation of required Azure Arc extensions.|
@@ -255,6 +257,36 @@ Deploys Azure cloud messaging resources including Event Hubs, Service Bus, and E
 |eventHubConfig|`object`|The Event Hub configuration object for edge messaging.|
 |eventGridConfig|`object`|The Event Grid configuration object for edge messaging.|
 
+### cloudNetworking
+
+Creates virtual network, subnet, and network security group resources for Azure deployments.
+
+#### Parameters for cloudNetworking
+
+|Name|Description|Type|Default|Required|
+| :--- | :--- | :--- | :--- | :--- |
+|common|The common component configuration.|`[_2.Common](#user-defined-types)`|n/a|yes|
+|networkingConfig|Networking configuration settings.|`[_1.NetworkingConfig](#user-defined-types)`|[variables('_1.networkingConfigDefaults')]|no|
+|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|False|no|
+
+#### Resources for cloudNetworking
+
+|Name|Type|API Version|
+| :--- | :--- | :--- |
+|attribution|`Microsoft.Resources/deployments`|2020-06-01|
+|networkSecurityGroup|`Microsoft.Network/networkSecurityGroups`|2024-05-01|
+|virtualNetwork|`Microsoft.Network/virtualNetworks`|2024-05-01|
+
+#### Outputs for cloudNetworking
+
+|Name|Type|Description|
+| :--- | :--- | :--- |
+|networkSecurityGroupId|`string`|The ID of the created network security group.|
+|networkSecurityGroupName|`string`|The name of the created network security group.|
+|subnetId|`string`|The ID of the created subnet.|
+|virtualNetworkId|`string`|The ID of the created virtual network.|
+|virtualNetworkName|`string`|The name of the created virtual network.|
+
 ### cloudVmHost
 
 Provisions virtual machines and networking infrastructure for hosting Azure IoT Operations edge deployments.
@@ -269,29 +301,27 @@ Provisions virtual machines and networking infrastructure for hosting Azure IoT 
 |storageProfile|The storage profile for the VM.|`[_1.StorageProfile](#user-defined-types)`|[variables('_1.storageProfileDefaults')]|no|
 |vmUsername|Username used for the host VM that will be given kube-config settings on setup. (Otherwise, resource_prefix if it exists as a user)|`string`|n/a|no|
 |vmCount|The number of host VMs to create if a multi-node cluster is needed.|`int`|1|no|
-|vmSkuSize|Size of the VM|`string`|Standard_D8s_v3|no|
+|vmSkuSize|Size of the VM.|`string`|Standard_D8s_v3|no|
 |telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|False|no|
+|subnetId|The subnet ID to connect the VMs to.|`string`|n/a|yes|
 
 #### Resources for cloudVmHost
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
 |attribution|`Microsoft.Resources/deployments`|2020-06-01|
-|network|`Microsoft.Resources/deployments`|2022-09-01|
 |virtualMachine|`Microsoft.Resources/deployments`|2022-09-01|
 
 #### Outputs for cloudVmHost
 
 |Name|Type|Description|
 | :--- | :--- | :--- |
-|networkSecurityGroupId|`string`||
-|virtualNetworkName|`string`||
-|adminUsername|`string`||
-|privateIpAddresses|`array`||
-|publicFqdns|`array`||
-|publicIpAddresses|`array`||
-|vmIds|`array`||
-|vmNames|`array`||
+|adminUsername|`string`|The admin username for SSH access to the VMs.|
+|privateIpAddresses|`array`|An array containing the private IP addresses of all deployed VMs.|
+|publicFqdns|`array`|An array containing the public FQDNs of all deployed VMs.|
+|publicIpAddresses|`array`|An array containing the public IP addresses of all deployed VMs.|
+|vmIds|`array`|An array containing the IDs of all deployed VMs.|
+|vmNames|`array`|An array containing the names of all deployed VMs.|
 
 ### cloudAksAcr
 
