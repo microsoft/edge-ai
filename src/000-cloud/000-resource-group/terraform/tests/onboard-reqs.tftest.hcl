@@ -89,33 +89,32 @@ run "create_resource_group_with_custom_tags" {
 # 2. Uncomment and run this test
 # 3. Delete the resource group when done
 # Alternatively, this functionality could be tested with provider mocks in future Terraform versions
-#
-# run "use_existing_resource_group" {
+
+# run "existing_resource_group" {
 #   command = plan
-#
+
 #   variables {
-#     resource_prefix          = run.setup_tests.resource_prefix
-#     environment              = "test"
-#     location                 = "eastus"
-#     instance                 = "004"
-#     resource_group_name      = "existing-rg-name"
-#     use_existing_resource_group = true
+#     resource_prefix     = run.setup_tests.resource_prefix
+#     environment         = "test"
+#     instance            = "004"
+#     resource_group_name = "existing-rg-name"
 #   }
-#
+
 #   # Assert that the resource group isn't created
 #   assert {
 #     condition     = length(azurerm_resource_group.new) == 0
-#     error_message = "Resource group should not be created when use_existing_resource_group is true"
+#     error_message = "Resource group should not be created when there is an existing resource group"
 #   }
-#
+
+#   # Assert that the data source for the existing resource group is used
+#   assert {
+#     condition     = length(data.azurerm_resource_group.existing) >= 1
+#     error_message = "Resource group should exist when you provide an existing resource group name"
+#   }
+
 #   # Assert that the output uses data from the existing resource group
 #   assert {
 #     condition     = output.resource_group.name == var.resource_group_name
 #     error_message = "Resource group name output is not set correctly"
-#   }
-#
-#   assert {
-#     condition     = output.resource_group.location == var.location
-#     error_message = "Resource group location output is not set correctly"
 #   }
 # }

@@ -61,7 +61,6 @@ Beyond the basic required variables, this blueprint supports advanced customizat
 |-------------------------------------------|------------------------------------|----------|-------------------------------------------------------------|
 | `environment`                             | Environment type                   | Required | "dev", "test", "prod", etc.                                 |
 | `resource_prefix`                         | Prefix for resource naming         | Required | Short unique alphanumeric string (max 8 chars recommended)  |
-| `use_existing_resource_group`             | Use existing resource group        | `false`  | When true, looks up a resource group instead of creating it |
 | `resource_group_name`                     | Name of resource group             | `null`   | When null, name is generated from prefix, env, and instance |
 | `location`                                | Azure region location              | Required | "eastus2", "westus3", etc.                                  |
 | `instance`                                | Deployment instance number         | `"001"`  | For multiple deployments                                    |

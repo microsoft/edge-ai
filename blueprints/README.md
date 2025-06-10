@@ -44,7 +44,7 @@ All blueprints support deploying to existing resource groups rather than creatin
 To use an existing resource group with Terraform:
 
 ```sh
-terraform apply -var="use_existing_resource_group=true" -var="resource_group_name=your-existing-rg"
+terraform apply -var="resource_group_name=your-existing-rg"
 ```
 
 ### Bicep Implementation
@@ -145,7 +145,7 @@ Ensure your Azure CLI is logged in and your subscription context is set correctl
    terraform apply -var-file=terraform.tfvars # Add '-auto-approve' to skip confirmation
    ```
 
-   > **Note**: To deploy to an existing resource group instead of creating a new one, add `-var="use_existing_resource_group=true" -var="resource_group_name=your-existing-rg"` to your apply command.
+   > **Note**: To deploy to an existing resource group instead of creating a new one, add `-var="resource_group_name=your-existing-rg"` to your apply command.
 
 5. Wait for the deployments to complete, an example successful deployment message looks like the following:
 
