@@ -69,6 +69,9 @@
         "editor.tabSize": 4,
     },
 
+    "shellcheck.enableQuickFix": true,
+    "shellcheck.run": "onSave",
+
     "yaml.schemas": {
         "https://raw.githubusercontent.com/microsoft/azure-pipelines-vscode/master/service-schema.json": "*-pipelines.yml",
         "https://squidfunk.github.io/mkdocs-material/schema.json": "mkdocs.yml",
