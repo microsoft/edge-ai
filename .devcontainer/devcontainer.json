@@ -30,7 +30,8 @@
 		"ghcr.io/devcontainers/features/powershell": {
 			"pwsh": "latest"
 		},
-		"ghcr.io/devcontainers/features/rust:1": {}
+		"ghcr.io/devcontainers/features/rust:1": {},
+		"ghcr.io/devcontainers/features/go:1": {}
 	},
 	"customizations": {
 		"vscode": {
@@ -45,7 +46,6 @@
 				"charliermarsh.ruff",
 				"darkriszty.markdown-table-prettify",
 				"DavidAnson.vscode-markdownlint",
-				"deque-systems.vscode-axe-linter",
 				"eamodio.gitlens",
 				"EditorConfig.EditorConfig",
 				"esbenp.prettier-vscode",
@@ -55,6 +55,7 @@
 				"ms-azuretools.vscode-azureterraform",
 				"ms-azuretools.vscode-bicep",
 				"ms-azuretools.vscode-docker",
+				"ms-dotnettools.csdevkit",
 				"ms-python.debugpy",
 				"ms-python.python",
 				"ms-python.vscode-pylance",
@@ -69,22 +70,46 @@
 				"ms-vscode.powershell",
 				"github.vscode-github-actions",
 				"bierner.markdown-mermaid",
-				"rust-lang.rust-analyzer"
+				"rust-lang.rust-analyzer",
+				"ms-dotnettools.vscode-dotnet-runtime",
+				"ms-python.autopep8",
+				"ms-azuretools.vscode-azurefunctions",
+				"msazurermtools.azurerm-vscode-tools",
+				"ms-azuretools.vscode-azureresourcegroups",
+				"ms-python.black-formatter",
+				"ms-dotnettools.csharp",
+				"vadimcn.vscode-lldb",
+				"ms-azuretools.vscode-containers",
+				"dbaeumer.vscode-eslint",
+				"tamasfe.even-better-toml",
+				"ms-python.flake8",
+				"golang.go",
+				"redhat.vscode-yaml",
+				"GitHub.copilot",
+				"GitHub.copilot-chat"
 			]
 		}
 	},
+
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
-	"postCreateCommand": {
-		//"pip": "pip install --upgrade pip && pip3 install -r requirements.txt",
+
+	"onCreateCommand": {
 		"npm": "npm install -g npm && npm ci",
-		"gcm": "bash -c 'set -e; ARCH=$(dpkg --print-architecture); echo \"Configuring Git authentication...\"; if [ \"$ARCH\" = \"arm64\" ]; then echo \"M1/ARM64 architecture detected - configuring Git to use VS Code authentication\"; git config --global credential.helper \"$HOME/.vscode-server/bin/*/node /usr/local/share/vscode-server/resources/app/extensions/git/dist/askpass.js\"; else echo \"Installing Git Credential Manager for $ARCH...\"; GCM_DEB_URL=$(curl -sSL https://api.github.com/repos/git-ecosystem/git-credential-manager/releases/latest | grep -o \"https://github.com.*linux_${ARCH}.*.deb\" | grep -v symbols | head -n 1); if [ -z \"$GCM_DEB_URL\" ]; then echo \"Could not find GCM package for $ARCH. Configuring VS Code auth helper instead.\"; git config --global credential.helper \"$HOME/.vscode-server/bin/*/node /usr/local/share/vscode-server/resources/app/extensions/git/dist/askpass.js\"; else echo \"Installing from $GCM_DEB_URL\"; curl -sSLO \"$GCM_DEB_URL\" && sudo dpkg -i gcm-linux_*.deb && rm -f gcm-linux_*.deb && git-credential-manager configure; fi; fi'"
+		"apt": "sudo apt update && sudo apt install -y shellcheck",
+		"go": "go install mvdan.cc/sh/v3/cmd/shfmt@latest",
+		"update-bashrc": "echo 'export PATH=\"${containerWorkspaceFolder}/scripts:$PATH\"' | sudo tee -a  ~/.bashrc"
 	},
-	// Use 'postCreateCommand' to run commands after the container is created.
-	// "postCreateCommand": "uname -a",
+
+	// DONT USE 'postCreateCommand', it ruins your global .gitconfig https://github.com/devcontainers/cli/issues/787
+
 	// Replace when using a ptrace-based debugger like C++, Go, and Rust
 	// "runArgs": [ "--init", "--cap-add=SYS_PTRACE", "--security-opt", "seccomp=unconfined" ],
+
 	// Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
 	"remoteUser": "vscode",
-	"postStartCommand": "git config --global --add safe.directory ${containerWorkspaceFolder}"
+
+	"postStartCommand": {
+		"gcm": "bash -c 'set -e; ARCH=$(dpkg --print-architecture); echo \"Configuring Git authentication...\"; if [ \"$ARCH\" = \"arm64\" ]; then echo \"M1/ARM64 architecture detected - configuring Git to use VS Code authentication\"; git config --global credential.helper \"$HOME/.vscode-server/bin/*/node /usr/local/share/vscode-server/resources/app/extensions/git/dist/askpass.js\"; else echo \"Installing Git Credential Manager for $ARCH...\"; GCM_DEB_URL=$(curl -sSL https://api.github.com/repos/git-ecosystem/git-credential-manager/releases/latest | grep -o \"https://github.com.*linux_${ARCH}.*.deb\" | grep -v symbols | head -n 1); if [ -z \"$GCM_DEB_URL\" ]; then echo \"Could not find GCM package for $ARCH. Configuring VS Code auth helper instead.\"; git config --global credential.helper \"$HOME/.vscode-server/bin/*/node /usr/local/share/vscode-server/resources/app/extensions/git/dist/askpass.js\"; else echo \"Installing from $GCM_DEB_URL\"; curl -sSLO \"$GCM_DEB_URL\" && sudo dpkg -i gcm-linux_*.deb && rm -f gcm-linux_*.deb && git-credential-manager configure; fi; fi' && git config --global --add safe.directory ${containerWorkspaceFolder}"
+	}
 }
