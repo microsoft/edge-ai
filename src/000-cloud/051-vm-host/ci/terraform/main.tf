@@ -16,14 +16,10 @@ data "azurerm_user_assigned_identity" "arc_onboarding" {
   resource_group_name = data.azurerm_resource_group.aio.name
 }
 
-module "virtual_network" {
-  source = "../../../050-networking/terraform"
-
-  environment     = var.environment
-  instance        = var.instance
-  location        = var.location
-  resource_prefix = var.resource_prefix
-  resource_group  = data.azurerm_resource_group.aio
+data "azurerm_subnet" "subnet" {
+  name                 = "snet-${var.resource_prefix}-${var.environment}-${var.instance}"
+  resource_group_name  = data.azurerm_resource_group.aio.name
+  virtual_network_name = "vnet-${var.resource_prefix}-${var.environment}-${var.instance}"
 }
 
 module "ci" {
@@ -34,6 +30,6 @@ module "ci" {
   environment             = var.environment
   instance                = var.instance
   resource_group          = data.azurerm_resource_group.aio
-  subnet_id               = module.virtual_network.subnet_id
+  subnet_id               = data.azurerm_subnet.subnet.id
   arc_onboarding_identity = data.azurerm_user_assigned_identity.arc_onboarding
 }
