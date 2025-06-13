@@ -3,6 +3,12 @@ variable "environment" {
   description = "Environment for all resources in this module: dev, test, or prod"
 }
 
+variable "use_existing_resource_group" {
+  type        = bool
+  description = "Whether to use an existing resource group instead of creating a new one. When true, the component will look up a resource group with the specified or generated name instead of creating it."
+  default     = false
+}
+
 variable "resource_prefix" {
   type        = string
   description = "Prefix for all resources in this module"

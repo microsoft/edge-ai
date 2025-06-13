@@ -69,7 +69,6 @@ Beyond the basic required variables, this blueprint supports advanced customizat
 | `should_create_anonymous_broker_listener` | Enable anonymous MQTT listener     | `false`  | For dev/test only, not secure for production                |
 | `should_create_aks`                       | Create Azure Kubernetes Service    | `false`  | When true, deploys AKS in addition to the K3s cluster       |
 | `should_create_acr_private_endpoint`      | Enable ACR private endpoint        | `false`  | Creates a private endpoint for the Azure Container Registry |
-| `should_enable_opc_sim_asset_discovery`   | Enable asset discovery             | `false`  | Enables preview feature for OPC UA simulator assets         |
 | `aio_features`                            | AIO feature configurations         | `null`   | Map of feature settings for Azure IoT Operations            |
 
 For additional configuration options, review the variables in `variables.tf`.
@@ -77,7 +76,6 @@ For additional configuration options, review the variables in `variables.tf`.
 > Note: The `aio_features` variable is a map that allows you to specify feature flags for Azure IoT Operations. This can be used to enable or disable specific features based on your deployment needs. For example, you can use the following format of variables to enable the preview feature [OPC UA asset discovery](https://learn.microsoft.com/azure/iot-operations/discover-manage-assets/howto-autodetect-opc-ua-assets-use-akri):
 
 ```hcl
-should_enable_opc_sim_asset_discovery = true
 should_deploy_resource_sync_rules     = true
 
 aio_features = {
