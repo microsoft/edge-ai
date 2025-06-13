@@ -1,5 +1,5 @@
 ---
-applyTo: '**/*.sh'
+applyTo: '**/src/**/*.sh'
 ---
 # Bash Instructions
 
