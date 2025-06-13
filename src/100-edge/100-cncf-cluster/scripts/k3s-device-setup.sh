@@ -392,4 +392,44 @@ if [[ ! $SKIP_ARC_CONNECT ]]; then
   fi
 fi
 
+####
+# Wait for Server Ready State
+####
+
+wait_for_k3s_server_ready() {
+  local timeout_seconds=1800
+  local start_time
+  local elapsed_time
+
+  start_time=$(date +%s)
+
+  log "Waiting for k3s server to be ready (timeout: ${timeout_seconds}s)..."
+
+  while true; do
+    elapsed_time=$(($(date +%s) - start_time))
+
+    if ((elapsed_time >= timeout_seconds)); then
+      err "Timeout waiting for k3s server to become ready after ${timeout_seconds} seconds. Check 'systemctl status k3s' and 'kubectl get nodes' for more information."
+    fi
+
+    if kubectl wait --for condition=ready node --all --timeout=60s; then
+      if kubectl wait --for=jsonpath='{.status.phase}'=Running pod -l '!job-name' -n kube-system --timeout=60s &&
+        kubectl wait --for=jsonpath='{.status.phase}'=Succeeded pod -l 'job-name' -n kube-system --timeout=60s; then
+        if kubectl cluster-info | grep -c -E "(Kubernetes control plane|CoreDNS|Metrics-server).*running" | grep -q "3"; then
+          log "k3s server is ready and responding (${elapsed_time}s elapsed)"
+          return 0
+        fi
+      fi
+    fi
+
+    sleep 5
+    elapsed_time=$(($(date +%s) - start_time))
+    log "Still waiting for k3s server readiness... (${elapsed_time}s elapsed)"
+  done
+}
+
+if [[ ! $SKIP_INSTALL_K3S ]]; then
+  wait_for_k3s_server_ready
+fi
+
 log "Finished setting up Azure Arc..."
