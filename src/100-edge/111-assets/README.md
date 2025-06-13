@@ -32,8 +32,8 @@ module "assets" {
       target_address = "opc-server-address"
       endpoint_profile_type  = "endpoint-type"
       method = "string"
-      should_enable_opc_sim_asset_discovery = "bool"
-      opc_sim_additional_config_string = "string"
+      should_enable_opc_asset_discovery = "bool"
+      opc_additional_config_string = "string"
     }
   ]
 

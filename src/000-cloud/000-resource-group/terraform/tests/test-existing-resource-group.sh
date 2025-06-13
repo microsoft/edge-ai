@@ -5,7 +5,7 @@ set -e
 # Test script for validating "existing resource group" functionality
 # -----------------------------------------------------------------------------
 # This script creates a temporary resource group, tests the Terraform module
-# with said resource group, validates outputs, and cleans up.
+# with use_existing_resource_group=true, validates outputs, and cleans up.
 # -----------------------------------------------------------------------------
 
 # Text formatting
@@ -104,7 +104,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~> 3.0"
+      version = ">= 4.8.0"
     }
   }
 }
@@ -123,20 +123,21 @@ module "resource_group" {
   location            = "${LOCATION}"
 
   # Test existing resource group
-  resource_group_name = "${TEMP_RG_NAME}"
+  use_existing_resource_group = true
+  resource_group_name         = "${TEMP_RG_NAME}"
 }
 
 # Output all module outputs for validation
 output "resource_group_name" {
-  value = module.resource_group.resource_group_name
+  value = module.resource_group.resource_group.name
 }
 
 output "resource_group_id" {
-  value = module.resource_group.resource_group_id
+  value = module.resource_group.resource_group.id
 }
 
 output "resource_group_location" {
-  value = module.resource_group.resource_group_location
+  value = module.resource_group.resource_group.location
 }
 EOF
 
@@ -175,7 +176,7 @@ log "SUCCESS" "Terraform outputs verified successfully!"
 # Check if Terraform created a new resource group by mistake
 RG_COUNT=$(az group list --query "[?starts_with(name, 'rg-rgtest-dev-001')].name" -o tsv | wc -l)
 if [ "$RG_COUNT" -gt 0 ]; then
-  log "ERROR" "Terraform created a new resource group even though an existing one was specified!"
+  log "ERROR" "Terraform created a new resource group even though use_existing_resource_group=true"
   # Find and delete the incorrectly created resource group
   NEW_RG=$(az group list --query "[?starts_with(name, 'rg-rgtest-dev-001')].name" -o tsv)
   log "WARNING" "Deleting incorrectly created resource group: $NEW_RG"

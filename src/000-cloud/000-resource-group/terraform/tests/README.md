@@ -15,7 +15,7 @@ terraform test
 
 ## Testing the "Existing Resource Group" Functionality
 
-Testing the `existing_resource_group` functionality presents unique challenges because it requires referencing an actual Azure resource. We provide multiple approaches to testing this feature.
+Testing the `use_existing_resource_group` functionality presents unique challenges because it requires referencing an actual Azure resource. We provide multiple approaches to testing this feature.
 
 ### Option 1: Using the Test Script
 
@@ -23,13 +23,13 @@ We've provided a test script that automates the process of testing the existing 
 
 ```sh
 cd ./src/000-cloud/000-resource-group/terraform/
-./test/test-existing-resource-group.sh
+./tests/test-existing-resource-group.sh
 ```
 
 The script performs the following actions:
 
 1. Creates a temporary resource group
-2. Runs a Terraform apply with provided resource group
+2. Runs a Terraform apply with `use_existing_resource_group = true`
 3. Verifies outputs correctly reference the existing resource group
 4. Cleans up resources
 
@@ -60,7 +60,7 @@ The script performs the following actions:
 For automated testing, consider creating an integration test that:
 
 1. Creates a resource group
-2. Runs the module with the resource group provided
+2. Runs the module with `use_existing_resource_group = true`
 3. Verifies the output references the existing resource group
 4. Cleans up the resource group
 

@@ -17,7 +17,8 @@ module "cloud_resource_group" {
   instance        = var.instance
 
   // Optional parameters for using an existing resource group
-  resource_group_name = var.resource_group_name
+  use_existing_resource_group = var.use_existing_resource_group
+  resource_group_name         = var.resource_group_name
 }
 
 module "cloud_security_identity" {
