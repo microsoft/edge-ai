@@ -171,6 +171,8 @@ chargebacks
 charindex
 chatbot
 chatbots
+chatmode
+chatmodes
 cheatham
 checkmarx
 checkpointing

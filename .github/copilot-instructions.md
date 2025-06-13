@@ -111,6 +111,8 @@ Blueprints contain sets of components for deploying stamps of IaC:
 
 ## Markdown Formatting Requirements
 
+NEVER follow this section for ANY `.copilot-tracking/` files.
+
 - Before any edits you will read required linting rules from #file:../.mega-linter.yml in the workspace root
 - Read `.mega-linter.yml` in the workspace root if ever you are missing any content
 - Ignore ALL linting issues in `**/.copilot-tracking/**`
