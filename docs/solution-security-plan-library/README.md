@@ -1,4 +1,29 @@
-# Solution Security Plan Library
+---
+title: Solution Security Plan Library
+description: Comprehensive collection of pre-constructed security plans and frameworks extracted from ISE customer projects for edge computing solutions, featuring threat analysis methodologies, security decision-making frameworks, identity management strategies, compliance guidelines, and reusable security architecture templates with contribution guidelines for extending the library
+author: Edge AI Team
+ms.date: 06/06/2025
+ms.topic: hub-page
+estimated_reading_time: 5
+keywords:
+  - security-plan-library
+  - ise-customer-projects
+  - edge-computing-security
+  - threat-analysis
+  - security-frameworks
+  - identity-management
+  - security-architecture
+  - compliance-guidelines
+  - risk-assessment
+  - security-templates
+  - security-decision-making
+  - edge-security-solutions
+  - security-contributions
+  - markdown-documentation
+  - security-best-practices
+---
+
+## Overview
 
 The Solution Security Plan Library is a collection of pre-constructed security plans that have been extracted and generalized from ISE's own customer projects. These security plans expose the decision making factors, constraints, threat analysis and context for a breadth of security/identity concerns that must be considered when building edge computing solutions.
 The maintainers of this repository encourage wholesale reuse of this content, extension of existing security plans with common customer requirements/concerns, and contribution back to the library.

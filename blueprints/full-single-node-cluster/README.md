@@ -1,6 +1,23 @@
-# Full Single Cluster Blueprint
+---
+title: Full Single Cluster Blueprint
+description: Complete end-to-end deployment of Azure IoT Operations on a single-node, Arc-enabled Kubernetes cluster with all components from VM creation to AIO installation
+author: Edge AI Team
+ms.date: 06/07/2025
+ms.topic: reference
+keywords:
+  - azure iot operations
+  - single node cluster
+  - kubernetes
+  - arc-enabled
+  - terraform
+  - bicep
+  - edge computing
+  - vm deployment
+  - k3s cluster
+estimated_reading_time: 3
+---
 
-## Overview
+## Full Single Cluster Blueprint
 
 This blueprint provides a complete end-to-end deployment of Azure IoT Operations (AIO) on a single-node, Arc-enabled Kubernetes cluster. It deploys all necessary components from VM creation to AIO installation, resulting in a fully functional edge computing environment that integrates with Azure cloud services.
 Please follow general blueprint recommendations from blueprints [README.md](../README.md).
@@ -137,3 +154,10 @@ Ensure you have the following prerequisites:
 ## Deploy Blueprint
 
 Follow detailed deployment instructions from the blueprints README.md, [Detailed Deployment Workflow](../README.md#detailed-deployment-workflow)
+
+---
+
+<!-- markdownlint-disable MD036 -->
+*🤖 Crafted with precision by ✨Copilot following brilliant human instruction,
+then carefully refined by our team of discerning human reviewers.*
+<!-- markdownlint-enable MD036 -->

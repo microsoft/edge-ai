@@ -1,8 +1,32 @@
-# AI Guardrails Implementation in a Disconnected Environment
-
-Date: 2025-03-17
-
-Authors: Omer Demir
+---
+title: AI Guardrails Implementation in a Disconnected Environment
+description: Architecture Decision Record for implementing AI content moderation guardrails in disconnected/air-gapped environments without cloud dependencies. Evaluates locally deployed models including Llama-Guard-3-1B and Llama-Guard-3-8B for content safety, comparing performance metrics, datasets, and selecting optimal solutions for offline AI safety compliance in high-security environments.
+author: Edge AI Team
+ms.date: 06/06/2025
+ms.topic: architecture-decision-record
+estimated_reading_time: 11
+keywords:
+  - ai-guardrails
+  - content-moderation
+  - disconnected-environments
+  - air-gapped
+  - offline-ai-safety
+  - llama-guard
+  - llama-guard-3-1b
+  - llama-guard-3-8b
+  - false-positive-rate
+  - false-negative-rate
+  - content-safety
+  - ai-safety-institute
+  - hazard-categories
+  - prompt-injection
+  - local-deployment
+  - security-compliance
+  - performance-benchmarks
+  - quantization
+  - architecture-decision-record
+  - adr
+---
 
 ## Status
 
@@ -43,7 +67,7 @@ The following decisions have been made to enable guardrails on a disconnected en
 
 ### Inappropriate categories
 
-The following are a selection of categories identified by the MLCommons AI Safety working group deemed Hazard Categories. These categories were used in evaluating and benchmarking LLM models on how well they could respond to dangerous and/or inappropriate prompts. Refer to the AI Safety v0.5 POC for more details, [here](https://mlcommons.org/2024/04/mlc-aisafety-v0-5-poc/).
+The following are a selection of categories identified by the MLCommons AI Safety working group deemed Hazard Categories. These categories were used in evaluating and benchmarking LLM models on how well they could respond to dangerous and/or inappropriate prompts. Refer to the [AI Safety v0.5 POC for more details](https://mlcommons.org/2024/04/mlc-aisafety-v0-5-poc/).
 
 - **S1:** Violent Crimes
 - **S2:** Non-Violent Crimes
@@ -152,3 +176,5 @@ By adopting this decision:
 - Multi-Language Support: Provide more dataset with different language support.
 - Fine-tuning Exploration: Consider lightweight fine-tuning methods to improve accuracy without significantly increasing resource usage.
 - Deployment Strategy Exploration: Consider packaged, k3s and other deployment strategies to deliver application.
+
+_AI and automation capabilities described in this scenario should be implemented following responsible AI principles, including fairness, reliability, safety, privacy, inclusiveness, transparency, and accountability. Organizations should ensure appropriate governance, monitoring, and human oversight are in place for all AI-powered solutions._

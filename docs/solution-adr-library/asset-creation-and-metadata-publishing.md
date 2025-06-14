@@ -1,10 +1,34 @@
-# Asset and Metadata Creation
-
-Date: 2024-04-03
+---
+title: Asset and Metadata Creation
+description: Architecture Decision Record for asset creation and metadata management in Azure IoT Operations. Addresses automated asset provisioning using OPC UA endpoints, metadata storage via Azure Resource Tags, and publishing asset hierarchy information to MQTT broker for Unified Namespace (UNS) integration with consistent topic structure across enterprise environments.
+author: Edge AI Team
+ms.date: 06/06/2025
+ms.topic: architecture-decision-record
+estimated_reading_time: 7
+keywords:
+  - asset-creation
+  - metadata-management
+  - azure-iot-operations
+  - opc-ua
+  - azure-resource-tags
+  - mqtt-broker
+  - unified-namespace
+  - uns
+  - asset-provisioning
+  - azure-cli
+  - asset-endpoint-profiles
+  - custom-properties
+  - topic-structure
+  - enterprise-uns
+  - arc-enabled-kubernetes
+  - metadata-publishing
+  - azure-portal
+  - shell-scripts
+  - architecture-decision-record
+  - adr
+---
 
 ## Status
-
-[For this library of ADRs, mark the most applicable status at which it was stored in the original project. This can help provide context and validity for folks reviewing this ADR. If it has been deprecated you can add a note on why and date it.]
 
 - [ ] Draft
 - [X] Proposed
@@ -90,3 +114,5 @@ A shell script can be used to implement the following steps in an efficient way:
 
 Meta data will be published to the MQTT broker and stored in the Enterprise UNS (Corp/L4).
 ![Asset Metadata UNS](./media/poc1-asset-metadata-uns.png)
+
+*AI and automation capabilities described in this scenario should be implemented following responsible AI principles, including fairness, reliability, safety, privacy, inclusiveness, transparency, and accountability. Organizations should ensure appropriate governance, monitoring, and human oversight are in place for all AI-powered solutions.*

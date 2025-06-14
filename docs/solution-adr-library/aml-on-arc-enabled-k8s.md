@@ -1,10 +1,23 @@
-# Scale deployment of Azure ML models to edge Arc-enabled K&s clusters in an PoC
-
-Date: **2024-09-06**
+---
+title: Scale deployment of Azure ML models to edge Arc-enabled K8s clusters in a PoC
+description: Architecture Decision Record documenting the selection of Azure ML Arc Extension for deploying machine learning models to edge Arc-enabled Kubernetes clusters. Compares Azure ML Arc Extension against GitOps-based deployment approaches, evaluating factors like scale deployment capabilities, integration with MLOps processes, system requirements, and operational considerations for manufacturing edge environments.
+author: Edge AI Team
+ms.date: 06/06/2025
+ms.topic: architecture-decision-record
+estimated_reading_time: 10
+keywords:
+  - azure-machine-learning
+  - arc-enabled-kubernetes
+  - edge-computing
+  - mlops
+  - model-deployment
+  - manufacturing
+  - gitops
+  - architecture-decision-record
+  - adr
+---
 
 ## Status
-
-[For this library of ADRs, mark the most applicable status at which it was stored in the original project. This can help provide context and validity for folks reviewing this ADR. If it has been deprecated you can add a note on why and date it.]
 
 - [ ] Draft
 - [ ] Proposed
@@ -141,3 +154,5 @@ Product team offering:
 Edge & Platform Product team is working on extending ML model and workload deployment with solutions like
 Toolchain Orchestrator and Configuration Management. These solutions are in Private Preview at time of writing
 but should be evaluated in future engagements.
+
+*AI and automation capabilities described in this scenario should be implemented following responsible AI principles, including fairness, reliability, safety, privacy, inclusiveness, transparency, and accountability. Organizations should ensure appropriate governance, monitoring, and human oversight are in place for all AI-powered solutions.*

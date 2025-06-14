@@ -1,6 +1,32 @@
-# Architecture Decision Record: Policy as Code with OPA Gatekeeper
-
-Date: 2024-12-06
+---
+title: 'Architecture Decision Record: Policy as Code with OPA Gatekeeper'
+description: Architecture Decision Record evaluating Kubernetes policy-as-code solutions for implementing pod isolation controls and security policy enforcement. Compares OPA Gatekeeper's declarative YAML-based approach against custom Golang admission webhooks, focusing on preventing unauthorized cluster state modifications and implementing strict admission controls for Azure Arc agent pods in PSNet environments.
+author: Edge AI Team
+ms.date: 06/06/2025
+ms.topic: architecture-decision-record
+estimated_reading_time: 8
+keywords:
+  - opa-gatekeeper
+  - open-policy-agent
+  - policy-as-code
+  - kubernetes-admission-control
+  - pod-isolation
+  - security-policy-enforcement
+  - azure-arc-agents
+  - psnet
+  - rego-language
+  - constraint-templates
+  - custom-admission-webhooks
+  - golang-development
+  - declarative-policies
+  - infrastructure-as-code
+  - policy-enforcement
+  - cluster-security
+  - admission-webhook
+  - mutation-controls
+  - architecture-decision-record
+  - adr
+---
 
 ## Status
 
@@ -10,7 +36,6 @@ Date: 2024-12-06
 - [x] Proposed
 - [ ] Accepted
 - [ ] Deprecated
-- [ ] Superseded by 0002
 
 ## Context
 
@@ -93,3 +118,5 @@ To address these challenges, we will:
 - [Kubernetes Pod Security Standards](https://kubernetes.io/docs/concepts/security/pod-security-standards/)
 - [CNCF OPA Project Overview](https://www.cncf.io/projects/open-policy-agent-opa/)
 - [OPA Community and Ecosystem](https://www.openpolicyagent.org/docs/latest/ecosystem/)
+
+*AI and automation capabilities described in this scenario should be implemented following responsible AI principles, including fairness, reliability, safety, privacy, inclusiveness, transparency, and accountability. Organizations should ensure appropriate governance, monitoring, and human oversight are in place for all AI-powered solutions.*

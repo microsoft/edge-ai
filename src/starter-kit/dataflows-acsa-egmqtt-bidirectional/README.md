@@ -1,12 +1,29 @@
-# Overview
+---
+title: Azure IoT Operations Dataflows
+description: Azure IoT Operations Dataflows and supported infrastructure creation sample that enables bidirectional data flow from AIO MQTT Broker to Cloud and local storage
+author: Edge AI Team
+ms.date: 06/07/2025
+ms.topic: tutorial
+keywords:
+  - azure iot operations
+  - dataflows
+  - mqtt broker
+  - azure event grid
+  - azure storage account
+  - acsa edge volume
+  - persistent volume claims
+  - starter kit
+  - bidirectional flow
+estimated_reading_time: 11
+---
 
 This folder contains assets with Azure IoT Operations Dataflows and supported infrastructure creation.
 This sample deploys the necessary components to enable data flow from the AIO MQTT Broker to the Cloud and back, as well as to the local storage. The next data routing is enabled in this sample:
 
 1. AIO MQTT -> Azure Event Grid
-1. Azure Event Grid -> AIO MQTT
-1. AIO MQTT -> Azure Storage Account
-1. AIO MQTT -> Local Shared Azure Container Storage enabled by Azure Arc (ACSA) Edge Volume
+2. Azure Event Grid -> AIO MQTT
+3. AIO MQTT -> Azure Storage Account
+4. AIO MQTT -> Local Shared Azure Container Storage enabled by Azure Arc (ACSA) Edge Volume
 
 The following resources will be created when using the assets available under the `dataflows-acsa-egmqtt-bidirectional` folder:
 
@@ -220,3 +237,10 @@ The edge subvolumes created in this sample use the default ingestion policy (`ed
 - Every Monday at 9 AM: `0 9 * * 1`
 
 For more information on EdgeIngestPolicy options, refer to the [Azure Arc-enabled Kubernetes Storage documentation](https://learn.microsoft.com/azure/azure-arc/container-storage/cloud-ingest-edge-volume-configuration?tabs=portal#optional-modify-the-ingestpolicy-from-the-default).
+
+---
+
+<!-- markdownlint-disable MD036 -->
+*🤖 Crafted with precision by ✨Copilot following brilliant human instruction,
+then carefully refined by our team of discerning human reviewers.*
+<!-- markdownlint-enable MD036 -->

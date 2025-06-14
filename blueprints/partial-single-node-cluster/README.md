@@ -1,6 +1,23 @@
-# Partial Single Node Cluster Blueprint
+---
+title: Partial Single Node Cluster Blueprint
+description: Deployment of a single-node, Arc-enabled Kubernetes cluster without Azure IoT Operations providing a foundational edge computing environment for later extension
+author: Edge AI Team
+ms.date: 06/07/2025
+ms.topic: reference
+keywords:
+  - kubernetes
+  - arc-enabled cluster
+  - single node
+  - foundational deployment
+  - terraform
+  - edge computing
+  - vm deployment
+  - k3s cluster
+  - partial deployment
+estimated_reading_time: 2
+---
 
-## Overview
+## Partial Single Node Cluster Blueprint
 
 This blueprint provides a deployment of a single-node, Arc-enabled Kubernetes cluster without Azure IoT Operations (AIO). It deploys only the necessary components from VM creation to Arc-enabled cluster setup, resulting in a foundational edge computing environment that can later be extended with additional services.
 
@@ -72,3 +89,10 @@ Ensure you have the following prerequisites:
 ## Deploy Blueprint
 
 Follow detailed deployment instructions from the blueprints README.md, [Detailed Deployment Workflow](../README.md#detailed-deployment-workflow)
+
+---
+
+<!-- markdownlint-disable MD036 -->
+*🤖 Crafted with precision by ✨Copilot following brilliant human instruction,
+then carefully refined by our team of discerning human reviewers.*
+<!-- markdownlint-enable MD036 -->

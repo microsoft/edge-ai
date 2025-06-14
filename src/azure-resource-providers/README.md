@@ -1,4 +1,18 @@
-# Register providers
+---
+title: Register Azure Resource Providers
+description: Scripts for registering required Azure resource providers in your subscription for Azure IoT Operations edge deployment
+author: Edge AI Team
+ms.date: 06/07/2025
+ms.topic: tutorial
+keywords:
+  - azure resource providers
+  - azure cli
+  - subscription
+  - provider registration
+  - shell script
+  - powershell
+estimated_reading_time: 2
+---
 
 This folder contains scripts that will register the required resource providers in your subscription.
 The registration script only needs to be run once per subscription.
@@ -45,3 +59,10 @@ Invoke-Pester -Script ./register-azure-providers.Tests.ps1
 - [A] Make sure you’ve cloned the repository with LF (Unix line endings). You can clone using WSL or Git for Windows while forcing Git to use LF endings.
   If you’re using Git for Windows, please set `core.autocrlf` to `false`, by running the following command:
   `git config --global core.autocrlf false`
+
+---
+
+<!-- markdownlint-disable MD036 -->
+*🤖 Crafted with precision by ✨Copilot following brilliant human instruction,
+then carefully refined by our team of discerning human reviewers.*
+<!-- markdownlint-enable MD036 -->

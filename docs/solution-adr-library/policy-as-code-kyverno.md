@@ -1,6 +1,30 @@
-# Architecture Decision Record: Policy as Code with Kyverno
-
-Date: 2024-12-06
+---
+title: 'Architecture Decision Record: Policy as Code with Kyverno'
+description: Architecture Decision Record evaluating Kubernetes policy-as-code solutions, comparing Kyverno against OPA Gatekeeper for policy management and governance. Documents the selection of Kyverno based on YAML-based policy definitions, advanced features including image verification and resource generation, simplified management, and alignment with existing Infrastructure as Code strategies.
+author: Edge AI Team
+ms.date: 06/06/2025
+ms.topic: architecture-decision-record
+estimated_reading_time: 7
+keywords:
+  - kyverno
+  - opa-gatekeeper
+  - policy-as-code
+  - kubernetes-policy
+  - admission-control
+  - policy-validation
+  - policy-mutation
+  - resource-generation
+  - image-verification
+  - yaml-policies
+  - rego-language
+  - governance
+  - security
+  - compliance
+  - gitops
+  - infrastructure-as-code
+  - architecture-decision-record
+  - adr
+---
 
 ## Status
 
@@ -10,7 +34,6 @@ Date: 2024-12-06
 - [x] Proposed
 - [ ] Accepted
 - [ ] Deprecated
-- [ ] Superseded by 0002
 
 ## Context
 
@@ -87,3 +110,5 @@ We identified the need for Kubernetes policy management and pod security control
 - [Kyverno Policy Reports](https://kyverno.io/docs/policy-reports/)
 - [Kyverno Image Verification](https://kyverno.io/docs/writing-policies/verify-images/)
 - [CNCF Kyverno Project](https://www.cncf.io/projects/kyverno/)
+
+*AI and automation capabilities described in this scenario should be implemented following responsible AI principles, including fairness, reliability, safety, privacy, inclusiveness, transparency, and accountability. Organizations should ensure appropriate governance, monitoring, and human oversight are in place for all AI-powered solutions.*

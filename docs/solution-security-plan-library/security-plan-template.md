@@ -1,3 +1,32 @@
+---
+title: Security Plan – Project Name
+description: Comprehensive security plan template for documenting project security architecture, threat modeling, data flow analysis, authentication and authorization controls, secrets management inventory, and security mitigation strategies following ISE security development practices
+author: Edge AI Team
+ms.date: 06/06/2025
+ms.topic: template
+estimated_reading_time: 3
+keywords:
+  - security-plan-template
+  - threat-modeling
+  - security-architecture
+  - data-flow-analysis
+  - authentication-controls
+  - authorization-controls
+  - secrets-management
+  - security-mitigations
+  - ise-security-checklist
+  - data-classification
+  - security-controls
+  - threat-assessment
+  - security-documentation
+  - managed-identities
+  - credential-management
+  - security-design
+  - security-requirements
+  - vulnerability-assessment
+  - security-stakeholder
+  - security-audit
+---
 <!-- ISE Security Checklist Items
 Please remove this section before sharing security plan information with your customers.
 
@@ -8,9 +37,7 @@ Complete these tasks and share your progress throughout the engagement at [ISE S
 - Meet with an ISE security champion or a member of the Security Tech Domain to review the design for your solution.
 - With the help of a champion or the Security TD, review and identify the elements in this security plan template that will be completed during the engagement. Deliver the completed components of this plan to the customer, ideally by committing it in markdown format to the customer's repo, so that they can integrate it into their threat model(s).
 -->
-# Security Plan – Project Name
-
-## Preamble
+## Security Plan – Project Name
 
 *Important to note:* ISE cannot certify/attest to the security of an architecture nor code. This document is intended to help produce backlog items specific to the customer engagement and to document the relevant security design decisions made by the team during build.
 Please direct your customer to work with their account team or preferred security vendor to seek an audit or pen-test from a security vendor if required/desired.
@@ -52,3 +79,5 @@ An ideal architecture would contain *zero secrets*. Credential-less options like
 | Name | What is its purpose? | Where does it live? | How was it generated? | What's the rotation strategy? Does it cause downtime? | How does the secret get distributed to consumers? | What’s the secret’s lifespan? |
 |------|----------------------|---------------------|-----------------------|-------------------------------------------------------|---------------------------------------------------|-------------------------------|
 | ...  | ...                  | ...                 | ...                   | ...                                                   | ...                                               | ...                           |
+
+*AI and automation capabilities described in this scenario should be implemented following responsible AI principles, including fairness, reliability, safety, privacy, inclusiveness, transparency, and accountability. Organizations should ensure appropriate governance, monitoring, and human oversight are in place for all AI-powered solutions.*

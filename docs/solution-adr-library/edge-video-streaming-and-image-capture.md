@@ -1,10 +1,34 @@
-# Video and Image Capture from Edge-Attached Cameras
+---
+title: Video and Image Capture from Edge-Attached Cameras
+description: Architecture Decision Record for implementing secure video streaming and image capture from edge-attached IP cameras using Azure IoT Operations Media Connector. Covers live RTSP streaming, snapshot/clip storage workflows, MQTT integration, Azure Container Storage enabled by Azure Arc (ACSA), and media synchronization with Azure Blob Storage for anomaly detection scenarios.
+author: Alain Uyidi
+ms.date: 06/06/2025
+ms.topic: architecture-decision-record
+estimated_reading_time: 10
+keywords:
+  - video-streaming
+  - image-capture
+  - edge-cameras
+  - ip-cameras
+  - media-connector
+  - azure-iot-operations
+  - rtsp-streaming
+  - mqtt-integration
+  - media-server
+  - azure-container-storage
+  - acsa
+  - azure-blob-storage
+  - snapshots
+  - video-clips
+  - anomaly-detection
+  - edge-computing
+  - media-management
+  - mrpc-requests
+  - architecture-decision-record
+  - adr
+---
 
-Date: **2024-03-05**
-
-Author: **Alain Uyidi**
-
-## Status (optional)
+## Status
 
 - [X] Draft
 - [ ] Proposed
@@ -123,3 +147,5 @@ In the current ADR, the following is out-of-scope:
 - Providing continuous realtime inference and indexing on the live video frames
 - Implementation of a Web UI Application that connects to the Media Server and receives the RTSP Stream
 - Manage camera username and passwords with Azure Key Vault to ensure security of the user credentials defined in the asset endpoint profile [https://docs.microsoft.com/azure/key-vault/secrets/overview-storage-keys](https://docs.microsoft.com/azure/key-vault/secrets/overview-storage-keys)
+
+*AI and automation capabilities described in this scenario should be implemented following responsible AI principles, including fairness, reliability, safety, privacy, inclusiveness, transparency, and accountability. Organizations should ensure appropriate governance, monitoring, and human oversight are in place for all AI-powered solutions.*

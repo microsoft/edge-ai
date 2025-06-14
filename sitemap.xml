@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Main documentation pages -->
+  <url>
+    <loc>https://azure.github.io/edge-ai/</loc>
+    <lastmod>2025-06-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- Documentation sections -->
+  <url>
+    <loc>https://azure.github.io/edge-ai/#/docs/getting-started/</loc>
+    <lastmod>2025-06-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://azure.github.io/edge-ai/#/docs/build-cicd/</loc>
+    <lastmod>2025-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://azure.github.io/edge-ai/#/docs/contributing/</loc>
+    <lastmod>2025-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://azure.github.io/edge-ai/#/docs/observability/</loc>
+    <lastmod>2025-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://azure.github.io/edge-ai/#/docs/project-planning/</loc>
+    <lastmod>2025-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://azure.github.io/edge-ai/#/docs/solution-adr-library/</loc>
+    <lastmod>2025-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://azure.github.io/edge-ai/#/docs/solution-security-plan-library/</loc>
+    <lastmod>2025-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://azure.github.io/edge-ai/#/docs/solution-technology-paper-library/</loc>
+    <lastmod>2025-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- Blueprint documentation -->
+  <url>
+    <loc>https://azure.github.io/edge-ai/#/blueprints/</loc>
+    <lastmod>2025-06-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://azure.github.io/edge-ai/#/blueprints/full-single-node-cluster/</loc>
+    <lastmod>2025-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://azure.github.io/edge-ai/#/blueprints/full-multi-node-cluster/</loc>
+    <lastmod>2025-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://azure.github.io/edge-ai/#/blueprints/full-arc-multi-node-cluster/</loc>
+    <lastmod>2025-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://azure.github.io/edge-ai/#/blueprints/minimum-single-node-cluster/</loc>
+    <lastmod>2025-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://azure.github.io/edge-ai/#/blueprints/only-cloud-single-node-cluster/</loc>
+    <lastmod>2025-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://azure.github.io/edge-ai/#/blueprints/only-edge-iot-ops/</loc>
+    <lastmod>2025-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://azure.github.io/edge-ai/#/blueprints/partial-single-node-cluster/</loc>
+    <lastmod>2025-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- Source code documentation -->
+  <url>
+    <loc>https://azure.github.io/edge-ai/#/src/</loc>
+    <lastmod>2025-06-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://azure.github.io/edge-ai/#/src/000-cloud/</loc>
+    <lastmod>2025-06-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://azure.github.io/edge-ai/#/src/100-edge/</loc>
+    <lastmod>2025-06-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://azure.github.io/edge-ai/#/src/500-application/</loc>
+    <lastmod>2025-06-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <url>
+    <loc>https://azure.github.io/edge-ai/#/src/900-tools-utilities/</loc>
+    <lastmod>2025-06-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+</urlset>

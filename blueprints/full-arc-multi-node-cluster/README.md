@@ -1,6 +1,23 @@
-# Full Arc Multi-node Cluster Blueprint
+---
+title: Full Arc Multi-node Cluster Blueprint
+description: Complete end-to-end deployment of Azure IoT Operations on Arc-enabled servers forming a multi-node Kubernetes cluster with production-grade high availability
+author: Edge AI Team
+ms.date: 06/07/2025
+ms.topic: reference
+keywords:
+  - azure iot operations
+  - arc-enabled servers
+  - multi node cluster
+  - kubernetes
+  - terraform
+  - edge computing
+  - production deployment
+  - k3s cluster
+  - existing infrastructure
+estimated_reading_time: 2
+---
 
-## Overview
+## Full Arc Multi-node Cluster Blueprint
 
 This blueprint provides a complete end-to-end deployment of Azure IoT Operations (AIO) on Arc-enabled servers that already exist in your environment. It configures these servers into a multi-node Kubernetes cluster and deploys all necessary AIO components, resulting in a production-grade edge computing environment with high availability that integrates with Azure cloud services.
 
@@ -93,3 +110,10 @@ Follow detailed deployment instructions from the blueprints README.md, [Detailed
 - **[Full Single Cluster](../full-single-node-cluster/README.md)**: Complete deployment on a single-node cluster
 - **[Only Cloud Single Node Cluster](../only-cloud-single-node-cluster/README.md)**: Deploy only the cloud resources
 - **[Only Edge IoT Ops](../only-edge-iot-ops/README.md)**: Deploy only the edge components assuming cloud infrastructure exists
+
+---
+
+<!-- markdownlint-disable MD036 -->
+*🤖 Crafted with precision by ✨Copilot following brilliant human instruction,
+then carefully refined by our team of discerning human reviewers.*
+<!-- markdownlint-enable MD036 -->

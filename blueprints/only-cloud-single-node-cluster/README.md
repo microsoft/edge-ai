@@ -1,6 +1,23 @@
-# Only Cloud Single Node Cluster Blueprint
+---
+title: Only Cloud Single Node Cluster Blueprint
+description: Deployment of cloud components required for Azure IoT Operations with single-node VM host, preparing cloud infrastructure without edge component installation
+author: Edge AI Team
+ms.date: 06/07/2025
+ms.topic: reference
+keywords:
+  - azure iot operations
+  - cloud infrastructure
+  - vm host
+  - cloud components
+  - terraform
+  - bicep
+  - infrastructure preparation
+  - edge prerequisites
+  - separated deployment
+estimated_reading_time: 2
+---
 
-## Overview
+## Only Cloud Single Node Cluster Blueprint
 
 This blueprint provides a deployment of the cloud components required for Azure IoT Operations (AIO) along with a single-node VM host. Unlike the full blueprint, this version **only** deploys the cloud resources and VM infrastructure, without installing the Kubernetes cluster or AIO components on the edge. This is ideal for scenarios where you want to prepare the cloud infrastructure first and handle the edge components separately or through a different process.
 
@@ -74,3 +91,10 @@ Follow detailed deployment instructions from the blueprints README.md, [Detailed
 - **[Full Single Cluster](../full-single-node-cluster/README.md)**: Complete deployment including edge components
 - **[Full Multi-node Cluster](../full-multi-node-cluster/README.md)**: Multi-node high-availability deployment
 - **[Only Edge IoT Ops](../only-edge-iot-ops/README.md)**: Deploy only the edge components assuming cloud infrastructure exists
+
+---
+
+<!-- markdownlint-disable MD036 -->
+*🤖 Crafted with precision by ✨Copilot following brilliant human instruction,
+then carefully refined by our team of discerning human reviewers.*
+<!-- markdownlint-enable MD036 -->

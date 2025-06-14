@@ -1,10 +1,33 @@
-# Vector DBs Comparison for offline RAG Search Running on In-car Embedded System
+---
+title: Vector DBs Comparison for offline RAG Search Running on In-car Embedded System
+description: Architecture Decision Record comparing vector database solutions (ChromaDB, Qdrant, FAISS) for offline Retrieval-Augmented Generation (RAG) search in automotive embedded systems. Evaluates resource consumption, performance, compatibility, offline capabilities, and deployment considerations for Qualcomm Android Automotive OS (AAOS) environments with technical documentation search use cases.
+author: Edge AI Team
+ms.date: 06/06/2025
+ms.topic: architecture-decision-record
+estimated_reading_time: 11
+keywords:
+  - vector-database
+  - chromadb
+  - qdrant
+  - faiss
+  - rag
+  - retrieval-augmented-generation
+  - embedded-systems
+  - automotive
+  - android-automotive-os
+  - aaos
+  - offline-processing
+  - edge-computing
+  - qualcomm
+  - resource-constraints
+  - technical-documentation
+  - car-manuals
+  - performance-optimization
+  - architecture-decision-record
+  - adr
+---
 
-Date: **2025-02-17**
-
-Author(s): **Cheng Chen**
-
-## Status (optional)
+## Status
 
 - [ ] Draft
 - [ ] Proposed
@@ -120,3 +143,5 @@ This document provides alternative vector DB options if the solution requirement
 - [FAISS vs Chroma: A Battle of Efficiency in Vector Storage](https://myscale.com/blog/faiss-vs-chroma-efficiency-vector-storage-battle/)
 - [Which Vector Database Should You Use?](https://medium.com/the-ai-forum/which-vector-database-should-you-use-choosing-the-best-one-for-your-needs-5108ec7ba133)
 - [Qdrant Technical Guide](https://qdrant.tech/documentation/guides/)
+
+*AI and automation capabilities described in this scenario should be implemented following responsible AI principles, including fairness, reliability, safety, privacy, inclusiveness, transparency, and accountability. Organizations should ensure appropriate governance, monitoring, and human oversight are in place for all AI-powered solutions.*

@@ -1,4 +1,22 @@
-# Application
+---
+title: Edge Applications
+description: Directory containing application projects that can be built and deployed to an edge or cloud based system with Docker containers and Azure Container Registry
+author: Edge AI Team
+ms.date: 06/07/2025
+ms.topic: reference
+keywords:
+  - application
+  - docker
+  - azure container registry
+  - acr
+  - helm charts
+  - multi-stage builds
+  - edge deployment
+  - cloud deployment
+estimated_reading_time: 7
+---
+
+## Edge Applications
 
 This directory contains application projects that can be built and deployed to an edge or cloud based system. Every
 application will have one or more services with a `Dockerfile` for each service that will be built and deployed into
@@ -133,3 +151,10 @@ For example:
 - `basic-inference.pipeline:2023-12-15-a1b2c3d` (multi-service)
 
 This naming convention is used by the build pipeline to properly tag and push images to the Azure Container Registry.
+
+---
+
+<!-- markdownlint-disable MD036 -->
+*🤖 Crafted with precision by ✨Copilot following brilliant human instruction,
+then carefully refined by our team of discerning human reviewers.*
+<!-- markdownlint-enable MD036 -->

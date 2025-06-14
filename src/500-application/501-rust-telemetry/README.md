@@ -1,4 +1,24 @@
-# Rust Telemetry with OpenTelemetry
+---
+title: Rust Telemetry with OpenTelemetry
+description: Distributed tracing with OpenTelemetry and an MQTT broker written in Rust, leveraging the Azure IoT Operations SDK for observable microservices deployed to edge environments
+author: Edge AI Team
+ms.date: 06/07/2025
+ms.topic: tutorial
+keywords:
+  - rust
+  - telemetry
+  - opentelemetry
+  - mqtt broker
+  - azure iot operations sdk
+  - distributed tracing
+  - microservices
+  - edge computing
+  - grafana
+  - docker
+estimated_reading_time: 10
+---
+
+## Rust Telemetry with OpenTelemetry
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE.md)
 
@@ -197,3 +217,10 @@ You can see the complete end-to-end journey of each telemetry message through th
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
+
+---
+
+<!-- markdownlint-disable MD036 -->
+*🤖 Crafted with precision by ✨Copilot following brilliant human instruction,
+then carefully refined by our team of discerning human reviewers.*
+<!-- markdownlint-enable MD036 -->
