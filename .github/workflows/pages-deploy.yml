@@ -1,12 +1,14 @@
-# GitHub Pages Deployment Workflow
+# GitHub Pages Deployment Workflow for Docsify Documentation
 #
 # Purpose:
-# This workflow builds and deploys documentation to GitHub Pages whenever documentation files are updated.
+# This workflow builds and deploys Docsify documentation to GitHub Pages whenever documentation files are updated.
+# It replaces the previous Jekyll-based build process with a Docsify-specific build that includes URL token replacement.
 #
 # Functionality:
 # - Triggers via workflow_call (manually or from ci-cd.yml)
-# - Sets up GitHub Pages environment
-# - Builds documentation (configurable for various documentation generators)
+# - Sets up Node.js environment for Docsify CLI
+# - Generates GitHub Pages-specific URL configuration for token replacement
+# - Builds Docsify documentation with all assets and plugins
 # - Deploys built documentation to GitHub Pages
 #
 # Parameters:
@@ -34,6 +36,13 @@
 #       source_branch: 'feature/improved-docs'
 #       deploy_environment: 'staging'
 # ```
+#
+# Features:
+# - Docsify CLI build process with Node.js caching
+# - Dynamic URL token replacement for GitHub Pages environment
+# - Comprehensive asset management (CSS, JS, images, plugins)
+# - Build validation and error reporting
+# - .nojekyll file generation to prevent Jekyll processing
 #
 # This workflow follows GitHub's best practices for Pages deployments and uses the
 # recommended actions for setting up and deploying to GitHub Pages.
@@ -81,33 +90,226 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
-      # copy _config.yml to docs folder from root to gh pages source folder 'docs'
-      - name: Copy additional file
-        run: |
-          # Copy file from source to destination
-          cp ./_config.yml ./docs/_config.yml
-
-      - name: Build with Jekyll
-        uses: actions/jekyll-build-pages@v1
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          source: ./docs
-          destination: ./_site
+          node-version: '18'
+          cache: 'npm'
 
-      # If you use a documentation generator like MkDocs, Jekyll, etc.
-      # add the build steps here
-      # Example for MkDocs:
-      # - name: Setup Python
-      #   uses: actions/setup-python@v5
-      #   with:
-      #     python-version: '3.10'
-      #
-      # - name: Install MkDocs and dependencies
-      #   run: |
-      #     python -m pip install --upgrade pip
-      #     pip install mkdocs mkdocs-material
-      #
-      # - name: Build documentation
-      #   run: mkdocs build
+      - name: Cache Docsify CLI
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-docsify-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-docsify-
+
+      - name: Install dependencies
+        run: |
+          echo "📦 Installing dependencies..."
+          npm ci
+          echo "✅ Dependencies installed successfully"
+
+      - name: Generate GitHub Pages URL configuration
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
+          GITHUB_REPOSITORY_NAME: ${{ github.event.repository.name }}
+          SOURCE_BRANCH: ${{ inputs.source_branch }}
+        run: |
+          echo "🔧 Generating GitHub Pages URL configuration..."
+          if ! pwsh -File scripts/Generate-GitHubPagesConfig.ps1; then
+            echo "❌ Failed to generate URL configuration"
+            echo "Debug information:"
+            echo "Repository: $GITHUB_REPOSITORY"
+            echo "Owner: $GITHUB_REPOSITORY_OWNER"
+            echo "Name: $GITHUB_REPOSITORY_NAME"
+            echo "Branch: $SOURCE_BRANCH"
+            exit 1
+          fi
+          echo "✅ URL configuration generated successfully"
+
+      - name: Build Docsify documentation
+        run: |
+          set -e  # Exit on any error
+
+          echo "🏗️  Starting Docsify documentation build..."
+
+          # Create the build directory
+          echo "📁 Creating build directory..."
+          if ! mkdir -p ./_site; then
+            echo "❌ Failed to create build directory"
+            exit 1
+          fi
+
+          # Copy main Docsify files
+          echo "📋 Copying main Docsify files..."
+          if ! cp index.html ./_site/; then
+            echo "❌ Failed to copy index.html"
+            exit 1
+          fi
+
+          if ! cp docsify-url-config.js ./_site/; then
+            echo "❌ Failed to copy docsify-url-config.js"
+            exit 1
+          fi
+
+          # Copy documentation content
+          echo "📚 Copying documentation content..."
+          if ! cp -r docs ./_site/; then
+            echo "❌ Failed to copy docs directory"
+            exit 1
+          fi
+
+          # Copy assets if they exist
+          echo "🎨 Copying assets..."
+          if [ -d "assets" ]; then
+            if cp -r assets ./_site/; then
+              echo "✅ Root assets directory copied"
+            else
+              echo "⚠️  Failed to copy root assets directory"
+            fi
+          else
+            echo "ℹ️  No root assets directory found"
+          fi
+
+          # Copy any root-level markdown files that might be referenced
+          echo "📄 Copying root markdown files..."
+          find . -maxdepth 1 -name "*.md" -exec cp {} ./_site/ \; 2>/dev/null || true
+
+          # Copy any additional static files Docsify might need
+          echo "📁 Copying additional static files..."
+          for file in robots.txt sitemap.xml favicon.ico .nojekyll; do
+            if [ -f "$file" ]; then
+              if cp "$file" ./_site/; then
+                echo "✅ Copied $file"
+              else
+                echo "⚠️  Failed to copy $file"
+              fi
+            fi
+          done
+
+          # Create .nojekyll file to prevent GitHub Pages from trying to process with Jekyll
+          if ! touch ./_site/.nojekyll; then
+            echo "❌ Failed to create .nojekyll file"
+            exit 1
+          fi
+          echo "✅ Created .nojekyll file"
+
+          # Verify the build
+          echo "🔍 Build verification:"
+          echo "Build output directory structure:"
+          if ! find ./_site -type f | head -20; then
+            echo "❌ Failed to list build output files"
+            exit 1
+          fi
+
+          echo ""
+          echo "📊 Build statistics:"
+          total_files=$(find ./_site -type f | wc -l)
+          total_size=$(du -sh ./_site | cut -f1)
+          echo "Total files: $total_files"
+          echo "Total size: $total_size"
+
+          if [ "$total_files" -lt 10 ]; then
+            echo "❌ Build output contains suspiciously few files ($total_files)"
+            exit 1
+          fi
+
+          # Check critical files
+          echo "🔧 Critical files check:"
+          for file in index.html docsify-url-config.js docs/_sidebar.md; do
+            if [ -f "./_site/$file" ]; then
+              echo "✅ $file found"
+            else
+              echo "❌ $file missing"
+              exit 1
+            fi
+          done
+
+          # Verify assets are copied
+          echo "🎨 Asset verification:"
+          if [ -d "./_site/docs/assets" ]; then
+            echo "✅ docs/assets directory found"
+            echo "📁 Assets found: $(ls ./_site/docs/assets/ | tr '\n' ' ')"
+          else
+            echo "⚠️  No docs/assets directory found"
+          fi
+
+          # Verify Docsify configuration
+          echo "⚙️  Docsify configuration check:"
+          if grep -q "window.\$docsify" ./_site/index.html; then
+            echo "✅ Docsify configuration found in index.html"
+          else
+            echo "❌ Docsify configuration missing from index.html"
+            exit 1
+          fi
+
+          # Verify URL token replacement setup
+          echo "🔗 URL configuration check:"
+          if grep -q "window.EDGE_AI_URL_CONFIG" ./_site/docsify-url-config.js; then
+            echo "✅ URL configuration found"
+          else
+            echo "❌ URL configuration missing"
+            exit 1
+          fi
+
+          echo "🎉 Docsify build completed successfully"
+
+      - name: Validate build output
+        run: |
+          echo "🔍 Running build validation tests..."
+
+          # Test 1: Verify HTML structure
+          echo "📄 Testing HTML structure..."
+          if ! grep -q "<html" ./_site/index.html; then
+            echo "❌ Invalid HTML structure in index.html"
+            exit 1
+          fi
+          echo "✅ HTML structure is valid"
+
+          # Test 2: Check for broken internal links in markdown
+          echo "🔗 Checking for potential internal link issues..."
+          broken_links=0
+
+          # Check for common broken link patterns in docs
+          if find ./_site/docs -name "*.md" -exec grep -l "\](.*\.md)" {} \; | head -5; then
+            echo "⚠️  Found relative markdown links that may need attention"
+            echo "ℹ️  Note: These will be processed by Docsify's router"
+          fi
+
+          # Test 3: Verify critical Docsify plugins are referenced
+          echo "🔌 Checking plugin references..."
+          plugins_found=0
+          for plugin in "docsify@4" "search.min.js" "docsify-pagination" "docsify-copy-code"; do
+            if grep -q "$plugin" ./_site/index.html; then
+              echo "✅ Plugin $plugin found"
+              ((plugins_found++))
+            else
+              echo "⚠️  Plugin $plugin not found"
+            fi
+          done
+
+          if [ $plugins_found -ge 3 ]; then
+            echo "✅ Essential plugins are properly referenced"
+          else
+            echo "⚠️  Some plugins may be missing, but build can continue"
+          fi
+
+          # Test 4: Verify sidebar exists and is valid
+          echo "📚 Checking sidebar configuration..."
+          if [ -f "./_site/docs/_sidebar.md" ]; then
+            if grep -q "Getting Started\|Project Planning\|Contributing" ./_site/docs/_sidebar.md; then
+              echo "✅ Sidebar contains expected navigation sections"
+            else
+              echo "⚠️  Sidebar may not contain expected navigation"
+            fi
+          else
+            echo "❌ Sidebar file missing"
+            exit 1
+          fi
+
+          echo "🎯 Build validation completed successfully"
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

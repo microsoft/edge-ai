@@ -1,6 +1,29 @@
-# Workload and Configuration Management
-
-Date: **2024-06-10**
+---
+title: Workload and Configuration Management
+description: Architecture Decision Record evaluating solutions for workload and configuration management in multi-cluster and multi-tenant environments. Compares Kalypso, Ascent, Resilient Edge, Rancher Fleet, and custom GitHub Actions workflows across capabilities including workload assignment, configuration composition, namespace-as-a-service, multi-cluster scalability, promotion flows, and deployment observability using GitOps principles.
+author: Edge AI Team
+ms.date: 06/06/2025
+ms.topic: architecture-decision-record
+estimated_reading_time: 18
+keywords:
+  - workload-management
+  - configuration-management
+  - multi-cluster
+  - multi-tenant
+  - gitops
+  - kalypso
+  - ascent
+  - resilient-edge
+  - rancher-fleet
+  - workload-assignment
+  - configuration-composition
+  - namespace-as-a-service
+  - deployment-observability
+  - promotion-flow
+  - platform-as-code
+  - architecture-decision-record
+  - adr
+---
 
 ## Status
 
@@ -221,3 +244,5 @@ The related topics are highlighted in separate ADRs:
 - Deployment Observability
 - Secret Management on the Edge with GitOps
 - GitOps Security Plan
+
+*AI and automation capabilities described in this scenario should be implemented following responsible AI principles, including fairness, reliability, safety, privacy, inclusiveness, transparency, and accountability. Organizations should ensure appropriate governance, monitoring, and human oversight are in place for all AI-powered solutions.*

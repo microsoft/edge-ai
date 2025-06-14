@@ -1,6 +1,23 @@
-# Only Edge IoT Ops Blueprint
+---
+title: Only Edge IoT Ops Blueprint
+description: Deployment of Azure IoT Operations components on existing Arc-enabled Kubernetes cluster without cloud infrastructure setup, ideal for existing edge environments
+author: Edge AI Team
+ms.date: 06/07/2025
+ms.topic: reference
+keywords:
+  - azure iot operations
+  - edge components
+  - arc-enabled cluster
+  - existing infrastructure
+  - terraform
+  - bicep
+  - edge deployment
+  - mqtt broker
+  - data processor
+estimated_reading_time: 2
+---
 
-## Overview
+## Only Edge IoT Ops Blueprint
 
 This blueprint deploys Azure IoT Operations (AIO) components on an existing Arc-enabled Kubernetes cluster without setting up cloud infrastructure. It's designed for scenarios where you already have infrastructure in place and only need to deploy the AIO edge components. This is particularly useful for adding AIO capabilities to existing edge environments or for testing AIO components on pre-existing clusters.
 
@@ -76,3 +93,10 @@ Follow detailed deployment instructions from the blueprints README.md, [Detailed
 - **[Full Single Cluster](../full-single-node-cluster/README.md)**: Complete deployment including cloud and edge components
 - **[Only Cloud Single Node Cluster](../only-cloud-single-node-cluster/README.md)**: Deploy only the cloud resources
 - **[Full Multi-node Cluster](../full-multi-node-cluster/README.md)**: Multi-node high-availability deployment
+
+---
+
+<!-- markdownlint-disable MD036 -->
+*🤖 Crafted with precision by ✨Copilot following brilliant human instruction,
+then carefully refined by our team of discerning human reviewers.*
+<!-- markdownlint-enable MD036 -->

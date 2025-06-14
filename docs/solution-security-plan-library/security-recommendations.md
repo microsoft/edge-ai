@@ -1,4 +1,37 @@
-# AI on Edge Security Recommendations
+---
+title: AI on Edge Security Recommendations
+description: Comprehensive security recommendations guide for AI on Edge projects featuring 91 detailed security controls across Azure Storage, Linux Virtual Machines, Azure Key Vault, Event Grid, Event Hubs, and Azure Monitor, covering network security, identity management, data protection, privileged access, threat detection, and compliance best practices
+author: Edge AI Team
+ms.date: 06/06/2025
+ms.topic: security-guidance
+estimated_reading_time: 20
+keywords:
+  - azure-security-recommendations
+  - ai-edge-security
+  - microsoft-security-controls
+  - azure-storage-security
+  - linux-vm-security
+  - azure-key-vault-security
+  - event-grid-security
+  - event-hubs-security
+  - azure-monitor-security
+  - network-security-controls
+  - identity-management
+  - azure-rbac
+  - managed-identities
+  - data-protection
+  - encryption-at-rest
+  - encryption-in-transit
+  - customer-managed-keys
+  - privileged-access
+  - threat-detection
+  - azure-policy
+  - conditional-access
+  - microsoft-defender
+  - azure-backup
+  - logging-monitoring
+  - compliance-controls
+---
 
 ## Overview
 
@@ -1386,3 +1419,5 @@ Use Microsoft Defender for Cloud to configure Azure Policy to audit and enforce 
 **Reference:**
 
 Create diagnostic settings at scale using Azure Policy: [https://docs.microsoft.com/azure/azure-monitor/essentials/diagnostic-settings-policy](https://docs.microsoft.com/azure/azure-monitor/essentials/diagnostic-settings-policy)
+
+*AI and automation capabilities described in this scenario should be implemented following responsible AI principles, including fairness, reliability, safety, privacy, inclusiveness, transparency, and accountability. Organizations should ensure appropriate governance, monitoring, and human oversight are in place for all AI-powered solutions.*

@@ -1,10 +1,39 @@
-# MLOps Tooling for Vision Model Edge Inference with Intensive Real-Time Video Stream
+---
+title: MLOps Tooling for Vision Model Edge Inference with Intensive Real-Time Video Stream
+description: Comprehensive technology paper evaluating MLOps tooling approaches for edge vision inference scenarios with real-time video streams. Compares Azure Machine Learning vs custom training with GitOps/Flux deployment, addressing autoscaling challenges, hardware acceleration, ONNX optimization, distributed training/inference, and proprietary model frameworks for computer vision workloads at scale.
+author: Cheng Chen
+ms.date: 06/06/2025
+ms.topic: technology-paper
+estimated_reading_time: 18
+keywords:
+  - mlops
+  - edge-inference
+  - vision-models
+  - computer-vision
+  - real-time-video
+  - azure-machine-learning
+  - aml
+  - gitops
+  - flux
+  - autoscaling
+  - hardware-acceleration
+  - onnx
+  - distributed-training
+  - distributed-inference
+  - kubernetes-hpa
+  - inference-router
+  - model-optimization
+  - cnn-models
+  - transformer-models
+  - proprietary-frameworks
+  - container-registry
+  - arc-enabled-kubernetes
+  - gpu-acceleration
+  - openvino
+  - technology-paper
+---
 
-Date: **2025-01-07**
-
-Drafted by: **Cheng Chen**
-
-## Summary
+## Overview
 
 The scenario discussed in this document is vision model inference at the edge with a high volume of real-time video streams being processed. Vision inference at the edge is essential for processing and analyzing image data locally for computer vision tasks like object detection, image classification, anomaly detection, etc.
 These tasks benefit from real-time processing at the edge, which reduces latency, minimizes data transmission costs, preserves privacy on-site, and ensures faster inference to decision-making loops by processing data closer to the edge data source and point of action.
@@ -45,7 +74,7 @@ Deployment: flexible for any deployment tool
 
 AML training service is used for model training and model packaging. The model package is deployed to the compute target via the AML deployment tooling or other deployment tool via a managed container registry.
 
-AML provides a model optimization feature supporting ONNX during model training; for details on how ONNX can help optimizing model inferencing, check [here](https://learn.microsoft.com/azure/machine-learning/concept-onnx?view=azureml-api-2). You can use AML to train an ONNX model, use automated machine learning capabilities for ONNX format conversion, or use Azure AI Custom Vision to generate customized ONNX models.
+AML provides a model optimization feature supporting ONNX during model training; for details on [how ONNX can help optimizing model inferencing](https://learn.microsoft.com/azure/machine-learning/concept-onnx?view=azureml-api-2). You can use AML to train an ONNX model, use automated machine learning capabilities for ONNX format conversion, or use Azure AI Custom Vision to generate customized ONNX models.
 
 Alternatively, if the model is built on one of the [frameworks which support ONNX conversion](https://onnx.ai/supported-tools), you can use [ONNX conversion tools](https://github.com/onnx/tutorials) to convert it.
 
@@ -53,7 +82,7 @@ Another important hardware acceleration feature that AML can provide is distribu
 
 The vision model trained with AML can be seamlessly deployed to Arc-enabled Kubernetes edge clusters with the AML native deployment service (arc extension) or can be flexibility packaged and saved in a container registry and subsequently deployed via other deployment tooling approaches.
 
-If you decide to use AML native deployment, it has built-in support for autoscaling. For autoscaling design and configuration, check [here](https://learn.microsoft.com/azure/machine-learning/how-to-kubernetes-inference-routing-azureml-fe?view=azureml-api-2#autoscaling) to become familiar with the AML autoscaling feature and its associated inferencing router component.
+If you decide to use AML native deployment, it has built-in support for autoscaling. For [autoscaling design and configuration](https://learn.microsoft.com/azure/machine-learning/how-to-kubernetes-inference-routing-azureml-fe?view=azureml-api-2#autoscaling) to become familiar with the AML autoscaling feature and its associated inferencing router component.
 
 If you decide to use a deployment tool other than AML deployment, such as GitOps/Flux, Kubernetes Horizontal Pod Autoscaler (HPA) is a popular choice for autoscaling pods, which is also compatible with model containers created by AML. See [Scenario 3](#scenario-3) for more details.
 
@@ -69,7 +98,7 @@ Considerations for this option:
   - If using AML autoscaling component inference router, you cannot enable Kubernetes HPA for model deployment as doing so would cause the two auto-scaling components to compete with each other.
   - AML autoscaling component does not scale the number of nodes in an Kubernetes cluster, because this could lead to unexpected cost increases. Instead, it scales the number of replicas for the model within the physical cluster boundaries.
   - AML provides pre-built Docker images for common frameworks like TensorFlow, PyTorch, ONNX Runtime, etc. If you use a less common framework (e.g., a proprietary framework), you may need to build a custom Docker container.
-  - MLflow integration is designed for popular frameworks like TensorFlow, PyTorch, and Scikit-learn. Custom frameworks may require additional effort for integration and testing. The MLflow supported frameworks are listed [here](https://mlflow.org/docs/latest/models.html#built-in-model-flavors).
+  - MLflow integration is designed for popular frameworks like TensorFlow, PyTorch, and Scikit-learn. Custom frameworks may require additional effort for integration and testing. [MLflow supported frameworks](https://mlflow.org/docs/latest/models.html#built-in-model-flavors).
 
 ### Scenario 2
 
@@ -93,7 +122,7 @@ For the scoring script, the specific functions, init() and run(), must be define
 During AML packaging and deployment, the inference router is retrieved from the Microsoft Container Registry (MCR) (Implied from [MS official document](https://learn.microsoft.com/azure/machine-learning/how-to-kubernetes-inference-routing-azureml-fe?view=azureml-api-2&utm_source=chatgpt.com);
 connection to the MCR is one of the connectivity requirements for deploying inference router to Arc AKS; though the documentation does not directly state that the inference router component is pulled from MCR. The Kubernetes EP created by AML is an abstract layer for all supporting Kubernetes services and exposes the model container via an HTTP REST API, with the inference router to be configured for traffic routing and autoscaling.
 
-The model acceleration conversion is the same as in [Scenario 1](#scenario-1). During packaging, AML supports converting models from many frameworks. You need to check your custom model to make sure it is compatible with the ONNX format, via checking the supported ONNX conversion frameworks [here](https://onnx.ai/supported-tools).
+The model acceleration conversion is the same as in [Scenario 1](#scenario-1). During packaging, AML supports converting models from many frameworks. You need to check your custom model to make sure it is compatible with the ONNX format, via checking the [supported ONNX conversion frameworks](https://onnx.ai/supported-tools).
 
 For hardware acceleration model deployment, AML has native support to deploy, manage, and monitor your ONNX models in Azure like AML service, Ubuntu VM, Windows server VM.
 
@@ -190,3 +219,9 @@ For future considerations, if any AIO deployment tool that will be publicly avai
 [Deploy AI using Microsoft Azure & ONNX for the OpenVINO Toolkit](https://www.intel.com/content/www/us/en/developer/videos/microsoft-azure-onnx-runtime-for-openvino.html#gs.j0ucc8)
 
 [Implementing optimized CPU inference in AML using ONNX models and Intel's OpenVINO toolkit](https://learn.microsoft.com/shows/ai-show/combining-the-power-of-optimum-openvino-onnx-runtime-and-azure)
+
+*AI and automation capabilities described in this scenario should be implemented following responsible AI principles, including fairness, reliability, safety, privacy, inclusiveness, transparency, and accountability. Organizations should ensure appropriate governance, monitoring, and human oversight are in place for all AI-powered solutions.*
+
+---
+
+*This documentation is part of the [Edge AI Platform](../index.md) project.*

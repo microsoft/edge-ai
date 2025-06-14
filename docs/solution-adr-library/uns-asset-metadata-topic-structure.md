@@ -1,8 +1,32 @@
-# Assets Metadata and UNS MQTT Topic Structure
-
-Date: 2024-04-24
-
-This document describes how we will store assets metadata and how we will use it to generate MQTT topics structure for the UNS.
+---
+title: Assets Metadata and UNS MQTT Topic Structure
+description: Architecture Decision Record defining how asset metadata is stored and used to generate MQTT topic structures for Unified Namespace (UNS) implementation. Evaluates Azure resource tags, IoT Operations asset custom properties, and IoT MQ State Store for storing metadata across multi-site production environments with OPC UA data integration and enterprise-to-local UNS replication.
+author: Edge AI Team
+ms.date: 06/06/2025
+ms.topic: architecture-decision-record
+estimated_reading_time: 17
+keywords:
+  - unified-namespace
+  - uns
+  - mqtt
+  - topic-structure
+  - asset-metadata
+  - azure-iot-operations
+  - opc-ua
+  - kepware
+  - enterprise-uns
+  - local-uns
+  - data-processor
+  - mqtt-bridge
+  - production-sites
+  - manufacturing
+  - industrial-iot
+  - azure-resource-tags
+  - custom-properties
+  - iot-mq-state-store
+  - architecture-decision-record
+  - adr
+---
 
 ## Status
 
@@ -343,3 +367,5 @@ DK/
                 ├── ManualStop
                 └── Alarm
 ```
+
+*AI and automation capabilities described in this scenario should be implemented following responsible AI principles, including fairness, reliability, safety, privacy, inclusiveness, transparency, and accountability. Organizations should ensure appropriate governance, monitoring, and human oversight are in place for all AI-powered solutions.*

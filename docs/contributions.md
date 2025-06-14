@@ -1,5 +1,28 @@
+---
+title: Pull Request Analysis for edge-ai
+description: Analysis of pull request activity and contributor statistics for the
+  edge-ai project
+author: Edge AI Team
+ms.date: 06/06/2025
+ms.topic: hub-page
+keywords:
+  - pull request analysis
+  - contributor statistics
+  - development metrics
+  - github copilot impact
+  - pr trends
+  - code review
+  - development productivity
+  - project analytics
+  - slo compliance
+  - terraform
+  - bicep
+  - infrastructure as code
+  - edge ai
+  - azure iot operations
+estimated_reading_time: 20
+---
 <!-- markdownlint-disable MD033 -->
-# Pull Request Analysis for edge-ai
 
 ## Overview
 
@@ -301,7 +324,7 @@ config:
 ---
 sankey-beta
 %% Top 5 Scenarios (by Customer Weighting) - Mermaid does not render title for sankey-beta directly in diagram
-"Predictive Maintenance","Azure VM Host Infrastructure",8
+"Predictive Maintenance","VM Host Infrastructure",8
 "Operational Performance Monitoring","Cloud Container Platform Infrastructure",8
 "Predictive Maintenance","Cloud Container Platform Infrastructure",8
 "Yield Process Optimization","Cloud Container Platform Infrastructure",6
@@ -364,7 +387,7 @@ sankey-beta
 "Predictive Maintenance","Stamp Architecture Deployment",8
 "Quality Process Optimization & Automation","Stamp Architecture Deployment",7
 "Yield Process Optimization","Stamp Architecture Deployment",6
-"Azure VM Host Infrastructure","Cloud Virtual Machine Host(s) (051-vm-host)",10
+"VM Host Infrastructure","Cloud Virtual Machine Host(s) (050-vm-host)",10
 "Cloud Container Platform Infrastructure","Cloud AKS Cluster and ACR (060-aks-acr)",9
 "OCP UA Closed-Loop Control","Cloud AKS Cluster and ACR (060-aks-acr)",9
 "Cloud Data Platform","Cloud Data Persistence (030-data)",33
@@ -413,10 +436,10 @@ config:
 ---
 sankey-beta
 %% Other Scenarios (Customer Weighting >= 2, Excluding Top 5) - Mermaid does not render title for sankey-beta directly in diagram
-"Automated Quality Diagnostics & Simulation","Azure VM Host Infrastructure",4
-"Facility Design & Simulation","Azure VM Host Infrastructure",3
-"Immersive Remote Operations","Azure VM Host Infrastructure",5
-"Semi-Autonomous Cell","Azure VM Host Infrastructure",2
+"Automated Quality Diagnostics & Simulation","VM Host Infrastructure",4
+"Facility Design & Simulation","VM Host Infrastructure",3
+"Immersive Remote Operations","VM Host Infrastructure",5
+"Semi-Autonomous Cell","VM Host Infrastructure",2
 "Automated Quality Diagnostics & Simulation","Cloud Container Platform Infrastructure",4
 "Autonomous Cell","Cloud Container Platform Infrastructure",2
 "Facility Design & Simulation","Cloud Container Platform Infrastructure",3
@@ -541,7 +564,7 @@ sankey-beta
 "Logistics Optimization & Automation","Stamp Architecture Deployment",2
 "Packaging Line Performance Optimization","Stamp Architecture Deployment",3
 "Semi-Autonomous Cell","Stamp Architecture Deployment",2
-"Azure VM Host Infrastructure","Cloud Virtual Machine Host(s) (051-vm-host)",10
+"VM Host Infrastructure","Cloud Virtual Machine Host(s) (050-vm-host)",10
 "Cloud Container Platform Infrastructure","Cloud AKS Cluster and ACR (060-aks-acr)",9
 "OCP UA Closed-Loop Control","Cloud AKS Cluster and ACR (060-aks-acr)",9
 "Cloud Data Platform","Cloud Data Persistence (030-data)",33
@@ -590,11 +613,11 @@ config:
 ---
 sankey-beta
 %% Scenarios with No Direct Customer Weighting (Value <= 1) - Mermaid does not render title for sankey-beta directly in diagram
-"Automated Formula Management","Azure VM Host Infrastructure",0
-"Integrated Maintenance/Work Orders","Azure VM Host Infrastructure",1
-"Product Innovation","Azure VM Host Infrastructure",0
-"Product Lifecycle Simulation","Azure VM Host Infrastructure",0
-"Virtual Training","Azure VM Host Infrastructure",0
+"Automated Formula Management","VM Host Infrastructure",0
+"Integrated Maintenance/Work Orders","VM Host Infrastructure",1
+"Product Innovation","VM Host Infrastructure",0
+"Product Lifecycle Simulation","VM Host Infrastructure",0
+"Virtual Training","VM Host Infrastructure",0
 "Automated Formula Management","Cloud Data Platform",0
 "Automated Product Design","Cloud Data Platform",0
 "Autonomous Material Movement","Cloud Data Platform",0
@@ -736,7 +759,7 @@ sankey-beta
 "Virtual Training","Stamp Architecture Deployment",0
 "Waste Circular Economy","Stamp Architecture Deployment",0
 "Water Usage Optimization","Stamp Architecture Deployment",1
-"Azure VM Host Infrastructure","Cloud Virtual Machine Host(s) (051-vm-host)",10
+"VM Host Infrastructure","Cloud Virtual Machine Host(s) (050-vm-host)",10
 "OCP UA Closed-Loop Control","Cloud AKS Cluster and ACR (060-aks-acr)",9
 "Cloud Data Platform","Cloud Data Persistence (030-data)",33
 "Cloud Messaging and Event Infrastructure","Edge Messaging & Data Routing (130-messaging)",33
@@ -772,3 +795,8 @@ sankey-beta
 ## Report Generation
 
 This report was generated on 2025-05-23 using data from all 306 pull requests in the edge-ai project.
+
+<!-- markdownlint-disable MD036 -->
+*🤖 Crafted with precision by ✨Copilot following brilliant human instruction,
+then carefully refined by our team of discerning human reviewers.*
+<!-- markdownlint-enable MD036 -->

@@ -1,8 +1,32 @@
-# Model Inferencing on Disconnected Windows Environments
-
-Date: 2025-03-07
-
-Authors: Omer Demir
+---
+title: Model Inferencing on Disconnected Windows Environments
+description: Architecture Decision Record evaluating inference engines for Small Language Model (SLM) inference on disconnected Windows environments. Compares ONNX Runtime GenAI, LlamaCPP, Hugging Face Optimum, and NVIDIA Triton for offline RAG capabilities, with performance benchmarks showing ONNX Runtime GenAI as the optimal solution for token throughput and latency optimization.
+author: Edge AI Team
+ms.date: 06/06/2025
+ms.topic: architecture-decision-record
+estimated_reading_time: 14
+keywords:
+  - model-inference
+  - small-language-models
+  - slm
+  - disconnected-environments
+  - offline-inference
+  - windows-environments
+  - onnx-runtime-genai
+  - llamacpp
+  - hugging-face-optimum
+  - nvidia-triton
+  - rag
+  - retrieval-augmented-generation
+  - token-throughput
+  - latency-optimization
+  - phi-3-mini
+  - performance-benchmarks
+  - opentelemetry
+  - telemetry-logging
+  - architecture-decision-record
+  - adr
+---
 
 ## Status
 
@@ -187,3 +211,5 @@ We tested following combinations;
 - [Hugging Face Optimum](https://github.com/huggingface/optimum)
 - [NVIDIA Triton Inference Server](https://developer.nvidia.com/nvidia-triton-inference-server)
 - [Phi-3 Mini ONNX Model](https://huggingface.co/microsoft/Phi-3-mini-4k-instruct-onnx)
+
+*AI and automation capabilities described in this scenario should be implemented following responsible AI principles, including fairness, reliability, safety, privacy, inclusiveness, transparency, and accountability. Organizations should ensure appropriate governance, monitoring, and human oversight are in place for all AI-powered solutions.*

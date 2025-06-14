@@ -1,6 +1,31 @@
-# GitOps operator for an Azure Arc enabled cluster
-
-Date: **2024-06-04**
+---
+title: GitOps operator for an Azure Arc enabled cluster
+description: Architecture Decision Record comparing GitOps operators (Flux vs Argo CD) for Azure Arc-enabled Kubernetes clusters. Evaluates Azure Arc GitOps extension integration with Flux v2, deployment observability through Azure Resource Graph, fleet management capabilities, and Microsoft support considerations for edge and cloud cluster deployments.
+author: Eugene Fedorenko
+ms.date: 06/06/2025
+ms.topic: architecture-decision-record
+estimated_reading_time: 6
+keywords:
+  - gitops
+  - gitops-operator
+  - azure-arc
+  - azure-arc-gitops
+  - flux
+  - flux-v2
+  - argo-cd
+  - kubernetes
+  - azure-resource-graph
+  - deployment-observability
+  - fleet-management
+  - microsoft-flux
+  - edge-computing
+  - cluster-management
+  - continuous-deployment
+  - kalypso-observability-hub
+  - azure-arc-extension
+  - architecture-decision-record
+  - adr
+---
 
 ## Status
 
@@ -53,3 +78,5 @@ The related topics are highlighted in separate ADRs:
 - [Workload and Configuration Management](./workload-configuration-management.md)
 - Deployment Observability
 - Secret Management on the Edge with GitOps
+
+*AI and automation capabilities described in this scenario should be implemented following responsible AI principles, including fairness, reliability, safety, privacy, inclusiveness, transparency, and accountability. Organizations should ensure appropriate governance, monitoring, and human oversight are in place for all AI-powered solutions.*

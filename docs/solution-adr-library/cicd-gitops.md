@@ -1,6 +1,25 @@
-# CI/CD. Multi-Environment Promotional Flow with GitOps
-
-Date: **2024-06-27**
+---
+title: CI/CD. Multi-Environment Promotional Flow with GitOps
+description: Architecture Decision Record documenting a comprehensive CI/CD implementation using GitOps methodology for multi-environment promotional flows. Outlines GitHub Actions-based workflows for continuous integration, automated deployment, and cross-environment promotion using separate repositories for source code, configuration, and GitOps manifests with pull-based reconciliation.
+author: Eugene Fedorenko
+ms.date: 06/06/2025
+ms.topic: architecture-decision-record
+estimated_reading_time: 12
+keywords:
+  - cicd
+  - gitops
+  - multi-environment
+  - promotional-flow
+  - github-actions
+  - continuous-integration
+  - continuous-deployment
+  - kubernetes-manifests
+  - helm-charts
+  - pull-based-deployment
+  - environment-promotion
+  - architecture-decision-record
+  - adr
+---
 
 ## Status
 
@@ -120,3 +139,5 @@ The related topics are highlighted in separate ADRs:
 - Deployment Observability
 - Secret Management on the Edge with GitOps
 - GitOps Security Plan
+
+*AI and automation capabilities described in this scenario should be implemented following responsible AI principles, including fairness, reliability, safety, privacy, inclusiveness, transparency, and accountability. Organizations should ensure appropriate governance, monitoring, and human oversight are in place for all AI-powered solutions.*

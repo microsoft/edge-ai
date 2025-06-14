@@ -1,6 +1,24 @@
-# Blueprints
+---
+title: Blueprints
+description: Infrastructure as Code composition mechanism providing ready-to-deploy end-to-end solutions for edge computing environments with Azure IoT Operations
+author: Edge AI Team
+ms.date: 06/07/2025
+ms.topic: reference
+keywords:
+  - blueprints
+  - infrastructure as code
+  - azure iot operations
+  - edge computing
+  - terraform
+  - bicep
+  - kubernetes
+  - arc-enabled clusters
+  - deployment templates
+  - iac composition
+estimated_reading_time: 7
+---
 
-## Overview
+## Blueprints
 
 Blueprints are the Infrastructure as Code (IaC) composition mechanism for this repository. They
 provide ready-to-deploy end-to-end solutions that showcase how to combine individual components into
@@ -429,43 +447,9 @@ terraform {
 
 ## Industry Solutions
 
-The blueprints in this repository can be used to implement a variety of industry solutions across different pillars. We are working aggressively towards building blueprints for each of these scenarios as time move on:
+The blueprints in this repository can be used to implement a variety of industry solutions across different pillars. We are working aggressively towards building blueprints for each of these scenarios as time move on.
 
-| Industry Pillar                                | Scenario                                              | Description                                                                                                                                  |
-|------------------------------------------------|-------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------|
-| **Process & Production Optimization**          | Packaging Line Performance Optimization               | Line & Bottleneck automated control                                                                                                          |
-|                                                | End-to-end batch planning and optimization            | Digitally enabled batch release                                                                                                              |
-|                                                | Changeover & Cycle Time Optimization                  | Advanced analytics-based cycle time optimization                                                                                             |
-|                                                | Autonomous Material Movement                          | Advanced IIoT applied to process optimization                                                                                                |
-|                                                | Operational Performance Monitoring                    | Digital tools to enhance a connected workforce                                                                                               |
-|                                                | Inventory Optimization                                | Real-time inventory management (internal/ external)                                                                                          |
-|                                                | Yield Process Optimization                            | Advanced IIoT applied to process optimization                                                                                                |
-| **Intelligent Asset Health**                   | Digital Inspection / Survey                           | Automated inspection enabled by digital thread                                                                                               |
-|                                                | Predictive Maintenance                                | AI driven predictive analysis for critical asset lifecycle management                                                                        |
-| **Empower Your Workforce**                     | Intelligent Assistant (CoPilot/Companion)             | Smart workforce planning and optimization                                                                                                    |
-|                                                | Integrated Maintenance/Work Orders                    | Resource efficiency with operations AI enabled data analytics                                                                                |
-|                                                | Immersive Remote Operations                           | Smart workforce upskilling tool                                                                                                              |
-|                                                | Enhanced Personal Safety                              | Virtual Muster. Robot-aided process operations support                                                                                       |
-|                                                | Virtual Training                                      | Immersive Training                                                                                                                           |
-| **Smart Quality Management**                   | Quality Process Optimization & Automation             | IoT-enabled manufacturing quality management                                                                                                 |
-|                                                | Automated Quality Diagnostics & Simulation            | Quality diagnostic system empowered by AI search engine e.g. line performance monitoring                                                     |
-| **Frictionless Material Handling & Logistics** | End-to-end Material Handling                          | Analytics for dynamic warehouse resource planning and scheduling                                                                             |
-|                                                | Logistics Optimization & Automation                   | Logistics Control Tower                                                                                                                      |
-|                                                | Autonomous Cell                                       | Fully automated process for discreet manufacturing                                                                                           |
-|                                                | Semi-Autonomous Cell                                  | Human robotics orchestration                                                                                                                 |
-| **Consumer in the IMV**                        | Connected Consumer Experience                         | Generative AI Customer Agent. Augmented remote assistance                                                                                    |
-|                                                | Connected Consumer Insights                           | Digital twin of customer system                                                                                                              |
-| **Virtual Design, Build & Operate Lifecycle**  | Automated Product Design                              | Digital twins and process modelling and simulation enabling shorter qualification trials in R&D                                              |
-|                                                | Facility Design & Simulation                          | Operation research model-based factory capacity optimization                                                                                 |
-|                                                | Product Innovation                                    | Ecosystem digital twin for co-development. Data unification for federation                                                                   |
-|                                                | Product Lifecycle Simulation                          | Intelligent Personalization. Simulated product lifecycle performance                                                                         |
-|                                                | Automated Formula Management                          | Product Formula Simulation. Model based Design                                                                                               |
-| **Cognitive Supply Ecosystem**                 | Ecosystem Orchestration                               | Agile logistics bidding through analytics-enabled capacity and price prediction                                                              |
-|                                                | Ecosystem Decision Support                            | A closed-loop analytic model connects portfolio, scenario, value, and situational analysis to drive supply chain innovation powered by AR/VR |
-| **Sustainability for the IMV**                 | Energy optimization for fixed facility/process assets | IIoT and advanced analytics based energy consumption optimization across ecosystem                                                           |
-|                                                | Compressed Air Optimization                           | Compressed air optimization using predictive analytics                                                                                       |
-|                                                | Waste Circular Economy                                | Advanced IIoT applied to process optimization                                                                                                |
-|                                                | Water Usage Optimization                              | Advanced analytics enabled clean water reduction and contaminated water cleaning optimization                                                |
+For a detailed list of industry pillars and scenarios, please see the [Industry Scenarios and Platform Capabilities](./industry-scenarios-platform-capabilities.md) document.
 
 ## Getting Started with Your Industry Solution
 
@@ -475,3 +459,10 @@ The blueprints in this repository can be used to implement a variety of industry
 4. After deployment, customize the solution with additional components specific to your industry scenario
 
 For more information about implementing specific industry solutions, please contact the solution team.
+
+---
+
+<!-- markdownlint-disable MD036 -->
+*🤖 Crafted with precision by ✨Copilot following brilliant human instruction,
+then carefully refined by our team of discerning human reviewers.*
+<!-- markdownlint-enable MD036 -->

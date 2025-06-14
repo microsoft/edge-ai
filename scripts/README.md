@@ -26,7 +26,8 @@ Azure DevOps build system for managing and validating the project's IaC.
     - [location-check.sh](#location-checksh)
   - [Documentation and Link Validation Scripts](#documentation-and-link-validation-scripts)
     - [link-lang-check.py](#link-lang-checkpy)
-    - [wiki-build.sh](#wiki-buildsh)
+    - [Build-Wiki.ps1](#build-wikips1)
+    - [wiki-build.sh (deprecated)](#wiki-buildsh-deprecated)
   - [GitHub Integration Scripts](#github-integration-scripts)
     - [github/create-pr.sh](#githubcreate-prsh)
     - [github/access-tokens-url.sh](#githubaccess-tokens-urlsh)
@@ -258,14 +259,31 @@ Finds and optionally fixes URLs with language path segments ('en-us').
   - Used by the [docs-check-bicep-template.yml](../.azdo/docs-check-bicep-template.yml) in the DocsCheckBicep job
 - **When to Use**: Run before submitting PRs to ensure links don't contain language-specific paths which can cause internationalization issues
 
-### wiki-build.sh
+### Build-Wiki.ps1
 
-Generates wiki content from markdown files in the repository.
+PowerShell script that generates Azure DevOps Wiki content from markdown files in the repository.
+Parses the navigation structure from docs/_sidebar.md and recreates the exact hierarchical
+folder structure in the wiki output.
 
-- **Usage**: `./wiki-build.sh`
+- **Usage**: `./Build-Wiki.ps1`
+- **Features**:
+  - Parses docs/_sidebar.md to extract complete 4-level navigation hierarchy
+  - Creates wiki structure with proper directory hierarchy and .order files at every level
+  - Updates relative links to work correctly in the new wiki structure
+  - Handles URL token replacement for Azure DevOps integration
+  - Integrates blueprint documentation seamlessly
 - **Build Integration**: Used by the [wiki-update-template.yml](../.azdo/wiki-update-template.yml) job to rebuild the Azure DevOps wiki
 - **When to Use**: Generally only used by the build system after merges to main
-- **Notes**: Creates a .wiki directory and organizes documentation for the Azure DevOps wiki
+- **Notes**: Creates a .wiki directory and organizes documentation to match the sidebar navigation exactly
+
+### wiki-build.sh (deprecated)
+
+Legacy bash script for generating wiki content. This script has been replaced by Build-Wiki.ps1.
+
+- **Status**: Deprecated - Use Build-Wiki.ps1 instead
+- **Legacy Usage**: `./wiki-build.sh`
+- **Migration**: The Azure DevOps pipeline now calls Build-Wiki.ps1 directly using pwsh
+- **Notes**: This script may be removed in future versions
 
 ## GitHub Integration Scripts
 
@@ -356,11 +374,11 @@ Most scripts follow these error handling practices:
 
 The following Azure DevOps pipeline templates depend on these scripts:
 
-| Azure DevOps Template                                                                            | Script Dependencies                                             |
-|--------------------------------------------------------------------------------------------------|-----------------------------------------------------------------|
-| [docs-check-terraform-template.yml](../.azdo/docs-check-terraform-template.md)                   | install-terraform-docs.sh, tf-docs-check.sh, link-lang-check.py |
-| [aio-version-checker-template.yml](../.azdo/aio-version-checker-template.md)                     | aio-version-checker.py                                          |
-| [variable-compliance-terraform-template.yml](../.azdo/variable-compliance-terraform-template.md) | tf-vars-compliance-check.py                                     |
-| [cluster-test-terraform-template.yml](../.azdo/cluster-test-terraform-template.md)               | tf-provider-version-check.sh                                    |
-| [resource-provider-pwsh-tests-template.yml](../.azdo/resource-provider-pwsh-tests-template.md)   | Invoke-Pester.ps1                                               |
-| [wiki-update-template.yml](../.azdo/wiki-update-template.md)                                     | wiki-build.sh                                                   |
+| Azure DevOps Template                                                                                                                       | Script Dependencies                                             |
+|---------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------|
+| [docs-check-terraform-template.yml](../docs/build-cicd/pipelines/azure-devops/templates/docs-check-terraform-template.md)                   | install-terraform-docs.sh, tf-docs-check.sh, link-lang-check.py |
+| [aio-version-checker-template.yml](../docs/build-cicd/pipelines/azure-devops/templates/aio-version-checker-template.md)                     | aio-version-checker.py                                          |
+| [variable-compliance-terraform-template.yml](../docs/build-cicd/pipelines/azure-devops/templates/variable-compliance-terraform-template.md) | tf-vars-compliance-check.py                                     |
+| [cluster-test-terraform-template.yml](../docs/build-cicd/pipelines/azure-devops/templates/cluster-test-terraform-template.md)               | tf-provider-version-check.sh                                    |
+| [resource-provider-pwsh-tests-template.yml](../docs/build-cicd/pipelines/azure-devops/templates/resource-provider-pwsh-tests-template.md)   | Invoke-Pester.ps1                                               |
+| [wiki-update-template.yml](../docs/build-cicd/pipelines/azure-devops/templates/wiki-update-template.md)                                     | Build-Wiki.ps1                                                  |

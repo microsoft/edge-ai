@@ -130,7 +130,7 @@ If you see issues with the documentation, please follow the [your first code con
 
 This project uses MegaLinter with numerous custom configured linters. These linters can be run locally to ensure that code reads the same across the project.
 
-For detailed information about our MegaLinter configuration, integration with our CI/CD pipeline, and available linters, please refer to our [MegaLinter documentation](./.azdo/templates/megalinter-template.md).
+For detailed information about our MegaLinter configuration, integration with our CI/CD pipeline, and available linters, please refer to our [MegaLinter documentation](./docs/build-cicd/pipelines/azure-devops/templates/megalinter-template.md).
 
 ### Development Environment
 
@@ -155,6 +155,17 @@ For detailed information about our coding standards, please refer to the [Coding
 - Git workflow practices including Conventional Commits
 - Documentation requirements
 - Variable naming and structure conventions
+
+### GitHub Copilot Instructions and Prompts
+
+This project includes comprehensive GitHub Copilot instruction and prompt files to enhance the development experience. For detailed information about available files and how to use them effectively, please refer to the [AI-Assisted Engineering](./docs/contributing/ai-assisted-engineering.md) guide.
+
+The guide covers:
+
+- Available instruction files for different technologies (Terraform, Bicep, C#, Python)
+- Prompt templates for common development tasks
+- Best practices for using Copilot with project-specific context
+- Step-by-step examples for Infrastructure as Code development
 
 ## Attribution
 

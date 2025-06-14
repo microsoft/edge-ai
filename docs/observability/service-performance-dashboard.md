@@ -1,6 +1,22 @@
-# Service Performance Dashboard Documentation
+---
+title: Service Performance Dashboard Documentation
+description: Service Performance Dashboard providing insights into Kubernetes pod resource usage, including memory and CPU utilization for monitoring and optimization
+author: Edge AI Team
+ms.date: 06/06/2025
+ms.topic: reference
+keywords:
+  - service performance dashboard
+  - monitoring
+  - kubernetes pods
+  - resource usage
+  - memory utilization
+  - cpu utilization
+  - performance metrics
+  - grafana
+estimated_reading_time: 2
+---
 
-## Purpose
+## Overview
 
 The `Service Performance Dashboard` provides insights into the resource usage of Kubernetes pods, including memory and CPU utilization. It is designed to help operators monitor and optimize resource allocation by visualizing key metrics.
 
@@ -77,3 +93,8 @@ Once imported, you can start monitoring the resource usage of your system using 
 ## Conclusion
 
 The `Service Performance Dashboard` provides a centralized view of in-cluster resource utilization, enabling proactive monitoring and optimization. Each panel is tailored to highlight specific metrics and thresholds, ensuring that operators can quickly identify and address potential inefficiencies.
+
+<!-- markdownlint-disable MD036 -->
+*🤖 Crafted with precision by ✨Copilot following brilliant human instruction,
+then carefully refined by our team of discerning human reviewers.*
+<!-- markdownlint-enable MD036 -->

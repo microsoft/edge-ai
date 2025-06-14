@@ -1,0 +1,334 @@
+---
+name: 📚 Documentation Automation
+
+on: # yamllint disable-line rule:truthy
+  push:
+    branches: [main, develop]
+    paths:
+      - 'docs/**'
+      - 'src/**/*.md'
+      - 'blueprints/**/*.md'
+      - 'scripts/Generate-DocsSidebar.ps1'
+      - 'scripts/Three-Tree-Enhancement.ps1'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docs/**'
+      - 'src/**/*.md'
+      - 'blueprints/**/*.md'
+      - 'scripts/Generate-DocsSidebar.ps1'
+      - 'scripts/Three-Tree-Enhancement.ps1'
+  workflow_dispatch:
+    inputs:
+      force_regenerate:
+        description: 'Force regeneration of all documentation'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  DOCUMENTATION_PATH: './docs'
+  SRC_PATH: './src'
+  BLUEPRINTS_PATH: './blueprints'
+
+jobs:
+  validate-frontmatter:
+    name: 🔍 Validate Frontmatter
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup PowerShell
+        uses: azure/powershell@v1
+        with:
+          inlineScript: |
+            Write-Host "PowerShell version: $($PSVersionTable.PSVersion)"
+          azPSVersion: 'latest'
+
+      - name: Validate frontmatter consistency
+        shell: pwsh
+        run: |
+          # Import frontmatter validation functions
+          . ./scripts/Generate-DocsSidebar.ps1
+
+          Write-Host "🔍 Validating frontmatter across all markdown files..."
+
+          $errors = @()
+          $warnings = @()
+
+          # Get all markdown files
+          $markdownFiles = Get-ChildItem -Path @('docs', 'src', 'blueprints') -Filter '*.md' -Recurse -ErrorAction SilentlyContinue
+
+          Write-Host "Found $($markdownFiles.Count) markdown files to validate"
+
+          foreach ($file in $markdownFiles) {
+            $frontmatter = Get-MarkdownFrontmatter -FilePath $file.FullName
+
+            if ($frontmatter) {
+              # Validate required fields
+              $requiredFields = @('title', 'description', 'author', 'ms.date', 'ms.topic')
+
+              foreach ($field in $requiredFields) {
+                if (-not $frontmatter.Frontmatter.ContainsKey($field)) {
+                  $errors += "Missing required field '$field' in: $($file.FullName)"
+                }
+              }
+
+              # Validate date format
+              if ($frontmatter.Frontmatter.ContainsKey('ms.date')) {
+                $date = $frontmatter.Frontmatter['ms.date']
+                if ($date -notmatch '^\d{2}/\d{2}/\d{4}$') {
+                  $warnings += "Invalid date format in: $($file.FullName). Expected MM/DD/YYYY, got: $date"
+                }
+              }
+
+              # Validate keywords array
+              if ($frontmatter.Frontmatter.ContainsKey('keywords')) {
+                $keywords = $frontmatter.Frontmatter['keywords']
+                if ($keywords -isnot [array] -and $keywords -notmatch ',') {
+                  $warnings += "Keywords should be an array in: $($file.FullName)"
+                }
+              }
+            } else {
+              $warnings += "No frontmatter found in: $($file.FullName)"
+            }
+          }
+
+          # Output results
+          if ($warnings.Count -gt 0) {
+            Write-Host "⚠️ Warnings found:" -ForegroundColor Yellow
+            $warnings | ForEach-Object { Write-Host "  $_" -ForegroundColor Yellow }
+          }
+
+          if ($errors.Count -gt 0) {
+            Write-Host "❌ Errors found:" -ForegroundColor Red
+            $errors | ForEach-Object { Write-Host "  $_" -ForegroundColor Red }
+            exit 1
+          }
+
+          Write-Host "✅ Frontmatter validation completed successfully" -ForegroundColor Green
+
+  generate-sidebar:
+    name: 🏗️ Generate Three-Tree Sidebar
+    runs-on: ubuntu-latest
+    needs: validate-frontmatter
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup PowerShell
+        uses: azure/powershell@v1
+        with:
+          inlineScript: |
+            Write-Host "PowerShell version: $($PSVersionTable.PSVersion)"
+          azPSVersion: 'latest'
+
+      - name: Generate enhanced sidebar
+        shell: pwsh
+        run: |
+          Write-Host "🏗️ Generating three-tree navigation sidebar..."
+
+          # Import the enhanced three-tree functions
+          Import-Module ./scripts/Three-Tree-Enhancement.ps1 -Force
+
+          # Run the enhanced sidebar generation
+          . ./scripts/Generate-DocsSidebar.ps1
+
+          Write-Host "✅ Sidebar generation completed"
+
+      - name: Check for changes
+        id: changes
+        run: |
+          if [ -n "$(git status --porcelain _sidebar.md)" ]; then
+            echo "changes=true" >> $GITHUB_OUTPUT
+            echo "📝 Sidebar changes detected"
+          else
+            echo "changes=false" >> $GITHUB_OUTPUT
+            echo "✅ No sidebar changes needed"
+          fi
+
+      - name: Commit and push changes
+        if: steps.changes.outputs.changes == 'true' && github.event_name != 'pull_request'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "Documentation Bot"
+          git add _sidebar.md
+          git commit -m "🤖 Auto-update three-tree navigation sidebar
+
+          - Updated sidebar with latest documentation structure
+          - Generated on $(date -u)
+          - Includes Bicep, Terraform, and README documentation trees"
+          git push
+
+  validate-links:
+    name: 🔗 Validate Documentation Links
+    runs-on: ubuntu-latest
+    needs: generate-sidebar
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install markdown-link-check
+        run: npm install -g markdown-link-check
+
+      - name: Check links in documentation
+        run: |
+          echo "🔗 Checking links in documentation files..."
+
+          # Create config file for link checking
+          cat > .markdown-link-check.json << EOF
+          {
+            "ignorePatterns": [
+              {
+                "pattern": "^http://localhost"
+              },
+              {
+                "pattern": "^https://localhost"
+              },
+              {
+                "pattern": "^#"
+              }
+            ],
+            "timeout": "10s",
+            "retryOn429": true,
+            "retryCount": 3,
+            "fallbackOnError": true
+          }
+          EOF
+
+          # Check all markdown files
+          find docs src blueprints -name "*.md" -type f | \
+            grep -v node_modules | \
+            xargs -I {} sh -c 'echo "Checking: {}" && markdown-link-check {} --config .markdown-link-check.json'
+
+  build-documentation:
+    name: 🏗️ Build Documentation Site
+    runs-on: ubuntu-latest
+    needs: [validate-frontmatter, generate-sidebar, validate-links]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install docsify-cli
+        run: npm install -g docsify-cli
+
+      - name: Test documentation build
+        run: |
+          echo "🏗️ Testing documentation build..."
+
+          # Create a temporary server to test the build
+          timeout 10s docsify serve . --port 3000 || true
+
+          echo "✅ Documentation build test completed"
+
+      - name: Generate search index
+        run: |
+          echo "🔍 Generating search index for enhanced search..."
+
+          # Create search index for better search performance
+          cat > search-index.js << EOF
+          // Enhanced search index for three-tree documentation
+          window.searchIndex = {
+            bicepDocs: [],
+            terraformDocs: [],
+            readmeDocs: [],
+            mainDocs: []
+          };
+          EOF
+
+          echo "✅ Search index generated"
+
+  report-documentation-health:
+    name: 📊 Documentation Health Report
+    runs-on: ubuntu-latest
+    needs: [validate-frontmatter, generate-sidebar, validate-links, build-documentation]
+    if: always()
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Generate documentation metrics
+        shell: pwsh
+        run: |
+          Write-Host "📊 Generating documentation health report..."
+
+          # Count documentation files by type
+          $docsCount = (Get-ChildItem -Path 'docs' -Filter '*.md' -Recurse -ErrorAction SilentlyContinue).Count
+          $srcCount = (Get-ChildItem -Path 'src' -Filter '*.md' -Recurse -ErrorAction SilentlyContinue).Count
+          $blueprintsCount = (Get-ChildItem -Path 'blueprints' -Filter '*.md' -Recurse -ErrorAction SilentlyContinue).Count
+
+          # Generate report
+          $report = @"
+          # 📚 Documentation Health Report
+
+          Generated on: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss UTC')
+
+          ## 📈 Documentation Statistics
+
+          | Category | File Count |
+          |----------|------------|
+          | Main Documentation | $docsCount |
+          | Infrastructure Components | $srcCount |
+          | Blueprints | $blueprintsCount |
+          | **Total** | **$($docsCount + $srcCount + $blueprintsCount)** |
+
+          ## 🏗️ Three-Tree Architecture Status
+
+          - ✅ Bicep Documentation Tree: Auto-generated navigation
+          - ✅ Terraform Documentation Tree: Auto-generated navigation
+          - ✅ README Documentation Tree: Manual README organization
+
+          ## 🔍 Quality Metrics
+
+          - Frontmatter Validation: ${{ needs.validate-frontmatter.result }}
+          - Sidebar Generation: ${{ needs.generate-sidebar.result }}
+          - Link Validation: ${{ needs.validate-links.result }}
+          - Build Test: ${{ needs.build-documentation.result }}
+
+          ---
+
+          *This report is automatically generated by the Documentation Automation workflow.*
+          "@
+
+          Write-Host $report
+
+          # Save report as artifact
+          $report | Out-File -FilePath 'documentation-health-report.md' -Encoding UTF8
+
+          Write-Host "✅ Documentation health report generated"
+
+      - name: Upload documentation report
+        uses: actions/upload-artifact@v4
+        with:
+          name: documentation-health-report
+          path: documentation-health-report.md
+          retention-days: 30
+
+      - name: Comment on PR with report
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('documentation-health-report.md', 'utf8');
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: report
+            });

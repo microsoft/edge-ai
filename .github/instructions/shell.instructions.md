@@ -21,7 +21,7 @@ When it's obvious errors should be visible or users explicitly request that erro
 ## Azure CLI and JMESPath Guidelines
 
 When working with Azure CLI:
-- Research Azure CLI command output structure using #fetch:https://docs.microsoft.com/en-us/cli/azure/query-azure-cli
+- Research Azure CLI command output structure using #fetch:https://docs.microsoft.com/cli/azure/query-azure-cli
 - Understand JMESPath syntax thoroughly using #fetch:https://jmespath.org/tutorial.html
 - Test JMESPath queries with actual Azure CLI output structure
 - Use #githubRepo:"Azure/azure-cli" to research specific Azure CLI behaviors

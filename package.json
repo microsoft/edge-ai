@@ -17,11 +17,22 @@
 		"checkov-changes": "pwsh -Command \"& $PWD/scripts/Detect-Folder-Changes.ps1 | & $PWD/scripts/Run-Checkov.ps1 -OutputFolder './checkov-results' -OutputFile 'code-analysis.xml'\"",
 		"checkov-all": "pwsh -Command \"& $PWD/scripts/Detect-Folder-Changes.ps1 -IncludeAllFolders | & $PWD/scripts/Run-Checkov.ps1 -OutputFolder './checkov-results' -OutputFile 'code-analysis.xml'\"",
 		"link-lang-check": "python ./scripts/link-lang-check.py",
-		"link-lang-fix": "python ./scripts/link-lang-check.py -f"
+		"link-lang-fix": "python ./scripts/link-lang-check.py -f",
+		"generate-sidebar": "pwsh -File ./scripts/Generate-DocsSidebar.ps1 -DocsPath ./docs -SrcPath ./src -SidebarFile _sidebar.md -Verbose",
+		"docs": "npm run docs:build-dev && ./scripts/serve-docs.sh --open",
+		"docs:verbose": "npm run docs:build-dev && ./scripts/serve-docs.sh --verbose --open",
+		"docs:no-open": "npm run docs:build-dev && ./scripts/serve-docs.sh",
+		"docs:build": "pwsh -File scripts/Generate-GitHubPagesConfig.ps1",
+		"docs:build-dev": "pwsh -File scripts/Generate-GitHubPagesConfig.ps1 -Development -Port 8080",
+		"docs:health-check": "pwsh -File scripts/Invoke-DocsHealthCheck.ps1"
 	},
 	"dependencies": {
-		"markdownlint-cli": "^0.45.0",
 		"markdown-table-formatter": "1.6.1",
+		"markdownlint": "0.38.0",
+		"markdownlint-cli": "^0.45.0",
 		"mega-linter-runner": "^8.1.0"
+	},
+	"devDependencies": {
+		"docsify-cli": "4.4.4"
 	}
 }

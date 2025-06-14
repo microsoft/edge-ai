@@ -1,4 +1,23 @@
-# Device setup
+---
+title: Device Setup
+description: Component for CNCF cluster setup through scripting for AIO by installing a K3s cluster, onboarding to Azure Arc, configuring AIO pre-requisites and other optional features
+author: Edge AI Team
+ms.date: 06/07/2025
+ms.topic: tutorial
+keywords:
+  - device setup
+  - cncf cluster
+  - k3s cluster
+  - azure arc
+  - azure iot operations
+  - script deployment
+  - key vault
+  - terraform
+  - bicep
+estimated_reading_time: 6
+---
+
+## Device setup
 
 Component for CNCF cluster setup through scripting for AIO by installing a K3s cluster, onboarding to Azure
 Arc, configuring AIO pre-requisites and other optional features. This script is to be executed on the device that will
@@ -37,7 +56,7 @@ Learn more about the required configuration by reading the [./terraform/README.m
 
 ### Virtual Machine extension
 
-Refer to [Custom Script Linux - Troubleshooting](https://learn.microsoft.com/en-us/azure/virtual-machines/extensions/custom-script-linux#troubleshooting)
+Refer to [Custom Script Linux - Troubleshooting](https://learn.microsoft.com/azure/virtual-machines/extensions/custom-script-linux#troubleshooting)
 for detailed troubleshooting information.
 
 ```sh
@@ -122,3 +141,10 @@ ENVIRONMENT=dev \
   ARC_RESOURCE_NAME=arck-sample-dev-001 \
   ./k3s-device-setup.sh
 ```
+
+---
+
+<!-- markdownlint-disable MD036 -->
+*🤖 Crafted with precision by ✨Copilot following brilliant human instruction,
+then carefully refined by our team of discerning human reviewers.*
+<!-- markdownlint-enable MD036 -->

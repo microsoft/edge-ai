@@ -1,4 +1,22 @@
-# New Environment Onboard Requirements
+---
+title: New Environment Onboard Requirements
+description: Component for onboarding a new environment and includes IaC for creating resources that are needed for an edge deployment including Azure Resource Group, User Assigned Managed Identity, and Service Principal
+author: Edge AI Team
+ms.date: 06/07/2025
+ms.topic: reference
+keywords:
+  - azure resource group
+  - managed identity
+  - service principal
+  - environment onboarding
+  - edge deployment
+  - terraform
+  - bicep
+  - infrastructure as code
+estimated_reading_time: 4
+---
+
+## New Environment Onboard Requirements
 
 Component for onboarding a new environment and includes IaC for creating resources that are needed for an
 edge deployment.
@@ -81,3 +99,10 @@ Refer to [Terraform Components - Getting Started](../README.md#terraform-compone
 deployment instructions.
 
 Learn more about the required configuration by reading the [./terraform/README.md](./terraform/README.md)
+
+---
+
+<!-- markdownlint-disable MD036 -->
+*🤖 Crafted with precision by ✨Copilot following brilliant human instruction,
+then carefully refined by our team of discerning human reviewers.*
+<!-- markdownlint-enable MD036 -->

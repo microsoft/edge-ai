@@ -126,7 +126,7 @@ jobs:
           # Build/refresh the wiki contents. This will put all artifacts into the
           # .wiki folder in the main branch.
           echo "Building wiki contents..."
-          "./scripts/wiki-build.sh"
+          pwsh -File "./scripts/Build-Wiki.ps1"
 
           # Copy the wiki contents to the wiki repo directory
           echo "Copying wiki contents to wiki repo directory..."

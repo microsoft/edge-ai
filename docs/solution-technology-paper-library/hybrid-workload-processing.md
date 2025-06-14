@@ -1,4 +1,36 @@
-# Hybrid Data Processing with Azure IoT Operations(AIO) and Microsoft Fabric
+---
+title: Hybrid Data Processing with Azure IoT Operations(AIO) and Microsoft Fabric
+description: Comprehensive technology guide for hybrid edge-to-cloud data processing architectures using Azure IoT Operations and Microsoft Fabric, covering real-time analytics, medallion architecture patterns, distributed caching strategies, and scalable streaming solutions for high-volume IoT workloads
+author:
+  - Madhav Annamraju
+  - Suneet Nangia
+ms.date: 06/06/2025
+ms.topic: solution-article
+estimated_reading_time: 18
+keywords:
+  - azure-iot-operations
+  - microsoft-fabric
+  - hybrid-data-processing
+  - edge-computing
+  - real-time-analytics
+  - eventhouse
+  - kql-database
+  - medallion-architecture
+  - time-series-data
+  - streaming-analytics
+  - lambda-architecture
+  - data-gravity
+  - influxdb
+  - spark-structured-streaming
+  - eventstream
+  - onelake
+  - data-archival
+  - disaster-recovery
+  - caching-strategies
+  - iot-data-ingestion
+---
+
+## Overview
 
 The influx of high granularity data from edge computing systems is rapidly increasing. This data
 comes from sensors, IoT devices, digital applications, business
@@ -548,3 +580,9 @@ These benefits make the Active-Standby model a robust solution for maintaining h
 
 [Microsoft Garnet]: https://www.microsoft.com/research/blog/introducing-garnet-an-open-source-next-generation-faster-cache-store-for-accelerating-applications-and-services/?msockid=1801f6b6973f61b51466e273963060b
 [def]: https://learn.microsoft.com/fabric/real-time-intelligence/eventhouse
+
+*AI and automation capabilities described in this scenario should be implemented following responsible AI principles, including fairness, reliability, safety, privacy, inclusiveness, transparency, and accountability. Organizations should ensure appropriate governance, monitoring, and human oversight are in place for all AI-powered solutions.*
+
+---
+
+*This documentation is part of the [Edge AI Platform](../index.md) project.*

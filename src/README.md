@@ -1,4 +1,24 @@
-# Source Code Structure
+---
+title: Source Code Structure
+description: Infrastructure as Code components organized by deployment location and purpose for enterprise deployments of Arc-enabled Azure IoT Operations solutions
+author: Edge AI Team
+ms.date: 06/07/2025
+ms.topic: reference
+keywords:
+  - source code
+  - infrastructure as code
+  - azure iot operations
+  - arc-enabled
+  - terraform
+  - bicep
+  - edge computing
+  - cloud infrastructure
+  - components
+  - deployment
+estimated_reading_time: 6
+---
+
+## Source Code Structure
 
 The source code for this project is organized into discrete categories optimized for enterprise
 deployments of Arc-enabled Azure IoT Operations solutions. The components are grouped by their
@@ -285,3 +305,10 @@ this repository:
 
 This generates documentation based on the configuration defined in the repository, using the metadata from your Bicep
 files.
+
+---
+
+<!-- markdownlint-disable MD036 -->
+*🤖 Crafted with precision by ✨Copilot following brilliant human instruction,
+then carefully refined by our team of discerning human reviewers.*
+<!-- markdownlint-enable MD036 -->

@@ -1,6 +1,23 @@
-# CNCF Cluster Script Output Blueprint
+---
+title: CNCF Cluster Script Output Blueprint
+description: Infrastructure as Code configurations for generating K3s Kubernetes cluster installation scripts with Azure Arc connectivity without actual deployment
+author: Edge AI Team
+ms.date: 06/07/2025
+ms.topic: reference
+keywords:
+  - cncf cluster
+  - k3s kubernetes
+  - azure arc
+  - script generation
+  - terraform
+  - bicep
+  - cluster setup
+  - installation scripts
+  - edge computing
+estimated_reading_time: 2
+---
 
-## Overview
+## CNCF Cluster Script Output Blueprint
 
 This blueprint provides Infrastructure as Code (IaC) configurations for generating installation scripts that set up and configure K3s Kubernetes clusters with Azure Arc connectivity. Unlike the full deployment blueprints, this option focuses on script generation without actually deploying the cluster resources. The generated scripts can then be manually executed in your target environment.
 
@@ -91,3 +108,10 @@ The scripts handle:
 
 - See the [full-single-cluster](../full-single-cluster/README.md) blueprint for complete deployment including the cluster
 - See the [full-multi-node-cluster](../full-multi-node-cluster/README.md) blueprint for multi-node deployments
+
+---
+
+<!-- markdownlint-disable MD036 -->
+*🤖 Crafted with precision by ✨Copilot following brilliant human instruction,
+then carefully refined by our team of discerning human reviewers.*
+<!-- markdownlint-enable MD036 -->

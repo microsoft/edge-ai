@@ -1,12 +1,36 @@
-# Observability solution options in fully disconnected Kubernetes clusters
-
-Date: 2024-03-18
-
-Authors: Adele Churchill, Andrew Cardy, Siobhan Baynes
+---
+title: Observability solution options in fully disconnected Kubernetes clusters
+description: Architecture Decision Record evaluating observability solutions for monitoring, logging, and tracing in air-gapped Kubernetes environments with no external connectivity. Compares OpenTelemetry Collector, Prometheus, Grafana stack, Jaeger, Zipkin, and ELK stack for defense customers requiring fully disconnected edge deployments while supporting both connected and disconnected scenarios.
+author: Edge AI Team
+ms.date: 06/06/2025
+ms.topic: architecture-decision-record
+estimated_reading_time: 11
+keywords:
+  - observability
+  - disconnected-environments
+  - air-gapped
+  - kubernetes
+  - opentelemetry-collector
+  - prometheus
+  - grafana
+  - grafana-tempo
+  - grafana-loki
+  - jaeger
+  - zipkin
+  - elk-stack
+  - distributed-tracing
+  - metrics-monitoring
+  - log-aggregation
+  - defense-customers
+  - edge-computing
+  - azure-monitor
+  - fluentbit
+  - telemetry-pipeline
+  - architecture-decision-record
+  - adr
+---
 
 ## Status
-
-[For this library of ADRs, mark the most applicable status at which it was stored in the original project. This can help provide context and validity for folks reviewing this ADR. If it has been deprecated you can add a note on why and date it.]
 
 - [ ] Draft
 - [ ] Proposed
@@ -31,7 +55,7 @@ In considering the above requirements, we should consider the personas who would
 
 ## Decision
 
-OpenTelemetry Collector has been chosen in both connected and disconnected scenarios. This will enable sending data to Azure Monitor when connected or to the disconnected stack when disconnected thus enabling the code to be destination agnostic and all changes to be done via the OpenTelemetry configuration file.  
+OpenTelemetry Collector has been chosen in both connected and disconnected scenarios. This will enable sending data to Azure Monitor when connected or to the disconnected stack when disconnected thus enabling the code to be destination agnostic and all changes to be done via the OpenTelemetry configuration file.
 The disconnected stack will be configured as per the diagram below:
 
 ![Disconnected Observability Stack](./media/disconnected-observability-stack.png)
@@ -135,3 +159,5 @@ In the current ADR, the following is out-of-scope:
 - Viewing traces from multiple disconnected nodes would be desirable, but is out of scope for this investigation. We should try to avoid solutions that may make implementing this feature difficult to implement in the future.
 - Selecting telemetry destinations at runtime is out of scope, but the solution should allow for this in the future.
 - Offline caching (store and forward) to keep data in a queue and push when connected is restored, is not considered in this document
+
+*AI and automation capabilities described in this scenario should be implemented following responsible AI principles, including fairness, reliability, safety, privacy, inclusiveness, transparency, and accountability. Organizations should ensure appropriate governance, monitoring, and human oversight are in place for all AI-powered solutions.*

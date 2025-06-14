@@ -1,4 +1,19 @@
-# Solution Technology Papers
+---
+title: Solution Technology Papers
+description: Collection of technology overview documents for edge computing solutions and standards
+author: Edge AI Team
+ms.date: 06/06/2025
+ms.topic: hub-page
+estimated_reading_time: 2
+keywords:
+  - technology papers
+  - edge computing
+  - standards
+  - documentation
+  - overview
+---
+
+## Overview
 
 The Solution Technology Paper library is a collection of short 5-7 page documents that can get engineers and program managers up-to-speed on the technology landscape for edge computing solutions. Papers typically focus on the key aspects of a technology or standard, and will map users to further learning content, to deepen the reader's expertise.
 

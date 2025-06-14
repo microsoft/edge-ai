@@ -1,6 +1,23 @@
-# Service Health Dashboard Documentation
+---
+title: Service Health Dashboard Documentation
+description: Comprehensive overview of the Service Health Dashboard providing monitoring and diagnostics for Azure Edge, AIO services, MQTT brokers, and Kubernetes clusters
+author: Edge AI Team
+ms.date: 06/06/2025
+ms.topic: reference
+estimated_reading_time: 3
+keywords:
+  - service health dashboard
+  - monitoring
+  - diagnostics
+  - azure edge
+  - aio services
+  - mqtt brokers
+  - kubernetes
+  - observability
+  - grafana
+---
 
-## Purpose
+## Overview
 
 The `Service Health Dashboard` provides a comprehensive overview of the health and performance of various components in the system, including Azure Edge, AIO services, MQTT brokers, and Kubernetes clusters.
 It is designed to help operators quickly identify and diagnose issues by visualizing key metrics and health indicators.
@@ -186,3 +203,10 @@ Once imported, you can start monitoring the health and performance of your syste
 ## Conclusion
 
 The `Service Health Dashboard` provides a centralized view of system health, enabling proactive monitoring and troubleshooting. Each panel is tailored to highlight specific metrics and thresholds, ensuring that operators can quickly identify and address potential issues.
+
+*AI and automation capabilities described in this scenario should be implemented following responsible AI principles, including fairness, reliability, safety, privacy, inclusiveness, transparency, and accountability. Organizations should ensure appropriate governance, monitoring, and human oversight are in place for all AI-powered solutions.*
+
+<!-- markdownlint-disable MD036 -->
+*🤖 Crafted with precision by ✨Copilot following brilliant human instruction,
+then carefully refined by our team of discerning human reviewers.*
+<!-- markdownlint-enable MD036 -->

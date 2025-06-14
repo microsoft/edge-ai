@@ -1,4 +1,34 @@
-# Certificates and TLS in Azure IoT Operations (AIO)
+---
+title: Certificates and TLS in Azure IoT Operations (AIO)
+description: Comprehensive technical guide to TLS security and certificate management in Azure IoT Operations covering PKI fundamentals, certificate chains, Root CA and Intermediate CA configurations, mutual TLS (mTLS), MQTT broker security, X.509 client authentication, trust bundles, certificate renewal strategies, and Azure Key Vault integration
+author: Katrien De Graeve
+ms.date: 06/06/2025
+ms.topic: solution-article
+estimated_reading_time: 13
+keywords:
+  - azure-iot-operations
+  - tls-security
+  - certificate-management
+  - pki-infrastructure
+  - root-ca
+  - intermediate-ca
+  - mqtt-broker-security
+  - mutual-tls
+  - mtls
+  - x509-authentication
+  - trust-bundles
+  - cert-manager
+  - trust-manager
+  - certificate-renewal
+  - azure-key-vault
+  - broker-listener
+  - certificate-chains
+  - ssl-certificates
+  - kubernetes-secrets
+  - enterprise-pki
+---
+
+## Overview
 
 Azure IoT Operations utilizes TLS for secure communication between servers and clients in services such as the MQTT broker. This document aims to demystify the complex aspects of TLS, focusing on key elements like Root CA, Intermediate CA, Leaf Certificates, Certificate Chains, and Trust Bundles.
 
@@ -35,7 +65,7 @@ When using public CAs from known vendors, these Root CAs are typically distribut
 
 In Kubernetes, *trust-manager* is a useful solution to help distribute trust within the cluster. It can distribute default CAs from known vendors as well as your own roots of trust.
 
-Read more about *trust-manager* [here](https://cert-manager.io/docs/trust/trust-manager/).
+Read more about [*trust-manager*](https://cert-manager.io/docs/trust/trust-manager/).
 
 Regardless of whether you use *trust-manager* or not, you will typically end up distributing the Root CA distribution via a `ConfigMap`, which is then mounted onto Pods (applications) that require TLS connectivity to servers. These ConfigMaps, often referred to as Trust Bundles, may contain one or more root CAs.
 
@@ -213,3 +243,9 @@ This can be achieved by following these steps:
 * [AIO MQTT broker: Encrypt internal traffic](https://learn.microsoft.com/azure/iot-operations/manage-mqtt-broker/howto-encrypt-internal-traffic)
 * [AIO tutorial: TLS, X.509 client authentication, and attribute-based access control (ABAC) authorization with Azure IoT Operations MQTT broker](https://learn.microsoft.com/azure/iot-operations/manage-mqtt-broker/tutorial-tls-x509)
 * [Create an Issuer for the TLS server certificate](https://learn.microsoft.com/azure/iot-operations/manage-mqtt-broker/howto-configure-brokerlistener?tabs=portal%2Cprod#create-an-issuer-for-the-tls-server-certificate)
+
+*AI and automation capabilities described in this scenario should be implemented following responsible AI principles, including fairness, reliability, safety, privacy, inclusiveness, transparency, and accountability. Organizations should ensure appropriate governance, monitoring, and human oversight are in place for all AI-powered solutions.*
+
+---
+
+*This documentation is part of the [Edge AI Platform](../index.md) project.*

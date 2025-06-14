@@ -1,4 +1,21 @@
-# Testing Bicep
+---
+title: Testing Bicep
+description: Tests for the Bicep implementation of the resource group component, including testing the useExistingResourceGroup functionality
+author: Edge AI Team
+ms.date: 06/07/2025
+ms.topic: reference
+keywords:
+  - testing
+  - bicep
+  - resource group
+  - azure cli
+  - existing resource group
+  - integration testing
+  - cicd pipeline
+estimated_reading_time: 3
+---
+
+## Testing Bicep
 
 This directory contains tests for the Bicep implementation of the resource group component.
 
@@ -67,3 +84,10 @@ When testing the existing resource group functionality, verify:
 2. The module outputs provide the correct resource group ID, name, and location
 3. Downstream resources that depend on the resource group are correctly placed in the existing resource group
 4. Error handling works as expected when the specified resource group doesn't exist
+
+---
+
+<!-- markdownlint-disable MD036 -->
+*🤖 Crafted with precision by ✨Copilot following brilliant human instruction,
+then carefully refined by our team of discerning human reviewers.*
+<!-- markdownlint-enable MD036 -->

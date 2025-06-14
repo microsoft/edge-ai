@@ -1,10 +1,20 @@
-# ADR Title
-
-[The title should be unique within the library, provide a longer title if needed to differentiate with other ADRs]
-
-Date: **2024-01-01** [Format=YYYY-MM-DD]
-
-Author(s): **Name of author(s)**
+---
+title: ADR Title
+description: '[The title should be unique within the library, provide a longer title if needed to differentiate with other ADRs]'
+author: Name of author(s)
+ms.date: 06/06/2025
+ms.topic: architecture
+estimated_reading_time: 2
+keywords:
+  - architecture
+  - design
+  - implementation
+  - workspaces
+  - edge
+  - solution
+  - adr
+  - library
+---
 
 ## Status (optional)
 
@@ -50,3 +60,5 @@ What are the consequences of this decision?
 ## Future Considerations (optional)
 
 Which upcoming solutions should be logged to keep in mind for re-evaluating this decision?
+
+*AI and automation capabilities described in this scenario should be implemented following responsible AI principles, including fairness, reliability, safety, privacy, inclusiveness, transparency, and accountability. Organizations should ensure appropriate governance, monitoring, and human oversight are in place for all AI-powered solutions.*

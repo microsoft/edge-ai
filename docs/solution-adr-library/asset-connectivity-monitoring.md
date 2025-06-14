@@ -1,10 +1,29 @@
-# Asset Connectivity Monitoring
-
-Date: 2024-03-27
+---
+title: Asset Connectivity Monitoring
+description: Architecture Decision Record for monitoring asset connectivity state in Azure IoT Operations environments. Addresses tracking device connectivity using OPC UA Broker logging, OpenTelemetry Collector, Loki log aggregation, and Grafana dashboards with LogQL queries to provide transparency and notifications for operational teams and subsystems dependent on OT data.
+author: Edge AI Team
+ms.date: 06/06/2025
+ms.topic: architecture-decision-record
+estimated_reading_time: 7
+keywords:
+  - asset-connectivity
+  - connectivity-monitoring
+  - azure-iot-operations
+  - opc-ua-broker
+  - opentelemetry
+  - loki
+  - grafana
+  - device-connectivity
+  - observability
+  - mqtt-broker
+  - uns
+  - connectivity-state
+  - telemetry-logging
+  - azure-edge-extensions
+  - adr
+---
 
 ## Status
-
-[For this library of ADRs, mark the most applicable status at which it was stored in the original project. This can help provide context and validity for folks reviewing this ADR. If it has been deprecated you can add a note on why and date it.]
 
 - [ ] Draft
 - [X] Proposed
@@ -67,9 +86,9 @@ Loki can be used as a datasource in a Grafana dashboard to display the connectiv
 ```logQL
 sum by(asset) (
   max_over_time(
-    {job="azure-iot-operations/opcua-connector"} |= `Session for asset` 
-    | pattern `<_>Session for asset <asset>/<_> is <connectivityState>"<_>` 
-    | label_format connectivity=`{{ if eq "connected" .connectivityState }}1{{else}}0{{end}}` 
+    {job="azure-iot-operations/opcua-connector"} |= `Session for asset`
+    | pattern `<_>Session for asset <asset>/<_> is <connectivityState>"<_>`
+    | label_format connectivity=`{{ if eq "connected" .connectivityState }}1{{else}}0{{end}}`
     | unwrap connectivity [$__interval]
   )
 )
@@ -78,3 +97,5 @@ sum by(asset) (
 An example **Asset Connectivity** panel:
 
 ![Asset Connectivity](./media/asset-connectivity-panel.png)
+
+*AI and automation capabilities described in this scenario should be implemented following responsible AI principles, including fairness, reliability, safety, privacy, inclusiveness, transparency, and accountability. Organizations should ensure appropriate governance, monitoring, and human oversight are in place for all AI-powered solutions.*

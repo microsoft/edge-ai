@@ -1,6 +1,32 @@
-# Deployment on the Edge with GitOps
-
-Date: **2024-06-04**
+---
+title: Deployment on the Edge with GitOps
+description: Architecture Decision Record establishing GitOps as the primary deployment technique for Kubernetes clusters across edge and cloud environments. Addresses scalability, security, and connectivity challenges in edge computing through pull-based deployment approach, comparing against traditional push-based methods for fleet management of hundreds to thousands of edge clusters.
+author: Eugene Fedorenko
+ms.date: 06/06/2025
+ms.topic: architecture-decision-record
+estimated_reading_time: 8
+keywords:
+  - gitops
+  - edge-deployment
+  - kubernetes
+  - pull-based-deployment
+  - push-based-deployment
+  - edge-computing
+  - fleet-management
+  - scalability
+  - edge-security
+  - connectivity-challenges
+  - disconnected-environments
+  - deployment-orchestration
+  - kubernetes-manifests
+  - git-repository
+  - oci-repository
+  - continuous-deployment
+  - rbac
+  - service-account
+  - architecture-decision-record
+  - adr
+---
 
 ## Status
 
@@ -76,3 +102,5 @@ The related topics are highlighted in separate ADRs:
 - [Workload and Configuration Management](./workload-configuration-management.md)
 - Deployment Observability
 - Secret Management on the Edge with GitOps
+
+*AI and automation capabilities described in this scenario should be implemented following responsible AI principles, including fairness, reliability, safety, privacy, inclusiveness, transparency, and accountability. Organizations should ensure appropriate governance, monitoring, and human oversight are in place for all AI-powered solutions.*

@@ -1,6 +1,23 @@
-# Minimum Single Node Cluster Blueprint
+---
+title: Minimum Single Node Cluster Blueprint
+description: Minimal deployment of Azure IoT Operations on a single-node, Arc-enabled Kubernetes cluster using minimum required resources while maintaining functionality
+author: Edge AI Team
+ms.date: 06/07/2025
+ms.topic: reference
+keywords:
+  - azure iot operations
+  - minimal deployment
+  - single node cluster
+  - kubernetes
+  - arc-enabled
+  - terraform
+  - bicep
+  - edge computing
+  - resource optimization
+estimated_reading_time: 3
+---
 
-## Overview
+## Minimum Single Node Cluster Blueprint
 
 This blueprint provides a minimal deployment of Azure IoT Operations (AIO) on a single-node, Arc-enabled Kubernetes cluster. It is designed to use the minimum required resources while still providing a functional edge deployment with Azure IoT Operations.
 Please follow general blueprint recommendations from blueprints [README.md](../README.md).
@@ -142,3 +159,10 @@ This blueprint deploys a minimal configuration. If you need additional capabilit
 1. For observability features, deploy the `edge_observability` module
 2. For messaging features, deploy the `edge_messaging` module
 3. For additional operators, modify the `edge_iot_ops` module variables
+
+---
+
+<!-- markdownlint-disable MD036 -->
+*🤖 Crafted with precision by ✨Copilot following brilliant human instruction,
+then carefully refined by our team of discerning human reviewers.*
+<!-- markdownlint-enable MD036 -->

@@ -1,11 +1,33 @@
-# Separation of Concerns in Edge Data Transforms
-
-This ADR addresses approaches to edge data transform pipelines for ML models hosted
-using the Azure ML Arc extension.
-
-Date: **2024-09-18**
-
-Author: **Martin Weber**
+---
+title: Separation of Concerns in Edge Data Transforms
+description: Architecture Decision Record addressing separation of concerns in edge data transformation pipelines for ML inferencing. Evaluates distribution of data preprocessing functionality between scoring gateway and Azure Machine Learning endpoints, comparing full preprocessing in gateway vs scoring endpoint vs windowing approaches for OPC UA data and real-time factory workloads.
+author: Martin Weber
+ms.date: 06/06/2025
+ms.topic: architecture-decision-record
+estimated_reading_time: 10
+keywords:
+  - edge-data-transforms
+  - separation-of-concerns
+  - ml-inferencing
+  - scoring-gateway
+  - azure-machine-learning
+  - azure-ml-arc-extension
+  - opc-ua
+  - mqtt-broker
+  - azure-iot-operations
+  - dataflow
+  - feature-engineering
+  - data-preprocessing
+  - time-series-data
+  - windowing
+  - real-time-workloads
+  - manufacturing
+  - factory-automation
+  - inference-pipeline
+  - scoring-endpoint
+  - architecture-decision-record
+  - adr
+---
 
 ## Status
 
@@ -13,7 +35,7 @@ Author: **Martin Weber**
 
 - [ ] Draft
 - [ ] Proposed
-- [X] Accepted (in scope of the MVE/Demonstrator)
+- [X] Accepted
 - [ ] Deprecated
 
 ## Context
@@ -135,3 +157,5 @@ The filtering of the data can be either done as part of the gateway or in an [Az
 ## Consequences
 
 The choice for _option #3_ in this MVE allows for simplest implementation of this demonstrator. For a real environment choices would need to be re-evaluated.
+
+_AI and automation capabilities described in this scenario should be implemented following responsible AI principles, including fairness, reliability, safety, privacy, inclusiveness, transparency, and accountability. Organizations should ensure appropriate governance, monitoring, and human oversight are in place for all AI-powered solutions._

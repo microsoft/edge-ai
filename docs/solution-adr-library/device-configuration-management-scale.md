@@ -1,6 +1,27 @@
-# ADR: Device configuration and management at scale
-
-Date: 2025-03-27
+---
+title: 'ADR: Device configuration and management at scale'
+description: Architecture Decision Record evaluating solutions for managing and configuring edge devices at scale. Compares Azure Arc for Servers against GitOps with Ansible for capabilities including OS updates, Kubernetes platform updates, observability, troubleshooting, access management, and scalability across hundreds of edge devices.
+author: Edge AI Team
+ms.date: 06/06/2025
+ms.topic: architecture-decision-record
+estimated_reading_time: 10
+keywords:
+  - device-management
+  - edge-computing
+  - azure-arc-servers
+  - gitops
+  - ansible
+  - os-updates
+  - kubernetes-updates
+  - k3s
+  - scale-management
+  - observability
+  - troubleshooting
+  - access-management
+  - configuration-management
+  - architecture-decision-record
+  - adr
+---
 
 ## Status
 
@@ -113,3 +134,5 @@ An example of Ansible pull configuration:
 - [Ansible Pull Documentation](https://docs.ansible.com/ansible/latest/cli/ansible-pull.html)
 - [K3s Kubernetes Distribution](https://k3s.io/)
 - [Deployment on the Edge with GitOps](./deployment-on-edge-gitops.md)
+
+*AI and automation capabilities described in this scenario should be implemented following responsible AI principles, including fairness, reliability, safety, privacy, inclusiveness, transparency, and accountability. Organizations should ensure appropriate governance, monitoring, and human oversight are in place for all AI-powered solutions.*

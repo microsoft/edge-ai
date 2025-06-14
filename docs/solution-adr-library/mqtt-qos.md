@@ -1,8 +1,34 @@
-# Choosing QoS Level for the MQTT Bridge routes
+---
+title: Choosing QoS Level for the MQTT Bridge routes
+description: Architecture Decision Record defining optimal MQTT Quality of Service (QoS) levels for MQTT Bridge routes between Local UNS and Enterprise UNS. Evaluates QoS 0, 1, and 2 for different data types including metadata and assets data, with considerations for Azure IoT Operations MQTT broker scaling and performance optimization.
+author: Edge AI Team
+ms.date: 06/06/2025
+ms.topic: architecture-decision-record
+estimated_reading_time: 9
+keywords:
+  - mqtt
+  - quality-of-service
+  - qos
+  - mqtt-bridge
+  - uns
+  - unified-namespace
+  - iot-operations
+  - azure-iot-operations
+  - message-delivery
+  - mqtt-broker
+  - data-flow
+  - metadata
+  - assets-data
+  - broker-scaling
+  - distributed-mode
+  - cardinality
+  - memory-profile
+  - architecture-decision-record
+  - adr
+estimated_reading_time: 9
+---
 
 ## Status
-
-[For this library of ADRs, mark the most applicable status at which it was stored in the original project. This can help provide context and validity for folks reviewing this ADR. If it has been deprecated you can add a note on why and date it.]
 
 - [ ] Draft
 - [X] Proposed
@@ -141,3 +167,5 @@ To configure the `cardinality` of the MQTT Broker elements, we can:
 - [Configure scaling settings - Configure core Azure IoT MQ](https://learn.microsoft.com/azure/iot-operations/manage-mqtt-connectivity/howto-configure-availability-scale#configure-scaling-settings)
 - [az iot ops - Azure CLI Reference](https://learn.microsoft.com/cli/azure/iot/ops?view=azure-cli-latest#az-iot-ops-init)
 - [Secure Azure IoT MQ Preview communication using BrokerListener](https://learn.microsoft.com/azure/iot-operations/manage-mqtt-connectivity/howto-configure-brokerlistener)
+
+*AI and automation capabilities described in this scenario should be implemented following responsible AI principles, including fairness, reliability, safety, privacy, inclusiveness, transparency, and accountability. Organizations should ensure appropriate governance, monitoring, and human oversight are in place for all AI-powered solutions.*

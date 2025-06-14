@@ -1,4 +1,21 @@
-# Testing Terraform
+---
+title: Testing Terraform
+description: Tests for the Terraform implementation of the resource group component, including testing the use_existing_resource_group functionality
+author: Edge AI Team
+ms.date: 06/07/2025
+ms.topic: reference
+keywords:
+  - testing
+  - terraform
+  - resource group
+  - existing resource group
+  - integration testing
+  - cicd pipeline
+  - automation
+estimated_reading_time: 3
+---
+
+## Testing Terraform
 
 To read more about how testing works in terraform, see [Tests | Terraform](https://developer.hashicorp.com/terraform/language/tests).
 
@@ -65,3 +82,10 @@ For automated testing, consider creating an integration test that:
 4. Cleans up the resource group
 
 This approach requires custom scripting but provides more reliable automated testing.
+
+---
+
+<!-- markdownlint-disable MD036 -->
+*🤖 Crafted with precision by ✨Copilot following brilliant human instruction,
+then carefully refined by our team of discerning human reviewers.*
+<!-- markdownlint-enable MD036 -->

@@ -1,4 +1,24 @@
-# Cloud Data Persistence
+---
+title: Cloud Data Persistence
+description: Central data management foundation of the Edge AI Accelerator architecture, bridging edge computing with cloud-based analytics capabilities through Azure Storage and Microsoft Fabric integration
+author: Edge AI Team
+ms.date: 06/07/2025
+ms.topic: reference
+keywords:
+  - cloud data persistence
+  - azure storage
+  - microsoft fabric
+  - lakehouse
+  - eventstream
+  - data lake
+  - edge ai accelerator
+  - analytics
+  - terraform
+  - bicep
+estimated_reading_time: 6
+---
+
+## Cloud Data Persistence
 
 ## Introduction
 
@@ -126,3 +146,10 @@ The terraform code can be found in the [terraform](terraform) folder.
 
 - [Azure Data Lake Storage](https://learn.microsoft.com/azure/storage/blobs/data-lake-storage-introduction)
 - [Introduction to Lakehouse in Microsoft Fabric](https://learn.microsoft.com/fabric/data-engineering/lakehouse-overview)
+
+---
+
+<!-- markdownlint-disable MD036 -->
+*🤖 Crafted with precision by ✨Copilot following brilliant human instruction,
+then carefully refined by our team of discerning human reviewers.*
+<!-- markdownlint-enable MD036 -->

@@ -1,0 +1,20 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://azure.github.io/edge-ai/sitemap.xml
+
+# Disallow crawling of tracking and internal files
+Disallow: /.azdo/
+Disallow: /.github/
+Disallow: /.git/
+
+# Allow crawling of documentation
+Allow: /docs/
+Allow: /blueprints/
+Allow: /src/
+Allow: /.github/instructions
+Allow: /.github/prompts
+
+# Crawl delay (optional - be respectful to search engines)
+Crawl-delay: 1
