@@ -142,7 +142,7 @@ resource "azapi_resource" "instance" {
   }
   body = {
     extendedLocation = {
-      name = azapi_resource.custom_location.output.id
+      name = azapi_resource.custom_location.id
       type = "CustomLocation"
     }
     properties = {
@@ -163,7 +163,7 @@ resource "azapi_resource" "broker" {
   parent_id = azapi_resource.instance.id
   body = {
     extendedLocation = {
-      name = azapi_resource.custom_location.output.id
+      name = azapi_resource.custom_location.id
       type = "CustomLocation"
     }
     properties = {
@@ -195,7 +195,7 @@ resource "azapi_resource" "broker_authn" {
   parent_id = azapi_resource.broker.id
   body = {
     extendedLocation = {
-      name = azapi_resource.custom_location.output.id
+      name = azapi_resource.custom_location.id
       type = "CustomLocation"
     }
     properties = {

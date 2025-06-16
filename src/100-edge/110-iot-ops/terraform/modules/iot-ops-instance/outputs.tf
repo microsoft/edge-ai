@@ -3,17 +3,26 @@ output "instance_name" {
 }
 
 output "custom_location_id" {
-  value = azapi_resource.custom_location.output.id
+  value = azapi_resource.custom_location.id
 }
 
 output "custom_locations" {
-  value = azapi_resource.custom_location.output
+  value = {
+    id   = azapi_resource.custom_location.id
+    name = azapi_resource.custom_location.name
+  }
 }
 
 output "aio_instance" {
-  value = azapi_resource.instance.output
+  value = {
+    id   = azapi_resource.instance.id
+    name = azapi_resource.instance.name
+  }
 }
 
 output "aio_dataflow_profile" {
-  value = azapi_resource.data_profiles.output
+  value = {
+    id   = azapi_resource.data_profiles.id
+    name = azapi_resource.data_profiles.name
+  }
 }
