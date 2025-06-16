@@ -12,7 +12,7 @@
 # - Detects system architecture automatically
 #
 # Parameters:
-# - -v version: Specify terraform-docs version (default: v0.19.0)
+# - -v version: Specify terraform-docs version (default: v0.20.0)
 # - -h: Display help message
 #
 # Output Variables:
@@ -31,14 +31,14 @@
 # ./install-terraform-docs.sh
 #
 # # Install specific version:
-# ./install-terraform-docs.sh -v v0.19.0
+# ./install-terraform-docs.sh -v v0.20.0
 #
 # # Show help:
 # ./install-terraform-docs.sh -h
 # ```
 
 # Default values
-DEFAULT_VERSION="v0.19.0"
+DEFAULT_VERSION="v0.20.0"
 VERSION="$DEFAULT_VERSION"
 
 # Function to display usage information

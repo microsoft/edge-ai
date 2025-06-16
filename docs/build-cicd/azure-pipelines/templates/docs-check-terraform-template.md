@@ -50,7 +50,7 @@ documentation quality and consistency across the repository.
 | `dependsOn`            | object  | No       | `[]`                                                            | Jobs this docs check job depends on                                        |
 | `displayName`          | string  | No       | `'Terraform Documentation Check'`                               | Custom display name for the job                                            |
 | `condition`            | string  | No       | `'succeeded()'`                                                 | Condition to run this job                                                  |
-| `terraformDocsVersion` | string  | No       | `'v0.19.0'`                                                     | Version of terraform-docs to install                                       |
+| `terraformDocsVersion` | string  | No       | `'v0.20.0'`                                                     | Version of terraform-docs to install                                       |
 | `breakBuild`           | boolean | No       | `false`                                                         | Whether to treat documentation issues as errors (true) or warnings (false) |
 | `pool`                 | object  | No       | `{ name: 'ai-on-edge-managed-pool', vmImage: 'ubuntu-latest' }` | Configuration for the agent pool                                           |
 

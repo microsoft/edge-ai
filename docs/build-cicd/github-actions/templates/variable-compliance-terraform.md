@@ -40,7 +40,7 @@ The Terraform Variable Compliance workflow analyzes all Terraform files in the r
 
 | Parameter                | Type   | Required | Default   | Description                                                                   |
 |--------------------------|--------|----------|-----------|-------------------------------------------------------------------------------|
-| `terraform_docs_version` | string | No       | `v0.19.0` | Version of terraform-docs to use for parsing Terraform variables              |
+| `terraform_docs_version` | string | No       | `v0.20.0` | Version of terraform-docs to use for parsing Terraform variables              |
 | `break_build`            | choice | No       | `false`   | Whether to fail the workflow if inconsistencies are found (`true` or `false`) |
 
 ## Outputs
