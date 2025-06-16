@@ -32,7 +32,7 @@ data "azapi_resource" "aio_custom_locations" {
 }
 
 data "azapi_resource" "aio_dataflow_profile" {
-  type      = "Microsoft.IoTOperations/instances/dataflowProfiles@2024-11-01"
+  type      = "Microsoft.IoTOperations/instances/dataflowProfiles@2025-04-01"
   parent_id = data.azapi_resource.aio_instance.id
   name      = "default"
 
@@ -42,11 +42,20 @@ data "azapi_resource" "aio_dataflow_profile" {
 module "ci" {
   source = "../../terraform"
 
-  resource_prefix      = var.resource_prefix
-  environment          = var.environment
-  instance             = var.instance
-  aio_instance         = data.azapi_resource.aio_instance.output
-  aio_custom_locations = data.azapi_resource.aio_custom_locations.output
-  aio_identity         = data.azurerm_user_assigned_identity.aio
-  aio_dataflow_profile = data.azapi_resource.aio_dataflow_profile.output
+  resource_prefix = var.resource_prefix
+  environment     = var.environment
+  instance        = var.instance
+  aio_instance = {
+    id   = data.azapi_resource.aio_instance.id
+    name = data.azapi_resource.aio_instance.name
+  }
+  aio_custom_locations = {
+    id   = data.azapi_resource.aio_custom_locations.id
+    name = data.azapi_resource.aio_custom_locations.name
+  }
+  aio_identity = data.azurerm_user_assigned_identity.aio
+  aio_dataflow_profile = {
+    id   = data.azapi_resource.aio_dataflow_profile.id
+    name = data.azapi_resource.aio_dataflow_profile.name
+  }
 }
