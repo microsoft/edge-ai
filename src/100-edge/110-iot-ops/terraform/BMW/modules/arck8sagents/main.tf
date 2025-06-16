@@ -12,20 +12,20 @@ data "http" "helm_config" {
 }
 
 locals {
-  chart_location_url = "${jsondecode(data.http.helm_config.response_body).repositoryPath}"
-  chart_path_parts = split("/", local.chart_location_url)
+  chart_location_url = jsondecode(data.http.helm_config.response_body).repositoryPath
+  chart_path_parts   = split("/", local.chart_location_url)
   chart_name_version = element(local.chart_path_parts, length(local.chart_path_parts) - 1)
-  chart_name = split(":", local.chart_name_version)[0]
-  chart_version = split(":", local.chart_name_version)[1]
-  chart_repository = "oci://${trimsuffix(local.chart_location_url, local.chart_name_version)}/v2"
+  chart_name         = split(":", local.chart_name_version)[0]
+  chart_version      = split(":", local.chart_name_version)[1]
+  chart_repository   = "oci://${trimsuffix(local.chart_location_url, local.chart_name_version)}/v2"
 }
 
 resource "helm_release" "arc_agent" {
-  name       = "azure-arc"
-  repository = local.chart_repository
-  chart      = local.chart_name
-  version    = local.chart_version
-  namespace  = "azure-arc-release"
+  name             = "azure-arc"
+  repository       = local.chart_repository
+  chart            = local.chart_name
+  version          = local.chart_version
+  namespace        = "azure-arc-release"
   create_namespace = true
 
   set {
@@ -34,7 +34,7 @@ resource "helm_release" "arc_agent" {
   }
 
   set {
-    name = "global.tenantId"
+    name  = "global.tenantId"
     value = data.azurerm_subscription.current.tenant_id
   }
 
@@ -79,7 +79,7 @@ resource "helm_release" "arc_agent" {
   }
 
   set {
-    name = "systemDefaultValues.azureArcAgents.autoUpdate"
+    name  = "systemDefaultValues.azureArcAgents.autoUpdate"
     value = false
   }
 
@@ -95,12 +95,12 @@ resource "helm_release" "arc_agent" {
 
   set {
     name  = "global.httpProxy"
-    value = "${var.http_proxy}"
+    value = var.http_proxy
   }
 
   set {
     name  = "global.httpsProxy"
-    value = "${var.http_proxy}"
+    value = var.http_proxy
   }
 
   set {

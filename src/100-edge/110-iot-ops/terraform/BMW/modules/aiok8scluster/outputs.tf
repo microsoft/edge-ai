@@ -9,8 +9,8 @@ locals {
 output "kube_config" {
   value = {
     content = rancher2_cluster_sync.arc_sync.kube_config
-    token = local.kube_config["users"][0]["user"]["token"]
-    host = local.kube_config["clusters"][0]["cluster"]["server"]
+    token   = local.kube_config["users"][0]["user"]["token"]
+    host    = local.kube_config["clusters"][0]["cluster"]["server"]
   }
 }
 

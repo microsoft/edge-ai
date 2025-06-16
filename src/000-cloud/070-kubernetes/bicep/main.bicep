@@ -22,16 +22,6 @@ param virtualNetworkName string
 param networkSecurityGroupId string
 
 /*
-  Container Registry Parameters
-*/
-
-@description('Whether to create a private endpoint for the Azure Container Registry.')
-param shouldCreateAcrPrivateEndpoint bool = false
-
-@description('The settings for the Azure Container Registry.')
-param containerRegistryConfig types.ContainerRegistry = types.containerRegistryDefaults
-
-/*
   Kubernetes Cluster Parameters
 */
 
@@ -40,6 +30,9 @@ param shouldCreateAks bool = false
 
 @description('The settings for the Azure Kubernetes Service cluster.')
 param kubernetesClusterConfig types.KubernetesCluster = types.kubernetesClusterDefaults
+
+@description('Name of the Azure Container Registry to create.')
+param containerRegistryName string
 
 @description('Whether to opt out of telemetry data collection.')
 param telemetry_opt_out bool = false
@@ -70,18 +63,6 @@ module network './modules/network.bicep' = {
     common: common
     virtualNetworkName: virtualNetworkName
     networkSecurityGroupId: networkSecurityGroupId
-    shouldCreateAcrPrivateEndpoint: shouldCreateAcrPrivateEndpoint
-  }
-}
-
-module containerRegistry './modules/container-registry.bicep' = {
-  name: '${deployment().name}-containerRegistry'
-  params: {
-    common: common
-    sku: containerRegistryConfig.sku
-    shouldCreateAcrPrivateEndpoint: shouldCreateAcrPrivateEndpoint
-    snetAcrId: shouldCreateAcrPrivateEndpoint ? network.outputs.snetAcrId : ''
-    virtualNetworkName: virtualNetworkName
   }
 }
 
@@ -94,7 +75,7 @@ module aksCluster './modules/aks-cluster.bicep' = if (shouldCreateAks) {
     dnsPrefix: kubernetesClusterConfig.?dnsPrefix ?? ''
     snetAksId: network.outputs.snetAksId
     snetAksPodId: network.outputs.snetAksPodId
-    acrId: containerRegistry.outputs.acrId
+    acrName: containerRegistryName
   }
 }
 
@@ -104,6 +85,3 @@ module aksCluster './modules/aks-cluster.bicep' = if (shouldCreateAks) {
 
 @description('The AKS cluster name.')
 output aksName string = aksCluster.outputs.aksName
-
-@description('The Azure Container Registry name.')
-output acrName string = containerRegistry.outputs.acrName

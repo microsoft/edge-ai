@@ -20,12 +20,6 @@ param shouldCreateAcrPrivateEndpoint bool = false
 @description('The settings for the Azure Container Registry.')
 param containerRegistryConfig types.ContainerRegistry = types.containerRegistryDefaults
 
-@description('Whether to create an Azure Kubernetes Service cluster.')
-param shouldCreateAks bool = false
-
-@description('The settings for the Azure Kubernetes Service cluster.')
-param kubernetesClusterConfig types.KubernetesCluster = types.kubernetesClusterDefaults
-
 /*
   Modules
 */
@@ -38,7 +32,5 @@ module mainModule '../../bicep/main.bicep' = {
     networkSecurityGroupId: networkSecurityGroupId
     shouldCreateAcrPrivateEndpoint: shouldCreateAcrPrivateEndpoint
     containerRegistryConfig: containerRegistryConfig
-    shouldCreateAks: shouldCreateAks
-    kubernetesClusterConfig: kubernetesClusterConfig
   }
 }

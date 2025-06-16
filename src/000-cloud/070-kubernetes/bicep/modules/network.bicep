@@ -1,5 +1,5 @@
-metadata name = 'AKS and ACR Network Resources'
-metadata description = 'Creates subnets for AKS and ACR private endpoints in an existing Virtual Network.'
+metadata name = 'AKS Network Resources'
+metadata description = 'Creates subnets for AKS private endpoints in an existing Virtual Network.'
 
 import * as core from '../types.core.bicep'
 
@@ -20,14 +20,10 @@ param virtualNetworkName string
 @description('Network security group ID to apply to the subnets.')
 param networkSecurityGroupId string
 
-@description('Whether to create a private endpoint subnet for the Azure Container Registry.')
-param shouldCreateAcrPrivateEndpoint bool
-
 /*
   Local Variables
 */
 
-var labelPrefixAcr = '${common.resourcePrefix}-acr-${common.environment}-${common.instance}'
 var labelPrefixAks = '${common.resourcePrefix}-aks-${common.environment}-${common.instance}'
 var labelPrefixAksPod = '${common.resourcePrefix}-aks-pod-${common.environment}-${common.instance}'
 
@@ -64,21 +60,6 @@ resource snetAksPod 'Microsoft.Network/virtualNetworks/subnets@2024-05-01' = {
   ]
 }
 
-resource snetAcr 'Microsoft.Network/virtualNetworks/subnets@2024-05-01' = if (shouldCreateAcrPrivateEndpoint) {
-  parent: vnet
-  name: 'subnet-${labelPrefixAcr}'
-  properties: {
-    addressPrefix: '10.0.2.0/24'
-    networkSecurityGroup: {
-      id: networkSecurityGroupId
-    }
-    privateEndpointNetworkPolicies: 'Disabled'
-  }
-  dependsOn: [
-    snetAksPod // Make sure subnets are created in sequence to avoid conflicts
-  ]
-}
-
 /*
   Outputs
 */
@@ -91,6 +72,3 @@ output snetAksName string = last(split(snetAks.name, '/'))
 
 @description('The subnet ID for the AKS pods.')
 output snetAksPodId string = snetAksPod.id
-
-@description('The subnet ID for the ACR private endpoint, if created.')
-output snetAcrId string = shouldCreateAcrPrivateEndpoint ? snetAcr.id : ''

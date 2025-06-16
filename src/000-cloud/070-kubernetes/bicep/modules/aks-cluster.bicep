@@ -29,8 +29,8 @@ param snetAksId string
 @description('Subnet ID for AKS pods.')
 param snetAksPodId string
 
-@description('ACR ID for pull role assignment.')
-param acrId string
+@description('ACR name for pull role assignment.')
+param acrName string
 
 /*
   Local Variables
@@ -43,6 +43,10 @@ var clusterDnsPrefix = empty(dnsPrefix)
 /*
   Resources
 */
+
+resource acr 'Microsoft.ContainerRegistry/registries@2023-01-01-preview' existing = {
+  name: acrName
+}
 
 resource aksCluster 'Microsoft.ContainerService/managedClusters@2023-06-01' = {
   name: 'aks-${common.resourcePrefix}-${common.environment}-${common.instance}'
@@ -78,7 +82,7 @@ resource aksCluster 'Microsoft.ContainerService/managedClusters@2023-06-01' = {
 
 // Assign ACR Pull role to AKS
 resource roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(aksCluster.id, acrId, 'acrpull')
+  name: guid(aksCluster.id, acr.id, 'acrpull')
   properties: {
     roleDefinitionId: subscriptionResourceId(
       'Microsoft.Authorization/roleDefinitions',

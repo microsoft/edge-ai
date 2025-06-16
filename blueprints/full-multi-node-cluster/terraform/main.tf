@@ -92,8 +92,8 @@ module "cloud_vm_host" {
   arc_onboarding_identity = module.cloud_security_identity.arc_onboarding_identity
 }
 
-module "cloud_aks_acr" {
-  source = "../../../src/000-cloud/060-aks-acr/terraform"
+module "cloud_acr" {
+  source = "../../../src/000-cloud/060-acr/terraform"
 
   environment     = var.environment
   resource_prefix = var.resource_prefix
@@ -105,7 +105,23 @@ module "cloud_aks_acr" {
   virtual_network        = module.cloud_networking.virtual_network
 
   should_create_acr_private_endpoint = var.should_create_acr_private_endpoint
-  should_create_aks                  = var.should_create_aks
+}
+
+module "cloud_kubernetes" {
+  source = "../../../src/000-cloud/070-kubernetes/terraform"
+
+  environment     = var.environment
+  resource_prefix = var.resource_prefix
+  location        = var.location
+
+  resource_group = module.cloud_resource_group.resource_group
+
+  network_security_group = module.cloud_networking.network_security_group
+  virtual_network        = module.cloud_networking.virtual_network
+
+  acr = module.cloud_acr.acr
+
+  should_create_aks = var.should_create_aks
 }
 
 module "edge_cncf_cluster" {

@@ -36,26 +36,3 @@ module "container_registry" {
   should_create_acr_private_endpoint = var.should_create_acr_private_endpoint
   sku                                = var.sku
 }
-
-module "aks_cluster" {
-  count = var.should_create_aks ? 1 : 0
-
-  source = "./modules/aks-cluster"
-
-  // Resource dependencies first
-  resource_group = var.resource_group
-  snet_aks       = module.network.snet_aks
-  snet_aks_pod   = module.network.snet_aks_pod
-  acr            = module.container_registry.acr
-
-  // Core parameters next
-  environment     = var.environment
-  resource_prefix = var.resource_prefix
-  location        = var.location
-  instance        = var.instance
-
-  // optional parameters
-  node_count   = var.node_count
-  node_vm_size = var.node_vm_size
-  dns_prefix   = var.dns_prefix
-}

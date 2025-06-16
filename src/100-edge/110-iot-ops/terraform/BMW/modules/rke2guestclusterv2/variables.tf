@@ -123,26 +123,26 @@ variable "cluster_admin_group_name" {
 
 variable "rancher_machine_pools" {
   type = list(object({
-    name                 = string
-    node_count           = number
-    cpu_count            = number
-    memory_size          = number
-    disk_size            = number
-    network_name         = string
-    image_name           = string
-    ssh_user             = string
-    availability_zone    = string
-    labels               = map(string)
-    control_plane_role   = bool
-    etcd_role            = bool
-    worker_role          = bool
-    user_data            = string
+    name               = string
+    node_count         = number
+    cpu_count          = number
+    memory_size        = number
+    disk_size          = number
+    network_name       = string
+    image_name         = string
+    ssh_user           = string
+    availability_zone  = string
+    labels             = map(string)
+    control_plane_role = bool
+    etcd_role          = bool
+    worker_role        = bool
+    user_data          = string
   }))
   description = "map with all the Rancher machine pools and options"
 }
 
 variable "additional_manifest" {
-  type = string
+  type        = string
   description = "additional Kubernetes manifests"
-  default = ""
+  default     = ""
 }
