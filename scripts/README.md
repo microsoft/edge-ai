@@ -89,7 +89,7 @@ Installs the terraform-docs tool at a specific version.
 
 - **Usage**: `./install-terraform-docs.sh [-v version] [-h]`
 - **Flags**:
-  - `-v version`: Specify terraform-docs version (default: v0.19.0)
+  - `-v version`: Specify terraform-docs version (default: v0.20.0)
   - `-h`: Display help message
 - **Build Integration**: Used by the [docs-check-terraform-template.yml](../.azdo/docs-check-terraform-template.yml) in the DocsCheckTerraform job
 - **When to Use**: When setting up a new development environment or updating the terraform-docs version

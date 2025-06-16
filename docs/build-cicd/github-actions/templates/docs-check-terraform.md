@@ -40,13 +40,13 @@ The Docs Check workflow is designed to maintain high-quality documentation throu
 | Parameter              | Type    | Required | Default   | Description                                                 |
 |------------------------|---------|----------|-----------|-------------------------------------------------------------|
 | `break_build`          | Boolean | No       | `false`   | Whether to fail the workflow on documentation issues        |
-| `terraformDocsVersion` | String  | No       | `v0.19.0` | Version of terraform-docs to use for checking documentation |
+| `terraformDocsVersion` | String  | No       | `v0.20.0` | Version of terraform-docs to use for checking documentation |
 
 ### Environment Variables
 
 | Environment Variable     | Default                                            | Description                                                   |
 |--------------------------|----------------------------------------------------|---------------------------------------------------------------|
-| `TERRAFORM_DOCS_VERSION` | Value from input parameters, defaults to `v0.19.0` | Version of terraform-docs to use for checking documentation   |
+| `TERRAFORM_DOCS_VERSION` | Value from input parameters, defaults to `v0.20.0` | Version of terraform-docs to use for checking documentation   |
 | `BREAK_BUILD`            | Value from input parameters, defaults to `false`   | Controls whether to fail the workflow on documentation issues |
 
 ## Outputs

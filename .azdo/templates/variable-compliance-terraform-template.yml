@@ -49,11 +49,10 @@ parameters:
   # Condition for when this job should run
   - name: condition
     type: string
-    default: 'succeeded()'
-  # Version of terraform-docs to install
+    default: 'succeeded()'  # Version of terraform-docs to install
   - name: terraformDocsVersion
     type: string
-    default: 'v0.19.0'
+    default: 'v0.20.0'
   # Whether to break the build on compliance issues (true) or just show warnings (false)
   - name: breakBuild
     type: boolean
