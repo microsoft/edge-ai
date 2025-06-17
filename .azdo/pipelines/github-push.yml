@@ -59,7 +59,8 @@ stages:
               token=$(bash $(System.DefaultWorkingDirectory)/scripts/github/jwt-token.sh $githubAppClientId ./github-app-private-key.pem)
 
               echo "Generating Github Access Tokens Url"
-              url=$(bash $(System.DefaultWorkingDirectory)/scripts/github/access-tokens-url.sh $token)
+              repo_path=$(echo "$url" | sed -n 's|.*/\([^/]\+/\[^/]\+\)$|\1|p')
+              url=$(bash $(System.DefaultWorkingDirectory)/scripts/github/access-tokens-url.sh $token $repo_path)
 
               echo "Generating Github Installation Token"
               installationToken=$(bash $(System.DefaultWorkingDirectory)/scripts/github/installation-token.sh $token $url)
@@ -91,7 +92,8 @@ stages:
           - bash: |
 
               echo "Creating PR"
-              bash $(System.DefaultWorkingDirectory)/scripts/github/create-pr.sh "$(installationToken)" "azdo-$(Build.BuildId)" "$(Build.SourceVersionMessage)"
+              repo_path=$(echo "$url" | sed -n 's|.*/\([^/]\+/\[^/]\+\)$|\1|p')
+              bash $(System.DefaultWorkingDirectory)/scripts/github/create-pr.sh "$(installationToken)" "azdo-$(Build.BuildId)" "$(Build.SourceVersionMessage)" "$repo_path"
 
             displayName: "Create GitHub PR"
             name: githubPR
