@@ -60,6 +60,7 @@ stages:
 
               echo "Generating Github Access Tokens Url"
               repo_path=$(echo "$url" | sed -n 's|.*/\([^/]\+/\[^/]\+\)$|\1|p')
+              echo "Repo Path: $repo_path"
               url=$(bash $(System.DefaultWorkingDirectory)/scripts/github/access-tokens-url.sh $token $repo_path)
 
               echo "Generating Github Installation Token"
