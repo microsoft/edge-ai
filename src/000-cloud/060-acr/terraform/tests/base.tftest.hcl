@@ -29,22 +29,8 @@ run "create_default_configuration" {
   }
 
   assert {
-    condition     = module.network.snet_aks.name == "subnet-${var.resource_prefix}-aks-${var.environment}-${var.instance}"
-    error_message = "Subnet name for AKS does not match expected pattern"
-  }
-  assert {
-    condition     = module.network.snet_aks_pod.name == "subnet-${var.resource_prefix}-aks-pod-${var.environment}-${var.instance}"
-    error_message = "Subnet name for AKS pod does not match expected pattern"
-  }
-
-  assert {
     condition     = module.container_registry.acr.name == "acr${var.resource_prefix}${var.environment}${var.instance}"
     error_message = "Azure Container Registry name does not match expected pattern"
-  }
-
-  assert {
-    condition     = length(module.aks_cluster) == 0
-    error_message = "Azure Kubernetes Service should NOT be created when should_create_aks is false"
   }
 }
 
@@ -60,30 +46,11 @@ run "create_non_default_configuration" {
     network_security_group             = run.setup_tests.network_security_group
     virtual_network                    = run.setup_tests.virtual_network
     should_create_acr_private_endpoint = true
-    should_create_aks                  = true
     sku                                = "Basic"
-    node_count                         = 3
-    node_vm_size                       = "Standard_DS2_v2"
-    dns_prefix                         = "dns-prefix"
   }
 
   assert {
     condition     = module.container_registry.acr.sku == "Basic"
     error_message = "Azure Container Registry SKU does not match expected value"
-  }
-
-  assert {
-    condition     = module.aks_cluster[0].aks.default_node_pool[0].node_count == 3
-    error_message = "AKS node count does not match expected value"
-  }
-
-  assert {
-    condition     = module.aks_cluster[0].aks.default_node_pool[0].vm_size == "Standard_DS2_v2"
-    error_message = "AKS VM size does not match expected value"
-  }
-
-  assert {
-    condition     = module.aks_cluster[0].aks.dns_prefix == "dns-prefix"
-    error_message = "AKS DNS prefix does not match expected value"
   }
 }

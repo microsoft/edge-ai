@@ -35,7 +35,7 @@ module "ci" {
   resource_group         = data.azurerm_resource_group.aio
   network_security_group = data.azurerm_network_security_group.aio_edge
   virtual_network        = data.azurerm_virtual_network.aio_edge
-  container_registry     = data.azurerm_azurerm_container_registry.acr
+  acr                    = data.azurerm_azurerm_container_registry.acr
   environment            = var.environment
   resource_prefix        = var.resource_prefix
   location               = var.location
