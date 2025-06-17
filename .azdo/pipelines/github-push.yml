@@ -59,7 +59,7 @@ stages:
               githubAppClientId=$(echo $(github-app-client-id))
               echo "$(github-app-private-key)" > ./github-app-private-key.pem
 
-              if [[ !${{ parameters.isEnterpriseGitHub }} ]]; then
+              if ! ${{ parameters.isEnterpriseGitHub }}; then
                 echo "Using public GitHub"
                 githubAppClientId=$(github-app-edge-ai-client-id)
                 echo "$(github-app-edge-ai-private-key)" > ./github-app-private-key.pem
@@ -82,7 +82,7 @@ stages:
           - bash: |
               githubUrl=$(githubRepoUrl)
 
-              if [[ !${{ parameters.isEnterpriseGitHub }} ]]; then
+              if ! ${{ parameters.isEnterpriseGitHub }}; then
                 echo "Using public GitHub"
                 githubUrl=$(github-edge-ai-repo-url)
               fi
