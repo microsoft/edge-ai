@@ -9,7 +9,6 @@ on: # yamllint disable-line rule:truthy
       - 'src/**/*.md'
       - 'blueprints/**/*.md'
       - 'scripts/Generate-DocsSidebar.ps1'
-      - 'scripts/Three-Tree-Enhancement.ps1'
   pull_request:
     branches: [main]
     paths:
@@ -17,7 +16,6 @@ on: # yamllint disable-line rule:truthy
       - 'src/**/*.md'
       - 'blueprints/**/*.md'
       - 'scripts/Generate-DocsSidebar.ps1'
-      - 'scripts/Three-Tree-Enhancement.ps1'
   workflow_dispatch:
     inputs:
       force_regenerate:
@@ -63,7 +61,7 @@ jobs:
           Write-Host "Found $($markdownFiles.Count) markdown files to validate"
 
           foreach ($file in $markdownFiles) {
-            $frontmatter = Get-MarkdownFrontmatter -FilePath $file.FullName
+            $frontmatter = Get-MarkdownFile -FilePath $file.FullName
 
             if ($frontmatter) {
               # Validate required fields
@@ -130,9 +128,6 @@ jobs:
         shell: pwsh
         run: |
           Write-Host "🏗️ Generating three-tree navigation sidebar..."
-
-          # Import the enhanced three-tree functions
-          Import-Module ./scripts/Three-Tree-Enhancement.ps1 -Force
 
           # Run the enhanced sidebar generation
           . ./scripts/Generate-DocsSidebar.ps1

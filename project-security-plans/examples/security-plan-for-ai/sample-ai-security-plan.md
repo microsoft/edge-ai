@@ -23,7 +23,7 @@ As part of a new pilot program, ISE Security TD has established the following ba
 Please find the Security Plan for RetailMart below. This document shows the architecture and data flow diagram of the application. These artifacts were constructed based on documentation and source code from the project itself and are subject to change as the architecture and codebase evolves.
 Each of the labeled entities in the figures below are accompanied by meta-information which describes the threats, describes the data in scope, and recommendations for security controls.
 
-Discretion and resilience are essential qualities for AI models to effectively navigate complex and sensitive tasks, ensuring they can make informed decisions and maintain performance in challenging environments.More details can ne found [here.](#discretion)
+Discretion and resilience are essential qualities for AI models to effectively navigate complex and sensitive tasks, ensuring they can make informed decisions and maintain performance in challenging environments. More details can be found in the [discretion section below](#discretion).
 In addition to the security controls recommended in this plan, we strongly advise our customers to have robust defense mechanisms implemented using SIEM, SOC tools.
 
 ## Application Overview

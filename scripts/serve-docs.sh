@@ -79,8 +79,8 @@ echo "🔄 Starting server..."
 echo "📖 Documentation will be available at: http://localhost:$PORT"
 echo ""
 
-# Build docsify command with options - use npx for reliability
-DOCSIFY_CMD="npx docsify serve . --port $PORT --index-name $INDEX_FILE"
+# Build docsify command with options - use npx for reliability and force resolution of marked
+DOCSIFY_CMD="npx --yes docsify serve . --port $PORT --index-name $INDEX_FILE"
 
 if [ "$OPEN" = true ]; then
   DOCSIFY_CMD="$DOCSIFY_CMD --open"

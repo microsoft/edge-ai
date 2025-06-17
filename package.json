@@ -34,5 +34,13 @@
 	},
 	"devDependencies": {
 		"docsify-cli": "4.4.4"
+	},
+	"resolutions": {
+		"marked": "^4.0.10",
+		"got": "^11.8.5"
+	},
+	"overrides": {
+		"marked": "^4.0.10",
+		"got": "^11.8.5"
 	}
 }
