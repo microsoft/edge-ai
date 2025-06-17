@@ -47,7 +47,7 @@ stages:
     jobs:
       - job: "GitHubPush"
         displayName: "Updating GitHub repo from AzDO"
-        condition: eq(variables.isMain, true)
+        # condition: eq(variables.isMain, true)
         steps:
           # Checkout repo
           - checkout: self
