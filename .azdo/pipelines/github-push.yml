@@ -30,10 +30,6 @@
 # GitHub sync pipeline
 ---
 trigger: none
-parameters:
-  - name: isEnterpriseGitHub
-    type: boolean
-    default: true
 variables:
   - group: 'ai-on-edge-secrets'
   - name: isMain
@@ -56,14 +52,8 @@ stages:
 
           # Create GitHub access token
           - bash: |
-              githubAppClientId=$(echo $(github-app-client-id))
-              echo "$(github-app-private-key)" > ./github-app-private-key.pem
-
-              if ! ${{ parameters.isEnterpriseGitHub }}; then
-                echo "Using public GitHub"
-                githubAppClientId=$(github-app-edge-ai-client-id)
-                echo "$(github-app-edge-ai-private-key)" > ./github-app-private-key.pem
-              fi
+              githubAppClientId=$(echo $(github-app-edge-ai-client-id))
+              echo "$(github-app-edge-ai-private-key)" > ./github-app-private-key.pem
 
               echo "Generating Github JWT Token"
               token=$(bash $(System.DefaultWorkingDirectory)/scripts/github/jwt-token.sh $githubAppClientId ./github-app-private-key.pem)
@@ -80,12 +70,7 @@ stages:
 
           # Push to GitHub
           - bash: |
-              githubUrl=$(githubRepoUrl)
-
-              if ! ${{ parameters.isEnterpriseGitHub }}; then
-                echo "Using public GitHub"
-                githubUrl=$(github-edge-ai-repo-url)
-              fi
+              githubUrl=$(github-edge-ai-repo-url)
 
               echo "Pushing to GitHub"
               remoteUrl=$(echo $githubUrl | sed "s|__token__|$(installationToken)|g")
