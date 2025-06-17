@@ -43,8 +43,8 @@ stages:
 
           # Create GitHub access token
           - bash: |
-              githubAppClientId=$(echo $(github-app-edge-ai-client-id))
-              echo "$(github-app-edge-ai-private-key)" > ./github-app-private-key.pem
+              githubAppClientId=$(echo $(github-edge-ai-app-client-id))
+              echo "$(github-edge-ai-app-private-key)" > ./github-app-private-key.pem
 
               echo "Generating Github JWT Token"
               token=$(bash $(System.DefaultWorkingDirectory)/scripts/github/jwt-token.sh $githubAppClientId ./github-app-private-key.pem)
