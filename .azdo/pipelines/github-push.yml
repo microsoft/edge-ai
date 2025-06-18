@@ -59,7 +59,7 @@ stages:
               token=$(bash $(System.DefaultWorkingDirectory)/scripts/github/jwt-token.sh $githubAppClientId ./github-app-private-key.pem)
 
               echo "Generating Github Access Tokens Url"
-              url=$(echo $(github-edge-ai-repo-url))
+              url="https://github.com/microsoft/edge-ai/"
               echo "Repo URL: $url"
               repo_path=$(echo "$url" | sed -n 's|https://github.com/\([^/][^/]*/[^/][^/]*\)/$|\1|p')
               echo "Repo Path: $repo_path"
@@ -96,6 +96,7 @@ stages:
 
               echo "Creating PR"
               url=$(echo $(github-edge-ai-repo-url))
+              echo "Repo Url: $url"
               repo_path=$(echo "$url" | sed -n 's|https://github.com/\([^/][^/]*/[^/][^/]*\)/$|\1|p')
               bash $(System.DefaultWorkingDirectory)/scripts/github/create-pr.sh "$(installationToken)" "azdo-$(Build.BuildId)" "$(Build.SourceVersionMessage)" "$repo_path"
 
