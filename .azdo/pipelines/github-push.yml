@@ -92,9 +92,9 @@ stages:
 
           # Create GitHub PR
           - bash: |
-
               echo "Creating PR"
               repo_path=$(echo $(github-edge-ai-repo-url) | sed -n 's|.*github.com/\([^/][^/]*/[^/][^/]*\)/$|\1|p')
+              echo "RepoPath: $repo_path"
               bash $(System.DefaultWorkingDirectory)/scripts/github/create-pr.sh "$(installationToken)" "azdo-$(Build.BuildId)" "$(Build.SourceVersionMessage)" "$repo_path"
 
             displayName: "Create GitHub PR"
