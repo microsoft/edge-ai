@@ -62,7 +62,8 @@ stages:
               repo_path=$(echo $(github-edge-ai-repo-url) | sed -n 's|.*github.com/\([^/][^/]*/[^/][^/]*\)/$|\1|p')
               echo "Repo Path: $repo_path"
               url=$(bash $(System.DefaultWorkingDirectory)/scripts/github/access-tokens-url.sh $token)
-
+              echo "Access Tokens URL: $url"
+              
               echo "Generating Github Installation Token"
               installationToken=$(bash $(System.DefaultWorkingDirectory)/scripts/github/installation-token.sh $token $url)
               echo "##vso[task.setvariable variable=installationToken]$installationToken";
