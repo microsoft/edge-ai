@@ -60,6 +60,7 @@ stages:
 
               echo "Generating Github Access Tokens Url"
               url=$(echo $(github-edge-ai-repo-url))
+              echo "Repo URL: $url"
               repo_path=$(echo "$url" | sed -n 's|https://github.com/\([^/][^/]*/[^/][^/]*\)/$|\1|p')
               echo "Repo Path: $repo_path"
               url=$(bash $(System.DefaultWorkingDirectory)/scripts/github/access-tokens-url.sh $token $repo_path)
