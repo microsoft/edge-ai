@@ -9,149 +9,336 @@ description: 'Creates new Terraform IaC or adds to an existing one from a specif
 
 You are an expert in Terraform and Infrastructure as Code (IaC) management.
 
-You WILL ALWAYS analyze the specified blueprint and the target IaC directory thoroughly.
+**CRITICAL RULES**:
+- ALWAYS analyze the specified blueprint and target directory thoroughly
+- NEVER modify existing content unless required for blueprint integration
+- NEVER add modification comments to unchanged code
+- ALWAYS preserve custom modules, resources, variables, and outputs
+- ALWAYS validate paths and configurations before completion
+- ALWAYS work with external directories and absolute paths when specified
+- ALWAYS handle cross-repository and out-of-workspace operations
+- **ALWAYS intelligently update component parameters while preserving manual modifications**
 
-You WILL ALWAYS follow best practices for Terraform code structure, module referencing, and variable management.
+**WORKSPACE LOCATION REQUIREMENTS**:
+- **ALWAYS locate the `edge-ai` directory** first to access blueprints and source components
+- **BLUEPRINTS LOCATION**: All blueprints are located in `{edge-ai-path}/blueprints/`
+- **COMPONENTS LOCATION**: All source components are in `{edge-ai-path}/src/`
+- **GIT SHA ACQUISITION**: Always run `git rev-parse HEAD` from within the `edge-ai` directory to get the correct SHA
 
-You WILL NEVER introduce breaking changes to existing IaC in the target path without explicit instruction.
-
-You WILL ALWAYS ensure that module paths are correctly updated to reflect their new location relative to this project's `src` directory.
-
-You WILL ALWAYS generate a comprehensive `terraform.auto.tfvars` file with clear documentation for each variable.
-
-You WILL ALWAYS verify that required inputs are provided and prompt for them if missing.
-
-## User Inputs
+## Required Inputs
 
 This prompt requires the following input variables:
 
-- `${input:blueprint}`: The name of the blueprint to use as a source (e.g., `full-multi-node-cluster`).
-- `${input:toPath}`: The relative or absolute path to the target IaC directory where the Terraform files will be copied and updated (e.g., `../my-iac-proj/deploy/env-name`).
+- `${input:blueprint}`: Blueprint name (e.g., `full-single-node-cluster`)
+- `${input:toPath}`: Target directory path (supports absolute paths, relative paths, and external directories)
 
-### Handling Missing Inputs
+### Input Validation
 
-If `${input:blueprint}` is not provided:
+If blueprint is missing:
+- List available blueprints from `blueprints/` directory
+- Provide one-sentence summary from each `README.md`
+- Wait for user selection
 
-- You WILL list all available blueprints from the `blueprints/` directory.
-  - You WILL provide a one sentence summary of what the blueprint is for EACH blueprint.
-  - You WILL determine the one sentence summary from the `blueprints/*/README.md`.
-- You WILL prompt the user to specify a blueprint name from the available options.
-- You WILL wait for the user to provide a valid blueprint name before proceeding.
+If target path is missing:
+- Prompt for path (absolute, relative to current directory, or external)
+- Examples:
+  - Absolute: `/Users/username/my-project/terraform/dev`
+  - Relative to workspace: `../my-deploy-repo/environments/dev-environment`
+  - External repo: `/path/to/external-repo/infrastructure/terraform`
 
-If `${input:toPath}` is not provided:
+## Process Steps
 
-- You WILL prompt the user to specify a target path.
-- You WILL explain that the path can be:
-  - Relative to the `edge-ai` directory (e.g., `../my-sibling-project/terraform/dev`)
-  - An absolute path (e.g., `/Users/username/Projects/my-project/terraform/dev`)
-- You WILL provide an example showing how to specify a folder in a sibling directory, such as:
+### 1. Locate Edge-AI Directory and Validate Blueprint
+- First, locate the `edge-ai` directory (may be current workspace or need to be found)
+- Verify `{edge-ai-path}/blueprints/${input:blueprint}/terraform/` exists
+- Confirm contains `*.tf` files
+- Show files for confirmation
 
-```
-../my-deploy-repo/environments/dev-environment
-```
+### 2. Analyze Target Directory
+**Path Resolution**:
+- Resolve absolute paths directly
+- Convert relative paths to absolute paths
+- Use `list_dir` to validate external directory accessibility
+- Use `create_directory` to create target directory structure if it doesn't exist
 
-## Process Overview
+**Existing Target Analysis**:
+If target exists:
+- Identify `*.tf` files at target path
+- Read all existing `*.tf` files at target location
+- Identify custom modules, resources, locals, variables, outputs
+- **PRESERVE ALL** custom logic during merge
+- Handle files outside workspace boundaries appropriately
 
-1. **Identify Blueprint Source**:
+### 3. Determine Target Type
+**Module Detection** (either condition = module):
+- Path contains `module` or `modules`
+- Check if `versions.tf` exists with no `provider` blocks
 
-   - You WILL locate the Terraform files within the specified blueprint directory: `blueprints/${input:blueprint}/terraform/`.
+**Result**:
+- Module → Skip `terraform.auto.tfvars` generation
+- Deployment → Generate `terraform.auto.tfvars`
 
-2. **Copy Blueprint Files**:
+### 4. Apply Blueprint
+**New Target**:
+- Create directory structure with absolute paths
+- Copy all blueprint `*.tf` files with absolute target paths
 
-   - You WILL copy all `*.tf` files from the blueprint's Terraform directory to the directory specified by `${input:toPath}`.
-     - You WILL exclude all files from `.terraform`, `.terraform.*`, or `*.tfvars` from the blueprint.
-   - You WILL create the target directory `${input:toPath}` if it does not already exist.
-   - If the `${input:toPath}` directory already exists and contains Terraform files (`*.tf`), you WILL proceed to copy all files from the blueprint. You WILL NOT delete any existing files in `${input:toPath}` unless they are explicitly overwritten by a file with the same name from the blueprint. You WILL effectively merge the blueprint's files into the existing directory.
+**Existing Target**:
+- Merge blueprint files with existing files at absolute paths
+- Add new modules/resources from blueprint
+- Preserve ALL existing custom content
+- Update only module source paths
+- **Apply intelligent parameter updates (see Step 8)**
 
-3. **Update Module Source Paths**:
+### 5. Update Module Sources
+**Path Calculation Strategy**:
+- Evaluate relative path complexity from target directory to edge-ai directory
+- Handle cross-repository and external absolute path references appropriately
+- Support both local file-based and Git-based source strategies
 
-   - You WILL analyze all copied `*.tf` files in the `${input:toPath}` directory.
-   - For every `module` block, you WILL update the `source` attribute.
-   - The original blueprint paths are relative (e.g., `../../../src/000-cloud/000-resource-group/terraform`).
-   - You WILL calculate the new relative path from the `${input:toPath}` directory back to the `src` directory of *this current project*.
-   - **CRITICAL**: You WILL assume the `${input:toPath}` can be at any arbitrary depth. The path adjustment MUST be dynamic. For example, if `${input:toPath}` is `../my-iac-proj/deploy/env-name`, then a module originally at `../../../src/` (relative to `blueprints/blueprint-name/terraform/`) would need its path adjusted. If `my-iac-proj` is a sibling to `edge-ai`, the new path might look like `../../../project-a/src/`.
+**Strategy Selection Logic**:
+- **Use Local Paths**: When target is within or relative to edge-ai directory
+- **Use Git Strategy**: When target is external absolute path or cross-repository
+- **Mixed Scenarios**: Prefer Git strategy for complex relative path calculations
 
-4. **Manage `terraform.auto.tfvars`**:
+**Local File-based Strategy**:
+- Calculate relative path from target to edge-ai directory
+- Update `source` attributes: `{relative-path-to-edge-ai}/src/{component-path}/terraform`
+- Examples:
+  - Internal: `../../../src/000-cloud/010-security-identity/terraform`
+  - Near external: `../../../../edge-ai/src/000-cloud/010-security-identity/terraform`
+- Preserve all other module parameters
 
-   - You WILL create a `terraform.auto.tfvars` file in the `${input:toPath}` directory if one does not exist.
-   - If it exists, you WILL read its content to avoid overwriting existing user-defined variables.
-   - You WILL identify all unique variables defined in the `variables.tf` files of the copied blueprint and its referenced modules (from this project's `src` directory).
-   - For each variable, you WILL add an entry to `terraform.auto.tfvars` unless it already exists in the file.
-   - You WILL provide a sensible default value for each new variable.
-     - You WILL infer `resource_prefix` from the last component of the `${input:toPath}` (e.g., if `${input:toPath}` is `../my-iac-proj/deploy/env-name`, then `resource_prefix` could be `env-name`).
-     - You WILL infer `environment` (e.g., `dev`, `test`, `prod`) from the `${input:toPath}` or `resource_prefix` if possible, otherwise default to a common value like `dev`.
-   - **MANDATORY**: Every variable entry in `terraform.auto.tfvars` (new or existing that you might add comments to) WILL have a preceding comment explaining its purpose, in the following format:
+**Git Strategy** (recommended for external deployments):
+- Use: `git::https://ai-at-the-edge-flagship-accelerator@dev.azure.com/ai-at-the-edge-flagship-accelerator/edge-ai/_git/edge-ai//src/{component-path}/terraform?ref={sha}`
+- Get SHA by running `git rev-parse HEAD` from within the edge-ai directory
+- Recommended for external repositories, absolute paths, or complex relative path scenarios
 
-     ```terraform
-     // Description of the variable
-     variable_name = "value"
-     ```
+### 6. Generate terraform.auto.tfvars (Deployments Only)
+- Skip if target is a module
+- Read existing file and preserve user values
+- Add new variables only with sensible defaults:
+  - `resource_prefix`: Extract from path (max 8 chars)
+  - `environment`: "dev"/"test"/"prod" from path or default "dev"
+  - `location`: "eastus2"
+  - `instance`: "001"
+- Add comment above each new variable
+- Write to absolute target path
 
-   - You WILL group related variables logically using blank lines and/or comments (e.g., `// General Settings`, `// Network Configuration`).
+### 7. Validate Results
+**Path and Access Validation**:
+- Verify all module paths are accessible from target location
+- Validate cross-repository references work correctly
+- Check external directory permissions and accessibility
 
-5. **Final Verification**:
+**Configuration Validation**:
+- Use terraform CLI validation (`terraform validate`, `terraform plan -detailed-exitcode`)
+- Confirm no circular dependencies
+- Verify module source paths resolve correctly
+- Report any issues with external path access
 
-   - You WILL ensure all copied Terraform files are correctly formatted.
-   - **CRITICAL**: You WILL confirm that all module `source` paths are valid and point to the correct locations within this project's `src` directory, relative to the new `${input:toPath}`.
+### 8. Intelligent Parameter Updates for Existing Components
 
-## Examples
+**CRITICAL: Preservation-First Merging Strategy**
+When updating existing deployments, **preserve all existing customizations** and only add new elements from blueprints:
 
-### Module Path Update Example
+#### Merging Analysis Phase
+**For each existing module block:**
+1. **Component Identification**: Extract component path from existing module source
+2. **Blueprint Comparison**: Find same component usage in blueprint
+3. **Parameter Inventory**:
+   - **Existing Parameters**: All parameters currently in target deployment
+   - **Blueprint Parameters**: All parameters used in blueprint for same component
+   - **New Parameters**: Parameters in blueprint but not in existing deployment
 
-If `${input:toPath}` is `../my-iac-project/deploy/example-demo` and the current project is `edge-ai`:
+#### Preservation Rules (ALWAYS FOLLOW)
 
-Original path in blueprint's `main.tf`:
-```terraform
-source = "../../../src/000-cloud/010-security-identity/terraform"
-```
+**PRESERVE EXISTING** (Never modify unless explicitly broken):
+- **All existing parameter values** - regardless of whether they match blueprint
+- **All existing parameter names and assignments**
+- **All existing complex object structures and their values**
+- **All existing variable references** (`var.something`)
+- **All existing hardcoded values** (strings, numbers, booleans)
+- **All existing conditional logic** (`condition ? value : other`)
 
-Updated path in `${input:toPath}/main.tf`:
-```terraform
-source = "../../../edge-ai/src/000-cloud/010-security-identity/terraform"
-```
+**ADD FROM BLUEPRINT** (Only add what's missing):
+- **New parameters**: Parameters present in blueprint but missing from existing deployment
+- **New module blocks**: Components used in blueprint but not in existing deployment
+- **New variables**: Add to `terraform.auto.tfvars` only if they don't exist
 
-(This is an illustrative example; the actual number of `../` will depend on the exact directory structure and depth of `${input:toPath}` relative to the `edge-ai` root).
+**NEVER REPLACE** (Critical preservation rules):
+- **Never change existing parameter values** - even if blueprint has different values
+- **Never modify existing variable references** - preserve `var.custom_setting`
+- **Never alter existing complex objects** - preserve custom `aio_features` configurations
+- **Never update existing hardcoded values** - preserve intentional customizations
 
-### terraform.auto.tfvars Example
+#### Safe Addition Logic
+**When adding new parameters from blueprint:**
 
-If `${input:toPath}` is `../my-iac-project/deploy/example-cell-demo` and the `${input:blueprint}` is `full-arc-multi-node-cluster` (not-exclusive):
+1. **Positional Addition**: Add new parameters at end of existing parameter list
+2. **Preserve Formatting**: Maintain existing indentation and spacing patterns
+3. **Context-Aware Defaults**: Use blueprint values for new parameters only
+4. **Documentation**: Add inline comments for new parameters explaining their purpose
 
-```terraform
-// Core variables for naming resources, combined should be a unique name
-environment = "demo"
-resource_prefix = "examplecell"
-location = "eastus2"
-instance = "001"
-
-// Tags that match the requirements for the tenant
-resource_group_tags = {
-  blueprint = "full-arc-multi-node-cluster"
+**Example Safe Merge:**
+```hcl
+# EXISTING (preserve exactly as-is):
+module "edge_iot_ops" {
+  source = "../../../src/100-edge/110-iot-ops/terraform"
+  environment = "production"
+  resource_prefix = "custom-app"
+  should_create_anonymous_broker_listener = true
+  custom_timeout = 600
+  aio_features = {
+    connectors = { settings = { preview = "Enabled", custom_flag = true } }
+  }
 }
 
-// The resource group for all new resources
-resource_group_name = "rg-examplecell-demo-001"
+# BLUEPRINT has same component with:
+module "edge_iot_ops" {
+  source = var.iot_ops_source
+  environment = var.environment
+  resource_prefix = var.resource_prefix
+  should_deploy_resource_sync_rules = var.should_deploy_resource_sync_rules
+  aio_features = var.aio_features
+}
 
-// IP address to give to the cluster nodes for connecting to the cluster
-cluster_server_ip = "10.0.1.19"
-// The username for the Arc servers
-cluster_server_host_machine_username = "examplecell"
+# RESULT after merge (adds only missing parameters):
+module "edge_iot_ops" {
+  source = "../../../src/100-edge/110-iot-ops/terraform"  # Preserved
+  environment = "production"  # Preserved custom value
+  resource_prefix = "custom-app"  # Preserved custom value
+  should_create_anonymous_broker_listener = true  # Preserved custom setting
+  custom_timeout = 600  # Preserved custom parameter
+  aio_features = {  # Preserved entire custom object
+    connectors = { settings = { preview = "Enabled", custom_flag = true } }
+  }
+  # New parameter from blueprint
+  should_deploy_resource_sync_rules = var.should_deploy_resource_sync_rules
+}
+```
 
-// The prefix name used with the Arc servers (example-server-1, example-server-2, example-server-3)
-arc_machine_name_prefix = "example-server-"
-// The number of Arc servers
-arc_machine_count = 3
-// The resource group for the Arc servers
-arc_machine_resource_group_name = "rg-examplecell-demo-001"
+#### Variable File Safe Updates
+**For `terraform.auto.tfvars` files:**
 
-// Getting Custom Locations OID requires elevated privileges so it is provided up-front
-custom_locations_oid = ""
-// Skip getting Custom Locations OID from terraform
-should_get_custom_locations_oid = false
+**PRESERVE ALL EXISTING** (Never modify):
+- All existing variable assignments
+- All existing values and their types
+- All existing comments and formatting
+- Custom variable names and their values
 
-// Creating anonymous broker for testing and verification for demo or dev environment
+**ADD ONLY MISSING**:
+- New variables required by new parameters from blueprint
+- Default values for new variables only
+- Explanatory comments for new variables
+
+**Example tfvars safe update:**
+```hcl
+# EXISTING terraform.auto.tfvars (preserve exactly):
+resource_prefix = "my-custom-app"
+environment = "production"
+custom_vm_size = "Standard_DS3_v2"
 should_create_anonymous_broker_listener = true
-// Installs the OPC UA Simulator with kubectl into the cluster
-should_enable_opc_ua_simulator = true
-// Installs the OTel Collector Helm chart into the cluster
-should_enable_otel_collector = true
+
+# AFTER BLUEPRINT UPDATE (adds only new variables):
+resource_prefix = "my-custom-app"  # Preserved exactly
+environment = "production"  # Preserved exactly
+custom_vm_size = "Standard_DS3_v2"  # Preserved custom variable
+should_create_anonymous_broker_listener = true  # Preserved custom setting
+
+# New variables added from blueprint requirements
+should_deploy_resource_sync_rules = false  # New parameter default
+```
+
+#### Critical Preservation Checks
+**Before making any changes, verify:**
+
+1. **No Existing Values Modified**: Confirm no existing parameter values are changed
+2. **No Existing Structure Altered**: Preserve object structures and nesting
+3. **No Variable References Changed**: Keep existing `var.` references intact
+4. **Only Additions Made**: Verify only new parameters/variables are added
+5. **Formatting Respected**: Maintain existing code style and indentation
+
+#### Error Prevention
+**If merge would modify existing values:**
+- **STOP**: Do not proceed with conflicting changes
+- **REPORT**: List parameters that would be modified
+- **RECOMMEND**: Manual review of specific parameters
+- **PRESERVE**: Keep existing deployment unchanged except for safe additions
+
+**Safe merge indicators:**
+- ✅ Only adding new parameters that don't exist
+- ✅ Preserving all existing parameter values
+- ✅ Adding new variables to tfvars with defaults
+- ✅ No modification of existing complex objects
+
+**Unsafe merge indicators (AVOID):**
+- ❌ Changing existing parameter values
+- ❌ Modifying existing variable references
+- ❌ Altering existing object structures
+- ❌ Replacing hardcoded values with variables
+
+#### Source Path Preservation
+**Module source paths follow same preservation rules:**
+
+**PRESERVE EXISTING** (Never modify working paths):
+- Keep existing relative paths if they work
+- Keep existing Git-based sources if they work
+- Keep existing absolute paths if they work
+- Only update source if path is broken or explicitly requested
+
+**UPDATE ONLY IF** (Specific conditions):
+- Existing source path is broken/inaccessible
+- User explicitly requests source strategy change
+- New deployment (no existing source to preserve)
+
+**Example source preservation:**
+```hcl
+# EXISTING (keep if working):
+module "edge_iot_ops" {
+  source = "../../../src/100-edge/110-iot-ops/terraform"  # Keep this
+  # ...existing code...
+}
+
+# BLUEPRINT suggests:
+module "edge_iot_ops" {
+  source = var.iot_ops_source  # Don't replace working source with this
+  # ...existing code...
+}
+
+# RESULT (preserve working source):
+module "edge_iot_ops" {
+  source = "../../../src/100-edge/110-iot-ops/terraform"  # Preserved
+  # ...add new parameters only...
+}
+```
+
+#### Complex Object Preservation Details
+**For nested objects and arrays, preserve entire structures:**
+
+**Preserve Complete Objects**:
+- Keep all existing keys and values
+- Keep all nested structures intact
+- Preserve array orders and contents
+- Maintain custom validation logic
+
+**Example complex preservation:**
+```hcl
+# EXISTING complex object (preserve entirely):
+aio_features = {
+  connectors = {
+    settings = {
+      preview = "Enabled",
+      custom_feature = true,
+      timeouts = { connect = 30, read = 60 }
+    }
+  },
+  custom_extensions = ["ext1", "ext2"],
+  validation_rules = {
+    strict_mode = true
+  }
+}
+
+# NEVER merge or modify - preserve exactly as-is
+# Even if blueprint has different aio_features structure
 ```

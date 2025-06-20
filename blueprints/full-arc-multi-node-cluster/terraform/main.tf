@@ -32,8 +32,9 @@ module "cloud_resource_group" {
   location        = var.location
   resource_prefix = var.resource_prefix
 
-  tags                = var.resource_group_tags
-  resource_group_name = var.resource_group_name
+  tags                        = var.resource_group_tags
+  resource_group_name         = var.resource_group_name
+  use_existing_resource_group = var.use_existing_resource_group
 }
 
 module "cloud_security_identity" {
