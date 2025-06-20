@@ -48,6 +48,7 @@ module "role_assignments" {
 
 module "ubuntu_k3s" {
   source = "./modules/ubuntu-k3s"
+  count  = var.should_deploy_arc_agents ? 0 : 1
 
   depends_on = [module.role_assignments]
 
@@ -71,6 +72,23 @@ module "ubuntu_k3s" {
   key_vault                                 = var.key_vault
   should_upload_to_key_vault                = var.should_upload_to_key_vault
   should_use_script_from_secrets_for_deploy = var.should_use_script_from_secrets_for_deploy
+}
+
+module "arc_agents" {
+  source = "./modules/arc-agents"
+  count  = var.should_deploy_arc_agents ? 1 : 0
+
+  depends_on = [module.role_assignments]
+
+  resource_group = var.resource_group
+  location       = var.cluster_server_machine.location
+
+  cluster_name         = local.arc_resource_name
+  http_proxy           = var.http_proxy
+  custom_locations_oid = local.custom_locations_oid
+  private_key_pem      = var.private_key_pem
+
+
 }
 
 data "azapi_resource" "arc_connected_cluster" {
