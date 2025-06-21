@@ -112,7 +112,6 @@ resource "azurerm_role_assignment" "grafana_monitoring_reader" {
 # import grafana dashboard for AIO
 resource "terraform_data" "apply_scripts" {
   count = var.grafana_admin_principal_id != "" ? 1 : 0
-
   depends_on = [
     azurerm_role_assignment.grafana_admin,
     azurerm_role_assignment.grafana_logs_reader,
@@ -120,15 +119,12 @@ resource "terraform_data" "apply_scripts" {
   ]
 
   provisioner "local-exec" {
-    command = <<-EOT
-      # Import dashboards from local files
-      for dashboard in ../../../src/000-cloud/020-observability/scripts/*.json; do
-        az grafana dashboard import -g ${var.azmon_resource_group.name} -n ${azurerm_dashboard_grafana.monitor.name} --definition $dashboard
-      done
+    command = "bash ${path.module}/../scripts/import-grafana-dashboards.sh"
 
-      # Import dashboard from GitHub
-      az grafana dashboard import -g ${var.azmon_resource_group.name} -n ${azurerm_dashboard_grafana.monitor.name} --definition https://raw.githubusercontent.com/Azure/azure-iot-operations/refs/heads/main/samples/grafana-dashboard/aio.sample.json
-    EOT
+    environment = {
+      GRAFANA_NAME        = azurerm_dashboard_grafana.monitor.name
+      RESOURCE_GROUP_NAME = var.azmon_resource_group.name
+    }
   }
 }
 
