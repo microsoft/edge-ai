@@ -2,23 +2,13 @@
 <!-- markdown-table-prettify-ignore-start -->
 # Terraform IaC
 
-## Requirements
-
-| Name | Version |
-|------|---------|
-| terraform | >= 1.11.0 |
-| azurerm | >= 4.11.0 |
-| external | >= 2.3.4 |
-| helm | >= 2.17.0 |
-| http | >= 3.2.0 |
-
 ## Providers
 
 | Name | Version |
 |------|---------|
-| azurerm | >= 4.11.0 |
-| helm | >= 2.17.0 |
-| http | >= 3.2.0 |
+| azurerm | n/a |
+| helm | n/a |
+| http | n/a |
 
 ## Resources
 
