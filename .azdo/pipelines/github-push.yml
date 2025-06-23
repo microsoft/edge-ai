@@ -30,10 +30,6 @@
 # GitHub sync pipeline
 ---
 trigger: none
-parameters:
-  - name: isEnterpriseGitHub
-    type: boolean
-    default: true
 variables:
   - group: 'ai-on-edge-secrets'
   - name: isMain
@@ -56,20 +52,17 @@ stages:
 
           # Create GitHub access token
           - bash: |
-              githubAppClientId=$(echo $(github-app-client-id))
-              echo "$(github-app-private-key)" > ./github-app-private-key.pem
-
-              if [[ ! ${{ parameters.isEnterpriseGitHub }} ]]; then
-                echo "Using public GitHub"
-                githubAppClientId=$(github-app-edge-ai-client-id)
-                echo "$(github-app-edge-ai-private-key)" > ./github-app-private-key.pem
-              fi
+              githubAppClientId=$(echo $(github-edge-ai-app-client-id))
+              echo "$(github-edge-ai-app-private-key)" > ./github-app-private-key.pem
 
               echo "Generating Github JWT Token"
               token=$(bash $(System.DefaultWorkingDirectory)/scripts/github/jwt-token.sh $githubAppClientId ./github-app-private-key.pem)
 
               echo "Generating Github Access Tokens Url"
-              url=$(bash $(System.DefaultWorkingDirectory)/scripts/github/access-tokens-url.sh $token)
+              repo_path=$(echo $(github-edge-ai-repo-url) | sed -n 's|.*github.com/\([^/][^/]*/[^/][^/]*\)/$|\1|p')
+              echo "Repo Path: $repo_path"
+              url=$(bash $(System.DefaultWorkingDirectory)/scripts/github/access-tokens-url.sh $token $repo_path)
+              echo "Access Tokens URL: $url"
 
               echo "Generating Github Installation Token"
               installationToken=$(bash $(System.DefaultWorkingDirectory)/scripts/github/installation-token.sh $token $url)
@@ -80,12 +73,7 @@ stages:
 
           # Push to GitHub
           - bash: |
-              githubUrl=$(githubRepoUrl)
-
-              if [[ ! ${{ parameters.isEnterpriseGitHub }} ]]; then
-                echo "Using public GitHub"
-                githubUrl=$(github-edge-ai-repo-url)
-              fi
+              githubUrl=$(github-edge-ai-repo-url)
 
               echo "Pushing to GitHub"
               remoteUrl=$(echo $githubUrl | sed "s|__token__|$(installationToken)|g")
@@ -104,9 +92,10 @@ stages:
 
           # Create GitHub PR
           - bash: |
-
               echo "Creating PR"
-              bash $(System.DefaultWorkingDirectory)/scripts/github/create-pr.sh "$(installationToken)" "azdo-$(Build.BuildId)" "$(Build.SourceVersionMessage)"
+              repo_path=$(echo $(github-edge-ai-repo-url) | sed -n 's|.*github.com/\([^/][^/]*/[^/][^/]*\)/$|\1|p')
+              echo "RepoPath: $repo_path"
+              bash $(System.DefaultWorkingDirectory)/scripts/github/create-pr.sh "$(installationToken)" "azdo-$(Build.BuildId)" "$(Build.SourceVersionMessage)" "$repo_path"
 
             displayName: "Create GitHub PR"
             name: githubPR
