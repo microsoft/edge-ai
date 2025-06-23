@@ -2,7 +2,7 @@ data "azurerm_subscription" "current" {
 }
 
 data "http" "helm_config" {
-  url = "https://${var.azure_resource_group.location}.dp.kubernetesconfiguration.azure.com/azure-arc-k8sagents/GetLatestHelmPackagePath?api-version=2019-11-01-preview"
+  url = "https://${var.location}.dp.kubernetesconfiguration.azure.com/azure-arc-k8sagents/GetLatestHelmPackagePath?api-version=2019-11-01-preview"
 
   method = "POST"
   # Optional request headers
@@ -28,93 +28,81 @@ resource "helm_release" "arc_agent" {
   namespace        = "azure-arc-release"
   create_namespace = true
 
-  set {
-    name  = "global.subscriptionId"
-    value = data.azurerm_subscription.current.subscription_id
-  }
+  set = [
+    {
+      name  = "global.subscriptionId"
+      value = data.azurerm_subscription.current.subscription_id
+    },
+    {
+      name  = "global.tenantId"
+      value = data.azurerm_subscription.current.tenant_id
+    },
+    {
+      name  = "global.kubernetesDistro"
+      value = "k3s"
+    },
+    {
+      name  = "global.kubernetesInfra"
+      value = "generic"
+    },
+    {
+      name  = "global.resourceGroupName"
+      value = var.resource_group.name
+    },
+    {
+      name  = "global.resourceName"
+      value = var.cluster_name
+    },
+    {
+      name  = "global.location"
+      value = var.location
+    },
+    {
+      name  = "systemDefaultValues.spnOnboarding"
+      value = false
+    },
+    {
+      name  = "global.azureEnvironment"
+      value = "AZUREPUBLICCLOUD"
+    },
+    {
+      name  = "systemDefaultValues.clusterconnect-agent.enabled"
+      value = true
+    },
+    {
+      name  = "systemDefaultValues.azureArcAgents.autoUpdate"
+      value = false
+    },
+    {
+      name  = "systemDefaultValues.customLocations.enabled"
+      value = true
+    },
+    {
+      name  = "systemDefaultValues.customLocations.oid"
+      value = var.custom_locations_oid
+    },
+    {
+      name  = "global.httpProxy"
+      value = var.http_proxy
+    },
+    {
+      name  = "global.httpsProxy"
+      value = var.http_proxy
+    },
+    {
+      name  = "global.isProxyEnabled"
+      value = true
+    },
+    {
+      name  = "global.noProxy"
+      value = replace("10.0.0.0/8,169.254.169.254/32,kubernetes.default.svc,.svc.cluster.local,.svc", ",", "\\,")
+    }
+  ]
 
-  set {
-    name  = "global.tenantId"
-    value = data.azurerm_subscription.current.tenant_id
-  }
-
-  set {
-    name  = "global.kubernetesDistro"
-    value = "k3s"
-  }
-
-  set {
-    name  = "global.kubernetesInfra"
-    value = "generic"
-  }
-
-  set {
-    name  = "global.resourceGroupName"
-    value = var.azure_resource_group.name
-  }
-
-  set {
-    name  = "global.resourceName"
-    value = var.cluster_name
-  }
-
-  set {
-    name  = "global.location"
-    value = var.azure_resource_group.location
-  }
-
-  set {
-    name  = "systemDefaultValues.spnOnboarding"
-    value = false
-  }
-
-  set {
-    name  = "global.azureEnvironment"
-    value = "AZUREPUBLICCLOUD"
-  }
-
-  set {
-    name  = "systemDefaultValues.clusterconnect-agent.enabled"
-    value = true
-  }
-
-  set {
-    name  = "systemDefaultValues.azureArcAgents.autoUpdate"
-    value = false
-  }
-
-  set {
-    name  = "systemDefaultValues.customLocations.enabled"
-    value = true
-  }
-
-  set {
-    name  = "systemDefaultValues.customLocations.oid"
-    value = var.custom_locations_oid
-  }
-
-  set {
-    name  = "global.httpProxy"
-    value = var.http_proxy
-  }
-
-  set {
-    name  = "global.httpsProxy"
-    value = var.http_proxy
-  }
-
-  set {
-    name  = "global.isProxyEnabled"
-    value = true
-  }
-
-  set {
-    name  = "global.noProxy"
-    value = replace("10.0.0.0/8,169.254.169.254/32,kubernetes.default.svc,.svc.cluster.local,.svc", ",", "\\,")
-  }
-
-  set_sensitive {
-    name  = "global.onboardingPrivateKey"
-    value = var.private_key_pem
-  }
+  set_sensitive = [
+    {
+      name  = "global.onboardingPrivateKey"
+      value = var.private_key_pem
+    }
+  ]
 }

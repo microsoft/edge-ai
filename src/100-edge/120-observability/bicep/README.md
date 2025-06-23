@@ -40,6 +40,8 @@ Deploys observability resources including cluster extensions for metrics and log
 
 ### attribution
 
+
+
 ### clusterExtensionsObs
 
 Creates the cluster extensions required to expose cluster and container metrics.

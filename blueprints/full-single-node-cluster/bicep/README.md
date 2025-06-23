@@ -34,7 +34,8 @@ Deploys a complete end-to-end environment for Azure IoT Operations on a single-n
 |cloudMessaging|`Microsoft.Resources/deployments`|2022-09-01|
 |cloudNetworking|`Microsoft.Resources/deployments`|2022-09-01|
 |cloudVmHost|`Microsoft.Resources/deployments`|2022-09-01|
-|cloudAksAcr|`Microsoft.Resources/deployments`|2022-09-01|
+|cloudAcr|`Microsoft.Resources/deployments`|2022-09-01|
+|cloudKubernetes|`Microsoft.Resources/deployments`|2022-09-01|
 |edgeCncfCluster|`Microsoft.Resources/deployments`|2022-09-01|
 |edgeIotOps|`Microsoft.Resources/deployments`|2022-09-01|
 |edgeObservability|`Microsoft.Resources/deployments`|2022-09-01|
@@ -52,7 +53,8 @@ Deploys a complete end-to-end environment for Azure IoT Operations on a single-n
 |cloudMessaging|Deploys Azure cloud messaging resources including Event Hubs, Service Bus, and Event Grid for IoT edge solution communication.|
 |cloudNetworking|Creates virtual network, subnet, and network security group resources for Azure deployments.|
 |cloudVmHost|Provisions virtual machines and networking infrastructure for hosting Azure IoT Operations edge deployments.|
-|cloudAksAcr|Deploys Azure Container Registry (ACR) and optionally Azure Kubernetes Service (AKS) resources.|
+|cloudAcr|Deploys Azure Container Registry (ACR) and optionally Azure Kubernetes Service (AKS) resources.|
+|cloudKubernetes|Deploys Azure Container Registry (ACR) and optionally Azure Kubernetes Service (AKS) resources.|
 |edgeCncfCluster|This module provisions and deploys automation scripts to a VM host that create and configure a K3s Kubernetes cluster with Arc connectivity.<br>The scripts handle primary and secondary node(s) setup, cluster administration, workload identity enablement, and installation of required Azure Arc extensions.|
 |edgeIotOps|Deploys Azure IoT Operations extensions, instances, and configurations on Azure Arc-enabled Kubernetes clusters.|
 |edgeObservability|Deploys observability resources including cluster extensions for metrics and logs collection, and rule groups for monitoring.|
@@ -61,6 +63,8 @@ Deploys a complete end-to-end environment for Azure IoT Operations on a single-n
 ## Module Details
 
 ### attribution
+
+
 
 ### cloudResourceGroup
 
@@ -322,11 +326,11 @@ Provisions virtual machines and networking infrastructure for hosting Azure IoT 
 |vmIds|`array`|An array containing the IDs of all deployed VMs.|
 |vmNames|`array`|An array containing the names of all deployed VMs.|
 
-### cloudAksAcr
+### cloudAcr
 
 Deploys Azure Container Registry (ACR) and optionally Azure Kubernetes Service (AKS) resources.
 
-#### Parameters for cloudAksAcr
+#### Parameters for cloudAcr
 
 |Name|Description|Type|Default|Required|
 | :--- | :--- | :--- | :--- | :--- |
@@ -335,25 +339,51 @@ Deploys Azure Container Registry (ACR) and optionally Azure Kubernetes Service (
 |networkSecurityGroupId|Network security group ID to apply to the subnets.|`string`|n/a|yes|
 |shouldCreateAcrPrivateEndpoint|Whether to create a private endpoint for the Azure Container Registry.|`bool`|False|no|
 |containerRegistryConfig|The settings for the Azure Container Registry.|`[_1.ContainerRegistry](#user-defined-types)`|[variables('_1.containerRegistryDefaults')]|no|
-|shouldCreateAks|Whether to create an Azure Kubernetes Service cluster.|`bool`|False|no|
-|kubernetesClusterConfig|The settings for the Azure Kubernetes Service cluster.|`[_1.KubernetesCluster](#user-defined-types)`|[variables('_1.kubernetesClusterDefaults')]|no|
 |telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|False|no|
 
-#### Resources for cloudAksAcr
+#### Resources for cloudAcr
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
 |attribution|`Microsoft.Resources/deployments`|2020-06-01|
 |network|`Microsoft.Resources/deployments`|2022-09-01|
 |containerRegistry|`Microsoft.Resources/deployments`|2022-09-01|
+
+#### Outputs for cloudAcr
+
+|Name|Type|Description|
+| :--- | :--- | :--- |
+|acrName|`string`|The Azure Container Registry name.|
+
+### cloudKubernetes
+
+Deploys Azure Container Registry (ACR) and optionally Azure Kubernetes Service (AKS) resources.
+
+#### Parameters for cloudKubernetes
+
+|Name|Description|Type|Default|Required|
+| :--- | :--- | :--- | :--- | :--- |
+|common|The common component configuration.|`[_2.Common](#user-defined-types)`|n/a|yes|
+|virtualNetworkName|Virtual network name for subnet creation.|`string`|n/a|yes|
+|networkSecurityGroupId|Network security group ID to apply to the subnets.|`string`|n/a|yes|
+|shouldCreateAks|Whether to create an Azure Kubernetes Service cluster.|`bool`|False|no|
+|kubernetesClusterConfig|The settings for the Azure Kubernetes Service cluster.|`[_1.KubernetesCluster](#user-defined-types)`|[variables('_1.kubernetesClusterDefaults')]|no|
+|containerRegistryName|Name of the Azure Container Registry to create.|`string`|n/a|yes|
+|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|False|no|
+
+#### Resources for cloudKubernetes
+
+|Name|Type|API Version|
+| :--- | :--- | :--- |
+|attribution|`Microsoft.Resources/deployments`|2020-06-01|
+|network|`Microsoft.Resources/deployments`|2022-09-01|
 |aksCluster|`Microsoft.Resources/deployments`|2022-09-01|
 
-#### Outputs for cloudAksAcr
+#### Outputs for cloudKubernetes
 
 |Name|Type|Description|
 | :--- | :--- | :--- |
 |aksName|`string`|The AKS cluster name.|
-|acrName|`string`|The Azure Container Registry name.|
 
 ### edgeCncfCluster
 

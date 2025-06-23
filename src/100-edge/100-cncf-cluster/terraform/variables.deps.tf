@@ -81,6 +81,7 @@ variable "key_vault" {
 variable "private_key_pem" {
   type        = string
   description = "Private key for onboarding"
+  sensitive   = true
   default     = null
 }
 

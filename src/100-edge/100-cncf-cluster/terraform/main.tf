@@ -87,12 +87,10 @@ module "arc_agents" {
   http_proxy           = var.http_proxy
   custom_locations_oid = local.custom_locations_oid
   private_key_pem      = var.private_key_pem
-
-
 }
 
 data "azapi_resource" "arc_connected_cluster" {
-  count = var.should_deploy_script_to_vm ? 1 : 0
+  count = var.should_deploy_script_to_vm && !var.should_deploy_arc_agents ? 1 : 0
 
   type      = "Microsoft.Kubernetes/connectedClusters@2024-01-01"
   parent_id = var.resource_group.id
@@ -109,13 +107,13 @@ data "azapi_resource" "arc_connected_cluster" {
 
 module "cluster_server_script_deployment" {
   source = "./modules/vm-script-deployment"
-  count  = var.should_deploy_script_to_vm && !var.should_deploy_arc_machines ? 1 : 0
+  count  = var.should_deploy_script_to_vm && !var.should_deploy_arc_machines && !var.should_deploy_arc_agents ? 1 : 0
 
   depends_on = [module.ubuntu_k3s]
 
   extension_name = "linux-cluster-server-setup"
   machine_id     = try(var.cluster_server_machine.id, null)
-  script_content = module.ubuntu_k3s.server_script_content
+  script_content = module.ubuntu_k3s[0].server_script_content
 
   // Key Vault script deployment parameters
   should_use_script_from_secrets_for_deploy = var.should_use_script_from_secrets_for_deploy
@@ -127,13 +125,13 @@ module "cluster_server_script_deployment" {
 
 module "cluster_node_script_deployment" {
   source = "./modules/vm-script-deployment"
-  count  = var.should_deploy_script_to_vm && !var.should_deploy_arc_machines ? try(length(var.cluster_node_machine), 0) : 0
+  count  = var.should_deploy_script_to_vm && !var.should_deploy_arc_machines && !var.should_deploy_arc_agents ? try(length(var.cluster_node_machine), 0) : 0
 
   depends_on = [module.cluster_server_script_deployment, module.ubuntu_k3s]
 
   extension_name = "linux-cluster-node-setup"
   machine_id     = try(var.cluster_node_machine[count.index].id, null)
-  script_content = module.ubuntu_k3s.node_script_content
+  script_content = module.ubuntu_k3s[0].node_script_content
 
   // Key Vault script deployment parameters
   should_use_script_from_secrets_for_deploy = var.should_use_script_from_secrets_for_deploy
@@ -149,14 +147,14 @@ module "cluster_node_script_deployment" {
 
 module "cluster_server_arc_script_deployment" {
   source = "./modules/arc-server-script-deployment"
-  count  = var.should_deploy_arc_machines ? 1 : 0
+  count  = var.should_deploy_arc_machines && !var.should_deploy_arc_agents ? 1 : 0
 
   depends_on = [module.ubuntu_k3s]
 
   extension_name = "linux-cluster-server-setup"
   arc_machine_id = var.cluster_server_machine.id
   location       = var.cluster_server_machine.location
-  script_content = module.ubuntu_k3s.server_script_content
+  script_content = module.ubuntu_k3s[0].server_script_content
 
   // Key Vault script deployment parameters
   should_use_script_from_secrets_for_deploy = var.should_use_script_from_secrets_for_deploy
@@ -168,14 +166,14 @@ module "cluster_server_arc_script_deployment" {
 
 module "cluster_node_arc_script_deployment" {
   source = "./modules/arc-server-script-deployment"
-  count  = var.should_deploy_arc_machines ? try(length(var.cluster_node_machine), 0) : 0
+  count  = var.should_deploy_arc_machines && !var.should_deploy_arc_agents ? try(length(var.cluster_node_machine), 0) : 0
 
   depends_on = [module.cluster_server_arc_script_deployment, module.ubuntu_k3s]
 
   extension_name = "linux-cluster-node-setup"
   arc_machine_id = var.cluster_node_machine[count.index].id
   location       = var.cluster_node_machine[count.index].location
-  script_content = module.ubuntu_k3s.node_script_content
+  script_content = module.ubuntu_k3s[0].node_script_content
 
   // Key Vault script deployment parameters
   should_use_script_from_secrets_for_deploy = var.should_use_script_from_secrets_for_deploy

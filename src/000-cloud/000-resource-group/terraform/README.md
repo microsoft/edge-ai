@@ -9,6 +9,7 @@ Creates the required resources needed for an edge IaC deployment or uses an exis
 | Name | Version |
 |------|---------|
 | terraform | >= 1.9.8, < 2.0 |
+| azapi | >= 2.3.0 |
 | azuread | >= 3.0.2 |
 | azurerm | >= 4.8.0 |
 
@@ -16,6 +17,7 @@ Creates the required resources needed for an edge IaC deployment or uses an exis
 
 | Name | Version |
 |------|---------|
+| azapi | >= 2.3.0 |
 | azurerm | >= 4.8.0 |
 
 ## Resources
@@ -23,6 +25,8 @@ Creates the required resources needed for an edge IaC deployment or uses an exis
 | Name | Type |
 |------|------|
 | [azurerm_resource_group.new](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) | resource |
+| [azapi_resource_list.listResourceGroups](https://registry.terraform.io/providers/Azure/azapi/latest/docs/data-sources/resource_list) | data source |
+| [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/client_config) | data source |
 | [azurerm_resource_group.existing](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/resource_group) | data source |
 
 ## Inputs
@@ -35,7 +39,6 @@ Creates the required resources needed for an edge IaC deployment or uses an exis
 | instance | Instance identifier for naming resources: 001, 002, etc... | `string` | `"001"` | no |
 | resource\_group\_name | The name for the resource group. If not provided, a default name will be generated using resource\_prefix, environment, and instance. | `string` | `null` | no |
 | tags | The tags to add to the resources. | `map(string)` | `null` | no |
-| use\_existing\_resource\_group | Whether to use an existing resource group instead of creating a new one. When true, the component will look up a resource group with the specified or generated name instead of creating it. | `bool` | `false` | no |
 
 ## Outputs
 

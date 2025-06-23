@@ -18,8 +18,9 @@ for a single-node cluster deployment, including observability, messaging, and da
 
 | Name | Source | Version |
 |------|--------|---------|
-| cloud\_aks\_acr | ../../../src/000-cloud/060-aks-acr/terraform | n/a |
+| cloud\_acr | ../../../src/000-cloud/060-acr/terraform | n/a |
 | cloud\_data | ../../../src/000-cloud/030-data/terraform | n/a |
+| cloud\_kubernetes | ../../../src/000-cloud/070-kubernetes/terraform | n/a |
 | cloud\_messaging | ../../../src/000-cloud/040-messaging/terraform | n/a |
 | cloud\_networking | ../../../src/000-cloud/050-networking/terraform | n/a |
 | cloud\_observability | ../../../src/000-cloud/020-observability/terraform | n/a |
@@ -52,6 +53,5 @@ for a single-node cluster deployment, including observability, messaging, and da
 | should\_deploy\_resource\_sync\_rules | Deploys resource sync rules if set to true | `bool` | `false` | no |
 | should\_enable\_opc\_ua\_simulator | Should create an OPC UA Simulator. Default is false. | `bool` | `false` | no |
 | should\_get\_custom\_locations\_oid | Whether to get Custom Locations Object ID using Terraform's azuread provider. (Otherwise, provided by 'custom\_locations\_oid' or `az connectedk8s enable-features` for custom-locations on cluster setup if not provided.) | `bool` | `true` | no |
-| use\_existing\_resource\_group | Whether to use an existing resource group instead of creating a new one. When true, the component will look up a resource group with the specified or generated name instead of creating it. | `bool` | `false` | no |
 <!-- markdown-table-prettify-ignore-end -->
 <!-- END_TF_DOCS -->

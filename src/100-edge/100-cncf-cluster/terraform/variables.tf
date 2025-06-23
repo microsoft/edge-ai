@@ -107,7 +107,6 @@ variable "http_proxy" {
   default     = null
 }
 
-
 /*
  * Optional - Cluster and Host Machine Parameters
  */

@@ -75,3 +75,11 @@ output "cluster_server_machine" {
     location = local.location
   }
 }
+
+output "mock_private_key_pem" {
+  value = "-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEA...\n-----END RSA PRIVATE KEY-----"
+}
+
+output "mock_http_proxy" {
+  value = "http://mock-proxy:8080"
+}

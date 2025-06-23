@@ -49,6 +49,8 @@ Deploys the minimal set of resources required for Azure IoT Operations on a sing
 
 ### attribution
 
+
+
 ### cloudResourceGroup
 
 Creates the required resources needed for an edge IaC deployment.
