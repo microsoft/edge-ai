@@ -44,8 +44,6 @@ Creates storage resources including Azure Storage Account and Schema Registry fo
 
 ### attribution
 
-
-
 ### storageAccount
 
 Creates an Azure Storage Account and blob container for storing schemas.

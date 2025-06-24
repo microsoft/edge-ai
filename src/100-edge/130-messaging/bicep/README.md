@@ -42,8 +42,6 @@ Deploys Dataflow endpoints and dataflows for Azure IoT Operations messaging inte
 
 ### attribution
 
-
-
 ### eventHubDataflow
 
 Provisions the ARM based data flow endpoint and data flow for Event Hub, requires Asset.

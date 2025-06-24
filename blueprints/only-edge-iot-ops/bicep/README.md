@@ -50,8 +50,6 @@ Deploys Azure IoT Operations on an existing Arc-enabled Kubernetes cluster witho
 
 ### attribution
 
-
-
 ### edgeIotOps
 
 Deploys Azure IoT Operations extensions, instances, and configurations on Azure Arc-enabled Kubernetes clusters.

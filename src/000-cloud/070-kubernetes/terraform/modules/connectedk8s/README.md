@@ -30,15 +30,11 @@
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| acr | Azure Container Registry. | ```object({ id = string })``` | n/a | yes |
 | environment | Environment for all resources in this module: dev, test, or prod. | `string` | n/a | yes |
 | instance | Instance identifier for naming resources: 001, 002, etc. | `string` | n/a | yes |
 | location | Location for all resources in this module. | `string` | n/a | yes |
-| private\_key\_pem | Private key for onboarding | `string` | n/a | yes |
 | resource\_group | Resource group for all resources in this module. | ```object({ name = string id = string })``` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module. | `string` | n/a | yes |
-| snet\_aks | Subnet for the AKS vnet. | ```object({ id = string })``` | n/a | yes |
-| snet\_aks\_pod | Subnet for the AKS pod vnet. | ```object({ id = string })``` | n/a | yes |
 
 ## Outputs
 

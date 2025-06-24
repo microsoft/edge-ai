@@ -32,8 +32,6 @@ Creates virtual network, subnet, and network security group resources for Azure 
 
 ### attribution
 
-
-
 ## User Defined Types
 
 ### `_1.NetworkingConfig`

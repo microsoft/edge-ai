@@ -11,7 +11,7 @@ resource "azapi_resource" "arc" {
   type      = "Microsoft.Kubernetes/connectedClusters@2024-12-01-preview"
   name      = "arck-${var.resource_prefix}-${var.environment}-${var.instance}"
   parent_id = var.resource_group.id
-  location  = var.resource_group.location
+  location  = var.location
   identity {
     type = "SystemAssigned"
   }

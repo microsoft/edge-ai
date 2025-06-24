@@ -36,3 +36,19 @@ module "aks_cluster" {
   node_vm_size = var.node_vm_size
   dns_prefix   = var.dns_prefix
 }
+
+module "arc_cluster_instance" {
+  count = var.should_create_arc_cluster_instance ? 1 : 0
+
+  source = "./modules/connectedk8s"
+
+  // Resource dependencies first
+  resource_group = var.resource_group
+
+    // Core parameters next
+  environment     = var.environment
+  resource_prefix = var.resource_prefix
+  location        = var.location
+  instance        = var.instance
+
+}

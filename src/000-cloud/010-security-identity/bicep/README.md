@@ -39,8 +39,6 @@ Provisions cloud resources required for Azure IoT Operations including Schema Re
 
 ### attribution
 
-
-
 ### identity
 
 Creates user-assigned managed identities for Secret Store Extension, Azure IoT Operations components and optionally Arc onboarding.

@@ -37,8 +37,6 @@ Deploys Azure Container Registry (ACR) and optionally Azure Kubernetes Service (
 
 ### attribution
 
-
-
 ### network
 
 Creates subnets for ACR private endpoints in an existing Virtual Network.

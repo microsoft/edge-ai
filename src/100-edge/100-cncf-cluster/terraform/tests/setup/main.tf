@@ -77,7 +77,7 @@ output "cluster_server_machine" {
 }
 
 output "mock_private_key_pem" {
-  value = "-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEA...\n-----END RSA PRIVATE KEY-----"
+  value = "<mock-private-key-pem>"
 }
 
 output "mock_http_proxy" {

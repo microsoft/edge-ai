@@ -38,8 +38,6 @@ Provisions virtual machines and networking infrastructure for hosting Azure IoT 
 
 ### attribution
 
-
-
 ### virtualMachine
 
 Creates a Linux virtual machine with networking components for Azure IoT Operations deployments.

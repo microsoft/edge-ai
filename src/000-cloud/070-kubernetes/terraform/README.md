@@ -14,6 +14,7 @@
 | Name | Source | Version |
 |------|--------|---------|
 | aks\_cluster | ./modules/aks-cluster | n/a |
+| arc\_cluster\_instance | ./modules/connectedk8s | n/a |
 | network | ./modules/network | n/a |
 
 ## Inputs
@@ -33,13 +34,17 @@
 | node\_vm\_size | VM size for the agent pool in the AKS cluster. Default is Standard\_D8ds\_v5. | `string` | `"Standard_D8ds_v5"` | no |
 | should\_create\_acr\_private\_endpoint | Should create a private endpoint for the Azure Container Registry. Default is false. | `bool` | `false` | no |
 | should\_create\_aks | Should create Azure Kubernetes Service. Default is false. | `bool` | `false` | no |
+| should\_create\_arc\_cluster\_instance | Should create an Azure Arc Cluster Instance. Default is false. | `bool` | `false` | no |
 | sku | SKU for the Azure Container Registry. Options are Basic, Standard, Premium. Default is Premium because of the need for private endpoints. | `string` | `"Premium"` | no |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| acr | The Azure Container Registry resource created by this module. |
 | aks | The Azure Kubernetes Service resource created by this module. |
+| connected\_cluster\_id | The ID of the Azure Arc Cluster Instance resource. |
+| connected\_cluster\_name | The name of the Azure Arc Cluster Instance resource. |
+| oidc\_issuer\_url | The OIDC issuer URL for the Azure Arc Cluster Instance. |
+| private\_key\_pem | The private key PEM for the Azure Arc Cluster Instance. |
 <!-- markdown-table-prettify-ignore-end -->
 <!-- END_TF_DOCS -->

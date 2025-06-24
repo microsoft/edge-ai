@@ -65,8 +65,6 @@ Deploys a complete end-to-end environment for Azure IoT Operations on a multi-no
 
 ### attribution
 
-
-
 ### cloudResourceGroup
 
 Creates the required resources needed for an edge IaC deployment.

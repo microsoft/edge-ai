@@ -63,8 +63,6 @@ The scripts handle primary and secondary node(s) setup, cluster administration, 
 
 ### attribution
 
-
-
 ### ubuntuK3s
 
 Configures K3s Kubernetes clusters on Ubuntu virtual machines and connects them to Azure Arc.
