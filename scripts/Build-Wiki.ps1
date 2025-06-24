@@ -715,6 +715,249 @@ function Get-RelativePath {
 
     return ($relativeParts -join "/")
 }
+
+function Build-StandaloneContent {
+    <#
+    .SYNOPSIS
+        Discovers and processes standalone content from new folders not covered by sidebar navigation
+    .DESCRIPTION
+        Processes content from:
+        - .github/prompts/ (AI prompt files)
+        - .github/chatmodes/ (Chat mode configurations)
+        - .github/instructions/ (Instruction files)
+        - copilot/ (AI assistant guides and conventions)
+        - praxisworx/ (Training and learning content)
+    .PARAMETER WikiDir
+        The target wiki directory where content should be copied
+    #>
+    param([string]$WikiDir)
+
+    Write-Host "Processing standalone content from new folders..." -ForegroundColor Cyan
+
+    # Define standalone content folders to process
+    $standaloneContent = @{
+        "copilot" = @{
+            SourcePath = "copilot"
+            WikiSection = "copilot-guides"
+            DisplayName = "Copilot Guides"
+            Description = "AI assistant instructions and development conventions"
+        }
+        "praxisworx" = @{
+            SourcePath = "praxisworx"
+            WikiSection = "praxisworx"
+            DisplayName = "PraxisWorx"
+            Description = "Training materials and learning resources"
+        }
+        "github-prompts" = @{
+            SourcePath = ".github/prompts"
+            WikiSection = "github-resources"
+            DisplayName = "GitHub Resources"
+            Description = "AI prompts, chat modes, and instructions"
+        }
+        "github-chatmodes" = @{
+            SourcePath = ".github/chatmodes"
+            WikiSection = "github-resources"
+            DisplayName = "Chat Modes"
+            Description = "AI chat mode configurations"
+        }
+        "github-instructions" = @{
+            SourcePath = ".github/instructions"
+            WikiSection = "github-resources"
+            DisplayName = "Instructions"
+            Description = "Development and contribution instructions"
+        }
+    }
+
+    # Process each standalone content area
+    foreach ($contentKey in $standaloneContent.Keys) {
+        $config = $standaloneContent[$contentKey]
+        $sourcePath = $config.SourcePath
+        $wikiSection = $config.WikiSection
+        $displayName = $config.DisplayName
+
+        if (Test-Path $sourcePath) {
+            Write-Host "  Processing $displayName from $sourcePath..." -ForegroundColor Gray
+
+            # Create or ensure wiki section directory exists
+            $wikiSectionPath = Join-Path $WikiDir $wikiSection
+            if (-not (Test-Path $wikiSectionPath)) {
+                New-Item -ItemType Directory -Path $wikiSectionPath -Force | Out-Null
+                Write-Host "    Created wiki section: $wikiSection" -ForegroundColor DarkGray
+            }
+
+            # Process content based on folder structure
+            Copy-StandaloneFolder -SourcePath $sourcePath -DestPath $wikiSectionPath -ContentKey $contentKey -Config $config
+        } else {
+            Write-Host "  Skipping $displayName - source folder not found: $sourcePath" -ForegroundColor Yellow
+        }
+    }
+
+    # Create master .order file for standalone sections
+    New-StandaloneSectionsOrder -WikiDir $WikiDir -ContentConfig $standaloneContent
+}
+
+function Copy-StandaloneFolder {
+    <#
+    .SYNOPSIS
+        Copies content from a standalone folder to the wiki structure
+    .DESCRIPTION
+        Handles various content types and maintains folder structure while creating appropriate .order files
+    #>
+    param(
+        [string]$SourcePath,
+        [string]$DestPath,
+        [string]$ContentKey,
+        [hashtable]$Config
+    )
+
+    $orderItems = @()
+
+    # Get all markdown files in the source directory
+    $markdownFiles = Get-ChildItem -Path $SourcePath -Filter "*.md" -Recurse
+    $subDirectories = Get-ChildItem -Path $SourcePath -Directory
+
+    # Process subdirectories first
+    foreach ($subDir in $subDirectories) {
+        $subDirName = Get-SafeFileName $subDir.Name
+        $subDirDestPath = Join-Path $DestPath $subDirName
+
+        if (-not (Test-Path $subDirDestPath)) {
+            New-Item -ItemType Directory -Path $subDirDestPath -Force | Out-Null
+        }
+
+        # Recursively copy subdirectory content
+        Copy-StandaloneFolder -SourcePath $subDir.FullName -DestPath $subDirDestPath -ContentKey "$ContentKey-$subDirName" -Config $Config
+        $orderItems += $subDirName
+
+        Write-Host "    Processed subdirectory: $($subDir.Name)" -ForegroundColor DarkGray
+    }
+
+    # Process markdown files in current directory
+    $rootFiles = $markdownFiles | Where-Object { $_.Directory.FullName -eq (Resolve-Path $SourcePath).Path }
+
+    foreach ($file in $rootFiles) {
+        $fileName = $file.Name
+        $destFileName = $fileName
+
+        # Handle special naming for certain file types
+        if ($fileName -eq "README.md") {
+            $parentDirName = Split-Path $SourcePath -Leaf
+            $destFileName = "$(Get-SafeFileName $parentDirName)-overview.md"
+        }
+
+        $destFilePath = Join-Path $DestPath $destFileName
+        Copy-Item -Path $file.FullName -Destination $destFilePath -Force
+
+        # Add to order (without .md extension)
+        $orderName = [System.IO.Path]::GetFileNameWithoutExtension($destFileName)
+        $orderItems += $orderName
+
+        Write-Host "    Copied: $fileName -> $destFileName" -ForegroundColor DarkGray
+    }
+
+    # Create .order file for this directory level
+    if ($orderItems.Count -gt 0) {
+        $orderPath = Join-Path $DestPath ".order"
+        $orderItems | Out-File $orderPath -Encoding UTF8
+        Write-Host "    Created .order file with $($orderItems.Count) items in $DestPath" -ForegroundColor DarkGray
+    }
+}
+
+function New-StandaloneSectionsOrder {
+    <#
+    .SYNOPSIS
+        Creates or updates the root .order file to include standalone content sections
+    .DESCRIPTION
+        Ensures that standalone content sections are properly ordered in the wiki navigation
+    #>
+    [CmdletBinding(SupportsShouldProcess)]
+    param(
+        [string]$WikiDir,
+        [hashtable]$ContentConfig
+    )
+
+    $rootOrderPath = Join-Path $WikiDir ".order"
+    $existingOrder = @()
+
+    # Read existing order if it exists
+    if (Test-Path $rootOrderPath) {
+        $existingOrder = Get-Content $rootOrderPath | Where-Object { $_.Trim() -ne '' }
+    }
+
+    # Add standalone sections that exist
+    $sectionsToAdd = @()
+    foreach ($contentKey in $ContentConfig.Keys) {
+        $config = $ContentConfig[$contentKey]
+        $wikiSection = $config.WikiSection
+        $wikiSectionPath = Join-Path $WikiDir $wikiSection
+
+        if ((Test-Path $wikiSectionPath) -and ($wikiSection -notin $existingOrder) -and ($wikiSection -notin $sectionsToAdd)) {
+            $sectionsToAdd += $wikiSection
+        }
+    }
+
+    if ($sectionsToAdd.Count -gt 0 -and $PSCmdlet.ShouldProcess($rootOrderPath, "Update root .order file with standalone sections")) {
+        $newOrder = $existingOrder + $sectionsToAdd
+        $newOrder | Out-File $rootOrderPath -Encoding UTF8
+        Write-Host "  Updated root .order file with standalone sections: $($sectionsToAdd -join ', ')" -ForegroundColor Green
+    }
+}
+
+# Function to update relative links in standalone content
+function Update-StandaloneRelativeLink {
+    <#
+    .SYNOPSIS
+        Updates relative links in standalone content to work within the wiki structure
+    .DESCRIPTION
+        Handles link updates for content that was moved from original locations to wiki sections
+    #>
+    [CmdletBinding(SupportsShouldProcess)]
+    param([string]$WikiDir)
+
+    Write-Host "Updating relative links in standalone content..." -ForegroundColor Cyan
+
+    # Define path mappings for standalone content
+    $pathMappings = @{
+        "copilot/" = "copilot-guides/"
+        "praxisworx/" = "praxisworx/"
+        ".github/prompts/" = "github-resources/"
+        ".github/chatmodes/" = "github-resources/"
+        ".github/instructions/" = "github-resources/"
+    }
+
+    # Get all markdown files in standalone sections
+    $standaloneFiles = @()
+    foreach ($mapping in $pathMappings.Values) {
+        $sectionPath = Join-Path $WikiDir $mapping
+        if (Test-Path $sectionPath) {
+            $standaloneFiles += Get-ChildItem -Path $sectionPath -Filter "*.md" -Recurse
+        }
+    }
+
+    foreach ($file in $standaloneFiles) {
+        $content = Get-Content $file.FullName -Raw
+        $modified = $false
+
+        # Update relative links that reference the original source locations
+        foreach ($originalPath in $pathMappings.Keys) {
+            $newPath = $pathMappings[$originalPath]
+            $pattern = "(\]\(\.\.?\/$originalPath)"
+
+            if ($content -match $pattern) {
+                $content = $content -replace $pattern, "](../$newPath"
+                $modified = $true
+                Write-Host "    Updated link in $($file.Name): ../$originalPath -> ../$newPath" -ForegroundColor Yellow
+            }
+        }
+
+        if ($modified -and $PSCmdlet.ShouldProcess($file.FullName, "Update relative links")) {
+            $content | Out-File $file.FullName -Encoding UTF8 -NoNewline
+        }
+    }
+
+    Write-Host "Standalone content link updates completed." -ForegroundColor Green
+}
+
 # Main execution
 try {
     Write-Host "Starting Azure DevOps Wiki build process..."
@@ -722,9 +965,13 @@ try {
     # Parse navigation structure
     $navItems = ConvertFrom-SidebarNavigation
 
-    # Build wiki structure based on navigation ONLY
+    # Build wiki structure based on navigation
     Write-Host "Building wiki structure based on sidebar navigation..."
     Build-WikiStructure -NavItems $navItems
+
+    # Copy standalone content (follows blueprint pattern)
+    Write-Host "Copying standalone content from new folders..."
+    Build-StandaloneContent -WikiDir $WikiRepoFolder
 
     # Update relative links to work with new folder structure
     Write-Host "Updating relative links for new wiki structure..."

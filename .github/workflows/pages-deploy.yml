@@ -1,15 +1,21 @@
-# GitHub Pages Deployment Workflow for Docsify Documentation
+# GitHub Pages Deployment Workflow for Multi-Section Docsify Documentation
 #
 # Purpose:
-# This workflow builds and deploys Docsify documentation to GitHub Pages whenever documentation files are updated.
-# It replaces the previous Jekyll-based build process with a Docsify-specific build that includes URL token replacement.
+# This workflow builds and deploys Docsify documentation with enhanced multi-section navigation to GitHub Pages.
+# It supports the full documentation architecture including all content folders processed by Generate-DocsSidebar.ps1
+# and implements dynamic validation for content-aware deployment verification.
 #
-# Functionality:
+# Enhanced Functionality:
 # - Triggers via workflow_call (manually or from ci-cd.yml)
 # - Sets up Node.js environment for Docsify CLI
+# - Comprehensive content copying for all documentation folders (docs/, src/, blueprints/, praxisworx/, .github/, copilot/)
+# - Section-based navigation architecture support with docs/_parts/ structure
+# - Dynamic sidebar currency validation (fails deployment if outdated)
+# - Content-aware validation for special file types (.prompt.md, .chatmode.md, .instructions.md)
+# - Post-deployment verification with site accessibility and path testing
 # - Generates GitHub Pages-specific URL configuration for token replacement
 # - Builds Docsify documentation with all assets and plugins
-# - Deploys built documentation to GitHub Pages
+# - Deploys built documentation to GitHub Pages with comprehensive validation reporting
 #
 # Parameters:
 # - source_branch: Branch to build documentation from
@@ -37,15 +43,30 @@
 #       deploy_environment: 'staging'
 # ```
 #
-# Features:
+# Enhanced Features:
+# - Multi-section documentation architecture with comprehensive folder coverage
+# - Dynamic content-aware validation that scales with documentation structure changes
+# - Section-based navigation support (docs/_parts/) for docsify multi-section architecture
+# - Sidebar currency validation prevents deployment of outdated navigation
+# - Post-deployment verification ensures site accessibility and documentation paths
+# - Comprehensive validation reporting for troubleshooting deployment issues
 # - Docsify CLI build process with Node.js caching
 # - Dynamic URL token replacement for GitHub Pages environment
 # - Comprehensive asset management (CSS, JS, images, plugins)
 # - Build validation and error reporting
 # - .nojekyll file generation to prevent Jekyll processing
 #
-# This workflow follows GitHub's best practices for Pages deployments and uses the
-# recommended actions for setting up and deploying to GitHub Pages.
+# Content Architecture Support:
+# - docs/: Core documentation content with section-specific sidebars
+# - src/: Infrastructure as Code components and modules
+# - blueprints/: Deployment blueprint configurations
+# - praxisworx/: Training and learning content
+# - .github/: Workflow and repository automation documentation
+# - copilot/: AI assistant instructions and prompts
+#
+# This workflow follows GitHub's best practices for Pages deployments, uses the
+# recommended actions for setting up and deploying to GitHub Pages, and implements
+# robust validation to ensure comprehensive documentation coverage.
 ---
 name: Deploy to GitHub Pages
 
@@ -129,11 +150,59 @@ jobs:
           fi
           echo "✅ URL configuration generated successfully"
 
+      - name: Validate sidebar is current
+        run: |
+          echo "🔍 Validating sidebar is current with documentation structure..."
+
+          # Store original sidebar content
+          original_sidebar=""
+          if [ -f "docs/_sidebar.md" ]; then
+            original_sidebar=$(cat docs/_sidebar.md)
+          fi
+
+          # Generate sidebar temporarily to check if it's current
+          echo "📝 Generating temporary sidebar for validation..."
+          if ! pwsh -File ./scripts/Generate-DocsSidebar.ps1; then
+            echo "❌ Failed to generate sidebar for validation"
+            exit 1
+          fi
+
+          # Get the newly generated content
+          new_sidebar=""
+          if [ -f "docs/_sidebar.md" ]; then
+            new_sidebar=$(cat docs/_sidebar.md)
+          fi
+
+          # Compare content excluding timestamp differences
+          original_content=$(echo "$original_sidebar" | sed 's/Generated on:.*//')
+          new_content=$(echo "$new_sidebar" | sed 's/Generated on:.*//')
+
+          if [ "$original_content" != "$new_content" ]; then
+            echo "❌ Sidebar is outdated and needs regeneration!"
+            echo "The sidebar doesn't match the current documentation structure."
+            echo "Please run the following command locally and commit the changes:"
+            echo "  pwsh -File ./scripts/Generate-DocsSidebar.ps1"
+            exit 1
+          else
+            echo "✅ Sidebar is current with documentation structure"
+          fi
+
+          # Restore original sidebar if it was temporarily modified
+          if [ -n "$original_sidebar" ]; then
+            echo "$original_sidebar" > docs/_sidebar.md
+          fi
+
       - name: Build Docsify documentation
         run: |
           set -e  # Exit on any error
 
-          echo "🏗️  Starting Docsify documentation build..."
+          echo "🏗️  Starting enhanced Docsify documentation build..."
+
+          # Show build environment info
+          echo "📊 Build Environment:"
+          echo "   - Working directory: $(pwd)"
+          echo "   - Available space: $(df -h . | tail -1 | awk '{print $4}')"
+          echo "   - Memory: $(free -h | grep '^Mem:' | awk '{print $7}' || echo 'N/A')"
 
           # Create the build directory
           echo "📁 Creating build directory..."
@@ -142,24 +211,57 @@ jobs:
             exit 1
           fi
 
-          # Copy main Docsify files
+          # Copy main Docsify files with progress reporting
           echo "📋 Copying main Docsify files..."
-          if ! cp index.html ./_site/; then
-            echo "❌ Failed to copy index.html"
-            exit 1
-          fi
+          files_to_copy=("index.html" "docsify-url-config.js")
+          for file in "${files_to_copy[@]}"; do
+            if [ -f "$file" ]; then
+              if cp "$file" ./_site/; then
+                file_size=$(ls -lh "$file" | awk '{print $5}')
+                echo "   ✅ $file ($file_size)"
+              else
+                echo "   ❌ Failed to copy $file"
+                exit 1
+              fi
+            else
+              echo "   ⚠️  $file not found"
+            fi
+          done
 
-          if ! cp docsify-url-config.js ./_site/; then
-            echo "❌ Failed to copy docsify-url-config.js"
-            exit 1
-          fi
+          # Copy all documentation folders with enhanced progress reporting
+          echo "� Copying documentation folders with enhanced monitoring..."
 
-          # Copy documentation content
-          echo "📚 Copying documentation content..."
-          if ! cp -r docs ./_site/; then
-            echo "❌ Failed to copy docs directory"
-            exit 1
-          fi
+          doc_folders=("docs" "src" "blueprints" "praxisworx" ".github" "copilot")
+          total_folders=${#doc_folders[@]}
+          current_folder=0
+
+          for folder in "${doc_folders[@]}"; do
+            ((current_folder++))
+            echo "📂 Processing folder $current_folder/$total_folders: $folder"
+
+            if [ -d "$folder" ]; then
+              # Get folder size and file count before copying
+              folder_size=$(du -sh "$folder" | cut -f1)
+              file_count=$(find "$folder" -type f | wc -l)
+              md_count=$(find "$folder" -name "*.md" | wc -l)
+
+              echo "   📊 $folder stats: $folder_size, $file_count files ($md_count markdown)"
+
+              # Copy with progress feedback
+              if cp -r "$folder" ./_site/; then
+                echo "   ✅ $folder copied successfully"
+              else
+                echo "   ⚠️  Failed to copy $folder directory"
+                # For critical folders, this should be an error
+                if [ "$folder" = "docs" ]; then
+                  echo "   ❌ Critical folder $folder failed to copy"
+                  exit 1
+                fi
+              fi
+            else
+              echo "   ℹ️  $folder directory not found (skipping)"
+            fi
+          done
 
           # Copy assets if they exist
           echo "🎨 Copying assets..."
@@ -224,6 +326,36 @@ jobs:
             else
               echo "❌ $file missing"
               exit 1
+            fi
+          done
+
+          # Verify section-based navigation architecture
+          echo "📋 Section-based navigation verification:"
+          if [ -d "./_site/docs/_parts" ]; then
+            echo "✅ Section navigation directory (docs/_parts) found"
+
+            # Check for section-specific sidebars
+            section_sidebars=("docs-sidebar.md" "praxisworx-sidebar.md" "blueprints-sidebar.md" "infrastructure-sidebar.md")
+            for sidebar in "${section_sidebars[@]}"; do
+              if [ -f "./_site/docs/_parts/$sidebar" ]; then
+                echo "✅ Section sidebar found: $sidebar"
+              else
+                echo "⚠️  Section sidebar missing: $sidebar"
+              fi
+            done
+          else
+            echo "⚠️  Section navigation directory (docs/_parts) not found"
+          fi
+
+          # Verify all documentation folders are copied
+          echo "📁 Documentation folders verification:"
+          doc_folders=("docs" "src" "blueprints" "praxisworx" ".github" "copilot")
+          for folder in "${doc_folders[@]}"; do
+            if [ -d "./_site/$folder" ]; then
+              file_count=$(find "./_site/$folder" -name "*.md" | wc -l)
+              echo "✅ $folder directory found ($file_count markdown files)"
+            else
+              echo "ℹ️  $folder directory not found (may not exist in source)"
             fi
           done
 
@@ -296,18 +428,116 @@ jobs:
             echo "⚠️  Some plugins may be missing, but build can continue"
           fi
 
-          # Test 4: Verify sidebar exists and is valid
-          echo "📚 Checking sidebar configuration..."
+          # Test 4: Dynamic sidebar validation based on actual content
+          echo "📚 Dynamic sidebar validation..."
           if [ -f "./_site/docs/_sidebar.md" ]; then
-            if grep -q "Getting Started\|Project Planning\|Contributing" ./_site/docs/_sidebar.md; then
-              echo "✅ Sidebar contains expected navigation sections"
+            # Count total sections in sidebar (lines starting with '- [' or just '- ')
+            sidebar_sections=$(grep -c "^- " "./_site/docs/_sidebar.md" || echo "0")
+            echo "✅ Sidebar found with $sidebar_sections navigation sections"
+
+            # Verify sidebar contains content from all copied folders
+            content_areas_found=0
+
+            # Check for docs content
+            if grep -q "docs/" "./_site/docs/_sidebar.md"; then
+              echo "✅ Docs content found in sidebar"
+              ((content_areas_found++))
+            fi
+
+            # Check for GitHub resources (if .github was copied)
+            if [ -d "./_site/.github" ] && grep -q -i "github\|copilot.*resources\|prompts" "./_site/docs/_sidebar.md"; then
+              echo "✅ GitHub resources content found in sidebar"
+              ((content_areas_found++))
+            fi
+
+            # Check for infrastructure content (if src was copied)
+            if [ -d "./_site/src" ] && grep -q -i "infrastructure\|terraform\|bicep" "./_site/docs/_sidebar.md"; then
+              echo "✅ Infrastructure content found in sidebar"
+              ((content_areas_found++))
+            fi
+
+            # Check for blueprints content (if blueprints was copied)
+            if [ -d "./_site/blueprints" ] && grep -q -i "blueprint" "./_site/docs/_sidebar.md"; then
+              echo "✅ Blueprints content found in sidebar"
+              ((content_areas_found++))
+            fi
+
+            # Check for praxisworx content (if praxisworx was copied)
+            if [ -d "./_site/praxisworx" ] && grep -q -i "praxisworx\|learning" "./_site/docs/_sidebar.md"; then
+              echo "✅ PraxisWorx content found in sidebar"
+              ((content_areas_found++))
+            fi
+
+            echo "📊 Content areas validated: $content_areas_found"
+
+            # Require at least basic content structure
+            if [ "$sidebar_sections" -ge 5 ] && [ "$content_areas_found" -ge 2 ]; then
+              echo "✅ Sidebar validation passed: adequate content structure"
             else
-              echo "⚠️  Sidebar may not contain expected navigation"
+              echo "⚠️  Sidebar validation warning: limited content structure detected"
+              echo "    Sections: $sidebar_sections, Content areas: $content_areas_found"
             fi
           else
             echo "❌ Sidebar file missing"
             exit 1
           fi
+
+          # Test 5: Validate content accessibility across all folders
+          echo "🔗 Content accessibility validation..."
+          total_md_files=$(find ./_site -name "*.md" | wc -l)
+          echo "📄 Total markdown files deployed: $total_md_files"
+
+          # Verify special file types are accessible
+          special_files_found=0
+          if find ./_site -name "*.prompt.md" | head -1 > /dev/null 2>&1; then
+            prompt_count=$(find ./_site -name "*.prompt.md" | wc -l)
+            echo "✅ Prompt files found: $prompt_count"
+            ((special_files_found++))
+          fi
+
+          if find ./_site -name "*.chatmode.md" | head -1 > /dev/null 2>&1; then
+            chatmode_count=$(find ./_site -name "*.chatmode.md" | wc -l)
+            echo "✅ Chatmode files found: $chatmode_count"
+            ((special_files_found++))
+          fi
+
+          if find ./_site -name "*.instructions.md" | head -1 > /dev/null 2>&1; then
+            instructions_count=$(find ./_site -name "*.instructions.md" | wc -l)
+            echo "✅ Instructions files found: $instructions_count"
+            ((special_files_found++))
+          fi
+
+          echo "🎯 Special file types accessible: $special_files_found"
+
+          # Comprehensive deployment validation report
+          echo ""
+          echo "📋 === COMPREHENSIVE DEPLOYMENT VALIDATION REPORT ==="
+          echo "🏗️  Build Summary:"
+          echo "   - Total files deployed: $total_files"
+          echo "   - Total markdown files: $total_md_files"
+          echo "   - Sidebar sections: $sidebar_sections"
+          echo "   - Content areas validated: $content_areas_found"
+          echo "   - Special file types: $special_files_found"
+          echo ""
+          echo "📁 Folder Status:"
+          for folder in docs src blueprints praxisworx .github copilot; do
+            if [ -d "./_site/$folder" ]; then
+              folder_md_count=$(find "./_site/$folder" -name "*.md" | wc -l)
+              echo "   ✅ $folder: $folder_md_count files"
+            else
+              echo "   ⚪ $folder: not present"
+            fi
+          done
+          echo ""
+          echo "🎯 Navigation Architecture:"
+          if [ -d "./_site/docs/_parts" ]; then
+            parts_count=$(ls "./_site/docs/_parts"/*.md 2>/dev/null | wc -l)
+            echo "   ✅ Section-based navigation: $parts_count section sidebars"
+          else
+            echo "   ⚪ Section-based navigation: not detected"
+          fi
+          echo ""
+          echo "🎉 Deployment validation completed successfully!"
 
           echo "🎯 Build validation completed successfully"
 
@@ -330,3 +560,47 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Verify deployment
+        run: |
+          echo "🔍 Verifying GitHub Pages deployment..."
+
+          # Get the deployment URL
+          SITE_URL="${{ steps.deployment.outputs.page_url }}"
+          echo "📍 Deployment URL: $SITE_URL"
+
+          # Wait a moment for deployment to be fully active
+          echo "⏳ Waiting for deployment to be fully active..."
+          sleep 30
+
+          # Test basic site accessibility
+          echo "🌐 Testing site accessibility..."
+          if curl -s -f "$SITE_URL" > /dev/null; then
+            echo "✅ Site is accessible"
+          else
+            echo "⚠️  Site accessibility check failed (may need more time)"
+          fi
+
+          # Test specific documentation paths if site is accessible
+          if curl -s -f "$SITE_URL" > /dev/null; then
+            echo "🔗 Testing documentation paths..."
+
+            # Test main documentation structure
+            paths_to_test=("" "/#/docs/" "/#/docs/_sidebar")
+
+            for path in "${paths_to_test[@]}"; do
+              test_url="${SITE_URL}${path}"
+              if curl -s -f "$test_url" > /dev/null; then
+                echo "   ✅ $path accessible"
+              else
+                echo "   ⚠️  $path may not be accessible"
+              fi
+            done
+
+            echo "🎯 Deployment verification completed"
+            echo "📋 Site URL: $SITE_URL"
+            echo "📋 Documentation should be accessible at: ${SITE_URL}/#/"
+          else
+            echo "ℹ️  Skipping path tests due to accessibility issues"
+            echo "📋 Site URL: $SITE_URL (may need additional time to be fully active)"
+          fi

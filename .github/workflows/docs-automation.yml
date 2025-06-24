@@ -200,7 +200,7 @@ jobs:
           EOF
 
           # Check all markdown files
-          find docs src blueprints -name "*.md" -type f | \
+          find docs src blueprints praxisworx .github copilot -name "*.md" -type f | \
             grep -v node_modules | \
             xargs -I {} sh -c 'echo "Checking: {}" && markdown-link-check {} --config .markdown-link-check.json'
 
@@ -246,12 +246,13 @@ jobs:
           EOF
 
           echo "✅ Search index generated"
-
   report-documentation-health:
     name: 📊 Documentation Health Report
     runs-on: ubuntu-latest
     needs: [validate-frontmatter, generate-sidebar, validate-links, build-documentation]
     if: always()
+    permissions:
+      issues: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -265,21 +266,23 @@ jobs:
           $docsCount = (Get-ChildItem -Path 'docs' -Filter '*.md' -Recurse -ErrorAction SilentlyContinue).Count
           $srcCount = (Get-ChildItem -Path 'src' -Filter '*.md' -Recurse -ErrorAction SilentlyContinue).Count
           $blueprintsCount = (Get-ChildItem -Path 'blueprints' -Filter '*.md' -Recurse -ErrorAction SilentlyContinue).Count
+          find docs src blueprints praxisworx .github copilot -name "*.md" -type f | \
 
           # Generate report
           $report = @"
           # 📚 Documentation Health Report
 
-          Generated on: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss UTC')
-
-          ## 📈 Documentation Statistics
+          Generated on: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss UTC')          ## 📈 Documentation Statistics
 
           | Category | File Count |
           |----------|------------|
           | Main Documentation | $docsCount |
           | Infrastructure Components | $srcCount |
           | Blueprints | $blueprintsCount |
-          | **Total** | **$($docsCount + $srcCount + $blueprintsCount)** |
+          | Learning Platform (PraxisWorx) | $praxisworxCount |
+          | GitHub Resources | $githubCount |
+          | AI Assistant Guides (Copilot) | $copilotCount |
+          | **Total** | **$($docsCount + $srcCount + $blueprintsCount + $praxisworxCount + $githubCount + $copilotCount)** |
 
           ## 🏗️ Three-Tree Architecture Status
 

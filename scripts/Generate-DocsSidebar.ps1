@@ -11,6 +11,9 @@
     - Infrastructure Code section with Bicep documentation
     - Component Overview with cross-references
 
+    Supports both single comprehensive sidebar generation and section-specific sidebar generation
+    for multi-section navigation architecture.
+
 .PARAMETER DocsPath
     Path to the docs directory. Defaults to '../docs'
 
@@ -20,16 +23,33 @@
 .PARAMETER SidebarFile
     Output sidebar file. Defaults to '_sidebar.md' in docs directory
 
+.PARAMETER Section
+    Generate sidebar for specific section only. Valid values: 'all', 'docs', 'praxisworx', 'blueprints', 'infrastructure'
+    When set to 'all' (default), generates comprehensive sidebar with all sections.
+    When set to specific section, generates section-specific sidebar in docs/_parts/ folder.
+
+.PARAMETER AllSections
+    Generate all section-specific sidebars at once. Creates separate sidebar files for each section
+    in the docs/_parts/ folder, plus the main comprehensive sidebar.
+
 .EXAMPLE
     .\Generate-DocsSidebar.ps1
 
 .EXAMPLE
     .\Generate-DocsSidebar.ps1 -DocsPath "C:\project\docs" -SrcPath "C:\project\src" -Verbose
+
+.EXAMPLE
+    .\Generate-DocsSidebar.ps1 -Section "docs"
+
+.EXAMPLE
+    .\Generate-DocsSidebar.ps1 -AllSections
 #>
 
 # Suppress PSScriptAnalyzer false positives - these parameters are actually used
 # SidebarFile is used in: $sidebarFilePath = Join-Path $resolvedDocsPath $SidebarFile
 [Diagnostics.CodeAnalysis.SuppressMessage('PSReviewUnusedParameter', 'SidebarFile')]
+[Diagnostics.CodeAnalysis.SuppressMessage('PSReviewUnusedParameter', 'Section')]
+[Diagnostics.CodeAnalysis.SuppressMessage('PSReviewUnusedParameter', 'AllSections')]
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $false)]
@@ -39,7 +59,14 @@ param(
     [string]$SrcPath = '',
 
     [Parameter(Mandatory = $false)]
-    [string]$SidebarFile = '_sidebar.md'
+    [string]$SidebarFile = '_sidebar.md',
+
+    [Parameter(Mandatory = $false)]
+    [ValidateSet('all', 'docs', 'praxisworx', 'blueprints', 'infrastructure', 'home', 'copilot')]
+    [string]$Section = 'all',
+
+    [Parameter(Mandatory = $false)]
+    [switch]$AllSections
 )
 
 # Auto-detect paths based on current directory
@@ -73,8 +100,18 @@ if ([string]::IsNullOrEmpty($SrcPath)) {
 
 # Configuration
 $ExcludeDirs = @('.git', 'node_modules', 'assets', 'media')
-$ExcludeFiles = @('_sidebar.md', '_navbar.md', '_footer.md', '_404.md')
+$ExcludeFiles = @('_sidebar.md', '_navbar.md', '_footer.md', '_404.md', 'coming-soon.md')
 $PriorityFiles = @('index.md', 'overview.md', 'readme.md', 'introduction.md')
+
+# Define the desired order for kata categories (used by multiple functions)
+$KataOrder = @(
+    'ai-assisted-engineering',
+    'task-planning',
+    'adr-creation',
+    'prompt-engineering',
+    'edge-deployment',
+    'troubleshooting'
+)
 
 # Core Functions
 
@@ -82,10 +119,13 @@ function Get-MarkdownFile {
     param(
         [Parameter(Mandatory = $true)]
         [string]$FilePath
-    )
-
-    if (-not (Test-Path $FilePath)) {
-        Write-Warning "File not found: $FilePath"
+    )    if (-not (Test-Path $FilePath)) {
+        # Only warn for unexpected file types, not directory scanning
+        if ($FilePath -match '\.(md|txt|yml|yaml)$') {
+            Write-Warning "File not found: $FilePath"
+        } else {
+            Write-Verbose "Directory not found (expected during scanning): $FilePath"
+        }
         return $null
     }
 
@@ -185,10 +225,8 @@ function Get-MarkdownFileList {
     param(
         [Parameter(Mandatory = $true)]
         [string]$Path
-    )
-
-    if (-not (Test-Path $Path)) {
-        Write-Warning "Path not found: $Path"
+    )    if (-not (Test-Path $Path)) {
+        Write-Verbose "Path not found (expected during scanning): $Path"
         return @()
     }
 
@@ -204,7 +242,9 @@ function Get-MarkdownFileList {
 
             $excludeDir = $false
             foreach ($exclude in $ExcludeDirs) {
-                if ($_.DirectoryName -like "*$exclude*") {
+                # Use exact path segment matching instead of wildcard to avoid excluding .github when trying to exclude .git
+                $pathSegments = $_.DirectoryName -split [IO.Path]::DirectorySeparatorChar
+                if ($pathSegments -contains $exclude) {
                     $excludeDir = $true
                     break
                 }
@@ -225,6 +265,16 @@ function Get-DisplayName {
         [string]$FilePath
     )
 
+    # Try to get title from frontmatter first
+    $markdownFile = Get-MarkdownFile -FilePath $FilePath
+    if ($markdownFile -and $markdownFile.Frontmatter -and $markdownFile.Frontmatter.ContainsKey('title')) {
+        $title = $markdownFile.Frontmatter['title']
+        if (-not [string]::IsNullOrWhiteSpace($title)) {
+            return $title.Trim()
+        }
+    }
+
+    # Fallback to generated display name
     $fileName = [System.IO.Path]::GetFileNameWithoutExtension($FilePath)
 
     # Remove numbered prefixes like 000-, 001-, 010-, etc.
@@ -596,7 +646,7 @@ function Build-TerraformSidebar {
         return ""
     }
 
-    $sidebar = "  - Terraform Documentation`n"
+    $sidebar = ""
 
     foreach ($dir in $terraformDirs | Sort-Object FullName) {
         $readmeFile = Join-Path $dir.FullName "README.md"
@@ -604,7 +654,7 @@ function Build-TerraformSidebar {
             $componentName = Split-Path (Split-Path $dir.FullName -Parent) -Leaf
             $displayName = Get-DisplayName -FilePath $componentName
             $relativePath = Get-DocsifyRelativePath -FilePath $readmeFile -RootPath $RootPath
-            $sidebar += "    - [$displayName]($relativePath)`n"
+            $sidebar += "  - [$displayName]($relativePath)`n"
 
             # Check for terraform/modules subdirectory
             $modulesDir = Join-Path $dir.FullName "modules"
@@ -642,7 +692,7 @@ function Add-TerraformModulesSidebar {
                 $moduleName = $moduleDir.Name
                 $moduleDisplayName = Get-DisplayName -FilePath $moduleName
                 $moduleRelativePath = Get-DocsifyRelativePath -FilePath $moduleReadme -RootPath $RootPath
-                $moduleContent += "$indent  - [$moduleDisplayName]($moduleRelativePath)`n"
+                $moduleContent += "$indent- [$moduleDisplayName]($moduleRelativePath)`n"
             }
         }
     }
@@ -674,7 +724,7 @@ function Build-BicepSidebar {
         return ""
     }
 
-    $sidebar = "  - Bicep Documentation`n"
+    $sidebar = ""
 
     foreach ($dir in $bicepDirs | Sort-Object FullName) {
         $readmeFile = Join-Path $dir.FullName "README.md"
@@ -682,7 +732,7 @@ function Build-BicepSidebar {
             $componentName = Split-Path (Split-Path $dir.FullName -Parent) -Leaf
             $displayName = Get-DisplayName -FilePath $componentName
             $relativePath = Get-DocsifyRelativePath -FilePath $readmeFile -RootPath $RootPath
-            $sidebar += "    - [$displayName]($relativePath)`n"
+            $sidebar += "  - [$displayName]($relativePath)`n"
 
             # Check for bicep/modules subdirectory
             $modulesDir = Join-Path $dir.FullName "modules"
@@ -710,11 +760,9 @@ function Add-BicepModulesSidebar {
     $moduleContent = ""
     $indent = "  " * $IndentLevel
 
-    # Check for .bicep files that would cause 404 errors in Docsify
+    # Check for .bicep files that would cause 404 errors in Docsify (silently skip them)
     $bicepFiles = Get-ChildItem -Path $ModulesPath -Filter "*.bicep" -File
     if ($bicepFiles.Count -gt 0) {
-        Write-Warning "Found $($bicepFiles.Count) .bicep files in $ModulesPath that cannot be directly linked in Docsify documentation."
-        Write-Warning "Bicep files should be documented through README.md files or converted to markdown documentation."
         foreach ($bicepFile in $bicepFiles) {
             Write-Verbose "Skipping direct link to bicep file: $($bicepFile.Name)"
         }
@@ -730,7 +778,7 @@ function Add-BicepModulesSidebar {
                 $moduleName = $moduleDir.Name
                 $moduleDisplayName = Get-DisplayName -FilePath $moduleName
                 $moduleRelativePath = Get-DocsifyRelativePath -FilePath $moduleReadme -RootPath $RootPath
-                $moduleContent += "$indent  - [$moduleDisplayName]($moduleRelativePath)`n"
+                $moduleContent += "$indent- [$moduleDisplayName]($moduleRelativePath)`n"
             } else {
                 Write-Verbose "Module directory $($moduleDir.Name) found but no README.md exists for documentation"
             }
@@ -769,7 +817,7 @@ function Build-ComponentsSidebar {
         $relativePath -notmatch '/ci/'
     }
 
-    $sidebar = "  - Component Overview`n"
+    $sidebar = ""
     $foundComponents = 0
 
     # Sort README files by their path for consistent ordering
@@ -810,7 +858,7 @@ function Build-ComponentsSidebar {
         }
 
         $docsifyPath = Get-DocsifyRelativePath -FilePath $readmeFile.FullName -RootPath $RootPath
-        $sidebar += "    - [$displayName]($docsifyPath)`n"
+        $sidebar += "  - [$displayName]($docsifyPath)`n"
         $foundComponents++
         Write-Verbose "Auto-discovered component: $displayName at $relativePath"
     }
@@ -901,13 +949,128 @@ function Build-SpecialFilesSidebar {
     return $specialSidebar
 }
 
-function Build-DocsSectionSidebar {
+function Build-PraxisWorxSectionSidebar {
     param(
         [Parameter(Mandatory = $true)]
         [string]$SectionPath,
         [Parameter(Mandatory = $true)]
         [string]$RootPath
     )
+
+    Write-Host "📚 Processing PraxisWorx section with custom ordering..." -ForegroundColor Cyan
+
+    $sidebar = ""
+
+    if (-not (Test-Path $SectionPath)) {
+        Write-Verbose "Section path not found: $SectionPath"
+        return $sidebar
+    }
+
+    # Get markdown files directly in the section root (excluding index/readme)
+    $rootFiles = Get-ChildItem -Path $SectionPath -Filter "*.md" | Where-Object {
+        $_.Name -notmatch '^(index|readme)\.md$'
+    } | Sort-Object Name
+
+    foreach ($file in $rootFiles) {
+        $displayName = Get-DisplayName -FilePath $file.FullName
+        $relativePath = Get-DocsifyRelativePath -FilePath $file.FullName -RootPath $RootPath
+        $sidebar += "  - [$displayName]($relativePath)`n"
+    }    # Define the desired order for PraxisWorx sections
+    $praxisWorxOrder = @(
+        'getting-started',
+        'katas',
+        'training-labs',
+        'shared'
+    )
+
+    # Process subdirectories with custom PraxisWorx ordering
+    $subdirectories = Get-ChildItem -Path $SectionPath -Directory
+
+    # Sort subdirectories according to PraxisWorx order, with fallback to alphabetical
+    $sortedSubdirs = $subdirectories | Sort-Object {
+        $dirName = $_.Name.ToLower()
+        $index = $praxisWorxOrder.IndexOf($dirName)
+        if ($index -ge 0) {
+            $index
+        } else {
+            1000 + $_.Name  # Fallback to alphabetical for unlisted directories
+        }
+    }
+
+    foreach ($subdir in $sortedSubdirs) {
+        $subdirDisplayName = Get-DisplayName -FilePath $subdir.Name
+
+        # Check if subdirectory has README.md to use as section header
+        $readmeFile = Get-ChildItem -Path $subdir.FullName -Filter "README.md" -ErrorAction SilentlyContinue
+        if ($readmeFile) {
+            # Use README.md as linked section header
+            $relativePath = Get-DocsifyRelativePath -FilePath $readmeFile.FullName -RootPath $RootPath
+            $sidebar += "  - [$subdirDisplayName]($relativePath)`n"
+        } else {
+            # Use plain text section header
+            $sidebar += "  - $subdirDisplayName`n"
+        }
+
+        # Get files in this subdirectory (non-recursive, single level)
+        $subdirFiles = Get-ChildItem -Path $subdir.FullName -Filter "*.md" | Where-Object {
+            $_.Name -notmatch '^(index|readme)\.md$'
+        } | Sort-Object Name
+
+        foreach ($file in $subdirFiles) {
+            $fileDisplayName = Get-DisplayName -FilePath $file.FullName
+            $relativePath = Get-DocsifyRelativePath -FilePath $file.FullName -RootPath $RootPath
+            $sidebar += "    - [$fileDisplayName]($relativePath)`n"
+        }
+
+        # Process nested subdirectories (for deeper hierarchy)
+        # Apply custom ordering for kata categories when in 'katas' directory
+        $nestedSubdirs = if ($subdir.Name.ToLower() -eq 'katas') {
+            Get-ChildItem -Path $subdir.FullName -Directory | Sort-Object {
+                $dirName = $_.Name.ToLower()
+                $index = $KataOrder.IndexOf($dirName)
+                if ($index -ge 0) {
+                    $index
+                } else {
+                    1000 + $_.Name  # Fallback to alphabetical for unlisted kata categories
+                }
+            }
+        } else {
+            Get-ChildItem -Path $subdir.FullName -Directory | Sort-Object Name
+        }
+        foreach ($nestedSubdir in $nestedSubdirs) {
+            $nestedSubdirDisplayName = Get-DisplayName -FilePath $nestedSubdir.Name
+
+            # Check if nested subdirectory has README.md
+            $nestedReadmeFile = Get-ChildItem -Path $nestedSubdir.FullName -Filter "README.md" -ErrorAction SilentlyContinue
+            if ($nestedReadmeFile) {
+                $relativePath = Get-DocsifyRelativePath -FilePath $nestedReadmeFile.FullName -RootPath $RootPath
+                $sidebar += "    - [$nestedSubdirDisplayName]($relativePath)`n"
+            } else {
+                $sidebar += "    - $nestedSubdirDisplayName`n"
+            }
+
+            # Get files in nested subdirectory
+            $nestedFiles = Get-ChildItem -Path $nestedSubdir.FullName -Filter "*.md" | Where-Object {
+                $_.Name -notmatch '^(index|readme)\.md$'
+            } | Sort-Object Name
+
+            foreach ($file in $nestedFiles) {
+                $fileDisplayName = Get-DisplayName -FilePath $file.FullName
+                $relativePath = Get-DocsifyRelativePath -FilePath $file.FullName -RootPath $RootPath
+                $sidebar += "      - [$fileDisplayName]($relativePath)`n"
+            }
+        }
+    }
+
+    return $sidebar
+}
+
+function Build-DocsSectionSidebar {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$SectionPath,
+        [Parameter(Mandatory = $true)]
+        [string]$RootPath    )
 
     Write-Host "📚 Processing docs section: $(Split-Path $SectionPath -Leaf)" -ForegroundColor Cyan
 
@@ -957,7 +1120,20 @@ function Build-DocsSectionSidebar {
         }
 
         # Process nested subdirectories (for deeper hierarchy)
-        $nestedSubdirs = Get-ChildItem -Path $subdir.FullName -Directory | Sort-Object Name
+        # Apply custom ordering for kata categories when in 'katas' directory
+        $nestedSubdirs = if ($subdir.Name.ToLower() -eq 'katas') {
+            Get-ChildItem -Path $subdir.FullName -Directory | Sort-Object {
+                $dirName = $_.Name.ToLower()
+                $index = $KataOrder.IndexOf($dirName)
+                if ($index -ge 0) {
+                    $index
+                } else {
+                    1000 + $_.Name  # Fallback to alphabetical for unlisted kata categories
+                }
+            }
+        } else {
+            Get-ChildItem -Path $subdir.FullName -Directory | Sort-Object Name
+        }
         foreach ($nestedSubdir in $nestedSubdirs) {
             $nestedSubdirDisplayName = Get-DisplayName -FilePath $nestedSubdir.Name
 
@@ -984,6 +1160,658 @@ function Build-DocsSectionSidebar {
     }
 
     return $sidebar
+}
+
+function Build-GitHubResourcesSidebar {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$RootPath
+    )
+
+    Write-Host "🔗 Generating GitHub Copilot Resources section..." -ForegroundColor Yellow
+
+    $githubPath = Join-Path $RootPath ".github"
+    $sidebar = ""
+
+    if (-not (Test-Path $githubPath)) {
+        Write-Verbose "GitHub directory not found: $githubPath"
+        return $sidebar
+    }
+
+    # Check for .github index file
+    $githubIndex = Join-Path $githubPath "README.md"
+    if (Test-Path $githubIndex) {
+        $relativePath = Get-DocsifyRelativePath -FilePath $githubIndex -RootPath $RootPath
+        $sidebar += "- [GitHub Copilot Resources]($relativePath)`n"
+    } else {
+        $sidebar += "- GitHub Copilot Resources`n"
+    }
+
+    # Process GitHub subdirectories in logical order with proper subsections
+    # Exclude 'workflows' and 'ISSUE_TEMPLATE' from the sidebar generation
+    $githubSubdirs = @('prompts', 'chatmodes', 'instructions')
+
+    foreach ($subdirName in $githubSubdirs) {
+        $subdirPath = Join-Path $githubPath $subdirName
+        if (Test-Path $subdirPath) {
+            $subdirDisplayName = switch ($subdirName) {
+                'prompts' { 'AI Prompts' }
+                'chatmodes' { 'Chat Modes' }
+                'instructions' { 'Instructions' }
+                default { Get-DisplayName -FilePath $subdirName }
+            }
+
+            # Check if subdirectory has README.md
+            $readmeFile = Get-ChildItem -Path $subdirPath -Filter "README.md" -ErrorAction SilentlyContinue
+            if ($readmeFile) {
+                $relativePath = Get-DocsifyRelativePath -FilePath $readmeFile.FullName -RootPath $RootPath
+                $sidebar += "  - [$subdirDisplayName]($relativePath)`n"
+            } else {
+                $sidebar += "  - $subdirDisplayName`n"
+            }
+
+            # Get markdown files in this subdirectory
+            $subdirFiles = Get-ChildItem -Path $subdirPath -Filter "*.md" | Where-Object {
+                $_.Name -notmatch '^(index|readme)\.md$'
+            } | Sort-Object Name
+
+            foreach ($file in $subdirFiles) {
+                $fileDisplayName = Get-DisplayName -FilePath $file.FullName
+                # Handle special file extensions - clean up the display names
+                $fileDisplayName = $fileDisplayName -replace '\.Prompt$', '' -replace '\.Chatmode$', '' -replace '\.Instructions$', ''
+                $relativePath = Get-DocsifyRelativePath -FilePath $file.FullName -RootPath $RootPath
+                $sidebar += "    - [$fileDisplayName]($relativePath)`n"
+            }
+        }
+    }
+
+    # Add any root-level .github files (excluding README.md) with proper subsection
+    $githubRootFiles = Get-ChildItem -Path $githubPath -Filter "*.md" | Where-Object {
+        $_.Name -notmatch '^(index|readme)\.md$'
+    } | Sort-Object Name
+
+    if ($githubRootFiles.Count -gt 0) {
+        $sidebar += "  - General Resources`n"
+        foreach ($file in $githubRootFiles) {
+            $fileDisplayName = Get-DisplayName -FilePath $file.FullName
+            $relativePath = Get-DocsifyRelativePath -FilePath $file.FullName -RootPath $RootPath
+            $sidebar += "    - [$fileDisplayName]($relativePath)`n"
+        }
+    }
+
+    return $sidebar
+}
+
+function Build-CopilotGuidesSidebar {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$RootPath
+    )
+
+    Write-Host "🤖 Generating Copilot Guides section..." -ForegroundColor Yellow
+
+    $copilotPath = Join-Path $RootPath "copilot"
+    $sidebar = ""
+
+    if (-not (Test-Path $copilotPath)) {
+        Write-Verbose "Copilot directory not found: $copilotPath"
+        return $sidebar
+    }
+
+    # Check for copilot index file
+    $copilotIndex = Join-Path $copilotPath "README.md"
+    if (Test-Path $copilotIndex) {
+        $relativePath = Get-DocsifyRelativePath -FilePath $copilotIndex -RootPath $RootPath
+        $sidebar += "- [Copilot Guides]($relativePath)`n"
+    } else {
+        $sidebar += "- Copilot Guides`n"
+    }
+
+    # Process root-level copilot files first
+    $copilotRootFiles = Get-ChildItem -Path $copilotPath -Filter "*.md" | Where-Object {
+        $_.Name -notmatch '^(index|readme)\.md$'
+    } | Sort-Object Name
+
+    foreach ($file in $copilotRootFiles) {
+        $fileDisplayName = Get-DisplayName -FilePath $file.FullName
+        $relativePath = Get-DocsifyRelativePath -FilePath $file.FullName -RootPath $RootPath
+        $sidebar += "  - [$fileDisplayName]($relativePath)`n"
+    }
+
+    # Process framework subdirectories in logical order
+    $frameworkOrder = @('bash', 'bicep', 'csharp', 'terraform')
+
+    foreach ($frameworkName in $frameworkOrder) {
+        $frameworkPath = Join-Path $copilotPath $frameworkName
+        if (Test-Path $frameworkPath) {
+            $frameworkDisplayName = switch ($frameworkName) {
+                'bash' { 'Bash/Shell' }
+                'bicep' { 'Bicep' }
+                'csharp' { 'C#/.NET' }
+                'terraform' { 'Terraform' }
+                default { (Get-Culture).TextInfo.ToTitleCase($frameworkName) }
+            }
+
+            # Check if framework directory has README.md
+            $readmeFile = Get-ChildItem -Path $frameworkPath -Filter "README.md" -ErrorAction SilentlyContinue
+            if ($readmeFile) {
+                $relativePath = Get-DocsifyRelativePath -FilePath $readmeFile.FullName -RootPath $RootPath
+                $sidebar += "  - [$frameworkDisplayName]($relativePath)`n"
+            } else {
+                $sidebar += "  - $frameworkDisplayName`n"
+            }
+
+            # Get markdown files in this framework directory
+            $frameworkFiles = Get-ChildItem -Path $frameworkPath -Filter "*.md" | Where-Object {
+                $_.Name -notmatch '^(index|readme)\.md$'
+            } | Sort-Object Name
+
+            foreach ($file in $frameworkFiles) {
+                $fileDisplayName = Get-DisplayName -FilePath $file.FullName
+                $relativePath = Get-DocsifyRelativePath -FilePath $file.FullName -RootPath $RootPath
+                $sidebar += "    - [$fileDisplayName]($relativePath)`n"
+            }
+        }
+    }
+
+    return $sidebar
+}
+
+function Build-SectionSidebar {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$SectionName,
+        [Parameter(Mandatory = $true)]
+        [string]$DocsPath,
+        [Parameter(Mandatory = $true)]
+        [string]$SrcPath,
+        [Parameter(Mandatory = $true)]
+        [string]$RootPath
+    )
+
+    Write-Host "📝 Generating $SectionName section sidebar..." -ForegroundColor Yellow
+
+    $sidebarContent = ""
+
+    switch ($SectionName.ToLower()) {
+        'docs' {
+            # Documentation section sidebar
+            Write-Host "🚀 Processing Documentation section..." -ForegroundColor Cyan
+
+            # Main documentation section
+            $mainSidebar = Build-MainSidebar -DocsPath $DocsPath -RootPath $RootPath
+
+            # Getting Started section
+            $gettingStartedPath = Join-Path $DocsPath "getting-started"
+            $gettingStartedSidebar = ""
+            if (Test-Path $gettingStartedPath) {
+                $gettingStartedIndex = Join-Path $gettingStartedPath "index.md"
+                $gettingStartedReadme = Join-Path $gettingStartedPath "README.md"
+                if (Test-Path $gettingStartedIndex) {
+                    $relativePath = Get-DocsifyRelativePath -FilePath $gettingStartedIndex -RootPath $RootPath
+                    $gettingStartedSidebar += "- [Getting Started]($relativePath)`n"
+                } elseif (Test-Path $gettingStartedReadme) {
+                    $relativePath = Get-DocsifyRelativePath -FilePath $gettingStartedReadme -RootPath $RootPath
+                    $gettingStartedSidebar += "- [Getting Started]($relativePath)`n"
+                } else {
+                    $gettingStartedSidebar += "- Getting Started`n"
+                }
+                $gettingStartedSidebar += Build-DocsSectionSidebar -SectionPath $gettingStartedPath -RootPath $RootPath
+            }
+
+            # Project Planning section
+            $projectPlanningPath = Join-Path $DocsPath "project-planning"
+            $projectPlanningSidebar = ""
+            if (Test-Path $projectPlanningPath) {
+                $projectPlanningReadme = Join-Path $projectPlanningPath "README.md"
+                if (Test-Path $projectPlanningReadme) {
+                    $relativePath = Get-DocsifyRelativePath -FilePath $projectPlanningReadme -RootPath $RootPath
+                    $projectPlanningSidebar += "- [Project Planning]($relativePath)`n"
+                } else {
+                    $projectPlanningSidebar += "- Project Planning`n"
+                }
+                $projectPlanningSidebar += Build-DocsSectionSidebar -SectionPath $projectPlanningPath -RootPath $RootPath
+            }
+
+            # Contributing section
+            $contributingPath = Join-Path $DocsPath "contributing"
+            $contributingSidebar = ""
+            if (Test-Path $contributingPath) {
+                $contributingIndex = Join-Path $contributingPath "index.md"
+                if (Test-Path $contributingIndex) {
+                    $relativePath = Get-DocsifyRelativePath -FilePath $contributingIndex -RootPath $RootPath
+                    $contributingSidebar += "- [Contributing]($relativePath)`n"
+                } else {
+                    $contributingSidebar += "- Contributing`n"
+                }
+                $contributingSidebar += Build-DocsSectionSidebar -SectionPath $contributingPath -RootPath $RootPath
+            }
+
+            # Solution libraries
+            $solutionAdrPath = Join-Path $DocsPath "solution-adr-library"
+            $solutionAdrSidebar = ""
+            if (Test-Path $solutionAdrPath) {
+                $solutionAdrReadme = Join-Path $solutionAdrPath "README.md"
+                if (Test-Path $solutionAdrReadme) {
+                    $relativePath = Get-DocsifyRelativePath -FilePath $solutionAdrReadme -RootPath $RootPath
+                    $solutionAdrSidebar += "- [Solution ADR Library]($relativePath)`n"
+                } else {
+                    $solutionAdrSidebar += "- Solution ADR Library`n"
+                }
+                $solutionAdrSidebar += Build-DocsSectionSidebar -SectionPath $solutionAdrPath -RootPath $RootPath
+            }
+
+            $solutionSecurityPath = Join-Path $DocsPath "solution-security-plan-library"
+            $solutionSecuritySidebar = ""
+            if (Test-Path $solutionSecurityPath) {
+                $solutionSecurityReadme = Join-Path $solutionSecurityPath "README.md"
+                if (Test-Path $solutionSecurityReadme) {
+                    $relativePath = Get-DocsifyRelativePath -FilePath $solutionSecurityReadme -RootPath $RootPath
+                    $solutionSecuritySidebar += "- [Solution Security Plan Library]($relativePath)`n"
+                } else {
+                    $solutionSecuritySidebar += "- Solution Security Plan Library`n"
+                }
+                $solutionSecuritySidebar += Build-DocsSectionSidebar -SectionPath $solutionSecurityPath -RootPath $RootPath
+            }
+
+            $solutionTechPath = Join-Path $DocsPath "solution-technology-paper-library"
+            $solutionTechSidebar = ""
+            if (Test-Path $solutionTechPath) {
+                $solutionTechReadme = Join-Path $solutionTechPath "README.md"
+                if (Test-Path $solutionTechReadme) {
+                    $relativePath = Get-DocsifyRelativePath -FilePath $solutionTechReadme -RootPath $RootPath
+                    $solutionTechSidebar += "- [Solution Technology Paper Library]($relativePath)`n"
+                } else {
+                    $solutionTechSidebar += "- Solution Technology Paper Library`n"
+                }
+                $solutionTechSidebar += Build-DocsSectionSidebar -SectionPath $solutionTechPath -RootPath $RootPath
+            }
+
+            # Observability and Build CI/CD sections
+            $observabilityPath = Join-Path $DocsPath "observability"
+            $observabilitySidebar = ""
+            if (Test-Path $observabilityPath) {
+                $observabilityIndex = Join-Path $observabilityPath "index.md"
+                if (Test-Path $observabilityIndex) {
+                    $relativePath = Get-DocsifyRelativePath -FilePath $observabilityIndex -RootPath $RootPath
+                    $observabilitySidebar += "- [Observability]($relativePath)`n"
+                } else {
+                    $observabilitySidebar += "- Observability`n"
+                }
+                $observabilitySidebar += Build-DocsSectionSidebar -SectionPath $observabilityPath -RootPath $RootPath
+            }
+
+            $buildCicdPath = Join-Path $DocsPath "build-cicd"
+            $buildCicdSidebar = ""
+            if (Test-Path $buildCicdPath) {
+                $buildCicdIndex = Join-Path $buildCicdPath "index.md"
+                if (Test-Path $buildCicdIndex) {
+                    $relativePath = Get-DocsifyRelativePath -FilePath $buildCicdIndex -RootPath $RootPath
+                    $buildCicdSidebar += "- [Build CI/CD]($relativePath)`n"
+                } else {
+                    $buildCicdSidebar += "- Build CI/CD`n"
+                }
+                $buildCicdSidebar += Build-DocsSectionSidebar -SectionPath $buildCicdPath -RootPath $RootPath
+            }
+
+            # GitHub Resources and Copilot Guides
+            $githubResourcesSidebar = Build-GitHubResourcesSidebar -RootPath $RootPath
+            $copilotGuidesSidebar = Build-CopilotGuidesSidebar -RootPath $RootPath
+
+            # Special files
+            $specialFilesSidebar = Build-SpecialFilesSidebar -DocsPath $DocsPath -RootPath $RootPath
+
+            # Combine sections
+            $allSections = @()
+            if ($mainSidebar.Trim()) { $allSections += $mainSidebar.TrimEnd() }
+            if ($gettingStartedSidebar.Trim()) { $allSections += $gettingStartedSidebar.TrimEnd() }
+            if ($projectPlanningSidebar.Trim()) { $allSections += $projectPlanningSidebar.TrimEnd() }
+            if ($contributingSidebar.Trim()) { $allSections += $contributingSidebar.TrimEnd() }
+            if ($solutionAdrSidebar.Trim()) { $allSections += $solutionAdrSidebar.TrimEnd() }
+            if ($solutionSecuritySidebar.Trim()) { $allSections += $solutionSecuritySidebar.TrimEnd() }
+            if ($solutionTechSidebar.Trim()) { $allSections += $solutionTechSidebar.TrimEnd() }
+            if ($observabilitySidebar.Trim()) { $allSections += $observabilitySidebar.TrimEnd() }
+            if ($buildCicdSidebar.Trim()) { $allSections += $buildCicdSidebar.TrimEnd() }
+            if ($githubResourcesSidebar.Trim()) { $allSections += $githubResourcesSidebar.TrimEnd() }
+            if ($copilotGuidesSidebar.Trim()) { $allSections += $copilotGuidesSidebar.TrimEnd() }
+            if ($specialFilesSidebar.Trim()) { $allSections += $specialFilesSidebar.TrimEnd() }
+
+            $sidebarContent = $allSections -join "`n`n"
+        }
+
+        'praxisworx' {
+            # PraxisWorx section sidebar
+            Write-Host "🎓 Processing PraxisWorx section..." -ForegroundColor Cyan
+            $praxisWorxPath = Join-Path $RootPath "praxisworx"
+            if (Test-Path $praxisWorxPath) {
+                $praxisWorxReadme = Join-Path $praxisWorxPath "README.md"
+                if (Test-Path $praxisWorxReadme) {
+                    $relativePath = Get-DocsifyRelativePath -FilePath $praxisWorxReadme -RootPath $RootPath
+                    $sidebarContent += "- [PraxisWorx Overview]($relativePath)`n"
+                } else {
+                    $sidebarContent += "- PraxisWorx Overview`n"
+                }
+                $sidebarContent += Build-PraxisWorxSectionSidebar -SectionPath $praxisWorxPath -RootPath $RootPath
+
+                # Add focused GitHub Resources and Copilot Guides for PraxisWorx
+                $sidebarContent += "`n- GitHub Copilot Resources`n"
+                $sidebarContent += "  - AI Prompts`n"
+                $sidebarContent += "    - [Adr Create](../.github/prompts/adr-create.prompt.md)`n"
+                $sidebarContent += "    - [Edge Ai Project Planning](../.github/prompts/edge-ai-project-planning.prompt.md)`n"
+                $sidebarContent += "    - [Task Planner](../.github/prompts/task-planner.prompt.md)`n"
+                $sidebarContent += "  - Chat Modes`n"
+                $sidebarContent += "    - [Praxisworx Kata Coach](../.github/chatmodes/praxisworx-kata-coach.chatmode.md)`n"
+                $sidebarContent += "    - [Praxisworx Lab Coach](../.github/chatmodes/praxisworx-lab-coach.chatmode.md)`n"
+                $sidebarContent += "    - [Task Planner](../.github/chatmodes/task-planner.chatmode.md)`n"
+                $sidebarContent += "- Copilot Guides`n"
+                $sidebarContent += "  - [Getting Started](../copilot/getting-started.md)`n"
+                $sidebarContent += "  - Bash/Shell`n"
+                $sidebarContent += "    - [Bash](../copilot/bash/bash.md)`n"
+            }
+        }
+
+        'blueprints' {
+            # Blueprints section sidebar
+            Write-Host "📋 Processing Blueprints section..." -ForegroundColor Cyan
+            $blueprintsPath = Join-Path $RootPath "blueprints"
+            if (Test-Path $blueprintsPath) {
+                $blueprintsReadme = Join-Path $blueprintsPath "README.md"
+                if (Test-Path $blueprintsReadme) {
+                    $relativePath = Get-DocsifyRelativePath -FilePath $blueprintsReadme -RootPath $RootPath
+                    $sidebarContent += "- [Blueprints Overview]($relativePath)`n"
+                } else {
+                    $sidebarContent += "- Blueprints Overview`n"
+                }
+
+                $sidebarContent += "`n- Blueprint Components`n"
+                $sidebarContent += "  - Component Overview`n"
+                $sidebarContent += Build-ComponentsSidebar -SrcPath $blueprintsPath -RootPath $RootPath
+                $sidebarContent += "`n- Bicep Blueprints`n"
+                $sidebarContent += "  - Bicep Documentation`n"
+                $sidebarContent += Build-BicepSidebar -SrcPath $blueprintsPath -RootPath $RootPath
+                $sidebarContent += "`n- Terraform Blueprints`n"
+                $sidebarContent += "  - Terraform Documentation`n"
+                $sidebarContent += Build-TerraformSidebar -SrcPath $blueprintsPath -RootPath $RootPath
+
+                # Add focused GitHub Resources and Copilot Guides for Blueprints
+                $sidebarContent += "`n- GitHub Copilot Resources`n"
+                $sidebarContent += "  - AI Prompts`n"
+                $sidebarContent += "    - [Deploy](../.github/prompts/deploy.prompt.md)`n"
+                $sidebarContent += "    - [Getting Started](../.github/prompts/getting-started.prompt.md)`n"
+                $sidebarContent += "    - [Terraform From Blueprint](../.github/prompts/terraform-from-blueprint.prompt.md)`n"
+                $sidebarContent += "  - Instructions`n"
+                $sidebarContent += "    - [Bicep](../.github/instructions/bicep.instructions.md)`n"
+                $sidebarContent += "    - [Terraform](../.github/instructions/terraform.instructions.md)`n"
+                $sidebarContent += "- Copilot Guides`n"
+                $sidebarContent += "  - [Deploy](../copilot/deploy.md)`n"
+                $sidebarContent += "  - Bicep`n"
+                $sidebarContent += "    - [Bicep Standards](../copilot/bicep/bicep-standards.md)`n"
+                $sidebarContent += "    - [Bicep](../copilot/bicep/bicep.md)`n"
+                $sidebarContent += "  - Terraform`n"
+                $sidebarContent += "    - [Terraform Standards](../copilot/terraform/terraform-standards.md)`n"
+                $sidebarContent += "    - [Terraform](../copilot/terraform/terraform.md)`n"
+            }
+        }
+
+        'infrastructure' {
+            # Infrastructure section sidebar
+            Write-Host "🏗️ Processing Infrastructure section..." -ForegroundColor Cyan
+            if ($SrcPath -and (Test-Path $SrcPath)) {
+                # Infrastructure overview
+                $srcReadme = Join-Path $SrcPath "README.md"
+                if (Test-Path $srcReadme) {
+                    $relativePath = Get-DocsifyRelativePath -FilePath $srcReadme -RootPath $RootPath
+                    $sidebarContent += "- [Infrastructure Overview]($relativePath)`n`n"
+                } else {
+                    $sidebarContent += "- Infrastructure Overview`n`n"
+                }
+
+                # Use dynamic component discovery for clean, consistent structure
+                Write-Verbose "Using dynamic component discovery for infrastructure sidebar..."
+
+                # Get all component groups dynamically
+                $componentGroups = Get-ChildItem -Path $SrcPath -Directory | Where-Object {
+                    $_.Name -match '^\d{3}-' -or $_.Name -match '^\d{4}-'
+                } | Sort-Object Name
+
+                foreach ($group in $componentGroups) {
+                    $groupDisplayName = Get-DisplayName -FilePath $group.Name
+                    $groupReadme = Join-Path $group.FullName "README.md"
+
+                    if (Test-Path $groupReadme) {
+                        $groupRelativePath = Get-DocsifyRelativePath -FilePath $groupReadme -RootPath $RootPath
+                        $sidebarContent += "- [$groupDisplayName]($groupRelativePath)`n"
+                    } else {
+                        $sidebarContent += "- $groupDisplayName`n"
+                    }
+
+                    # Get components within this group
+                    $components = Get-ChildItem -Path $group.FullName -Directory | Where-Object {
+                        $_.Name -match '^\d{3}-' -and (Test-Path (Join-Path $_.FullName "README.md"))
+                    } | Sort-Object Name
+
+                    foreach ($component in $components) {
+                        $componentDisplayName = Get-DisplayName -FilePath $component.Name
+                        $componentReadme = Join-Path $component.FullName "README.md"
+                        $componentRelativePath = Get-DocsifyRelativePath -FilePath $componentReadme -RootPath $RootPath
+                        $sidebarContent += "  - [$componentDisplayName]($componentRelativePath)`n"
+                    }
+                    $sidebarContent += "`n"
+                }
+
+                # Add other top-level components not in numbered groups
+                $otherComponents = Get-ChildItem -Path $SrcPath -Directory | Where-Object {
+                    $_.Name -notmatch '^\d{3}-' -and $_.Name -notmatch '^\d{4}-' -and
+                    (Test-Path (Join-Path $_.FullName "README.md"))
+                } | Sort-Object Name
+
+                if ($otherComponents.Count -gt 0) {
+                    $sidebarContent += "- Supporting Infrastructure`n"
+                    foreach ($component in $otherComponents) {
+                        $componentDisplayName = Get-DisplayName -FilePath $component.Name
+                        $componentReadme = Join-Path $component.FullName "README.md"
+                        $componentRelativePath = Get-DocsifyRelativePath -FilePath $componentReadme -RootPath $RootPath
+                        $sidebarContent += "  - [$componentDisplayName]($componentRelativePath)`n"
+                    }
+                }
+            } else {
+                Write-Warning "Infrastructure section requested but src directory not found: $SrcPath"
+                return ""
+            }
+        }
+
+        'home' {
+            # Home section sidebar - clean and focused navigation
+            Write-Host "🏠 Processing Home section..." -ForegroundColor Cyan
+
+            # Welcome/Overview
+            $docsIndex = Join-Path $DocsPath "index.md"
+            if (Test-Path $docsIndex) {
+                $relativePath = Get-DocsifyRelativePath -FilePath $docsIndex -RootPath $RootPath
+                $sidebarContent += "- [🏠 Welcome]($relativePath)`n"
+            }
+
+            # Quick Start Links
+            $sidebarContent += "`n- 🚀 Quick Start`n"
+            $gettingStartedPath = Join-Path $DocsPath "getting-started"
+            if (Test-Path $gettingStartedPath) {
+                $gettingStartedIndex = Join-Path $gettingStartedPath "index.md"
+                if (Test-Path $gettingStartedIndex) {
+                    $relativePath = Get-DocsifyRelativePath -FilePath $gettingStartedIndex -RootPath $RootPath
+                    $sidebarContent += "  - [Getting Started]($relativePath)`n"
+                }
+            }
+
+            # Navigation to major sections
+            $sidebarContent += "`n- 📚 Explore Documentation`n"
+            $sidebarContent += "  - [Documentation Hub](docs/index)`n"
+            $sidebarContent += "  - [Learning (PraxisWorx)](praxisworx/README)`n"
+            $sidebarContent += "  - [Blueprints](blueprints/README)`n"
+            $sidebarContent += "  - [Infrastructure Code](src/README)`n"
+
+            # Quick access to common resources
+            $sidebarContent += "`n- 🛠️ Developer Resources`n"
+            $sidebarContent += "  - [Copilot Guides](copilot/README)`n"
+            $contributingPath = Join-Path $DocsPath "contributing"
+            if (Test-Path $contributingPath) {
+                $contributingIndex = Join-Path $contributingPath "index.md"
+                if (Test-Path $contributingIndex) {
+                    $relativePath = Get-DocsifyRelativePath -FilePath $contributingIndex -RootPath $RootPath
+                    $sidebarContent += "  - [Contributing Guide]($relativePath)`n"
+                }
+            }
+        }
+
+        'copilot' {
+            # Copilot Resources section sidebar - comprehensive GitHub Copilot resources
+            Write-Host "🤖 Processing Copilot Resources section..." -ForegroundColor Cyan
+
+            # Copilot Guides Overview
+            $copilotPath = Join-Path $RootPath "copilot"
+            if (Test-Path $copilotPath) {
+                $copilotReadme = Join-Path $copilotPath "README.md"
+                if (Test-Path $copilotReadme) {
+                    $relativePath = Get-DocsifyRelativePath -FilePath $copilotReadme -RootPath $RootPath
+                    $sidebarContent += "- [🤖 Copilot Overview]($relativePath)`n"
+                } else {
+                    $sidebarContent += "- 🤖 Copilot Overview`n"
+                }
+            }
+
+            # Getting Started
+            $copilotGettingStarted = Join-Path $RootPath "copilot/getting-started.md"
+            if (Test-Path $copilotGettingStarted) {
+                $relativePath = Get-DocsifyRelativePath -FilePath $copilotGettingStarted -RootPath $RootPath
+                $sidebarContent += "- [🚀 Getting Started]($relativePath)`n"
+            }
+
+            # Copilot Instructions
+            $copilotInstructions = Join-Path $RootPath ".github/copilot-instructions.md"
+            if (Test-Path $copilotInstructions) {
+                $relativePath = Get-DocsifyRelativePath -FilePath $copilotInstructions -RootPath $RootPath
+                $sidebarContent += "- [📋 Copilot Instructions]($relativePath)`n"
+            }
+
+            # Technology-specific guides
+            $sidebarContent += "`n- 💻 Technology Guides`n"
+
+            # Bash/Shell guides
+            $bashPath = Join-Path $RootPath "copilot/bash"
+            if (Test-Path $bashPath) {
+                $bashReadme = Join-Path $bashPath "README.md"
+                $bashMd = Join-Path $bashPath "bash.md"
+                if (Test-Path $bashReadme) {
+                    $relativePath = Get-DocsifyRelativePath -FilePath $bashReadme -RootPath $RootPath
+                    $sidebarContent += "  - [Bash/Shell]($relativePath)`n"
+                } elseif (Test-Path $bashMd) {
+                    $relativePath = Get-DocsifyRelativePath -FilePath $bashMd -RootPath $RootPath
+                    $sidebarContent += "  - [Bash/Shell]($relativePath)`n"
+                }
+            }
+
+            # Bicep guides
+            $bicepPath = Join-Path $RootPath "copilot/bicep"
+            if (Test-Path $bicepPath) {
+                $bicepReadme = Join-Path $bicepPath "README.md"
+                $bicepMd = Join-Path $bicepPath "bicep.md"
+                if (Test-Path $bicepReadme) {
+                    $relativePath = Get-DocsifyRelativePath -FilePath $bicepReadme -RootPath $RootPath
+                    $sidebarContent += "  - [Bicep]($relativePath)`n"
+                } elseif (Test-Path $bicepMd) {
+                    $relativePath = Get-DocsifyRelativePath -FilePath $bicepMd -RootPath $RootPath
+                    $sidebarContent += "  - [Bicep]($relativePath)`n"
+                }
+            }
+
+            # C# guides
+            $csharpPath = Join-Path $RootPath "copilot/csharp"
+            if (Test-Path $csharpPath) {
+                $csharpReadme = Join-Path $csharpPath "README.md"
+                $csharpMd = Join-Path $csharpPath "csharp.md"
+                if (Test-Path $csharpReadme) {
+                    $relativePath = Get-DocsifyRelativePath -FilePath $csharpReadme -RootPath $RootPath
+                    $sidebarContent += "  - [C#/.NET]($relativePath)`n"
+                } elseif (Test-Path $csharpMd) {
+                    $relativePath = Get-DocsifyRelativePath -FilePath $csharpMd -RootPath $RootPath
+                    $sidebarContent += "  - [C#/.NET]($relativePath)`n"
+                }
+            }
+
+            # Terraform guides
+            $terraformPath = Join-Path $RootPath "copilot/terraform"
+            if (Test-Path $terraformPath) {
+                $terraformReadme = Join-Path $terraformPath "README.md"
+                $terraformMd = Join-Path $terraformPath "terraform.md"
+                if (Test-Path $terraformReadme) {
+                    $relativePath = Get-DocsifyRelativePath -FilePath $terraformReadme -RootPath $RootPath
+                    $sidebarContent += "  - [Terraform]($relativePath)`n"
+                } elseif (Test-Path $terraformMd) {
+                    $relativePath = Get-DocsifyRelativePath -FilePath $terraformMd -RootPath $RootPath
+                    $sidebarContent += "  - [Terraform]($relativePath)`n"
+                }
+            }
+
+            # Python guide
+            $pythonScriptPath = Join-Path $RootPath "copilot/python-script.md"
+            if (Test-Path $pythonScriptPath) {
+                $relativePath = Get-DocsifyRelativePath -FilePath $pythonScriptPath -RootPath $RootPath
+                $sidebarContent += "  - [Python]($relativePath)`n"
+            }
+
+            # Special guides
+            $deployPath = Join-Path $RootPath "copilot/deploy.md"
+            if (Test-Path $deployPath) {
+                $relativePath = Get-DocsifyRelativePath -FilePath $deployPath -RootPath $RootPath
+                $sidebarContent += "  - [Deploy Guide]($relativePath)`n"
+            }
+
+            $testsPath = Join-Path $RootPath "copilot/csharp-tests.md"
+            if (Test-Path $testsPath) {
+                $relativePath = Get-DocsifyRelativePath -FilePath $testsPath -RootPath $RootPath
+                $sidebarContent += "  - [C# Testing Guide]($relativePath)`n"
+            }
+
+            # GitHub-specific resources
+            $sidebarContent += "`n- 🔧 GitHub Resources`n"
+
+            # Chat Modes
+            $chatModesPath = Join-Path $RootPath ".github/chatmodes"
+            if (Test-Path $chatModesPath) {
+                $chatModesReadme = Join-Path $chatModesPath "README.md"
+                if (Test-Path $chatModesReadme) {
+                    $relativePath = Get-DocsifyRelativePath -FilePath $chatModesReadme -RootPath $RootPath
+                    $sidebarContent += "  - [Chat Modes]($relativePath)`n"
+                }
+            }
+
+            # Instructions
+            $instructionsPath = Join-Path $RootPath ".github/instructions"
+            if (Test-Path $instructionsPath) {
+                $instructionsReadme = Join-Path $instructionsPath "README.md"
+                if (Test-Path $instructionsReadme) {
+                    $relativePath = Get-DocsifyRelativePath -FilePath $instructionsReadme -RootPath $RootPath
+                    $sidebarContent += "  - [Instructions]($relativePath)`n"
+                }
+            }
+
+            # Prompts
+            $promptsPath = Join-Path $RootPath ".github/prompts"
+            if (Test-Path $promptsPath) {
+                $promptsReadme = Join-Path $promptsPath "README.md"
+                if (Test-Path $promptsReadme) {
+                    $relativePath = Get-DocsifyRelativePath -FilePath $promptsReadme -RootPath $RootPath
+                    $sidebarContent += "  - [AI Prompts]($relativePath)`n"
+                }
+            }
+        }
+
+        default {
+            Write-Error "Unknown section: $SectionName"
+            return ""
+        }
+    }
+
+    return $sidebarContent
 }
 
 function Main {
@@ -1015,11 +1843,109 @@ function Main {
         Write-Host "Src directory path: $resolvedSrcPath" -ForegroundColor Gray
     }
     Write-Host "Sidebar file path: $sidebarFilePath" -ForegroundColor Gray
-
-    Write-Host "`n📝 Generating enhanced sidebar with README ordering..." -ForegroundColor Yellow
+    Write-Host "Section: $Section" -ForegroundColor Gray
 
     try {
         # Get root path for Docsify-compatible path generation (absolute path)
+        $rootPath = Split-Path $resolvedDocsPath -Parent
+
+        # Handle generating all section-specific sidebars
+        if ($AllSections) {
+            Write-Host "`n🔄 Generating all section-specific sidebars..." -ForegroundColor Magenta
+
+            # Determine output directory for sections in _parts folder
+            $partsDir = Join-Path $resolvedDocsPath "_parts"
+            if (-not (Test-Path $partsDir)) {
+                New-Item -ItemType Directory -Path $partsDir -Force | Out-Null
+                Write-Host "Created directory: $partsDir" -ForegroundColor Green
+            }
+
+            # Generate sidebars for all sections
+            $sections = @('docs', 'praxisworx', 'blueprints', 'infrastructure', 'home', 'copilot')
+            $successCount = 0
+
+            foreach ($sectionName in $sections) {
+                Write-Host "`n📝 Generating section-specific sidebar for: $sectionName" -ForegroundColor Yellow
+
+                $sectionSidebarPath = Join-Path $partsDir "$sectionName-sidebar.md"
+                Write-Host "Section-specific sidebar file path: $sectionSidebarPath" -ForegroundColor Gray
+
+                # Generate section-specific sidebar
+                $sectionSidebar = Build-SectionSidebar -SectionName $sectionName -DocsPath $resolvedDocsPath -SrcPath $resolvedSrcPath -RootPath $rootPath
+
+                if ($sectionSidebar) {
+                    $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss UTC"
+                    $sidebarContent = @"
+<!-- markdownlint-disable MD041 -->
+<!-- $sectionName Section Sidebar -->
+<!-- Generated on: $timestamp -->
+
+$sectionSidebar
+"@
+
+                    # Ensure content ends with exactly one newline
+                    $sidebarContent = $sidebarContent.TrimEnd() + "`n"
+
+                    # Write sidebar file
+                    Set-Content -Path $sectionSidebarPath -Value $sidebarContent -Encoding UTF8 -NoNewline
+
+                    Write-Host "✅ Section-specific sidebar generated: $sectionSidebarPath" -ForegroundColor Green
+                    $successCount++
+                } else {
+                    Write-Warning "Failed to generate section-specific sidebar for: $sectionName"
+                }
+            }
+
+            Write-Host "`n🎉 Completed generating all section-specific sidebars!" -ForegroundColor Magenta
+            Write-Host "📊 Successfully generated: $successCount of $($sections.Count) sidebars" -ForegroundColor Green
+
+            # Also generate the main sidebar (all sections combined)
+            Write-Host "`n📝 Also generating main sidebar (all sections combined)..." -ForegroundColor Yellow
+        }
+
+        # Handle section-specific sidebar generation
+        elseif ($Section -ne 'all') {
+            Write-Host "`n📝 Generating section-specific sidebar for: $Section" -ForegroundColor Yellow
+
+            # Determine output file path for section in _parts folder
+            $partsDir = Join-Path $resolvedDocsPath "_parts"
+            if (-not (Test-Path $partsDir)) {
+                New-Item -ItemType Directory -Path $partsDir -Force | Out-Null
+                Write-Host "Created directory: $partsDir" -ForegroundColor Green
+            }
+
+            $sidebarFilePath = Join-Path $partsDir "$Section-sidebar.md"
+            Write-Host "Section-specific sidebar file path: $sidebarFilePath" -ForegroundColor Gray
+
+            # Generate section-specific sidebar
+            $sectionSidebar = Build-SectionSidebar -SectionName $Section -DocsPath $resolvedDocsPath -SrcPath $resolvedSrcPath -RootPath $rootPath
+
+            if ($sectionSidebar) {
+                $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss UTC"
+                $sidebarContent = @"
+<!-- markdownlint-disable MD041 -->
+<!-- $Section Section Sidebar -->
+<!-- Generated on: $timestamp -->
+
+$sectionSidebar
+"@
+
+                # Ensure content ends with exactly one newline
+                $sidebarContent = $sidebarContent.TrimEnd() + "`n"
+
+                # Write sidebar file
+                Set-Content -Path $sidebarFilePath -Value $sidebarContent -Encoding UTF8 -NoNewline
+
+                Write-Host "`n✅ Section-specific sidebar generated: $sidebarFilePath" -ForegroundColor Green
+                Write-Host "📋 Section: $Section" -ForegroundColor Green
+                return
+            } else {
+                Write-Error "Failed to generate section-specific sidebar for: $Section"
+                exit 1
+            }
+        }
+
+        Write-Host "`n📝 Generating complete sidebar with README ordering..." -ForegroundColor Yellow
         $rootPath = Split-Path $resolvedDocsPath -Parent
 
         # Generate main documentation sidebar (only for root-level docs files)
@@ -1029,8 +1955,14 @@ function Main {
         $infrastructureSidebar = ""
         if ($resolvedSrcPath) {
             Write-Host "📁 Generating Infrastructure Code sections..." -ForegroundColor Yellow
-
-            $infrastructureSidebar += "- Infrastructure Code`n"
+            # Check for README.md in src
+            $srcReadme = Join-Path $resolvedSrcPath "README.md"
+            if (Test-Path $srcReadme) {
+                $relativePath = Get-DocsifyRelativePath -FilePath $srcReadme -RootPath $rootPath
+                $infrastructureSidebar += "- [Infrastructure Code]($relativePath)`n"
+            } else {
+                $infrastructureSidebar += "- Infrastructure Code`n"
+            }
             $infrastructureSidebar += Build-ComponentsSidebar -SrcPath $resolvedSrcPath -RootPath $rootPath
             $infrastructureSidebar += Build-BicepSidebar -SrcPath $resolvedSrcPath -RootPath $rootPath
             $infrastructureSidebar += Build-TerraformSidebar -SrcPath $resolvedSrcPath -RootPath $rootPath
@@ -1041,8 +1973,34 @@ function Main {
         $gettingStartedSidebar = ""
         if (Test-Path $gettingStartedPath) {
             Write-Host "🚀 Generating Getting Started section..." -ForegroundColor Yellow
-            $gettingStartedSidebar += "- Getting Started`n"
+            # Check for index.md or README.md
+            $gettingStartedIndex = Join-Path $gettingStartedPath "index.md"
+            $gettingStartedReadme = Join-Path $gettingStartedPath "README.md"
+            if (Test-Path $gettingStartedIndex) {
+                $relativePath = Get-DocsifyRelativePath -FilePath $gettingStartedIndex -RootPath $rootPath
+                $gettingStartedSidebar += "- [Getting Started]($relativePath)`n"
+            } elseif (Test-Path $gettingStartedReadme) {
+                $relativePath = Get-DocsifyRelativePath -FilePath $gettingStartedReadme -RootPath $rootPath
+                $gettingStartedSidebar += "- [Getting Started]($relativePath)`n"
+            } else {
+                $gettingStartedSidebar += "- Getting Started`n"
+            }
             $gettingStartedSidebar += Build-DocsSectionSidebar -SectionPath $gettingStartedPath -RootPath $rootPath
+        }
+
+        # Generate PraxisWorx section
+        $praxisWorxPath = Join-Path $rootPath "praxisworx"
+        $praxisWorxSidebar = ""
+        if (Test-Path $praxisWorxPath) {
+            Write-Host "🎓 Generating PraxisWorx section..." -ForegroundColor Yellow
+            $praxisWorxReadme = Join-Path $praxisWorxPath "README.md"
+            if (Test-Path $praxisWorxReadme) {
+                $relativePath = Get-DocsifyRelativePath -FilePath $praxisWorxReadme -RootPath $rootPath
+                $praxisWorxSidebar += "- [PraxisWorx]($relativePath)`n"
+            } else {
+                $praxisWorxSidebar += "- PraxisWorx`n"
+            }
+            $praxisWorxSidebar += Build-PraxisWorxSectionSidebar -SectionPath $praxisWorxPath -RootPath $rootPath
         }
 
         # Generate Build CI/CD section
@@ -1050,7 +2008,18 @@ function Main {
         $buildCicdSidebar = ""
         if (Test-Path $buildCicdPath) {
             Write-Host "🔧 Generating Build CI/CD section..." -ForegroundColor Yellow
-            $buildCicdSidebar += "- Build CI/CD`n"
+            # Check for index.md or README.md
+            $buildCicdIndex = Join-Path $buildCicdPath "index.md"
+            $buildCicdReadme = Join-Path $buildCicdPath "README.md"
+            if (Test-Path $buildCicdIndex) {
+                $relativePath = Get-DocsifyRelativePath -FilePath $buildCicdIndex -RootPath $rootPath
+                $buildCicdSidebar += "- [Build CI/CD]($relativePath)`n"
+            } elseif (Test-Path $buildCicdReadme) {
+                $relativePath = Get-DocsifyRelativePath -FilePath $buildCicdReadme -RootPath $rootPath
+                $buildCicdSidebar += "- [Build CI/CD]($relativePath)`n"
+            } else {
+                $buildCicdSidebar += "- Build CI/CD`n"
+            }
             $buildCicdSidebar += Build-DocsSectionSidebar -SectionPath $buildCicdPath -RootPath $rootPath
         }
 
@@ -1059,7 +2028,18 @@ function Main {
         $contributingSidebar = ""
         if (Test-Path $contributingPath) {
             Write-Host "🤝 Generating Contributing section..." -ForegroundColor Yellow
-            $contributingSidebar += "- Contributing`n"
+            # Check for index.md or README.md
+            $contributingIndex = Join-Path $contributingPath "index.md"
+            $contributingReadme = Join-Path $contributingPath "README.md"
+            if (Test-Path $contributingIndex) {
+                $relativePath = Get-DocsifyRelativePath -FilePath $contributingIndex -RootPath $rootPath
+                $contributingSidebar += "- [Contributing]($relativePath)`n"
+            } elseif (Test-Path $contributingReadme) {
+                $relativePath = Get-DocsifyRelativePath -FilePath $contributingReadme -RootPath $rootPath
+                $contributingSidebar += "- [Contributing]($relativePath)`n"
+            } else {
+                $contributingSidebar += "- Contributing`n"
+            }
             $contributingSidebar += Build-DocsSectionSidebar -SectionPath $contributingPath -RootPath $rootPath
         }
 
@@ -1068,7 +2048,18 @@ function Main {
         $projectPlanningSidebar = ""
         if (Test-Path $projectPlanningPath) {
             Write-Host "📋 Generating Project Planning section..." -ForegroundColor Yellow
-            $projectPlanningSidebar += "- Project Planning`n"
+            # Check for index.md or README.md
+            $projectPlanningIndex = Join-Path $projectPlanningPath "index.md"
+            $projectPlanningReadme = Join-Path $projectPlanningPath "README.md"
+            if (Test-Path $projectPlanningIndex) {
+                $relativePath = Get-DocsifyRelativePath -FilePath $projectPlanningIndex -RootPath $rootPath
+                $projectPlanningSidebar += "- [Project Planning]($relativePath)`n"
+            } elseif (Test-Path $projectPlanningReadme) {
+                $relativePath = Get-DocsifyRelativePath -FilePath $projectPlanningReadme -RootPath $rootPath
+                $projectPlanningSidebar += "- [Project Planning]($relativePath)`n"
+            } else {
+                $projectPlanningSidebar += "- Project Planning`n"
+            }
             $projectPlanningSidebar += Build-DocsSectionSidebar -SectionPath $projectPlanningPath -RootPath $rootPath
         }
 
@@ -1077,7 +2068,18 @@ function Main {
         $observabilitySidebar = ""
         if (Test-Path $observabilityPath) {
             Write-Host "📊 Generating Observability section..." -ForegroundColor Yellow
-            $observabilitySidebar += "- Observability`n"
+            # Check for index.md or README.md
+            $observabilityIndex = Join-Path $observabilityPath "index.md"
+            $observabilityReadme = Join-Path $observabilityPath "README.md"
+            if (Test-Path $observabilityIndex) {
+                $relativePath = Get-DocsifyRelativePath -FilePath $observabilityIndex -RootPath $rootPath
+                $observabilitySidebar += "- [Observability]($relativePath)`n"
+            } elseif (Test-Path $observabilityReadme) {
+                $relativePath = Get-DocsifyRelativePath -FilePath $observabilityReadme -RootPath $rootPath
+                $observabilitySidebar += "- [Observability]($relativePath)`n"
+            } else {
+                $observabilitySidebar += "- Observability`n"
+            }
             $observabilitySidebar += Build-DocsSectionSidebar -SectionPath $observabilityPath -RootPath $rootPath
         }
 
@@ -1086,7 +2088,18 @@ function Main {
         $solutionAdrSidebar = ""
         if (Test-Path $solutionAdrPath) {
             Write-Host "📚 Generating Solution ADR Library section..." -ForegroundColor Yellow
-            $solutionAdrSidebar += "- Solution ADR Library`n"
+            # Check for index.md or README.md
+            $solutionAdrIndex = Join-Path $solutionAdrPath "index.md"
+            $solutionAdrReadme = Join-Path $solutionAdrPath "README.md"
+            if (Test-Path $solutionAdrIndex) {
+                $relativePath = Get-DocsifyRelativePath -FilePath $solutionAdrIndex -RootPath $rootPath
+                $solutionAdrSidebar += "- [Solution ADR Library]($relativePath)`n"
+            } elseif (Test-Path $solutionAdrReadme) {
+                $relativePath = Get-DocsifyRelativePath -FilePath $solutionAdrReadme -RootPath $rootPath
+                $solutionAdrSidebar += "- [Solution ADR Library]($relativePath)`n"
+            } else {
+                $solutionAdrSidebar += "- Solution ADR Library`n"
+            }
             $solutionAdrSidebar += Build-DocsSectionSidebar -SectionPath $solutionAdrPath -RootPath $rootPath
         }
 
@@ -1095,7 +2108,18 @@ function Main {
         $solutionSecuritySidebar = ""
         if (Test-Path $solutionSecurityPath) {
             Write-Host "🔒 Generating Solution Security Plan Library section..." -ForegroundColor Yellow
-            $solutionSecuritySidebar += "- Solution Security Plan Library`n"
+            # Check for index.md or README.md
+            $solutionSecurityIndex = Join-Path $solutionSecurityPath "index.md"
+            $solutionSecurityReadme = Join-Path $solutionSecurityPath "README.md"
+            if (Test-Path $solutionSecurityIndex) {
+                $relativePath = Get-DocsifyRelativePath -FilePath $solutionSecurityIndex -RootPath $rootPath
+                $solutionSecuritySidebar += "- [Solution Security Plan Library]($relativePath)`n"
+            } elseif (Test-Path $solutionSecurityReadme) {
+                $relativePath = Get-DocsifyRelativePath -FilePath $solutionSecurityReadme -RootPath $rootPath
+                $solutionSecuritySidebar += "- [Solution Security Plan Library]($relativePath)`n"
+            } else {
+                $solutionSecuritySidebar += "- Solution Security Plan Library`n"
+            }
             $solutionSecuritySidebar += Build-DocsSectionSidebar -SectionPath $solutionSecurityPath -RootPath $rootPath
         }
 
@@ -1104,7 +2128,18 @@ function Main {
         $solutionTechSidebar = ""
         if (Test-Path $solutionTechPath) {
             Write-Host "🔬 Generating Solution Technology Paper Library section..." -ForegroundColor Yellow
-            $solutionTechSidebar += "- Solution Technology Paper Library`n"
+            # Check for index.md or README.md
+            $solutionTechIndex = Join-Path $solutionTechPath "index.md"
+            $solutionTechReadme = Join-Path $solutionTechPath "README.md"
+            if (Test-Path $solutionTechIndex) {
+                $relativePath = Get-DocsifyRelativePath -FilePath $solutionTechIndex -RootPath $rootPath
+                $solutionTechSidebar += "- [Solution Technology Paper Library]($relativePath)`n"
+            } elseif (Test-Path $solutionTechReadme) {
+                $relativePath = Get-DocsifyRelativePath -FilePath $solutionTechReadme -RootPath $rootPath
+                $solutionTechSidebar += "- [Solution Technology Paper Library]($relativePath)`n"
+            } else {
+                $solutionTechSidebar += "- Solution Technology Paper Library`n"
+            }
             $solutionTechSidebar += Build-DocsSectionSidebar -SectionPath $solutionTechPath -RootPath $rootPath
         }
 
@@ -1122,8 +2157,14 @@ function Main {
         $blueprintsSidebar = ""
         if (Test-Path $blueprintsPath) {
             Write-Host "📋 Generating Blueprints sections..." -ForegroundColor Yellow
-
-            $blueprintsSidebar += "- Blueprints`n"
+            # Check for README.md in blueprints
+            $blueprintsReadme = Join-Path $blueprintsPath "README.md"
+            if (Test-Path $blueprintsReadme) {
+                $relativePath = Get-DocsifyRelativePath -FilePath $blueprintsReadme -RootPath $rootPath
+                $blueprintsSidebar += "- [Blueprints]($relativePath)`n"
+            } else {
+                $blueprintsSidebar += "- Blueprints`n"
+            }
             $blueprintsSidebar += Build-ComponentsSidebar -SrcPath $blueprintsPath -RootPath $rootPath
             $blueprintsSidebar += Build-BicepSidebar -SrcPath $blueprintsPath -RootPath $rootPath
             $blueprintsSidebar += Build-TerraformSidebar -SrcPath $blueprintsPath -RootPath $rootPath
@@ -1131,6 +2172,12 @@ function Main {
 
         # Generate special files section
         $specialFilesSidebar = Build-SpecialFilesSidebar -DocsPath $resolvedDocsPath -RootPath $rootPath
+
+        # Generate GitHub Resources section
+        $githubResourcesSidebar = Build-GitHubResourcesSidebar -RootPath $rootPath
+
+        # Generate Copilot Guides section
+        $copilotGuidesSidebar = Build-CopilotGuidesSidebar -RootPath $rootPath
 
         # Combine all sections with proper spacing
         $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss UTC"
@@ -1140,6 +2187,7 @@ function Main {
         if ($mainSidebar.Trim()) { $allSections += $mainSidebar.TrimEnd() }
 
         if ($gettingStartedSidebar.Trim()) { $allSections += $gettingStartedSidebar.TrimEnd() }
+        if ($praxisWorxSidebar.Trim()) { $allSections += $praxisWorxSidebar.TrimEnd() }
         if ($projectPlanningSidebar.Trim()) { $allSections += $projectPlanningSidebar.TrimEnd() }
         if ($blueprintsSidebar.Trim()) { $allSections += $blueprintsSidebar.TrimEnd() }
 
@@ -1151,12 +2199,16 @@ function Main {
 
         # if ($templatesSidebar.Trim()) { $allSections += $templatesSidebar.TrimEnd() }
 
+        if ($githubResourcesSidebar.Trim()) { $allSections += $githubResourcesSidebar.TrimEnd() }
+
         if ($infrastructureSidebar.Trim()) { $allSections += $infrastructureSidebar.TrimEnd() }
 
         if ($observabilitySidebar.Trim()) { $allSections += $observabilitySidebar.TrimEnd() }
         if ($buildCicdSidebar.Trim()) { $allSections += $buildCicdSidebar.TrimEnd() }
 
         if ($specialFilesSidebar.Trim()) { $allSections += $specialFilesSidebar.TrimEnd() }
+
+        if ($copilotGuidesSidebar.Trim()) { $allSections += $copilotGuidesSidebar.TrimEnd() }
 
         $sidebarContent = @"
 <!-- markdownlint-disable MD041 -->

@@ -56,13 +56,15 @@ members reference for guidance.
 
 ## Outputs
 
-This template doesn't produce formal pipeline outputs, but it results in updated content in the Azure DevOps wiki repository.
+This template produces the following outputs:
+
+- **Updated Wiki Content**: Synchronized documentation in the Azure DevOps wiki repository
 
 ## Dependencies
 
 This template may depend on the following:
 
-- **Required Scripts**: `wiki-build.sh` to process markdown files and build wiki content
+- **Required Scripts**: `Build-Wiki.ps1` to process markdown files and build wiki content
 - **Required Permissions**: Write access to the wiki repository
 - **Required Agent Capabilities**:
 - Git with credential persistence support
@@ -112,7 +114,7 @@ The template executes a series of steps to update the wiki:
    - Checks out the wiki repository to update with new content
 
 3. **Wiki Content Generation**:
-   - Runs the `wiki-build.sh` script to process markdown files
+   - Runs the `Build-Wiki.ps1` script to process markdown files
    - Formats content for wiki compatibility
    - Generates a structured wiki hierarchy
 
@@ -164,7 +166,7 @@ Common issues and their solutions:
 
 3. **Wiki Build Script Errors**:
    - **Symptom**: Wiki content is not properly formatted or incomplete
-   - **Solution**: Check the `wiki-build.sh` script for errors and verify it's processing all documentation files correctly
+   - **Solution**: Check the `Build-Wiki.ps1` script for errors and verify it's processing all documentation files correctly
 
 4. **Empty Wiki Updates**:
    - **Symptom**: Wiki update job succeeds but no changes appear in the wiki

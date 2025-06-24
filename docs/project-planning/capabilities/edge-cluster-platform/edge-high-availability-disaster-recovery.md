@@ -5,13 +5,13 @@ author: Edge AI Team
 ms.date: 06/06/2025
 ms.topic: concept
 keywords:
-  - overview
-  - index
-  - navigation
-  - workspaces
-  - edge
-  - project
-  - planning
+  - high-availability
+  - disaster-recovery
+  - edge-computing
+  - resilience
+  - fault-tolerance
+  - backup-strategies
+  - cluster-management
   - capabilities
 estimated_reading_time: 11
 ---

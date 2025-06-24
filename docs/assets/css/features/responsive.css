@@ -1,0 +1,72 @@
+/* Mobile and Responsive Design Adaptations */
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-300px);
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  /* Ensure sidebar is visible on desktop */
+  body.close .sidebar {
+    transform: translateX(0);
+  }
+}
+
+/* Ensure sidebar is visible by default on desktop */
+@media (min-width: 769px) {
+  .sidebar {
+    transform: translateX(0) !important;
+  }
+}
+
+/* Responsive - hide TOC space on smaller screens */
+@media (max-width: 1200px) {
+  .content,
+  section.content,
+  .app-main {
+    right: 20px !important; /* Remove TOC space but maintain navbar clearance */
+    top: 60px !important; /* Ensure navbar space on tablets */
+  }
+
+  .page_toc,
+  .toc-container,
+  .docsify-toc {
+    display: none !important;
+  }
+}
+
+/* Mobile responsive layout */
+@media (max-width: 768px) {
+  .content,
+  section.content,
+  .app-main {
+    left: 0 !important;
+    right: 0 !important;
+    top: 60px !important; /* Maintain navbar space on mobile */
+    position: relative !important;
+  }
+}
+
+/* Responsive improvements for metadata */
+@media (max-width: 768px) {
+  .metadata-header-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .metadata-reading-time {
+    align-self: flex-end;
+    margin-top: 5px;
+  }
+
+  .metadata-date-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+}

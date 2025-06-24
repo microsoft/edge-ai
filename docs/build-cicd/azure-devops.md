@@ -1,132 +1,169 @@
 ---
 title: Azure DevOps pipelines
-description: Documentation for Azure DevOps CI/CD pipeline and infrastructure components in the Edge AI Accelerator project.
+description: Documentation for Azure DevOps CI/CD pipelines used in the Edge AI Accelerator project for infrastructure testing and deployment automation.
 author: Edge AI Team
 ms.date: 06/06/2025
-ms.topic: reference
+ms.topic: how-to-guide
 keywords:
   - azure devops
-  - pipelines
-  - ci/cd
+  - ci/cd pipelines
   - pipeline templates
-  - checkov security scanning
-  - megalinter
+  - infrastructure testing
   - terraform testing
   - bicep validation
-  - infrastructure automation
-  - managed pool
+  - checkov security scanning
+  - megalinter
+  - matrix testing
+  - change detection
+  - service connections
+  - managed identity
   - azure devops infrastructure
-  - terraform module
+  - deployment automation
+  - agent pools
 estimated_reading_time: 3
 ---
 ## Azure DevOps Pipelines
 
-This document covers the Azure DevOps CI/CD pipeline and infrastructure components that exist in the Edge AI Accelerator repository.
+This document provides documentation for Azure DevOps CI/CD pipelines used in the Edge AI Accelerator project for infrastructure testing and deployment automation.
 
 ## In this guide
 
-- [Main pipeline](#main-pipeline)
+- [Overview](#overview)
+- [Main pipeline structure](#main-pipeline-structure)
 - [Pipeline templates](#pipeline-templates)
 - [Azure DevOps infrastructure](#azure-devops-infrastructure)
+- [Getting started](#getting-started)
 
-## Main pipeline
+## Overview
 
-The repository contains a main Azure DevOps pipeline in `azure-pipelines.yml` (194 lines) that provides CI/CD automation for infrastructure components.
+The Edge AI Accelerator project uses Azure DevOps for automated infrastructure testing and deployment. The pipeline system provides:
 
-### Trigger configuration
+- **Automated Testing**: Matrix-based testing for Terraform and Bicep components
+- **Security Scanning**: Integrated security validation with Checkov
+- **Quality Assurance**: Documentation validation and compliance checking
+- **Version Management**: Automated component version checking
 
-The pipeline triggers on:
+## Main pipeline structure
 
-- **Branch triggers**: `main` and `internal-eng` branches
-- **Scheduled triggers**: Daily at 5 AM UTC (9 PM PST)
-- **Manual triggers**: With optional security scanning parameter
+**File**: `azure-pipelines.yml` (194 lines)
+
+The main pipeline is triggered on:
+
+- Pull requests to main branch
+- Commits to main and internal-eng branches
+- Daily scheduled runs (5 AM UTC)
 
 ### Pipeline stages
 
-The pipeline consists of two main stages:
-
 #### Scheduled stage
 
-Runs security and update scanning with these jobs:
+Runs daily for security and update scanning:
 
-- **Checkov security scanning**: Uses `checkov-template.yml` for infrastructure security validation
-- **AIO version checking**: Uses `aio-version-checker-template.yml` to check component versions
-- **Matrix folder checking**: Uses `matrix-folder-check-template.yml` to detect changes in source directories
-- **Terraform testing**: Uses `cluster-test-terraform-template.yml` for infrastructure component testing
+- **Security scanning** with Checkov
+- **Component version checking** for AIO components
+- **Full repository scanning** for all components
+- **Terraform testing** for all infrastructure components
 
 #### Main stage
 
-Runs on pull requests and commits to main branch for component validation and testing.
+Runs on pull requests and main branch commits:
 
-### Pipeline configuration
-
-- **Pool**: `ai-on-edge-managed-pool`
-- **VM Image**: `ubuntu-latest`
-- Uses managed DevOps pool with Ubuntu 2022 and Windows 2022 agents
+- **Change detection** to identify modified components
+- **Matrix testing** for affected Terraform components
+- **Bicep validation** for affected Bicep components
+- **Script testing** for PowerShell scripts
 
 ## Pipeline templates
 
-The repository includes 11 specialized pipeline templates in `.azdo/templates/`:
+Located in `.azdo/templates/`, these templates provide reusable pipeline functionality:
 
-### Security and quality templates
+### Core templates
 
-| Template                           | Purpose                                 |
-|------------------------------------|-----------------------------------------|
-| `checkov-template.yml`             | Security scanning with Checkov          |
-| `megalinter-template.yml`          | Code quality and linting validation     |
-| `matrix-folder-check-template.yml` | Dynamic change detection for components |
+- **`matrix-folder-check-template.yml`**: Detects changes and generates test matrices
+- **`cluster-test-terraform-template.yml`**: Terraform component testing
+- **`checkov-template.yml`**: Security scanning with Checkov
+- **`megalinter-template.yml`**: Code quality and linting
+- **`aio-version-checker-template.yml`**: Component version validation
 
-### Infrastructure testing templates
+### Validation templates
 
-| Template                                     | Purpose                                |
-|----------------------------------------------|----------------------------------------|
-| `cluster-test-terraform-template.yml`        | Terraform component testing            |
-| `docs-check-terraform-template.yml`          | Terraform documentation validation     |
-| `docs-check-bicep-template.yml`              | Bicep documentation validation         |
-| `variable-compliance-terraform-template.yml` | Terraform variable compliance checking |
-| `variable-compliance-bicep-template.yml`     | Bicep variable compliance checking     |
+- **`variable-compliance-terraform-template.yml`**: Terraform variable compliance
+- **`variable-compliance-bicep-template.yml`**: Bicep variable compliance
+- **`docs-check-terraform-template.yml`**: Terraform documentation validation
+- **`docs-check-bicep-template.yml`**: Bicep documentation validation
 
 ### Utility templates
 
-| Template                                    | Purpose                                          |
-|---------------------------------------------|--------------------------------------------------|
-| `aio-version-checker-template.yml`          | Azure IoT Operations version checking            |
-| `resource-provider-pwsh-tests-template.yml` | PowerShell script testing for resource providers |
-| `wiki-update-template.yml`                  | Documentation wiki updates                       |
+- **`resource-provider-pwsh-tests-template.yml`**: PowerShell script testing
+- **`wiki-update-template.yml`**: Documentation updates
+
+### GitHub integration
+
+- **`github-push.yml`**: Pushes content from Azure DevOps to GitHub
+- **`github-pull.yml`**: Pulls content from GitHub to Azure DevOps
 
 ## Azure DevOps infrastructure
 
-The repository includes Terraform infrastructure for Azure DevOps integration in `deploy/azdo/`.
+The `deploy/azdo/` directory contains Terraform modules for Azure DevOps infrastructure:
 
-### Infrastructure components
+### Main components
 
-The Azure DevOps infrastructure module creates:
+- **Resource Group**: Container for all Azure DevOps resources
+- **Virtual Network**: Network infrastructure with dedicated subnets
+- **Storage Account**: Artifact storage and state management
+- **Key Vault**: Secure secret management with private endpoint
+- **Container Registry**: Private container image storage
+- **Managed Identity**: Authentication for pipeline operations
 
-- **Resource Group**: Container for Azure DevOps resources
-- **Virtual Network**: With subnets for Key Vault, ACR, and DevOps agent pool
-- **Storage Account**: For pipeline artifacts and state storage
-- **Key Vault**: With private endpoint for secure secret management
-- **Container Registry**: With private endpoint for container image storage
-- **DevOps Managed Pool**: For pipeline execution agents
-- **User Assigned Managed Identity**: With appropriate role assignments
+### Infrastructure modules
 
-### Module structure
+- **`modules/key-vault/`**: Key Vault with private endpoint configuration
+- **`modules/storage-account/`**: Storage account for artifacts
+- **`modules/network/`**: Virtual network and subnet configuration
+- **`modules/identity/`**: Managed identity and role assignments
 
-| File           | Purpose                           |
-|----------------|-----------------------------------|
-| `main.tf`      | Main infrastructure configuration |
-| `variables.tf` | Input variable definitions        |
-| `versions.tf`  | Provider version constraints      |
-| `modules/`     | Internal module components        |
+## Getting started
 
-### Requirements
+### Prerequisites
 
-- **Terraform**: >= 1.9.8, < 2.0
-- **Azure Provider**: >= 4.8.0
-- **Azure AD Provider**: >= 3.0.2
-- **Azure API Provider**: >= 2.2.0
+1. **Azure DevOps Organization**: Access to Azure DevOps with appropriate permissions
+2. **Azure Subscription**: Target subscription for infrastructure deployment
+3. **Service Principal or Managed Identity**: Authentication for Azure operations
 
-For detailed deployment instructions and module documentation, see the [Azure DevOps infrastructure README](../../deploy/azdo/README.md).
+### Service connection setup
+
+Create a service connection in Azure DevOps using either:
+
+#### Managed Identity (Recommended)
+
+For scenarios where your Azure DevOps organization is in the same tenant as your target subscription.
+
+#### Service Principal
+
+For cross-tenant scenarios or when managed identity is not available.
+
+Follow the [Azure DevOps documentation](https://learn.microsoft.com/azure/devops/pipelines/library/service-endpoints?view=azure-devops) for detailed setup instructions.
+
+### Pipeline configuration
+
+The main pipeline (`azure-pipelines.yml`) uses these key configurations:
+
+- **Pool**: `ai-on-edge-managed-pool` with Ubuntu agents
+- **Service Connection**: `azdo-ai-for-edge-iac-for-edge`
+- **Triggers**: Automatic on main/internal-eng branches and daily schedule
+- **Parameters**: Optional security scanning flag for manual runs
+
+### Agent pool requirements
+
+The pipeline requires a managed agent pool with:
+
+- Ubuntu 2022 or later
+- Terraform CLI installed
+- Azure CLI installed
+- PowerShell Core installed
+- Docker support for container operations
+
+## Related guides
 
 - [GitHub Actions Workflows][github-actions-guide] - GitHub Actions CI/CD documentation
 - [Build Scripts Guide][build-scripts-guide] - Automated build and validation scripts

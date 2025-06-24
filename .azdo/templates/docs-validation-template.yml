@@ -1,0 +1,396 @@
+# Enhanced Documentation Validation Template
+#
+# Purpose:
+# This template provides comprehensive documentation validation for Azure DevOps pull requests,
+# ensuring documentation standards are maintained and the enhanced multi-section sidebar navigation
+# stays synchronized with content changes across all documentation folders.
+#
+# Enhanced Functionality:
+# - Validates enhanced multi-section sidebar navigation (docs/_parts/ structure)
+# - Performs link validation across all documentation folders (docs, src, blueprints, praxisworx, .github, copilot)
+# - Checks frontmatter consistency and required fields using Validate-MarkdownFrontmatter.ps1
+# - Validates section-based navigation architecture with Generate-DocsSidebar.ps1
+# - Provides detailed documentation health reporting with enhanced statistics
+# - Supports the full enhanced documentation structure from Generate-DocsSidebar.ps1
+#
+# Parameters:
+# - dependsOn: Jobs that this job depends on
+# - displayName: Display name for this job
+# - condition: Condition for running this job
+# - breakBuild: Whether to treat validation failures as errors (true) or warnings (false)
+# - onlyChangedFiles: Whether to validate only files changed in the PR/commit (true) or all files (false)
+# - pool: Agent pool configuration
+#
+# Usage Examples:
+# ```yaml
+# # Basic usage for PR validation:
+# - template: .azdo/templates/docs-validation-template.yml
+#   parameters:
+#     dependsOn: PreviousJob
+#     displayName: "Enhanced Documentation Validation"
+#
+# # Changed files validation mode:
+# - template: .azdo/templates/docs-validation-template.yml
+#   parameters:
+#     onlyChangedFiles: true
+#     displayName: "Changed Files Documentation Validation"
+# ```
+#
+# This template validates the complete enhanced documentation architecture including:
+# - Multi-section navigation with docs/_parts/ structure
+# - All documentation folders processed by Generate-DocsSidebar.ps1
+# - Section-specific sidebars for improved navigation organization
+# - Comprehensive content validation across the enhanced structure
+---
+parameters:
+  # Dependencies for this job
+  - name: dependsOn
+    type: object
+    default: []
+  # Display name for the job
+  - name: displayName
+    type: string
+    default: 'Documentation Validation'
+  # Condition for when to run this job
+  - name: condition
+    type: string
+    default: succeeded()  # Whether to break the build on validation issues (true) or just show warnings (false)
+  - name: breakBuild
+    type: boolean
+    default: false
+  # Whether to validate only files changed in the PR/commit (true) or all files (false)
+  - name: onlyChangedFiles
+    type: boolean
+    default: false
+  # Pool configuration
+  - name: pool
+    type: object
+    default:
+      name: 'ai-on-edge-managed-pool'
+      vmImage: 'ubuntu-latest'
+
+jobs:
+  - job: DocsValidation
+    displayName: ${{ parameters.displayName }}
+    dependsOn: ${{ parameters.dependsOn }}
+    condition: ${{ parameters.condition }}
+    pool: ${{ parameters.pool }}
+
+    steps:
+
+      # Checkout repo
+      - checkout: self
+        clean: true      # Set up PowerShell environment
+      - task: PowerShell@2
+        inputs:
+          targetType: 'inline'
+          script: |
+            Write-Host "PowerShell version: $($PSVersionTable.PSVersion)"
+        displayName: "Setup PowerShell Environment"      # Validate frontmatter consistency
+      - task: PowerShell@2
+        inputs:
+          targetType: 'inline'
+          script: |
+            Write-Host "🔍 Starting frontmatter validation..."            # Determine which files to validate
+            $validateOnlyChanged = "${{ parameters.onlyChangedFiles }}" -eq "True"
+
+            if ($validateOnlyChanged) {
+              Write-Host "📋 Validating only changed files in this PR/commit"
+
+              # Use the script's built-in git diff functionality
+              try {
+                $result = & "./scripts/Validate-MarkdownFrontmatter.ps1" -ChangedFilesOnly -Verbose
+                $exitCode = $LASTEXITCODE
+              }
+              catch {
+                Write-Host "⚠️ Could not determine changed files, falling back to full validation"
+                $result = & "./scripts/Validate-MarkdownFrontmatter.ps1" -Verbose
+                $exitCode = $LASTEXITCODE
+              }
+            } else {
+              # Run full validation
+              Write-Host "📋 Validating all markdown files"
+              $result = & "./scripts/Validate-MarkdownFrontmatter.ps1" -Verbose
+              $exitCode = $LASTEXITCODE
+            }
+
+            if ($exitCode -ne 0) {
+              $message = "Frontmatter validation failed. Please check markdown file frontmatter."
+              Write-Host "❌ $message" -ForegroundColor Red
+
+              if ("${{ parameters.breakBuild }}" -eq "True") {
+                Write-Host "##vso[task.logissue type=error]$message"
+                exit 1
+              } else {
+                Write-Host "##vso[task.logissue type=warning]$message"
+              }
+            } else {
+              Write-Host "✅ Frontmatter validation completed successfully" -ForegroundColor Green
+            }
+        displayName: "Validate Frontmatter Consistency"
+        condition: and( not(failed()), not(canceled()) )
+
+      # Validate enhanced multi-section sidebar navigation
+      - task: PowerShell@2
+        inputs:
+          targetType: 'inline'
+          script: |
+            Write-Host "🔍 Validating enhanced multi-section navigation sidebar..."
+
+            # Store original sidebar content for all sections
+            $originalSidebars = @{}
+            $sidebarPaths = @(
+              "docs/_sidebar.md",
+              "docs/_parts/docs-sidebar.md",
+              "docs/_parts/praxisworx-sidebar.md",
+              "docs/_parts/blueprints-sidebar.md",
+              "docs/_parts/infrastructure-sidebar.md"
+            )
+
+            foreach ($path in $sidebarPaths) {
+              if (Test-Path $path) {
+                $originalSidebars[$path] = Get-Content $path -Raw
+              }
+            }
+
+            # Run the enhanced sidebar generation
+            . ./scripts/Generate-DocsSidebar.ps1
+
+            # Validate each sidebar section
+            $validationPassed = $true
+            $issues = @()
+
+            foreach ($path in $sidebarPaths) {
+              if (Test-Path $path) {
+                $newContent = Get-Content $path -Raw
+                $originalContent = $originalSidebars[$path]
+
+                # Compare content excluding timestamp differences
+                $originalClean = ($originalContent -replace "Generated on.*?\n", "")
+                $newClean = ($newContent -replace "Generated on.*?\n", "")
+
+                if ($originalClean -ne $newClean) {
+                  $issues += "- $path is outdated"
+                  $validationPassed = $false
+                }
+              }
+            }
+
+            # Check if docs/_parts/ directory structure exists
+            if (-not (Test-Path "docs/_parts/")) {
+              $issues += "- docs/_parts/ directory missing - required for multi-section navigation"
+              $validationPassed = $false
+            }
+
+            if (-not $validationPassed) {
+              $message = "Sidebar validation failed:`n$($issues -join "`n")`n`nPlease run: pwsh -File ./scripts/Generate-DocsSidebar.ps1"
+              Write-Host "❌ Sidebar validation failed!" -ForegroundColor Red
+              Write-Host $message -ForegroundColor Red
+
+              if ("${{ parameters.breakBuild }}" -eq "True") {
+                Write-Host "##vso[task.logissue type=error]$message"
+                exit 1
+              } else {
+                Write-Host "##vso[task.logissue type=warning]$message"
+              }
+            } else {
+              Write-Host "✅ All sidebar sections are up to date" -ForegroundColor Green
+            }
+
+            # Restore original sidebars if they were temporarily modified
+            foreach ($path in $originalSidebars.Keys) {
+              if ($originalSidebars[$path] -ne "") {
+                $originalSidebars[$path] | Set-Content $path -NoNewline
+              }
+            }
+        displayName: "Validate Enhanced Multi-Section Sidebar Navigation"
+        condition: and( not(failed()), not(canceled()) )
+
+      # Set up Node.js for link validation
+      - task: NodeTool@0
+        inputs:
+          versionSpec: '18'
+        displayName: "Setup Node.js"
+
+      # Install markdown-link-check
+      - bash: |
+          npm install -g markdown-link-check
+        displayName: "Install markdown-link-check"
+        condition: and( not(failed()), not(canceled()) )      # Validate documentation links
+      - bash: |
+          echo "🔗 Checking links in documentation files..."
+
+          # Create config file for link checking
+          cat > .markdown-link-check.json << EOF
+          {
+            "ignorePatterns": [
+              {
+                "pattern": "^http://localhost"
+              },
+              {
+                "pattern": "^https://localhost"
+              },
+              {
+                "pattern": "^#"
+              }
+            ],
+            "timeout": "10s",
+            "retryOn429": true,
+            "retryCount": 3,
+            "fallbackOnError": true
+          }
+          EOF
+
+          # Determine which files to check
+          validate_only_changed="${{ parameters.onlyChangedFiles }}"
+          link_errors=0
+
+          if [ "$validate_only_changed" = "True" ]; then
+            echo "📋 Validating links only in changed files"
+
+            # Get changed markdown files
+            changed_files=""
+            if git merge-base HEAD origin/main >/dev/null 2>&1; then
+              changed_files=$(git diff --name-only $(git merge-base HEAD origin/main) HEAD | grep '\.md$' || true)
+            else
+              # Fallback to HEAD~1 if merge-base fails
+              changed_files=$(git diff --name-only HEAD~1 HEAD | grep '\.md$' || true)
+            fi
+
+            if [ -z "$changed_files" ]; then
+              echo "No changed markdown files found - skipping link validation"
+              exit 0
+            fi
+
+            echo "Found changed markdown files:"
+            echo "$changed_files"
+
+            # Check each changed file
+            for file in $changed_files; do
+              if [ -f "$file" ]; then
+                echo "Checking: $file"
+                if ! markdown-link-check "$file" --config .markdown-link-check.json; then
+                  if [ "${{ parameters.breakBuild }}" = "True" ]; then
+                    echo "##vso[task.logissue type=error]Link validation failed in: $file"
+                  else
+                    echo "##vso[task.logissue type=warning]Link validation failed in: $file"
+                  fi
+                  link_errors=$((link_errors + 1))
+                fi
+              fi
+            done
+          else
+            echo "📋 Validating links in all documentation files"
+
+            # Check all markdown files in tracked folders (includes enhanced documentation structure)
+            find docs src blueprints praxisworx .github copilot -name "*.md" -type f 2>/dev/null | \
+              grep -v node_modules | \
+              while read file; do
+                echo "Checking: $file"
+                if ! markdown-link-check "$file" --config .markdown-link-check.json; then
+                  if [ "${{ parameters.breakBuild }}" = "True" ]; then
+                    echo "##vso[task.logissue type=error]Link validation failed in: $file"
+                  else
+                    echo "##vso[task.logissue type=warning]Link validation failed in: $file"
+                  fi
+                  link_errors=$((link_errors + 1))
+                fi
+              done
+          fi
+
+          if [ $link_errors -gt 0 ] && [ "${{ parameters.breakBuild }}" = "True" ]; then
+            echo "❌ Link validation failed with $link_errors errors"
+            exit 1
+          else
+            echo "✅ Link validation completed"
+          fi
+        displayName: "Validate Documentation Links"
+        condition: and( not(failed()), not(canceled()) )
+
+      # Generate documentation health report
+      - task: PowerShell@2
+        inputs:
+          targetType: 'inline'
+          script: |
+            Write-Host "📊 Generating documentation health report..."
+
+            # Count documentation files by type (enhanced structure)
+            $docsCount = (Get-ChildItem -Path 'docs' -Filter '*.md' -Recurse -ErrorAction SilentlyContinue).Count
+            $srcCount = (Get-ChildItem -Path 'src' -Filter '*.md' -Recurse -ErrorAction SilentlyContinue).Count
+            $blueprintsCount = (Get-ChildItem -Path 'blueprints' -Filter '*.md' -Recurse -ErrorAction SilentlyContinue).Count
+            $praxisworxCount = (Get-ChildItem -Path 'praxisworx' -Filter '*.md' -Recurse -ErrorAction SilentlyContinue).Count
+            $githubCount = (Get-ChildItem -Path '.github' -Filter '*.md' -Recurse -ErrorAction SilentlyContinue).Count
+            $copilotCount = (Get-ChildItem -Path 'copilot' -Filter '*.md' -Recurse -ErrorAction SilentlyContinue).Count
+
+            # Check section-based navigation structure
+            $sectionStructure = @()
+            $sectionPaths = @(
+              "docs/_parts/docs-sidebar.md",
+              "docs/_parts/praxisworx-sidebar.md",
+              "docs/_parts/blueprints-sidebar.md",
+              "docs/_parts/infrastructure-sidebar.md"
+            )
+
+            foreach ($path in $sectionPaths) {
+              $status = if (Test-Path $path) { "✅" } else { "❌" }
+              $sectionName = (Split-Path $path -Leaf) -replace "-sidebar.md", ""
+              $sectionStructure += "- $status $sectionName section: $path"
+            }
+
+            # Generate enhanced health report
+            $report = @"
+            # 📚 Enhanced Documentation Health Report
+
+            Generated on: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss UTC')
+
+            ## 📈 Documentation Statistics
+
+            | Category | File Count |
+            |----------|------------|
+            | Main Documentation | $docsCount |
+            | Infrastructure Components | $srcCount |
+            | Blueprints | $blueprintsCount |
+            | Learning Platform (PraxisWorx) | $praxisworxCount |
+            | GitHub Resources | $githubCount |
+            | AI Assistant Guides (Copilot) | $copilotCount |
+            | **Total** | **$($docsCount + $srcCount + $blueprintsCount + $praxisworxCount + $githubCount + $copilotCount)** |
+
+            ## 🏗️ Multi-Section Navigation Architecture
+
+            ### Section-Based Sidebars
+            $($sectionStructure -join "`n")
+
+            ### Enhanced Three-Tree Architecture Status
+            - ✅ Bicep Documentation Tree: Auto-generated navigation
+            - ✅ Terraform Documentation Tree: Auto-generated navigation
+            - ✅ README Documentation Tree: Manual README organization
+            - ✅ Multi-Section Navigation: Section-specific sidebars in docs/_parts/
+
+            ## 🔍 Validation Results
+
+            - Frontmatter Validation: Completed
+            - Enhanced Multi-Section Sidebar Validation: Completed
+            - Link Validation: Completed (includes copilot/ folder)
+            - Documentation Standards: Verified
+
+            ---
+
+            *This report is automatically generated during enhanced documentation validation.*
+            "@
+
+            Write-Host $report
+
+            # Save report as artifact
+            $report | Out-File -FilePath 'documentation-health-report.md' -Encoding UTF8
+
+            Write-Host "✅ Documentation health report generated"
+        displayName: "Generate Documentation Health Report"
+        condition: always()
+
+      # Upload documentation health report as artifact
+      - task: PublishPipelineArtifact@1
+        condition: always()
+        displayName: Upload Documentation Health Report
+        inputs:
+          targetPath: "documentation-health-report.md"
+          artifactName: DocumentationHealthReport

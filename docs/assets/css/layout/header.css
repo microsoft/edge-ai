@@ -1,0 +1,33 @@
+/* Header and Navigation Styling */
+
+/* Progress bar styling */
+.progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0%;
+  height: 3px;
+  background: linear-gradient(90deg, var(--theme-color), var(--theme-color-secondary));
+  z-index: 10000;
+  transition: width 0.2s ease;
+}
+
+/* Updated timestamp styling */
+.docsify-updated {
+  color: #6c757d;
+  font-size: 0.85em;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #e6e6e6;
+  text-align: right;
+}
+
+.docsify-updated:before {
+  content: "🕒 ";
+}
+
+/* Dark mode updated timestamp */
+body.dark .docsify-updated {
+  color: var(--theme-text-muted, #a0aec0);
+  border-color: var(--theme-border-color, #4a5568);
+}

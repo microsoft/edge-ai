@@ -5,14 +5,14 @@ author: Edge AI Team
 ms.date: 06/06/2025
 ms.topic: concept
 keywords:
-  - overview
-  - index
-  - navigation
-  - workspaces
-  - edge
-  - project
-  - planning
+  - simulation
+  - modeling
+  - what-if-analysis
+  - digital-twin
+  - scenario-analysis
   - capabilities
+  - predictive-modeling
+  - virtual-testing
 estimated_reading_time: 9
 ---
 

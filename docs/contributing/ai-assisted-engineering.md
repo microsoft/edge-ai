@@ -79,6 +79,15 @@ Prompt files for specific tasks that can be invoked using `/prompt-name` in Copi
 - **`task-planner.prompt.md`** - Task planning prompts
 - **`terraform-from-blueprint.prompt.md`** - Terraform blueprint conversion
 
+### Enhanced Chatmodes (`/.github/chatmodes/`)
+
+Advanced chatmode files with comprehensive tool access for specialized coaching and workflow assistance:
+
+- **`praxisworx-kata-coach.chatmode.md`** - Interactive kata coaching with enhanced tool access
+- **`praxisworx-lab-coach.chatmode.md`** - Complex training lab coaching for multi-component systems
+- **`task-planner.chatmode.md`** - Comprehensive task planning with research capabilities
+- **`prompt-builder.chatmode.md`** - Expert prompt engineering and validation system
+
 ## Using Repository AI Resources
 
 ### Applying Context Instructions
@@ -93,6 +102,37 @@ Prompt files for specific tasks that can be invoked using `/prompt-name` in Copi
 1. In VS Code, use Command Palette: **Chat: Run Prompt** and select desired prompt
 2. Or type `/prompt-name` directly in Copilot chat (e.g., `/pull-request`, `/task-planner`)
 3. Follow the guided workflow provided by the prompt
+
+### Using Enhanced Chatmodes
+
+Chatmodes provide specialized AI coaching with enhanced tool access:
+
+1. **Reference Chatmodes**: Use `#file:/.github/chatmodes/chatmode-name.chatmode.md` in Copilot Chat
+2. **PraxisWorx Coaching**:
+   - **Kata Coach**: `#file:/.github/chatmodes/praxisworx-kata-coach.chatmode.md` for focused practice exercises
+   - **Lab Coach**: `#file:/.github/chatmodes/praxisworx-lab-coach.chatmode.md` for complex training labs
+3. **Enhanced Capabilities**: Chatmodes have comprehensive tool access for research, file editing, and system interaction
+4. **Coaching Methodology**: Follows OpenHack-style discovery-based learning with systematic guidance
+
+### PraxisWorx AI Coaching Integration
+
+Explore advanced AI-assisted enginering practices through our **[PraxisWorx Training Platform](/praxisworx/)**:
+
+#### Interactive Learning Support
+
+- **✅ Task Check-offs**: Mark progress and track learning automatically
+- **🆘 Coaching Hints**: Get contextual help when stuck on exercises
+- **🧭 Smart Guidance**: Personalized coaching based on your development patterns
+- **📊 Skill Assessment**: AI-powered recommendations for your next learning steps
+
+#### Getting Started with AI Coaching
+
+1. **Launch Training Mode**: Run `npm run docs:training` to access the learning platform
+2. **Select Coaching Mode**: Choose "PraxisWorx Kata Coach" in GitHub Copilot Chat
+3. **Start Learning**: Say "I'm working on PraxisWorx learning and want interactive coaching"
+4. **Get Personalized Path**: Take the skill assessment for customized kata recommendations
+
+All PraxisWorx coaching modes are pre-configured and ready to use immediately in this repository. All advanced chatmode prompts can be easily copied into your own project for immediate AI-assisted engineering acceleration.
 
 ## Essential Project Prompts
 

@@ -1,33 +1,106 @@
 # Edge AI Accelerator
 
-[![Build Status](https://dev.azure.com/ai-at-the-edge-flagship-accelerator/IaC%20for%20the%20Edge/_apis/build/status%2FIaC%20for%20the%20Edge?branchName=main)](https://dev.azure.com/ai-at-the-edge-flagship-accelerator/IaC%20for%20the%20Edge/_build/latest?definitionId=3&branchName=main)
+[![Build Status](https://dev.azure.com/ai-at-the-edge-flagship-accelerator/IaC%20for%20the%20Edge/_build/latest?definitionId=3&branchName=main)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE.md)
 [![Open in Dev Containers](https://img.shields.io/static/v1?label=Dev%20Containers&message=Open&color=blue&logo=visualstudiocode)](https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://dev.azure.com/ai-at-the-edge-flagship-accelerator/_git/edge-ai)
 
-Production-ready Infrastructure as Code for edge AI solutions. Built by geeks, for geeks who need stuff that actually works in production.
+Production-ready Infrastructure as Code that empowers organizations to achieve more with edge AI solutions. Built by friendly geeks, for every team that needs edge solutions to achieve real production results.
 
 ## 🎯 Who This Is For
 
 - **Platform Engineers** building edge AI infrastructure at scale
 - **DevOps Teams** deploying IoT and edge computing solutions
 - **Solution Architects** designing hybrid cloud-edge systems
-- **Anyone** who's tired of edge infrastructure demos that don't work in the real world
+- **Every organization** that needs edge infrastructure solutions that actually deliver production results
 
 ## 🚀 Get Started (Pick Your Adventure)
 
 ### → [Just Want to Deploy Something?](docs/getting-started/general-user.md)
 
-Start here if you want to deploy existing blueprints to Azure. **Time: 30-60 minutes**
+Start here if you want to achieve rapid deployment with existing blueprints to Azure. **Time: 30-60 minutes**
 
 ### → [Building Custom Solutions?](docs/getting-started/blueprint-developer.md)
 
-Start here if you're combining components into new deployment scenarios. **Time: 2-4 hours**
+Start here if you're combining components to achieve new deployment scenarios. **Time: 2-4 hours**
 
 ### → [Contributing New Features?](docs/getting-started/feature-developer.md)
 
-Start here if you're developing new components or capabilities. **Time: 1-2 days setup**
+Start here if you're developing new components to help others achieve more. **Time: 1-2 days setup**
 
-## 📁 Repository Tour
+## 🗺️ Your Learning and Deployment Journey
+
+```mermaid
+graph TD
+    Start([Target: Edge AI Solutions])
+
+    subgraph experience [Your Experience Level]
+        Beginner[New to Edge AI<br/>Need to learn<br/>fundamentals]
+        Intermediate[Some Experience<br/>Want to deploy<br/>quickly]
+        Advanced[Expert Level<br/>Building custom<br/>solutions]
+    end
+
+    subgraph learning [PraxisWorx Learning Path]
+        Foundation[Foundation Katas<br/>AI-Assisted Engineering<br/>15-45 min each]
+        Skills[Core Skills<br/>Task Planning<br/>ADR Creation<br/>Prompt Engineering]
+        Application[Applied Practice<br/>Edge Deployment Labs<br/>2-50+ hours]
+    end
+
+    subgraph deployment [Deployment Path]
+        QuickDeploy[Quick Deploy<br/>Use existing<br/>blueprints<br/>30-60 minutes]
+        CustomBuild[Custom Solutions<br/>Combine<br/>components<br/>2-4 hours]
+        NewFeatures[Feature Development<br/>Create new<br/>components<br/>1-2 days]
+    end
+
+    subgraph outcomes [Outcomes]
+        Production[Production Systems<br/>Reliable edge AI<br/>solutions]
+        Expertise[Team Expertise<br/>AI-assisted<br/>engineering skills]
+        Community[Community Impact<br/>Contributions &<br/>improvements]
+    end
+
+    Start --> Beginner
+    Start --> Intermediate
+    Start --> Advanced
+
+    Beginner --> Foundation
+    Foundation --> Skills
+    Skills --> Application
+    Application --> QuickDeploy
+
+    Intermediate --> QuickDeploy
+    Intermediate --> CustomBuild
+
+    Advanced --> CustomBuild
+    Advanced --> NewFeatures
+
+    %% Learning enhances all paths
+    Foundation -.-> QuickDeploy
+    Skills -.-> CustomBuild
+    Application -.-> NewFeatures
+
+    QuickDeploy --> Production
+    CustomBuild --> Production
+    NewFeatures --> Production
+
+    Application --> Expertise
+    NewFeatures --> Community
+
+    %% Enhanced color scheme for learning journey
+    style Start fill:#e1f5fe,stroke:#01579b,stroke-width:3px
+    style Beginner fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    style Intermediate fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    style Advanced fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    style Foundation fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    style Skills fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    style Application fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    style QuickDeploy fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    style CustomBuild fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    style NewFeatures fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    style Production fill:#cffafe,stroke:#059669,stroke-width:2px
+    style Expertise fill:#cffafe,stroke:#059669,stroke-width:2px
+    style Community fill:#cffafe,stroke:#059669,stroke-width:2px
+```
+
+## �📁 Repository Tour
 
 ```text
 📦 edge-ai/
@@ -80,13 +153,40 @@ code .
 
 **Alternative:** [Manual setup instructions](docs/getting-started/development-environment.md) (for the brave)
 
-## 🎨 What Makes This Different
+> **Note on Telemetry:** If you wish to opt-out of sending telemetry data to Microsoft when deploying Azure resources with Terraform, you can set the environment variable `ARM_DISABLE_TERRAFORM_PARTNER_ID=true` before running any `terraform` commands.
 
-- **Actually works in production** (not just pretty demos)
-- **Modular design** - compose your own solutions
-- **AI-assisted development** - optimized for GitHub Copilot
-- **Multiple IaC frameworks** - Terraform today, Bicep coming soon
-- **Comprehensive testing** - because edge infrastructure is hard enough
+## 🎨 What Makes This Project Different
+
+- **Actually works in production** - empowering real deployments
+- **Modular design** - enabling teams to build custom solutions that meet business needs
+- **AI-assisted development** - optimized for GitHub Copilot to accelerate every engineer's productivity
+- **Multiple IaC frameworks** - Terraform & Bicep
+- **Comprehensive testing** - because empowering reliable edge infrastructure deployments is our mission
+
+## 🎓 PraxisWorx Learning Platform
+
+**Empower your team to achieve proficiency in AI-assisted, hyper-velocity engineering** through hands-on training labs and focused practice exercises (Katas).
+
+PraxisWorx (*where AI empowers every engineer to achieve more*) provides challenge-based learning for edge-to-cloud AI systems:
+
+- **🥋 [Katas](praxisworx/katas/)** - Focused 15-45 minute practice exercises
+- **🧪 [Training Labs](praxisworx/training-labs/)** - Comprehensive 2-8 hour hands-on experiences *(Coming Soon)*
+- **🤖 [AI Coaching](praxisworx/)** - Built-in coaching prompts for discovery-based learning
+
+### 🚀 Start Your AI-Assisted Learning Path
+
+**One-click training mode** - launch documentation with automatic navigation to PraxisWorx learning platform:
+
+```bash
+npm run docs:training
+```
+
+This command automatically:
+
+- ✅ Builds the documentation
+- ✅ Starts the local server
+- ✅ Opens your browser directly to the PraxisWorx homepage
+- ✅ Provides immediate access to all learning paths and resources
 
 ## 🤝 Contributing
 
@@ -108,3 +208,8 @@ This project is licensed under the [MIT License](./LICENSE).
 > trademarks or logos is subject to and must follow Microsoft's Trademark & Brand Guidelines. Use of Microsoft trademarks or logos in
 > modified versions of this project must not cause confusion or imply Microsoft sponsorship. Any use of third-party trademarks or
 > logos are subject to those third-party's policies.
+
+<!-- markdownlint-disable MD036 -->
+*🤖 Crafted with precision by ✨Copilot following brilliant human instruction,
+then carefully refined by our team of discerning human reviewers.*
+<!-- markdownlint-enable MD036 -->

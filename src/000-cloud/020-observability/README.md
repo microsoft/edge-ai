@@ -28,7 +28,6 @@ This component establishes centralized monitoring and observability infrastructu
 ## Purpose and Role
 
 The Cloud Observability component serves as the monitoring backbone for the entire Edge AI Accelerator solution:
->>>>>>> 9878c36 (feat(docs): Enhance documentation across multiple components with structured metadata and improved descriptions)
 
 - **Centralized Monitoring**: Aggregates metrics, logs, and traces from edge and cloud components
 - **Real-time Visibility**: Provides real-time dashboards and alerting for operational insights

@@ -6,13 +6,13 @@ ms.date: 06/06/2025
 ms.topic: concept
 estimated_reading_time: 8
 keywords:
-  - overview
-  - index
-  - navigation
-  - workspaces
-  - edge
-  - project
-  - planning
+  - immersive-visualization
+  - 3d-rendering
+  - collaboration
+  - virtual-reality
+  - augmented-reality
+  - digital-twin
+  - visualization-platform
   - capabilities
 ---
 

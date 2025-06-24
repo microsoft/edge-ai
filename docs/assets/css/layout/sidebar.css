@@ -1,0 +1,89 @@
+/* Sidebar Navigation Styling */
+
+/* Logo in sidebar */
+.sidebar .app-name img {
+  max-width: 40px;
+  height: auto;
+  margin-right: 10px;
+  vertical-align: middle;
+}
+
+/* Sidebar title styling */
+.sidebar .app-name {
+  font-size: 1.2em;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  padding: 0 15px;
+}
+
+/* Sidebar - only for page navigation */
+.sidebar {
+  z-index: 999 !important;
+}
+
+/* Ensure sidebar navigation is clean and focused on pages only */
+.sidebar-nav > ul > li > a {
+  font-weight: 600;
+  color: var(--theme-color);
+}
+
+/* Make bold elements in sidebar actually render as bold */
+.sidebar-nav strong {
+  font-weight: bold !important;
+  color: var(--theme-color);
+}
+
+.sidebar-nav ul ul {
+  padding-left: 20px;
+}
+
+/* Disable any automatic heading generation in sidebar */
+.sidebar .sidebar-nav .auto-header {
+  display: none !important;
+}
+
+/* High priority rules to hide app-sub-sidebar elements */
+.sidebar .sidebar-nav .app-sub-sidebar,
+.sidebar .app-sub-sidebar,
+.sidebar-nav .app-sub-sidebar,
+.app-sub-sidebar,
+[class*="app-sub-sidebar"],
+div.app-sub-sidebar,
+ul.app-sub-sidebar,
+li.app-sub-sidebar,
+.sidebar .sidebar-nav ul.app-sub-sidebar,
+.sidebar .sidebar-nav li.app-sub-sidebar,
+.sidebar .sidebar-nav div.app-sub-sidebar {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  height: 0 !important;
+  overflow: hidden !important;
+  position: absolute !important;
+  left: -9999px !important;
+}
+
+/* Sidebar collapse button styling */
+.sidebar-toggle {
+  background: var(--theme-color) !important;
+  border-radius: 0 6px 6px 0 !important;
+}
+
+.sidebar-toggle:hover {
+  background: var(--theme-color-secondary) !important;
+}
+
+/* Dark mode sidebar styling */
+body.dark .sidebar {
+  background: var(--theme-sidebar-bg, #2d3748);
+  border-right: 1px solid var(--theme-sidebar-border, #4a5568);
+}
+
+body.dark .sidebar ul li a {
+  color: var(--theme-text-secondary, #cbd5e0);
+}
+
+body.dark .sidebar ul li a:hover {
+  color: var(--theme-heading-color, #63b3ed);
+}

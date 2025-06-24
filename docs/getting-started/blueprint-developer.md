@@ -2,15 +2,23 @@
 title: Blueprint Developer Guide - Getting Started
 description: Create custom deployment blueprints using existing components for edge AI solutions
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-15
 ms.topic: how-to
 estimated_reading_time: 7
-keywords: blueprint developer, custom blueprints, terraform, bicep, components, edge AI architecture
+keywords:
+  - blueprint developer
+  - custom blueprints
+  - terraform
+  - bicep
+  - components
+  - edge AI architecture
 ---
 
 ## Blueprint Developer Guide - Getting Started
 
 This guide is for developers who want to create custom deployment blueprints by combining existing components. Blueprints define complete deployment scenarios for specific use cases.
+
+> **🎯 Master Blueprint Development:** Accelerate your learning with our [PraxisWorx Training Platform](/praxisworx/). Explore the [Edge-to-Cloud Systems Track](/praxisworx/training-labs/02-edge-to-cloud-systems/) for comprehensive training on AI-assisted composition of multi-component system architectures and blueprint creation.
 
 ## Understanding Blueprint Architecture
 
@@ -477,7 +485,7 @@ After creating your blueprint:
 ## Additional Resources
 
 - **[Feature Developer Guide](feature-developer.md)** - Contribute new components
-- **[Component Documentation](../../src/README.md)** - Understanding existing components
+- **[Component Documentation](src/README.md)** - Understanding existing components
 - **[AI-Assisted Engineering](../contributing/ai-assisted-engineering.md)** - Using GitHub Copilot for blueprint development
 - **[Terraform Best Practices][terraform-best-practices]** - Official Terraform guidelines
 - **[Bicep Best Practices][bicep-best-practices]** - Official Bicep guidelines

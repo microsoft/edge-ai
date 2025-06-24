@@ -1,0 +1,31 @@
+/* Footer and Additional Components */
+
+/* Footer styling */
+.docsify-footer {
+  padding: 30px 0;
+  border-top: 1px solid #e6e6e6;
+  background: #f8f9fa;
+  text-align: center;
+  margin-top: 50px;
+}
+
+.docsify-footer p {
+  margin: 5px 0;
+  color: #6c757d;
+  font-size: 0.9em;
+}
+
+.docsify-footer a {
+  color: var(--theme-color);
+  text-decoration: none;
+}
+
+.docsify-footer a:hover {
+  text-decoration: underline;
+}
+
+/* Dark mode footer styling */
+body.dark .docsify-footer {
+  background: var(--theme-sidebar-bg, #2d3748);
+  border-color: var(--theme-border-color, #4a5568);
+}

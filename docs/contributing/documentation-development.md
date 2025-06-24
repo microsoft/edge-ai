@@ -384,15 +384,20 @@ lsof -i :8080
 
 ### PowerShell Wiki Builder
 
-The project uses `scripts/Build-Wiki.ps1` to build Azure DevOps Wiki documentation. This PowerShell script provides enhanced functionality over the legacy bash script:
+The project uses `scripts/Build-Wiki.ps1` to build Azure DevOps Wiki documentation. This PowerShell script provides enhanced functionality with comprehensive content coverage across all documentation areas:
 
 **Key Features:**
 
-- **Complete Content Coverage**: Copies all 202+ documentation files from the `docs/` directory
+- **Comprehensive Content Coverage**: Includes all documentation from multiple areas:
+  - Main documentation from `docs/` directory following sidebar navigation
+  - Blueprint documentation from `blueprints/*/README.md` files
+  - GitHub resources from `.github/prompts/`, `.github/chatmodes/`, `.github/instructions/`
+  - AI Assistant guides from `copilot/` folder
+  - Learning platform materials from `praxisworx/` folder
 - **Navigation Preservation**: Parses `docs/_sidebar.md` to recreate hierarchical folder structure
-- **Azure DevOps Integration**: Generates `.order` files for proper wiki navigation
+- **Azure DevOps Integration**: Generates `.order` files for proper wiki navigation across all sections
 - **URL Token Replacement**: Automatically replaces URL tokens with Azure DevOps-specific URLs
-- **Infrastructure Organization**: Special handling for terraform, bicep, and other infrastructure content
+- **Standalone Content Organization**: Creates dedicated wiki sections for new content areas beyond sidebar navigation
 
 ### Build Process
 
@@ -401,10 +406,13 @@ The project uses `scripts/Build-Wiki.ps1` to build Azure DevOps Wiki documentati
 pwsh scripts/Build-Wiki.ps1
 ```
 
-This creates a `.wiki` folder with:
+This creates a `.wiki` folder with comprehensive documentation coverage including:
 
-- **458 total files** (all docs + infrastructure content)
-- **Hierarchical navigation** matching the sidebar structure
+- **Complete documentation** from docs/ folder following sidebar navigation
+- **Blueprint documentation** organized by framework (terraform/bicep)
+- **GitHub resources section** with prompts, chatmodes, and instructions
+- **Copilot guides section** with AI assistant conventions and instructions
+- **PraxisWorx section** with training materials and learning resources
 - **Azure DevOps URLs** replacing all variable tokens
 - **Proper .order files** for wiki navigation at every level
 
@@ -423,11 +431,20 @@ The generated wiki organizes content as follows:
 ├── observability/                   # Observability section
 │   ├── .order                      # Section navigation
 │   └── *.md                        # All observability docs
-└── infrastructure/                  # Infrastructure content
-    ├── .order                      # Infrastructure navigation
-    ├── terraform/                  # All terraform docs
-    ├── bicep/                      # All bicep docs
-    └── *.md                        # Other infrastructure docs
+├── infrastructure/                  # Infrastructure content
+│   ├── .order                      # Infrastructure navigation
+│   ├── terraform/                  # All terraform docs
+│   ├── bicep/                      # All bicep docs
+│   └── *.md                        # Other infrastructure docs
+├── copilot-guides/                  # AI Assistant guides
+│   ├── .order                      # Copilot navigation
+│   └── *.md                        # Copilot conventions and instructions
+├── praxisworx/                      # Learning platform
+│   ├── .order                      # PraxisWorx navigation
+│   └── *.md                        # Training materials and resources
+└── github-resources/                # GitHub resources
+    ├── .order                      # GitHub resources navigation
+    └── *.md                        # Prompts, chatmodes, instructions
 ```
 
 ### Integration with Azure Pipelines
@@ -448,35 +465,8 @@ The build process is integrated with Azure DevOps pipelines via `.azdo/templates
 1. **Follow writing guidelines** and use URL tokens
 1. **Test locally** - URL replacement is automatic in all contexts
 1. **Run linting** with `npm run mdlint`
-1. **Submit a pull request** with clear documentation changes
-
-### Review Process
-
-Documentation changes go through:
-
-- ✅ Automated linting and validation
-- ✅ Link checking and URL validation
-- ✅ Multi-context testing
-- ✅ Manual review for content quality
-- ✅ Integration testing
-
-### Documentation Standards
-
-- **Accuracy**: All information must be current and correct
-- **Completeness**: Cover all necessary details without overwhelming
-- **Clarity**: Write for your intended audience
-- **Consistency**: Follow established patterns and conventions
-- **Accessibility**: Ensure content is accessible to all users
 
 ---
-
-## Related Documentation
-
-- 📋 [URL Replacement System](./url-replacement.md) - Complete URL token reference
-- 🔧 [Development Environment](./development-environment.md) - Dev container setup
-- 🧪 [Testing and Validation](./testing-validation.md) - Quality assurance
-- 🤖 [AI-Assisted Engineering](./ai-assisted-engineering.md) - GitHub Copilot workflows
-- ❓ [Troubleshooting](./troubleshooting.md) - Common issues and solutions
 
 <!-- markdownlint-disable MD036 -->
 *🤖 Crafted with precision by ✨Copilot following brilliant human instruction,
