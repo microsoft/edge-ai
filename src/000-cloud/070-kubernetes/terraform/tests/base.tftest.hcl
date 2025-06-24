@@ -42,17 +42,17 @@ run "create_non_default_configuration" {
   command = plan
 
   variables {
-    resource_prefix                    = run.setup_tests.resource_prefix
-    environment                        = run.setup_tests.environment
-    location                           = run.setup_tests.location
-    instance                           = run.setup_tests.instance
-    resource_group                     = run.setup_tests.resource_group
-    network_security_group             = run.setup_tests.network_security_group
-    virtual_network                    = run.setup_tests.virtual_network
-    should_create_aks                  = true
-    node_count                         = 3
-    node_vm_size                       = "Standard_DS2_v2"
-    dns_prefix                         = "dns-prefix"
+    resource_prefix        = run.setup_tests.resource_prefix
+    environment            = run.setup_tests.environment
+    location               = run.setup_tests.location
+    instance               = run.setup_tests.instance
+    resource_group         = run.setup_tests.resource_group
+    network_security_group = run.setup_tests.network_security_group
+    virtual_network        = run.setup_tests.virtual_network
+    should_create_aks      = true
+    node_count             = 3
+    node_vm_size           = "Standard_DS2_v2"
+    dns_prefix             = "dns-prefix"
   }
 
   assert {

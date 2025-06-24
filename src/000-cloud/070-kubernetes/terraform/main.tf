@@ -45,7 +45,7 @@ module "arc_cluster_instance" {
   // Resource dependencies first
   resource_group = var.resource_group
 
-    // Core parameters next
+  // Core parameters next
   environment     = var.environment
   resource_prefix = var.resource_prefix
   location        = var.location
