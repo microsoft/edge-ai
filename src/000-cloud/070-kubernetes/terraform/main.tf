@@ -50,5 +50,4 @@ module "arc_cluster_instance" {
   resource_prefix = var.resource_prefix
   location        = var.location
   instance        = var.instance
-
 }

@@ -1,5 +1,10 @@
-data "external" "public_key" {
-  program = ["bash", "-c", "python3 -m pip install pycryptodome 1>/dev/null && python3 ${path.module}/convert_to_pub_key.py \"${data.tls_private_key.arc_key.private_key_pem}\""]
+/**
+ * # Arc Cluster Instance Module
+ *
+ * Deploys Azure Arc cluster instances
+ */
+ data "external" "public_key" {
+  program = ["bash", "-c", "python3 -m pip install pycryptodome 1>/dev/null && python3 ${path.module}/convert_to_pub_key.py \"${tls_private_key.arc_key.private_key_pem}\""]
 }
 
 resource "tls_private_key" "arc_key" {
