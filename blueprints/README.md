@@ -96,7 +96,7 @@ Ensure your Azure CLI is logged in and your subscription context is set correctl
 
 ### Getting Started and Deploying with Terraform
 
-**Note on Telemetry:** If you wish to opt-out of sending telemetry data to Microsoft when deploying Azure resources with Terraform, you can set the environment variable `ARM_DISABLE_TERRAFORM_PARTNER_ID=true` before running any `terraform` commands.
+> **Note on Telemetry:** If you wish to opt-out of sending telemetry data to Microsoft when deploying Azure resources with Terraform, you can set the environment variable `ARM_DISABLE_TERRAFORM_PARTNER_ID=true` before running any `terraform` commands.
 
 1. Navigate to your chosen blueprint directory, as an example:
 

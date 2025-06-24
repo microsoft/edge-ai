@@ -98,6 +98,7 @@ The project includes comprehensive build scripts for validation and automation:
 ### Build automation
 
 - **Documentation Generation**: Automated Terraform and Bicep documentation
+- **Wiki Documentation**: Comprehensive Azure DevOps wiki publishing with content from all documentation areas
 - **Dependency Management**: Package and provider version management
 - **Quality Assurance**: Linting, formatting, and compliance validation
 

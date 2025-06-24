@@ -48,22 +48,35 @@ Perfect for: Developers who want to create new deployment scenarios by combining
 
 Perfect for: Contributors who want to add new components, improve existing functionality, or enhance the accelerator platform.
 
+## 🎓 Accelerate Your Skills with PraxisWorx
+
+**This project uses AI-assisted engineering practices, level up your skills!** Explore our comprehensive learning platform:
+
+**[PraxisWorx Training Platform](/praxisworx/)** - Practice AI-assisted engineering through structured learning paths.
+
+- **🥋 Individual Practice (Katas)** - 15-45 min focused skill-building exercises
+- **🧪 Team Exploration (Labs)** - 2-50+ hour comprehensive system implementations
+- **📊 AI Coaching** - Interactive guidance with GitHub Copilot integration
+- **🎯 Skill Assessment** - Personalized recommendations based on your experience
+
+**Quick Start**: Run `npm run docs:training` to launch the learning platform.
+
 ## Additional Resources
 
-- **[Contributor Documentation](../contributing/)** - Comprehensive developer resources
-- **[Build & CI/CD Guide](../build-cicd/)** - Deployment pipeline and automation
-- **[Component Library](../../src/)** - Browse available infrastructure components
-- **[Blueprint Catalog](../../blueprints/)** - Ready-to-deploy solution templates
+- **[Contributor Documentation](/docs/contributing/)** - Comprehensive developer resources
+- **[Build & CI/CD Guide](/docs/build-cicd/)** - Deployment pipeline and automation
+- **[Component Library](/src/)** - Browse available infrastructure components
+- **[Blueprint Catalog](/blueprints/)** - Ready-to-deploy solution templates
 - **[Azure IoT Operations Getting Started][iot-ops-quickstart]** - Official Microsoft documentation
-- **[Repository README](../../README.md)** - Project overview and quick setup
+- **[Repository README](/README.md)** - Project overview and quick setup
 
 ## Need Help?
 
 - Use **GitHub Copilot** throughout the documentation for interactive assistance
-- Check our **[troubleshooting guides](./general-user.md#troubleshooting)** for common issues
-- Review our **[contribution guidelines](../contributing/contributing.md)** for community support options
-- Explore **[AI-assisted engineering](../contributing/ai-assisted-engineering.md)** to boost productivity
-- Visit the **[observability docs](../observability/)** for monitoring and debugging
+- Check our **[troubleshooting guides](general-user.md#troubleshooting)** for common issues
+- Review our **[contribution guidelines](/docs/contributing/contributing.md)** for community support options
+- Explore **[AI-assisted engineering](/docs/contributing/ai-assisted-engineering.md)** to boost productivity
+- Visit the **[observability docs](/docs/observability/)** for monitoring and debugging
 
 ---
 

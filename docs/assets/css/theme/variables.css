@@ -1,0 +1,38 @@
+/* CSS Custom Properties and Brand Colors */
+:root {
+  /* Primary brand colors */
+  --theme-color: #0078d4;
+  --theme-color-secondary: #106ebe;
+
+  /* Sidebar */
+  --sidebar-width: 300px;
+  --sidebar-nav-strong-border-right-color: var(--theme-color);
+
+  /* Header */
+  --cover-background-color: linear-gradient(to left bottom, hsl(240, 100%, 70%) 0%, hsl(240, 100%, 70%) 100%);
+
+  /* Dark mode variables */
+  --docsify-dark-mode-btn-position: 15px;
+  --docsify-dark-mode-btn-size: 40px;
+}
+
+/* Dark Mode Theme Variables */
+body.dark {
+  --theme-background: #1c2022;
+  --theme-text: #b4b4b4;
+  --theme-sidebar-bg: #2d3748;
+  --theme-sidebar-border: #4a5568;
+  --theme-content-bg: #1c2022;
+  --theme-metadata-bg: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+  --theme-border-color: #4a5568;
+  --theme-text-muted: #a0aec0;
+  --theme-text-secondary: #cbd5e0;
+  --theme-text-primary: #e2e8f0;
+  --theme-heading-color: #63b3ed;
+  --theme-code-bg: #2d3748;
+  --theme-code-text: #fbb6ce;
+  --theme-blockquote-bg: #2d3748;
+  --theme-table-bg: #2d3748;
+  --theme-input-bg: #2d3748;
+  --theme-toc-bg: rgba(45, 55, 72, 0.95);
+}

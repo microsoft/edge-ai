@@ -262,19 +262,27 @@ Finds and optionally fixes URLs with language path segments ('en-us').
 ### Build-Wiki.ps1
 
 PowerShell script that generates Azure DevOps Wiki content from markdown files in the repository.
-Parses the navigation structure from docs/_sidebar.md and recreates the exact hierarchical
-folder structure in the wiki output.
+Parses the navigation structure from docs/_sidebar.md and includes comprehensive content coverage
+from all documentation folders throughout the repository.
 
 - **Usage**: `./Build-Wiki.ps1`
 - **Features**:
   - Parses docs/_sidebar.md to extract complete 4-level navigation hierarchy
   - Creates wiki structure with proper directory hierarchy and .order files at every level
+  - Includes standalone content from all documentation folders (.github/prompts, .github/chatmodes, .github/instructions, copilot/, praxisworx/)
   - Updates relative links to work correctly in the new wiki structure
   - Handles URL token replacement for Azure DevOps integration
   - Integrates blueprint documentation seamlessly
+  - Provides comprehensive documentation coverage beyond just sidebar navigation
+- **Content Areas**:
+  - Main documentation from docs/ folder following sidebar navigation
+  - Blueprint documentation from blueprints/*/README.md
+  - GitHub resources including prompts, chatmodes, and instructions
+  - AI Assistant guides from copilot/ folder
+  - Learning platform materials from praxisworx/ folder
 - **Build Integration**: Used by the [wiki-update-template.yml](../.azdo/wiki-update-template.yml) job to rebuild the Azure DevOps wiki
 - **When to Use**: Generally only used by the build system after merges to main
-- **Notes**: Creates a .wiki directory and organizes documentation to match the sidebar navigation exactly
+- **Notes**: Creates a .wiki directory and organizes documentation to match the sidebar navigation exactly, with additional sections for comprehensive content coverage
 
 ### wiki-build.sh (deprecated)
 

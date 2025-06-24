@@ -200,8 +200,8 @@ az bicep build --file main.bicep  # Build Bicep template
 - **[Getting Started Guides](../getting-started/)** - Initial setup and user guides
 - **[Build & CI/CD Documentation](../build-cicd/)** - Pipeline and automation guides
 - **[Observability Documentation](../observability/)** - Monitoring and debugging
-- **[Component Library](../../src/)** - Browse infrastructure components
-- **[Blueprint Catalog](../../blueprints/)** - Deployment solution templates
+- **[Component Library](src/)** - Browse infrastructure components
+- **[Blueprint Catalog](blueprints/)** - Deployment solution templates
 - **[Project Repository][project-repo]** - Main repository
 - **[Azure IoT Operations Documentation][iot-ops-docs]** - Platform documentation
 - **[Terraform Documentation][terraform-docs]** - Infrastructure as Code

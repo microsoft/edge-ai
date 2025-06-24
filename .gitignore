@@ -284,6 +284,9 @@ FakesAssemblies/
 .ntvs_analysis.dat
 node_modules/
 
+# Docsify configuration (generated at runtime)
+docsify-url-config.js
+
 # Visual Studio 6 build log
 *.plg
 

@@ -1,0 +1,74 @@
+/* Main Content Area Styling */
+
+/* Force content positioning with proper scroll container */
+.content,
+section.content,
+.app-main {
+  position: fixed !important;
+  left: 320px !important; /* Just past sidebar */
+  right: 240px !important; /* Space for TOC */
+  top: 60px !important; /* Space for navbar */
+  bottom: 0 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  padding: 20px !important;
+  margin: 0 !important;
+  width: auto !important;
+  max-width: none !important;
+  box-sizing: border-box !important;
+
+  /* Hide scrollbar while keeping scroll functionality */
+  scrollbar-width: none !important; /* Firefox */
+  -ms-overflow-style: none !important; /* Internet Explorer 10+ */
+}
+
+/* Hide scrollbar for webkit browsers (Chrome, Safari, Edge) */
+.content::-webkit-scrollbar,
+section.content::-webkit-scrollbar,
+.app-main::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* Make markdown section fill the space and position TOC relative to it */
+.markdown-section {
+  max-width: none !important;
+  width: 100% !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+  position: relative !important; /* This allows TOC to position relative to content */
+}
+
+/* Dark mode content styling */
+body.dark .content {
+  background: var(--theme-content-bg, #1c2022);
+}
+
+body.dark .markdown-section {
+  color: var(--theme-text-primary, #e2e8f0);
+}
+
+body.dark .markdown-section h1,
+body.dark .markdown-section h2,
+body.dark .markdown-section h3,
+body.dark .markdown-section h4,
+body.dark .markdown-section h5,
+body.dark .markdown-section h6 {
+  color: var(--theme-heading-color, #63b3ed);
+}
+
+body.dark .markdown-section code {
+  background: var(--theme-code-bg, #2d3748);
+  color: var(--theme-code-text, #fbb6ce);
+}
+
+body.dark .markdown-section pre {
+  background: var(--theme-code-bg, #2d3748);
+}
+
+body.dark .markdown-section blockquote {
+  background: var(--theme-blockquote-bg, #2d3748);
+  border-left: 4px solid var(--theme-heading-color, #63b3ed);
+}

@@ -1,0 +1,14 @@
+/* Form Controls and Input Styling */
+
+/* Search box styling */
+.search .input-wrap input {
+  border: 1px solid #e6e6e6;
+  border-radius: 4px;
+}
+
+/* Dark mode search input */
+body.dark .search .input-wrap input {
+  background: var(--theme-input-bg, #2d3748);
+  border-color: var(--theme-border-color, #4a5568);
+  color: var(--theme-text-primary, #e2e8f0);
+}

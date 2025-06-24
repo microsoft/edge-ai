@@ -12,19 +12,15 @@
 		"tflint-fix": "mega-linter-runner --env \"'ENABLE_LINTERS=TERRAFORM_TERRAFORM_FMT,TERRAFORM_TFLINT'\" --fix",
 		"lint-devcontainer": "mega-linter-runner --env \"'BICEP_BICEP_LINTER_ARGUMENTS=--outdir ./megalinter-reports'\"",
 		"lint-fix-devcontainer": "mega-linter-runner --env \"'BICEP_BICEP_LINTER_ARGUMENTS=--outdir ./megalinter-reports'\" --fix",
-		"format-tables": "markdown-table-formatter \"{.github,**}/*.md\"",
-		"format-tables-check": "markdown-table-formatter --check \"{.github,**}/*.md\"",
+		"format-tables": "markdown-table-formatter \"{.github,node_modules,**}/*.md\"",
+		"format-tables-check": "markdown-table-formatter --check \"{.github,node)modules,**}/*.md\"",
 		"checkov-changes": "pwsh -Command \"& $PWD/scripts/Detect-Folder-Changes.ps1 | & $PWD/scripts/Run-Checkov.ps1 -OutputFolder './checkov-results' -OutputFile 'code-analysis.xml'\"",
 		"checkov-all": "pwsh -Command \"& $PWD/scripts/Detect-Folder-Changes.ps1 -IncludeAllFolders | & $PWD/scripts/Run-Checkov.ps1 -OutputFolder './checkov-results' -OutputFile 'code-analysis.xml'\"",
 		"link-lang-check": "python ./scripts/link-lang-check.py",
 		"link-lang-fix": "python ./scripts/link-lang-check.py -f",
 		"generate-sidebar": "pwsh -File ./scripts/Generate-DocsSidebar.ps1 -DocsPath ./docs -SrcPath ./src -SidebarFile _sidebar.md -Verbose",
-		"docs": "npm run docs:build-dev && ./scripts/serve-docs.sh --open",
-		"docs:verbose": "npm run docs:build-dev && ./scripts/serve-docs.sh --verbose --open",
-		"docs:no-open": "npm run docs:build-dev && ./scripts/serve-docs.sh",
-		"docs:build": "pwsh -File scripts/Generate-GitHubPagesConfig.ps1",
-		"docs:build-dev": "pwsh -File scripts/Generate-GitHubPagesConfig.ps1 -Development -Port 8080",
-		"docs:health-check": "pwsh -File scripts/Invoke-DocsHealthCheck.ps1"
+		"docs": "pwsh -File ./scripts/Serve-Docs.ps1 -Open",
+		"docs:training": "pwsh -File ./scripts/Serve-Docs.ps1 -Open -StartPage praxisworx/README"
 	},
 	"dependencies": {
 		"markdown-table-formatter": "1.6.1",

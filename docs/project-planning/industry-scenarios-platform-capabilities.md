@@ -6,14 +6,14 @@ author: Edge AI Team
 ms.date: 06/06/2025
 ms.topic: hub-page
 keywords:
-  - overview
-  - index
-  - navigation
-  - workspaces
-  - edge
-  - project
-  - planning
-  - industry
+  - industry-scenarios
+  - platform-capabilities
+  - use-cases
+  - implementation-examples
+  - industrial-automation
+  - edge-ai
+  - scenario-catalog
+  - application-domains
 estimated_reading_time: 8
 ---
 ## Industry Scenarios and Platform Capabilities Overview
@@ -165,7 +165,7 @@ then carefully refined by our team of discerning human reviewers.*
 
 <!-- Reference Links -->
 [ai-planning-guide]: ./ai-planning-guide.md
-[blueprints-readme]: ../../blueprints/README.md
+[blueprints-readme]: blueprints/README.md
 [capabilities-folder]: ./capabilities/
 [comprehensive-mapping]: ./comprehensive-scenario-capability-mapping.md
 [comprehensive-scenario-mapping]: ./comprehensive-scenario-capability-mapping.md

@@ -92,7 +92,12 @@
 	},
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	// "forwardPorts": [],
+	"forwardPorts": [8080],
+
+	// Container environment variables
+	"containerEnv": {
+		"BROWSER": "code --new-window"
+	},
 
 	"onCreateCommand": {
 		"npm": "npm install -g npm && npm ci",

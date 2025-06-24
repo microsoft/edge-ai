@@ -29,7 +29,9 @@ Each state and migration between states is governed by a well defined progressio
 
 ### Draft
 
-ADRs can enter a draft state regardless of their author of origin. Project leads may commit draft ADRs directly to main, whereas community members must submit their drafts via a pull request. ADR PRs from community members will be immediately merged to the main branch to record the idea, concept, feature, or change. Community members should update their clones, requesting a PR to submit their draft to main as soon as is reasonable, even as they continue work on the draft. Project leads may commit draft ADRs directly to main. Draft ADRs will be automatically deleted after 15 days of inactivity. ALL ADRs must enter via a draft state and progress through the subsequent process states, regardless of origin.
+ADRs can enter a draft state regardless of their author of origin. Project leads may commit draft ADRs directly to main, whereas community members must submit their drafts via a pull request. ADR PRs from community members will be immediately merged to the main branch to record the idea, concept, feature, or change.
+
+Community members should update their clones, requesting a PR to submit their draft to main as soon as is reasonable, even as they continue work on the draft. Project leads may commit draft ADRs directly to main. Draft ADRs will be automatically deleted after 15 days of inactivity. ALL ADRs must enter via a draft state and progress through the subsequent process states, regardless of origin.
 
 ### Proposed
 
@@ -39,12 +41,15 @@ PRs raised to migrate a draft ADR to proposed will adhere to the following rules
 
 - Unless there are open discussion comments on the draft PR, the draft ADR will progress to the Proposed state after 3 business days from the day of submission.
 - Draft PRs can progress to the Proposed state after the PR has been approval by one (1) member of the project's lead team.
-- PRs for submission to the Proposed state will be automatically closed after 15 days of inactivity by the author.  
-- ADRs in the Proposed state have an open, five (5) day comment period for community members to contribute to or challenge any aspect of the ADR. After the 5 day period elapses, ADRs PRs will transition to a 3 day evaluation period by project leads who will ensure fitness of the ADR to the projects roadmap. Project leads have 3 days to address or close all open community comments on the PR, guided by the Product Owner. If all comments have been addressed and the PO approves the PR, the ADR will transition to the Accepted state. In the PO's absence, the project's Technical Lead can assume the PO's responsibilities and approve the PR for progression to the accepted state.
+- PRs for submission to the Proposed state will be automatically closed after 15 days of inactivity by the author.
+- ADRs in the Proposed state have an open, five (5) day comment period for community members to contribute to or challenge any aspect of the ADR. After the 5 day period elapses, ADRs PRs will transition to a 3 day evaluation period by project leads who will ensure fitness of the ADR to the projects roadmap.
+- Project leads have 3 days to address or close all open community comments on the PR, guided by the Product Owner. If all comments have been addressed and the PO approves the PR, the ADR will transition to the Accepted state. In the PO's absence, the project's Technical Lead can assume the PO's responsibilities and approve the PR for progression to the accepted state.
 
 ### Accepted
 
-The Accepted state represents ADRs that have been reviewed for completeness and approved by the project leads and have progressed through a period of RFC from the broader project community. Work to implement the decisions once the ADR has moved into the accepted state. Once a month, ADRs in the accepted state will be reviewed by project leads to ensure they are still relevant to the project, and if not will either be moved to the Deprecated directory, or set back to a draft state for revision and updating.
+The Accepted state represents ADRs that have been reviewed for completeness and approved by the project leads and have progressed through a period of RFC from the broader project community. Work to implement the decisions once the ADR has moved into the accepted state.
+
+Once a month, ADRs in the accepted state will be reviewed by project leads to ensure they are still relevant to the project, and if not will either be moved to the Deprecated directory, or set back to a draft state for revision and updating.
 
 If the ADR is replacing a prior accepted ADR, the old ADR must be renamed with a `S-` prefix as part of the Superseded ADR PR, and the old ADR must remain in the Accepted folder for linage.
 

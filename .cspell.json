@@ -62,5 +62,14 @@
 	"ignoreRegExpList": [
 		"/^\\s*```[\\s\\S]*?^\\s*```/gm",
 		"/^authors?:.*(?:\\r?\\n\\s*-.*)*$/gmi"
+	],
+	"words": [
+		"ˈpræksɪs",
+		"Chronograf",
+		"Kapacitor",
+		"kata",
+		"katas",
+		"praxisworx",
+		"πρᾶξις"
 	]
 }

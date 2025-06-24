@@ -15,9 +15,11 @@
 
   <!-- Table of Contents plugin -->
   <link rel="stylesheet" href="https://unpkg.com/docsify-plugin-toc@1.3.1/dist/light.css">
-
   <!-- Sidebar collapse plugin -->
   <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify-sidebar-collapse/dist/sidebar.min.css" />
+
+  <!-- Interactive Progress Bar Styles -->
+  <link rel="stylesheet" href="docs/assets/css/features/interactive-progress.css" />
 
   <!-- Custom styles -->
   <style>
@@ -107,15 +109,13 @@
       .sidebar {
         transform: translateX(0) !important;
       }
-    }
-
-    /* Table of Contents styling - Fixed position overlay */
+    }    /* Table of Contents styling - Fixed position overlay */
     .page_toc,
     .toc-container,
     .docsify-toc {
       position: fixed !important;
       right: 20px !important;
-      top: 80px !important;
+      top: 140px !important; /* Adjusted for navbar height (60px) + spacing */
       left: auto !important;
       transform: none !important;
       background: rgba(255, 255, 255, 0.95) !important;
@@ -124,7 +124,7 @@
       padding: 15px !important;
       max-width: 200px !important;
       width: 200px !important;
-      max-height: calc(100vh - 160px) !important;
+      max-height: calc(100vh - 220px) !important; /* Adjusted for navbar space */
       overflow-y: auto !important;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
       z-index: 1000 !important;
@@ -302,16 +302,14 @@
       margin: 0 !important;
       padding: 0 !important;
       overflow: hidden !important; /* Prevent body scroll */
-    }
-
-    /* Force content positioning with proper scroll container */
+    }    /* Force content positioning with proper scroll container */
     .content,
     section.content,
     .app-main {
       position: fixed !important;
       left: 320px !important; /* Just past sidebar */
       right: 240px !important; /* Space for TOC */
-      top: 0 !important;
+      top: 60px !important; /* Space for navbar */
       bottom: 0 !important;
       overflow-y: auto !important;
       overflow-x: hidden !important;
@@ -343,14 +341,13 @@
       margin: 0 !important;
       box-sizing: border-box !important;
       position: relative !important; /* This allows TOC to position relative to content */
-    }
-
-    /* Responsive - hide TOC space on smaller screens */
+    }    /* Responsive - hide TOC space on smaller screens */
     @media (max-width: 1200px) {
       .content,
       section.content,
       .app-main {
-        right: 20px !important;
+        right: 20px !important; /* Remove TOC space but maintain navbar clearance */
+        top: 60px !important; /* Ensure navbar space on tablets */
       }
 
       .page_toc,
@@ -358,15 +355,14 @@
       .docsify-toc {
         display: none !important;
       }
-    }
-
-    /* Mobile responsive layout */
+    }/* Mobile responsive layout */
     @media (max-width: 768px) {
       .content,
       section.content,
       .app-main {
         left: 0 !important;
         right: 0 !important;
+        top: 60px !important; /* Maintain navbar space on mobile */
         position: relative !important;
       }
     }
@@ -375,33 +371,14 @@
     .mermaid {
       text-align: center;
       margin: 20px 0;
-      overflow-x: auto; /* Allow horizontal scrolling if needed */
-      overflow-y: hidden; /* Prevent vertical scrolling within mermaid container */
-      /* Ensure container respects chart dimensions */
-      width: 100%;
-      max-width: none;
-      /* Add some padding to prevent clipping */
-      padding: 10px;
+      overflow-x: auto;
     }
 
     .mermaid svg {
-      border-radius: 6px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-      /* Allow chart to determine its own size, but constrain to container */
       max-width: 100%;
-      /* Don't override height - let chart decide */
-      /* Ensure it's displayed as block for proper centering */
+      height: auto;
       display: block;
       margin: 0 auto;
-    }
-
-    /* Responsive behavior for smaller screens */
-    @media (max-width: 768px) {
-      .mermaid svg {
-        /* Scale down proportionally on smaller screens while maintaining aspect ratio */
-        width: 100% !important;
-        height: auto !important;
-      }
     }
 
     /* Enhanced Page Metadata styling */
@@ -466,6 +443,11 @@
       gap: 5px;
     }
 
+    .metadata-byline .reading-time {
+      color: var(--theme-color);
+      font-weight: 500;
+    }
+
     .metadata-tags {
       display: flex;
       align-items: center;
@@ -509,18 +491,133 @@
       line-height: 1.5;
     }
 
-    /* Responsive metadata */
+    /* Enhanced Metadata Layout Styling */
+    .metadata-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .metadata-author {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.95em;
+      color: #495057;
+    }
+
+    .author-label {
+      color: #6c757d;
+      font-weight: normal;
+    }
+
+    .author-name {
+      font-weight: 600;
+      color: #495057;
+    }
+
+    .metadata-reading-time {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #f8f9fa;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.9em;
+      color: #6c757d;
+      font-weight: 500;
+      border: 1px solid #e9ecef;
+      transition: all 0.2s ease;
+    }
+
+    .metadata-reading-time:hover {
+      background: #e9ecef;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .reading-time-icon {
+      font-size: 0.9em;
+      opacity: 0.8;
+    }
+
+    .reading-time-value {
+      font-weight: 600;
+      color: var(--theme-color);
+    }
+
+    .reading-time-unit {
+      color: #6c757d;
+      font-size: 0.85em;
+    }
+
+    .metadata-date-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9em;
+      color: #6c757d;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .date-icon, .updated-icon {
+      font-size: 0.9em;
+      opacity: 0.7;
+    }
+
+    .date-label, .updated-label {
+      font-weight: normal;
+      color: #6c757d;
+    }
+
+    .date-value, .updated-value {
+      font-weight: 500;
+      color: #495057;
+    }
+
+    /* Responsive improvements for new layout */
     @media (max-width: 768px) {
-      .metadata-header {
+      .metadata-header-row {
         flex-direction: column;
         align-items: flex-start;
+        gap: 10px;
       }
 
-      .metadata-byline {
+      .metadata-reading-time {
+        align-self: flex-end;
+        margin-top: 5px;
+      }
+
+      .metadata-date-row {
         flex-direction: column;
         align-items: flex-start;
-        gap: 8px;
+        gap: 4px;
       }
+    }
+
+    /* Legacy metadata-byline styling */
+    .metadata-byline {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      font-size: 0.9em;
+      color: #6c757d;
+    }
+
+    .metadata-byline span {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .metadata-byline .reading-time {
+      color: var(--theme-color);
+      font-weight: 500;
     }
 
     /* Dark mode variables */
@@ -775,6 +872,11 @@
       color: #63b3ed !important;
     }
   </style>
+
+  <!-- Critical CSS for immediate rendering -->
+  <link rel="stylesheet" href="docs/assets/css/critical.css">
+    <!-- Main CSS - all modular styles -->
+  <link rel="stylesheet" href="docs/assets/css/main.css">
 </head>
 <body>
   <div id="app">Loading documentation...</div>
@@ -784,21 +886,22 @@
       name: '<img src="docs/assets/logo.png" alt="Logo" style="width:40px;height:40px;margin-right:10px;vertical-align:middle;">Edge AI Platform',
       repo: 'https://github.com/Microsoft/edge-ai',
       loadSidebar: 'docs/_sidebar.md',  // Use custom _sidebar.md file from docs directory
-      loadNavbar: false,
-      auto2top: true,
-      homepage: 'docs/index.md',  // Explicitly set the homepage
+      loadNavbar: 'docs/_navbar.md',  // Load navbar from docs directory (with alias redirection)
+      auto2top: true,      homepage: 'docs/index.md',  // Explicitly set the homepage
 
       // Cover page
       coverpage: false,
 
-      // Search plugin
+      // Search plugin configuration - restored and optimized for multi-section architecture
       search: {
-        maxAge: 86400000, // 1 day
-        paths: 'auto',
-        placeholder: 'Search documentation...',
+        maxAge: 3600000, // 1 hour cache for faster content update visibility
+        paths: 'auto', // Automatic path discovery
+        placeholder: 'Type to search',
         noData: 'No results found',
-        depth: 4,
-        hideOtherSidebarContent: false
+        depth: 2, // Index h1 and h2 headings
+        namespace: 'edge-ai-docs', // Unique namespace to avoid conflicts
+        pathNamespaces: ['/docs', '/src', '/blueprints', '/praxisworx', '/.github', '/copilot'], // Multi-section support
+        hideOtherSidebarContent: false // Keep sidebar content visible during search
       },
 
       // Pagination
@@ -868,23 +971,68 @@
 
       // Mermaid configuration
       mermaidConfig: {
-        querySelector: ".mermaid"
+        theme: 'default'
       },
 
       // Sidebar collapse configuration
       sidebarDisplayLevel: 0, // Everything starts collapsed
       subMaxLevel: 3,         // Allow up to 3 levels in sidebar
-      auto2top: true,         // Auto scroll to top when navigating
-
-      // Homepage
-      homepage: 'docs/index.md',
-
-      // Alias configuration for src documentation
+      auto2top: true,         // Auto scroll to top when navigating      // Homepage
+      homepage: 'docs/index.md',      // Alias configuration - Critical for multi-folder content structure
+      // Docsify by default looks for navigation files relative to the current page's path
+      // These aliases redirect all requests to centralized navigation files, ensuring
+      // consistent navigation across all content folders (docs/, blueprints/, praxisworx/, etc.)
+      //
+      // BACKUP - Original configuration (before section-specific sidebar routing):
+      // alias: {
+      //   '/.*/_media/(.*)': 'docs/_media/$1',
+      //   '/src-docs/(.*)': 'src/$1',
+      //   '/src.*/_sidebar.md': 'docs/_sidebar.md',
+      //   '/.*/_sidebar.md': 'docs/_sidebar.md',
+      //   '/.*/_navbar.md': 'docs/_navbar.md'
+      // },      // NEW - Section-specific sidebar routing configuration (2025-06-18):
+      // Performance Note: Patterns are ordered from most specific to least specific
+      // for optimal matching efficiency. Most commonly accessed sections are prioritized.
       alias: {
+        // Media files - redirect any _media requests to the main docs/_media folder
+        // High priority: needed for all image/asset loading across sections
         '/.*/_media/(.*)': 'docs/_media/$1',
+
+        // Source documentation - map src-docs paths to actual src folder
+        // High priority: common documentation pattern
         '/src-docs/(.*)': 'src/$1',
-        '/src.*/_sidebar.md': 'docs/_sidebar.md',  // Redirect all src sidebar requests to main sidebar
-        '/.*/_sidebar.md': 'docs/_sidebar.md'      // Redirect ALL nested sidebar requests to main sidebar
+
+        // Section-specific sidebar routing - ORDERED BY EXPECTED USAGE FREQUENCY
+        // Note: These MUST come before generic patterns to ensure proper section detection
+
+        // Documentation section - loads docs-specific sidebar (HIGHEST TRAFFIC)
+        '/docs.*/_sidebar.md': 'docs/_parts/docs-sidebar.md',
+
+        // Infrastructure section (src folder) - loads infrastructure-specific sidebar
+        '/src.*/_sidebar.md': 'docs/_parts/infrastructure-sidebar.md',
+
+        // Blueprints section - loads blueprints-specific sidebar
+        '/blueprints.*/_sidebar.md': 'docs/_parts/blueprints-sidebar.md',
+
+        // PraxisWorx section - loads praxisworx-specific sidebar
+        '/praxisworx.*/_sidebar.md': 'docs/_parts/praxisworx-sidebar.md',
+
+        // Copilot Resources section - loads copilot-specific sidebar
+        // Two patterns for comprehensive coverage of GitHub Copilot resources
+        '/copilot.*/_sidebar.md': 'docs/_parts/copilot-sidebar.md',
+        '/.github.*/_sidebar.md': 'docs/_parts/copilot-sidebar.md',
+
+        // Home section - loads home-specific sidebar for root-level content
+        // Complex pattern for root-level markdown files - optimized regex grouping
+        '/(?:README|INDEX|CONTRIBUTING|SECURITY|SUPPORT|CODE_OF_CONDUCT|LICENSE).*/_sidebar.md': 'docs/_parts/home-sidebar.md',
+
+        // Fallback sidebar navigation - handle all other paths with default sidebar
+        // IMPORTANT: This MUST be last among sidebar patterns for proper precedence
+        '/.*/_sidebar.md': 'docs/_sidebar.md',
+
+        // Navbar navigation - ensure all directories use the same navbar
+        // Without this, subpages would try to load their own _navbar.md and fail with 404s
+        '/.*/_navbar.md': 'docs/_navbar.md'
       },
 
       // 404 fallback
@@ -919,24 +1067,71 @@
               const cleanContent = content.replace(frontmatterRegex, '');
 
               try {
-                // Simple YAML parser for basic key-value pairs
+                // Enhanced YAML parser for basic key-value pairs and arrays
                 const metadata = {};
                 const lines = yamlContent.split('\n');
+                let currentKey = null;
+                let currentArray = [];
+                let inArray = false;
 
                 lines.forEach(line => {
-                  const colonIndex = line.indexOf(':');
-                  if (colonIndex > 0) {
-                    const key = line.substring(0, colonIndex).trim();
-                    let value = line.substring(colonIndex + 1).trim().replace(/^['"]|['"]$/g, '');
+                  const trimmedLine = line.trim();
 
-                    // Handle arrays (tags, keywords)
-                    if (value.includes(',')) {
-                      value = value.split(',').map(item => item.trim());
+                  // Skip empty lines
+                  if (!trimmedLine) {
+                    return;
+                  }
+
+                  // Handle array items starting with -
+                  if (trimmedLine.startsWith('- ')) {
+                    if (inArray && currentKey) {
+                      let arrayItem = trimmedLine.substring(2).trim();
+                      // Remove quotes if present
+                      arrayItem = arrayItem.replace(/^['"]|['"]$/g, '');
+                      currentArray.push(arrayItem);
+                    }
+                    return;
+                  }
+
+                  // Finish current array if we hit a new key while in array mode
+                  if (inArray && currentKey && trimmedLine.includes(':')) {
+                    metadata[currentKey] = [...currentArray]; // Create a copy
+                    currentArray = [];
+                    inArray = false;
+                    currentKey = null;
+                  }
+
+                  // Process key-value pairs
+                  const colonIndex = trimmedLine.indexOf(':');
+                  if (colonIndex > 0) {
+                    const key = trimmedLine.substring(0, colonIndex).trim();
+                    let value = trimmedLine.substring(colonIndex + 1).trim();
+
+                    // Remove surrounding quotes
+                    value = value.replace(/^['"]|['"]$/g, '');
+
+                    // Check if this starts an array (empty value after colon)
+                    if (value === '' || value === '[]') {
+                      currentKey = key;
+                      currentArray = [];
+                      inArray = true;
+                      return;
                     }
 
+                    // Handle inline arrays with commas
+                    if (value.includes(',')) {
+                      value = value.split(',').map(item => item.trim().replace(/^['"]|['"]$/g, ''));
+                    }
+
+                    // Store the key-value pair
                     metadata[key] = value;
                   }
                 });
+
+                // Handle final array if file ends with array
+                if (inArray && currentKey && currentArray.length > 0) {
+                  metadata[currentKey] = [...currentArray]; // Create a copy
+                }
 
                 currentMetadata = metadata;
 
@@ -959,23 +1154,74 @@
                 // Key information row
                 metadataHtml += '<div class="metadata-info">';
 
-                // Author and dates
-                if (metadata.author || metadata.date || metadata.updated) {
-                  metadataHtml += '<div class="metadata-byline">';
+                // Improved metadata layout with better visual hierarchy
+                if (metadata.author || metadata.date || metadata.updated || metadata.estimated_reading_time) {
+                  // First row: Author and reading time (most important info)
+                  if (metadata.author || metadata.estimated_reading_time) {
+                    metadataHtml += '<div class="metadata-header-row">';
 
-                  if (metadata.author) {
-                    metadataHtml += `<span class="author">👤 By ${metadata.author}</span>`;
+                    if (metadata.author) {
+                      metadataHtml += '<div class="metadata-author">';
+                      metadataHtml += `<span class="author-label">By</span> `;
+                      metadataHtml += `<span class="author-name">${metadata.author}</span>`;
+                      metadataHtml += '</div>';
+                    }
+
+                    // Add reading time support with prominent display
+                    if (metadata.estimated_reading_time) {
+                      let readingTime = metadata.estimated_reading_time;
+                      // Handle both "X minutes" format and integer format
+                      if (typeof readingTime === 'string') {
+                        // Extract number from "X minutes" format
+                        const match = readingTime.match(/(\d+)/);
+                        readingTime = match ? parseInt(match[1], 10) : readingTime;
+                      }
+
+                      if (typeof readingTime === 'number' || !isNaN(parseInt(readingTime, 10))) {
+                        const timeValue = typeof readingTime === 'number' ? readingTime : parseInt(readingTime, 10);
+                        metadataHtml += '<div class="metadata-reading-time">';
+                        metadataHtml += `<span class="reading-time-icon">⏱️</span>`;
+                        metadataHtml += `<span class="reading-time-value">${timeValue}</span> `;
+                        metadataHtml += `<span class="reading-time-unit">min read</span>`;
+                        metadataHtml += '</div>';
+                      }
+                    }
+
+                    metadataHtml += '</div>';
                   }
 
-                  if (metadata.date) {
-                    metadataHtml += `<span class="date">📅 ${metadata.date}</span>`;
-                  }
+                  // Second row: Publication/update dates
+                  if (metadata.date || metadata['ms.date'] || metadata.updated) {
+                    metadataHtml += '<div class="metadata-date-row">';
 
-                  if (metadata.updated && metadata.updated !== metadata.date) {
-                    metadataHtml += `<span class="updated">🔄 Updated ${metadata.updated}</span>`;
-                  }
+                    if (metadata.date || metadata['ms.date']) {
+                      const displayDate = metadata.date || metadata['ms.date'];
+                      // Format date nicely if it's in YYYY-MM-DD format
+                      let formattedDate = displayDate;
+                      if (displayDate && displayDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                        const dateObj = new Date(displayDate);
+                        formattedDate = dateObj.toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        });
+                      }
+                      metadataHtml += `<span class="date-icon">📅</span>`;
+                      metadataHtml += `<span class="date-label">Published</span> `;
+                      metadataHtml += `<span class="date-value">${formattedDate}</span>`;
+                    }
 
-                  metadataHtml += '</div>';
+                    if (metadata.updated && metadata.updated !== (metadata.date || metadata['ms.date'])) {
+                      if (metadata.date || metadata['ms.date']) {
+                        metadataHtml += ' • ';
+                      }
+                      metadataHtml += `<span class="updated-icon">🔄</span>`;
+                      metadataHtml += `<span class="updated-label">Updated</span> `;
+                      metadataHtml += `<span class="updated-value">${metadata.updated}</span>`;
+                    }
+
+                    metadataHtml += '</div>';
+                  }
                 }
 
                 // Tags and keywords (clickable)
@@ -1107,14 +1353,13 @@
             } else if (isAzureDevOpsWiki) {
               // Azure DevOps Wiki context
               url = 'https://dev.azure.com/ai-at-the-edge-flagship-accelerator/edge-ai/_git/edge-ai?path=/docs/' + vm.route.file;
-              linkText = '📝 Edit in Azure DevOps';
-            } else {
+              linkText = '📝 Edit in Azure DevOps';            } else {
               // GitHub Pages or other contexts (default to GitHub)
               url = 'https://github.com/Microsoft/edge-ai/edit/main/docs/' + vm.route.file;
               linkText = '📝 Edit on GitHub';
             }
 
-            const editHtml = `[${linkText}](${url}){:target="_blank" .edit-link}`;
+            const editHtml = `<a href="${url}" target="_blank" class="edit-link">${linkText}</a>`;
             return content + '\n\n---\n\n' + editHtml;
           });
 
@@ -1306,11 +1551,11 @@
               if (arrow && !section.classList.contains('open')) {
                 arrow.click();
               }
-            });
-          }
+            });          }
         }
-      ]
-    }
+      ], // End of plugins array
+
+    }; // End of window.$docsify configuration
 
     // Search function for clickable tags
     function doSearch(term) {
@@ -1334,7 +1579,6 @@
 
   <!-- Docsify core -->
   <script src="//cdn.jsdelivr.net/npm/docsify@4"></script>
-
   <!-- Docsify plugins -->
   <script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/search.min.js"></script>
   <script src="//cdn.jsdelivr.net/npm/docsify-pagination/dist/docsify-pagination.min.js"></script>
@@ -1388,9 +1632,10 @@
         const isDark = document.body.classList.contains('dark');
         darkModeBtn.innerHTML = isDark ? '☀️' : '🌙';
         localStorage.setItem('docsify-dark-mode', isDark ? 'dark' : 'light');
-      });
-    })();
-  </script>  <!-- Fix TOC navigation and scroll tracking for custom layout -->
+      });    })();
+  </script>
+
+  <!-- Fix TOC navigation and scroll tracking for custom layout -->
   <script>
     (function() {
       let tocLinks = [];
@@ -1574,9 +1819,7 @@
         contentContainer = getContentContainer();
         if (!contentContainer) {
           return;
-        }
-
-        // Get TOC links - target the actual plugin structure
+        }        // Get TOC links - target the actual plugin structure
         tocLinks = Array.from(document.querySelectorAll('.page_toc div[class^="lv"] a'));
         if (tocLinks.length === 0) {
           // Fallback to our original selectors
@@ -1586,12 +1829,8 @@
           return;
         }
 
-        // Get headings - try both with and without markdown-section
-        headings = Array.from(document.querySelectorAll('.markdown-section h1, .markdown-section h2, .markdown-section h3, .markdown-section h4, .markdown-section h5, .markdown-section h6'));
-        if (headings.length === 0) {
-          // Fallback: try without markdown-section wrapper
-          headings = Array.from(document.querySelectorAll('.content h1, .content h2, .content h3, .content h4, .content h5, .content h6'));
-        }
+        // Get all headings in content
+        headings = Array.from(document.querySelectorAll('.content h1, .content h2, .content h3, .content h4, .content h5, .content h6'));
         if (headings.length === 0) {
           return;
         }
@@ -1617,11 +1856,9 @@
 
         // Also listen to window scroll as fallback
         window.removeEventListener('scroll', throttledScrollHandler);
-        window.addEventListener('scroll', throttledScrollHandler, { passive: true });
-
-        // Initial update after elements are settled
+        window.addEventListener('scroll', throttledScrollHandler, { passive: true });        // Initial update after elements are settled
         setTimeout(updateTOCActiveState, 200);
-      }
+      } // End of initTOCNavigation function
 
       // Function to handle initial URL hash with ID parameter (only on first load)
       function handleInitialHash() {
@@ -1744,8 +1981,8 @@
             // Handle initial hash only on the very first load
             setTimeout(handleInitialHash, 800);
           });
-        }
-      ]);
+        } // End of plugin function
+      ]); // End of plugin array
 
       // Backup initialization
       if (document.readyState === 'loading') {
@@ -1757,16 +1994,65 @@
   </script>
 
   <!-- Mermaid diagrams -->
-  <script type="module">
-    import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs";
-    mermaid.initialize({
-      startOnLoad: true,
-      theme: 'default',
-      securityLevel: 'loose'
-    });
-    window.mermaid = mermaid;
+  <script src="//cdn.jsdelivr.net/npm/mermaid@11.2.1/dist/mermaid.min.js"></script>
+  <script>
+    // Custom mermaid integration for docsify
+    (function() {
+      let mermaidChart = 0;
+
+      const mermaidPlugin = function(hook, vm) {
+        hook.ready(function() {
+          mermaid.initialize({
+            startOnLoad: false,
+            theme: 'default',
+            securityLevel: 'loose',
+            flowchart: {
+              useMaxWidth: true,
+              htmlLabels: true,
+              curve: 'basis'
+            },
+            themeVariables: {
+              fontSize: '13px'
+            }
+          });
+        });
+
+        hook.doneEach(function() {
+          // Find all code blocks with mermaid language
+          const mermaidElements = document.querySelectorAll('pre[data-lang="mermaid"]');
+
+          mermaidElements.forEach(function(element) {
+            const code = element.querySelector('code');
+            if (code) {
+              const mermaidCode = code.textContent;
+              const chartId = 'mermaid-chart-' + mermaidChart++;
+
+              // Create new div for mermaid
+              const mermaidDiv = document.createElement('div');
+              mermaidDiv.className = 'mermaid';
+              mermaidDiv.id = chartId;
+              mermaidDiv.textContent = mermaidCode;
+
+              // Replace the pre element with mermaid div
+              element.parentNode.replaceChild(mermaidDiv, element);
+
+              // Render the mermaid diagram
+              mermaid.render(chartId + '-svg', mermaidCode).then(function(result) {
+                mermaidDiv.innerHTML = result.svg;
+              }).catch(function(error) {
+                console.error('Mermaid rendering error:', error);
+                mermaidDiv.innerHTML = '<p>Error rendering diagram</p>';
+              });
+            }
+          });
+        });
+      };
+
+      // Add the plugin to docsify
+      window.$docsify = window.$docsify || {};
+      window.$docsify.plugins = (window.$docsify.plugins || []).concat(mermaidPlugin);
+    })();
   </script>
-  <script src="//unpkg.com/docsify-mermaid@2.0.1/dist/docsify-mermaid.js"></script>
 
   <!-- Syntax highlighting -->
   <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-bash.min.js"></script>
@@ -1780,5 +2066,8 @@
 
   <!-- URL replacement configuration (injected by serve-docs.sh) -->
   <script src="docsify-url-config.js"></script>
+
+  <!-- Interactive Progress Tracking Plugin -->
+  <script src="interactive-progress.js"></script>
 </body>
 </html>

@@ -101,6 +101,15 @@ jobs:
     with:
       github_comment_reporter: true
 
+  # Documentation automation validation for PRs
+  docs-automation:
+    name: Documentation Automation
+    needs: [mega-linter]
+    uses: ./.github/workflows/docs-automation.yml
+    with:
+      force_regenerate: false
+    secrets: inherit
+
   # Call docs-check-terraform for PR validation
   docs-check-terraform:
     name: Terraform Documentation Check
@@ -128,11 +137,10 @@ jobs:
     with:
       iac-type: all
       break-build: false
-
   # Use reusable workflow to detect detailed changes and create folder matrix
   matrix-changes:
     name: Detect Matrix Changes
-    needs: [docs-check-terraform, docs-check-bicep]
+    needs: [docs-automation, docs-check-terraform, docs-check-bicep]
     uses: ./.github/workflows/matrix-folder-check.yml
     with:
       displayName: 'Detect component changes for PR validation'

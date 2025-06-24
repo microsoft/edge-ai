@@ -1,0 +1,44 @@
+/* Breadcrumb Navigation Styling */
+
+/* Breadcrumb styling */
+.docsify-breadcrumb {
+  padding: 10px 0;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #e6e6e6;
+  font-size: 0.9em;
+}
+
+.docsify-breadcrumb ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.docsify-breadcrumb li {
+  display: flex;
+  align-items: center;
+}
+
+.docsify-breadcrumb li:not(:last-child):after {
+  content: "›";
+  margin: 0 8px;
+  color: #999;
+}
+
+.docsify-breadcrumb a {
+  color: var(--theme-color);
+  text-decoration: none;
+  padding: 4px 0;
+}
+
+.docsify-breadcrumb a:hover {
+  text-decoration: underline;
+}
+
+/* Dark mode breadcrumb styling */
+body.dark .docsify-breadcrumb {
+  border-color: var(--theme-border-color, #4a5568);
+}

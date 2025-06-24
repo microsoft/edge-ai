@@ -5,15 +5,7 @@ author: Edge AI Team
 ms.date: 06/06/2025
 ms.topic: hub-page
 keywords:
-  - overview
-  - index
-  - navigation
-  - workspaces
-  - edge
-  - project
-  - planning
-  - guide.md
-  - ai-planning
+  - ai-assistance
   - github-copilot
   - project-planning
   - automation

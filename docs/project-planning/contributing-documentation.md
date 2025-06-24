@@ -6,14 +6,14 @@ author: Edge AI Team
 ms.date: 06/06/2025
 ms.topic: hub-page
 keywords:
-  - overview
-  - index
-  - navigation
-  - workspaces
-  - edge
-  - project
-  - planning
   - contributing
+  - documentation
+  - templates
+  - scenarios
+  - capabilities
+  - community
+  - project-planning
+  - framework
 estimated_reading_time: 4
 ---
 

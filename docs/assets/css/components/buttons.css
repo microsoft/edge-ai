@@ -1,0 +1,59 @@
+/* Button Styles and States */
+
+/* Tag buttons */
+.tag-button {
+  background: var(--theme-color);
+  color: white;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 16px;
+  font-size: 0.75em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.tag-button:hover {
+  background: var(--theme-color-secondary);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Enhanced copy code button styling */
+.docsify-copy-code-button {
+  background: var(--theme-color) !important;
+  color: white !important;
+  border-radius: 6px !important;
+  font-size: 0.75em !important;
+  padding: 4px 8px !important;
+  transition: all 0.2s ease !important;
+}
+
+.docsify-copy-code-button:hover {
+  background: var(--theme-color-secondary) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Edit on GitHub button styling */
+.edit-on-github {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: var(--theme-color);
+  color: white;
+  padding: 10px 15px;
+  border-radius: 25px;
+  text-decoration: none;
+  font-size: 0.9em;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  z-index: 1000;
+}
+
+.edit-on-github:hover {
+  background: var(--theme-color-secondary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  color: white;
+}

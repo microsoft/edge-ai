@@ -137,7 +137,19 @@ stages:
           # to the PR and set the pull request ID and source repo URIs
           enableAzureReporter: true
           pullRequestId: $(System.PullRequest.PullRequestId)
-          sourceRepoUri: $(System.PullRequest.SourceRepositoryURI)
+          sourceRepoUri: $(System.PullRequest.SourceRepositoryURI)      # Use the enhanced documentation validation template for comprehensive docs checking
+      # Note: For performance optimization in large repositories, you can use:
+      # onlyChangedFiles: true (validates only files changed in PR)
+      # breakBuild: true (fail build on validation issues)
+      - template: .azdo/templates/docs-validation-template.yml
+        parameters:
+          dependsOn: MegaLinter
+          displayName: "Enhanced Documentation Validation"
+          condition: succeeded()
+          breakBuild: false  # Only show warnings by default
+          pool:
+            name: 'ai-on-edge-managed-pool'
+            vmImage: 'ubuntu-latest'
       # Use the docs check template for PR builds
       - template: .azdo/templates/docs-check-terraform-template.yml
         parameters:

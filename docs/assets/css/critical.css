@@ -1,0 +1,35 @@
+/* Critical Above-the-Fold Styles */
+
+/* Essential CSS variables that need to be available immediately */
+:root {
+  --theme-color: #0078d4;
+  --theme-color-secondary: #106ebe;
+  --sidebar-width: 300px;
+}
+
+/* Essential body and layout styles */
+body {
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+/* Critical sidebar and content positioning */
+.sidebar {
+  z-index: 999 !important;
+}
+
+.content,
+section.content,
+.app-main {
+  position: fixed !important;
+  left: 320px !important;
+  right: 240px !important;
+  top: 60px !important;
+  bottom: 0 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  padding: 20px !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+}

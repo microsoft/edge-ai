@@ -100,16 +100,16 @@ This repository implements a modular, templatized approach to pipeline definitio
 
 The following templates are available in the `.azdo` directory:
 
-| Template                                     | Purpose                                                                                              | Documentation                                                                   |
-|----------------------------------------------|------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------|
-| `aio-version-checker-template.yml`           | Checks Azure IoT Operations component versions against latest available releases                     | [Template Documentation](./templates/aio-version-checker-template.md)           |
-| `cluster-test-terraform-template.yml`        | Runs Terraform init, validate, plan and tests on component folders                                   | [Template Documentation](./templates/cluster-test-terraform-template.md)        |
-| `docs-check-terraform-template.yml`          | Validates documentation quality including Terraform docs and URL checks                              | [Template Documentation](./templates/docs-check-terraform-template.md)          |
-| `matrix-folder-check-template.yml`           | Checks for changes in source directories and creates a dynamic matrix of folders for downstream jobs | [Template Documentation](./templates/matrix-folder-check-template.md)           |
-| `megalinter-template.yml`                    | Provides linting capabilities across multiple languages                                              | [Template Documentation](./templates/megalinter-template.md)                    |
-| `resource-provider-pwsh-tests-template.yml`  | Runs tests to ensure resource provider registration scripts function as expected                     | [Template Documentation](./templates/resource-provider-pwsh-tests-template.md)  |
-| `variable-compliance-terraform-template.yml` | Ensures consistent Terraform variable definitions across modules                                     | [Template Documentation](./templates/variable-compliance-terraform-template.md) |
-| `wiki-update-template.yml`                   | Updates Azure DevOps wiki with markdown documentation from the repository                            | [Template Documentation](./templates/wiki-update-template.md)                   |
+| Template                                     | Purpose                                                                                                                                                              | Documentation                                                                   |
+|----------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------|
+| `aio-version-checker-template.yml`           | Checks Azure IoT Operations component versions against latest available releases                                                                                     | [Template Documentation](./templates/aio-version-checker-template.md)           |
+| `cluster-test-terraform-template.yml`        | Runs Terraform init, validate, plan and tests on component folders                                                                                                   | [Template Documentation](./templates/cluster-test-terraform-template.md)        |
+| `docs-check-terraform-template.yml`          | Validates documentation quality including Terraform docs and URL checks                                                                                              | [Template Documentation](./templates/docs-check-terraform-template.md)          |
+| `matrix-folder-check-template.yml`           | Checks for changes in source directories and creates a dynamic matrix of folders for downstream jobs                                                                 | [Template Documentation](./templates/matrix-folder-check-template.md)           |
+| `megalinter-template.yml`                    | Provides linting capabilities across multiple languages                                                                                                              | [Template Documentation](./templates/megalinter-template.md)                    |
+| `resource-provider-pwsh-tests-template.yml`  | Runs tests to ensure resource provider registration scripts function as expected                                                                                     | [Template Documentation](./templates/resource-provider-pwsh-tests-template.md)  |
+| `variable-compliance-terraform-template.yml` | Ensures consistent Terraform variable definitions across modules                                                                                                     | [Template Documentation](./templates/variable-compliance-terraform-template.md) |
+| `wiki-update-template.yml`                   | Updates Azure DevOps wiki with comprehensive documentation coverage from all content areas including docs/, blueprints/, copilot/, praxisworx/, and .github/ folders | [Template Documentation](./templates/wiki-update-template.md)                   |
 
 > **Note:** All template documentation follows a standardized format that includes overview,
 > features, parameters, usage examples, implementation details, and troubleshooting sections.
@@ -143,7 +143,7 @@ stages:
     jobs:
       - template: .azdo/templates/megalinter-template.yml
         parameters:
-          displayName: 'Lint Code'
+          displayName: "Lint Code"
           enableAzureReporter: true
 ```
 
@@ -199,7 +199,7 @@ jobs:
 The following variables are required/optional to run this repository's main pipeline.
 Please see, [Set variables in pipeline](https://learn.microsoft.com/azure/devops/pipelines/process/variables?view=azure-devops&tabs=classic%2Cbatch#set-variables-in-pipeline) for this process.
 
-| variable                              | secret | suggested value            | details                                                                                                                                                                                                             |
+| Variable                              | Secret | Suggested Value            | Details                                                                                                                                                                                                             |
 |:--------------------------------------|:------:|:---------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `subscription_id`                     |   Y    | Azure subscription GUID    |                                                                                                                                                                                                                     |
 | `TF_VAR_CUSTOM_LOCATIONS_OID`         |   Y    | OID of Arc Custom Location | [Create and manage custom locations on Azure Arc-enabled Kubernetes](https://learn.microsoft.com/azure/azure-arc/kubernetes/custom-locations)                                                                       |

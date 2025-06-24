@@ -2,10 +2,16 @@
 title: General User Guide - Getting Started
 description: Deploy and use the AI on Edge Flagship Accelerator with step-by-step instructions for both Terraform and Bicep deployments
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-15
 ms.topic: how-to
 estimated_reading_time: 5
-keywords: general user, deployment, blueprint, terraform, bicep, Azure IoT Operations
+keywords:
+  - general user
+  - deployment
+  - blueprint
+  - terraform
+  - bicep
+  - Azure IoT Operations
 ---
 
 ## General User Guide - Getting Started
@@ -20,6 +26,8 @@ Before you begin, ensure you have:
 - **GitHub account** with access to this repository
 - **Docker Desktop** installed and running (for Dev Container)
 - **Visual Studio Code** with the Dev Containers extension
+
+> **💡 New to edge AI deployments?** Check out our [PraxisWorx Training Platform](/praxisworx/) for hands-on learning experiences that complement this guide. Start with our [Edge-to-Cloud Systems Track](/praxisworx/training-labs/02-edge-to-cloud-systems/) to build your expertise, learning to use AI and accelerate your solution development.
 
 ## Step 1: Set Up Development Environment
 
@@ -359,10 +367,10 @@ After successful deployment:
 [terraform-install]: https://learn.hashicorp.com/tutorials/terraform/install-cli
 [kubectl-install]: https://kubernetes.io/docs/tasks/tools/install-kubectl/
 [docker-install]: https://docs.docker.com/get-docker/
-[blueprint-full-single]: ../../blueprints/full-single-node-cluster/
-[blueprint-full-multi]: ../../blueprints/full-multi-node-cluster/
-[blueprint-minimum]: ../../blueprints/minimum-single-node-cluster/
-[blueprint-cloud-only]: ../../blueprints/only-cloud-single-node-cluster/
+[blueprint-full-single]: blueprints/full-single-node-cluster/
+[blueprint-full-multi]: blueprints/full-multi-node-cluster/
+[blueprint-minimum]: blueprints/minimum-single-node-cluster/
+[blueprint-cloud-only]: blueprints/only-cloud-single-node-cluster/
 [iot-ops-quickstart]: https://learn.microsoft.com/azure/iot-operations/get-started-end-to-end-sample/quickstart-deploy
 [iot-ops-docs]: https://learn.microsoft.com/azure/iot-operations/
 [project-repo]: {{REPO_URL}}

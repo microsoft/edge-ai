@@ -193,8 +193,8 @@ Contributions to capability documentation should follow the established patterns
 [industry-scenarios-platform-capabilities]: ../industry-scenarios-platform-capabilities.md
 [getting-started-guide]: ../getting-started-simple.md
 [architecture-documentation]: ../README.md
-[blueprints]: ../../blueprints/README.md
-[components]: ../../src/README.md
+[blueprints]: blueprints/README.md
+[components]: src/README.md
 [contributing-guide]: ../../CONTRIBUTING.md
 [coding-conventions]: ../coding-conventions.md
 [documentation-standards]: ../coding-conventions.md#documentation

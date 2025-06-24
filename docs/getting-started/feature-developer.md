@@ -2,7 +2,7 @@
 title: Feature Developer Guide - Getting Started
 description: Comprehensive guide for contributors developing new features and components in the AI on Edge Flagship Accelerator, covering development environment, processes, and coding standards
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-15
 ms.topic: how-to
 estimated_reading_time: 10
 keywords:
@@ -22,6 +22,8 @@ keywords:
 ## Feature Developer Guide - Getting Started
 
 This guide is for contributors who want to add new features, components, or improve existing functionality in the AI on Edge Flagship Accelerator. It provides comprehensive guidance on the development environment, processes, and standards.
+
+> **🚀 Boost Your Development Velocity:** Master AI-assisted engineering with our [PraxisWorx Training Platform](/praxisworx/). Start with the [AI-Assisted Engineering Track](/praxisworx/training-labs/01-ai-assisted-engineering/) to learn advanced GitHub Copilot techniques and hyper-velocity development practices.
 
 ## Repository Structure and Organization
 
