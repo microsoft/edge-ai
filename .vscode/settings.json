@@ -92,5 +92,6 @@
         {
             "file": "./.github/instructions/commit-message.instructions.md"
         }
-    ]
+    ],
+    "github.copilot.chat.advanced.workspace.prototypeAdoCodeSearchEnabled": true
 }

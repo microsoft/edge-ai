@@ -85,8 +85,8 @@
 				"ms-python.flake8",
 				"golang.go",
 				"redhat.vscode-yaml",
-				"GitHub.copilot",
-				"GitHub.copilot-chat"
+				"GitHub.copilot@prerelease",
+				"GitHub.copilot-chat@prerelease"
 			]
 		}
 	},
