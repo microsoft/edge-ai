@@ -64,5 +64,6 @@ Deploys a full deployment with (almost) all components onto Arc enabled Servers.
 | should\_enable\_opc\_ua\_simulator | Whether to deploy the OPC UA Simulator to the cluster | `bool` | `true` | no |
 | should\_enable\_otel\_collector | Whether to deploy the OpenTelemetry Collector and Azure Monitor ConfigMap (optionally used) | `bool` | `true` | no |
 | should\_get\_custom\_locations\_oid | Whether to get Custom Locations Object ID using Terraform's azuread provider. (Otherwise, provided by 'custom\_locations\_oid' or `az connectedk8s enable-features` for custom-locations on cluster setup if not provided.) | `bool` | `true` | no |
+| use\_existing\_resource\_group | Whether to use an existing resource group instead of creating a new one. When true, the component will look up a resource group with the specified or generated name instead of creating it. | `bool` | `false` | no |
 <!-- markdown-table-prettify-ignore-end -->
 <!-- END_TF_DOCS -->

@@ -23,6 +23,7 @@ You WILL NEVER create follow-up tasks for documentation or tests.
         *   You WILL write its total line count to the chat (e.g., "Lines: 7641").
         *   You WILL proceed to step 2.
     *   **If `pr-reference.xml` is NOT provided**:
+        *   **MANDATORY**: You MUST use the `./scripts/pr-ref-gen.sh` script to create the `pr-reference.xml`, you will not use any other commands to get the git status or diffs.
         *   You WILL create `pr-reference.xml` by running the `./scripts/pr-ref-gen.sh` script.
             *   Default: `./scripts/pr-ref-gen.sh --no-md-diff` (excludes markdown).
             *   If `${input:includeMarkdown}` is true: `./scripts/pr-ref-gen.sh` (includes markdown).
