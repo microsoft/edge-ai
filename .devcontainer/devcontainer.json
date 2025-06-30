@@ -100,6 +100,7 @@
 	},
 
 	"onCreateCommand": {
+		"pip": "pip install -r requirements.txt",
 		"npm": "npm install -g npm && npm ci",
 		"apt": "sudo apt update && sudo apt install -y shellcheck",
 		"go": "go install mvdan.cc/sh/v3/cmd/shfmt@latest",

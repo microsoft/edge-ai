@@ -13,7 +13,7 @@ variable "platform" {
     train   = string
   })
   default = {
-    version = "0.7.12"
+    version = "0.7.21"
     train   = "preview"
   }
 }
@@ -38,7 +38,7 @@ variable "edge_storage_accelerator" {
     diskMountPoint        = string
   })
   default = {
-    version               = "2.4.0"
+    version               = "2.5.3"
     train                 = "stable"
     diskStorageClass      = ""
     faultToleranceEnabled = false
@@ -52,7 +52,7 @@ variable "secret_sync_controller" {
     train   = string
   })
   default = {
-    version = "0.8.2"
+    version = "0.9.4"
     train   = "preview"
   }
 }

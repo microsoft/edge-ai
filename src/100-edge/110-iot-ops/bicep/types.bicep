@@ -26,7 +26,7 @@ type SecretStoreExtension = {
 @export()
 var secretStoreExtensionDefaults = {
   release: {
-    version: '0.8.2'
+    version: '0.9.4'
     train: 'preview'
   }
 }
@@ -67,7 +67,7 @@ type ContainerStorageExtension = {
 @export()
 var containerStorageExtensionDefaults = {
   release: {
-    version: '2.4.0'
+    version: '2.5.3'
     train: 'stable'
   }
   settings: {
@@ -90,7 +90,7 @@ type AioPlatformExtension = {
 @export()
 var aioPlatformExtensionDefaults = {
   release: {
-    version: '0.7.12'
+    version: '0.7.21'
     train: 'preview'
   }
   settings: {
@@ -119,8 +119,8 @@ type AioExtension = {
 @export()
 var aioExtensionDefaults = {
   release: {
-    version: '1.1.19'
-    train: 'stable'
+    version: '1.1.59'
+    train: 'integration'
   }
   settings: {
     namespace: 'azure-iot-operations'

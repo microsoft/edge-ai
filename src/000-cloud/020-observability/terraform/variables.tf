@@ -11,7 +11,7 @@ variable "grafana_admin_principal_id" {
 variable "grafana_major_version" {
   description = "Major version of grafana to use"
   type        = string
-  default     = "10"
+  default     = "11"
 }
 
 variable "log_retention_in_days" {
