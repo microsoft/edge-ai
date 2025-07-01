@@ -22,7 +22,9 @@
 		},
     	"ghcr.io/rio/features/k3d:1": {},
 		"ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {
-			"version": "latest",
+ 			// "version": "latest" uses https://dl.k8s.io/release/stable.txt which experiences outages during heavy load.
+			// Update this back to "latest" or continue to upgrade the version periodically.
+			"version": "1.33.2",
 			"helm": "latest",
 			"minikube": "none"
 		},
