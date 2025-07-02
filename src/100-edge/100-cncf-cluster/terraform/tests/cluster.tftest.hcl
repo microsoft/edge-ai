@@ -34,6 +34,32 @@ run "create_default_cluster" {
   }
 }
 
+run "create_arc_agents" {
+  command = plan
+
+  variables {
+    resource_prefix                 = run.setup_tests.resource_prefix
+    environment                     = "dev"
+    resource_group                  = run.setup_tests.aio_resource_group
+    should_get_custom_locations_oid = false
+    should_deploy_script_to_vm      = true
+    should_assign_roles             = false
+    should_deploy_arc_agents        = true
+    arc_onboarding_sp               = run.setup_tests.mock_sp
+    custom_locations_oid            = run.setup_tests.mock_custom_locations_oid
+    key_vault                       = run.setup_tests.key_vault
+    cluster_server_machine          = run.setup_tests.cluster_server_machine
+    http_proxy                      = run.setup_tests.mock_http_proxy
+    private_key_pem                 = run.setup_tests.mock_private_key_pem
+  }
+
+  # Assertions for the default configuration
+  assert {
+    condition     = local.arc_resource_name == "arck-${var.resource_prefix}-${var.environment}-001"
+    error_message = "Arc resource name does not follow naming convention"
+  }
+}
+
 # Test the default cluster configuration with SP authentication
 run "create_default_cluster_with_sp" {
   command = plan
@@ -204,3 +230,4 @@ run "test_invalid_multiple_identities" {
     cluster_server_machine          = run.setup_tests.cluster_server_machine
   }
 }
+

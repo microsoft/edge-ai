@@ -56,6 +56,12 @@ variable "should_deploy_arc_machines" {
   default     = false
 }
 
+variable "should_deploy_arc_agents" {
+  type        = bool
+  description = "Should deploy arc agents using helm charts instead of Azure CLI."
+  default     = false
+}
+
 variable "should_assign_roles" {
   description = "Whether to assign Key Vault roles to identity or service principal."
   type        = bool
@@ -92,6 +98,12 @@ EOF
 variable "should_enable_arc_auto_upgrade" {
   type        = bool
   description = "Enable or disable auto-upgrades of Arc agents. (Otherwise, 'false' for 'env=prod' else 'true' for all other envs)."
+  default     = null
+}
+
+variable "http_proxy" {
+  type        = string
+  description = "HTTP proxy URL"
   default     = null
 }
 

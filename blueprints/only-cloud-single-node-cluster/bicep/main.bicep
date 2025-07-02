@@ -130,15 +130,27 @@ module cloudVmHost '../../../src/000-cloud/051-vm-host/bicep/main.bicep' = {
   }
 }
 
-module cloudAksAcr '../../../src/000-cloud/060-aks-acr/bicep/main.bicep' = {
+module cloudAcr '../../../src/000-cloud/060-acr/bicep/main.bicep' = {
   name: '${deployment().name}-caa5'
   scope: resourceGroup(resourceGroupName)
   dependsOn: [cloudResourceGroup]
   params: {
     common: common
     virtualNetworkName: cloudNetworking.outputs.virtualNetworkName
-    networkSecurityGroupId: cloudNetworking.outputs.networkSecurityGroupId
+    networkSecurityGroupName: cloudNetworking.outputs.networkSecurityGroupName
     shouldCreateAcrPrivateEndpoint: shouldCreateAcrPrivateEndpoint
+  }
+}
+
+module cloudKubernetes '../../../src/000-cloud/070-kubernetes/bicep/main.bicep' = {
+  name: '${deployment().name}-caa5'
+  scope: resourceGroup(resourceGroupName)
+  dependsOn: [cloudResourceGroup]
+  params: {
+    common: common
+    virtualNetworkName: cloudNetworking.outputs.virtualNetworkName
+    networkSecurityGroupName: cloudNetworking.outputs.networkSecurityGroupName
+    containerRegistryName: cloudAcr.outputs.acrName
     shouldCreateAks: shouldCreateAks
   }
 }
@@ -154,10 +166,10 @@ output vmUsername string = cloudVmHost.outputs.adminUsername
 output vmNames array = cloudVmHost.outputs.vmNames
 
 @description('The AKS cluster name.')
-output aksName string = cloudAksAcr.outputs.aksName
+output aksName string = cloudKubernetes.outputs.aksName
 
 @description('The Azure Container Registry name.')
-output acrName string = cloudAksAcr.outputs.acrName
+output acrName string = cloudAcr.outputs.acrName
 
 @description('The name of the Secret Store Extension Key Vault.')
 output keyVaultName string = cloudSecurityIdentity.outputs.keyVaultName!

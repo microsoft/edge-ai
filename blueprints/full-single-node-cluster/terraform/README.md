@@ -18,8 +18,9 @@ for a single-node cluster deployment, including observability, messaging, and da
 
 | Name | Source | Version |
 |------|--------|---------|
-| cloud\_aks\_acr | ../../../src/000-cloud/060-aks-acr/terraform | n/a |
+| cloud\_acr | ../../../src/000-cloud/060-acr/terraform | n/a |
 | cloud\_data | ../../../src/000-cloud/030-data/terraform | n/a |
+| cloud\_kubernetes | ../../../src/000-cloud/070-kubernetes/terraform | n/a |
 | cloud\_messaging | ../../../src/000-cloud/040-messaging/terraform | n/a |
 | cloud\_networking | ../../../src/000-cloud/050-networking/terraform | n/a |
 | cloud\_observability | ../../../src/000-cloud/020-observability/terraform | n/a |

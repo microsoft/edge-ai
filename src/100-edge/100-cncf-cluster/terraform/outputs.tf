@@ -28,7 +28,7 @@ output "arc_connected_cluster" {
 
 output "server_token" {
   description = "The token used by the server in the k3s cluster. ('null' if the server is responsible for generating the token)"
-  value       = module.ubuntu_k3s.cluster_server_token
+  value       = try(module.ubuntu_k3s[0].cluster_server_token, null)
   sensitive   = true
 }
 
@@ -38,20 +38,20 @@ output "server_token" {
 
 output "server_script_secret_name" {
   description = "The name of the key vault secret containing the server script."
-  value       = module.ubuntu_k3s.server_script_secret_name
+  value       = try(module.ubuntu_k3s[0].server_script_secret_name, null)
 }
 
 output "node_script_secret_name" {
   description = "The name of the key vault secret containing the node script."
-  value       = module.ubuntu_k3s.node_script_secret_name
+  value       = try(module.ubuntu_k3s[0].node_script_secret_name, null)
 }
 
 output "server_script_secret_download_command" {
   description = "Az CLI command to download the server script secret."
-  value       = module.ubuntu_k3s.server_script_secret_download_command
+  value       = try(module.ubuntu_k3s[0].server_script_secret_download_command, null)
 }
 
 output "node_script_secret_download_command" {
   description = "Az CLI command to download the node script secret."
-  value       = module.ubuntu_k3s.node_script_secret_download_command
+  value       = try(module.ubuntu_k3s[0].node_script_secret_download_command, null)
 }

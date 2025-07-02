@@ -30,7 +30,6 @@ locals {
   }
 }
 
-
 resource "azurerm_arc_kubernetes_cluster_extension" "iot_operations" {
   name           = "iot-ops"
   cluster_id     = var.arc_connected_cluster_id
@@ -70,6 +69,12 @@ resource "azurerm_arc_kubernetes_cluster_extension" "iot_operations" {
     "schemaRegistry.values.mqttBroker.tlsEnabled"                          = true,
     "schemaRegistry.values.mqttBroker.serviceAccountTokenAudience"         = var.mqtt_broker_config.serviceAccountAudience
   }
+}
+
+resource "azurerm_role_assignment" "schema_registry" {
+  scope                = var.schema_registry_id
+  role_definition_name = "Contributor"
+  principal_id         = azurerm_arc_kubernetes_cluster_extension.iot_operations.identity[0].principal_id
 }
 
 resource "azapi_resource" "custom_location" {
