@@ -69,6 +69,7 @@ If you prefer local development, install these tools:
 - [Terraform][terraform-install] (>= 1.0)
 - [kubectl][kubectl-install]
 - [Docker][docker-install]
+- [Python][python-install]
 
 ## Step 2: Choose Your Blueprint
 
@@ -374,6 +375,7 @@ After successful deployment:
 [iot-ops-quickstart]: https://learn.microsoft.com/azure/iot-operations/get-started-end-to-end-sample/quickstart-deploy
 [iot-ops-docs]: https://learn.microsoft.com/azure/iot-operations/
 [project-repo]: {{REPO_URL}}
+[python-install]: https://www.python.org/downloads/
 
 *AI and automation capabilities described in this scenario should be implemented following responsible AI principles, including fairness, reliability, safety, privacy, inclusiveness, transparency, and accountability. Organizations should ensure appropriate governance, monitoring, and human oversight are in place for all AI-powered solutions.*
 

@@ -77,3 +77,11 @@ variable "key_vault" {
     error_message = "'key_vault' is required when 'should_upload_to_key_vault' is true"
   }
 }
+
+variable "private_key_pem" {
+  type        = string
+  description = "Private key for onboarding"
+  sensitive   = true
+  default     = null
+}
+

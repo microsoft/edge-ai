@@ -35,6 +35,7 @@ install extensions for cluster connect and custom locations.
 
 | Name | Source | Version |
 |------|--------|---------|
+| arc\_agents | ./modules/arc-agents | n/a |
 | cluster\_node\_arc\_script\_deployment | ./modules/arc-server-script-deployment | n/a |
 | cluster\_node\_script\_deployment | ./modules/vm-script-deployment | n/a |
 | cluster\_server\_arc\_script\_deployment | ./modules/arc-server-script-deployment | n/a |
@@ -60,12 +61,15 @@ install extensions for cluster connect and custom locations.
 | cluster\_server\_machine | n/a | ```object({ id = string location = string })``` | `null` | no |
 | cluster\_server\_token | The token that will be given to the server for the cluster or used by the agent nodes to connect them to the cluster. (ex. <https://docs.k3s.io/cli/token)> | `string` | `null` | no |
 | custom\_locations\_oid | The object id of the Custom Locations Entra ID application for your tenant. If none is provided, the script will attempt to retrieve this requiring 'Application.Read.All' or 'Directory.Read.All' permissions. ```sh az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv``` | `string` | `null` | no |
+| http\_proxy | HTTP proxy URL | `string` | `null` | no |
 | instance | Instance identifier for naming resources: 001, 002, etc... | `string` | `"001"` | no |
 | key\_vault | The Key Vault object containing id, name, and vault\_uri properties. | ```object({ id = string name = string vault_uri = string })``` | `null` | no |
 | key\_vault\_script\_secret\_prefix | Optional prefix for the Key Vault script secret name when should\_use\_script\_from\_secrets\_for\_deploy is true. | `string` | `""` | no |
+| private\_key\_pem | Private key for onboarding | `string` | `null` | no |
 | script\_output\_filepath | The location of where to write out the script file. (Otherwise, '{path.root}/out') | `string` | `null` | no |
 | should\_add\_current\_user\_cluster\_admin | Gives the current logged in user cluster-admin permissions with the new cluster. | `bool` | `true` | no |
 | should\_assign\_roles | Whether to assign Key Vault roles to identity or service principal. | `bool` | `true` | no |
+| should\_deploy\_arc\_agents | Should deploy arc agents using helm charts instead of Azure CLI. | `bool` | `false` | no |
 | should\_deploy\_arc\_machines | Should deploy to Arc-connected servers instead of Azure VMs. When true, machine\_id refers to an Arc-connected server ID. | `bool` | `false` | no |
 | should\_deploy\_script\_to\_vm | Should deploy the scripts to the provided Azure VMs. | `bool` | `true` | no |
 | should\_enable\_arc\_auto\_upgrade | Enable or disable auto-upgrades of Arc agents. (Otherwise, 'false' for 'env=prod' else 'true' for all other envs). | `bool` | `null` | no |
