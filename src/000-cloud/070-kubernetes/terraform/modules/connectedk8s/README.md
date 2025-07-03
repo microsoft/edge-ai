@@ -8,7 +8,6 @@ Deploys Azure Arc cluster instances
 
 | Name | Version |
 |------|---------|
-| terraform | >= 1.2.9 |
 | terraform | >= 1.9.8, < 2.0 |
 | azapi | 2.3.0 |
 
