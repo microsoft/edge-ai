@@ -5,7 +5,7 @@
  */
 
 resource "azapi_resource" "dataflow_endpoint_to_event_hub" {
-  type      = "Microsoft.IoTOperations/instances/dataflowEndpoints@2025-04-01"
+  type      = "Microsoft.IoTOperations/instances/dataflowEndpoints@2024-11-01"
   name      = "dfe-eh-${var.resource_prefix}-${var.environment}-sample-${var.instance}"
   parent_id = var.aio_instance.id
 
@@ -38,7 +38,7 @@ resource "azapi_resource" "dataflow_endpoint_to_event_hub" {
 }
 
 resource "azapi_resource" "dataflow_to_event_hub" {
-  type      = "Microsoft.IoTOperations/instances/dataflowProfiles/dataflows@2025-04-01"
+  type      = "Microsoft.IoTOperations/instances/dataflowProfiles/dataflows@2024-11-01"
   name      = "df-eh-${var.resource_prefix}-${var.environment}-passthrough-${var.instance}"
   parent_id = var.aio_dataflow_profile.id
 

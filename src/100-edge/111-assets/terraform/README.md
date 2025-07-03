@@ -10,7 +10,7 @@ facilitates the management of custom Kubernetes resources and manifests.
 | Name | Version |
 |------|---------|
 | terraform | >= 1.9.8, < 2.0 |
-| azapi | >= 1.8.0 |
+| azapi | >= 2.3.0 |
 | azuread | >= 2.0.0 |
 | azurerm | >= 4.8.0 |
 
@@ -18,7 +18,7 @@ facilitates the management of custom Kubernetes resources and manifests.
 
 | Name | Version |
 |------|---------|
-| azapi | >= 1.8.0 |
+| azapi | >= 2.3.0 |
 
 ## Resources
 

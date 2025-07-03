@@ -9,12 +9,13 @@ Provisions the ARM based data flow endpoint and data flow, requires Asset
 | Name | Version |
 |------|---------|
 | terraform | >= 1.9.8, < 2.0 |
+| azapi | >= 2.3.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| azapi | n/a |
+| azapi | >= 2.3.0 |
 
 ## Resources
 

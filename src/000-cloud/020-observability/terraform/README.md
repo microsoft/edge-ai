@@ -56,7 +56,7 @@ Creates a new Azure Monitor Workspace, Log Analytics Workspace and Azure Managed
 | app\_insights\_retention\_in\_days | The retention period in days for Application Insights data. | `number` | `30` | no |
 | daily\_quota\_in\_gb | Daily quota to write logs in log analytics | `number` | `10` | no |
 | grafana\_admin\_principal\_id | Object id of a user to grant grafana admin access to. Leave blank to not grant access to any users | `string` | `null` | no |
-| grafana\_major\_version | Major version of grafana to use | `string` | `"10"` | no |
+| grafana\_major\_version | Major version of grafana to use | `string` | `"11"` | no |
 | instance | Instance identifier for naming resources: 001, 002, etc... | `string` | `"001"` | no |
 | log\_retention\_in\_days | Duration to retain logs in log analytics | `number` | `30` | no |
 | logs\_data\_collection\_rule\_namespaces | List of cluster namespaces to be exposed in the log analytics workspace | `list(string)` | ```[ "kube-system", "gatekeeper-system", "azure-arc", "azure-iot-operations" ]``` | no |
