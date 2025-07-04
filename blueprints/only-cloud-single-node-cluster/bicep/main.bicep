@@ -1,5 +1,5 @@
-metadata name = 'Full Single Cluster Blueprint'
-metadata description = 'Deploys a complete end-to-end environment for Azure IoT Operations on a single-node, Arc-enabled Kubernetes cluster.'
+metadata name = 'Full Cloud Single Cluster Blueprint'
+metadata description = 'Deploys a complete end-to-end cloud environment as preparation for Azure IoT Operations on a single-node.'
 
 import * as core from './types.core.bicep'
 

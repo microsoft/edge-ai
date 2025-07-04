@@ -23,7 +23,7 @@ Deploys Azure Arc cluster instances
 
 | Name | Type |
 |------|------|
-| [azapi_resource.arc](https://registry.terraform.io/providers/azure/azapi/2.3.0/docs/resources/resource) | resource |
+| [azapi_resource.arc](https://registry.terraform.io/providers/Azure/azapi/2.3.0/docs/resources/resource) | resource |
 | [tls_private_key.arc_key](https://registry.terraform.io/providers/hashicorp/tls/latest/docs/resources/private_key) | resource |
 | [external_external.public_key](https://registry.terraform.io/providers/hashicorp/external/latest/docs/data-sources/external) | data source |
 
