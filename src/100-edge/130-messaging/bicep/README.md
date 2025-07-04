@@ -24,7 +24,6 @@ Deploys Dataflow endpoints and dataflows for Azure IoT Operations messaging inte
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|attribution|`Microsoft.Resources/deployments`|2020-06-01|
 |aioIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2023-01-31|
 |aioCustomLocation|`Microsoft.ExtendedLocation/customLocations`|2021-08-31-preview|
 |eventHubDataflow|`Microsoft.Resources/deployments`|2022-09-01|
@@ -34,13 +33,10 @@ Deploys Dataflow endpoints and dataflows for Azure IoT Operations messaging inte
 
 |Name|Description|
 | :--- | :--- |
-|attribution||
 |eventHubDataflow|Provisions the ARM based data flow endpoint and data flow for Event Hub, requires Asset.|
 |eventGridDataflow|Provisions the ARM based data flow endpoint and data flow for Event Grid, requires Asset.|
 
 ## Module Details
-
-### attribution
 
 ### eventHubDataflow
 

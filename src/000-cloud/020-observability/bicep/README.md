@@ -24,7 +24,6 @@ Deploys Azure observability resources including Azure Monitor Workspace, Log Ana
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|attribution|`Microsoft.Resources/deployments`|2020-06-01|
 |monitorWorkspace|`Microsoft.Monitor/accounts`|2023-04-03|
 |logAnalytics|`Microsoft.OperationalInsights/workspaces`|2025-02-01|
 |grafana|`Microsoft.Dashboard/grafana`|2024-10-01|
@@ -35,16 +34,6 @@ Deploys Azure observability resources including Azure Monitor Workspace, Log Ana
 |dataCollectionEndpoint|`Microsoft.Insights/dataCollectionEndpoints`|2023-03-11|
 |logsDataCollectionRule|`Microsoft.Insights/dataCollectionRules`|2023-03-11|
 |metricsDataCollectionRule|`Microsoft.Insights/dataCollectionRules`|2023-03-11|
-
-## Modules
-
-|Name|Description|
-| :--- | :--- |
-|attribution||
-
-## Module Details
-
-### attribution
 
 ## User Defined Types
 

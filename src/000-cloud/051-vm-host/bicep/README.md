@@ -24,19 +24,15 @@ Provisions virtual machines and networking infrastructure for hosting Azure IoT 
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|attribution|`Microsoft.Resources/deployments`|2020-06-01|
 |virtualMachine|`Microsoft.Resources/deployments`|2022-09-01|
 
 ## Modules
 
 |Name|Description|
 | :--- | :--- |
-|attribution||
 |virtualMachine|Creates a Linux virtual machine with networking components for Azure IoT Operations deployments.|
 
 ## Module Details
-
-### attribution
 
 ### virtualMachine
 

@@ -23,7 +23,6 @@ Provisions cloud resources required for Azure IoT Operations including Schema Re
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|attribution|`Microsoft.Resources/deployments`|2020-06-01|
 |identity|`Microsoft.Resources/deployments`|2022-09-01|
 |keyVault|`Microsoft.Resources/deployments`|2022-09-01|
 
@@ -31,13 +30,10 @@ Provisions cloud resources required for Azure IoT Operations including Schema Re
 
 |Name|Description|
 | :--- | :--- |
-|attribution||
 |identity|Creates user-assigned managed identities for Secret Store Extension, Azure IoT Operations components and optionally Arc onboarding.|
 |keyVault|Creates an Azure Key Vault for use with the Secret Sync Extension to securely store and synchronize secrets.|
 
 ## Module Details
-
-### attribution
 
 ### identity
 

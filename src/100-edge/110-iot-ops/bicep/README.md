@@ -51,7 +51,6 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|attribution|`Microsoft.Resources/deployments`|2020-06-01|
 |deployIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2023-01-31|
 |sseIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2023-01-31|
 |deployArcK8sRoleAssignments|`Microsoft.Resources/deployments`|2022-09-01|
@@ -70,7 +69,6 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 
 |Name|Description|
 | :--- | :--- |
-|attribution||
 |deployArcK8sRoleAssignments|Assigns required Azure Arc roles to the deployment identity for cluster access.|
 |deployKeyVaultRoleAssignments|Assigns required Key Vault roles to the deployment identity for script execution.|
 |sseKeyVaultRoleAssignments|Assigns roles for Secret Sync to access Key Vault.|
@@ -84,8 +82,6 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 |opcUaSimulator|Deploy and configure the OPC UA Simulator|
 
 ## Module Details
-
-### attribution
 
 ### deployArcK8sRoleAssignments
 

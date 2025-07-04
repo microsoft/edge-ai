@@ -42,7 +42,6 @@ The scripts handle primary and secondary node(s) setup, cluster administration, 
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|attribution|`Microsoft.Resources/deployments`|2020-06-01|
 |arcOnboardingIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2024-11-30|
 |ubuntuK3s|`Microsoft.Resources/deployments`|2022-09-01|
 |roleAssignment|`Microsoft.Resources/deployments`|2022-09-01|
@@ -53,15 +52,12 @@ The scripts handle primary and secondary node(s) setup, cluster administration, 
 
 |Name|Description|
 | :--- | :--- |
-|attribution||
 |ubuntuK3s|Configures K3s Kubernetes clusters on Ubuntu virtual machines and connects them to Azure Arc.|
 |roleAssignment|Assigns the required Kubernetes Cluster - Azure Arc Onboarding role to a managed identity or service principal.|
 |keyVaultRoleAssignments|Assigns appropriate roles to access Key Vault secrets.|
 |deployScriptsToVm|Deploys a script to a virtual machine using the CustomScript extension.|
 
 ## Module Details
-
-### attribution
 
 ### ubuntuK3s
 
