@@ -26,7 +26,6 @@ Deploys a complete end-to-end environment for Azure IoT Operations on a single-n
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|attribution|`Microsoft.Resources/deployments`|2020-06-01|
 |cloudResourceGroup|`Microsoft.Resources/deployments`|2022-09-01|
 |cloudSecurityIdentity|`Microsoft.Resources/deployments`|2022-09-01|
 |cloudObservability|`Microsoft.Resources/deployments`|2022-09-01|
@@ -45,7 +44,6 @@ Deploys a complete end-to-end environment for Azure IoT Operations on a single-n
 
 |Name|Description|
 | :--- | :--- |
-|attribution||
 |cloudResourceGroup|Creates the required resources needed for an edge IaC deployment.|
 |cloudSecurityIdentity|Provisions cloud resources required for Azure IoT Operations including Schema Registry, Storage Account, Key Vault, and User Assigned Managed Identities.|
 |cloudObservability|Deploys Azure observability resources including Azure Monitor Workspace, Log Analytics Workspace, Azure Managed Grafana, and Data Collection Rules for container monitoring and metrics collection.|
@@ -61,8 +59,6 @@ Deploys a complete end-to-end environment for Azure IoT Operations on a single-n
 |edgeMessaging|Deploys Dataflow endpoints and dataflows for Azure IoT Operations messaging integration, specifically for Event Hub and Event Grid.|
 
 ## Module Details
-
-### attribution
 
 ### cloudResourceGroup
 
@@ -82,7 +78,6 @@ Creates the required resources needed for an edge IaC deployment.
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|attribution|`Microsoft.Resources/deployments`|2020-06-01|
 |newResourceGroup|`Microsoft.Resources/resourceGroups`|2022-09-01|
 |existingResourceGroup|`Microsoft.Resources/resourceGroups`|2022-09-01|
 
@@ -115,7 +110,6 @@ Provisions cloud resources required for Azure IoT Operations including Schema Re
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|attribution|`Microsoft.Resources/deployments`|2020-06-01|
 |identity|`Microsoft.Resources/deployments`|2022-09-01|
 |keyVault|`Microsoft.Resources/deployments`|2022-09-01|
 
@@ -159,7 +153,6 @@ Deploys Azure observability resources including Azure Monitor Workspace, Log Ana
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|attribution|`Microsoft.Resources/deployments`|2020-06-01|
 |monitorWorkspace|`Microsoft.Monitor/accounts`|2023-04-03|
 |logAnalytics|`Microsoft.OperationalInsights/workspaces`|2025-02-01|
 |grafana|`Microsoft.Dashboard/grafana`|2024-10-01|
@@ -206,7 +199,6 @@ Creates storage resources including Azure Storage Account and Schema Registry fo
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|attribution|`Microsoft.Resources/deployments`|2020-06-01|
 |storageAccount|`Microsoft.Resources/deployments`|2022-09-01|
 |schemaRegistry|`Microsoft.Resources/deployments`|2022-09-01|
 |schemaRegistryRoleAssignment|`Microsoft.Resources/deployments`|2022-09-01|
@@ -242,7 +234,6 @@ Deploys Azure cloud messaging resources including Event Hubs, Service Bus, and E
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|attribution|`Microsoft.Resources/deployments`|2020-06-01|
 |eventHub|`Microsoft.Resources/deployments`|2022-09-01|
 |eventGrid|`Microsoft.Resources/deployments`|2022-09-01|
 
@@ -274,7 +265,6 @@ Creates virtual network, subnet, and network security group resources for Azure 
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|attribution|`Microsoft.Resources/deployments`|2020-06-01|
 |networkSecurityGroup|`Microsoft.Network/networkSecurityGroups`|2024-05-01|
 |virtualNetwork|`Microsoft.Network/virtualNetworks`|2024-05-01|
 
@@ -310,7 +300,6 @@ Provisions virtual machines and networking infrastructure for hosting Azure IoT 
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|attribution|`Microsoft.Resources/deployments`|2020-06-01|
 |virtualMachine|`Microsoft.Resources/deployments`|2022-09-01|
 
 #### Outputs for cloudVmHost
@@ -343,7 +332,6 @@ Deploys Azure Container Registry (ACR) resources.
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|attribution|`Microsoft.Resources/deployments`|2020-06-01|
 |network|`Microsoft.Resources/deployments`|2022-09-01|
 |containerRegistry|`Microsoft.Resources/deployments`|2022-09-01|
 
@@ -373,7 +361,6 @@ Deploys optionally Azure Kubernetes Service (AKS) resources.
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|attribution|`Microsoft.Resources/deployments`|2020-06-01|
 |network|`Microsoft.Resources/deployments`|2022-09-01|
 |aksCluster|`Microsoft.Resources/deployments`|2022-09-01|
 
@@ -423,7 +410,6 @@ The scripts handle primary and secondary node(s) setup, cluster administration, 
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|attribution|`Microsoft.Resources/deployments`|2020-06-01|
 |arcOnboardingIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2024-11-30|
 |ubuntuK3s|`Microsoft.Resources/deployments`|2022-09-01|
 |roleAssignment|`Microsoft.Resources/deployments`|2022-09-01|
@@ -491,7 +477,6 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|attribution|`Microsoft.Resources/deployments`|2020-06-01|
 |deployIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2023-01-31|
 |sseIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2023-01-31|
 |deployArcK8sRoleAssignments|`Microsoft.Resources/deployments`|2022-09-01|
@@ -549,7 +534,6 @@ Deploys observability resources including cluster extensions for metrics and log
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|attribution|`Microsoft.Resources/deployments`|2020-06-01|
 |clusterExtensionsObs|`Microsoft.Resources/deployments`|2022-09-01|
 |ruleAssociationsObs|`Microsoft.Resources/deployments`|2022-09-01|
 
@@ -582,7 +566,6 @@ Deploys Dataflow endpoints and dataflows for Azure IoT Operations messaging inte
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|attribution|`Microsoft.Resources/deployments`|2020-06-01|
 |aioIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2023-01-31|
 |aioCustomLocation|`Microsoft.ExtendedLocation/customLocations`|2021-08-31-preview|
 |eventHubDataflow|`Microsoft.Resources/deployments`|2022-09-01|

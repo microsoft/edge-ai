@@ -26,7 +26,6 @@ Creates storage resources including Azure Storage Account and Schema Registry fo
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|attribution|`Microsoft.Resources/deployments`|2020-06-01|
 |storageAccount|`Microsoft.Resources/deployments`|2022-09-01|
 |schemaRegistry|`Microsoft.Resources/deployments`|2022-09-01|
 |schemaRegistryRoleAssignment|`Microsoft.Resources/deployments`|2022-09-01|
@@ -35,14 +34,11 @@ Creates storage resources including Azure Storage Account and Schema Registry fo
 
 |Name|Description|
 | :--- | :--- |
-|attribution||
 |storageAccount|Creates an Azure Storage Account and blob container for storing schemas.|
 |schemaRegistry|Creates an Azure Device Registry (ADR) Schema Registry for storing and managing device schemas.|
 |schemaRegistryRoleAssignment|Creates role assignments for the Schema Registry to access the storage account.|
 
 ## Module Details
-
-### attribution
 
 ### storageAccount
 

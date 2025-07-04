@@ -36,19 +36,15 @@ Deploys Azure IoT Operations on an existing Arc-enabled Kubernetes cluster witho
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|attribution|`Microsoft.Resources/deployments`|2020-06-01|
 |edgeIotOps|`Microsoft.Resources/deployments`|2022-09-01|
 
 ## Modules
 
 |Name|Description|
 | :--- | :--- |
-|attribution||
 |edgeIotOps|Deploys Azure IoT Operations extensions, instances, and configurations on Azure Arc-enabled Kubernetes clusters.|
 
 ## Module Details
-
-### attribution
 
 ### edgeIotOps
 
@@ -99,7 +95,6 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|attribution|`Microsoft.Resources/deployments`|2020-06-01|
 |deployIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2023-01-31|
 |sseIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2023-01-31|
 |deployArcK8sRoleAssignments|`Microsoft.Resources/deployments`|2022-09-01|

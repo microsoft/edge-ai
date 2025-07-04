@@ -24,7 +24,6 @@ Deploys observability resources including cluster extensions for metrics and log
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|attribution|`Microsoft.Resources/deployments`|2020-06-01|
 |clusterExtensionsObs|`Microsoft.Resources/deployments`|2022-09-01|
 |ruleAssociationsObs|`Microsoft.Resources/deployments`|2022-09-01|
 
@@ -32,13 +31,10 @@ Deploys observability resources including cluster extensions for metrics and log
 
 |Name|Description|
 | :--- | :--- |
-|attribution||
 |clusterExtensionsObs|Creates the cluster extensions required to expose cluster and container metrics.|
 |ruleAssociationsObs|Creates the data collection rule associations required for observability and Prometheus rule groups for monitoring.|
 
 ## Module Details
-
-### attribution
 
 ### clusterExtensionsObs
 

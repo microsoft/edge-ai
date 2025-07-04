@@ -23,7 +23,6 @@ Deploys the minimal set of resources required for Azure IoT Operations on a sing
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|attribution|`Microsoft.Resources/deployments`|2020-06-01|
 |cloudResourceGroup|`Microsoft.Resources/deployments`|2022-09-01|
 |cloudSecurityIdentity|`Microsoft.Resources/deployments`|2022-09-01|
 |cloudData|`Microsoft.Resources/deployments`|2022-09-01|
@@ -36,7 +35,6 @@ Deploys the minimal set of resources required for Azure IoT Operations on a sing
 
 |Name|Description|
 | :--- | :--- |
-|attribution||
 |cloudResourceGroup|Creates the required resources needed for an edge IaC deployment.|
 |cloudSecurityIdentity|Provisions cloud resources required for Azure IoT Operations including Schema Registry, Storage Account, Key Vault, and User Assigned Managed Identities.|
 |cloudData|Creates storage resources including Azure Storage Account and Schema Registry for data in the Edge AI solution.|
@@ -46,8 +44,6 @@ Deploys the minimal set of resources required for Azure IoT Operations on a sing
 |edgeIotOps|Deploys Azure IoT Operations extensions, instances, and configurations on Azure Arc-enabled Kubernetes clusters.|
 
 ## Module Details
-
-### attribution
 
 ### cloudResourceGroup
 
@@ -67,7 +63,6 @@ Creates the required resources needed for an edge IaC deployment.
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|attribution|`Microsoft.Resources/deployments`|2020-06-01|
 |newResourceGroup|`Microsoft.Resources/resourceGroups`|2022-09-01|
 |existingResourceGroup|`Microsoft.Resources/resourceGroups`|2022-09-01|
 
@@ -100,7 +95,6 @@ Provisions cloud resources required for Azure IoT Operations including Schema Re
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|attribution|`Microsoft.Resources/deployments`|2020-06-01|
 |identity|`Microsoft.Resources/deployments`|2022-09-01|
 |keyVault|`Microsoft.Resources/deployments`|2022-09-01|
 
@@ -146,7 +140,6 @@ Creates storage resources including Azure Storage Account and Schema Registry fo
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|attribution|`Microsoft.Resources/deployments`|2020-06-01|
 |storageAccount|`Microsoft.Resources/deployments`|2022-09-01|
 |schemaRegistry|`Microsoft.Resources/deployments`|2022-09-01|
 |schemaRegistryRoleAssignment|`Microsoft.Resources/deployments`|2022-09-01|
@@ -177,7 +170,6 @@ Creates virtual network, subnet, and network security group resources for Azure 
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|attribution|`Microsoft.Resources/deployments`|2020-06-01|
 |networkSecurityGroup|`Microsoft.Network/networkSecurityGroups`|2024-05-01|
 |virtualNetwork|`Microsoft.Network/virtualNetworks`|2024-05-01|
 
@@ -213,7 +205,6 @@ Provisions virtual machines and networking infrastructure for hosting Azure IoT 
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|attribution|`Microsoft.Resources/deployments`|2020-06-01|
 |virtualMachine|`Microsoft.Resources/deployments`|2022-09-01|
 
 #### Outputs for cloudVmHost
@@ -267,7 +258,6 @@ The scripts handle primary and secondary node(s) setup, cluster administration, 
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|attribution|`Microsoft.Resources/deployments`|2020-06-01|
 |arcOnboardingIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2024-11-30|
 |ubuntuK3s|`Microsoft.Resources/deployments`|2022-09-01|
 |roleAssignment|`Microsoft.Resources/deployments`|2022-09-01|
@@ -335,7 +325,6 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|attribution|`Microsoft.Resources/deployments`|2020-06-01|
 |deployIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2023-01-31|
 |sseIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2023-01-31|
 |deployArcK8sRoleAssignments|`Microsoft.Resources/deployments`|2022-09-01|

@@ -20,19 +20,8 @@ Creates the required resources needed for an edge IaC deployment.
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|attribution|`Microsoft.Resources/deployments`|2020-06-01|
 |newResourceGroup|`Microsoft.Resources/resourceGroups`|2022-09-01|
 |existingResourceGroup|`Microsoft.Resources/resourceGroups`|2022-09-01|
-
-## Modules
-
-|Name|Description|
-| :--- | :--- |
-|attribution||
-
-## Module Details
-
-### attribution
 
 ## User Defined Types
 

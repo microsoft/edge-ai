@@ -227,6 +227,11 @@ def extract_resources(json_data: Dict[str, Any]) -> List[Dict[str, Any]]:
         return resources
 
     for res_name, res_info in json_data["resources"].items():
+        # Skip attribution resources labeling the deployment
+        if res_name == "attribution" and re.match(r"^pid-", res_info.get("name", "")):
+            print(f"Skipping resource '{res_name}' with name 'pid' as it is an attribution.")
+            continue
+
         res_data = {
             "name": res_name,
             "type": "",
@@ -268,6 +273,11 @@ def extract_modules(json_data: Dict[str, Any], max_nested_level: int = 1, curren
         return modules
 
     for module_name, module_info in json_data["resources"].items():
+         # Skip attribution modules labeling the deployment
+        if module_name == "attribution" and re.match(r"^pid-", module_info.get("name", "")):
+            print(f"Skipping module '{module_name}' with name 'pid' as it is an attribution.")
+            continue
+
         # Check if this resource is a deployment (module)
         if module_info.get("type") == "Microsoft.Resources/deployments":
             mod_data = {
@@ -335,6 +345,11 @@ def extract_modules(json_data: Dict[str, Any], max_nested_level: int = 1, curren
                     if isinstance(resources_data, dict):
                         # Process dictionary-style resources (with .items())
                         for res_name, res_info in resources_data.items():
+                            # Skip attribution resources labeling the deployment
+                            if res_name == "attribution" and re.match(r"^pid-", res_info.get("name", "")):
+                                print(f"Skipping resource '{res_name}' with name 'pid' as it is an attribution.")
+                                continue
+
                             res_data = {
                                 "name": res_name,
                                 "type": "",

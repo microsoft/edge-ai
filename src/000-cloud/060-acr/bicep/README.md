@@ -21,7 +21,6 @@ Deploys Azure Container Registry (ACR) resources.
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|attribution|`Microsoft.Resources/deployments`|2020-06-01|
 |network|`Microsoft.Resources/deployments`|2022-09-01|
 |containerRegistry|`Microsoft.Resources/deployments`|2022-09-01|
 
@@ -29,13 +28,10 @@ Deploys Azure Container Registry (ACR) resources.
 
 |Name|Description|
 | :--- | :--- |
-|attribution||
 |network|Creates subnets for ACR private endpoints in an existing Virtual Network.|
 |containerRegistry|Deploys an Azure Container Registry with optional private endpoint.|
 
 ## Module Details
-
-### attribution
 
 ### network
 
