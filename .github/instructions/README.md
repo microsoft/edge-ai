@@ -53,6 +53,14 @@ Standardized commit message formatting using Conventional Commit patterns.
 - **Scope**: Message format, types, scopes, standardization
 - **Apply When**: Creating commit messages or reviewing version control
 
+### [Python Script Instructions](python-script.instructions.md)
+
+Enhanced guidance for Python script development specifically targeting utility scripts in the `/scripts` directory.
+
+- **Context**: Python automation scripts, build system utilities, deployment tools
+- **Scope**: PEP 8 compliance, error handling, testing, documentation
+- **Apply When**: Working with Python scripts in the `/scripts/**/*.py` pattern
+
 ### [Shell Instructions](shell.instructions.md)
 
 General shell environment and command-line interface guidance.

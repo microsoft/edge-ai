@@ -39,7 +39,6 @@ Prompts can be invoked in GitHub Copilot Chat using `/prompt-name` syntax (e.g.,
 
 - **[Deploy](./deploy.prompt.md)** - Deployment workflows and best practices
 - **[Terraform from Blueprint](./terraform-from-blueprint.prompt.md)** - Converting blueprints to Terraform
-- **[Python Script](./python-script.prompt.md)** - Python scripting standards and patterns
 - **[C# Tests](./csharp-tests.prompt.md)** - C# test development guidance
 
 ### Documentation & Process

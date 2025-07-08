@@ -53,13 +53,17 @@ Comprehensive guidance files referenced by the main copilot instructions:
 - **`terraform/`** - Terraform development guidance and standards
 - **`bicep/`** - Bicep development guidance and standards
 - **`csharp/`** - C# development guidance and standards
+- **`bash/`** - Bash scripting standards and guidelines
 
 ### Context Instructions (`/.github/instructions/`)
 
 Instruction files designed to be attached to Copilot context using **Add Context > Instructions**:
 
+- **`bash.instructions.md`** - Bash scripting standards and best practices
 - **`bicep.instructions.md`** - Bicep-specific instructions for Copilot
 - **`csharp.instructions.md`** - C# development instructions
+- **`shell.instructions.md`** - Shell scripting guidelines and conventions
+- **`task-implementation.instructions.md`** - Task implementation instructions and workflow
 - **`terraform.instructions.md`** - Terraform development instructions
 - **`commit-message.instructions.md`** - Commit message formatting guidance
 - **`task-plan.instructions.md`** - Task planning instructions
@@ -73,16 +77,18 @@ Prompt files for specific tasks that can be invoked using `/prompt-name` in Copi
 - **`deploy.prompt.md`** - Deployment-related prompts
 - **`edge-ai-project-planning.prompt.md`** - Project planning guidance
 - **`getting-started.prompt.md`** - Getting started prompts
+- **`iotops-version-upgrade.prompt.md`** - IoT Operations version upgrade guidance
+- **`prompt-new.prompt.md`** - New prompt creation assistant
+- **`prompt-refactor.prompt.md`** - Prompt refactoring and improvement
 - **`pull-request.prompt.md`** - Pull request creation assistance
 - **`python-script.prompt.md`** - Python scripting prompts
-- **`task-implementer.prompt.md`** - Task implementation guidance
-- **`task-planner.prompt.md`** - Task planning prompts
 - **`terraform-from-blueprint.prompt.md`** - Terraform blueprint conversion
 
-### Enhanced Chatmodes (`/.github/chatmodes/`)
+### Enhanced Chat modes (`/.github/chatmodes/`)
 
 Advanced chatmode files with comprehensive tool access for specialized coaching and workflow assistance:
 
+- **`adr-creation.chatmode.md`** - Guided architecture decision record creation workflow
 - **`praxisworx-kata-coach.chatmode.md`** - Interactive kata coaching with enhanced tool access
 - **`praxisworx-lab-coach.chatmode.md`** - Complex training lab coaching for multi-component systems
 - **`task-planner.chatmode.md`** - Comprehensive task planning with research capabilities
@@ -100,19 +106,32 @@ Advanced chatmode files with comprehensive tool access for specialized coaching 
 ### Invoking Reusable Prompts
 
 1. In VS Code, use Command Palette: **Chat: Run Prompt** and select desired prompt
-2. Or type `/prompt-name` directly in Copilot chat (e.g., `/pull-request`, `/task-planner`)
+2. Or type `/prompt-name` directly in Copilot chat (e.g., `/pull-request`, `/getting-started`)
 3. Follow the guided workflow provided by the prompt
 
-### Using Enhanced Chatmodes
+### Using Enhanced Chat Modes
 
-Chatmodes provide specialized AI coaching with enhanced tool access:
+Chat modes provide specialized AI coaching with enhanced tool access, changing the system prompt in addition to the instructions:
 
-1. **Reference Chatmodes**: Use `#file:/.github/chatmodes/chatmode-name.chatmode.md` in Copilot Chat
+1. **Reference Chat Modes**: Use the chat mode drop-down in Copilot Chat to select a custom chat mode
 2. **PraxisWorx Coaching**:
    - **Kata Coach**: `#file:/.github/chatmodes/praxisworx-kata-coach.chatmode.md` for focused practice exercises
    - **Lab Coach**: `#file:/.github/chatmodes/praxisworx-lab-coach.chatmode.md` for complex training labs
-3. **Enhanced Capabilities**: Chatmodes have comprehensive tool access for research, file editing, and system interaction
+3. **Enhanced Capabilities**: Chat modes have comprehensive tool access for research, file editing, and system interaction
 4. **Coaching Methodology**: Follows OpenHack-style discovery-based learning with systematic guidance
+
+#### Task Planning and Implementation
+
+- **Task Planner Chat Mode**: Access advanced planning capabilities by choosing the custom chat mode `task-planner` in Copilot Chat (instead of Agent mode)
+  - Creates structured development plans with phases and tasks
+  - Performs research to gather context for comprehensive planning
+  - Generates documentation in `./.copilot-tracking/plans/` (excluded from git)
+
+- **Task Implementation Instructions**: Enhance implementation with `task-implementation.instructions.md` context instructions
+  - Provides guidance for executing plans and tracking progress
+  - Works with task planning outputs for coordinated development flow
+  - Follows standardized workflows for consistent implementation practices
+  - When you select a file in the `.copilot-tracking/plans/` directory, Copilot will automatically apply the task implementation instructions context
 
 ### PraxisWorx AI Coaching Integration
 
@@ -141,13 +160,6 @@ All PraxisWorx coaching modes are pre-configured and ready to use immediately in
 - Generates comprehensive PR descriptions following project standards
 - Ensures proper documentation updates and review checklist completion
 - Options: `includeMarkdown=true`, `branch=feat/branch-name`
-
-### Task Planning and Implementation (`/task-planner`, `/task-implementer`)
-
-- **`/task-planner`**: Creates structured development plans with phases and tasks
-- **`/task-implementer`**: Executes plans and tracks progress through each phase
-- Files stored in `./.copilot-tracking/` (excluded from git)
-- Works with the `task-plan.instructions.md` for enhanced guidance
 
 ### Deployment Assistance (`/deploy`)
 

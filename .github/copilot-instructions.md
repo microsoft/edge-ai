@@ -33,13 +33,13 @@ When working with specific types of files or contexts, you must:
 
 ### Matching Patterns and Files for Changes or Implementation
 
-| Pattern/Context                        | Required Copilot Files        | Minimum Lines |
-|----------------------------------------|-------------------------------|---------------|
-| `**/terraform/**` or terraform context | `**/copilot/terraform/**`     | 1000          |
-| `**/bicep/**` or bicep context         | `**/copilot/bicep/**`         | 1000          |
-| `**/*.cs` or C# context                | `**/copilot/csharp/**`        | 1000          |
-| `**/*.cs` with testing context         | `**/copilot/csharp-tests.md`  | 1000          |
-| `**/*.py` or Python context            | `**/copilot/python-script.md` | 1000          |
+| Pattern/Context                               | Required Copilot Files        | Minimum Lines |
+|-----------------------------------------------|-------------------------------|---------------|
+| `**/terraform/**` or terraform context        | `**/copilot/terraform/**`     | 1000          |
+| `**/bicep/**` or bicep context                | `**/copilot/bicep/**`         | 1000          |
+| `**/*.cs` or C# context                       | `**/copilot/csharp/**`        | 1000          |
+| `**/*.cs` with testing context                | `**/copilot/csharp-tests.md`  | 1000          |
+| `./scripts/**/*.py` or scripts Python context | `**/copilot/python-script.md` | 1000          |
 <!-- </search-for-copilot-files> -->
 
 <!-- <component-structure> -->
