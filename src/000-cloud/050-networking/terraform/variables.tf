@@ -10,7 +10,7 @@ variable "virtual_network_config" {
   description = "Configuration for the virtual network including address space and subnet prefix."
   default = {
     address_space         = "10.0.0.0/16"
-    subnet_address_prefix = "10.0.2.0/24"
+    subnet_address_prefix = "10.0.1.0/24"
   }
   validation {
     condition     = can(cidrhost(var.virtual_network_config.address_space, 0)) && can(cidrhost(var.virtual_network_config.subnet_address_prefix, 0))
