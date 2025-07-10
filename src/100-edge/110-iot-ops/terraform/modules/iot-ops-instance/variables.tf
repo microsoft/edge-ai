@@ -133,7 +133,7 @@ variable "aio_uami_id" {
 }
 
 variable "should_create_anonymous_broker_listener" {
-  type        = string
+  type        = bool
   description = "Whether to enable an insecure anonymous AIO MQ Broker Listener. (Should only be used for dev or test environments)"
 }
 
