@@ -1,0 +1,30 @@
+---
+apiVersion: connectivity.iotoperations.azure.com/v1
+kind: Dataflow
+metadata:
+  name: l3-to-l4-cert-auth
+  namespace: azure-iot-operations
+spec:
+  mode: Enabled
+  profileRef: default
+  operations:
+    - operationType: Source
+      sourceSettings:
+        dataSources:
+          - input
+        endpointRef: mqtt-local
+        serializationFormat: Json
+    - builtInTransformationSettings:
+        datasets: []
+        filter: []
+        map:
+          - inputs:
+              - "*"
+            output: "*"
+            type: PassThrough
+        serializationFormat: Json
+      operationType: BuiltInTransformation
+    - destinationSettings:
+        dataDestination: output
+        endpointRef: mqtt-l4-cert-auth
+      operationType: Destination

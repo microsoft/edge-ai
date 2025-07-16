@@ -1,0 +1,15 @@
+---
+apiVersion: mqttbroker.iotoperations.azure.com/v1
+kind: BrokerAuthentication
+metadata:
+  name: default
+  namespace: azure-iot-operations
+spec:
+  authenticationMethods:
+    - method: ServiceAccountToken
+      serviceAccountTokenSettings:
+        audiences:
+          - aio-internal
+    - method: X509
+      x509Settings:
+        trustedClientCaCert: client-ca

@@ -1,0 +1,24 @@
+---
+apiVersion: connectivity.iotoperations.azure.com/v1
+kind: DataflowEndpoint
+metadata:
+  name: mqtt-local
+  namespace: azure-iot-operations
+spec:
+  endpointType: Mqtt
+  mqttSettings:
+    authentication:
+      method: Anonymous
+      anonymousSettings: {}
+    clientIdPrefix: local-mqtt-client
+    cloudEventAttributes: Propagate
+    host: aio-broker:18883
+    keepAliveSeconds: 60
+    maxInflightMessages: 100
+    protocol: Mqtt
+    qos: 1
+    retain: Keep
+    sessionExpirySeconds: 3600
+    tls:
+      mode: Enabled
+      trustedCaCertificateConfigMapRef: azure-iot-operations-aio-ca-trust-bundle

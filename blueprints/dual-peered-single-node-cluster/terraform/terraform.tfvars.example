@@ -1,0 +1,96 @@
+# Dual Peered Single Node Cluster Blueprint - Sample Configuration
+# Copy this file to terraform.tfvars and customize the values for your deployment
+
+# Required Variables
+environment     = "dev"
+resource_prefix = "myorg"
+location        = "eastus2"
+instance        = "001"
+
+# Cluster A Configuration (default: 10.1.0.0/16)
+use_existing_resource_group_a = false
+resource_group_name_a         = null
+cluster_a_virtual_network_config = {
+  address_space         = "10.1.0.0/16"
+  subnet_address_prefix = "10.1.1.0/24"
+}
+
+# Cluster B Configuration (default: 10.2.0.0/16)
+use_existing_resource_group_b = false
+resource_group_name_b         = null
+cluster_b_virtual_network_config = {
+  address_space         = "10.2.0.0/16"
+  subnet_address_prefix = "10.2.1.0/24"
+}
+
+# Azure Arc and Custom Locations
+should_get_custom_locations_oid = true
+custom_locations_oid            = null
+
+# Security and Development Settings
+should_create_anonymous_broker_listener = false  # Set to true for dev/test environments only
+should_create_aks                       = false  # Optional: Deploy AKS in addition to K3s
+should_create_acr_private_endpoint      = false  # Optional: Private endpoint for ACR
+
+# Azure IoT Operations Features
+should_deploy_resource_sync_rules = false
+should_enable_opc_ua_simulator    = false
+should_create_azure_functions     = false
+
+# Example: Enable preview features for asset discovery
+# Uncomment and modify as needed
+# aio_features = {
+#   connectors = {
+#     settings = {
+#       preview = "Enabled"
+#     }
+#   }
+# }
+
+# Asset Configuration (Optional)
+# Uncomment and customize as needed for your OPC UA assets
+# asset_endpoint_profiles = [
+#   {
+#     name                              = "opc-ua-connector-0"
+#     target_address                    = "opc.tcp://opcplc-000000:50000"
+#     should_enable_opc_asset_discovery = true
+#   }
+# ]
+
+# assets = [
+#   {
+#     name                       = "thermostat"
+#     asset_endpoint_profile_ref = "opc-ua-connector-0"
+#     description               = "A simulated thermostat asset"
+#     datasets = [
+#       {
+#         name = "temperature"
+#         data_points = [
+#           {
+#             name                     = "temperature"
+#             data_source             = "ns=2;s=fast_uint1"
+#             observability_mode      = "gauge"
+#             data_point_configuration = jsonencode({
+#               publishingInterval = 1000
+#               samplingInterval   = 500
+#               queueSize         = 10
+#             })
+#           }
+#         ]
+#       }
+#     ]
+#   }
+# ]
+
+# Certificate Generation Configuration
+# Choose between certificate generation (requires Step CLI) or secret provider classes (Azure Key Vault)
+should_create_certificates = true  # Set to false to use Azure Key Vault secret provider classes instead
+
+# Certificate Generation Method (only applies when should_create_certificates = true)
+use_terraform_certificates = false # Set to true to use Terraform TLS provider instead of Step CLI
+
+# Custom Script Deployment Configuration
+# Deploy custom scripts to VMs for MQTT configuration
+should_deploy_custom_scripts            = false  # Deploy both server-central.sh and client-technology.sh
+should_deploy_server_central_script     = false  # Deploy server-central.sh to Cluster A only
+should_deploy_client_technology_script  = false  # Deploy client-technology.sh to Cluster B only
