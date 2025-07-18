@@ -16,12 +16,12 @@ data "azurerm_key_vault" "sse" {
 }
 
 data "azurerm_user_assigned_identity" "sse" {
-  name                = "id-${var.resource_prefix}-${var.environment}-sse-${var.instance}"
+  name                = "id-${var.resource_prefix}-sse-${var.environment}-${var.instance}"
   resource_group_name = data.azurerm_resource_group.aio.name
 }
 
 data "azurerm_user_assigned_identity" "aio" {
-  name                = "id-${var.resource_prefix}-${var.environment}-aio-${var.instance}"
+  name                = "id-${var.resource_prefix}-aio-${var.environment}-${var.instance}"
   resource_group_name = data.azurerm_resource_group.aio.name
 }
 
