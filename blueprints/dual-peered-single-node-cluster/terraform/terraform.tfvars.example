@@ -28,7 +28,7 @@ should_get_custom_locations_oid = true
 custom_locations_oid            = null
 
 # Security and Development Settings
-should_create_anonymous_broker_listener = false  # Set to true for dev/test environments only
+should_create_anonymous_broker_listener = true  # Set to true for dev/test environments only
 should_create_aks                       = false  # Optional: Deploy AKS in addition to K3s
 should_create_acr_private_endpoint      = false  # Optional: Private endpoint for ACR
 
@@ -84,13 +84,20 @@ should_create_azure_functions     = false
 
 # Certificate Generation Configuration
 # Choose between certificate generation (requires Step CLI) or secret provider classes (Azure Key Vault)
-should_create_certificates = true  # Set to false to use Azure Key Vault secret provider classes instead
+should_create_certificates = false  # Set to false to use Azure Key Vault secret provider classes instead
 
 # Certificate Generation Method (only applies when should_create_certificates = true)
-use_terraform_certificates = false # Set to true to use Terraform TLS provider instead of Step CLI
+use_terraform_certificates = true # Set to true to use Terraform TLS provider instead of Step CLI
 
 # Custom Script Deployment Configuration
 # Deploy custom scripts to VMs for MQTT configuration
-should_deploy_custom_scripts            = false  # Deploy both server-central.sh and client-technology.sh
-should_deploy_server_central_script     = false  # Deploy server-central.sh to Cluster A only
-should_deploy_client_technology_script  = false  # Deploy client-technology.sh to Cluster B only
+should_deploy_custom_scripts            = true  # Deploy both server-central.sh and client-technology.sh
+should_deploy_server_central_script     = true  # Deploy server-central.sh to Cluster A only
+should_deploy_client_technology_script  = true  # Deploy client-technology.sh to Cluster B only
+
+# MQTT Configuration
+enterprise_broker_port                       = 28883                # Port for enterprise MQTT broker listener (default: 28883)
+enterprise_broker_server_cert_secret_name    = "broker-server-cert" # Name of the Kubernetes secret containing the broker server certificate (default: "broker-server-cert")
+enterprise_client_ca_configmap_name          = "client-ca"          # Name of the Kubernetes configmap containing the client CA certificate (default: "client-ca")
+site_client_secret_name                      = "client-secret"      # Name of the Kubernetes secret containing the client certificate and key (default: "client-secret")
+site_tls_ca_configmap_name                   = "tls-ca-configmap"   # Name of the Kubernetes configmap containing the TLS CA certificate (default: "tls-ca-configmap")

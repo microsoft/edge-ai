@@ -509,8 +509,12 @@ module "custom_script_deployment" {
   should_deploy_server_central_script    = var.should_deploy_server_central_script || var.should_deploy_custom_scripts
   should_deploy_client_technology_script = var.should_deploy_client_technology_script || var.should_deploy_custom_scripts
 
-  server_vm_id = module.cluster_a_cloud_vm_host.virtual_machines[0].id
-  client_vm_id = module.cluster_b_cloud_vm_host.virtual_machines[0].id
+  server_vm_id                              = module.cluster_a_cloud_vm_host.virtual_machines[0].id
+  client_vm_id                              = module.cluster_b_cloud_vm_host.virtual_machines[0].id
+  enterprise_broker_server_cert_secret_name = var.enterprise_broker_server_cert_secret_name
+  enterprise_client_ca_configmap_name       = var.enterprise_client_ca_configmap_name
+  site_client_secret_name                   = var.site_client_secret_name
+  site_tls_ca_configmap_name                = var.site_tls_ca_configmap_name
 
   depends_on = [
     module.cluster_a_edge_iot_ops,
@@ -518,5 +522,27 @@ module "custom_script_deployment" {
     module.certificate_generation,
     module.terraform_certificate_generation,
     module.secret_provider_class
+  ]
+}
+
+// MQTT Configuration Module
+module "mqtt_configuration" {
+  source = "./modules/mqtt-configuration"
+
+  site_aio_instance                         = module.cluster_a_edge_iot_ops.aio_instance
+  site_aio_dataflow_profile                 = module.cluster_a_edge_iot_ops.aio_dataflow_profile
+  site_custom_locations                     = module.cluster_a_edge_iot_ops.custom_locations
+  enterprise_aio_instance                   = module.cluster_b_edge_iot_ops.aio_instance
+  enterprise_aio_dataflow_profile           = module.cluster_b_edge_iot_ops.aio_dataflow_profile
+  enterprise_custom_locations               = module.cluster_b_edge_iot_ops.custom_locations
+  enterprise_vm_private_ip                  = module.cluster_b_cloud_vm_host.virtual_machines[0].private_ip_address
+  enterprise_broker_port                    = var.enterprise_broker_port
+  enterprise_broker_server_cert_secret_name = var.enterprise_broker_server_cert_secret_name
+  enterprise_client_ca_configmap_name       = var.enterprise_client_ca_configmap_name
+  site_client_secret_name                   = var.site_client_secret_name
+  site_tls_ca_configmap_name                = var.site_tls_ca_configmap_name
+
+  depends_on = [
+    module.custom_script_deployment
   ]
 }

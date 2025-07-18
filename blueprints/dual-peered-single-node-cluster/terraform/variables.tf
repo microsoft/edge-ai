@@ -234,29 +234,67 @@ variable "should_create_azure_functions" {
 variable "should_deploy_custom_scripts" {
   type        = bool
   description = "Whether to deploy the custom scripts (server-central.sh and client-technology.sh) to the VMs."
-  default     = false
+  default     = true
 }
 
 variable "should_deploy_server_central_script" {
   type        = bool
   description = "Whether to deploy the server-central.sh script to Cluster A VM."
-  default     = false
+  default     = true
 }
 
 variable "should_deploy_client_technology_script" {
   type        = bool
   description = "Whether to deploy the client-technology.sh script to Cluster B VM."
-  default     = false
+  default     = true
 }
 
 variable "should_create_certificates" {
   type        = bool
   description = "Whether to generate certificates using the certs.sh script before deployment."
-  default     = true
+  default     = false
 }
 
 variable "use_terraform_certificates" {
   type        = bool
   description = "Use Terraform TLS provider instead of Step CLI for certificate generation. Only applies when should_create_certificates is true."
-  default     = false
+  default     = true
+}
+
+/*
+ * MQTT Configuration
+ */
+
+variable "enterprise_broker_port" {
+  type        = number
+  description = "The port number for the enterprise MQTT broker listener"
+  default     = 28883
+  validation {
+    condition     = var.enterprise_broker_port > 0 && var.enterprise_broker_port <= 65535
+    error_message = "Enterprise broker port must be between 1 and 65535."
+  }
+}
+
+variable "enterprise_broker_server_cert_secret_name" {
+  type        = string
+  description = "The name of the Kubernetes secret containing the broker server certificate"
+  default     = "broker-server-cert"
+}
+
+variable "enterprise_client_ca_configmap_name" {
+  type        = string
+  description = "The name of the Kubernetes configmap containing the client CA certificate"
+  default     = "client-ca"
+}
+
+variable "site_client_secret_name" {
+  type        = string
+  description = "The name of the Kubernetes secret containing the client certificate and key"
+  default     = "client-secret"
+}
+
+variable "site_tls_ca_configmap_name" {
+  type        = string
+  description = "The name of the Kubernetes configmap containing the TLS CA certificate"
+  default     = "tls-ca-configmap"
 }

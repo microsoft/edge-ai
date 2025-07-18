@@ -49,10 +49,10 @@ resource "azapi_resource" "cluster_b_secret_provider_class" {
   }
 }
 
-// Secret Sync for Cluster A Server Certificates
-resource "azapi_resource" "cluster_a_server_secret_sync" {
+// Secret Sync for Cluster A (Server and Client Certificates)
+resource "azapi_resource" "cluster_a_secret_sync" {
   type      = "Microsoft.SecretSyncController/secretSyncs@2024-08-21-preview"
-  name      = "server-certificates-sync"
+  name      = "certificates-sync"
   location  = var.cluster_a_location
   parent_id = var.cluster_a_resource_group.id
 
@@ -64,23 +64,41 @@ resource "azapi_resource" "cluster_a_server_secret_sync" {
     properties = {
       secretProviderClassName = azapi_resource.cluster_a_secret_provider_class.name
       kubernetesSecretType    = "Opaque"
-      serviceAccountName      = "workload-identity-sa"
+      serviceAccountName      = var.cluster_a_secret_sync_identity.client_id
       objectSecretMapping = [
+        # Server Certificates
         {
-          sourcePath = "l4-server-root-ca-crt"
-          targetKey  = "l4-server-root-ca-crt"
+          sourcePath = "server-root-ca-crt"
+          targetKey  = "server-root-ca-crt"
         },
         {
-          sourcePath = "l4-server-intermediate-ca-crt"
-          targetKey  = "l4-server-intermediate-ca-crt"
+          sourcePath = "server-intermediate-ca-crt"
+          targetKey  = "server-intermediate-ca-crt"
         },
         {
-          sourcePath = "l4-server-leaf-ca-crt"
-          targetKey  = "l4-server-leaf-ca-crt"
+          sourcePath = "server-leaf-ca-crt"
+          targetKey  = "server-leaf-ca-crt"
         },
         {
-          sourcePath = "l4-server-leaf-ca-key"
-          targetKey  = "l4-server-leaf-ca-key"
+          sourcePath = "server-leaf-ca-key"
+          targetKey  = "server-leaf-ca-key"
+        },
+        # Client Certificates
+        {
+          sourcePath = "client-root-ca-crt"
+          targetKey  = "client-root-ca-crt"
+        },
+        {
+          sourcePath = "client-intermediate-ca-crt"
+          targetKey  = "client-intermediate-ca-crt"
+        },
+        {
+          sourcePath = "client-leaf-ca-crt"
+          targetKey  = "client-leaf-ca-crt"
+        },
+        {
+          sourcePath = "client-leaf-ca-key"
+          targetKey  = "client-leaf-ca-key"
         }
       ]
     }
@@ -89,50 +107,10 @@ resource "azapi_resource" "cluster_a_server_secret_sync" {
   depends_on = [azapi_resource.cluster_a_secret_provider_class]
 }
 
-// Secret Sync for Cluster A Client Certificates
-resource "azapi_resource" "cluster_a_client_secret_sync" {
+// Secret Sync for Cluster B (Server and Client Certificates)
+resource "azapi_resource" "cluster_b_secret_sync" {
   type      = "Microsoft.SecretSyncController/secretSyncs@2024-08-21-preview"
-  name      = "client-certificates-sync"
-  location  = var.cluster_a_location
-  parent_id = var.cluster_a_resource_group.id
-
-  body = {
-    extendedLocation = {
-      name = var.cluster_a_custom_location_id
-      type = "CustomLocation"
-    }
-    properties = {
-      secretProviderClassName = azapi_resource.cluster_a_secret_provider_class.name
-      kubernetesSecretType    = "Opaque"
-      serviceAccountName      = "workload-identity-sa"
-      objectSecretMapping = [
-        {
-          sourcePath = "l4-client-root-ca-crt"
-          targetKey  = "l4-client-root-ca-crt"
-        },
-        {
-          sourcePath = "l4-client-intermediate-ca-crt"
-          targetKey  = "l4-client-intermediate-ca-crt"
-        },
-        {
-          sourcePath = "l4-client-leaf-ca-crt"
-          targetKey  = "l4-client-leaf-ca-crt"
-        },
-        {
-          sourcePath = "l4-client-leaf-ca-key"
-          targetKey  = "l4-client-leaf-ca-key"
-        }
-      ]
-    }
-  }
-
-  depends_on = [azapi_resource.cluster_a_secret_provider_class]
-}
-
-// Secret Sync for Cluster B Server Certificates
-resource "azapi_resource" "cluster_b_server_secret_sync" {
-  type      = "Microsoft.SecretSyncController/secretSyncs@2024-08-21-preview"
-  name      = "server-certificates-sync"
+  name      = "certificates-sync"
   location  = var.cluster_b_location
   parent_id = var.cluster_b_resource_group.id
 
@@ -144,63 +122,41 @@ resource "azapi_resource" "cluster_b_server_secret_sync" {
     properties = {
       secretProviderClassName = azapi_resource.cluster_b_secret_provider_class.name
       kubernetesSecretType    = "Opaque"
-      serviceAccountName      = "workload-identity-sa"
+      serviceAccountName      = var.cluster_b_secret_sync_identity.client_id
       objectSecretMapping = [
+        # Server Certificates
         {
-          sourcePath = "l4-server-root-ca-crt"
-          targetKey  = "l4-server-root-ca-crt"
+          sourcePath = "server-root-ca-crt"
+          targetKey  = "server-root-ca-crt"
         },
         {
-          sourcePath = "l4-server-intermediate-ca-crt"
-          targetKey  = "l4-server-intermediate-ca-crt"
+          sourcePath = "server-intermediate-ca-crt"
+          targetKey  = "server-intermediate-ca-crt"
         },
         {
-          sourcePath = "l4-server-leaf-ca-crt"
-          targetKey  = "l4-server-leaf-ca-crt"
+          sourcePath = "server-leaf-ca-crt"
+          targetKey  = "server-leaf-ca-crt"
         },
         {
-          sourcePath = "l4-server-leaf-ca-key"
-          targetKey  = "l4-server-leaf-ca-key"
-        }
-      ]
-    }
-  }
-
-  depends_on = [azapi_resource.cluster_b_secret_provider_class]
-}
-
-// Secret Sync for Cluster B Client Certificates
-resource "azapi_resource" "cluster_b_client_secret_sync" {
-  type      = "Microsoft.SecretSyncController/secretSyncs@2024-08-21-preview"
-  name      = "client-certificates-sync"
-  location  = var.cluster_b_location
-  parent_id = var.cluster_b_resource_group.id
-
-  body = {
-    extendedLocation = {
-      name = var.cluster_b_custom_location_id
-      type = "CustomLocation"
-    }
-    properties = {
-      secretProviderClassName = azapi_resource.cluster_b_secret_provider_class.name
-      kubernetesSecretType    = "Opaque"
-      serviceAccountName      = "workload-identity-sa"
-      objectSecretMapping = [
+          sourcePath = "server-leaf-ca-key"
+          targetKey  = "server-leaf-ca-key"
+        },
+        # Client Certificates
         {
-          sourcePath = "l4-client-root-ca-crt"
-          targetKey  = "l4-client-root-ca-crt"
+          sourcePath = "client-root-ca-crt"
+          targetKey  = "client-root-ca-crt"
         },
         {
-          sourcePath = "l4-client-intermediate-ca-crt"
-          targetKey  = "l4-client-intermediate-ca-crt"
+          sourcePath = "client-intermediate-ca-crt"
+          targetKey  = "client-intermediate-ca-crt"
         },
         {
-          sourcePath = "l4-client-leaf-ca-crt"
-          targetKey  = "l4-client-leaf-ca-crt"
+          sourcePath = "client-leaf-ca-crt"
+          targetKey  = "client-leaf-ca-crt"
         },
         {
-          sourcePath = "l4-client-leaf-ca-key"
-          targetKey  = "l4-client-leaf-ca-key"
+          sourcePath = "client-leaf-ca-key"
+          targetKey  = "client-leaf-ca-key"
         }
       ]
     }

@@ -214,60 +214,60 @@ locals {
 
 resource "local_file" "server_root_ca_cert" {
   content  = tls_self_signed_cert.server_root_ca.cert_pem
-  filename = "${var.certs_output_directory}/l4-server-root-ca.crt"
+  filename = "${var.certs_output_directory}/server-root-ca.crt"
 }
 
 resource "local_file" "server_root_ca_key" {
   content  = tls_private_key.server_root_ca.private_key_pem
-  filename = "${var.certs_output_directory}/l4-server-root-ca.key"
+  filename = "${var.certs_output_directory}/server-root-ca.key"
 }
 
 resource "local_file" "server_intermediate_ca_cert" {
   content  = tls_locally_signed_cert.server_intermediate_ca.cert_pem
-  filename = "${var.certs_output_directory}/l4-server-intermediate-ca.crt"
+  filename = "${var.certs_output_directory}/server-intermediate-ca.crt"
 }
 
 resource "local_file" "server_intermediate_ca_key" {
   content  = tls_private_key.server_intermediate_ca.private_key_pem
-  filename = "${var.certs_output_directory}/l4-server-intermediate-ca.key"
+  filename = "${var.certs_output_directory}/server-intermediate-ca.key"
 }
 
 resource "local_file" "server_leaf_cert" {
   content  = local.server_cert_bundle
-  filename = "${var.certs_output_directory}/l4-server-leaf-ca.crt"
+  filename = "${var.certs_output_directory}/server-leaf-ca.crt"
 }
 
 resource "local_file" "server_leaf_key" {
   content  = tls_private_key.server_leaf.private_key_pem
-  filename = "${var.certs_output_directory}/l4-server-leaf-ca.key"
+  filename = "${var.certs_output_directory}/server-leaf-ca.key"
 }
 
 resource "local_file" "client_root_ca_cert" {
   content  = tls_self_signed_cert.client_root_ca.cert_pem
-  filename = "${var.certs_output_directory}/l4-client-root-ca.crt"
+  filename = "${var.certs_output_directory}/client-root-ca.crt"
 }
 
 resource "local_file" "client_root_ca_key" {
   content  = tls_private_key.client_root_ca.private_key_pem
-  filename = "${var.certs_output_directory}/l4-client-root-ca.key"
+  filename = "${var.certs_output_directory}/client-root-ca.key"
 }
 
 resource "local_file" "client_intermediate_ca_cert" {
   content  = tls_locally_signed_cert.client_intermediate_ca.cert_pem
-  filename = "${var.certs_output_directory}/l4-client-intermediate-ca.crt"
+  filename = "${var.certs_output_directory}/client-intermediate-ca.crt"
 }
 
 resource "local_file" "client_intermediate_ca_key" {
   content  = tls_private_key.client_intermediate_ca.private_key_pem
-  filename = "${var.certs_output_directory}/l4-client-intermediate-ca.key"
+  filename = "${var.certs_output_directory}/client-intermediate-ca.key"
 }
 
 resource "local_file" "client_leaf_cert" {
   content  = local.client_cert_bundle
-  filename = "${var.certs_output_directory}/l4-client-leaf-ca.crt"
+  filename = "${var.certs_output_directory}/client-leaf-ca.crt"
 }
 
 resource "local_file" "client_leaf_key" {
   content  = tls_private_key.client_leaf.private_key_pem
-  filename = "${var.certs_output_directory}/l4-client-leaf-ca.key"
+  filename = "${var.certs_output_directory}/client-leaf-ca.key"
 }
