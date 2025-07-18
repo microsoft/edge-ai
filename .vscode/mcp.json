@@ -9,6 +9,18 @@
         "--rm",
         "hashicorp/terraform-mcp-server"
       ]
+    },
+    "crisp": {
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-i",
+        "--name",
+        "crisp-mcp-server",
+        "anmalkov/mcp-crisp:latest"
+      ],
+      "env": {}
     }
   }
 }
