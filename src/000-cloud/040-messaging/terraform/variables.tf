@@ -2,13 +2,13 @@
  * Optional Variables
  */
 
-variable "should_create_event_hubs" {
+variable "should_create_eventhub" {
   description = "Whether to create the Event Hubs resources."
   type        = bool
   default     = true
 }
 
-variable "should_create_event_grid" {
+variable "should_create_eventgrid" {
   description = "Whether to create the Event Grid resources."
   type        = bool
   default     = true
@@ -21,38 +21,46 @@ variable "should_create_azure_functions" {
 }
 
 # Event Hub configuration parameters
-variable "event_hub_capacity" {
+variable "eventhub_capacity" {
   description = "Specifies the Capacity / Throughput Units for Event Hub namespace."
   type        = number
   default     = 1
 }
 
-variable "event_hub_message_retention" {
-  description = "Specifies the number of days to retain events for Event Hub, from 1 to 7 days."
-  type        = number
-  default     = 1
-}
+variable "eventhubs" {
+  description = <<-EOF
+    Per-Event Hub configuration. Keys are Event Hub names.
 
-variable "event_hub_partition_count" {
-  description = "Specifies the number of partitions for Event Hub. Valid values are from 1 to 32."
-  type        = number
-  default     = 1
+    - **Message retention**: Specifies the number of days to retain events for this Event Hub, from 1 to 7.
+    - **Partition count**: Specifies the number of partitions for the Event Hub. Valid values are from 1 to 32.
+    - **Consumer group user metadata**: A placeholder to store user-defined string data with maximum length 1024.
+      It can be used to store descriptive data, such as list of teams and their contact information,
+      or user-defined configuration settings.
+  EOF
+  type = map(object({
+    message_retention = optional(number, 1)
+    partition_count   = optional(number, 1)
+    consumer_groups = optional(map(object({
+      user_metadata = optional(string, null)
+    })), {})
+  }))
+  default = { "evh-aio-sample" = {} }
 }
 
 # Event Grid configuration parameters
-variable "event_grid_capacity" {
+variable "eventgrid_capacity" {
   description = "Specifies the Capacity / Throughput Units for Event Grid namespace."
   type        = number
   default     = 1
 }
 
-variable "event_grid_max_client_sessions" {
+variable "eventgrid_max_client_sessions" {
   description = "Specifies the maximum number of client sessions per authentication name."
   type        = number
   default     = 8
 }
 
-variable "event_grid_topic_name" {
+variable "eventgrid_topic_name" {
   description = "Topic template name to create in the Event Grid namespace."
   type        = string
   default     = "default"

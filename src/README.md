@@ -68,7 +68,7 @@ engineers can deploy the `100-edge` components for on-premises cluster set-up.
 
 ## Prerequisites and Setting Up Your Environment
 
-> Please refer to the [Root README](../README.md) for a complete list of prerequisites and setup instructions, ensure your Azure CLI is correctly configured with your subscription context set correctly.
+> Please refer to the [root README](../README.md) for a complete list of prerequisites and setup instructions, ensure your Azure CLI is correctly configured with your subscription context set correctly.
 > For a step-by-step guide with details, follow the instructions [Getting Started and Prerequisites Setup](../README.md#getting-started-and-environment-setup).
 
 ## Terraform Components - Getting Started
@@ -102,27 +102,24 @@ Set up terraform settings and apply them:
 
 1. cd into the `<component>/ci/terraform` directory
 
-   ```sh
-   cd ./ci/terraform
-   ```
+    ```sh
+    cd ./ci/terraform
+    ```
 
-2. Set up required env vars:
+1. Set up required env vars:
 
-   ```sh
-   # Dynamically get the Subscription ID or manually get and pass to ARM_SUBSCRIPTION_ID
-   current_subscription_id=$(az account show --query id -o tsv)
-   export ARM_SUBSCRIPTION_ID="$current_subscription_id"
-   ```
+    ```sh
+    # Required by the azurerm terraform provider
+    export ARM_SUBSCRIPTION_ID=$(az account show --query id -o tsv)
+    ```
 
-3. Create a `terraform.tfvars` file with at least the following minimum configuration settings:
+1. Create a `terraform.tfvars` file with at least the following minimum configuration settings:
 
    ```hcl
    # Required, environment hosting resource: "dev", "prod", "test", etc...
    environment     = "<environment>"
    # Required, short unique alphanumeric string: "sample123", "plantwa", "uniquestring", etc...
    resource_prefix = "<resource-prefix>"
-   # Required, region location: "eastus2", "westus3", etc...
-   location        = "<location>"
    # Optional, instance/replica number: "001", "002", etc...
    instance        = "<instance>"
    ```
@@ -133,16 +130,28 @@ Set up terraform settings and apply them:
    > [!NOTE]: To have Terraform automatically use your variables you can name your tfvars file `terraform.auto.tfvars`.
    > Terraform will use variables from any `*.auto.tfvars` files located in the same deployment folder.
 
-4. Initialize and apply terraform
+1. Create necessary components. Anything in `ci/terraform/main.tf` that is of type `data` rather than `resource` needs to be pre-created. Common components include resource group and UAMI. Referenced variables should match your `terraform.tfvars` file.
 
-   ```sh
-   # Pulls down providers and modules, initializes state and backend
-   # Use '-update -reconfigure' if provider or backend updates are required
-   terraform init # -update -reconfigure
+    ```sh
+    # Create resource group
+    az group create --resource-group "rg-$resource_prefix-$environment-$instance" --location westus3
 
-   # Review resource change list, then type 'y' enter to deploy, or, deploy with '-auto-approve'
-   terraform apply -var-file=terraform.tfvars # -auto-approve
-   ```
+    # Create UAMI
+    az identity --resource-group "rg-$resource_prefix-$environment-$instance" --name "id-$resource_prefix-aio-$environment-$instance"
+    ```
+
+    Some modules may require more (or fewer) pre-created resources.
+
+1. Initialize and apply terraform
+
+    ```sh
+    # Pulls down providers and modules, initializes state and backend
+    # Use '-update -reconfigure' if provider or backend updates are required
+    terraform init # -update -reconfigure
+
+    # Review resource change list, then type 'y' enter to deploy, or, deploy with '-auto-approve'
+    terraform apply -var-file=terraform.tfvars # -auto-approve
+    ```
 
 #### Terraform - Destroy Resources
 
@@ -162,24 +171,20 @@ If deleting manually, be sure delete your local state representation by removing
 
 #### Terraform - Scripts
 
-Scripts for deploying all Terraform CI is included with the `operate-all-terraform.sh` script. This script helps
-assist in automatically deploying each individual Terraform component, in order:
+Scripts for deploying all Terraform CI is included with the `operate-all-terraform.sh` script. This script helps assist in automatically deploying each individual Terraform component, in order:
 
-1. Refer to [Terraform - Create Resources](#terraform---create-resources) above to add a `terraform.tfvars`
-   located at `src/terraform.tfvars`.
+1. Refer to [Terraform - Create Resources](#terraform---create-resources) above to add a `terraform.tfvars` located at `src/terraform.tfvars`.
 
-2. Execute `operate-all-terraform.sh`
+1. Execute `operate-all-terraform.sh`
 
-   ```sh
-   # Use '--start-layer' and '--end-layer' to specify where the script should start and end deploying.
-   ./operate-all-terraform.sh # --start-layer 030-iot-ops-cloud-reqs --end-layer 040-iot-ops
-   ```
+    ```sh
+    # Use '--start-layer' and '--end-layer' to specify where the script should start and end deploying.
+    ./operate-all-terraform.sh # --start-layer 030-iot-ops-cloud-reqs --end-layer 040-iot-ops
+    ```
 
 ### Terraform - Generating Docs
 
-To simplify doc generation, this directory makes use of [terraform-docs](https://terraform-docs.io/). To generate docs
-for new modules or
-re-generate docs for existing modules, run the following command from the root of this repository:
+To simplify doc generation, this directory makes use of [terraform-docs](https://terraform-docs.io/). To generate docs for new modules or re-generate docs for existing modules, run the following command from the root of this repository:
 
 ```sh
 ./scripts/update-all-terraform-docs.sh
@@ -189,13 +194,12 @@ This generates docs based on the configuration defined in `terraform-docs.yml`, 
 
 ### Terraform - Testing
 
-Each Terraform component under `src/<component>/terraform` includes Terraform tests. To run these tests, ensure you have
-completed an `az login` into your Azure subscription. `cd` into the `terraform` directory that you would like to test.
+Each Terraform component under `src/<component>/terraform` includes Terraform tests. To run these tests, ensure you have logged into your Azure subscription. `cd` into the `terraform` directory that you would like to test.
 Then execute following commands:
 
 ```sh
 # Required by the azurerm terraform provider
-export ARM_SUBSCRIPTION_ID="<SUBSCRIPTION_ID>"
+export ARM_SUBSCRIPTION_ID=$(az account show --query id -o tsv)
 # Runs the tests if there is a tests folder in the same directory.
 terraform test
 ```
@@ -206,12 +210,12 @@ can be done by using the following set of commands:
 
 ```sh
 # Terraform is case-sensitive with variable names provided by environment variables
-export TF_VAR_custom_locations_oid
-export ARM_SUBSCRIPTION_ID="<SUBSCRIPTION_ID>"
+export TF_VAR_CUSTOM_LOCATIONS_OID=$(az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv)
+export ARM_SUBSCRIPTION_ID=$(az account show --query id -o tsv)
 terraform test
 
 # Additionally, you can use the '-var' parameter to pass variables on the command line
-# terraform test -var custom_locations_oid=$(TF_VAR_CUSTOM_LOCATIONS_OID)
+# terraform test -var custom_locations_oid=$TF_VAR_CUSTOM_LOCATIONS_OID
 ```
 
 ## Bicep Components - Getting Started
@@ -235,51 +239,52 @@ Set up Bicep parameters and deploy:
 
 1. cd into the `<component>/ci/bicep` directory
 
-   ```sh
-   cd ./component-directory/ci/bicep
-   ```
+    ```sh
+    cd ./component-directory/ci/bicep
+    ```
 
-1. Create a resource group for your deployment
+1. Create a resource group for your deployment:
 
-   ```sh
-   # Replace with your preferred location
-   LOCATION="eastus2"
-   # Create a unique resource group name
-   RESOURCE_GROUP_NAME="rg-aio-bicep-deployment"
+    ```sh
+    # Replace with your preferred location
+    LOCATION="eastus2"
+    # Create a unique resource group name
+    RESOURCE_GROUP_NAME="rg-aio-bicep-deployment"
 
-   # Create the resource group
-   az group create --name $RESOURCE_GROUP_NAME --location $LOCATION
-   ```
+    # Create the resource group
+    az group create --resource_group $RESOURCE_GROUP_NAME --location $LOCATION
+    ```
 
 1. Create a parameter file named `main.dev.bicepparam` in the `ci/bicep` directory with your deployment parameters:
 
-   ```bicep
-   // Parameters for component deployment
-   using './bicep/main.bicep'
+    ```bicep
+    // Parameters for component deployment
+    using './bicep/main.bicep'
 
-   // Required parameters
-   param common = {
-     resourcePrefix: 'myprefix'     // Replace with a unique prefix
-     location: 'eastus2'            // Replace with your Azure region
-     environment: 'dev'             // 'dev', 'test', or 'prod'
-     instance: '001'                // Instance identifier
-   }
+    // Required parameters
+    param common = {
+      resourcePrefix: 'myprefix'     // Replace with a unique prefix
+      location: 'eastus2'            // Replace with your Azure region
+      environment: 'dev'             // 'dev', 'test', or 'prod'
+      instance: '001'                // Instance identifier
+    }
 
-   // Component-specific parameters will vary based on the component
-   // Example additional parameters:
-   // param storageAccountSku = 'Standard_LRS'
-   // param enableDiagnostics = true
-   ```
+    // Component-specific parameters will vary based on the component
+    // Example additional parameters:
+    // param storageAccountSku = 'Standard_LRS'
+    // param enableDiagnostics = true
+    ```
 
-1. Deploy the Bicep template
+1. Deploy the Bicep template with your chosen deployment name:
 
-   ```sh
-   # Deploy a specific component
-   az deployment group create \
-     --name <deployment-name> \
-     --resource-group $RESOURCE_GROUP_NAME \
-     --parameters ./main.dev.bicepparam
-   ```
+    ```sh
+    DEPLOYMENT_NAME=YourDeploymentName
+    # Deploy a specific component
+    az deployment group create \
+      --name $DEPLOYMENT_NAME \
+      --resource-group $RESOURCE_GROUP_NAME \
+      --parameters ./main.dev.bicepparam
+    ```
 
 #### Bicep - Cleanup Resources
 
@@ -287,7 +292,7 @@ To remove resources created by Bicep deployments, you can:
 
 ```sh
 # Remove a specific deployment
-az deployment group delete --resource-group $RESOURCE_GROUP_NAME --name <deployment-name>
+az deployment group delete --resource-group $RESOURCE_GROUP_NAME --name $DEPLOYMENT_NAME
 
 # Remove the entire resource group and all resources
 az group delete --name $RESOURCE_GROUP_NAME --no-wait

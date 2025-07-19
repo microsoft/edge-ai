@@ -1,16 +1,16 @@
-output "event_grid" {
+output "eventgrid" {
   description = "Event Grid configuration including topic name and endpoint"
-  value       = try(module.event_grid[0].event_grid, null)
+  value       = try(module.eventgrid[0].eventgrid, null)
 }
 
-output "event_grid_endpoint" {
-  description = "The Event Grid endpoint URL for MQTT connections"
-  value       = try(module.event_grid[0].event_grid.endpoint, null)
+output "eventhub_namespace" {
+  description = "Event Hub namespace configuration"
+  value       = try(module.eventhub[0].eventhub_namespace, null)
 }
 
-output "event_hub" {
-  description = "Event Hub configuration including connection string and endpoint"
-  value       = try(module.event_hubs[0].event_hub, null)
+output "eventhubs" {
+  description = "Event Hub(s) configuration"
+  value       = try(module.eventhub[0].eventhubs, null)
 }
 
 /*

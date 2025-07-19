@@ -16,5 +16,5 @@ module "cloud_fabric" {
   should_create_fabric_eventstream = var.should_create_fabric_eventstream
   should_create_fabric_lakehouse   = var.should_create_fabric_lakehouse
   should_create_fabric_workspace   = var.should_create_fabric_workspace
-  // eventhub_endpoint = module.cloud_messaging.event_hub. fill_in
+  // eventhub_endpoint = module.cloud_messaging.eventhubs. fill_in
 }

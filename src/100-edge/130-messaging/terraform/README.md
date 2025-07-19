@@ -1,6 +1,9 @@
 <!-- BEGIN_TF_DOCS -->
 <!-- markdown-table-prettify-ignore-start -->
-# Terraform IaC
+# Messaging
+
+Creates Azure IoT Operations dataflows for messaging scenarios including
+Event Hub and Event Grid endpoints for edge-to-cloud data transmission.
 
 ## Requirements
 
@@ -14,8 +17,8 @@
 
 | Name | Source | Version |
 |------|--------|---------|
-| sample\_event\_grid\_dataflow | ./modules/event-grid | n/a |
-| sample\_event\_hub\_dataflow | ./modules/event-hub | n/a |
+| sample\_eventgrid\_dataflow | ./modules/eventgrid | n/a |
+| sample\_eventhub\_dataflow | ./modules/eventhub | n/a |
 
 ## Inputs
 
@@ -28,8 +31,10 @@
 | environment | Environment for all resources in this module: dev, test, or prod | `string` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
 | asset\_name | The name of the Azure IoT Operations Device Registry Asset resource to send its data from edge to cloud. | `string` | `"oven"` | no |
-| event\_grid | Values for the existing Event Grid | ```object({ topic_name = string endpoint = string })``` | `null` | no |
-| event\_hub | Values for the existing Event Hub namespace and Event Hub | ```object({ namespace_name = string event_hub_name = string })``` | `null` | no |
+| eventgrid | Values for the existing Event Grid | ```object({ topic_name = string endpoint = string })``` | `null` | no |
+| eventhub | Values for the existing Event Hub namespace and Event Hub | ```object({ namespace_name = string eventhub_name = string })``` | `null` | no |
 | instance | Instance identifier for naming resources: 001, 002, etc... | `string` | `"001"` | no |
+| should\_create\_eventgrid\_dataflows | Whether to create event grid dataflows. | `bool` | `true` | no |
+| should\_create\_eventhub\_dataflows | Whether to create event hub dataflows. | `bool` | `true` | no |
 <!-- markdown-table-prettify-ignore-end -->
 <!-- END_TF_DOCS -->

@@ -11,6 +11,7 @@
 		"tf-docs": "./scripts/update-all-terraform-docs.sh",
 		"bicep-docs": "./scripts/update-all-bicep-docs.sh",
 		"tflint-fix": "mega-linter-runner --env \"'ENABLE_LINTERS=TERRAFORM_TERRAFORM_FMT,TERRAFORM_TFLINT'\" --fix",
+		"tf-validate": "bash -c 'set -e; trap \"echo; echo Interrupted.; exit 130\" INT; source ./scripts/az-sub-init.sh && find blueprints src -name \"terraform\" -type d 2>/dev/null | while read dir; do if compgen -G \"$dir/*.tf\" > /dev/null; then echo \"Processing $dir...\"; pushd \"$dir\"; terraform init -upgrade; terraform validate; terraform fmt -recursive; popd; else echo \"Skipping $dir (no .tf files found)\"; fi; done'",
 		"lint-devcontainer": "mega-linter-runner --env \"'BICEP_BICEP_LINTER_ARGUMENTS=--outdir ./megalinter-reports'\"",
 		"lint-fix-devcontainer": "mega-linter-runner --env \"'BICEP_BICEP_LINTER_ARGUMENTS=--outdir ./megalinter-reports'\" --fix",
 		"format-tables": "markdown-table-formatter \"{.github,node_modules,**}/*.md\"",

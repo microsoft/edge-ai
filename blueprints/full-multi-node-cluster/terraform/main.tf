@@ -55,7 +55,7 @@ module "cloud_fabric" {
   should_create_fabric_eventstream = var.should_create_fabric
   should_create_fabric_lakehouse   = var.should_create_fabric
   should_create_fabric_workspace   = var.should_create_fabric
-  // eventhub_endpoint = module.cloud_messaging.event_hub. fill_in
+  // eventhub_endpoint = module.cloud_messaging.eventhubs. fill_in
 }
 
 module "cloud_messaging" {
@@ -206,6 +206,6 @@ module "edge_messaging" {
   aio_dataflow_profile = module.edge_iot_ops.aio_dataflow_profile
   aio_instance         = module.edge_iot_ops.aio_instance
   aio_identity         = module.cloud_security_identity.aio_identity
-  event_grid           = module.cloud_messaging.event_grid
-  event_hub            = module.cloud_messaging.event_hub
+  eventgrid            = module.cloud_messaging.eventgrid
+  eventhub             = module.cloud_messaging.eventhubs[0]
 }

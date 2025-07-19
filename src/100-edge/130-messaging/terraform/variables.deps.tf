@@ -34,16 +34,16 @@ variable "aio_dataflow_profile" {
  * Optional
  */
 
-variable "event_hub" {
+variable "eventhub" {
   description = "Values for the existing Event Hub namespace and Event Hub"
   type = object({
     namespace_name = string
-    event_hub_name = string
+    eventhub_name  = string
   })
   default = null
 }
 
-variable "event_grid" {
+variable "eventgrid" {
   description = "Values for the existing Event Grid"
   type = object({
     topic_name = string

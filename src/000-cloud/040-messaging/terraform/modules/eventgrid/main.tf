@@ -12,11 +12,11 @@ resource "azurerm_eventgrid_namespace" "aio_eg_ns" {
   capacity            = var.capacity
 
   topic_spaces_configuration {
-    maximum_client_sessions_per_authentication_name = var.event_grid_max_client_sessions_per_auth_name
+    maximum_client_sessions_per_authentication_name = var.eventgrid_max_client_sessions_per_auth_name
   }
 }
 
-resource "azapi_resource" "event_grid_namespace_topic_space" {
+resource "azapi_resource" "eventgrid_namespace_topic_space" {
   type      = "Microsoft.EventGrid/namespaces/topicSpaces@2024-12-15-preview"
   parent_id = azurerm_eventgrid_namespace.aio_eg_ns.id
   name      = "evgts-${var.resource_prefix}-${var.environment}-aio-${var.instance}"
@@ -30,7 +30,7 @@ resource "azapi_resource" "event_grid_namespace_topic_space" {
 }
 
 resource "azurerm_role_assignment" "data_sender" {
-  scope                = azapi_resource.event_grid_namespace_topic_space.id
+  scope                = azapi_resource.eventgrid_namespace_topic_space.id
   role_definition_name = "EventGrid TopicSpaces Publisher"
   principal_id         = var.aio_uami_principal_id
 }

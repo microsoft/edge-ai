@@ -21,8 +21,8 @@ Provisions the ARM based data flow endpoint and data flow for Event Grid, requir
 
 | Name | Type |
 |------|------|
-| [azapi_resource.dataflow_endpoint_to_event_grid](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) | resource |
-| [azapi_resource.dataflow_to_event_grid](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) | resource |
+| [azapi_resource.dataflow_endpoint_to_eventgrid](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) | resource |
+| [azapi_resource.dataflow_to_eventgrid](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) | resource |
 
 ## Inputs
 
@@ -35,7 +35,7 @@ Provisions the ARM based data flow endpoint and data flow for Event Grid, requir
 | asset\_name | The name of the Azure IoT Operations Device Registry Asset resource to send its data from edge to cloud. | `string` | n/a | yes |
 | custom\_location\_id | The resource ID of the Custom Location. | `string` | n/a | yes |
 | environment | Environment for all resources in this module: dev, test, or prod | `string` | n/a | yes |
-| event\_grid | Values for the existing Event Grid | ```object({ topic_name = string endpoint = string })``` | n/a | yes |
+| eventgrid | Values for the existing Event Grid | ```object({ topic_name = string endpoint = string })``` | n/a | yes |
 | instance | Instance identifier for naming resources: 001, 002, etc... | `string` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
 <!-- markdown-table-prettify-ignore-end -->

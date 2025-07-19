@@ -69,6 +69,7 @@ You MUST ALWAYS meticulously follow these Terraform standards and conventions wi
   - Hyphens allowed: `{resource_abbreviation}-${var.resource_prefix}-{optional_extra}-${var.environment}-${var.instance}`
   - Hyphens not allowed: `{resource_abbreviation}${var.resource_prefix}{optional_extra}${var.environment}${var.instance}`
   - Name length restriction: `'{resource_abbreviation}{optional_extra}${random_string.resource}'`
+- **Map-based resources**: When using `for_each` with map variables, use `name = each.key` directly UNLESS variable documentation specifies otherwise
 
 #### Outputs
 
@@ -133,7 +134,7 @@ resource "azapi_resource" "dataflow_endpoint" {
     properties = {
       endpointType = "Kafka"
       kafkaSettings = {
-        host = "${var.event_hub.namespace_name}.servicebus.windows.net:9093"
+        host = "${var.eventhub.namespace_name}.servicebus.windows.net:9093"
         batching = {
           latencyMs   = 0
           maxMessages = 100
