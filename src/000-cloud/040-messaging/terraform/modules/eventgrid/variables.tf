@@ -33,27 +33,23 @@ variable "capacity" {
   type        = number
   default     = 1
   validation {
-    condition     = var.capacity >= 1 && var.capacity <= 20
-    error_message = "Capacity must be between 1 and 20."
+    condition     = var.capacity >= 1 && var.capacity <= 40
+    error_message = "Capacity must be between 1 and 40."
   }
 }
 
-variable "message_retention" {
-  description = "Specifies the number of days to retain events for this Event Hub, from 1 to 7 days."
+variable "eventgrid_max_client_sessions_per_auth_name" {
+  description = "Specifies the maximum number of client sessions per authentication name. Valid values are from 3 to 100. This parameter should be greater than the number of dataflows"
   type        = number
-  default     = 1
+  default     = 8
   validation {
-    condition     = var.message_retention >= 1 && var.message_retention <= 7
-    error_message = "Message retention must be between 1 and 7 days."
+    condition     = var.eventgrid_max_client_sessions_per_auth_name >= 3 && var.eventgrid_max_client_sessions_per_auth_name <= 100
+    error_message = "Partition count must be between 1 and 100."
   }
 }
 
-variable "partition_count" {
-  description = "Specifies the number of partitions for the Event Hub. Valid values are from 1 to 32."
-  type        = number
-  default     = 1
-  validation {
-    condition     = var.partition_count >= 1 && var.partition_count <= 32
-    error_message = "Partition count must be between 1 and 32."
-  }
+variable "topic_name" {
+  description = "Topic template name to create in the Event Grid namespace"
+  type        = string
+  default     = "default"
 }

@@ -21,6 +21,7 @@ module "ci" {
   resource_prefix = var.resource_prefix
   environment     = var.environment
   instance        = var.instance
+  eventhubs       = var.eventhubs
   resource_group  = data.azurerm_resource_group.aio
   aio_identity    = data.azurerm_user_assigned_identity.aio
 }

@@ -21,7 +21,7 @@ Create a new Event Grid namespace and namespace topic and assign the AIO instanc
 
 | Name | Type |
 |------|------|
-| [azapi_resource.event_grid_namespace_topic_space](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) | resource |
+| [azapi_resource.eventgrid_namespace_topic_space](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) | resource |
 | [azurerm_eventgrid_namespace.aio_eg_ns](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/eventgrid_namespace) | resource |
 | [azurerm_role_assignment.data_sender](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) | resource |
 
@@ -36,13 +36,13 @@ Create a new Event Grid namespace and namespace topic and assign the AIO instanc
 | resource\_group\_name | The name for the resource group. | `string` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
 | capacity | Specifies the Capacity / Throughput Units for a Standard SKU namespace. | `number` | `1` | no |
-| event\_grid\_max\_client\_sessions\_per\_auth\_name | Specifies the maximum number of client sessions per authentication name. Valid values are from 3 to 100. This parameter should be greater than the number of dataflows | `number` | `8` | no |
+| eventgrid\_max\_client\_sessions\_per\_auth\_name | Specifies the maximum number of client sessions per authentication name. Valid values are from 3 to 100. This parameter should be greater than the number of dataflows | `number` | `8` | no |
 | topic\_name | Topic template name to create in the Event Grid namespace | `string` | `"default"` | no |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| event\_grid | n/a |
+| eventgrid | n/a |
 <!-- markdown-table-prettify-ignore-end -->
 <!-- END_TF_DOCS -->

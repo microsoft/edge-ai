@@ -1,12 +1,6 @@
-mock_provider "azurerm" {
-  override_resource {
-    target = azurerm_resource_group.this
-    values = {
-      id       = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg"
-      name     = "test-rg"
-      location = "eastus"
-    }
-  }
+provider "azurerm" {
+  storage_use_azuread = true
+  features {}
 }
 
 # Call the setup module to create a random resource prefix
@@ -17,7 +11,7 @@ run "setup_tests" {
 }
 
 # Test that Event Hubs Data Sender role is assigned when Event Hubs is created
-run "verify_event_hubs_role_assignment" {
+run "verify_eventhub_configuration" {
   command = plan
 
   variables {
@@ -28,13 +22,13 @@ run "verify_event_hubs_role_assignment" {
     instance        = "001"
 
     # Only create Event Hubs
-    should_create_event_hubs = true
-    should_create_event_grid = false
+    should_create_eventhub  = true
+    should_create_eventgrid = false
   }
 
   # Verify the Azure Event Hubs Data Sender role is assigned to the AIO identity
   assert {
-    condition     = module.event_hubs[0].event_hub != null
+    condition     = module.eventhub[0].eventhubs != null
     error_message = "Event Hub should be created"
   }
 
@@ -42,13 +36,13 @@ run "verify_event_hubs_role_assignment" {
   # we'll verify that the Event Hub module was created, which indirectly indicates
   # the role assignment would be created as part of the module
   assert {
-    condition     = length(module.event_hubs) == 1
+    condition     = length(module.eventhub) == 1
     error_message = "The Event Hubs module should be created, which would include the role assignment"
   }
 }
 
 # Test that EventGrid TopicSpaces Publisher role is assigned when Event Grid is created
-run "verify_event_grid_role_assignment" {
+run "verify_eventgrid_role_assignment" {
   command = plan
 
   variables {
@@ -59,13 +53,13 @@ run "verify_event_grid_role_assignment" {
     instance        = "001"
 
     # Only create Event Grid
-    should_create_event_hubs = false
-    should_create_event_grid = true
+    should_create_eventhub  = false
+    should_create_eventgrid = true
   }
 
   # Verify the EventGrid TopicSpaces Publisher role is assigned to the AIO identity
   assert {
-    condition     = module.event_grid[0].event_grid != null
+    condition     = module.eventgrid[0].eventgrid != null
     error_message = "Event Grid should be created"
   }
 
@@ -73,7 +67,7 @@ run "verify_event_grid_role_assignment" {
   # we'll verify that the Event Grid module was created, which indirectly indicates
   # the role assignment would be created as part of the module
   assert {
-    condition     = length(module.event_grid) == 1
+    condition     = length(module.eventgrid) == 1
     error_message = "The Event Grid module should be created, which would include the role assignment"
   }
 }

@@ -93,7 +93,8 @@ This messaging infrastructure integrates with all major components:
 
 ### Terraform
 
-Refer to [Terraform Components - Getting Started](../README.md#terraform-components---getting-started) for deployment instructions.
+Refer to [Terraform Components - Getting Started](../../README.md#terraform-components---getting-started) for
+deployment instructions.
 
 Learn more about the required configuration by reading the [./terraform/README.md](./terraform/README.md)
 

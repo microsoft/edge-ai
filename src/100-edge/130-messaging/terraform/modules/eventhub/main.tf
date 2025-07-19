@@ -4,7 +4,7 @@
  * Provisions the ARM based data flow endpoint and data flow, requires Asset
  */
 
-resource "azapi_resource" "dataflow_endpoint_to_event_hub" {
+resource "azapi_resource" "dataflow_endpoint_to_eventhub" {
   type      = "Microsoft.IoTOperations/instances/dataflowEndpoints@2024-11-01"
   name      = "dfe-eh-${var.resource_prefix}-${var.environment}-sample-${var.instance}"
   parent_id = var.aio_instance.id
@@ -17,7 +17,7 @@ resource "azapi_resource" "dataflow_endpoint_to_event_hub" {
     properties = {
       endpointType = "Kafka"
       kafkaSettings = {
-        host = "${var.event_hub.namespace_name}.servicebus.windows.net:9093"
+        host = "${var.eventhub.namespace_name}.servicebus.windows.net:9093"
         batching = {
           latencyMs   = 0
           maxMessages = 100
@@ -37,7 +37,7 @@ resource "azapi_resource" "dataflow_endpoint_to_event_hub" {
   }
 }
 
-resource "azapi_resource" "dataflow_to_event_hub" {
+resource "azapi_resource" "dataflow_to_eventhub" {
   type      = "Microsoft.IoTOperations/instances/dataflowProfiles/dataflows@2024-11-01"
   name      = "df-eh-${var.resource_prefix}-${var.environment}-passthrough-${var.instance}"
   parent_id = var.aio_dataflow_profile.id
@@ -75,8 +75,8 @@ resource "azapi_resource" "dataflow_to_event_hub" {
         {
           operationType = "Destination"
           destinationSettings = {
-            endpointRef     = azapi_resource.dataflow_endpoint_to_event_hub.name
-            dataDestination = var.event_hub.event_hub_name
+            endpointRef     = azapi_resource.dataflow_endpoint_to_eventhub.name
+            dataDestination = var.eventhub.eventhub_name
           }
         }
       ]

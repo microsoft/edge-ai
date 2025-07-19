@@ -4,7 +4,7 @@
  * Provisions the ARM based data flow endpoint and data flow for Event Grid, requires Asset
  */
 
-resource "azapi_resource" "dataflow_endpoint_to_event_grid" {
+resource "azapi_resource" "dataflow_endpoint_to_eventgrid" {
   type      = "Microsoft.IoTOperations/instances/dataflowEndpoints@2024-11-01"
   name      = "dfe-eg-${var.resource_prefix}-${var.environment}-sample-${var.instance}"
   parent_id = var.aio_instance.id
@@ -17,7 +17,7 @@ resource "azapi_resource" "dataflow_endpoint_to_event_grid" {
     properties = {
       endpointType = "Mqtt"
       mqttSettings = {
-        host = var.event_grid.endpoint
+        host = var.eventgrid.endpoint
         tls = {
           mode = "Enabled"
         }
@@ -33,7 +33,7 @@ resource "azapi_resource" "dataflow_endpoint_to_event_grid" {
   }
 }
 
-resource "azapi_resource" "dataflow_to_event_grid" {
+resource "azapi_resource" "dataflow_to_eventgrid" {
   type      = "Microsoft.IoTOperations/instances/dataflowProfiles/dataflows@2024-11-01"
   name      = "df-eg-${var.resource_prefix}-${var.environment}-passthrough-${var.instance}"
   parent_id = var.aio_dataflow_profile.id
@@ -71,8 +71,8 @@ resource "azapi_resource" "dataflow_to_event_grid" {
         {
           operationType = "Destination"
           destinationSettings = {
-            endpointRef     = azapi_resource.dataflow_endpoint_to_event_grid.name
-            dataDestination = var.event_grid.topic_name
+            endpointRef     = azapi_resource.dataflow_endpoint_to_eventgrid.name
+            dataDestination = var.eventgrid.topic_name
           }
         }
       ]

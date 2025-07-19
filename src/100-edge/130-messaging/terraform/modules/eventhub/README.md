@@ -21,8 +21,8 @@ Provisions the ARM based data flow endpoint and data flow, requires Asset
 
 | Name | Type |
 |------|------|
-| [azapi_resource.dataflow_endpoint_to_event_hub](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) | resource |
-| [azapi_resource.dataflow_to_event_hub](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) | resource |
+| [azapi_resource.dataflow_endpoint_to_eventhub](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) | resource |
+| [azapi_resource.dataflow_to_eventhub](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) | resource |
 
 ## Inputs
 
@@ -35,7 +35,7 @@ Provisions the ARM based data flow endpoint and data flow, requires Asset
 | asset\_name | The name of the Azure IoT Operations Device Registry Asset resource to send its data from edge to cloud. | `string` | n/a | yes |
 | custom\_location\_id | The resource ID of the Custom Location. | `string` | n/a | yes |
 | environment | Environment for all resources in this module: dev, test, or prod | `string` | n/a | yes |
-| event\_hub | Values for the existing Event Hub namespace and Event Hub | ```object({ namespace_name = string event_hub_name = string })``` | n/a | yes |
+| eventhub | Values for the existing Event Hub namespace and Event Hub. | ```object({ namespace_name = string eventhub_name = string })``` | n/a | yes |
 | instance | Instance identifier for naming resources: 001, 002, etc... | `string` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
 <!-- markdown-table-prettify-ignore-end -->

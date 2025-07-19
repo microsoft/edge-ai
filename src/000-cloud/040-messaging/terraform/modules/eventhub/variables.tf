@@ -1,7 +1,3 @@
-/*
- * Required Variables
- */
-
 variable "environment" {
   type        = string
   description = "Environment for all resources in this module: dev, test, or prod"
@@ -10,16 +6,35 @@ variable "environment" {
 variable "resource_prefix" {
   type        = string
   description = "Prefix for all resources in this module"
-  validation {
-    condition     = length(var.resource_prefix) > 0 && can(regex("^[a-zA-Z](?:-?[a-zA-Z0-9])*$", var.resource_prefix))
-    error_message = "Resource prefix must not be empty, must only contain alphanumeric characters and dashes. Must start with an alphabetic character."
-  }
 }
 
 variable "instance" {
   type        = string
   description = "Instance identifier for naming resources: 001, 002, etc..."
-  default     = "001"
+}
+
+variable "resource_group_name" {
+  type        = string
+  description = "The name for the resource group."
+}
+
+variable "location" {
+  type        = string
+  description = "Location for all resources in this module"
+}
+
+variable "aio_uami_principal_id" {
+  type        = string
+  description = "Principal ID of the User Assigned Managed Identity for the Azure IoT Operations instance"
+}
+
+variable "capacity" {
+  description = "Specifies the Capacity / Throughput Units for a Standard SKU namespace."
+  type        = number
+  validation {
+    condition     = var.capacity >= 1 && var.capacity <= 20
+    error_message = "Capacity must be between 1 and 20."
+  }
 }
 
 variable "eventhubs" {
@@ -39,5 +54,4 @@ variable "eventhubs" {
       user_metadata = optional(string, null)
     })), {})
   }))
-  default = { "evh-aio-sample" = {} }
 }
