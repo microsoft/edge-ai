@@ -1,13 +1,20 @@
-module "sample_event_hub_dataflow" {
-  count = var.event_hub != null ? 1 : 0
+/**
+ * # Messaging
+ *
+ * Creates Azure IoT Operations dataflows for messaging scenarios including
+ * Event Hub and Event Grid endpoints for edge-to-cloud data transmission.
+ */
 
-  source = "./modules/event-hub"
+module "sample_eventhub_dataflow" {
+  count = var.should_create_eventhub_dataflows ? 1 : 0
+
+  source = "./modules/eventhub"
 
   resource_prefix      = var.resource_prefix
   environment          = var.environment
   instance             = var.instance
   custom_location_id   = var.aio_custom_locations.id
-  event_hub            = var.event_hub
+  eventhub             = var.eventhub
   asset_name           = var.asset_name
   aio_uami_tenant_id   = var.aio_identity.tenant_id
   aio_uami_client_id   = var.aio_identity.client_id
@@ -15,17 +22,17 @@ module "sample_event_hub_dataflow" {
   aio_dataflow_profile = var.aio_dataflow_profile
 }
 
-module "sample_event_grid_dataflow" {
-  count = var.event_grid != null ? 1 : 0
+module "sample_eventgrid_dataflow" {
+  count = var.should_create_eventgrid_dataflows ? 1 : 0
 
-  source = "./modules/event-grid"
+  source = "./modules/eventgrid"
 
   resource_prefix      = var.resource_prefix
   environment          = var.environment
   instance             = var.instance
   custom_location_id   = var.aio_custom_locations.id
   aio_instance         = var.aio_instance
-  event_grid           = var.event_grid
+  eventgrid            = var.eventgrid
   asset_name           = var.asset_name
   aio_uami_tenant_id   = var.aio_identity.tenant_id
   aio_uami_client_id   = var.aio_identity.client_id

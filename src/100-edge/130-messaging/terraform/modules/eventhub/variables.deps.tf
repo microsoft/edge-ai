@@ -10,10 +10,10 @@ variable "aio_dataflow_profile" {
   })
 }
 
-variable "event_grid" {
+variable "eventhub" {
   type = object({
-    topic_name = string
-    endpoint   = string
+    namespace_name = string
+    eventhub_name  = string
   })
-  description = "Values for the existing Event Grid"
+  description = "Values for the existing Event Hub namespace and Event Hub."
 }

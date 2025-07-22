@@ -1,12 +1,6 @@
-mock_provider "azurerm" {
-  override_resource {
-    target = azurerm_resource_group.this
-    values = {
-      id       = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg"
-      name     = "test-rg"
-      location = "eastus"
-    }
-  }
+provider "azurerm" {
+  storage_use_azuread = true
+  features {}
 }
 
 # Call the setup module to create a random resource prefix
@@ -25,21 +19,26 @@ run "create_default_configuration" {
     resource_group  = run.setup_tests.resource_group
     aio_identity    = run.setup_tests.aio_identity
     instance        = "001"
-
-    # Defaults will be used
-    should_create_event_hubs      = true
-    should_create_event_grid      = true
-    should_create_azure_functions = false
   }
 
   assert {
-    condition     = module.event_hubs[0].event_hub != null
-    error_message = "Event Hub should be created with default configuration"
+    condition     = module.eventhub[0].eventhub_namespace != null && module.eventhub[0].eventhubs != null
+    error_message = "Event Hub should be created"
   }
 
   assert {
-    condition     = module.event_grid[0].event_grid != null
-    error_message = "Event Grid should be created with default configuration"
+    condition     = module.eventgrid[0].eventgrid != null
+    error_message = "Event Grid should be created"
+  }
+
+  assert {
+    condition     = length(module.app_service_plan) == 0
+    error_message = "App Service Plan should not be created when should_create_azure_functions is false"
+  }
+
+  assert {
+    condition     = length(module.azure_functions) == 0
+    error_message = "Azure Functions should not be created when should_create_azure_functions is false"
   }
 
   assert {
@@ -53,7 +52,7 @@ run "create_default_configuration" {
   }
 }
 
-run "create_only_event_hubs" {
+run "verify_eventhub_configuration" {
   command = plan
 
   variables {
@@ -64,22 +63,22 @@ run "create_only_event_hubs" {
     instance        = "001"
 
     # Only create Event Hubs
-    should_create_event_hubs = true
-    should_create_event_grid = false
+    should_create_eventhub  = true
+    should_create_eventgrid = false
   }
 
   assert {
-    condition     = module.event_hubs[0].event_hub != null
+    condition     = module.eventhub[0].eventhub_namespace != null && module.eventhub[0].eventhubs != null
     error_message = "Event Hub should be created"
   }
 
   assert {
-    condition     = length(module.event_grid) == 0
+    condition     = length(module.eventgrid) == 0
     error_message = "Event Grid should not be created"
   }
 }
 
-run "create_only_event_grid" {
+run "create_only_eventgrid" {
   command = plan
 
   variables {
@@ -90,17 +89,17 @@ run "create_only_event_grid" {
     instance        = "002"
 
     # Only create Event Grid
-    should_create_event_hubs = false
-    should_create_event_grid = true
+    should_create_eventhub  = false
+    should_create_eventgrid = true
   }
 
   assert {
-    condition     = module.event_grid[0].event_grid != null
+    condition     = module.eventgrid[0].eventgrid != null
     error_message = "Event Grid should be created"
   }
 
   assert {
-    condition     = length(module.event_hubs) == 0
+    condition     = length(module.eventhub) == 0
     error_message = "Event Hub should not be created"
   }
 }
@@ -117,8 +116,8 @@ run "create_no_messaging" {
 
     # Create none of the services
     should_create_azure_functions = false
-    should_create_event_hubs      = false
-    should_create_event_grid      = false
+    should_create_eventhub        = false
+    should_create_eventgrid       = false
   }
 
   assert {
@@ -132,12 +131,12 @@ run "create_no_messaging" {
   }
 
   assert {
-    condition     = length(module.event_hubs) == 0
+    condition     = length(module.eventhub) == 0
     error_message = "Event Hub should not be created"
   }
 
   assert {
-    condition     = length(module.event_grid) == 0
+    condition     = length(module.eventgrid) == 0
     error_message = "Event Grid should not be created"
   }
 }
@@ -154,8 +153,8 @@ run "create_only_azure_functions" {
 
     # Only create Azure Functions
     should_create_azure_functions = true
-    should_create_event_hubs      = false
-    should_create_event_grid      = false
+    should_create_eventhub        = false
+    should_create_eventgrid       = false
   }
 
   assert {
@@ -169,17 +168,17 @@ run "create_only_azure_functions" {
   }
 
   assert {
-    condition     = length(module.event_hubs) == 0
+    condition     = length(module.eventhub) == 0
     error_message = "Event Hub should not be created"
   }
 
   assert {
-    condition     = length(module.event_grid) == 0
+    condition     = length(module.eventgrid) == 0
     error_message = "Event Grid should not be created"
   }
 }
 
-run "create_functions_and_event_hub" {
+run "create_functions_and_eventhub" {
   command = plan
 
   variables {
@@ -191,8 +190,8 @@ run "create_functions_and_event_hub" {
 
     # Create Azure Functions and Event Hub
     should_create_azure_functions = true
-    should_create_event_hubs      = true
-    should_create_event_grid      = false
+    should_create_eventhub        = true
+    should_create_eventgrid       = false
   }
 
   assert {
@@ -206,12 +205,12 @@ run "create_functions_and_event_hub" {
   }
 
   assert {
-    condition     = module.event_hubs[0].event_hub != null
+    condition     = module.eventhub[0].eventhubs != null
     error_message = "Event Hub should be created"
   }
 
   assert {
-    condition     = length(module.event_grid) == 0
+    condition     = length(module.eventgrid) == 0
     error_message = "Event Grid should not be created"
   }
 }
@@ -228,8 +227,8 @@ run "create_all_services" {
 
     # Create all services
     should_create_azure_functions = true
-    should_create_event_hubs      = true
-    should_create_event_grid      = true
+    should_create_eventhub        = true
+    should_create_eventgrid       = true
   }
 
   assert {
@@ -243,12 +242,12 @@ run "create_all_services" {
   }
 
   assert {
-    condition     = module.event_hubs[0].event_hub != null
+    condition     = module.eventhub[0].eventhubs != null
     error_message = "Event Hub should be created"
   }
 
   assert {
-    condition     = module.event_grid[0].event_grid != null
+    condition     = module.eventgrid[0].eventgrid != null
     error_message = "Event Grid should be created"
   }
 }

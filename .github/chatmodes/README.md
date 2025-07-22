@@ -67,6 +67,15 @@ Expert prompt engineering and validation system for creating high-quality AI pro
 - **Best For**: Prompt optimization, AI instruction refinement, quality assurance
 - **Philosophy**: Iterative engineering with built-in validation cycles
 
+### [Security Plan Creator](security-plan-creator.chatmode.md)
+
+Expert security architect for creating comprehensive cloud security plans with threat modeling and risk assessment.
+
+- **Purpose**: Analyze blueprint architectures and create actionable security plans with specific threat mitigations
+- **Capabilities**: Blueprint analysis, threat assessment, operational data flow modeling, security documentation
+- **Best For**: Security planning, threat modeling, compliance documentation, risk assessment
+- **Philosophy**: Component-specific analysis with actionable, implementable security measures
+
 ## Usage Guidelines
 
 ### Selecting the Right Mode
@@ -76,6 +85,7 @@ Expert prompt engineering and validation system for creating high-quality AI pro
 3. **Project Planning**: Use Task Planner for strategic planning and research
 4. **Architecture Documentation**: Use ADR Creation for collaborative decision records
 5. **Prompt Development**: Use Prompt Builder for AI instruction optimization
+6. **Security Planning**: Use Security Plan Creator for threat analysis and security documentation
 
 ### Activation
 
