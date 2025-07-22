@@ -214,7 +214,7 @@ module "cluster_a_edge_messaging" {
   aio_instance         = module.cluster_a_edge_iot_ops.aio_instance
   aio_identity         = module.cluster_a_cloud_security_identity.aio_identity
   eventgrid            = module.cluster_a_cloud_messaging.eventgrid
-  eventhub             = module.cluster_a_cloud_messaging.eventhubs
+  eventhub             = module.cluster_a_cloud_messaging.eventhubs[0]
 }
 
 // Cluster B - Secondary cluster with second address space
@@ -227,7 +227,7 @@ module "cluster_b_cloud_resource_group" {
   }
   environment     = var.environment
   location        = var.location
-  resource_prefix = "${var.resource_prefix}-${local.cluster_b_name}"
+  resource_prefix = "${var.resource_prefix}${local.cluster_b_name}"
   instance        = var.instance
 
   // Optional parameters for using an existing resource group
@@ -240,7 +240,7 @@ module "cluster_b_cloud_security_identity" {
 
   environment     = var.environment
   location        = var.location
-  resource_prefix = "${var.resource_prefix}-${local.cluster_b_name}"
+  resource_prefix = "${var.resource_prefix}${local.cluster_b_name}"
   instance        = var.instance
 
   aio_resource_group = module.cluster_b_cloud_resource_group.resource_group
@@ -251,7 +251,7 @@ module "cluster_b_cloud_observability" {
 
   environment     = var.environment
   location        = var.location
-  resource_prefix = "${var.resource_prefix}-${local.cluster_b_name}"
+  resource_prefix = "${var.resource_prefix}${local.cluster_b_name}"
   instance        = var.instance
 
   azmon_resource_group = module.cluster_b_cloud_resource_group.resource_group
@@ -262,7 +262,7 @@ module "cluster_b_cloud_data" {
 
   environment     = var.environment
   location        = var.location
-  resource_prefix = "${var.resource_prefix}-${local.cluster_b_name}"
+  resource_prefix = "${var.resource_prefix}${local.cluster_b_name}"
   instance        = var.instance
 
   resource_group = module.cluster_b_cloud_resource_group.resource_group
@@ -274,7 +274,7 @@ module "cluster_b_cloud_messaging" {
   resource_group  = module.cluster_b_cloud_resource_group.resource_group
   aio_identity    = module.cluster_b_cloud_security_identity.aio_identity
   environment     = var.environment
-  resource_prefix = "${var.resource_prefix}-${local.cluster_b_name}"
+  resource_prefix = "${var.resource_prefix}${local.cluster_b_name}"
   instance        = var.instance
 
   should_create_azure_functions = var.should_create_azure_functions
@@ -285,7 +285,7 @@ module "cluster_b_cloud_networking" {
 
   environment     = var.environment
   location        = var.location
-  resource_prefix = "${var.resource_prefix}-${local.cluster_b_name}"
+  resource_prefix = "${var.resource_prefix}${local.cluster_b_name}"
   instance        = var.instance
 
   resource_group         = module.cluster_b_cloud_resource_group.resource_group
@@ -297,7 +297,7 @@ module "cluster_b_cloud_vm_host" {
 
   environment     = var.environment
   location        = var.location
-  resource_prefix = "${var.resource_prefix}-${local.cluster_b_name}"
+  resource_prefix = "${var.resource_prefix}${local.cluster_b_name}"
   instance        = var.instance
 
   resource_group          = module.cluster_b_cloud_resource_group.resource_group
@@ -309,7 +309,7 @@ module "cluster_b_cloud_acr" {
   source = "../../../src/000-cloud/060-acr/terraform"
 
   environment     = var.environment
-  resource_prefix = "${var.resource_prefix}-${local.cluster_b_name}"
+  resource_prefix = "${var.resource_prefix}${local.cluster_b_name}"
   location        = var.location
   instance        = var.instance
 
@@ -325,7 +325,7 @@ module "cluster_b_cloud_kubernetes" {
   source = "../../../src/000-cloud/070-kubernetes/terraform"
 
   environment     = var.environment
-  resource_prefix = "${var.resource_prefix}-${local.cluster_b_name}"
+  resource_prefix = "${var.resource_prefix}${local.cluster_b_name}"
   location        = var.location
   instance        = var.instance
 
@@ -343,7 +343,7 @@ module "cluster_b_edge_cncf_cluster" {
   source = "../../../src/100-edge/100-cncf-cluster/terraform"
 
   environment     = var.environment
-  resource_prefix = "${var.resource_prefix}-${local.cluster_b_name}"
+  resource_prefix = "${var.resource_prefix}${local.cluster_b_name}"
   instance        = var.instance
 
   resource_group          = module.cluster_b_cloud_resource_group.resource_group
@@ -412,7 +412,7 @@ module "cluster_b_edge_messaging" {
   depends_on = [module.cluster_b_edge_iot_ops]
 
   environment     = var.environment
-  resource_prefix = "${var.resource_prefix}-${local.cluster_b_name}"
+  resource_prefix = "${var.resource_prefix}${local.cluster_b_name}"
   instance        = var.instance
 
   aio_custom_locations = module.cluster_b_edge_iot_ops.custom_locations
@@ -420,7 +420,7 @@ module "cluster_b_edge_messaging" {
   aio_instance         = module.cluster_b_edge_iot_ops.aio_instance
   aio_identity         = module.cluster_b_cloud_security_identity.aio_identity
   eventgrid            = module.cluster_b_cloud_messaging.eventgrid
-  eventhub             = module.cluster_b_cloud_messaging.eventhubs
+  eventhub             = module.cluster_b_cloud_messaging.eventhubs[0]
 }
 
 // VNet Peering between Cluster A and Cluster B
@@ -537,7 +537,7 @@ module "mqtt_configuration" {
   site_custom_locations                     = module.cluster_a_edge_iot_ops.custom_locations
   enterprise_aio_instance                   = module.cluster_b_edge_iot_ops.aio_instance
   enterprise_custom_locations               = module.cluster_b_edge_iot_ops.custom_locations
-  enterprise_vm_private_ip                  = module.cluster_b_cloud_vm_host.virtual_machines[0].private_ip_address
+  enterprise_vm_private_ip                  = module.cluster_b_cloud_vm_host.private_ips[0]
   enterprise_broker_port                    = var.enterprise_broker_port
   enterprise_broker_server_cert_secret_name = var.enterprise_broker_server_cert_secret_name
   enterprise_client_ca_configmap_name       = var.enterprise_client_ca_configmap_name
