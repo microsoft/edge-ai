@@ -27,15 +27,15 @@ to build complex multi-stage solutions that meet your specific requirements.
 
 ## Available Blueprints
 
-| Blueprint                                                               | Description                                                                                                                                        |
-|-------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------|
-| [Minimum Single Cluster](./minimum-single-node-cluster/README.md)       | Minimum deployment of Azure IoT Operations on a single-node, Arc-enabled Kubernetes cluster, omitting observability, messaging, and ACR components |
-| [Full Single Cluster](./full-single-node-cluster/README.md)             | Complete deployment of Azure IoT Operations on a single-node, Arc-enabled Kubernetes cluster                                                       |
-| [Full Multi-node Cluster](./full-multi-node-cluster/README.md)          | Complete deployment of Azure IoT Operations on a multi-node, Arc-enabled Kubernetes cluster                                                        |
-| [CNCF Cluster Script Only](./only-output-cncf-cluster-script/README.md) | Generates scripts for cluster creation without deploying resources                                                                                 |
-| [Azure Fabric Environment](./fabric/terraform/README.md)                | Provisions Azure Fabric environment  *Terraform only currently*                                                                                    |
-| [Dual Peered Single Node Cluster](./dual-peered-single-node-cluster/README.md) | Deploys a two single-node clusters with peered networks for proving secured communication via multiple instances of AIO MQ                 |
-| *More coming soon...*                                                   |                                                                                                                                                    |
+| Blueprint                                                                      | Description                                                                                                                                        |
+|--------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------|
+| [Minimum Single Cluster](./minimum-single-node-cluster/README.md)              | Minimum deployment of Azure IoT Operations on a single-node, Arc-enabled Kubernetes cluster, omitting observability, messaging, and ACR components |
+| [Full Single Cluster](./full-single-node-cluster/README.md)                    | Complete deployment of Azure IoT Operations on a single-node, Arc-enabled Kubernetes cluster                                                       |
+| [Full Multi-node Cluster](./full-multi-node-cluster/README.md)                 | Complete deployment of Azure IoT Operations on a multi-node, Arc-enabled Kubernetes cluster                                                        |
+| [CNCF Cluster Script Only](./only-output-cncf-cluster-script/README.md)        | Generates scripts for cluster creation without deploying resources                                                                                 |
+| [Azure Fabric Environment](./fabric/terraform/README.md)                       | Provisions Azure Fabric environment  *Terraform only currently*                                                                                    |
+| [Dual Peered Single Node Cluster](./dual-peered-single-node-cluster/README.md) | Deploys a two single-node clusters with peered networks for proving secured communication via multiple instances of AIO MQ                         |
+| *More coming soon...*                                                          |                                                                                                                                                    |
 
 ## Terraform Architecture
 

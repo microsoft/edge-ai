@@ -122,10 +122,10 @@ This blueprint includes all variables from the single cluster blueprint plus clu
 
 #### Cluster A Configuration
 
-| Variable                        | Description                   | Default | Notes                                       |
-|---------------------------------|-------------------------------|---------|---------------------------------------------|
-| `use_existing_resource_group_a` | Use existing RG for Cluster A | `false` | When true, looks up existing resource group |
-| `resource_group_name_a`         | Cluster A resource group name | `null`  | Auto-generated when null                    |
+| Variable                           | Description                     | Default                                                              | Notes                                       |
+|------------------------------------|---------------------------------|----------------------------------------------------------------------|---------------------------------------------|
+| `use_existing_resource_group_a`    | Use existing RG for Cluster A   | `false`                                                              | When true, looks up existing resource group |
+| `resource_group_name_a`            | Cluster A resource group name   | `null`                                                               | Auto-generated when null                    |
 | `cluster_a_virtual_network_config` | Cluster A network configuration | `{address_space="10.1.0.0/16", subnet_address_prefix="10.1.1.0/24"}` | CIDR blocks for Cluster A                   |
 
 #### Cluster B Configuration
@@ -266,15 +266,15 @@ The certificate generation runs first using either Step CLI execution, Terraform
 
 ### Certificate Options Comparison
 
-| Feature | Step CLI | Terraform TLS | Key Vault |
-|---------|----------|---------------|-----------|
-| External Dependencies | Requires Step CLI | None | None |
-| Certificate Format | Step CLI optimized | Standard X.509 | Azure managed |
-| Platform Requirements | Step CLI availability | Terraform only | Azure only |
-| State Management | File-based | Terraform state | Cloud-based |
-| Security Considerations | Local files | State file | Azure security |
-| Rotation Method | Re-run script | Terraform apply | Azure automation |
-| Variable Configuration | `should_create_certificates=true, use_terraform_certificates=false` | `should_create_certificates=true, use_terraform_certificates=true` | `should_create_certificates=false` |
+| Feature                 | Step CLI                                                            | Terraform TLS                                                      | Key Vault                          |
+|-------------------------|---------------------------------------------------------------------|--------------------------------------------------------------------|------------------------------------|
+| External Dependencies   | Requires Step CLI                                                   | None                                                               | None                               |
+| Certificate Format      | Step CLI optimized                                                  | Standard X.509                                                     | Azure managed                      |
+| Platform Requirements   | Step CLI availability                                               | Terraform only                                                     | Azure only                         |
+| State Management        | File-based                                                          | Terraform state                                                    | Cloud-based                        |
+| Security Considerations | Local files                                                         | State file                                                         | Azure security                     |
+| Rotation Method         | Re-run script                                                       | Terraform apply                                                    | Azure automation                   |
+| Variable Configuration  | `should_create_certificates=true, use_terraform_certificates=false` | `should_create_certificates=true, use_terraform_certificates=true` | `should_create_certificates=false` |
 
 ## Testing Connectivity
 
