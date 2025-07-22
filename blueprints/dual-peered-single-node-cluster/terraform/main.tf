@@ -213,8 +213,8 @@ module "cluster_a_edge_messaging" {
   aio_dataflow_profile = module.cluster_a_edge_iot_ops.aio_dataflow_profile
   aio_instance         = module.cluster_a_edge_iot_ops.aio_instance
   aio_identity         = module.cluster_a_cloud_security_identity.aio_identity
-  eventgrid            = module.cluster_a_cloud_messaging.event_grid
-  eventhub             = module.cluster_a_cloud_messaging.event_hub
+  eventgrid            = module.cluster_a_cloud_messaging.eventgrid
+  eventhub             = module.cluster_a_cloud_messaging.eventhubs
 }
 
 // Cluster B - Secondary cluster with second address space
@@ -419,8 +419,8 @@ module "cluster_b_edge_messaging" {
   aio_dataflow_profile = module.cluster_b_edge_iot_ops.aio_dataflow_profile
   aio_instance         = module.cluster_b_edge_iot_ops.aio_instance
   aio_identity         = module.cluster_b_cloud_security_identity.aio_identity
-  eventgrid            = module.cluster_b_cloud_messaging.event_grid
-  eventhub             = module.cluster_b_cloud_messaging.event_hub
+  eventgrid            = module.cluster_b_cloud_messaging.eventgrid
+  eventhub             = module.cluster_b_cloud_messaging.eventhubs
 }
 
 // VNet Peering between Cluster A and Cluster B
@@ -509,12 +509,15 @@ module "custom_script_deployment" {
   should_deploy_server_central_script    = var.should_deploy_server_central_script || var.should_deploy_custom_scripts
   should_deploy_client_technology_script = var.should_deploy_client_technology_script || var.should_deploy_custom_scripts
 
-  server_vm_id                              = module.cluster_a_cloud_vm_host.virtual_machines[0].id
-  client_vm_id                              = module.cluster_b_cloud_vm_host.virtual_machines[0].id
-  enterprise_broker_server_cert_secret_name = var.enterprise_broker_server_cert_secret_name
-  enterprise_client_ca_configmap_name       = var.enterprise_client_ca_configmap_name
-  site_client_secret_name                   = var.site_client_secret_name
-  site_tls_ca_configmap_name                = var.site_tls_ca_configmap_name
+  server_vm_id                               = module.cluster_a_cloud_vm_host.virtual_machines[0].id
+  client_vm_id                               = module.cluster_b_cloud_vm_host.virtual_machines[0].id
+  enterprise_broker_server_cert_secret_name  = var.enterprise_broker_server_cert_secret_name
+  enterprise_client_ca_configmap_name        = var.enterprise_client_ca_configmap_name
+  site_client_secret_name                    = var.site_client_secret_name
+  site_tls_ca_configmap_name                 = var.site_tls_ca_configmap_name
+  should_create_certificates                 = var.should_create_certificates
+  enterprise_synced_certificates_secret_name = var.should_create_certificates ? "" : module.secret_provider_class[0].cluster_a_synced_certificates_secret_name
+  site_synced_certificates_secret_name       = var.should_create_certificates ? "" : module.secret_provider_class[0].cluster_b_synced_certificates_secret_name
 
   depends_on = [
     module.cluster_a_edge_iot_ops,

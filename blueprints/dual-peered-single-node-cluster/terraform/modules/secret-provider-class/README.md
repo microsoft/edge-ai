@@ -48,13 +48,17 @@ resources for both clusters to enable secret synchronization from Key Vault.
 | cluster\_b\_name | The name identifier for Cluster B. | `string` | n/a | yes |
 | cluster\_b\_resource\_group | The resource group for Cluster B. | ```object({ id = string })``` | n/a | yes |
 | cluster\_b\_secret\_sync\_identity | The secret sync identity for Cluster B. | ```object({ client_id = string })``` | n/a | yes |
+| cluster\_a\_synced\_certificates\_secret\_name | The name of the Kubernetes secret where certificates will be synced from Key Vault for Cluster A. | `string` | `"certificates-sync-a"` | no |
+| cluster\_b\_synced\_certificates\_secret\_name | The name of the Kubernetes secret where certificates will be synced from Key Vault for Cluster B. | `string` | `"certificates-sync-b"` | no |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
 | cluster\_a\_secret\_provider\_class | The Secret Provider Class resource for Cluster A. |
+| cluster\_a\_synced\_certificates\_secret\_name | The name of the Kubernetes secret containing the synced certificates from Key Vault for Cluster A. |
 | cluster\_b\_secret\_provider\_class | The Secret Provider Class resource for Cluster B. |
+| cluster\_b\_synced\_certificates\_secret\_name | The name of the Kubernetes secret containing the synced certificates from Key Vault for Cluster B. |
 | secret\_sync\_dependency | Dependency marker for secret synchronization setup completion. |
 <!-- markdown-table-prettify-ignore-end -->
 <!-- END_TF_DOCS -->

@@ -52,7 +52,7 @@ resource "azapi_resource" "cluster_b_secret_provider_class" {
 // Secret Sync for Cluster A (Server and Client Certificates)
 resource "azapi_resource" "cluster_a_secret_sync" {
   type      = "Microsoft.SecretSyncController/secretSyncs@2024-08-21-preview"
-  name      = "certificates-sync"
+  name      = var.cluster_a_synced_certificates_secret_name
   location  = var.cluster_a_location
   parent_id = var.cluster_a_resource_group.id
 
@@ -110,7 +110,7 @@ resource "azapi_resource" "cluster_a_secret_sync" {
 // Secret Sync for Cluster B (Server and Client Certificates)
 resource "azapi_resource" "cluster_b_secret_sync" {
   type      = "Microsoft.SecretSyncController/secretSyncs@2024-08-21-preview"
-  name      = "certificates-sync"
+  name      = var.cluster_b_synced_certificates_secret_name
   location  = var.cluster_b_location
   parent_id = var.cluster_b_resource_group.id
 

@@ -77,3 +77,19 @@ variable "cluster_b_secret_sync_identity" {
   })
   description = "The secret sync identity for Cluster B."
 }
+
+/*
+ * Certificate Sync Configuration
+ */
+
+variable "cluster_a_synced_certificates_secret_name" {
+  type        = string
+  description = "The name of the Kubernetes secret where certificates will be synced from Key Vault for Cluster A."
+  default     = "certificates-sync-a"
+}
+
+variable "cluster_b_synced_certificates_secret_name" {
+  type        = string
+  description = "The name of the Kubernetes secret where certificates will be synced from Key Vault for Cluster B."
+  default     = "certificates-sync-b"
+}
