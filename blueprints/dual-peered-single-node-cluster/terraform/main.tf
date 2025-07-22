@@ -7,8 +7,8 @@
  */
 
 locals {
-  cluster_a_name = "cluster-a"
-  cluster_b_name = "cluster-b"
+  cluster_a_name = "b"
+  cluster_b_name = "a"
 }
 
 // Cluster A - Primary cluster with first address space
@@ -21,7 +21,7 @@ module "cluster_a_cloud_resource_group" {
   }
   environment     = var.environment
   location        = var.location
-  resource_prefix = "${var.resource_prefix}-${local.cluster_a_name}"
+  resource_prefix = "${var.resource_prefix}${local.cluster_a_name}"
   instance        = var.instance
 
   // Optional parameters for using an existing resource group
@@ -34,7 +34,7 @@ module "cluster_a_cloud_security_identity" {
 
   environment     = var.environment
   location        = var.location
-  resource_prefix = "${var.resource_prefix}-${local.cluster_a_name}"
+  resource_prefix = "${var.resource_prefix}${local.cluster_a_name}"
   instance        = var.instance
 
   aio_resource_group = module.cluster_a_cloud_resource_group.resource_group
@@ -45,7 +45,7 @@ module "cluster_a_cloud_observability" {
 
   environment     = var.environment
   location        = var.location
-  resource_prefix = "${var.resource_prefix}-${local.cluster_a_name}"
+  resource_prefix = "${var.resource_prefix}${local.cluster_a_name}"
   instance        = var.instance
 
   azmon_resource_group = module.cluster_a_cloud_resource_group.resource_group
@@ -56,7 +56,7 @@ module "cluster_a_cloud_data" {
 
   environment     = var.environment
   location        = var.location
-  resource_prefix = "${var.resource_prefix}-${local.cluster_a_name}"
+  resource_prefix = "${var.resource_prefix}${local.cluster_a_name}"
   instance        = var.instance
 
   resource_group = module.cluster_a_cloud_resource_group.resource_group
@@ -68,7 +68,7 @@ module "cluster_a_cloud_messaging" {
   resource_group  = module.cluster_a_cloud_resource_group.resource_group
   aio_identity    = module.cluster_a_cloud_security_identity.aio_identity
   environment     = var.environment
-  resource_prefix = "${var.resource_prefix}-${local.cluster_a_name}"
+  resource_prefix = "${var.resource_prefix}${local.cluster_a_name}"
   instance        = var.instance
 
   should_create_azure_functions = var.should_create_azure_functions
@@ -79,7 +79,7 @@ module "cluster_a_cloud_networking" {
 
   environment     = var.environment
   location        = var.location
-  resource_prefix = "${var.resource_prefix}-${local.cluster_a_name}"
+  resource_prefix = "${var.resource_prefix}${local.cluster_a_name}"
   instance        = var.instance
 
   resource_group         = module.cluster_a_cloud_resource_group.resource_group
@@ -91,7 +91,7 @@ module "cluster_a_cloud_vm_host" {
 
   environment     = var.environment
   location        = var.location
-  resource_prefix = "${var.resource_prefix}-${local.cluster_a_name}"
+  resource_prefix = "${var.resource_prefix}${local.cluster_a_name}"
   instance        = var.instance
 
   resource_group          = module.cluster_a_cloud_resource_group.resource_group
@@ -103,7 +103,7 @@ module "cluster_a_cloud_acr" {
   source = "../../../src/000-cloud/060-acr/terraform"
 
   environment     = var.environment
-  resource_prefix = "${var.resource_prefix}-${local.cluster_a_name}"
+  resource_prefix = "${var.resource_prefix}${local.cluster_a_name}"
   location        = var.location
   instance        = var.instance
 
@@ -119,7 +119,7 @@ module "cluster_a_cloud_kubernetes" {
   source = "../../../src/000-cloud/070-kubernetes/terraform"
 
   environment     = var.environment
-  resource_prefix = "${var.resource_prefix}-${local.cluster_a_name}"
+  resource_prefix = "${var.resource_prefix}${local.cluster_a_name}"
   location        = var.location
   instance        = var.instance
 
@@ -137,7 +137,7 @@ module "cluster_a_edge_cncf_cluster" {
   source = "../../../src/100-edge/100-cncf-cluster/terraform"
 
   environment     = var.environment
-  resource_prefix = "${var.resource_prefix}-${local.cluster_a_name}"
+  resource_prefix = "${var.resource_prefix}${local.cluster_a_name}"
   instance        = var.instance
 
   resource_group          = module.cluster_a_cloud_resource_group.resource_group
@@ -206,7 +206,7 @@ module "cluster_a_edge_messaging" {
   depends_on = [module.cluster_a_edge_iot_ops]
 
   environment     = var.environment
-  resource_prefix = "${var.resource_prefix}-${local.cluster_a_name}"
+  resource_prefix = "${var.resource_prefix}${local.cluster_a_name}"
   instance        = var.instance
 
   aio_custom_locations = module.cluster_a_edge_iot_ops.custom_locations
