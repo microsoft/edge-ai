@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=SC2154
 
 # Site Script for Cluster B
 # This script sets up MQTT client endpoints with certificate-based authentication
@@ -23,12 +24,12 @@ echo "${server_root_ca_cert}" | base64 -d >"$CERT_FOLDER/server-root-ca.crt"
 echo "Executing site configuration..."
 
 # Execute the main site logic
-kubectl create secret generic ${site_client_secret_name} -n azure-iot-operations \
+kubectl create secret generic "${site_client_secret_name}" -n azure-iot-operations \
   --from-file=client_cert.pem="$CERT_FOLDER/client-leaf-ca.crt" \
   --from-file=client_key.pem="$CERT_FOLDER/client-leaf-ca.key" \
   --from-file=client_intermediate_certs.pem="$CERT_FOLDER/client-intermediate-ca.crt"
 
-kubectl create configmap ${site_tls_ca_configmap_name} --from-file "$CERT_FOLDER/server-root-ca.crt" -n azure-iot-operations
+kubectl create configmap "${site_tls_ca_configmap_name}" --from-file "$CERT_FOLDER/server-root-ca.crt" -n azure-iot-operations
 
 echo "Site script execution completed successfully."
 

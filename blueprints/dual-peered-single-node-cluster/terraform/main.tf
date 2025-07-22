@@ -213,8 +213,8 @@ module "cluster_a_edge_messaging" {
   aio_dataflow_profile = module.cluster_a_edge_iot_ops.aio_dataflow_profile
   aio_instance         = module.cluster_a_edge_iot_ops.aio_instance
   aio_identity         = module.cluster_a_cloud_security_identity.aio_identity
-  event_grid           = module.cluster_a_cloud_messaging.event_grid
-  event_hub            = module.cluster_a_cloud_messaging.event_hub
+  eventgrid            = module.cluster_a_cloud_messaging.event_grid
+  eventhub             = module.cluster_a_cloud_messaging.event_hub
 }
 
 // Cluster B - Secondary cluster with second address space
@@ -419,8 +419,8 @@ module "cluster_b_edge_messaging" {
   aio_dataflow_profile = module.cluster_b_edge_iot_ops.aio_dataflow_profile
   aio_instance         = module.cluster_b_edge_iot_ops.aio_instance
   aio_identity         = module.cluster_b_cloud_security_identity.aio_identity
-  event_grid           = module.cluster_b_cloud_messaging.event_grid
-  event_hub            = module.cluster_b_cloud_messaging.event_hub
+  eventgrid            = module.cluster_b_cloud_messaging.event_grid
+  eventhub             = module.cluster_b_cloud_messaging.event_hub
 }
 
 // VNet Peering between Cluster A and Cluster B
@@ -533,7 +533,6 @@ module "mqtt_configuration" {
   site_aio_dataflow_profile                 = module.cluster_a_edge_iot_ops.aio_dataflow_profile
   site_custom_locations                     = module.cluster_a_edge_iot_ops.custom_locations
   enterprise_aio_instance                   = module.cluster_b_edge_iot_ops.aio_instance
-  enterprise_aio_dataflow_profile           = module.cluster_b_edge_iot_ops.aio_dataflow_profile
   enterprise_custom_locations               = module.cluster_b_edge_iot_ops.custom_locations
   enterprise_vm_private_ip                  = module.cluster_b_cloud_vm_host.virtual_machines[0].private_ip_address
   enterprise_broker_port                    = var.enterprise_broker_port

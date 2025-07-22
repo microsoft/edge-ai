@@ -86,26 +86,26 @@ This blueprint extends the single cluster pattern with dual deployment and netwo
 
 Each cluster uses the same modules as the single cluster blueprint, prefixed with `cluster_a_` or `cluster_b_`:
 
-| Module Type                    | Purpose                                 | Source Location                                          |
-|--------------------------------|-----------------------------------------|----------------------------------------------------------|
-| `cloud_resource_group`         | Creates separate resource groups        | `../../../src/000-cloud/000-resource-group/terraform`    |
-| `cloud_security_identity`      | Handles identity and security per cluster| `../../../src/000-cloud/010-security-identity/terraform` |
-| `cloud_observability`          | Sets up monitoring infrastructure       | `../../../src/000-cloud/020-observability/terraform`     |
-| `cloud_data`                   | Creates data storage resources          | `../../../src/000-cloud/030-data/terraform`              |
-| `cloud_messaging`              | Sets up messaging infrastructure        | `../../../src/000-cloud/040-messaging/terraform`         |
-| `cloud_networking`             | Creates virtual networks with peering   | `../../../src/000-cloud/050-networking/terraform`        |
-| `cloud_vm_host`                | Creates VM hosts for each cluster       | `../../../src/000-cloud/051-vm-host/terraform`           |
-| `cloud_acr`                    | Deploys ACR for each cluster            | `../../../src/000-cloud/060-acr/terraform`               |
-| `cloud_kubernetes`             | Optional AKS deployment                 | `../../../src/000-cloud/070-kubernetes/terraform`        |
-| `edge_cncf_cluster`            | Deploys K3s Kubernetes clusters         | `../../../src/100-edge/100-cncf-cluster/terraform`       |
-| `edge_iot_ops`                 | Installs Azure IoT Operations           | `../../../src/100-edge/110-iot-ops/terraform`            |
-| `edge_assets`                  | Manages OPC UA assets                   | `../../../src/100-edge/111-assets/terraform`             |
-| `edge_observability`           | Sets up edge monitoring                 | `../../../src/100-edge/120-observability/terraform`      |
-| `edge_messaging`               | Deploys edge messaging components       | `../../../src/100-edge/130-messaging/terraform`          |
-| `certificate_generation`       | Generates TLS certificates with Step CLI| `./modules/certificate-generation`                       |
-| `terraform_certificate_generation` | Generates TLS certificates with Terraform TLS provider| `./modules/terraform-certificate-generation`    |
-| `secret_provider_class`        | Creates Key Vault secret provider classes| `./modules/secret-provider-class`                       |
-| `custom_script_deployment`     | Deploys custom scripts to VMs           | `./modules/custom-script-deployment`                     |
+| Module Type                        | Purpose                                                | Source Location                                          |
+|------------------------------------|--------------------------------------------------------|----------------------------------------------------------|
+| `cloud_resource_group`             | Creates separate resource groups                       | `../../../src/000-cloud/000-resource-group/terraform`    |
+| `cloud_security_identity`          | Handles identity and security per cluster              | `../../../src/000-cloud/010-security-identity/terraform` |
+| `cloud_observability`              | Sets up monitoring infrastructure                      | `../../../src/000-cloud/020-observability/terraform`     |
+| `cloud_data`                       | Creates data storage resources                         | `../../../src/000-cloud/030-data/terraform`              |
+| `cloud_messaging`                  | Sets up messaging infrastructure                       | `../../../src/000-cloud/040-messaging/terraform`         |
+| `cloud_networking`                 | Creates virtual networks with peering                  | `../../../src/000-cloud/050-networking/terraform`        |
+| `cloud_vm_host`                    | Creates VM hosts for each cluster                      | `../../../src/000-cloud/051-vm-host/terraform`           |
+| `cloud_acr`                        | Deploys ACR for each cluster                           | `../../../src/000-cloud/060-acr/terraform`               |
+| `cloud_kubernetes`                 | Optional AKS deployment                                | `../../../src/000-cloud/070-kubernetes/terraform`        |
+| `edge_cncf_cluster`                | Deploys K3s Kubernetes clusters                        | `../../../src/100-edge/100-cncf-cluster/terraform`       |
+| `edge_iot_ops`                     | Installs Azure IoT Operations                          | `../../../src/100-edge/110-iot-ops/terraform`            |
+| `edge_assets`                      | Manages OPC UA assets                                  | `../../../src/100-edge/111-assets/terraform`             |
+| `edge_observability`               | Sets up edge monitoring                                | `../../../src/100-edge/120-observability/terraform`      |
+| `edge_messaging`                   | Deploys edge messaging components                      | `../../../src/100-edge/130-messaging/terraform`          |
+| `certificate_generation`           | Generates TLS certificates with Step CLI               | `./modules/certificate-generation`                       |
+| `terraform_certificate_generation` | Generates TLS certificates with Terraform TLS provider | `./modules/terraform-certificate-generation`             |
+| `secret_provider_class`            | Creates Key Vault secret provider classes              | `./modules/secret-provider-class`                        |
+| `custom_script_deployment`         | Deploys custom scripts to VMs                          | `./modules/custom-script-deployment`                     |
 
 ### Variable Reference
 
@@ -113,28 +113,28 @@ This blueprint includes all variables from the single cluster blueprint plus clu
 
 #### Core Variables
 
-| Variable                                  | Description                        | Default  | Notes                                                       |
-|-------------------------------------------|------------------------------------|----------|-------------------------------------------------------------|
-| `environment`                             | Environment type                   | Required | "dev", "test", "prod", etc.                                 |
-| `resource_prefix`                         | Prefix for resource naming         | Required | Short unique alphanumeric string (max 6 chars recommended)  |
-| `location`                                | Azure region location              | Required | "eastus2", "westus3", etc.                                  |
-| `instance`                                | Deployment instance number         | `"001"`  | For multiple deployments                                    |
+| Variable          | Description                | Default  | Notes                                                      |
+|-------------------|----------------------------|----------|------------------------------------------------------------|
+| `environment`     | Environment type           | Required | "dev", "test", "prod", etc.                                |
+| `resource_prefix` | Prefix for resource naming | Required | Short unique alphanumeric string (max 6 chars recommended) |
+| `location`        | Azure region location      | Required | "eastus2", "westus3", etc.                                 |
+| `instance`        | Deployment instance number | `"001"`  | For multiple deployments                                   |
 
 #### Cluster A Configuration
 
-| Variable                                  | Description                        | Default                     | Notes                                                       |
-|-------------------------------------------|------------------------------------|----------------------------|-------------------------------------------------------------|
-| `use_existing_resource_group_a`           | Use existing RG for Cluster A     | `false`                    | When true, looks up existing resource group                 |
-| `resource_group_name_a`                   | Cluster A resource group name      | `null`                     | Auto-generated when null                                    |
-| `cluster_a_virtual_network_config`       | Cluster A network configuration    | `{address_space="10.1.0.0/16", subnet_address_prefix="10.1.1.0/24"}` | CIDR blocks for Cluster A |
+| Variable                        | Description                   | Default | Notes                                       |
+|---------------------------------|-------------------------------|---------|---------------------------------------------|
+| `use_existing_resource_group_a` | Use existing RG for Cluster A | `false` | When true, looks up existing resource group |
+| `resource_group_name_a`         | Cluster A resource group name | `null`  | Auto-generated when null                    |
+| `cluster_a_virtual_network_config` | Cluster A network configuration | `{address_space="10.1.0.0/16", subnet_address_prefix="10.1.1.0/24"}` | CIDR blocks for Cluster A                   |
 
 #### Cluster B Configuration
 
-| Variable                                  | Description                        | Default                     | Notes                                                       |
-|-------------------------------------------|------------------------------------|----------------------------|-------------------------------------------------------------|
-| `use_existing_resource_group_b`           | Use existing RG for Cluster B     | `false`                    | When true, looks up existing resource group                 |
-| `resource_group_name_b`                   | Cluster B resource group name      | `null`                     | Auto-generated when null                                    |
-| `cluster_b_virtual_network_config`       | Cluster B network configuration    | `{address_space="10.2.0.0/16", subnet_address_prefix="10.2.1.0/24"}` | CIDR blocks for Cluster B |
+| Variable                           | Description                     | Default                                                              | Notes                                       |
+|------------------------------------|---------------------------------|----------------------------------------------------------------------|---------------------------------------------|
+| `use_existing_resource_group_b`    | Use existing RG for Cluster B   | `false`                                                              | When true, looks up existing resource group |
+| `resource_group_name_b`            | Cluster B resource group name   | `null`                                                               | Auto-generated when null                    |
+| `cluster_b_virtual_network_config` | Cluster B network configuration | `{address_space="10.2.0.0/16", subnet_address_prefix="10.2.1.0/24"}` | CIDR blocks for Cluster B                   |
 
 #### Shared Configuration
 
@@ -150,18 +150,18 @@ All other variables from the single cluster blueprint are shared between both cl
 
 #### Certificate Generation Configuration
 
-| Variable                                  | Description                        | Default                     | Notes                                                       |
-|-------------------------------------------|------------------------------------|----------------------------|-------------------------------------------------------------|
-| `should_create_certificates`              | Generate certificates using Step CLI | `true`                   | When true, chooses between Step CLI or Terraform; when false, uses secret-provider-class module |
-| `use_terraform_certificates`              | Use Terraform TLS provider instead of Step CLI | `false`          | Only applies when should_create_certificates is true; requires no external dependencies |
+| Variable                     | Description                                    | Default | Notes                                                                                           |
+|------------------------------|------------------------------------------------|---------|-------------------------------------------------------------------------------------------------|
+| `should_create_certificates` | Generate certificates using Step CLI           | `true`  | When true, chooses between Step CLI or Terraform; when false, uses secret-provider-class module |
+| `use_terraform_certificates` | Use Terraform TLS provider instead of Step CLI | `false` | Only applies when should_create_certificates is true; requires no external dependencies         |
 
 #### Custom Script Deployment Configuration
 
-| Variable                                  | Description                        | Default                     | Notes                                                       |
-|-------------------------------------------|------------------------------------|----------------------------|-------------------------------------------------------------|
-| `should_deploy_custom_scripts`            | Deploy both custom scripts        | `false`                    | Enables both server-central.sh and client-technology.sh     |
-| `should_deploy_server_central_script`     | Deploy server script to Cluster A | `false`                    | Deploys MQTT broker configuration on Cluster A             |
-| `should_deploy_client_technology_script`  | Deploy client script to Cluster B | `false`                    | Deploys MQTT client configuration on Cluster B             |
+| Variable                                 | Description                       | Default | Notes                                                   |
+|------------------------------------------|-----------------------------------|---------|---------------------------------------------------------|
+| `should_deploy_custom_scripts`           | Deploy both custom scripts        | `false` | Enables both server-central.sh and client-technology.sh |
+| `should_deploy_server_central_script`    | Deploy server script to Cluster A | `false` | Deploys MQTT broker configuration on Cluster A          |
+| `should_deploy_client_technology_script` | Deploy client script to Cluster B | `false` | Deploys MQTT client configuration on Cluster B          |
 
 ### Network Configuration
 

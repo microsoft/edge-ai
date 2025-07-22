@@ -8,9 +8,9 @@ output "enterprise_mqtt_endpoint_cert_auth" {
   value       = azapi_resource.enterprise_mqtt_endpoint_cert_auth
 }
 
-output "enterprise_site_route_cert_auth" {
+output "site_enterprise_route_cert_auth" {
   description = "The enterprise site route with certificate authentication dataflow."
-  value       = azapi_resource.enterprise_site_route_cert_auth
+  value       = azapi_resource.site_enterprise_route_cert_auth
 }
 
 output "enterprise_mqtt_broker_authentication" {

@@ -91,7 +91,7 @@ resource "azapi_resource" "enterprise_mqtt_endpoint_cert_auth" {
 }
 
 // Enterprise Site Route with Certificate Authentication
-resource "azapi_resource" "enterprise_site_route_cert_auth" {
+resource "azapi_resource" "site_enterprise_route_cert_auth" {
   type      = "Microsoft.IoTOperations/instances/dataflowProfiles/dataflows@2025-04-01"
   name      = "site-to-enterprise-cert-auth"
   parent_id = var.site_aio_dataflow_profile.id

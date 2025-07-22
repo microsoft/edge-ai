@@ -34,6 +34,7 @@ to build complex multi-stage solutions that meet your specific requirements.
 | [Full Multi-node Cluster](./full-multi-node-cluster/README.md)          | Complete deployment of Azure IoT Operations on a multi-node, Arc-enabled Kubernetes cluster                                                        |
 | [CNCF Cluster Script Only](./only-output-cncf-cluster-script/README.md) | Generates scripts for cluster creation without deploying resources                                                                                 |
 | [Azure Fabric Environment](./fabric/terraform/README.md)                | Provisions Azure Fabric environment  *Terraform only currently*                                                                                    |
+| [Dual Peered Single Node Cluster](./dual-peered-single-node-cluster/README.md) | Deploys a two single-node clusters with peered networks for proving secured communication via multiple instances of AIO MQ                 |
 | *More coming soon...*                                                   |                                                                                                                                                    |
 
 ## Terraform Architecture

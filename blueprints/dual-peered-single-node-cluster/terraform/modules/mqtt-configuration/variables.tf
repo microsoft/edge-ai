@@ -51,11 +51,6 @@ variable "enterprise_aio_instance" {
   description = "Enterprise Azure IoT Operations instance object from the IoT Operations module"
 }
 
-variable "enterprise_aio_dataflow_profile" {
-  type        = any
-  description = "Enterprise Azure IoT Operations dataflow profile object from the IoT Operations module"
-}
-
 variable "enterprise_custom_locations" {
   type = object({
     id   = string
