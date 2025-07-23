@@ -25,6 +25,40 @@ resource "azapi_resource" "cluster_a_secret_provider_class" {
       clientId     = var.cluster_a_secret_sync_identity.client_id
       keyvaultName = var.cluster_a_key_vault.name
       tenantId     = data.azurerm_subscription.current.tenant_id
+      objects = [
+        {
+          objectName = "server-root-ca-crt"
+          objectType = "secret"
+        },
+        {
+          objectName = "server-intermediate-ca-crt"
+          objectType = "secret"
+        },
+        {
+          objectName = "server-leaf-ca-crt"
+          objectType = "secret"
+        },
+        {
+          objectName = "server-leaf-ca-key"
+          objectType = "secret"
+        },
+        {
+          objectName = "client-root-ca-crt"
+          objectType = "secret"
+        },
+        {
+          objectName = "client-intermediate-ca-crt"
+          objectType = "secret"
+        },
+        {
+          objectName = "client-leaf-ca-crt"
+          objectType = "secret"
+        },
+        {
+          objectName = "client-leaf-ca-key"
+          objectType = "secret"
+        }
+      ]
     }
   }
 }
@@ -45,6 +79,40 @@ resource "azapi_resource" "cluster_b_secret_provider_class" {
       clientId     = var.cluster_b_secret_sync_identity.client_id
       keyvaultName = var.cluster_b_key_vault.name
       tenantId     = data.azurerm_subscription.current.tenant_id
+      objects = [
+        {
+          objectName = "server-root-ca-crt"
+          objectType = "secret"
+        },
+        {
+          objectName = "server-intermediate-ca-crt"
+          objectType = "secret"
+        },
+        {
+          objectName = "server-leaf-ca-crt"
+          objectType = "secret"
+        },
+        {
+          objectName = "server-leaf-ca-key"
+          objectType = "secret"
+        },
+        {
+          objectName = "client-root-ca-crt"
+          objectType = "secret"
+        },
+        {
+          objectName = "client-intermediate-ca-crt"
+          objectType = "secret"
+        },
+        {
+          objectName = "client-leaf-ca-crt"
+          objectType = "secret"
+        },
+        {
+          objectName = "client-leaf-ca-key"
+          objectType = "secret"
+        }
+      ]
     }
   }
 }
