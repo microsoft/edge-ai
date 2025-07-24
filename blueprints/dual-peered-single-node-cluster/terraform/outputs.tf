@@ -85,53 +85,14 @@ output "client_technology_script_deployment" {
 }
 
 /*
- * Certificate Generation Outputs
- */
-
-output "certificate_generation_status" {
-  description = "Status of the certificate generation process."
-  value = var.should_create_certificates ? (
-    var.use_terraform_certificates ? {
-      status = "completed"
-      method = "terraform"
-      result = try(module.terraform_certificate_generation[0].certificate_dependency, null)
-      } : {
-      status = "completed"
-      method = "step-cli"
-      result = try(module.certificate_generation[0].certificate_dependency, null)
-    }
-    ) : {
-    status = "skipped"
-    method = "none"
-    result = null
-  }
-}
-
-output "terraform_certificate_files" {
-  description = "List of certificate files created by Terraform TLS provider (when use_terraform_certificates is true)."
-  value = var.should_create_certificates && var.use_terraform_certificates ? {
-    files               = try(module.terraform_certificate_generation[0].certificate_files, [])
-    server_root_ca_cert = try(module.terraform_certificate_generation[0].server_root_ca_cert, null)
-    server_leaf_cert    = try(module.terraform_certificate_generation[0].server_leaf_cert, null)
-    client_root_ca_cert = try(module.terraform_certificate_generation[0].client_root_ca_cert, null)
-    client_leaf_cert    = try(module.terraform_certificate_generation[0].client_leaf_cert, null)
-  } : null
-  sensitive = false
-}
-
-/*
  * Secret Provider Class Outputs
  */
 
 output "secret_provider_class_status" {
   description = "Status of the secret provider class configuration."
-  value = var.should_create_certificates ? {
-    status        = "skipped"
-    cluster_a_spc = null
-    cluster_b_spc = null
-    } : {
+  value = {
     status        = "completed"
-    cluster_a_spc = try(module.secret_provider_class[0].cluster_a_secret_provider_class, null)
-    cluster_b_spc = try(module.secret_provider_class[0].cluster_b_secret_provider_class, null)
+    cluster_a_spc = try(module.secret_provider_class.cluster_a_secret_provider_class, null)
+    cluster_b_spc = try(module.secret_provider_class.cluster_b_secret_provider_class, null)
   }
 }

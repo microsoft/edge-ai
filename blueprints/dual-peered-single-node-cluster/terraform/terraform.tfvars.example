@@ -82,13 +82,6 @@ should_create_azure_functions     = false
 #   }
 # ]
 
-# Certificate Generation Configuration
-# Choose between certificate generation (requires Step CLI) or secret provider classes (Azure Key Vault)
-should_create_certificates = false  # Set to false to use Azure Key Vault secret provider classes instead
-
-# Certificate Generation Method (only applies when should_create_certificates = true)
-use_terraform_certificates = true # Set to true to use Terraform TLS provider instead of Step CLI
-
 # Custom Script Deployment Configuration
 # Deploy custom scripts to VMs for MQTT configuration
 should_deploy_custom_scripts            = true  # Deploy both server-central.sh and client-technology.sh
@@ -97,7 +90,7 @@ should_deploy_client_technology_script  = true  # Deploy client-technology.sh to
 
 # MQTT Configuration
 enterprise_broker_port                       = 28883                # Port for enterprise MQTT broker listener (default: 28883)
-enterprise_broker_server_cert_secret_name    = "broker-server-cert" # Name of the Kubernetes secret containing the broker server certificate (default: "broker-server-cert")
+enterprise_broker_tls_cert_secret_name    = "broker-tls-cert" # Name of the Kubernetes secret containing the broker server certificate (default: "broker-tls-cert")
 enterprise_client_ca_configmap_name          = "client-ca"          # Name of the Kubernetes configmap containing the client CA certificate (default: "client-ca")
 site_client_secret_name                      = "client-secret"      # Name of the Kubernetes secret containing the client certificate and key (default: "client-secret")
 site_tls_ca_configmap_name                   = "tls-ca-configmap"   # Name of the Kubernetes configmap containing the TLS CA certificate (default: "tls-ca-configmap")

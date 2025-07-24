@@ -195,7 +195,7 @@ resource "azapi_resource" "enterprise_mqtt_broker_listener" {
           tls = {
             mode = "Manual"
             manual = {
-              secretRef = var.enterprise_broker_server_cert_secret_name
+              secretRef = var.enterprise_broker_tls_cert_secret_name
             }
           }
         }

@@ -81,6 +81,15 @@ variable "cluster_b_secret_sync_identity" {
 /*
  * Certificate Sync Configuration
  */
+variable "site_client_secret_name" {
+  type        = string
+  description = "The name of the Kubernetes secret containing the client certificate and key"
+}
+
+variable "enterprise_broker_tls_cert_secret_name" {
+  type        = string
+  description = "The name of the Kubernetes secret containing the broker tls certificate"
+}
 
 variable "cluster_a_synced_certificates_secret_name" {
   type        = string

@@ -48,6 +48,8 @@ resources for both clusters to enable secret synchronization from Key Vault.
 | cluster\_b\_name | The name identifier for Cluster B. | `string` | n/a | yes |
 | cluster\_b\_resource\_group | The resource group for Cluster B. | ```object({ id = string })``` | n/a | yes |
 | cluster\_b\_secret\_sync\_identity | The secret sync identity for Cluster B. | ```object({ client_id = string })``` | n/a | yes |
+| enterprise\_broker\_tls\_cert\_secret\_name | The name of the Kubernetes secret containing the broker tls certificate | `string` | n/a | yes |
+| site\_client\_secret\_name | The name of the Kubernetes secret containing the client certificate and key | `string` | n/a | yes |
 | cluster\_a\_synced\_certificates\_secret\_name | The name of the Kubernetes secret where certificates will be synced from Key Vault for Cluster A. | `string` | `"certificates-sync-a"` | no |
 | cluster\_b\_synced\_certificates\_secret\_name | The name of the Kubernetes secret where certificates will be synced from Key Vault for Cluster B. | `string` | `"certificates-sync-b"` | no |
 

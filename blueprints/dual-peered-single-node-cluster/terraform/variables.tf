@@ -249,18 +249,6 @@ variable "should_deploy_client_technology_script" {
   default     = true
 }
 
-variable "should_create_certificates" {
-  type        = bool
-  description = "Whether to generate certificates using the certs.sh script before deployment."
-  default     = false
-}
-
-variable "use_terraform_certificates" {
-  type        = bool
-  description = "Use Terraform TLS provider instead of Step CLI for certificate generation. Only applies when should_create_certificates is true."
-  default     = true
-}
-
 /*
  * MQTT Configuration
  */
@@ -275,10 +263,10 @@ variable "enterprise_broker_port" {
   }
 }
 
-variable "enterprise_broker_server_cert_secret_name" {
+variable "enterprise_broker_tls_cert_secret_name" {
   type        = string
-  description = "The name of the Kubernetes secret containing the broker server certificate"
-  default     = "broker-server-cert"
+  description = "The name of the Kubernetes secret containing the broker tls certificate"
+  default     = "broker-tls-cert"
 }
 
 variable "enterprise_client_ca_configmap_name" {
@@ -297,4 +285,28 @@ variable "site_tls_ca_configmap_name" {
   type        = string
   description = "The name of the Kubernetes configmap containing the TLS CA certificate"
   default     = "tls-ca-configmap"
+}
+
+/*
+ * Certificate Configuration
+ */
+
+variable "external_certificates" {
+  type = object({
+    server_root_ca_cert         = string
+    server_root_ca_key          = string
+    server_intermediate_ca_cert = string
+    server_intermediate_ca_key  = string
+    server_leaf_cert            = string
+    server_leaf_key             = string
+    client_root_ca_cert         = string
+    client_root_ca_key          = string
+    client_intermediate_ca_cert = string
+    client_intermediate_ca_key  = string
+    client_leaf_cert            = string
+    client_leaf_key             = string
+  })
+  description = "External certificates to use instead of generating them with Terraform. When null, certificates will be generated using the terraform-certificate-generation module."
+  default     = null
+  sensitive   = true
 }

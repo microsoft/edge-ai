@@ -34,8 +34,6 @@ Each cluster operates independently but can communicate through the peered virtu
 
 | Name | Source | Version |
 |------|--------|---------|
-| certificate\_generation | ./modules/certificate-generation | n/a |
-| cluster\_a\_cloud\_acr | ../../../src/000-cloud/060-acr/terraform | n/a |
 | cluster\_a\_cloud\_data | ../../../src/000-cloud/030-data/terraform | n/a |
 | cluster\_a\_cloud\_kubernetes | ../../../src/000-cloud/070-kubernetes/terraform | n/a |
 | cluster\_a\_cloud\_messaging | ../../../src/000-cloud/040-messaging/terraform | n/a |
@@ -49,9 +47,7 @@ Each cluster operates independently but can communicate through the peered virtu
 | cluster\_a\_edge\_iot\_ops | ../../../src/100-edge/110-iot-ops/terraform | n/a |
 | cluster\_a\_edge\_messaging | ../../../src/100-edge/130-messaging/terraform | n/a |
 | cluster\_a\_edge\_observability | ../../../src/100-edge/120-observability/terraform | n/a |
-| cluster\_b\_cloud\_acr | ../../../src/000-cloud/060-acr/terraform | n/a |
 | cluster\_b\_cloud\_data | ../../../src/000-cloud/030-data/terraform | n/a |
-| cluster\_b\_cloud\_kubernetes | ../../../src/000-cloud/070-kubernetes/terraform | n/a |
 | cluster\_b\_cloud\_messaging | ../../../src/000-cloud/040-messaging/terraform | n/a |
 | cluster\_b\_cloud\_networking | ../../../src/000-cloud/050-networking/terraform | n/a |
 | cluster\_b\_cloud\_observability | ../../../src/000-cloud/020-observability/terraform | n/a |
@@ -64,8 +60,11 @@ Each cluster operates independently but can communicate through the peered virtu
 | cluster\_b\_edge\_messaging | ../../../src/100-edge/130-messaging/terraform | n/a |
 | cluster\_b\_edge\_observability | ../../../src/100-edge/120-observability/terraform | n/a |
 | custom\_script\_deployment | ./modules/custom-script-deployment | n/a |
+| key\_vault\_publisher | ./modules/key-vault-publisher | n/a |
 | mqtt\_configuration | ./modules/mqtt-configuration | n/a |
 | secret\_provider\_class | ./modules/secret-provider-class | n/a |
+| shared\_cloud\_acr | ../../../src/000-cloud/060-acr/terraform | n/a |
+| shared\_cloud\_resource\_group | ../../../src/000-cloud/000-resource-group/terraform | n/a |
 | terraform\_certificate\_generation | ./modules/terraform-certificate-generation | n/a |
 
 ## Inputs
@@ -82,8 +81,9 @@ Each cluster operates independently but can communicate through the peered virtu
 | cluster\_b\_virtual\_network\_config | Configuration for Cluster B virtual network including address space and subnet prefix. | ```object({ address_space = string subnet_address_prefix = string })``` | ```{ "address_space": "10.2.0.0/16", "subnet_address_prefix": "10.2.1.0/24" }``` | no |
 | custom\_locations\_oid | The object id of the Custom Locations Entra ID application for your tenant. If none is provided, the script will attempt to retrieve this requiring 'Application.Read.All' or 'Directory.Read.All' permissions. ```sh az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv``` | `string` | `null` | no |
 | enterprise\_broker\_port | The port number for the enterprise MQTT broker listener | `number` | `28883` | no |
-| enterprise\_broker\_server\_cert\_secret\_name | The name of the Kubernetes secret containing the broker server certificate | `string` | `"broker-server-cert"` | no |
+| enterprise\_broker\_tls\_cert\_secret\_name | The name of the Kubernetes secret containing the broker tls certificate | `string` | `"broker-tls-cert"` | no |
 | enterprise\_client\_ca\_configmap\_name | The name of the Kubernetes configmap containing the client CA certificate | `string` | `"client-ca"` | no |
+| external\_certificates | External certificates to use instead of generating them with Terraform. When null, certificates will be generated using the terraform-certificate-generation module. | ```object({ server_root_ca_cert = string server_root_ca_key = string server_intermediate_ca_cert = string server_intermediate_ca_key = string server_leaf_cert = string server_leaf_key = string client_root_ca_cert = string client_root_ca_key = string client_intermediate_ca_cert = string client_intermediate_ca_key = string client_leaf_cert = string client_leaf_key = string })``` | `null` | no |
 | instance | Instance identifier for naming resources: 001, 002, etc... | `string` | `"001"` | no |
 | resource\_group\_name\_a | The name for the Cluster A resource group. If not provided, a default name will be generated using resource\_prefix, environment, and instance. | `string` | `null` | no |
 | resource\_group\_name\_b | The name for the Cluster B resource group. If not provided, a default name will be generated using resource\_prefix, environment, and instance. | `string` | `null` | no |
@@ -91,7 +91,6 @@ Each cluster operates independently but can communicate through the peered virtu
 | should\_create\_aks | Should create Azure Kubernetes Service. Default is false. | `bool` | `false` | no |
 | should\_create\_anonymous\_broker\_listener | Whether to enable an insecure anonymous AIO MQ Broker Listener. (Should only be used for dev or test environments) | `bool` | `false` | no |
 | should\_create\_azure\_functions | Whether to create Azure Functions for the clusters. | `bool` | `false` | no |
-| should\_create\_certificates | Whether to generate certificates using the certs.sh script before deployment. | `bool` | `false` | no |
 | should\_deploy\_client\_technology\_script | Whether to deploy the client-technology.sh script to Cluster B VM. | `bool` | `true` | no |
 | should\_deploy\_custom\_scripts | Whether to deploy the custom scripts (server-central.sh and client-technology.sh) to the VMs. | `bool` | `true` | no |
 | should\_deploy\_resource\_sync\_rules | Deploys resource sync rules if set to true. | `bool` | `false` | no |
@@ -102,13 +101,11 @@ Each cluster operates independently but can communicate through the peered virtu
 | site\_tls\_ca\_configmap\_name | The name of the Kubernetes configmap containing the TLS CA certificate | `string` | `"tls-ca-configmap"` | no |
 | use\_existing\_resource\_group\_a | Whether to use an existing resource group for Cluster A instead of creating a new one. When true, the component will look up a resource group with the specified or generated name instead of creating it. | `bool` | `false` | no |
 | use\_existing\_resource\_group\_b | Whether to use an existing resource group for Cluster B instead of creating a new one. When true, the component will look up a resource group with the specified or generated name instead of creating it. | `bool` | `false` | no |
-| use\_terraform\_certificates | Use Terraform TLS provider instead of Step CLI for certificate generation. Only applies when should\_create\_certificates is true. | `bool` | `true` | no |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| certificate\_generation\_status | Status of the certificate generation process. |
 | client\_technology\_script\_deployment | The client technology script deployment extension on Cluster B. |
 | cluster\_a\_aio\_instance | The Cluster A AIO instance. |
 | cluster\_a\_arc\_connected\_cluster | The Cluster A Arc connected cluster. |
@@ -122,7 +119,6 @@ Each cluster operates independently but can communicate through the peered virtu
 | cluster\_b\_virtual\_network | The Cluster B virtual network. |
 | secret\_provider\_class\_status | Status of the secret provider class configuration. |
 | server\_central\_script\_deployment | The server central script deployment extension on Cluster A. |
-| terraform\_certificate\_files | List of certificate files created by Terraform TLS provider (when use\_terraform\_certificates is true). |
 | vnet\_peering\_cluster\_a\_to\_cluster\_b | The virtual network peering from Cluster A to Cluster B. |
 | vnet\_peering\_cluster\_b\_to\_cluster\_a | The virtual network peering from Cluster B to Cluster A. |
 <!-- markdown-table-prettify-ignore-end -->

@@ -36,7 +36,7 @@ Uses existing AIO instance and dataflow profile outputs from the IoT Operations 
 |------|-------------|------|---------|:--------:|
 | enterprise\_aio\_instance | Enterprise Azure IoT Operations instance object from the IoT Operations module | `any` | n/a | yes |
 | enterprise\_broker\_port | The port number for the enterprise MQTT broker listener | `number` | n/a | yes |
-| enterprise\_broker\_server\_cert\_secret\_name | The name of the Kubernetes secret containing the broker server certificate | `string` | n/a | yes |
+| enterprise\_broker\_tls\_cert\_secret\_name | The name of the Kubernetes secret containing the broker tls certificate | `string` | n/a | yes |
 | enterprise\_client\_ca\_configmap\_name | The name of the Kubernetes configmap containing the client CA certificate | `string` | n/a | yes |
 | enterprise\_custom\_locations | Custom locations object for the enterprise cluster | ```object({ id = string name = string })``` | n/a | yes |
 | enterprise\_vm\_private\_ip | The private IP address of the enterprise VM (cluster A). | `string` | n/a | yes |

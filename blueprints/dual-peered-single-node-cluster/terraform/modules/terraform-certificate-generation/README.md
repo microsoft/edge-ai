@@ -19,25 +19,12 @@ for both server and client authentication.
 
 | Name | Version |
 |------|---------|
-| local | >= 2.0.0 |
 | tls | >= 4.0.0 |
 
 ## Resources
 
 | Name | Type |
 |------|------|
-| [local_file.client_intermediate_ca_cert](https://registry.terraform.io/providers/hashicorp/local/latest/docs/resources/file) | resource |
-| [local_file.client_intermediate_ca_key](https://registry.terraform.io/providers/hashicorp/local/latest/docs/resources/file) | resource |
-| [local_file.client_leaf_cert](https://registry.terraform.io/providers/hashicorp/local/latest/docs/resources/file) | resource |
-| [local_file.client_leaf_key](https://registry.terraform.io/providers/hashicorp/local/latest/docs/resources/file) | resource |
-| [local_file.client_root_ca_cert](https://registry.terraform.io/providers/hashicorp/local/latest/docs/resources/file) | resource |
-| [local_file.client_root_ca_key](https://registry.terraform.io/providers/hashicorp/local/latest/docs/resources/file) | resource |
-| [local_file.server_intermediate_ca_cert](https://registry.terraform.io/providers/hashicorp/local/latest/docs/resources/file) | resource |
-| [local_file.server_intermediate_ca_key](https://registry.terraform.io/providers/hashicorp/local/latest/docs/resources/file) | resource |
-| [local_file.server_leaf_cert](https://registry.terraform.io/providers/hashicorp/local/latest/docs/resources/file) | resource |
-| [local_file.server_leaf_key](https://registry.terraform.io/providers/hashicorp/local/latest/docs/resources/file) | resource |
-| [local_file.server_root_ca_cert](https://registry.terraform.io/providers/hashicorp/local/latest/docs/resources/file) | resource |
-| [local_file.server_root_ca_key](https://registry.terraform.io/providers/hashicorp/local/latest/docs/resources/file) | resource |
 | [tls_cert_request.client_intermediate_ca](https://registry.terraform.io/providers/hashicorp/tls/latest/docs/resources/cert_request) | resource |
 | [tls_cert_request.client_leaf](https://registry.terraform.io/providers/hashicorp/tls/latest/docs/resources/cert_request) | resource |
 | [tls_cert_request.server_intermediate_ca](https://registry.terraform.io/providers/hashicorp/tls/latest/docs/resources/cert_request) | resource |
@@ -59,22 +46,24 @@ for both server and client authentication.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| certs\_output\_directory | Directory where the generated certificates will be stored. | `string` | n/a | yes |
 | server\_vm\_private\_ip | The private IP address of the server VM to use as Subject Alternative Name (SAN) in certificates. | `string` | n/a | yes |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| certificate\_dependency | Dependency marker for certificate generation completion. |
-| certificate\_files | List of certificate files created by this module. |
+| certificates | All generated certificates and keys in a single object. |
 | client\_intermediate\_ca\_cert | Client Intermediate CA certificate. |
+| client\_intermediate\_ca\_key | Client Intermediate CA private key. |
 | client\_leaf\_cert | Client leaf certificate (bundled with chain). |
 | client\_leaf\_key | Client leaf certificate private key. |
 | client\_root\_ca\_cert | Client Root CA certificate. |
+| client\_root\_ca\_key | Client Root CA private key. |
 | server\_intermediate\_ca\_cert | Server Intermediate CA certificate. |
+| server\_intermediate\_ca\_key | Server Intermediate CA private key. |
 | server\_leaf\_cert | Server leaf certificate (bundled with chain). |
 | server\_leaf\_key | Server leaf certificate private key. |
 | server\_root\_ca\_cert | Server Root CA certificate. |
+| server\_root\_ca\_key | Server Root CA private key. |
 <!-- markdown-table-prettify-ignore-end -->
 <!-- END_TF_DOCS -->

@@ -9,6 +9,27 @@
 locals {
   cluster_a_name = "b"
   cluster_b_name = "a"
+
+  # Certificate resolution logic: use external_certificates if provided, otherwise generate them
+  certificates = var.external_certificates != null ? var.external_certificates : module.terraform_certificate_generation[0].certificates
+}
+
+// Shared Resource Group for ACR, AKS, EventHubs, EventGrid etc.
+module "shared_cloud_resource_group" {
+  source = "../../../src/000-cloud/000-resource-group/terraform"
+
+  tags = {
+    blueprint = "dual-peered-single-cluster"
+    cluster   = "shared"
+  }
+  environment     = var.environment
+  location        = var.location
+  resource_prefix = "${var.resource_prefix}${local.cluster_a_name}"
+  instance        = var.instance
+
+  // Optional parameters for using an existing resource group
+  use_existing_resource_group = var.use_existing_resource_group_a
+  resource_group_name         = "rg-${var.resource_prefix}-${var.environment}-${var.instance}-shared"
 }
 
 // Cluster A - Primary cluster with first address space
@@ -65,7 +86,7 @@ module "cluster_a_cloud_data" {
 module "cluster_a_cloud_messaging" {
   source = "../../../src/000-cloud/040-messaging/terraform"
 
-  resource_group  = module.cluster_a_cloud_resource_group.resource_group
+  resource_group  = module.shared_cloud_resource_group.resource_group
   aio_identity    = module.cluster_a_cloud_security_identity.aio_identity
   environment     = var.environment
   resource_prefix = "${var.resource_prefix}${local.cluster_a_name}"
@@ -99,7 +120,7 @@ module "cluster_a_cloud_vm_host" {
   arc_onboarding_identity = module.cluster_a_cloud_security_identity.arc_onboarding_identity
 }
 
-module "cluster_a_cloud_acr" {
+module "shared_cloud_acr" {
   source = "../../../src/000-cloud/060-acr/terraform"
 
   environment     = var.environment
@@ -107,7 +128,7 @@ module "cluster_a_cloud_acr" {
   location        = var.location
   instance        = var.instance
 
-  resource_group = module.cluster_a_cloud_resource_group.resource_group
+  resource_group = module.shared_cloud_resource_group.resource_group
 
   network_security_group = module.cluster_a_cloud_networking.network_security_group
   virtual_network        = module.cluster_a_cloud_networking.virtual_network
@@ -115,7 +136,7 @@ module "cluster_a_cloud_acr" {
   should_create_acr_private_endpoint = var.should_create_acr_private_endpoint
 }
 
-module "cluster_a_cloud_kubernetes" {
+module "shared_cloud_kubernetes" {
   source = "../../../src/000-cloud/070-kubernetes/terraform"
 
   environment     = var.environment
@@ -123,12 +144,12 @@ module "cluster_a_cloud_kubernetes" {
   location        = var.location
   instance        = var.instance
 
-  resource_group = module.cluster_a_cloud_resource_group.resource_group
+  resource_group = module.shared_cloud_resource_group.resource_group
 
   network_security_group = module.cluster_a_cloud_networking.network_security_group
   virtual_network        = module.cluster_a_cloud_networking.virtual_network
 
-  acr = module.cluster_a_cloud_acr.acr
+  acr = module.shared_cloud_acr.acr
 
   should_create_aks = var.should_create_aks
 }
@@ -213,8 +234,8 @@ module "cluster_a_edge_messaging" {
   aio_dataflow_profile = module.cluster_a_edge_iot_ops.aio_dataflow_profile
   aio_instance         = module.cluster_a_edge_iot_ops.aio_instance
   aio_identity         = module.cluster_a_cloud_security_identity.aio_identity
-  eventgrid            = module.cluster_a_cloud_messaging.eventgrid
-  eventhub             = module.cluster_a_cloud_messaging.eventhubs[0]
+  eventgrid            = module.shared_cloud_messaging.eventgrid
+  eventhub             = module.shared_cloud_messaging.eventhubs[0]
 }
 
 // Cluster B - Secondary cluster with second address space
@@ -268,18 +289,6 @@ module "cluster_b_cloud_data" {
   resource_group = module.cluster_b_cloud_resource_group.resource_group
 }
 
-module "cluster_b_cloud_messaging" {
-  source = "../../../src/000-cloud/040-messaging/terraform"
-
-  resource_group  = module.cluster_b_cloud_resource_group.resource_group
-  aio_identity    = module.cluster_b_cloud_security_identity.aio_identity
-  environment     = var.environment
-  resource_prefix = "${var.resource_prefix}${local.cluster_b_name}"
-  instance        = var.instance
-
-  should_create_azure_functions = var.should_create_azure_functions
-}
-
 module "cluster_b_cloud_networking" {
   source = "../../../src/000-cloud/050-networking/terraform"
 
@@ -303,40 +312,6 @@ module "cluster_b_cloud_vm_host" {
   resource_group          = module.cluster_b_cloud_resource_group.resource_group
   subnet_id               = module.cluster_b_cloud_networking.subnet_id
   arc_onboarding_identity = module.cluster_b_cloud_security_identity.arc_onboarding_identity
-}
-
-module "cluster_b_cloud_acr" {
-  source = "../../../src/000-cloud/060-acr/terraform"
-
-  environment     = var.environment
-  resource_prefix = "${var.resource_prefix}${local.cluster_b_name}"
-  location        = var.location
-  instance        = var.instance
-
-  resource_group = module.cluster_b_cloud_resource_group.resource_group
-
-  network_security_group = module.cluster_b_cloud_networking.network_security_group
-  virtual_network        = module.cluster_b_cloud_networking.virtual_network
-
-  should_create_acr_private_endpoint = var.should_create_acr_private_endpoint
-}
-
-module "cluster_b_cloud_kubernetes" {
-  source = "../../../src/000-cloud/070-kubernetes/terraform"
-
-  environment     = var.environment
-  resource_prefix = "${var.resource_prefix}${local.cluster_b_name}"
-  location        = var.location
-  instance        = var.instance
-
-  resource_group = module.cluster_b_cloud_resource_group.resource_group
-
-  network_security_group = module.cluster_b_cloud_networking.network_security_group
-  virtual_network        = module.cluster_b_cloud_networking.virtual_network
-
-  acr = module.cluster_b_cloud_acr.acr
-
-  should_create_aks = var.should_create_aks
 }
 
 module "cluster_b_edge_cncf_cluster" {
@@ -419,8 +394,8 @@ module "cluster_b_edge_messaging" {
   aio_dataflow_profile = module.cluster_b_edge_iot_ops.aio_dataflow_profile
   aio_instance         = module.cluster_b_edge_iot_ops.aio_instance
   aio_identity         = module.cluster_b_cloud_security_identity.aio_identity
-  eventgrid            = module.cluster_b_cloud_messaging.eventgrid
-  eventhub             = module.cluster_b_cloud_messaging.eventhubs[0]
+  eventgrid            = module.shared_cloud_messaging.eventgrid
+  eventhub             = module.shared_cloud_messaging.eventhubs[0]
 }
 
 // VNet Peering between Cluster A and Cluster B
@@ -448,38 +423,31 @@ resource "azurerm_virtual_network_peering" "cluster_b_to_cluster_a" {
   use_remote_gateways          = false
 }
 
-// Certificate Generation Module (Step CLI)
-module "certificate_generation" {
-  count  = var.should_create_certificates && !var.use_terraform_certificates ? 1 : 0
-  source = "./modules/certificate-generation"
-
-  server_vm_private_ip   = module.cluster_a_cloud_vm_host.virtual_machines[0].private_ip_address
-  certs_script_path      = "${path.module}/../scripts/certs.sh"
-  certs_output_directory = "${path.module}/../certs"
-
-  depends_on = [
-    module.cluster_a_cloud_vm_host,
-    module.cluster_b_cloud_vm_host
-  ]
-}
-
-// Terraform Certificate Generation Module (Pure Terraform)
+// Terraform Certificate Generation Module (conditional)
 module "terraform_certificate_generation" {
-  count  = var.should_create_certificates && var.use_terraform_certificates ? 1 : 0
+  count  = var.external_certificates == null ? 1 : 0
   source = "./modules/terraform-certificate-generation"
 
-  server_vm_private_ip   = module.cluster_a_cloud_vm_host.virtual_machines[0].private_ip_address
-  certs_output_directory = "${path.module}/../certs"
+  server_vm_private_ip = module.cluster_b_cloud_vm_host.private_ips[0]
+}
+
+// Key Vault Publisher Module - Writes certificates to Key Vault using SecretProviderClass naming
+module "key_vault_publisher" {
+  source = "./modules/key-vault-publisher"
+
+  certificates           = local.certificates
+  cluster_a_name         = local.cluster_a_name
+  cluster_b_name         = local.cluster_b_name
+  cluster_a_key_vault_id = module.cluster_a_cloud_security_identity.key_vault.id
+  cluster_b_key_vault_id = module.cluster_b_cloud_security_identity.key_vault.id
 
   depends_on = [
-    module.cluster_a_cloud_vm_host,
-    module.cluster_b_cloud_vm_host
+    module.terraform_certificate_generation
   ]
 }
 
-// Secret Provider Class Module (when certificates are not generated)
+// Secret Provider Class Module
 module "secret_provider_class" {
-  count  = var.should_create_certificates ? 0 : 1
   source = "./modules/secret-provider-class"
 
   cluster_a_name                 = local.cluster_a_name
@@ -488,17 +456,20 @@ module "secret_provider_class" {
   cluster_a_custom_location_id   = module.cluster_a_edge_iot_ops.custom_location_id
   cluster_a_key_vault            = module.cluster_a_cloud_security_identity.key_vault
   cluster_a_secret_sync_identity = module.cluster_a_cloud_security_identity.secret_sync_identity
+  site_client_secret_name        = var.site_client_secret_name
 
-  cluster_b_name                 = local.cluster_b_name
-  cluster_b_location             = var.location
-  cluster_b_resource_group       = module.cluster_b_cloud_resource_group.resource_group
-  cluster_b_custom_location_id   = module.cluster_b_edge_iot_ops.custom_location_id
-  cluster_b_key_vault            = module.cluster_b_cloud_security_identity.key_vault
-  cluster_b_secret_sync_identity = module.cluster_b_cloud_security_identity.secret_sync_identity
+  cluster_b_name                         = local.cluster_b_name
+  cluster_b_location                     = var.location
+  cluster_b_resource_group               = module.cluster_b_cloud_resource_group.resource_group
+  cluster_b_custom_location_id           = module.cluster_b_edge_iot_ops.custom_location_id
+  cluster_b_key_vault                    = module.cluster_b_cloud_security_identity.key_vault
+  cluster_b_secret_sync_identity         = module.cluster_b_cloud_security_identity.secret_sync_identity
+  enterprise_broker_tls_cert_secret_name = var.enterprise_broker_tls_cert_secret_name
 
   depends_on = [
     module.cluster_a_edge_iot_ops,
-    module.cluster_b_edge_iot_ops
+    module.cluster_b_edge_iot_ops,
+    module.key_vault_publisher
   ]
 }
 
@@ -511,20 +482,16 @@ module "custom_script_deployment" {
 
   server_vm_id                               = module.cluster_a_cloud_vm_host.virtual_machines[0].id
   client_vm_id                               = module.cluster_b_cloud_vm_host.virtual_machines[0].id
-  enterprise_broker_server_cert_secret_name  = var.enterprise_broker_server_cert_secret_name
   enterprise_client_ca_configmap_name        = var.enterprise_client_ca_configmap_name
-  site_client_secret_name                    = var.site_client_secret_name
   site_tls_ca_configmap_name                 = var.site_tls_ca_configmap_name
-  should_create_certificates                 = var.should_create_certificates
-  enterprise_synced_certificates_secret_name = var.should_create_certificates ? "" : module.secret_provider_class[0].cluster_a_synced_certificates_secret_name
-  site_synced_certificates_secret_name       = var.should_create_certificates ? "" : module.secret_provider_class[0].cluster_b_synced_certificates_secret_name
+  enterprise_synced_certificates_secret_name = module.secret_provider_class.cluster_a_synced_certificates_secret_name
+  site_synced_certificates_secret_name       = module.secret_provider_class.cluster_b_synced_certificates_secret_name
 
   depends_on = [
     module.cluster_a_edge_iot_ops,
     module.cluster_b_edge_iot_ops,
-    module.certificate_generation,
-    module.terraform_certificate_generation,
-    module.secret_provider_class
+    module.secret_provider_class,
+    module.key_vault_publisher
   ]
 }
 
@@ -532,17 +499,17 @@ module "custom_script_deployment" {
 module "mqtt_configuration" {
   source = "./modules/mqtt-configuration"
 
-  site_aio_instance                         = module.cluster_a_edge_iot_ops.aio_instance
-  site_aio_dataflow_profile                 = module.cluster_a_edge_iot_ops.aio_dataflow_profile
-  site_custom_locations                     = module.cluster_a_edge_iot_ops.custom_locations
-  enterprise_aio_instance                   = module.cluster_b_edge_iot_ops.aio_instance
-  enterprise_custom_locations               = module.cluster_b_edge_iot_ops.custom_locations
-  enterprise_vm_private_ip                  = module.cluster_b_cloud_vm_host.private_ips[0]
-  enterprise_broker_port                    = var.enterprise_broker_port
-  enterprise_broker_server_cert_secret_name = var.enterprise_broker_server_cert_secret_name
-  enterprise_client_ca_configmap_name       = var.enterprise_client_ca_configmap_name
-  site_client_secret_name                   = var.site_client_secret_name
-  site_tls_ca_configmap_name                = var.site_tls_ca_configmap_name
+  site_aio_instance                      = module.cluster_a_edge_iot_ops.aio_instance
+  site_aio_dataflow_profile              = module.cluster_a_edge_iot_ops.aio_dataflow_profile
+  site_custom_locations                  = module.cluster_a_edge_iot_ops.custom_locations
+  enterprise_aio_instance                = module.cluster_b_edge_iot_ops.aio_instance
+  enterprise_custom_locations            = module.cluster_b_edge_iot_ops.custom_locations
+  enterprise_vm_private_ip               = module.cluster_b_cloud_vm_host.private_ips[0]
+  enterprise_broker_port                 = var.enterprise_broker_port
+  enterprise_broker_tls_cert_secret_name = var.enterprise_broker_tls_cert_secret_name
+  enterprise_client_ca_configmap_name    = var.enterprise_client_ca_configmap_name
+  site_client_secret_name                = var.site_client_secret_name
+  site_tls_ca_configmap_name             = var.site_tls_ca_configmap_name
 
   depends_on = [
     module.custom_script_deployment

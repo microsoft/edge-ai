@@ -51,7 +51,7 @@ This blueprint deploys two independent clusters with the following components fo
 
 ### Custom Script Deployment
 
-- **Dynamic Certificate Generation**: Automatically generates TLS certificates using the server VM's private IP address as Subject Alternative Name (SAN)
+- **Azure Key Vault Integration**: Uses Azure Key Vault Secret Sync Controller for secure certificate management
 - **Automated Certificate Management**: Pre-configured certificates for secure MQTT communication between clusters
 - **Server Central Configuration**: Deploys server-central.sh to Cluster A for MQTT broker setup with proper certificates
 - **Client Technology Configuration**: Deploys client-technology.sh to Cluster B for client endpoint setup with certificate-based authentication
@@ -102,8 +102,6 @@ Each cluster uses the same modules as the single cluster blueprint, prefixed wit
 | `edge_assets`                      | Manages OPC UA assets                                  | `../../../src/100-edge/111-assets/terraform`             |
 | `edge_observability`               | Sets up edge monitoring                                | `../../../src/100-edge/120-observability/terraform`      |
 | `edge_messaging`                   | Deploys edge messaging components                      | `../../../src/100-edge/130-messaging/terraform`          |
-| `certificate_generation`           | Generates TLS certificates with Step CLI               | `./modules/certificate-generation`                       |
-| `terraform_certificate_generation` | Generates TLS certificates with Terraform TLS provider | `./modules/terraform-certificate-generation`             |
 | `secret_provider_class`            | Creates Key Vault secret provider classes              | `./modules/secret-provider-class`                        |
 | `custom_script_deployment`         | Deploys custom scripts to VMs                          | `./modules/custom-script-deployment`                     |
 
@@ -148,13 +146,6 @@ All other variables from the single cluster blueprint are shared between both cl
 - `aio_features`
 - Asset and messaging configuration variables
 
-#### Certificate Generation Configuration
-
-| Variable                     | Description                                    | Default | Notes                                                                                           |
-|------------------------------|------------------------------------------------|---------|-------------------------------------------------------------------------------------------------|
-| `should_create_certificates` | Generate certificates using Step CLI           | `true`  | When true, chooses between Step CLI or Terraform; when false, uses secret-provider-class module |
-| `use_terraform_certificates` | Use Terraform TLS provider instead of Step CLI | `false` | Only applies when should_create_certificates is true; requires no external dependencies         |
-
 #### Custom Script Deployment Configuration
 
 | Variable                                 | Description                       | Default | Notes                                                   |
@@ -190,7 +181,6 @@ Ensure you have the following prerequisites:
 - Registered resource providers (see deployment instructions)
 - Appropriate permissions to create resources in multiple resource groups
 - **Non-overlapping IP address spaces** if you customize the network configuration
-- **Step CLI tool** installed for certificate generation ([installation guide](https://smallstep.com/docs/step-cli/installation/))
 
 ## Resource Naming Convention
 
@@ -214,13 +204,12 @@ Follow detailed deployment instructions from the blueprints README.md, [Detailed
 # Initialize Terraform
 terraform init
 
-# Plan with custom network ranges and Terraform-based certificate generation
+# Plan with custom network ranges
 terraform plan \
   -var="environment=dev" \
   -var="resource_prefix=myorg" \
   -var="location=eastus2" \
   -var="should_deploy_custom_scripts=true" \
-  -var="use_terraform_certificates=true" \
   -var="cluster_a_virtual_network_config={address_space=\"192.168.1.0/24\",subnet_address_prefix=\"192.168.1.0/28\"}" \
   -var="cluster_b_virtual_network_config={address_space=\"192.168.2.0/24\",subnet_address_prefix=\"192.168.2.0/28\"}"
 
@@ -230,51 +219,25 @@ terraform apply
 
 ### Script Deployment Features
 
-The blueprint includes automated certificate generation and deployment of custom scripts:
+The blueprint includes automated certificate management and deployment of custom scripts:
 
-#### Certificate Generation vs Secret Provider Classes
+#### Certificate Management
 
-The blueprint supports three mutually exclusive approaches for handling secrets and certificates:
-
-**Certificate Generation Mode with Step CLI (Default)** - `should_create_certificates = true && use_terraform_certificates = false`:
-
-- **Dynamic Certificate Generation**: Executes `certs.sh` script locally using the Step CLI to generate TLS certificates with the server VM's private IP address as SAN
-- **Local Certificate Management**: All certificates are generated and managed locally during Terraform execution
-- **Requires Step CLI**: Must have Step CLI installed on the machine running Terraform
-
-**Certificate Generation Mode with Terraform TLS Provider** - `should_create_certificates = true && use_terraform_certificates = true`:
-
-- **Pure Terraform Implementation**: Uses Terraform's TLS provider to generate the same certificates as the Step CLI script
-- **No External Dependencies**: Does not require Step CLI or any external tools
-- **State-based Management**: Certificates are tracked in Terraform state for lifecycle management
-- **Cross-Platform**: Works on any platform that supports Terraform
-
-**Secret Provider Class Mode** - `should_create_certificates = false`:
+The blueprint uses **Azure Key Vault Secret Sync Controller** for secure certificate management:
 
 - **Azure Key Vault Integration**: Creates `Microsoft.SecretSyncController/azureKeyVaultSecretProviderClasses` resources for both clusters
 - **Cloud-based Secret Management**: Secrets are managed and synchronized from Azure Key Vault
-- **No Local Dependencies**: Does not require Step CLI or local certificate generation
+- **No Local Dependencies**: Does not require external tools or local certificate generation
+- **Automated Synchronization**: Certificates are automatically synced to Kubernetes secrets in both clusters
 
-#### Deployment Features (All Modes)
+#### Deployment Features
 
-- **Server Central (Cluster A)**: Configures MQTT broker with authentication and TLS certificates (from Step CLI, Terraform, or Key Vault)
+- **Server Central (Cluster A)**: Configures MQTT broker with authentication and TLS certificates from Key Vault
 - **Client Technology (Cluster B)**: Sets up MQTT client endpoints with certificate-based authentication
 - **Kubernetes Resources**: Applies necessary broker listeners, endpoints, and routing configurations from `scripts/` manifests
 - **Template-Free Deployment**: Scripts are embedded as Terraform locals using templatefile() for clean separation of concerns
 
-The certificate generation runs first using either Step CLI execution, Terraform TLS provider, or secret provider class configuration via Azure API, followed by script deployment via Azure VM Custom Script Extensions. All certificate and manifest files are base64-encoded and embedded directly into the script content for security and reliability.
-
-### Certificate Options Comparison
-
-| Feature                 | Step CLI                                                            | Terraform TLS                                                      | Key Vault                          |
-|-------------------------|---------------------------------------------------------------------|--------------------------------------------------------------------|------------------------------------|
-| External Dependencies   | Requires Step CLI                                                   | None                                                               | None                               |
-| Certificate Format      | Step CLI optimized                                                  | Standard X.509                                                     | Azure managed                      |
-| Platform Requirements   | Step CLI availability                                               | Terraform only                                                     | Azure only                         |
-| State Management        | File-based                                                          | Terraform state                                                    | Cloud-based                        |
-| Security Considerations | Local files                                                         | State file                                                         | Azure security                     |
-| Rotation Method         | Re-run script                                                       | Terraform apply                                                    | Azure automation                   |
-| Variable Configuration  | `should_create_certificates=true, use_terraform_certificates=false` | `should_create_certificates=true, use_terraform_certificates=true` | `should_create_certificates=false` |
+The certificate synchronization from Azure Key Vault runs first, followed by script deployment via Azure VM Custom Script Extensions. All certificate and manifest files are base64-encoded and embedded directly into the script content for security and reliability.
 
 ## Testing Connectivity
 

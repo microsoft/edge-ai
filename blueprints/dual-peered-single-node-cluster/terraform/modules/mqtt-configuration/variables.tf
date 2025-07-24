@@ -8,9 +8,9 @@ variable "enterprise_broker_port" {
   description = "The port number for the enterprise MQTT broker listener"
 }
 
-variable "enterprise_broker_server_cert_secret_name" {
+variable "enterprise_broker_tls_cert_secret_name" {
   type        = string
-  description = "The name of the Kubernetes secret containing the broker server certificate"
+  description = "The name of the Kubernetes secret containing the broker tls certificate"
 }
 
 variable "enterprise_client_ca_configmap_name" {
