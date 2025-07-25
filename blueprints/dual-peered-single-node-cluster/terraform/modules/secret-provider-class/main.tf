@@ -118,7 +118,7 @@ resource "azapi_resource" "cluster_b_secret_provider_class" {
 }
 
 // Secret Sync for Cluster A ConfigMap
-resource "azapi_resource" "cluster_a_secret_sync" {
+resource "azapi_resource" "cluster_a_cm_secret_sync" {
   type      = "Microsoft.SecretSyncController/secretSyncs@2024-08-21-preview"
   name      = var.cluster_a_synced_certificates_secret_name
   location  = var.cluster_a_location
@@ -182,7 +182,7 @@ resource "azapi_resource" "cluster_a_secret_sync" {
 }
 
 // Secret Sync for Cluster B ConfigMap
-resource "azapi_resource" "cluster_b_secret_sync" {
+resource "azapi_resource" "cluster_b_cm_secret_sync" {
   type      = "Microsoft.SecretSyncController/secretSyncs@2024-08-21-preview"
   name      = var.cluster_b_synced_certificates_secret_name
   location  = var.cluster_b_location
