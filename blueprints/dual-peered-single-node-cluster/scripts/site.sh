@@ -19,7 +19,7 @@ if kubectl get secret "${synced_certificates_secret_name}" -n azure-iot-operatio
     echo "Certificates found, extracting from synced secret: ${synced_certificates_secret_name}"
 
     # Extract certificate content into variable
-    server_root_ca_cert=$(kubectl get secret "${synced_certificates_secret_name}" -n azure-iot-operations -o jsonpath='{.data.server-root-ca-crt}' | base64 -d)
+    server_root_ca_cert=$(kubectl get secret "${synced_certificates_secret_name}" -n azure-iot-operations -o jsonpath="{.data['server-root-ca-crt']}" | base64 -d)
 
     echo "Executing site configuration with Key Vault certificates..."
 
