@@ -86,24 +86,24 @@ This blueprint extends the single cluster pattern with dual deployment and netwo
 
 Each cluster uses the same modules as the single cluster blueprint, prefixed with `cluster_a_` or `cluster_b_`:
 
-| Module Type                        | Purpose                                                | Source Location                                          |
-|------------------------------------|--------------------------------------------------------|----------------------------------------------------------|
-| `cloud_resource_group`             | Creates separate resource groups                       | `../../../src/000-cloud/000-resource-group/terraform`    |
-| `cloud_security_identity`          | Handles identity and security per cluster              | `../../../src/000-cloud/010-security-identity/terraform` |
-| `cloud_observability`              | Sets up monitoring infrastructure                      | `../../../src/000-cloud/020-observability/terraform`     |
-| `cloud_data`                       | Creates data storage resources                         | `../../../src/000-cloud/030-data/terraform`              |
-| `cloud_messaging`                  | Sets up messaging infrastructure                       | `../../../src/000-cloud/040-messaging/terraform`         |
-| `cloud_networking`                 | Creates virtual networks with peering                  | `../../../src/000-cloud/050-networking/terraform`        |
-| `cloud_vm_host`                    | Creates VM hosts for each cluster                      | `../../../src/000-cloud/051-vm-host/terraform`           |
-| `cloud_acr`                        | Deploys ACR for each cluster                           | `../../../src/000-cloud/060-acr/terraform`               |
-| `cloud_kubernetes`                 | Optional AKS deployment                                | `../../../src/000-cloud/070-kubernetes/terraform`        |
-| `edge_cncf_cluster`                | Deploys K3s Kubernetes clusters                        | `../../../src/100-edge/100-cncf-cluster/terraform`       |
-| `edge_iot_ops`                     | Installs Azure IoT Operations                          | `../../../src/100-edge/110-iot-ops/terraform`            |
-| `edge_assets`                      | Manages OPC UA assets                                  | `../../../src/100-edge/111-assets/terraform`             |
-| `edge_observability`               | Sets up edge monitoring                                | `../../../src/100-edge/120-observability/terraform`      |
-| `edge_messaging`                   | Deploys edge messaging components                      | `../../../src/100-edge/130-messaging/terraform`          |
-| `secret_provider_class`            | Creates Key Vault secret provider classes              | `./modules/secret-provider-class`                        |
-| `custom_script_deployment`         | Deploys custom scripts to VMs                          | `./modules/custom-script-deployment`                     |
+| Module Type                | Purpose                                   | Source Location                                          |
+|----------------------------|-------------------------------------------|----------------------------------------------------------|
+| `cloud_resource_group`     | Creates separate resource groups          | `../../../src/000-cloud/000-resource-group/terraform`    |
+| `cloud_security_identity`  | Handles identity and security per cluster | `../../../src/000-cloud/010-security-identity/terraform` |
+| `cloud_observability`      | Sets up monitoring infrastructure         | `../../../src/000-cloud/020-observability/terraform`     |
+| `cloud_data`               | Creates data storage resources            | `../../../src/000-cloud/030-data/terraform`              |
+| `cloud_messaging`          | Sets up messaging infrastructure          | `../../../src/000-cloud/040-messaging/terraform`         |
+| `cloud_networking`         | Creates virtual networks with peering     | `../../../src/000-cloud/050-networking/terraform`        |
+| `cloud_vm_host`            | Creates VM hosts for each cluster         | `../../../src/000-cloud/051-vm-host/terraform`           |
+| `cloud_acr`                | Deploys ACR for each cluster              | `../../../src/000-cloud/060-acr/terraform`               |
+| `cloud_kubernetes`         | Optional AKS deployment                   | `../../../src/000-cloud/070-kubernetes/terraform`        |
+| `edge_cncf_cluster`        | Deploys K3s Kubernetes clusters           | `../../../src/100-edge/100-cncf-cluster/terraform`       |
+| `edge_iot_ops`             | Installs Azure IoT Operations             | `../../../src/100-edge/110-iot-ops/terraform`            |
+| `edge_assets`              | Manages OPC UA assets                     | `../../../src/100-edge/111-assets/terraform`             |
+| `edge_observability`       | Sets up edge monitoring                   | `../../../src/100-edge/120-observability/terraform`      |
+| `edge_messaging`           | Deploys edge messaging components         | `../../../src/100-edge/130-messaging/terraform`          |
+| `secret_provider_class`    | Creates Key Vault secret provider classes | `./modules/secret-provider-class`                        |
+| `custom_script_deployment` | Deploys custom scripts to VMs             | `./modules/custom-script-deployment`                     |
 
 ### Variable Reference
 
