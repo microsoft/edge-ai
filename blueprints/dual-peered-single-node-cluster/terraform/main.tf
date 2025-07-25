@@ -486,6 +486,10 @@ module "custom_script_deployment" {
   site_tls_ca_configmap_name                 = var.site_tls_ca_configmap_name
   enterprise_synced_certificates_secret_name = module.secret_provider_class.cluster_a_synced_certificates_secret_name
   site_synced_certificates_secret_name       = module.secret_provider_class.cluster_b_synced_certificates_secret_name
+  cluster_a_name                             = local.cluster_a_name
+  cluster_b_name                             = local.cluster_b_name
+  cluster_a_secret_sync_identity             = module.cluster_a_cloud_security_identity.secret_sync_identity
+  cluster_b_secret_sync_identity             = module.cluster_b_cloud_security_identity.secret_sync_identity
 
   depends_on = [
     module.cluster_a_edge_iot_ops,

@@ -1,0 +1,18 @@
+---
+apiVersion: secrets-store.csi.x-k8s.io/v1
+kind: SecretProviderClass
+metadata:
+  name: "spc-ops-aio-${CLUSTER_NAME}"
+  namespace: cert-manager
+spec:
+  provider: azure
+  parameters:
+    clientID: "${TF_SSE_USER_ASSIGNED_CLIENT_ID}"
+    keyvaultName: ${TF_KEY_VAULT_NAME}
+    objects: |
+      array:
+        - |
+          objectName: server-root-ca-crt
+          objectType: secret
+
+    tenantID: "${TF_AZURE_TENANT_ID}"
