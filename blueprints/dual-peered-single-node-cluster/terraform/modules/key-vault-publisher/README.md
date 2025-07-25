@@ -6,6 +6,12 @@ This module publishes certificates to Azure Key Vault using the exact same secre
 as defined in the SecretProviderClass resource. It supports both terraform-generated
 certificates and externally provided certificates.
 
+## Requirements
+
+| Name | Version |
+|------|---------|
+| terraform | >= 1.9.8, < 2.0 |
+
 ## Providers
 
 | Name | Version |

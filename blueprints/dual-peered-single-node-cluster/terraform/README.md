@@ -35,7 +35,6 @@ Each cluster operates independently but can communicate through the peered virtu
 | Name | Source | Version |
 |------|--------|---------|
 | cluster\_a\_cloud\_data | ../../../src/000-cloud/030-data/terraform | n/a |
-| cluster\_a\_cloud\_kubernetes | ../../../src/000-cloud/070-kubernetes/terraform | n/a |
 | cluster\_a\_cloud\_messaging | ../../../src/000-cloud/040-messaging/terraform | n/a |
 | cluster\_a\_cloud\_networking | ../../../src/000-cloud/050-networking/terraform | n/a |
 | cluster\_a\_cloud\_observability | ../../../src/000-cloud/020-observability/terraform | n/a |
@@ -48,7 +47,6 @@ Each cluster operates independently but can communicate through the peered virtu
 | cluster\_a\_edge\_messaging | ../../../src/100-edge/130-messaging/terraform | n/a |
 | cluster\_a\_edge\_observability | ../../../src/100-edge/120-observability/terraform | n/a |
 | cluster\_b\_cloud\_data | ../../../src/000-cloud/030-data/terraform | n/a |
-| cluster\_b\_cloud\_messaging | ../../../src/000-cloud/040-messaging/terraform | n/a |
 | cluster\_b\_cloud\_networking | ../../../src/000-cloud/050-networking/terraform | n/a |
 | cluster\_b\_cloud\_observability | ../../../src/000-cloud/020-observability/terraform | n/a |
 | cluster\_b\_cloud\_resource\_group | ../../../src/000-cloud/000-resource-group/terraform | n/a |
@@ -64,6 +62,7 @@ Each cluster operates independently but can communicate through the peered virtu
 | mqtt\_configuration | ./modules/mqtt-configuration | n/a |
 | secret\_provider\_class | ./modules/secret-provider-class | n/a |
 | shared\_cloud\_acr | ../../../src/000-cloud/060-acr/terraform | n/a |
+| shared\_cloud\_kubernetes | ../../../src/000-cloud/070-kubernetes/terraform | n/a |
 | shared\_cloud\_resource\_group | ../../../src/000-cloud/000-resource-group/terraform | n/a |
 | terraform\_certificate\_generation | ./modules/terraform-certificate-generation | n/a |
 
