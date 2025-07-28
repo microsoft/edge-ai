@@ -490,6 +490,8 @@ module "custom_script_deployment" {
   cluster_b_name                             = local.cluster_b_name
   cluster_a_secret_sync_identity             = module.cluster_a_cloud_security_identity.secret_sync_identity
   cluster_b_secret_sync_identity             = module.cluster_b_cloud_security_identity.secret_sync_identity
+  cluster_a_key_vault                        = module.cluster_a_cloud_security_identity.key_vault
+  cluster_b_key_vault                        = module.cluster_b_cloud_security_identity.key_vault
 
   depends_on = [
     module.cluster_a_edge_iot_ops,
