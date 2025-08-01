@@ -1,5 +1,6 @@
 ---
 applyTo: '**/bicep/**'
+description: 'Instructions for Bicep infrastructure as code implementation - Brought to you by microsoft/edge-ai'
 ---
 # Bicep Instructions
 

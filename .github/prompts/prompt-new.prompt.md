@@ -1,6 +1,6 @@
 ---
 mode: 'agent'
-description: 'Creates or updates prompt/instruction files based on source code or user-provided files'
+description: 'Creates or updates prompt/instruction files based on source code or user-provided files - Brought to you by microsoft/edge-ai'
 ---
 
 # Create New Prompt Files

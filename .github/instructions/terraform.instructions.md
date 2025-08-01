@@ -1,5 +1,6 @@
 ---
 applyTo: '**/*.{tf,hcl,tfvars}'
+description: 'Instructions for Terraform infrastructure as code implementation - Brought to you by microsoft/edge-ai'
 ---
 # Terraform Instructions
 

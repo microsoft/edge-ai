@@ -1,3 +1,7 @@
+---
+description: 'Guidelines for generating conventional commit messages - Brought to you by microsoft/edge-ai'
+---
+
 # Commit Message Guidelines
 
 This document provides instructions for generating standardized commit messages.

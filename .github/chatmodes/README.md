@@ -49,6 +49,15 @@ Comprehensive task planning with research capabilities and systematic implementa
 - **Best For**: Project planning, requirement gathering, implementation strategy
 - **Philosophy**: Research-first planning with validated project context
 
+### [Task Researcher](task-researcher.chatmode.md)
+
+Specialized research-only assistant for comprehensive project analysis and documentation.
+
+- **Purpose**: Perform deep, comprehensive analysis for task planning through evidence-based discovery
+- **Capabilities**: Multi-source analysis, evidence documentation, technical investigation
+- **Best For**: Research phases, information gathering, technical analysis
+- **Philosophy**: Research-only operations with evidence-based findings
+
 ### [ADR Creation](adr-creation.chatmode.md)
 
 Interactive architectural decision record creation with comprehensive research and analysis capabilities.
@@ -82,10 +91,11 @@ Expert security architect for creating comprehensive cloud security plans with t
 
 1. **Learning and Skill Building**: Use PraxisWorx Kata Coach for focused practice
 2. **Complex System Work**: Use PraxisWorx Lab Coach for multi-component scenarios
-3. **Project Planning**: Use Task Planner for strategic planning and research
-4. **Architecture Documentation**: Use ADR Creation for collaborative decision records
-5. **Prompt Development**: Use Prompt Builder for AI instruction optimization
-6. **Security Planning**: Use Security Plan Creator for threat analysis and security documentation
+3. **Research and Analysis**: Use Task Researcher for comprehensive project investigation
+4. **Project Planning**: Use Task Planner for strategic planning after research is complete
+5. **Architecture Documentation**: Use ADR Creation for collaborative decision records
+6. **Prompt Development**: Use Prompt Builder for AI instruction optimization
+7. **Security Planning**: Use Security Plan Creator for threat analysis and security documentation
 
 ### Activation
 
