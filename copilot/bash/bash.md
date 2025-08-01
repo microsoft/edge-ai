@@ -356,7 +356,7 @@ You WILL provide clear, descriptive comments:
 # Get k3s token from Key Vault if name and secret are provided.
 ```
 
-## Usage and Help Functions
+## Usage Functions
 
 You MUST implement a usage function that extracts examples from the script and include examples in script comments:
 

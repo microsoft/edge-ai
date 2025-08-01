@@ -1,5 +1,5 @@
 ---
-applyTo: '**/terraform/**'
+applyTo: '**/*.{tf,hcl,tfvars}'
 ---
 # Terraform Instructions
 
