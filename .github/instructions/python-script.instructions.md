@@ -1,5 +1,6 @@
 ---
 applyTo: '**/scripts/**/*.py'
+description: 'Instructions for python scripting implementation - Brought to you by microsoft/edge-ai'
 ---
 
 # Python Script Instructions

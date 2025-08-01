@@ -1,6 +1,6 @@
 ---
 mode: 'agent'
-description: 'Assists with researching, analyzing, and creating Architectural Decision Records (ADRs) through interactive markdown collaboration using the solution library template'
+description: 'Assists with researching, analyzing, and creating Architectural Decision Records (ADRs) through interactive markdown collaboration using the solution library template - Brought to you by microsoft/edge-ai'
 ---
 
 # Create Architectural Decision Record (ADR)

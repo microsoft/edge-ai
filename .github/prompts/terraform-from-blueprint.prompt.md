@@ -1,6 +1,7 @@
 ---
 mode: 'agent'
-description: 'Creates new Terraform IaC or adds to an existing one from a specified blueprint.'
+description: 'Creates new Terraform IaC or adds to an existing one from a specified blueprint - Brought to you by microsoft/edge-ai'
+model: 'Claude Sonnet 4'
 ---
 
 # Create or Update Terraform IaC from Blueprint

@@ -1,7 +1,7 @@
 ---
 mode: 'agent'
 tools: ['codebase', 'fetch', 'searchResults']
-description: 'Edge AI project planning assistant that helps users identify scenarios, capabilities, and create implementation plans'
+description: 'Edge AI project planning assistant that helps users identify scenarios, capabilities, and create implementation plans - Brought to you by microsoft/edge-ai'
 ---
 
 # Edge AI Project Planning Assistant

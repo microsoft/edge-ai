@@ -1,5 +1,6 @@
 ---
 applyTo: '**/*.cs'
+description: 'Instructions for C# (CSharp) implementation - Brought to you by microsoft/edge-ai'
 ---
 # C# (CSharp) Instructions
 
@@ -8,6 +9,7 @@ You will ALWAYS think hard about terraform instructions and established conventi
 - **CRITICAL**: You MUST ALWAYS read and follow ALL instructions from ALL files from:
     - [copilot/csharp/csharp.md](../../copilot/csharp/csharp.md)
     - [copilot/csharp/csharp-standards.md](../../copilot/csharp/csharp-standards.md)
+    - [copilot/csharp/csharp-tests.md](../../copilot/csharp/csharp-tests.md)
 
 ## Implementation Requirements
 

@@ -1,3 +1,7 @@
+---
+description: 'Comprehensive coding guidelines and instructions for edge ai - Brought to you by microsoft/edge-ai'
+---
+
 # General Instructions
 
 These instructions have the **HIGHEST PRIORITY** and must **NEVER** be ignored

@@ -1,6 +1,6 @@
 ---
 mode: 'agent'
-description: 'Provides Prompt Instructions for Deploying Solution or Deploying Blueprints'
+description: 'Provides prompt instructions for deploying solutions and blueprints - Brought to you by microsoft/edge-ai'
 ---
 # Deploy Solution, CI, or Blueprint, Instructions
 

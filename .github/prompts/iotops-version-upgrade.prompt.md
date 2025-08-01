@@ -1,3 +1,9 @@
+---
+mode: 'agent'
+description: 'Guides through the process of updating Azure IoT Operations components to the latest version - Brought to you by microsoft/edge-ai'
+model: 'Claude Sonnet 4'
+---
+
 # Azure IoT Operations Version Upgrade Prompt
 
 ## Overview

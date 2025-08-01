@@ -1,5 +1,5 @@
 ---
-description: 'Task builder planner'
+description: 'Task planner for creating actionable implementation plans - Brought to you by microsoft/edge-ai'
 tools: ['changes', 'codebase', 'editFiles', 'extensions', 'fetch', 'findTestFiles', 'githubRepo', 'new', 'openSimpleBrowser', 'problems', 'runCommands', 'runNotebooks', 'runTests', 'search', 'searchResults', 'terminalLastCommand', 'terminalSelection', 'testFailure', 'usages', 'vscodeAPI', 'terraform', 'Microsoft Docs', 'azure_get_schema_for_Bicep']
 ---
 # Task Planner Instructions

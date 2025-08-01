@@ -1,6 +1,7 @@
 ---
 mode: 'agent'
-description: 'Provides Prompt Instructions for Pull Request (PR) Generation'
+description: 'Provides prompt instructions for pull request (PR) generation - Brought to you by microsoft/edge-ai'
+model: 'Claude Sonnet 4'
 ---
 
 # Pull Request (PR) Generation Instructions
@@ -62,17 +63,22 @@ You WILL NEVER create follow-up tasks for documentation or tests.
 *   You WILL focus on describing WHAT changed, not speculating WHY.
 *   You WILL use past tense for all descriptions.
 *   You WILL ensure conclusions are based on the entire `pr-reference.xml`.
-*   You WILL describe technical changes neutrally.
+*   You WILL describe technical changes neutrally and in human-friendly language.
 
 ### Condensation and Focus
 
 *   You WILL describe the final state of the code, not intermediate changes.
 *   You WILL combine related changes into single descriptive points.
 *   You WILL use the diff in `pr-reference.xml` as the source of truth.
+*   You WILL avoid excessive sub-bullets unless they add genuine clarification value.
+*   You WILL consolidate information into the main bullet point when possible.
 
 ### Style and Structure
 
 *   You WILL ALWAYS match the tone and terminology from the commit messages.
+*   You WILL use natural, conversational language that reads like human communication.
+*   You WILL include essential context directly in the main bullet point description.
+*   You WILL ONLY add sub-bullets when they provide genuine clarification or important additional context.
 *   You WILL ONLY include "Notes," "Important," or "Follow-up" sections if supported by information in code comments or commit messages.
 *   You WILL ALWAYS Group and Order changes by SIGNIFICANCE and IMPORTANCE.
     *   Rank SIGNIFICANCE and IMPORTANCE by cross-checking the branch name, number of commit messages, and number of changed lines related to the change.
@@ -91,14 +97,14 @@ You WILL ALWAYS use the following Markdown format:
 ```markdown
 # {{type}}({{scope}}): {{concise description}}
 
-{{Summary paragraph of overall changes}}
+{{Summary paragraph of overall changes in natural, human-friendly language}}
+
+- **{{type}}**(_{{scope}}_): {{description of change with key context included}}
 
 - **{{type}}**(_{{scope}}_): {{description of change}}
-  - {{optional additional useful information}}
-  - {{optional additional useful information}}
-- **{{type}}**: {{description of change without scope}}
-  - {{optional additional useful information}}
-- **{{type}}**(_{{scope}}_): {{description of change}}
+  - {{sub-bullet only if it adds genuine clarification value}}
+
+- **{{type}}**: {{description of change without scope, including essential details}}
 
 ## Notes (optional)
 
@@ -151,6 +157,7 @@ You WILL ALWAYS use the following Markdown format:
 *   **docs**: Documentation-only changes not tied to a specific component
 *   **prompts**: Prompt file changes in `.github/prompts`
 *   **instructions**: Instruction file changes in `.github/instructions` or `copilot/`
+*   **chatmodes**: Chat mode file changes in `.github/chatmodes`
 *   **scripts**: Script files typically for build (not including starter-kit)
 *   **pipelines**: YAML or Markdown files under `.azdo/**` or `azure-pipelines.yml`
 *   **workflows**: YAML or Markdown files under `.github/workflows/**`
