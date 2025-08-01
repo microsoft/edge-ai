@@ -4,7 +4,7 @@
 
 You will ALWAYS think hard about deploying blueprints or ci folder using established practices.
 
-- You will ask the user if they need help with their environment setup and direct them to first run the prompt `.github/prompts/getting-started.prompt.md`
+- You will ask the user if they need guidance with their environment setup and direct them to first run the prompt `.github/prompts/getting-started.prompt.md`
 - You will wait longer for any `az` commands to finish as some take longer
   - You will always check the command window if you think the command did not finish before suggesting to run a different command
 - You will use a Markdown checklist whenever getting or updating, defaults, parameters, or variables, from the user
@@ -41,7 +41,7 @@ You will ALWAYS think hard about deploying blueprints or ci folder using establi
 - If a `*.tfvars` already exists in the `terraform` folder:
   - Verify if they want to deploy with the already existing `*.tfvars` file
   - Otherwise, before creating a new `terraform.tfvars` file:
-    - Look for existing `terraform.tfstate` files and offer to help reset deployment state if needed
+    - Look for existing `terraform.tfstate` files and offer to reset deployment state if needed
     - Suggest checking existing resource groups in Azure to avoid conflicts
 - Before executing any Terraform commands, verify:
   - Azure CLI is logged in (following deployment instructions)
@@ -55,7 +55,7 @@ You will ALWAYS think hard about deploying blueprints or ci folder using establi
 - Handle deployment errors:
   - First, if you don't have the error message, request to see the specific error message before diagnosing
   - For state conflicts (403/409 errors), guide through proper cleanup:
-    1. Offer to help remove Azure resources (via Portal or CLI)
+    1. Offer to remove Azure resources (via informational Portal guidance or automatically with CLI)
     2. Clean up local Terraform state files
     3. Reinitialize with fresh state
   - For permissions errors, suggest checking Azure role assignments
@@ -68,14 +68,14 @@ You will ALWAYS think hard about deploying blueprints or ci folder using establi
 - Ensure all commands are run from the `bicep` folder
 - Fully read in and understand the `main.bicep` file that will be deployed
 - Offer to generate the `main.bicepparam` file that will be in the `bicep` folder
-  - If the user already has a `main.bicepparam` file, offer to use it as is or help the user update it
+  - If the user already has a `main.bicepparam` file, offer to use it as is or guide the user in updating it
   - Use the command `az bicep generate-params --file main.bicep --output-format bicepparam --include-params all` only if the user does not have a `main.bicepparam` file
   - If failure, then instruct the user to install or update Azure CLI
   - Fully read in and understand the `*.bicepparam` file that was generated
   - Provide defaults to these parameters for the user but be sure to ask for confirmation
   - Suggest the removal of parameters with default values to simplify the deployment work
   - Suggest a unique resourcePrefix (5-8 alphanumeric characters), use something like `openssl rand -hex 4` to avoid naming conflicts
-- If a `*.bicepparam` already exists in the `bicep` folder, then offer to use it as is or help the user update it
+- If a `*.bicepparam` already exists in the `bicep` folder, then offer to use it as is or guide the user in updating it
 - Before executing any deployment commands, verify:
   - Azure CLI is logged in (following deployment instructions)
   - Correct subscription is set (following deployment instructions)
@@ -88,7 +88,7 @@ You will ALWAYS think hard about deploying blueprints or ci folder using establi
 - Handle deployment errors:
   - First, if you don't have the error message, request to see the specific error message before diagnosing
   - For state conflicts (403/409 errors), guide through proper cleanup:
-    1. Offer to help remove Azure resources (via Portal or CLI)
+    1. Offer to remove Azure resources (via informational Portal guidance or automatically with CLI)
     2. For permissions errors, suggest checking Azure role assignments
     3. For missing provider registrations, direct to the registration scripts
 <!-- </deploying-bicep> -->

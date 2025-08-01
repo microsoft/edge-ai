@@ -9,20 +9,23 @@ You MUST ALWAYS meticulously follow these Terraform standards and conventions wi
 <!-- <table-of-contents> -->
 ## Table of Contents
 
-- [Terraform Coding Conventions](#terraform-coding-conventions)
-  - [General Conventions](#terraform-general-conventions)
-    - [File/Naming Standards](#file-and-naming-standards)
-    - [Documentation](#documentation-and-comments)
-    - [Variables](#variables-and-parameters)
-    - [Module Structure](#module-structure)
-    - [Resource Naming](#resource-naming)
-    - [Outputs](#outputs)
-    - [Component-Specific](#component-specific-conventions)
-  - [Reference and Validation](#reference-and-validation)
-  - [File Organization](#file-organization-standards)
-    - [Main.tf](#main-file-organization)
-    - [Variables.tf](#variables-organization)
-    - [Outputs.tf](#outputs-organization)
+- [Terraform Coding Standards](#terraform-coding-standards)
+  - [Table of Contents](#table-of-contents)
+  - [Terraform Coding Conventions](#terraform-coding-conventions)
+    - [Terraform General Conventions](#terraform-general-conventions)
+      - [File and Naming Standards](#file-and-naming-standards)
+      - [Documentation and Comments](#documentation-and-comments)
+      - [Variables and Parameters](#variables-and-parameters)
+      - [Module Structure](#module-structure)
+      - [Resource Naming](#resource-naming)
+      - [Outputs](#outputs)
+      - [Component-Specific Conventions](#component-specific-conventions)
+      - [Enforcing Conventions](#enforcing-conventions)
+    - [Reference and Validation](#reference-and-validation)
+    - [File Organization Standards](#file-organization-standards)
+      - [Main File Organization](#main-file-organization)
+      - [Variables Organization](#variables-organization)
+      - [Outputs Organization](#outputs-organization)
 <!-- </table-of-contents> -->
 
 ## Terraform Coding Conventions
@@ -41,7 +44,7 @@ You MUST ALWAYS meticulously follow these Terraform standards and conventions wi
 - You MUST use `//` for single-line or `/* */` for multi-line comments; NEVER use `#`
 - You MUST include a markdown comment at the TOP of EVERY `main.tf` file
 - You MUST provide descriptive `description` for all variables/outputs, ending with a period
-- You MUST add helpful comments for non-obvious code
+- You MUST add meaningful and factual comments for non-obvious code
 - You MUST NOT add redundant comments
 
 #### Variables and Parameters
@@ -75,7 +78,7 @@ You MUST ALWAYS meticulously follow these Terraform standards and conventions wi
 
 - You MUST output resources as objects with necessary fields
 - You MUST set `sensitive = true` for secrets
-- You MUST provide helpful descriptions
+- You MUST provide meaningful and useful descriptions
 - You MUST use functions like `try()` or `coalesce()`
 - You MUST NOT use ternary operators if alternatives exist
 

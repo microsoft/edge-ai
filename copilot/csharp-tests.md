@@ -32,7 +32,7 @@ The structure of the tests will look like the following:
 - Member fields should be organized at the top of the class in alphabetical order.
 - Fields should be `readonly` when possible.
 - The service under test should always be named `sut`.
-- Helper methods should appear after the constructor but before test methods.
+- Utility methods should appear after the constructor but before test methods.
 - Test methods should be grouped logically by behavior and ordered alphabetically within those groups.
 - Mock setup should typically be done in the constructor for common setup and in individual test methods for specific
   behavior.
@@ -83,7 +83,7 @@ public class EndpointDataProcessorTests
             httpClient);
     }
 
-    // Helper methods should be placed between constructor and test methods.
+    // Utility methods should be placed between constructor and test methods.
     private void SendAsyncSetup(HttpResponseMessage responseMessage)
     {
         httpMessageHandlerMock
@@ -100,7 +100,7 @@ public class EndpointDataProcessorTests
     {
         // Arrange
         var responseContent = JsonSerializer.Serialize(expectedSinkData);
-        // Helper methods should always be preferred when creating the same/similar logic for testing.
+        // Utility methods should always be preferred when creating the same/similar logic for testing.
         SendAsyncSetup(new HttpResponseMessage
         {
             StatusCode = HttpStatusCode.OK,
@@ -219,7 +219,7 @@ public class PipelineService_WhenReceivingOneTests : PipelineServiceTestsBase, I
 
 ## Test Base Classes
 
-- Base classes should contain shared setup logic and helper methods used by multiple derived test classes.
+- Base classes should contain shared setup logic and utility methods used by multiple derived test classes.
 - The base class should have protected members that derived classes can access.
 - Fields in the base class should be ordered alphabetically for consistency.
 
@@ -243,10 +243,10 @@ public abstract class PipelineServiceTestsBase
         // Common setup code used by derived test classes.
     }
 
-    // Helper methods available to all derived test classes.
+    // Utility methods available to all derived test classes.
     protected async Task OnTelemetryReceived(FakeSourceData sourceData, string senderId = "test-sender-id")
     {
-        // Implementation of helper method.
+        // Implementation of utility method.
     }
 
     // Fake models for testing also used by derived classes when needed.

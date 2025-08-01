@@ -129,7 +129,7 @@ public class StackWidget<TData>(
 
 - All `public` or `protected` classes, interfaces, or methods for use/reuse WILL ALWAYS follow XML Documentation standards (excluding tests).
 - `<see cref="..."/>` SHOULD ALWAYS be used for references.
-- `<seealso cref="..."/>` SHOULD be added for contextual help (e.g., `/// <seealso cref="ImplementingClass{TData}"/>` for an interface).
+- `<seealso cref="..."/>` SHOULD be added for contextual information (e.g., `/// <seealso cref="ImplementingClass{TData}"/>` for an interface).
 
 ### XML Documentation Example
 

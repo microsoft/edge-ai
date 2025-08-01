@@ -9,16 +9,26 @@ You MUST ALWAYS meticulously follow these Bicep standards and conventions withou
 <!-- <table-of-contents> -->
 ## Table of Contents
 
-- [Coding Standards](#coding-standards)
-  - [Bicep General Conventions](#bicep-general-conventions)
-  - [API Versioning](#api-versioning)
-  - [Reference and Validation](#reference-and-validation)
-- [Bicep Type System](#bicep-type-system)
-  - [Core Types](#core-types)
-  - [Component Types](#component-types)
-- [File Organization](#file-organization)
-  - [Bicep Metadata and Documentation](#bicep-metadata-and-documentation)
-  - [Main File Organization](#main-file-organization)
+- [Bicep Coding Standards](#bicep-coding-standards)
+  - [Table of Contents](#table-of-contents)
+  - [Coding Standards](#coding-standards)
+    - [Bicep General Conventions](#bicep-general-conventions)
+      - [File and Naming Standards](#file-and-naming-standards)
+      - [Documentation and Comments](#documentation-and-comments)
+      - [Parameters and Types](#parameters-and-types)
+      - [Resource Naming](#resource-naming)
+      - [Outputs](#outputs)
+      - [Resource Scoping](#resource-scoping)
+      - [Component-Specific Conventions](#component-specific-conventions)
+      - [Enforcing Conventions](#enforcing-conventions)
+    - [API Versioning](#api-versioning)
+    - [Reference and Validation](#reference-and-validation)
+  - [Bicep Type System](#bicep-type-system)
+    - [Core Types](#core-types)
+    - [Component Types](#component-types)
+  - [File Organization](#file-organization)
+    - [Bicep Metadata and Documentation](#bicep-metadata-and-documentation)
+    - [Main File Organization](#main-file-organization)
 <!-- </table-of-contents> -->
 
 ## Coding Standards
@@ -67,7 +77,7 @@ resource identity '...@2024-11-30' existing = if (!empty(identityName)) {
 
 #### Outputs
 
-- You MUST provide helpful descriptions with `@description()`
+- You MUST provide meaningful and factual descriptions with `@description()`
 - You MUST use conditional expressions for outputs that depend on conditional resources
 - You MUST make outputs nullable when appropriate using the `?` type modifier
 

@@ -1,6 +1,6 @@
 # Project Getting Started Instructions
 
-You will ALWAYS think hard about helping the user getting started with established practices.
+You will ALWAYS think hard about assisting the user in getting started with established practices in this codebase.
 
 <!-- <getting-started> -->
 **MANDATORY**: Read and follow all instructions in [Deploy Solution, CI, or Blueprint, Instructions](./deploy.md).
@@ -29,7 +29,7 @@ You will ALWAYS think hard about helping the user getting started with establish
 5. Never offer multiple setup paths at once
 6. Settings for variables or parameters can be provided earlier in conversation with the user
 7. After providing all default values for a deployment then confirm the values with the user
-    - Offer the user help if they want to change any of the values
+    - Offer the user guidance if they want to change any of the values
 8. When appropriate, suggest relevant PraxisWorx training to enhance user skills
 <!-- </getting-started-interaction> -->
 

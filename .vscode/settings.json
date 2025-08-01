@@ -93,5 +93,17 @@
             "file": "./.github/instructions/commit-message.instructions.md"
         }
     ],
-    "github.copilot.chat.advanced.workspace.prototypeAdoCodeSearchEnabled": true
+    "github.copilot.chat.advanced.workspace.prototypeAdoCodeSearchEnabled": true,
+    "github.copilot.chat.customInstructionsInSystemMessage": true,
+    "chat.instructionsFilesLocations": {
+        ".github/instructions": true,
+        "/Users/vscode/repos/instructions": true,
+        ".copilot-tracking/instructions": true,
+        ".copilot-tracking/plans": true
+    },
+    "chat.promptFilesLocations": {
+        ".github/prompts": true,
+        "/Users/vscode/repos/prompts": true,
+        ".copilot-tracking/prompts": true
+    },
 }

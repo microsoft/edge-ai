@@ -67,6 +67,7 @@
 				"streetsidesoftware.code-spell-checker-cspell-bundled-dictionaries",
 				"timonwong.shellcheck",
 				"yzhang.markdown-all-in-one",
+				"ms-azuretools.vscode-azure-github-copilot",
 				"ms-azure-devops.azure-pipelines",
 				"ms-kubernetes-tools.vscode-kubernetes-tools",
 				"ms-vscode.powershell",
