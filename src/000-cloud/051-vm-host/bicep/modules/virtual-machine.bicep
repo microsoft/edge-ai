@@ -60,7 +60,7 @@ resource publicIp 'Microsoft.Network/publicIPAddresses@2024-05-01' = {
   name: 'pip-${resourceNamePrefix}-${vmIndex}'
   location: common.location
   sku: {
-    name: 'Basic'
+    name: 'Standard'
   }
   properties: {
     publicIPAllocationMethod: 'Static'
