@@ -121,7 +121,6 @@ run "create_non_default_cluster" {
     should_generate_cluster_server_token = true
     should_deploy_script_to_vm           = true
     should_assign_roles                  = true
-    cluster_admin_oid                    = run.setup_tests.mock_cluster_admin_oid
     key_vault                            = run.setup_tests.key_vault
     cluster_server_machine               = run.setup_tests.cluster_server_machine
   }
@@ -183,11 +182,6 @@ run "test_optional_parameters" {
   assert {
     condition     = length(data.azapi_resource.arc_connected_cluster) == 0
     error_message = "Data source for Arc connected cluster should not be created when should_deploy_script_to_vm is false"
-  }
-
-  assert {
-    condition     = local.current_user_oid == null
-    error_message = "current_user_oid should be null when should_add_current_user_cluster_admin is false"
   }
 }
 

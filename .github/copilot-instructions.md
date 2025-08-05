@@ -180,6 +180,15 @@ If working with a specific Azure tenant, specify it during initialization:
 ```bash
 source ./scripts/az-sub-init.sh --tenant your-tenant.onmicrosoft.com
 ```
+
+### Terraform Validation and Testing Steps
+
+Final steps for ONLY terraform changes:
+  - You will ITERATE with `npm run tf-validate` and `npm run tflint-fix` and fix all issues, continue to iterate until all issues are fixed
+  - You will generate docs with `npm run tf-docs` and `npm run mdlint-fix`
+  - You will NEVER add any tests unless specifically asked to add tests
+    - All tests must ONLY EVER be for `command = plan` tests
+
 <!-- </terraform-operations> -->
 
 <!-- <blueprint-structure-understanding> -->

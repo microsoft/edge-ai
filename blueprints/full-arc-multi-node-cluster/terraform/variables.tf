@@ -53,6 +53,12 @@ EOF
   default     = null
 }
 
+variable "should_add_current_user_cluster_admin" {
+  type        = bool
+  description = "Gives the current logged in user cluster-admin permissions with the new cluster."
+  default     = true
+}
+
 /*
  * IoT Ops Parameters - Optional
  */

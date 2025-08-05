@@ -58,6 +58,9 @@ param shouldEnableArcAutoUpgrade bool = common.environment != 'prod'
 @description('The Object ID that will be given cluster-admin permissions.')
 param clusterAdminOid string?
 
+@description('The User Principal Name that will be given cluster-admin permissions.')
+param clusterAdminUpn string?
+
 @description('The node virtual machines names.')
 param clusterNodeVirtualMachineNames string[]?
 
@@ -157,6 +160,7 @@ module ubuntuK3s './modules/ubuntu-k3s.bicep' = {
     arcResourceName: arcConnectedClusterName
     arcTenantId: tenant().tenantId
     clusterAdminOid: clusterAdminOid ?? (shouldAddCurrentUserClusterAdmin ? deployer().objectId : null)
+    clusterAdminUpn: clusterAdminUpn ?? (shouldAddCurrentUserClusterAdmin ? deployer().userPrincipalName : null)
     customLocationsOid: customLocationsOid
     shouldEnableArcAutoUpgrade: shouldEnableArcAutoUpgrade
     arcOnboardingSpClientId: arcOnboardingSpClientId

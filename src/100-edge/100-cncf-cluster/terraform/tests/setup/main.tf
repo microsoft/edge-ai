@@ -57,10 +57,6 @@ output "mock_identity" {
   }
 }
 
-output "mock_cluster_admin_oid" {
-  value = "00000000-0000-0000-0000-000000000005"
-}
-
 output "key_vault" {
   value = {
     id        = "${local.resource_group_id}/providers/Microsoft.KeyVault/vaults/mock-key-vault"

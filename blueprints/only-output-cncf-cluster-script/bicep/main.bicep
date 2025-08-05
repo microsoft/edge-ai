@@ -56,6 +56,9 @@ param shouldAssignRoles bool = true
 @description('The Object ID that will be given cluster-admin permissions.')
 param clusterAdminOid string?
 
+@description('The User Principal Name that will be given cluster-admin permissions.')
+param clusterAdminUpn string?
+
 @description('The names of the VMs for the cluster nodes. (Only needed if wanting this blueprint to deploy the scripts)')
 param clusterNodeVirtualMachineNames string[]?
 
@@ -147,6 +150,7 @@ module edgeCncfCluster '../../../src/100-edge/100-cncf-cluster/bicep/main.bicep'
 
     // Cluster Configuration Parameters
     clusterAdminOid: clusterAdminOid
+    clusterAdminUpn: clusterAdminUpn
     clusterNodeVirtualMachineNames: clusterNodeVirtualMachineNames
     clusterServerHostMachineUsername: clusterServerHostMachineUsername
     clusterServerIp: clusterServerIp

@@ -52,6 +52,9 @@ param arcOnboardingSpClientSecret string?
 @description('The Object ID that will be given cluster-admin permissions.')
 param clusterAdminOid string?
 
+@description('The User Principal Name that will be given cluster-admin permissions.')
+param clusterAdminUpn string?
+
 @description('Username for the host machine with kube-config settings.')
 param clusterServerHostMachineUsername string
 
@@ -103,6 +106,7 @@ var clusterServerUrl = !empty(clusterServerIp) ? 'https://${clusterServerIp}:644
 var serverEnvVars = {
   K3S_NODE_TYPE: 'server'
   CLUSTER_ADMIN_OID: clusterAdminOid
+  CLUSTER_ADMIN_UPN: clusterAdminUpn
   SKIP_ARC_CONNECT: ''
   DEPLOY_ADMIN_OID: deployAdminOid
 }
@@ -110,6 +114,7 @@ var serverEnvVars = {
 var nodeEnvVars = {
   K3S_NODE_TYPE: 'agent'
   CLUSTER_ADMIN_OID: ''
+  CLUSTER_ADMIN_UPN: ''
   SKIP_ARC_CONNECT: 'true'
   DEPLOY_ADMIN_OID: ''
 }

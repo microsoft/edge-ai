@@ -54,6 +54,12 @@ EOF
   default     = null
 }
 
+variable "should_add_current_user_cluster_admin" {
+  type        = bool
+  description = "Gives the current logged in user cluster-admin permissions with the new cluster."
+  default     = true
+}
+
 variable "should_create_anonymous_broker_listener" {
   type        = bool
   description = "Whether to enable an insecure anonymous AIO MQ Broker Listener. (Should only be used for dev or test environments)"

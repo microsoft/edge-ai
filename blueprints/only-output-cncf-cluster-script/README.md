@@ -46,7 +46,7 @@ Both implementations create two types of scripts:
 | `instance`                            | Instance identifier                          | `"001"`                           |    no    |
 | `custom_locations_oid`                | Custom Locations Service Principal Object ID | `null` (will attempt to retrieve) |    no    |
 | `arc_onboarding_sp`                   | Service Principal for Arc onboarding         | `null`                            |    no    |
-| `cluster_admin_oid`                   | Object ID for cluster-admin permissions      | `null` (current user if enabled)  |    no    |
+| `cluster_admin_id`                    | ID for cluster-admin permissions             | `null` (current user if enabled)  |    no    |
 | `should_output_cluster_server_script` | Whether to output the server script          | `true`                            |    no    |
 | `should_output_cluster_node_script`   | Whether to output the node script            | `false`                           |    no    |
 | `script_output_filepath`              | Path to output script files                  | `"./out"`                         |    no    |

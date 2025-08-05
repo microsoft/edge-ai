@@ -1,3 +1,10 @@
+/**
+ * # Full Multi Node Cluster Blueprint
+ *
+ * This blueprint deploys a complete Azure IoT Operations environment with all cloud and edge components
+ * for a multi-node cluster deployment, including observability, messaging, and data management.
+ */
+
 module "cloud_resource_group" {
   source = "../../../src/000-cloud/000-resource-group/terraform"
 
@@ -41,21 +48,6 @@ module "cloud_data" {
   resource_prefix = var.resource_prefix
 
   resource_group = module.cloud_resource_group.resource_group
-}
-
-module "cloud_fabric" {
-  source = "../../../src/000-cloud/031-fabric/terraform"
-
-  environment     = var.environment
-  location        = var.location
-  resource_prefix = var.resource_prefix
-
-  resource_group                   = module.cloud_resource_group.resource_group
-  should_create_fabric_capacity    = var.should_create_fabric
-  should_create_fabric_eventstream = var.should_create_fabric
-  should_create_fabric_lakehouse   = var.should_create_fabric
-  should_create_fabric_workspace   = var.should_create_fabric
-  // eventhub_endpoint = module.cloud_messaging.eventhubs. fill_in
 }
 
 module "cloud_messaging" {
@@ -138,10 +130,11 @@ module "edge_cncf_cluster" {
   cluster_node_machine    = slice(module.cloud_vm_host.virtual_machines, 1, length(module.cloud_vm_host.virtual_machines))
   cluster_server_ip       = module.cloud_vm_host.private_ips[0]
 
-  should_deploy_arc_machines           = false
-  should_generate_cluster_server_token = true
-  should_get_custom_locations_oid      = var.should_get_custom_locations_oid
-  custom_locations_oid                 = var.custom_locations_oid
+  should_deploy_arc_machines            = false
+  should_generate_cluster_server_token  = true
+  should_get_custom_locations_oid       = var.should_get_custom_locations_oid
+  should_add_current_user_cluster_admin = var.should_add_current_user_cluster_admin
+  custom_locations_oid                  = var.custom_locations_oid
 
   // Key Vault for script retrieval
   key_vault = module.cloud_security_identity.key_vault
@@ -201,6 +194,7 @@ module "edge_messaging" {
 
   environment     = var.environment
   resource_prefix = var.resource_prefix
+  instance        = "001"
 
   aio_custom_locations = module.edge_iot_ops.custom_locations
   aio_dataflow_profile = module.edge_iot_ops.aio_dataflow_profile

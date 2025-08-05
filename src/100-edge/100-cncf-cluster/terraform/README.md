@@ -29,6 +29,7 @@ install extensions for cluster connect and custom locations.
 |------|------|
 | [azapi_resource.arc_connected_cluster](https://registry.terraform.io/providers/Azure/azapi/latest/docs/data-sources/resource) | data source |
 | [azuread_service_principal.custom_locations](https://registry.terraform.io/providers/hashicorp/azuread/latest/docs/data-sources/service_principal) | data source |
+| [azuread_user.current](https://registry.terraform.io/providers/hashicorp/azuread/latest/docs/data-sources/user) | data source |
 | [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/client_config) | data source |
 
 ## Modules
@@ -54,7 +55,7 @@ install extensions for cluster connect and custom locations.
 | arc\_onboarding\_identity | The Principal ID for the identity that will be used for onboarding the cluster to Arc. | ```object({ principal_id = string })``` | `null` | no |
 | arc\_onboarding\_principal\_ids | The Principal IDs for a pre-existing identity that will be used for onboarding the cluster to Arc. | `list(string)` | `null` | no |
 | arc\_onboarding\_sp | n/a | ```object({ client_id = string object_id = string client_secret = string })``` | `null` | no |
-| cluster\_admin\_oid | The Object ID that will be given cluster-admin permissions with the new cluster. (Otherwise, current logged in user if 'should\_add\_current\_user\_cluster\_admin=true') | `string` | `null` | no |
+| cluster\_admin\_id | The ID that will be given cluster-admin permissions with the new cluster, userPrincipalName for User Entra AD, Object ID for Group Entra AD. (Otherwise, current logged in user if 'should\_add\_current\_user\_cluster\_admin=true') | `string` | `null` | no |
 | cluster\_node\_machine | n/a | ```list(object({ id = string location = string }))``` | `null` | no |
 | cluster\_server\_host\_machine\_username | Username used for the host machines that will be given kube-config settings on setup. (Otherwise, 'resource\_prefix' if it exists as a user) | `string` | `null` | no |
 | cluster\_server\_ip | The IP address for the server for the cluster. (Needed for mult-node cluster) | `string` | `null` | no |

@@ -52,16 +52,16 @@ EOF
   default     = null
 }
 
+variable "should_add_current_user_cluster_admin" {
+  type        = bool
+  description = "Gives the current logged in user cluster-admin permissions with the new cluster."
+  default     = true
+}
+
 variable "host_machine_count" {
   type        = number
   description = "The number of host machines for the cluster. (The first host machine will be the cluster server)"
   default     = 3
-}
-
-variable "should_create_fabric" {
-  description = "Whether to create Fabric components."
-  type        = bool
-  default     = false
 }
 
 variable "should_create_anonymous_broker_listener" {

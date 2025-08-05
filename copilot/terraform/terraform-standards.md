@@ -17,11 +17,13 @@ You MUST ALWAYS meticulously follow these Terraform standards and conventions wi
       - [Documentation and Comments](#documentation-and-comments)
       - [Variables and Parameters](#variables-and-parameters)
       - [Module Structure](#module-structure)
+      - [Deferred Data Resources](#deferred-data-resources)
       - [Resource Naming](#resource-naming)
       - [Outputs](#outputs)
       - [Component-Specific Conventions](#component-specific-conventions)
       - [Enforcing Conventions](#enforcing-conventions)
     - [Reference and Validation](#reference-and-validation)
+    - [Deferred Data Resource Patterns](#deferred-data-resource-patterns)
     - [File Organization Standards](#file-organization-standards)
       - [Main File Organization](#main-file-organization)
       - [Variables Organization](#variables-organization)
@@ -64,6 +66,16 @@ You MUST ALWAYS meticulously follow these Terraform standards and conventions wi
 - You MUST NOT create provider blocks in component/internal modules
 - You MUST NOT modify provider blocks except in `blueprints/`, `ci/`, or `tests/`
 - You MUST NOT violate module relationship rules when referencing modules
+
+#### Deferred Data Resources
+
+- You MUST use `terraform_data` resources to defer data source computations when build systems lack permissions for `terraform plan`
+- You MUST name deferred resources with `defer` prefix (e.g., `terraform_data.defer`, `terraform_data.defer_azuread_user`)
+- You MUST include explanatory comment for deferred data resources explaining build system compatibility requirement
+- You SHOULD use conditional counts on `terraform_data` deferred resources when the deferral is conditional
+- You MUST reference deferred outputs using `.output` syntax (e.g., `terraform_data.defer.output.resource_group_name`)
+- You MUST use `alltrue()`, `try()`, and `coalesce()` functions for complex conditional logic in deferred patterns
+- You MUST use `try()`, and when needed `coalesce()` functions for references to `data` deferred resources
 
 #### Resource Naming
 
@@ -158,6 +170,44 @@ resource "azapi_resource" "dataflow_endpoint" {
 }
 ```
 
+### Deferred Data Resource Patterns
+
+You MUST use these patterns when build systems lack permissions to query specific Azure resources during `terraform plan`:
+
+<!-- <deferred-patterns> -->
+**Simple Resource Deferral** (CI environments):
+
+```terraform
+// Defer computation to prevent `data` objects from querying for state on `terraform plan`.
+// Needed for testing and build system.
+resource "terraform_data" "defer" {
+  input = {
+    resource_group_name = "rg-${var.resource_prefix}-${var.environment}-${var.instance}"
+  }
+}
+
+data "azurerm_resource_group" "aio" {
+  name = terraform_data.defer.output.resource_group_name
+}
+```
+
+**Conditional Azure AD Deferral**:
+
+```terraform
+resource "terraform_data" "defer_azuread_user" {
+  count = var.should_add_current_user_cluster_admin ? 1 : 0
+  input = {
+    object_id = data.azurerm_client_config.current.object_id
+  }
+}
+
+data "azuread_user" "current" {
+  count     = length(terraform_data.defer_azuread_user)
+  object_id = terraform_data.defer_azuread_user[0].output.object_id
+}
+```
+<!-- </deferred-patterns> -->
+
 - After edits, you MUST:
   1. Run `terraform fmt` and `terraform validate`
   2. Verify VS Code's Terraform diagnostics
@@ -175,9 +225,10 @@ All `main.tf` files MUST follow this organization:
 
 1. Markdown `/** */` comment at the top with title and description
 2. Local variables in one `locals` block, grouped by functionality
-3. `data` resources, grouped by functionality
-4. `resource` resources, grouped by functionality
-5. `module` resources, grouped by functionality
+3. Deferred data resource computations using `terraform_data` (when required)
+4. `data` resources, grouped by functionality
+5. `resource` resources, grouped by functionality
+6. `module` resources, grouped by functionality
 
 Example:
 
@@ -195,7 +246,34 @@ locals {
   custom_locations_oid = try(coalesce(var.custom_locations_oid, data.azuread_service_principal.custom_locations[0].object_id), "")
 }
 
+// Defer computation to prevent `data` objects from querying for state on `terraform plan`.
+// Needed for testing and build system compatibility.
 data "azurerm_client_config" "current" {}
+
+resource "terraform_data" "defer_azuread_user" {
+  count = var.should_add_current_user_cluster_admin ? 1 : 0
+  input = {
+    object_id = data.azurerm_client_config.current.object_id
+  }
+}
+
+data "azuread_user" "current" {
+  count     = length(terraform_data.defer_azuread_user)
+  object_id = terraform_data.defer_azuread_user[0].output.object_id
+}
+
+resource "terraform_data" "defer_custom_locations" {
+  count = alltrue([var.should_get_custom_locations_oid, try(length(var.custom_locations_oid), 0) == 0]) ? 1 : 0
+  input = {
+    // ref: https://learn.microsoft.com/azure/iot-operations/deploy-iot-ops/howto-prepare-cluster?tabs=ubuntu#arc-enable-your-cluster
+    client_id = "bc313c14-388c-4e7d-a58e-70017303ee3b" #gitleaks:allow
+  }
+}
+
+data "azuread_service_principal" "custom_locations" {
+  count     = length(terraform_data.defer_custom_locations)
+  client_id = terraform_data.defer_custom_locations[0].output.client_id
+}
 
 resource "azurerm_role_assignment" "connected_machine_onboarding" {
   count = var.should_assign_roles ? 1 : 0

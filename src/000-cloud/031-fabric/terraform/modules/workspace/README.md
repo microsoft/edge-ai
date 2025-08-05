@@ -7,19 +7,19 @@
 | Name | Version |
 |------|---------|
 | terraform | >= 1.9.8, < 2.0.0 |
-| fabric | 1.1.0 |
+| fabric | 1.3.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| fabric | 1.1.0 |
+| fabric | 1.3.0 |
 
 ## Resources
 
 | Name | Type |
 |------|------|
-| [fabric_workspace.this](https://registry.terraform.io/providers/microsoft/fabric/1.1.0/docs/resources/workspace) | resource |
+| [fabric_workspace.this](https://registry.terraform.io/providers/microsoft/fabric/1.3.0/docs/resources/workspace) | resource |
 
 ## Inputs
 

@@ -43,6 +43,7 @@ locals {
   server_env_var = {
     K3S_NODE_TYPE     = "server"
     CLUSTER_ADMIN_OID = coalesce(var.cluster_admin_oid, "$${CLUSTER_ADMIN_OID}")
+    CLUSTER_ADMIN_UPN = coalesce(var.cluster_admin_upn, "$${CLUSTER_ADMIN_UPN}")
     SKIP_ARC_CONNECT  = "$${SKIP_ARC_CONNECT}"
   }
 
@@ -50,6 +51,7 @@ locals {
   node_env_var = {
     K3S_NODE_TYPE     = "agent"
     CLUSTER_ADMIN_OID = "$${CLUSTER_ADMIN_OID}"
+    CLUSTER_ADMIN_UPN = "$${CLUSTER_ADMIN_UPN}"
     SKIP_ARC_CONNECT  = "true"
   }
 

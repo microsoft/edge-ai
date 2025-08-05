@@ -11,7 +11,6 @@ Contains all the resources needed for Cloud based data persistence.
 | terraform | >= 1.9.8, < 2.0.0 |
 | azapi | >= 2.3.0 |
 | azurerm | >= 4.23.0 |
-| fabric | 1.1.0 |
 
 ## Providers
 

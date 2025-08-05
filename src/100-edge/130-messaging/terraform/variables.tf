@@ -19,3 +19,9 @@ variable "should_create_eventhub_dataflows" {
   description = "Whether to create event hub dataflows."
   default     = true
 }
+
+variable "should_create_fabric_rti_dataflows" {
+  type        = bool
+  description = "Whether to create fabric RTI dataflows."
+  default     = false
+}

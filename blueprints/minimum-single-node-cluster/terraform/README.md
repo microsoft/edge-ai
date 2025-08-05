@@ -41,6 +41,6 @@ It includes only the essential components and minimizes resource usage.
 | instance | Instance identifier for naming resources: 001, 002, etc... | `string` | `"001"` | no |
 | should\_create\_anonymous\_broker\_listener | Whether to enable an insecure anonymous AIO MQ Broker Listener. (Should only be used for dev or test environments) | `bool` | `false` | no |
 | should\_get\_custom\_locations\_oid | Whether to get Custom Locations Object ID using Terraform's azuread provider. (Otherwise, provided by 'custom\_locations\_oid' or `az connectedk8s enable-features` for custom-locations on cluster setup if not provided.) | `bool` | `true` | no |
-| vm\_sku\_size | Size of the VM | `string` | `"Standard_D4_v3"` | no |
+| vm\_sku\_size | Size of the VM | `string` | `"Standard_D4_v4"` | no |
 <!-- markdown-table-prettify-ignore-end -->
 <!-- END_TF_DOCS -->

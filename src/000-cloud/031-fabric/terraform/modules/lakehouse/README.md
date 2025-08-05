@@ -7,19 +7,19 @@
 | Name | Version |
 |------|---------|
 | terraform | >= 1.9.8, < 2.0.0 |
-| fabric | 1.1.0 |
+| fabric | 1.3.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| fabric | 1.1.0 |
+| fabric | 1.3.0 |
 
 ## Resources
 
 | Name | Type |
 |------|------|
-| [fabric_lakehouse.this](https://registry.terraform.io/providers/microsoft/fabric/1.1.0/docs/resources/lakehouse) | resource |
+| [fabric_lakehouse.this](https://registry.terraform.io/providers/microsoft/fabric/1.3.0/docs/resources/lakehouse) | resource |
 
 ## Inputs
 

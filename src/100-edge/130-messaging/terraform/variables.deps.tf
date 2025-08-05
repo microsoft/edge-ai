@@ -51,3 +51,22 @@ variable "eventgrid" {
   })
   default = null
 }
+
+variable "fabric_eventstream_endpoint" {
+  type = object({
+    bootstrap_server = string
+    topic_name       = string
+    endpoint_type    = string
+  })
+  description = "Fabric RTI connection details from EventStream. If provided, creates a Fabric RTI dataflow endpoint."
+  default     = null
+}
+
+variable "fabric_workspace" {
+  type = object({
+    id           = string
+    display_name = string
+  })
+  description = "Fabric workspace for RTI resources. Required when fabric_eventstream_endpoint is provided."
+  default     = null
+}
