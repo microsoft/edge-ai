@@ -82,7 +82,7 @@ variable "should_enable_otel_collector" {
 }
 
 variable "should_assign_key_vault_roles" {
-  description = "Whether to assign Key Vault roles to provided Secret Sync identity"
+  description = "Whether to assign Key Vault roles to provided Secret Sync identity."
   type        = bool
   default     = true
 }

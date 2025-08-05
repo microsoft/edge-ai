@@ -9,7 +9,8 @@
 locals {
   arc_resource_name            = "arck-${var.resource_prefix}-${var.environment}-${var.instance}"
   custom_locations_oid         = try(coalesce(var.custom_locations_oid), data.azuread_service_principal.custom_locations[0].object_id, "")
-  current_user_oid             = var.should_add_current_user_cluster_admin ? data.azurerm_client_config.current.object_id : null
+  current_user_oid             = try(data.azurerm_client_config.current.object_id, null)
+  current_user_upn             = try(data.azuread_user.current[0].user_principal_name, null)
   should_use_principal_ids     = var.arc_onboarding_principal_ids != null
   arc_onboarding_principal_ids = local.should_use_principal_ids ? var.arc_onboarding_principal_ids : [try(var.arc_onboarding_identity.principal_id, var.arc_onboarding_sp.object_id, null)]
 }
@@ -21,11 +22,29 @@ locals {
 data "azurerm_client_config" "current" {
 }
 
-data "azuread_service_principal" "custom_locations" {
-  count = alltrue([var.should_get_custom_locations_oid, try(length(var.custom_locations_oid), 0) == 0]) ? 1 : 0
+resource "terraform_data" "defer_azuread_user" {
+  count = var.should_add_current_user_cluster_admin ? 1 : 0
+  input = {
+    object_id = data.azurerm_client_config.current.object_id
+  }
+}
 
-  // ref: https://learn.microsoft.com/azure/iot-operations/deploy-iot-ops/howto-prepare-cluster?tabs=ubuntu#arc-enable-your-cluster
-  client_id = "bc313c14-388c-4e7d-a58e-70017303ee3b" #gitleaks:allow
+data "azuread_user" "current" {
+  count     = length(terraform_data.defer_azuread_user)
+  object_id = terraform_data.defer_azuread_user[0].output.object_id
+}
+
+resource "terraform_data" "defer_custom_locations" {
+  count = alltrue([var.should_get_custom_locations_oid, try(length(var.custom_locations_oid), 0) == 0]) ? 1 : 0
+  input = {
+    // ref: https://learn.microsoft.com/azure/iot-operations/deploy-iot-ops/howto-prepare-cluster?tabs=ubuntu#arc-enable-your-cluster
+    client_id = "bc313c14-388c-4e7d-a58e-70017303ee3b" #gitleaks:allow
+  }
+}
+
+data "azuread_service_principal" "custom_locations" {
+  count     = length(terraform_data.defer_custom_locations)
+  client_id = terraform_data.defer_custom_locations[0].output.client_id
 }
 
 /*
@@ -57,6 +76,7 @@ module "ubuntu_k3s" {
   arc_resource_name                         = local.arc_resource_name
   arc_tenant_id                             = data.azurerm_client_config.current.tenant_id
   cluster_admin_oid                         = try(coalesce(var.cluster_admin_oid, local.current_user_oid), null)
+  cluster_admin_upn                         = try(coalesce(var.cluster_admin_upn, local.current_user_upn), null)
   custom_locations_oid                      = local.custom_locations_oid
   should_enable_arc_auto_upgrade            = var.should_enable_arc_auto_upgrade
   environment                               = var.environment

@@ -102,7 +102,13 @@ variable "should_assign_roles" {
 
 variable "cluster_admin_oid" {
   type        = string
-  description = "The Object ID that will be given cluster-admin permissions with the new cluster. (Otherwise, current logged in user if 'should_add_current_user_cluster_admin=true')"
+  description = "The Object ID that will be given cluster-admin permissions with the new cluster. (Otherwise, current logged in user Object ID if 'should_add_current_user_cluster_admin=true')"
+  default     = null
+}
+
+variable "cluster_admin_upn" {
+  type        = string
+  description = "The User Principal Name that will be given cluster-admin permissions with the new cluster. (Otherwise, current logged in user UPN if 'should_add_current_user_cluster_admin=true')"
   default     = null
 }
 

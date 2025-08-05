@@ -50,6 +50,11 @@ module "ci" {
   aio_identity         = data.azurerm_user_assigned_identity.aio
   aio_dataflow_profile = data.azapi_resource.aio_dataflow_profile.output
 
-  should_create_eventgrid_dataflows = false
-  should_create_eventhub_dataflows  = false
+  should_create_eventgrid_dataflows  = false
+  should_create_eventhub_dataflows   = false
+  should_create_fabric_rti_dataflows = var.fabric_eventstream_endpoint != null && var.fabric_workspace != null
+
+  // Fabric RTI Configuration for CI Testing
+  fabric_eventstream_endpoint = var.fabric_eventstream_endpoint
+  fabric_workspace            = var.fabric_workspace
 }

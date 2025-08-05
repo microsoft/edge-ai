@@ -48,6 +48,7 @@ module "edge_cncf_cluster" {
   should_add_current_user_cluster_admin = var.should_add_current_user_cluster_admin
   should_assign_roles                   = var.should_assign_roles
   cluster_admin_oid                     = var.cluster_admin_oid
+  cluster_admin_upn                     = var.cluster_admin_upn
   script_output_filepath                = var.script_output_filepath
   should_get_custom_locations_oid       = var.should_get_custom_locations_oid
 

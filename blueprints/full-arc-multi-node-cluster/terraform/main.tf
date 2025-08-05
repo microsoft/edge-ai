@@ -106,8 +106,9 @@ module "edge_cncf_cluster" {
   // Needed for now to create a server token before setting up server and nodes
   should_generate_cluster_server_token = true
 
-  should_get_custom_locations_oid = var.should_get_custom_locations_oid
-  custom_locations_oid            = var.custom_locations_oid
+  should_get_custom_locations_oid       = var.should_get_custom_locations_oid
+  custom_locations_oid                  = var.custom_locations_oid
+  should_add_current_user_cluster_admin = var.should_add_current_user_cluster_admin
 
   key_vault = module.cloud_security_identity.key_vault
 
@@ -177,6 +178,7 @@ module "edge_messaging" {
 
   environment     = var.environment
   resource_prefix = var.resource_prefix
+  instance        = "001"
 
   aio_custom_locations = module.edge_iot_ops.custom_locations
   aio_dataflow_profile = module.edge_iot_ops.aio_dataflow_profile

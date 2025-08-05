@@ -30,15 +30,16 @@ data "azurerm_key_vault" "aio" {
 module "ci" {
   source = "../../terraform"
 
-  environment                     = var.environment
-  instance                        = var.instance
-  resource_prefix                 = var.resource_prefix
-  custom_locations_oid            = var.custom_locations_oid
-  resource_group                  = data.azurerm_resource_group.aio
-  cluster_server_machine          = data.azurerm_virtual_machine.aio
-  should_get_custom_locations_oid = var.should_get_custom_locations_oid
-  arc_onboarding_identity         = data.azurerm_user_assigned_identity.arc
-  key_vault                       = data.azurerm_key_vault.aio
+  environment                           = var.environment
+  instance                              = var.instance
+  resource_prefix                       = var.resource_prefix
+  custom_locations_oid                  = var.custom_locations_oid
+  resource_group                        = data.azurerm_resource_group.aio
+  cluster_server_machine                = data.azurerm_virtual_machine.aio
+  should_get_custom_locations_oid       = var.should_get_custom_locations_oid
+  should_add_current_user_cluster_admin = var.should_add_current_user_cluster_admin
+  arc_onboarding_identity               = data.azurerm_user_assigned_identity.arc
+  key_vault                             = data.azurerm_key_vault.aio
 
   // Script deployment from Key Vault parameters
   should_use_script_from_secrets_for_deploy = var.should_use_script_from_secrets_for_deploy

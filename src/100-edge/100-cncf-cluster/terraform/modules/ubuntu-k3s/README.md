@@ -40,7 +40,7 @@ along with installing extensions for cluster connect and custom locations.
 | arc\_onboarding\_sp | n/a | ```object({ client_id = string object_id = string client_secret = string })``` | n/a | yes |
 | arc\_resource\_name | The name of the new Azure Arc resource. | `string` | n/a | yes |
 | arc\_tenant\_id | The ID of the Tenant for the new Azure Arc resource. | `string` | n/a | yes |
-| cluster\_admin\_oid | The Object ID that will be given cluster-admin permissions with the new cluster. (Otherwise, current logged in user if 'should\_add\_current\_user\_cluster\_admin=true') | `string` | n/a | yes |
+| cluster\_admin\_id | The ID that will be given cluster-admin permissions with the new cluster, userPrincipalName for User Entra AD, Object ID for Group Entra AD. (Otherwise, current logged in user if 'should\_add\_current\_user\_cluster\_admin=true') | `string` | n/a | yes |
 | cluster\_server\_host\_machine\_username | Username used for the host machines that will be given kube-config settings on setup. (Otherwise, 'resource\_prefix' if it exists as a user) | `string` | n/a | yes |
 | cluster\_server\_ip | The IP address for the server for the cluster. (Needed for mult-node cluster) | `string` | n/a | yes |
 | cluster\_server\_token | The token that will be given to the server for the cluster or used by the agent nodes to connect them to the cluster. (ex. <https://docs.k3s.io/cli/token>) | `string` | n/a | yes |

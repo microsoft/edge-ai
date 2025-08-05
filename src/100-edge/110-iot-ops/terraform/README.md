@@ -33,7 +33,7 @@ Instance can be created, and after.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | adr\_schema\_registry | n/a | ```object({ id = string })``` | n/a | yes |
-| aio\_identity | n/a | ```object({ id = string })``` | n/a | yes |
+| aio\_identity | n/a | ```object({ id = string client_id = string tenant_id = string })``` | n/a | yes |
 | arc\_connected\_cluster | n/a | ```object({ name = string id = string location = string })``` | n/a | yes |
 | resource\_group | n/a | ```object({ name = string id = string location = string })``` | n/a | yes |
 | secret\_sync\_identity | n/a | ```object({ id = string client_id = string principal_id = string })``` | n/a | yes |
@@ -52,7 +52,7 @@ Instance can be created, and after.
 | operations\_config | n/a | ```object({ namespace = string kubernetesDistro = string version = string train = string agentOperationTimeoutInMinutes = number })``` | ```{ "agentOperationTimeoutInMinutes": 120, "kubernetesDistro": "K3s", "namespace": "azure-iot-operations", "train": "integration", "version": "1.1.59" }``` | no |
 | platform | n/a | ```object({ version = string train = string })``` | ```{ "train": "preview", "version": "0.7.21" }``` | no |
 | secret\_sync\_controller | n/a | ```object({ version = string train = string })``` | ```{ "train": "preview", "version": "0.9.4" }``` | no |
-| should\_assign\_key\_vault\_roles | Whether to assign Key Vault roles to provided Secret Sync identity | `bool` | `true` | no |
+| should\_assign\_key\_vault\_roles | Whether to assign Key Vault roles to provided Secret Sync identity. | `bool` | `true` | no |
 | should\_create\_anonymous\_broker\_listener | Whether to enable an insecure anonymous AIO MQ Broker Listener. (Should only be used for dev or test environments) | `bool` | `false` | no |
 | should\_deploy\_resource\_sync\_rules | Deploys resource sync rules if set to true | `bool` | `false` | no |
 | should\_enable\_otel\_collector | Deploy the OpenTelemetry Collector and Azure Monitor ConfigMap (optionally used) | `bool` | `true` | no |
@@ -62,10 +62,10 @@ Instance can be created, and after.
 
 | Name | Description |
 |------|-------------|
-| aio\_dataflow\_profile | n/a |
-| aio\_instance | n/a |
-| aio\_instance\_name | n/a |
-| custom\_location\_id | n/a |
-| custom\_locations | n/a |
+| aio\_dataflow\_profile | The AIO dataflow profile. |
+| aio\_instance | The AIO instance. |
+| aio\_instance\_name | The name of the AIO instance. |
+| custom\_location\_id | The ID of the custom location. |
+| custom\_locations | The custom locations. |
 <!-- markdown-table-prettify-ignore-end -->
 <!-- END_TF_DOCS -->

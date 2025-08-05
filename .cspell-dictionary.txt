@@ -182,6 +182,7 @@ dataops
 etl
 elt
 lakehouse
+lakehouses
 mlops
 nosql
 olap

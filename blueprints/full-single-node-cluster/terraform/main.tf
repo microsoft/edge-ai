@@ -80,6 +80,8 @@ module "cloud_networking" {
 module "cloud_vm_host" {
   source = "../../../src/000-cloud/051-vm-host/terraform"
 
+  depends_on = [module.cloud_security_identity]
+
   environment     = var.environment
   location        = var.location
   resource_prefix = var.resource_prefix
@@ -127,6 +129,8 @@ module "cloud_kubernetes" {
 module "edge_cncf_cluster" {
   source = "../../../src/100-edge/100-cncf-cluster/terraform"
 
+  depends_on = [module.cloud_vm_host]
+
   environment     = var.environment
   resource_prefix = var.resource_prefix
   instance        = var.instance
@@ -136,9 +140,10 @@ module "edge_cncf_cluster" {
   arc_onboarding_sp       = module.cloud_security_identity.arc_onboarding_sp
   cluster_server_machine  = module.cloud_vm_host.virtual_machines[0]
 
-  should_deploy_arc_machines      = false
-  should_get_custom_locations_oid = var.should_get_custom_locations_oid
-  custom_locations_oid            = var.custom_locations_oid
+  should_deploy_arc_machines            = false
+  should_get_custom_locations_oid       = var.should_get_custom_locations_oid
+  should_add_current_user_cluster_admin = var.should_add_current_user_cluster_admin
+  custom_locations_oid                  = var.custom_locations_oid
 
   // Key Vault for script retrieval
   key_vault = module.cloud_security_identity.key_vault

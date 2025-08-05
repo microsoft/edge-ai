@@ -13,7 +13,8 @@ K3S_URL="${K3S_URL}"                             # The url for the k3s server if
 K3S_NODE_TYPE="${K3S_NODE_TYPE}"                 # Type of k3s node to create (ex. 'server' or 'agent', defaults to 'server')
 K3S_TOKEN="${K3S_TOKEN}"                         # The token used to secure k3s agent nodes joining a k3s cluster (refer https://docs.k3s.io/cli/token)
 K3S_VERSION="${K3S_VERSION}"                     # Version of k3s to install (ex. 'v1.31.2+k3s1') leave blank to install latest
-CLUSTER_ADMIN_OID="${CLUSTER_ADMIN_OID}"         # The Object ID that would be given the cluster-admin permission in the cluster (ex. 'az ad signed-in-user show --query id -o tsv')
+CLUSTER_ADMIN_UPN="${CLUSTER_ADMIN_UPN}"         # The user principal name that would be given the cluster-admin permission in the cluster (ex. 'az ad signed-in-user show --query userPrincipalName -o tsv')
+CLUSTER_ADMIN_OID="${CLUSTER_ADMIN_OID}"         # The object ID that would be given the cluster-admin permission in the cluster (ex. 'az ad signed-in-user show --query id -o tsv')
 AKV_NAME="${AKV_NAME}"                           # Azure Key Vault name to store secrets
 AKV_K3S_TOKEN_SECRET="${AKV_K3S_TOKEN_SECRET}"   # Azure Key Vault secret name for k3s token
 AKV_DEPLOY_SAT_SECRET="${AKV_DEPLOY_SAT_SECRET}" # Azure Key Vault secret name for cluster admin token
@@ -259,14 +260,23 @@ if [[ ${ENVIRONMENT,,} != "prod" ]]; then
   fi
 fi
 
-# Create 'cluster-admin' role binding for the provided Admin Object ID, needed for additional setup.
+# Create 'cluster-admin' role binding for the provided Admin Object ID and/or UPN, needed for additional setup.
 
 if [[ $CLUSTER_ADMIN_OID ]]; then
-  log "Adding $CLUSTER_ADMIN_OID as cluster admin"
+  log "Adding $CLUSTER_ADMIN_OID as cluster admin by object ID"
   short_id="$(echo "$CLUSTER_ADMIN_OID" | cut -c1-7)"
   kubectl create clusterrolebinding "$short_id-user-binding" \
     --clusterrole cluster-admin \
     --user="$CLUSTER_ADMIN_OID" \
+    --dry-run=client -o yaml | kubectl apply -f -
+fi
+
+if [[ $CLUSTER_ADMIN_UPN ]]; then
+  log "Adding $CLUSTER_ADMIN_UPN as cluster admin by user principal name"
+  short_upn="$(echo "$CLUSTER_ADMIN_UPN" | sha256sum | cut -c1-7)"
+  kubectl create clusterrolebinding "$short_upn-user-binding" \
+    --clusterrole cluster-admin \
+    --user="$CLUSTER_ADMIN_UPN" \
     --dry-run=client -o yaml | kubectl apply -f -
 fi
 

@@ -38,3 +38,20 @@ module "sample_eventgrid_dataflow" {
   aio_uami_client_id   = var.aio_identity.client_id
   aio_dataflow_profile = var.aio_dataflow_profile
 }
+
+module "sample_fabric_rti_dataflow" {
+  count = var.should_create_fabric_rti_dataflows ? 1 : 0
+
+  source = "./modules/fabric-rti"
+
+  resource_prefix             = var.resource_prefix
+  environment                 = var.environment
+  instance                    = var.instance
+  custom_location_id          = var.aio_custom_locations.id
+  asset_name                  = var.asset_name
+  aio_instance                = var.aio_instance
+  aio_dataflow_profile        = var.aio_dataflow_profile
+  aio_identity                = var.aio_identity
+  fabric_eventstream_endpoint = var.fabric_eventstream_endpoint
+  fabric_workspace            = var.fabric_workspace
+}

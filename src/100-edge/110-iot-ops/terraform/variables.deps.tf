@@ -28,7 +28,9 @@ variable "secret_sync_identity" {
 
 variable "aio_identity" {
   type = object({
-    id = string
+    id        = string
+    client_id = string
+    tenant_id = string
   })
 }
 

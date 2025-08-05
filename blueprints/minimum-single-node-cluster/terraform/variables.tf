@@ -60,6 +60,12 @@ EOF
   default     = null
 }
 
+variable "should_add_current_user_cluster_admin" {
+  type        = bool
+  description = "Gives the current logged in user cluster-admin permissions with the new cluster."
+  default     = true
+}
+
 /*
  * Optional Variables
  */
@@ -74,7 +80,7 @@ variable "vm_sku_size" {
   type        = string
   description = "Size of the VM"
   // Minimize resource usage - set smaller VM size
-  default = "Standard_D4_v3"
+  default = "Standard_D4_v4"
 }
 
 variable "asset_endpoint_profiles" {

@@ -76,9 +76,10 @@ module "edge_cncf_cluster" {
   arc_onboarding_sp       = module.cloud_security_identity.arc_onboarding_sp
   cluster_server_machine  = module.cloud_vm_host.virtual_machines[0]
 
-  should_deploy_arc_machines      = false
-  should_get_custom_locations_oid = var.should_get_custom_locations_oid
-  custom_locations_oid            = var.custom_locations_oid
+  should_deploy_arc_machines            = false
+  should_get_custom_locations_oid       = var.should_get_custom_locations_oid
+  custom_locations_oid                  = var.custom_locations_oid
+  should_add_current_user_cluster_admin = var.should_add_current_user_cluster_admin
 
   // Key Vault configuration
   key_vault                                 = module.cloud_security_identity.key_vault
