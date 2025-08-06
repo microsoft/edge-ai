@@ -1,0 +1,18 @@
+---
+apiVersion: trust.cert-manager.io/v1alpha1
+kind: Bundle
+metadata:
+  name: ${ENTERPRISE_CLIENT_CA_CONFIGMAP_NAME}
+spec:
+  sources:
+    - useDefaultCAs: false
+    # A Secret in the "trust" namespace; a Secret resource in the trust-manager namespace
+    - secret:
+        name: "${SYNCED_CERTIFICATES_SECRET_NAME}"
+        key: "client-root-ca-crt"
+  target:
+    configMap:
+      key: "${ENTERPRISE_CLIENT_CA_CONFIGMAP_NAME}"
+    namespaceSelector:
+      matchLabels:
+        ca-bundle/inject: "enabled"

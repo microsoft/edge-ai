@@ -16,6 +16,10 @@ module "network" {
   environment     = var.environment
   resource_prefix = var.resource_prefix
   instance        = var.instance
+
+  // Optional parameters
+  subnet_address_prefixes_aks     = var.subnet_address_prefixes_aks
+  subnet_address_prefixes_aks_pod = var.subnet_address_prefixes_aks_pod
 }
 
 module "aks_cluster" {

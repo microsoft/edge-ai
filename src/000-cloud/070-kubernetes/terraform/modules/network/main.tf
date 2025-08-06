@@ -23,12 +23,12 @@ resource "azurerm_subnet" "snet_aks" {
   resource_group_name  = var.resource_group.name
   virtual_network_name = var.virtual_network.name
   name                 = "subnet-${local.label_prefix_aks}"
-  address_prefixes     = ["10.0.3.0/24"]
+  address_prefixes     = var.subnet_address_prefixes_aks
 }
 
 resource "azurerm_subnet" "snet_aks_pod" {
   resource_group_name  = var.resource_group.name
   virtual_network_name = var.virtual_network.name
   name                 = "subnet-${local.label_prefix_aks_pod}"
-  address_prefixes     = ["10.0.4.0/24"]
+  address_prefixes     = var.subnet_address_prefixes_aks_pod
 }

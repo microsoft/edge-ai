@@ -17,9 +17,9 @@ module "network" {
   resource_prefix = var.resource_prefix
   instance        = var.instance
 
-  // optional parameters
+  // Optional parameters
   should_create_acr_private_endpoint = var.should_create_acr_private_endpoint
-
+  subnet_address_prefixes_acr        = var.subnet_address_prefixes_acr
 }
 
 module "container_registry" {
@@ -36,7 +36,7 @@ module "container_registry" {
   location        = var.location
   instance        = var.instance
 
-  // optional parameters
+  // Optional parameters
   should_create_acr_private_endpoint = var.should_create_acr_private_endpoint
   sku                                = var.sku
 }

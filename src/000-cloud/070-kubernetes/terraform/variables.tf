@@ -31,3 +31,15 @@ variable "dns_prefix" {
   default     = null
   description = "DNS prefix for the AKS cluster. This is used to create a unique DNS name for the cluster. If not provided, a default value will be generated."
 }
+
+variable "subnet_address_prefixes_aks" {
+  type        = list(string)
+  description = "Address prefixes for the AKS subnet."
+  default     = ["10.0.3.0/24"]
+}
+
+variable "subnet_address_prefixes_aks_pod" {
+  type        = list(string)
+  description = "Address prefixes for the AKS pod subnet."
+  default     = ["10.0.4.0/24"]
+}

@@ -1,0 +1,94 @@
+# Dual Peered Single Node Cluster Blueprint - Sample Configuration
+# Copy this file to terraform.tfvars and customize the values for your deployment
+
+# Required Variables
+environment     = "dev"
+resource_prefix = "myorg"
+location        = "eastus2"
+instance        = "001"
+
+# Cluster A Configuration (default: 10.1.0.0/16)
+use_existing_resource_group_a = false
+resource_group_name_a         = null
+cluster_a_virtual_network_config = {
+  address_space         = "10.1.0.0/16"
+  subnet_address_prefix = "10.1.1.0/24"
+}
+
+# Cluster B Configuration (default: 10.2.0.0/16)
+use_existing_resource_group_b = false
+resource_group_name_b         = null
+cluster_b_virtual_network_config = {
+  address_space         = "10.2.0.0/16"
+  subnet_address_prefix = "10.2.1.0/24"
+}
+
+# Azure Arc and Custom Locations
+should_get_custom_locations_oid = true
+custom_locations_oid            = null
+
+# Security and Development Settings
+should_create_anonymous_broker_listener = true  # Set to true for dev/test environments only
+should_create_aks                       = false  # Optional: Deploy AKS in addition to K3s
+should_create_acr_private_endpoint      = false  # Optional: Private endpoint for ACR
+
+# Azure IoT Operations Features
+should_deploy_resource_sync_rules = false
+should_enable_opc_ua_simulator    = false
+should_create_azure_functions     = false
+
+# Example: Enable preview features for asset discovery
+# Uncomment and modify as needed
+# aio_features = {
+#   connectors = {
+#     settings = {
+#       preview = "Enabled"
+#     }
+#   }
+# }
+
+# Asset Configuration (Optional)
+# Uncomment and customize as needed for your OPC UA assets
+# asset_endpoint_profiles = [
+#   {
+#     name                              = "opc-ua-connector-0"
+#     target_address                    = "opc.tcp://opcplc-000000:50000"
+#     should_enable_opc_asset_discovery = true
+#   }
+# ]
+
+# assets = [
+#   {
+#     name                       = "thermostat"
+#     asset_endpoint_profile_ref = "opc-ua-connector-0"
+#     description               = "A simulated thermostat asset"
+#     datasets = [
+#       {
+#         name = "temperature"
+#         data_points = [
+#           {
+#             name                     = "temperature"
+#             data_source             = "ns=2;s=fast_uint1"
+#             observability_mode      = "gauge"
+#             data_point_configuration = jsonencode({
+#               publishingInterval = 1000
+#               samplingInterval   = 500
+#               queueSize         = 10
+#             })
+#           }
+#         ]
+#       }
+#     ]
+#   }
+# ]
+
+# Custom Script Deployment Configuration
+# Deploy custom scripts to VMs for MQTT configuration
+should_deploy_custom_scripts            = true  # Deploy both server-central.sh and client-technology.sh
+
+# MQTT Configuration
+enterprise_broker_port                       = 28883                # Port for enterprise MQTT broker listener (default: 28883)
+enterprise_broker_tls_cert_secret_name    = "broker-tls-cert" # Name of the Kubernetes secret containing the broker server certificate (default: "broker-tls-cert")
+enterprise_client_ca_configmap_name          = "client-ca"          # Name of the Kubernetes configmap containing the client CA certificate (default: "client-ca")
+site_client_secret_name                      = "client-secret"      # Name of the Kubernetes secret containing the client certificate and key (default: "client-secret")
+site_tls_ca_configmap_name                   = "tls-ca-configmap"   # Name of the Kubernetes configmap containing the TLS CA certificate (default: "tls-ca-configmap")

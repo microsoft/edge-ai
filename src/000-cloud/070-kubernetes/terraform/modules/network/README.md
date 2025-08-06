@@ -34,6 +34,8 @@ Deploys virtual network resources for AKS
 | network\_security\_group | n/a | ```object({ id = string })``` | n/a | yes |
 | resource\_group | n/a | ```object({ name = string })``` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module. | `string` | n/a | yes |
+| subnet\_address\_prefixes\_aks | Address prefixes for the AKS subnet. | `list(string)` | n/a | yes |
+| subnet\_address\_prefixes\_aks\_pod | Address prefixes for the AKS pod subnet. | `list(string)` | n/a | yes |
 | virtual\_network | n/a | ```object({ name = string })``` | n/a | yes |
 
 ## Outputs
