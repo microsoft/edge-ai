@@ -31,6 +31,7 @@ Deploys Azure Container Registry resources
 | instance | Instance identifier for naming resources: 001, 002, etc... | `string` | `"001"` | no |
 | should\_create\_acr\_private\_endpoint | Should create a private endpoint for the Azure Container Registry. Default is false. | `bool` | `false` | no |
 | sku | SKU for the Azure Container Registry. Options are Basic, Standard, Premium. Default is Premium because of the need for private endpoints. | `string` | `"Premium"` | no |
+| subnet\_address\_prefixes\_acr | Address prefixes for the ACR subnet. | `list(string)` | ```[ "10.0.2.0/24" ]``` | no |
 
 ## Outputs
 

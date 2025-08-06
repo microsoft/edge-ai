@@ -14,3 +14,9 @@ variable "sku" {
   description = "SKU for the Azure Container Registry. Options are Basic, Standard, Premium. Default is Premium because of the need for private endpoints."
   default     = "Premium"
 }
+
+variable "subnet_address_prefixes_acr" {
+  type        = list(string)
+  description = "Address prefixes for the ACR subnet."
+  default     = ["10.0.2.0/24"]
+}

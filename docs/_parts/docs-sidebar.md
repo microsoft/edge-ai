@@ -1,6 +1,6 @@
 <!-- markdownlint-disable MD041 -->
 <!-- docs Section Sidebar -->
-<!-- Generated on: 2025-06-21 17:11:33 UTC -->
+<!-- Generated on: 2025-07-24 18:40:01 UTC -->
 
 - [AI on Edge Flagship Accelerator](docs/index.md)
 
@@ -220,22 +220,24 @@
     - [Deploy](.github/prompts/deploy.prompt.md)
     - [Edge Ai Project Planning](.github/prompts/edge-ai-project-planning.prompt.md)
     - [Getting Started](.github/prompts/getting-started.prompt.md)
+    - [Iotops Version Upgrade](.github/prompts/iotops-version-upgrade.prompt.md)
     - [Prompt New](.github/prompts/prompt-new.prompt.md)
     - [Prompt Refactor](.github/prompts/prompt-refactor.prompt.md)
     - [Pull Request](.github/prompts/pull-request.prompt.md)
-    - [Python Script](.github/prompts/python-script.prompt.md)
     - [Terraform From Blueprint](.github/prompts/terraform-from-blueprint.prompt.md)
   - [Chat Modes](.github/chatmodes/README.md)
     - [Adr Creation](.github/chatmodes/adr-creation.chatmode.md)
     - [Praxisworx Kata Coach](.github/chatmodes/praxisworx-kata-coach.chatmode.md)
     - [Praxisworx Lab Coach](.github/chatmodes/praxisworx-lab-coach.chatmode.md)
     - [Prompt Builder](.github/chatmodes/prompt-builder.chatmode.md)
+    - [Security Plan Creator](.github/chatmodes/security-plan-creator.chatmode.md)
     - [Task Planner](.github/chatmodes/task-planner.chatmode.md)
   - [Instructions](.github/instructions/README.md)
     - [Bash](.github/instructions/bash.instructions.md)
     - [Bicep](.github/instructions/bicep.instructions.md)
     - [Commit Message](.github/instructions/commit-message.instructions.md)
     - [Csharp](.github/instructions/csharp.instructions.md)
+    - [Python Script](.github/instructions/python-script.instructions.md)
     - [Shell](.github/instructions/shell.instructions.md)
     - [Task Implementation](.github/instructions/task-implementation.instructions.md)
     - [Terraform](.github/instructions/terraform.instructions.md)

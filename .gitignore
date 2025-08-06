@@ -442,3 +442,6 @@ pr-reference.xml
 
 # Confidential files
 security-plan-outputs/
+
+# certs for mq cert authentication
+certs/
