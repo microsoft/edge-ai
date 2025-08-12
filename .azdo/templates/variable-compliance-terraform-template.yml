@@ -16,8 +16,8 @@
 # - displayName: Display name for this job
 # - condition: Condition for running this job
 # - terraformDocsVersion: Version of terraform-docs to install
-# - breakBuild: When true, variable inconsistencies fail the build instead of just warnings
-# - pool: Azure DevOps agent pool configuration
+# - breakBuild: Whether to break the build on validation issues (true) or just show warnings (false)
+# - agentPool: Azure DevOps agent pool configuration
 #
 # Usage Examples:
 # ```yaml
@@ -53,12 +53,12 @@ parameters:
   - name: terraformDocsVersion
     type: string
     default: 'v0.20.0'
-  # Whether to break the build on compliance issues (true) or just show warnings (false)
+  # Whether to break the build on validation issues (true) or just show warnings (false)
   - name: breakBuild
     type: boolean
     default: false
-  # Pool configuration
-  - name: pool
+  # Agent pool configuration
+  - name: agentPool
     type: object
     default:
       name: 'ai-on-edge-managed-pool'
@@ -69,7 +69,7 @@ jobs:
     displayName: ${{ parameters.displayName }}
     dependsOn: ${{ parameters.dependsOn }}
     condition: ${{ parameters.condition }}
-    pool: ${{ parameters.pool }}
+    pool: ${{ parameters.agentPool }}
     steps:
       - checkout: self
         clean: true

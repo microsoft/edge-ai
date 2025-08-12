@@ -67,14 +67,12 @@ parameters:
   - name: matrixVariable
     type: string
     default: 'dependencies.MatrixBuildFolderCheck.outputs[''matrixBuildFolderCheckTask.changedTfFolders'']'
-  # Pool name to be used in the job
-  - name: poolName
-    type: string
-    default: 'ai-on-edge-managed-pool'
-  # VM image to be used in the job
-  - name: vmImage
-    type: string
-    default: 'ubuntu-latest'
+  # Agent pool configuration
+  - name: agentPool
+    type: object
+    default:
+      name: 'ai-on-edge-managed-pool'
+      vmImage: 'ubuntu-latest'
   # Azure service connection name
   - name: azureServiceConnection
     type: string
@@ -113,9 +111,7 @@ jobs:
     displayName: ${{ parameters.displayName }}
     dependsOn: ${{ parameters.dependsOn }}
     condition: ${{ parameters.condition }}
-    pool:
-      name: ${{ parameters.poolName }}
-      vmImage: ${{ parameters.vmImage }}
+    pool: ${{ parameters.agentPool }}
     strategy:
       matrix: $[ ${{ parameters.matrixVariable }} ]
       maxParallel: ${{ parameters.maxParallel }}

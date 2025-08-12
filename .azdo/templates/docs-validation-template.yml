@@ -19,7 +19,7 @@
 # - condition: Condition for running this job
 # - breakBuild: Whether to treat validation failures as errors (true) or warnings (false)
 # - onlyChangedFiles: Whether to validate only files changed in the PR/commit (true) or all files (false)
-# - pool: Agent pool configuration
+# - agentPool: Agent pool configuration
 #
 # Usage Examples:
 # ```yaml
@@ -62,8 +62,8 @@ parameters:
   - name: onlyChangedFiles
     type: boolean
     default: false
-  # Pool configuration
-  - name: pool
+  # Agent pool configuration
+  - name: agentPool
     type: object
     default:
       name: 'ai-on-edge-managed-pool'
@@ -74,7 +74,7 @@ jobs:
     displayName: ${{ parameters.displayName }}
     dependsOn: ${{ parameters.dependsOn }}
     condition: ${{ parameters.condition }}
-    pool: ${{ parameters.pool }}
+    pool: ${{ parameters.agentPool }}
 
     steps:
 

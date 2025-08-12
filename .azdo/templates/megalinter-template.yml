@@ -18,6 +18,7 @@
 # - enableAzureReporter: When true, posts results as comments on Azure DevOps PRs
 # - pullRequestId: ID of the pull request (required for PR comments)
 # - sourceRepoUri: URI of the source repository (required for PR comments)
+# - agentPool: Agent pool configuration with name and vmImage properties
 #
 # Usage Examples:
 # ```yaml
@@ -62,15 +63,19 @@ parameters:
   - name: sourceRepoUri
     type: string
     default: ''
+  # Agent pool configuration
+  - name: agentPool
+    type: object
+    default:
+      name: 'ai-on-edge-managed-pool'
+      vmImage: 'ubuntu-latest'
 
 jobs:
   - job: MegaLinter
     dependsOn: ${{ parameters.dependsOn }}
     displayName: ${{ parameters.displayName }}
     condition: ${{ parameters.condition }}
-    pool:
-      name: ai-on-edge-managed-pool
-      vmImage: ubuntu-latest
+    pool: ${{ parameters.agentPool }}
 
     steps:
       # Checkout repo

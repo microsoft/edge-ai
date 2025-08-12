@@ -25,12 +25,12 @@ parameters:
   - name: condition
     type: string
     default: 'succeeded()'
-  # Whether to break the build on compliance issues (true) or just show warnings (false)
+  # Whether to break the build on validation issues (true) or just show warnings (false)
   - name: breakBuild
     type: boolean
     default: false
-  # Pool configuration
-  - name: pool
+  # Agent pool configuration
+  - name: agentPool
     type: object
     default:
       name: 'ai-on-edge-managed-pool'
@@ -41,7 +41,7 @@ jobs:
     displayName: ${{ parameters.displayName }}
     dependsOn: ${{ parameters.dependsOn }}
     condition: ${{ parameters.condition }}
-    pool: ${{ parameters.pool }}
+    pool: ${{ parameters.agentPool }}
 
     steps:
 

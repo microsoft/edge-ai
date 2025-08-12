@@ -76,15 +76,19 @@ parameters:
   - name: wikiBranch
     type: string
     default: 'wiki'
+  # Agent pool configuration
+  - name: agentPool
+    type: object
+    default:
+      name: 'ai-on-edge-managed-pool'
+      vmImage: 'ubuntu-latest'
 
 jobs:
   - job: WikiUpdate
     displayName: ${{ parameters.displayName }}
     dependsOn: ${{ parameters.dependsOn }}
     condition: ${{ parameters.condition }}
-    pool:
-      name: ai-on-edge-managed-pool
-      vmImage: ubuntu-latest
+    pool: ${{ parameters.agentPool }}
     variables:
       BRANCH_REPO_FOLDER: ${{ parameters.branchRepoFolder }}
       WIKI_REPO_FOLDER: ${{ parameters.wikiRepoFolder }}

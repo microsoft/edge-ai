@@ -24,16 +24,17 @@ parameters:
   # Condition for when this job should run
   - name: condition
     type: string
-    default: 'succeeded()'  # Version of terraform-docs to install
+    default: 'succeeded()'
+  # Version of terraform-docs to install
   - name: terraformDocsVersion
     type: string
     default: 'v0.20.0'
-  # Whether to break the build on compliance issues (true) or just show warnings (false)
+  # Whether to break the build on validation issues (true) or just show warnings (false)
   - name: breakBuild
     type: boolean
     default: false
-  # Pool configuration
-  - name: pool
+  # Agent pool configuration
+  - name: agentPool
     type: object
     default:
       name: 'ai-on-edge-managed-pool'
@@ -44,7 +45,7 @@ jobs:
     displayName: ${{ parameters.displayName }}
     dependsOn: ${{ parameters.dependsOn }}
     condition: ${{ parameters.condition }}
-    pool: ${{ parameters.pool }}
+    pool: ${{ parameters.agentPool }}
 
     steps:
 
