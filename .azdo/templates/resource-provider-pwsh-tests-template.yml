@@ -58,14 +58,18 @@ parameters:
   - name: pwshTestResultsOutput
     type: string
     default: $(System.DefaultWorkingDirectory)/PWSH-TEST-RESULTS.xml
+  # Agent pool configuration
+  - name: agentPool
+    type: object
+    default:
+      name: 'ai-on-edge-managed-pool'
+      vmImage: 'ubuntu-latest'
 
 jobs:
   # Job to run PowerShell script tests for the resource providers if they have changed
   - job: ResourceProviderPWSHScriptTest
     dependsOn: ${{ parameters.dependsOn }}
-    pool:
-      name: ai-on-edge-managed-pool
-      vmImage: "ubuntu-latest"
+    pool: ${{ parameters.agentPool }}
     condition: ${{ parameters.pwshScriptCondition }}
     variables:
       testResultsOutput: ${{ parameters.pwshTestResultsOutput }}

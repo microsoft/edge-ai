@@ -18,6 +18,7 @@
 # - displayName: Display name for this job
 # - condition: Condition for running this job
 # - includeAllFolders: When true, returns all folders containing Terraform and Bicep files
+# - agentPool: Agent pool configuration with name and vmImage properties
 #
 # Output Variables:
 # - matrixBuildFolderCheckTask.changesInRpEnablementShell: true/false if shell scripts changed in subscription setup
@@ -70,15 +71,19 @@ parameters:
   - name: includeAllFolders
     type: boolean
     default: false
+  # Agent pool configuration
+  - name: agentPool
+    type: object
+    default:
+      name: 'ai-on-edge-managed-pool'
+      vmImage: 'ubuntu-latest'
 
 jobs:
   - job: ${{ parameters.jobName }}
     displayName: ${{ parameters.displayName }}
     dependsOn: ${{ parameters.dependsOn }}
     condition: ${{ parameters.condition }}
-    pool:
-      name: ai-on-edge-managed-pool
-      vmImage: ubuntu-latest
+    pool: ${{ parameters.agentPool }}
     steps:
       # Checkout repo and set fetchDepth to 0 to get all history
       - checkout: self

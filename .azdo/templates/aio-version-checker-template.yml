@@ -61,15 +61,19 @@ parameters:
   - name: breakBuild
     type: boolean
     default: false
+  # Agent pool configuration
+  - name: agentPool
+    type: object
+    default:
+      name: 'ai-on-edge-managed-pool'
+      vmImage: 'ubuntu-latest'
 
 jobs:
   - job: AIOVersionCheck
     displayName: ${{ parameters.displayName }}
     dependsOn: ${{ parameters.dependsOn }}
     condition: ${{ parameters.condition }}
-    pool:
-      name: ai-on-edge-managed-pool
-      vmImage: ubuntu-latest
+    pool: ${{ parameters.agentPool }}
     steps:
       - checkout: self
         clean: true

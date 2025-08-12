@@ -34,8 +34,10 @@
 ---
 parameters:
   - name: agentPool
-    type: string
-    default: 'ubuntu-latest'
+    type: object
+    default:
+      name: 'ai-on-edge-managed-pool'
+      vmImage: 'ubuntu-latest'
   - name: dependsOn
     type: object
     default: []
@@ -44,8 +46,7 @@ jobs:
   - job: checkov_scan
     displayName: 'Checkov Security Scan'
     dependsOn: ${{ parameters.dependsOn }}
-    pool:
-      vmImage: ${{ parameters.agentPool }}
+    pool: ${{ parameters.agentPool }}
     steps:
       - checkout: self
 

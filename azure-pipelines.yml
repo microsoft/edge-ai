@@ -52,11 +52,11 @@ variables:
   isMain: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
   isScheduled: $[eq(variables['Build.Reason'], 'Schedule')]
 
-# Define the default pool for the entire pipeline. This is a
-# Managed DevOps Pool with Ubuntu 2022 and WIndows 2022 agents
+# Define the default pool for the entire pipeline using centralized variables.
+# This is a Managed DevOps Pool with Ubuntu 2022 and Windows 2022 agents
 pool:
-  name: ai-on-edge-managed-pool
-  vmImage: ubuntu-latest
+  name: $(poolName)
+  vmImage: $(vmImage)
 
 stages:
   # Daily scheduled build to run security and update scanning
@@ -67,7 +67,9 @@ stages:
       # Run Checkov security scanning directly with the PowerShell script approach
       - template: .azdo/templates/checkov-template.yml
         parameters:
-          agentPool: 'ubuntu-latest'
+          agentPool:
+            name: $(poolName)
+            vmImage: $(vmImage)
 
       # Use the aio-version-checker-template.yml template for checking AIO component versions
       - template: .azdo/templates/aio-version-checker-template.yml
@@ -77,6 +79,9 @@ stages:
           condition: succeeded()
           iacType: all  # Check all supported file types (currently only Terraform and Bicep files)
           breakBuild: false  # Only show warnings by default
+          agentPool:
+            name: $(poolName)
+            vmImage: $(vmImage)
 
       # Use the matrix-folder-check-template.yml to check all folders in src directory for scheduled scans
       - template: .azdo/templates/matrix-folder-check-template.yml
@@ -86,6 +91,9 @@ stages:
           displayName: "Check all folders in src directory"
           condition: succeeded()
           includeAllFolders: true  # Check all folders for scheduled builds
+          agentPool:
+            name: $(poolName)
+            vmImage: $(vmImage)
 
       # Use the cluster-test-terraform-template.yml template for Terraform testing in scheduled runs
       - template: .azdo/templates/cluster-test-terraform-template.yml
@@ -96,6 +104,9 @@ stages:
           matrixVariable: dependencies.ScheduledComponentsFolderCheck.outputs['matrixBuildFolderCheckTask.changedTfFolders']
           azureServiceConnection: azdo-ai-for-edge-iac-for-edge
           breakBuild: true
+          agentPool:
+            name: $(poolName)
+            vmImage: $(vmImage)
 
   - stage: Main
     displayName: Main Build
@@ -109,6 +120,9 @@ stages:
           condition: succeeded()
           # for main do not report results as there's no PR to report to
           enableAzureReporter: false
+          agentPool:
+            name: $(poolName)
+            vmImage: $(vmImage)
 
       # Use the wiki-update-template.yml to update the wiki documentation
       # This job will only run if the MegaLinter job passes.
@@ -121,6 +135,9 @@ stages:
           wikiRepoFolder: "wiki"
           wikiRepo: "git://edge-ai/edge-ai@refs/heads/wiki"
           wikiBranch: "wiki"
+          agentPool:
+            name: $(poolName)
+            vmImage: $(vmImage)
 
   - stage: PR
     displayName: PR Build Process
@@ -137,7 +154,11 @@ stages:
           # to the PR and set the pull request ID and source repo URIs
           enableAzureReporter: true
           pullRequestId: $(System.PullRequest.PullRequestId)
-          sourceRepoUri: $(System.PullRequest.SourceRepositoryURI)      # Use the enhanced documentation validation template for comprehensive docs checking
+          sourceRepoUri: $(System.PullRequest.SourceRepositoryURI)
+          agentPool:
+            name: $(poolName)
+            vmImage: $(vmImage)
+      # Use the enhanced documentation validation template for comprehensive docs checking
       # Note: For performance optimization in large repositories, you can use:
       # onlyChangedFiles: true (validates only files changed in PR)
       # breakBuild: true (fail build on validation issues)
@@ -147,9 +168,9 @@ stages:
           displayName: "Enhanced Documentation Validation"
           condition: succeeded()
           breakBuild: false  # Only show warnings by default
-          pool:
-            name: 'ai-on-edge-managed-pool'
-            vmImage: 'ubuntu-latest'
+          agentPool:
+            name: $(poolName)
+            vmImage: $(vmImage)
       # Use the docs check template for PR builds
       - template: .azdo/templates/docs-check-terraform-template.yml
         parameters:
@@ -157,6 +178,9 @@ stages:
           displayName: "Terraform Documentation Quality Check"
           condition: succeeded()
           breakBuild: false  # Only show warnings by default
+          agentPool:
+            name: $(poolName)
+            vmImage: $(vmImage)
       # Use the docs check template for Bicep files
       - template: .azdo/templates/docs-check-bicep-template.yml
         parameters:
@@ -164,6 +188,9 @@ stages:
           displayName: "Bicep Documentation Quality Check"
           condition: succeeded()
           breakBuild: false  # Only show warnings by default
+          agentPool:
+            name: $(poolName)
+            vmImage: $(vmImage)
       # Use the matrix-folder-check-template.yml to check for changes in src directory
       - template: .azdo/templates/matrix-folder-check-template.yml
         parameters:
@@ -172,6 +199,9 @@ stages:
           displayName: "Check for changes in src directory"
           condition: succeeded()
           includeAllFolders: false  # Only check folders with changes for PR builds
+          agentPool:
+            name: $(poolName)
+            vmImage: $(vmImage)
       # Use the resource-provider-pwsh-tests-template.yml template for Resource Provider testing jobs
       - template: .azdo/templates/resource-provider-pwsh-tests-template.yml
         parameters:
@@ -180,6 +210,9 @@ stages:
           azureServiceConnection: azdo-ai-for-edge-iac-for-edge
           workingDirectory: $(System.DefaultWorkingDirectory)/src/azure-resource-providers
           pwshTestResultsOutput: $(System.DefaultWorkingDirectory)/PWSH-TEST-RESULTS.xml
+          agentPool:
+            name: $(poolName)
+            vmImage: $(vmImage)
       # Use template for Terraform variable compliance checking
       - template: .azdo/templates/variable-compliance-terraform-template.yml
         parameters:
@@ -187,6 +220,9 @@ stages:
           displayName: "Check Terraform Variable Consistency"
           condition: succeeded()
           breakBuild: false  # Only show warnings by default
+          agentPool:
+            name: $(poolName)
+            vmImage: $(vmImage)
       # Use template for Bicep variable compliance checking
       - template: .azdo/templates/variable-compliance-bicep-template.yml
         parameters:
@@ -194,6 +230,9 @@ stages:
           displayName: "Check Bicep Variable Consistency"
           condition: succeeded()
           breakBuild: false  # Only show warnings by default
+          agentPool:
+            name: $(poolName)
+            vmImage: $(vmImage)
       # Use the cluster-test-terraform-template.yml template for Terraform testing
       - template: .azdo/templates/cluster-test-terraform-template.yml
         parameters:
@@ -203,3 +242,6 @@ stages:
           matrixVariable: dependencies.ComponentChangesFolderCheck.outputs['matrixBuildFolderCheckTask.changedTfFolders']
           azureServiceConnection: azdo-ai-for-edge-iac-for-edge
           breakBuild: true
+          agentPool:
+            name: $(poolName)
+            vmImage: $(vmImage)
