@@ -142,7 +142,7 @@ stages:
             name: $(poolName)
             vmImage: $(vmImage)
 
-  - stage: Pre-Release
+  - stage: PreRelease
     displayName: Pre-Release Build
     # Run the pre-release build process only if the build is not scheduled and is the pre-release branch
     condition: and(eq(variables.isPreRelease, true), eq(variables.isScheduled, false))
