@@ -25,6 +25,13 @@
 # GitHub sync pipeline
 ---
 trigger: none
+parameters:
+  - name: sourceBranch
+    type: string
+    default: 'main'
+    values:
+      - 'main'
+      - 'pre-release'
 variables:
   - group: 'ai-on-edge-secrets'
 pool:
@@ -69,33 +76,34 @@ stages:
               remoteUrl=$(echo $githubUrl | sed "s|__token__|$(installationToken)|g")
               git clone $remoteUrl
 
-              cd Iac-for-the-Edge
+              cd edge-ai
+
               git remote remove origin
               git remote add origin $(azdo-edge-ai-repo-url)
-              git -c http.extraheader="AUTHORIZATION: bearer $(System.AccessToken)" fetch origin main
+              echo "Fetching changes from GitHub"
+              git -c http.extraheader="AUTHORIZATION: bearer $(System.AccessToken)" fetch origin ${{ parameters.sourceBranch }}
 
             displayName: "Pull from GitHub"
             name: githubPull
 
           # Create AzDO branch and PR if changes detected
           - bash: |
+              cd edge-ai
 
-              cd Iac-for-the-Edge
-
-              echo "run git diff"
-              changedFiles=$(git -c http.extraheader="AUTHORIZATION: bearer $(System.AccessToken)" diff --name-only origin/main...HEAD)
-              if [[ -z "$changedFiles" ]]; then
-                echo "No files changed - no sync required"
-                exit 0
-              fi
+              # echo "run git diff"
+              # changedFiles=$(git -c http.extraheader="AUTHORIZATION: bearer $(System.AccessToken)" diff --name-only origin/${{ parameters.sourceBranch }}...HEAD)
+              # if [[ -z "$changedFiles" ]]; then
+              #   echo "No files changed - no sync required"
+              #   exit 0
+              # fi
 
               echo "GitHub has new changes"
-              echo "Creating new branch github-$(Build.BuildId)"
-              git -c http.extraheader="AUTHORIZATION: bearer $(System.AccessToken)" push --force origin main:github-$(Build.BuildId)
+              echo "Creating new branch github-${{ parameters.sourceBranch }}-$(Build.BuildId)"
+              git -c http.extraheader="AUTHORIZATION: bearer $(System.AccessToken)" push --force origin ${{ parameters.sourceBranch }}:github-${{ parameters.sourceBranch }}-$(Build.BuildId)
 
               echo "Creating PR"
               export AZURE_DEVOPS_EXT_PAT=$(System.AccessToken)
-              az repos pr create --repository "Iac for the Edge" --source-branch "github-$(Build.BuildId)" --target-branch "main" --title "GitHub merge for branch github-$(Build.BuildId)" --description "Sync from Git Hub - IaC for the Edge repo"
+              az repos pr create --repository "edge-ai" --source-branch "github-${{ parameters.sourceBranch }}-$(Build.BuildId)" --target-branch "${{ parameters.sourceBranch }}" --title "GitHub merge for branch github-${{ parameters.sourceBranch }}-$(Build.BuildId)" --description "Sync from Git Hub - edge-ai repo"
 
             displayName: "Create AzDO branch and PR"
             name: azdoPR

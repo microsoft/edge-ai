@@ -34,6 +34,8 @@ variables:
   - group: 'ai-on-edge-secrets'
   - name: isMain
     value: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
+  - name: isPreRelease
+    value: $[eq(variables['Build.SourceBranch'], 'refs/heads/pre-release')]
 pool:
   name: ai-on-edge-managed-pool
   vmImage: ubuntu-latest
@@ -43,7 +45,7 @@ stages:
     jobs:
       - job: "GitHubPush"
         displayName: "Updating GitHub repo from AzDO"
-        condition: eq(variables.isMain, true)
+        condition: or(eq(variables.isMain, true), eq(variables.isPreRelease, true))
         steps:
           # Checkout repo
           - checkout: self
@@ -77,15 +79,16 @@ stages:
 
               echo "Pushing to GitHub"
               remoteUrl=$(echo $githubUrl | sed "s|__token__|$(installationToken)|g")
+              sourceBranch=$(echo $(Build.SourceBranch) | sed 's|refs/heads/||')
               echo "Remote URL: $remoteUrl"
               git remote remove origin
               git remote add origin $remoteUrl
               echo "Switching to a new temporary branch to leave the detached mode"
-              git switch -c azdo-$(Build.BuildId)
+              git switch -c azdo-$sourceBranch-$(Build.BuildId)
               echo "$(git branch --all)"
-              git push --force origin azdo-$(Build.BuildId):azdo-$(Build.BuildId)
+              git push --force origin azdo-$sourceBranch-$(Build.BuildId):azdo-$sourceBranch-$(Build.BuildId)
               git remote remove origin
-              echo "Pushed branch azdo-$(Build.BuildId) to GitHub"
+              echo "Pushed branch azdo-$sourceBranch-$(Build.BuildId) to GitHub"
 
             displayName: "Push to GitHub"
             name: githubPush
@@ -94,8 +97,9 @@ stages:
           - bash: |
               echo "Creating PR"
               repo_path=$(echo $(github-edge-ai-repo-url) | sed -n 's|.*github.com/\([^/][^/]*/[^/][^/]*\)/$|\1|p')
+              sourceBranch=$(echo $(Build.SourceBranch) | sed 's|refs/heads/||')
               echo "RepoPath: $repo_path"
-              bash $(System.DefaultWorkingDirectory)/scripts/github/create-pr.sh "$(installationToken)" "azdo-$(Build.BuildId)" "$(Build.SourceVersionMessage)" "$repo_path"
+              bash $(System.DefaultWorkingDirectory)/scripts/github/create-pr.sh "$(installationToken)" "azdo-$sourceBranch-$(Build.BuildId)" "$(Build.SourceVersionMessage)" "$repo_path"
 
             displayName: "Create GitHub PR"
             name: githubPR

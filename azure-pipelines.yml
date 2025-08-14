@@ -30,6 +30,7 @@ trigger:
     include:
       - main
       - internal-eng
+      - pre-release
 
 # Add parameters section for manual trigger option
 parameters:
@@ -47,9 +48,11 @@ schedules:
     always: true
 
 # set isMain to true if the branch is main to trigger main stage
+# set isPreRelease to true if the branch is pre-release to trigger pre-release stage
 # set isScheduled to true if the build is scheduled to trigger
 variables:
   isMain: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
+  isPreRelease: $[eq(variables['Build.SourceBranch'], 'refs/heads/pre-release')]
   isScheduled: $[eq(variables['Build.Reason'], 'Schedule')]
 
 # Define the default pool for the entire pipeline using centralized variables.
@@ -139,10 +142,26 @@ stages:
             name: $(poolName)
             vmImage: $(vmImage)
 
+  - stage: PreRelease
+    displayName: Pre-Release Build
+    # Run the pre-release build process only if the build is not scheduled and is the pre-release branch
+    condition: and(eq(variables.isPreRelease, true), eq(variables.isScheduled, false))
+    jobs:
+      # Use the megaLinter-template.yml to run MegaLinter
+      - template: .azdo/templates/megalinter-template.yml
+        parameters:
+          displayName: "Run MegaLinter"
+          condition: succeeded()
+          # for main do not report results as there's no PR to report to
+          enableAzureReporter: false
+          agentPool:
+            name: $(poolName)
+            vmImage: $(vmImage)
+
   - stage: PR
     displayName: PR Build Process
-    # Run the PR build process only if the build is not scheduled and not the main branch
-    condition: and(eq(variables.isMain, false), eq(variables.isScheduled, false))
+    # Run the PR build process only if the build is not scheduled, not the main branch and not the pre-release branch
+    condition: and(eq(variables.isMain, false), eq(variables.isPreRelease, false), eq(variables.isScheduled, false))
     jobs:
       # Use the MegaLinter template for PR builds with Azure reporter enabled
       - template: .azdo/templates/megalinter-template.yml
