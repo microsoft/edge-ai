@@ -1,0 +1,67 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "basic-inference.fullname" . }}
+  labels:
+    {{- include "basic-inference.labels" . | nindent 4 }}
+  {{- if .Values.namespace }}
+  namespace: {{ .Values.namespace }}
+  {{- end }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "basic-inference.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "basic-inference.selectorLabels" . | nindent 8 }}
+    spec:
+      imagePullSecrets:
+        {{- toYaml .Values.imagePullSecrets | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: {{ .Values.image }}
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "basic-inference.fullname" . }}-config
+          env:
+            - name: SOURCE_TOPIC
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "basic-inference.fullname" . }}-config
+                  key: mqtt-source-topic
+            - name: SINK_TOPIC
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "basic-inference.fullname" . }}-config
+                  key: mqtt-sink-topic
+            - name: ENDPOINT_URI
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "basic-inference.fullname" . }}-config
+                  key: inference-url
+            - name: AIO_MQTT_USE_TLS
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "basic-inference.fullname" . }}-config
+                  key: mqtt-use-tls
+            - name: AIO_MQTT_CLIENT_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "basic-inference.fullname" . }}-config
+                  key: mqtt-client-id
+            - name: AIO_BROKER_HOSTNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "basic-inference.fullname" . }}-config
+                  key: mqtt-broker-hostname
+            - name: AIO_BROKER_TCP_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "basic-inference.fullname" . }}-config
+                  key: mqtt-broker-port
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}

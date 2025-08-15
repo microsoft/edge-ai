@@ -1,0 +1,22 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "basic-inference.fullname" . }}-config
+  labels:
+    {{- include "basic-inference.labels" . | nindent 4 }}
+  {{- if .Values.namespace }}
+  namespace: {{ .Values.namespace }}
+  {{- end }}
+data:
+  inference-url: {{ .Values.inference.url | quote }}
+  {{- if .Values.mqtt.enabled }}
+  mqtt-broker-hostname: inference-mosquitto
+  {{- else }}
+  mqtt-broker-hostname: {{ .Values.mqtt.broker.hostname | quote }}
+  {{- end }}
+  mqtt-broker-port: {{ .Values.mqtt.broker.tcpPort | quote }}
+  mqtt-use-tls: {{ .Values.mqtt.broker.useTls | quote }}
+  mqtt-client-id: {{ .Values.mqtt.client.id | quote }}
+  mqtt-source-topic: {{ .Values.mqtt.topics.source | quote }}
+  mqtt-sink-topic: {{ .Values.mqtt.topics.sink | quote }}

@@ -1,0 +1,72 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: e2e-test
+  labels:
+    test-type: e2e
+spec:
+  backoffLimit: 1
+  template:
+    metadata:
+      labels:
+        test-type: e2e
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: mqtt-e2e-tester
+          image: efrecon/mqtt-client:latest
+          command:
+            - sh
+            - -c
+            - |
+              set -e
+
+              echo "Starting E2E test for Basic Inference Pipeline..."
+
+              # Configuration
+              MQTT_BROKER="inference-mosquitto"
+              MQTT_PORT="1883"
+              INPUT_TOPIC="device/sensor/telemetry"
+              OUTPUT_TOPIC="inference/results"
+
+              # Wait for MQTT broker
+              echo "Waiting for MQTT broker..."
+              timeout=300
+              while ! nc -z $MQTT_BROKER $MQTT_PORT; do
+                if [ $timeout -le 0 ]; then
+                  echo "ERROR: MQTT broker not available"
+                  exit 1
+                fi
+                sleep 1
+                timeout=$((timeout - 1))
+              done
+              echo "MQTT broker is ready"
+
+              # Subscribe to output topic and publish test message
+              echo "Starting test..."
+              mosquitto_sub -h $MQTT_BROKER -p $MQTT_PORT -t "$OUTPUT_TOPIC" -C 1 -W 300 &
+              SUB_PID=$!
+
+              sleep 2
+
+              # Send test message
+              TEST_MESSAGE='{"id": 1, "timestamp": "'$(date -Iseconds)'", "data": {"value": 42}}'
+              echo "Publishing test message: $TEST_MESSAGE"
+              mosquitto_pub -h $MQTT_BROKER -p $MQTT_PORT -t "$INPUT_TOPIC" -m "$TEST_MESSAGE"
+
+              # Wait for result
+              wait $SUB_PID
+              if [ $? -eq 0 ]; then
+                echo "✅ E2E test PASSED: Inference pipeline is working"
+              else
+                echo "❌ E2E test FAILED: No response received"
+                exit 1
+              fi
+      resources:
+        requests:
+          cpu: 20m
+          memory: 64Mi
+        limits:
+          cpu: 20m
+          memory: 128Mi
