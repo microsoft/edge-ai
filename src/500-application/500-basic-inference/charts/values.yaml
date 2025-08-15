@@ -1,0 +1,65 @@
+---
+# Default values for basic-inference.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image: $IMAGE_NAME:$IMAGE_TAG
+
+imagePullPolicy: Always
+
+imagePullSecrets:
+  - name: cr-secret
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 50m
+    memory: 128Mi
+
+service:
+  type: ClusterIP
+  port: 80
+
+# Application-specific configuration
+inference:
+  # URL for the inference service endpoint - using httpbin for testing
+  url: "https://httpbin.org/post"
+
+# MQTT broker configuration
+mqtt:
+  # Deploy MQTT broker as part of this chart
+  enabled: true
+  broker:
+    hostname: "mosquitto-broker"
+    tcpPort: 1883
+    useTls: false
+  client:
+    id: "InferencePipeline"
+  # MQTT topics configuration
+  topics:
+    source: "device/sensor/telemetry"  # Topic to receive sensor data from
+    sink: "inference/results"          # Topic to publish inference results to
+  # Mosquitto broker configuration
+  mosquitto:
+    image:
+      repository: eclipse-mosquitto
+      tag: "2.0.18"
+      pullPolicy: IfNotPresent
+    resources:
+      limits:
+        cpu: 50m
+        memory: 128Mi
+      requests:
+        cpu: 20m
+        memory: 64Mi
+    persistence:
+      enabled: false
+    config: |
+      # Mosquitto configuration
+      listener 1883
+      allow_anonymous true
+      persistence false

@@ -1,0 +1,120 @@
+---
+{{- if .Values.mqtt.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "basic-inference.fullname" . }}-mosquitto-config
+  labels:
+    {{- include "basic-inference.labels" . | nindent 4 }}
+    app.kubernetes.io/component: mosquitto
+  {{- if .Values.namespace }}
+  namespace: {{ .Values.namespace }}
+  {{- end }}
+data:
+  mosquitto.conf: |
+{{ .Values.mqtt.mosquitto.config | indent 4 }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "basic-inference.fullname" . }}-mosquitto
+  labels:
+    {{- include "basic-inference.labels" . | nindent 4 }}
+    app.kubernetes.io/component: mosquitto
+  {{- if .Values.namespace }}
+  namespace: {{ .Values.namespace }}
+  {{- end }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "basic-inference.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: mosquitto
+  template:
+    metadata:
+      labels:
+        {{- include "basic-inference.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: mosquitto
+    spec:
+      containers:
+        - name: mosquitto
+          image: "{{ .Values.mqtt.mosquitto.image.repository }}:{{ .Values.mqtt.mosquitto.image.tag }}"
+          imagePullPolicy: {{ .Values.mqtt.mosquitto.image.pullPolicy }}
+          ports:
+            - name: mqtt
+              containerPort: {{ .Values.mqtt.broker.tcpPort }}
+              protocol: TCP
+          volumeMounts:
+            - name: config
+              mountPath: /mosquitto/config/mosquitto.conf
+              subPath: mosquitto.conf
+              readOnly: true
+            {{- if .Values.mqtt.mosquitto.persistence.enabled }}
+            - name: data
+              mountPath: /mosquitto/data
+            {{- end }}
+          resources:
+            {{- toYaml .Values.mqtt.mosquitto.resources | nindent 12 }}
+          livenessProbe:
+            tcpSocket:
+              port: mqtt
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            tcpSocket:
+              port: mqtt
+            initialDelaySeconds: 5
+            periodSeconds: 5
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "basic-inference.fullname" . }}-mosquitto-config
+        {{- if .Values.mqtt.mosquitto.persistence.enabled }}
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ include "basic-inference.fullname" . }}-mosquitto-data
+        {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: inference-mosquitto
+  labels:
+    {{- include "basic-inference.labels" . | nindent 4 }}
+    app.kubernetes.io/component: mosquitto
+  {{- if .Values.namespace }}
+  namespace: {{ .Values.namespace }}
+  {{- end }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.mqtt.broker.tcpPort }}
+      targetPort: mqtt
+      protocol: TCP
+      name: mqtt
+  selector:
+    {{- include "basic-inference.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: mosquitto
+{{- if .Values.mqtt.mosquitto.persistence.enabled }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "basic-inference.fullname" . }}-mosquitto-data
+  labels:
+    {{- include "basic-inference.labels" . | nindent 4 }}
+    app.kubernetes.io/component: mosquitto
+  {{- if .Values.namespace }}
+  namespace: {{ .Values.namespace }}
+  {{- end }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.mqtt.mosquitto.persistence.size }}
+  {{- if .Values.mqtt.mosquitto.persistence.storageClass }}
+  storageClassName: {{ .Values.mqtt.mosquitto.persistence.storageClass }}
+  {{- end }}
+{{- end }}
+{{- end }}
