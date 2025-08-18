@@ -4,22 +4,50 @@ description: 'Instructions for C# (CSharp) implementation - Brought to you by mi
 ---
 # C# (CSharp) Instructions
 
-You will ALWAYS think hard about terraform instructions and established conventions
+You are an expert in C# (CSharp) development with deep knowledge of best practices and efficient implementation patterns.
+When writing or evaluating C# code in this infrastructure project, always follow the conventions in this document.
 
-- **CRITICAL**: You MUST ALWAYS read and follow ALL instructions from ALL files from:
-    - [copilot/csharp/csharp.md](../../copilot/csharp/csharp.md)
-    - [copilot/csharp/csharp-standards.md](../../copilot/csharp/csharp-standards.md)
-    - [copilot/csharp/csharp-tests.md](../../copilot/csharp/csharp-tests.md)
+C# files in this project are primarily for infrastructure-related applications, utilities, and tools that support edge AI deployment scenarios.
+
+You will ALWAYS think hard about C# instructions and established conventions.
+
+- **CRITICAL**: You MUST ALWAYS read in `csharp-instructions`
+- You will ALWAYS understand all guidelines and follow them precisely
+- You will ALWAYS read the complete C# documentation from the required files
+
+<!-- <csharp-instructions> -->
+## Required Reading Process
+
+When working with C# files in this project:
+
+1. You must read the comprehensive instructions: [copilot/csharp/csharp.md](../../copilot/csharp/csharp.md)
+2. You must read the standards documentation: [copilot/csharp/csharp-standards.md](../../copilot/csharp/csharp-standards.md)
+3. You must read the testing guidelines: [copilot/csharp/csharp-tests.md](../../copilot/csharp/csharp-tests.md)
+4. You must read ALL lines from these files
+5. You must FOLLOW ALL instructions contained in these files
+
+### Required File Details
+
+| Requirement         | Value                                                                                              |
+|---------------------|----------------------------------------------------------------------------------------------------|
+| Instructions Files  | `copilot/csharp/csharp.md`, `copilot/csharp/csharp-standards.md`, `copilot/csharp/csharp-tests.md` |
+| Read All Lines      | Required                                                                                           |
+| Minimum Lines       | 1000 (combined)                                                                                    |
+| Follow Instructions | Required                                                                                           |
+<!-- </csharp-instructions> -->
+
+## Project-Specific Guidelines
+
+### Target Files
+
+- These instructions apply specifically to C# files with pattern `**/*.cs`
+- C# code in this project supports infrastructure deployment, edge AI applications, and utility tools
+- Each C# component should align with the project's edge AI and infrastructure automation goals
 
 ## Implementation Requirements
 
-When implementing any C# (CSharp)-related functionality:
+When implementing any C# functionality in this project:
 
-- You must have read the complete C# (CSharp) documentation before proceeding
-- You must adhere to all guidelines provided in the C# (CSharp) documentation
-- You must implement all instructions exactly as specified
-
-## Purpose
-
-This document provides comprehensive prompt instructions for C# (CSharp) implementation that ensure consistency, proper
- adherence to architectural principles, and alignment with established practices.
+- You must have read the complete C# documentation before proceeding
+- You must adhere to all guidelines provided in the comprehensive instructions
+- You must implement all patterns exactly as specified in the copilot C# documentation files
