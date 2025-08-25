@@ -40,6 +40,13 @@ variable "adr_schema_registry" {
   })
 }
 
+variable "adr_namespace" {
+  type = object({
+    id = string
+  })
+  description = "Azure Device Registry namespace to use with Azure IoT Operations. Otherwise, not configured."
+}
+
 variable "arc_connected_cluster" {
   type = object({
     name     = string

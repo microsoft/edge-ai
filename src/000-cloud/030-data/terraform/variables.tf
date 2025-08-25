@@ -9,6 +9,48 @@ variable "should_create_schema_registry" {
 }
 
 /*
+ * ADR Namespace
+ */
+
+variable "should_create_adr_namespace" {
+  type        = bool
+  description = "Whether to create an Azure Device Registry namespace."
+  default     = true
+}
+
+variable "adr_namespace_name" {
+  type        = string
+  description = "The name of the ADR namespace. Otherwise, 'adrns-{resource_prefix}-{environment}-{instance}'."
+  default     = null
+
+  validation {
+    condition     = var.adr_namespace_name == null || can(regex("^[a-z0-9][a-z0-9-]*[a-z0-9]$", var.adr_namespace_name))
+    error_message = "ADR namespace name must match pattern ^[a-z0-9][a-z0-9-]*[a-z0-9]$ and be 3-64 characters long."
+  }
+
+  validation {
+    condition     = var.adr_namespace_name == null || (length(var.adr_namespace_name) >= 3 && length(var.adr_namespace_name) <= 64)
+    error_message = "ADR namespace name must be between 3 and 64 characters long."
+  }
+}
+
+variable "adr_namespace_messaging_endpoints" {
+  type = map(object({
+    endpointType = string
+    address      = string
+    resourceId   = optional(string)
+  }))
+  description = "Dictionary of messaging endpoints for the ADR namespace."
+  default     = null
+}
+
+variable "adr_namespace_enable_identity" {
+  type        = bool
+  description = "Whether to enable system-assigned managed identity for the ADR namespace."
+  default     = true
+}
+
+/*
  * Storage Account - Optional
  */
 

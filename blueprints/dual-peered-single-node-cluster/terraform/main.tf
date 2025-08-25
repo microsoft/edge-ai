@@ -170,6 +170,7 @@ module "cluster_a_edge_iot_ops" {
   arc_connected_cluster = module.cluster_a_edge_cncf_cluster.arc_connected_cluster
   secret_sync_key_vault = module.cluster_a_cloud_security_identity.key_vault
   secret_sync_identity  = module.cluster_a_cloud_security_identity.secret_sync_identity
+  adr_namespace         = module.cluster_a_cloud_data.adr_namespace
 
   should_deploy_resource_sync_rules       = var.should_deploy_resource_sync_rules
   should_create_anonymous_broker_listener = var.should_create_anonymous_broker_listener
@@ -188,10 +189,11 @@ module "cluster_a_edge_assets" {
   location           = var.location
   resource_group     = module.cluster_a_cloud_resource_group.resource_group
   custom_location_id = module.cluster_a_edge_iot_ops.custom_location_id
+  adr_namespace      = module.cluster_a_cloud_data.adr_namespace
 
-  should_create_default_asset = var.should_enable_opc_ua_simulator
-  asset_endpoint_profiles     = var.asset_endpoint_profiles
-  assets                      = var.assets
+  should_create_default_namespaced_asset = var.should_enable_opc_ua_simulator
+  namespaced_devices                     = var.namespaced_devices
+  namespaced_assets                      = var.namespaced_assets
 }
 
 module "cluster_a_edge_observability" {
@@ -381,6 +383,7 @@ module "cluster_b_edge_iot_ops" {
   arc_connected_cluster = module.cluster_b_edge_cncf_cluster.arc_connected_cluster
   secret_sync_key_vault = module.cluster_b_cloud_security_identity.key_vault
   secret_sync_identity  = module.cluster_b_cloud_security_identity.secret_sync_identity
+  adr_namespace         = module.cluster_b_cloud_data.adr_namespace
 
   should_deploy_resource_sync_rules       = var.should_deploy_resource_sync_rules
   should_create_anonymous_broker_listener = var.should_create_anonymous_broker_listener
@@ -399,10 +402,11 @@ module "cluster_b_edge_assets" {
   location           = var.location
   resource_group     = module.cluster_b_cloud_resource_group.resource_group
   custom_location_id = module.cluster_b_edge_iot_ops.custom_location_id
+  adr_namespace      = module.cluster_b_cloud_data.adr_namespace
 
-  should_create_default_asset = var.should_enable_opc_ua_simulator
-  asset_endpoint_profiles     = var.asset_endpoint_profiles
-  assets                      = var.assets
+  should_create_default_namespaced_asset = var.should_enable_opc_ua_simulator
+  namespaced_devices                     = var.namespaced_devices
+  namespaced_assets                      = var.namespaced_assets
 }
 
 module "cluster_b_edge_observability" {

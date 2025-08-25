@@ -32,11 +32,12 @@ data "azapi_resource" "aio_custom_locations" {
 }
 
 data "azapi_resource" "aio_dataflow_profile" {
-  type      = "Microsoft.IoTOperations/instances/dataflowProfiles@2025-04-01"
+  type      = "Microsoft.IoTOperations/instances/dataflowProfiles@2025-07-01-preview"
   parent_id = data.azapi_resource.aio_instance.id
   name      = "default"
 
   response_export_values = ["name", "id"]
+
 }
 
 module "ci" {

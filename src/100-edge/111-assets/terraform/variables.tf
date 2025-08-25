@@ -1,7 +1,8 @@
 /**
  * # Variables for Kubernetes Assets
  *
- * This file defines variables specific to the Kubernetes assets component.
+ * This file defines variables specific to the Kubernetes assets component using
+ * the namespaced Device Registry model.
  */
 
 /*
@@ -19,7 +20,44 @@ variable "location" {
 }
 
 /*
- * Asset Configuration Variables - Optional
+ * Device Configuration Variables - Optional
+ */
+
+variable "namespaced_devices" {
+  type = list(object({
+    name    = string
+    enabled = optional(bool, true)
+    endpoints = object({
+      outbound = optional(object({
+        assigned = object({})
+      }), { assigned = {} })
+      inbound = map(object({
+        endpoint_type           = string
+        address                 = string
+        version                 = optional(string, null)
+        additionalConfiguration = optional(string)
+        authentication = object({
+          method = string
+          usernamePasswordCredentials = optional(object({
+            usernameSecretName = string
+            passwordSecretName = string
+          }))
+          x509Credentials = optional(object({
+            certificateSecretName = string
+          }))
+        })
+        trustSettings = optional(object({
+          trustList = string
+        }))
+      }))
+    })
+  }))
+  description = "List of namespaced devices to create. Otherwise, an empty list."
+  default     = []
+}
+
+/*
+ * Legacy Asset Configuration Variables - Optional
  */
 
 variable "asset_endpoint_profiles" {
@@ -66,12 +104,64 @@ variable "assets" {
 }
 
 /*
+ * Namespaced Asset Configuration Variables - Optional
+ */
+
+variable "namespaced_assets" {
+  type = list(object({
+    name         = string
+    display_name = optional(string)
+    device_ref = object({
+      device_name   = string
+      endpoint_name = string
+    })
+    description       = optional(string)
+    documentation_uri = optional(string)
+    enabled           = optional(bool, true)
+    hardware_revision = optional(string)
+    manufacturer      = optional(string)
+    manufacturer_uri  = optional(string)
+    model             = optional(string)
+    product_code      = optional(string)
+    serial_number     = optional(string)
+    software_revision = optional(string)
+    attributes        = optional(map(string), {})
+    datasets = optional(list(object({
+      name = string
+      data_points = list(object({
+        name                     = string
+        data_source              = string
+        data_point_configuration = optional(string)
+      }))
+      destinations = optional(list(object({
+        target = string
+        configuration = object({
+          topic  = optional(string)
+          retain = optional(string)
+          qos    = optional(string)
+        })
+      })), [])
+    })), [])
+    default_datasets_configuration = optional(string)
+    default_events_configuration   = optional(string)
+  }))
+  description = "List of namespaced assets to create. Otherwise, an empty list."
+  default     = []
+}
+
+/*
  * Feature Flag Variables - Optional
  */
 
 variable "should_create_default_asset" {
   type        = bool
-  description = "Whether to create a default asset. Otherwise, false."
+  description = "Whether to create a default asset and endpoint profile. Otherwise, false."
+  default     = false
+}
+
+variable "should_create_default_namespaced_asset" {
+  type        = bool
+  description = "Whether to create a default namespaced asset and device. Otherwise, false."
   default     = false
 }
 

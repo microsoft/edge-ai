@@ -122,7 +122,9 @@ module "iot_ops_instance" {
   trust_source                            = local.trust_source
   operations_config                       = var.operations_config
   schema_registry_id                      = var.adr_schema_registry.id
+  adr_namespace_id                        = try(var.adr_namespace.id, null)
   mqtt_broker_config                      = var.mqtt_broker_config
+  mqtt_broker_persistence_config          = var.mqtt_broker_persistence_config
   dataflow_instance_count                 = var.dataflow_instance_count
   should_deploy_resource_sync_rules       = var.should_deploy_resource_sync_rules
   customer_managed_trust_settings         = local.customer_managed_trust_settings
