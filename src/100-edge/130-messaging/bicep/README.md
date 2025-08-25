@@ -59,10 +59,10 @@ Provisions the ARM based data flow endpoint and data flow for Event Hub, require
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|aioInstanceResource|`Microsoft.IoTOperations/instances`|2025-04-01|
-|aioDataflowProfileResource|`Microsoft.IoTOperations/instances/dataflowProfiles`|2025-04-01|
-|dataflowEndpointToEventHub|`Microsoft.IoTOperations/instances/dataflowEndpoints`|2025-04-01|
-|dataflowToEventHub|`Microsoft.IoTOperations/instances/dataflowProfiles/dataflows`|2025-04-01|
+|aioInstanceResource|`Microsoft.IoTOperations/instances`|2025-07-01-preview|
+|aioDataflowProfileResource|`Microsoft.IoTOperations/instances/dataflowProfiles`|2025-07-01-preview|
+|dataflowEndpointToEventHub|`Microsoft.IoTOperations/instances/dataflowEndpoints`|2025-07-01-preview|
+|dataflowToEventHub|`Microsoft.IoTOperations/instances/dataflowProfiles/dataflows`|2025-07-01-preview|
 
 ### eventGridDataflow
 
@@ -85,10 +85,10 @@ Provisions the ARM based data flow endpoint and data flow for Event Grid, requir
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|aioInstanceResource|`Microsoft.IoTOperations/instances`|2025-04-01|
-|aioDataflowProfileResource|`Microsoft.IoTOperations/instances/dataflowProfiles`|2025-04-01|
-|dataflowEndpointToEventGrid|`Microsoft.IoTOperations/instances/dataflowEndpoints`|2025-04-01|
-|dataflowToEventGrid|`Microsoft.IoTOperations/instances/dataflowProfiles/dataflows`|2025-04-01|
+|aioInstanceResource|`Microsoft.IoTOperations/instances`|2025-07-01-preview|
+|aioDataflowProfileResource|`Microsoft.IoTOperations/instances/dataflowProfiles`|2025-07-01-preview|
+|dataflowEndpointToEventGrid|`Microsoft.IoTOperations/instances/dataflowEndpoints`|2025-07-01-preview|
+|dataflowToEventGrid|`Microsoft.IoTOperations/instances/dataflowProfiles/dataflows`|2025-07-01-preview|
 
 ## User Defined Types
 

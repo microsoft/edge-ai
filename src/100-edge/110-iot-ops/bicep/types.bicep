@@ -26,7 +26,7 @@ type SecretStoreExtension = {
 @export()
 var secretStoreExtensionDefaults = {
   release: {
-    version: '0.9.4'
+    version: '0.10.0'
     train: 'preview'
   }
 }
@@ -67,7 +67,7 @@ type ContainerStorageExtension = {
 @export()
 var containerStorageExtensionDefaults = {
   release: {
-    version: '2.5.3'
+    version: '2.6.0'
     train: 'stable'
   }
   settings: {
@@ -90,7 +90,7 @@ type AioPlatformExtension = {
 @export()
 var aioPlatformExtensionDefaults = {
   release: {
-    version: '0.7.21'
+    version: '0.7.25'
     train: 'preview'
   }
   settings: {
@@ -119,8 +119,8 @@ type AioExtension = {
 @export()
 var aioExtensionDefaults = {
   release: {
-    version: '1.1.59'
-    train: 'integration'
+    version: '1.2.36'
+    train: 'preview'
   }
   settings: {
     namespace: 'azure-iot-operations'
@@ -149,6 +149,148 @@ type InstanceFeatureMode = 'Stable' | 'Preview' | 'Disabled'
 
 @description('The setting value of the AIO instance feature. Either "Enabled" or "Disabled".')
 type InstanceFeatureSettingValue = 'Enabled' | 'Disabled'
+
+@export()
+@description('Broker persistence configuration for disk-backed message storage.')
+type BrokerPersistence = {
+  @description('Whether persistence is enabled.')
+  enabled: bool
+
+  @description('Maximum size of the message buffer on disk (e.g., "500M", "1G").')
+  maxSize: string?
+
+  @description('Encryption configuration for the persistence database.')
+  encryption: {
+    @description('Whether encryption is enabled for the persistence database. Either "Enabled" or "Disabled".')
+    mode: ('Enabled' | 'Disabled')
+  }?
+
+  @description('Dynamic settings for MQTTv5 user property-based persistence control.')
+  dynamicSettings: {
+    @description('The user property key to enable persistence.')
+    userPropertyKey: string?
+
+    @description('The user property value to enable persistence.')
+    userPropertyValue: string?
+  }?
+
+  @description('Controls which retained messages should be persisted to disk.')
+  retain: {
+    @description('Retention policy mode. Either "All", "None", or "Custom".')
+    mode: ('All' | 'None' | 'Custom')
+
+    @description('Custom retention settings (required when mode is Custom).')
+    retainSettings: {
+      @description('List of topics for custom retention (supports wildcards).')
+      topics: string[]?
+
+      @description('Dynamic retention control configuration.')
+      dynamic: {
+        @description('Whether dynamic retention control is enabled. Either "Enabled" or "Disabled".')
+        mode: ('Enabled' | 'Disabled')
+      }?
+    }?
+  }?
+
+  @description('Controls which state store keys should be persisted to disk.')
+  stateStore: {
+    @description('State store policy mode. Either "All", "None", or "Custom".')
+    mode: ('All' | 'None' | 'Custom')
+
+    @description('Custom state store settings (required when mode is Custom).')
+    stateStoreSettings: {
+      @description('List of state store resources to persist.')
+      stateStoreResources: {
+        @description('The key type for persistence. Either "Pattern", "String", or "Binary".')
+        keyType: ('Pattern' | 'String' | 'Binary')
+
+        @description('List of keys to persist to disk.')
+        keys: string[]
+      }[]?
+
+      @description('Dynamic state store control configuration.')
+      dynamic: {
+        @description('Whether dynamic state store control is enabled. Either "Enabled" or "Disabled".')
+        mode: ('Enabled' | 'Disabled')
+      }?
+    }?
+  }?
+
+  @description('Controls which subscriber queues should be persisted to disk.')
+  subscriberQueue: {
+    @description('Subscriber queue policy mode. Either "All", "None", or "Custom".')
+    mode: ('All' | 'None' | 'Custom')
+
+    @description('Custom subscriber queue settings (required when mode is Custom).')
+    subscriberQueueSettings: {
+      @description('List of subscriber client IDs (supports wildcards).')
+      subscriberClientIds: string[]?
+
+      @description('List of topics for subscriber persistence (supports wildcards).')
+      topics: string[]?
+
+      @description('Dynamic subscriber queue control configuration.')
+      dynamic: {
+        @description('Whether dynamic subscriber queue control is enabled. Either "Enabled" or "Disabled".')
+        mode: ('Enabled' | 'Disabled')
+      }?
+    }?
+  }?
+
+  @description('Persistent volume claim specification for storage.')
+  persistentVolumeClaimSpec: {
+    @description('Storage class name for the persistent volume.')
+    storageClassName: string?
+
+    @description('Access modes for the persistent volume.')
+    accessModes: string[]?
+
+    @description('Volume mode (Filesystem or Block).')
+    volumeMode: string?
+
+    @description('Volume name.')
+    volumeName: string?
+
+    @description('Resource requirements for the persistent volume.')
+    resources: {
+      @description('Resource requests.')
+      requests: object?
+
+      @description('Resource limits.')
+      limits: object?
+    }?
+
+    @description('Data source for the persistent volume.')
+    dataSource: {
+      @description('API group of the data source.')
+      apiGroup: string?
+
+      @description('Kind of the data source.')
+      kind: string
+
+      @description('Name of the data source.')
+      name: string
+    }?
+
+    @description('Label selector for persistent volume selection.')
+    selector: {
+      @description('Label match requirements.')
+      matchLabels: object?
+
+      @description('Expression-based match requirements.')
+      matchExpressions: {
+        @description('Label key.')
+        key: string
+
+        @description('Selection operator for persistent volume label selectors.')
+        operator: ('In' | 'NotIn' | 'Exists' | 'DoesNotExist')
+
+        @description('Label values.')
+        values: string[]?
+      }[]?
+    }?
+  }?
+}
 
 @export()
 @description('The settings for the Azure IoT Operations MQ Broker.')
@@ -182,6 +324,9 @@ type AioMqBroker = {
 
   @description('The service type for the broker (ClusterIP, LoadBalancer, NodePort).')
   serviceType: string
+
+  @description('Broker persistence configuration for disk-backed message storage.')
+  persistence: BrokerPersistence?
 }
 
 @export()

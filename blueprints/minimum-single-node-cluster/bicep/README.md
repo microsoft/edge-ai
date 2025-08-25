@@ -134,6 +134,10 @@ Creates storage resources including Azure Storage Account and Schema Registry fo
 |schemaContainerName|The name for the Blob Container for schemas.|`string`|schemas|no|
 |schemaRegistryName|The name for the ADR Schema Registry.|`string`|[format('sr-{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]|no|
 |schemaRegistryNamespace|The ADLS Gen2 namespace for the ADR Schema Registry.|`string`|[format('srns-{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]|no|
+|shouldCreateAdrNamespace|Whether to create the ADR Namespace.|`bool`|True|no|
+|adrNamespaceName|The name for the ADR Namespace.|`string`|[format('adrns-{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]|no|
+|adrNamespaceMessagingEndpoints|Dictionary of messaging endpoints for the ADR namespace.|`[_1.AdrNamespaceMessagingEndpoints](#user-defined-types)`|n/a|no|
+|adrNamespaceEnableIdentity|Whether to enable system-assigned managed identity for the ADR namespace.|`bool`|True|no|
 |telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|False|no|
 
 #### Resources for cloudData
@@ -143,6 +147,7 @@ Creates storage resources including Azure Storage Account and Schema Registry fo
 |storageAccount|`Microsoft.Resources/deployments`|2022-09-01|
 |schemaRegistry|`Microsoft.Resources/deployments`|2022-09-01|
 |schemaRegistryRoleAssignment|`Microsoft.Resources/deployments`|2022-09-01|
+|adrNamespace|`Microsoft.Resources/deployments`|2022-09-01|
 
 #### Outputs for cloudData
 
@@ -153,6 +158,9 @@ Creates storage resources including Azure Storage Account and Schema Registry fo
 |storageAccountName|`string`|The Storage Account Name.|
 |storageAccountId|`string`|The Storage Account ID.|
 |schemaContainerName|`string`|The Schema Container Name.|
+|adrNamespaceName|`string`|The ADR Namespace Name.|
+|adrNamespaceId|`string`|The ADR Namespace ID.|
+|adrNamespace|`object`|The complete ADR namespace resource information.|
 
 ### cloudNetworking
 
@@ -237,6 +245,7 @@ The scripts handle primary and secondary node(s) setup, cluster administration, 
 |shouldAddCurrentUserClusterAdmin|Whether to add the current user as a cluster admin.|`bool`|True|no|
 |shouldEnableArcAutoUpgrade|Whether to enable auto-upgrade for Azure Arc agents.|`bool`|[not(equals(parameters('common').environment, 'prod'))]|no|
 |clusterAdminOid|The Object ID that will be given cluster-admin permissions.|`string`|n/a|no|
+|clusterAdminUpn|The User Principal Name that will be given cluster-admin permissions.|`string`|n/a|no|
 |clusterNodeVirtualMachineNames|The node virtual machines names.|`array`|n/a|no|
 |clusterServerVirtualMachineName|The server virtual machines name.|`string`|n/a|no|
 |clusterServerHostMachineUsername|Username used for the host machines that will be given kube-config settings on setup. (Otherwise, resource_prefix if it exists as a user)|`string`|[parameters('common').resourcePrefix]|no|
@@ -299,6 +308,7 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 |aioMqBrokerConfig|The settings for the Azure IoT Operations MQ Broker.|`[_1.AioMqBroker](#user-defined-types)`|[variables('_1.aioMqBrokerDefaults')]|no|
 |brokerListenerAnonymousConfig|Configuration for the insecure anonymous AIO MQ Broker Listener.|`[_1.AioMqBrokerAnonymous](#user-defined-types)`|[variables('_1.aioMqBrokerAnonymousDefaults')]|no|
 |schemaRegistryName|The resource name for the ADR Schema Registry for Azure IoT Operations.|`string`|n/a|yes|
+|adrNamespaceName|The resource name for the ADR Namespace for Azure IoT Operations.|`string`|n/a|no|
 |shouldDeployAio|Whether to deploy an Azure IoT Operations Instance and all of its required components into the connected cluster.|`bool`|True|no|
 |shouldDeployResourceSyncRules|Whether or not to deploy the Custom Locations Resource Sync Rules for the Azure IoT Operations resources.|`bool`|True|no|
 |shouldCreateAnonymousBrokerListener|Whether to enable an insecure anonymous AIO MQ Broker Listener. (Should only be used for dev or test environments)|`bool`|False|no|
@@ -327,6 +337,7 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 | :--- | :--- | :--- |
 |deployIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2023-01-31|
 |sseIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2023-01-31|
+|adrNamespace|`Microsoft.DeviceRegistry/namespaces`|2025-07-01-preview|
 |deployArcK8sRoleAssignments|`Microsoft.Resources/deployments`|2022-09-01|
 |deployKeyVaultRoleAssignments|`Microsoft.Resources/deployments`|2022-09-01|
 |sseKeyVaultRoleAssignments|`Microsoft.Resources/deployments`|2022-09-01|

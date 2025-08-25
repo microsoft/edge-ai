@@ -2,6 +2,7 @@
 adal
 adls
 adminconsent
+adrns
 afds
 agic
 aiops

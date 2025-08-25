@@ -62,6 +62,9 @@ param brokerListenerAnonymousConfig types.AioMqBrokerAnonymous = types.aioMqBrok
 @description('The resource name for the ADR Schema Registry for Azure IoT Operations.')
 param schemaRegistryName string
 
+@description('The resource name for the ADR Namespace for Azure IoT Operations.')
+param adrNamespaceName string?
+
 @description('Whether to deploy an Azure IoT Operations Instance and all of its required components into the connected cluster.')
 param shouldDeployAio bool = true
 
@@ -169,6 +172,10 @@ resource deployIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-0
 
 resource sseIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' existing = {
   name: sseIdentityName
+}
+
+resource adrNamespace 'Microsoft.DeviceRegistry/namespaces@2025-07-01-preview' existing = if (!empty(adrNamespaceName)) {
+  name: adrNamespaceName!
 }
 
 /*
@@ -290,6 +297,7 @@ module iotOpsInstance 'modules/iot-ops-instance.bicep' = if (shouldDeployAio) {
     common: common
     customLocationName: customLocationName
     schemaRegistryName: schemaRegistryName
+    adrNamespaceId: adrNamespace.?id
     secretStoreExtensionId: iotOpsInit.outputs.secretStoreExtensionId
     shouldCreateAnonymousBrokerListener: shouldCreateAnonymousBrokerListener
     shouldDeployResourceSyncRules: shouldDeployResourceSyncRules
@@ -364,6 +372,7 @@ module opcUaSimulator 'modules/opc-ua-simulator-asset.bicep' = if (shouldEnableO
   params: {
     common: common
     customLocationId: iotOpsInstance.outputs.customLocationId
+    adrNamespaceId: adrNamespace.id
   }
 }
 
