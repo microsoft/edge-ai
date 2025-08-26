@@ -262,10 +262,6 @@ Bicep provides an alternative Infrastructure as Code (IaC) approach that's nativ
    ```sh
    # Deploy using the Azure CLI at the subscription level, keep deployment_name less than 8 characters:
    az deployment sub create --name {deployment_name} --location {location} --parameters ./main.bicepparam
-
-   # Deploy using the Azure CLI at the resource group level, keep deployment_name less than 8 characters:
-   RG_NAME="rg-{resource_prefix}-{environment}-{instance}"
-   az deployment group create -g $RG_NAME --name {deployment_name} --parameters ./main.bicepparam
    ```
 
    > **Note**: When deploying with a `customLocationsOid`, ensure the CUSTOM_LOCATIONS_OID environment variable is set in your current shell session before running the deployment command.

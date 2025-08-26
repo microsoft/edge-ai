@@ -28,6 +28,7 @@ Deploys Azure IoT Operations on an existing Arc-enabled Kubernetes cluster witho
 |aioInstanceName|The name for the Azure IoT Operations Instance resource.|`string`|[format('{0}-ops-instance', parameters('arcConnectedClusterName'))]|no|
 |arcConnectedClusterName|The resource name for the Arc-enabled Kubernetes cluster.|`string`|[format('arck-{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]|no|
 |schemaRegistryName|The resource name for the Azure Data Registry Schema Registry for Azure IoT Operations.|`string`|[format('sr-{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]|no|
+|adrNamespaceName|The resource name for the ADR Namespace for Azure IoT Operations. Optional parameter for referencing an existing ADR namespace.|`string`|n/a|no|
 |shouldDeployAio|Whether to deploy Azure IoT Operations. (For debugging)|`bool`|`true`|no|
 |shouldCreateAnonymousBrokerListener|Whether to enable an insecure anonymous Azure IoT Operations MQ Broker Listener. Should only be used for dev or test environments.|`bool`|`false`|no|
 |shouldDeployResourceSyncRules|Whether to deploy Custom Locations Resource Sync Rules for the Azure IoT Operations resources.|`bool`|`true`|no|
@@ -69,6 +70,7 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 |aioMqBrokerConfig|The settings for the Azure IoT Operations MQ Broker.|`[_1.AioMqBroker](#user-defined-types)`|[variables('_1.aioMqBrokerDefaults')]|no|
 |brokerListenerAnonymousConfig|Configuration for the insecure anonymous AIO MQ Broker Listener.|`[_1.AioMqBrokerAnonymous](#user-defined-types)`|[variables('_1.aioMqBrokerAnonymousDefaults')]|no|
 |schemaRegistryName|The resource name for the ADR Schema Registry for Azure IoT Operations.|`string`|n/a|yes|
+|adrNamespaceName|The resource name for the ADR Namespace for Azure IoT Operations.|`string`|n/a|no|
 |shouldDeployAio|Whether to deploy an Azure IoT Operations Instance and all of its required components into the connected cluster.|`bool`|True|no|
 |shouldDeployResourceSyncRules|Whether or not to deploy the Custom Locations Resource Sync Rules for the Azure IoT Operations resources.|`bool`|True|no|
 |shouldCreateAnonymousBrokerListener|Whether to enable an insecure anonymous AIO MQ Broker Listener. (Should only be used for dev or test environments)|`bool`|False|no|
@@ -97,6 +99,7 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 | :--- | :--- | :--- |
 |deployIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2023-01-31|
 |sseIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2023-01-31|
+|adrNamespace|`Microsoft.DeviceRegistry/namespaces`|2025-07-01-preview|
 |deployArcK8sRoleAssignments|`Microsoft.Resources/deployments`|2022-09-01|
 |deployKeyVaultRoleAssignments|`Microsoft.Resources/deployments`|2022-09-01|
 |sseKeyVaultRoleAssignments|`Microsoft.Resources/deployments`|2022-09-01|
@@ -179,6 +182,7 @@ The settings for the Azure IoT Operations MQ Broker.
 |backendPartitions|`int`|The number of partitions for the backend of the broker.|
 |memoryProfile|`string`|The memory profile for the broker (Low, Medium, High).|
 |serviceType|`string`|The service type for the broker (ClusterIP, LoadBalancer, NodePort).|
+|persistence|`[_1.BrokerPersistence](#user-defined-types)`|Broker persistence configuration for disk-backed message storage.|
 
 ### `_1.AioMqBrokerAnonymous`
 
@@ -198,6 +202,21 @@ The settings for the Azure IoT Operations Platform Extension.
 | :--- | :--- | :--- |
 |release|`[_1.Release](#user-defined-types)`|The common settings for the extension.|
 |settings|`object`||
+
+### `_1.BrokerPersistence`
+
+Broker persistence configuration for disk-backed message storage.
+
+|Property|Type|Description|
+| :--- | :--- | :--- |
+|enabled|`bool`|Whether persistence is enabled.|
+|maxSize|`string`|Maximum size of the message buffer on disk (e.g., "500M", "1G").|
+|encryption|`object`|Encryption configuration for the persistence database.|
+|dynamicSettings|`object`|Dynamic settings for MQTTv5 user property-based persistence control.|
+|retain|`object`|Controls which retained messages should be persisted to disk.|
+|stateStore|`object`|Controls which state store keys should be persisted to disk.|
+|subscriberQueue|`object`|Controls which subscriber queues should be persisted to disk.|
+|persistentVolumeClaimSpec|`object`|Persistent volume claim specification for storage.|
 
 ### `_1.ContainerStorageExtension`
 

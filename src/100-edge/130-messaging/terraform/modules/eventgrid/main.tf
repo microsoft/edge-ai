@@ -5,7 +5,7 @@
  */
 
 resource "azapi_resource" "dataflow_endpoint_to_eventgrid" {
-  type      = "Microsoft.IoTOperations/instances/dataflowEndpoints@2024-11-01"
+  type      = "Microsoft.IoTOperations/instances/dataflowEndpoints@2025-07-01-preview"
   name      = "dfe-eg-${var.resource_prefix}-${var.environment}-sample-${var.instance}"
   parent_id = var.aio_instance.id
 
@@ -31,10 +31,12 @@ resource "azapi_resource" "dataflow_endpoint_to_eventgrid" {
       }
     }
   }
+
+  schema_validation_enabled = false # Disable schema validation for azapi_resource for 2025-07-01-preview until azapi provider supports it
 }
 
 resource "azapi_resource" "dataflow_to_eventgrid" {
-  type      = "Microsoft.IoTOperations/instances/dataflowProfiles/dataflows@2024-11-01"
+  type      = "Microsoft.IoTOperations/instances/dataflowProfiles/dataflows@2025-07-01-preview"
   name      = "df-eg-${var.resource_prefix}-${var.environment}-passthrough-${var.instance}"
   parent_id = var.aio_dataflow_profile.id
 
@@ -78,4 +80,6 @@ resource "azapi_resource" "dataflow_to_eventgrid" {
       ]
     }
   }
+
+  schema_validation_enabled = false # Disable schema validation for azapi_resource for 2025-07-01-preview until azapi provider supports it
 }

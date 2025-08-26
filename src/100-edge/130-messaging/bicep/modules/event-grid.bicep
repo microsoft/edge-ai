@@ -36,16 +36,16 @@ param customLocationId string
   Resources
 */
 
-resource aioInstanceResource 'Microsoft.IoTOperations/instances@2025-04-01' existing = {
+resource aioInstanceResource 'Microsoft.IoTOperations/instances@2025-07-01-preview' existing = {
   name: aioInstanceName
 }
 
-resource aioDataflowProfileResource 'Microsoft.IoTOperations/instances/dataflowProfiles@2025-04-01' existing = {
+resource aioDataflowProfileResource 'Microsoft.IoTOperations/instances/dataflowProfiles@2025-07-01-preview' existing = {
   parent: aioInstanceResource
   name: aioDataflowProfileName
 }
 
-resource dataflowEndpointToEventGrid 'Microsoft.IoTOperations/instances/dataflowEndpoints@2025-04-01' = {
+resource dataflowEndpointToEventGrid 'Microsoft.IoTOperations/instances/dataflowEndpoints@2025-07-01-preview' = {
   name: 'dfe-eg-${common.resourcePrefix}-${common.environment}-sample-${common.instance}'
   parent: aioInstanceResource
   extendedLocation: {
@@ -70,7 +70,7 @@ resource dataflowEndpointToEventGrid 'Microsoft.IoTOperations/instances/dataflow
   }
 }
 
-resource dataflowToEventGrid 'Microsoft.IoTOperations/instances/dataflowProfiles/dataflows@2025-04-01' = {
+resource dataflowToEventGrid 'Microsoft.IoTOperations/instances/dataflowProfiles/dataflows@2025-07-01-preview' = {
   parent: aioDataflowProfileResource
   name: 'df-eg-${common.resourcePrefix}-${common.environment}-passthrough-${common.instance}'
   extendedLocation: {

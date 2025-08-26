@@ -53,6 +53,9 @@ param trustIssuerSettings types.TrustSettingsConfig?
 @description('The resource name for the ADR Schema Registry for Azure IoT Operations.')
 param schemaRegistryName string
 
+@description('The resource ID for the ADR Namespace for Azure IoT Operations.')
+param adrNamespaceId string?
+
 @description('Whether or not to enable the Open Telemetry Collector for Azure IoT Operations.')
 param shouldEnableOtelCollector bool
 
@@ -224,7 +227,7 @@ resource adrSyncRule 'Microsoft.ExtendedLocation/customLocations/resourceSyncRul
   ]
 }
 
-resource aioInstance 'Microsoft.IoTOperations/instances@2025-04-01' = {
+resource aioInstance 'Microsoft.IoTOperations/instances@2025-07-01-preview' = {
   name: aioInstanceName
   location: common.location
   extendedLocation: {
@@ -244,6 +247,13 @@ resource aioInstance 'Microsoft.IoTOperations/instances@2025-04-01' = {
         resourceId: schemaRegistry.id
       }
     },
+    adrNamespaceId == null
+      ? {}
+      : {
+          adrNamespaceRef: {
+            resourceId: adrNamespaceId
+          }
+        },
     aioFeatures == null
       ? {}
       : {
@@ -252,33 +262,40 @@ resource aioInstance 'Microsoft.IoTOperations/instances@2025-04-01' = {
   )
 }
 
-resource broker 'Microsoft.IoTOperations/instances/brokers@2025-04-01' = {
+resource broker 'Microsoft.IoTOperations/instances/brokers@2025-07-01-preview' = {
   parent: aioInstance
   name: 'default'
   extendedLocation: {
     name: customLocation.id
     type: 'CustomLocation'
   }
-  properties: {
-    memoryProfile: aioMqBrokerConfig.memoryProfile
-    generateResourceLimits: {
-      cpu: 'Disabled'
-    }
-    cardinality: {
-      backendChain: {
-        partitions: aioMqBrokerConfig.backendPartitions
-        workers: aioMqBrokerConfig.backendWorkers
-        redundancyFactor: aioMqBrokerConfig.backendRedundancyFactor
+  properties: union(
+    {
+      memoryProfile: aioMqBrokerConfig.memoryProfile
+      generateResourceLimits: {
+        cpu: 'Disabled'
       }
-      frontend: {
-        replicas: aioMqBrokerConfig.frontendReplicas
-        workers: aioMqBrokerConfig.frontendWorkers
+      cardinality: {
+        backendChain: {
+          partitions: aioMqBrokerConfig.backendPartitions
+          workers: aioMqBrokerConfig.backendWorkers
+          redundancyFactor: aioMqBrokerConfig.backendRedundancyFactor
+        }
+        frontend: {
+          replicas: aioMqBrokerConfig.frontendReplicas
+          workers: aioMqBrokerConfig.frontendWorkers
+        }
       }
-    }
-  }
+    },
+    aioMqBrokerConfig.?persistence != null
+      ? {
+          persistence: aioMqBrokerConfig.persistence!
+        }
+      : {}
+  )
 }
 
-resource brokerAuthn 'Microsoft.IoTOperations/instances/brokers/authentications@2025-04-01' = {
+resource brokerAuthn 'Microsoft.IoTOperations/instances/brokers/authentications@2025-07-01-preview' = {
   parent: broker
   name: 'default'
   extendedLocation: {
@@ -297,7 +314,7 @@ resource brokerAuthn 'Microsoft.IoTOperations/instances/brokers/authentications@
   }
 }
 
-resource brokerListener 'Microsoft.IoTOperations/instances/brokers/listeners@2025-04-01' = {
+resource brokerListener 'Microsoft.IoTOperations/instances/brokers/listeners@2025-07-01-preview' = {
   parent: broker
   name: 'default'
   extendedLocation: {
@@ -326,7 +343,7 @@ resource brokerListener 'Microsoft.IoTOperations/instances/brokers/listeners@202
   }
 }
 
-resource brokerListenerAnonymous 'Microsoft.IoTOperations/instances/brokers/listeners@2025-04-01' = if (shouldCreateAnonymousBrokerListener) {
+resource brokerListenerAnonymous 'Microsoft.IoTOperations/instances/brokers/listeners@2025-07-01-preview' = if (shouldCreateAnonymousBrokerListener) {
   parent: broker
   name: 'default-anon'
   extendedLocation: {
@@ -348,7 +365,7 @@ resource brokerListenerAnonymous 'Microsoft.IoTOperations/instances/brokers/list
   ]
 }
 
-resource dataFlowProfile 'Microsoft.IoTOperations/instances/dataflowProfiles@2025-04-01' = {
+resource dataFlowProfile 'Microsoft.IoTOperations/instances/dataflowProfiles@2025-07-01-preview' = {
   parent: aioInstance
   name: 'default'
   extendedLocation: {
@@ -360,7 +377,7 @@ resource dataFlowProfile 'Microsoft.IoTOperations/instances/dataflowProfiles@202
   }
 }
 
-resource dataFlowEndpoint 'Microsoft.IoTOperations/instances/dataflowEndpoints@2025-04-01' = {
+resource dataFlowEndpoint 'Microsoft.IoTOperations/instances/dataflowEndpoints@2025-07-01-preview' = {
   parent: aioInstance
   name: 'default'
   extendedLocation: {

@@ -37,6 +37,18 @@ module "schema_registry" {
   storage_account = module.storage_account.storage_account
 }
 
+module "adr_namespace" {
+  count = var.should_create_adr_namespace ? 1 : 0
+
+  source = "./modules/adr-namespace"
+
+  location                        = var.location
+  resource_group                  = var.resource_group
+  adr_namespace_name              = coalesce(var.adr_namespace_name, "adrns-${var.resource_prefix}-${var.environment}-${var.instance}")
+  messaging_endpoints             = var.adr_namespace_messaging_endpoints
+  enable_system_assigned_identity = var.adr_namespace_enable_identity
+}
+
 module "data_lake" {
   count = var.should_create_data_lake ? 1 : 0
 

@@ -25,6 +25,7 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 |aioMqBrokerConfig|The settings for the Azure IoT Operations MQ Broker.|`[_1.AioMqBroker](#user-defined-types)`|[variables('_1.aioMqBrokerDefaults')]|no|
 |brokerListenerAnonymousConfig|Configuration for the insecure anonymous AIO MQ Broker Listener.|`[_1.AioMqBrokerAnonymous](#user-defined-types)`|[variables('_1.aioMqBrokerAnonymousDefaults')]|no|
 |schemaRegistryName|The resource name for the ADR Schema Registry for Azure IoT Operations.|`string`|n/a|yes|
+|adrNamespaceName|The resource name for the ADR Namespace for Azure IoT Operations.|`string`|n/a|no|
 |shouldDeployAio|Whether to deploy an Azure IoT Operations Instance and all of its required components into the connected cluster.|`bool`|`true`|no|
 |shouldDeployResourceSyncRules|Whether or not to deploy the Custom Locations Resource Sync Rules for the Azure IoT Operations resources.|`bool`|`true`|no|
 |shouldCreateAnonymousBrokerListener|Whether to enable an insecure anonymous AIO MQ Broker Listener. (Should only be used for dev or test environments)|`bool`|`false`|no|
@@ -53,6 +54,7 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 | :--- | :--- | :--- |
 |deployIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2023-01-31|
 |sseIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2023-01-31|
+|adrNamespace|`Microsoft.DeviceRegistry/namespaces`|2025-07-01-preview|
 |deployArcK8sRoleAssignments|`Microsoft.Resources/deployments`|2022-09-01|
 |deployKeyVaultRoleAssignments|`Microsoft.Resources/deployments`|2022-09-01|
 |sseKeyVaultRoleAssignments|`Microsoft.Resources/deployments`|2022-09-01|
@@ -283,6 +285,7 @@ Deploys Azure IoT Operations instance, broker, authentication, listeners, and da
 |trustSource|The source for trust for Azure IoT Operations.|`[_1.TrustSource](#user-defined-types)`|n/a|yes|
 |trustIssuerSettings|The trust settings for Azure IoT Operations.|`[_1.TrustSettingsConfig](#user-defined-types)`|n/a|no|
 |schemaRegistryName|The resource name for the ADR Schema Registry for Azure IoT Operations.|`string`|n/a|yes|
+|adrNamespaceId|The resource ID for the ADR Namespace for Azure IoT Operations.|`string`|n/a|no|
 |shouldEnableOtelCollector|Whether or not to enable the Open Telemetry Collector for Azure IoT Operations.|`bool`|n/a|yes|
 |brokerListenerAnonymousConfig|Configuration for the insecure anonymous AIO MQ Broker Listener.|`[_1.AioMqBrokerAnonymous](#user-defined-types)`|n/a|yes|
 |aioMqBrokerConfig|The settings for the Azure IoT Operations MQ Broker.|`[_1.AioMqBroker](#user-defined-types)`|n/a|yes|
@@ -302,13 +305,13 @@ Deploys Azure IoT Operations instance, broker, authentication, listeners, and da
 |customLocation|`Microsoft.ExtendedLocation/customLocations`|2021-08-31-preview|
 |aioSyncRule|`Microsoft.ExtendedLocation/customLocations/resourceSyncRules`|2021-08-31-preview|
 |adrSyncRule|`Microsoft.ExtendedLocation/customLocations/resourceSyncRules`|2021-08-31-preview|
-|aioInstance|`Microsoft.IoTOperations/instances`|2025-04-01|
-|broker|`Microsoft.IoTOperations/instances/brokers`|2025-04-01|
-|brokerAuthn|`Microsoft.IoTOperations/instances/brokers/authentications`|2025-04-01|
-|brokerListener|`Microsoft.IoTOperations/instances/brokers/listeners`|2025-04-01|
-|brokerListenerAnonymous|`Microsoft.IoTOperations/instances/brokers/listeners`|2025-04-01|
-|dataFlowProfile|`Microsoft.IoTOperations/instances/dataflowProfiles`|2025-04-01|
-|dataFlowEndpoint|`Microsoft.IoTOperations/instances/dataflowEndpoints`|2025-04-01|
+|aioInstance|`Microsoft.IoTOperations/instances`|2025-07-01-preview|
+|broker|`Microsoft.IoTOperations/instances/brokers`|2025-07-01-preview|
+|brokerAuthn|`Microsoft.IoTOperations/instances/brokers/authentications`|2025-07-01-preview|
+|brokerListener|`Microsoft.IoTOperations/instances/brokers/listeners`|2025-07-01-preview|
+|brokerListenerAnonymous|`Microsoft.IoTOperations/instances/brokers/listeners`|2025-07-01-preview|
+|dataFlowProfile|`Microsoft.IoTOperations/instances/dataflowProfiles`|2025-07-01-preview|
+|dataFlowEndpoint|`Microsoft.IoTOperations/instances/dataflowEndpoints`|2025-07-01-preview|
 
 #### Outputs for iotOpsInstance
 
@@ -441,19 +444,21 @@ Deploy and configure the OPC UA Simulator
 | :--- | :--- | :--- | :--- | :--- |
 |common|The common component configuration.|`[_1.Common](#user-defined-types)`|n/a|yes|
 |customLocationId|The ID of the custom location.|`string`|n/a|yes|
+|adrNamespaceId|The ID of the ADR namespace.|`string`|n/a|yes|
 
 #### Resources for opcUaSimulator
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|assetEndpoint|`Microsoft.DeviceRegistry/assetEndpointProfiles`|2024-11-01|
-|asset|`Microsoft.DeviceRegistry/assets`|2024-11-01|
+|device|`Microsoft.DeviceRegistry/namespaces/devices`|2025-07-01-preview|
+|adrNamespace|`Microsoft.DeviceRegistry/namespaces`|2025-07-01-preview|
+|asset|`Microsoft.DeviceRegistry/namespaces/assets`|2025-07-01-preview|
 
 #### Outputs for opcUaSimulator
 
 |Name|Type|Description|
 | :--- | :--- | :--- |
-|assetEndpointId|`string`|The ID of the asset endpoint.|
+|deviceId|`string`|The ID of the device.|
 |assetId|`string`|The ID of the asset.|
 
 ## User Defined Types
@@ -505,6 +510,7 @@ The settings for the Azure IoT Operations MQ Broker.
 |backendPartitions|`int`|The number of partitions for the backend of the broker.|
 |memoryProfile|`string`|The memory profile for the broker (Low, Medium, High).|
 |serviceType|`string`|The service type for the broker (ClusterIP, LoadBalancer, NodePort).|
+|persistence|`[_1.BrokerPersistence](#user-defined-types)`|Broker persistence configuration for disk-backed message storage.|
 
 ### `_1.AioMqBrokerAnonymous`
 
@@ -524,6 +530,21 @@ The settings for the Azure IoT Operations Platform Extension.
 | :--- | :--- | :--- |
 |release|`[_1.Release](#user-defined-types)`|The common settings for the extension.|
 |settings|`object`||
+
+### `_1.BrokerPersistence`
+
+Broker persistence configuration for disk-backed message storage.
+
+|Property|Type|Description|
+| :--- | :--- | :--- |
+|enabled|`bool`|Whether persistence is enabled.|
+|maxSize|`string`|Maximum size of the message buffer on disk (e.g., "500M", "1G").|
+|encryption|`object`|Encryption configuration for the persistence database.|
+|dynamicSettings|`object`|Dynamic settings for MQTTv5 user property-based persistence control.|
+|retain|`object`|Controls which retained messages should be persisted to disk.|
+|stateStore|`object`|Controls which state store keys should be persisted to disk.|
+|subscriberQueue|`object`|Controls which subscriber queues should be persisted to disk.|
+|persistentVolumeClaimSpec|`object`|Persistent volume claim specification for storage.|
 
 ### `_1.ContainerStorageExtension`
 

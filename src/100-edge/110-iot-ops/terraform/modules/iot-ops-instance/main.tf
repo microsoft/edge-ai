@@ -23,6 +23,12 @@ locals {
 
   mqtt_broker_address = "mqtts://${var.mqtt_broker_config.brokerListenerServiceName}.${var.operations_config.namespace}:${var.mqtt_broker_config.brokerListenerPort}"
 
+  # Helper function for boolean to enabled/disabled string conversion
+  enabled_disabled = {
+    true  = "Enabled"
+    false = "Disabled"
+  }
+
   metrics = {
     enabled               = var.should_enable_otel_collector
     otelCollectorAddress  = var.should_enable_otel_collector ? "aio-otel-collector.${var.operations_config.namespace}.svc.cluster.local:4317" : ""
@@ -137,7 +143,7 @@ resource "azapi_resource" "aio_device_registry_sync_rule" {
 }
 
 resource "azapi_resource" "instance" {
-  type      = "Microsoft.IoTOperations/instances@2025-04-01"
+  type      = "Microsoft.IoTOperations/instances@2025-07-01-preview"
   name      = local.aio_instance_name
   location  = var.connected_cluster_location
   parent_id = var.resource_group_id
@@ -154,16 +160,19 @@ resource "azapi_resource" "instance" {
       schemaRegistryRef = {
         resourceId = var.schema_registry_id
       }
+      adrNamespaceRef = var.adr_namespace_id != null ? {
+        resourceId = var.adr_namespace_id
+      } : null
       features = try(var.aio_features, null)
     }
   }
   response_export_values = ["name", "id"]
 
-  schema_validation_enabled = false # Disable schema validation for azapi_resource for 2025-04-01 until azapi provider supports it
+  schema_validation_enabled = false # Disable schema validation for azapi_resource for 2025-07-01-preview until azapi provider supports it
 }
 
 resource "azapi_resource" "broker" {
-  type      = "Microsoft.IoTOperations/instances/brokers@2025-04-01"
+  type      = "Microsoft.IoTOperations/instances/brokers@2025-07-01-preview"
   name      = "default"
   parent_id = azapi_resource.instance.id
   body = {
@@ -171,31 +180,187 @@ resource "azapi_resource" "broker" {
       name = azapi_resource.custom_location.id
       type = "CustomLocation"
     }
-    properties = {
-      memoryProfile = var.mqtt_broker_config.memoryProfile
-      generateResourceLimits = {
-        cpu = "Disabled"
-      }
-      cardinality = {
-        backendChain = {
-          partitions       = var.mqtt_broker_config.backendPartitions
-          workers          = var.mqtt_broker_config.backendWorkers
-          redundancyFactor = var.mqtt_broker_config.backendRedundancyFactor
+    properties = merge(
+      {
+        memoryProfile = var.mqtt_broker_config.memoryProfile
+        generateResourceLimits = {
+          cpu = "Disabled"
         }
-        frontend = {
-          replicas = var.mqtt_broker_config.frontendReplicas
-          workers  = var.mqtt_broker_config.frontendWorkers
+        cardinality = {
+          backendChain = {
+            partitions       = var.mqtt_broker_config.backendPartitions
+            workers          = var.mqtt_broker_config.backendWorkers
+            redundancyFactor = var.mqtt_broker_config.backendRedundancyFactor
+          }
+          frontend = {
+            replicas = var.mqtt_broker_config.frontendReplicas
+            workers  = var.mqtt_broker_config.frontendWorkers
+          }
         }
-      }
-    }
+      },
+      try({
+        persistence = merge(
+          {
+            maxSize = var.mqtt_broker_persistence_config.max_size
+          },
+          try({
+            encryption = {
+              mode = local.enabled_disabled[var.mqtt_broker_persistence_config.encryption_enabled]
+            }
+          }, {}),
+          try({
+            dynamicSettings = {
+              userPropertyKey   = var.mqtt_broker_persistence_config.dynamic_settings.user_property_key
+              userPropertyValue = var.mqtt_broker_persistence_config.dynamic_settings.user_property_value
+            }
+          }, {}),
+          try({
+            retain = merge(
+              {
+                mode = var.mqtt_broker_persistence_config.retain_policy.mode
+              },
+              try(
+                alltrue([
+                  var.mqtt_broker_persistence_config.retain_policy.custom_settings != null,
+                  var.mqtt_broker_persistence_config.retain_policy.mode == "Custom"
+                  ]) ? {
+                  retainSettings = merge(
+                    try({
+                      topics = var.mqtt_broker_persistence_config.retain_policy.custom_settings.topics
+                    }, {}),
+                    try({
+                      dynamic = {
+                        mode = local.enabled_disabled[var.mqtt_broker_persistence_config.retain_policy.custom_settings.dynamic_enabled]
+                      }
+                    }, {})
+                  )
+                } : {},
+                {}
+              )
+            )
+          }, {}),
+          try({
+            stateStore = merge(
+              {
+                mode = var.mqtt_broker_persistence_config.state_store_policy.mode
+              },
+              try(
+                alltrue([
+                  var.mqtt_broker_persistence_config.state_store_policy.custom_settings != null,
+                  var.mqtt_broker_persistence_config.state_store_policy.mode == "Custom"
+                  ]) ? {
+                  stateStoreSettings = merge(
+                    try({
+                      stateStoreResources = [
+                        for resource in var.mqtt_broker_persistence_config.state_store_policy.custom_settings.state_store_resources : {
+                          keyType = resource.key_type
+                          keys    = resource.keys
+                        }
+                      ]
+                    }, {}),
+                    try({
+                      dynamic = {
+                        mode = local.enabled_disabled[var.mqtt_broker_persistence_config.state_store_policy.custom_settings.dynamic_enabled]
+                      }
+                    }, {})
+                  )
+                } : {},
+                {}
+              )
+            )
+          }, {}),
+          try({
+            subscriberQueue = merge(
+              {
+                mode = var.mqtt_broker_persistence_config.subscriber_queue_policy.mode
+              },
+              try(
+                alltrue([
+                  var.mqtt_broker_persistence_config.subscriber_queue_policy.custom_settings != null,
+                  var.mqtt_broker_persistence_config.subscriber_queue_policy.mode == "Custom"
+                  ]) ? {
+                  subscriberQueueSettings = merge(
+                    try({
+                      subscriberClientIds = var.mqtt_broker_persistence_config.subscriber_queue_policy.custom_settings.subscriber_client_ids
+                    }, {}),
+                    try({
+                      topics = var.mqtt_broker_persistence_config.subscriber_queue_policy.custom_settings.topics
+                    }, {}),
+                    try({
+                      dynamic = {
+                        mode = local.enabled_disabled[var.mqtt_broker_persistence_config.subscriber_queue_policy.custom_settings.dynamic_enabled]
+                      }
+                    }, {})
+                  )
+                } : {},
+                {}
+              )
+            )
+          }, {}),
+          try({
+            persistentVolumeClaimSpec = merge(
+              try({
+                volumeName = var.mqtt_broker_persistence_config.persistent_volume_claim_spec.volume_name
+              }, {}),
+              try({
+                volumeMode = var.mqtt_broker_persistence_config.persistent_volume_claim_spec.volume_mode
+              }, {}),
+              try({
+                storageClassName = var.mqtt_broker_persistence_config.persistent_volume_claim_spec.storage_class_name
+              }, {}),
+              try({
+                accessModes = var.mqtt_broker_persistence_config.persistent_volume_claim_spec.access_modes
+              }, {}),
+              try({
+                dataSource = merge(
+                  {
+                    kind = var.mqtt_broker_persistence_config.persistent_volume_claim_spec.data_source.kind
+                    name = var.mqtt_broker_persistence_config.persistent_volume_claim_spec.data_source.name
+                  },
+                  try({
+                    apiGroup = var.mqtt_broker_persistence_config.persistent_volume_claim_spec.data_source.api_group
+                  }, {})
+                )
+              }, {}),
+              try({
+                resources = merge(
+                  try({
+                    requests = var.mqtt_broker_persistence_config.persistent_volume_claim_spec.resources.requests
+                  }, {}),
+                  try({
+                    limits = var.mqtt_broker_persistence_config.persistent_volume_claim_spec.resources.limits
+                  }, {})
+                )
+              }, {}),
+              try({
+                selector = merge(
+                  try({
+                    matchLabels = var.mqtt_broker_persistence_config.persistent_volume_claim_spec.selector.match_labels
+                  }, {}),
+                  try({
+                    matchExpressions = [
+                      for expr in var.mqtt_broker_persistence_config.persistent_volume_claim_spec.selector.match_expressions : {
+                        key      = expr.key
+                        operator = expr.operator
+                        values   = expr.values
+                      }
+                    ]
+                  }, {})
+                )
+              }, {})
+            )
+          }, {})
+        )
+      }, {})
+    )
   }
   depends_on = [azapi_resource.custom_location, azapi_resource.instance]
 
-  schema_validation_enabled = false # Disable schema validation for azapi_resource for 2025-04-01 until azapi provider supports it
+  schema_validation_enabled = false # Disable schema validation for azapi_resource for 2025-07-01-preview until azapi provider supports it
 }
 
 resource "azapi_resource" "broker_authn" {
-  type      = "Microsoft.IoTOperations/instances/brokers/authentications@2025-04-01"
+  type      = "Microsoft.IoTOperations/instances/brokers/authentications@2025-07-01-preview"
   name      = "default"
   parent_id = azapi_resource.broker.id
   body = {
@@ -216,11 +381,11 @@ resource "azapi_resource" "broker_authn" {
   }
   depends_on = [azapi_resource.custom_location, azapi_resource.broker]
 
-  schema_validation_enabled = false # Disable schema validation for azapi_resource for 2025-04-01 until azapi provider supports it
+  schema_validation_enabled = false # Disable schema validation for azapi_resource for 2025-07-01-preview until azapi provider supports it
 }
 
 resource "azapi_resource" "broker_listener" {
-  type      = "Microsoft.IoTOperations/instances/brokers/listeners@2025-04-01"
+  type      = "Microsoft.IoTOperations/instances/brokers/listeners@2025-07-01-preview"
   name      = "default"
   parent_id = azapi_resource.broker.id
   body = {
@@ -251,13 +416,13 @@ resource "azapi_resource" "broker_listener" {
   }
   depends_on = [azapi_resource.custom_location, azapi_resource.broker, azapi_resource.broker_authn]
 
-  schema_validation_enabled = false # Disable schema validation for azapi_resource for 2025-04-01 until azapi provider supports it
+  schema_validation_enabled = false # Disable schema validation for azapi_resource for 2025-07-01-preview until azapi provider supports it
 }
 
 resource "azapi_resource" "broker_listener_anonymous" {
   count = var.should_create_anonymous_broker_listener ? 1 : 0
 
-  type      = "Microsoft.IoTOperations/instances/brokers/listeners@2025-04-01"
+  type      = "Microsoft.IoTOperations/instances/brokers/listeners@2025-07-01-preview"
   name      = "default-anon"
   parent_id = azapi_resource.broker.id
   body = {
@@ -278,11 +443,11 @@ resource "azapi_resource" "broker_listener_anonymous" {
   }
   depends_on = [azapi_resource.custom_location, azapi_resource.broker, azapi_resource.broker_authn]
 
-  schema_validation_enabled = false # Disable schema validation for azapi_resource for 2025-04-01 until azapi provider supports it
+  schema_validation_enabled = false # Disable schema validation for azapi_resource for 2025-07-01-preview until azapi provider supports it
 }
 
 resource "azapi_resource" "data_profiles" {
-  type      = "Microsoft.IoTOperations/instances/dataflowProfiles@2025-04-01"
+  type      = "Microsoft.IoTOperations/instances/dataflowProfiles@2025-07-01-preview"
   name      = "default"
   parent_id = azapi_resource.instance.id
   body = {
@@ -297,11 +462,11 @@ resource "azapi_resource" "data_profiles" {
   depends_on             = [azapi_resource.custom_location, azapi_resource.instance]
   response_export_values = ["name", "id"]
 
-  schema_validation_enabled = false # Disable schema validation for azapi_resource for 2025-04-01 until azapi provider supports it
+  schema_validation_enabled = false # Disable schema validation for azapi_resource for 2025-07-01-preview until azapi provider supports it
 }
 
 resource "azapi_resource" "data_endpoint" {
-  type      = "Microsoft.IoTOperations/instances/dataflowEndpoints@2025-04-01"
+  type      = "Microsoft.IoTOperations/instances/dataflowEndpoints@2025-07-01-preview"
   name      = "default"
   parent_id = azapi_resource.instance.id
   body = {
@@ -328,5 +493,5 @@ resource "azapi_resource" "data_endpoint" {
   }
   depends_on = [azapi_resource.custom_location, azapi_resource.instance]
 
-  schema_validation_enabled = false # Disable schema validation for azapi_resource for 2025-04-01 until azapi provider supports it
+  schema_validation_enabled = false # Disable schema validation for azapi_resource for 2025-07-01-preview until azapi provider supports it
 }

@@ -91,47 +91,78 @@ variable "should_create_azure_functions" {
  * IoT Asset Endpoints and Assets - Optional
  */
 
-variable "asset_endpoint_profiles" {
+variable "namespaced_devices" {
   type = list(object({
-    name                  = string
-    target_address        = string
-    endpoint_profile_type = optional(string)
-    method                = optional(string)
-
-    should_enable_opc_asset_discovery = optional(bool)
-    opc_additional_config_string      = optional(string)
+    name    = string
+    enabled = optional(bool, true)
+    endpoints = object({
+      outbound = optional(object({
+        assigned = object({})
+      }), { assigned = {} })
+      inbound = map(object({
+        endpoint_type           = string
+        address                 = string
+        version                 = optional(string, null)
+        additionalConfiguration = optional(string)
+        authentication = object({
+          method = string
+          usernamePasswordCredentials = optional(object({
+            usernameSecretName = string
+            passwordSecretName = string
+          }))
+          x509Credentials = optional(object({
+            certificateSecretName = string
+          }))
+        })
+        trustSettings = optional(object({
+          trustList = string
+        }))
+      }))
+    })
   }))
-  description = "List of asset endpoint profiles to create. Otherwise, an empty list."
+  description = "List of namespaced devices to create. Otherwise, an empty list."
   default     = []
 }
 
-variable "assets" {
+variable "namespaced_assets" {
   type = list(object({
-    asset_endpoint_profile_ref = string
+    name         = string
+    display_name = optional(string)
+    device_ref = object({
+      device_name   = string
+      endpoint_name = string
+    })
+    description       = optional(string)
+    documentation_uri = optional(string)
+    enabled           = optional(bool, true)
+    hardware_revision = optional(string)
+    manufacturer      = optional(string)
+    manufacturer_uri  = optional(string)
+    model             = optional(string)
+    product_code      = optional(string)
+    serial_number     = optional(string)
+    software_revision = optional(string)
+    attributes        = optional(map(string), {})
     datasets = optional(list(object({
-      data_points = list(object({
-        data_point_configuration = optional(string)
-        data_source              = string
-        name                     = string
-        observability_mode       = optional(string)
-      }))
       name = string
+      data_points = list(object({
+        name                     = string
+        data_source              = string
+        data_point_configuration = optional(string)
+      }))
+      destinations = optional(list(object({
+        target = string
+        configuration = object({
+          topic  = optional(string)
+          retain = optional(string)
+          qos    = optional(string)
+        })
+      })), [])
     })), [])
     default_datasets_configuration = optional(string)
-    description                    = optional(string)
-    display_name                   = optional(string)
-    documentation_uri              = optional(string)
-    enabled                        = optional(bool)
-    hardware_revision              = optional(string)
-    manufacturer                   = optional(string)
-    manufacturer_uri               = optional(string)
-    model                          = optional(string)
-    name                           = string
-    product_code                   = optional(string)
-    serial_number                  = optional(string)
-    software_revision              = optional(string)
+    default_events_configuration   = optional(string)
   }))
-  description = "List of assets to create. Otherwise, an empty list."
+  description = "List of namespaced assets to create. Otherwise, an empty list."
   default     = []
 }
 
@@ -187,4 +218,10 @@ variable "resource_group_tags" {
   type        = map(string)
   description = "The tags to add to the resources."
   default     = null
+}
+
+variable "should_create_adr_namespace" {
+  type        = bool
+  description = "Whether to create an Azure Device Registry namespace for Azure IoT Operations"
+  default     = true
 }

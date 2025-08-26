@@ -146,6 +146,7 @@ module "edge_iot_ops" {
   depends_on = [module.edge_cncf_cluster]
 
   adr_schema_registry   = module.cloud_data.schema_registry
+  adr_namespace         = module.cloud_data.adr_namespace
   resource_group        = module.cloud_resource_group.resource_group
   aio_identity          = module.cloud_security_identity.aio_identity
   arc_connected_cluster = module.edge_cncf_cluster.arc_connected_cluster
@@ -167,10 +168,11 @@ module "edge_assets" {
   location           = var.location
   resource_group     = module.cloud_resource_group.resource_group
   custom_location_id = module.edge_iot_ops.custom_location_id
+  adr_namespace      = module.cloud_data.adr_namespace
 
-  should_create_default_asset = var.should_enable_opc_ua_simulator
-  asset_endpoint_profiles     = var.asset_endpoint_profiles
-  assets                      = var.assets
+  should_create_default_namespaced_asset = var.should_enable_opc_ua_simulator
+  namespaced_devices                     = var.namespaced_devices
+  namespaced_assets                      = var.namespaced_assets
 }
 
 module "edge_observability" {

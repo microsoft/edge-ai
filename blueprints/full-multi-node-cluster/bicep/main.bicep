@@ -152,6 +152,7 @@ module cloudData '../../../src/000-cloud/030-data/bicep/main.bicep' = {
   dependsOn: [cloudResourceGroup]
   params: {
     common: common
+    shouldCreateAdrNamespace: true
   }
 }
 
@@ -200,7 +201,7 @@ module cloudAcr '../../../src/000-cloud/060-acr/bicep/main.bicep' = {
 }
 
 module cloudKubernetes '../../../src/000-cloud/070-kubernetes/bicep/main.bicep' = {
-  name: '${deployment().name}-caa5'
+  name: '${deployment().name}-ck6'
   scope: resourceGroup(resourceGroupName)
   dependsOn: [cloudResourceGroup]
   params: {
@@ -242,6 +243,7 @@ module edgeIotOps '../../../src/100-edge/110-iot-ops/bicep/main.bicep' = {
     // Azure IoT Operations Instance Parameters
     aioIdentityName: cloudSecurityIdentity.outputs.aioIdentityName
     schemaRegistryName: cloudData.outputs.schemaRegistryName
+    adrNamespaceName: cloudData.outputs.adrNamespaceName
     shouldDeployAio: shouldDeployAio
     shouldCreateAnonymousBrokerListener: shouldCreateAnonymousBrokerListener
     shouldEnableOtelCollector: shouldEnableOtelCollector

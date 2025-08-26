@@ -2,6 +2,7 @@
 adal
 adls
 adminconsent
+adrns
 afds
 agic
 aiops
@@ -1557,6 +1558,7 @@ Terrascan
 UAMI
 acrpull
 acsa
+adrns
 agentpool
 arck
 azapi

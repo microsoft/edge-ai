@@ -41,6 +41,14 @@ data "azapi_resource" "arc_connected_cluster" {
   response_export_values = ["name", "id", "location"]
 }
 
+data "azapi_resource" "adr_namespace" {
+  type      = "Microsoft.DeviceRegistry/namespaces@2025-07-01-preview"
+  parent_id = data.azurerm_resource_group.aio.id
+  name      = "adrns-${var.resource_prefix}-${var.environment}-${var.instance}"
+
+  response_export_values = ["name", "id"]
+}
+
 module "ci" {
   source = "../../terraform"
 
@@ -50,4 +58,5 @@ module "ci" {
   aio_identity          = data.azurerm_user_assigned_identity.aio
   adr_schema_registry   = data.azapi_resource.schema_registry.output
   arc_connected_cluster = data.azapi_resource.arc_connected_cluster.output
+  adr_namespace         = data.azapi_resource.adr_namespace.output
 }

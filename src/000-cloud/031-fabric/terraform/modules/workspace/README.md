@@ -33,7 +33,6 @@
 
 | Name | Description |
 |------|-------------|
-| workspace\_id | The ID of the created workspace |
-| workspace\_name | The name of the created workspace |
+| workspace | The Fabric workspace. |
 <!-- markdown-table-prettify-ignore-end -->
 <!-- END_TF_DOCS -->

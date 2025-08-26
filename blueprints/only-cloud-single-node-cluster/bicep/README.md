@@ -2,9 +2,9 @@
 <!-- markdown-table-prettify-ignore-start -->
 <!-- markdownlint-disable MD033 -->
 
-# Full Single Cluster Blueprint
+# Full Cloud Single Cluster Blueprint
 
-Deploys a complete end-to-end environment for Azure IoT Operations on a single-node, Arc-enabled Kubernetes cluster.
+Deploys a complete end-to-end cloud environment as preparation for Azure IoT Operations on a single-node.
 
 ## Parameters
 
@@ -131,7 +131,7 @@ Deploys Azure observability resources including Azure Monitor Workspace, Log Ana
 |tags|Additional tags to add to the resources.|`object`|{}|no|
 |logRetentionInDays|Log Analytics Workspace retention in days|`int`|30|no|
 |dailyQuotaInGb|Log Analytics Workspace daily quota in GB|`int`|10|no|
-|grafanaMajorVersion|Grafana major version|`string`|10|no|
+|grafanaMajorVersion|Grafana major version|`string`|11|no|
 |grafanaAdminPrincipalId|The principalId (objectId) of the user or service principal to assign the Grafana Admin role.|`string`|n/a|no|
 |logsDataCollectionRuleNamespaces|List of cluster namespaces to be exposed in the log analytics workspace|`array`|['kube-system', 'gatekeeper-system', 'azure-arc', 'azure-iot-operations']|no|
 |logsDataCollectionRuleStreams|List of streams to be enabled in the log analytics workspace|`array`|['Microsoft-ContainerLog', 'Microsoft-ContainerLogV2', 'Microsoft-KubeEvents', 'Microsoft-KubePodInventory', 'Microsoft-KubeNodeInventory', 'Microsoft-KubePVInventory', 'Microsoft-KubeServices', 'Microsoft-KubeMonAgentEvents', 'Microsoft-InsightsMetrics', 'Microsoft-ContainerInventory', 'Microsoft-ContainerNodeInventory', 'Microsoft-Perf']|no|
@@ -181,6 +181,10 @@ Creates storage resources including Azure Storage Account and Schema Registry fo
 |schemaContainerName|The name for the Blob Container for schemas.|`string`|schemas|no|
 |schemaRegistryName|The name for the ADR Schema Registry.|`string`|[format('sr-{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]|no|
 |schemaRegistryNamespace|The ADLS Gen2 namespace for the ADR Schema Registry.|`string`|[format('srns-{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]|no|
+|shouldCreateAdrNamespace|Whether to create the ADR Namespace.|`bool`|True|no|
+|adrNamespaceName|The name for the ADR Namespace.|`string`|[format('adrns-{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]|no|
+|adrNamespaceMessagingEndpoints|Dictionary of messaging endpoints for the ADR namespace.|`[_1.AdrNamespaceMessagingEndpoints](#user-defined-types)`|n/a|no|
+|adrNamespaceEnableIdentity|Whether to enable system-assigned managed identity for the ADR namespace.|`bool`|True|no|
 |telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|False|no|
 
 #### Resources for cloudData
@@ -190,6 +194,7 @@ Creates storage resources including Azure Storage Account and Schema Registry fo
 |storageAccount|`Microsoft.Resources/deployments`|2022-09-01|
 |schemaRegistry|`Microsoft.Resources/deployments`|2022-09-01|
 |schemaRegistryRoleAssignment|`Microsoft.Resources/deployments`|2022-09-01|
+|adrNamespace|`Microsoft.Resources/deployments`|2022-09-01|
 
 #### Outputs for cloudData
 
@@ -200,6 +205,9 @@ Creates storage resources including Azure Storage Account and Schema Registry fo
 |storageAccountName|`string`|The Storage Account Name.|
 |storageAccountId|`string`|The Storage Account ID.|
 |schemaContainerName|`string`|The Schema Container Name.|
+|adrNamespaceName|`string`|The ADR Namespace Name.|
+|adrNamespaceId|`string`|The ADR Namespace ID.|
+|adrNamespace|`object`|The complete ADR namespace resource information.|
 
 ### cloudMessaging
 
