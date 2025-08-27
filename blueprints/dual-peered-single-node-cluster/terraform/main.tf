@@ -187,7 +187,7 @@ module "cluster_a_edge_assets" {
 
   location           = var.location
   resource_group     = module.cluster_a_cloud_resource_group.resource_group
-  custom_location_id = module.cluster_a_edge_iot_ops.custom_location_id
+  custom_location_id = module.cluster_a_edge_iot_ops.custom_locations.id
 
   should_create_default_asset = var.should_enable_opc_ua_simulator
   asset_endpoint_profiles     = var.asset_endpoint_profiles
@@ -398,7 +398,7 @@ module "cluster_b_edge_assets" {
 
   location           = var.location
   resource_group     = module.cluster_b_cloud_resource_group.resource_group
-  custom_location_id = module.cluster_b_edge_iot_ops.custom_location_id
+  custom_location_id = module.cluster_b_edge_iot_ops.custom_locations.id
 
   should_create_default_asset = var.should_enable_opc_ua_simulator
   asset_endpoint_profiles     = var.asset_endpoint_profiles
@@ -491,7 +491,7 @@ module "secret_provider_class" {
   cluster_a_name                 = local.cluster_a_name
   cluster_a_location             = var.location
   cluster_a_resource_group       = module.cluster_a_cloud_resource_group.resource_group
-  cluster_a_custom_location_id   = module.cluster_a_edge_iot_ops.custom_location_id
+  cluster_a_custom_location_id   = module.cluster_a_edge_iot_ops.custom_locations.id
   cluster_a_key_vault            = module.cluster_a_cloud_security_identity.key_vault
   cluster_a_secret_sync_identity = module.cluster_a_cloud_security_identity.secret_sync_identity
   site_client_secret_name        = var.site_client_secret_name
@@ -499,7 +499,7 @@ module "secret_provider_class" {
   cluster_b_name                         = local.cluster_b_name
   cluster_b_location                     = var.location
   cluster_b_resource_group               = module.cluster_b_cloud_resource_group.resource_group
-  cluster_b_custom_location_id           = module.cluster_b_edge_iot_ops.custom_location_id
+  cluster_b_custom_location_id           = module.cluster_b_edge_iot_ops.custom_locations.id
   cluster_b_key_vault                    = module.cluster_b_cloud_security_identity.key_vault
   cluster_b_secret_sync_identity         = module.cluster_b_cloud_security_identity.secret_sync_identity
   enterprise_broker_tls_cert_secret_name = var.enterprise_broker_tls_cert_secret_name

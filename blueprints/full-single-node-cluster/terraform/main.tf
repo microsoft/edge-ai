@@ -175,7 +175,7 @@ module "edge_assets" {
 
   location           = var.location
   resource_group     = module.cloud_resource_group.resource_group
-  custom_location_id = module.edge_iot_ops.custom_location_id
+  custom_location_id = module.edge_iot_ops.custom_locations.id
 
   should_create_default_asset = var.should_enable_opc_ua_simulator
   asset_endpoint_profiles     = var.asset_endpoint_profiles

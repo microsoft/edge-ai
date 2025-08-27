@@ -1,0 +1,6 @@
+---
+apiVersion: v2
+name: media-capture-service
+description: A Helm chart for deploying the media capture service for edge AI video processing
+type: application
+version: 0.1.0
