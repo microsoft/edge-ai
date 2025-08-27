@@ -1,0 +1,143 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "media-capture-service.fullname" . }}
+  namespace: {{ include "media-capture-service.namespace" . }}
+  labels:
+    {{- include "media-capture-service.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "media-capture-service.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "media-capture-service.selectorLabels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      restartPolicy: Always
+      containers:
+        - name: {{ .Chart.Name }}
+          {{- with .Values.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          image: {{ include "media-capture-service.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.targetPort }}
+              protocol: TCP
+          env:
+            # MQTT Configuration
+            - name: AIO_BROKER_HOSTNAME
+              value: {{ .Values.mediaCapture.mqtt.brokerHostname | quote }}
+            - name: AIO_BROKER_TCP_PORT
+              value: {{ .Values.mediaCapture.mqtt.brokerTcpPort | quote }}
+            - name: AIO_TLS_CA_FILE
+              value: {{ .Values.mediaCapture.mqtt.tlsCaFile | quote }}
+            - name: AIO_SAT_FILE
+              value: {{ .Values.mediaCapture.mqtt.satFile | quote }}
+            - name: AIO_MQTT_CLIENT_ID
+              value: {{ .Values.mediaCapture.mqtt.clientId | quote }}
+
+            # Trigger Topics
+            - name: TRIGGER_TOPICS
+{{- if kindIs "string" .Values.mediaCapture.triggerTopics }}
+              value: {{ .Values.mediaCapture.triggerTopics | quote }}
+{{- else }}
+              value: {{ .Values.mediaCapture.triggerTopics | toJson | quote }}
+{{- end }}
+
+            # Media Storage
+            - name: MEDIA_CLOUD_SYNC_DIR
+              value: {{ .Values.mediaCapture.storage.cloudSyncDir | quote }}
+
+            # Video Configuration
+            - name: RTSP_URL
+              value: {{ .Values.mediaCapture.video.rtspUrl | quote }}
+            - name: VIDEO_FPS
+              value: {{ .Values.mediaCapture.video.fps | quote }}
+            - name: FRAME_WIDTH
+              value: {{ .Values.mediaCapture.video.frameWidth | quote }}
+            - name: FRAME_HEIGHT
+              value: {{ .Values.mediaCapture.video.frameHeight | quote }}
+            - name: BUFFER_SECONDS
+              value: {{ .Values.mediaCapture.video.bufferSeconds | quote }}
+            - name: CAPTURE_DURATION_SECONDS
+              value: {{ .Values.mediaCapture.video.captureDurationSeconds | quote }}
+            - name: VIDEO_FEED_DELAY_SECONDS
+              value: {{ .Values.mediaCapture.video.feedDelaySeconds | quote }}
+
+            # Logging
+            - name: RUST_LOG
+              value: {{ .Values.logging.level | quote }}
+
+          volumeMounts:
+            {{- if .Values.volumes.mqSat.enabled }}
+            - name: mq-sat
+              mountPath: /var/run/secrets/tokens
+            {{- end }}
+            {{- if .Values.volumes.trustBundle.enabled }}
+            - name: trust-bundle
+              mountPath: /var/run/certs
+            {{- end }}
+            {{- if .Values.volumes.mediaStorage.enabled }}
+            - name: media-storage
+              mountPath: /cloud-sync
+            {{- end }}
+
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+
+      volumes:
+        {{- if .Values.volumes.mqSat.enabled }}
+        - name: mq-sat
+          projected:
+            sources:
+            - serviceAccountToken:
+                path: mq-sat
+                audience: {{ .Values.volumes.mqSat.audience }}
+                expirationSeconds: {{ .Values.volumes.mqSat.expirationSeconds }}
+        {{- end }}
+        {{- if .Values.volumes.trustBundle.enabled }}
+        - name: trust-bundle
+          configMap:
+            name: {{ .Values.volumes.trustBundle.configMapName }}
+        {{- end }}
+        {{- if .Values.volumes.mediaStorage.enabled }}
+        - name: media-storage
+          persistentVolumeClaim:
+            claimName: {{ .Values.volumes.mediaStorage.pvcName }}
+        {{- end }}
+
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

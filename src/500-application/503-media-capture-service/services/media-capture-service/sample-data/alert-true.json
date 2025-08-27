@@ -1,0 +1,271 @@
+{
+  "Alert": true,
+  "alert_message": "ACTION NEEDED: Attention! A leak has been detected.",
+  "cluster_name": "hulk",
+  "attributes": {
+    "devices": [
+      {
+        "device_name": "DCAM2-Cam1",
+        "device_type": "Intelliview DCam-2",
+        "timestamp_ISO8601": "2025-05-02T20:55:30.213Z",
+        "device_data": {
+          "type": "ALERT_DLQC",
+          "timestamp": 1746219330213,
+          "message": "NGL Leak",
+          "event_id": 5337,
+          "camera_id": 1,
+          "leak_location": {
+            "longitude": -116.93991,
+            "latitude": 54.32876
+          },
+          "camera_location": {
+            "longitude": -116.9401,
+            "latitude": 54.32851
+          },
+          "flow_rate": 49.24,
+          "unit": "g/s",
+          "mass": 0.6,
+          "mass_unit": "kg",
+          "confidence_level": 98,
+          "camera_orientation": 275,
+          "depression_angle": 7,
+          "wind_speed": 23,
+          "wind_speed_unit": "m/h",
+          "wind_direction": 148,
+          "temperature": 57,
+          "temperature_unit": "F",
+          "humidity": 54
+        }
+      },
+      {
+        "device_name": "SPOD UUID-9003",
+        "device_type": "Sensit SPOD IP Gateway",
+        "timestamp_ISO8601": "2024-10-03T15:15:58",
+        "device_data": {
+          "deviceId": "SPOD01433",
+          "time": "2024-10-03T15:15:58",
+          "iodb": {
+            "ppb": 1142,
+            "pid": 63.78,
+            "temp": 25.2,
+            "humid": 47.6,
+            "pres": 1008,
+            "wspd": 0.3,
+            "wdir": 91.4,
+            "batt": 14.05,
+            "chrg": 0.85,
+            "run": 100.88,
+            "tsen1": 2692,
+            "heat1": 32,
+            "tset1": 2596,
+            "sd": 1000,
+            "tcrh": 0,
+            "r232": 0,
+            "brdv": 5,
+            "fwv": 604,
+            "misc": 230,
+            "zero1": 4964,
+            "span1": 40378,
+            "ofs1": 0,
+            "slp1": 200,
+            "lat": 0,
+            "lon": 0
+          }
+        }
+      },
+      {
+        "device_name": "Rainwise Station 1",
+        "device_type": "Rainwise IP100 / MK-III",
+        "timestamp_ISO8601": "2025-01-01T00:21:39",
+        "device_data": {
+          "time": "2025/01/01 00:21:39",
+          "batt": 7.7,
+          "signal": -65,
+          "quality": 5,
+          "us": {
+            "atmp": {
+              "tic": 89.9,
+              "tia": 89.9,
+              "tdh": 89.9,
+              "tih": 89.9,
+              "tdl": 88.4,
+              "til": 89.9
+            },
+            "rh": {
+              "ric": 0,
+              "ria": 0,
+              "rdh": 0,
+              "rih": 0,
+              "rdl": 0,
+              "ril": 0
+            },
+            "bp": {
+              "bic": 29.91,
+              "bia": 29.91,
+              "bdh": 29.92,
+              "bih": 29.91,
+              "bdl": 29.91,
+              "bil": 29.91
+            },
+            "wnd": {
+              "wic": 1.4,
+              "wict": 157,
+              "wia": 0.8,
+              "wdh": 3.5,
+              "wdht": 157,
+              "wih": 2.1,
+              "wiht": 157
+            },
+            "rf": {
+              "rfd": 0,
+              "rfm": 0
+            },
+            "sr": {
+              "src": 1246,
+              "srd": 1578717,
+              "srm": 0
+            },
+            "sr2": {
+              "sr2c": 0,
+              "sr2d": 0,
+              "sr2m": 0
+            },
+            "uv": {
+              "uvc": 20,
+              "uvd": 20,
+              "uvm": 20
+            },
+            "lw": {
+              "lwc": 0,
+              "lwd": 0,
+              "lwm": 0
+            },
+            "tmp1": {
+              "t1ic": 61.3,
+              "t1ia": 61.3,
+              "t1dh": 69,
+              "t1ih": 61.3,
+              "t1dl": 60.8,
+              "t1il": 61.3
+            },
+            "tmp2": {
+              "t2ic": 62.9,
+              "t2ia": 62.9,
+              "t2dh": 68.5,
+              "t2ih": 62.9,
+              "t2dl": 61.8,
+              "t2il": 62.9
+            },
+            "sm": {
+              "sic": 0,
+              "sia": 0,
+              "sdh": 0,
+              "sih": 0,
+              "sdl": 0,
+              "sil": 0
+            },
+            "itmp": {
+              "itic": 77,
+              "itia": 77,
+              "itdh": 77,
+              "itih": 77,
+              "itdl": 74,
+              "itil": 77
+            }
+          },
+          "metric": {
+            "atmp": {
+              "tic": 32.2,
+              "tia": 32.2,
+              "tdh": 32.2,
+              "tih": 32.2,
+              "tdl": 31.3,
+              "til": 32.2
+            },
+            "rh": {
+              "ric": 0,
+              "ria": 0,
+              "rdh": 0,
+              "rih": 0,
+              "rdl": 0,
+              "ril": 0
+            },
+            "bp": {
+              "bic": 1013,
+              "bia": 1013,
+              "bdh": 1013.21,
+              "bih": 1013,
+              "bdl": 1013,
+              "bil": 1013
+            },
+            "wnd": {
+              "wic": 2.3,
+              "wict": 157,
+              "wia": 1.3,
+              "wdh": 5.6,
+              "wdht": 157,
+              "wih": 3.4,
+              "wiht": 157
+            },
+            "rf": {
+              "rfd": 0,
+              "rfm": 0
+            },
+            "sr": {
+              "src": 1246,
+              "srd": 1578717,
+              "srm": 0
+            },
+            "sr2": {
+              "sr2c": 0,
+              "sr2d": 0,
+              "sr2m": 0
+            },
+            "uv": {
+              "uvc": 20,
+              "uvd": 20,
+              "uvm": 20
+            },
+            "lw": {
+              "lwc": 0,
+              "lwd": 0,
+              "lwm": 0
+            },
+            "tmp1": {
+              "t1ic": 16.3,
+              "t1ia": 16.3,
+              "t1dh": 20.6,
+              "t1ih": 16.3,
+              "t1dl": 16,
+              "t1il": 16.3
+            },
+            "tmp2": {
+              "t2ic": 17.2,
+              "t2ia": 17.2,
+              "t2dh": 20.3,
+              "t2ih": 17.2,
+              "t2dl": 16.6,
+              "t2il": 17.2
+            },
+            "sm": {
+              "sic": 0,
+              "sia": 0,
+              "sdh": 0,
+              "sih": 0,
+              "sdl": 0,
+              "sil": 0
+            },
+            "itmp": {
+              "itic": 25,
+              "itia": 25,
+              "itdh": 25,
+              "itih": 25,
+              "itdl": 23.3,
+              "itil": 25
+            }
+          }
+        }
+      }
+    ]
+  }
+}

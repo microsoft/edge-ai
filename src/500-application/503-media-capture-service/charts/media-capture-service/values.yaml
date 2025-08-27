@@ -1,0 +1,99 @@
+---
+# Default values for media-capture-service
+replicaCount: 1
+
+image:
+  repository: your-registry.azurecr.io/media-capture-service
+  pullPolicy: Always
+  tag: "latest"
+
+imagePullSecrets:
+  - name: acr-auth
+
+nameOverride: ""
+fullnameOverride: ""
+
+# Kubernetes namespace
+namespace: azure-iot-operations
+
+service:
+  type: ClusterIP
+  port: 8080
+  targetPort: 8080
+
+# Media capture service configuration
+mediaCapture:
+  # MQTT Configuration
+  mqtt:
+    brokerHostname: "aio-broker.azure-iot-operations"
+    brokerTcpPort: "18883"
+    clientId: "media-capture-service"
+    tlsCaFile: "/var/run/certs/ca.crt"
+    satFile: "/var/run/secrets/tokens/mq-sat"
+
+  # Trigger topics for video capture (JSON array format)
+  triggerTopics: >-
+    ["topic/path/to/trigger"]
+
+  # Media storage configuration
+  storage:
+    cloudSyncDir: "/cloud-sync/media"
+    pvcName: "pvc-acsa-cloud-backed"
+
+  # Video configuration
+  video:
+    rtspUrl: "rtsp://your-camera:8554/live"
+    fps: "20"
+    frameWidth: "896"
+    frameHeight: "512"
+    bufferSeconds: "60"
+    captureDurationSeconds: "10"
+    feedDelaySeconds: "5"
+
+# Logging configuration
+logging:
+  level: "info"
+
+# Volume configurations
+volumes:
+  mqSat:
+    enabled: true
+    audience: "aio-internal"
+    expirationSeconds: 86400
+
+  trustBundle:
+    enabled: true
+    configMapName: "azure-iot-operations-aio-ca-trust-bundle"
+
+  mediaStorage:
+    enabled: true
+    pvcName: "pvc-acsa-cloud-backed"
+
+# Pod security context
+podSecurityContext:
+  fsGroup: 1000
+
+# Container security context
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: false
+  runAsNonRoot: true
+  runAsUser: 1000
+
+# Node selector
+nodeSelector: {}
+
+# Tolerations
+tolerations: []
+
+# Affinity
+affinity: {}
+
+# Pod annotations
+podAnnotations: {}
+
+# Pod labels
+podLabels: {}

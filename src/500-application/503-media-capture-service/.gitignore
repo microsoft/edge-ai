@@ -1,0 +1,7 @@
+target
+Cargo.lock
+
+# Docker Compose generated resources - ignore entire folders
+resources/mq-sat/
+resources/trust-bundle/
+resources/media/

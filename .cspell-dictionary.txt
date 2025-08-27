@@ -57,12 +57,14 @@ ZTNA
 
 # Development Tools & Technologies
 ansible
+azurecontainer
 bicepconfig
 bicepparam
 containerd
 contravariance
 crowdsourced
 Crowdsourced
+distroless
 cyberattacks
 Dapr
 docker
