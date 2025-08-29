@@ -49,6 +49,7 @@ param shouldCreateAks bool = false
 
 resource attribution 'Microsoft.Resources/deployments@2020-06-01' = if (!telemetry_opt_out) {
   name: 'pid-acce1e78-0375-4637-a593-86aa36dcfeac'
+  location: common.location
   properties: {
     mode: 'Incremental'
     template: {
@@ -143,7 +144,7 @@ module cloudAcr '../../../src/000-cloud/060-acr/bicep/main.bicep' = {
 }
 
 module cloudKubernetes '../../../src/000-cloud/070-kubernetes/bicep/main.bicep' = {
-  name: '${deployment().name}-caa5'
+  name: '${deployment().name}-ck6'
   scope: resourceGroup(resourceGroupName)
   dependsOn: [cloudResourceGroup]
   params: {
