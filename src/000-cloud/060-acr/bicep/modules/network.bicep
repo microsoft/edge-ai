@@ -37,7 +37,7 @@ resource vnet 'Microsoft.Network/virtualNetworks@2024-05-01' existing = {
   name: virtualNetworkName
 }
 
-resource nsg 'Microsoft.Network/networkSecurityGroups@2024-05-01' = {
+resource nsg 'Microsoft.Network/networkSecurityGroups@2024-05-01' existing = {
   name: networkSecurityGroupName
 }
 
