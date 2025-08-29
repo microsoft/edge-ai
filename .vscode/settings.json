@@ -69,6 +69,14 @@
         "editor.tabSize": 4,
     },
 
+    "[powershell]": {
+        "debug.saveBeforeStart": "nonUntitledEditorsInActiveGroup",
+        "editor.semanticHighlighting.enabled": false,
+        "editor.wordSeparators": "`~!@#$%^&*()=+[{]}\\|;:'\",.<>/?",
+        "editor.formatOnSave": true,
+        "editor.tabSize": 4,
+    },
+
     "shellcheck.enableQuickFix": true,
     "shellcheck.run": "onSave",
 
@@ -94,7 +102,9 @@
         }
     ],
     "github.copilot.chat.advanced.workspace.prototypeAdoCodeSearchEnabled": true,
+    "github.copilot.chat.advanced.multiReplaceString.enabled": true,
     "github.copilot.chat.customInstructionsInSystemMessage": true,
+    "chat.todoListTool.enabled": true,
     "chat.instructionsFilesLocations": {
         ".github/instructions": true,
         "/Users/vscode/repos/instructions": true,

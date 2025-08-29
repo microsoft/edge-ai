@@ -8,6 +8,7 @@ aiops
 akri
 apim
 apparmor
+appinsight
 appinsights
 arcbox
 arcgis
@@ -376,8 +377,10 @@ autostart
 avanade
 avere
 avro
+backticked
 bandwidth
 baremetal
+bargauge
 blockchain
 chatbot
 chatbots
@@ -1018,6 +1021,7 @@ parallelization
 parashar
 passcode
 passcodes
+pasteable
 pbmm
 pdbs
 pdfs
@@ -1050,6 +1054,7 @@ posix
 powercli
 powerskills
 ppac
+prd
 preapproved
 precommitment
 precommitments
@@ -1126,6 +1131,7 @@ rebalance
 rebalancing
 rebar
 rebranded
+recalc
 recordsets
 reddy
 redgate
@@ -1205,6 +1211,8 @@ sharded
 sharding
 showbacks
 signalr
+signup
+signingkey
 simplement
 sios
 sitelogs

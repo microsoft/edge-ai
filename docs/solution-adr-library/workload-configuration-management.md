@@ -79,14 +79,14 @@ They define the desired state of the fleet. The actual deployment process, inclu
 
 Kalypso is a composable solution consisting of the following components:
 
-- Application CI/CD templates with GitOps​
-  - Promote application changes across environments in GitOps fashion​
-- Control Plane. Kalypso Scheduler​.
-  - Assign applications to the clusters​
-  - Compose platform configurations​
-  - Dedicate namespace-as-a-service for the applications on the clusters​
-- Deployment Observability Hub​
-  - Monitor what application versions are deployed to what clusters in the environments​
+- Application CI/CD templates with GitOps
+  - Promote application changes across environments in GitOps fashion
+- Control Plane. Kalypso Scheduler .
+  - Assign applications to the clusters
+  - Compose platform configurations
+  - Dedicate namespace-as-a-service for the applications on the clusters
+- Deployment Observability Hub
+  - Monitor what application versions are deployed to what clusters in the environments
 
 ![kalypso](./media/kalypso.png)
 

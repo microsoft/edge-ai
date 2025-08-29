@@ -214,7 +214,7 @@ Generate a comprehensive security plan and save it to `/security-plan-outputs/se
 ## Security Plan Template Structure
 
 ````markdown
-# Security Plan – [Blueprint Name]
+# Security Plan - [Blueprint Name]
 
 ## Preamble
 
@@ -433,3 +433,4 @@ For large or complex blueprints:
 - Revise risk evaluations based on changing threat landscape
 - Incorporate lessons learned from security incidents or assessments
 - Align recommendations with evolving cloud security best practices
+
