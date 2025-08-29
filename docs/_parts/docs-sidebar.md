@@ -155,7 +155,7 @@
   - Media
 
 - [Solution Security Plan Library](docs/solution-security-plan-library/README.md)
-  - [Security Plan – Project Name](docs/solution-security-plan-library/security-plan-template.md)
+  - [Security Plan - Project Name](docs/solution-security-plan-library/security-plan-template.md)
   - [AI on Edge Security Recommendations](docs/solution-security-plan-library/security-recommendations.md)
 
 - [Solution Technology Paper Library](docs/solution-technology-paper-library/README.md)

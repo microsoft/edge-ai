@@ -1,4 +1,4 @@
-# Security Plan – RetailMart (Example) Retail Application
+# Security Plan - RetailMart (Example) Retail Application
 
 ## Preamble
 
@@ -12,7 +12,7 @@ As part of a new pilot program, ISE Security TD has established the following ba
 
 - Regularly review your Defender for Cloud secure score and recommendations throughout your engagement and create backlog items to remediate them as appropriate.
 
-- Identify and meet with the customer’s security stakeholder during the start, middle, and end of the engagement. Identify and prioritize security requirements, share progress, and hand off unfinished backlog items.
+- Identify and meet with the customer's security stakeholder during the start, middle, and end of the engagement. Identify and prioritize security requirements, share progress, and hand off unfinished backlog items.
 
 - Meet with an ISE security champion to review the design for your solution.
 
@@ -272,7 +272,7 @@ Web application, Non Search Microservice, Search API RAG microservice, Conversat
 
 An ideal architecture would contain **zero secrets**. Credential-less options like managed identities should be used wherever possible. Where secrets are required, it's important to track them for operational purposes. Please see our [Example SecretsInventory](https://www.cwcwiki.com/wiki/Security_Plan_Guidelines#Example_Secrets_Inventory) to help you get started.
 
-| **Name**  | **What is it?** | **Where does it live?** | **How was it generated?** | **What's the rotation strategy? Does it cause downtime?** | **How does the secret get distributed to consumers?** | **What’s the secret’s lifespan?** |
+| **Name**  | **What is it?** | **Where does it live?** | **How was it generated?** | **What's the rotation strategy? Does it cause downtime?** | **How does the secret get distributed to consumers?** | **What's the secret's lifespan?** |
 |-----------|-----------------|-------------------------|---------------------------|-----------------------------------------------------------|-------------------------------------------------------|-----------------------------------|
 | ......... | ......          | ........                | .....                     | .....                                                     | ........                                              | ..........                        |
 
@@ -288,7 +288,7 @@ Designing controls that limit access to data and ensure that users/systems have 
 
 The system should be able to identify abnormal behaviors and prevent manipulation or coercion outside of the normal boundaries of acceptable behavior in relation to the AI system and the specific task. These are new types of attacks specific to the AI/ML space.
 
-Systems should be designed to resist inputs that would otherwise conflict with local laws, ethics and values held by the community and its creators. This means providing AI with the capability to determine when an interaction is going “off script.”  Integrity.
+Systems should be designed to resist inputs that would otherwise conflict with local laws, ethics and values held by the community and its creators. This means providing AI with the capability to determine when an interaction is going "off script."  Integrity.
 
 Hence, it is important to spruce up the defense mechanisms for the early detection of anomalies, so that AI based applications can fail safe for maintaining Business continuity.
 

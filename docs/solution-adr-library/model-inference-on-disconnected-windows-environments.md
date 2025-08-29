@@ -149,7 +149,7 @@ For disconnected environments, the chosen solution was leveraging OpenTelemetry 
 
 ## Benchmark Results
 
-For the benchmark, it was used **Microsoft’s Phi-3 Mini ONNX model** ([Hugging Face link](https://huggingface.co/microsoft/Phi-3-mini-4k-instruct-onnx)) for testing, deployed on an **Azure ND96amsr_A100_v4 instance** (1x A100 80GB GPU). In addition, we used fixed generation length **256 tokens**, with **5** warmup run and **10** repetition.
+For the benchmark, it was used **Microsoft's Phi-3 Mini ONNX model** ([Hugging Face link](https://huggingface.co/microsoft/Phi-3-mini-4k-instruct-onnx)) for testing, deployed on an **Azure ND96amsr_A100_v4 instance** (1x A100 80GB GPU). In addition, we used fixed generation length **256 tokens**, with **5** warmup run and **10** repetition.
 
 We tested following combinations;
 

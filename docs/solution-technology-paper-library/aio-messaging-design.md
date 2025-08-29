@@ -316,7 +316,7 @@ Just like MQTTv5, Azure Event Hub messages can carry two sets of properties as b
 
 | Custom Property Name          | Mapped From                            | Description/Example                                                                             |
 |-------------------------------|----------------------------------------|-------------------------------------------------------------------------------------------------|
-| Payload Format Indicator      | MQTTv5 System Properties               | Example “1”                                                                                     |
+| Payload Format Indicator      | MQTTv5 System Properties               | Example "1"                                                                                     |
 | Content Type                  | MQTTv5 System Properties               | application/json                                                                                |
 | uuid                          | OPCUA CloudEvent MQTT Message Property | 5d4cd37c-963e-4c45-a6d5-c4c7dff9f0f9                                                            |
 | externalAssetId               | OPCUA CloudEvent MQTT Message Property | 5d4cd37c-963e-4c45-a6d5-c4c7dff9f0f9                                                            |
@@ -337,7 +337,7 @@ Just like MQTTv5, Azure Event Hub messages can carry two sets of properties as b
 
 **Nuances:**
 
-1. Event Hub system properties (custom properties are not supported currently) of Event Hub messages above can be loaded into a KQL table in Fabric using the “Event system properties” dropdown in the [“Get data”](https://learn.microsoft.com/fabric/real-time-intelligence/get-data-event-hub#connect-the-cloud-connection-to-your-kql-database) workflow, which can provide useful data context.
+1. Event Hub system properties (custom properties are not supported currently) of Event Hub messages above can be loaded into a KQL table in Fabric using the "Event system properties" dropdown in the ["Get data"](https://learn.microsoft.com/fabric/real-time-intelligence/get-data-event-hub#connect-the-cloud-connection-to-your-kql-database) workflow, which can provide useful data context.
 2. To flatten the hierarchical JSON received on Event Hub, use one of the following approaches:
 
     1. Utilize the DataFlow [mapping feature](https://learn.microsoft.com/azure/iot-operations/connect-to-cloud/concept-dataflow-mapping?tabs=bicep) in Yaml/Bicep to flatten the structure.

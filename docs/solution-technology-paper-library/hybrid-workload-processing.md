@@ -154,7 +154,7 @@ medium confidence](media/e2e-data-flow.png)
     [columnar database](https://www.influxdata.com/glossary/column-database/) format that is optimized for storing
      large volumes of data in a compressed format. The storage layer also includes indexing mechanisms to enable
       efficient access to data based on time ranges.
-InfluxDB is built to handle high-volume, high-velocity data and real-time queries. It can analyze millions of time series data points per second without limits or caps. The platform is built in Rust and leverages the FIDAP stack—Flight, Iceberg, DataFusion, Arrow, and Parquet—using Apache-backed technologies to efficiently ingest, store, and analyze time series data at any scale.
+InfluxDB is built to handle high-volume, high-velocity data and real-time queries. It can analyze millions of time series data points per second without limits or caps. The platform is built in Rust and leverages the FIDAP stack-Flight, Iceberg, DataFusion, Arrow, and Parquet-using Apache-backed technologies to efficiently ingest, store, and analyze time series data at any scale.
 
 **Distributed Cache:** Allows storing and retrieving network
     requests and responses. Often used with service workers to cache
@@ -333,14 +333,14 @@ Additionally, it's backward compatible and comes with various connectors, so you
 dozens, hundreds, or even thousands of commodity servers. KQL database in Eventhouse can also scale up to exploit new hardware like SSDs
 (solid-state drives) and transactional memory.
 
-**Flexibility** -- Eventhouse’s schema-less KQL database can handle and store structured, unstructured, and semi-structured data, facilitating flexible and swift development of applications and use cases like real-time decision-making, recommendations, profile management, bidding, and risk profiling.
+**Flexibility** -- Eventhouse's schema-less KQL database can handle and store structured, unstructured, and semi-structured data, facilitating flexible and swift development of applications and use cases like real-time decision-making, recommendations, profile management, bidding, and risk profiling.
 
 **Achieve greater agility** - Edge-to-cloud platforms give organizations the flexibility to respond quickly to requests from the business, capitalize
 on market opportunities when they arise, and accelerate time-to-market for new products.
 
 **Realize the transformational value of apps and data** - Some data sets are simply too large or business-critical to make the move to the cloud. An
-edge-to-cloud platform offers maximum availability and minimum latency for data assets. It provides a powerful way to create and clean data
-lakes and extract vital information through analytics and AI.
+edge-to-cloud platform offers maximum availability and minimum latency for data assets. It provides a powerful way to create and clean data
+lakes and extract vital information through analytics and AI.
 
 **Availability** -- Eventhouse on Fabric features a distributed architecture that ensures there is no single point of failure. If one or more nodes go down, the other nodes in the system can continue operations without data loss, and without impacting availability of the data.
 

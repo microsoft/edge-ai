@@ -1,4 +1,18 @@
 {
+  "inputs": [
+    {
+      "id": "ado_org",
+      "type": "promptString",
+      "description": "Azure DevOps organization name  (e.g. 'contoso')",
+      "default": "ai-at-the-edge-flagship-accelerator"
+    },
+    {
+      "id": "ado_tenant",
+      "type": "promptString",
+      "description": "Azure tenant ID (required for multi-tenant scenarios)",
+      "default": ""
+    }
+  ],
   "servers": {
     // Terraform MCP Server: https://github.com/hashicorp/terraform-mcp-server
     "terraform": {
@@ -21,6 +35,20 @@
         "anmalkov/mcp-crisp:latest"
       ],
       "env": {}
+    },
+    "context7": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp"]
+    },
+    "microsoft-docs": {
+      "type": "http",
+      "url": "https://learn.microsoft.com/api/mcp"
+    },
+    "ado": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@azure-devops/mcp", "${input:ado_org}", "--tenant", "${input:ado_tenant}"]
     }
   }
 }

@@ -1,7 +1,7 @@
 {
 	"scripts": {
-		"mdlint": "markdownlint --config .markdownlint.json --ignore .copilot-tracking --ignore .github --ignore node_modules --ignore venv \"**/*.md\"; markdown-table-formatter --check \"{.github,**}/*.md\"",
-		"mdlint-fix": "markdownlint --config .markdownlint.json --ignore .copilot-tracking --ignore .github --ignore node_modules --ignore venv --fix \"**/*.md\"; markdown-table-formatter \"{.github,**}/*.md\"",
+		"mdlint": "markdownlint --config .markdownlint.json --ignore .copilot-tracking --ignore .github --ignore node_modules --ignore venv \"**/*.md\"; markdown-table-formatter --check \"{.github,**}/**/*.md\"",
+		"mdlint-fix": "markdownlint --config .markdownlint.json --ignore .copilot-tracking --ignore .github --ignore node_modules --ignore venv --fix \"**/*.md\"; markdown-table-formatter \"{.github,**}/**/*.md\"",
 		"link-check": "mega-linter-runner --env \"'ENABLE_LINTERS=MARKDOWN_MARKDOWN_LINK_CHECK'\" ",
 		"cspell": "mega-linter-runner  --env 'ENABLE_LINTERS=SPELL_CSPELL'",
 		"yaml": "mega-linter-runner  --env 'ENABLE_LINTERS=YAML_YAMLLINT'",
@@ -22,7 +22,11 @@
 		"link-lang-fix": "python ./scripts/link-lang-check.py -f",
 		"generate-sidebar": "pwsh -File ./scripts/Generate-DocsSidebar.ps1 -DocsPath ./docs -SrcPath ./src -SidebarFile _sidebar.md -Verbose",
 		"docs": "pwsh -File ./scripts/Serve-Docs.ps1 -Open",
-		"docs:training": "pwsh -File ./scripts/Serve-Docs.ps1 -Open -StartPage praxisworx/README"
+		"docs:training": "pwsh -File ./scripts/Serve-Docs.ps1 -Open -StartPage praxisworx/README",
+		"unicode:outputonly": "pwsh -File ./scripts/Fix-VisuallySimilarUnicode.ps1 -OutputOnly",
+		"unicode:outputonly:verbose": "pwsh -File ./scripts/Fix-VisuallySimilarUnicode.ps1 -OutputOnly -Verbose",
+		"unicode:fix": "pwsh -File ./scripts/Fix-VisuallySimilarUnicode.ps1",
+		"unicode:fix:quiet": "pwsh -File ./scripts/Fix-VisuallySimilarUnicode.ps1 -Quiet"
 	},
 	"dependencies": {
 		"markdown-table-formatter": "1.6.1",

@@ -41,7 +41,7 @@ The decision is to implement a data feed process using factory equipment, Rabbit
 ![Decision architecture](./images/Decision_architedcture.png)
 
 We can query data from PostgreSQL  directly for detailed validation & comparison. May require a different set of networking &
-connectivity challenges, but could be a fallback if AIO pipelines don’t work.
+connectivity challenges, but could be a fallback if AIO pipelines don't work.
 
 This would decouple proving 2 things:
 
@@ -59,7 +59,7 @@ This would decouple proving 2 things:
    The Ingest service is a black-box that hosts proprietary Machine algorithms for handling batching and compression. PostgreSQL  is
    used to store time-series data needed for the Ingest Service.
 6. The Mosquitto broker bridges topics from RabbitMQ. These are individual telemetry messages.
-   Mosquitto is required to bridge topics due to incompatibilities between RabbitMQ’s MQTT  plugin and AIO’s MQ bridging.
+   Mosquitto is required to bridge topics due to incompatibilities between RabbitMQ's MQTT  plugin and AIO's MQ bridging.
 7. The Mosquitto broker bridges topics into AIO MQ to be made available for AIO components.
 8. AIO Data Processing pipelines or Cloud Connectors read messages from the AIO MQ.
    - The AIO MQ service may be redundant if AIO features can read messages directly from Mosquitto.
@@ -92,16 +92,16 @@ The components that make up the Machine portion in Kubernetes include:
 
 The components that make up the AIO portion in Kubernetes include:
 
-1. **Mosquitto**: Not specific to AIO, but required to bridge messages with Machine’s RabbitMQ.
+1. **Mosquitto**: Not specific to AIO, but required to bridge messages with Machine's RabbitMQ.
    - Requires a 5GB mounted volume for storing queued messages.
    - Deployed as a StatefulSet and configured with ConfigMaps and Secrets
 
-2. **AIO MQ**: AIO’s MQTT  message broker. This component may be redundant with the mosquitto broker depending on whether AIO
+2. **AIO MQ**: AIO's MQTT  message broker. This component may be redundant with the mosquitto broker depending on whether AIO
    features can integrate well with mosquitto.
    - This is installed as part of AIO itself. There is no need to deploy additional pods.
    - AIO MQ can be configured to use persistent storage for storing queued messages , we will configure 5GB for this purpose.
 
-3. **AIO Data Processor & Cloud Connector**: AIO’s features that can transport data from message brokers to the cloud (blob storage).
+3. **AIO Data Processor & Cloud Connector**: AIO's features that can transport data from message brokers to the cloud (blob storage).
    - We would only need one of these options to send data from an MQTT  broker to Blob Storage.
    - [AIO Data Flow Processing](https://learn.microsoft.com/azure/iot-operations/connect-to-cloud/overview-dataflow)  runs generic no-code pipelines for processing data at the edge. We would not directly deploy the pods that
      these pipelines run on.
@@ -111,7 +111,7 @@ The components that make up the AIO portion in Kubernetes include:
 ## Container Images
 
 The table below shows all of the container images that are required to power the system above. Platform-level components can pull from
-[mcr.microsoft.com](http://mcr.microsoft.com/)  for images while custom components and open source images will be hosted in customer’s ACR to enable security
+[mcr.microsoft.com](http://mcr.microsoft.com/)  for images while custom components and open source images will be hosted in customer's ACR to enable security
 scanning, but we can pull from DockerHub for the POC.
 
 | Kubernetes Component                 | Maintainer         | Image                                                                         | Public/Private | Container Registry    |

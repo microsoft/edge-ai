@@ -29,18 +29,18 @@ The work in progress review focuses on the list of new findings in Defender that
 
 The final review should occur before the final sprint of the engagement. Customer participation is recommended or at minimum the customer should be debriefed about the meeting. At this time, all work that is considered in scope should be complete and all work items that will be left for the customer should be reviewed and communicated with the customer.
 It's not best practice to address existing Defender recommendations in the last sprint as the final sprint should be left to deal with any emerging new work and revising the security plan so that it matches what is being delivered to the customer.
-In ISE we don’t defer security fundamentals.  There are no engagement types where it's appropriate to defer basic security fundamentals.   Sometimes there are recommendations that layer on multiple protections or enhance fundamentals that the customer will decide to put on the backlog.
+In ISE we don't defer security fundamentals.  There are no engagement types where it's appropriate to defer basic security fundamentals.   Sometimes there are recommendations that layer on multiple protections or enhance fundamentals that the customer will decide to put on the backlog.
 
 **FAQ:**
 
-Q: I don’t have access to "Production" or the customer is deploying the code what should I do?
+Q: I don't have access to "Production" or the customer is deploying the code what should I do?
 A: Reviewing the secure score and the recomendations in the environment where the code is developed is always an option. The focus of this work is to make sure that the code that we deliver does not introduce security risk and that the customer understands their security posture.  
 
 Q: My customer does not use Defender or does not want to pay for Defender.
 A: Defender recommendations are free.   Dev crews can review defender findings independently of their customer sharing the outcomes of their work in situations where it would not help the customer to learn from our "code with" practices.
 
 Q: When is clicking not applicable (N/A) appropriate?
-A: Very rarely!  In fact don’t be surprised if the security TD reaches out to you to learn about why it's not applicable. In cases where the dev crew is not delivering code to the customer this may be the best option.
+A: Very rarely!  In fact don't be surprised if the security TD reaches out to you to learn about why it's not applicable. In cases where the dev crew is not delivering code to the customer this may be the best option.
 
 Q: What if the customer uses another tool for recommendations?
 A: You should still review all Defender recommendations in your development environment for your resource group(s) and triage them appropriately. You can use the customers tool and review those findings as well.
@@ -58,7 +58,7 @@ Dev crews are given full points for completing each of the three required review
 
 ## Customer Security Stakeholder Conversation
 
-```Identify and meet with the customer’s security stakeholder during the start, middle, and end of the engagement. Identify and prioritize security requirements, share progress, and hand off unfinished backlog items.```
+```Identify and meet with the customer's security stakeholder during the start, middle, and end of the engagement. Identify and prioritize security requirements, share progress, and hand off unfinished backlog items.```
 
 The objective here is to have an organic conversation with the customer's security stakeholder(s). Our focus primarily revolves around gathering their security goals and needs, followed by the prioritization of these requests.
 
@@ -83,7 +83,7 @@ However, in the rare instance where a security stakeholder may not have a predef
 
 **Definition of done:**
 
-Dev crews are given full points for having a productive and ongoing conversation with the customer’s security stakeholder throughout the engagement.
+Dev crews are given full points for having a productive and ongoing conversation with the customer's security stakeholder throughout the engagement.
 
 ## ISE Security Champion
 
@@ -122,8 +122,8 @@ Crews are encouraged to work with Security Champions or a member of the Security
   - See CSE Wiki, open a resource request, or ask in the Cybersecurity channel.
 - Do I have to complete every section of the template?
   - At this time, it is up to dev crews to determine which parts of the template are relevant to the engagement.
-- Why don’t we call this a Threat Model?
-  - Because we don’t want to confuse our customers. An ISE Security Plan does not include any form of attestation or assertions that have been validated by a penetration test.
+- Why don't we call this a Threat Model?
+  - Because we don't want to confuse our customers. An ISE Security Plan does not include any form of attestation or assertions that have been validated by a penetration test.
 
 **Definition of done:**
 

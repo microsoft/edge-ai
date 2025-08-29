@@ -82,9 +82,9 @@ In an edge system, the ability to send telemetry to the cloud for analysis requi
 
 For sending telemetry back to cloud, the following options were evaluated:
 
-1. [Azure Monitor Container Insights](https://learn.microsoft.com/azure/azure-arc/kubernetes/extensions-release#azure-monitor-container-insights) – A first-party solution from Microsoft that collects telemetry from edge containers systems and delivers to portfolio of services inside Azure Monitor depending on the type of signal.
-2. [OpenTelemetry Collector](https://opentelemetry.io/docs/collector/) – A vendor-agnostic open-source component designed to collect, process, and export telemetry data.
-3. [Azure Monitor Edge Pipeline (preview)](https://learn.microsoft.com/azure/azure-monitor/essentials/edge-pipeline-configure?tabs=Portal) – A first-party solution from Microsoft for building data ingestion pipelines. Very similar to OpenTelemetry Collector. This product is NOT considered due to its preview status.
+1. [Azure Monitor Container Insights](https://learn.microsoft.com/azure/azure-arc/kubernetes/extensions-release#azure-monitor-container-insights) - A first-party solution from Microsoft that collects telemetry from edge containers systems and delivers to portfolio of services inside Azure Monitor depending on the type of signal.
+2. [OpenTelemetry Collector](https://opentelemetry.io/docs/collector/) - A vendor-agnostic open-source component designed to collect, process, and export telemetry data.
+3. [Azure Monitor Edge Pipeline (preview)](https://learn.microsoft.com/azure/azure-monitor/essentials/edge-pipeline-configure?tabs=Portal) - A first-party solution from Microsoft for building data ingestion pipelines. Very similar to OpenTelemetry Collector. This product is NOT considered due to its preview status.
 
 | **Data Source**                       | **Ease of Deployment**                                      | **Supported Environments**       | **Data Collection**                                                                                      | **Storage**                                                                                  |
 |---------------------------------------|-------------------------------------------------------------|----------------------------------|----------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------|
@@ -128,7 +128,7 @@ A detailed comparison can be found here: [Azure Monitor best practices - Analysi
 ![Detailed Architecture](./images/Observability_detailed_architecture.png)
 
 1. An OpenTelemetry Collector instance will be deployed per environment supporting software development lifecycle (SDLC). This enables the development, testing, and deployment in a controlled and systematic manner.
-2. Azure Monitor Agent (AMA) will be configured to pull telemetry from OpenTelemetry Collector’s Prometheus. AMA is used as an agent in the middle to push telemetry to Azure Managed Prometheus. Presently AMA supports only Azure RBAC for authorization. AMA helps to connect OpenTelemetry with Prometheus with the help of Service Principal.
+2. Azure Monitor Agent (AMA) will be configured to pull telemetry from OpenTelemetry Collector's Prometheus. AMA is used as an agent in the middle to push telemetry to Azure Managed Prometheus. Presently AMA supports only Azure RBAC for authorization. AMA helps to connect OpenTelemetry with Prometheus with the help of Service Principal.
    - This necessitates coordination between AIO telemetry collection pipeline as AIO also configures AMA agent to pull telemetry.
 3. A Kubernetes service will be deployed to enable OTLP instrumented workloads to send telemetry to service at `<service-name>.<namespace>.svc.cluster.local:4317`.
 4. Control Tower will publish a custom metric showing the most recent successful telemetry push to Blob storage. This means that no additional configuration will be needed to connect Azure Managed Grafana to Azure Table Storage.
@@ -152,7 +152,7 @@ Credits: [OpenTelemetry Collector Documentation](https://opentelemetry.io/docs/c
 | [OTLP Receiver](https://github.com/open-telemetry/opentelemetry-collector/blob/main/receiver/otlpreceiver/README.md)                   | Receives data via gRPC or HTTP using OTLP format.                     |
 | [Kubelet Stats Receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/kubeletstatsreceiver)    | Node, pod, container, and volume metrics.                             |
 | [Kubernetes Cluster Receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/k8sclusterreceiver) | Collects cluster-level metrics and entity events.                     |
-| [RabbitMQ Receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/rabbitmqreceiver)             | Receive telemetry information from edge gateway’s RabbitMQ component. |
+| [RabbitMQ Receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/rabbitmqreceiver)             | Receive telemetry information from edge gateway's RabbitMQ component. |
 
 ---
 
@@ -206,7 +206,7 @@ We round up to a whole number meaning we need to store 5 MB of data/day/workload
 
 ### Logs & Traces
 
-Logs and traces are a function of the rate and size of log statements. Let’s estimate this to be 1 GB/day.
+Logs and traces are a function of the rate and size of log statements. Let's estimate this to be 1 GB/day.
 ![Obs Equation4](./images/Obs_equation4.png)
 
 ## Configuration
@@ -238,7 +238,7 @@ Deployments must ensure:
 
 ![Merging Azure IoT Operations Configuration](./images/IoT_Operations_Configuration.png)
 
-The Azure Monitor Agent (AMA) will be configured to pull telemetry from OpenTelemetry Collector’s Prometheus. Azure IoT Operations also configures AMA to pull telemetry from the Prometheus server running inside of AIO. This presents a conflict in configuration.
+The Azure Monitor Agent (AMA) will be configured to pull telemetry from OpenTelemetry Collector's Prometheus. Azure IoT Operations also configures AMA to pull telemetry from the Prometheus server running inside of AIO. This presents a conflict in configuration.
 
 A unified `ama-metrics-prometheus-config` configuration will be created. This configuration will merge the AIO configuration with additional configurations to scrape telemetry from `<service-name>.<namespace>.svc.cluster.local:8889/metrics` for each deployed OpenTelemetry Collector instance.
 

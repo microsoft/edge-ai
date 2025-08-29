@@ -32,7 +32,7 @@ Once `develop` (AzDO main) has acquired enough features for a release (or a pred
 
 Release cycles might not be so important and interesting in the scope of the AI Flagship Accelerator project, but it is a good practice to have a dedicated branch for preparing releases.
 
-Once the release is ready to ship, it will get merged into `main` and `develop` (AzDO main), then the `release` branch will be deleted. It’s important to merge back into `develop` (AzDO main) because critical updates may have been added to the `release` branch and they need to be accessible to new features.
+Once the release is ready to ship, it will get merged into `main` and `develop` (AzDO main), then the `release` branch will be deleted. It's important to merge back into `develop` (AzDO main) because critical updates may have been added to the `release` branch and they need to be accessible to new features.
 
 ### AzDO to GitHub Sync
 
