@@ -119,6 +119,7 @@ resource "azapi_resource" "aio_sync_rule" {
       targetResourceGroup = var.resource_group_id
     }
   }
+
   count = var.should_deploy_resource_sync_rules ? 1 : 0
 }
 
@@ -139,6 +140,7 @@ resource "azapi_resource" "aio_device_registry_sync_rule" {
       targetResourceGroup = var.resource_group_id
     }
   }
+
   count = var.should_deploy_resource_sync_rules ? 1 : 0
 }
 

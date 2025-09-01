@@ -1,5 +1,5 @@
 /**
- * # Azure IoT Instance post-installation enablement 
+ * # Azure IoT Instance post-installation enablement
  *
  * Enables secret-sync on the Azure IoT instance after the instance is created.
  *
@@ -7,9 +7,15 @@
 
 data "azurerm_subscription" "current" {}
 
+// Generate SPC name using the same pattern as the Azure IoT Operations CLI
+locals {
+  spc_name_hash_input = "${var.connected_cluster_name}-${var.resource_group.name}-${var.aio_instance_name}"
+  spc_name            = "spc-ops-${substr(sha256(local.spc_name_hash_input), 0, 7)}"
+}
+
 resource "azapi_resource" "default_aio_keyvault_secret_provider_class" {
   type      = "Microsoft.SecretSyncController/azureKeyVaultSecretProviderClasses@2024-08-21-preview"
-  name      = "spc-ops-aio" # Name can be anything, as the Digital Operations Experience (DOE) searches for the SPC by the custom location and resource group, this is not documented but found through default install values and testing
+  name      = local.spc_name
   location  = var.connected_cluster_location
   parent_id = var.resource_group.id
 
@@ -53,4 +59,21 @@ resource "azurerm_federated_identity_credential" "federated_identity_cred_aio_in
   issuer              = data.azapi_resource.cluster_oidc_issuer.output.properties.oidcIssuerProfile.issuerUrl
   parent_id           = var.aio_user_managed_identity_id
   subject             = "system:serviceaccount:${var.aio_namespace}:aio-dataflow" # Service account name must be this value, this is currently not documented but hard-coded in CLI, eg here: https://github.com/Azure/azure-iot-ops-cli-extension/blob/dev/azext_edge/edge/providers/orchestration/resources/instances.py#L37
+}
+
+resource "azapi_update_resource" "aio_instance_secret_sync_update" {
+  count     = var.enable_instance_secret_sync ? 1 : 0
+  type      = "Microsoft.IoTOperations/instances@2025-07-01-preview"
+  name      = var.aio_instance_name
+  parent_id = var.resource_group.id
+
+  depends_on = [azapi_resource.default_aio_keyvault_secret_provider_class]
+
+  body = {
+    properties = {
+      defaultSecretProviderClassRef = {
+        resourceId = azapi_resource.default_aio_keyvault_secret_provider_class[0].id
+      }
+    }
+  }
 }

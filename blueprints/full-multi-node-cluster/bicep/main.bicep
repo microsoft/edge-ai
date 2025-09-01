@@ -2,7 +2,6 @@ metadata name = 'Full Multi-node Cluster Blueprint'
 metadata description = 'Deploys a complete end-to-end environment for Azure IoT Operations on a multi-node, Arc-enabled Kubernetes cluster.'
 
 import * as core from './types.core.bicep'
-import * as iotOpsTypes from '../../../src/100-edge/110-iot-ops/bicep/types.bicep'
 
 targetScope = 'subscription'
 
@@ -105,6 +104,7 @@ var shouldEnableOpcUaSimulatorAsset = false
 
 resource attribution 'Microsoft.Resources/deployments@2020-06-01' = if (!telemetry_opt_out) {
   name: 'pid-acce1e78-0375-4637-a593-86aa36dcfeac'
+  location: deployment().location
   properties: {
     mode: 'Incremental'
     template: {

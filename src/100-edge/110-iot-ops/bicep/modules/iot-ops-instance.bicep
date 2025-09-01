@@ -33,6 +33,16 @@ param aioPlatformExtensionId string
 param aioFeatures types.AioFeatures?
 
 /*
+  Secret Sync Parameters
+*/
+
+@description('The name of the User Assigned Managed Identity for Secret Sync.')
+param sseIdentityName string
+
+@description('The name of the Key Vault for Secret Sync.')
+param sseKeyVaultName string
+
+/*
   Security and Trust Parameters
 */
 
@@ -117,15 +127,11 @@ var aioMqBrokerAddress = 'mqtts://${aioMqBrokerConfig.brokerListenerServiceName}
   Resources
 */
 
-resource aioIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' existing = {
-  name: aioIdentityName
-}
-
 resource schemaRegistry 'Microsoft.DeviceRegistry/schemaRegistries@2024-09-01-preview' existing = {
   name: schemaRegistryName
 }
 
-resource arcConnectedCluster 'Microsoft.Kubernetes/connectedClusters@2021-03-01' existing = {
+resource arcConnectedCluster 'Microsoft.Kubernetes/connectedClusters@2024-12-01-preview' existing = {
   name: arcConnectedClusterName
 }
 
@@ -227,6 +233,48 @@ resource adrSyncRule 'Microsoft.ExtendedLocation/customLocations/resourceSyncRul
   ]
 }
 
+resource sseIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' existing = {
+  name: sseIdentityName
+
+  resource sseFedCred 'federatedIdentityCredentials' = {
+    name: 'aio-sse-ficred'
+    properties: {
+      audiences: ['api://AzureADTokenExchange']
+      issuer: arcConnectedCluster.properties.oidcIssuerProfile.issuerUrl
+      subject: 'system:serviceaccount:${aioExtensionConfig.settings.namespace}:aio-ssc-sa'
+    }
+  }
+}
+
+resource aioIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' existing = {
+  name: aioIdentityName
+
+  resource aioFedCred 'federatedIdentityCredentials' = {
+    name: 'aio-instance-ficred'
+    properties: {
+      audiences: ['api://AzureADTokenExchange']
+      issuer: arcConnectedCluster.properties.oidcIssuerProfile.issuerUrl
+      subject: 'system:serviceaccount:${aioExtensionConfig.settings.namespace}:aio-dataflow'
+    }
+  }
+}
+
+resource defaultSecretSyncSecretProviderClass 'Microsoft.SecretSyncController/azureKeyVaultSecretProviderClasses@2024-08-21-preview' = {
+  name: 'spc-ops-${take(uniqueString('${arcConnectedClusterName}-${resourceGroup().name}-${aioInstanceName}'), 7)}'
+  location: common.location
+
+  extendedLocation: {
+    name: customLocation.id
+    type: 'CustomLocation'
+  }
+
+  properties: {
+    clientId: sseIdentity.properties.clientId
+    keyvaultName: sseKeyVaultName!
+    tenantId: sseIdentity.properties.tenantId
+  }
+}
+
 resource aioInstance 'Microsoft.IoTOperations/instances@2025-07-01-preview' = {
   name: aioInstanceName
   location: common.location
@@ -245,6 +293,9 @@ resource aioInstance 'Microsoft.IoTOperations/instances@2025-07-01-preview' = {
       description: 'An AIO instance.'
       schemaRegistryRef: {
         resourceId: schemaRegistry.id
+      }
+      defaultSecretProviderClassRef: {
+        resourceId: defaultSecretSyncSecretProviderClass.id
       }
     },
     adrNamespaceId == null

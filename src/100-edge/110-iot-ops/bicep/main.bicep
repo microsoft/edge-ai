@@ -190,7 +190,7 @@ module deployArcK8sRoleAssignments 'modules/deploy-arc-k8s-role-assignments.bice
   name: '${deployment().name}-arc0'
   params: {
     arcConnectedClusterName: arcConnectedClusterName
-    deployIdentityPrincipalId: deployIdentity.properties.principalId
+    deployIdentityPrincipalId: (deployIdentity.?properties.?principalId) ?? ''
   }
 }
 
@@ -199,7 +199,7 @@ module deployKeyVaultRoleAssignments 'modules/deploy-key-vault-role-assignments.
   scope: resourceGroup(deployKeyVaultResourceGroupName)
   params: {
     deployKeyVaultName: deployKeyVaultName
-    deployIdentityPrincipalId: deployIdentity.properties.principalId
+    deployIdentityPrincipalId: (deployIdentity.?properties.?principalId) ?? ''
   }
 }
 
@@ -279,7 +279,7 @@ module postInitScripts 'modules/apply-scripts.bicep' = if (shouldDeployAioDeploy
   IoT Operations Instance Modules
 */
 
-module iotOpsInstance 'modules/iot-ops-instance.bicep' = if (shouldDeployAio) {
+module iotOpsInstance 'modules/iot-ops-instance.bicep' = if (shouldDeployAio && shouldInitAio) {
   name: '${deployment().name}-ioi3'
   dependsOn: [
     postInitScripts
@@ -288,35 +288,24 @@ module iotOpsInstance 'modules/iot-ops-instance.bicep' = if (shouldDeployAio) {
     aioDataFlowInstanceConfig: aioDataFlowInstanceConfig
     aioExtensionConfig: aioExtensionConfig
     aioIdentityName: aioIdentityName
+    sseIdentityName: sseIdentityName
+    sseKeyVaultName: sseKeyVaultName
     aioInstanceName: aioInstanceName
     aioFeatures: aioFeatures
     aioMqBrokerConfig: aioMqBrokerConfig
-    aioPlatformExtensionId: iotOpsInit.outputs.aioPlatformExtensionId
+    aioPlatformExtensionId: (iotOpsInit.?outputs.?aioPlatformExtensionId) ?? ''
     arcConnectedClusterName: arcConnectedClusterName
     brokerListenerAnonymousConfig: brokerListenerAnonymousConfig
     common: common
     customLocationName: customLocationName
     schemaRegistryName: schemaRegistryName
     adrNamespaceId: adrNamespace.?id
-    secretStoreExtensionId: iotOpsInit.outputs.secretStoreExtensionId
+    secretStoreExtensionId: (iotOpsInit.?outputs.?secretStoreExtensionId) ?? ''
     shouldCreateAnonymousBrokerListener: shouldCreateAnonymousBrokerListener
     shouldDeployResourceSyncRules: shouldDeployResourceSyncRules
     shouldEnableOtelCollector: shouldEnableOtelCollector
     trustIssuerSettings: trustIssuerSettings.?trustSettings
     trustSource: trustSource
-  }
-}
-
-module iotOpsInstancePost 'modules/iot-ops-instance-post.bicep' = if (shouldDeployAio) {
-  name: '${deployment().name}-ioip4'
-  params: {
-    aioIdentityName: aioIdentityName
-    aioNamespace: aioExtensionConfig.settings.namespace
-    arcConnectedClusterName: arcConnectedClusterName
-    common: common
-    customLocationId: iotOpsInstance.outputs.customLocationId
-    sseIdentityName: sseIdentityName
-    sseKeyVaultName: sseKeyVaultName
   }
 }
 
@@ -364,14 +353,14 @@ module postInstanceScripts 'modules/apply-scripts.bicep' = if (shouldDeployAioDe
   OPC UA Simulator Modules
 */
 
-module opcUaSimulator 'modules/opc-ua-simulator-asset.bicep' = if (shouldEnableOpcUaSimulatorAsset) {
+module opcUaSimulator 'modules/opc-ua-simulator-asset.bicep' = if (shouldEnableOpcUaSimulatorAsset && shouldDeployAio) {
   name: '${deployment().name}-opc7'
   dependsOn: [
     postInstanceScripts
   ]
   params: {
     common: common
-    customLocationId: iotOpsInstance.outputs.customLocationId
+    customLocationId: (iotOpsInstance.?outputs.?customLocationId) ?? ''
     adrNamespaceId: adrNamespace.id
   }
 }
@@ -381,49 +370,57 @@ module opcUaSimulator 'modules/opc-ua-simulator-asset.bicep' = if (shouldEnableO
 */
 
 @description('The ID of the Container Storage Extension.')
-output containerStorageExtensionId string = iotOpsInit.outputs.containerStorageExtensionId
+output containerStorageExtensionId string = (iotOpsInit.?outputs.?containerStorageExtensionId) ?? ''
 
 @description('The name of the Container Storage Extension.')
-output containerStorageExtensionName string = iotOpsInit.outputs.containerStorageExtensionName
+output containerStorageExtensionName string = (iotOpsInit.?outputs.?containerStorageExtensionName) ?? ''
 
 @description('The ID of the Open Service Mesh Extension.')
-output openServiceMeshExtensionId string = iotOpsInit.outputs.openServiceMeshExtensionId
+output openServiceMeshExtensionId string = (iotOpsInit.?outputs.?openServiceMeshExtensionId) ?? ''
 
 @description('The name of the Open Service Mesh Extension.')
-output openServiceMeshExtensionName string = iotOpsInit.outputs.openServiceMeshExtensionName
+output openServiceMeshExtensionName string = (iotOpsInit.?outputs.?openServiceMeshExtensionName) ?? ''
 
 @description('The ID of the Azure IoT Operations Platform Extension.')
-output aioPlatformExtensionId string = iotOpsInit.outputs.aioPlatformExtensionId
+output aioPlatformExtensionId string = (iotOpsInit.?outputs.?aioPlatformExtensionId) ?? ''
 
 @description('The name of the Azure IoT Operations Platform Extension.')
-output aioPlatformExtensionName string = iotOpsInit.outputs.aioPlatformExtensionName
+output aioPlatformExtensionName string = (iotOpsInit.?outputs.?aioPlatformExtensionName) ?? ''
 
 @description('The ID of the Secret Store Extension.')
-output secretStoreExtensionId string = iotOpsInit.outputs.secretStoreExtensionId
+output secretStoreExtensionId string = (iotOpsInit.?outputs.?secretStoreExtensionId) ?? ''
 
 @description('The name of the Secret Store Extension.')
-output secretStoreExtensionName string = iotOpsInit.outputs.secretStoreExtensionName
+output secretStoreExtensionName string = (iotOpsInit.?outputs.?secretStoreExtensionName) ?? ''
 
 @description('The ID of the deployed Custom Location.')
-output customLocationId string = iotOpsInstance.outputs.customLocationId
+output customLocationId string = shouldDeployAio ? (iotOpsInstance.?outputs.?customLocationId ?? '') : ''
 
 @description('The name of the deployed Custom Location.')
-output customLocationName string = iotOpsInstance.outputs.customLocationName
+output customLocationName string = shouldDeployAio ? (iotOpsInstance.?outputs.?customLocationName ?? '') : ''
 
 @description('The ID of the deployed Azure IoT Operations instance.')
-output aioInstanceId string = iotOpsInstance.outputs.aioInstanceId
+output aioInstanceId string = shouldDeployAio ? (iotOpsInstance.?outputs.?aioInstanceId ?? '') : ''
 
 @description('The name of the deployed Azure IoT Operations instance.')
-output aioInstanceName string = iotOpsInstance.outputs.aioInstanceName
+output aioInstanceName string = shouldDeployAio ? (iotOpsInstance.?outputs.?aioInstanceName ?? '') : ''
 
 @description('The ID of the deployed Azure IoT Operations Data Flow Profile.')
-output dataFlowProfileId string = shouldDeployResourceSyncRules ? iotOpsInstance.outputs.dataFlowProfileId : ''
+output dataFlowProfileId string = shouldDeployAio && shouldDeployResourceSyncRules
+  ? (iotOpsInstance.?outputs.?dataFlowProfileId ?? '')
+  : ''
 
 @description('The name of the deployed Azure IoT Operations Data Flow Profile.')
-output dataFlowProfileName string = shouldDeployResourceSyncRules ? iotOpsInstance.outputs.dataFlowProfileName : ''
+output dataFlowProfileName string = shouldDeployAio && shouldDeployResourceSyncRules
+  ? (iotOpsInstance.?outputs.?dataFlowProfileName ?? '')
+  : ''
 
 @description('The ID of the deployed Azure IoT Operations Data Flow Endpoint.')
-output dataFlowEndpointId string = shouldDeployResourceSyncRules ? iotOpsInstance.outputs.dataFlowEndpointId : ''
+output dataFlowEndpointId string = shouldDeployAio && shouldDeployResourceSyncRules
+  ? (iotOpsInstance.?outputs.?dataFlowEndpointId ?? '')
+  : ''
 
 @description('The name of the deployed Azure IoT Operations Data Flow Endpoint.')
-output dataFlowEndpointName string = shouldDeployResourceSyncRules ? iotOpsInstance.outputs.dataFlowEndpointName : ''
+output dataFlowEndpointName string = shouldDeployAio && shouldDeployResourceSyncRules
+  ? (iotOpsInstance.?outputs.?dataFlowEndpointName ?? '')
+  : ''

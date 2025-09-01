@@ -22,6 +22,7 @@ Enables secret-sync on the Azure IoT instance after the instance is created.
 | Name | Type |
 |------|------|
 | [azapi_resource.default_aio_keyvault_secret_provider_class](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) | resource |
+| [azapi_update_resource.aio_instance_secret_sync_update](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/update_resource) | resource |
 | [azurerm_federated_identity_credential.federated_identity_cred_aio_instance](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/federated_identity_credential) | resource |
 | [azurerm_federated_identity_credential.federated_identity_cred_sse_aio](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/federated_identity_credential) | resource |
 | [azapi_resource.cluster_oidc_issuer](https://registry.terraform.io/providers/Azure/azapi/latest/docs/data-sources/resource) | data source |
@@ -31,6 +32,7 @@ Enables secret-sync on the Azure IoT instance after the instance is created.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| aio\_instance\_name | The name of the Azure IoT Operations instance | `string` | n/a | yes |
 | aio\_namespace | Azure IoT Operations namespace | `string` | n/a | yes |
 | aio\_user\_managed\_identity\_id | ID of the User Assigned Managed Identity for the Azure IoT Operations instance | `string` | n/a | yes |
 | connected\_cluster\_location | The location of the connected cluster resource | `string` | n/a | yes |

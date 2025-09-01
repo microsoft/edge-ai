@@ -48,5 +48,9 @@ variable "aio_namespace" {
 variable "aio_user_managed_identity_id" {
   type        = string
   description = "ID of the User Assigned Managed Identity for the Azure IoT Operations instance"
+}
 
+variable "aio_instance_name" {
+  type        = string
+  description = "The name of the Azure IoT Operations instance"
 }

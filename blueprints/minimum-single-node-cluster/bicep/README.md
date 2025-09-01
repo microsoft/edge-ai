@@ -345,7 +345,6 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 |postInitScriptsSecrets|`Microsoft.Resources/deployments`|2022-09-01|
 |postInitScripts|`Microsoft.Resources/deployments`|2022-09-01|
 |iotOpsInstance|`Microsoft.Resources/deployments`|2022-09-01|
-|iotOpsInstancePost|`Microsoft.Resources/deployments`|2022-09-01|
 |postInstanceScriptsSecrets|`Microsoft.Resources/deployments`|2022-09-01|
 |postInstanceScripts|`Microsoft.Resources/deployments`|2022-09-01|
 |opcUaSimulator|`Microsoft.Resources/deployments`|2022-09-01|

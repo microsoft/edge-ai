@@ -62,7 +62,6 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 |postInitScriptsSecrets|`Microsoft.Resources/deployments`|2022-09-01|
 |postInitScripts|`Microsoft.Resources/deployments`|2022-09-01|
 |iotOpsInstance|`Microsoft.Resources/deployments`|2022-09-01|
-|iotOpsInstancePost|`Microsoft.Resources/deployments`|2022-09-01|
 |postInstanceScriptsSecrets|`Microsoft.Resources/deployments`|2022-09-01|
 |postInstanceScripts|`Microsoft.Resources/deployments`|2022-09-01|
 |opcUaSimulator|`Microsoft.Resources/deployments`|2022-09-01|
@@ -78,7 +77,6 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 |postInitScriptsSecrets|Creates secrets in Key Vault for deployment script setup and initialization for Azure IoT Operations.|
 |postInitScripts|Runs deployment scripts for IoT Operations using an Azure deploymentScript resource, including tool installation and script execution.|
 |iotOpsInstance|Deploys Azure IoT Operations instance, broker, authentication, listeners, and data flow components on an Azure Arc-enabled Kubernetes cluster.|
-|iotOpsInstancePost|Configures federated identity credentials for Azure IoT Operations and Secret Sync Extension service accounts and sets up Key Vault Secret Provider Class.|
 |postInstanceScriptsSecrets|Creates secrets in Key Vault for deployment script setup and initialization for Azure IoT Operations.|
 |postInstanceScripts|Runs deployment scripts for IoT Operations using an Azure deploymentScript resource, including tool installation and script execution.|
 |opcUaSimulator|Deploy and configure the OPC UA Simulator|
@@ -281,6 +279,8 @@ Deploys Azure IoT Operations instance, broker, authentication, listeners, and da
 |aioExtensionConfig|The settings for the Azure IoT Operations Extension.|`[_1.AioExtension](#user-defined-types)`|n/a|yes|
 |aioPlatformExtensionId|The resource ID for the Azure IoT Operations Platform Extension.|`string`|n/a|yes|
 |aioFeatures||`[_1.AioFeatures](#user-defined-types)`|n/a|no|
+|sseIdentityName|The name of the User Assigned Managed Identity for Secret Sync.|`string`|n/a|yes|
+|sseKeyVaultName|The name of the Key Vault for Secret Sync.|`string`|n/a|yes|
 |secretStoreExtensionId|The resource ID for the Secret Store Extension.|`string`|n/a|yes|
 |trustSource|The source for trust for Azure IoT Operations.|`[_1.TrustSource](#user-defined-types)`|n/a|yes|
 |trustIssuerSettings|The trust settings for Azure IoT Operations.|`[_1.TrustSettingsConfig](#user-defined-types)`|n/a|no|
@@ -298,13 +298,17 @@ Deploys Azure IoT Operations instance, broker, authentication, listeners, and da
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|aioIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2023-01-31|
+|sseIdentity::sseFedCred|`Microsoft.ManagedIdentity/userAssignedIdentities/federatedIdentityCredentials`|2023-01-31|
+|aioIdentity::aioFedCred|`Microsoft.ManagedIdentity/userAssignedIdentities/federatedIdentityCredentials`|2023-01-31|
 |schemaRegistry|`Microsoft.DeviceRegistry/schemaRegistries`|2024-09-01-preview|
-|arcConnectedCluster|`Microsoft.Kubernetes/connectedClusters`|2021-03-01|
+|arcConnectedCluster|`Microsoft.Kubernetes/connectedClusters`|2024-12-01-preview|
 |aioExtension|`Microsoft.KubernetesConfiguration/extensions`|2023-05-01|
 |customLocation|`Microsoft.ExtendedLocation/customLocations`|2021-08-31-preview|
 |aioSyncRule|`Microsoft.ExtendedLocation/customLocations/resourceSyncRules`|2021-08-31-preview|
 |adrSyncRule|`Microsoft.ExtendedLocation/customLocations/resourceSyncRules`|2021-08-31-preview|
+|sseIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2023-01-31|
+|aioIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2023-01-31|
+|defaultSecretSyncSecretProviderClass|`Microsoft.SecretSyncController/azureKeyVaultSecretProviderClasses`|2024-08-21-preview|
 |aioInstance|`Microsoft.IoTOperations/instances`|2025-07-01-preview|
 |broker|`Microsoft.IoTOperations/instances/brokers`|2025-07-01-preview|
 |brokerAuthn|`Microsoft.IoTOperations/instances/brokers/authentications`|2025-07-01-preview|
@@ -339,33 +343,6 @@ Deploys Azure IoT Operations instance, broker, authentication, listeners, and da
 |brokerAuthnId|`string`|The ID of the deployed AIO MQ Broker Authentication.|
 |brokerListenerName|`string`|The name of the deployed AIO MQ Broker Listener.|
 |brokerListenerId|`string`|The ID of the deployed AIO MQ Broker Listener.|
-
-### iotOpsInstancePost
-
-Configures federated identity credentials for Azure IoT Operations and Secret Sync Extension service accounts and sets up Key Vault Secret Provider Class.
-
-#### Parameters for iotOpsInstancePost
-
-|Name|Description|Type|Default|Required|
-| :--- | :--- | :--- | :--- | :--- |
-|common|The common component configuration.|`[_1.Common](#user-defined-types)`|n/a|yes|
-|arcConnectedClusterName|Name of the existing arc-enabled cluster where AIO will be deployed.|`string`|n/a|yes|
-|customLocationId|The resource Id for the Custom Locations for Azure IoT Operations.|`string`|n/a|yes|
-|sseIdentityName|The name of the User Assigned Managed Identity for Secret Sync.|`string`|n/a|yes|
-|aioIdentityName|The name of the User Assigned Managed Identity for Azure IoT Operations.|`string`|n/a|yes|
-|sseKeyVaultName|The name of the Key Vault for Secret Sync. (Required when providing sseUserManagedIdentityName)|`string`|n/a|yes|
-|aioNamespace|The namespace for Azure IoT Operations in the cluster.|`string`|n/a|yes|
-
-#### Resources for iotOpsInstancePost
-
-|Name|Type|API Version|
-| :--- | :--- | :--- |
-|sseIdentity::sseFedCred|`Microsoft.ManagedIdentity/userAssignedIdentities/federatedIdentityCredentials`|2023-01-31|
-|aioIdentity::aioFedCred|`Microsoft.ManagedIdentity/userAssignedIdentities/federatedIdentityCredentials`|2023-01-31|
-|arcConnectedCluster|`Microsoft.Kubernetes/connectedClusters`|2024-12-01-preview|
-|sseIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2023-01-31|
-|aioIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2023-01-31|
-|defaultSecretSyncSecretProviderClass|`Microsoft.SecretSyncController/azureKeyVaultSecretProviderClasses`|2024-08-21-preview|
 
 ### postInstanceScriptsSecrets
 

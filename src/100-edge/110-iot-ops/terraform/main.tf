@@ -150,6 +150,7 @@ module "iot_ops_instance_post" {
   aio_namespace                = var.operations_config.namespace
   sse_user_managed_identity    = var.secret_sync_identity
   aio_user_managed_identity_id = var.aio_identity.id
+  aio_instance_name            = module.iot_ops_instance.instance_name
 }
 
 /*
