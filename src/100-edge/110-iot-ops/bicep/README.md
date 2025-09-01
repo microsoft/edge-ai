@@ -307,7 +307,6 @@ Deploys Azure IoT Operations instance, broker, authentication, listeners, and da
 |aioSyncRule|`Microsoft.ExtendedLocation/customLocations/resourceSyncRules`|2021-08-31-preview|
 |adrSyncRule|`Microsoft.ExtendedLocation/customLocations/resourceSyncRules`|2021-08-31-preview|
 |sseIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2023-01-31|
-|aioIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2023-01-31|
 |defaultSecretSyncSecretProviderClass|`Microsoft.SecretSyncController/azureKeyVaultSecretProviderClasses`|2024-08-21-preview|
 |aioInstance|`Microsoft.IoTOperations/instances`|2025-07-01-preview|
 |broker|`Microsoft.IoTOperations/instances/brokers`|2025-07-01-preview|
