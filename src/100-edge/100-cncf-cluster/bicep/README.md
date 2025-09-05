@@ -21,6 +21,7 @@ The scripts handle primary and secondary node(s) setup, cluster administration, 
 |shouldAddCurrentUserClusterAdmin|Whether to add the current user as a cluster admin.|`bool`|`true`|no|
 |shouldEnableArcAutoUpgrade|Whether to enable auto-upgrade for Azure Arc agents.|`bool`|[not(equals(parameters('common').environment, 'prod'))]|no|
 |clusterAdminOid|The Object ID that will be given cluster-admin permissions.|`string`|n/a|no|
+|clusterAdminUpn|The User Principal Name that will be given cluster-admin permissions.|`string`|n/a|no|
 |clusterNodeVirtualMachineNames|The node virtual machines names.|`array`|n/a|no|
 |clusterServerVirtualMachineName|The server virtual machines name.|`string`|n/a|no|
 |clusterServerHostMachineUsername|Username used for the host machines that will be given kube-config settings on setup. (Otherwise, resource_prefix if it exists as a user)|`string`|[parameters('common').resourcePrefix]|no|
@@ -75,6 +76,7 @@ Configures K3s Kubernetes clusters on Ubuntu virtual machines and connects them 
 |arcOnboardingSpClientId|The Service Principal Client ID for Arc onboarding.|`string`|n/a|no|
 |arcOnboardingSpClientSecret|The Service Principal Client Secret for Arc onboarding.|`securestring`|n/a|no|
 |clusterAdminOid|The Object ID that will be given cluster-admin permissions.|`string`|n/a|no|
+|clusterAdminUpn|The User Principal Name that will be given cluster-admin permissions.|`string`|n/a|no|
 |clusterServerHostMachineUsername|Username for the host machine with kube-config settings.|`string`|n/a|yes|
 |clusterServerIp|The IP address for the server for the cluster. (Needed for mult-node cluster)|`string`|n/a|no|
 |deployAdminOid|The Object ID that will be given deployment admin permissions.|`string`|n/a|no|

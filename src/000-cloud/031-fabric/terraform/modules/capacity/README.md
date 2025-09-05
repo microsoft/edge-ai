@@ -29,7 +29,6 @@
 | name | The name of the Fabric capacity. | `string` | n/a | yes |
 | resource\_group\_name | The name of the resource group in which to create the Fabric capacity. | `string` | n/a | yes |
 | admin\_members | List of AAD object IDs for Fabric capacity administrators. | `list(string)` | `[]` | no |
-| create\_capacity | Boolean flag to determine whether to create a new Fabric capacity or use an existing one. | `bool` | `true` | no |
 | sku | The SKU name for the Fabric capacity. | `string` | `"F2"` | no |
 | tags | Tags to apply to the Fabric capacity. | `map(string)` | `{}` | no |
 
@@ -37,8 +36,6 @@
 
 | Name | Description |
 |------|-------------|
-| capacity\_id | The ID of the Fabric capacity. |
-| capacity\_name | The name of the Fabric capacity. |
-| capacity\_sku | The SKU of the Fabric capacity. |
+| capacity | The Fabric capacity. |
 <!-- markdown-table-prettify-ignore-end -->
 <!-- END_TF_DOCS -->

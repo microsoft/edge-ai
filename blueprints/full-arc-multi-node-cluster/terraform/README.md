@@ -59,6 +59,7 @@ Deploys a full deployment with (almost) all components onto Arc enabled Servers.
 | custom\_locations\_oid | The object id of the Custom Locations Entra ID application for your tenant. If none is provided, the script will attempt to retrieve this requiring 'Application.Read.All' or 'Directory.Read.All' permissions. ```sh az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv``` | `string` | `null` | no |
 | resource\_group\_name | The name of the Resource Group that will be created for the resources. | `string` | `null` | no |
 | resource\_group\_tags | The tags to add to the resources. | `map(string)` | `null` | no |
+| should\_add\_current\_user\_cluster\_admin | Gives the current logged in user cluster-admin permissions with the new cluster. | `bool` | `true` | no |
 | should\_create\_anonymous\_broker\_listener | Whether to enable an insecure anonymous AIO MQ Broker Listener. Should only be used for dev or test environments. | `bool` | `false` | no |
 | should\_create\_azure\_functions | Whether to create Azure Functions for the cluster | `bool` | `false` | no |
 | should\_enable\_opc\_ua\_simulator | Whether to deploy the OPC UA Simulator to the cluster | `bool` | `true` | no |

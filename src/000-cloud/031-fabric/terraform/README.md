@@ -17,11 +17,14 @@ Contains all the resources needed for Fabric based resources.
 | Name | Version |
 |------|---------|
 | fabric | 1.3.0 |
+| terraform | n/a |
 
 ## Resources
 
 | Name | Type |
 |------|------|
+| [terraform_data.defer_fabric_capacity](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data) | resource |
+| [terraform_data.defer_fabric_workspace](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data) | resource |
 | [fabric_capacity.existing](https://registry.terraform.io/providers/microsoft/fabric/1.3.0/docs/data-sources/capacity) | data source |
 | [fabric_workspace.existing](https://registry.terraform.io/providers/microsoft/fabric/1.3.0/docs/data-sources/workspace) | data source |
 

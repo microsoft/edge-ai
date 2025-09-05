@@ -3,26 +3,42 @@
 """
 AIO Version Checker
 
-This script compares the version and train of components in either Terraform or Bicep
-configuration files with AIO components defined in remote JSON files. It outputs
-any mismatches found and is useful for build systems to ensure that the most recent
-released versions of AIO components and trains are being used.
+This script compares the version and train of components in either Terraform or
+Bicep configuration files with AIO components defined in remote JSON files. It
+outputs any mismatches found and is useful for build systems to ensure that the
+most recent released versions of AIO components and trains are being used.
 
 Functionality:
-    - Checks Terraform variables in ./src/040-iot-ops/terraform/variables.init.tf
-    - Checks Terraform instance variables in ./src/040-iot-ops/terraform/variables.instance.tf
-    - Checks Bicep variables in ./src/040-iot-ops/bicep/types.bicep
-    - Compares with latest versions and trains from remote manifest files
-    - Reports any mismatches in versions or trains
+        - Checks Terraform variables in
+            ./src/040-iot-ops/terraform/variables.init.tf
+        - Checks Terraform instance variables in
+            ./src/040-iot-ops/terraform/variables.instance.tf
+        - Checks Bicep variables in ./src/040-iot-ops/bicep/types.bicep
+                - Resolves latest release via the GitHub API and derives
+                    manifest URLs
+            - If JSON assets are not present in the release, falls back to the
+                release branch/tag to fetch the JSON files
+        - Compares with latest versions and trains from remote manifest files
+        - Reports any mismatches in versions or trains
 
 Parameters:
     --error-on-mismatch: Exit with error code 1 if versions don't match
     -v, --verbose: Enable verbose output
     -t, --iac-type: Type of IaC files to check (terraform, bicep, or all)
+    --strict-latest: Fail if latest release cannot be resolved; do not use
+                     legacy fallbacks
+    --require-asset-files: Require JSON manifests to be present as release
+                           assets; if missing, exit instead of using branch
+                           fallback
+    --print-manifest-urls: Resolve and print only the two manifest URLs
+                           (enablement and instance) as JSON to stdout and exit
+    --release-tag TAG:     Resolve URLs for a specific release tag (e.g. v1.2.36)
+    --channel {stable,preview}: When no tag is provided, choose latest stable
+                           (default) or latest preview release
 
 Returns:
-    JSON array: Outputs a list of mismatches found, with each mismatch containing details
-                about the component, local and remote versions/trains
+    JSON array: Outputs a list of mismatches found, with each mismatch
+    containing details about the component, local and remote versions/trains
 
 Raises:
     Exception: If manifests cannot be downloaded or parsed
@@ -43,22 +59,27 @@ Example:
     python aio-version-checker.py --error-on-mismatch
 
 Notes:
-    The script is designed to ensure that infrastructure code in a repository stays
-    up-to-date with the latest released versions of Azure IoT Operations components.
+    The script is designed to ensure that infrastructure code in a repository
+    stays up-to-date with the latest released versions of Azure IoT Operations
+    components.
 
 See Also:
-    - Azure IoT Operations documentation: https://learn.microsoft.com/azure/iot-operations
-    - AIO manifest files:
-      - https://raw.githubusercontent.com/Azure/azure-iot-operations/main/release/azure-iot-operations-enablement.json
-      - https://raw.githubusercontent.com/Azure/azure-iot-operations/main/release/azure-iot-operations-instance.json
+        - Azure IoT Operations docs:
+            https://learn.microsoft.com/azure/iot-operations
+        - AIO manifest files (raw):
+            https://raw.githubusercontent.com/Azure/azure-iot-operations/main/
+            release/azure-iot-operations-enablement.json
+            https://raw.githubusercontent.com/Azure/azure-iot-operations/main/
+            release/azure-iot-operations-instance.json
 """
 
 import argparse
+import os
 import json
 import logging
 import re
 import sys
-from typing import Dict, List, Any, Literal, Union
+from typing import Dict, List, Any, Literal, Union, Tuple, Optional
 
 import hcl2
 import requests
@@ -70,6 +91,7 @@ logging.basicConfig(
 logger = logging.getLogger("aio-version-checker")
 
 # Constants
+# Legacy default URLs (used only as last-resort fallback if requested)
 AIO_MANIFEST_VERSIONS_URL = "https://raw.githubusercontent.com/Azure/azure-iot-operations/main/release/azure-iot-operations-enablement.json"
 AIO_MANIFEST_INSTANCE_VERSIONS_URL = "https://raw.githubusercontent.com/Azure/azure-iot-operations/main/release/azure-iot-operations-instance.json"
 TERRAFORM_VARS_FILE = "./src/100-edge/110-iot-ops/terraform/variables.init.tf"
@@ -86,7 +108,6 @@ TERRAFORM_COMPONENTS = [
     "platform:platform",
     "secret_sync_controller:secretStore",
     "edge_storage_accelerator:containerStorage",
-    "open_service_mesh:openServiceMesh",
     "azure-iot-operations:iotOperations",  # Maps to iotOperations in manifest
 ]
 
@@ -95,7 +116,6 @@ BICEP_COMPONENTS = [
     "aioPlatformExtensionDefaults:platform",
     "secretStoreExtensionDefaults:secretStore",
     "containerStorageExtensionDefaults:containerStorage",
-    "openServiceMeshExtensionDefaults:openServiceMesh",
     "aioExtensionDefaults:iotOperations",  # Maps to iotOperations in manifest
 ]
 
@@ -128,10 +148,184 @@ def parse_args() -> argparse.Namespace:
         default="all",
         help="Type of IaC files to check (terraform, bicep, or all) [default: all]",
     )
+    parser.add_argument(
+        "--strict-latest",
+        action="store_true",
+        help=(
+            "Fail if latest release information cannot be resolved via GitHub API; "
+            "do not fall back to legacy URLs."
+        ),
+    )
+    parser.add_argument(
+        "--require-asset-files",
+        action="store_true",
+        help=(
+            "Require JSON manifests to be present as release assets; if missing, "
+            "exit with error instead of falling back to tag branch URLs."
+        ),
+    )
+    parser.add_argument(
+        "--print-manifest-urls",
+        action="store_true",
+        help=(
+            "Print only the resolved manifest URLs as JSON and exit. Useful for external tooling."
+        ),
+    )
+    parser.add_argument(
+        "--release-tag",
+        dest="release_tag",
+        default=None,
+        help=(
+            "Specific release tag to resolve (e.g., v1.2.36). If provided, overrides --channel."
+        ),
+    )
+    parser.add_argument(
+        "--channel",
+        choices=["stable", "preview"],
+        default="stable",
+        help=(
+            "When no --release-tag is provided, resolve the latest release from this channel."
+        ),
+    )
     return parser.parse_args()
 
 
-def download_manifests() -> Dict[str, Dict[str, Any]]:
+def get_latest_manifest_urls(
+    require_asset_files: bool = False,
+    strict_latest: bool = False,
+    timeout: int = 10,
+    release_tag: Optional[str] = None,
+    channel: Literal["stable", "preview"] = "stable",
+) -> Tuple[str, str, Dict[str, str]]:
+    """
+    Resolve URLs for the enablement and instance manifests from the latest GitHub release.
+
+    Logic:
+    - If release_tag is provided, call releases/tags/{tag}.
+    - Else if channel == 'preview', call releases and pick the latest prerelease.
+    - Else call releases/latest to get tag_name and target_commitish.
+    - If assets include the two JSON files, use their browser_download_url.
+    - Otherwise, fall back to raw.githubusercontent.com using target_commitish
+      (typically 'release/<tag>') and known paths under /release/.
+    - If require_asset_files is True and assets are missing, raise.
+    - If strict_latest is True and API call fails, raise.
+
+    Returns:
+        (enablement_url, instance_url, meta)
+        meta includes keys: 'source' ('assets' or 'branch'), 'tag_name', 'target_commitish'.
+    """
+    # Prepare optional auth header to avoid rate limits when GITHUB_TOKEN is set
+    headers = {}
+    github_token = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
+    if github_token:
+        headers["Authorization"] = f"Bearer {github_token}"
+
+    # Determine which API endpoint to call based on inputs
+    if release_tag:
+        api_url = f"https://api.github.com/repos/Azure/azure-iot-operations/releases/tags/{release_tag}"
+        context_desc = f"release tag {release_tag}"
+    elif channel == "preview":
+        api_url = "https://api.github.com/repos/Azure/azure-iot-operations/releases"
+        context_desc = "latest preview (pre-release)"
+    else:
+        api_url = "https://api.github.com/repos/Azure/azure-iot-operations/releases/latest"
+        context_desc = "latest stable release"
+    logger.debug(f"Querying GitHub API for {context_desc}: {api_url}")
+    try:
+        resp = requests.get(api_url, timeout=timeout, headers=headers)
+        if resp.status_code == 403:
+            logger.warning(
+                "GitHub API rate limited. Set GITHUB_TOKEN to increase limits."
+            )
+        resp.raise_for_status()
+        data = resp.json()
+        # If preview channel requested, pick first prerelease from list
+        if not release_tag and channel == "preview":
+            if isinstance(data, list):
+                preview = next((r for r in data if r.get("prerelease")), None)
+                if preview is None:
+                    raise RuntimeError("No preview releases found.")
+                data = preview
+            else:
+                raise RuntimeError("Unexpected response for releases list.")
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Failed to query latest release from GitHub API: {e}")
+        if strict_latest:
+            raise
+        # Attempt to fall back to legacy constants
+        return (
+            AIO_MANIFEST_VERSIONS_URL,
+            AIO_MANIFEST_INSTANCE_VERSIONS_URL,
+            {"source": "legacy", "tag_name": "", "target_commitish": ""},
+        )
+    except json.JSONDecodeError as e:
+        logger.error(f"Failed to parse JSON response from GitHub API: {e}")
+        if strict_latest:
+            raise
+        # Attempt to fall back to legacy constants
+        return (
+            AIO_MANIFEST_VERSIONS_URL,
+            AIO_MANIFEST_INSTANCE_VERSIONS_URL,
+            {"source": "legacy", "tag_name": "", "target_commitish": ""},
+        )
+
+    tag_name = data.get("tag_name") or ""
+    target_commitish = data.get("target_commitish") or ""
+    assets: List[Dict[str, Any]] = data.get("assets", []) or []
+
+    logger.debug(
+        f"Latest release tag: {tag_name}, target_commitish: {target_commitish}, assets: {len(assets)}"
+    )
+
+    # Try assets first
+    asset_map = {a.get("name"): a for a in assets if isinstance(a, dict)}
+    enablement_asset = asset_map.get("azure-iot-operations-enablement.json")
+    instance_asset = asset_map.get("azure-iot-operations-instance.json")
+
+    if enablement_asset and instance_asset:
+        enablement_url = enablement_asset.get("browser_download_url") or ""
+        instance_url = instance_asset.get("browser_download_url") or ""
+        if enablement_url and instance_url:
+            logger.debug("Resolved manifest URLs from release assets.")
+            return (
+                enablement_url,
+                instance_url,
+                {"source": "assets", "tag_name": tag_name,
+                    "target_commitish": target_commitish},
+            )
+
+    # Assets missing
+    if require_asset_files:
+        raise RuntimeError(
+            "Required manifest JSON files not found in release assets."
+        )
+
+    # Fall back to branch path using target_commitish if present; otherwise, derive from tag
+    if not target_commitish and not tag_name:
+        raise RuntimeError(
+            "Cannot construct fallback URL: both target_commitish and tag_name are empty.")
+    ref = target_commitish or f"release/{tag_name}".lstrip("/")
+    # Build raw URLs to the files in the repository at the release branch/ref
+    base_repo_raw = "https://raw.githubusercontent.com/Azure/azure-iot-operations"
+    enablement_url = f"{base_repo_raw}/{ref}/release/azure-iot-operations-enablement.json"
+    instance_url = f"{base_repo_raw}/{ref}/release/azure-iot-operations-instance.json"
+    logger.debug(
+        "Assets not found. Falling back to branch URLs: "
+        f"enablement={enablement_url}, instance={instance_url}"
+    )
+    return (
+        enablement_url,
+        instance_url,
+        {"source": "branch", "tag_name": tag_name,
+            "target_commitish": target_commitish},
+    )
+
+
+def download_manifests(
+    enablement_url: str,
+    instance_url: str,
+    timeout: int = 15,
+) -> Dict[str, Dict[str, Any]]:
     """
     Download both AIO manifests (enablement and instance) from GitHub.
 
@@ -151,10 +345,10 @@ def download_manifests() -> Dict[str, Dict[str, Any]]:
 
     # Download the enablement manifest
     logger.debug(
-        f"Downloading AIO enablement manifest from {AIO_MANIFEST_VERSIONS_URL}"
+        f"Downloading AIO enablement manifest from {enablement_url}"
     )
     try:
-        response = requests.get(AIO_MANIFEST_VERSIONS_URL)
+        response = requests.get(enablement_url, timeout=timeout)
         response.raise_for_status()
         manifest_data["enablement"] = response.json()
 
@@ -179,10 +373,10 @@ def download_manifests() -> Dict[str, Dict[str, Any]]:
 
     # Download the instance manifest
     logger.debug(
-        f"Downloading AIO instance manifest from {AIO_MANIFEST_INSTANCE_VERSIONS_URL}"
+        f"Downloading AIO instance manifest from {instance_url}"
     )
     try:
-        response = requests.get(AIO_MANIFEST_INSTANCE_VERSIONS_URL)
+        response = requests.get(instance_url, timeout=timeout)
         response.raise_for_status()
         manifest_data["instance"] = response.json()
 
@@ -296,7 +490,8 @@ def extract_tf_instance_variables(tf_instance_file: str) -> List[Dict[str, str]]
     Raises:
         SystemExit: If the file cannot be parsed
     """
-    logger.debug(f"Reading Terraform instance variables file: {tf_instance_file}")
+    logger.debug(
+        f"Reading Terraform instance variables file: {tf_instance_file}")
 
     try:
         with open(tf_instance_file, "r") as f:
@@ -446,7 +641,8 @@ def extract_variables(iac_type: IaCType, file_path: str) -> List[Dict[str, str]]
     if iac_type == "terraform":
         # Get variables from both files and combine them
         variables = extract_tf_variables(TERRAFORM_VARS_FILE)
-        instance_variables = extract_tf_instance_variables(TERRAFORM_VARS_INSTANCE_FILE)
+        instance_variables = extract_tf_instance_variables(
+            TERRAFORM_VARS_INSTANCE_FILE)
         return variables + instance_variables
     elif iac_type == "bicep":
         return extract_bicep_variables(file_path)
@@ -491,7 +687,8 @@ def extract_remote_versions(
 
     # Debug log manifest structures
     if logger.isEnabledFor(logging.DEBUG):
-        enablement_versions = enablement.get("variables", {}).get("VERSIONS", {})
+        enablement_versions = enablement.get(
+            "variables", {}).get("VERSIONS", {})
         instance_versions = instance.get("variables", {}).get("VERSIONS", {})
         logger.debug(
             f"Enablement manifest contains versions for: {list(enablement_versions.keys())}"
@@ -507,19 +704,23 @@ def extract_remote_versions(
         if remote_name == "iotOperations":
             # Get IoT Operations version from instance manifest
             version = (
-                instance.get("variables", {}).get("VERSIONS", {}).get(remote_name, "")
+                instance.get("variables", {}).get(
+                    "VERSIONS", {}).get(remote_name, "")
             )
-            train = instance.get("variables", {}).get("TRAINS", {}).get(remote_name, "")
+            train = instance.get("variables", {}).get(
+                "TRAINS", {}).get(remote_name, "")
             logger.debug(
                 f"Found IoT Operations in instance manifest: version={version}, train={train}"
             )
         else:
             # Get other components from enablement manifest
             version = (
-                enablement.get("variables", {}).get("VERSIONS", {}).get(remote_name, "")
+                enablement.get("variables", {}).get(
+                    "VERSIONS", {}).get(remote_name, "")
             )
             train = (
-                enablement.get("variables", {}).get("TRAINS", {}).get(remote_name, "")
+                enablement.get("variables", {}).get(
+                    "TRAINS", {}).get(remote_name, "")
             )
             logger.debug(
                 f"Remote component {local_name} (remote: {remote_name}): version={version}, train={train}"
@@ -572,13 +773,14 @@ def compare_versions(
             remote_train = remote_versions[name]["train"]
 
             # Determine which manifest URL was used for this component
-            manifest_url = manifest_urls.get(name, manifest_urls.get("default", ""))
+            manifest_url = manifest_urls.get(
+                name, manifest_urls.get("default", ""))
 
             version_mismatch = (
-                    local_version and remote_version and local_version != remote_version
+                local_version and remote_version and local_version != remote_version
             )
             train_mismatch = (
-                    local_train and remote_train and local_train != remote_train
+                local_train and remote_train and local_train != remote_train
             )
 
             if version_mismatch or train_mismatch:
@@ -624,17 +826,49 @@ def main() -> int:
     iac_type: Union[IaCType, Literal["all"]] = args.iac_type
     logger.debug(f"Using {iac_type.upper()} mode")
 
-    # Step 1: Download manifests
+    # If only manifest URLs are requested, resolve and print them, then exit
+    if getattr(args, "print_manifest_urls", False):
+        try:
+            enablement_url, instance_url, meta = get_latest_manifest_urls(
+                require_asset_files=args.require_asset_files,
+                strict_latest=args.strict_latest,
+                release_tag=args.release_tag,
+                channel=args.channel,
+            )
+            output = {
+                "enablement_url": enablement_url,
+                "instance_url": instance_url,
+                "meta": meta,
+            }
+            print(json.dumps(output, indent=2))
+            return 0
+        except Exception as e:
+            logger.error(f"Failed to resolve manifest URLs: {e}")
+            return 1
+
+    # Step 1: Resolve latest manifest URLs via GitHub API and download manifests
     try:
-        manifests = download_manifests()
+        enablement_url, instance_url, meta = get_latest_manifest_urls(
+            require_asset_files=args.require_asset_files,
+            strict_latest=args.strict_latest,
+            release_tag=args.release_tag,
+            channel=args.channel,
+        )
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.debug(
+                f"Manifest resolution: source={meta.get('source')}, tag={meta.get('tag_name')}, "
+                f"ref={meta.get('target_commitish')}, enablement_url={enablement_url}, instance_url={instance_url}"
+            )
+        manifests = download_manifests(enablement_url, instance_url)
     except Exception as e:
         logger.error(f"Failed to download manifests: {e}")
         return 1
 
     # Create a dictionary to track which component comes from which URL
-    manifest_urls = {"default": AIO_MANIFEST_VERSIONS_URL}
+    # Attribute mismatches to the actual source URLs used
+    manifest_urls = {"default": enablement_url}
     # IoT Operations comes from the instance manifest
-    manifest_urls["azure-iot-operations"] = AIO_MANIFEST_INSTANCE_VERSIONS_URL
+    manifest_urls["azure-iot-operations"] = instance_url
 
     # Step 2: Extract variables based on IaC type
     all_mismatches = []

@@ -14,7 +14,7 @@ Deploys Azure observability resources including Azure Monitor Workspace, Log Ana
 |tags|Additional tags to add to the resources.|`object`|{}|no|
 |logRetentionInDays|Log Analytics Workspace retention in days|`int`|30|no|
 |dailyQuotaInGb|Log Analytics Workspace daily quota in GB|`int`|10|no|
-|grafanaMajorVersion|Grafana major version|`string`|10|no|
+|grafanaMajorVersion|Grafana major version|`string`|11|no|
 |grafanaAdminPrincipalId|The principalId (objectId) of the user or service principal to assign the Grafana Admin role.|`string`|n/a|no|
 |logsDataCollectionRuleNamespaces|List of cluster namespaces to be exposed in the log analytics workspace|`array`|['kube-system', 'gatekeeper-system', 'azure-arc', 'azure-iot-operations']|no|
 |logsDataCollectionRuleStreams|List of streams to be enabled in the log analytics workspace|`array`|['Microsoft-ContainerLog', 'Microsoft-ContainerLogV2', 'Microsoft-KubeEvents', 'Microsoft-KubePodInventory', 'Microsoft-KubeNodeInventory', 'Microsoft-KubePVInventory', 'Microsoft-KubeServices', 'Microsoft-KubeMonAgentEvents', 'Microsoft-InsightsMetrics', 'Microsoft-ContainerInventory', 'Microsoft-ContainerNodeInventory', 'Microsoft-Perf']|no|

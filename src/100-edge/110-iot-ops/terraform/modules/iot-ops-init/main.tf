@@ -37,25 +37,6 @@ resource "azurerm_arc_kubernetes_cluster_extension" "secret_store" {
   depends_on = [azurerm_arc_kubernetes_cluster_extension.platform]
 }
 
-resource "azurerm_arc_kubernetes_cluster_extension" "open_service_mesh" {
-  name           = "open-service-mesh"
-  cluster_id     = var.arc_connected_cluster_id
-  extension_type = "microsoft.openservicemesh"
-  identity {
-    type = "SystemAssigned"
-  }
-  version       = var.open_service_mesh.version
-  release_train = var.open_service_mesh.train
-  configuration_settings = {
-    "osm.osm.enablePermissiveTrafficPolicy"       = "false"
-    "osm.osm.featureFlags.enableWASMStats"        = "false"
-    "osm.osm.configResyncInterval"                = "10s"
-    "osm.osm.osmController.resource.requests.cpu" = "100m"
-    "osm.osm.osmBootstrap.resource.requests.cpu"  = "100m"
-    "osm.osm.injector.resource.requests.cpu"      = "100m"
-  }
-}
-
 resource "azurerm_arc_kubernetes_cluster_extension" "container_storage" {
   name           = "azure-arc-containerstorage"
   cluster_id     = var.arc_connected_cluster_id
@@ -66,7 +47,7 @@ resource "azurerm_arc_kubernetes_cluster_extension" "container_storage" {
   version                = var.edge_storage_accelerator.version
   release_train          = var.edge_storage_accelerator.train
   configuration_settings = local.container_storage_settings
-  depends_on             = [azurerm_arc_kubernetes_cluster_extension.open_service_mesh, azurerm_arc_kubernetes_cluster_extension.platform]
+  depends_on             = [azurerm_arc_kubernetes_cluster_extension.platform]
 }
 
 resource "azurerm_arc_kubernetes_cluster_extension" "platform" {

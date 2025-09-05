@@ -104,7 +104,6 @@ The version checker verifies these components:
 | Platform          | platform                 | aioPlatformExtensionDefaults      | enablement             |
 | Secret Store      | secret_sync_controller   | secretStoreExtensionDefaults      | enablement             |
 | Container Storage | edge_storage_accelerator | containerStorageExtensionDefaults | enablement             |
-| Open Service Mesh | open_service_mesh        | openServiceMeshExtensionDefaults  | enablement             |
 | IoT Operations    | azure-iot-operations     | aioExtensionDefaults              | instance               |
 
 ### Files Checked

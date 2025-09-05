@@ -61,10 +61,11 @@ Deploys an AIO instance.
 
 | Name | Description |
 |------|-------------|
-| aio\_dataflow\_profile | n/a |
-| aio\_instance | n/a |
-| custom\_location\_id | n/a |
-| custom\_locations | n/a |
-| instance\_name | n/a |
+| aio\_broker\_listener\_anonymous | Anonymous MQTT Broker Listener configuration details. |
+| aio\_dataflow\_profile | Azure IoT Operations dataflow profile details. |
+| aio\_instance | Azure IoT Operations instance details. |
+| aio\_mqtt\_broker | MQTT Broker configuration details. |
+| aio\_namespace | Azure IoT Operations namespace. |
+| custom\_locations | Custom location details. |
 <!-- markdown-table-prettify-ignore-end -->
 <!-- END_TF_DOCS -->

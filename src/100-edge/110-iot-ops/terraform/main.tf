@@ -67,7 +67,6 @@ module "iot_ops_init" {
   arc_connected_cluster_id = var.arc_connected_cluster.id
   aio_platform_config      = var.aio_platform_config
   platform                 = var.platform
-  open_service_mesh        = var.open_service_mesh
   edge_storage_accelerator = var.edge_storage_accelerator
   secret_sync_controller   = var.secret_sync_controller
 }
