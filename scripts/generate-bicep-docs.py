@@ -211,12 +211,74 @@ def extract_parameters(json_data: Dict[str, Any]) -> List[Dict[str, Any]]:
     return parameters
 
 
-def extract_resources(json_data: Dict[str, Any]) -> List[Dict[str, Any]]:
+def is_existing_resource(
+    res_name: str, res_info: Dict[str, Any], verbose: bool = False
+) -> bool:
+    """
+    Check if a resource is an existing resource reference (not a new resource created by this module).
+
+    Args:
+        res_name: The name of the resource
+        res_info: The resource information dictionary
+        verbose: Whether to output additional information
+
+    Returns:
+        True if the resource is an existing resource reference, False otherwise
+    """
+    # When Bicep 'existing' resources are compiled to ARM, they may have specific patterns
+    # Note: This detection is best-effort. In some cases, existing resources in compiled ARM JSON
+    # may not have clear indicators. For more reliable filtering, consider:
+    # 1. Using naming conventions for existing resources
+    # 2. Adding metadata to bicep files to mark existing resources
+    # 3. Post-processing the ARM JSON to add explicit markers
+
+    # Method 1: Check for explicit existing property
+    if res_info.get("existing") is True:
+        if verbose:
+            print(f"Resource '{res_name}' marked as existing via 'existing' property.")
+        return True
+
+    # Method 2: Check if resource has deploymentScope or similar indicators of being a reference
+    if "copy" not in res_info and "properties" in res_info:
+        properties = res_info.get("properties", {})
+        # If the resource has very minimal properties and no deployment configuration,
+        # it might be a reference to an existing resource
+        if len(properties) == 0 or (len(properties) == 1 and "mode" in properties):
+            if verbose:
+                print(
+                    f"Resource '{res_name}' appears to be an existing resource reference (minimal properties)."
+                )
+            return True
+
+    # Method 3: Check conditions that suggest existing resources
+    condition = res_info.get("condition", True)
+    if isinstance(condition, bool) and not condition:
+        if verbose:
+            print(
+                f"Resource '{res_name}' has existing-related condition: {condition}"
+            )
+        return True
+    elif isinstance(condition, str):
+        condition_str = condition.lower()
+        if "existing" in condition_str:
+            if verbose:
+                print(
+                    f"Resource '{res_name}' has existing-related condition: {condition}"
+                )
+            return True
+
+    return False
+
+
+def extract_resources(
+    json_data: Dict[str, Any], verbose: bool = False
+) -> List[Dict[str, Any]]:
     """
     Extract resources information from the ARM JSON.
 
     Args:
         json_data: The ARM JSON data
+        verbose: Whether to output additional information
 
     Returns:
         List of dictionaries with resource information
@@ -229,7 +291,17 @@ def extract_resources(json_data: Dict[str, Any]) -> List[Dict[str, Any]]:
     for res_name, res_info in json_data["resources"].items():
         # Skip attribution resources labeling the deployment
         if res_name == "attribution" and re.match(r"^pid-", res_info.get("name", "")):
-            print(f"Skipping resource '{res_name}' with name 'pid' as it is an attribution.")
+            print(
+                f"Skipping resource '{res_name}' with name 'pid' as it is an attribution."
+            )
+            continue
+
+        # Skip existing resources (references to existing resources, not new resources created by this module)
+        if is_existing_resource(res_name, res_info, verbose):
+            if verbose:
+                print(
+                    f"Skipping existing resource '{res_name}' as it is a reference to an existing resource."
+                )
             continue
 
         res_data = {
@@ -323,8 +395,17 @@ def extract_modules(json_data: Dict[str, Any], max_nested_level: int = 1, curren
                         if "defaultValue" in param_info:
                             try:
                                 default_value = param_info["defaultValue"]
+                                # Format boolean values as markdown `true` or `false`
+                                if isinstance(default_value, bool):
+                                    default_value = (
+                                        "`true`" if default_value else "`false`"
+                                    )
                                 # Remove surrounding quotes if the default value is a string
-                                if isinstance(default_value, str) and default_value.startswith('"') and default_value.endswith('"'):
+                                elif (
+                                    isinstance(default_value, str)
+                                    and default_value.startswith('"')
+                                    and default_value.endswith('"')
+                                ):
                                     default_value = default_value[1:-1]
                                 param_data["default"] = default_value
                                 param_data["required"] = False
@@ -346,8 +427,16 @@ def extract_modules(json_data: Dict[str, Any], max_nested_level: int = 1, curren
                         # Process dictionary-style resources (with .items())
                         for res_name, res_info in resources_data.items():
                             # Skip attribution resources labeling the deployment
-                            if res_name == "attribution" and re.match(r"^pid-", res_info.get("name", "")):
-                                print(f"Skipping resource '{res_name}' with name 'pid' as it is an attribution.")
+                            if res_name == "attribution" and re.match(
+                                r"^pid-", res_info.get("name", "")
+                            ):
+                                print(
+                                    f"Skipping resource '{res_name}' with name 'pid' as it is an attribution."
+                                )
+                                continue
+
+                            # Skip existing resources (references to existing resources, not new resources created by this module)
+                            if is_existing_resource(res_name, res_info):
                                 continue
 
                             res_data = {
@@ -367,6 +456,11 @@ def extract_modules(json_data: Dict[str, Any], max_nested_level: int = 1, curren
                         # Process array-style resources
                         for res_info in resources_data:
                             res_name = res_info.get("name", "unnamed-resource")
+
+                            # Skip existing resources
+                            if is_existing_resource(res_name, res_info):
+                                continue
+
                             res_data = {
                                 "name": res_name,
                                 "type": res_info.get("type", ""),
@@ -377,6 +471,11 @@ def extract_modules(json_data: Dict[str, Any], max_nested_level: int = 1, curren
                         # Bicep-style object resources with direct properties
                         for res_name in resources_data:
                             res_info = resources_data[res_name]
+
+                            # Skip existing resources
+                            if is_existing_resource(res_name, res_info):
+                                continue
+
                             res_data = {
                                 "name": res_name,
                                 "type": "",
@@ -684,7 +783,7 @@ def main() -> int:
     # Extract data from JSON
     metadata = extract_metadata(json_data)
     parameters = extract_parameters(json_data)
-    resources = extract_resources(json_data)
+    resources = extract_resources(json_data, verbose=args.verbose)
     modules = extract_modules(json_data, max_nested_level=max_nested_level)
     types = extract_user_defined_types(json_data)
     outputs = extract_outputs(json_data)
