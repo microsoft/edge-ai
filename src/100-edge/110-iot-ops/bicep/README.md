@@ -50,8 +50,6 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|deployIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2023-01-31|
-|sseIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2023-01-31|
 |deployArcK8sRoleAssignments|`Microsoft.Resources/deployments`|2022-09-01|
 |deployKeyVaultRoleAssignments|`Microsoft.Resources/deployments`|2022-09-01|
 |sseKeyVaultRoleAssignments|`Microsoft.Resources/deployments`|2022-09-01|
@@ -172,7 +170,6 @@ Initializes and configures the required Arc extensions for Azure IoT Operations 
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|arcConnectedCluster|`Microsoft.Kubernetes/connectedClusters`|2021-03-01|
 |aioPlatform|`Microsoft.KubernetesConfiguration/extensions`|2023-05-01|
 |containerStorage|`Microsoft.KubernetesConfiguration/extensions`|2023-05-01|
 |secretStore|`Microsoft.KubernetesConfiguration/extensions`|2023-05-01|
@@ -212,7 +209,6 @@ Creates secrets in Key Vault for deployment script setup and initialization for 
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|sseIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2024-11-30|
 |scriptSecrets|`Microsoft.Resources/deployments`|2022-09-01|
 
 #### Outputs for postInitScriptsSecrets
@@ -281,7 +277,7 @@ Deploys Azure IoT Operations instance, broker, authentication, listeners, and da
 |shouldEnableOtelCollector|Whether or not to enable the Open Telemetry Collector for Azure IoT Operations.|`bool`|n/a|yes|
 |brokerListenerAnonymousConfig|Configuration for the insecure anonymous AIO MQ Broker Listener.|`[_1.AioMqBrokerAnonymous](#user-defined-types)`|n/a|yes|
 |aioMqBrokerConfig|The settings for the Azure IoT Operations MQ Broker.|`[_1.AioMqBroker](#user-defined-types)`|n/a|yes|
-|shouldCreateAnonymousBrokerListener|Whether to enable an insecure anonymous AIO MQ Broker Listener. (Should only be used for dev or test environments)|`bool`|False|no|
+|shouldCreateAnonymousBrokerListener|Whether to enable an insecure anonymous AIO MQ Broker Listener. (Should only be used for dev or test environments)|`bool`|`false`|no|
 |aioDataFlowInstanceConfig|The settings for Azure IoT Operations Data Flow Instances.|`[_1.AioDataFlowInstance](#user-defined-types)`|n/a|yes|
 |customLocationName|The name for the Custom Locations resource.|`string`|n/a|yes|
 |shouldDeployResourceSyncRules|Whether or not to deploy the Custom Locations Resource Sync Rules for the Azure IoT Operations resources.|`bool`|n/a|yes|
@@ -290,9 +286,6 @@ Deploys Azure IoT Operations instance, broker, authentication, listeners, and da
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|aioIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2023-01-31|
-|schemaRegistry|`Microsoft.DeviceRegistry/schemaRegistries`|2024-09-01-preview|
-|arcConnectedCluster|`Microsoft.Kubernetes/connectedClusters`|2021-03-01|
 |aioExtension|`Microsoft.KubernetesConfiguration/extensions`|2023-05-01|
 |customLocation|`Microsoft.ExtendedLocation/customLocations`|2021-08-31-preview|
 |aioSyncRule|`Microsoft.ExtendedLocation/customLocations/resourceSyncRules`|2021-08-31-preview|
@@ -354,9 +347,6 @@ Configures federated identity credentials for Azure IoT Operations and Secret Sy
 | :--- | :--- | :--- |
 |sseIdentity::sseFedCred|`Microsoft.ManagedIdentity/userAssignedIdentities/federatedIdentityCredentials`|2023-01-31|
 |aioIdentity::aioFedCred|`Microsoft.ManagedIdentity/userAssignedIdentities/federatedIdentityCredentials`|2023-01-31|
-|arcConnectedCluster|`Microsoft.Kubernetes/connectedClusters`|2024-12-01-preview|
-|sseIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2023-01-31|
-|aioIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2023-01-31|
 |defaultSecretSyncSecretProviderClass|`Microsoft.SecretSyncController/azureKeyVaultSecretProviderClasses`|2024-08-21-preview|
 
 ### postInstanceScriptsSecrets
@@ -374,7 +364,7 @@ Creates secrets in Key Vault for deployment script setup and initialization for 
 |deployKeyVaultResourceGroupName|The resource group name where the Key Vault is located. Defaults to the current resource group.|`string`|n/a|yes|
 |deploySecretNamePrefix|The prefix used with constructing the secret name that will have the deployment script. (e.g., ds-iot-ops-0, ds-iot-ops-1)|`string`|n/a|yes|
 |deployUserTokenSecretName|The name of the secret in Key Vault that has the token for the deploy user with cluster-admin role.|`string`|n/a|yes|
-|shouldEnableOpcUaSimulator|Whether or not to enable the OPC UA Simulator for Azure IoT Operations.|`bool`|True|no|
+|shouldEnableOpcUaSimulator|Whether or not to enable the OPC UA Simulator for Azure IoT Operations.|`bool`|`true`|no|
 
 #### Resources for postInstanceScriptsSecrets
 
