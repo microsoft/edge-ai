@@ -144,7 +144,7 @@ Deploys Azure observability resources including Azure Monitor Workspace, Log Ana
 |tags|Additional tags to add to the resources.|`object`|{}|no|
 |logRetentionInDays|Log Analytics Workspace retention in days|`int`|30|no|
 |dailyQuotaInGb|Log Analytics Workspace daily quota in GB|`int`|10|no|
-|grafanaMajorVersion|Grafana major version|`string`|10|no|
+|grafanaMajorVersion|Grafana major version|`string`|11|no|
 |grafanaAdminPrincipalId|The principalId (objectId) of the user or service principal to assign the Grafana Admin role.|`string`|n/a|no|
 |logsDataCollectionRuleNamespaces|List of cluster namespaces to be exposed in the log analytics workspace|`array`|['kube-system', 'gatekeeper-system', 'azure-arc', 'azure-iot-operations']|no|
 |logsDataCollectionRuleStreams|List of streams to be enabled in the log analytics workspace|`array`|['Microsoft-ContainerLog', 'Microsoft-ContainerLogV2', 'Microsoft-KubeEvents', 'Microsoft-KubePodInventory', 'Microsoft-KubeNodeInventory', 'Microsoft-KubePVInventory', 'Microsoft-KubeServices', 'Microsoft-KubeMonAgentEvents', 'Microsoft-InsightsMetrics', 'Microsoft-ContainerInventory', 'Microsoft-ContainerNodeInventory', 'Microsoft-Perf']|no|
@@ -390,6 +390,7 @@ The scripts handle primary and secondary node(s) setup, cluster administration, 
 |shouldAddCurrentUserClusterAdmin|Whether to add the current user as a cluster admin.|`bool`|True|no|
 |shouldEnableArcAutoUpgrade|Whether to enable auto-upgrade for Azure Arc agents.|`bool`|[not(equals(parameters('common').environment, 'prod'))]|no|
 |clusterAdminOid|The Object ID that will be given cluster-admin permissions.|`string`|n/a|no|
+|clusterAdminUpn|The User Principal Name that will be given cluster-admin permissions.|`string`|n/a|no|
 |clusterNodeVirtualMachineNames|The node virtual machines names.|`array`|n/a|no|
 |clusterServerVirtualMachineName|The server virtual machines name.|`string`|n/a|no|
 |clusterServerHostMachineUsername|Username used for the host machines that will be given kube-config settings on setup. (Otherwise, resource_prefix if it exists as a user)|`string`|[parameters('common').resourcePrefix]|no|
@@ -440,7 +441,6 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 |common|The common component configuration.|`[_2.Common](#user-defined-types)`|n/a|yes|
 |arcConnectedClusterName|The resource name for the Arc connected cluster.|`string`|n/a|yes|
 |containerStorageConfig|The settings for the Azure Container Store for Azure Arc Extension.|`[_1.ContainerStorageExtension](#user-defined-types)`|[variables('_1.containerStorageExtensionDefaults')]|no|
-|openServiceMeshConfig|The settings for the Open Service Mesh Extension.|`[_1.OpenServiceMeshExtension](#user-defined-types)`|[variables('_1.openServiceMeshExtensionDefaults')]|no|
 |aioPlatformConfig|The settings for the Azure IoT Operations Platform Extension.|`[_1.AioPlatformExtension](#user-defined-types)`|[variables('_1.aioPlatformExtensionDefaults')]|no|
 |secretStoreConfig|The settings for the Secret Store Extension.|`[_1.SecretStoreExtension](#user-defined-types)`|[variables('_1.secretStoreExtensionDefaults')]|no|
 |shouldInitAio|Whether to deploy the Azure IoT Operations initial connected cluster resources, Secret Sync, ACSA, OSM, AIO Platform.|`bool`|True|no|
@@ -498,8 +498,6 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 | :--- | :--- | :--- |
 |containerStorageExtensionId|`string`|The ID of the Container Storage Extension.|
 |containerStorageExtensionName|`string`|The name of the Container Storage Extension.|
-|openServiceMeshExtensionId|`string`|The ID of the Open Service Mesh Extension.|
-|openServiceMeshExtensionName|`string`|The name of the Open Service Mesh Extension.|
 |aioPlatformExtensionId|`string`|The ID of the Azure IoT Operations Platform Extension.|
 |aioPlatformExtensionName|`string`|The name of the Azure IoT Operations Platform Extension.|
 |secretStoreExtensionId|`string`|The ID of the Secret Store Extension.|
@@ -693,14 +691,6 @@ The mode of the AIO instance feature. Either "Stable", "Preview" or "Disabled".
 ### `_1.InstanceFeatureSettingValue`
 
 The setting value of the AIO instance feature. Either "Enabled" or "Disabled".
-
-### `_1.OpenServiceMeshExtension`
-
-The settings for the Open Service Mesh Extension.
-
-|Property|Type|Description|
-| :--- | :--- | :--- |
-|release|`[_1.Release](#user-defined-types)`|The common settings for the extension.|
 
 ### `_1.Release`
 

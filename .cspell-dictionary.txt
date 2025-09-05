@@ -20,6 +20,7 @@ azcopy
 azdo
 azsk
 azurecli
+deviceregistry
 eastus
 keyvault
 onedrive
@@ -61,6 +62,7 @@ ansible
 azurecontainer
 bicepconfig
 bicepparam
+commitish
 containerd
 contravariance
 crowdsourced

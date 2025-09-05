@@ -44,14 +44,13 @@ Instance can be created, and after.
 | broker\_listener\_anonymous\_config | Configuration for the insecure anonymous AIO MQ Broker Listener.  For additional information, refer to: <https://learn.microsoft.com/azure/iot-operations/manage-mqtt-broker/howto-test-connection?tabs=bicep#node-port> | ```object({ serviceName = string port = number nodePort = number })``` | ```{ "nodePort": 31884, "port": 18884, "serviceName": "aio-broker-anon" }``` | no |
 | byo\_issuer\_trust\_settings | Settings for CustomerManagedByoIssuer (Bring Your Own Issuer) trust configuration | ```object({ issuer_name = string issuer_kind = string configmap_name = string configmap_key = string })``` | `null` | no |
 | dataflow\_instance\_count | Number of dataflow instances. Defaults to 1. | `number` | `1` | no |
-| edge\_storage\_accelerator | n/a | ```object({ version = string train = string diskStorageClass = string faultToleranceEnabled = bool diskMountPoint = string })``` | ```{ "diskMountPoint": "/mnt", "diskStorageClass": "", "faultToleranceEnabled": false, "train": "stable", "version": "2.5.3" }``` | no |
+| edge\_storage\_accelerator | n/a | ```object({ version = string train = string diskStorageClass = string faultToleranceEnabled = bool diskMountPoint = string })``` | ```{ "diskMountPoint": "/mnt", "diskStorageClass": "", "faultToleranceEnabled": false, "train": "stable", "version": "2.6.0" }``` | no |
 | enable\_instance\_secret\_sync | Whether to enable secret sync on the Azure IoT Operations instance | `bool` | `true` | no |
 | enable\_opc\_ua\_simulator | Deploy OPC UA Simulator to the cluster | `bool` | `true` | no |
 | mqtt\_broker\_config | n/a | ```object({ brokerListenerServiceName = string brokerListenerPort = number serviceAccountAudience = string frontendReplicas = number frontendWorkers = number backendRedundancyFactor = number backendWorkers = number backendPartitions = number memoryProfile = string serviceType = string })``` | ```{ "backendPartitions": 1, "backendRedundancyFactor": 2, "backendWorkers": 1, "brokerListenerPort": 18883, "brokerListenerServiceName": "aio-broker", "frontendReplicas": 1, "frontendWorkers": 1, "memoryProfile": "Low", "serviceAccountAudience": "aio-internal", "serviceType": "ClusterIp" }``` | no |
-| open\_service\_mesh | n/a | ```object({ version = string train = string })``` | ```{ "train": "stable", "version": "1.2.10" }``` | no |
-| operations\_config | n/a | ```object({ namespace = string kubernetesDistro = string version = string train = string agentOperationTimeoutInMinutes = number })``` | ```{ "agentOperationTimeoutInMinutes": 120, "kubernetesDistro": "K3s", "namespace": "azure-iot-operations", "train": "integration", "version": "1.1.59" }``` | no |
-| platform | n/a | ```object({ version = string train = string })``` | ```{ "train": "preview", "version": "0.7.21" }``` | no |
-| secret\_sync\_controller | n/a | ```object({ version = string train = string })``` | ```{ "train": "preview", "version": "0.9.4" }``` | no |
+| operations\_config | n/a | ```object({ namespace = string kubernetesDistro = string version = string train = string agentOperationTimeoutInMinutes = number })``` | ```{ "agentOperationTimeoutInMinutes": 120, "kubernetesDistro": "K3s", "namespace": "azure-iot-operations", "train": "stable", "version": "1.1.69" }``` | no |
+| platform | n/a | ```object({ version = string train = string })``` | ```{ "train": "preview", "version": "0.7.25" }``` | no |
+| secret\_sync\_controller | n/a | ```object({ version = string train = string })``` | ```{ "train": "preview", "version": "0.10.0" }``` | no |
 | should\_assign\_key\_vault\_roles | Whether to assign Key Vault roles to provided Secret Sync identity. | `bool` | `true` | no |
 | should\_create\_anonymous\_broker\_listener | Whether to enable an insecure anonymous AIO MQ Broker Listener. (Should only be used for dev or test environments) | `bool` | `false` | no |
 | should\_deploy\_resource\_sync\_rules | Deploys resource sync rules if set to true | `bool` | `false` | no |
@@ -62,10 +61,11 @@ Instance can be created, and after.
 
 | Name | Description |
 |------|-------------|
-| aio\_dataflow\_profile | The AIO dataflow profile. |
-| aio\_instance | The AIO instance. |
-| aio\_instance\_name | The name of the AIO instance. |
-| custom\_location\_id | The ID of the custom location. |
-| custom\_locations | The custom locations. |
+| aio\_broker\_listener\_anonymous | The anonymous MQTT Broker Listener configuration details. |
+| aio\_dataflow\_profile | The Azure IoT Operations dataflow profile. |
+| aio\_instance | The Azure IoT Operations instance. |
+| aio\_mqtt\_broker | The MQTT Broker configuration details. |
+| aio\_namespace | The Azure IoT Operations namespace. |
+| custom\_locations | The custom location details. |
 <!-- markdown-table-prettify-ignore-end -->
 <!-- END_TF_DOCS -->

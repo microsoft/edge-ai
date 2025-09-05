@@ -46,6 +46,7 @@ for a single-node cluster deployment, including observability, messaging, and da
 | custom\_locations\_oid | The object id of the Custom Locations Entra ID application for your tenant. If none is provided, the script will attempt to retrieve this requiring 'Application.Read.All' or 'Directory.Read.All' permissions. ```sh az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv``` | `string` | `null` | no |
 | instance | Instance identifier for naming resources: 001, 002, etc... | `string` | `"001"` | no |
 | resource\_group\_name | The name for the resource group. If not provided, a default name will be generated using resource\_prefix, environment, and instance. | `string` | `null` | no |
+| should\_add\_current\_user\_cluster\_admin | Gives the current logged in user cluster-admin permissions with the new cluster. | `bool` | `true` | no |
 | should\_create\_acr\_private\_endpoint | Should create a private endpoint for the Azure Container Registry. Default is false. | `bool` | `false` | no |
 | should\_create\_aks | Should create Azure Kubernetes Service. Default is false. | `bool` | `false` | no |
 | should\_create\_anonymous\_broker\_listener | Whether to enable an insecure anonymous AIO MQ Broker Listener. (Should only be used for dev or test environments) | `bool` | `false` | no |
@@ -54,5 +55,18 @@ for a single-node cluster deployment, including observability, messaging, and da
 | should\_enable\_opc\_ua\_simulator | Should create an OPC UA Simulator. Default is false. | `bool` | `false` | no |
 | should\_get\_custom\_locations\_oid | Whether to get Custom Locations Object ID using Terraform's azuread provider. (Otherwise, provided by 'custom\_locations\_oid' or `az connectedk8s enable-features` for custom-locations on cluster setup if not provided.) | `bool` | `true` | no |
 | use\_existing\_resource\_group | Whether to use an existing resource group instead of creating a new one. When true, the component will look up a resource group with the specified or generated name instead of creating it. | `bool` | `false` | no |
+
+## Outputs
+
+| Name | Description |
+|------|-------------|
+| azure\_iot\_operations | Azure IoT Operations deployment details. |
+| cluster\_connection | Commands and information to connect to the deployed cluster. |
+| container\_registry | Azure Container Registry details for storing application images. |
+| data\_storage | Data storage resources. |
+| deployment\_summary | Summary of the deployment configuration. |
+| messaging | Cloud messaging resources. |
+| observability | Monitoring and observability resources. |
+| security\_identity | Security and identity resources. |
 <!-- markdown-table-prettify-ignore-end -->
 <!-- END_TF_DOCS -->

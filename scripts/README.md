@@ -220,15 +220,23 @@ The script performs these actions:
 
 Validates Azure IoT Operations component versions against latest available.
 
-- **Usage**: `python3 ./aio-version-checker.py [--error-on-mismatch] [-v] [-t {terraform,bicep,both}]`
+- **Usage**: `python3 ./aio-version-checker.py [flags]`
 - **Flags**:
-  - `--error-on-mismatch`: Exit with error code 1 if versions don't match
-  - `-v, --verbose`: Enable verbose output
-  - `-t, --iac-type {terraform,bicep,both}`: Type of IaC files to check
-- **Returns**: JSON array of version differences between local and remote
-- **Build Integration**: Used by the [aio-version-checker-template.yml](../.azdo/aio-version-checker-template.yml) job
-- **When to Use**: Run periodically to check if AIO components use the currently released versions
-- **Dependencies**: Requires Python packages: hcl2, requests
+- `--error-on-mismatch`: Exit with code 1 if mismatches are found
+- `-v, --verbose`: Enable verbose logging
+- `-t, --iac-type {terraform,bicep,all}`: Which IaC files to evaluate
+- `--print-manifest-urls`: Print only the resolved enablement/instance manifest URLs as JSON and exit
+- `--release-tag <tag>`: Resolve a specific release tag (e.g., `v1.2.36`)
+- `--channel {stable,preview}`: When no tag provided, choose latest stable (default) or latest preview
+- `--strict-latest`: Fail if the GitHub API call fails (no legacy fallback)
+- `--require-asset-files`: Require JSONs to be present as release assets (no branch fallback)
+- **Returns**: Compare mode outputs a JSON array of version differences; URL resolution mode outputs a JSON object with `enablement_url`, `instance_url`, and `meta`
+- **Build Integration**: Used by the [aio-version-checker-template.yml](../docs/build-cicd/pipelines/azure-devops/templates/aio-version-checker-template.md) job
+- **When to Use**: Periodically check that AIO components use the currently released versions, or resolve manifest URLs for other tooling
+- **Dependencies**: Python packages `hcl2`, `requests`
+- **Notes**:
+  - Uses `GITHUB_TOKEN` or `GH_TOKEN` if set to reduce GitHub API rate limits, optional
+  - Used by the `iotops-version-upgrade.prompt.md` Prompt to resolve manifest URLs for IoT Operations version upgrades
 
 ## Blueprint Deployment Preparation Scripts
 

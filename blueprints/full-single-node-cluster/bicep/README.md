@@ -10,7 +10,7 @@ Deploys a complete end-to-end environment for Azure IoT Operations on a single-n
 
 |Name|Description|Type|Default|Required|
 | :--- | :--- | :--- | :--- | :--- |
-|common|The common component configuration.|`[_2.Common](#user-defined-types)`|n/a|yes|
+|common|The common component configuration.|`[_1.Common](#user-defined-types)`|n/a|yes|
 |resourceGroupName|The name for the resource group. If not provided, a default name will be generated.|`string`|[format('rg-{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]|no|
 |useExistingResourceGroup|Whether to use an existing resource group instead of creating a new one.|`bool`|`false`|no|
 |telemetry_opt_out|Whether to opt-out of telemetry. Set to true to disable telemetry.|`bool`|`false`|no|
@@ -143,7 +143,7 @@ Deploys Azure observability resources including Azure Monitor Workspace, Log Ana
 |tags|Additional tags to add to the resources.|`object`|{}|no|
 |logRetentionInDays|Log Analytics Workspace retention in days|`int`|30|no|
 |dailyQuotaInGb|Log Analytics Workspace daily quota in GB|`int`|10|no|
-|grafanaMajorVersion|Grafana major version|`string`|10|no|
+|grafanaMajorVersion|Grafana major version|`string`|11|no|
 |grafanaAdminPrincipalId|The principalId (objectId) of the user or service principal to assign the Grafana Admin role.|`string`|n/a|no|
 |logsDataCollectionRuleNamespaces|List of cluster namespaces to be exposed in the log analytics workspace|`array`|['kube-system', 'gatekeeper-system', 'azure-arc', 'azure-iot-operations']|no|
 |logsDataCollectionRuleStreams|List of streams to be enabled in the log analytics workspace|`array`|['Microsoft-ContainerLog', 'Microsoft-ContainerLogV2', 'Microsoft-KubeEvents', 'Microsoft-KubePodInventory', 'Microsoft-KubeNodeInventory', 'Microsoft-KubePVInventory', 'Microsoft-KubeServices', 'Microsoft-KubeMonAgentEvents', 'Microsoft-InsightsMetrics', 'Microsoft-ContainerInventory', 'Microsoft-ContainerNodeInventory', 'Microsoft-Perf']|no|
@@ -389,6 +389,7 @@ The scripts handle primary and secondary node(s) setup, cluster administration, 
 |shouldAddCurrentUserClusterAdmin|Whether to add the current user as a cluster admin.|`bool`|True|no|
 |shouldEnableArcAutoUpgrade|Whether to enable auto-upgrade for Azure Arc agents.|`bool`|[not(equals(parameters('common').environment, 'prod'))]|no|
 |clusterAdminOid|The Object ID that will be given cluster-admin permissions.|`string`|n/a|no|
+|clusterAdminUpn|The User Principal Name that will be given cluster-admin permissions.|`string`|n/a|no|
 |clusterNodeVirtualMachineNames|The node virtual machines names.|`array`|n/a|no|
 |clusterServerVirtualMachineName|The server virtual machines name.|`string`|n/a|no|
 |clusterServerHostMachineUsername|Username used for the host machines that will be given kube-config settings on setup. (Otherwise, resource_prefix if it exists as a user)|`string`|[parameters('common').resourcePrefix]|no|
@@ -439,7 +440,6 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 |common|The common component configuration.|`[_2.Common](#user-defined-types)`|n/a|yes|
 |arcConnectedClusterName|The resource name for the Arc connected cluster.|`string`|n/a|yes|
 |containerStorageConfig|The settings for the Azure Container Store for Azure Arc Extension.|`[_1.ContainerStorageExtension](#user-defined-types)`|[variables('_1.containerStorageExtensionDefaults')]|no|
-|openServiceMeshConfig|The settings for the Open Service Mesh Extension.|`[_1.OpenServiceMeshExtension](#user-defined-types)`|[variables('_1.openServiceMeshExtensionDefaults')]|no|
 |aioPlatformConfig|The settings for the Azure IoT Operations Platform Extension.|`[_1.AioPlatformExtension](#user-defined-types)`|[variables('_1.aioPlatformExtensionDefaults')]|no|
 |secretStoreConfig|The settings for the Secret Store Extension.|`[_1.SecretStoreExtension](#user-defined-types)`|[variables('_1.secretStoreExtensionDefaults')]|no|
 |shouldInitAio|Whether to deploy the Azure IoT Operations initial connected cluster resources, Secret Sync, ACSA, OSM, AIO Platform.|`bool`|True|no|
@@ -497,8 +497,6 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 | :--- | :--- | :--- |
 |containerStorageExtensionId|`string`|The ID of the Container Storage Extension.|
 |containerStorageExtensionName|`string`|The name of the Container Storage Extension.|
-|openServiceMeshExtensionId|`string`|The ID of the Open Service Mesh Extension.|
-|openServiceMeshExtensionName|`string`|The name of the Open Service Mesh Extension.|
 |aioPlatformExtensionId|`string`|The ID of the Azure IoT Operations Platform Extension.|
 |aioPlatformExtensionName|`string`|The name of the Azure IoT Operations Platform Extension.|
 |secretStoreExtensionId|`string`|The ID of the Secret Store Extension.|
@@ -573,211 +571,7 @@ Deploys Dataflow endpoints and dataflows for Azure IoT Operations messaging inte
 
 ## User Defined Types
 
-### `_1.AioCaConfig`
-
-Configuration for Azure IoT Operations Certificate Authority.
-
-|Property|Type|Description|
-| :--- | :--- | :--- |
-|rootCaCertPem|`securestring`|The PEM-formatted root CA certificate.|
-|caCertChainPem|`securestring`|The PEM-formatted CA certificate chain.|
-|caKeyPem|`securestring`|The PEM-formatted CA private key.|
-
-### `_1.AioDataFlowInstance`
-
-The settings for Azure IoT Operations Data Flow Instances.
-
-|Property|Type|Description|
-| :--- | :--- | :--- |
-|count|`int`|The number of data flow instances.|
-
-### `_1.AioExtension`
-
-The settings for the Azure IoT Operations Extension.
-
-|Property|Type|Description|
-| :--- | :--- | :--- |
-|release|`[_1.Release](#user-defined-types)`|The common settings for the extension.|
-|settings|`object`||
-
-### `_1.AioFeatures`
-
-AIO Instance features.
-
-### `_1.AioMqBroker`
-
-The settings for the Azure IoT Operations MQ Broker.
-
-|Property|Type|Description|
-| :--- | :--- | :--- |
-|brokerListenerServiceName|`string`|The service name for the broker listener.|
-|brokerListenerPort|`int`|The port for the broker listener.|
-|serviceAccountAudience|`string`|The audience for the service account.|
-|frontendReplicas|`int`|The number of frontend replicas for the broker.|
-|frontendWorkers|`int`|The number of frontend workers for the broker.|
-|backendRedundancyFactor|`int`|The redundancy factor for the backend of the broker.|
-|backendWorkers|`int`|The number of backend workers for the broker.|
-|backendPartitions|`int`|The number of partitions for the backend of the broker.|
-|memoryProfile|`string`|The memory profile for the broker (Low, Medium, High).|
-|serviceType|`string`|The service type for the broker (ClusterIP, LoadBalancer, NodePort).|
-
-### `_1.AioMqBrokerAnonymous`
-
-Configuration for the insecure anonymous AIO MQ Broker Listener.
-
-|Property|Type|Description|
-| :--- | :--- | :--- |
-|serviceName|`string`|The service name for the anonymous broker listener.|
-|port|`int`|The port for the anonymous broker listener.|
-|nodePort|`int`|The node port for the anonymous broker listener.|
-
-### `_1.AioPlatformExtension`
-
-The settings for the Azure IoT Operations Platform Extension.
-
-|Property|Type|Description|
-| :--- | :--- | :--- |
-|release|`[_1.Release](#user-defined-types)`|The common settings for the extension.|
-|settings|`object`||
-
-### `_1.ContainerStorageExtension`
-
-The settings for the Azure Container Store for Azure Arc Extension.
-
-|Property|Type|Description|
-| :--- | :--- | :--- |
-|release|`[_1.Release](#user-defined-types)`|The common settings for the extension.|
-|settings|`object`||
-
-### `_1.CustomerManagedByoIssuerConfig`
-
-The configuration for Customer Managed Bring Your Own Issuer for Azure IoT Operations certificates.
-
-|Property|Type|Description|
-| :--- | :--- | :--- |
-|trustSource|`string`||
-|trustSettings|`[_1.TrustSettingsConfig](#user-defined-types)`|The trust settings for Azure IoT Operations.|
-
-### `_1.CustomerManagedGenerateIssuerConfig`
-
-The configuration for the Customer Managed Generated trust source of Azure IoT Operations certificates.
-
-|Property|Type|Description|
-| :--- | :--- | :--- |
-|trustSource|`string`||
-|aioCa|`[_1.AioCaConfig](#user-defined-types)`|The CA certificate, chain, and key for Azure IoT Operations.|
-
-### `_1.IncludeFileConfig`
-
-Additional file configuration for deployment scripts.
-
-|Property|Type|Description|
-| :--- | :--- | :--- |
-|name|`string`|The name of the file to create.|
-|content|`securestring`|The content of the file to create.|
-
-### `_1.InstanceFeature`
-
-Individual feature object within the AIO instance.
-
-|Property|Type|Description|
-| :--- | :--- | :--- |
-|mode|`[_1.InstanceFeatureMode](#user-defined-types)`||
-|settings|`object`||
-
-### `_1.InstanceFeatureMode`
-
-The mode of the AIO instance feature. Either "Stable", "Preview" or "Disabled".
-
-### `_1.InstanceFeatureSettingValue`
-
-The setting value of the AIO instance feature. Either "Enabled" or "Disabled".
-
-### `_1.OpenServiceMeshExtension`
-
-The settings for the Open Service Mesh Extension.
-
-|Property|Type|Description|
-| :--- | :--- | :--- |
-|release|`[_1.Release](#user-defined-types)`|The common settings for the extension.|
-
-### `_1.Release`
-
-The common settings for Azure Arc Extensions.
-
-|Property|Type|Description|
-| :--- | :--- | :--- |
-|version|`string`|The version of the extension.|
-|train|`string`|The release train that has the version to deploy (ex., "preview", "stable").|
-
-### `_1.ScriptConfig`
-
-Script configuration for deployment scripts.
-
-|Property|Type|Description|
-| :--- | :--- | :--- |
-|content|`securestring`|The script content to be executed.|
-|env|`array`|Environment variables for the script.|
-
-### `_1.ScriptEnvironmentVariable`
-
-Environment variable configuration for scripts.
-
-|Property|Type|Description|
-| :--- | :--- | :--- |
-|name|`string`|The name of the environment variable.|
-|value|`string`|The value of the environment variable.|
-|secureValue|`securestring`|The secure value of the environment variable.|
-
-### `_1.ScriptFilesConfig`
-
-The script and additional configuration files for deployment scripts.
-
-|Property|Type|Description|
-| :--- | :--- | :--- |
-|scripts|`array`|The script configuration for deployment scripts.|
-|includeFiles|`array`|The additional file configuration for deployment scripts.s|
-
-### `_1.SecretStoreExtension`
-
-The settings for the Secret Store Extension.
-
-|Property|Type|Description|
-| :--- | :--- | :--- |
-|release|`[_1.Release](#user-defined-types)`|The common settings for the extension.|
-
-### `_1.SelfSignedIssuerConfig`
-
-The configuration for Self-Signed Issuer for Azure IoT Operations certificates.
-
-|Property|Type|Description|
-| :--- | :--- | :--- |
-|trustSource|`string`||
-
-### `_1.TrustConfigSource`
-
-The config source of trust for how to use or generate Azure IoT Operations certificates.
-
-### `_1.TrustIssuerConfig`
-
-The configuration for the trust source of Azure IoT Operations certificates.
-
-### `_1.TrustSettingsConfig`
-
-The configuration for the trust settings of Azure IoT Operations certificates.
-
-|Property|Type|Description|
-| :--- | :--- | :--- |
-|issuerName|`string`||
-|issuerKind|`string`||
-|configMapName|`string`||
-|configMapKey|`string`||
-
-### `_1.TrustSource`
-
-The source of trust for Azure IoT Operations certificates.
-
-### `_2.Common`
+### `_1.Common`
 
 Common settings for the components.
 

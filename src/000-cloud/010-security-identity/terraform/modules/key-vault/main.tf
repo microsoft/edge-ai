@@ -12,13 +12,13 @@ data "azurerm_client_config" "current" {}
  */
 
 resource "azurerm_key_vault" "new" {
-  name                      = coalesce(var.key_vault_name, "kv-${var.resource_prefix}-${var.environment}-${var.instance}")
-  location                  = var.location
-  resource_group_name       = var.resource_group.name
-  tenant_id                 = data.azurerm_client_config.current.tenant_id
-  sku_name                  = "standard"
-  purge_protection_enabled  = false
-  enable_rbac_authorization = true
+  name                       = coalesce(var.key_vault_name, "kv-${var.resource_prefix}-${var.environment}-${var.instance}")
+  location                   = var.location
+  resource_group_name        = var.resource_group.name
+  tenant_id                  = data.azurerm_client_config.current.tenant_id
+  sku_name                   = "standard"
+  purge_protection_enabled   = false
+  rbac_authorization_enabled = true
 }
 
 /*
