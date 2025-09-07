@@ -666,7 +666,7 @@ The Media Capture Service uses environment variables for configuration. These ca
 | `AIO_TLS_CA_FILE`              | Path to the CA certificate file for TLS communication with the MQTT broker.              | `/var/run/certs/ca.crt`                                                      |
 | `AIO_SAT_FILE`                 | Path to the service account token file for MQTT authentication.                          | `/var/run/secrets/tokens/mq-sat`                                             |
 | `RUST_LOG`                     | Logging level for the application.                                                       | `info`                                                                       |
-| `TRIGGER_TOPICS`               | JSON array of MQTT topics to subscribe to for triggering video capture.                  | `["cvx/+/+/+/+/alert/true/output", "cvx/+/+/+/+/camera/analytics_disabled"]` |
+| `TRIGGER_TOPICS`               | JSON array of MQTT topics to subscribe to for triggering video capture.                  | `["xyz/+/+/+/+/alert/true/output", "xyz/+/+/+/+/camera/analytics_disabled"]` |
 | `MEDIA_CLOUD_SYNC_DIR`         | Directory inside the pod where media files or video segments are synced to the cloud.    | `/cloud-sync/media`                                                          |
 | `RTSP_URL`                     | RTSP URL for the live video stream to buffer.                                            | `rtsp://mock-camera-fof.eastus2.azurecontainer.io:8554/live`                 |
 | `VIDEO_FPS`                    | Frames per second for the video buffer.                                                  | `20`                                                                         |
