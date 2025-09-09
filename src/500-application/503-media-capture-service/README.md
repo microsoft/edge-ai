@@ -659,25 +659,25 @@ helm template media-capture-service . --values values.yaml
 
 The Media Capture Service uses environment variables for configuration. These can be set in the `.env` file for Docker Compose deployment or configured in the Helm chart values:
 
-| **Environment Variable**       | **Description**                                                                          | **Default Value**                                                            |
-|--------------------------------|------------------------------------------------------------------------------------------|------------------------------------------------------------------------------|
-| `AIO_BROKER_HOSTNAME`          | Hostname of the MQTT broker.                                                             | `aio-broker.azure-iot-operations`                                            |
-| `AIO_BROKER_TCP_PORT`          | TCP port for the MQTT broker.                                                            | `18883`                                                                      |
-| `AIO_TLS_CA_FILE`              | Path to the CA certificate file for TLS communication with the MQTT broker.              | `/var/run/certs/ca.crt`                                                      |
-| `AIO_SAT_FILE`                 | Path to the service account token file for MQTT authentication.                          | `/var/run/secrets/tokens/mq-sat`                                             |
-| `RUST_LOG`                     | Logging level for the application.                                                       | `info`                                                                       |
-| `TRIGGER_TOPICS`               | JSON array of MQTT topics to subscribe to for triggering video capture.                  | `["xyz/+/+/+/+/alert/true/output", "xyz/+/+/+/+/camera/analytics_disabled"]` |
-| `MEDIA_CLOUD_SYNC_DIR`         | Directory inside the pod where media files or video segments are synced to the cloud.    | `/cloud-sync/media`                                                          |
-| `RTSP_URL`                     | RTSP URL for the live video stream to buffer.                                            | `rtsp://mock-camera-fof.eastus2.azurecontainer.io:8554/live`                 |
-| `VIDEO_FPS`                    | Frames per second for the video buffer.                                                  | `20`                                                                         |
-| `FRAME_WIDTH`                  | Frame width for buffered video.                                                          | `896`                                                                        |
-| `FRAME_HEIGHT`                 | Frame height for buffered video.                                                         | `512`                                                                        |
-| `BUFFER_SECONDS`               | Number of seconds of video to keep in the buffer (for segment extraction).               | `120`                                                                        |
-| `AIO_MQTT_CLIENT_ID`           | MQTT client ID for the service.                                                          | `media-capture-service`                                                      |
-| `CAPTURE_DURATION_SECONDS`     | Duration (in seconds) of video segment to extract on alert/manual trigger.               | `10`                                                                         |
-| `VIDEO_FEED_DELAY_SECONDS`     | Seconds to offset alert timestamp for video delay compensation.                          | `5`                                                                          |
-| `BUFFER_CLEANUP_INTERVAL_SECS` | Interval in seconds between cleanup operations for old frames in the buffer.             | `60`                                                                         |
-| `MAX_OLD_FRAMES_AGE_SECS`      | Maximum age (in seconds) for frames in the buffer before they're removed during cleanup. | `300`                                                                        |
+| **Environment Variable**       | **Description**                                                                          | **Default Value**                                                 |
+|--------------------------------|------------------------------------------------------------------------------------------|-------------------------------------------------------------------|
+| `AIO_BROKER_HOSTNAME`          | Hostname of the MQTT broker.                                                             | `aio-broker.azure-iot-operations`                                 |
+| `AIO_BROKER_TCP_PORT`          | TCP port for the MQTT broker.                                                            | `18883`                                                           |
+| `AIO_TLS_CA_FILE`              | Path to the CA certificate file for TLS communication with the MQTT broker.              | `/var/run/certs/ca.crt`                                           |
+| `AIO_SAT_FILE`                 | Path to the service account token file for MQTT authentication.                          | `/var/run/secrets/tokens/mq-sat`                                  |
+| `RUST_LOG`                     | Logging level for the application.                                                       | `info`                                                            |
+| `TRIGGER_TOPICS`               | JSON array of MQTT topics to subscribe to for triggering video capture.                  | `["xyz/+/+/+/+/alert/trigger", "xyz/+/+/+/+/analytics_disabled"]` |
+| `MEDIA_CLOUD_SYNC_DIR`         | Directory inside the pod where media files or video segments are synced to the cloud.    | `/cloud-sync/media`                                               |
+| `RTSP_URL`                     | RTSP URL for the live video stream to buffer.                                            | `rtsp://mock-camera-fof.eastus2.azurecontainer.io:8554/live`      |
+| `VIDEO_FPS`                    | Frames per second for the video buffer.                                                  | `20`                                                              |
+| `FRAME_WIDTH`                  | Frame width for buffered video.                                                          | `896`                                                             |
+| `FRAME_HEIGHT`                 | Frame height for buffered video.                                                         | `512`                                                             |
+| `BUFFER_SECONDS`               | Number of seconds of video to keep in the buffer (for segment extraction).               | `120`                                                             |
+| `AIO_MQTT_CLIENT_ID`           | MQTT client ID for the service.                                                          | `media-capture-service`                                           |
+| `CAPTURE_DURATION_SECONDS`     | Duration (in seconds) of video segment to extract on alert/manual trigger.               | `10`                                                              |
+| `VIDEO_FEED_DELAY_SECONDS`     | Seconds to offset alert timestamp for video delay compensation.                          | `5`                                                               |
+| `BUFFER_CLEANUP_INTERVAL_SECS` | Interval in seconds between cleanup operations for old frames in the buffer.             | `60`                                                              |
+| `MAX_OLD_FRAMES_AGE_SECS`      | Maximum age (in seconds) for frames in the buffer before they're removed during cleanup. | `300`                                                             |
 
 ### Key Configuration Notes
 
