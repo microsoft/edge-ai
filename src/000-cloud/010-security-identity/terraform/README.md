@@ -40,11 +40,11 @@ access to resources.
 |------|-------------|------|---------|:--------:|
 | aio\_resource\_group | n/a | ```object({ id = string name = string location = string })``` | n/a | yes |
 | environment | Environment for all resources in this module: dev, test, or prod | `string` | n/a | yes |
-| location | Location for all resources in this module | `string` | n/a | yes |
+| location | Azure region where all resources will be deployed | `string` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
-| instance | Instance identifier for naming resources: 001, 002, etc... | `string` | `"001"` | no |
+| instance | Instance identifier for naming resources: 001, 002, etc | `string` | `"001"` | no |
 | key\_vault\_admin\_principal\_id | The Principal ID or Object ID for the admin that will have access to update secrets on the Key Vault. | `string` | `null` | no |
-| key\_vault\_name | The resource name for the new Key Vault. (Otherwise, 'kv-{var.resource\_prefix}-{var.environment}-{var.instance}') | `string` | `null` | no |
+| key\_vault\_name | The name of the Key Vault to store secrets. If not provided, defaults to 'kv-{resource\_prefix}-{environment}-{instance}' | `string` | `null` | no |
 | onboard\_identity\_type | Identity type to use for onboarding the cluster to Azure Arc.  Allowed values:  - id - sp - skip | `string` | `"id"` | no |
 | should\_create\_identities | Whether to create the identities used for Arc Onboarding, Secret Sync, and AIO. | `bool` | `true` | no |
 | should\_create\_key\_vault | Whether to create the Key Vault. | `bool` | `true` | no |

@@ -37,8 +37,8 @@ facilitates the management of custom Kubernetes resources and manifests.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| custom\_location\_id | The ID (resource ID) of the custom location to retrieve. | `string` | n/a | yes |
-| location | Azure region where resources will be deployed. | `string` | n/a | yes |
+| custom\_location\_id | The resource ID of the Custom Location | `string` | n/a | yes |
+| location | Azure region where all resources will be deployed | `string` | n/a | yes |
 | resource\_group | Resource group object containing name and id where resources will be deployed. | ```object({ name = string id = string })``` | n/a | yes |
 | asset\_endpoint\_profiles | List of asset endpoint profiles to create. Otherwise, an empty list. | ```list(object({ endpoint_profile_type = optional(string) method = optional(string) name = string opc_additional_config_string = optional(string) should_enable_opc_asset_discovery = optional(bool) target_address = string }))``` | `[]` | no |
 | assets | List of assets to create. Otherwise, an empty list. | ```list(object({ asset_endpoint_profile_ref = string datasets = optional(list(object({ data_points = list(object({ data_point_configuration = optional(string) data_source = string name = string observability_mode = optional(string) })) name = string })), []) default_datasets_configuration = optional(string) description = optional(string) display_name = optional(string) documentation_uri = optional(string) enabled = optional(bool) hardware_revision = optional(string) manufacturer = optional(string) manufacturer_uri = optional(string) model = optional(string) name = string product_code = optional(string) serial_number = optional(string) software_revision = optional(string) }))``` | `[]` | no |

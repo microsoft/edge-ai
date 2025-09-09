@@ -3,11 +3,11 @@ variable "resource_group" {
     id   = string
     name = string
   })
-  description = "Name and ID of the pre-existing resource group in which to create resources"
+  description = "Resource group object containing name and id where resources will be deployed"
 }
 variable "custom_location_id" {
   type        = string
-  description = "The resource ID of the Custom Location."
+  description = "The resource ID of the Custom Location"
 }
 
 variable "connected_cluster_location" {
@@ -30,7 +30,7 @@ variable "key_vault" {
     name = string
     id   = string
   })
-  description = "The name and id of the existing key vault for Azure IoT Operations instance"
+  description = "The Key Vault object containing id, name, and vault_uri properties"
 }
 
 variable "sse_user_managed_identity" {

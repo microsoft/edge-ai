@@ -93,8 +93,8 @@ variable "dataflow_instance_count" {
 
 variable "should_deploy_resource_sync_rules" {
   type        = bool
-  default     = false
   description = "Deploys resource sync rules if set to true"
+  default     = false
 }
 
 variable "enable_instance_secret_sync" {
@@ -105,7 +105,7 @@ variable "enable_instance_secret_sync" {
 
 variable "should_create_anonymous_broker_listener" {
   type        = bool
-  description = "Whether to enable an insecure anonymous AIO MQ Broker Listener. (Should only be used for dev or test environments)"
+  description = "Whether to enable an insecure anonymous AIO MQ Broker Listener. Should only be used for dev or test environments"
   default     = false
 }
 

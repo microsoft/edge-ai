@@ -4,13 +4,13 @@ variable "name" {
 }
 
 variable "location" {
-  description = "The Azure region in which to create the Fabric capacity."
   type        = string
+  description = "Azure region where all resources will be deployed"
 }
 
 variable "resource_group_name" {
-  description = "The name of the resource group in which to create the Fabric capacity."
   type        = string
+  description = "Name of the resource group"
 }
 
 variable "admin_members" {
@@ -20,13 +20,13 @@ variable "admin_members" {
 }
 
 variable "sku" {
-  description = "The SKU name for the Fabric capacity."
   type        = string
+  description = "SKU name for the resource"
   default     = "F2"
 }
 
 variable "tags" {
-  description = "Tags to apply to the Fabric capacity."
   type        = map(string)
+  description = "Tags to apply to all resources"
   default     = {}
 }

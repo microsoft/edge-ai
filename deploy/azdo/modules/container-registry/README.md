@@ -37,7 +37,7 @@ Create a Container Registry to host the artifacts for the Accelerator
 | resource\_prefix | Prefix for all resources in this module. | `string` | n/a | yes |
 | snet\_acr | Subnet for the Azure Container Registry private endpoint. | ```object({ id = string })``` | n/a | yes |
 | vnet | Virtual Network for Key Vault Private DNS Zone. | ```object({ name = string })``` | n/a | yes |
-| sku | SKU for the Azure Container Registry. Options are Basic, Standard, Premium. Default is Premium because of the need for private endpoints. | `string` | `"Premium"` | no |
+| acr_sku | SKU for the Azure Container Registry. Options are Basic, Standard, Premium. Default is Premium because of the need for private endpoints. | `string` | `"Premium"` | no |
 
 ## Outputs
 

@@ -21,7 +21,7 @@ variable "cluster_a_location" {
 
 variable "cluster_a_name" {
   type        = string
-  description = "The name identifier for Cluster A."
+  description = "The name identifier for Cluster A"
 }
 
 variable "cluster_a_resource_group" {
@@ -61,7 +61,7 @@ variable "cluster_b_location" {
 
 variable "cluster_b_name" {
   type        = string
-  description = "The name identifier for Cluster B."
+  description = "The name identifier for Cluster B"
 }
 
 variable "cluster_b_resource_group" {

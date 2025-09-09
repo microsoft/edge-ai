@@ -8,6 +8,7 @@ variable "resource_group" {
     id       = string
     location = string
   })
+  description = "Resource group object containing name and id where resources will be deployed"
 }
 
 variable "arc_connected_cluster" {

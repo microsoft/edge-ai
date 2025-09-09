@@ -7,6 +7,7 @@ variable "resource_group" {
     name = string
     id   = optional(string)
   })
+  description = "Resource group object containing name and id where resources will be deployed"
 }
 
 /*
@@ -31,16 +32,16 @@ variable "cluster_node_machine" {
 
 variable "arc_onboarding_principal_ids" {
   type        = list(string)
-  description = "The Principal IDs for a pre-existing identity that will be used for onboarding the cluster to Arc."
+  description = "The Principal IDs for the identity or service principal that will be used for onboarding the cluster to Arc"
   default     = null
 }
 
 variable "arc_onboarding_identity" {
-  description = "The Principal ID for the identity that will be used for onboarding the cluster to Arc."
   type = object({
     principal_id = string
   })
-  default = null
+  description = "The Principal ID for the identity that will be used for onboarding the cluster to Arc"
+  default     = null
 
   validation {
     condition     = !var.should_assign_roles || anytrue([var.arc_onboarding_identity != null, var.arc_onboarding_sp != null, var.arc_onboarding_principal_ids != null])
@@ -69,7 +70,7 @@ variable "key_vault" {
     name      = string
     vault_uri = string
   })
-  description = "The Key Vault object containing id, name, and vault_uri properties."
+  description = "The Key Vault object containing id, name, and vault_uri properties"
   default     = null
 
   validation {

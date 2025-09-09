@@ -1,25 +1,25 @@
 variable "environment" {
   type        = string
-  description = "Environment for all resources in this module: dev, test, or prod."
+  description = "Environment for all resources in this module: dev, test, or prod"
 }
 
 variable "resource_prefix" {
-  type        = string
-  description = "Prefix for all resources in this module."
+  type = string
   validation {
     condition     = length(var.resource_prefix) > 0 && can(regex("^[a-zA-Z](?:-?[a-zA-Z0-9])*$", var.resource_prefix))
     error_message = "Resource prefix must not be empty, must only contain alphanumeric characters and dashes. Must start with an alphabetic character."
   }
+  description = "Prefix for all resources in this module"
 }
 
 variable "location" {
   type        = string
-  description = "Location for all resources in this module."
+  description = "Azure region where all resources will be deployed"
 }
 
 variable "instance" {
   type        = string
-  description = "Instance identifier for naming resources: 001, 002, etc..."
+  description = "Instance identifier for naming resources: 001, 002, etc"
   default     = "001"
 }
 
@@ -134,28 +134,28 @@ variable "aio_namespace" {
 variable "should_get_custom_locations_oid" {
   type        = bool
   description = <<-EOF
-    Whether to get Custom Locations Object ID using Terraform's azuread provider. (Otherwise, provided by
-    'custom_locations_oid' or `az connectedk8s enable-features` for custom-locations on cluster setup if not provided.)
-EOF
+  Whether to get Custom Locations Object ID using Terraform's azuread provider. (Otherwise, provided by
+  'custom_locations_oid' or `az connectedk8s enable-features` for custom-locations on cluster setup if not provided.)
+  EOF
   default     = true
 }
 
 variable "custom_locations_oid" {
   type        = string
   description = <<-EOF
-    The object id of the Custom Locations Entra ID application for your tenant.
-    If none is provided, the script will attempt to retrieve this requiring 'Application.Read.All' or 'Directory.Read.All' permissions.
-
-    ```sh
-    az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv
-    ```
-EOF
+  The object id of the Custom Locations Entra ID application for your tenant.
+  If none is provided, the script will attempt to retrieve this requiring 'Application.Read.All' or 'Directory.Read.All' permissions.
+  
+  ```sh
+  az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv
+  ```
+  EOF
   default     = null
 }
 
 variable "should_create_anonymous_broker_listener" {
   type        = bool
-  description = "Whether to enable an insecure anonymous AIO MQ Broker Listener. (Should only be used for dev or test environments)"
+  description = "Whether to enable an insecure anonymous AIO MQ Broker Listener. Should only be used for dev or test environments"
   default     = false
 }
 
@@ -207,13 +207,13 @@ variable "aio_features" {
 
 variable "should_deploy_resource_sync_rules" {
   type        = bool
+  description = "Deploys resource sync rules if set to true"
   default     = false
-  description = "Deploys resource sync rules if set to true."
 }
 
 variable "should_enable_opc_ua_simulator" {
   type        = bool
-  description = "Should create an OPC UA Simulator. Default is false."
+  description = "Whether to deploy the OPC UA Simulator to the cluster. Default is false"
   default     = false
 }
 
@@ -263,7 +263,7 @@ variable "assets" {
 
 variable "should_create_azure_functions" {
   type        = bool
-  description = "Whether to create Azure Functions for the clusters."
+  description = "Whether to create the Azure Functions resources including App Service Plan"
   default     = false
 }
 

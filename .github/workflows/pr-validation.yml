@@ -166,7 +166,7 @@ jobs:
       contents: write
       statuses: write
     with:
-      break_build: false
+      break_build: true
     secrets: inherit
 
   # Terraform tests using matrix for each changed module

@@ -5,9 +5,9 @@
 variable "should_get_custom_locations_oid" {
   type        = bool
   description = <<-EOF
-    Whether to get Custom Locations Object ID using Terraform's azuread provider. (Otherwise, provided by
-    'custom_locations_oid' or `az connectedk8s enable-features` for custom-locations on cluster setup if not provided.)
-EOF
+  Whether to get Custom Locations Object ID using Terraform's azuread provider. (Otherwise, provided by
+  'custom_locations_oid' or `az connectedk8s enable-features` for custom-locations on cluster setup if not provided.)
+  EOF
 }
 
 /*
@@ -16,7 +16,7 @@ EOF
 
 variable "should_use_script_from_secrets_for_deploy" {
   type        = bool
-  description = "Whether to use the deploy-script-secrets.sh script to fetch and execute deployment scripts from Key Vault."
+  description = "Whether to use the deploy-script-secrets.sh script to fetch and execute deployment scripts from Key Vault"
   default     = true
 }
 
@@ -85,13 +85,13 @@ variable "should_upload_to_key_vault" {
 variable "custom_locations_oid" {
   type        = string
   description = <<-EOF
-    The object id of the Custom Locations Entra ID application for your tenant.
-    If none is provided, the script will attempt to retrieve this requiring 'Application.Read.All' or 'Directory.Read.All' permissions.
-
-    ```sh
-    az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv
-    ```
-EOF
+  The object id of the Custom Locations Entra ID application for your tenant.
+  If none is provided, the script will attempt to retrieve this requiring 'Application.Read.All' or 'Directory.Read.All' permissions.
+  
+  ```sh
+  az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv
+  ```
+  EOF
   default     = null
 }
 
@@ -125,13 +125,13 @@ variable "cluster_admin_upn" {
 
 variable "cluster_server_ip" {
   type        = string
-  description = "The IP address for the server for the cluster. (Needed for mult-node cluster)"
+  description = "The IP Address for the cluster server that the cluster nodes will use to connect."
   default     = null
 }
 
 variable "cluster_server_token" {
   type        = string
-  description = "The token that will be given to the server for the cluster or used by the agent nodes to connect them to the cluster. (ex. <https://docs.k3s.io/cli/token)>"
+  description = "The token that will be given to the server for the cluster or used by the agent nodes to connect them to the cluster. (ex. <https://docs.k3s.io/cli/token>)"
   default     = null
   sensitive   = true
 }
@@ -149,9 +149,9 @@ variable "should_generate_cluster_server_token" {
 variable "cluster_server_host_machine_username" {
   type        = string
   description = <<-EOF
-    Username used for the host machines that will be given kube-config settings on setup.
-    (Otherwise, 'resource_prefix' if it exists as a user)
-EOF
+  Username used for the host machines that will be given kube-config settings on setup.
+  (Otherwise, 'resource_prefix' if it exists as a user)
+  EOF
   default     = null
 }
 

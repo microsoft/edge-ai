@@ -3,7 +3,7 @@ variable "resource_group" {
     id   = string
     name = string
   })
-  description = "Name and ID of the pre-existing resource group in which to create resources"
+  description = "Resource group object containing name and id where resources will be deployed"
 }
 
 variable "connected_cluster_name" {

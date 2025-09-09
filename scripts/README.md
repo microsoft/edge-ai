@@ -65,7 +65,7 @@ Verifies that Terraform documentation is up-to-date.
 Validates Terraform variable definitions across modules for consistency.
 
 - **Usage**:
-  - Run `pip install -r requirements.txt` (to pick up the requests library)
+  - Ensure `terraform-docs` is installed and available in PATH
   - Run `./tf-vars-compliance-check.py`
 - **Returns**: JSON array of inconsistencies found in variable definitions
 - **Build Integration**: Used by the [variable-compliance-terraform-template.yml](../.azdo/variable-compliance-terraform-template.yml) job

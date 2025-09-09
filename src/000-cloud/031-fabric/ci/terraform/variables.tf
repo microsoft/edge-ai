@@ -4,27 +4,27 @@
 
 variable "environment" {
   type        = string
-  description = "Environment for all resources in this module: dev, test, or prod."
+  description = "Environment for all resources in this module: dev, test, or prod"
 }
 
 variable "instance" {
   type        = string
-  description = "Instance identifier for naming resources: 001, 002, etc..."
+  description = "Instance identifier for naming resources: 001, 002, etc"
   default     = "001"
 }
 
 variable "resource_prefix" {
-  type        = string
-  description = "Prefix for all resources in this module."
+  type = string
   validation {
     condition     = length(var.resource_prefix) > 0 && can(regex("^[a-zA-Z](?:-?[a-zA-Z0-9])*$", var.resource_prefix))
     error_message = "Resource prefix must not be empty, must only contain alphanumeric characters and dashes. Must start with an alphabetic character."
   }
+  description = "Prefix for all resources in this module"
 }
 
 variable "fabric_workspace_name" {
-  description = "The name of the Microsoft Fabric workspace. Otherwise, 'ws-{resource_prefix}-{environment}-{instance}'."
   type        = string
+  description = "The name of the Microsoft Fabric workspace. Otherwise, 'ws-{resource_prefix}-{environment}-{instance}'"
   default     = null
 }
 

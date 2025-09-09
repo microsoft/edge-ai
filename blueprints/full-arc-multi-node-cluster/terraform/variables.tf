@@ -4,21 +4,21 @@
 
 variable "environment" {
   type        = string
-  description = "Environment for all resources in this module: e.g., dev, test, prod, etc."
+  description = "Environment for all resources in this module: dev, test, or prod"
 }
 
 variable "resource_prefix" {
-  type        = string
-  description = "Prefix for all resources in this module."
+  type = string
   validation {
     condition     = length(var.resource_prefix) > 0 && can(regex("^[a-zA-Z](?:-?[a-zA-Z0-9])*$", var.resource_prefix))
     error_message = "Resource prefix must not be empty, must only contain alphanumeric characters and dashes. Must start with an alphabetic character."
   }
+  description = "Prefix for all resources in this module"
 }
 
 variable "location" {
   type        = string
-  description = "Location for all resources in this module."
+  description = "Azure region where all resources will be deployed"
 }
 
 variable "use_existing_resource_group" {
@@ -34,22 +34,22 @@ variable "use_existing_resource_group" {
 variable "should_get_custom_locations_oid" {
   type        = bool
   description = <<-EOF
-    Whether to get Custom Locations Object ID using Terraform's azuread provider. (Otherwise, provided by
-    'custom_locations_oid' or `az connectedk8s enable-features` for custom-locations on cluster setup if not provided.)
-EOF
+  Whether to get Custom Locations Object ID using Terraform's azuread provider. (Otherwise, provided by
+  'custom_locations_oid' or `az connectedk8s enable-features` for custom-locations on cluster setup if not provided.)
+  EOF
   default     = true
 }
 
 variable "custom_locations_oid" {
   type        = string
   description = <<-EOF
-    The object id of the Custom Locations Entra ID application for your tenant.
-    If none is provided, the script will attempt to retrieve this requiring 'Application.Read.All' or 'Directory.Read.All' permissions.
-
-    ```sh
-    az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv
-    ```
-EOF
+  The object id of the Custom Locations Entra ID application for your tenant.
+  If none is provided, the script will attempt to retrieve this requiring 'Application.Read.All' or 'Directory.Read.All' permissions.
+  
+  ```sh
+  az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv
+  ```
+  EOF
   default     = null
 }
 
@@ -65,25 +65,25 @@ variable "should_add_current_user_cluster_admin" {
 
 variable "should_create_anonymous_broker_listener" {
   type        = bool
-  description = "Whether to enable an insecure anonymous AIO MQ Broker Listener. Should only be used for dev or test environments."
+  description = "Whether to enable an insecure anonymous AIO MQ Broker Listener. Should only be used for dev or test environments"
   default     = false
 }
 
 variable "should_enable_opc_ua_simulator" {
   type        = bool
-  description = "Whether to deploy the OPC UA Simulator to the cluster"
+  description = "Whether to deploy the OPC UA Simulator to the cluster. Default is false"
   default     = true
 }
 
 variable "should_enable_otel_collector" {
   type        = bool
-  description = "Whether to deploy the OpenTelemetry Collector and Azure Monitor ConfigMap (optionally used)"
+  description = "Whether to deploy the OpenTelemetry Collector and Azure Monitor ConfigMap"
   default     = true
 }
 
 variable "should_create_azure_functions" {
   type        = bool
-  description = "Whether to create Azure Functions for the cluster"
+  description = "Whether to create the Azure Functions resources including App Service Plan"
   default     = false
 }
 
@@ -147,7 +147,10 @@ variable "cluster_server_ip" {
 
 variable "cluster_server_host_machine_username" {
   type        = string
-  description = "The username for the cluster server that will be given kubectl access."
+  description = <<-EOF
+  Username used for the host machines that will be given kube-config settings on setup.
+  (Otherwise, 'resource_prefix' if it exists as a user)
+  EOF
   default     = null
 }
 
@@ -179,7 +182,7 @@ variable "arc_machine_resource_group_name" {
 
 variable "resource_group_name" {
   type        = string
-  description = "The name of the Resource Group that will be created for the resources."
+  description = "Name of the resource group"
   default     = null
 }
 

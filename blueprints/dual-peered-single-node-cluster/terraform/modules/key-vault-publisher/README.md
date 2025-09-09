@@ -45,9 +45,9 @@ certificates and externally provided certificates.
 |------|-------------|------|---------|:--------:|
 | certificates | Certificate data to write to Key Vault. Can come from terraform-certificate-generation module or external source. | ```object({ server_root_ca_cert = string server_root_ca_key = string server_intermediate_ca_cert = string server_intermediate_ca_key = string server_leaf_cert = string server_leaf_key = string client_root_ca_cert = string client_root_ca_key = string client_intermediate_ca_cert = string client_intermediate_ca_key = string client_leaf_cert = string client_leaf_key = string })``` | n/a | yes |
 | cluster\_a\_key\_vault\_id | Resource ID of the Key Vault for cluster A. | `string` | n/a | yes |
-| cluster\_a\_name | Name of cluster A for tagging purposes. | `string` | n/a | yes |
+| cluster\_a\_name | The name identifier for Cluster A | `string` | n/a | yes |
 | cluster\_b\_key\_vault\_id | Resource ID of the Key Vault for cluster B. | `string` | n/a | yes |
-| cluster\_b\_name | Name of cluster B for tagging purposes. | `string` | n/a | yes |
+| cluster\_b\_name | The name identifier for Cluster B | `string` | n/a | yes |
 
 ## Outputs
 

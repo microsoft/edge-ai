@@ -35,7 +35,7 @@ Enables secret-sync on the Azure IoT instance after the instance is created.
 | aio\_user\_managed\_identity\_id | ID of the User Assigned Managed Identity for the Azure IoT Operations instance | `string` | n/a | yes |
 | connected\_cluster\_location | The location of the connected cluster resource | `string` | n/a | yes |
 | connected\_cluster\_name | The name of the connected cluster to deploy Azure IoT Operations to | `string` | n/a | yes |
-| custom\_location\_id | The resource ID of the Custom Location. | `string` | n/a | yes |
+| custom\_location\_id | The resource ID of the Custom Location | `string` | n/a | yes |
 | enable\_instance\_secret\_sync | Whether to enable secret sync on the Azure IoT Operations instance | `bool` | n/a | yes |
 | key\_vault | The name and id of the existing key vault for Azure IoT Operations instance | ```object({ name = string id = string })``` | n/a | yes |
 | resource\_group | Name and ID of the pre-existing resource group in which to create resources | ```object({ id = string name = string })``` | n/a | yes |

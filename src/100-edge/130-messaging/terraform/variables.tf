@@ -10,13 +10,13 @@ variable "asset_name" {
 
 variable "should_create_eventgrid_dataflows" {
   type        = bool
-  description = "Whether to create event grid dataflows."
+  description = "Whether to create EventGrid dataflows in the edge messaging component"
   default     = true
 }
 
 variable "should_create_eventhub_dataflows" {
   type        = bool
-  description = "Whether to create event hub dataflows."
+  description = "Whether to create EventHub dataflows in the edge messaging component"
   default     = true
 }
 

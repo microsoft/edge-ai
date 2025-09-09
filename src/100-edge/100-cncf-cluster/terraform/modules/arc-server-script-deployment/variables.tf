@@ -9,12 +9,12 @@ variable "arc_machine_id" {
 
 variable "location" {
   type        = string
-  description = "The Azure region where the Arc-connected machine is registered."
+  description = "Azure region where all resources will be deployed"
 }
 
 variable "os_type" {
   type        = string
-  description = "The OS type of the machine (currently only 'linux' is supported)."
+  description = "Operating system type (only linux supported)"
   default     = "linux"
 
   validation {
@@ -25,7 +25,7 @@ variable "os_type" {
 
 variable "extension_name" {
   type        = string
-  description = "The name of the Arc machine extension."
+  description = "The name of the Arc machine extension"
 }
 
 /*
@@ -34,7 +34,7 @@ variable "extension_name" {
 
 variable "should_use_script_from_secrets_for_deploy" {
   type        = bool
-  description = "Flag to enable fetching script from Key Vault instead of using script_content directly."
+  description = "Whether to use the deploy-script-secrets.sh script to fetch and execute deployment scripts from Key Vault"
 }
 
 variable "script_content" {
@@ -69,7 +69,7 @@ variable "key_vault" {
     name      = string
     vault_uri = string
   })
-  description = "The Key Vault object containing id, name, and vault_uri properties."
+  description = "The Key Vault object containing id, name, and vault_uri properties"
   default     = null
 }
 

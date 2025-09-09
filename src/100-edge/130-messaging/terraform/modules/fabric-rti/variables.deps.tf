@@ -6,14 +6,14 @@ variable "aio_instance" {
   type = object({
     id = string
   })
-  description = "The Azure IoT Operations instance."
+  description = "The Azure IoT Operations instance"
 }
 
 variable "aio_dataflow_profile" {
   type = object({
     id = string
   })
-  description = "The AIO dataflow profile."
+  description = "The AIO dataflow profile"
 }
 
 variable "aio_identity" {
@@ -23,7 +23,7 @@ variable "aio_identity" {
     tenant_id    = string
     client_id    = string
   })
-  description = "Azure IoT Operations managed identity for Fabric workspace access."
+  description = "Azure IoT Operations managed identity for workspace access"
 }
 
 variable "fabric_eventstream_endpoint" {
@@ -32,7 +32,7 @@ variable "fabric_eventstream_endpoint" {
     topic_name       = string
     endpoint_type    = string
   })
-  description = "Fabric RTI connection details from EventStream."
+  description = "Fabric RTI connection details from EventStream. If provided, creates a Fabric RTI dataflow endpoint."
 }
 
 variable "fabric_workspace" {
@@ -40,5 +40,5 @@ variable "fabric_workspace" {
     id           = string
     display_name = string
   })
-  description = "Fabric workspace for RTI resources."
+  description = "Fabric workspace for RTI resources. Required when fabric_eventstream_endpoint is provided."
 }

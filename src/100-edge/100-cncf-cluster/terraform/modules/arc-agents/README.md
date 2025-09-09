@@ -35,9 +35,9 @@ if you are not using Azure CLI provided by the ubuntu-k3s module.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | cluster\_name | Name of the created ARC K8s cluster | `string` | n/a | yes |
-| custom\_locations\_oid | Object ID of the custom location. Get by executing az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv | `string` | n/a | yes |
+| custom\_locations\_oid | The object id of the Custom Locations Entra ID application for your tenant. If none is provided, the script will attempt to retrieve this requiring 'Application.Read.All' or 'Directory.Read.All' permissions. ```sh az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv``` | `string` | n/a | yes |
 | http\_proxy | HTTP proxy URL | `string` | n/a | yes |
-| location | Location for all resources in this module. | `string` | n/a | yes |
+| location | Azure region where all resources will be deployed | `string` | n/a | yes |
 | private\_key\_pem | Private key for onboarding | `string` | n/a | yes |
 | resource\_group | n/a | ```object({ name = string id = optional(string) })``` | n/a | yes |
 <!-- markdown-table-prettify-ignore-end -->

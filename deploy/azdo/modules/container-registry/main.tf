@@ -9,7 +9,7 @@ resource "azurerm_container_registry" "acr" {
   name                          = "acr${var.resource_prefix}${var.environment}${var.instance}"
   resource_group_name           = var.resource_group.name
   location                      = var.resource_group.location
-  sku                           = var.sku
+  sku                           = var.acr_sku
   public_network_access_enabled = false
 }
 

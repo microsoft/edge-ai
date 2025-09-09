@@ -10,12 +10,12 @@
 
 variable "custom_location_id" {
   type        = string
-  description = "The ID (resource ID) of the custom location to retrieve."
+  description = "The resource ID of the Custom Location"
 }
 
 variable "location" {
   type        = string
-  description = "Azure region where resources will be deployed."
+  description = "Azure region where all resources will be deployed"
 }
 
 /*
@@ -82,15 +82,13 @@ variable "should_create_default_asset" {
 variable "k8s_bridge_principal_id" {
   type        = string
   default     = null
-  description = <<EOT
+  description = <<-EOT
 Optional. The principal ID of the K8 Bridge for Azure IoT Operations.
 Required only if enable_asset_discovery=true and automatic retrieval fails.
 If null and enable_asset_discovery=true, will be automatically retrieved using the service principal data source.
 
 Can be retrieved manually using:
 
-  ```sh
-  az ad sp list --display-name "K8 Bridge" --query "[0].appId" -o tsv
-  ```
+  az ad sp list --display-name \"K8 Bridge\" --query \"[0].appId\" -o tsv
 EOT
 }

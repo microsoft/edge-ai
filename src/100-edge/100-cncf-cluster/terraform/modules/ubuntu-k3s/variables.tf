@@ -23,7 +23,7 @@ variable "should_output_cluster_server_script" {
 
 variable "should_use_script_from_secrets_for_deploy" {
   type        = bool
-  description = "Whether to use the deploy-script-secrets.sh script to fetch and execute deployment scripts from Key Vault."
+  description = "Whether to use the deploy-script-secrets.sh script to fetch and execute deployment scripts from Key Vault"
 }
 
 /*
@@ -52,13 +52,13 @@ variable "arc_tenant_id" {
 variable "custom_locations_oid" {
   type        = string
   description = <<-EOF
-    The object id of the Custom Locations Entra ID application for your tenant.
-    If none is provided, the script will attempt to retrieve this requiring 'Application.Read.All' or 'Directory.Read.All' permissions.
-
-    ```sh
-    az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv
-    ```
-EOF
+  The object id of the Custom Locations Entra ID application for your tenant.
+  If none is provided, the script will attempt to retrieve this requiring 'Application.Read.All' or 'Directory.Read.All' permissions.
+  
+  ```sh
+  az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv
+  ```
+  EOF
 }
 
 variable "should_enable_arc_auto_upgrade" {
@@ -72,23 +72,23 @@ variable "should_enable_arc_auto_upgrade" {
 
 variable "cluster_admin_oid" {
   type        = string
-  description = "The Object ID that will be given cluster-admin permissions with the new cluster."
+  description = "The Object ID that will be given cluster-admin permissions with the new cluster. (Otherwise, current logged in user Object ID if 'should_add_current_user_cluster_admin=true')"
 }
 
 variable "cluster_admin_upn" {
   type        = string
-  description = "The User Principal Name that will be given cluster-admin permissions with the new cluster."
+  description = "The User Principal Name that will be given cluster-admin permissions with the new cluster. (Otherwise, current logged in user UPN if 'should_add_current_user_cluster_admin=true')"
 }
 
 variable "cluster_server_ip" {
   type        = string
-  description = "The IP address for the server for the cluster. (Needed for mult-node cluster)"
+  description = "The IP Address for the cluster server that the cluster nodes will use to connect."
 }
 
 variable "cluster_server_token" {
   type        = string
-  description = "The token that will be given to the server for the cluster or used by the agent nodes to connect them to the cluster. (ex. <https://docs.k3s.io/cli/token>)"
   sensitive   = true
+  description = "The token that will be given to the server for the cluster or used by the agent nodes to connect them to the cluster. (ex. <https://docs.k3s.io/cli/token>)"
 }
 
 variable "should_generate_cluster_server_token" {
@@ -103,9 +103,9 @@ variable "should_generate_cluster_server_token" {
 variable "cluster_server_host_machine_username" {
   type        = string
   description = <<-EOF
-    Username used for the host machines that will be given kube-config settings on setup.
-    (Otherwise, 'resource_prefix' if it exists as a user)
-EOF
+  Username used for the host machines that will be given kube-config settings on setup.
+  (Otherwise, 'resource_prefix' if it exists as a user)
+  EOF
 }
 
 variable "should_skip_az_cli_login" {

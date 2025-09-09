@@ -26,7 +26,7 @@
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | capacity\_id | The ID of the premium capacity to assign to the workspace (Run ./scripts/select-fabric-capacity.sh to choose one) | `string` | n/a | yes |
-| workspace\_description | The description of the workspace | `string` | n/a | yes |
+| workspace\_description | The description of the Microsoft Fabric workspace | `string` | n/a | yes |
 | workspace\_display\_name | The display name of the workspace | `string` | n/a | yes |
 
 ## Outputs

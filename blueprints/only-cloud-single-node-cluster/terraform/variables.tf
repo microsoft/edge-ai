@@ -4,22 +4,22 @@ variable "environment" {
 }
 
 variable "resource_prefix" {
-  type        = string
-  description = "Prefix for all resources in this module"
+  type = string
   validation {
     condition     = length(var.resource_prefix) > 0 && can(regex("^[a-zA-Z](?:-?[a-zA-Z0-9])*$", var.resource_prefix))
     error_message = "Resource prefix must not be empty, must only contain alphanumeric characters and dashes. Must start with an alphabetic character."
   }
+  description = "Prefix for all resources in this module"
 }
 
 variable "location" {
   type        = string
-  description = "Location for all resources in this module"
+  description = "Azure region where all resources will be deployed"
 }
 
 variable "instance" {
   type        = string
-  description = "Instance identifier for naming resources: 001, 002, etc..."
+  description = "Instance identifier for naming resources: 001, 002, etc"
   default     = "001"
 }
 
@@ -31,7 +31,7 @@ variable "use_existing_resource_group" {
 
 variable "resource_group_name" {
   type        = string
-  description = "The name for the resource group. If not provided, a default name will be generated using resource_prefix, environment, and instance."
+  description = "Name of the resource group"
   default     = null
 }
 
@@ -49,6 +49,6 @@ variable "should_create_acr_private_endpoint" {
 
 variable "should_create_azure_functions" {
   type        = bool
-  description = "Whether to create Azure Functions for the cluster"
+  description = "Whether to create the Azure Functions resources including App Service Plan"
   default     = false
 }

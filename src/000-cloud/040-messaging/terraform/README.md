@@ -41,11 +41,11 @@ Azure IoT Operations Dataflow to send and receive data from edge to cloud.
 | function\_cors\_allowed\_origins | A list of origins that should be allowed to make cross-origin calls. | `list(string)` | ```[ "*" ]``` | no |
 | function\_cors\_support\_credentials | Whether CORS requests with credentials are allowed. | `bool` | `false` | no |
 | function\_node\_version | The version of Node.js to use. | `string` | `"18"` | no |
-| instance | Instance identifier for naming resources: 001, 002, etc... | `string` | `"001"` | no |
-| should\_create\_azure\_functions | Whether to create the Azure Functions resources including App Service Plan. | `bool` | `false` | no |
+| instance | Instance identifier for naming resources: 001, 002, etc | `string` | `"001"` | no |
+| should\_create\_azure\_functions | Whether to create the Azure Functions resources including App Service Plan | `bool` | `false` | no |
 | should\_create\_eventgrid | Whether to create the Event Grid resources. | `bool` | `true` | no |
 | should\_create\_eventhub | Whether to create the Event Hubs resources. | `bool` | `true` | no |
-| tags | Tags to apply to all resources. | `map(string)` | `{}` | no |
+| tags | Tags to apply to all resources | `map(string)` | `{}` | no |
 
 ## Outputs
 

@@ -28,6 +28,6 @@ variable "key_vault" {
     name      = string
     vault_uri = string
   })
-  description = "The Key Vault object containing id, name, and vault_uri properties."
+  description = "The Key Vault object containing id, name, and vault_uri properties"
   default     = null
 }

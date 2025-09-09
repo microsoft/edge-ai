@@ -7,6 +7,7 @@ This file contains detailed coding conventions and file organization standards f
 You MUST ALWAYS meticulously follow these Terraform standards and conventions without deviation.
 
 <!-- <table-of-contents> -->
+
 ## Table of Contents
 
 - [Terraform Coding Standards](#terraform-coding-standards)
@@ -16,6 +17,7 @@ You MUST ALWAYS meticulously follow these Terraform standards and conventions wi
       - [File and Naming Standards](#file-and-naming-standards)
       - [Documentation and Comments](#documentation-and-comments)
       - [Variables and Parameters](#variables-and-parameters)
+      - [Variable Description Standards](#variable-description-standards)
       - [Module Structure](#module-structure)
       - [Deferred Data Resources](#deferred-data-resources)
       - [Resource Naming](#resource-naming)
@@ -28,6 +30,7 @@ You MUST ALWAYS meticulously follow these Terraform standards and conventions wi
       - [Main File Organization](#main-file-organization)
       - [Variables Organization](#variables-organization)
       - [Outputs Organization](#outputs-organization)
+
 <!-- </table-of-contents> -->
 
 ## Terraform Coding Conventions
@@ -35,6 +38,7 @@ You MUST ALWAYS meticulously follow these Terraform standards and conventions wi
 ### Terraform General Conventions
 
 <!-- <terraform-general-conventions> -->
+
 #### File and Naming Standards
 
 - You MUST use `kebab-case` for file/folder names, `snake_case` for resources/variables
@@ -60,6 +64,22 @@ You MUST ALWAYS meticulously follow these Terraform standards and conventions wi
 - You MUST provide variables for common settings
 - You MUST use proper resource references for dependencies
 - You MUST NOT use ternary operators unless unavoidable
+
+#### Variable Description Standards
+
+- You MUST NOT end variable descriptions with periods
+- You MUST use standardized descriptions for common variables:
+  - Environment: `Environment for all resources in this module: dev, test, or prod`
+  - Location: `Location for all resources in this module`
+  - Resource Prefix: `Prefix for all resources in this module`
+  - Instance: `Instance identifier for naming resources: 001, 002, etc`
+- You MUST use consistent Azure service terminology:
+  - Use "User Assigned Managed Identity" (not variations like "User-Assigned" or "UAI")
+  - Use "location" (not "region")
+  - Use "resource group object containing name and id" for resource group variables
+- You MUST include examples for constrained variables
+- You MUST specify object properties for complex types
+- You MUST add security warnings for development-only features
 
 #### Module Structure
 
@@ -122,8 +142,10 @@ You MUST ALWAYS ensure Terraform conventions are followed:
 ### Reference and Validation
 
 <!-- <reference-validation> -->
+
 - You MUST search the codebase for existing Terraform resources before editing
 - If no reference exists:
+
   1. Use HashiCorp Registry documentation
   2. Check for deprecated fields and use latest properties
   3. Verify provider version requirements
@@ -175,6 +197,7 @@ resource "azapi_resource" "dataflow_endpoint" {
 You MUST use these patterns when build systems lack permissions to query specific Azure resources during `terraform plan`:
 
 <!-- <deferred-patterns> -->
+
 **Simple Resource Deferral** (CI environments):
 
 ```terraform
@@ -212,7 +235,7 @@ data "azuread_user" "current" {
   1. Run `terraform fmt` and `terraform validate`
   2. Verify VS Code's Terraform diagnostics
   3. Fix all validation issues before committing
-<!-- </reference-validation> -->
+  <!-- </reference-validation> -->
 
 ### File Organization Standards
 
@@ -221,6 +244,7 @@ This section details how to organize content within specific Terraform files.
 #### Main File Organization
 
 <!-- <component-main-tf-example> -->
+
 All `main.tf` files MUST follow this organization:
 
 1. Markdown `/** */` comment at the top with title and description
@@ -292,11 +316,13 @@ module "ubuntu_k3s" {
   // Additional parameters omitted for brevity
 }
 ```
+
 <!-- </component-main-tf-example> -->
 
 #### Variables Organization
 
 <!-- <component-variables-tf-example> -->
+
 All variables files MUST follow this organization:
 
 1. Required variables (no defaults) grouped at the top
@@ -336,11 +362,13 @@ variable "custom_locations_oid" {
   default     = null
 }
 ```
+
 <!-- </component-variables-tf-example> -->
 
 #### Outputs Organization
 
 <!-- <outputs-tf-example> -->
+
 All `outputs.tf` files MUST follow this organization:
 
 1. Outputs grouped by functionality with clear comment headers
@@ -374,4 +402,5 @@ output "azure_arc_proxy_command" {
   value       = "az connectedk8s proxy -n ${local.arc_resource_name} -g ${var.resource_group.name}"
 }
 ```
+
 <!-- </outputs-tf-example> -->

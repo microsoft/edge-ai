@@ -3,10 +3,10 @@
  */
 
 variable "resource_group" {
-  description = "Resource group for all resources in this module."
   type = object({
     name = string
   })
+  description = "Resource group object containing name and id where resources will be deployed"
 }
 
 variable "snet_aks" {
@@ -24,8 +24,8 @@ variable "snet_aks_pod" {
 }
 
 variable "acr" {
-  description = "Azure Container Registry."
   type = object({
     id = string
   })
+  description = "Azure Container Registry"
 }

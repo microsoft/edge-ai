@@ -25,7 +25,7 @@
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| lakehouse\_description | The description of the lakehouse | `string` | n/a | yes |
+| lakehouse\_description | The description of the Microsoft Fabric lakehouse | `string` | n/a | yes |
 | lakehouse\_display\_name | The display name of the lakehouse | `string` | n/a | yes |
 | workspace\_id | The ID of the workspace where the lakehouse will be created | `string` | n/a | yes |
 

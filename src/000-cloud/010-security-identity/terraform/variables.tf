@@ -4,7 +4,7 @@
 
 variable "key_vault_name" {
   type        = string
-  description = "The resource name for the new Key Vault. (Otherwise, 'kv-{var.resource_prefix}-{var.environment}-{var.instance}')"
+  description = "The name of the Key Vault to store secrets. If not provided, defaults to 'kv-{resource_prefix}-{environment}-{instance}'"
   default     = null
 }
 

@@ -19,12 +19,12 @@ variable "certificates" {
 
 variable "cluster_a_name" {
   type        = string
-  description = "Name of cluster A for tagging purposes."
+  description = "The name identifier for Cluster A"
 }
 
 variable "cluster_b_name" {
   type        = string
-  description = "Name of cluster B for tagging purposes."
+  description = "The name identifier for Cluster B"
 }
 
 variable "cluster_a_key_vault_id" {

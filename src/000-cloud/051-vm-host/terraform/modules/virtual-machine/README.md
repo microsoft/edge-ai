@@ -30,10 +30,10 @@ Deploys a Linux VM with configuration for Arc-connected K3s cluster
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | label\_prefix | Prefix to be used for all resource names | `string` | n/a | yes |
-| location | Location for all resources in this module | `string` | n/a | yes |
-| resource\_group\_name | Resource group name for all resources in this module | `string` | n/a | yes |
+| location | Azure region where all resources will be deployed | `string` | n/a | yes |
+| resource\_group\_name | Name of the resource group | `string` | n/a | yes |
 | ssh\_public\_key | SSH public key to use for VM authentication | `string` | n/a | yes |
-| subnet\_id | ID of the subnet to attach the VM to | `string` | n/a | yes |
+| subnet\_id | The ID of the subnet to deploy the VM host in | `string` | n/a | yes |
 | vm\_index | Index of the VM for deployment of multiple VMs | `number` | n/a | yes |
 | vm\_username | Username for the VM admin account | `string` | n/a | yes |
 | arc\_onboarding\_identity\_id | ID of the user assigned identity for Arc onboarding | `string` | `null` | no |

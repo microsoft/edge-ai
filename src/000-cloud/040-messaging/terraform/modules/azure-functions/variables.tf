@@ -12,27 +12,27 @@ variable "app_service_plan" {
 
 variable "environment" {
   type        = string
-  description = "Environment for all resources in this module: dev, test, or prod."
+  description = "Environment for all resources in this module: dev, test, or prod"
 }
 
 variable "instance" {
   type        = string
-  description = "Instance identifier for naming resources: 001, 002, etc."
+  description = "Instance identifier for naming resources: 001, 002, etc"
 }
 
 variable "location" {
   type        = string
-  description = "Location for all resources in this module."
+  description = "Azure region where all resources will be deployed"
 }
 
 variable "resource_group_name" {
   type        = string
-  description = "The name for the resource group."
+  description = "Name of the resource group"
 }
 
 variable "resource_prefix" {
   type        = string
-  description = "Prefix for all resources in this module."
+  description = "Prefix for all resources in this module"
 }
 
 /*
@@ -61,5 +61,5 @@ variable "node_version" {
 
 variable "tags" {
   type        = map(string)
-  description = "Tags to apply to all resources."
+  description = "Tags to apply to all resources"
 }

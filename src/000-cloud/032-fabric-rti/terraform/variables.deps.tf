@@ -7,5 +7,5 @@ variable "fabric_workspace" {
     id           = string
     display_name = string
   })
-  description = "Fabric workspace for RTI resources."
+  description = "Fabric workspace for RTI resources. Required when fabric_eventstream_endpoint is provided."
 }

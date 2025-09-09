@@ -30,13 +30,13 @@ Deploys Azure Container Registry with a private endpoint and private DNS zone.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| environment | Environment for all resources in this module: dev, test, or prod. | `string` | n/a | yes |
-| instance | Instance identifier for naming resources: 001, 002, etc. | `string` | n/a | yes |
-| location | Location for all resources in this module. | `string` | n/a | yes |
-| resource\_group | Resource group for all resources in this module. | ```object({ name = string })``` | n/a | yes |
-| resource\_prefix | Prefix for all resources in this module. | `string` | n/a | yes |
+| environment | Environment for all resources in this module: dev, test, or prod | `string` | n/a | yes |
+| instance | Instance identifier for naming resources: 001, 002, etc | `string` | n/a | yes |
+| location | Azure region where all resources will be deployed | `string` | n/a | yes |
+| resource\_group | Resource group object containing name and id where resources will be deployed | ```object({ name = string })``` | n/a | yes |
+| resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
 | should\_create\_acr\_private\_endpoint | Should create a private endpoint for the Azure Container Registry. Default is false. | `bool` | n/a | yes |
-| sku | SKU for the Azure Container Registry. Options are Basic, Standard, Premium. Default is Premium because of the need for private endpoints. | `string` | n/a | yes |
+| sku | SKU name for the resource | `string` | n/a | yes |
 | snet\_acr | Subnet for the Azure Container Registry private endpoint. | ```object({ id = string })``` | n/a | yes |
 | vnet | Virtual Network for Container Registry Private DNS Zone. | ```object({ id = string })``` | n/a | yes |
 

@@ -11,12 +11,12 @@ variable "label_prefix" {
 
 variable "location" {
   type        = string
-  description = "Location for all resources in this module"
+  description = "Azure region where all resources will be deployed"
 }
 
 variable "resource_group_name" {
   type        = string
-  description = "Resource group name for all resources in this module"
+  description = "Name of the resource group"
 }
 
 variable "ssh_public_key" {
@@ -26,7 +26,7 @@ variable "ssh_public_key" {
 
 variable "subnet_id" {
   type        = string
-  description = "ID of the subnet to attach the VM to"
+  description = "The ID of the subnet to deploy the VM host in"
 }
 
 variable "vm_index" {

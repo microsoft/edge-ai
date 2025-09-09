@@ -10,12 +10,12 @@ variable "resource_prefix" {
 
 variable "instance" {
   type        = string
-  description = "Instance identifier for naming resources: 001, 002, etc..."
+  description = "Instance identifier for naming resources: 001, 002, etc"
 }
 
 variable "custom_location_id" {
   type        = string
-  description = "The resource ID of the Custom Location."
+  description = "The resource ID of the Custom Location"
 }
 
 variable "asset_name" {
