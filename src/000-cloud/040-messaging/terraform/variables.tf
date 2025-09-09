@@ -15,8 +15,8 @@ variable "should_create_eventgrid" {
 }
 
 variable "should_create_azure_functions" {
-  description = "Whether to create the Azure Functions resources including App Service Plan."
   type        = bool
+  description = "Whether to create the Azure Functions resources including App Service Plan"
   default     = false
 }
 
@@ -105,7 +105,7 @@ variable "function_node_version" {
 }
 
 variable "tags" {
-  description = "Tags to apply to all resources."
   type        = map(string)
+  description = "Tags to apply to all resources"
   default     = {}
 }

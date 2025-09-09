@@ -3,8 +3,8 @@
  */
 
 variable "fabric_workspace_name" {
-  description = "The name of the Microsoft Fabric workspace. Otherwise, 'ws-{resource_prefix}-{environment}-{instance}'."
   type        = string
+  description = "The name of the Microsoft Fabric workspace. Otherwise, 'ws-{resource_prefix}-{environment}-{instance}'"
   default     = null
 }
 
@@ -15,8 +15,8 @@ variable "fabric_lakehouse_name" {
 }
 
 variable "fabric_eventhouse_name" {
-  description = "The name of the Microsoft Fabric eventhouse. Otherwise, 'evh-{resource_prefix}-{environment}-{instance}'."
   type        = string
+  description = "The name of the Microsoft Fabric eventhouse. Otherwise, 'evh-{resource_prefix}-{environment}-{instance}'"
   default     = null
 }
 
@@ -40,8 +40,8 @@ variable "additional_kql_databases" {
 }
 
 variable "eventhouse_description" {
-  description = "The description of the Microsoft Fabric eventhouse."
   type        = string
+  description = "The description of the Microsoft Fabric eventhouse"
   default     = "Eventhouse for real-time analytics of Edge device data"
 }
 
@@ -58,8 +58,8 @@ variable "fabric_capacity_sku" {
 }
 
 variable "lakehouse_description" {
-  description = "The description of the Microsoft Fabric lakehouse."
   type        = string
+  description = "The description of the Microsoft Fabric lakehouse"
   default     = "Lakehouse for storing and analyzing data from Edge devices"
 }
 
@@ -88,7 +88,7 @@ variable "should_create_fabric_workspace" {
 }
 
 variable "workspace_description" {
-  description = "The description of the Microsoft Fabric workspace."
   type        = string
+  description = "The description of the Microsoft Fabric workspace"
   default     = "Microsoft Fabric workspace for the Edge AI Accelerator solution"
 }

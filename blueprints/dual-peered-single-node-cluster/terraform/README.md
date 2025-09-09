@@ -72,9 +72,9 @@ Each cluster operates independently but can communicate through the peered virtu
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| environment | Environment for all resources in this module: dev, test, or prod. | `string` | n/a | yes |
-| location | Location for all resources in this module. | `string` | n/a | yes |
-| resource\_prefix | Prefix for all resources in this module. | `string` | n/a | yes |
+| environment | Environment for all resources in this module: dev, test, or prod | `string` | n/a | yes |
+| location | Azure region where all resources will be deployed | `string` | n/a | yes |
+| resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
 | aio\_features | AIO Instance features with mode ('Stable', 'Preview', 'Disabled') and settings ('Enabled', 'Disabled'). | ```map(object({ mode = optional(string) settings = optional(map(string)) }))``` | `null` | no |
 | aio\_namespace | Azure IoT Operations namespace | `string` | `"azure-iot-operations"` | no |
 | asset\_endpoint\_profiles | List of asset endpoint profiles to create. Otherwise, an empty list. | ```list(object({ name = string target_address = string endpoint_profile_type = optional(string) method = optional(string) should_enable_opc_asset_discovery = optional(bool) opc_additional_config_string = optional(string) }))``` | `[]` | no |
@@ -92,15 +92,15 @@ Each cluster operates independently but can communicate through the peered virtu
 | enterprise\_broker\_tls\_cert\_secret\_name | The name of the Kubernetes secret containing the broker tls certificate | `string` | `"broker-tls-cert"` | no |
 | enterprise\_client\_ca\_configmap\_name | The name of the Kubernetes configmap containing the client CA certificate | `string` | `"client-ca"` | no |
 | external\_certificates | External certificates to use instead of generating them with Terraform. When null, certificates will be generated using the terraform-certificate-generation module. | ```object({ server_root_ca_cert = string server_root_ca_key = string server_intermediate_ca_cert = string server_intermediate_ca_key = string server_leaf_cert = string server_leaf_key = string client_root_ca_cert = string client_root_ca_key = string client_intermediate_ca_cert = string client_intermediate_ca_key = string client_leaf_cert = string client_leaf_key = string })``` | `null` | no |
-| instance | Instance identifier for naming resources: 001, 002, etc... | `string` | `"001"` | no |
+| instance | Instance identifier for naming resources: 001, 002, etc | `string` | `"001"` | no |
 | resource\_group\_name\_a | The name for the Cluster A resource group. If not provided, a default name will be generated using resource\_prefix, environment, and instance. | `string` | `null` | no |
 | resource\_group\_name\_b | The name for the Cluster B resource group. If not provided, a default name will be generated using resource\_prefix, environment, and instance. | `string` | `null` | no |
 | should\_create\_acr\_private\_endpoint | Should create a private endpoint for the Azure Container Registry. Default is false. | `bool` | `false` | no |
 | should\_create\_aks | Should create Azure Kubernetes Service. Default is false. | `bool` | `false` | no |
-| should\_create\_anonymous\_broker\_listener | Whether to enable an insecure anonymous AIO MQ Broker Listener. (Should only be used for dev or test environments) | `bool` | `false` | no |
-| should\_create\_azure\_functions | Whether to create Azure Functions for the clusters. | `bool` | `false` | no |
-| should\_deploy\_resource\_sync\_rules | Deploys resource sync rules if set to true. | `bool` | `false` | no |
-| should\_enable\_opc\_ua\_simulator | Should create an OPC UA Simulator. Default is false. | `bool` | `false` | no |
+| should\_create\_anonymous\_broker\_listener | Whether to enable an insecure anonymous AIO MQ Broker Listener. Should only be used for dev or test environments | `bool` | `false` | no |
+| should\_create\_azure\_functions | Whether to create the Azure Functions resources including App Service Plan | `bool` | `false` | no |
+| should\_deploy\_resource\_sync\_rules | Deploys resource sync rules if set to true | `bool` | `false` | no |
+| should\_enable\_opc\_ua\_simulator | Whether to deploy the OPC UA Simulator to the cluster. Default is false | `bool` | `false` | no |
 | should\_get\_custom\_locations\_oid | Whether to get Custom Locations Object ID using Terraform's azuread provider. (Otherwise, provided by 'custom\_locations\_oid' or `az connectedk8s enable-features` for custom-locations on cluster setup if not provided.) | `bool` | `true` | no |
 | site\_client\_secret\_name | The name of the Kubernetes secret containing the client certificate and key | `string` | `"client-secret"` | no |
 | site\_tls\_ca\_configmap\_name | The name of the Kubernetes configmap containing the TLS CA certificate | `string` | `"tls-ca-configmap"` | no |

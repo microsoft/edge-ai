@@ -32,11 +32,11 @@ Create or use and existing a Key Vault for Secret Sync Extension
 |------|-------------|------|---------|:--------:|
 | environment | Environment for all resources in this module: dev, test, or prod | `string` | n/a | yes |
 | key\_vault\_admin\_principal\_id | The Principal ID or Object ID for the admin that will have access to update secrets on the Key Vault. | `string` | n/a | yes |
-| key\_vault\_name | The name of the Key Vault for Secret Sync Extension. (Otherwise, 'kv-{var.resource\_prefix}-{var.environment}-{var.instance}' | `string` | n/a | yes |
-| location | Location for all resources in this module | `string` | n/a | yes |
+| key\_vault\_name | The name of the Key Vault to store secrets. If not provided, defaults to 'kv-{resource\_prefix}-{environment}-{instance}' | `string` | n/a | yes |
+| location | Azure region where all resources will be deployed | `string` | n/a | yes |
 | resource\_group | n/a | ```object({ name = string })``` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
-| instance | Instance identifier for naming resources: 001, 002, etc... | `string` | `"001"` | no |
+| instance | Instance identifier for naming resources: 001, 002, etc | `string` | `"001"` | no |
 
 ## Outputs
 

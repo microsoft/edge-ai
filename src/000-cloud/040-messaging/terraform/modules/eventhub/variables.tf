@@ -10,17 +10,17 @@ variable "resource_prefix" {
 
 variable "instance" {
   type        = string
-  description = "Instance identifier for naming resources: 001, 002, etc..."
+  description = "Instance identifier for naming resources: 001, 002, etc"
 }
 
 variable "resource_group_name" {
   type        = string
-  description = "The name for the resource group."
+  description = "Name of the resource group"
 }
 
 variable "location" {
   type        = string
-  description = "Location for all resources in this module"
+  description = "Azure region where all resources will be deployed"
 }
 
 variable "aio_uami_principal_id" {

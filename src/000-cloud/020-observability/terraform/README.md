@@ -50,18 +50,18 @@ Creates a new Azure Monitor Workspace, Log Analytics Workspace and Azure Managed
 |------|-------------|------|---------|:--------:|
 | azmon\_resource\_group | n/a | ```object({ name = string id = string location = string })``` | n/a | yes |
 | environment | Environment for all resources in this module: dev, test, or prod | `string` | n/a | yes |
-| location | Location for all resources in this module | `string` | n/a | yes |
+| location | Azure region where all resources will be deployed | `string` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
 | app\_insights\_application\_type | The type of application being monitored by Application Insights. | `string` | `"web"` | no |
 | app\_insights\_retention\_in\_days | The retention period in days for Application Insights data. | `number` | `30` | no |
 | daily\_quota\_in\_gb | Daily quota to write logs in log analytics | `number` | `10` | no |
 | grafana\_admin\_principal\_id | Object id of a user to grant grafana admin access to. Leave blank to not grant access to any users | `string` | `null` | no |
 | grafana\_major\_version | Major version of grafana to use | `string` | `"11"` | no |
-| instance | Instance identifier for naming resources: 001, 002, etc... | `string` | `"001"` | no |
+| instance | Instance identifier for naming resources: 001, 002, etc | `string` | `"001"` | no |
 | log\_retention\_in\_days | Duration to retain logs in log analytics | `number` | `30` | no |
 | logs\_data\_collection\_rule\_namespaces | List of cluster namespaces to be exposed in the log analytics workspace | `list(string)` | ```[ "kube-system", "gatekeeper-system", "azure-arc", "azure-iot-operations" ]``` | no |
 | logs\_data\_collection\_rule\_streams | List of streams to be enabled in the log analytics workspace | `list(string)` | ```[ "Microsoft-ContainerLog", "Microsoft-ContainerLogV2", "Microsoft-KubeEvents", "Microsoft-KubePodInventory", "Microsoft-KubeNodeInventory", "Microsoft-KubePVInventory", "Microsoft-KubeServices", "Microsoft-KubeMonAgentEvents", "Microsoft-InsightsMetrics", "Microsoft-ContainerInventory", "Microsoft-ContainerNodeInventory", "Microsoft-Perf" ]``` | no |
-| tags | Tags to apply to all resources. | `map(string)` | `{}` | no |
+| tags | Tags to apply to all resources | `map(string)` | `{}` | no |
 
 ## Outputs
 

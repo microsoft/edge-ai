@@ -27,11 +27,11 @@ Deploys virtual network resources for ACR
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| environment | Environment for all resources in this module: dev, test, or prod. | `string` | n/a | yes |
-| instance | Instance identifier for naming resources: 001, 002, etc. | `string` | n/a | yes |
+| environment | Environment for all resources in this module: dev, test, or prod | `string` | n/a | yes |
+| instance | Instance identifier for naming resources: 001, 002, etc | `string` | n/a | yes |
 | network\_security\_group | n/a | ```object({ id = string })``` | n/a | yes |
 | resource\_group | n/a | ```object({ name = string })``` | n/a | yes |
-| resource\_prefix | Prefix for all resources in this module. | `string` | n/a | yes |
+| resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
 | should\_create\_acr\_private\_endpoint | Should create a private endpoint for the Azure Container Registry. Default is false. | `bool` | n/a | yes |
 | subnet\_address\_prefixes\_acr | Address prefixes for the ACR subnet. | `list(string)` | n/a | yes |
 | virtual\_network | n/a | ```object({ name = string })``` | n/a | yes |

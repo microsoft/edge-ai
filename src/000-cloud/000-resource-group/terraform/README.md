@@ -31,11 +31,11 @@ Creates the required resources needed for an edge IaC deployment or uses an exis
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | environment | Environment for all resources in this module: dev, test, or prod | `string` | n/a | yes |
-| location | Location for all resources in this module | `string` | n/a | yes |
+| location | Azure region where all resources will be deployed | `string` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
-| instance | Instance identifier for naming resources: 001, 002, etc... | `string` | `"001"` | no |
-| resource\_group\_name | The name for the resource group. If not provided, a default name will be generated using resource\_prefix, environment, and instance. | `string` | `null` | no |
-| tags | The tags to add to the resources. | `map(string)` | `null` | no |
+| instance | Instance identifier for naming resources: 001, 002, etc | `string` | `"001"` | no |
+| resource\_group\_name | Name of the resource group | `string` | `null` | no |
+| tags | Tags to apply to all resources | `map(string)` | `null` | no |
 | use\_existing\_resource\_group | Whether to use an existing resource group instead of creating a new one. When true, the component will look up a resource group with the specified or generated name instead of creating it. | `bool` | `false` | no |
 
 ## Outputs

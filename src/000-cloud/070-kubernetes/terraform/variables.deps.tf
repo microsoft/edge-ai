@@ -7,6 +7,7 @@ variable "resource_group" {
     name = string
     id   = string
   })
+  description = "Resource group object containing name and id where resources will be deployed"
 }
 
 variable "network_security_group" {
@@ -26,4 +27,5 @@ variable "acr" {
   type = object({
     id = string
   })
+  description = "Azure Container Registry"
 }

@@ -33,11 +33,11 @@ role assignments for provided principal IDs.
 |------|-------------|------|---------|:--------:|
 | container\_access\_type | The Access Level for the container (blob, container or private) | `string` | n/a | yes |
 | data\_lake\_blob\_container\_name | The name of the Blob Container for the data lake. | `string` | n/a | yes |
-| data\_lake\_data\_contributor\_principal\_id | The Principal ID that will be assigned the 'Storage Blob Data Contributor' role at the Storage Account scope. | `string` | n/a | yes |
+| data\_lake\_data\_contributor\_principal\_id | The Principal ID that will be assigned the 'Storage Blob Data Contributor' role at the Storage Account scope | `string` | n/a | yes |
 | data\_lake\_data\_owner\_principal\_id | The Principal ID that will be assigned the 'Storage Blob Data Owner' role at the Storage Account scope. (Otherwise, uses the current logged in user) | `string` | n/a | yes |
-| data\_lake\_filesystem\_name | Name of the Data Lake Gen2 filesystem | `string` | n/a | yes |
-| file\_share\_name | Name of the file share | `string` | n/a | yes |
-| file\_share\_quota\_gb | Quota of the file share in GB | `number` | n/a | yes |
+| data\_lake\_filesystem\_name | Name of the Data Lake Gen2 filesystem to create | `string` | n/a | yes |
+| file\_share\_name | Name of the file share to create | `string` | n/a | yes |
+| file\_share\_quota\_gb | Maximum size of the file share in GB | `number` | n/a | yes |
 | should\_create\_data\_lake\_file\_share | Whether to create a file share | `bool` | n/a | yes |
 | storage\_account | n/a | ```object({ id = string })``` | n/a | yes |
 

@@ -4,11 +4,11 @@ variable "workspace_display_name" {
 }
 
 variable "workspace_description" {
-  description = "The description of the workspace"
   type        = string
+  description = "The description of the Microsoft Fabric workspace"
 }
 
 variable "capacity_id" {
-  description = "The ID of the premium capacity to assign to the workspace (Run ./scripts/select-fabric-capacity.sh to choose one)"
   type        = string
+  description = "The capacity ID for the workspace"
 }

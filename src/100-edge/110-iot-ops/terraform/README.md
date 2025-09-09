@@ -52,9 +52,9 @@ Instance can be created, and after.
 | platform | n/a | ```object({ version = string train = string })``` | ```{ "train": "preview", "version": "0.7.25" }``` | no |
 | secret\_sync\_controller | n/a | ```object({ version = string train = string })``` | ```{ "train": "preview", "version": "0.10.0" }``` | no |
 | should\_assign\_key\_vault\_roles | Whether to assign Key Vault roles to provided Secret Sync identity. | `bool` | `true` | no |
-| should\_create\_anonymous\_broker\_listener | Whether to enable an insecure anonymous AIO MQ Broker Listener. (Should only be used for dev or test environments) | `bool` | `false` | no |
+| should\_create\_anonymous\_broker\_listener | Whether to enable an insecure anonymous AIO MQ Broker Listener. Should only be used for dev or test environments | `bool` | `false` | no |
 | should\_deploy\_resource\_sync\_rules | Deploys resource sync rules if set to true | `bool` | `false` | no |
-| should\_enable\_otel\_collector | Deploy the OpenTelemetry Collector and Azure Monitor ConfigMap (optionally used) | `bool` | `true` | no |
+| should\_enable\_otel\_collector | Whether to deploy the OpenTelemetry Collector and Azure Monitor ConfigMap | `bool` | `true` | no |
 | trust\_config\_source | TrustConfig source must be one of 'SelfSigned', 'CustomerManagedByoIssuer' or 'CustomerManagedGenerateIssuer'. Defaults to SelfSigned. When choosing CustomerManagedGenerateIssuer, ensure connectedk8s proxy is enabled on the cluster for current user. When choosing CustomerManagedByoIssuer, ensure an Issuer and ConfigMap resources exist in the cluster. | `string` | `"SelfSigned"` | no |
 
 ## Outputs

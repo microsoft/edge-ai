@@ -1,6 +1,6 @@
 variable "key_vault_name" {
-  description = "The name of the Key Vault for Secret Sync Extension. (Otherwise, 'kv-{var.resource_prefix}-{var.environment}-{var.instance}'"
   type        = string
+  description = "The name of the Key Vault to store secrets. If not provided, defaults to 'kv-{resource_prefix}-{environment}-{instance}'"
 }
 
 variable "key_vault_admin_principal_id" {

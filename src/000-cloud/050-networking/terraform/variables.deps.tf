@@ -7,5 +7,5 @@ variable "resource_group" {
     id   = string
     name = string
   })
-  description = "The resource group to deploy the virtual network in."
+  description = "Resource group object containing name and id where resources will be deployed"
 }

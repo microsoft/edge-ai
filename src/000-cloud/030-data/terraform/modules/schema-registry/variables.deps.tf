@@ -3,6 +3,7 @@ variable "resource_group" {
     id   = string
     name = string
   })
+  description = "Resource group object containing name and id where resources will be deployed"
 }
 
 variable "storage_account" {

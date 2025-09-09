@@ -247,7 +247,7 @@ This component creates the following resources:
 This component requires the following dependencies:
 
 - **000-resource-group**: Azure resource group for all resources
-- **010-security-identity**: AIO managed identity for Fabric workspace access
+- **010-security-identity**: AIO managed identity for workspace access
 - **031-fabric**: Fabric workspace and eventhouse provisioning
 
 ## Outputs
@@ -302,7 +302,7 @@ This component integrates with other parts of the solution:
 
 - **Edge Messaging**: Consumes CustomEndpoint connection details for AIO dataflow configuration
 - **Fabric Workspace**: Uses provisioned workspace and eventhouse from 031-fabric component
-- **Security Identity**: Uses AIO managed identity for secure Fabric workspace access
+- **Security Identity**: Uses AIO managed identity for secure workspace access
 - **Blueprints**: Orchestrated with other components for end-to-end data flow solutions
 
 ## Security Considerations

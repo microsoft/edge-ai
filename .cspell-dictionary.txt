@@ -735,6 +735,8 @@ heatmap
 heatmaps
 helion
 helpdesk
+heredoc
+heredocs
 hexadecimal
 hids
 highlevel

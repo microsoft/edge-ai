@@ -85,8 +85,8 @@ variable "data_lake_blob_container_name" {
 }
 
 variable "data_lake_filesystem_name" {
-  description = "Name of the Data Lake Gen2 filesystem to create"
   type        = string
+  description = "Name of the Data Lake Gen2 filesystem to create"
   default     = "datalake"
 }
 
@@ -97,8 +97,8 @@ variable "data_lake_data_owner_principal_id" {
 }
 
 variable "data_lake_data_contributor_principal_id" {
-  description = "Principal ID of a managed identity that should be granted Storage Blob Data Contributor access"
   type        = string
+  description = "The Principal ID that will be assigned the 'Storage Blob Data Contributor' role at the Storage Account scope"
   default     = null
 }
 
@@ -113,13 +113,13 @@ variable "should_create_data_lake_file_share" {
 }
 
 variable "file_share_name" {
-  description = "Name of the file share to create"
   type        = string
+  description = "Name of the file share to create"
   default     = "fileshare"
 }
 
 variable "file_share_quota_gb" {
-  description = "Maximum size of the file share in GB"
   type        = number
+  description = "Maximum size of the file share in GB"
   default     = 5
 }

@@ -4,11 +4,11 @@ variable "lakehouse_display_name" {
 }
 
 variable "lakehouse_description" {
-  description = "The description of the lakehouse"
   type        = string
+  description = "The description of the Microsoft Fabric lakehouse"
 }
 
 variable "workspace_id" {
-  description = "The ID of the workspace where the lakehouse will be created"
   type        = string
+  description = "The ID of the workspace where the lakehouse will be created"
 }

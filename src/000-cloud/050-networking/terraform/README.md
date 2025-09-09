@@ -31,11 +31,11 @@ This component provides the foundational networking infrastructure for cloud res
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| environment | Environment for all resources in this module: dev, test, or prod. | `string` | n/a | yes |
-| location | Azure region to provision all resources in this module. | `string` | n/a | yes |
+| environment | Environment for all resources in this module: dev, test, or prod | `string` | n/a | yes |
+| location | Azure region where all resources will be deployed | `string` | n/a | yes |
 | resource\_group | The resource group to deploy the virtual network in. | ```object({ id = string name = string })``` | n/a | yes |
-| resource\_prefix | Prefix for all resources in this module. | `string` | n/a | yes |
-| instance | Instance identifier for naming resources: 001, 002, etc... | `string` | `"001"` | no |
+| resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
+| instance | Instance identifier for naming resources: 001, 002, etc | `string` | `"001"` | no |
 | virtual\_network\_config | Configuration for the virtual network including address space and subnet prefix. | ```object({ address_space = string subnet_address_prefix = string })``` | ```{ "address_space": "10.0.0.0/16", "subnet_address_prefix": "10.0.1.0/24" }``` | no |
 
 ## Outputs

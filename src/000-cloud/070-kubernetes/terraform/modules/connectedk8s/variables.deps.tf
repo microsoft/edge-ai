@@ -3,9 +3,9 @@
  */
 
 variable "resource_group" {
-  description = "Resource group for all resources in this module."
   type = object({
     name = string
     id   = string
   })
+  description = "Resource group object containing name and id where resources will be deployed"
 }

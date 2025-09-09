@@ -9,6 +9,7 @@ variable "aio_identity" {
     tenant_id    = string
     client_id    = string
   })
+  description = "Azure IoT Operations managed identity for workspace access"
 }
 
 variable "aio_custom_locations" {
@@ -22,12 +23,14 @@ variable "aio_instance" {
   type = object({
     id = string
   })
+  description = "The Azure IoT Operations instance"
 }
 
 variable "aio_dataflow_profile" {
   type = object({
     id = string
   })
+  description = "The AIO dataflow profile"
 }
 
 /*
@@ -35,12 +38,12 @@ variable "aio_dataflow_profile" {
  */
 
 variable "eventhub" {
-  description = "Values for the existing Event Hub namespace and Event Hub"
   type = object({
     namespace_name = string
     eventhub_name  = string
   })
-  default = null
+  description = "Values for the existing Event Hub namespace and Event Hub."
+  default     = null
 }
 
 variable "eventgrid" {

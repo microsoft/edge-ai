@@ -8,6 +8,7 @@ variable "resource_group" {
     id       = string
     location = string
   })
+  description = "Resource group object containing name and id where resources will be deployed"
 }
 
 variable "secret_sync_key_vault" {
@@ -32,6 +33,7 @@ variable "aio_identity" {
     client_id = string
     tenant_id = string
   })
+  description = "Azure IoT Operations managed identity for workspace access"
 }
 
 variable "adr_schema_registry" {

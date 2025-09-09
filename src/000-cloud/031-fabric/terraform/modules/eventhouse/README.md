@@ -30,9 +30,9 @@ time-series and telemetry data from IoT devices and streaming sources.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| eventhouse\_description | The description of the eventhouse. | `string` | n/a | yes |
+| eventhouse\_description | The description of the Microsoft Fabric eventhouse | `string` | n/a | yes |
 | eventhouse\_display\_name | The display name of the eventhouse. | `string` | n/a | yes |
-| workspace\_id | The ID of the workspace where the eventhouse will be created. | `string` | n/a | yes |
+| workspace\_id | The ID of the workspace where the lakehouse will be created | `string` | n/a | yes |
 | additional\_kql\_databases | Additional KQL databases to create within the eventhouse. | ```map(object({ display_name = string description = string }))``` | `{}` | no |
 
 ## Outputs

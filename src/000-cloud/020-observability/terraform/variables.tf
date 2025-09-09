@@ -58,6 +58,6 @@ variable "app_insights_retention_in_days" {
 
 variable "tags" {
   type        = map(string)
-  description = "Tags to apply to all resources."
+  description = "Tags to apply to all resources"
   default     = {}
 }
