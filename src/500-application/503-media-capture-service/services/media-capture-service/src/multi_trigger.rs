@@ -23,7 +23,7 @@ impl MultiTriggerWorker {
         let t = topic.to_lowercase();
 
         // Treat any topic containing "alert" (e.g., "alerts/trigger", ".../alert/true") as an Alert
-        if t.contains("alert") {
+        if t.contains("alert") && t.contains("trigger") {
             return MessageType::Alert;
         }
 
