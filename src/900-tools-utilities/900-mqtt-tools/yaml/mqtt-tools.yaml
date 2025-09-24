@@ -47,7 +47,7 @@ spec:
             - name: trust-bundle # Only needed for non-anonymous listener
               mountPath: /var/run/certs
         - name: opcua-tools
-          image: python:3.13-slim
+          image: mcr.microsoft.com/devcontainers/python:3.13
           command: ["sh", "-c"]
           args:
             - |

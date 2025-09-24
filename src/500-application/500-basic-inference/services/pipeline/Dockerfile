@@ -6,6 +6,7 @@ ARG BUILD_CONFIGURATION=Release
 
 WORKDIR /src/InferencePipeline
 
+COPY ./NuGet.config .
 COPY ./src/InferencePipeline/InferencePipeline.csproj .
 
 RUN dotnet restore InferencePipeline.csproj
