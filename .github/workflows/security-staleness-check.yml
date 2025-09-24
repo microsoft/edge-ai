@@ -1,0 +1,191 @@
+# Security Staleness Check Workflow
+#
+# Purpose:
+# Monitors repository dependencies for SHA staleness and performs infrastructure as code (IaC)
+# security scanning to identify outdated dependencies and potential security vulnerabilities.
+#
+# Functionality:
+# - Executes daily SHA staleness monitoring using Test-SHAStaleness.ps1 script
+# - Runs Checkov security scanning against infrastructure code files
+# - Generates comprehensive staleness reports with configurable age thresholds
+# - Publishes security monitoring artifacts for audit and review
+# - Provides automated security summary with GitHub Actions annotations
+#
+# Parameters:
+# - max_age_days: Maximum age in days before considering dependency stale (default: 30)
+# - output_format: Output format for results - 'github', 'json', or 'console' (default: 'github')
+#
+# Output Variables:
+# - None directly from this workflow (outputs available in artifacts)
+#
+# Usage Examples:
+# Triggered automatically via scheduled cron (daily at 6 AM UTC) or manually dispatched
+# for ad-hoc security staleness analysis with custom parameters.
+#
+# This workflow ensures proactive monitoring of dependency freshness and security compliance
+# across the repository's infrastructure and application dependencies.
+---
+name: 'Security Staleness Check'
+
+on: # yamllint disable-line rule:truthy
+  schedule:
+    # Run daily at 6 AM UTC
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+    inputs:
+      max_age_days:
+        description: 'Maximum age in days before considering dependency stale'
+        required: false
+        default: '30'
+        type: string
+      output_format:
+        description: 'Output format for results'
+        required: false
+        default: 'github'
+        type: choice
+        options:
+          - github
+          - json
+          - console
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+  security-staleness-check:
+    name: 'SHA Staleness Monitoring'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 'Harden Runner'
+        uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f # v2.10.2
+        with:
+          egress-policy: audit
+          allowed-endpoints: >
+            api.github.com:443
+            github.com:443
+            registry-1.docker.io:443
+            mcr.microsoft.com:443
+            objects.githubusercontent.com:443
+
+      - name: 'Checkout Repository'
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: 'Setup PowerShell'
+        shell: bash
+        run: |
+          # PowerShell is pre-installed on GitHub Actions runners
+          pwsh --version
+
+      - name: 'Create logs directory'
+        shell: bash
+        run: |
+          mkdir -p logs
+          chmod 755 logs
+
+      - name: 'Run Checkov (security IaC scan)'
+        shell: pwsh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          Write-Host "Running Checkov IaC scan (output to logs/checkov-report.json and logs/checkov-report.txt)"
+          python3 -m pip install --user checkov
+          $env:PATH = "$env:PATH:$HOME/.local/bin"
+
+          # Run Checkov against repository root, produce JSON and CLI outputs
+          checkov -d . -o json > logs/checkov-report.json 2>&1 || true
+          checkov -d . -o cli > logs/checkov-report.txt 2>&1 || true
+
+      - name: 'Run SHA Staleness Check'
+        shell: pwsh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $MaxAge = if ("${{ github.event.inputs.max_age_days }}") {
+            [int]"${{ github.event.inputs.max_age_days }}"
+          } else {
+            30
+          }
+
+          $OutputFormat = if ("${{ github.event.inputs.output_format }}") {
+            "${{ github.event.inputs.output_format }}"
+          } else {
+            "github"
+          }
+
+          Write-Host "Running SHA staleness check with MaxAge=$MaxAge days, OutputFormat=$OutputFormat"
+
+          ./scripts/security/Test-SHAStaleness.ps1 -OutputFormat $OutputFormat -MaxAge $MaxAge -LogPath "./logs/sha-staleness-check.log" -OutputPath "./logs/stale-dependencies.json"
+
+      - name: 'Upload staleness report'
+        if: always()
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        with:
+          name: sha-staleness-report-${{ github.run_id }}
+          path: |
+            logs/sha-staleness-check.log
+            logs/stale-dependencies.json
+            logs/checkov-report.json
+            logs/checkov-report.txt
+          retention-days: 30
+
+      - name: 'Security Summary'
+        if: always()
+        shell: pwsh
+        run: |
+          Write-Host "=== Security SHA Staleness Check Summary ===" -ForegroundColor Cyan
+
+          # SHA staleness summary
+          if (Test-Path "./logs/stale-dependencies.json") {
+            $Report = Get-Content "./logs/stale-dependencies.json" | ConvertFrom-Json
+            $StaleCount = $Report.Dependencies.Count
+
+            Write-Host "Stale dependencies found: $StaleCount" -ForegroundColor $(if ($StaleCount -eq 0) { "Green" } else { "Yellow" })
+            Write-Host "Age threshold: $($Report.MaxAgeThreshold) days" -ForegroundColor Cyan
+            Write-Host "Report timestamp: $($Report.Timestamp)" -ForegroundColor Cyan
+
+            if ($StaleCount -gt 0) {
+              Write-Host "`nStale dependency breakdown:" -ForegroundColor Yellow
+              $Groups = $Report.Dependencies | Group-Object Type
+              foreach ($Group in $Groups) {
+                Write-Host "  $($Group.Name): $($Group.Count)" -ForegroundColor Yellow
+              }
+
+              # Emit a single GitHub Actions warning summary (do not create issues/PRs)
+              Write-Host "::warning::SHA staleness: $StaleCount stale dependency items detected. See artifact 'sha-staleness-report' for details."
+            }
+          } else {
+            Write-Host "No staleness report generated" -ForegroundColor Red
+          }
+
+          # Checkov summary (warnings only)
+          if (Test-Path "./logs/checkov-report.json") {
+            try {
+              $Checkov = Get-Content "./logs/checkov-report.json" | ConvertFrom-Json
+              $Failed = ($Checkov.results.failed_checks | Measure-Object).Count
+              $Skipped = ($Checkov.results.skipped_checks | Measure-Object).Count
+
+              Write-Host "`nCheckov results: Failed=$Failed, Skipped=$Skipped" -ForegroundColor Cyan
+
+              if ($Failed -gt 0) {
+                Write-Host "::warning::Checkov detected $Failed failed checks. Review logs/checkov-report.json and logs/checkov-report.txt for details."
+              } else {
+                Write-Host "::notice::Checkov found no failing checks."
+              }
+
+            } catch {
+              Write-Host "::warning::Failed to parse Checkov output: $($_.Exception.Message)"
+            }
+          } elseif (Test-Path "./logs/checkov-report.txt") {
+            # Fallback to text output
+            $Text = Get-Content "./logs/checkov-report.txt"
+            if ($Text -match "FAILED") {
+              Write-Host "::warning::Checkov scan found potential issues. See logs/checkov-report.txt"
+            } else {
+              Write-Host "::notice::Checkov scan completed with no failing checks (text output)."
+            }
+          } else {
+            Write-Host "::warning::No Checkov report generated"
+          }

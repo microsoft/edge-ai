@@ -211,6 +211,130 @@ For example:
 
 This naming convention is used by the build pipeline to properly tag and push images to the Azure Container Registry.
 
+## Supply Chain Security for Production Deployments
+
+### SLSA Attestation Best Practices
+
+While the sample applications in this repository are reference implementations and do not require SLSA (Supply-chain Levels for Software Artifacts) attestation, **production deployments of edge AI applications should implement SLSA attestation** for enhanced supply chain security.
+
+#### When to Implement SLSA Attestation
+
+**Implement SLSA attestation when:**
+
+- Publishing container images to public or shared registries
+- Distributing applications to external customers or partners
+- Meeting compliance requirements for regulated industries
+- Building production systems with multiple teams or vendors
+- Deploying to environments where supply chain integrity is critical
+
+**SLSA attestation is NOT needed for:**
+
+- Local development and testing (like these samples)
+- Internal proof-of-concepts or demos
+- Applications that remain within a single, controlled environment
+
+#### SLSA Implementation for Edge AI Applications
+
+**Level 1 Requirements:**
+
+- Automated build process with version control integration
+- Immutable build environment (containers, VMs)
+- Build provenance tracking
+
+**Level 2 Requirements (Recommended):**
+
+- Hosted build service (GitHub Actions, Azure DevOps)
+- Tamper-resistant build logs
+- Signed provenance metadata
+
+**Level 3 Requirements (Advanced):**
+
+- Hardware-based key storage
+- Non-falsifiable provenance
+- Isolated build environments
+
+#### Practical Implementation Steps
+
+1. **Enable SLSA in CI/CD Workflows:**
+
+    ```yaml
+    # Example GitHub Actions workflow with SLSA attestation
+    jobs:
+    build:
+        runs-on: ubuntu-latest
+        outputs:
+        hashes: ${{ steps.hash.outputs.hashes }}
+        steps:
+        - uses: actions/checkout@v4
+        - name: Build container
+            run: docker build -t myapp:${{ github.sha }} .
+        - name: Generate artifact hashes
+            id: hash
+            run: |
+            # Generate SHA256 hash of container image
+            HASH=$(docker images --digests myapp:${{ github.sha }} --format '{{.Digest}}')
+            echo "hashes={\"myapp:${{ github.sha }}\":\"sha256:$HASH\"}" >> "$GITHUB_OUTPUT"
+
+    slsa-attestation:
+        needs: build
+        permissions:
+        id-token: write
+        contents: read
+        uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v2.0.0
+        with:
+        base64-subjects: "${{ needs.build.outputs.hashes }}"
+    ```
+
+2. **Configure Container Registry Integration:**
+
+   - Use registries that support SLSA attestation (GitHub Container Registry, Azure Container Registry)
+   - Enable automatic vulnerability scanning
+   - Implement signature verification policies
+
+3. **Consumer Verification:**
+
+   - Document how downstream users can verify attestations
+   - Provide verification tools and scripts
+   - Include attestation verification in deployment documentation
+
+#### Edge AI Specific Considerations
+
+**Model Artifacts:**
+
+- Apply SLSA attestation to ML model files and training datasets
+- Track model lineage and training provenance
+- Implement model signature verification
+
+**Hardware Dependencies:**
+
+- Document hardware-specific optimizations and their security implications
+- Verify integrity of hardware acceleration libraries (CUDA, OpenVINO)
+- Implement secure boot chains for edge devices
+
+**Network Constraints:**
+
+- Design for intermittent connectivity during attestation verification
+- Cache attestation metadata for offline verification
+- Implement graceful degradation when attestation services are unavailable
+
+#### Resources and Tools
+
+- **SLSA Framework**: [https://slsa.dev/](https://slsa.dev/)
+- **GitHub SLSA Generator**: [slsa-framework/slsa-github-generator](https://github.com/slsa-framework/slsa-github-generator)
+- **Azure DevOps SLSA**: [Microsoft DevSecOps for SLSA](https://learn.microsoft.com/en-us/azure/devops/pipelines/security/overview)
+- **Container Signing**: [Cosign](https://github.com/sigstore/cosign) for container image signing and verification
+
+#### Integration with Existing Security Infrastructure
+
+This repository implements comprehensive supply chain security through:
+
+- **SHA Pinning**: All dependencies use immutable references (`scripts/security/Update-*SHAPinning.ps1`)
+- **Staleness Monitoring**: Automated detection of outdated dependencies (`scripts/security/Test-SHAStaleness.ps1`)
+- **Security Templates**: Cross-platform CI/CD security monitoring (`.azdo/templates/security-*.yml`)
+- **Dependency Management**: Automated updates via Dependabot and Azure DevOps scanning
+
+When implementing SLSA attestation for production deployments, build upon these existing security practices for comprehensive supply chain protection.
+
 ---
 
 <!-- markdownlint-disable MD036 -->

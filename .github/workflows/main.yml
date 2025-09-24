@@ -59,12 +59,12 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
         with:
           fetch-depth: 0
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@294a9d92911152fe08befb9ec03e240add280cb3
         with:
           languages: ${{ matrix.language }}
           build-mode: none
@@ -75,10 +75,10 @@ jobs:
           # queries: security-extended,security-and-quality
 
       - name: Autobuild
-        uses: github/codeql-action/autobuild@v3
+        uses: github/codeql-action/autobuild@294a9d92911152fe08befb9ec03e240add280cb3
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@294a9d92911152fe08befb9ec03e240add280cb3
         with:
           category: "/language:${{matrix.language}}"
 
@@ -88,12 +88,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
 
       # GitHub doesn't have a direct equivalent to Azure's ComponentGovernanceComponentDetection
       # Using a basic dependency check with built-in security scanning
       - name: Dependency Review
-        uses: actions/dependency-review-action@v3
+        uses: actions/dependency-review-action@72eb03d02c7872a771aacd928f3123ac62ad6d3a
         with:
           head-ref: refs/heads/main
           base-ref: refs/heads/main
@@ -130,10 +130,16 @@ jobs:
       break_build: false
     secrets: inherit
 
+  # Security monitoring job for main branch
+  security-monitoring:
+    name: Security Monitoring
+    uses: ./.github/workflows/security-comprehensive.yml
+    secrets: inherit
+
   # Pages deployment for main branch (replaces wiki update)
   deploy-pages-main:
     name: Deploy Documentation (Main)
-    needs: [docs-check-terraform-main, docs-check-bicep-main]
+    needs: [docs-check-terraform-main, docs-check-bicep-main, security-monitoring]
     permissions:
       pages: write
       contents: read
