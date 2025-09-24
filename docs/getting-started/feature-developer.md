@@ -35,13 +35,23 @@ The repository follows a structured component-based architecture:
 edge-ai/
 ├── src/                           # Source components
 │   ├── 000-cloud/                 # Cloud infrastructure components
+│   │   ├── 000-resource-group/    # Resource group provisioning
 │   │   ├── 010-security-identity/ # Identity and security
-│   │   ├── 020-networking/        # Network infrastructure
-│   │   └── 030-storage/           # Storage solutions
+│   │   ├── 020-observability/     # Cloud-side monitoring and logging
+│   │   ├── 030-data/              # Data storage and management
+│   │   ├── 031-fabric/            # Microsoft Fabric resources
+│   │   ├── 032-fabric-rti/        # Microsoft Fabric Real-Time Intelligence
+│   │   ├── 040-messaging/         # Event Grid, Event Hubs, Service Bus
+│   │   ├── 050-networking/        # Virtual networks and network security
+│   │   ├── 051-vm-host/           # Virtual machine provisioning
+│   │   ├── 060-acr/               # Azure Container Registry
+│   │   └── 070-kubernetes/        # Kubernetes cluster configuration
 │   └── 100-edge/                  # Edge infrastructure components
-│       ├── 110-iot-ops/           # IoT Operations
-│       ├── 120-kubernetes/        # Kubernetes cluster
-│       └── 130-monitoring/        # Monitoring and observability
+│       ├── 100-cncf-cluster/      # CNCF-compliant cluster (K3s) with Arc
+│       ├── 110-iot-ops/           # Azure IoT Operations infrastructure
+│       ├── 111-assets/            # Asset management for IoT Operations
+│       ├── 120-observability/     # Edge-specific observability
+│       └── 130-messaging/         # Edge messaging and data routing
 ├── blueprints/                    # Deployment templates
 ├── docs/                          # Documentation
 ├── scripts/                       # Automation scripts
@@ -60,7 +70,7 @@ Components follow a decimal naming pattern for deployment order:
 
 Components can contain internal modules:
 
-- **Location**: `{component}/modules/{internal_module}`
+- **Location**: `src/{grouping}/{component}/{framework}/modules/{internal_module}`
 - **Scope**: Internal modules are ONLY referenced from their parent component
 - **Rule**: Never reference internal modules from outside the component
 
@@ -97,9 +107,6 @@ Configure Git for development work:
 # Set your identity
 git config --global user.name "Your Name"
 git config --global user.email "your.email@domain.com"
-
-# Configure conventional commit template
-git config --global commit.template .github/.gitmessage
 
 # Set default branch
 git config --global init.defaultBranch main
@@ -151,8 +158,8 @@ npm run checkov-changes        # Security scan on changed folders
 npm run checkov-all            # Security scan on all folders
 
 # Language and link checking
-npm run link-check             # Check for language-specific links
-npm run link-fix               # Fix language-specific links
+npm run link-lang-check        # Check for language-specific links
+npm run link-lang-fix          # Fix language-specific links
 ```
 
 #### Linting and Code Quality Tools
@@ -162,7 +169,7 @@ The Dev Container includes comprehensive linting and quality tools:
 1. **MegaLinter**: Comprehensive multi-language linting
    - Configuration: `.mega-linter.yml`
    - Runs automatically in CI/CD
-   - Documentation: `docs/build-cicd/megalinter-template.md`
+   - Documentation: `docs/build-cicd/azure-pipelines/templates/megalinter-template.md`
 
 2. **Terraform Tools**:
    - `terraform fmt` - Code formatting
@@ -220,56 +227,73 @@ Before coding, define:
 1. **Create component directory**:
 
    ```bash
-   # Choose appropriate grouping and number
-   mkdir -p src/000-cloud/040-my-component/{terraform,bicep}
-   cd src/000-cloud/040-my-component
+   # Choose appropriate grouping and number (use next available number)
+   # Check existing components first: ls src/000-cloud/
+   # Use the next available number (e.g., 080, 090, etc.)
+   mkdir -p src/000-cloud/{next-number}-{component-name}/{terraform,bicep}
+   cd src/000-cloud/{next-number}-{component-name}
+
+   # Example with actual numbers:
+   # mkdir -p src/000-cloud/080-storage/{terraform,bicep}
+   # cd src/000-cloud/080-storage
    ```
 
-2. **Create README.md**:
+2. **Create main README.md**:
 
-   ```bash
-   # Document the component purpose and usage
-   cat > README.md << 'EOF'
-   # My Component
+   Create the main component README.md with YAML front matter and comprehensive documentation:
 
-   ## Overview
+   ```yaml
+   ---
+   title: My Component Name
+   description: Brief description of what this component does and its role in the Edge AI Accelerator
+   author: Edge AI Team
+   ms.date: YYYY-MM-DD
+   ms.topic: reference
+   keywords:
+     - relevant
+     - keywords
+     - for
+     - search
+   estimated_reading_time: 3
+   ---
 
-   Brief description of what this component does.
+   ## My Component Name
+
+   Detailed description of the component's purpose and role within the Edge AI Accelerator architecture.
+
+   ## Purpose and Role
+
+   - What problems this component solves
+   - How it integrates with other components
+   - Its position in the deployment sequence
 
    ## Dependencies
 
    - Component A (010-security-identity)
-   - Component B (020-networking)
+   - Component B (050-networking)
 
    ## Usage
 
-   ### Terraform
+   See framework-specific README.md files for detailed usage instructions:
+   - [Terraform Implementation](./terraform/README.md)
+   - [Bicep Implementation](./bicep/README.md)
 
-   ```hcl
-   module "my_component" {
-     source = "./src/000-cloud/040-my-component/terraform"
-     # parameters
-   }
+   ---
+
+   <!-- markdownlint-disable MD036 -->
+   *🤖 Crafted with precision by ✨Copilot following brilliant human instruction,
+   then carefully refined by our team of discerning human reviewers.*
+   <!-- markdownlint-enable MD036 -->
    ```
 
-   ### Bicep
-
-   ```bicep
-   module myComponent './src/000-cloud/040-my-component/bicep/main.bicep' = {
-     // parameters
-   }
-   ```
-
-   EOF
-
-   ```bash
+   **Important**: Framework-specific README.md files (in `./terraform/` and `./bicep/` directories) are **automatically generated** by `npm run tf-docs` and `npm run bicep-docs` scripts. Never edit these files manually.
 
 #### Step 3: Implement Terraform Version
 
 1. **Create main.tf**:
 
    ```hcl
-   # src/000-cloud/040-my-component/terraform/main.tf
+   # src/000-cloud/{next-number}-{component-name}/terraform/main.tf
 
    terraform {
      required_version = ">= 1.0"
@@ -293,7 +317,7 @@ Before coding, define:
 2. **Create variables.tf**:
 
    ```hcl
-   # src/000-cloud/040-my-component/terraform/variables.tf
+   # src/000-cloud/{next-number}-{component-name}/terraform/variables.tf
 
    variable "location" {
      description = "Azure region for resources"
@@ -315,7 +339,7 @@ Before coding, define:
 3. **Create outputs.tf**:
 
    ```hcl
-   # src/000-cloud/040-my-component/terraform/outputs.tf
+   # src/000-cloud/{next-number}-{component-name}/terraform/outputs.tf
 
    output "resource_group_name" {
      description = "Name of the created resource group"
@@ -328,12 +352,31 @@ Before coding, define:
    }
    ```
 
+4. **Generate framework documentation**:
+
+   After implementing both frameworks, generate the framework-specific README.md files:
+
+   ```bash
+   # Generate Terraform documentation
+   npm run tf-docs
+
+   # Generate Bicep documentation
+   npm run bicep-docs
+
+   # Fix any markdown linting issues
+   npm run mdlint-fix
+   ```
+
+   **Critical**: The `./terraform/README.md` and `./bicep/README.md` files are auto-generated and should **NEVER** be edited manually. They are generated from:
+   - Terraform: Comments in `.tf` files and the `.terraform-docs.yml` configuration
+   - Bicep: Parameter descriptions and the `generate-bicep-docs.py` script
+
 #### Step 4: Implement Bicep Version
 
 1. **Create main.bicep**:
 
    ```bicep
-   // src/000-cloud/040-my-component/bicep/main.bicep
+   // src/000-cloud/{next-number}-{component-name}/bicep/main.bicep
 
    @description('Azure region for resources')
    param location string
@@ -364,7 +407,7 @@ Before committing, run comprehensive tests:
 
 ```bash
 # Navigate to your component
-cd src/000-cloud/040-my-component
+cd src/000-cloud/{next-number}-{component-name}
 
 # Test Terraform
 cd terraform
@@ -389,17 +432,17 @@ Create automated tests for your component:
 
 ```bash
 # Create test directory
-mkdir -p tests/components/040-my-component
+mkdir -p tests/components/{next-number}-{component-name}
 
 # Create test script
-cat > tests/components/040-my-component/test.sh << 'EOF'
+cat > tests/components/{next-number}-{component-name}/test.sh << 'EOF'
 #!/bin/bash
 set -e
 
-echo "Testing 040-my-component..."
+echo "Testing {next-number}-{component-name}..."
 
 # Test Terraform
-cd src/000-cloud/040-my-component/terraform
+cd src/000-cloud/{next-number}-{component-name}/terraform
 terraform init
 terraform validate
 terraform fmt -check
@@ -411,7 +454,7 @@ az bicep build --file main.bicep
 echo "Component tests passed!"
 EOF
 
-chmod +x tests/components/040-my-component/test.sh
+chmod +x tests/components/{next-number}-{component-name}/test.sh
 ```
 
 #### Integration Testing
@@ -430,7 +473,7 @@ mkdir -p tests/integration/my-component-test/{terraform,bicep}
 
 ### Conventional Commits
 
-All commits must follow the conventional commit format:
+All commits must follow the conventional commit format. Use the GitHub Copilot `/git-commit` prompt to automatically stage and commit changes, or `/git-commit-message` to generate a commit message for manual use.
 
 #### Commit Structure
 
@@ -453,7 +496,28 @@ All commits must follow the conventional commit format:
 - **chore**: Build process or auxiliary tool changes
 - **ci**: CI/CD configuration changes
 
-#### Examples
+#### Using GitHub Copilot for Commits
+
+The project includes custom Copilot prompts for commit workflows:
+
+##### Option 1: Automatic staging and commit
+
+```bash
+# Type in Copilot Chat: /git-commit
+# This will stage all changes and create a conventional commit automatically
+```
+
+##### Option 2: Generate commit message only
+
+```bash
+# Stage your changes first
+git add .
+
+# Type in Copilot Chat: /git-commit-message
+# This will generate a commit message for you to copy and use manually
+```
+
+#### Manual Commit Examples
 
 ```bash
 # Adding a new component
@@ -489,7 +553,7 @@ Before creating a PR, ensure quality:
 npm run lint-devcontainer
 
 # Run component-specific tests
-./tests/components/040-my-component/test.sh
+./tests/components/{next-number}-{component-name}/test.sh
 
 # Check conventional commit format
 git log --oneline -5  # Verify recent commits follow format
@@ -570,7 +634,7 @@ Every PR must include:
 1. **README files**: Every component needs comprehensive documentation
 2. **Code comments**: Explain complex logic and decisions
 3. **Examples**: Provide realistic usage examples
-4. **MkDocs compliance**: Follow repository documentation standards
+4. **Docsify compliance**: Follow repository documentation standards
 
 ## Debugging and Troubleshooting
 

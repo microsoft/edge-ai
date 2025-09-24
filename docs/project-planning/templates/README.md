@@ -126,9 +126,9 @@ These templates provide a complete framework for documenting edge AI implementat
 
 ## Template Features
 
-### MkDocs Integration
+### Docsify Integration
 
-- **Metadata Support:** Templates include guidance for MkDocs metadata when needed
+- **Metadata Support:** Templates include guidance for Docsify frontmatter when needed
 - **Navigation Structure:** Consistent structure supports automated navigation generation
 - **Cross-Reference Links:** Templates include proper linking patterns for documentation discoverability
 
