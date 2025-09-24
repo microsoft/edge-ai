@@ -1,5 +1,4 @@
 # Matrix Folder Check Workflow
-#
 # Purpose:
 # This reusable workflow detects changes in the repository's directory structure and creates
 # dynamic outputs that drive conditional execution in downstream jobs. It determines which
@@ -62,10 +61,11 @@
 #
 # This workflow is primarily used for CI/CD pipelines to conditionally run tests and
 # verification steps based on which files have changed in a pull request or commit.
+
 ---
 name: Matrix Folder Check
 
-on: # yamllint disable-line rule:truthy
+on:  # yamllint disable-line rule:truthy
   workflow_call:
     inputs:
       displayName:
@@ -114,7 +114,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Needed to get all history for comparing changes
+          fetch-depth: 0  # Needed to get all history for comparing changes
 
       - name: Check for changes in src folders
         id: check-changes
