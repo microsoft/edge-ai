@@ -118,6 +118,8 @@ on: # yamllint disable-line rule:truthy
         type: boolean
         default: false
 
+permissions:
+  contents: read
 jobs:
   # Job to validate and test Terraform configurations
   terraform-test:

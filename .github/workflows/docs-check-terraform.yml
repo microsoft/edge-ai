@@ -1,5 +1,5 @@
+---
 # Terraform Documentation Compliance Check Workflow
-#
 # Purpose:
 # This workflow validates documentation standards across the codebase to ensure
 # all Terraform modules are properly documented and documentation stays in sync with code.
@@ -35,10 +35,10 @@
 #
 # This workflow helps maintain accurate and consistent documentation across the codebase,
 # improving usability and reducing onboarding time for new contributors.
----
+
 name: Terraform Docs Check
 
-on: # yamllint disable-line rule:truthy
+on:  # yamllint disable-line rule:truthy
   workflow_dispatch:  # Allow manual triggering and being called from ci-cd.yml
     inputs:
       break_build:
@@ -69,9 +69,6 @@ jobs:
     name: Terraform Documentation Compliance Check
     runs-on: ubuntu-latest
 
-    env:
-      TERRAFORM_DOCS_VERSION: ${{ inputs.terraformDocsVersion || github.event.inputs.terraformDocsVersion }}
-      BREAK_BUILD: ${{ inputs.break_build || github.event.inputs.break_build || 'false' }}  # Support both workflow_call and workflow_dispatch
 
     steps:
       - name: Checkout Code
@@ -86,13 +83,11 @@ jobs:
 
       - name: Install terraform-docs
         run: |
-          ./scripts/install-terraform-docs.sh -v "${{ env.TERRAFORM_DOCS_VERSION }}"
+          ./scripts/install-terraform-docs.sh -v "${{ inputs.terraformDocsVersion }}"
         shell: bash
 
       - name: Check for changes in documentation
-        id: docs-check-terraform
         run: |
-
           # Call tf-docs-check.sh script to check for changes
           ./scripts/tf-docs-check.sh
           readme_changed=$(tail -n 1 $(pwd)/scripts/tf-docs-check.sh)
@@ -101,26 +96,22 @@ jobs:
           if [ "$readme_changed" = true ]; then
             echo "Updates are required for documentation."
             echo "Please go into the project's src directory, run the update-all-terraform-docs.sh script, and commit changes."
-
             echo "::warning::Documentation needs to be updated. Please run the update-all-terraform-docs.sh script and commit the changes."
-
-            if [[ "${{ env.BREAK_BUILD }}" == "true" ]]; then
+            if [[ "${{ inputs.break_build }}" == "true" ]]; then
               echo "::error::Documentation needs to be updated. Please run the update-all-terraform-docs.sh script and commit the changes."
               exit 1
             fi
           else
             echo "No updates detected in the documentation."
           fi
-
         shell: bash
 
       - name: Check for language path segments in links
         id: link-lang-check
         run: |
-
           # Run the link-lang-check.py script to find en-us URLs
           echo "Checking for language path segments (en-us) in links..."
-          links_json=$(python3 $(pwd)/scripts/link-lang-check.py)
+          links_json=$(python3 ./scripts/link-lang-check.py)
 
           # Check if we got valid JSON results
           if echo "$links_json" | jq empty 2>/dev/null; then
@@ -139,7 +130,7 @@ jobs:
                 # Create a warning for each link
                 echo "::warning file=$file,line=$line::URL contains language path segment (en-us): $url"
 
-                if [[ "${{ env.BREAK_BUILD }}" == "true" ]]; then
+                if [[ "${{ inputs.break_build }}" == "true" ]]; then
                   echo "::error file=$file,line=$line::URL contains language path segment (en-us): $url"
                   exit_with_error=true
                 fi
@@ -156,5 +147,4 @@ jobs:
             echo "$links_json"
             echo "::warning::Error parsing output from link-lang-check.py script"
           fi
-
         shell: bash

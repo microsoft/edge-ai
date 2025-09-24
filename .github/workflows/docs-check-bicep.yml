@@ -1,8 +1,10 @@
+---
 # Bicep Documentation Compliance Check Workflow
-#
 # Purpose:
 # This workflow validates documentation standards across the codebase to ensure
 # all Bicep modules are properly documented and documentation stays in sync with code.
+permissions:
+  contents: read
 #
 # Functionality:
 # - Verifies Bicep module documentation is current using custom documentation generator
@@ -34,10 +36,9 @@
 #
 # This workflow helps maintain accurate and consistent documentation across the codebase,
 # improving usability and reducing onboarding time for new contributors.
----
 name: Bicep Docs Check
 
-on: # yamllint disable-line rule:truthy
+on:  # yamllint disable-line rule:truthy
   workflow_dispatch:  # Allow manual triggering and being called from ci-cd.yml
     inputs:
       break_build:

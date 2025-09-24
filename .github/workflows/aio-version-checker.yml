@@ -1,3 +1,4 @@
+---
 # Azure IoT Operations Version Checker Workflow
 #
 # Purpose:
@@ -21,10 +22,14 @@
 #
 # Usage:
 # This workflow is triggered by the ci-cd.yml workflow.
----
+
+# GitHub Actions permissions
+permissions:
+  contents: read
+
 name: AIO Version Checker
 
-on: # yamllint disable-line rule:truthy
+on:  # yamllint disable-line rule:truthy
   workflow_dispatch:
     inputs:
       iac-type:
@@ -49,14 +54,16 @@ on: # yamllint disable-line rule:truthy
         default: 'all'
         type: string
       break-build:
-        description: 'Break the build if version mismatches are found'
+        description: >
+          Break the build if version mismatches are found
         required: true
         default: false
         type: boolean
     outputs:
       mismatches_found:
         description: 'Indicates if any version mismatches were found'
-        value: ${{ jobs.check-aio-versions.outputs.mismatches_found }}
+        value: >
+          ${{ jobs.check-aio-versions.outputs.mismatches_found }}
 
 jobs:
   check-aio-versions:

@@ -1,13 +1,15 @@
 # Main Branch CI/CD Workflow
 #
 # Purpose:
-# This workflow runs the continuous integration and deployment pipeline for the main branch,
+# This workflow runs the continuous integration and deployment pipeline for the
+# main branch,
 # ensuring code quality and deploying documentation to GitHub Pages.
 #
 # Functionality:
 # - Runs MegaLinter for static code analysis across multiple languages
 # - Validates documentation standards and updates docs if needed
-# - Deploys documentation to GitHub Pages when docs have changed
+# - When code is pushed to the main branch (triggers deployment to
+#   GitHub Pages)
 # - Checks Azure IoT Operations component versions against latest published releases
 # - Performs matrix-based validation of Terraform configurations
 #
@@ -24,6 +26,14 @@
 # up-to-date for users of the repository.
 ---
 name: Main Branch CI/CD
+
+permissions:
+  contents: read
+  actions: read
+  checks: write
+  pull-requests: write
+  statuses: write
+  security-events: write
 
 on: # yamllint disable-line rule:truthy
   push:
@@ -58,7 +68,8 @@ jobs:
         with:
           languages: ${{ matrix.language }}
           build-mode: none
-          # If you wish to specify custom queries, you can do so here or in a config file.
+          # If you wish to specify custom queries, you can do so here or in a
+          # config file.
           # By default, queries listed here will override any specified in a config file.
           # For more details, see: https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/configuring-code-scanning#using-queries-in-ql-packs
           # queries: security-extended,security-and-quality
