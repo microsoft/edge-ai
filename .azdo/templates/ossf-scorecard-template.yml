@@ -1,0 +1,108 @@
+# OSSF Scorecard Security Analysis Template
+#
+# Purpose:
+# Performs Open Source Security Foundation (OSSF) Scorecard analysis to evaluate
+# the security posture of a GitHub repository against industry best practices.
+#
+# Single Responsibility:
+# - OSSF Scorecard analysis only
+# - No other security functions (dependency pinning, egress monitoring, etc.)
+#
+# Parameters:
+# - repository: Repository name for OSSF analysis
+# - format: Output format (json, sarif)
+# - workingDirectory: Working directory for analysis
+# - continueOnError: Continue pipeline on analysis errors
+# - dependsOn: Jobs that this job depends on
+# - condition: Condition for running this job
+# - agentPool: Agent pool configuration
+#
+# Usage Examples:
+# - template: .azdo/templates/ossf-scorecard-template.yml
+#   parameters:
+#     repository: $(Build.Repository.Name)
+#     format: json
+#
+# This template provides focused OSSF Scorecard analysis for supply chain security assessment.
+---
+parameters:
+  - name: repository
+    type: string
+    displayName: 'Repository name for OSSF analysis'
+    default: '$(Build.Repository.Name)'
+  - name: format
+    type: string
+    default: 'json'
+    values:
+      - 'json'
+      - 'sarif'
+    displayName: 'Output format for scorecard results'
+  - name: workingDirectory
+    type: string
+    default: '$(Build.SourcesDirectory)'
+    displayName: 'Working directory for analysis'
+  - name: continueOnError
+    type: boolean
+    default: true
+    displayName: 'Continue pipeline on analysis errors'
+  - name: dependsOn
+    type: object
+    default: []
+    displayName: 'Jobs that this job depends on'
+  - name: displayName
+    type: string
+    default: 'OSSF Scorecard Analysis'
+    displayName: 'Display name for this job'
+  - name: condition
+    type: string
+    default: 'succeeded()'
+    displayName: 'Condition for running this job'
+  - name: agentPool
+    type: object
+    default:
+      name: 'ai-on-edge-managed-pool'
+      vmImage: 'ubuntu-latest'
+    displayName: 'Agent pool configuration'
+
+jobs:
+  - job: OSSFScorecardAnalysis
+    dependsOn: ${{ parameters.dependsOn }}
+    displayName: ${{ parameters.displayName }}
+    condition: ${{ parameters.condition }}
+    pool: ${{ parameters.agentPool }}
+    steps:
+      - task: PowerShell@2
+        displayName: 'OSSF Scorecard Security Analysis'
+        continueOnError: ${{ parameters.continueOnError }}
+        inputs:
+          targetType: 'filePath'
+          filePath: '$(Build.SourcesDirectory)/scripts/security/Invoke-OSSFScorecard.ps1'
+          arguments: >
+            -Repository "${{ parameters.repository }}"
+            -Format "${{ parameters.format }}"
+            -OutputPath "$(Build.ArtifactStagingDirectory)/scorecard-results.${{ parameters.format }}"
+            -Verbose
+          workingDirectory: '${{ parameters.workingDirectory }}'
+          pwsh: true
+        env:
+          GITHUB_TOKEN: $(GITHUB_TOKEN)
+
+      - task: PublishTestResults@2
+        displayName: 'Publish OSSF Scorecard Results'
+        condition: always()
+        inputs:
+          testResultsFormat: 'VSTest'
+          testResultsFiles: '**/scorecard-results.*'
+          searchFolder: '$(Build.ArtifactStagingDirectory)'
+          mergeTestResults: true
+          failTaskOnFailedTests: false
+          testRunTitle: 'OSSF Scorecard Security Analysis'
+
+      - task: PublishBuildArtifacts@1
+        displayName: 'Publish OSSF Scorecard Artifacts'
+        condition: always()
+        inputs:
+          pathToPublish: '$(Build.ArtifactStagingDirectory)'
+          artifactName: 'ossf-scorecard-results'
+          includeRootFolder: false
+          parallel: true

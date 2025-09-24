@@ -153,6 +153,8 @@ devsecops
 gdpr
 hipaa
 oidc
+OSSF
+ossf
 passwordless
 siem
 sox

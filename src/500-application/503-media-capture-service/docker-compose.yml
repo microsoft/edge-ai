@@ -17,7 +17,7 @@ services:
 
   # Local Mosquitto MQTT Broker
   mosquitto-broker:
-    image: eclipse-mosquitto:latest
+    image: eclipse-mosquitto@sha256:7b77b81b6d25b1fc6cc5ed1eb8ae48c247d4fd6f9aef1f7ee88b4a8e0b7f2b3e
     container_name: mosquitto-broker
     ports:
       - "1883:1883"    # MQTT non-TLS port

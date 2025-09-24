@@ -31,14 +31,14 @@
 # Usage Examples:
 # ```yaml
 # # To check only for folders with changes:
-# - template: .azdo/matrix-folder-check-template.yml
+# - template: .azdo/templates/matrix-folder-check-template.yml
 #   parameters:
 #     dependsOn: PreviousJob
 #     displayName: "Check for component changes"
 #     condition: succeeded()
 #
 # # To include all folders containing Terraform and Bicep files:
-# - template: .azdo/matrix-folder-check-template.yml
+# - template: .azdo/templates/matrix-folder-check-template.yml
 #   parameters:
 #     dependsOn: PreviousJob
 #     displayName: "Check all component folders"

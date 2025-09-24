@@ -1,3 +1,28 @@
+# Documentation Automation Workflow
+#
+# Purpose:
+# Automates documentation generation, validation, and deployment processes including
+# frontmatter validation, sidebar generation, and GitHub Pages deployment.
+#
+# Functionality:
+# - Validates YAML frontmatter in documentation files for consistency and completeness
+# - Automatically generates navigation sidebars from documentation structure
+# - Validates documentation links and references for accuracy
+# - Deploys updated documentation to GitHub Pages when changes are detected
+# - Performs documentation health checks and quality assurance
+#
+# Parameters:
+# - force_regenerate: Forces regeneration of all documentation when manually triggered (default: false)
+#
+# Output Variables:
+# - None directly from this workflow (outputs available through GitHub Pages deployment)
+#
+# Usage Examples:
+# Triggered automatically when documentation files change in docs/, src/, or blueprints/ paths,
+# or manually dispatched for complete documentation regeneration and validation.
+#
+# This workflow ensures documentation remains current, properly structured, and accessible
+# through automated validation and deployment processes.
 ---
 name: Docs Automation
 
@@ -40,10 +65,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
 
-      - name: Setup PowerShell
-        uses: azure/powershell@v1
+      - name: Run docs health check
+        uses: azure/powershell@1c589a2e445c71fe2cea92c69f7b80b572760c3b # v2
         with:
           inlineScript: |
             Write-Host "PowerShell version: $($PSVersionTable.PSVersion)"
@@ -128,12 +153,12 @@ jobs:
     needs: validate-frontmatter
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup PowerShell
-        uses: azure/powershell@v1
+        uses: azure/powershell@1c589a2e445c71fe2cea92c69f7b80b572760c3b # v2
         with:
           inlineScript: |
             Write-Host "PowerShell version: $($PSVersionTable.PSVersion)"
@@ -180,10 +205,10 @@ jobs:
     needs: generate-sidebar
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.1.1
         with:
           node-version: '18'
 
@@ -229,10 +254,10 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.1.1
         with:
           node-version: '18'
 
@@ -277,7 +302,7 @@ jobs:
       issues: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
 
       - name: Generate documentation metrics
         shell: pwsh
@@ -340,8 +365,8 @@ jobs:
 
           Write-Host "✅ Documentation health report generated"
 
-      - name: Upload documentation report
-        uses: actions/upload-artifact@v4
+      - name: Upload report
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.4.0
         with:
           name: documentation-health-report
           path: documentation-health-report.md
@@ -349,7 +374,7 @@ jobs:
 
       - name: Comment on PR with report
         if: github.event_name == 'pull_request'
-        uses: actions/github-script@v7
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         with:
           script: |
             const fs = require('fs');

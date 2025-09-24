@@ -1,0 +1,130 @@
+# Security PR Validation Workflow - Ultra-fast security checks for pull requests
+# This workflow provides immediate security feedback during PR validation.
+# Focuses on harden-runner and egress monitoring for quick feedback (< 3 minutes).
+# Designed for fast developer feedback without blocking the PR process.
+
+name: Security PR Validation
+
+on:
+  workflow_call:
+    inputs:
+      working-directory:
+        description: 'Working directory for security validation'
+        required: false
+        type: string
+        default: '.'
+      enable-egress-filter:
+        description: 'Enable network egress filtering'
+        required: false
+        type: boolean
+        default: true
+      enable-endpoint-monitoring:
+        description: 'Enable endpoint monitoring for security events'
+        required: false
+        type: boolean
+        default: true
+      allowed-endpoints:
+        description: 'Allowed network endpoints (space-separated)'
+        required: false
+        type: string
+        default: 'api.github.com:443 github.com:443 objects.githubusercontent.com:443 registry-1.docker.io:443 auth.docker.io:443 production.cloudflare.docker.com:443 *.azurecr.io:443 packages.microsoft.com:443 *.nuget.org:443 pypi.org:443 files.pythonhosted.org:443'
+      continue-on-error:
+        description: 'Continue pipeline on hardening errors'
+        required: false
+        type: boolean
+        default: false
+
+    outputs:
+      security-status:
+        description: 'Security validation status'
+        value: ${{ jobs.security-hardening.outputs.security-status }}
+      egress-violations:
+        description: 'Number of egress violations detected'
+        value: ${{ jobs.security-hardening.outputs.egress-violations }}
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+  security-hardening:
+    name: Security Hardening
+    runs-on: ubuntu-latest
+    outputs:
+      security-status: ${{ steps.hardening.outputs.status }}
+      egress-violations: ${{ steps.egress.outputs.violations }}
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@5c7944e73c4c2a096b17a9cb74d65b6c2bbafbde
+        with:
+          egress-policy: audit
+          allowed-endpoints: ${{ inputs.allowed-endpoints }}
+
+      - name: Checkout Repository
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+
+      - name: Setup PowerShell Core
+        run: |
+          # Download and install PowerShell Core
+          wget -q "https://packages.microsoft.com/keys/microsoft.asc" -O- | sudo apt-key add -
+          wget -q "https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb" -O packages-microsoft-prod.deb
+          sudo dpkg -i packages-microsoft-prod.deb
+          sudo apt-get update
+          sudo apt-get install -y powershell
+
+      - name: Initialize Security Hardening
+        id: hardening
+        shell: pwsh
+        working-directory: ${{ inputs.working-directory }}
+        continue-on-error: ${{ inputs.continue-on-error }}
+        run: |
+          Write-Host "Initializing security hardening for PR validation..."
+
+          & ./scripts/security/Initialize-HardenRunner.ps1 `
+            -EnableEgressFilter:$${{ inputs.enable-egress-filter }} `
+            -EnableEndpointMonitoring:$${{ inputs.enable-endpoint-monitoring }} `
+            -AllowedEndpoints "${{ inputs.allowed-endpoints }}" `
+            -Verbose
+
+          Write-Host "Security hardening initialization completed"
+          "status=success" >> $env:GITHUB_OUTPUT
+
+      - name: Monitor Egress Traffic
+        id: egress
+        if: inputs.enable-egress-filter == true
+        shell: pwsh
+        working-directory: ${{ inputs.working-directory }}
+        run: |
+          Write-Host "Monitoring egress traffic for security violations..."
+
+          & ./scripts/security/Monitor-EgressTraffic.ps1 `
+            -AllowedEndpoints "${{ inputs.allowed-endpoints }}" `
+            -OutputPath "./egress-monitoring.json" `
+            -Verbose
+
+          # Parse monitoring results for output
+          if (Test-Path "./egress-monitoring.json") {
+              $results = Get-Content "./egress-monitoring.json" | ConvertFrom-Json
+              $violations = $results.ViolationCount -or 0
+
+              Write-Host "Egress violations detected: $violations"
+              "violations=$violations" >> $env:GITHUB_OUTPUT
+
+              if ($violations -gt 0) {
+                  Write-Warning "Security egress violations detected. Review monitoring results."
+              }
+          } else {
+              Write-Host "No egress monitoring results generated"
+              "violations=0" >> $env:GITHUB_OUTPUT
+          }
+
+      - name: Upload Security Artifacts
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808
+        if: always()
+        with:
+          name: security-pr-results
+          path: |
+            egress-monitoring.json
+            security-hardening-*.log
+          retention-days: 7

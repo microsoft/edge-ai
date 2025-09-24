@@ -1,0 +1,216 @@
+# SHA Staleness Monitoring Template
+#
+# Purpose:
+# Monitors repository dependencies for stale SHA pins and outdated references
+# to ensure supply chain security and dependency freshness.
+#
+# Single Responsibility:
+# - SHA staleness monitoring only
+# - No other security functions (Checkov scanning, OSSF analysis, etc.)
+#
+# Parameters:
+# - maxAgeDays: Maximum age threshold in days for dependency staleness detection
+# - outputFormat: Report output format ('azdo', 'json', 'console')
+# - logPath: File path for staleness monitoring log output
+# - outputPath: File path for structured staleness report output
+# - workingDirectory: Working directory for analysis
+# - continueOnError: Continue pipeline on analysis errors
+# - dependsOn: Jobs that this job depends on
+# - condition: Condition for running this job
+# - agentPool: Agent pool configuration
+#
+# Usage Examples:
+# - template: .azdo/templates/sha-staleness-template.yml
+#   parameters:
+#     maxAgeDays: 30
+#     outputFormat: json
+#
+# This template provides focused SHA staleness monitoring for dependency management.
+---
+parameters:
+  - name: maxAgeDays
+    type: number
+    default: 30
+    displayName: 'Maximum age threshold in days for staleness detection'
+  - name: outputFormat
+    type: string
+    default: 'azdo'
+    values:
+      - 'azdo'
+      - 'json'
+      - 'console'
+    displayName: 'Report output format'
+  - name: logPath
+    type: string
+    default: '$(Build.ArtifactStagingDirectory)/sha-staleness-monitoring.log'
+    displayName: 'File path for staleness monitoring log output'
+  - name: outputPath
+    type: string
+    default: '$(Build.ArtifactStagingDirectory)/stale-dependencies.json'
+    displayName: 'File path for structured staleness report output'
+  - name: workingDirectory
+    type: string
+    default: '$(Build.SourcesDirectory)'
+    displayName: 'Working directory for analysis'
+  - name: continueOnError
+    type: boolean
+    default: true
+    displayName: 'Continue pipeline on analysis errors'
+  - name: dependsOn
+    type: object
+    default: []
+    displayName: 'Jobs that this job depends on'
+  - name: displayName
+    type: string
+    default: 'SHA Staleness Monitoring'
+    displayName: 'Display name for this job'
+  - name: condition
+    type: string
+    default: 'succeeded()'
+    displayName: 'Condition for running this job'
+  - name: agentPool
+    type: object
+    default:
+      name: 'ai-on-edge-managed-pool'
+      vmImage: 'ubuntu-latest'
+    displayName: 'Agent pool configuration'
+
+jobs:
+  - job: SHAStalenessMonitoring
+    dependsOn: ${{ parameters.dependsOn }}
+    displayName: ${{ parameters.displayName }}
+    condition: ${{ parameters.condition }}
+    pool: ${{ parameters.agentPool }}
+    steps:
+      - task: PowerShell@2
+        displayName: 'Initialize SHA Staleness Monitoring'
+        inputs:
+          targetType: 'inline'
+          script: |
+            Write-Host "=== SHA Staleness Monitoring ===" -ForegroundColor Cyan
+            Write-Host "Max age threshold: ${{ parameters.maxAgeDays }} days" -ForegroundColor Green
+            Write-Host "Output format: ${{ parameters.outputFormat }}" -ForegroundColor Green
+            Write-Host "Log path: ${{ parameters.logPath }}" -ForegroundColor Green
+            Write-Host "Output path: ${{ parameters.outputPath }}" -ForegroundColor Green
+
+            # Create directories if they don't exist
+            $LogDir = Split-Path -Parent "${{ parameters.logPath }}"
+            $OutputDir = Split-Path -Parent "${{ parameters.outputPath }}"
+
+            if (!(Test-Path $LogDir)) {
+              New-Item -ItemType Directory -Path $LogDir -Force | Out-Null
+              Write-Host "Created log directory: $LogDir" -ForegroundColor Yellow
+            }
+
+            if (!(Test-Path $OutputDir)) {
+              New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null
+              Write-Host "Created output directory: $OutputDir" -ForegroundColor Yellow
+            }
+
+      - task: PowerShell@2
+        displayName: 'Run SHA Staleness Analysis'
+        continueOnError: ${{ parameters.continueOnError }}
+        inputs:
+          targetType: 'filePath'
+          filePath: '${{ parameters.workingDirectory }}/scripts/security/Test-SHAStaleness.ps1'
+          arguments: >
+            -OutputFormat "${{ parameters.outputFormat }}"
+            -MaxAge ${{ parameters.maxAgeDays }}
+            -LogPath "${{ parameters.logPath }}"
+            -OutputPath "${{ parameters.outputPath }}"
+            -Verbose
+          workingDirectory: '${{ parameters.workingDirectory }}'
+          pwsh: true
+        env:
+          SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+
+      - task: PowerShell@2
+        displayName: 'Analyze SHA Staleness Results'
+        condition: always()
+        inputs:
+          targetType: 'inline'
+          script: |
+            Write-Host "=== SHA Staleness Analysis Results ===" -ForegroundColor Cyan
+
+            $LogPath = "${{ parameters.logPath }}"
+            $OutputPath = "${{ parameters.outputPath }}"
+
+            # Display log summary if exists
+            if (Test-Path $LogPath) {
+              $LogContent = Get-Content $LogPath
+              $WarningLines = $LogContent | Where-Object { $_ -match "\[Warning\]" }
+              $ErrorLines = $LogContent | Where-Object { $_ -match "\[Error\]" }
+
+              Write-Host "Log entries processed: $($LogContent.Count)" -ForegroundColor Green
+              Write-Host "Warnings found: $($WarningLines.Count)" -ForegroundColor $(if ($WarningLines.Count -eq 0) { "Green" } else { "Yellow" })
+              Write-Host "Errors found: $($ErrorLines.Count)" -ForegroundColor $(if ($ErrorLines.Count -eq 0) { "Green" } else { "Red" })
+            } else {
+              Write-Host "##vso[task.logissue type=warning]No log file found at: $LogPath"
+            }
+
+            # Analyze JSON output if exists
+            if (Test-Path $OutputPath) {
+              try {
+                $Report = Get-Content $OutputPath | ConvertFrom-Json
+                $StaleCount = $Report.Dependencies.Count
+
+                Write-Host "=== Stale Dependencies Report ===" -ForegroundColor Cyan
+                Write-Host "Total stale dependencies: $StaleCount" -ForegroundColor $(if ($StaleCount -eq 0) { "Green" } else { "Red" })
+                Write-Host "Age threshold: $($Report.MaxAgeThreshold) days" -ForegroundColor Green
+                Write-Host "Report generated: $($Report.Timestamp)" -ForegroundColor Green
+
+                if ($StaleCount -gt 0) {
+                  Write-Host "`n=== Dependency Breakdown ===" -ForegroundColor Yellow
+                  $Groups = $Report.Dependencies | Group-Object Type
+                  foreach ($Group in $Groups) {
+                    Write-Host "$($Group.Name): $($Group.Count) stale items" -ForegroundColor Yellow
+                  }
+
+                  # Show high severity items
+                  $HighSeverity = $Report.Dependencies | Where-Object { $_.Severity -eq "High" }
+                  if ($HighSeverity.Count -gt 0) {
+                    Write-Host "`n=== High Severity Dependencies ===" -ForegroundColor Red
+                    foreach ($Dep in $HighSeverity) {
+                      Write-Host "##vso[task.logissue type=error;sourcepath=$($Dep.File)]HIGH: $($Dep.Message)"
+                    }
+                  }
+
+                  # Summary message for build
+                  if ($StaleCount -gt 0) {
+                    Write-Host "##vso[task.logissue type=warning]Build completed with $StaleCount stale dependencies detected"
+                    Write-Host "##vso[task.complete result=SucceededWithIssues]"
+                  }
+                } else {
+                  Write-Host "##vso[task.logissue type=info]No stale dependencies detected - all SHA pins are current!"
+                }
+
+                # Set pipeline variables for downstream tasks
+                Write-Host "##vso[task.setvariable variable=StaleDependencyCount]$StaleCount"
+                Write-Host "##vso[task.setvariable variable=HasStaleDependencies]$($StaleCount -gt 0)"
+
+              } catch {
+                Write-Host "##vso[task.logissue type=error]Failed to parse staleness report: $($_.Exception.Message)"
+              }
+            } else {
+              Write-Host "##vso[task.logissue type=warning]No staleness report found at: $OutputPath"
+            }
+
+      - task: PublishTestResults@2
+        displayName: 'Publish SHA Staleness Test Results'
+        condition: always()
+        inputs:
+          testResultsFormat: 'VSTest'
+          testResultsFiles: '**/stale-dependencies.json'
+          searchFolder: '$(Build.ArtifactStagingDirectory)'
+          mergeTestResults: true
+          failTaskOnFailedTests: false
+          testRunTitle: 'SHA Staleness Analysis'
+
+      - task: PublishBuildArtifacts@1
+        displayName: 'Publish SHA Staleness Artifacts'
+        condition: always()
+        inputs:
+          pathToPublish: '$(Build.ArtifactStagingDirectory)'
+          artifactName: 'sha-staleness-report'
+          includeRootFolder: false
+          parallel: true
