@@ -134,9 +134,9 @@ You're tasked with setting up a complex edge computing development environment t
 ---
 
 <!-- Reference Links -->
-[azure-iot-operations]: https://learn.microsoft.com/en-us/azure/iot-operations/
-[azure-kubernetes]: https://learn.microsoft.com/en-us/azure/aks/
-[terraform-azure]: https://learn.microsoft.com/en-us/azure/developer/terraform/
+[azure-iot-operations]: https://learn.microsoft.com/azure/iot-operations/
+[azure-kubernetes]: https://learn.microsoft.com/azure/aks/
+[terraform-azure]: https://learn.microsoft.com/azure/developer/terraform/
 
 <!-- markdownlint-disable MD036 -->
 *🤖 Crafted with precision by ✨Copilot following brilliant human instruction,

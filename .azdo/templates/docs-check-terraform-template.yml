@@ -53,12 +53,14 @@ jobs:
       - checkout: self
         clean: true
 
-      # Add Python setup task
-      - task: UsePythonVersion@0
+      # Set up PowerShell
+      - task: PowerShell@2
+        displayName: "Verify PowerShell Installation"
         inputs:
-          versionSpec: '3.11'
-          addToPath: true
-        displayName: "Setup Python 3.11"
+          targetType: 'inline'
+          script: |
+            Write-Host "PowerShell Version: $($PSVersionTable.PSVersion)"
+            Write-Host "PowerShell Edition: $($PSVersionTable.PSEdition)"
 
       # Install terraform-docs using the shared script with new parameter format
       - bash: |
@@ -94,44 +96,34 @@ jobs:
         condition: and( not(failed()), not(canceled()) )
 
       # Check for en-us links in docs
-      - bash: |
+      - task: PowerShell@2
+        displayName: "Check for language path segments in links"
+        inputs:
+          targetType: 'inline'
+          script: |
+            Write-Host "Checking for language path segments (en-us) in links..."
 
-          # Run the link-lang-check.py script to find en-us URLs
-          echo "Checking for language path segments (en-us) in links..."
-          links_json=$(python3 $(System.DefaultWorkingDirectory)/scripts/link-lang-check.py)
+            # Run the PowerShell script and capture JSON output
+            $jsonOutput = & "$(System.DefaultWorkingDirectory)/scripts/linting/Link-Lang-Check.ps1"
+            $links = $jsonOutput | ConvertFrom-Json
 
-          # Check if we got valid JSON results
-          if echo "$links_json" | jq empty 2>/dev/null; then
-            # Count the number of links found
-            link_count=$(echo "$links_json" | jq '. | length')
+            if ($links.Count -gt 0) {
+              Write-Host "Found $($links.Count) URLs with language path segments (en-us)."
 
-            if [ "$link_count" -gt 0 ]; then
-              echo "Found $link_count URLs with language path segments (en-us)."
+              $breakBuild = "${{ parameters.breakBuild }}" -eq "true" -or "${{ parameters.breakBuild }}" -eq "True"
 
-              # Loop through each link and create a build warning
-              echo "$links_json" | jq -c '.[]' | while read -r link; do
-                file=$(echo "$link" | jq -r '.file')
-                line=$(echo "$link" | jq -r '.line_number')
-                url=$(echo "$link" | jq -r '.original_url')
+              foreach ($link in $links) {
+                $issueType = if ($breakBuild) { "error" } else { "warning" }
+                $message = "URL contains language path segment (en-us): $($link.original_url)"
+                Write-Host "##vso[task.logissue type=$issueType;sourcepath=$($link.file);linenumber=$($link.line_number);]$message"
+              }
 
-                # Create a warning for each link
-                if [[ "${{ parameters.breakBuild }}" == "true" ]]; then
-                  issue_type="error"
-                else
-                  issue_type="warning"
-                fi
-
-                echo "##vso[task.logissue type=$issue_type;sourcepath=$file;linenumber=$line;]URL contains language path segment (en-us): $url"
-              done
-
-            else
-              echo "No URLs with language path segments (en-us) found."
-            fi
-          else
-            echo "Error parsing output from link-lang-check.py script"
-            echo "$links_json"
-          fi
-
-        displayName: Check for language path segments in links
-        workingDirectory: $(System.DefaultWorkingDirectory)
+              if ($breakBuild) {
+                Write-Host "##vso[task.complete result=Failed;]Build failed due to language path segments in URLs"
+                exit 1
+              }
+            } else {
+              Write-Host "No URLs with language path segments (en-us) found."
+            }
+          workingDirectory: '$(System.DefaultWorkingDirectory)'
         condition: and( not(failed()), not(canceled()) )

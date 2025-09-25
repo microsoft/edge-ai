@@ -164,7 +164,7 @@ I'm working on Deployment Basics kata and want interactive coaching with progres
 [kata-coach]: /.github/chatmodes/praxisworx-kata-coach.chatmode.md
 [deploy-prompt]: /.github/prompts/deploy.prompt.md
 [project-blueprints]: /blueprints/README
-[azure-cli]: https://docs.microsoft.com/en-us/cli/azure/
+[azure-cli]: https://docs.microsoft.com/cli/azure/
 
 <!-- markdownlint-disable MD036 -->
 *🤖 Crafted with precision by ✨Copilot following brilliant human instruction,

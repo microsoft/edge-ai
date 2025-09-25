@@ -159,7 +159,7 @@ I'm working on Basic Prompt Structure kata and want interactive coaching with pr
 ---
 
 <!-- Reference Links -->
-[prompt-engineering-azure]: https://learn.microsoft.com/en-us/azure/ai-services/openai/concepts/prompt-engineering
+[prompt-engineering-azure]: https://learn.microsoft.com/azure/ai-services/openai/concepts/prompt-engineering
 
 <!-- markdownlint-disable MD036 -->
 *🤖 Crafted with precision by ✨Copilot following brilliant human instruction,
