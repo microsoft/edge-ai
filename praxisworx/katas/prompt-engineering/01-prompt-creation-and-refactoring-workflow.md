@@ -161,7 +161,7 @@ I'm working on Prompt Creation and Refactoring Workflow kata and want interactiv
 ---
 
 <!-- Reference Links -->
-[prompt-engineering-azure]: https://learn.microsoft.com/en-us/azure/ai-services/openai/concepts/prompt-engineering
+[prompt-engineering-azure]: https://learn.microsoft.com/azure/ai-services/openai/concepts/prompt-engineering
 
 <!-- markdownlint-disable MD036 -->
 *🤖 Crafted with precision by ✨Copilot following brilliant human instruction,

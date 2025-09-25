@@ -156,9 +156,9 @@ then carefully refined by our team of discerning human reviewers.*
 [pr-generation]: /praxisworx/katas/task-planning/06-pr-generation
 
 <!-- Microsoft Documentation -->
-[azure-devops-project-management]: https://learn.microsoft.com/en-us/azure/devops/boards/
-[azure-devops-planning]: https://learn.microsoft.com/en-us/azure/devops/boards/plans/
-[azure-project-management]: https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/manage/
-[azure-devops-work-items]: https://learn.microsoft.com/en-us/azure/devops/boards/work-items/
-[azure-agile-planning]: https://learn.microsoft.com/en-us/azure/devops/boards/plans/portfolio-management
-[microsoft-project]: https://learn.microsoft.com/en-us/project/
+[azure-devops-project-management]: https://learn.microsoft.com/azure/devops/boards/
+[azure-devops-planning]: https://learn.microsoft.com/azure/devops/boards/plans/
+[azure-project-management]: https://learn.microsoft.com/azure/cloud-adoption-framework/manage/
+[azure-devops-work-items]: https://learn.microsoft.com/azure/devops/boards/work-items/
+[azure-agile-planning]: https://learn.microsoft.com/azure/devops/boards/plans/portfolio-management
+[microsoft-project]: https://learn.microsoft.com/project/

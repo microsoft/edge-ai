@@ -283,9 +283,9 @@ Comprehensive documentation covering platform standards, guidelines, and best pr
 [environment-setup]: /docs/getting-started/
 [vscode-docs]: https://code.visualstudio.com/docs
 [github-docs]: https://docs.github.com
-[markdown-guide]: https://docs.microsoft.com/en-us/contribute/markdown-reference
+[markdown-guide]: https://docs.microsoft.com/contribute/markdown-reference
 [azure-devops-templates]: https://docs.microsoft.com/azure/devops/pipelines/process/templates
-[documentation-standards]: https://docs.microsoft.com/en-us/style-guide/welcome
+[documentation-standards]: https://docs.microsoft.com/style-guide/welcome
 
 <!-- markdownlint-disable MD036 -->
 *🤖 Crafted with precision by ✨Copilot following brilliant human instruction,

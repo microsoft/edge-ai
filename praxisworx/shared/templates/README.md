@@ -49,8 +49,8 @@ When creating new content types, consider creating a corresponding template to e
 [kata-template]: /praxisworx/shared/templates/kata-template
 [training-lab-template]: /praxisworx/shared/templates/training-lab-template
 [contributing-guide]: /praxisworx/contributing
-[documentation-standards]: https://docs.microsoft.com/en-us/style-guide/welcome
-[markdown-guide]: https://docs.microsoft.com/en-us/contribute/markdown-reference
+[documentation-standards]: https://docs.microsoft.com/style-guide/welcome
+[markdown-guide]: https://docs.microsoft.com/contribute/markdown-reference
 
 <!-- markdownlint-disable MD036 -->
 *🤖 Crafted with precision by ✨Copilot following brilliant human instruction,

@@ -133,8 +133,8 @@ A manufacturing facility needs comprehensive predictive maintenance for critical
 
 <!-- Reference Links -->
 [task-planning-mode]: /.github/chatmodes/task-planner.chatmode.md
-[azure-iot-edge]: https://learn.microsoft.com/en-us/azure/iot-edge/
-[azure-solution-accelerators]: https://learn.microsoft.com/en-us/azure/iot-accelerators/
+[azure-iot-edge]: https://learn.microsoft.com/azure/iot-edge/
+[azure-solution-accelerators]: https://learn.microsoft.com/azure/iot-accelerators/
 
 <!-- markdownlint-disable MD036 -->
 *🤖 Crafted with precision by ✨Copilot following brilliant human instruction,

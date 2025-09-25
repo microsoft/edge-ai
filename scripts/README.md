@@ -25,7 +25,7 @@ Azure DevOps build system for managing and validating the project's IaC.
   - [Blueprint Deployment Preparation Scripts](#blueprint-deployment-preparation-scripts)
     - [location-check.sh](#location-checksh)
   - [Documentation and Link Validation Scripts](#documentation-and-link-validation-scripts)
-    - [link-lang-check.py](#link-lang-checkpy)
+    - [Link-Lang-Check.ps1](#link-lang-checkps1)
     - [Build-Wiki.ps1](#build-wikips1)
     - [wiki-build.sh (deprecated)](#wiki-buildsh-deprecated)
   - [GitHub Integration Scripts](#github-integration-scripts)
@@ -252,20 +252,21 @@ Uses a chosen blueprint to crawl all referenced modules, create a list of deploy
 
 ## Documentation and Link Validation Scripts
 
-### link-lang-check.py
+### Link-Lang-Check.ps1
 
-Finds and optionally fixes URLs with language path segments ('en-us').
+PowerShell script that finds and optionally fixes URLs with language path segments ('en-us').
 
 - **Usage**:
-  - Find links with language defaults only: `python3 link-lang-check.py` (outputs JSON)
-  - Find links with verbose output: `python3 link-lang-check.py -v`
-  - Fix links and remove 'en-us': `python3 link-lang-check.py -f`
-  - Fix links with verbose output: `python3 link-lang-check.py -f -v`
+  - Find links with language defaults only: `pwsh ./linting/Link-Lang-Check.ps1` (outputs JSON)
+  - Find links with verbose output: `pwsh ./linting/Link-Lang-Check.ps1 -Verbose`
+  - Fix links and remove 'en-us': `pwsh ./linting/Link-Lang-Check.ps1 -Fix`
+  - Fix links with verbose output: `pwsh ./linting/Link-Lang-Check.ps1 -Fix -Verbose`
 - **Returns**: JSON array of detected links with file paths and line numbers (in search mode)
 - **Build Integration**:
-  - Used by the [docs-check-terraform-template.yml](../.azdo/docs-check-terraform-template.yml) in the DocsCheckTerraform job
-  - Used by the [docs-check-bicep-template.yml](../.azdo/docs-check-bicep-template.yml) in the DocsCheckBicep job
+  - Used by the [docs-check-terraform-template.yml](../.azdo/templates/docs-check-terraform-template.yml) in the DocsCheckTerraform job
+  - Used by the [docs-check-bicep-template.yml](../.azdo/templates/docs-check-bicep-template.yml) in the DocsCheckBicep job
 - **When to Use**: Run before submitting PRs to ensure links don't contain language-specific paths which can cause internationalization issues
+- **Features**: Enhanced CI/CD logging support for Azure DevOps and GitHub Actions
 
 ### Build-Wiki.ps1
 
@@ -390,11 +391,11 @@ Most scripts follow these error handling practices:
 
 The following Azure DevOps pipeline templates depend on these scripts:
 
-| Azure DevOps Template                                                                                                                       | Script Dependencies                                             |
-|---------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------|
-| [docs-check-terraform-template.yml](../docs/build-cicd/pipelines/azure-devops/templates/docs-check-terraform-template.md)                   | install-terraform-docs.sh, tf-docs-check.sh, link-lang-check.py |
-| [aio-version-checker-template.yml](../docs/build-cicd/pipelines/azure-devops/templates/aio-version-checker-template.md)                     | aio-version-checker.py                                          |
-| [variable-compliance-terraform-template.yml](../docs/build-cicd/pipelines/azure-devops/templates/variable-compliance-terraform-template.md) | tf-vars-compliance-check.py                                     |
-| [cluster-test-terraform-template.yml](../docs/build-cicd/pipelines/azure-devops/templates/cluster-test-terraform-template.md)               | tf-provider-version-check.sh                                    |
-| [resource-provider-pwsh-tests-template.yml](../docs/build-cicd/pipelines/azure-devops/templates/resource-provider-pwsh-tests-template.md)   | Invoke-Pester.ps1                                               |
-| [wiki-update-template.yml](../docs/build-cicd/pipelines/azure-devops/templates/wiki-update-template.md)                                     | Build-Wiki.ps1                                                  |
+| Azure DevOps Template                                                                                                                       | Script Dependencies                                                           |
+|---------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------|
+| [docs-check-terraform-template.yml](../docs/build-cicd/pipelines/azure-devops/templates/docs-check-terraform-template.md)                   | install-terraform-docs.sh, tf-docs-check.sh, Link-Lang-Check.ps1 (PowerShell) |
+| [aio-version-checker-template.yml](../docs/build-cicd/pipelines/azure-devops/templates/aio-version-checker-template.md)                     | aio-version-checker.py                                                        |
+| [variable-compliance-terraform-template.yml](../docs/build-cicd/pipelines/azure-devops/templates/variable-compliance-terraform-template.md) | tf-vars-compliance-check.py                                                   |
+| [cluster-test-terraform-template.yml](../docs/build-cicd/pipelines/azure-devops/templates/cluster-test-terraform-template.md)               | tf-provider-version-check.sh                                                  |
+| [resource-provider-pwsh-tests-template.yml](../docs/build-cicd/pipelines/azure-devops/templates/resource-provider-pwsh-tests-template.md)   | Invoke-Pester.ps1                                                             |
+| [wiki-update-template.yml](../docs/build-cicd/pipelines/azure-devops/templates/wiki-update-template.md)                                     | Build-Wiki.ps1                                                                |
