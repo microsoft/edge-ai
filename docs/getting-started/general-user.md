@@ -368,10 +368,10 @@ After successful deployment:
 [terraform-install]: https://learn.hashicorp.com/tutorials/terraform/install-cli
 [kubectl-install]: https://kubernetes.io/docs/tasks/tools/install-kubectl/
 [docker-install]: https://docs.docker.com/get-docker/
-[blueprint-full-single]: blueprints/full-single-node-cluster/
-[blueprint-full-multi]: blueprints/full-multi-node-cluster/
-[blueprint-minimum]: blueprints/minimum-single-node-cluster/
-[blueprint-cloud-only]: blueprints/only-cloud-single-node-cluster/
+[blueprint-full-single]: /blueprints/full-single-node-cluster/
+[blueprint-full-multi]: /blueprints/full-multi-node-cluster/
+[blueprint-minimum]: /blueprints/minimum-single-node-cluster/
+[blueprint-cloud-only]: /blueprints/only-cloud-single-node-cluster/
 [iot-ops-quickstart]: https://learn.microsoft.com/azure/iot-operations/get-started-end-to-end-sample/quickstart-deploy
 [iot-ops-docs]: https://learn.microsoft.com/azure/iot-operations/
 [project-repo]: {{REPO_URL}}
