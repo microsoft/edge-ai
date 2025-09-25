@@ -1,0 +1,169 @@
+# Rust Container Images Build and Push Template
+#
+# Purpose:
+# This template automates the process of building and pushing Rust-based container images
+# to Azure Container Registry (ACR). It handles semantic versioning, tagging strategies,
+# and multi-image builds in a single pipeline execution.
+#
+# Functionality:
+# - Authenticates with Azure Container Registry using provided credentials
+# - Tags Rust components using semantic versioning from Cargo.toml or git tags
+# - Builds Docker images for multiple Rust components in parallel
+# - Applies multiple tags including semantic version, release candidate, and latest
+# - Pushes all tagged images to the specified container registry
+# - Supports custom component directory structures and naming conventions
+#
+# Parameters:
+# - jobId: Unique identifier for the build job instance
+# - containerRegistry: Azure Container Registry URL for image storage
+# - acrUsername: Username for ACR authentication
+# - acrPassword: Password or token for ACR authentication
+# - imageNames: List of Rust component names to build as container images
+# - componentsPath: Directory path containing Rust component source code
+# - agentPool: Agent pool configuration for the build environment
+# - displayName: Custom display name for the job (optional)
+# - dependsOn: Jobs that this job depends on for execution order
+# - condition: Condition for running this job
+#
+# Usage Examples:
+# ```yaml
+# # Basic usage for building multiple Rust components:
+# - template: .azdo/templates/build-rust-images.yml
+#   parameters:
+#     jobId: 'build-rust-components'
+#     containerRegistry: 'myacr.azurecr.io'
+#     acrUsername: $(ACR_USERNAME)
+#     acrPassword: $(ACR_PASSWORD)
+#     imageNames: ['component1', 'component2', 'component3']
+#
+# # Custom component path and job configuration:
+# - template: .azdo/templates/build-rust-images.yml
+#   parameters:
+#     jobId: 'build-edge-components'
+#     containerRegistry: 'edgeacr.azurecr.io'
+#     acrUsername: $(EDGE_ACR_USERNAME)
+#     acrPassword: $(EDGE_ACR_PASSWORD)
+#     imageNames: ['edge-processor', 'data-collector']
+#     componentsPath: 'src/rust-components'
+#     displayName: 'Build Edge AI Components'
+# ```
+#
+# This template is essential for Rust-based microservices deployments where
+# consistent versioning and automated container builds are required.
+---
+parameters:
+  # Unique identifier for the build job instance
+  - name: jobId
+    type: string
+    default: ''
+    displayName: 'Job identifier for this build instance (required)'
+  # Azure Container Registry URL for image storage
+  - name: containerRegistry
+    type: string
+    default: ''
+    displayName: 'Container registry URL (e.g., myacr.azurecr.io) - required'
+  # Username for ACR authentication
+  - name: acrUsername
+    type: string
+    default: ''
+    displayName: 'ACR username for authentication - required'
+  # Password or token for ACR authentication
+  - name: acrPassword
+    type: string
+    default: ''
+    displayName: 'ACR password or access token for authentication - required'
+  # List of Rust component names to build as container images
+  - name: imageNames
+    type: object
+    default: []
+    displayName: 'Array of component names to build (must match directory names)'
+  # Directory path containing Rust component source code
+  - name: componentsPath
+    type: string
+    default: 'components'
+    displayName: 'Path to directory containing Rust component sources'
+  # Agent pool configuration for the build environment
+  - name: agentPool
+    type: object
+    default:
+      vmImage: 'ubuntu-latest'
+    displayName: 'Agent pool configuration for Docker builds'
+  # Custom display name for the job (optional)
+  - name: displayName
+    type: string
+    default: ''
+    displayName: 'Custom display name for the job (leave empty for auto-generated name)'
+  # Jobs that this job depends on for execution order
+  - name: dependsOn
+    type: object
+    default: []
+    displayName: 'Jobs that must complete before this job runs'
+  # Condition for running this job
+  - name: condition
+    type: string
+    default: 'succeeded()'
+    displayName: 'Condition that determines when this job should run'
+
+jobs:
+  - job: 'build_push_${{ parameters.jobId }}'
+    displayName: ${{ coalesce(parameters.displayName, format('Build and Push Containers to {0}', parameters.containerRegistry)) }}
+    dependsOn: ${{ parameters.dependsOn }}
+    condition: ${{ parameters.condition }}
+    pool: ${{ parameters.agentPool }}
+
+    steps:
+      - checkout: self
+        persistCredentials: true
+
+      - script: |
+          # Log in to Azure Container Registry using token
+          docker login ${{ parameters.containerRegistry }} --username ${{ parameters.acrUsername }} --password ${{ parameters.acrPassword }}
+        displayName: 'Login to Azure Container Registry using token'
+
+      - script: |
+          set -euo pipefail
+          chmod +x ./scripts/tag-rust-components.sh || true
+          ./scripts/tag-rust-components.sh || true
+        displayName: 'Tag Rust components from Cargo.toml'
+
+      - ${{ each imageName in parameters.imageNames }}:
+          - script: |
+              set -euo pipefail
+
+              REG="${{ parameters.containerRegistry }}"
+              COMP="${{ imageName }}"
+              COMPONENTS_PATH="${{ parameters.componentsPath }}"
+
+              # Determine semver for this component from git tag (created earlier), fallback to Cargo.toml
+              TAG=$(git tag --points-at HEAD | grep "^${COMP}/" | head -n1 || true)
+              if [ -n "${TAG}" ]; then
+                SEMVER="${TAG#*/}"
+              else
+                # Fallback: read directly from Cargo.toml [package] section
+                SEMVER=$(awk '
+                  BEGIN { inpkg=0 }
+                  /^\[package\]/ { inpkg=1; next }
+                  inpkg && /^\[/ { inpkg=0 }
+                  inpkg && /^[[:space:]]*version[[:space:]]*=/ {
+                    if (match($0, /"[^"]+"/)) { v=substr($0, RSTART+1, RLENGTH-2); print v; exit 0 }
+                  }
+                ' "${COMPONENTS_PATH}/${COMP}/Cargo.toml")
+              fi
+
+              # Compose tags
+              RC_TAG="${SEMVER}-rc$(Build.BuildId)"
+
+              echo "Building ${REG}/${COMP}:${SEMVER}, ${RC_TAG}, latest"
+              docker build \
+                -t "${REG}/${COMP}:${SEMVER}" \
+                -t "${REG}/${COMP}:${RC_TAG}" \
+                -t "${REG}/${COMP}:latest" \
+                "${COMPONENTS_PATH}/${COMP}"
+
+              echo "Pushing ${REG}/${COMP}:${SEMVER}"
+              docker push "${REG}/${COMP}:${SEMVER}"
+              echo "Pushing ${REG}/${COMP}:${RC_TAG}"
+              docker push "${REG}/${COMP}:${RC_TAG}"
+              echo "Pushing ${REG}/${COMP}:latest"
+              docker push "${REG}/${COMP}:latest"
+            displayName: 'Build and Push Docker Image for ${{ imageName }}'
