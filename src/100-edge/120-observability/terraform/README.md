@@ -29,7 +29,7 @@ Creates resources needed for additional utilities and features.
 | aio\_logs\_data\_collection\_rule | n/a | ```object({ name = string id = string })``` | n/a | yes |
 | aio\_metrics\_data\_collection\_rule | n/a | ```object({ name = string id = string })``` | n/a | yes |
 | arc\_connected\_cluster | n/a | ```object({ name = string id = string location = string })``` | n/a | yes |
-| resource\_group | n/a | ```object({ name = string id = string location = string })``` | n/a | yes |
+| resource\_group | Resource group object containing name and id where resources will be deployed | ```object({ name = string id = string location = string })``` | n/a | yes |
 | scrape\_interval | Interval to scrape metrics from the cluster, valid values are between 1m and 30m (PT1M and PT30M) | `string` | `"PT1M"` | no |
 
 ## Outputs

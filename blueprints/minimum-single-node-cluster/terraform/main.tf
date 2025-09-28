@@ -27,6 +27,11 @@ module "cloud_security_identity" {
   instance        = var.instance
 
   aio_resource_group = module.cloud_resource_group.resource_group
+
+  # Private endpoint configuration
+  should_create_key_vault_private_endpoint = var.should_enable_private_endpoints
+  key_vault_private_endpoint_subnet_id     = var.should_enable_private_endpoints ? module.cloud_networking.subnet_id : null
+  key_vault_virtual_network_id             = var.should_enable_private_endpoints ? module.cloud_networking.virtual_network.id : null
 }
 
 module "cloud_data" {
@@ -42,6 +47,10 @@ module "cloud_data" {
   // Minimize resource usage
   storage_account_tier        = "Standard"
   storage_account_replication = "LRS"
+
+  should_enable_private_endpoint = var.should_enable_private_endpoints
+  private_endpoint_subnet_id     = var.should_enable_private_endpoints ? module.cloud_networking.subnet_id : null
+  virtual_network_id             = var.should_enable_private_endpoints ? module.cloud_networking.virtual_network.id : null
 }
 
 module "cloud_networking" {

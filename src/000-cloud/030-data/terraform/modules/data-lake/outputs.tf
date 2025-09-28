@@ -15,5 +15,5 @@ output "file_share_name" {
 
 output "filesystem_name" {
   description = "The name for the Data Lake Gen2 Filesystem."
-  value       = azurerm_storage_data_lake_gen2_filesystem.data_lake.name
+  value       = try(azurerm_storage_data_lake_gen2_filesystem.data_lake[0].name, null)
 }

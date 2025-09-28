@@ -33,9 +33,9 @@ Instance can be created, and after.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | adr\_schema\_registry | n/a | ```object({ id = string })``` | n/a | yes |
-| aio\_identity | n/a | ```object({ id = string client_id = string tenant_id = string })``` | n/a | yes |
+| aio\_identity | Azure IoT Operations managed identity for workspace access | ```object({ id = string client_id = string tenant_id = string })``` | n/a | yes |
 | arc\_connected\_cluster | n/a | ```object({ name = string id = string location = string })``` | n/a | yes |
-| resource\_group | n/a | ```object({ name = string id = string location = string })``` | n/a | yes |
+| resource\_group | Resource group object containing name and id where resources will be deployed | ```object({ name = string id = string location = string })``` | n/a | yes |
 | secret\_sync\_identity | n/a | ```object({ id = string client_id = string principal_id = string })``` | n/a | yes |
 | secret\_sync\_key\_vault | Azure Key Vault ID to use with Secret Sync Extension. | ```object({ name = string id = string })``` | n/a | yes |
 | aio\_ca | CA certificate for the MQTT broker, can be either Root CA or Root CA with any number of Intermediate CAs. If not provided, a self-signed Root CA with a intermediate will be generated. Only valid when Trust Source is set to CustomerManaged | ```object({ root_ca_cert_pem = string ca_cert_chain_pem = string ca_key_pem = string })``` | `null` | no |

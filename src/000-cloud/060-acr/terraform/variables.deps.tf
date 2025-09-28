@@ -21,3 +21,12 @@ variable "virtual_network" {
     id   = string
   })
 }
+
+variable "nat_gateway" {
+  type = object({
+    id   = string
+    name = string
+  })
+  description = "NAT gateway object from the networking component for managed outbound access"
+  default     = null
+}

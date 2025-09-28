@@ -13,6 +13,7 @@ module "storage_account" {
   account_tier                         = var.storage_account_tier
   account_replication_type             = var.storage_account_replication
   account_kind                         = var.storage_account_kind
+  is_hns_enabled                       = var.storage_account_is_hns_enabled
   blob_soft_delete_retention_days      = var.blob_soft_delete_retention_days
   container_soft_delete_retention_days = var.container_soft_delete_retention_days
   environment                          = var.environment
@@ -22,6 +23,8 @@ module "storage_account" {
   resource_group                       = var.resource_group
   resource_prefix                      = var.resource_prefix
   should_enable_private_endpoint       = var.should_enable_private_endpoint
+  should_enable_public_network_access  = var.should_enable_public_network_access
+  virtual_network_id                   = var.virtual_network_id
 }
 
 module "schema_registry" {
@@ -51,4 +54,5 @@ module "data_lake" {
   file_share_quota_gb                     = var.file_share_quota_gb
   should_create_data_lake_file_share      = var.should_create_data_lake_file_share
   storage_account                         = module.storage_account.storage_account
+  is_hns_enabled                          = var.storage_account_is_hns_enabled
 }

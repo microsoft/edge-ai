@@ -1,3 +1,13 @@
+variable "default_outbound_access_enabled" {
+  type        = bool
+  description = "Whether to enable default outbound internet access for the ACR subnet"
+}
+
+variable "nat_gateway_id" {
+  type        = string
+  description = "NAT gateway resource id for associating the ACR subnet"
+}
+
 variable "should_create_acr_private_endpoint" {
   type        = bool
   description = "Should create a private endpoint for the Azure Container Registry. Default is false."

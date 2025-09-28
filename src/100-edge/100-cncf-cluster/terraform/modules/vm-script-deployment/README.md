@@ -37,7 +37,7 @@ Note: Windows support will be added in a future update.
 | node\_type | The node type (e.g., 'server', 'node') - Used to construct the Key Vault secret name. | `string` | n/a | yes |
 | secret\_name\_prefix | Optional prefix for the Key Vault secret name. | `string` | n/a | yes |
 | should\_use\_script\_from\_secrets\_for\_deploy | Whether to use the deploy-script-secrets.sh script to fetch and execute deployment scripts from Key Vault | `bool` | n/a | yes |
-| key\_vault | The Key Vault object containing id, name, and vault\_uri properties. | ```object({ id = string name = string vault_uri = string })``` | `null` | no |
+| key\_vault | The Key Vault object containing id, name, and vault\_uri properties | ```object({ id = string name = string vault_uri = string })``` | `null` | no |
 | os\_type | Operating system type (only linux supported) | `string` | `"linux"` | no |
 | script\_content | The content of the script to deploy when not fetching from Key Vault. | `string` | `null` | no |
 

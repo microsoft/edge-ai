@@ -146,7 +146,7 @@ You MUST build an in-memory canonical map by parsing both tables above. You WILL
 
 ### Style and Normalization Requirements
 
-- Single-line descriptions: You WILL follow project style: capitalized first letter, no trailing period, 10–100 chars where practical. You WILL NOT auto-alter canonical text when building the map; style checks apply when proposing new entries.
+- Single-line descriptions: You WILL follow project style: capitalized first letter, no trailing period, 10-100 chars where practical. You WILL NOT auto-alter canonical text when building the map; style checks apply when proposing new entries.
 - For heredoc descriptions: You MUST preserve indentation and internal formatting exactly as authored.
 
 ### Safety Check Requirements

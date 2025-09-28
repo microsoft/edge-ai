@@ -36,12 +36,12 @@ Deploys Microsoft Fabric capacity, workspace, lakehouse, and eventhouse resource
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| environment | Environment for all resources in this module: dev, test, or prod. | `string` | n/a | yes |
-| location | Location for all resources in this module. | `string` | n/a | yes |
-| resource\_prefix | Prefix for all resources in this module. | `string` | n/a | yes |
-| fabric\_workspace\_name | The name of the Microsoft Fabric workspace. Otherwise, 'ws-{resource\_prefix}-{environment}-{instance}'. | `string` | `null` | no |
-| instance | Instance identifier for naming resources: 001, 002, etc... | `string` | `"001"` | no |
-| resource\_group\_name | Resource group name for all resources in this module. Otherwise, 'rg-{resource\_prefix}-{environment}-{instance}'. | `string` | `null` | no |
+| environment | Environment for all resources in this module: dev, test, or prod | `string` | n/a | yes |
+| location | Azure region where all resources will be deployed | `string` | n/a | yes |
+| resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
+| fabric\_workspace\_name | The name of the Microsoft Fabric workspace. Otherwise, 'ws-{resource\_prefix}-{environment}-{instance}' | `string` | `null` | no |
+| instance | Instance identifier for naming resources: 001, 002, etc | `string` | `"001"` | no |
+| resource\_group\_name | Name of the resource group | `string` | `null` | no |
 | should\_create\_fabric\_capacity | Whether to create a new Fabric capacity or use an existing one. | `bool` | `false` | no |
 | should\_create\_fabric\_eventhouse | Whether to create a Microsoft Fabric Eventhouse for real-time intelligence scenarios. | `bool` | `false` | no |
 | should\_create\_fabric\_lakehouse | Whether to create a Microsoft Fabric lakehouse. | `bool` | `false` | no |

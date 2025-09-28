@@ -38,6 +38,8 @@ performance tracking, and diagnostic insights.
 | resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
 | retention\_in\_days | The retention period in days for Application Insights data. | `number` | n/a | yes |
 | tags | Tags to apply to all resources | `map(string)` | n/a | yes |
+| internet\_ingestion\_enabled | Should the Application Insights support ingestion over the Public Internet. | `bool` | `true` | no |
+| internet\_query\_enabled | Should the Application Insights support querying over the Public Internet. | `bool` | `true` | no |
 
 ## Outputs
 

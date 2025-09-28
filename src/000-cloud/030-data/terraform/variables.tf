@@ -30,6 +30,18 @@ variable "storage_account_kind" {
   default     = "StorageV2"
 }
 
+variable "storage_account_is_hns_enabled" {
+  description = "Whether to enable Hierarchical Namespace (HNS) for Azure Data Lake Storage Gen2. Note: Azure ML workspaces do not support HNS-enabled storage accounts."
+  type        = bool
+  default     = true
+}
+
+variable "should_enable_public_network_access" {
+  description = "Whether to enable public network access for the storage account"
+  type        = bool
+  default     = true
+}
+
 /*
  * Private Endpoint for Storage Account - Optional
  */
@@ -42,6 +54,12 @@ variable "should_enable_private_endpoint" {
 
 variable "private_endpoint_subnet_id" {
   description = "ID of the subnet to deploy the private endpoint"
+  type        = string
+  default     = null
+}
+
+variable "virtual_network_id" {
+  description = "The ID of the virtual network to link to the private DNS zones. Required if should_enable_private_endpoint is true."
   type        = string
   default     = null
 }

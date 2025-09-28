@@ -66,6 +66,12 @@ variable "should_add_current_user_cluster_admin" {
   default     = true
 }
 
+variable "should_enable_private_endpoints" {
+  type        = bool
+  description = "Whether to enable private endpoints for Key Vault and Storage Account"
+  default     = false
+}
+
 /*
  * Optional Variables
  */

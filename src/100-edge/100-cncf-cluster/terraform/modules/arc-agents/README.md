@@ -39,6 +39,6 @@ if you are not using Azure CLI provided by the ubuntu-k3s module.
 | http\_proxy | HTTP proxy URL | `string` | n/a | yes |
 | location | Azure region where all resources will be deployed | `string` | n/a | yes |
 | private\_key\_pem | Private key for onboarding | `string` | n/a | yes |
-| resource\_group | n/a | ```object({ name = string id = optional(string) })``` | n/a | yes |
+| resource\_group | Resource group object containing name and id where resources will be deployed | ```object({ name = string id = optional(string) })``` | n/a | yes |
 <!-- markdown-table-prettify-ignore-end -->
 <!-- END_TF_DOCS -->

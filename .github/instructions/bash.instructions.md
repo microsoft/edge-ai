@@ -6,16 +6,16 @@ description: 'Instructions for bash script implementation - Brought to you by mi
 
 You will ALWAYS think hard about bash instructions and established conventions
 
-- **CRITICAL**: You MUST ALWAYS read and follow ALL instructions in ALL files from:
-  - [copilot/bash/bash.md](../../copilot/bash/bash.md)
+* **CRITICAL**: You MUST ALWAYS read and follow ALL instructions in ALL files from:
+  * [copilot/bash/bash.md](../../copilot/bash/bash.md)
 
 ## Implementation Requirements
 
 When implementing any Bash-related functionality:
 
-- You must have read the complete Bash documentation before proceeding
-- You must adhere to all guidelines provided in the Bash documentation
-- You must implement all instructions exactly as specified
+* You must have read the complete Bash documentation before proceeding
+* You must adhere to all guidelines provided in the Bash documentation
+* You must implement all instructions exactly as specified
 
 ## Purpose
 

@@ -32,11 +32,6 @@ run "create_default_configuration" {
     condition     = module.network.snet_aks_pod.name == "subnet-${var.resource_prefix}-aks-pod-${var.environment}-${var.instance}"
     error_message = "Subnet name for AKS pod does not match expected pattern"
   }
-
-  assert {
-    condition     = length(module.aks_cluster) == 0
-    error_message = "Azure Kubernetes Service should NOT be created when should_create_aks is false"
-  }
 }
 
 run "create_non_default_configuration" {

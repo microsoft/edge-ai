@@ -37,10 +37,10 @@ Deploys one or more Linux VMs for Arc-connected K3s cluster
 |------|-------------|------|---------|:--------:|
 | environment | Environment for all resources in this module: dev, test, or prod | `string` | n/a | yes |
 | location | Azure region where all resources will be deployed | `string` | n/a | yes |
-| resource\_group | The resource group to deploy the VM host in. | ```object({ name = string })``` | n/a | yes |
+| resource\_group | Resource group object containing name and id where resources will be deployed | ```object({ name = string })``` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
 | subnet\_id | The ID of the subnet to deploy the VM host in | `string` | n/a | yes |
-| arc\_onboarding\_identity | The identity for Arc onboarding. | ```object({ id = string })``` | `null` | no |
+| arc\_onboarding\_identity | The Principal ID for the identity that will be used for onboarding the cluster to Arc | ```object({ id = string })``` | `null` | no |
 | host\_machine\_count | The number of host VMs to create if a multi-node cluster is needed | `number` | `1` | no |
 | instance | Instance identifier for naming resources: 001, 002, etc | `string` | `"001"` | no |
 | vm\_sku\_size | Size of the VM | `string` | `"Standard_D8s_v3"` | no |
