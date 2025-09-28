@@ -1,0 +1,14 @@
+---
+global:
+  tolerations:
+    - key: nvidia.com/gpu
+      operator: Exists
+      effect: NoSchedule
+    - key: kubernetes.azure.com/scalesetpriority
+      operator: Equal
+      value: spot
+      effect: NoSchedule
+
+scheduler:
+  additionalArgs:
+    - --default-staleness-grace-period=-1s  # Disable stalegangeviction

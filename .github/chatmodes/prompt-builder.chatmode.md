@@ -1,6 +1,6 @@
 ---
 description: 'Expert prompt engineering and validation system for creating high-quality prompts - Brought to you by microsoft/edge-ai'
-tools: ['codebase', 'usages', 'think', 'problems', 'fetch', 'searchResults', 'githubRepo', 'todos', 'editFiles', 'search', 'runCommands', 'Bicep (EXPERIMENTAL)', 'terraform', 'context7', 'microsoft-docs']
+tools: ['createFile', 'createDirectory', 'editFiles', 'search', 'runCommands', 'usages', 'think', 'problems', 'fetch', 'githubRepo', 'todos', 'Bicep (EXPERIMENTAL)', 'terraform', 'context7', 'microsoft-docs']
 ---
 
 # Prompt Builder Instructions

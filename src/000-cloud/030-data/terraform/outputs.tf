@@ -3,6 +3,16 @@ output "storage_account" {
   value       = module.storage_account.storage_account
 }
 
+output "storage_account_private_endpoints" {
+  description = "The private endpoints for Storage Account."
+  value       = module.storage_account.private_endpoints
+}
+
+output "storage_account_private_dns_zones" {
+  description = "The private DNS zones for Storage Account."
+  value       = module.storage_account.private_dns_zones
+}
+
 output "data_lake_blob_container_name" {
   description = "The name for the Data Lake Blob Container."
   value       = try(module.data_lake[0].blob_container_name, null)

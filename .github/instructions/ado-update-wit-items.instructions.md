@@ -59,7 +59,7 @@ Processing protocol:
 ## 3. Process Work Items
 
 * Mandatory: must continually map temporary WI[Reference Number] to ADO System.Id for relationships
-* Mandatory: fields that specify `markdown` must be provided as `Markdown` for format property
+* Mandatory: unless otherwise specified, `format` should always be provided and set to `Markdown`
 
 1. **Create Top Level Work Items**: mcp_ado_wit_create_work_item
 2. **Create Child Work Items**: mcp_ado_wit_add_child_work_items

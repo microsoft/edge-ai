@@ -43,7 +43,7 @@ resource snetAks 'Microsoft.Network/virtualNetworks/subnets@2024-05-01' = {
   parent: vnet
   name: 'subnet-${labelPrefixAks}'
   properties: {
-    addressPrefix: '10.0.3.0/24'
+    addressPrefix: '10.0.5.0/24'
     networkSecurityGroup: {
       id: nsg.id
     }
@@ -54,7 +54,7 @@ resource snetAksPod 'Microsoft.Network/virtualNetworks/subnets@2024-05-01' = {
   parent: vnet
   name: 'subnet-${labelPrefixAksPod}'
   properties: {
-    addressPrefix: '10.0.4.0/24'
+    addressPrefix: '10.0.6.0/24'
     networkSecurityGroup: {
       id: nsg.id
     }

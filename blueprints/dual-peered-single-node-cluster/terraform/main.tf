@@ -11,7 +11,8 @@ locals {
   cluster_b_name = "b"
 
   # Certificate resolution logic: use external_certificates if provided, otherwise generate them
-  certificates = var.external_certificates != null ? var.external_certificates : module.terraform_certificate_generation[0].certificates
+  certificates                    = var.external_certificates != null ? var.external_certificates : module.terraform_certificate_generation[0].certificates
+  default_outbound_access_enabled = var.should_enable_managed_outbound_access == false
 }
 
 // Cluster A - Primary cluster with first address space
@@ -41,6 +42,11 @@ module "cluster_a_cloud_security_identity" {
   instance        = var.instance
 
   aio_resource_group = module.cluster_a_cloud_resource_group.resource_group
+
+  # Private endpoint configuration
+  should_create_key_vault_private_endpoint = var.should_enable_private_endpoints
+  key_vault_private_endpoint_subnet_id     = var.should_enable_private_endpoints ? module.cluster_a_cloud_networking.subnet_id : null
+  key_vault_virtual_network_id             = var.should_enable_private_endpoints ? module.cluster_a_cloud_networking.virtual_network.id : null
 }
 
 module "cluster_a_cloud_observability" {
@@ -63,6 +69,11 @@ module "cluster_a_cloud_data" {
   instance        = var.instance
 
   resource_group = module.cluster_a_cloud_resource_group.resource_group
+
+  # Private endpoint configuration
+  should_enable_private_endpoint = var.should_enable_private_endpoints
+  private_endpoint_subnet_id     = var.should_enable_private_endpoints ? module.cluster_a_cloud_networking.subnet_id : null
+  virtual_network_id             = var.should_enable_private_endpoints ? module.cluster_a_cloud_networking.virtual_network.id : null
 }
 
 module "cluster_a_cloud_messaging" {
@@ -87,6 +98,12 @@ module "cluster_a_cloud_networking" {
 
   resource_group         = module.cluster_a_cloud_resource_group.resource_group
   virtual_network_config = var.cluster_a_virtual_network_config
+
+  default_outbound_access_enabled  = local.default_outbound_access_enabled
+  should_enable_nat_gateway        = var.should_enable_managed_outbound_access
+  nat_gateway_idle_timeout_minutes = var.nat_gateway_idle_timeout_minutes
+  nat_gateway_public_ip_count      = var.nat_gateway_public_ip_count
+  nat_gateway_zones                = var.nat_gateway_zones
 }
 
 module "cluster_a_cloud_vm_host" {
@@ -114,12 +131,16 @@ module "cluster_a_cloud_acr" {
 
   network_security_group = module.cluster_a_cloud_networking.network_security_group
   virtual_network        = module.cluster_a_cloud_networking.virtual_network
+  nat_gateway            = module.cluster_a_cloud_networking.nat_gateway
 
-  should_create_acr_private_endpoint = var.should_create_acr_private_endpoint
+  should_create_acr_private_endpoint = var.should_enable_private_endpoints
   subnet_address_prefixes_acr        = var.cluster_a_subnet_address_prefixes_acr
+  default_outbound_access_enabled    = local.default_outbound_access_enabled
 }
 
 module "cluster_a_cloud_kubernetes" {
+  count = var.should_create_aks ? 1 : 0
+
   source = "../../../src/000-cloud/070-kubernetes/terraform"
 
   environment     = var.environment
@@ -127,16 +148,26 @@ module "cluster_a_cloud_kubernetes" {
   location        = var.location
   instance        = var.instance
 
-  resource_group = module.cluster_a_cloud_resource_group.resource_group
+  resource_group    = module.cluster_a_cloud_resource_group.resource_group
+  should_create_aks = true
 
   network_security_group = module.cluster_a_cloud_networking.network_security_group
   virtual_network        = module.cluster_a_cloud_networking.virtual_network
+  nat_gateway            = module.cluster_a_cloud_networking.nat_gateway
 
   acr = module.cluster_a_cloud_acr.acr
 
-  should_create_aks               = var.should_create_aks
+  default_outbound_access_enabled = local.default_outbound_access_enabled
+
+  node_count                      = var.cluster_a_node_count
+  node_vm_size                    = var.cluster_a_node_vm_size
+  enable_auto_scaling             = var.cluster_a_enable_auto_scaling
+  min_count                       = var.cluster_a_min_count
+  max_count                       = var.cluster_a_max_count
+  dns_prefix                      = var.cluster_a_dns_prefix
   subnet_address_prefixes_aks     = var.cluster_a_subnet_address_prefixes_aks
   subnet_address_prefixes_aks_pod = var.cluster_a_subnet_address_prefixes_aks_pod
+  node_pools                      = var.cluster_a_node_pools
 }
 
 module "cluster_a_edge_cncf_cluster" {
@@ -252,6 +283,11 @@ module "cluster_b_cloud_security_identity" {
   instance        = var.instance
 
   aio_resource_group = module.cluster_b_cloud_resource_group.resource_group
+
+  # Private endpoint configuration
+  should_create_key_vault_private_endpoint = var.should_enable_private_endpoints
+  key_vault_private_endpoint_subnet_id     = var.should_enable_private_endpoints ? module.cluster_b_cloud_networking.subnet_id : null
+  key_vault_virtual_network_id             = var.should_enable_private_endpoints ? module.cluster_b_cloud_networking.virtual_network.id : null
 }
 
 module "cluster_b_cloud_observability" {
@@ -274,6 +310,11 @@ module "cluster_b_cloud_data" {
   instance        = var.instance
 
   resource_group = module.cluster_b_cloud_resource_group.resource_group
+
+  # Private endpoint configuration
+  should_enable_private_endpoint = var.should_enable_private_endpoints
+  private_endpoint_subnet_id     = var.should_enable_private_endpoints ? module.cluster_b_cloud_networking.subnet_id : null
+  virtual_network_id             = var.should_enable_private_endpoints ? module.cluster_b_cloud_networking.virtual_network.id : null
 }
 
 module "cluster_b_cloud_messaging" {
@@ -298,6 +339,12 @@ module "cluster_b_cloud_networking" {
 
   resource_group         = module.cluster_b_cloud_resource_group.resource_group
   virtual_network_config = var.cluster_b_virtual_network_config
+
+  default_outbound_access_enabled  = local.default_outbound_access_enabled
+  should_enable_nat_gateway        = var.should_enable_managed_outbound_access
+  nat_gateway_idle_timeout_minutes = var.nat_gateway_idle_timeout_minutes
+  nat_gateway_public_ip_count      = var.nat_gateway_public_ip_count
+  nat_gateway_zones                = var.nat_gateway_zones
 }
 
 module "cluster_b_cloud_vm_host" {
@@ -325,12 +372,16 @@ module "cluster_b_cloud_acr" {
 
   network_security_group = module.cluster_b_cloud_networking.network_security_group
   virtual_network        = module.cluster_b_cloud_networking.virtual_network
+  nat_gateway            = module.cluster_b_cloud_networking.nat_gateway
 
-  should_create_acr_private_endpoint = var.should_create_acr_private_endpoint
+  should_create_acr_private_endpoint = var.should_enable_private_endpoints
   subnet_address_prefixes_acr        = var.cluster_b_subnet_address_prefixes_acr
+  default_outbound_access_enabled    = local.default_outbound_access_enabled
 }
 
 module "cluster_b_cloud_kubernetes" {
+  count = var.should_create_aks ? 1 : 0
+
   source = "../../../src/000-cloud/070-kubernetes/terraform"
 
   environment     = var.environment
@@ -338,16 +389,25 @@ module "cluster_b_cloud_kubernetes" {
   location        = var.location
   instance        = var.instance
 
-  resource_group = module.cluster_b_cloud_resource_group.resource_group
+  resource_group    = module.cluster_b_cloud_resource_group.resource_group
+  should_create_aks = true
 
   network_security_group = module.cluster_b_cloud_networking.network_security_group
   virtual_network        = module.cluster_b_cloud_networking.virtual_network
+  nat_gateway            = module.cluster_b_cloud_networking.nat_gateway
 
   acr = module.cluster_b_cloud_acr.acr
 
-  should_create_aks               = var.should_create_aks
+  default_outbound_access_enabled = local.default_outbound_access_enabled
+  node_count                      = var.cluster_b_node_count
+  node_vm_size                    = var.cluster_b_node_vm_size
+  enable_auto_scaling             = var.cluster_b_enable_auto_scaling
+  min_count                       = var.cluster_b_min_count
+  max_count                       = var.cluster_b_max_count
+  dns_prefix                      = var.cluster_b_dns_prefix
   subnet_address_prefixes_aks     = var.cluster_b_subnet_address_prefixes_aks
   subnet_address_prefixes_aks_pod = var.cluster_b_subnet_address_prefixes_aks_pod
+  node_pools                      = var.cluster_b_node_pools
 }
 
 module "cluster_b_edge_cncf_cluster" {

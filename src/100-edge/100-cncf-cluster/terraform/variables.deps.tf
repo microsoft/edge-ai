@@ -30,6 +30,12 @@ variable "cluster_node_machine" {
   default = null
 }
 
+variable "cluster_node_machine_count" {
+  type        = number
+  description = "Number of cluster node machines referenced by cluster_node_machine when deploying scripts"
+  default     = null
+}
+
 variable "arc_onboarding_principal_ids" {
   type        = list(string)
   description = "The Principal IDs for the identity or service principal that will be used for onboarding the cluster to Arc"

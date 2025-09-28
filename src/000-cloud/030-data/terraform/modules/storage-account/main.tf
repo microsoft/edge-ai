@@ -5,7 +5,7 @@
  */
 
 locals {
-  storage_account_name = substr(lower("st${random_string.random_clean_prefix.result}${var.environment}aio${var.instance}"), 0, 24)
+  storage_account_name = substr(lower("st${random_string.random_clean_prefix.result}${replace(var.resource_prefix, "-", "")}${replace(var.environment, "-", "")}${var.instance}"), 0, 24)
 }
 
 /*
@@ -28,35 +28,150 @@ resource "azurerm_storage_account" "storage_account" {
   account_replication_type        = var.account_replication_type
   account_kind                    = var.account_kind
   min_tls_version                 = "TLS1_2"
-  is_hns_enabled                  = true
+  is_hns_enabled                  = var.is_hns_enabled
   shared_access_key_enabled       = false
   allow_nested_items_to_be_public = false
+  public_network_access_enabled   = var.should_enable_public_network_access
 
-  blob_properties {
-    delete_retention_policy {
-      days = var.blob_soft_delete_retention_days
-    }
-    container_delete_retention_policy {
-      days = var.container_soft_delete_retention_days
+  dynamic "blob_properties" {
+    for_each = var.is_hns_enabled ? [] : [1]
+    content {
+      delete_retention_policy {
+        days = var.blob_soft_delete_retention_days
+      }
+      container_delete_retention_policy {
+        days = var.container_soft_delete_retention_days
+      }
     }
   }
 }
 
 /*
- * Private Endpoint
+ * Private Endpoints
  */
 
-resource "azurerm_private_endpoint" "storage_pe" {
+resource "azurerm_private_endpoint" "storage_blob_pe" {
   count               = var.should_enable_private_endpoint ? 1 : 0
-  name                = "pep-${var.resource_prefix}-${var.environment}-storage-${var.instance}"
+  name                = "pe-blob-${azurerm_storage_account.storage_account.name}"
   location            = var.location
   resource_group_name = var.resource_group.name
   subnet_id           = var.private_endpoint_subnet_id
 
   private_service_connection {
-    name                           = "psc-${var.resource_prefix}-${var.environment}-storage-${var.instance}"
+    name                           = "storage-blob-privatelink"
     private_connection_resource_id = azurerm_storage_account.storage_account.id
     is_manual_connection           = false
-    subresource_names              = ["blob", "file"]
+    subresource_names              = ["blob"]
   }
+}
+
+resource "azurerm_private_endpoint" "storage_file_pe" {
+  count               = var.should_enable_private_endpoint ? 1 : 0
+  name                = "pe-file-${azurerm_storage_account.storage_account.name}"
+  location            = var.location
+  resource_group_name = var.resource_group.name
+  subnet_id           = var.private_endpoint_subnet_id
+
+  private_service_connection {
+    name                           = "storage-file-privatelink"
+    private_connection_resource_id = azurerm_storage_account.storage_account.id
+    is_manual_connection           = false
+    subresource_names              = ["file"]
+  }
+}
+
+resource "azurerm_private_endpoint" "storage_dfs_pe" {
+  count               = var.should_enable_private_endpoint ? 1 : 0
+  name                = "pe-dfs-${azurerm_storage_account.storage_account.name}"
+  location            = var.location
+  resource_group_name = var.resource_group.name
+  subnet_id           = var.private_endpoint_subnet_id
+
+  private_service_connection {
+    name                           = "storage-dfs-privatelink"
+    private_connection_resource_id = azurerm_storage_account.storage_account.id
+    is_manual_connection           = false
+    subresource_names              = ["dfs"]
+  }
+}
+
+resource "azurerm_private_dns_zone" "blob_dns_zone" {
+  count = var.should_enable_private_endpoint ? 1 : 0
+
+  name                = "privatelink.blob.core.windows.net"
+  resource_group_name = var.resource_group.name
+}
+
+resource "azurerm_private_dns_zone" "file_dns_zone" {
+  count = var.should_enable_private_endpoint ? 1 : 0
+
+  name                = "privatelink.file.core.windows.net"
+  resource_group_name = var.resource_group.name
+}
+
+resource "azurerm_private_dns_zone" "dfs_dns_zone" {
+  count = var.should_enable_private_endpoint ? 1 : 0
+
+  name                = "privatelink.dfs.core.windows.net"
+  resource_group_name = var.resource_group.name
+}
+
+resource "azurerm_private_dns_zone_virtual_network_link" "blob_vnet_link" {
+  count = var.should_enable_private_endpoint ? 1 : 0
+
+  name                  = "vnet-pzl-blob-${var.resource_prefix}-${var.environment}-${var.instance}"
+  resource_group_name   = var.resource_group.name
+  private_dns_zone_name = azurerm_private_dns_zone.blob_dns_zone[0].name
+  virtual_network_id    = var.virtual_network_id
+  registration_enabled  = false
+}
+
+resource "azurerm_private_dns_zone_virtual_network_link" "file_vnet_link" {
+  count = var.should_enable_private_endpoint ? 1 : 0
+
+  name                  = "vnet-pzl-file-${var.resource_prefix}-${var.environment}-${var.instance}"
+  resource_group_name   = var.resource_group.name
+  private_dns_zone_name = azurerm_private_dns_zone.file_dns_zone[0].name
+  virtual_network_id    = var.virtual_network_id
+  registration_enabled  = false
+}
+
+resource "azurerm_private_dns_zone_virtual_network_link" "dfs_vnet_link" {
+  count = var.should_enable_private_endpoint ? 1 : 0
+
+  name                  = "vnet-pzl-dfs-${var.resource_prefix}-${var.environment}-${var.instance}"
+  resource_group_name   = var.resource_group.name
+  private_dns_zone_name = azurerm_private_dns_zone.dfs_dns_zone[0].name
+  virtual_network_id    = var.virtual_network_id
+  registration_enabled  = false
+}
+
+resource "azurerm_private_dns_a_record" "blob_a_record" {
+  count = var.should_enable_private_endpoint ? 1 : 0
+
+  name                = azurerm_storage_account.storage_account.name
+  zone_name           = azurerm_private_dns_zone.blob_dns_zone[0].name
+  resource_group_name = var.resource_group.name
+  ttl                 = 300
+  records             = [azurerm_private_endpoint.storage_blob_pe[0].private_service_connection[0].private_ip_address]
+}
+
+resource "azurerm_private_dns_a_record" "file_a_record" {
+  count = var.should_enable_private_endpoint ? 1 : 0
+
+  name                = azurerm_storage_account.storage_account.name
+  zone_name           = azurerm_private_dns_zone.file_dns_zone[0].name
+  resource_group_name = var.resource_group.name
+  ttl                 = 300
+  records             = [azurerm_private_endpoint.storage_file_pe[0].private_service_connection[0].private_ip_address]
+}
+
+resource "azurerm_private_dns_a_record" "dfs_a_record" {
+  count = var.should_enable_private_endpoint ? 1 : 0
+
+  name                = azurerm_storage_account.storage_account.name
+  zone_name           = azurerm_private_dns_zone.dfs_dns_zone[0].name
+  resource_group_name = var.resource_group.name
+  ttl                 = 300
+  records             = [azurerm_private_endpoint.storage_dfs_pe[0].private_service_connection[0].private_ip_address]
 }

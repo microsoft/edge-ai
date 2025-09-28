@@ -12,6 +12,16 @@ output "cluster_a_virtual_network" {
   value       = module.cluster_a_cloud_networking.virtual_network
 }
 
+output "cluster_a_nat_gateway" {
+  description = "The Cluster A NAT gateway when managed outbound access is enabled."
+  value       = module.cluster_a_cloud_networking.nat_gateway
+}
+
+output "cluster_a_nat_gateway_public_ips" {
+  description = "The Cluster A NAT gateway public IP resources keyed by name."
+  value       = module.cluster_a_cloud_networking.nat_gateway_public_ips
+}
+
 output "cluster_a_arc_connected_cluster" {
   description = "The Cluster A Arc connected cluster."
   value       = module.cluster_a_edge_cncf_cluster.arc_connected_cluster
@@ -39,6 +49,16 @@ output "cluster_b_resource_group" {
 output "cluster_b_virtual_network" {
   description = "The Cluster B virtual network."
   value       = module.cluster_b_cloud_networking.virtual_network
+}
+
+output "cluster_b_nat_gateway" {
+  description = "The Cluster B NAT gateway when managed outbound access is enabled."
+  value       = module.cluster_b_cloud_networking.nat_gateway
+}
+
+output "cluster_b_nat_gateway_public_ips" {
+  description = "The Cluster B NAT gateway public IP resources keyed by name."
+  value       = module.cluster_b_cloud_networking.nat_gateway_public_ips
 }
 
 output "cluster_b_arc_connected_cluster" {

@@ -18,21 +18,43 @@ output "arc_onboarding_identity" {
 }
 
 output "aio_identity" {
-  value = {
-    id           = azurerm_user_assigned_identity.user_managed_identity_aio.id
-    name         = azurerm_user_assigned_identity.user_managed_identity_aio.name
-    principal_id = azurerm_user_assigned_identity.user_managed_identity_aio.principal_id
-    client_id    = azurerm_user_assigned_identity.user_managed_identity_aio.client_id
-    tenant_id    = azurerm_user_assigned_identity.user_managed_identity_aio.tenant_id
-  }
+  value = try({
+    id           = azurerm_user_assigned_identity.user_managed_identity_aio[0].id
+    name         = azurerm_user_assigned_identity.user_managed_identity_aio[0].name
+    principal_id = azurerm_user_assigned_identity.user_managed_identity_aio[0].principal_id
+    client_id    = azurerm_user_assigned_identity.user_managed_identity_aio[0].client_id
+    tenant_id    = azurerm_user_assigned_identity.user_managed_identity_aio[0].tenant_id
+  }, null)
 }
 
 output "secret_sync_identity" {
-  value = {
-    id           = azurerm_user_assigned_identity.user_managed_identity_secret_sync.id
-    name         = azurerm_user_assigned_identity.user_managed_identity_secret_sync.name
-    principal_id = azurerm_user_assigned_identity.user_managed_identity_secret_sync.principal_id
-    client_id    = azurerm_user_assigned_identity.user_managed_identity_secret_sync.client_id
-    tenant_id    = azurerm_user_assigned_identity.user_managed_identity_secret_sync.tenant_id
-  }
+  value = try({
+    id           = azurerm_user_assigned_identity.user_managed_identity_secret_sync[0].id
+    name         = azurerm_user_assigned_identity.user_managed_identity_secret_sync[0].name
+    principal_id = azurerm_user_assigned_identity.user_managed_identity_secret_sync[0].principal_id
+    client_id    = azurerm_user_assigned_identity.user_managed_identity_secret_sync[0].client_id
+    tenant_id    = azurerm_user_assigned_identity.user_managed_identity_secret_sync[0].tenant_id
+  }, null)
+}
+
+output "ml_workload_identity" {
+  description = "The AzureML workload user-assigned identity."
+  value = try({
+    id           = azurerm_user_assigned_identity.ml_workload[0].id
+    client_id    = azurerm_user_assigned_identity.ml_workload[0].client_id
+    principal_id = azurerm_user_assigned_identity.ml_workload[0].principal_id
+    name         = azurerm_user_assigned_identity.ml_workload[0].name
+    tenant_id    = azurerm_user_assigned_identity.ml_workload[0].tenant_id
+  }, null)
+}
+
+output "aks_identity" {
+  description = "The AKS user-assigned identity for custom private DNS zone scenarios."
+  value = try({
+    id           = azurerm_user_assigned_identity.aks_identity[0].id
+    name         = azurerm_user_assigned_identity.aks_identity[0].name
+    principal_id = azurerm_user_assigned_identity.aks_identity[0].principal_id
+    client_id    = azurerm_user_assigned_identity.aks_identity[0].client_id
+    tenant_id    = azurerm_user_assigned_identity.aks_identity[0].tenant_id
+  }, null)
 }

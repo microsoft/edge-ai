@@ -40,8 +40,7 @@ run "create_custom_configuration" {
     container_soft_delete_retention_days = 14
     data_lake_filesystem_name            = "customdatalake"
     data_lake_blob_container_name        = "customcontainer"
-    should_enable_private_endpoint       = true
-    private_endpoint_subnet_id           = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/testrg/providers/Microsoft.Network/virtualNetworks/testvnet/subnets/testsubnet"
+    should_enable_private_endpoint       = false
   }
 }
 

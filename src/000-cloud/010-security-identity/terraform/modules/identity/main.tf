@@ -56,13 +56,33 @@ resource "azurerm_user_assigned_identity" "arc_onboarding" {
 }
 
 resource "azurerm_user_assigned_identity" "user_managed_identity_secret_sync" {
+  count = var.should_create_secret_sync_identity ? 1 : 0
+
   location            = var.location
   name                = "id-${var.resource_prefix}-sse-${var.environment}-${var.instance}"
   resource_group_name = var.resource_group.name
 }
 
 resource "azurerm_user_assigned_identity" "user_managed_identity_aio" {
+  count = var.should_create_aio_identity ? 1 : 0
+
   location            = var.location
   name                = "id-${var.resource_prefix}-aio-${var.environment}-${var.instance}"
+  resource_group_name = var.resource_group.name
+}
+
+resource "azurerm_user_assigned_identity" "ml_workload" {
+  count = var.should_create_ml_workload_identity ? 1 : 0
+
+  location            = var.location
+  name                = "id-${var.resource_prefix}-mlw-${var.environment}-${var.instance}"
+  resource_group_name = var.resource_group.name
+}
+
+resource "azurerm_user_assigned_identity" "aks_identity" {
+  count = var.should_create_aks_identity ? 1 : 0
+
+  location            = var.location
+  name                = "id-${var.resource_prefix}-aks-${var.environment}-${var.instance}"
   resource_group_name = var.resource_group.name
 }

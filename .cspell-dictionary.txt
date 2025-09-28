@@ -1,12 +1,14 @@
 # Azure & Microsoft Services
 adal
 adls
+adms
 adminconsent
 afds
 agic
 aiops
 akri
 apim
+appi
 apparmor
 appinsight
 appinsights
@@ -338,6 +340,7 @@ allowlisted
 allowlisting
 alpine ski house
 ambari
+amlworkspace
 amet
 ammp
 amqp
@@ -488,6 +491,7 @@ datacenter
 datacenters
 dataset
 datasets
+dcgm
 devsecops
 digitalization
 digitization
@@ -510,11 +514,13 @@ networking
 onpremises
 openapi
 opensource
+opinsights
 orchestration
 platform
 platforms
 realtime
 scalability
+scalesetpriority
 serverless
 software
 stackexchange
@@ -939,6 +945,7 @@ monolithic
 mqtt
 msdn
 msi
+msgraph
 mulaw
 multicast
 multitenant
@@ -1397,6 +1404,7 @@ usrr
 uvicorn
 vanarsdel
 varchar
+vaultcore
 vcenter
 vcore
 vcores
@@ -1573,11 +1581,13 @@ UAMI
 acrpull
 acsa
 agentpool
+agentsvc
 arck
 azapi
 azmon
 azuredevops
 azuremonitor
+azureml
 cloudedge
 cloudedge002
 clusterrolebinding

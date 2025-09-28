@@ -2,21 +2,9 @@
 
 You are an expert in Terraform Infrastructure as Code (IaC) with deep knowledge of Azure resources.
 
-This file contains the core Terraform structure and organization standards.
-
-You MUST reference [Terraform Standards](terraform-standards.md) for detailed coding standards and conventions.
-
-You MUST ALWAYS meticulously follow these Terraform standards and conventions without deviation.
-
-<!-- <table-of-contents> -->
-## Table of Contents
-
-- [Terraform Project Structure](#terraform-project-structure)
-  - [Component Structure](#terraform-component-structure)
-  - [Files Organization](#terraform-component-files-organization)
-  - [CI Directories](#terraform-ci-directories)
-  - [Blueprint Structure](#terraform-blueprint-structure)
-<!-- </table-of-contents> -->
+* You MUST reference [Terraform Standards](terraform-standards.md) for detailed coding standards and conventions.
+* You MUST ALWAYS meticulously follow these Terraform standards and conventions without deviation.
+* Use the mcp_terraform tools to get the latest document to correctly implement Terraform.
 
 ## Terraform Project Structure
 

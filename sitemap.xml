@@ -88,13 +88,6 @@
   </url>
 
   <url>
-    <loc>https://azure.github.io/edge-ai/#/blueprints/full-arc-multi-node-cluster/</loc>
-    <lastmod>2025-06-13</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
     <loc>https://azure.github.io/edge-ai/#/blueprints/minimum-single-node-cluster/</loc>
     <lastmod>2025-06-13</lastmod>
     <changefreq>monthly</changefreq>

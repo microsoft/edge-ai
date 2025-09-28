@@ -35,8 +35,8 @@ Deploys resources necessary to enable Azure IoT Operations (AIO) with Customer M
 | aio\_ca | CA certificate for the MQTT broker, can be either Root CA or Root CA with any number of Intermediate CAs. If not provided, a self-signed Root CA with a intermediate will be generated. Only valid when Trust Source is set to CustomerManaged | ```object({ root_ca_cert_pem = string ca_cert_chain_pem = string ca_key_pem = string })``` | n/a | yes |
 | connected\_cluster\_name | The name of the connected cluster to deploy Azure IoT Operations to | `string` | n/a | yes |
 | customer\_managed\_trust\_settings | Values for AIO CustomerManaged trust resources | ```object({ issuer_name = string issuer_kind = string configmap_name = string configmap_key = string })``` | n/a | yes |
-| key\_vault | The name and id of the existing key vault for Azure IoT Operations instance | ```object({ name = string id = string })``` | n/a | yes |
-| resource\_group | Name and ID of the pre-existing resource group in which to create resources | ```object({ id = string name = string })``` | n/a | yes |
+| key\_vault | The Key Vault object containing id, name, and vault\_uri properties | ```object({ name = string id = string })``` | n/a | yes |
+| resource\_group | Resource group object containing name and id where resources will be deployed | ```object({ id = string name = string })``` | n/a | yes |
 | sse\_user\_managed\_identity | Secret Sync Extension user managed identity id and client id | ```object({ id = string client_id = string })``` | n/a | yes |
 
 ## Outputs

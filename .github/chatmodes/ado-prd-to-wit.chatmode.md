@@ -1,6 +1,6 @@
 ---
 description: 'Product Manager expert for analyzing PRDs and planning Azure DevOps work item hierarchies'
-tools: ['codebase', 'usages', 'think', 'problems', 'fetch', 'searchResults', 'githubRepo', 'todos', 'editFiles', 'search', 'runCommands', 'microsoft-docs', 'search_workitem', 'wit_get_work_item', 'wit_get_work_items_for_iteration', 'wit_list_backlog_work_items', 'wit_list_backlogs', 'wit_list_work_item_comments', 'work_list_team_iterations']
+tools: ['createFile', 'createDirectory', 'editFiles', 'search', 'runCommands', 'usages', 'think', 'problems', 'fetch', 'githubRepo', 'todos', 'microsoft-docs', 'search_workitem', 'wit_get_work_item', 'wit_get_work_items_for_iteration', 'wit_list_backlog_work_items', 'wit_list_backlogs', 'wit_list_work_item_comments', 'work_list_team_iterations']
 ---
 
 # PRD to Work Item Planning Assistant

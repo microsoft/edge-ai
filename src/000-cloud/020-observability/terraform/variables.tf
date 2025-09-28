@@ -56,6 +56,28 @@ variable "app_insights_retention_in_days" {
   default     = 30
 }
 
+/*
+ * Private Endpoint Configuration - Optional
+ */
+
+variable "should_enable_private_endpoints" {
+  type        = bool
+  description = "Whether to enable private endpoints for Azure Monitor and Application Insights."
+  default     = false
+}
+
+variable "private_endpoint_subnet_id" {
+  type        = string
+  description = "The ID of the subnet where private endpoints will be created. Required if should_enable_private_endpoints is true."
+  default     = null
+}
+
+variable "virtual_network_id" {
+  type        = string
+  description = "The ID of the virtual network for private DNS zone linking. Required if should_enable_private_endpoints is true."
+  default     = null
+}
+
 variable "tags" {
   type        = map(string)
   description = "Tags to apply to all resources"

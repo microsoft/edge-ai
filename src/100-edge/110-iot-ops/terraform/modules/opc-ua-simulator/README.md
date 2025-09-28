@@ -21,6 +21,6 @@ Deploy and configure the OPC UA Simulator
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | connected\_cluster\_name | The name of the connected cluster to deploy Azure IoT Operations to | `string` | n/a | yes |
-| resource\_group | Name and ID of the pre-existing resource group in which to create resources | ```object({ id = string name = string })``` | n/a | yes |
+| resource\_group | Resource group object containing name and id where resources will be deployed | ```object({ id = string name = string })``` | n/a | yes |
 <!-- markdown-table-prettify-ignore-end -->
 <!-- END_TF_DOCS -->

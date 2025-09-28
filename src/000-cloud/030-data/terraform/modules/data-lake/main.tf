@@ -6,18 +6,24 @@
  */
 
 resource "azurerm_storage_container" "data_lake" {
+  depends_on = [azurerm_role_assignment.data_lake_owner]
+
   name                  = var.data_lake_blob_container_name
   storage_account_id    = var.storage_account.id
   container_access_type = var.container_access_type
 }
 
 resource "azurerm_storage_data_lake_gen2_filesystem" "data_lake" {
+  count      = var.is_hns_enabled ? 1 : 0
+  depends_on = [azurerm_role_assignment.data_lake_owner]
+
   name               = var.data_lake_filesystem_name
   storage_account_id = var.storage_account.id
 }
 
 resource "azurerm_storage_share" "data_lake" {
-  count = var.should_create_data_lake_file_share ? 1 : 0
+  count      = var.should_create_data_lake_file_share ? 1 : 0
+  depends_on = [azurerm_role_assignment.data_lake_owner]
 
   name               = var.file_share_name
   quota              = var.file_share_quota_gb

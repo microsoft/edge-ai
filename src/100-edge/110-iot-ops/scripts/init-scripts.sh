@@ -5,21 +5,48 @@ set +e
 
 # Function to clean up resources
 cleanup() {
+  local exit_code=$?
   echo "Cleaning up..."
 
   [ -f "$kube_config_file" ] && rm "$kube_config_file" && echo "Deleted kubeconfig file"
 
   # Kill the proxy process group
-  if kill -INT -"$proxy_pgid"; then
-    echo "Killing proxy process $proxy_pid and process group $proxy_pgid with SIGINT, waiting for completion"
-    # Monitor for process to exit, kill -0 only checks for existence of process
-    while kill -0 "$proxy_pid" 2>/dev/null; do
-      echo "Waiting for process to exit..."
-      sleep 1
-    done
+  if [[ ${proxy_pid:-} ]]; then
+    if [[ ! ${proxy_pgid:-} ]]; then
+      proxy_pgid="$proxy_pid"
+    fi
+
+    if [[ ${proxy_pgid:-} ]]; then
+      if kill -INT -- "-${proxy_pgid}"; then
+        echo "Killing proxy process $proxy_pid and process group $proxy_pgid with SIGINT, waiting for completion"
+      else
+        echo "Process group signal failed, attempting to signal proxy process $proxy_pid"
+        kill -INT "$proxy_pid"
+      fi
+
+      local wait_elapsed=0
+      while kill -0 "$proxy_pid" 2>/dev/null; do
+        echo "Waiting for process to exit..."
+        sleep 1
+        ((wait_elapsed += 1))
+        if ((wait_elapsed == 5)); then
+          echo "Proxy still running, sending SIGTERM..."
+          if ! kill -TERM -- "-${proxy_pgid}"; then
+            kill -TERM "$proxy_pid"
+          fi
+        elif ((wait_elapsed > 10)); then
+          echo "Proxy did not exit after SIGTERM, sending SIGKILL..."
+          if ! kill -KILL -- "-${proxy_pgid}"; then
+            kill -KILL "$proxy_pid"
+          fi
+        fi
+      done
+    fi
   fi
 
   echo "Cleanup done"
+  trap - EXIT INT TERM
+  exit "$exit_code"
 }
 
 check_connected_to_cluster() {
@@ -36,14 +63,32 @@ start_proxy() {
   kube_config_file=$(mktemp -t "${TF_CONNECTED_CLUSTER_NAME}.XXX")
   # Start proxy in its own process group with -m
   set -m
+  local -a proxy_args=(
+    "-n" "$TF_CONNECTED_CLUSTER_NAME"
+    "-g" "$TF_RESOURCE_GROUP_NAME"
+    "--port" "9800"
+    "--file" "$kube_config_file"
+  )
+  local deploy_user_token=""
   if [[ $DEPLOY_USER_TOKEN_SECRET ]]; then
     echo "Getting Deploy User Token..."
-    K8S_PROXY_TOKEN=" --token $(az keyvault secret show --name "$DEPLOY_USER_TOKEN_SECRET" --vault-name "$DEPLOY_KEY_VAULT_NAME" --query "value" -o tsv)"
+    if ! deploy_user_token=$(az keyvault secret show \
+      --name "$DEPLOY_USER_TOKEN_SECRET" \
+      --vault-name "$DEPLOY_KEY_VAULT_NAME" \
+      --query "value" \
+      -o tsv); then
+      echo "ERROR: failed to retrieve Deploy User Token from Key Vault" >&2
+      exit 1
+    fi
     echo "Got Deploy User Token..."
+    proxy_args+=("--token" "$deploy_user_token")
   fi
-  az connectedk8s proxy -n "$TF_CONNECTED_CLUSTER_NAME" -g "$TF_RESOURCE_GROUP_NAME" --port 9800 --file "$kube_config_file""$K8S_PROXY_TOKEN" >/dev/null &
+  az connectedk8s proxy "${proxy_args[@]}" >/dev/null &
   export proxy_pid=$!
-  proxy_pgid=$(ps -o pgid= -p $proxy_pid | tr -d ' ')
+  proxy_pgid=$(ps -o pgid= -p "$proxy_pid" 2>/dev/null | tr -d ' ')
+  if [[ ! $proxy_pgid ]]; then
+    proxy_pgid="$proxy_pid"
+  fi
   export proxy_pgid
   set +m
 
@@ -72,7 +117,7 @@ if check_connected_to_cluster; then
   echo "Cluster is already available from kubectl, continuing..."
 else
   # Trap any error or exit to cleanup
-  trap cleanup EXIT
+  trap cleanup EXIT INT TERM
 
   echo "Starting 'az connectedk8s proxy'"
 

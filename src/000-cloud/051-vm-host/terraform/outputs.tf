@@ -58,7 +58,6 @@ output "username" {
 output "virtual_machines" {
   description = "The created virtual machines."
   value       = module.virtual_machine[*].virtual_machine
-  sensitive   = true
 }
 
 output "vm_id" {

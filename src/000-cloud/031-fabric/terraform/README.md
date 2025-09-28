@@ -43,7 +43,7 @@ Contains all the resources needed for Fabric based resources.
 |------|-------------|------|---------|:--------:|
 | environment | Environment for all resources in this module: dev, test, or prod | `string` | n/a | yes |
 | location | Azure region where all resources will be deployed | `string` | n/a | yes |
-| resource\_group | n/a | ```object({ name = string })``` | n/a | yes |
+| resource\_group | Resource group object containing name and id where resources will be deployed | ```object({ name = string })``` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
 | additional\_kql\_databases | Additional KQL databases to create within the eventhouse. | ```map(object({ display_name = string description = string }))``` | `{}` | no |
 | eventhouse\_description | The description of the Microsoft Fabric eventhouse | `string` | `"Eventhouse for real-time analytics of Edge device data"` | no |

@@ -22,6 +22,7 @@ Deploys Azure Container Registry with a private endpoint and private DNS zone.
 |------|------|
 | [azurerm_container_registry.acr](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/container_registry) | resource |
 | [azurerm_private_dns_a_record.a_record](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_dns_a_record) | resource |
+| [azurerm_private_dns_a_record.data_endpoint](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_dns_a_record) | resource |
 | [azurerm_private_dns_zone.dns_zone](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_dns_zone) | resource |
 | [azurerm_private_dns_zone_virtual_network_link.vnet_link](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_dns_zone_virtual_network_link) | resource |
 | [azurerm_private_endpoint.pep](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_endpoint) | resource |
@@ -45,5 +46,7 @@ Deploys Azure Container Registry with a private endpoint and private DNS zone.
 | Name | Description |
 |------|-------------|
 | acr | The Azure Container Registry resource created by this module. |
+| private\_dns\_zone | The private DNS zone for Azure Container Registry. |
+| private\_endpoint | The private endpoint resource for Azure Container Registry. |
 <!-- markdown-table-prettify-ignore-end -->
 <!-- END_TF_DOCS -->

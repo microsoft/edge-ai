@@ -38,7 +38,7 @@ Contains all the resources needed for Cloud based data persistence.
 |------|-------------|------|---------|:--------:|
 | environment | Environment for all resources in this module: dev, test, or prod | `string` | n/a | yes |
 | location | Azure region where all resources will be deployed | `string` | n/a | yes |
-| resource\_group | n/a | ```object({ name = string id = optional(string) })``` | n/a | yes |
+| resource\_group | Resource group object containing name and id where resources will be deployed | ```object({ name = string id = optional(string) })``` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
 | blob\_soft\_delete\_retention\_days | Number of days to retain deleted blobs | `number` | `7` | no |
 | container\_access\_type | The Access Level for the container (blob, container or private) | `string` | `"private"` | no |
@@ -55,9 +55,12 @@ Contains all the resources needed for Cloud based data persistence.
 | should\_create\_data\_lake\_file\_share | Whether to create a file share | `bool` | `false` | no |
 | should\_create\_schema\_registry | Whether to crate the Schema Registry resources. | `bool` | `true` | no |
 | should\_enable\_private\_endpoint | Whether to create a private endpoint for the storage account | `bool` | `false` | no |
+| should\_enable\_public\_network\_access | Whether to enable public network access for the storage account | `bool` | `true` | no |
+| storage\_account\_is\_hns\_enabled | Whether to enable Hierarchical Namespace (HNS) for Azure Data Lake Storage Gen2. Note: Azure ML workspaces do not support HNS-enabled storage accounts. | `bool` | `true` | no |
 | storage\_account\_kind | Defines the Kind of account (BlobStorage, BlockBlobStorage, FileStorage, Storage or StorageV2) | `string` | `"StorageV2"` | no |
 | storage\_account\_replication | Defines the type of replication to use for this storage account (LRS, GRS, RAGRS, ZRS) | `string` | `"LRS"` | no |
 | storage\_account\_tier | Defines the Tier to use for this storage account (Standard or Premium) | `string` | `"Standard"` | no |
+| virtual\_network\_id | The ID of the virtual network to link to the private DNS zones. Required if should\_enable\_private\_endpoint is true. | `string` | `null` | no |
 
 ## Outputs
 
@@ -68,5 +71,7 @@ Contains all the resources needed for Cloud based data persistence.
 | data\_lake\_filesystem\_name | The name for the Data Lake Gen2 Filesystem. |
 | schema\_registry | The new ADR Schema Registry resource. |
 | storage\_account | The new Storage Account resource. |
+| storage\_account\_private\_dns\_zones | The private DNS zones for Storage Account. |
+| storage\_account\_private\_endpoints | The private endpoints for Storage Account. |
 <!-- markdown-table-prettify-ignore-end -->
 <!-- END_TF_DOCS -->

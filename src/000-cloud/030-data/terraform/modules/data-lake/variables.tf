@@ -37,3 +37,8 @@ variable "data_lake_filesystem_name" {
   type        = string
   description = "Name of the Data Lake Gen2 filesystem to create"
 }
+
+variable "is_hns_enabled" {
+  description = "Whether to enable Hierarchical Namespace (HNS) for Azure Data Lake Storage Gen2. Note: Azure ML workspaces do not support HNS-enabled storage accounts."
+  type        = bool
+}

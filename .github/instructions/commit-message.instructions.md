@@ -54,6 +54,7 @@ Scopes MUST be one of the following:
 - `(scripts)`
 - `(adrs)`
 - `(build)`
+- `(azureml)`
 
 ## Description
 

@@ -62,3 +62,9 @@ variable "should_add_current_user_cluster_admin" {
   description = "Gives the current logged in user cluster-admin permissions with the new cluster."
   default     = true
 }
+
+variable "should_enable_private_endpoints" {
+  type        = bool
+  description = "Whether to enable private endpoints for Key Vault and Storage Account"
+  default     = false
+}

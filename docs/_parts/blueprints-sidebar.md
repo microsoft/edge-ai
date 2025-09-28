@@ -8,7 +8,6 @@
   - Component Overview
   - [Source Code Overview](blueprints/README.md)
   - [Dual Peered Single Node Cluster](blueprints/dual-peered-single-node-cluster/README.md)
-  - [Full Arc Multi Node Cluster](blueprints/full-arc-multi-node-cluster/README.md)
   - [Full Multi Node Cluster](blueprints/full-multi-node-cluster/README.md)
   - [Full Single Node Cluster](blueprints/full-single-node-cluster/README.md)
   - [Minimum Single Node Cluster](blueprints/minimum-single-node-cluster/README.md)
@@ -36,7 +35,6 @@
     - [Secret Provider Class](blueprints/dual-peered-single-node-cluster/terraform/modules/secret-provider-class/README.md)
     - [Terraform Certificate Generation](blueprints/dual-peered-single-node-cluster/terraform/modules/terraform-certificate-generation/README.md)
   - [Fabric](blueprints/fabric/terraform/README.md)
-  - [Full Arc Multi Node Cluster](blueprints/full-arc-multi-node-cluster/terraform/README.md)
   - [Full Multi Node Cluster](blueprints/full-multi-node-cluster/terraform/README.md)
   - [Full Single Node Cluster](blueprints/full-single-node-cluster/terraform/README.md)
   - [Minimum Single Node Cluster](blueprints/minimum-single-node-cluster/terraform/README.md)

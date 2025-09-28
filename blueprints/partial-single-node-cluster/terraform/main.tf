@@ -29,11 +29,16 @@ module "cloud_security_identity" {
   source = "../../../src/000-cloud/010-security-identity/terraform"
 
   environment     = var.environment
+  location        = var.location
   resource_prefix = var.resource_prefix
   instance        = var.instance
-  location        = var.location
 
   aio_resource_group = module.cloud_resource_group.resource_group
+
+  # Private endpoint configuration
+  should_create_key_vault_private_endpoint = var.should_enable_private_endpoints
+  key_vault_private_endpoint_subnet_id     = var.should_enable_private_endpoints ? module.cloud_networking.subnet_id : null
+  key_vault_virtual_network_id             = var.should_enable_private_endpoints ? module.cloud_networking.virtual_network.id : null
 }
 
 module "cloud_networking" {
