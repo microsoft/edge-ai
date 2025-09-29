@@ -1,7 +1,6 @@
 ---
 mode: 'agent'
 description: 'Provides prompt instructions for pull request (PR) generation - Brought to you by microsoft/edge-ai'
-model: 'Claude Sonnet 4'
 ---
 
 # Pull Request (PR) Generation Instructions
@@ -19,35 +18,42 @@ You WILL NEVER create follow-up tasks for documentation or tests.
 
 ## Process Overview
 
-1.  **`pr-reference.xml` Handling** (located at [.copilot-tracking/pr/pr-reference.xml](../../.copilot-tracking/pr/pr-reference.xml)):
-    *   **If `pr-reference.xml` is provided**:
-        *   You WILL write its total line count to the chat (e.g., "Lines: 7641").
-        *   You WILL proceed to step 2.
-    *   **If `pr-reference.xml` is NOT provided**:
-        *   **MANDATORY**: You MUST use the `./scripts/pr-ref-gen.sh` script to create the `pr-reference.xml`, you will not use any other commands to get the git status or diffs.
-        *   You WILL create `pr-reference.xml` by running the `./scripts/pr-ref-gen.sh` script.
-            *   Default: `./scripts/pr-ref-gen.sh --no-md-diff` (excludes markdown).
-            *   If `${input:includeMarkdown}` is true: `./scripts/pr-ref-gen.sh` (includes markdown).
-            *   If a different base branch is specified via `${input:branch}`: `./scripts/pr-ref-gen.sh --no-md-diff --base-branch ${input:branch}` (adjust markdown inclusion as needed).
-        *   You WILL note the total line count from the script's output.
-        *   You WILL write this line count to the chat.
+### Step 1: `pr-reference.xml` Handling (located at `.copilot-tracking/pr/pr-reference.xml`)
 
-2.  **CRITICAL: `pr-reference.xml` Analysis**:
-    *   You MUST read and analyze the ENTIRE `pr-reference.xml` file. This file contains the current branch name, commit history (compared to `main` or the specified `${input:branch}`), and the full detailed diff.
-    *   `pr-reference.xml` WILL ONLY be used to generate [pr.md](../../pr.md).
-    *   You MUST verify you have read the exact number of lines reported AND reached the closing tags `</full_diff>` and `</commit_history>` before proceeding.
-    *   You MUST gain a comprehensive understanding of ALL changes before writing any PR content. ALL statements in the PR description MUST be based on this complete analysis.
+*   **If `pr-reference.xml` is provided**:
+    *   Verify with the user if they want to use the existing `pr-reference.xml` file that you found before proceeding. If the user does not want to use the existing `pr-reference.xml` file, then use `rm` to delete the `pr-reference.xml` then move onto "If `pr-reference.xml` is NOT provided.
+    *   You WILL write its total line count to the chat (e.g., "Lines: 7641").
+    *   You WILL proceed to Step 2 of this Process.
+*   **If `pr-reference.xml` is NOT provided**:
+    *   Use `git fetch {{remote}} {{branch}}` determined from `${input:branch:origin/main}`, to update the remote branch to build a correct pull request.
+    *   You MUST use the `./scripts/pr-ref-gen.sh` script to create the `pr-reference.xml`, you will not use any other commands to get the git status or diffs.
+    *   You WILL create `pr-reference.xml` by running the `./scripts/pr-ref-gen.sh` script.
+        *   Default: `./scripts/pr-ref-gen.sh --base-branch origin/main`.
+        *   If `${input:includeMarkdown}` is false: `./scripts/pr-ref-gen.sh --no-md-diff` (excludes markdown).
+        *   If a different base branch is specified via `${input:branch}`: `./scripts/pr-ref-gen.sh --base-branch ${input:branch}` (adjust markdown inclusion as needed).
+    *   You WILL note the total line count from the script's output.
+    *   You WILL write this line count to the chat.
 
-3.  **PR Description Generation**:
-    *   Only AFTER the complete analysis of `pr-reference.xml`, You WILL generate a Markdown PR description in a file named `pr.md`.
-    *   If `pr.md` already exists, You WILL overwrite it. Do not read its existing content.
+### Step 2: `pr-reference.xml` Analysis
 
-4.  **Security and Compliance Analysis**:
-    *   After PR generation, You WILL analyze `pr-reference.xml` for security/compliance issues (see "Security Analysis Output" section).
-    *   You WILL output this analysis to the chat.
+*   You MUST read and analyze the ENTIRE `pr-reference.xml` file which contains the current branch name, commit history (compared to `origin/main` or the specified `${input:branch}`), and the full detailed diff.
+*   `pr-reference.xml` WILL ONLY be used to generate `pr.md`.
+*   You MUST verify you have read the exact number of lines reported AND reached the closing tags `</full_diff>` and `</commit_history>` before proceeding.
+*   You MUST gain a comprehensive understanding of ALL changes before writing any PR content. ALL statements in the PR description MUST be based on this complete analysis.
 
-5.  **FINAL STEP: Cleanup**:
-    *   You WILL delete the `pr-reference.xml` file.
+### Step 3: PR Description Generation
+
+*   Only AFTER the complete analysis of `pr-reference.xml`, You WILL generate a Markdown PR description in a file named `pr.md`.
+*   If `pr.md` already exists then use `rm` to delete the `pr.md` first WITHOUT reading it.
+
+### Step 4: Security and Compliance Analysis
+
+*   After PR generation, You WILL analyze `pr-reference.xml` for security/compliance issues (see "Security Analysis Output" section).
+*   You WILL output this analysis to the chat.
+
+### Step 5: Cleanup
+
+*   You WILL delete the `pr-reference.xml` file.
 
 ## PR Content Generation Principles
 
@@ -127,41 +133,7 @@ You WILL ALWAYS use the following Markdown format:
 
 ### Type and Scope Reference
 
-**Types**:
-
-*   **feat**: New feature
-*   **fix**: Bug fix
-*   **docs**: Documentation changes
-*   **style**: Formatting changes (e.g., white-space, fixing linter warnings that are not errors)
-*   **refactor**: Code restructuring without changing external behavior
-*   **test**: Adding or modifying tests
-*   **chore**: Cleanup, repository administration changes
-*   **perf**: Performance improvements
-
-**Common Scopes** (Use if applicable; otherwise, determine from context. This list is not exhaustive.):
-
-*   **iot-ops**: IoT Operations components
-*   **cncf-cluster**: CNCF cluster components
-*   **observability**: Monitoring components
-*   **blueprints**: Blueprint definitions
-*   **security-identity**: Security components
-*   **data**: Data storage components
-*   **fabric**: Fabric components
-*   **aks-acr**: AKS and ACR components
-*   **messaging**: Messaging components
-*   **vm-host**: VM host components
-*   **application**: Application components
-*   **tools**: Tools and utilities
-*   **starter-kit**: Starter Kit
-*   **repo**: Repository-wide changes (e.g., CI, linting configurations)
-*   **docs**: Documentation-only changes not tied to a specific component
-*   **prompts**: Prompt file changes in `.github/prompts`
-*   **instructions**: Instruction file changes in `.github/instructions` or `copilot/`
-*   **chatmodes**: Chat mode file changes in `.github/chatmodes`
-*   **scripts**: Script files typically for build (not including starter-kit)
-*   **pipelines**: YAML or Markdown files under `.azdo/**` or `azure-pipelines.yml`
-*   **workflows**: YAML or Markdown files under `.github/workflows/**`
-*   **config**: YAML, JSON, INI, TOML files typically at the root of the project
+Determine from commits provided in `pr-reference.xml`
 
 ## Pre-Generation Checklist
 
@@ -196,3 +168,7 @@ After PR generation, You WILL analyze `pr-reference.xml` and provide the followi
 6.  ✅/❌ - Conventional commits compliance (for title and commit messages reviewed)
 
 You WILL provide this analysis separately AFTER generating the PR description, at the very end of the chat conversation.
+
+---
+
+Follow each step in the Process for Pull Request Generation and create a new pr.md file.

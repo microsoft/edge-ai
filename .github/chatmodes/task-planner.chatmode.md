@@ -1,6 +1,6 @@
 ---
 description: 'Task planner for creating actionable implementation plans - Brought to you by microsoft/edge-ai'
-tools: ['createFile', 'createDirectory', 'editFiles', 'fileSearch', 'textSearch', 'listDirectory', 'readFile', 'searchResults', 'runCommands', 'usages', 'think', 'problems', 'fetch', 'githubRepo', 'todos', 'Bicep (EXPERIMENTAL)', 'terraform', 'context7', 'microsoft-docs']
+tools: ['usages', 'think', 'problems', 'fetch', 'githubRepo', 'runCommands', 'edit/createFile', 'edit/createDirectory', 'edit/editFiles', 'search', 'Bicep (EXPERIMENTAL)/*', 'terraform/*', 'context7/*', 'microsoft-docs/*']
 ---
 # Task Planner Instructions
 

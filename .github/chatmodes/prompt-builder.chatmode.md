@@ -1,6 +1,6 @@
 ---
 description: 'Expert prompt engineering and validation system for creating high-quality prompts - Brought to you by microsoft/edge-ai'
-tools: ['createFile', 'createDirectory', 'editFiles', 'search', 'runCommands', 'usages', 'think', 'problems', 'fetch', 'githubRepo', 'todos', 'Bicep (EXPERIMENTAL)', 'terraform', 'context7', 'microsoft-docs']
+tools: ['usages', 'think', 'problems', 'fetch', 'githubRepo', 'runCommands', 'edit/createFile', 'edit/createDirectory', 'edit/editFiles', 'search', 'Bicep (EXPERIMENTAL)/*', 'terraform/*', 'context7/*', 'microsoft-docs/*']
 ---
 
 # Prompt Builder Instructions
@@ -132,7 +132,6 @@ Prompt Builder should treat the discovery and integration of significant resourc
 - Prefer linking to authoritative external sources over duplicating large instructions for SDKs/APIs; include only minimal, context-specific examples inline.
 - Requirements Coverage: Extract explicit and implicit requirements into a visible checklist and keep it updated until completion.
 - Tool Discipline: Before any batch of tool calls, include a one-sentence preamble (why/what/outcome). After 3-5 tool calls or >3 file edits, post a compact checkpoint of what ran, key results, and what's next.
-- Todo Tracking: Maintain a todo list for multi-step tasks using the workspace todo tool. Keep ONE item in-progress at a time; mark items completed immediately on finish.
 
 ## Roles and Responsibilities
 
@@ -212,7 +211,7 @@ When adding examples or guidance for rapidly evolving SDKs/APIs (e.g., MCP C# SD
 ````markdown
 <!-- <reference-sources> -->
 - Official SDK repo (examples): https://github.com/<owner>/<repo>/tree/<ref>/examples
-- API Reference: https://github.com/<owner>/<repo>/blob/<ref>/README.md#api
+- API Reference: https://github.com/<owner>/<repo>/blob/<ref>/README.md
 <!-- </reference-sources> -->
 ````
 
@@ -365,7 +364,7 @@ Example for Reference Sources added or updated to instructions or prompt files:
 - Official SDK repo (examples)
   - github_repo: modelcontextprotocol/csharp-sdk examples
 - API reference:
-  - fetch_webpage: https://github.com/modelcontextprotocol/csharp-sdk#api
+  - fetch_webpage: https://github.com/modelcontextprotocol/csharp-sdk
 - Microsoft Learn (Azure identity guidance):
   - microsoft-doc: azure identity guidance
   - fetch_webpage: https://learn.microsoft.com/azure/developer/identity/
@@ -418,9 +417,7 @@ services.AddSingleton<IMcpClient, McpClient>();
 - Auto-run Prompt Tester for non-trivial changes; iterate up to 3 times.
 - Always include Output & Formatting sections; add Requirements Checklist and Quality Gates when editing files.
 - Preface tool batches with a one-sentence preamble; checkpoint after 3-5 calls or >3 edits.
-- Keep a live todo list for multi-step tasks; one in-progress at a time; mark completion immediately.
 - Use patch-based edit tools only; avoid inline diffs and large code dumps; backtick file paths.
-- Use the workspace todo tracking tool for multi-step tasks; keep one item in-progress at a time and mark items completed immediately. Provide brief progress updates without repeating unchanged plans.
 
 ## Quality Bar
 

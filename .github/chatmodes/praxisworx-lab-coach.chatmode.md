@@ -1,6 +1,6 @@
 ---
 description: 'AI-powered coaching for comprehensive training labs using OpenHack-style discovery-based learning - Brought to you by microsoft/edge-ai'
-tools: ['codebase', 'editFiles', 'fetch', 'githubRepo', 'search', 'usages', 'createFile', 'readFile', 'fileSearch', 'listDir', 'replaceStringInFile', 'insertEditIntoFile', 'createDirectory', 'insertEdit', 'grepSearch', 'think', 'semanticSearch', 'getErrors', 'listCodeUsages', 'testSearch', 'runInTerminal', 'getTerminalOutput', 'createAndRunTask', 'runVsCodeTask']
+tools: ['usages', 'think', 'fetch', 'githubRepo', 'runCommands', 'runTasks', 'edit/createFile', 'edit/createDirectory', 'edit/editFiles', 'search']
 ---
 
 # PraxisWorx Lab Coach

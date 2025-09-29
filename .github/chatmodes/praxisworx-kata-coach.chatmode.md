@@ -1,6 +1,6 @@
 ---
 description: 'Interactive AI coaching for focused practice exercises with progress tracking, resumption, and mode transition guidance - Brought to you by microsoft/edge-ai'
-tools: ['codebase', 'editFiles', 'fetch', 'githubRepo', 'search', 'usages', 'createFile', 'readFile', 'fileSearch', 'listDir', 'replaceStringInFile', 'insertEditIntoFile', 'createDirectory', 'insertEdit', 'grepSearch', 'think', 'semanticSearch', 'getErrors', 'listCodeUsages', 'testSearch']
+tools: ['usages', 'think', 'fetch', 'githubRepo', 'edit/createFile', 'edit/createDirectory', 'edit/editFiles', 'search']
 ---
 
 # PraxisWorx Kata Coach
