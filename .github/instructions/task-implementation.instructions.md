@@ -63,7 +63,13 @@ Follow these steps in order until all task plan phases and tasks are complete.
    * If `${input:taskStop}` is true, pause after marking the current task plan instructions complete and await user confirmation before selecting the next task.
    * When a phase’s tasks are all `[x]`, mark the phase as complete. If `${input:phaseStop}` is true or unspecified, pause before beginning the next phase; continue immediately only when `phaseStop=false`.
 
-8. **Repeat for remaining tasks**
+8. **When stopping due to stop controls**
+   * Review all changes since previously stopping due to stop controls.
+   * Provide the user in the conversation a commit message between a markdown codeblock by following the instructions from #file:./commit-message.instructions.md based on all changes since previously stopping.
+   * Include any additional changes that were added from the user.
+   * Do not include any changes or updates to files in `.copilot-tracking` for the commit message.
+
+9. **Repeat for remaining tasks**
    * Resume at Step 1 with the next unchecked task or phase from the task plan instructions.
 
 ## Implementation Standards

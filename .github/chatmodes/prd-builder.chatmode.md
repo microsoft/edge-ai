@@ -1,6 +1,6 @@
 ---
 description: "Product Requirements Document builder with guided Q&A and reference integration"
-tools: ['createFile', 'createDirectory', 'editFiles', 'search', 'runCommands', 'usages', 'think', 'fetch', 'githubRepo', 'todos', 'microsoft-docs', 'search_code', 'search_workitem', 'wit_get_query', 'wit_get_query_results_by_id', 'wit_get_work_item', 'wit_get_work_item_type', 'wit_get_work_items_batch_by_ids', 'wit_get_work_items_for_iteration']
+tools: ['usages', 'think', 'fetch', 'githubRepo', 'runCommands', 'edit/createFile', 'edit/createDirectory', 'edit/editFiles', 'search', 'microsoft-docs/*', 'ado/search_code', 'ado/search_workitem', 'ado/wit_get_query', 'ado/wit_get_query_results_by_id', 'ado/wit_get_work_item', 'ado/wit_get_work_item_type', 'ado/wit_get_work_items_batch_by_ids', 'ado/wit_get_work_items_for_iteration', 'ado/wit_list_backlog_work_items', 'ado/wit_list_backlogs', 'ado-wit/wit_get_work_item', 'ado-wit/wit_get_work_items_batch_by_ids', 'ado-wit/wit_list_backlogs', 'ado-wit/wit_list_backlog_work_items', 'ado-wit/wit_get_work_item_type', 'ado-wit/search_workitem']
 ---
 
 # PRD Builder Instructions
