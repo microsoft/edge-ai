@@ -76,11 +76,185 @@ jobs:
     displayName: ${{ parameters.displayName }}
     condition: ${{ parameters.condition }}
     pool: ${{ parameters.agentPool }}
+    variables:
+      MegaLinterGitleaksArgs: ''
 
     steps:
       # Checkout repo
       - checkout: self
         clean: true
+        fetchDepth: 0
+        fetchTags: false
+        persistCredentials: true
+
+      - pwsh: |
+          $ErrorActionPreference = 'Stop'
+          Set-StrictMode -Version 3.0
+
+          function Invoke-Git {
+            param(
+              [Parameter(Mandatory)]
+              [string[]]$Args,
+              [switch]$AllowFailure
+            )
+
+            & git @Args
+            $exitCode = $LASTEXITCODE
+            if ($exitCode -ne 0) {
+              if ($AllowFailure) {
+                Write-Host "git $($Args -join ' ') exited with $exitCode; continuing."
+              } else {
+                throw "git $($Args -join ' ') exited with $exitCode"
+              }
+            }
+            return $exitCode
+          }
+
+          Write-Host "Remote branches before cleanup:"
+          Invoke-Git -Args @('for-each-ref', '--format=  %(refname:strip=2)', 'refs/remotes/origin')
+
+          $sourceBranch = $env:SYSTEM_PULLREQUEST_SOURCEBRANCH
+          $targetBranch = $env:SYSTEM_PULLREQUEST_TARGETBRANCH
+
+          if ($null -ne $sourceBranch) {
+            $sourceBranch = $sourceBranch -replace '^refs/heads/', ''
+          } else {
+            $sourceBranch = ''
+          }
+
+          if ($null -ne $targetBranch) {
+            $targetBranch = $targetBranch -replace '^refs/heads/', ''
+          } else {
+            $targetBranch = ''
+          }
+
+          if ([string]::IsNullOrWhiteSpace($sourceBranch)) {
+            Write-Host "No PR source branch detected; skipping branch cleanup."
+            exit 0
+          }
+
+          if ([string]::IsNullOrWhiteSpace($targetBranch)) {
+            $targetBranch = $env:BUILD_SOURCEBRANCHNAME
+          }
+
+          if ([string]::IsNullOrWhiteSpace($targetBranch)) {
+            $targetBranch = 'main'
+          }
+
+          $remoteName = 'origin'
+
+          $refspecs = @()
+
+          if (-not [string]::IsNullOrWhiteSpace($sourceBranch)) {
+            $sourceExit = Invoke-Git -Args @('ls-remote', '--exit-code', '--heads', $remoteName, $sourceBranch) -AllowFailure
+            if ($sourceExit -eq 0) {
+              $refspecs += "+refs/heads/$sourceBranch:refs/remotes/$remoteName/$sourceBranch"
+            } else {
+              Write-Host "Source branch '$sourceBranch' not found on $remoteName; skipping remote fetch for it."
+            }
+          }
+
+          $targetCandidates = @()
+
+          if (-not [string]::IsNullOrWhiteSpace($targetBranch)) {
+            $targetCandidates += $targetBranch
+          }
+
+          $remoteHeadBranch = ''
+          try {
+            $headOutput = (& git symbolic-ref "refs/remotes/$remoteName/HEAD" 2>$null)
+            if ($LASTEXITCODE -eq 0 -and $null -ne $headOutput) {
+              $headRef = $headOutput | Select-Object -First 1
+              if ($null -ne $headRef) {
+                $headRef = $headRef.Trim()
+                if ($headRef -match "^refs/remotes/$remoteName/(.+)$") {
+                  $remoteHeadBranch = $Matches[1]
+                }
+              }
+            }
+          } catch {
+            $remoteHeadBranch = ''
+          }
+
+          if (-not [string]::IsNullOrWhiteSpace($remoteHeadBranch) -and $targetCandidates -notcontains $remoteHeadBranch) {
+            $targetCandidates += $remoteHeadBranch
+          }
+
+          if ($targetCandidates -notcontains 'main') {
+            $targetCandidates += 'main'
+          }
+
+          $masterExists = Invoke-Git -Args @('show-ref', '--verify', '--quiet', "refs/remotes/$remoteName/master") -AllowFailure
+          if ($masterExists -eq 0 -and $targetCandidates -notcontains 'master') {
+            $targetCandidates += 'master'
+          }
+
+          $targetAdded = $false
+
+          foreach ($candidate in $targetCandidates) {
+            if ([string]::IsNullOrWhiteSpace($candidate)) {
+              continue
+            }
+
+            if ($candidate -eq $sourceBranch) {
+              $targetAdded = $true
+              $targetBranch = $candidate
+              break
+            }
+
+            $targetExit = Invoke-Git -Args @('ls-remote', '--exit-code', '--heads', $remoteName, $candidate) -AllowFailure
+
+            if ($targetExit -eq 0) {
+              $refspecs += "+refs/heads/$candidate:refs/remotes/$remoteName/$candidate"
+              $targetBranch = $candidate
+              $targetAdded = $true
+              break
+            }
+          }
+
+          if (-not $targetAdded) {
+            Write-Host "Target branch '$targetBranch' not found on $remoteName; relying on fallbacks."
+          }
+
+          Invoke-Git -Args @('config', '--unset-all', 'remote.origin.fetch') -AllowFailure
+
+          if ($refspecs.Count -eq 0) {
+            Write-Host 'No matching remote branches detected; restoring default fetch configuration.'
+            Invoke-Git -Args @('config', '--add', 'remote.origin.fetch', "+refs/heads/*:refs/remotes/$remoteName/*")
+            Invoke-Git -Args @('fetch', $remoteName, '--prune', '--prune-tags', '--no-recurse-submodules') -AllowFailure
+            Invoke-Git -Args @('remote', 'set-head', $remoteName, '--auto') -AllowFailure
+            Write-Host "Remote branches after cleanup:"
+            Invoke-Git -Args @('for-each-ref', '--format=  %(refname:strip=2)', "refs/remotes/$remoteName")
+            exit 0
+          }
+
+          foreach ($refspec in $refspecs) {
+            Invoke-Git -Args @('config', '--add', 'remote.origin.fetch', $refspec)
+          }
+
+          Write-Host "Configuring remote.origin.fetch for source=$sourceBranch target=$targetBranch"
+
+          Invoke-Git -Args @('fetch', $remoteName, '--prune', '--prune-tags', '--no-recurse-submodules')
+
+          Invoke-Git -Args @('remote', 'set-head', $remoteName, '--auto') -AllowFailure
+
+          Write-Host "Remote branches after cleanup:"
+          Invoke-Git -Args @('for-each-ref', '--format=  %(refname:strip=2)', "refs/remotes/$remoteName")
+        displayName: 'Limit remote branches for MegaLinter diff mode'
+        condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'))
+
+      - pwsh: |
+          $ErrorActionPreference = 'Stop'
+
+          if ('$(Build.Reason)' -eq 'PullRequest') {
+            $value = '--log-opts="origin/$(System.PullRequest.TargetBranch)..HEAD"'
+          } else {
+            $value = ''
+          }
+
+          Write-Host "Setting MegaLinterGitleaksArgs to '$value'"
+          Write-Host "##vso[task.setvariable variable=MegaLinterGitleaksArgs]$value"
+        displayName: 'Configure MegaLinter Git diff arguments'
 
       - script: |
 
@@ -94,11 +268,16 @@ jobs:
       # Run MegaLinter with different configurations based on Azure Reporter setting
       - ${{ if eq(parameters.enableAzureReporter, true) }}:
           - script: |
+              GITLEAKS_ENV=""
+              if [ -n "$(MegaLinterGitleaksArgs)" ]; then
+                GITLEAKS_ENV="-e REPOSITORY_GITLEAKS_ARGUMENTS=\"$(MegaLinterGitleaksArgs)\""
+              fi
 
-              docker run -v $(System.DefaultWorkingDirectory):/tmp/lint \
-                --env-file <(env | grep -e SYSTEM_ -e BUILD_ -e TF_ -e AGENT_) \
+              eval docker run -v $(System.DefaultWorkingDirectory):/tmp/lint \
+                --env-file '<(env | grep -e SYSTEM_ -e BUILD_ -e TF_ -e AGENT_)' \
                 -e SYSTEM_ACCESSTOKEN=$(System.AccessToken) \
                 -e GIT_AUTHORIZATION_BEARER=$(System.AccessToken) \
+                ${GITLEAKS_ENV} \
                 -e SYSTEM_COLLECTIONURI='$(System.CollectionUri)' \
                 -e SYSTEM_PULLREQUEST_PULLREQUESTID='${{ parameters.pullRequestId }}' \
                 -e SYSTEM_PULLREQUEST_SOURCEREPOSITORYURI='${{ parameters.sourceRepoUri }}' \
@@ -112,11 +291,16 @@ jobs:
 
       - ${{ if eq(parameters.enableAzureReporter, false) }}:
           - script: |
+              GITLEAKS_ENV=""
+              if [ -n "$(MegaLinterGitleaksArgs)" ]; then
+                GITLEAKS_ENV="-e REPOSITORY_GITLEAKS_ARGUMENTS=\"$(MegaLinterGitleaksArgs)\""
+              fi
 
-              docker run -v $(System.DefaultWorkingDirectory):/tmp/lint \
-                --env-file <(env | grep -e SYSTEM_ -e BUILD_ -e TF_ -e AGENT_) \
+              eval docker run -v $(System.DefaultWorkingDirectory):/tmp/lint \
+                --env-file '<(env | grep -e SYSTEM_ -e BUILD_ -e TF_ -e AGENT_)' \
                 -e SYSTEM_ACCESSTOKEN=$(System.AccessToken) \
                 -e GIT_AUTHORIZATION_BEARER=$(System.AccessToken) \
+                ${GITLEAKS_ENV} \
                 -e AZURE_COMMENT_REPORTER='false' \
                 oxsecurity/megalinter:v8
 
