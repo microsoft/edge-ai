@@ -1,37 +1,34 @@
 ---
 mode: "agent"
-description: "Analyze research, plans, or repo changes to discover Azure DevOps Features and User Stories, then produce a planning handoff."
+description: "Analyze research, plans, or repository changes to discover and plan Azure DevOps User Stories and Bugs with handoff for creation or updates."
 ---
 
 # Discover Work Items & Produce Handoff
 
-Follow all instructions from #file:../instructions/ado-wit-discovery.instructions.md and #file:../instructions/ado-wit-planning.instructions.md as authoritative guidance. When searching Azure DevOps, always include work items in `New`, `Active`, or `Resolved` state for Epics, Features, and User Stories unless the user provides a different set of states.
-
-## Document Handling
-
-* Evaluate every user-supplied attachment or referenced file together when determining which work items to discover, create, or update.
-* When reviewing research documents, pull only the details that align with the tasks the user wants executed, and consolidate related tasks into a single User Story when they represent a unified outcome.
-
-## Discovery-Only Mode
-
-* If `${input:discoverUserStoriesOnly}` is `true`, operate in discovery-only mode: do not propose new work items or updates.
-* Focus searches on existing User Stories in `New`, `Active`, or `Resolved` state that most closely match the provided context and record them without modifying their content.
-* Ensure handoff entries note `No Change` for every referenced work item when operating in this mode and add related links to any resolved stories that inform new or updated work.
+Follow all instructions from #file:../instructions/ado-wit-discovery.instructions.md and #file:../instructions/ado-wit-planning.instructions.md
 
 ## Inputs
 
-* ${input:adoProject:edge-ai}: Azure DevOps project identifier (override when the user requests a different project).
-* ${input:planningType:changes}: Planning type folder name (e.g., research, plan, details, changes).
-* ${input:researchDocuments}: (Optional) Comma-separated relative paths or attachments for research sources. Infer from provided context or attachments when omitted.
-* ${input:taskPlan}: (Optional) Relative path to task plan instructions. Detect automatically from conversation if not supplied explicitly.
-* ${input:taskDetails}: (Optional) Relative path to task detail notes. Identify from user-provided context or fallback artifacts when missing.
-* ${input:discoverUserStoriesOnly:false}: (Optional) Enable discovery-only mode to surface matching User Stories without creating or updating work items.
-* ${input:areaPath}: (Optional) Area Path filter for discovery.
-* ${input:iterationPath}: (Optional) Iteration Path filter for discovery.
-* Guidance may be provided directly through the conversation; capture all parent Feature/Epic directions and creation requests when given.
-* Implicit change context (diffs, commits) must be gathered when none of the document inputs are provided.
-* ${input:baseBranch:origin/main}: Git comparison base used for diffs and commit analysis when inspecting repository changes.
+* ${input:adoProject:edge-ai}: Azure DevOps project identifier.
+* ${input:witFocus:User Story}: Work item type to focus on (`User Story` or `Bug`). Determines which work items to discover, create, and update.
+* ${input:documents}: (Optional) Comma-separated relative paths or attachments for source material (research, plans, details). Infer from conversation context when omitted.
+* ${input:includeBranchChanges:false}: (Optional) Include git diff analysis for work item discovery when no documents are provided.
+* ${input:baseBranch:origin/main}: (Optional) Git comparison base for diff and commit analysis.
+* ${input:areaPath}: (Optional) Area Path filter for work item searches.
+* ${input:iterationPath}: (Optional) Iteration Path filter for work item searches.
+* ${input:workItemStates:New,Active,Resolved}: (Optional) Comma-separated states to include in searches.
 
----
+## Instructions
 
-Proceed through the instructions in order. Update the planning-log task list after each major action and do not skip required protocol steps.
+Analyze provided artifacts and repository changes to:
+
+1. Discover existing work items of type `${input:witFocus}` in Azure DevOps.
+2. Update existing work items when they align with the work being requested.
+3. Create minimal new work items (prefer one unless work is large or involves multiple contributors).
+4. When `${input:witFocus}` is `User Story`, link to existing parent Features and Epics for traceability.
+5. When `${input:witFocus}` is `Bug`, skip parent linking (Bugs are standalone).
+6. Produce a handoff document for execution.
+
+**Feature and Epic discovery**: When working with User Stories, discover Features and Epics only for linking purposes. Create or update Features and Epics only when explicitly requested by the user. When working with Bugs, skip Feature and Epic discovery entirely.
+
+Proceed through the discovery workflow. Update planning-log.md after each major action and maintain all planning files per the instructions.
