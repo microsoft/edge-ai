@@ -8,17 +8,22 @@
 
 # Display usage information
 function show_usage {
-  echo "Usage: $0 [--no-md-diff] [--base-branch BRANCH]"
+  echo "Usage: $0 [--no-md-diff] [--base-branch BRANCH] [--output FILE]"
   echo ""
   echo "Options:"
   echo "  --no-md-diff       Exclude markdown files (*.md) from the diff output"
   echo "  --base-branch      Specify the base branch to compare against (default: main)"
+  echo "  --output           Specify output file path (default: .copilot-tracking/pr/pr-reference.xml)"
   exit 1
 }
 
+# Get the repository root directory
+REPO_ROOT=$(git rev-parse --show-toplevel)
+
 # Process command line arguments
 NO_MD_DIFF=false
-BASE_BRANCH="main"
+BASE_BRANCH="origin/main"
+OUTPUT_FILE="${REPO_ROOT}/.copilot-tracking/pr/pr-reference.xml"
 while [[ $# -gt 0 ]]; do
   case "$1" in
   --no-md-diff)
@@ -31,6 +36,14 @@ while [[ $# -gt 0 ]]; do
       show_usage
     fi
     BASE_BRANCH="$2"
+    shift 2
+    ;;
+  --output)
+    if [[ -z $2 || $2 == --* ]]; then
+      echo "Error: --output requires an argument"
+      show_usage
+    fi
+    OUTPUT_FILE="$2"
     shift 2
     ;;
   --help | -h)
@@ -49,9 +62,8 @@ if ! git rev-parse --verify "${BASE_BRANCH}" &>/dev/null; then
   exit 1
 fi
 
-# Get the repository root directory
-REPO_ROOT=$(git rev-parse --show-toplevel)
-PR_REF_FILE="${REPO_ROOT}/.copilot-tracking/pr/pr-reference.xml"
+# Set output file path
+PR_REF_FILE="${OUTPUT_FILE}"
 mkdir -p "$(dirname "$PR_REF_FILE")"
 
 # Create the reference file with commit history using XML tags
@@ -93,3 +105,4 @@ if [ "$NO_MD_DIFF" = true ]; then
 fi
 echo "Lines: $LINE_COUNT"
 echo "Base branch: $BASE_BRANCH"
+echo "File name: $PR_REF_FILE"
