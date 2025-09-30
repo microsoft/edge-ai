@@ -113,6 +113,7 @@ jobs:
           Write-Host "Remote branches before cleanup:"
           Invoke-Git -Args @('for-each-ref', '--format=  %(refname:strip=2)', 'refs/remotes/origin')
 
+          $buildSourceBranch = $env:BUILD_SOURCEBRANCH
           $sourceBranch = $env:SYSTEM_PULLREQUEST_SOURCEBRANCH
           $targetBranch = $env:SYSTEM_PULLREQUEST_TARGETBRANCH
 
@@ -129,7 +130,19 @@ jobs:
           }
 
           if ([string]::IsNullOrWhiteSpace($sourceBranch)) {
-            Write-Host "No PR source branch detected; skipping branch cleanup."
+            if ($buildSourceBranch -match '^refs/heads/(.+)$') {
+              $sourceBranch = $Matches[1]
+            }
+          }
+
+          if ([string]::IsNullOrWhiteSpace($targetBranch)) {
+            if ($buildSourceBranch -match '^refs/heads/(.+)$') {
+              $targetBranch = $Matches[1]
+            }
+          }
+
+          if ([string]::IsNullOrWhiteSpace($sourceBranch)) {
+            Write-Host "No branch detected; skipping branch cleanup."
             exit 0
           }
 
@@ -241,15 +254,31 @@ jobs:
           Write-Host "Remote branches after cleanup:"
           Invoke-Git -Args @('for-each-ref', '--format=  %(refname:strip=2)', "refs/remotes/$remoteName")
         displayName: 'Limit remote branches for MegaLinter diff mode'
-        condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'))
+        condition: and(succeeded(), or(eq(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/main')))
 
       - pwsh: |
           $ErrorActionPreference = 'Stop'
+          Set-StrictMode -Version 3.0
 
-          if ('$(Build.Reason)' -eq 'PullRequest') {
+          $buildReason = '$(Build.Reason)'
+          $buildSourceBranch = '$(Build.SourceBranch)'
+          $value = ''
+
+          if ($buildReason -eq 'PullRequest') {
             $value = '--log-opts="origin/$(System.PullRequest.TargetBranch)..HEAD"'
-          } else {
-            $value = ''
+          } elseif ($buildSourceBranch -eq 'refs/heads/main') {
+            $commitCount = 0
+            try {
+              $commitCount = [int](& git rev-list --count HEAD 2>$null)
+            } catch {
+              $commitCount = 0
+            }
+
+            if ($commitCount -gt 1) {
+              $value = '--log-opts="HEAD~1..HEAD"'
+            } else {
+              $value = '--log-opts="HEAD"'
+            }
           }
 
           Write-Host "Setting MegaLinterGitleaksArgs to '$value'"
