@@ -150,3 +150,8 @@ variable "should_assign_cluster_admin" {
   description = "Whether to assign Azure Kubernetes Cluster Admin Role permissions on the cluster."
 }
 
+variable "should_disable_local_account" {
+  type        = bool
+  description = "Whether to disable local admin account for the AKS cluster."
+}
+

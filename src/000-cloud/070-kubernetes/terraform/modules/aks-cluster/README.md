@@ -52,6 +52,7 @@ Supports private clusters with optional private endpoints and DNS zone managemen
 | resource\_group | Resource group object containing name and id where resources will be deployed | ```object({ name = string })``` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module. | `string` | n/a | yes |
 | should\_assign\_cluster\_admin | Whether to assign Azure Kubernetes Cluster Admin Role permissions on the cluster. | `bool` | n/a | yes |
+| should\_disable\_local\_account | Whether to disable local admin account for the AKS cluster. | `bool` | n/a | yes |
 | should\_enable\_private\_cluster | Whether to enable private cluster mode for AKS | `bool` | n/a | yes |
 | should\_enable\_private\_cluster\_public\_fqdn | Whether to enable public FQDN for private cluster | `bool` | n/a | yes |
 | should\_enable\_private\_endpoint | Whether to create a private endpoint for the AKS cluster | `bool` | n/a | yes |
