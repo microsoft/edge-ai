@@ -13,9 +13,6 @@ param arcConnectedClusterName string
 @description('The settings for the Azure Container Store for Azure Arc Extension.')
 param containerStorageConfig types.ContainerStorageExtension
 
-@description('The settings for the Open Service Mesh Extension.')
-param openServiceMeshConfig types.OpenServiceMeshExtension
-
 @description('The settings for the Azure IoT Operations Platform Extension.')
 param aioPlatformConfig types.AioPlatformExtension
 
@@ -71,25 +68,6 @@ resource aioPlatform 'Microsoft.KubernetesConfiguration/extensions@2023-05-01' =
   }
 }
 
-resource openServiceMesh 'Microsoft.KubernetesConfiguration/extensions@2023-05-01' = {
-  scope: arcConnectedCluster
-  name: 'open-service-mesh'
-  properties: {
-    extensionType: 'microsoft.openservicemesh'
-    autoUpgradeMinorVersion: false
-    version: openServiceMeshConfig.release.version
-    releaseTrain: openServiceMeshConfig.release.train
-    configurationSettings: {
-      'osm.osm.enablePermissiveTrafficPolicy': 'false'
-      'osm.osm.featureFlags.enableWASMStats': 'false'
-      'osm.osm.configResyncInterval': '10s'
-      'osm.osm.osmController.resource.requests.cpu': '100m'
-      'osm.osm.osmBootstrap.resource.requests.cpu': '100m'
-      'osm.osm.injector.resource.requests.cpu': '100m'
-    }
-  }
-}
-
 resource containerStorage 'Microsoft.KubernetesConfiguration/extensions@2023-05-01' = {
   scope: arcConnectedCluster
   // 'azure-arc-containerstorage' is the required extension name for ACSA.
@@ -109,7 +87,6 @@ resource containerStorage 'Microsoft.KubernetesConfiguration/extensions@2023-05-
     }
   }
   dependsOn: [
-    openServiceMesh
     aioPlatform
   ]
 }
@@ -151,12 +128,6 @@ output secretStoreExtensionId string = secretStore.id
 
 @description('The name of the Secret Store Extension.')
 output secretStoreExtensionName string = secretStore.name
-
-@description('The ID of the Open Service Mesh Extension.')
-output openServiceMeshExtensionId string = openServiceMesh.id
-
-@description('The name of the Open Service Mesh Extension.')
-output openServiceMeshExtensionName string = openServiceMesh.name
 
 @description('The ID of the Azure IoT Operations Platform Extension.')
 output aioPlatformExtensionId string = aioPlatform.id

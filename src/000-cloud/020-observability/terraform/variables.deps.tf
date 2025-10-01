@@ -8,4 +8,5 @@ variable "azmon_resource_group" {
     id       = string
     location = string
   })
+  description = "The resource group object containing name and id for observability resources."
 }

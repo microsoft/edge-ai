@@ -29,8 +29,3 @@ provider "azurerm" {
     }
   }
 }
-
-provider "fabric" {
-  # Enable preview features required for pre-release
-  preview = true
-}

@@ -462,7 +462,7 @@ This section teaches you the essential workflow transition that professional AI-
 <!-- Reference Links -->
 [task-planning-mode]: /.github/chatmodes/task-planner.chatmode.md
 [digital-inspection-scenario]: /docs/project-planning/scenarios/digital-inspection-survey/README.md
-[ms-style-guide]: https://learn.microsoft.com/en-us/style-guide/
+[ms-style-guide]: https://learn.microsoft.com/style-guide/
 
 <!-- markdownlint-disable MD036 -->
 *🤖 Crafted with precision by ✨Copilot following brilliant human instruction,

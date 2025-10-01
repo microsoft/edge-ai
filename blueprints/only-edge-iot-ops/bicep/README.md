@@ -58,10 +58,9 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 |common|The common component configuration.|`[_2.Common](#user-defined-types)`|n/a|yes|
 |arcConnectedClusterName|The resource name for the Arc connected cluster.|`string`|n/a|yes|
 |containerStorageConfig|The settings for the Azure Container Store for Azure Arc Extension.|`[_1.ContainerStorageExtension](#user-defined-types)`|[variables('_1.containerStorageExtensionDefaults')]|no|
-|openServiceMeshConfig|The settings for the Open Service Mesh Extension.|`[_1.OpenServiceMeshExtension](#user-defined-types)`|[variables('_1.openServiceMeshExtensionDefaults')]|no|
 |aioPlatformConfig|The settings for the Azure IoT Operations Platform Extension.|`[_1.AioPlatformExtension](#user-defined-types)`|[variables('_1.aioPlatformExtensionDefaults')]|no|
 |secretStoreConfig|The settings for the Secret Store Extension.|`[_1.SecretStoreExtension](#user-defined-types)`|[variables('_1.secretStoreExtensionDefaults')]|no|
-|shouldInitAio|Whether to deploy the Azure IoT Operations initial connected cluster resources, Secret Sync, ACSA, OSM, AIO Platform.|`bool`|True|no|
+|shouldInitAio|Whether to deploy the Azure IoT Operations initial connected cluster resources, Secret Sync, ACSA, OSM, AIO Platform.|`bool`|`true`|no|
 |aioIdentityName|The name of the User Assigned Managed Identity for Azure IoT Operations.|`string`|n/a|yes|
 |aioExtensionConfig|The settings for the Azure IoT Operations Extension.|`[_1.AioExtension](#user-defined-types)`|[variables('_1.aioExtensionDefaults')]|no|
 |aioFeatures|AIO Instance features.|`[_1.AioFeatures](#user-defined-types)`|n/a|no|
@@ -71,35 +70,32 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 |brokerListenerAnonymousConfig|Configuration for the insecure anonymous AIO MQ Broker Listener.|`[_1.AioMqBrokerAnonymous](#user-defined-types)`|[variables('_1.aioMqBrokerAnonymousDefaults')]|no|
 |schemaRegistryName|The resource name for the ADR Schema Registry for Azure IoT Operations.|`string`|n/a|yes|
 |adrNamespaceName|The resource name for the ADR Namespace for Azure IoT Operations.|`string`|n/a|no|
-|shouldDeployAio|Whether to deploy an Azure IoT Operations Instance and all of its required components into the connected cluster.|`bool`|True|no|
-|shouldDeployResourceSyncRules|Whether or not to deploy the Custom Locations Resource Sync Rules for the Azure IoT Operations resources.|`bool`|True|no|
-|shouldCreateAnonymousBrokerListener|Whether to enable an insecure anonymous AIO MQ Broker Listener. (Should only be used for dev or test environments)|`bool`|False|no|
-|shouldEnableOtelCollector|Whether or not to enable the Open Telemetry Collector for Azure IoT Operations.|`bool`|True|no|
-|shouldEnableOpcUaSimulator|Whether or not to enable the OPC UA Simulator for Azure IoT Operations.|`bool`|True|no|
+|shouldDeployAio|Whether to deploy an Azure IoT Operations Instance and all of its required components into the connected cluster.|`bool`|`true`|no|
+|shouldDeployResourceSyncRules|Whether or not to deploy the Custom Locations Resource Sync Rules for the Azure IoT Operations resources.|`bool`|`true`|no|
+|shouldCreateAnonymousBrokerListener|Whether to enable an insecure anonymous AIO MQ Broker Listener. (Should only be used for dev or test environments)|`bool`|`false`|no|
+|shouldEnableOtelCollector|Whether or not to enable the Open Telemetry Collector for Azure IoT Operations.|`bool`|`true`|no|
+|shouldEnableOpcUaSimulator|Whether or not to enable the OPC UA Simulator for Azure IoT Operations.|`bool`|`true`|no|
 |shouldEnableOpcUaSimulatorAsset|Whether or not to create the OPC UA Simulator ADR Asset for Azure IoT Operations.|`bool`|[parameters('shouldEnableOpcUaSimulator')]|no|
 |customLocationName|The name for the Custom Locations resource.|`string`|[format('{0}-cl', parameters('arcConnectedClusterName'))]|no|
 |trustIssuerSettings|The trust issuer settings for Customer Managed Azure IoT Operations Settings.|`[_1.TrustIssuerConfig](#user-defined-types)`|{'trustSource': 'SelfSigned'}|no|
 |sseKeyVaultName|The name of the Key Vault for Secret Sync. (Required when providing sseIdentityName)|`string`|n/a|yes|
 |sseIdentityName|The name of the User Assigned Managed Identity for Secret Sync.|`string`|n/a|yes|
 |sseKeyVaultResourceGroupName|The name of the Resource Group for the Key Vault for Secret Sync. (Required when providing sseIdentityName)|`string`|[resourceGroup().name]|no|
-|shouldAssignSseKeyVaultRoles|Whether to assign roles for Key Vault to the provided Secret Sync Identity.|`bool`|True|no|
+|shouldAssignSseKeyVaultRoles|Whether to assign roles for Key Vault to the provided Secret Sync Identity.|`bool`|`true`|no|
 |shouldAssignDeployIdentityRoles|Whether to assign roles to the deploy identity.|`bool`|[not(empty(parameters('deployIdentityName')))]|no|
 |deployIdentityName|The resource name for a managed identity that will be given deployment admin permissions.|`string`|n/a|no|
-|shouldDeployAioDeploymentScripts|Whether to deploy DeploymentScripts for Azure IoT Operations.|`bool`|False|no|
+|shouldDeployAioDeploymentScripts|Whether to deploy DeploymentScripts for Azure IoT Operations.|`bool`|`false`|no|
 |deployKeyVaultName|The name of the Key Vault that will have scripts and secrets for deployment.|`string`|[parameters('sseKeyVaultName')]|no|
 |deployKeyVaultResourceGroupName|The resource group name where the Key Vault is located. Defaults to the current resource group.|`string`|[parameters('sseKeyVaultResourceGroupName')]|no|
 |deployUserTokenSecretName|The name for the deploy user token secret in Key Vault.|`string`|deploy-user-token|no|
 |deploymentScriptsSecretNamePrefix|The prefix used with constructing the secret name that will have the deployment script.|`string`|[format('{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]|no|
-|shouldAddDeployScriptsToKeyVault|Whether to add the deploy scripts for DeploymentScripts to Key Vault as secrets. (Required for DeploymentScripts)|`bool`|False|no|
-|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|False|no|
+|shouldAddDeployScriptsToKeyVault|Whether to add the deploy scripts for DeploymentScripts to Key Vault as secrets. (Required for DeploymentScripts)|`bool`|`false`|no|
+|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|`false`|no|
 
 #### Resources for edgeIotOps
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|deployIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2023-01-31|
-|sseIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2023-01-31|
-|adrNamespace|`Microsoft.DeviceRegistry/namespaces`|2025-07-01-preview|
 |deployArcK8sRoleAssignments|`Microsoft.Resources/deployments`|2022-09-01|
 |deployKeyVaultRoleAssignments|`Microsoft.Resources/deployments`|2022-09-01|
 |sseKeyVaultRoleAssignments|`Microsoft.Resources/deployments`|2022-09-01|
@@ -117,8 +113,6 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 | :--- | :--- | :--- |
 |containerStorageExtensionId|`string`|The ID of the Container Storage Extension.|
 |containerStorageExtensionName|`string`|The name of the Container Storage Extension.|
-|openServiceMeshExtensionId|`string`|The ID of the Open Service Mesh Extension.|
-|openServiceMeshExtensionName|`string`|The name of the Open Service Mesh Extension.|
 |aioPlatformExtensionId|`string`|The ID of the Azure IoT Operations Platform Extension.|
 |aioPlatformExtensionName|`string`|The name of the Azure IoT Operations Platform Extension.|
 |secretStoreExtensionId|`string`|The ID of the Secret Store Extension.|
@@ -269,14 +263,6 @@ The mode of the AIO instance feature. Either "Stable", "Preview" or "Disabled".
 ### `_1.InstanceFeatureSettingValue`
 
 The setting value of the AIO instance feature. Either "Enabled" or "Disabled".
-
-### `_1.OpenServiceMeshExtension`
-
-The settings for the Open Service Mesh Extension.
-
-|Property|Type|Description|
-| :--- | :--- | :--- |
-|release|`[_1.Release](#user-defined-types)`|The common settings for the extension.|
 
 ### `_1.Release`
 

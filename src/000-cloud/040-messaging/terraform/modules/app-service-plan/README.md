@@ -27,14 +27,14 @@ This module provides the compute infrastructure needed for serverless and web ap
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| environment | Environment for all resources in this module: dev, test, or prod. | `string` | n/a | yes |
-| instance | Instance identifier for naming resources: 001, 002, etc. | `string` | n/a | yes |
-| location | Location for all resources in this module. | `string` | n/a | yes |
-| os\_type | The operating system type for the App Service Plan. | `string` | n/a | yes |
-| resource\_group\_name | The name for the resource group. | `string` | n/a | yes |
-| resource\_prefix | Prefix for all resources in this module. | `string` | n/a | yes |
+| environment | Environment for all resources in this module: dev, test, or prod | `string` | n/a | yes |
+| instance | Instance identifier for naming resources: 001, 002, etc | `string` | n/a | yes |
+| location | Azure region where all resources will be deployed | `string` | n/a | yes |
+| os\_type | Operating system type (only linux supported) | `string` | n/a | yes |
+| resource\_group\_name | Name of the resource group | `string` | n/a | yes |
+| resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
 | sku\_name | The SKU name for the App Service Plan. | `string` | n/a | yes |
-| tags | Tags to apply to all resources. | `map(string)` | n/a | yes |
+| tags | Tags to apply to all resources | `map(string)` | n/a | yes |
 
 ## Outputs
 

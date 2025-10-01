@@ -43,7 +43,6 @@ The scripts handle primary and secondary node(s) setup, cluster administration, 
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|arcOnboardingIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2024-11-30|
 |ubuntuK3s|`Microsoft.Resources/deployments`|2022-09-01|
 |roleAssignment|`Microsoft.Resources/deployments`|2022-09-01|
 |keyVaultRoleAssignments|`Microsoft.Resources/deployments`|2022-09-01|
@@ -95,7 +94,6 @@ Configures K3s Kubernetes clusters on Ubuntu virtual machines and connects them 
 | :--- | :--- | :--- |
 |keyVault::serverScriptSecret|`Microsoft.KeyVault/vaults/secrets`|2024-11-01|
 |keyVault::nodeScriptSecret|`Microsoft.KeyVault/vaults/secrets`|2024-11-01|
-|keyVault|`Microsoft.KeyVault/vaults`|2024-11-01|
 
 #### Outputs for ubuntuK3s
 
@@ -170,8 +168,6 @@ Deploys a script to a virtual machine using the CustomScript extension.
 |Name|Type|API Version|
 | :--- | :--- | :--- |
 |clusterServerVirtualMachine::linuxServerScriptSetup|`Microsoft.Compute/virtualMachines/extensions`|2024-11-01|
-|clusterServerVirtualMachine|`Microsoft.Compute/virtualMachines`|2024-11-01|
-|clusterNodeVirtualMachines|`Microsoft.Compute/virtualMachines`|2024-11-01|
 |linuxNodeScriptSetup|`Microsoft.Compute/virtualMachines/extensions`|2024-11-01|
 
 ## User Defined Types

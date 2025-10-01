@@ -4,7 +4,7 @@
 
 variable "environment" {
   type        = string
-  description = "Environment for all resources in this module: dev, test, or prod."
+  description = "Environment for all resources in this module: dev, test, or prod"
 }
 
 variable "instance_suffix" {
@@ -14,7 +14,7 @@ variable "instance_suffix" {
 
 variable "location" {
   type        = string
-  description = "Location for all resources in this module."
+  description = "Azure region where all resources will be deployed"
 }
 
 variable "log_analytics_workspace_id" {
@@ -24,12 +24,12 @@ variable "log_analytics_workspace_id" {
 
 variable "resource_group_name" {
   type        = string
-  description = "The name for the resource group."
+  description = "Name of the resource group"
 }
 
 variable "resource_prefix" {
   type        = string
-  description = "Prefix for all resources in this module."
+  description = "Prefix for all resources in this module"
 }
 
 /*
@@ -46,7 +46,19 @@ variable "retention_in_days" {
   description = "The retention period in days for Application Insights data."
 }
 
+variable "internet_ingestion_enabled" {
+  type        = bool
+  description = "Should the Application Insights support ingestion over the Public Internet."
+  default     = true
+}
+
+variable "internet_query_enabled" {
+  type        = bool
+  description = "Should the Application Insights support querying over the Public Internet."
+  default     = true
+}
+
 variable "tags" {
   type        = map(string)
-  description = "Tags to apply to all resources."
+  description = "Tags to apply to all resources"
 }

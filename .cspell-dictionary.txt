@@ -1,6 +1,7 @@
 # Azure & Microsoft Services
 adal
 adls
+adms
 adminconsent
 adrns
 afds
@@ -8,7 +9,9 @@ agic
 aiops
 akri
 apim
+appi
 apparmor
+appinsight
 appinsights
 arcbox
 arcgis
@@ -20,6 +23,7 @@ azcopy
 azdo
 azsk
 azurecli
+deviceregistry
 eastus
 keyvault
 onedrive
@@ -55,15 +59,19 @@ WCAG
 wcag
 XBRL
 ZTNA
+KMGTPE
 
 # Development Tools & Technologies
 ansible
+azurecontainer
 bicepconfig
 bicepparam
+commitish
 containerd
 contravariance
 crowdsourced
 Crowdsourced
+distroless
 cyberattacks
 Dapr
 docker
@@ -149,6 +157,8 @@ devsecops
 gdpr
 hipaa
 oidc
+OSSF
+ossf
 passwordless
 siem
 sox
@@ -332,6 +342,7 @@ allowlisted
 allowlisting
 alpine ski house
 ambari
+amlworkspace
 amet
 ammp
 amqp
@@ -375,8 +386,10 @@ autostart
 avanade
 avere
 avro
+backticked
 bandwidth
 baremetal
+bargauge
 blockchain
 chatbot
 chatbots
@@ -480,6 +493,7 @@ datacenter
 datacenters
 dataset
 datasets
+dcgm
 devsecops
 digitalization
 digitization
@@ -502,11 +516,13 @@ networking
 onpremises
 openapi
 opensource
+opinsights
 orchestration
 platform
 platforms
 realtime
 scalability
+scalesetpriority
 serverless
 software
 stackexchange
@@ -729,6 +745,8 @@ heatmap
 heatmaps
 helion
 helpdesk
+heredoc
+heredocs
 hexadecimal
 hids
 highlevel
@@ -917,7 +935,6 @@ misconfigure
 misconfiguring
 mitigations
 mkdir
-mkdocs
 mklink
 mlflow
 moby
@@ -930,6 +947,7 @@ monolithic
 mqtt
 msdn
 msi
+msgraph
 mulaw
 multicast
 multitenant
@@ -1017,6 +1035,7 @@ parallelization
 parashar
 passcode
 passcodes
+pasteable
 pbmm
 pdbs
 pdfs
@@ -1049,6 +1068,7 @@ posix
 powercli
 powerskills
 ppac
+prd
 preapproved
 precommitment
 precommitments
@@ -1125,6 +1145,7 @@ rebalance
 rebalancing
 rebar
 rebranded
+recalc
 recordsets
 reddy
 redgate
@@ -1204,6 +1225,8 @@ sharded
 sharding
 showbacks
 signalr
+signup
+signingkey
 simplement
 sios
 sitelogs
@@ -1383,6 +1406,7 @@ usrr
 uvicorn
 vanarsdel
 varchar
+vaultcore
 vcenter
 vcore
 vcores
@@ -1560,11 +1584,13 @@ acrpull
 acsa
 adrns
 agentpool
+agentsvc
 arck
 azapi
 azmon
 azuredevops
 azuremonitor
+azureml
 cloudedge
 cloudedge002
 clusterrolebinding

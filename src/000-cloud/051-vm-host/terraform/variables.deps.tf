@@ -6,12 +6,12 @@ variable "resource_group" {
   type = object({
     name = string
   })
-  description = "The resource group to deploy the VM host in."
+  description = "Resource group object containing name and id where resources will be deployed"
 }
 
 variable "subnet_id" {
   type        = string
-  description = "The ID of the subnet to deploy the VM host in."
+  description = "The ID of the subnet to deploy the VM host in"
 }
 
 /*
@@ -22,6 +22,6 @@ variable "arc_onboarding_identity" {
   type = object({
     id = string
   })
-  description = "The identity for Arc onboarding."
+  description = "The Principal ID for the identity that will be used for onboarding the cluster to Arc"
   default     = null
 }

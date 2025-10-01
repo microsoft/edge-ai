@@ -1,25 +1,25 @@
 variable "environment" {
   type        = string
-  description = "Environment for all resources in this module: dev, test, or prod."
+  description = "Environment for all resources in this module: dev, test, or prod"
 }
 
 variable "resource_prefix" {
-  type        = string
-  description = "Prefix for all resources in this module."
+  type = string
   validation {
     condition     = length(var.resource_prefix) > 0 && can(regex("^[a-zA-Z](?:-?[a-zA-Z0-9])*$", var.resource_prefix))
     error_message = "Resource prefix must not be empty, must only contain alphanumeric characters and dashes. Must start with an alphabetic character."
   }
+  description = "Prefix for all resources in this module"
 }
 
 variable "location" {
   type        = string
-  description = "Location for all resources in this module."
+  description = "Azure region where all resources will be deployed"
 }
 
 variable "instance" {
   type        = string
-  description = "Instance identifier for naming resources: 001, 002, etc..."
+  description = "Instance identifier for naming resources: 001, 002, etc"
   default     = "001"
 }
 
@@ -134,28 +134,28 @@ variable "aio_namespace" {
 variable "should_get_custom_locations_oid" {
   type        = bool
   description = <<-EOF
-    Whether to get Custom Locations Object ID using Terraform's azuread provider. (Otherwise, provided by
-    'custom_locations_oid' or `az connectedk8s enable-features` for custom-locations on cluster setup if not provided.)
-EOF
+  Whether to get Custom Locations Object ID using Terraform's azuread provider. (Otherwise, provided by
+  'custom_locations_oid' or `az connectedk8s enable-features` for custom-locations on cluster setup if not provided.)
+  EOF
   default     = true
 }
 
 variable "custom_locations_oid" {
   type        = string
   description = <<-EOF
-    The object id of the Custom Locations Entra ID application for your tenant.
-    If none is provided, the script will attempt to retrieve this requiring 'Application.Read.All' or 'Directory.Read.All' permissions.
+  The object id of the Custom Locations Entra ID application for your tenant.
+  If none is provided, the script will attempt to retrieve this requiring 'Application.Read.All' or 'Directory.Read.All' permissions.
 
-    ```sh
-    az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv
-    ```
-EOF
+  ```sh
+  az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv
+  ```
+  EOF
   default     = null
 }
 
 variable "should_create_anonymous_broker_listener" {
   type        = bool
-  description = "Whether to enable an insecure anonymous AIO MQ Broker Listener. (Should only be used for dev or test environments)"
+  description = "Whether to enable an insecure anonymous AIO MQ Broker Listener. Should only be used for dev or test environments"
   default     = false
 }
 
@@ -165,10 +165,156 @@ variable "should_create_aks" {
   default     = false
 }
 
-variable "should_create_acr_private_endpoint" {
+/*
+ * AKS Cluster Configuration - Cluster A
+ */
+
+variable "cluster_a_node_count" {
+  type        = number
+  description = "Number of nodes for the agent pool in the AKS cluster for Cluster A."
+  default     = 1
+}
+
+variable "cluster_a_node_vm_size" {
+  type        = string
+  description = "VM size for the agent pool in the AKS cluster for Cluster A. Default is Standard_D8ds_v5."
+  default     = "Standard_D8ds_v5"
+}
+
+variable "cluster_a_enable_auto_scaling" {
   type        = bool
-  description = "Should create a private endpoint for the Azure Container Registry. Default is false."
+  description = "Should enable auto-scaler for the default node pool for Cluster A."
   default     = false
+}
+
+variable "cluster_a_min_count" {
+  type        = number
+  description = "The minimum number of nodes which should exist in the default node pool for Cluster A. Valid values are between 0 and 1000."
+  default     = null
+}
+
+variable "cluster_a_max_count" {
+  type        = number
+  description = "The maximum number of nodes which should exist in the default node pool for Cluster A. Valid values are between 0 and 1000."
+  default     = null
+}
+
+variable "cluster_a_dns_prefix" {
+  type        = string
+  default     = null
+  description = "DNS prefix for the AKS cluster for Cluster A. This is used to create a unique DNS name for the cluster. If not provided, a default value will be generated."
+}
+
+variable "cluster_a_node_pools" {
+  type = map(object({
+    node_count                  = number
+    vm_size                     = string
+    subnet_address_prefixes     = list(string)
+    pod_subnet_address_prefixes = list(string)
+    node_taints                 = optional(list(string), [])
+    enable_auto_scaling         = optional(bool, false)
+    min_count                   = optional(number, null)
+    max_count                   = optional(number, null)
+  }))
+  description = "Additional node pools for the AKS cluster for Cluster A. Map key is used as the node pool name."
+  default     = {}
+}
+
+/*
+ * AKS Cluster Configuration - Cluster B
+ */
+
+variable "cluster_b_node_count" {
+  type        = number
+  description = "Number of nodes for the agent pool in the AKS cluster for Cluster B."
+  default     = 1
+}
+
+variable "cluster_b_node_vm_size" {
+  type        = string
+  description = "VM size for the agent pool in the AKS cluster for Cluster B. Default is Standard_D8ds_v5."
+  default     = "Standard_D8ds_v5"
+}
+
+variable "cluster_b_enable_auto_scaling" {
+  type        = bool
+  description = "Should enable auto-scaler for the default node pool for Cluster B."
+  default     = false
+}
+
+variable "cluster_b_min_count" {
+  type        = number
+  description = "The minimum number of nodes which should exist in the default node pool for Cluster B. Valid values are between 0 and 1000."
+  default     = null
+}
+
+variable "cluster_b_max_count" {
+  type        = number
+  description = "The maximum number of nodes which should exist in the default node pool for Cluster B. Valid values are between 0 and 1000."
+  default     = null
+}
+
+variable "cluster_b_dns_prefix" {
+  type        = string
+  default     = null
+  description = "DNS prefix for the AKS cluster for Cluster B. This is used to create a unique DNS name for the cluster. If not provided, a default value will be generated."
+}
+
+variable "cluster_b_node_pools" {
+  type = map(object({
+    node_count                  = number
+    vm_size                     = string
+    subnet_address_prefixes     = list(string)
+    pod_subnet_address_prefixes = list(string)
+    node_taints                 = optional(list(string), [])
+    enable_auto_scaling         = optional(bool, false)
+    min_count                   = optional(number, null)
+    max_count                   = optional(number, null)
+  }))
+  description = "Additional node pools for the AKS cluster for Cluster B. Map key is used as the node pool name."
+  default     = {}
+}
+
+variable "should_enable_private_endpoints" {
+  type        = bool
+  description = "Whether to enable private endpoints for Key Vault and Storage Account for both clusters"
+  default     = false
+}
+
+/*
+ * Outbound Access Configuration
+ */
+
+variable "should_enable_managed_outbound_access" {
+  type        = bool
+  description = "Whether to enable managed outbound egress via NAT gateway instead of platform default internet access"
+  default     = true
+}
+
+variable "nat_gateway_idle_timeout_minutes" {
+  type        = number
+  description = "Idle timeout in minutes for NAT gateway connections"
+  default     = 4
+  validation {
+    condition     = var.nat_gateway_idle_timeout_minutes >= 4 && var.nat_gateway_idle_timeout_minutes <= 240
+    error_message = "Idle timeout must be between 4 and 240 minutes"
+  }
+}
+
+variable "nat_gateway_public_ip_count" {
+  type        = number
+  description = "Number of public IP addresses to associate with the NAT gateway (example: 2)"
+  default     = 1
+  validation {
+    condition     = var.nat_gateway_public_ip_count >= 1 && var.nat_gateway_public_ip_count <= 16
+    error_message = "Public IP count must be between 1 and 16"
+  }
+}
+
+variable "nat_gateway_zones" {
+  type        = list(string)
+  description = "Availability zones for NAT gateway resources when zone-redundancy is required (example: ['1','2'])"
+  default     = []
 }
 
 variable "aio_features" {
@@ -207,13 +353,13 @@ variable "aio_features" {
 
 variable "should_deploy_resource_sync_rules" {
   type        = bool
+  description = "Deploys resource sync rules if set to true"
   default     = false
-  description = "Deploys resource sync rules if set to true."
 }
 
 variable "should_enable_opc_ua_simulator" {
   type        = bool
-  description = "Should create an OPC UA Simulator. Default is false."
+  description = "Whether to deploy the OPC UA Simulator to the cluster. Default is false"
   default     = false
 }
 
@@ -294,7 +440,7 @@ variable "namespaced_assets" {
 
 variable "should_create_azure_functions" {
   type        = bool
-  description = "Whether to create Azure Functions for the clusters."
+  description = "Whether to create the Azure Functions resources including App Service Plan"
   default     = false
 }
 

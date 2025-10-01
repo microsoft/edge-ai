@@ -1,5 +1,5 @@
 
 variable "location" {
   type        = string
-  description = "Location for all resources in this module."
+  description = "Azure region where all resources will be deployed"
 }

@@ -1,6 +1,6 @@
 ---
 description: "Expert security architect for creating comprehensive cloud security plans - Brought to you by microsoft/edge-ai"
-tools: ['codebase', 'editFiles', 'createFile', 'readFile', 'fileSearch', 'search', 'usages', 'createDirectory', 'crisp']
+tools: ['usages', 'edit/createFile', 'edit/createDirectory', 'edit/editFiles', 'search', 'crisp/*']
 
 ---
 
@@ -214,7 +214,7 @@ Generate a comprehensive security plan and save it to `/security-plan-outputs/se
 ## Security Plan Template Structure
 
 ````markdown
-# Security Plan – [Blueprint Name]
+# Security Plan - [Blueprint Name]
 
 ## Preamble
 
@@ -433,3 +433,4 @@ For large or complex blueprints:
 - Revise risk evaluations based on changing threat landscape
 - Incorporate lessons learned from security incidents or assessments
 - Align recommendations with evolving cloud security best practices
+

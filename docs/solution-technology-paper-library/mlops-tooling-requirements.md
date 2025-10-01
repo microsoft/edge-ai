@@ -78,7 +78,7 @@ AML provides a model optimization feature supporting ONNX during model training;
 
 Alternatively, if the model is built on one of the [frameworks which support ONNX conversion](https://onnx.ai/supported-tools), you can use [ONNX conversion tools](https://github.com/onnx/tutorials) to convert it.
 
-Another important hardware acceleration feature that AML can provide is distributed training (e.g., TensorFlow’s MirroredStrategy or PyTorch DDP) across multiple GPUs to speed up model training. Without strong support of distributed training, models may not perform optimally in distributed edge environments. Distributed training can be used for traditional machine learning models, but it is better suited for compute and time intensive tasks, like the use of deep learning model for vision tasks.
+Another important hardware acceleration feature that AML can provide is distributed training (e.g., TensorFlow's MirroredStrategy or PyTorch DDP) across multiple GPUs to speed up model training. Without strong support of distributed training, models may not perform optimally in distributed edge environments. Distributed training can be used for traditional machine learning models, but it is better suited for compute and time intensive tasks, like the use of deep learning model for vision tasks.
 
 The vision model trained with AML can be seamlessly deployed to Arc-enabled Kubernetes edge clusters with the AML native deployment service (arc extension) or can be flexibility packaged and saved in a container registry and subsequently deployed via other deployment tooling approaches.
 

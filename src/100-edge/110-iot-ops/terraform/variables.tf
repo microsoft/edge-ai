@@ -77,8 +77,8 @@ variable "enable_opc_ua_simulator" {
 
 variable "should_enable_otel_collector" {
   type        = bool
+  description = "Whether to deploy the OpenTelemetry Collector and Azure Monitor ConfigMap"
   default     = true
-  description = "Deploy the OpenTelemetry Collector and Azure Monitor ConfigMap (optionally used)"
 }
 
 variable "should_assign_key_vault_roles" {

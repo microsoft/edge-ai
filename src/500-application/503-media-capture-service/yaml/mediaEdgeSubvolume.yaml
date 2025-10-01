@@ -1,0 +1,13 @@
+---
+apiVersion: "arccontainerstorage.azure.net/v1"
+kind: EdgeSubvolume
+metadata:
+  name: media
+spec:
+  edgevolume: pvc-acsa-cloud-backed
+  path: media
+  auth:
+    authType: MANAGED_IDENTITY
+  storageaccountendpoint: "${STORAGE_ACCOUNT_ENDPOINT}"
+  container: media
+  ingestPolicy: edgeingestpolicy-default # Optional: See the following instructions if you want to update the ingestPolicy with your own configuration

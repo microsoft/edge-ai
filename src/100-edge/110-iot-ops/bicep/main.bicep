@@ -21,9 +21,6 @@ param arcConnectedClusterName string
 @description('The settings for the Azure Container Store for Azure Arc Extension.')
 param containerStorageConfig types.ContainerStorageExtension = types.containerStorageExtensionDefaults
 
-@description('The settings for the Open Service Mesh Extension.')
-param openServiceMeshConfig types.OpenServiceMeshExtension = types.openServiceMeshExtensionDefaults
-
 @description('The settings for the Azure IoT Operations Platform Extension.')
 param aioPlatformConfig types.AioPlatformExtension = types.aioPlatformExtensionDefaults
 
@@ -227,7 +224,6 @@ module iotOpsInit 'modules/iot-ops-init.bicep' = if (shouldInitAio) {
     aioPlatformConfig: aioPlatformConfig
     arcConnectedClusterName: arcConnectedClusterName
     containerStorageConfig: containerStorageConfig
-    openServiceMeshConfig: openServiceMeshConfig
     secretStoreConfig: secretStoreConfig
   }
 }
@@ -374,12 +370,6 @@ output containerStorageExtensionId string = (iotOpsInit.?outputs.?containerStora
 
 @description('The name of the Container Storage Extension.')
 output containerStorageExtensionName string = (iotOpsInit.?outputs.?containerStorageExtensionName) ?? ''
-
-@description('The ID of the Open Service Mesh Extension.')
-output openServiceMeshExtensionId string = (iotOpsInit.?outputs.?openServiceMeshExtensionId) ?? ''
-
-@description('The name of the Open Service Mesh Extension.')
-output openServiceMeshExtensionName string = (iotOpsInit.?outputs.?openServiceMeshExtensionName) ?? ''
 
 @description('The ID of the Azure IoT Operations Platform Extension.')
 output aioPlatformExtensionId string = (iotOpsInit.?outputs.?aioPlatformExtensionId) ?? ''

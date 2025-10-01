@@ -1,0 +1,80 @@
+---
+services:
+  # Init container to setup required files
+  setup-resources:
+    image: alpine:latest
+    container_name: setup-resources
+    volumes:
+      # Mount only the media directory for local development
+      - ./resources/media:/cloud-sync/media
+    command: |
+      sh -c "
+        echo 'Setting up resources for media-capture-service...'
+        echo 'Resource setup complete for local development!'
+      "
+    networks:
+      - media-capture-network
+
+  # Local Mosquitto MQTT Broker
+  mosquitto-broker:
+    image: eclipse-mosquitto@sha256:7b77b81b6d25b1fc6cc5ed1eb8ae48c247d4fd6f9aef1f7ee88b4a8e0b7f2b3e
+    container_name: mosquitto-broker
+    ports:
+      - "1883:1883"    # MQTT non-TLS port
+    volumes:
+      - "./resources/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro"
+      - "mosquitto-data:/mosquitto/data"
+      - "./services/media-capture-service/sample-data:/tmp/sample-data:ro"
+    depends_on:
+      setup-resources:
+        condition: service_completed_successfully
+    networks:
+      - media-capture-network
+    restart: unless-stopped
+
+  media-capture-service:
+    # Build locally from Dockerfile
+    build:
+      context: ./services/media-capture-service
+      dockerfile: Dockerfile
+    image: media-capture-service:latest
+    platform: linux/amd64  # Force AMD64 platform for compatibility
+
+    container_name: media-capture-service
+    restart: unless-stopped
+
+    # Run as current user to maintain file permissions
+    user: "1000:1000"
+
+    # Load environment variables from .env file
+    env_file:
+      - .env
+
+    # Override specific variables for local development
+    environment:
+      - AIO_BROKER_HOSTNAME=mosquitto-broker
+      - AIO_BROKER_TCP_PORT=1883
+      - AIO_MQTT_USE_TLS=false
+
+    # Wait for setup and mosquitto broker to be ready
+    depends_on:
+      setup-resources:
+        condition: service_completed_successfully
+      mosquitto-broker:
+        condition: service_started
+
+    # Volume mounts for local development (no authentication)
+    volumes:
+      # Media cloud sync directory
+      - ./resources/media:/cloud-sync/media
+
+    # Network configuration
+    networks:
+      - media-capture-network
+
+networks:
+  media-capture-network:
+    driver: bridge
+
+volumes:
+  mosquitto-data:

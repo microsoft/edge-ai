@@ -49,20 +49,20 @@ already deployed resources.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| environment | Environment for all resources in this module: dev, test, or prod. | `string` | n/a | yes |
-| location | Location for all resources in this module | `string` | n/a | yes |
-| resource\_prefix | Prefix for all resources in this module. | `string` | n/a | yes |
+| environment | Environment for all resources in this module: dev, test, or prod | `string` | n/a | yes |
+| location | Azure region where all resources will be deployed | `string` | n/a | yes |
+| resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
 | aio\_identity\_name | Name of the existing AIO user-assigned managed identity. Otherwise, 'id-{resource\_prefix}-{environment}-aio-{instance}'. | `string` | `null` | no |
 | aio\_instance\_name | Name of the existing AIO instance. Otherwise, 'arck-{resource\_prefix}-{environment}-{instance}-ops-instance'. | `string` | `null` | no |
 | custom\_location\_name | Name of the existing custom location. Otherwise, 'arck-{resource\_prefix}-{environment}-{instance}-cl'. | `string` | `null` | no |
 | eventhouse\_kql\_database\_name | Name of the Eventhouse KQL Database. (default, Eventhouse name) | `string` | `null` | no |
 | eventstream\_table\_name | Name of the Eventhouse table for data ingestion. | `string` | `null` | no |
-| fabric\_eventhouse\_name | Display name of the existing Microsoft Fabric eventhouse. Otherwise, 'evh-{resource\_prefix}-{environment}-{instance}'. | `string` | `null` | no |
-| fabric\_workspace\_name | Display name of the existing Microsoft Fabric workspace. Otherwise, 'ws-{resource\_prefix}-{environment}-{instance}'. | `string` | `null` | no |
-| instance | Instance identifier for naming resources: 001, 002, etc. | `string` | `"001"` | no |
-| resource\_group\_name | Name of the existing resource group. Otherwise, 'rg-{resource\_prefix}-{environment}-{instance}'. | `string` | `null` | no |
-| should\_create\_eventgrid\_dataflows | Whether to create EventGrid dataflows in the edge messaging component. | `bool` | `false` | no |
-| should\_create\_eventhub\_dataflows | Whether to create EventHub dataflows in the edge messaging component. | `bool` | `false` | no |
+| fabric\_eventhouse\_name | The name of the Microsoft Fabric eventhouse. Otherwise, 'evh-{resource\_prefix}-{environment}-{instance}' | `string` | `null` | no |
+| fabric\_workspace\_name | The name of the Microsoft Fabric workspace. Otherwise, 'ws-{resource\_prefix}-{environment}-{instance}' | `string` | `null` | no |
+| instance | Instance identifier for naming resources: 001, 002, etc | `string` | `"001"` | no |
+| resource\_group\_name | Name of the resource group | `string` | `null` | no |
+| should\_create\_eventgrid\_dataflows | Whether to create EventGrid dataflows in the edge messaging component | `bool` | `false` | no |
+| should\_create\_eventhub\_dataflows | Whether to create EventHub dataflows in the edge messaging component | `bool` | `false` | no |
 | should\_create\_fabric\_eventhouse | Whether to create a Microsoft Fabric Eventhouse for real-time intelligence scenarios. | `bool` | `true` | no |
 
 ## Outputs

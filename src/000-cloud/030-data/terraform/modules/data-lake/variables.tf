@@ -14,8 +14,8 @@ variable "data_lake_data_owner_principal_id" {
 }
 
 variable "data_lake_data_contributor_principal_id" {
-  description = "The Principal ID that will be assigned the 'Storage Blob Data Contributor' role at the Storage Account scope."
   type        = string
+  description = "The Principal ID that will be assigned the 'Storage Blob Data Contributor' role at the Storage Account scope"
 }
 
 variable "should_create_data_lake_file_share" {
@@ -24,16 +24,21 @@ variable "should_create_data_lake_file_share" {
 }
 
 variable "file_share_name" {
-  description = "Name of the file share"
   type        = string
+  description = "Name of the file share to create"
 }
 
 variable "file_share_quota_gb" {
-  description = "Quota of the file share in GB"
   type        = number
+  description = "Maximum size of the file share in GB"
 }
 
 variable "data_lake_filesystem_name" {
-  description = "Name of the Data Lake Gen2 filesystem"
   type        = string
+  description = "Name of the Data Lake Gen2 filesystem to create"
+}
+
+variable "is_hns_enabled" {
+  description = "Whether to enable Hierarchical Namespace (HNS) for Azure Data Lake Storage Gen2. Note: Azure ML workspaces do not support HNS-enabled storage accounts."
+  type        = bool
 }

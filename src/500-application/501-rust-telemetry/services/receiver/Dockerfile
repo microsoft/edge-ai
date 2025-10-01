@@ -18,7 +18,7 @@
 # =============================================================================
 # STAGE 1: Builder - Compiles the Rust application
 # =============================================================================
-FROM mcr.microsoft.com/cbl-mariner/base/core:2.0 AS builder
+FROM mcr.microsoft.com/cbl-mariner/base/core:2.0@sha256:b462b8e95dfa12b3fefc95025a627306a527de61db17b8519a59b8e25f1663c7 AS builder
 
 # Install OpenSSL development libraries, C compiler, curl, CA certificates, and other build dependencies
 RUN tdnf install -y openssl-devel-1.1.1k-36.cm2 gcc-11.2.0-8.cm2 make-4.3-2.cm2 binutils-2.37-14.cm2 glibc-devel-2.35-7.cm2 curl-8.8.0-5.cm2 ca-certificates-2.0.0-19.cm2 && \
@@ -77,9 +77,7 @@ RUN touch src/main.rs && cargo build --release
 # =============================================================================
 # STAGE 2: Runtime - Creates the minimal production image
 # =============================================================================
-FROM mcr.microsoft.com/cbl-mariner/base/core:2.0
-
-# Install only the necessary runtime dependencies and create a non-root user
+FROM mcr.microsoft.com/cbl-mariner/base/core:2.0@sha256:b462b8e95dfa12b3fefc95025a627306a527de61db17b8519a59b8e25f1663c7 # Install only the necessary runtime dependencies and create a non-root user
 RUN tdnf install -y ca-certificates-2.0.0-19.cm2 shadow-utils-4.9-13.cm2 && \
     tdnf clean all && \
     groupadd -r appuser && useradd -r -g appuser appuser

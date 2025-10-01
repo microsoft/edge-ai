@@ -311,7 +311,7 @@ The service can be backed up by the Azure Backup service.
 
 Enable Azure Backup and configure the backup source on a desired frequency and with a desired retention period. Azure Backup lets you easily configure operational backup for protecting block blobs in your storage accounts. Backup of blobs is configured at the storage account level. So, all blobs in the storage account are protected with operational backup.
 
-You can configure backup for multiple storage accounts using the Backup Center. You can also configure backup for a storage account using the storage account’s Data Protection properties.
+You can configure backup for multiple storage accounts using the Backup Center. You can also configure backup for a storage account using the storage account's Data Protection properties.
 
 **Reference:**
 
@@ -326,7 +326,7 @@ Service supports its own native backup capability (if not using Azure Backup).
 
 **Configuration Guidance:**
 
-Operational backup of blobs is a local backup solution. So the backup data isn't transferred to the Backup vault, but is stored in the source storage account itself. However, the Backup vault still serves as the unit of managing backups. Also, this is a continuous backup solution, which means that you don’t need to schedule any backups and all changes will be retained and restorable from the state at a selected point in time.
+Operational backup of blobs is a local backup solution. So the backup data isn't transferred to the Backup vault, but is stored in the source storage account itself. However, the Backup vault still serves as the unit of managing backups. Also, this is a continuous backup solution, which means that you don't need to schedule any backups and all changes will be retained and restorable from the state at a selected point in time.
 
 **Reference:**
 

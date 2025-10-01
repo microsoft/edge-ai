@@ -1,7 +1,7 @@
 /*
  * IMPORTANT: The variable names in this file ('aioPlatformExtensionDefaults',
  * 'secretStoreExtensionDefaults', 'containerStorageExtensionDefaults',
- * 'openServiceMeshExtensionDefaults', 'aioExtensionDefaults') are explicitly referenced
+ * 'aioExtensionDefaults') are explicitly referenced
  * by the aio-version-checker.py script. If you rename these variables or change their structure,
  * you must also update the script and the aio-version-checker-template.yml pipeline.
  */
@@ -28,21 +28,6 @@ var secretStoreExtensionDefaults = {
   release: {
     version: '0.10.0'
     train: 'preview'
-  }
-}
-
-@export()
-@description('The settings for the Open Service Mesh Extension.')
-type OpenServiceMeshExtension = {
-  @description('The common settings for the extension.')
-  release: Release
-}
-
-@export()
-var openServiceMeshExtensionDefaults = {
-  release: {
-    version: '1.2.10'
-    train: 'stable'
   }
 }
 

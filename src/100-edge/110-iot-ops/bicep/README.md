@@ -13,7 +13,6 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 |common|The common component configuration.|`[_2.Common](#user-defined-types)`|n/a|yes|
 |arcConnectedClusterName|The resource name for the Arc connected cluster.|`string`|n/a|yes|
 |containerStorageConfig|The settings for the Azure Container Store for Azure Arc Extension.|`[_1.ContainerStorageExtension](#user-defined-types)`|[variables('_1.containerStorageExtensionDefaults')]|no|
-|openServiceMeshConfig|The settings for the Open Service Mesh Extension.|`[_1.OpenServiceMeshExtension](#user-defined-types)`|[variables('_1.openServiceMeshExtensionDefaults')]|no|
 |aioPlatformConfig|The settings for the Azure IoT Operations Platform Extension.|`[_1.AioPlatformExtension](#user-defined-types)`|[variables('_1.aioPlatformExtensionDefaults')]|no|
 |secretStoreConfig|The settings for the Secret Store Extension.|`[_1.SecretStoreExtension](#user-defined-types)`|[variables('_1.secretStoreExtensionDefaults')]|no|
 |shouldInitAio|Whether to deploy the Azure IoT Operations initial connected cluster resources, Secret Sync, ACSA, OSM, AIO Platform.|`bool`|`true`|no|
@@ -52,9 +51,6 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|deployIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2023-01-31|
-|sseIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2023-01-31|
-|adrNamespace|`Microsoft.DeviceRegistry/namespaces`|2025-07-01-preview|
 |deployArcK8sRoleAssignments|`Microsoft.Resources/deployments`|2022-09-01|
 |deployKeyVaultRoleAssignments|`Microsoft.Resources/deployments`|2022-09-01|
 |sseKeyVaultRoleAssignments|`Microsoft.Resources/deployments`|2022-09-01|
@@ -166,7 +162,6 @@ Initializes and configures the required Arc extensions for Azure IoT Operations 
 | :--- | :--- | :--- | :--- | :--- |
 |arcConnectedClusterName|The resource name for the Arc connected cluster.|`string`|n/a|yes|
 |containerStorageConfig|The settings for the Azure Container Store for Azure Arc Extension.|`[_1.ContainerStorageExtension](#user-defined-types)`|n/a|yes|
-|openServiceMeshConfig|The settings for the Open Service Mesh Extension.|`[_1.OpenServiceMeshExtension](#user-defined-types)`|n/a|yes|
 |aioPlatformConfig|The settings for the Azure IoT Operations Platform Extension.|`[_1.AioPlatformExtension](#user-defined-types)`|n/a|yes|
 |secretStoreConfig|The settings for the Secret Store Extension.|`[_1.SecretStoreExtension](#user-defined-types)`|n/a|yes|
 
@@ -174,9 +169,7 @@ Initializes and configures the required Arc extensions for Azure IoT Operations 
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|arcConnectedCluster|`Microsoft.Kubernetes/connectedClusters`|2021-03-01|
 |aioPlatform|`Microsoft.KubernetesConfiguration/extensions`|2023-05-01|
-|openServiceMesh|`Microsoft.KubernetesConfiguration/extensions`|2023-05-01|
 |containerStorage|`Microsoft.KubernetesConfiguration/extensions`|2023-05-01|
 |secretStore|`Microsoft.KubernetesConfiguration/extensions`|2023-05-01|
 
@@ -188,8 +181,6 @@ Initializes and configures the required Arc extensions for Azure IoT Operations 
 |containerStorageExtensionName|`string`|The name of the Container Storage Extension.|
 |secretStoreExtensionId|`string`|The ID of the Secret Store Extension.|
 |secretStoreExtensionName|`string`|The name of the Secret Store Extension.|
-|openServiceMeshExtensionId|`string`|The ID of the Open Service Mesh Extension.|
-|openServiceMeshExtensionName|`string`|The name of the Open Service Mesh Extension.|
 |aioPlatformExtensionId|`string`|The ID of the Azure IoT Operations Platform Extension.|
 |aioPlatformExtensionName|`string`|The name of the Azure IoT Operations Platform Extension.|
 
@@ -217,7 +208,6 @@ Creates secrets in Key Vault for deployment script setup and initialization for 
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|sseIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2024-11-30|
 |scriptSecrets|`Microsoft.Resources/deployments`|2022-09-01|
 
 #### Outputs for postInitScriptsSecrets
@@ -289,7 +279,7 @@ Deploys Azure IoT Operations instance, broker, authentication, listeners, and da
 |shouldEnableOtelCollector|Whether or not to enable the Open Telemetry Collector for Azure IoT Operations.|`bool`|n/a|yes|
 |brokerListenerAnonymousConfig|Configuration for the insecure anonymous AIO MQ Broker Listener.|`[_1.AioMqBrokerAnonymous](#user-defined-types)`|n/a|yes|
 |aioMqBrokerConfig|The settings for the Azure IoT Operations MQ Broker.|`[_1.AioMqBroker](#user-defined-types)`|n/a|yes|
-|shouldCreateAnonymousBrokerListener|Whether to enable an insecure anonymous AIO MQ Broker Listener. (Should only be used for dev or test environments)|`bool`|False|no|
+|shouldCreateAnonymousBrokerListener|Whether to enable an insecure anonymous AIO MQ Broker Listener. (Should only be used for dev or test environments)|`bool`|`false`|no|
 |aioDataFlowInstanceConfig|The settings for Azure IoT Operations Data Flow Instances.|`[_1.AioDataFlowInstance](#user-defined-types)`|n/a|yes|
 |customLocationName|The name for the Custom Locations resource.|`string`|n/a|yes|
 |shouldDeployResourceSyncRules|Whether or not to deploy the Custom Locations Resource Sync Rules for the Azure IoT Operations resources.|`bool`|n/a|yes|
@@ -300,14 +290,10 @@ Deploys Azure IoT Operations instance, broker, authentication, listeners, and da
 | :--- | :--- | :--- |
 |sseIdentity::sseFedCred|`Microsoft.ManagedIdentity/userAssignedIdentities/federatedIdentityCredentials`|2023-01-31|
 |aioIdentity::aioFedCred|`Microsoft.ManagedIdentity/userAssignedIdentities/federatedIdentityCredentials`|2023-01-31|
-|schemaRegistry|`Microsoft.DeviceRegistry/schemaRegistries`|2024-09-01-preview|
-|arcConnectedCluster|`Microsoft.Kubernetes/connectedClusters`|2024-12-01-preview|
 |aioExtension|`Microsoft.KubernetesConfiguration/extensions`|2023-05-01|
 |customLocation|`Microsoft.ExtendedLocation/customLocations`|2021-08-31-preview|
 |aioSyncRule|`Microsoft.ExtendedLocation/customLocations/resourceSyncRules`|2021-08-31-preview|
 |adrSyncRule|`Microsoft.ExtendedLocation/customLocations/resourceSyncRules`|2021-08-31-preview|
-|sseIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2023-01-31|
-|aioIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2023-01-31|
 |defaultSecretSyncSecretProviderClass|`Microsoft.SecretSyncController/azureKeyVaultSecretProviderClasses`|2024-08-21-preview|
 |aioInstance|`Microsoft.IoTOperations/instances`|2025-07-01-preview|
 |broker|`Microsoft.IoTOperations/instances/brokers`|2025-07-01-preview|
@@ -359,7 +345,7 @@ Creates secrets in Key Vault for deployment script setup and initialization for 
 |deployKeyVaultResourceGroupName|The resource group name where the Key Vault is located. Defaults to the current resource group.|`string`|n/a|yes|
 |deploySecretNamePrefix|The prefix used with constructing the secret name that will have the deployment script. (e.g., ds-iot-ops-0, ds-iot-ops-1)|`string`|n/a|yes|
 |deployUserTokenSecretName|The name of the secret in Key Vault that has the token for the deploy user with cluster-admin role.|`string`|n/a|yes|
-|shouldEnableOpcUaSimulator|Whether or not to enable the OPC UA Simulator for Azure IoT Operations.|`bool`|True|no|
+|shouldEnableOpcUaSimulator|Whether or not to enable the OPC UA Simulator for Azure IoT Operations.|`bool`|`true`|no|
 
 #### Resources for postInstanceScriptsSecrets
 
@@ -428,7 +414,6 @@ Deploy and configure the OPC UA Simulator
 |Name|Type|API Version|
 | :--- | :--- | :--- |
 |device|`Microsoft.DeviceRegistry/namespaces/devices`|2025-07-01-preview|
-|adrNamespace|`Microsoft.DeviceRegistry/namespaces`|2025-07-01-preview|
 |asset|`Microsoft.DeviceRegistry/namespaces/assets`|2025-07-01-preview|
 
 #### Outputs for opcUaSimulator
@@ -576,14 +561,6 @@ The mode of the AIO instance feature. Either "Stable", "Preview" or "Disabled".
 
 The setting value of the AIO instance feature. Either "Enabled" or "Disabled".
 
-### `_1.OpenServiceMeshExtension`
-
-The settings for the Open Service Mesh Extension.
-
-|Property|Type|Description|
-| :--- | :--- | :--- |
-|release|`[_1.Release](#user-defined-types)`|The common settings for the extension.|
-
 ### `_1.Release`
 
 The common settings for Azure Arc Extensions.
@@ -677,8 +654,6 @@ Common settings for the components.
 | :--- | :--- | :--- |
 |containerStorageExtensionId|`string`|The ID of the Container Storage Extension.|
 |containerStorageExtensionName|`string`|The name of the Container Storage Extension.|
-|openServiceMeshExtensionId|`string`|The ID of the Open Service Mesh Extension.|
-|openServiceMeshExtensionName|`string`|The name of the Open Service Mesh Extension.|
 |aioPlatformExtensionId|`string`|The ID of the Azure IoT Operations Platform Extension.|
 |aioPlatformExtensionName|`string`|The name of the Azure IoT Operations Platform Extension.|
 |secretStoreExtensionId|`string`|The ID of the Secret Store Extension.|

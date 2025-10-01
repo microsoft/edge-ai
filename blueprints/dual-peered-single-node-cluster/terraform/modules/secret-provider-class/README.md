@@ -39,13 +39,13 @@ resources for both clusters to enable secret synchronization from Key Vault.
 | cluster\_a\_custom\_location\_id | The custom location ID for Cluster A. | `string` | n/a | yes |
 | cluster\_a\_key\_vault | The Key Vault for Cluster A. | ```object({ name = string })``` | n/a | yes |
 | cluster\_a\_location | The Azure location for Cluster A resources. | `string` | n/a | yes |
-| cluster\_a\_name | The name identifier for Cluster A. | `string` | n/a | yes |
+| cluster\_a\_name | The name identifier for Cluster A | `string` | n/a | yes |
 | cluster\_a\_resource\_group | The resource group for Cluster A. | ```object({ id = string })``` | n/a | yes |
 | cluster\_a\_secret\_sync\_identity | The secret sync identity for Cluster A. | ```object({ client_id = string })``` | n/a | yes |
 | cluster\_b\_custom\_location\_id | The custom location ID for Cluster B. | `string` | n/a | yes |
 | cluster\_b\_key\_vault | The Key Vault for Cluster B. | ```object({ name = string })``` | n/a | yes |
 | cluster\_b\_location | The Azure location for Cluster B resources. | `string` | n/a | yes |
-| cluster\_b\_name | The name identifier for Cluster B. | `string` | n/a | yes |
+| cluster\_b\_name | The name identifier for Cluster B | `string` | n/a | yes |
 | cluster\_b\_resource\_group | The resource group for Cluster B. | ```object({ id = string })``` | n/a | yes |
 | cluster\_b\_secret\_sync\_identity | The secret sync identity for Cluster B. | ```object({ client_id = string })``` | n/a | yes |
 | enterprise\_broker\_tls\_cert\_secret\_name | The name of the Kubernetes secret containing the broker tls certificate | `string` | n/a | yes |

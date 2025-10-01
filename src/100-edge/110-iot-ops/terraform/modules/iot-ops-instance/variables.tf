@@ -130,7 +130,7 @@ variable "platform_cluster_extension_id" {
 
 variable "should_enable_otel_collector" {
   type        = bool
-  description = "Deploy the OpenTelemetry Collector and Azure Monitor ConfigMap (optionally used)"
+  description = "Whether to deploy the OpenTelemetry Collector and Azure Monitor ConfigMap"
 }
 
 variable "aio_uami_id" {
@@ -140,7 +140,7 @@ variable "aio_uami_id" {
 
 variable "should_create_anonymous_broker_listener" {
   type        = bool
-  description = "Whether to enable an insecure anonymous AIO MQ Broker Listener. (Should only be used for dev or test environments)"
+  description = "Whether to enable an insecure anonymous AIO MQ Broker Listener. Should only be used for dev or test environments"
 }
 
 variable "broker_listener_anonymous_config" {

@@ -72,6 +72,18 @@ variable "storage_account_kind" {
   default     = "StorageV2"
 }
 
+variable "storage_account_is_hns_enabled" {
+  description = "Whether to enable Hierarchical Namespace (HNS) for Azure Data Lake Storage Gen2. Note: Azure ML workspaces do not support HNS-enabled storage accounts."
+  type        = bool
+  default     = true
+}
+
+variable "should_enable_public_network_access" {
+  description = "Whether to enable public network access for the storage account"
+  type        = bool
+  default     = true
+}
+
 /*
  * Private Endpoint for Storage Account - Optional
  */
@@ -84,6 +96,12 @@ variable "should_enable_private_endpoint" {
 
 variable "private_endpoint_subnet_id" {
   description = "ID of the subnet to deploy the private endpoint"
+  type        = string
+  default     = null
+}
+
+variable "virtual_network_id" {
+  description = "The ID of the virtual network to link to the private DNS zones. Required if should_enable_private_endpoint is true."
   type        = string
   default     = null
 }
@@ -127,8 +145,8 @@ variable "data_lake_blob_container_name" {
 }
 
 variable "data_lake_filesystem_name" {
-  description = "Name of the Data Lake Gen2 filesystem to create"
   type        = string
+  description = "Name of the Data Lake Gen2 filesystem to create"
   default     = "datalake"
 }
 
@@ -139,8 +157,8 @@ variable "data_lake_data_owner_principal_id" {
 }
 
 variable "data_lake_data_contributor_principal_id" {
-  description = "Principal ID of a managed identity that should be granted Storage Blob Data Contributor access"
   type        = string
+  description = "The Principal ID that will be assigned the 'Storage Blob Data Contributor' role at the Storage Account scope"
   default     = null
 }
 
@@ -155,13 +173,13 @@ variable "should_create_data_lake_file_share" {
 }
 
 variable "file_share_name" {
-  description = "Name of the file share to create"
   type        = string
+  description = "Name of the file share to create"
   default     = "fileshare"
 }
 
 variable "file_share_quota_gb" {
-  description = "Maximum size of the file share in GB"
   type        = number
+  description = "Maximum size of the file share in GB"
   default     = 5
 }

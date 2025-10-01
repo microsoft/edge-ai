@@ -34,10 +34,3 @@ variable "edge_storage_accelerator" {
     diskMountPoint        = string
   })
 }
-
-variable "open_service_mesh" {
-  type = object({
-    version = string
-    train   = string
-  })
-}

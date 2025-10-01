@@ -58,16 +58,9 @@ Creates the required resources needed for an edge IaC deployment.
 | :--- | :--- | :--- | :--- | :--- |
 |common|The common component configuration.|`[_1.Common](#user-defined-types)`|n/a|yes|
 |resourceGroupName|The name for the resource group. If not provided, a default name will be generated.|`string`|[format('rg-{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]|no|
-|useExistingResourceGroup|Whether to use an existing resource group instead of creating a new one.|`bool`|False|no|
-|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|False|no|
+|useExistingResourceGroup|Whether to use an existing resource group instead of creating a new one.|`bool`|`false`|no|
+|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|`false`|no|
 |tags|Additional tags to add to the resources.|`object`|{}|no|
-
-#### Resources for cloudResourceGroup
-
-|Name|Type|API Version|
-| :--- | :--- | :--- |
-|newResourceGroup|`Microsoft.Resources/resourceGroups`|2022-09-01|
-|existingResourceGroup|`Microsoft.Resources/resourceGroups`|2022-09-01|
 
 #### Outputs for cloudResourceGroup
 
@@ -86,13 +79,13 @@ Provisions cloud resources required for Azure IoT Operations including Schema Re
 |Name|Description|Type|Default|Required|
 | :--- | :--- | :--- | :--- | :--- |
 |common|The common component configuration.|`[_1.Common](#user-defined-types)`|n/a|yes|
-|shouldCreateArcOnboardingUami|Whether to create a User Assigned Managed Identity for onboarding a cluster to Azure Arc.|`bool`|True|no|
-|shouldCreateKeyVault|Whether or not to create a new Key Vault for the Secret Sync Extension.|`bool`|True|no|
+|shouldCreateArcOnboardingUami|Whether to create a User Assigned Managed Identity for onboarding a cluster to Azure Arc.|`bool`|`true`|no|
+|shouldCreateKeyVault|Whether or not to create a new Key Vault for the Secret Sync Extension.|`bool`|`true`|no|
 |keyVaultName|The name of the Key Vault.|`string`|[format('kv-{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]|no|
 |keyVaultResourceGroupName|The name for the Resource Group for the Key Vault.|`string`|[resourceGroup().name]|no|
-|shouldAssignAdminUserRole|Whether or not to create a role assignment for an admin user.|`bool`|True|no|
+|shouldAssignAdminUserRole|Whether or not to create a role assignment for an admin user.|`bool`|`true`|no|
 |adminUserObjectId|The Object ID for an admin user that will be granted the "Key Vault Secrets Officer" role.|`string`|[deployer().objectId]|no|
-|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|False|no|
+|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|`false`|no|
 
 #### Resources for cloudSecurityIdentity
 
@@ -135,7 +128,7 @@ Deploys Azure observability resources including Azure Monitor Workspace, Log Ana
 |grafanaAdminPrincipalId|The principalId (objectId) of the user or service principal to assign the Grafana Admin role.|`string`|n/a|no|
 |logsDataCollectionRuleNamespaces|List of cluster namespaces to be exposed in the log analytics workspace|`array`|['kube-system', 'gatekeeper-system', 'azure-arc', 'azure-iot-operations']|no|
 |logsDataCollectionRuleStreams|List of streams to be enabled in the log analytics workspace|`array`|['Microsoft-ContainerLog', 'Microsoft-ContainerLogV2', 'Microsoft-KubeEvents', 'Microsoft-KubePodInventory', 'Microsoft-KubeNodeInventory', 'Microsoft-KubePVInventory', 'Microsoft-KubeServices', 'Microsoft-KubeMonAgentEvents', 'Microsoft-InsightsMetrics', 'Microsoft-ContainerInventory', 'Microsoft-ContainerNodeInventory', 'Microsoft-Perf']|no|
-|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|False|no|
+|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|`false`|no|
 
 #### Resources for cloudObservability
 
@@ -172,20 +165,20 @@ Creates storage resources including Azure Storage Account and Schema Registry fo
 |Name|Description|Type|Default|Required|
 | :--- | :--- | :--- | :--- | :--- |
 |common|The common component configuration.|`[_2.Common](#user-defined-types)`|n/a|yes|
-|shouldCreateStorageAccount|Whether to create the Storage Account.|`bool`|True|no|
+|shouldCreateStorageAccount|Whether to create the Storage Account.|`bool`|`true`|no|
 |storageAccountResourceGroupName|The name for the Resource Group for the Storage Account.|`string`|[if(parameters('shouldCreateStorageAccount'), resourceGroup().name, fail('storageAccountResourceGroupName required when shouldCreateStorageAccount is false'))]|no|
 |storageAccountName|The name for the Storage Account used by the Schema Registry.|`string`|[if(parameters('shouldCreateStorageAccount'), format('st{0}', uniqueString(resourceGroup().id)), fail('storageAccountName required when shouldCreateStorageAccount is false'))]|no|
 |storageAccountSettings|The settings for the new Storage Account.|`[_1.StorageAccountSettings](#user-defined-types)`|[variables('_1.storageAccountSettingsDefaults')]|no|
-|shouldCreateSchemaRegistry|Whether to create the ADR Schema Registry.|`bool`|True|no|
-|shouldCreateSchemaContainer|Whether to create the Blob Container for schemas.|`bool`|True|no|
+|shouldCreateSchemaRegistry|Whether to create the ADR Schema Registry.|`bool`|`true`|no|
+|shouldCreateSchemaContainer|Whether to create the Blob Container for schemas.|`bool`|`true`|no|
 |schemaContainerName|The name for the Blob Container for schemas.|`string`|schemas|no|
 |schemaRegistryName|The name for the ADR Schema Registry.|`string`|[format('sr-{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]|no|
 |schemaRegistryNamespace|The ADLS Gen2 namespace for the ADR Schema Registry.|`string`|[format('srns-{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]|no|
-|shouldCreateAdrNamespace|Whether to create the ADR Namespace.|`bool`|True|no|
+|shouldCreateAdrNamespace|Whether to create the ADR Namespace.|`bool`|`true`|no|
 |adrNamespaceName|The name for the ADR Namespace.|`string`|[format('adrns-{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]|no|
 |adrNamespaceMessagingEndpoints|Dictionary of messaging endpoints for the ADR namespace.|`[_1.AdrNamespaceMessagingEndpoints](#user-defined-types)`|n/a|no|
-|adrNamespaceEnableIdentity|Whether to enable system-assigned managed identity for the ADR namespace.|`bool`|True|no|
-|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|False|no|
+|adrNamespaceEnableIdentity|Whether to enable system-assigned managed identity for the ADR namespace.|`bool`|`true`|no|
+|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|`false`|no|
 
 #### Resources for cloudData
 
@@ -220,11 +213,11 @@ Deploys Azure cloud messaging resources including Event Hubs, Service Bus, and E
 |common|The common component configuration.|`[_2.Common](#user-defined-types)`|n/a|yes|
 |tags|Additional tags to add to the resources.|`object`|{}|no|
 |aioIdentityName|The User-Assigned Managed Identity for Azure IoT Operations.|`string`|n/a|yes|
-|shouldCreateEventHub|Whether to create Event Hubs resources.|`bool`|True|no|
+|shouldCreateEventHub|Whether to create Event Hubs resources.|`bool`|`true`|no|
 |eventHubConfig|The configuration for the Event Hubs Namespace.|`[_1.EventHubConfig](#user-defined-types)`|n/a|no|
-|shouldCreateEventGrid|Whether to create Event Grid resources.|`bool`|True|no|
+|shouldCreateEventGrid|Whether to create Event Grid resources.|`bool`|`true`|no|
 |eventGridConfig|The configuration for the Event Grid Domain.|`[_1.EventGridConfig](#user-defined-types)`|n/a|no|
-|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|False|no|
+|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|`false`|no|
 
 #### Resources for cloudMessaging
 
@@ -255,13 +248,12 @@ Creates virtual network, subnet, and network security group resources for Azure 
 | :--- | :--- | :--- | :--- | :--- |
 |common|The common component configuration.|`[_2.Common](#user-defined-types)`|n/a|yes|
 |networkingConfig|Networking configuration settings.|`[_1.NetworkingConfig](#user-defined-types)`|[variables('_1.networkingConfigDefaults')]|no|
-|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|False|no|
+|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|`false`|no|
 
 #### Resources for cloudNetworking
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|networkSecurityGroup|`Microsoft.Network/networkSecurityGroups`|2024-05-01|
 |virtualNetwork|`Microsoft.Network/virtualNetworks`|2024-05-01|
 
 #### Outputs for cloudNetworking
@@ -289,7 +281,7 @@ Provisions virtual machines and networking infrastructure for hosting Azure IoT 
 |vmUsername|Username used for the host VM that will be given kube-config settings on setup. (Otherwise, resource_prefix if it exists as a user)|`string`|n/a|no|
 |vmCount|The number of host VMs to create if a multi-node cluster is needed.|`int`|1|no|
 |vmSkuSize|Size of the VM.|`string`|Standard_D8s_v3|no|
-|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|False|no|
+|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|`false`|no|
 |subnetId|The subnet ID to connect the VMs to.|`string`|n/a|yes|
 
 #### Resources for cloudVmHost
@@ -320,9 +312,9 @@ Deploys Azure Container Registry (ACR) resources.
 |common|The common component configuration.|`[_2.Common](#user-defined-types)`|n/a|yes|
 |virtualNetworkName|Virtual network name for subnet creation.|`string`|n/a|yes|
 |networkSecurityGroupName|Network security group name to apply to the subnets.|`string`|n/a|yes|
-|shouldCreateAcrPrivateEndpoint|Whether to create a private endpoint for the Azure Container Registry.|`bool`|False|no|
+|shouldCreateAcrPrivateEndpoint|Whether to create a private endpoint for the Azure Container Registry.|`bool`|`false`|no|
 |containerRegistryConfig|The settings for the Azure Container Registry.|`[_1.ContainerRegistry](#user-defined-types)`|[variables('_1.containerRegistryDefaults')]|no|
-|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|False|no|
+|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|`false`|no|
 
 #### Resources for cloudAcr
 
@@ -348,10 +340,10 @@ Deploys optionally Azure Kubernetes Service (AKS) resources.
 |common|The common component configuration.|`[_2.Common](#user-defined-types)`|n/a|yes|
 |virtualNetworkName|Virtual network name for subnet creation.|`string`|n/a|yes|
 |networkSecurityGroupName|Network security group name to apply to the subnets.|`string`|n/a|yes|
-|shouldCreateAks|Whether to create an Azure Kubernetes Service cluster.|`bool`|False|no|
+|shouldCreateAks|Whether to create an Azure Kubernetes Service cluster.|`bool`|`false`|no|
 |kubernetesClusterConfig|The settings for the Azure Kubernetes Service cluster.|`[_1.KubernetesCluster](#user-defined-types)`|[variables('_1.kubernetesClusterDefaults')]|no|
 |containerRegistryName|Name of the Azure Container Registry to create.|`string`|n/a|yes|
-|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|False|no|
+|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|`false`|no|
 
 #### Resources for cloudKubernetes
 

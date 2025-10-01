@@ -24,8 +24,6 @@ Deploys Dataflow endpoints and dataflows for Azure IoT Operations messaging inte
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|aioIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2023-01-31|
-|aioCustomLocation|`Microsoft.ExtendedLocation/customLocations`|2021-08-31-preview|
 |eventHubDataflow|`Microsoft.Resources/deployments`|2022-09-01|
 |eventGridDataflow|`Microsoft.Resources/deployments`|2022-09-01|
 
@@ -59,8 +57,6 @@ Provisions the ARM based data flow endpoint and data flow for Event Hub, require
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|aioInstanceResource|`Microsoft.IoTOperations/instances`|2025-07-01-preview|
-|aioDataflowProfileResource|`Microsoft.IoTOperations/instances/dataflowProfiles`|2025-07-01-preview|
 |dataflowEndpointToEventHub|`Microsoft.IoTOperations/instances/dataflowEndpoints`|2025-07-01-preview|
 |dataflowToEventHub|`Microsoft.IoTOperations/instances/dataflowProfiles/dataflows`|2025-07-01-preview|
 
@@ -85,8 +81,6 @@ Provisions the ARM based data flow endpoint and data flow for Event Grid, requir
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|aioInstanceResource|`Microsoft.IoTOperations/instances`|2025-07-01-preview|
-|aioDataflowProfileResource|`Microsoft.IoTOperations/instances/dataflowProfiles`|2025-07-01-preview|
 |dataflowEndpointToEventGrid|`Microsoft.IoTOperations/instances/dataflowEndpoints`|2025-07-01-preview|
 |dataflowToEventGrid|`Microsoft.IoTOperations/instances/dataflowProfiles/dataflows`|2025-07-01-preview|
 

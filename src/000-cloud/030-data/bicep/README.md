@@ -140,7 +140,7 @@ Creates an Azure Device Registry (ADR) Namespace for organizing assets and devic
 |common|The common component configuration.|`[_2.Common](#user-defined-types)`|n/a|yes|
 |adrNamespaceName|The name of the ADR namespace. Lowercase alphanumeric with optional internal hyphens, 3-64 characters.|`string`|n/a|no|
 |messagingEndpoints|Dictionary of messaging endpoints for the namespace.|`[_1.AdrNamespaceMessagingEndpoints](#user-defined-types)`|n/a|no|
-|enableSystemAssignedIdentity|Whether to enable system-assigned managed identity for the namespace.|`bool`|True|no|
+|enableSystemAssignedIdentity|Whether to enable system-assigned managed identity for the namespace.|`bool`|`true`|no|
 
 #### Resources for adrNamespace
 

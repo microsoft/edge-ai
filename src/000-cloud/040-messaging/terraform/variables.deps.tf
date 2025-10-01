@@ -8,6 +8,7 @@ variable "resource_group" {
     id       = string
     location = string
   })
+  description = "Resource group object containing name and id where resources will be deployed"
 }
 
 variable "aio_identity" {
@@ -17,4 +18,5 @@ variable "aio_identity" {
     tenant_id    = string
     client_id    = string
   })
+  description = "Azure IoT Operations managed identity for workspace access"
 }

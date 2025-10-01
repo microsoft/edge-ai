@@ -86,14 +86,14 @@ check_provider_versions_in_folder() {
     # ├── provider[registry.terraform.io/hashicorp/azurerm] >= 4.8.0
     # ├── provider[registry.terraform.io/hashicorp/azuread] >= 3.0.2
     # ├── test.tests.iot-ops-cloud-reqs
-    # │   └── run.setup_tests
-    # │       └── provider[registry.terraform.io/hashicorp/random] >= 3.5.1
+    # │   └── run.setup_tests
+    # │       └── provider[registry.terraform.io/hashicorp/random] >= 3.5.1
     # ├── module.schema_registry
-    # │   ├── provider[registry.terraform.io/hashicorp/random]
-    # │   ├── provider[registry.terraform.io/hashicorp/azurerm]
-    # │   └── provider[registry.terraform.io/azure/azapi]
+    # │   ├── provider[registry.terraform.io/hashicorp/random]
+    # │   ├── provider[registry.terraform.io/hashicorp/azurerm]
+    # │   └── provider[registry.terraform.io/azure/azapi]
     # ├── module.sse_key_vault
-    # │   └── provider[registry.terraform.io/hashicorp/azurerm]
+    # │   └── provider[registry.terraform.io/hashicorp/azurerm]
     # └── module.uami
     #     └── provider[registry.terraform.io/hashicorp/azurerm]
     # This will create the final space delimited tuple array, shaped like:

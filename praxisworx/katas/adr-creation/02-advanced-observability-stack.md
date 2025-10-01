@@ -156,8 +156,8 @@ I'm working on Advanced Observability Stack kata and want interactive coaching w
 ---
 
 <!-- Reference Links -->
-[ms-azure-monitor]: https://docs.microsoft.com/en-us/azure/azure-monitor/
-[ms-application-insights]: https://docs.microsoft.com/en-us/azure/azure-monitor/app/app-insights-overview
+[ms-azure-monitor]: https://docs.microsoft.com/azure/azure-monitor/
+[ms-application-insights]: https://docs.microsoft.com/azure/azure-monitor/app/app-insights-overview
 
 <!-- markdownlint-disable MD036 -->
 *🤖 Crafted with precision by ✨Copilot following brilliant human instruction,

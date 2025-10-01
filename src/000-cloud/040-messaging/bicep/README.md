@@ -52,7 +52,6 @@ Deploys Azure Event Hubs Namespace with Event Hubs, partitions, and consumer gro
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|aioIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2024-11-30|
 |eventHubNamespace|`Microsoft.EventHub/namespaces`|2024-05-01-preview|
 |eventHubs|`Microsoft.EventHub/namespaces/eventhubs`|2024-05-01-preview|
 |dataSenderRoleAssignment|`Microsoft.Authorization/roleAssignments`|2022-04-01|
@@ -82,7 +81,6 @@ Deploys Azure Event Grid Domain with topics and event subscriptions.
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|aioIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2024-11-30|
 |eventGridNamespace|`Microsoft.EventGrid/namespaces`|2025-02-15|
 |topicSpace|`Microsoft.EventGrid/namespaces/topicSpaces`|2025-02-15|
 |dataSenderRoleAssignment|`Microsoft.Authorization/roleAssignments`|2022-04-01|

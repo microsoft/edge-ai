@@ -21,7 +21,8 @@ locals {
   custom_location_name = "cl-${var.connected_cluster_name}"
   aio_instance_name    = "iotops-${var.connected_cluster_name}"
 
-  mqtt_broker_address = "mqtts://${var.mqtt_broker_config.brokerListenerServiceName}.${var.operations_config.namespace}:${var.mqtt_broker_config.brokerListenerPort}"
+  mqtt_broker_hostname = "${var.mqtt_broker_config.brokerListenerServiceName}.${var.operations_config.namespace}"
+  mqtt_broker_address  = "mqtts://${local.mqtt_broker_hostname}:${var.mqtt_broker_config.brokerListenerPort}"
 
   # Helper function for boolean to enabled/disabled string conversion
   enabled_disabled = {

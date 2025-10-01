@@ -52,9 +52,9 @@ Deploys an AIO instance.
 | resource\_group\_id | The ID for the Resource Group for the resources. | `string` | n/a | yes |
 | schema\_registry\_id | The resource ID of the schema registry for Azure IoT Operations instance | `string` | n/a | yes |
 | secret\_store\_cluster\_extension\_id | The resource ID of the Secret Store cluster extension | `string` | n/a | yes |
-| should\_create\_anonymous\_broker\_listener | Whether to enable an insecure anonymous AIO MQ Broker Listener. (Should only be used for dev or test environments) | `bool` | n/a | yes |
+| should\_create\_anonymous\_broker\_listener | Whether to enable an insecure anonymous AIO MQ Broker Listener. Should only be used for dev or test environments | `bool` | n/a | yes |
 | should\_deploy\_resource\_sync\_rules | Deploys resource sync rules if set to true | `bool` | n/a | yes |
-| should\_enable\_otel\_collector | Deploy the OpenTelemetry Collector and Azure Monitor ConfigMap (optionally used) | `bool` | n/a | yes |
+| should\_enable\_otel\_collector | Whether to deploy the OpenTelemetry Collector and Azure Monitor ConfigMap | `bool` | n/a | yes |
 | adr\_namespace\_id | The resource ID of the Azure Device Registry namespace for the Azure IoT Operations instance. Otherwise, not configured. | `string` | `null` | no |
 | aio\_features | AIO Instance features with mode ('Stable', 'Preview', 'Disabled') and settings ('Enabled', 'Disabled'). | ```map(object({ mode = optional(string) settings = optional(map(string)) }))``` | `null` | no |
 | trust\_source | Trust source must be one of 'SelfSigned' or 'CustomerManaged'. Defaults to SelfSigned. | `string` | `"SelfSigned"` | no |
@@ -63,10 +63,11 @@ Deploys an AIO instance.
 
 | Name | Description |
 |------|-------------|
-| aio\_dataflow\_profile | n/a |
-| aio\_instance | n/a |
-| custom\_location\_id | n/a |
-| custom\_locations | n/a |
-| instance\_name | n/a |
+| aio\_broker\_listener\_anonymous | Anonymous MQTT Broker Listener configuration details. |
+| aio\_dataflow\_profile | Azure IoT Operations dataflow profile details. |
+| aio\_instance | Azure IoT Operations instance details. |
+| aio\_mqtt\_broker | MQTT Broker configuration details. |
+| aio\_namespace | Azure IoT Operations namespace. |
+| custom\_locations | Custom location details. |
 <!-- markdown-table-prettify-ignore-end -->
 <!-- END_TF_DOCS -->

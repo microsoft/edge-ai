@@ -26,13 +26,13 @@ run "create_default_configuration" {
   }
 
   assert {
-    condition     = module.key_vault[0] != null
+    condition     = length(module.key_vault) == 1
     error_message = "Key vault should be created with default configuration"
   }
 
   assert {
-    condition     = module.identity[0].aio_identity != null
-    error_message = "AIO identity should be created with default configuration"
+    condition     = length(module.identity) == 1
+    error_message = "Identity module should be created with default configuration"
   }
 }
 
@@ -52,7 +52,7 @@ run "create_custom_key_vault_configuration" {
   }
 
   assert {
-    condition     = module.key_vault[0] != null
+    condition     = length(module.key_vault) == 1
     error_message = "Key vault should be created with custom configuration"
   }
 }

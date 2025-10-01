@@ -1,5 +1,15 @@
-mkdocs~=1.5.0
-mkdocs-material~=9.5.0
-python-hcl2~=4.3.0
-jinja2~=3.1.6
-checkov~=3.2.0
+# Documentation Generation
+# NOTE: mkdocs removed - project uses docsify (see package.json devDependencies and index.html)
+
+# Infrastructure as Code Processing
+python-hcl2~=4.3.0               # HCL2 (Terraform) configuration parser
+jinja2~=3.1.6                    # Template engine for configuration generation
+
+# Security and Compliance Scanning
+checkov~=3.2.0                   # Infrastructure security and compliance scanner
+
+# Security-Critical Dependencies (Version Pinned for CVE Remediation)
+asteval>=1.0.6                   # Safe mathematical expression evaluator
+                                 # Pinned >=1.0.6 to resolve CVE-2021-11025 (RCE) and CVE-2021-11026 (DoS)
+urllib3>=2.5.0                   # HTTP client library
+                                 # Pinned >=2.5.0 to resolve CVE-2024-37891 (SSRF vulnerability)

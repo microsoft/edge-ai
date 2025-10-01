@@ -3,7 +3,7 @@
 {
 	"name": "iac-edge-devcontainer",
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-	"image": "mcr.microsoft.com/vscode/devcontainers/python:3",
+	"image": "mcr.microsoft.com/devcontainers/python:3.11-bookworm",
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	"features": {
 		"ghcr.io/devcontainers/features/common-utils:2": {},
@@ -14,7 +14,7 @@
 		},
 		"ghcr.io/devcontainers/features/dotnet:2": {},
 		"ghcr.io/devcontainers/features/github-cli:1": {},
-		"ghcr.io/devcontainers-contrib/features/pipx-package:1": {},
+		"ghcr.io/devcontainers-extra/features/pipx-package:1": {},
 		"ghcr.io/devcontainers-extra/features/pre-commit:2": {},
 		"ghcr.io/devcontainers/features/node:1": {},
 		"ghcr.io/devcontainers/features/terraform:1": {
@@ -50,7 +50,6 @@
 				"DavidAnson.vscode-markdownlint",
 				"eamodio.gitlens",
 				"EditorConfig.EditorConfig",
-				"esbenp.prettier-vscode",
 				"foxundermoon.shell-format",
 				"GitHub.vscode-pull-request-github",
 				"hashicorp.terraform",
@@ -107,6 +106,7 @@
 		"npm": "npm install -g npm && npm ci",
 		"apt": "sudo apt update && sudo apt install -y shellcheck",
 		"go": "go install mvdan.cc/sh/v3/cmd/shfmt@latest",
+		"tflint": "curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash",
 		"update-bashrc": "echo 'export PATH=\"${containerWorkspaceFolder}/scripts:$PATH\"' | sudo tee -a  ~/.bashrc"
 	},
 

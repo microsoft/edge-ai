@@ -1,5 +1,5 @@
+---
 # Variable Compliance Terraform Workflow
-#
 # Purpose:
 # This workflow checks for consistency in Terraform variable definitions across modules,
 # ensuring that variables with the same name have consistent descriptions, types, and defaults.
@@ -33,10 +33,8 @@
 #
 # This workflow helps maintain consistency across infrastructure code, which improves
 # maintainability and reduces errors when reusing modules across different environments.
----
 name: Terraform Variable Compliance
-
-on: # yamllint disable-line rule:truthy
+'on':
   workflow_dispatch:
     inputs:
       terraform_docs_version:
@@ -63,30 +61,25 @@ on: # yamllint disable-line rule:truthy
         required: false
         type: boolean
         default: false
-
+permissions:
+  contents: read
 concurrency:
   group: ${{ github.ref }}-terraform-var-compliance
   cancel-in-progress: true
-
 jobs:
   variable-compliance:
     name: Check Terraform Variable Consistency
     runs-on: ubuntu-latest
     steps:
-      # Git Checkout
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
         with:
           fetch-depth: 0
-
-      # Setup Python
       - name: Set up Python 3.11
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236
         with:
           python-version: '3.11'
           cache: 'pip'
-
-      # Install terraform-docs
       - name: Install terraform-docs
         env:
           TERRAFORM_DOCS_VERSION: ${{ inputs.terraform_docs_version || 'v0.19.0' }}
@@ -96,14 +89,10 @@ jobs:
           chmod +x terraform-docs
           sudo mv terraform-docs /usr/local/bin/
           terraform-docs --version
-
-      # Install Python dependencies
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
           pip install jq pyyaml
-
-      # Run variable compliance check
       - name: Run Terraform Variable Compliance Check
         id: var-check
         env:
@@ -137,11 +126,9 @@ jobs:
           else
             echo "No inconsistencies found in Terraform variable definitions."
           fi
-
-      # Upload results as artifacts
       - name: Upload compliance results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808
         with:
           name: terraform-variable-compliance-results
           path: |

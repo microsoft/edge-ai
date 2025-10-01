@@ -104,7 +104,7 @@ var shouldEnableOpcUaSimulatorAsset = false
 
 resource attribution 'Microsoft.Resources/deployments@2020-06-01' = if (!telemetry_opt_out) {
   name: 'pid-acce1e78-0375-4637-a593-86aa36dcfeac'
-  location: deployment().location
+  location: common.location
   properties: {
     mode: 'Incremental'
     template: {

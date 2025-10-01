@@ -11,26 +11,26 @@
 
 variable "environment" {
   type        = string
-  description = "Environment for all resources in this module: dev, test, or prod."
+  description = "Environment for all resources in this module: dev, test, or prod"
 }
 
 variable "resource_prefix" {
-  type        = string
-  description = "Prefix for all resources in this module."
+  type = string
   validation {
     condition     = length(var.resource_prefix) > 0 && can(regex("^[a-zA-Z](?:-?[a-zA-Z0-9])*$", var.resource_prefix))
     error_message = "Resource prefix must not be empty, must only contain alphanumeric characters and dashes. Must start with an alphabetic character."
   }
+  description = "Prefix for all resources in this module"
 }
 
 variable "location" {
   type        = string
-  description = "Location for all resources in this module"
+  description = "Azure region where all resources will be deployed"
 }
 
 variable "instance" {
   type        = string
-  description = "Instance identifier for naming resources: 001, 002, etc."
+  description = "Instance identifier for naming resources: 001, 002, etc"
   default     = "001"
 }
 
@@ -40,19 +40,19 @@ variable "instance" {
 
 variable "resource_group_name" {
   type        = string
-  description = "Name of the existing resource group. Otherwise, 'rg-{resource_prefix}-{environment}-{instance}'."
+  description = "Name of the resource group"
   default     = null
 }
 
 variable "fabric_workspace_name" {
   type        = string
-  description = "Display name of the existing Microsoft Fabric workspace. Otherwise, 'ws-{resource_prefix}-{environment}-{instance}'."
+  description = "The name of the Microsoft Fabric workspace. Otherwise, 'ws-{resource_prefix}-{environment}-{instance}'"
   default     = null
 }
 
 variable "fabric_eventhouse_name" {
   type        = string
-  description = "Display name of the existing Microsoft Fabric eventhouse. Otherwise, 'evh-{resource_prefix}-{environment}-{instance}'."
+  description = "The name of the Microsoft Fabric eventhouse. Otherwise, 'evh-{resource_prefix}-{environment}-{instance}'"
   default     = null
 }
 
@@ -102,12 +102,12 @@ variable "eventhouse_kql_database_name" {
 
 variable "should_create_eventgrid_dataflows" {
   type        = bool
-  description = "Whether to create EventGrid dataflows in the edge messaging component."
+  description = "Whether to create EventGrid dataflows in the edge messaging component"
   default     = false
 }
 
 variable "should_create_eventhub_dataflows" {
   type        = bool
-  description = "Whether to create EventHub dataflows in the edge messaging component."
+  description = "Whether to create EventHub dataflows in the edge messaging component"
   default     = false
 }

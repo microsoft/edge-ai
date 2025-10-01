@@ -1,5 +1,5 @@
+---
 # Variable Compliance Bicep Workflow
-#
 # Purpose:
 # This workflow checks for consistency in Bicep parameter definitions across modules,
 # ensuring that parameters with the same name have consistent descriptions, types, and defaults.
@@ -31,20 +31,15 @@
 #
 # This workflow helps maintain consistency across infrastructure code, which improves
 # maintainability and reduces errors when reusing modules across different environments.
----
 name: Bicep Variable Compliance
-
-on: # yamllint disable-line rule:truthy
+'on':
   workflow_dispatch:
     inputs:
       break_build:
         description: 'Fail workflow on inconsistencies'
         required: false
-        default: 'false'
-        type: choice
-        options:
-          - 'true'
-          - 'false'
+        type: boolean
+        default: false
   workflow_call:
     inputs:
       break_build:
@@ -56,11 +51,11 @@ on: # yamllint disable-line rule:truthy
       mismatches_found:
         description: 'Indicates if any parameter inconsistencies were found'
         value: ${{ jobs.variable-compliance.outputs.mismatches_found }}
-
+permissions:
+  contents: read
 concurrency:
   group: ${{ github.ref }}-bicep-var-compliance
   cancel-in-progress: true
-
 jobs:
   variable-compliance:
     name: Check Bicep Parameter Consistency
@@ -70,7 +65,7 @@ jobs:
     steps:
       # Git Checkout
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
         with:
           fetch-depth: 0
 
@@ -79,7 +74,7 @@ jobs:
         id: var-check
         shell: pwsh
         env:
-          BREAK_BUILD: ${{ inputs.break_build || 'false' }}
+          BREAK_BUILD: ${{ inputs.break_build }}
         run: |
           # Create output directories if they don't exist
           New-Item -Path ".arm" -ItemType Directory -Force
@@ -156,7 +151,7 @@ jobs:
       # Upload results as artifacts
       - name: Upload compliance results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808
         with:
           name: bicep-variable-compliance-results
           path: |

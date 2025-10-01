@@ -129,8 +129,8 @@ keywords:
 
 <!-- Reference Links -->
 [project-blueprints]: /blueprints/README
-[azure-resource-manager]: https://learn.microsoft.com/en-us/azure/azure-resource-manager/
-[azure-disaster-recovery]: https://learn.microsoft.com/en-us/azure/site-recovery/site-recovery-overview
+[azure-resource-manager]: https://learn.microsoft.com/azure/azure-resource-manager/
+[azure-disaster-recovery]: https://learn.microsoft.com/azure/site-recovery/site-recovery-overview
 
 <!-- markdownlint-disable MD036 -->
 *🤖 Crafted with precision by ✨Copilot following brilliant human instruction,

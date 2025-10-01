@@ -118,6 +118,8 @@ on: # yamllint disable-line rule:truthy
         type: boolean
         default: false
 
+permissions:
+  contents: read
 jobs:
   # Job to validate and test Terraform configurations
   terraform-test:
@@ -126,7 +128,7 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
 
       # Process working directory: extract paths and check for CI folders
       - name: Process working directories
@@ -172,13 +174,13 @@ jobs:
           fi
 
       - name: Azure Login
-        uses: azure/login@v1
+        uses: azure/login@92a5484dfaf04ca78a94597f4f19fea633851fa2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
           enable-AzPSSession: true
 
       - name: Get secrets from Key Vault
-        uses: azure/get-keyvault-secrets@v1
+        uses: azure/get-keyvault-secrets@b5c723b9ac7870c022b8c35befe620b7009b336f
         with:
           keyvault: ${{ inputs.keyvault-name }}
           secrets: '*'
@@ -186,7 +188,7 @@ jobs:
         if: inputs.keyvault-name != ''
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
+        uses: hashicorp/setup-terraform@651471c36a6092792c552e8b1bef71e592b462d8
         with:
           terraform_version: ${{ inputs.terraform-version }}
           cli_config_credentials_token: ${{ secrets.TERRAFORM_API_TOKEN }}
@@ -335,7 +337,7 @@ jobs:
         run: exit 1
 
       - name: Setup Node.js for test processing
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@5e21ff4d9bc06a74674ebf3f11c5d9bb6f561e3b
         with:
           node-version: '22.x'
         if: steps.workingDirProcessor.outputs.tfTestsExist == 'true'
@@ -416,7 +418,7 @@ jobs:
       #     check_name: "${{ steps.workingDirProcessor.outputs.folderPathSafe }} Test Results"
 
       - name: Upload Terraform Plan
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808
         with:
           name: ${{ steps.workingDirProcessor.outputs.folderPathSafe }}-terraform-plan
           path: ${{ github.workspace }}/${{ github.run_id }}.${{ steps.workingDirProcessor.outputs.folderPathSafe }}.tfplan
@@ -424,7 +426,7 @@ jobs:
           if-no-files-found: ignore
 
       - name: Upload Terraform Test Output
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808
         if: steps.workingDirProcessor.outputs.tfTestsExist == 'true'
         with:
           name: ${{ steps.workingDirProcessor.outputs.folderPathSafe }}-test-output

@@ -14,5 +14,5 @@ variable "resource_group" {
     name = string
     id   = string
   })
-  description = "Resource group object containing name and id where resources will be deployed."
+  description = "Resource group object containing name and id where resources will be deployed"
 }

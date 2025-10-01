@@ -30,14 +30,16 @@ performance tracking, and diagnostic insights.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | application\_type | The type of application being monitored. | `string` | n/a | yes |
-| environment | Environment for all resources in this module: dev, test, or prod. | `string` | n/a | yes |
+| environment | Environment for all resources in this module: dev, test, or prod | `string` | n/a | yes |
 | instance\_suffix | Instance suffix for naming resources: fn, web, api, etc. | `string` | n/a | yes |
-| location | Location for all resources in this module. | `string` | n/a | yes |
+| location | Azure region where all resources will be deployed | `string` | n/a | yes |
 | log\_analytics\_workspace\_id | The ID of the Log Analytics Workspace to associate with Application Insights. | `string` | n/a | yes |
-| resource\_group\_name | The name for the resource group. | `string` | n/a | yes |
-| resource\_prefix | Prefix for all resources in this module. | `string` | n/a | yes |
+| resource\_group\_name | Name of the resource group | `string` | n/a | yes |
+| resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
 | retention\_in\_days | The retention period in days for Application Insights data. | `number` | n/a | yes |
-| tags | Tags to apply to all resources. | `map(string)` | n/a | yes |
+| tags | Tags to apply to all resources | `map(string)` | n/a | yes |
+| internet\_ingestion\_enabled | Should the Application Insights support ingestion over the Public Internet. | `bool` | `true` | no |
+| internet\_query\_enabled | Should the Application Insights support querying over the Public Internet. | `bool` | `true` | no |
 
 ## Outputs
 

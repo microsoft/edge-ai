@@ -25,7 +25,6 @@ output "virtual_machine" {
     location = azurerm_linux_virtual_machine.aio_edge.location
   }
   description = "The complete VM resource"
-  sensitive   = true
 }
 
 output "linux_virtual_machine_name" {

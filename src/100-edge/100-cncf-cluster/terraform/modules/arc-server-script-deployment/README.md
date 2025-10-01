@@ -32,14 +32,14 @@ Note: Windows support will be added in a future update.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | arc\_machine\_id | The ID of the Azure Arc-connected machine to deploy the script to. | `string` | n/a | yes |
-| extension\_name | The name of the Arc machine extension. | `string` | n/a | yes |
+| extension\_name | The name of the Arc machine extension | `string` | n/a | yes |
 | kubernetes\_distro | The Kubernetes distribution (e.g., 'k3s', 'aks') - Used to construct the Key Vault secret name. | `string` | n/a | yes |
-| location | The Azure region where the Arc-connected machine is registered. | `string` | n/a | yes |
+| location | Azure region where all resources will be deployed | `string` | n/a | yes |
 | node\_type | The node type (e.g., 'server', 'node') - Used to construct the Key Vault secret name. | `string` | n/a | yes |
 | secret\_name\_prefix | Optional prefix for the Key Vault secret name. | `string` | n/a | yes |
-| should\_use\_script\_from\_secrets\_for\_deploy | Flag to enable fetching script from Key Vault instead of using script\_content directly. | `bool` | n/a | yes |
-| key\_vault | The Key Vault object containing id, name, and vault\_uri properties. | ```object({ id = string name = string vault_uri = string })``` | `null` | no |
-| os\_type | The OS type of the machine (currently only 'linux' is supported). | `string` | `"linux"` | no |
+| should\_use\_script\_from\_secrets\_for\_deploy | Whether to use the deploy-script-secrets.sh script to fetch and execute deployment scripts from Key Vault | `bool` | n/a | yes |
+| key\_vault | The Key Vault object containing id, name, and vault\_uri properties | ```object({ id = string name = string vault_uri = string })``` | `null` | no |
+| os\_type | Operating system type (only linux supported) | `string` | `"linux"` | no |
 | script\_content | The content of the script to deploy when not fetching from Key Vault. | `string` | `null` | no |
 
 ## Outputs

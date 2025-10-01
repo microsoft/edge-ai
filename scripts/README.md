@@ -25,7 +25,7 @@ Azure DevOps build system for managing and validating the project's IaC.
   - [Blueprint Deployment Preparation Scripts](#blueprint-deployment-preparation-scripts)
     - [location-check.sh](#location-checksh)
   - [Documentation and Link Validation Scripts](#documentation-and-link-validation-scripts)
-    - [link-lang-check.py](#link-lang-checkpy)
+    - [Link-Lang-Check.ps1](#link-lang-checkps1)
     - [Build-Wiki.ps1](#build-wikips1)
     - [wiki-build.sh (deprecated)](#wiki-buildsh-deprecated)
   - [GitHub Integration Scripts](#github-integration-scripts)
@@ -65,7 +65,7 @@ Verifies that Terraform documentation is up-to-date.
 Validates Terraform variable definitions across modules for consistency.
 
 - **Usage**:
-  - Run `pip install -r requirements.txt` (to pick up the requests library)
+  - Ensure `terraform-docs` is installed and available in PATH
   - Run `./tf-vars-compliance-check.py`
 - **Returns**: JSON array of inconsistencies found in variable definitions
 - **Build Integration**: Used by the [variable-compliance-terraform-template.yml](../.azdo/variable-compliance-terraform-template.yml) job
@@ -220,15 +220,23 @@ The script performs these actions:
 
 Validates Azure IoT Operations component versions against latest available.
 
-- **Usage**: `python3 ./aio-version-checker.py [--error-on-mismatch] [-v] [-t {terraform,bicep,both}]`
+- **Usage**: `python3 ./aio-version-checker.py [flags]`
 - **Flags**:
-  - `--error-on-mismatch`: Exit with error code 1 if versions don't match
-  - `-v, --verbose`: Enable verbose output
-  - `-t, --iac-type {terraform,bicep,both}`: Type of IaC files to check
-- **Returns**: JSON array of version differences between local and remote
-- **Build Integration**: Used by the [aio-version-checker-template.yml](../.azdo/aio-version-checker-template.yml) job
-- **When to Use**: Run periodically to check if AIO components use the currently released versions
-- **Dependencies**: Requires Python packages: hcl2, requests
+- `--error-on-mismatch`: Exit with code 1 if mismatches are found
+- `-v, --verbose`: Enable verbose logging
+- `-t, --iac-type {terraform,bicep,all}`: Which IaC files to evaluate
+- `--print-manifest-urls`: Print only the resolved enablement/instance manifest URLs as JSON and exit
+- `--release-tag <tag>`: Resolve a specific release tag (e.g., `v1.2.36`)
+- `--channel {stable,preview}`: When no tag provided, choose latest stable (default) or latest preview
+- `--strict-latest`: Fail if the GitHub API call fails (no legacy fallback)
+- `--require-asset-files`: Require JSONs to be present as release assets (no branch fallback)
+- **Returns**: Compare mode outputs a JSON array of version differences; URL resolution mode outputs a JSON object with `enablement_url`, `instance_url`, and `meta`
+- **Build Integration**: Used by the [aio-version-checker-template.yml](../docs/build-cicd/pipelines/azure-devops/templates/aio-version-checker-template.md) job
+- **When to Use**: Periodically check that AIO components use the currently released versions, or resolve manifest URLs for other tooling
+- **Dependencies**: Python packages `hcl2`, `requests`
+- **Notes**:
+  - Uses `GITHUB_TOKEN` or `GH_TOKEN` if set to reduce GitHub API rate limits, optional
+  - Used by the `iotops-version-upgrade.prompt.md` Prompt to resolve manifest URLs for IoT Operations version upgrades
 
 ## Blueprint Deployment Preparation Scripts
 
@@ -244,20 +252,21 @@ Uses a chosen blueprint to crawl all referenced modules, create a list of deploy
 
 ## Documentation and Link Validation Scripts
 
-### link-lang-check.py
+### Link-Lang-Check.ps1
 
-Finds and optionally fixes URLs with language path segments ('en-us').
+PowerShell script that finds and optionally fixes URLs with language path segments ('en-us').
 
 - **Usage**:
-  - Find links with language defaults only: `python3 link-lang-check.py` (outputs JSON)
-  - Find links with verbose output: `python3 link-lang-check.py -v`
-  - Fix links and remove 'en-us': `python3 link-lang-check.py -f`
-  - Fix links with verbose output: `python3 link-lang-check.py -f -v`
+  - Find links with language defaults only: `pwsh ./linting/Link-Lang-Check.ps1` (outputs JSON)
+  - Find links with verbose output: `pwsh ./linting/Link-Lang-Check.ps1 -Verbose`
+  - Fix links and remove 'en-us': `pwsh ./linting/Link-Lang-Check.ps1 -Fix`
+  - Fix links with verbose output: `pwsh ./linting/Link-Lang-Check.ps1 -Fix -Verbose`
 - **Returns**: JSON array of detected links with file paths and line numbers (in search mode)
 - **Build Integration**:
-  - Used by the [docs-check-terraform-template.yml](../.azdo/docs-check-terraform-template.yml) in the DocsCheckTerraform job
-  - Used by the [docs-check-bicep-template.yml](../.azdo/docs-check-bicep-template.yml) in the DocsCheckBicep job
+  - Used by the [docs-check-terraform-template.yml](../.azdo/templates/docs-check-terraform-template.yml) in the DocsCheckTerraform job
+  - Used by the [docs-check-bicep-template.yml](../.azdo/templates/docs-check-bicep-template.yml) in the DocsCheckBicep job
 - **When to Use**: Run before submitting PRs to ensure links don't contain language-specific paths which can cause internationalization issues
+- **Features**: Enhanced CI/CD logging support for Azure DevOps and GitHub Actions
 
 ### Build-Wiki.ps1
 
@@ -382,11 +391,11 @@ Most scripts follow these error handling practices:
 
 The following Azure DevOps pipeline templates depend on these scripts:
 
-| Azure DevOps Template                                                                                                                       | Script Dependencies                                             |
-|---------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------|
-| [docs-check-terraform-template.yml](../docs/build-cicd/pipelines/azure-devops/templates/docs-check-terraform-template.md)                   | install-terraform-docs.sh, tf-docs-check.sh, link-lang-check.py |
-| [aio-version-checker-template.yml](../docs/build-cicd/pipelines/azure-devops/templates/aio-version-checker-template.md)                     | aio-version-checker.py                                          |
-| [variable-compliance-terraform-template.yml](../docs/build-cicd/pipelines/azure-devops/templates/variable-compliance-terraform-template.md) | tf-vars-compliance-check.py                                     |
-| [cluster-test-terraform-template.yml](../docs/build-cicd/pipelines/azure-devops/templates/cluster-test-terraform-template.md)               | tf-provider-version-check.sh                                    |
-| [resource-provider-pwsh-tests-template.yml](../docs/build-cicd/pipelines/azure-devops/templates/resource-provider-pwsh-tests-template.md)   | Invoke-Pester.ps1                                               |
-| [wiki-update-template.yml](../docs/build-cicd/pipelines/azure-devops/templates/wiki-update-template.md)                                     | Build-Wiki.ps1                                                  |
+| Azure DevOps Template                                                                                                                       | Script Dependencies                                                           |
+|---------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------|
+| [docs-check-terraform-template.yml](../docs/build-cicd/pipelines/azure-devops/templates/docs-check-terraform-template.md)                   | install-terraform-docs.sh, tf-docs-check.sh, Link-Lang-Check.ps1 (PowerShell) |
+| [aio-version-checker-template.yml](../docs/build-cicd/pipelines/azure-devops/templates/aio-version-checker-template.md)                     | aio-version-checker.py                                                        |
+| [variable-compliance-terraform-template.yml](../docs/build-cicd/pipelines/azure-devops/templates/variable-compliance-terraform-template.md) | tf-vars-compliance-check.py                                                   |
+| [cluster-test-terraform-template.yml](../docs/build-cicd/pipelines/azure-devops/templates/cluster-test-terraform-template.md)               | tf-provider-version-check.sh                                                  |
+| [resource-provider-pwsh-tests-template.yml](../docs/build-cicd/pipelines/azure-devops/templates/resource-provider-pwsh-tests-template.md)   | Invoke-Pester.ps1                                                             |
+| [wiki-update-template.yml](../docs/build-cicd/pipelines/azure-devops/templates/wiki-update-template.md)                                     | Build-Wiki.ps1                                                                |

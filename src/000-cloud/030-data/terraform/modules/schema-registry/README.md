@@ -34,9 +34,9 @@ Storage Blob Data Contributor Role Assignment.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | environment | Environment for all resources in this module: dev, test, or prod | `string` | n/a | yes |
-| instance | Instance identifier for naming resources: 001, 002, etc... | `string` | n/a | yes |
-| location | Location for all resources in this module | `string` | n/a | yes |
-| resource\_group | n/a | ```object({ id = string name = string })``` | n/a | yes |
+| instance | Instance identifier for naming resources: 001, 002, etc | `string` | n/a | yes |
+| location | Azure region where all resources will be deployed | `string` | n/a | yes |
+| resource\_group | Resource group object containing name and id where resources will be deployed | ```object({ id = string name = string })``` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
 | storage\_account | n/a | ```object({ id = string name = string primary_blob_endpoint = string })``` | n/a | yes |
 

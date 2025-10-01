@@ -35,7 +35,7 @@ Creates the data collection rule associations required to link the right data fo
 | aio\_metrics\_data\_collection\_rule | n/a | ```object({ name = string id = string })``` | n/a | yes |
 | aio\_resource\_group | n/a | ```object({ name = string id = string location = string })``` | n/a | yes |
 | arc\_connected\_cluster | n/a | ```object({ name = string id = string location = string })``` | n/a | yes |
-| scrape\_interval | Interval to scrape metrics from the cluster | `string` | n/a | yes |
+| scrape\_interval | Interval to scrape metrics from the cluster, valid values are between 1m and 30m (PT1M and PT30M) | `string` | n/a | yes |
 
 ## Outputs
 

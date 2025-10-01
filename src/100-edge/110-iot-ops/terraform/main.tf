@@ -67,7 +67,6 @@ module "iot_ops_init" {
   arc_connected_cluster_id = var.arc_connected_cluster.id
   aio_platform_config      = var.aio_platform_config
   platform                 = var.platform
-  open_service_mesh        = var.open_service_mesh
   edge_storage_accelerator = var.edge_storage_accelerator
   secret_sync_controller   = var.secret_sync_controller
 }
@@ -146,11 +145,11 @@ module "iot_ops_instance_post" {
   connected_cluster_name       = var.arc_connected_cluster.name
   key_vault                    = var.secret_sync_key_vault
   enable_instance_secret_sync  = var.enable_instance_secret_sync
-  custom_location_id           = module.iot_ops_instance.custom_location_id
+  custom_location_id           = module.iot_ops_instance.custom_locations.id
   aio_namespace                = var.operations_config.namespace
   sse_user_managed_identity    = var.secret_sync_identity
   aio_user_managed_identity_id = var.aio_identity.id
-  aio_instance_name            = module.iot_ops_instance.instance_name
+  aio_instance_name            = module.iot_ops_instance.aio_instance.name
 }
 
 /*

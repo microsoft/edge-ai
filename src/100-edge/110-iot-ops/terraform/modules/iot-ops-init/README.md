@@ -21,7 +21,6 @@ Deploys resources necessary to enable Azure IoT Operations (AIO) and creates an 
 | Name | Type |
 |------|------|
 | [azurerm_arc_kubernetes_cluster_extension.container_storage](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/arc_kubernetes_cluster_extension) | resource |
-| [azurerm_arc_kubernetes_cluster_extension.open_service_mesh](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/arc_kubernetes_cluster_extension) | resource |
 | [azurerm_arc_kubernetes_cluster_extension.platform](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/arc_kubernetes_cluster_extension) | resource |
 | [azurerm_arc_kubernetes_cluster_extension.secret_store](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/arc_kubernetes_cluster_extension) | resource |
 
@@ -32,7 +31,6 @@ Deploys resources necessary to enable Azure IoT Operations (AIO) and creates an 
 | aio\_platform\_config | Install cert-manager and trust-manager extensions | ```object({ install_cert_manager = bool install_trust_manager = bool })``` | n/a | yes |
 | arc\_connected\_cluster\_id | The resource ID of the connected cluster to deploy Azure IoT Operations Platform to | `string` | n/a | yes |
 | edge\_storage\_accelerator | n/a | ```object({ version = string train = string diskStorageClass = string faultToleranceEnabled = bool diskMountPoint = string })``` | n/a | yes |
-| open\_service\_mesh | n/a | ```object({ version = string train = string })``` | n/a | yes |
 | platform | n/a | ```object({ version = string train = string })``` | n/a | yes |
 | secret\_sync\_controller | n/a | ```object({ version = string train = string })``` | n/a | yes |
 

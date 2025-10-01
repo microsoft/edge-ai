@@ -4,13 +4,13 @@ variable "eventhouse_display_name" {
 }
 
 variable "eventhouse_description" {
-  description = "The description of the eventhouse."
   type        = string
+  description = "The description of the Microsoft Fabric eventhouse"
 }
 
 variable "workspace_id" {
-  description = "The ID of the workspace where the eventhouse will be created."
   type        = string
+  description = "The ID of the workspace where the lakehouse will be created"
 }
 
 variable "additional_kql_databases" {

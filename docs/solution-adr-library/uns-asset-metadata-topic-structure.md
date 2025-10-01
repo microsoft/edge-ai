@@ -136,56 +136,56 @@ Enterprise/
     └── CH/
         └── NNPI
             └── Line01
-               └── Unit01
-                    ├── Infeed
-                    ├── Outfeed
-                    ├── Waste
-                    ├── Running
-                    ├── ManualStop
-                    ├── Alarm
+               └── Unit01
+                    ├── Infeed
+                    ├── Outfeed
+                    ├── Waste
+                    ├── Running
+                    ├── ManualStop
+                    ├── Alarm
                     ├── BatchID
-                    └── ProductID
+                    └── ProductID
                 └── Unit02
-                    ├── Infeed
-                    ├── Outfeed
-                    ├── Waste
-                    ├── Running
-                    ├── ManualStop
-                    └── Alarm
+                    ├── Infeed
+                    ├── Outfeed
+                    ├── Waste
+                    ├── Running
+                    ├── ManualStop
+                    └── Alarm
                 └── Unit03
-                    ├── Infeed
-                    ├── Outfeed
-                    ├── Waste
-                    ├── Running
-                    ├── ManualStop
-                    └── Alarm
+                    ├── Infeed
+                    ├── Outfeed
+                    ├── Waste
+                    ├── Running
+                    ├── ManualStop
+                    └── Alarm
 └── DK/
     └── HI/
         └── 24A
             └── Line01
-               └── Unit01
-                    ├── Infeed
-                    ├── Outfeed
-                    ├── Waste
-                    ├── Running
-                    ├── ManualStop
-                    ├── Alarm
+               └── Unit01
+                    ├── Infeed
+                    ├── Outfeed
+                    ├── Waste
+                    ├── Running
+                    ├── ManualStop
+                    ├── Alarm
                     ├── BatchID
-                    └── ProductID
+                    └── ProductID
                 └── Unit02
-                    ├── Infeed
-                    ├── Outfeed
-                    ├── Waste
-                    ├── Running
-                    ├── ManualStop
-                    └── Alarm
+                    ├── Infeed
+                    ├── Outfeed
+                    ├── Waste
+                    ├── Running
+                    ├── ManualStop
+                    └── Alarm
                 └── Unit03
-                    ├── Infeed
-                    ├── Outfeed
-                    ├── Waste
-                    ├── Running
-                    ├── ManualStop
-                    └── Alarm
+                    ├── Infeed
+                    ├── Outfeed
+                    ├── Waste
+                    ├── Running
+                    ├── ManualStop
+                    └── Alarm
 ```
 
 ## Decision
@@ -223,7 +223,7 @@ Meta/
     └── HI/
         └── 24A
             └── Line01
-               └── Unit01
+               └── Unit01
                     └── azure-iot-operations
                         └── data
                             └── kepware-opc-ua-connector
@@ -237,7 +237,7 @@ Meta/
     └── CH/
         └── NNPI
             └── Line01
-               └── Unit01
+               └── Unit01
                     └── azure-iot-operations
                         └── data
                             └── kepware-opc-ua-connector
@@ -257,7 +257,7 @@ Meta/
     └── HI/
         └── 24A
             └── Line01
-               └── Unit01
+               └── Unit01
                     └── azure-iot-operations
                         └── data
                             └── kepware-opc-ua-connector
@@ -295,77 +295,77 @@ DK/
 └── HI/
     └── 24A
         └── Line01
-           └── Unit01
-                ├── Infeed
-                ├── Outfeed
-                ├── Waste
-                ├── Running
-                ├── ManualStop
-                ├── Alarm
+           └── Unit01
+                ├── Infeed
+                ├── Outfeed
+                ├── Waste
+                ├── Running
+                ├── ManualStop
+                ├── Alarm
                 ├── BatchID
-                └── ProductID
+                └── ProductID
             └── Unit02
-                ├── Infeed
-                ├── Outfeed
-                ├── Waste
-                ├── Running
-                ├── ManualStop
-                └── Alarm
+                ├── Infeed
+                ├── Outfeed
+                ├── Waste
+                ├── Running
+                ├── ManualStop
+                └── Alarm
             └── Unit03
-                ├── Infeed
-                ├── Outfeed
-                ├── Waste
-                ├── Running
-                ├── ManualStop
-                └── Alarm
+                ├── Infeed
+                ├── Outfeed
+                ├── Waste
+                ├── Running
+                ├── ManualStop
+                └── Alarm
         └── Line02
-           └── Unit01
-                ├── Infeed
-                ├── Outfeed
-                ├── Waste
-                ├── Running
-                ├── ManualStop
-                ├── Alarm
+           └── Unit01
+                ├── Infeed
+                ├── Outfeed
+                ├── Waste
+                ├── Running
+                ├── ManualStop
+                ├── Alarm
                 ├── BatchID
-                └── ProductID
+                └── ProductID
             └── Unit02
-                ├── Infeed
-                ├── Outfeed
-                ├── Waste
-                ├── Running
-                ├── ManualStop
-                └── Alarm
+                ├── Infeed
+                ├── Outfeed
+                ├── Waste
+                ├── Running
+                ├── ManualStop
+                └── Alarm
             └── Unit03
-                ├── Infeed
-                ├── Outfeed
-                ├── Waste
-                ├── Running
-                ├── ManualStop
-                └── Alarm
+                ├── Infeed
+                ├── Outfeed
+                ├── Waste
+                ├── Running
+                ├── ManualStop
+                └── Alarm
         └── LineFilling
-           └── RRU
-                ├── Infeed
-                ├── Outfeed
-                ├── Waste
-                ├── Running
-                ├── ManualStop
-                ├── Alarm
+           └── RRU
+                ├── Infeed
+                ├── Outfeed
+                ├── Waste
+                ├── Running
+                ├── ManualStop
+                ├── Alarm
                 ├── BatchID
-                └── ProductID
+                └── ProductID
             └── HQL
-                ├── Infeed
-                ├── Outfeed
-                ├── Waste
-                ├── Running
-                ├── ManualStop
-                └── Alarm
+                ├── Infeed
+                ├── Outfeed
+                ├── Waste
+                ├── Running
+                ├── ManualStop
+                └── Alarm
             └── MLD
-                ├── Infeed
-                ├── Outfeed
-                ├── Waste
-                ├── Running
-                ├── ManualStop
-                └── Alarm
+                ├── Infeed
+                ├── Outfeed
+                ├── Waste
+                ├── Running
+                ├── ManualStop
+                └── Alarm
 ```
 
 *AI and automation capabilities described in this scenario should be implemented following responsible AI principles, including fairness, reliability, safety, privacy, inclusiveness, transparency, and accountability. Organizations should ensure appropriate governance, monitoring, and human oversight are in place for all AI-powered solutions.*

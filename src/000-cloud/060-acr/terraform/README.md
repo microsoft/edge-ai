@@ -23,15 +23,17 @@ Deploys Azure Container Registry resources
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | environment | Environment for all resources in this module: dev, test, or prod | `string` | n/a | yes |
-| location | Location for all resources in this module. | `string` | n/a | yes |
+| location | Azure region where all resources will be deployed | `string` | n/a | yes |
 | network\_security\_group | n/a | ```object({ id = string })``` | n/a | yes |
-| resource\_group | n/a | ```object({ name = string })``` | n/a | yes |
+| resource\_group | Resource group object containing name and id where resources will be deployed | ```object({ name = string })``` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
 | virtual\_network | n/a | ```object({ name = string id = string })``` | n/a | yes |
-| instance | Instance identifier for naming resources: 001, 002, etc... | `string` | `"001"` | no |
-| should\_create\_acr\_private\_endpoint | Should create a private endpoint for the Azure Container Registry. Default is false. | `bool` | `false` | no |
-| sku | SKU for the Azure Container Registry. Options are Basic, Standard, Premium. Default is Premium because of the need for private endpoints. | `string` | `"Premium"` | no |
-| subnet\_address\_prefixes\_acr | Address prefixes for the ACR subnet. | `list(string)` | ```[ "10.0.2.0/24" ]``` | no |
+| default\_outbound\_access\_enabled | Whether to enable default outbound internet access for the ACR subnet | `bool` | `false` | no |
+| instance | Instance identifier for naming resources: 001, 002, etc | `string` | `"001"` | no |
+| nat\_gateway | NAT gateway object from the networking component for managed outbound access | ```object({ id = string name = string })``` | `null` | no |
+| should\_create\_acr\_private\_endpoint | Whether to create a private endpoint for the Azure Container Registry (default false) | `bool` | `false` | no |
+| sku | SKU name for the resource | `string` | `"Premium"` | no |
+| subnet\_address\_prefixes\_acr | Address prefixes for the ACR subnet | `list(string)` | ```[ "10.0.3.0/24" ]``` | no |
 
 ## Outputs
 
