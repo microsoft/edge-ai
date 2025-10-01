@@ -1,0 +1,16 @@
+{
+  "projectBaseUrl": ".",
+  "timeout": "20s",
+  "retryOn429": true,
+  "ignorePatterns": [
+    { "pattern": "\\{\\{[A-Z0-9_]+\\}\\}" },
+    { "pattern": "^mailto:" },
+    { "pattern": "^tel:" }
+  ],
+  "replacementPatterns": [
+    { "pattern": "^#/docs/", "replacement": "" },
+    { "pattern": "^#/(?!/)", "replacement": "../" },
+    { "pattern": "^/docs/", "replacement": "../docs/" },
+    { "pattern": "^docs/", "replacement": "" }
+  ]
+}
