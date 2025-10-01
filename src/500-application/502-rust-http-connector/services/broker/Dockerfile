@@ -21,7 +21,7 @@
 # =============================================================================
 
 # STAGE 1: Builder - Compiles the Rust application
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/cbl-mariner/base/rust:1.72 AS builder
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/cbl-mariner/base/rust:1.72@sha256:b9fcab32d29e74b9178437797f57732b8654e9b5db93423080a58c35528accd3 AS builder
 
 WORKDIR /usr/src/app
 
@@ -47,7 +47,7 @@ COPY ./src ./src
 RUN cargo build --release
 
 # STAGE 2: Runtime - Creates the minimal production image
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/cbl-mariner/base/core:2.0
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/cbl-mariner/base/core:2.0@sha256:b462b8e95dfa12b3fefc95025a627306a527de61db17b8519a59b8e25f1663c7 AS runtime
 
 # Install runtime dependencies and create non-root user
 RUN tdnf update -y && \

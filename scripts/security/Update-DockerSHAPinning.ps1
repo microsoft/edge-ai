@@ -208,6 +208,8 @@ $DockerImageSHAMap = @{
     'mcr.microsoft.com/dotnet/sdk:9.0'                     = 'mcr.microsoft.com/dotnet/sdk:9.0@sha256:c97a488465b7c0e3f193b7bb4b41d6b6e8530f388b5503c1413cb6b3b648b4f3'
     'mcr.microsoft.com/cbl-mariner/base/core:2.0'          = 'mcr.microsoft.com/cbl-mariner/base/core:2.0@sha256:b462b8e95dfa12b3fefc95025a627306a527de61db17b8519a59b8e25f1663c7'
     'mcr.microsoft.com/devcontainers/python:3.11-bookworm' = 'mcr.microsoft.com/devcontainers/python:3.11-bookworm@sha256:17b9b47f293b5b6e4b6a6e67d8bba0d5e0e5b6d6d2c3f4e5a6b7c8d9e0f1a2b3'
+    'mcr.microsoft.com/devcontainers/base:ubuntu-24.04'    = 'mcr.microsoft.com/devcontainers/base:ubuntu-24.04@sha256:ad92cae7c25cafb1e7bb5aa7520b81be85fac022ea92e404b94a11127631fae3'
+    'mcr.microsoft.com/cbl-mariner/base/rust:1.72'         = 'mcr.microsoft.com/cbl-mariner/base/rust:1.72@sha256:b9fcab32d29e74b9178437797f57732b8654e9b5db93423080a58c35528accd3'
 
     # Eclipse Foundation Images
     'eclipse-mosquitto'                                    = 'eclipse-mosquitto@sha256:7b77b81b6d25b1fc6cc5ed1eb8ae48c247d4fd6f9aef1f7ee88b4a8e0b7f2b3e'
@@ -222,6 +224,7 @@ $DockerImageSHAMap = @{
     'alpine:3.19'                                          = 'alpine:3.19@sha256:c5b1261d6d3e43071626931fc004f70149baeba2c8ec672bd4f27761f8e1ad6b'
     'debian:bookworm-slim'                                 = 'debian:bookworm-slim@sha256:c618be84fc82d365ce1834a31746b0ffe0499cf50fb1a0ce7b74863b52e5682c'
     'node:20-alpine'                                       = 'node:20-alpine@sha256:c1ee51b68c17fe1e9e9fb5c481e44b6b74c6c2f6b9f7f0b4b4b4c4c4c4c4c4c4'
+    'ubuntu:24.04'                                         = 'ubuntu:24.04@sha256:353675e2a41babd526e2b837d7ec780c2a05bca0164f7ea5dbbd433d21d166fc'
 }
 
 # Shell script external dependency patterns
@@ -287,54 +290,115 @@ function Convert-DockerFileImage {
 
     $updatedContent = $Content
     $changesMade = $false
+    $pinnedCount = 0
+    Write-Information ("[{0}] [Info] Convert-DockerFileImage: Processing {1}" -f (Get-Date -Format "yyyy-MM-dd HH:mm:ss"), $FilePath)
 
     # Pattern to match FROM instructions
-    $fromPattern = '(?m)^FROM\s+([^\s@]+)(?:@sha256:[\da-f]{64})?\s*(.*)$'
+    $fromPattern = '(?m)^FROM\s+(?:(?<platform>--platform=[^\s]+\s+))?(?<image>[^\s@]+)(?:@sha256:[\da-f]{64})?\s*(?<remainder>.*)$'
 
     $regexMatches = [regex]::Matches($updatedContent, $fromPattern)
+    Write-Information ("[{0}] [Info] Found {1} FROM instructions" -f (Get-Date -Format "yyyy-MM-dd HH:mm:ss"), $regexMatches.Count)
     foreach ($match in $regexMatches) {
         $fullMatch = $match.Value
-        $imageRef = $match.Groups[1].Value.Trim()
-        $remainder = $match.Groups[2].Value
+        $platformSegment = ($match.Groups['platform'].Value | ForEach-Object { $_ })
+        $imageRef = $match.Groups['image'].Value.Trim()
+        $remainder = $match.Groups['remainder'].Value
+        Write-Information ("[{0}] [Info] Processing FROM line: {1}" -f (Get-Date -Format "yyyy-MM-dd HH:mm:ss"), $fullMatch)
+        Write-Information ("[{0}] [Info] Parsed platform='{1}' imageRef='{2}' remainder='{3}'" -f (Get-Date -Format "yyyy-MM-dd HH:mm:ss"), $platformSegment, $imageRef, $remainder)
 
         # Skip if already SHA-pinned and not forcing updates
         if ($imageRef -match '@sha256:' -and -not $Force) {
-            Write-SecurityLog -Level 'Info' -Message "Already SHA-pinned in ${FilePath}: $imageRef"
+            Write-Information ("[{0}] [Info] Already SHA-pinned in {1}: {2}" -f (Get-Date -Format "yyyy-MM-dd HH:mm:ss"), $FilePath, $imageRef)
             continue
         }
 
         # Remove existing SHA if forcing updates
         $cleanImageRef = $imageRef -replace '@sha256:[\da-f]{64}', ''
+        Write-Information ("[{0}] [Info] Clean image reference: {1}" -f (Get-Date -Format "yyyy-MM-dd HH:mm:ss"), $cleanImageRef)
 
         # Check if we have a SHA mapping for this image
         $shaImageRef = $null
         foreach ($key in $DockerImageSHAMap.Keys) {
             if ($cleanImageRef -eq $key -or $cleanImageRef -like "$key*") {
                 $shaImageRef = $DockerImageSHAMap[$key]
+                Write-Information ("[{0}] [Info] Matched map entry: {1} -> {2}" -f (Get-Date -Format "yyyy-MM-dd HH:mm:ss"), $key, $shaImageRef)
                 break
             }
         }
 
         if ($shaImageRef) {
-            $newFromLine = "FROM $shaImageRef $remainder".Trim()
-            $updatedContent = $updatedContent.Replace($fullMatch, $newFromLine)
+            # Split remainder into (optional) alias/extra tokens and inline comment; then place comment on its own line
+            $prePart = $null; $commentPart = $null
+            if ($remainder -match '^(?<pre>[^#]*?)(?<comment>#.*)$') {
+                $prePart = ($matches['pre']).TrimEnd()
+                $commentPart = ($matches['comment']).Trim()
+            }
+            elseif ($remainder -match '^#') {
+                $commentPart = $remainder.Trim()
+            }
+            else {
+                $prePart = $remainder
+            }
+            $baseLine = "FROM ${platformSegment}${shaImageRef}".TrimEnd()
+            if ($prePart -and $prePart.Trim().Length -gt 0) { $baseLine = "$baseLine $prePart".TrimEnd() }
+            if ($commentPart) {
+                $newFromLine = "$baseLine`n$commentPart"
+            }
+            else {
+                $newFromLine = $baseLine
+            }
+            $updatedContent = $updatedContent.Replace($fullMatch, $newFromLine.TrimEnd())
             $changesMade = $true
-            Write-SecurityLog -Level 'Success' -Message "Pinned: $cleanImageRef -> $shaImageRef"
+            $pinnedCount++
+            Write-Information ("[{0}] [Success] Pinned: {1} -> {2}" -f (Get-Date -Format "yyyy-MM-dd HH:mm:ss"), $cleanImageRef, $shaImageRef)
         }
         else {
             # Try to get digest dynamically
-            $digest = Get-DockerImageDigest -ImageReference $cleanImageRef
+            Write-Information ("[{0}] [Info] No static map entry, attempting digest lookup: {1}" -f (Get-Date -Format "yyyy-MM-dd HH:mm:ss"), $cleanImageRef)
+            $digestRaw = Get-DockerImageDigest -ImageReference $cleanImageRef
+            # Filter any non-digest log strings accidentally written to the pipeline
+            $digest = $null
+            if ($digestRaw) {
+                $digest = ($digestRaw | Where-Object { $_ -is [string] -and $_ -match '^sha256:[0-9a-f]{64}$' } | Select-Object -First 1)
+            }
             if ($digest) {
                 $shaImageRef = "$cleanImageRef@$digest"
-                $newFromLine = "FROM $shaImageRef $remainder".Trim()
-                $updatedContent = $updatedContent.Replace($fullMatch, $newFromLine)
+                $prePart = $null; $commentPart = $null
+                if ($remainder -match '^(?<pre>[^#]*?)(?<comment>#.*)$') {
+                    $prePart = ($matches['pre']).TrimEnd()
+                    $commentPart = ($matches['comment']).Trim()
+                }
+                elseif ($remainder -match '^#') {
+                    $commentPart = $remainder.Trim()
+                }
+                else {
+                    $prePart = $remainder
+                }
+                $baseLine = "FROM ${platformSegment}${shaImageRef}".TrimEnd()
+                if ($prePart -and $prePart.Trim().Length -gt 0) { $baseLine = "$baseLine $prePart".TrimEnd() }
+                if ($commentPart) {
+                    $newFromLine = "$baseLine`n$commentPart"
+                }
+                else {
+                    $newFromLine = $baseLine
+                }
+                $updatedContent = $updatedContent.Replace($fullMatch, $newFromLine.TrimEnd())
                 $changesMade = $true
-                Write-SecurityLog -Level 'Success' -Message "Pinned: $cleanImageRef -> $shaImageRef"
+                $pinnedCount++
+                Write-Information ("[{0}] [Info] Resolved dynamic digest: {1}" -f (Get-Date -Format "yyyy-MM-dd HH:mm:ss"), $digest)
+                Write-Information ("[{0}] [Success] Pinned: {1} -> {2}" -f (Get-Date -Format "yyyy-MM-dd HH:mm:ss"), $cleanImageRef, $shaImageRef)
             }
             else {
-                Write-SecurityLog -Level 'Warning' -Message "No SHA mapping found for: $cleanImageRef"
+                Write-Information ("[{0}] [Warning] No valid digest (sha256) resolved for: {1}; leaving image unmodified (will still normalize comment formatting)" -f (Get-Date -Format "yyyy-MM-dd HH:mm:ss"), $cleanImageRef)
             }
         }
+    }
+
+    if ($changesMade) {
+        Write-Information ("[{0}] [Info] Convert-DockerFileImage summary: pinned {1} image(s) in {2}" -f (Get-Date -Format "yyyy-MM-dd HH:mm:ss"), $pinnedCount, $FilePath)
+    }
+    else {
+        Write-Information ("[{0}] [Info] Convert-DockerFileImage summary: no changes for {1}" -f (Get-Date -Format "yyyy-MM-dd HH:mm:ss"), $FilePath)
     }
 
     return @{
@@ -544,22 +608,26 @@ function Main {
             $result = $null
 
             if ($file.Name -like "Dockerfile*") {
+                Write-SecurityLog -Level 'Info' -Message "Convert-DockerFileImage: $($file.Name)"
                 $result = Convert-DockerFileImage -FilePath $file.FullName -Content $content
             }
             elseif ($file.Name -like "docker-compose*") {
+                Write-SecurityLog -Level 'Info' -Message "Convert-DockerComposeImage: $($file.Name)"
                 $result = Convert-DockerComposeImage -FilePath $file.FullName -Content $content
             }
             elseif ($file.Name -eq "devcontainer.json") {
+                Write-SecurityLog -Level 'Info' -Message "Update-DevcontainerImages: $($file.Name)"
                 $result = Update-DevcontainerImages -FilePath $file.FullName -Content $content
             }
 
-            if ($result -and $result.PSObject.Properties.Name -contains 'Changed' -and $result.Changed) {
+            if ($result -and $result.PSObject.Properties.Match('Changed') -and $result.Changed) {
                 if ($WhatIfPreference) {
                     Write-Output "What if: Performing the operation `"Update Docker SHA pinning`" on target `"$($file.FullName)`"."
                 }
                 else {
+                    Write-Information ("[{0}] [Info] Updating file: {1}" -f (Get-Date -Format "yyyy-MM-dd HH:mm:ss"), $file.FullName)
                     Set-ContentPreservePermission -Path $file.FullName -Value $result.Content -NoNewline
-                    Write-SecurityLog -Level 'Success' -Message "Updated file: $($file.FullName)"
+                    Write-Information ("[{0}] [Success] Updated file: {1}" -f (Get-Date -Format "yyyy-MM-dd HH:mm:ss"), $file.FullName)
                 }
                 $totalChanged++
             }

@@ -73,6 +73,7 @@ distroless
 cyberattacks
 Dapr
 docker
+Dockerfiles
 explainability
 Explainability
 Fairlearn
@@ -91,9 +92,11 @@ jupyter
 kaggle
 linkerd
 Multus
+myregistry
 nojekyll
 Opsgenie
 rollouts
+rosbag
 Rundeck
 Sankey
 Seldon
@@ -216,6 +219,7 @@ workday
 
 # Networking & Infrastructure
 cidr
+cyclonedds
 dns
 firewall
 loadbalancer

@@ -1,6 +1,6 @@
 ARG BUILDPLATFORM=linux/amd64
 
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/cbl-mariner/base/core:2.0 AS build
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/cbl-mariner/base/core:2.0@sha256:b462b8e95dfa12b3fefc95025a627306a527de61db17b8519a59b8e25f1663c7 AS build
 
 # Ensure robust shell behavior and pipefail
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -119,7 +119,7 @@ COPY ./src ./src
 # Build the final application (only application code recompiles)
 RUN cargo build --release
 
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/cbl-mariner/base/core:2.0 AS runtime
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/cbl-mariner/base/core:2.0@sha256:b462b8e95dfa12b3fefc95025a627306a527de61db17b8519a59b8e25f1663c7 AS runtime
 
 # Ensure robust shell behavior and pipefail
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]

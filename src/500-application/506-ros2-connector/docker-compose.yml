@@ -1,0 +1,115 @@
+---
+services:
+  # MQTT Broker for message routing (connector network only)
+  mqtt-broker:
+    image: eclipse-mosquitto:2.0
+    container_name: mqtt-broker
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./resources/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+    restart: unless-stopped
+    command: mosquitto -c /mosquitto/config/mosquitto.conf
+    healthcheck:
+      test: ["CMD", "mosquitto_pub", "-h", "localhost", "-t", "test", "-m", "test"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      connector-network:
+
+  # MQTT UI for visualizing MQTT topics and messages
+  mqtt-ui:
+    image: alpine
+    container_name: mqtt-ui
+    command: ["sh", "-c", "apk add mosquitto-clients mqttui && sleep infinity"]
+    environment:
+      - MQTT_BROKER_HOST=mqtt-broker
+      - MQTT_BROKER_PORT=1883
+    depends_on:
+      - mqtt-broker
+    networks:
+      connector-network:
+
+  # Bridge container: connected to both simulator and connector networks
+  ros2-connector:
+    build:
+      context: .
+      dockerfile: ./services/ros2-connector/Dockerfile
+    container_name: ros2-connector
+    hostname: ros2-connector
+    env_file:
+      - .env
+    environment:
+      - LOG_TO_CONSOLE=true
+      - PYTHONUNBUFFERED=1
+      - ROS_DOMAIN_ID=0
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+      - CYCLONEDDS_URI=file:///app/cyclone-dds.xml
+      - MQTT_BROKER=mqtt-broker
+      - MQTT_PORT=1883
+      - ROS_LOCALHOST_ONLY=0
+    ports:
+      - "${SERVICE_PORT:-8080}:8080"
+    volumes:
+      - ./resources:/app/resources:ro
+      - ./resources/cyclone-dds-local.xml:/app/cyclone-dds.xml:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    depends_on:
+      - mqtt-broker
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      connector-network:
+        ipv4_address: 192.168.0.11
+
+  # ROS2 Robot Simulator for testing (isolated on simulator-network)
+  ros2-simulator:
+    build:
+      context: .
+      dockerfile: ./services/ros2-simulator/Dockerfile
+    container_name: ros2-simulator
+    env_file:
+      - .env
+    environment:
+      - ROS_DOMAIN_ID=0
+      - ROS_LOCALHOST_ONLY=0
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+      - CYCLONEDDS_URI=file:///app/cyclone-dds.xml
+      - USE_BAG_PLAYBACK=false
+      - BAG_PATH=/app/data
+    ports:
+      - "8081:8080"
+    volumes:
+      - ./resources:/app/resources:ro
+      - ./resources/cyclone-dds-local.xml:/app/cyclone-dds.xml:ro
+      - ./resources/data:/app/data:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    depends_on:
+      - mqtt-broker
+    networks:
+      connector-network:
+        ipv4_address: 192.168.0.10
+
+networks:
+  connector-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.0.0/24
+          gateway: 192.168.0.1

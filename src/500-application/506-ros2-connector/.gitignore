@@ -1,0 +1,75 @@
+# Environment files
+.env
+.env.*
+!.env.template
+
+# Logs
+logs/
+*.log
+ros_logs/
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+resources/data/*
+resources/data_converted
+
+# Coverage directory used by tools like istanbul
+coverage/
+
+# Build outputs
+dist/
+build/
+target/
+install/
+log/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+venv/
+env/
+
+# ROS2 specific
+build/
+install/
+log/
+.colcon_install_layout
+.colcon_build_layout
+
+# Node.js (if any JS tooling)
+node_modules/
+npm-debug.log*
+
+# IDE files
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+.ropeproject
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker
+.dockerignore
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Configuration overrides
+config/local.yaml
+config/secrets.yaml

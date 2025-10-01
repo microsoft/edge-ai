@@ -16,7 +16,7 @@ COPY src/requirements.txt .
 RUN pip wheel --no-cache-dir --wheel-dir /wheels -r requirements.txt
 
 # STAGE 2: Runtime - Creates the minimal production image
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/cbl-mariner/base/python:3.9
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/cbl-mariner/base/python:3.9 AS runtime
 
 WORKDIR /app
 
