@@ -1,0 +1,40 @@
+{{- if .Values.cycloneDDS.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "ros2-simulator.fullname" . }}-cyclone-dds
+  labels:
+    {{- include "ros2-simulator.labels" . | nindent 4 }}
+data:
+  cyclone-dds.xml: |
+    <?xml version="1.0" encoding="UTF-8"?>
+    <CycloneDDS xmlns="https://cdds.io/config">
+      <Domain id="any">
+        <General>
+          <AllowMulticast>{{ .Values.cycloneDDS.allowMulticast }}</AllowMulticast>
+          <Interfaces>
+          {{- if .Values.cycloneDDS.interfaces }}
+            {{- range .Values.cycloneDDS.interfaces }}
+            <NetworkInterface name="{{ . }}" presence_required="false" priority="100" />
+            {{- end }}
+          {{- end }}
+            <NetworkInterface name="lo" presence_required="true" priority="50" />
+          </Interfaces>
+        </General>
+        <Discovery>
+          <ParticipantIndex>auto</ParticipantIndex>
+          {{- if .Values.cycloneDDS.peers }}
+          <Peers>
+            {{- range .Values.cycloneDDS.peers }}
+            <Peer Address="{{ . }}" />
+            {{- end }}
+          </Peers>
+          {{- end }}
+        </Discovery>
+        <Tracing>
+          <Verbosity>{{ .Values.cycloneDDS.verbosity }}</Verbosity>
+          <OutputFile>/tmp/cyclonedds.log</OutputFile>
+        </Tracing>
+      </Domain>
+    </CycloneDDS>
+{{- end }}

@@ -77,7 +77,9 @@ RUN touch src/main.rs && cargo build --release
 # =============================================================================
 # STAGE 2: Runtime - Creates the minimal production image
 # =============================================================================
-FROM mcr.microsoft.com/cbl-mariner/base/core:2.0@sha256:b462b8e95dfa12b3fefc95025a627306a527de61db17b8519a59b8e25f1663c7 # Install only the necessary runtime dependencies and create a non-root user
+FROM mcr.microsoft.com/cbl-mariner/base/core:2.0@sha256:b462b8e95dfa12b3fefc95025a627306a527de61db17b8519a59b8e25f1663c7 AS runtime
+
+# Install only the necessary runtime dependencies and create a non-root user
 RUN tdnf install -y ca-certificates-2.0.0-19.cm2 shadow-utils-4.9-13.cm2 && \
     tdnf clean all && \
     groupadd -r appuser && useradd -r -g appuser appuser

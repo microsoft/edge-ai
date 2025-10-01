@@ -1,0 +1,56 @@
+---
+replicaCount: 1
+
+image:
+  repository: ros2-simulator # overridden by script with full ref
+  tag: latest
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: false
+
+service:
+  enabled: true
+  port: 80
+  targetPort: 8080
+  type: none
+  discoveryPort: 21161     # UDP discovery port
+  userPort: 21162          # UDP user data port
+
+livenessProbe:
+  httpGet:
+    path: /health
+    port: http
+  initialDelaySeconds: 30
+  periodSeconds: 30
+readinessProbe:
+  httpGet:
+    path: /health
+    port: http
+  initialDelaySeconds: 10
+  periodSeconds: 15
+
+env: {}
+
+# CycloneDDS Configuration
+cycloneDDS:
+  enabled: true
+  allowMulticast: false
+  verbosity: info
+  peers: []
+  interfaces: []
+
+podAnnotations: {}
+nodeSelector: {}
+affinity: {}
+tolerations: []
+
+# Rosbag playback configuration
+rosbag:
+  enabled: false
+  pvcName: rosbag-pvc
+  mountPath: /app/data

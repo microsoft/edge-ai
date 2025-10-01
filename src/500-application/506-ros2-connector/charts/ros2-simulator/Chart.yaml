@@ -1,0 +1,14 @@
+---
+apiVersion: v2
+name: ros2-simulator
+description: ROS2 Simulator workload
+version: 0.1.0
+appVersion: "1.0.0"
+type: application
+keywords:
+  - ros2
+  - simulator
+  - robotics
+maintainers:
+  - name: Edge AI Team
+    email: edge-ai@microsoft.com

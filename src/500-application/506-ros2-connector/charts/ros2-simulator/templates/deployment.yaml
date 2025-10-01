@@ -1,0 +1,85 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ros2-simulator.fullname" . }}
+  labels:
+    {{- include "ros2-simulator.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "ros2-simulator.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "ros2-simulator.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: simulator
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: ROS_LOG_DIR
+              value: /tmp
+            {{- range $k, $v := .Values.env }}
+            - name: {{ $k }}
+              value: {{ $v | quote }}
+            {{- end }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.targetPort }}
+          livenessProbe:
+            {{- toYaml .Values.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.readinessProbe | nindent 12 }}
+          {{- if .Values.cycloneDDS.enabled }}
+          volumeMounts:
+            - name: cyclone-dds-config
+              mountPath: /app/cyclone-dds.xml
+              subPath: cyclone-dds.xml
+              readOnly: true
+            {{- if .Values.rosbag.enabled }}
+            - name: rosbag-data
+              mountPath: {{ .Values.rosbag.mountPath }}
+              readOnly: true
+            {{- end }}
+          {{- else if .Values.rosbag.enabled }}
+          volumeMounts:
+            - name: rosbag-data
+              mountPath: {{ .Values.rosbag.mountPath }}
+              readOnly: true
+          {{- end }}
+      {{- if or .Values.cycloneDDS.enabled .Values.rosbag.enabled }}
+      volumes:
+        {{- if .Values.cycloneDDS.enabled }}
+        - name: cyclone-dds-config
+          configMap:
+            name: {{ include "ros2-simulator.fullname" . }}-cyclone-dds
+        {{- end }}
+        {{- if .Values.rosbag.enabled }}
+        - name: rosbag-data
+          persistentVolumeClaim:
+            claimName: {{ .Values.rosbag.pvcName }}
+        {{- end }}
+      {{- end }}

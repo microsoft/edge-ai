@@ -1,0 +1,102 @@
+---
+# Default values for ros2-connector
+replicaCount: 1
+
+image:
+  repository: ros2-connector
+  pullPolicy: IfNotPresent
+  tag: latest
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: false
+
+podAnnotations: {}
+
+podSecurityContext:
+  fsGroup: 1000
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: false
+  runAsNonRoot: true
+  runAsUser: 1000
+
+service:
+  enabled: true
+  type: ClusterIP
+  port: 80
+  targetPort: 8080
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: ros2-connector.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# Application-specific environment variables
+env: {}
+
+# Persistent storage (if needed)
+persistence:
+  enabled: false
+  storageClass: ""
+  accessMode: ReadWriteOnce
+  size: 1Gi
+  annotations: {}
+
+# Additional volumes and volume mounts
+volumes: []
+volumeMounts: []
+
+
+# ConfigMap for additional configuration files
+configMap:
+  enabled: false
+  data: {}
+
+# Secret for sensitive configuration
+secret:
+  enabled: false
+  data: {}
+
+
+# Pod disruption budget
+podDisruptionBudget:
+  enabled: false
+  minAvailable: 1
+
+# Network policies
+networkPolicy:
+  enabled: false
+  policyTypes: []
+  ingress: []
+  egress: []
+  useHostNetwork: false
+  dnsPolicy: ClusterFirst
+
+# DDS dynamic configuration
+cycloneDDS:
+  enabled: true
+  allowMulticast: false
+  peers: []
+  verbosity: info
+  interfaces: []
