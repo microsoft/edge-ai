@@ -69,6 +69,7 @@ Deploys Azure Kubernetes Service resources
 | should\_add\_current\_user\_cluster\_admin | Whether to assign the current logged in user Azure Kubernetes Cluster Admin Role permissions on the cluster when 'cluster\_admin\_oid' is not provided. | `bool` | `true` | no |
 | should\_create\_aks | Should create Azure Kubernetes Service. Default is false. | `bool` | `false` | no |
 | should\_create\_arc\_cluster\_instance | Should create an Azure Arc Cluster Instance. Default is false. | `bool` | `false` | no |
+| should\_disable\_local\_account | Whether to disable local admin account for the AKS cluster. Recommended for security compliance (CKV\_AZURE\_141). | `bool` | `true` | no |
 | should\_enable\_azure\_monitor\_metrics | Whether to enable Azure Monitor Metrics (Prometheus) extension for the AKS cluster. | `bool` | `true` | no |
 | should\_enable\_oidc\_issuer | Whether to enable the OIDC issuer URL for the cluster. Required for workload identity. | `bool` | `false` | no |
 | should\_enable\_private\_cluster | Whether to enable private cluster mode for AKS | `bool` | `false` | no |

@@ -110,8 +110,9 @@ module "aks_cluster" {
   should_enable_oidc_issuer       = var.should_enable_oidc_issuer
 
   // Cluster Admin configuration
-  cluster_admin_oid           = local.cluster_admin_oid
-  should_assign_cluster_admin = local.should_assign_cluster_admin
+  cluster_admin_oid            = local.cluster_admin_oid
+  should_assign_cluster_admin  = local.should_assign_cluster_admin
+  should_disable_local_account = var.should_disable_local_account
 }
 
 module "arc_cluster_instance" {

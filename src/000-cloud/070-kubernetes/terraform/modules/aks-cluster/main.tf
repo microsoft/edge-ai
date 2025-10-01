@@ -23,6 +23,7 @@ resource "azurerm_kubernetes_cluster" "aks" {
 
   oidc_issuer_enabled       = var.should_enable_oidc_issuer || var.should_enable_workload_identity
   workload_identity_enabled = var.should_enable_workload_identity
+  local_account_disabled    = var.should_disable_local_account
 
   dynamic "microsoft_defender" {
     for_each = try(var.log_analytics_workspace.id, null) != null ? [1] : []
