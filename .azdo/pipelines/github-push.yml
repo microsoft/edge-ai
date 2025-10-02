@@ -45,7 +45,7 @@ stages:
     jobs:
       - job: "GitHubPush"
         displayName: "Updating GitHub repo from AzDO"
-        condition: or(eq(variables.isMain, true), eq(variables.isPreRelease, true))
+        # condition: or(eq(variables.isMain, true), eq(variables.isPreRelease, true))
         steps:
           # Checkout repo
           - checkout: self

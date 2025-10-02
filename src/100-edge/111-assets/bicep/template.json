@@ -1,0 +1,41 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "Asset": {
+      "value": {
+
+        "properties": {
+          "name": "hardening-furnace",
+          "externalAssetId": "A41773",
+          "manufacturer": "Tronrud Engineering AS",
+          "description": "Hardening Furnace",
+          "serialNumber": "TE 1002896",
+          "attributes": {
+            "componentName": "Hardening Furnace",
+            "description": "Hardening Furnace"
+          }
+        },
+        "datasets": [
+          {
+            "name": "default",
+            "dataPoints": [
+              {
+                "name": "results",
+                "dataSource": "ns=5;s=\"Root\".\"Objects\".\"ServerInterfaces\".\"Machines\".\"HardeningFurnace\".\"ResultManagement\".\"Results\"",
+                "observabilityMode": "None",
+                "dataPointConfiguration": "{\"samplingInterval\":500}"
+              },
+              {
+                "name": "currentState",
+                "dataSource": "ns=5;s=\"Root\".\"Objects\".\"ServerInterfaces\".\"Machines\".\"HardeningFurnace\".\"MachineryItemState\".\"CurrentState\"",
+                "observabilityMode": "None",
+                "dataPointConfiguration": "{\"samplingInterval\":500}"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,8 @@
+# CSV based on template.json values
+# Asset: hardening-furnace with 2 data points from template.json
+
+asset_name,display_name,device_name,endpoint_name,description,documentation_uri,enabled,hardware_revision,manufacturer,manufacturer_uri,model,product_code,serial_number,software_revision,dataset_name,datapoint_name,data_source,datapoint_config,destination_target,destination_topic,destination_retain,destination_qos,default_datasets_config,default_events_config,external_asset_id,observability_mode,component_name,attributes
+
+# Hardening Furnace with 2 data points from template.json
+hardening-furnace,Hardening Furnace,hardening-device-001,opc-endpoint,Hardening Furnace,,true,,Tronrud Engineering AS,,,TE 1002896,,default,results,"ns=5;s=""Root"".""Objects"".""ServerInterfaces"".""Machines"".""HardeningFurnace"".""ResultManagement"".""Results""","{""samplingInterval"":500}",,,,,auto,auto,A41773,None,Hardening Furnace,"{""componentName"": ""Hardening Furnace"", ""description"": ""Hardening Furnace""}"
+hardening-furnace,Hardening Furnace,hardening-device-001,opc-endpoint,Hardening Furnace,,true,,Tronrud Engineering AS,,,TE 1002896,,default,currentState,"ns=5;s=""Root"".""Objects"".""ServerInterfaces"".""Machines"".""HardeningFurnace"".""MachineryItemState"".""CurrentState""","{""samplingInterval"":500}",,,,,auto,auto,A41773,None,Hardening Furnace,"{""componentName"": ""Hardening Furnace"", ""description"": ""Hardening Furnace""}"
