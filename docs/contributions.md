@@ -1,28 +1,5 @@
----
-title: Pull Request Analysis for edge-ai
-description: Analysis of pull request activity and contributor statistics for the
-  edge-ai project
-author: Edge AI Team
-ms.date: 06/06/2025
-ms.topic: hub-page
-keywords:
-  - pull request analysis
-  - contributor statistics
-  - development metrics
-  - github copilot impact
-  - pr trends
-  - code review
-  - development productivity
-  - project analytics
-  - slo compliance
-  - terraform
-  - bicep
-  - infrastructure as code
-  - edge ai
-  - azure iot operations
-estimated_reading_time: 20
----
 <!-- markdownlint-disable MD033 -->
+# Pull Request Analysis for edge-ai
 
 ## Overview
 
@@ -30,12 +7,12 @@ This analysis covers pull request activity for the edge-ai project in the ai-at-
 
 ### Summary Statistics
 
-- **Total Pull Requests**: 306
-- **Completed**: 265 (86.6%)
-- **Active**: 7 (2.3%)
-- **Abandoned**: 34 (11.1%)
-- **Average Days to Complete**: 2.91
-- **Total Contributors**: 32
+- **Total Pull Requests**: 406
+- **Completed**: 348 (85.7%)
+- **Active**: 7 (1.7%)
+- **Abandoned**: 51 (12.6%)
+- **Average Days to Complete**: 3.27
+- **Total Contributors**: 40
 
 ## Monthly Pull Request Activity
 
@@ -46,10 +23,10 @@ The following chart shows the trend of PRs created and completed each month.
 xychart-beta
     title "Monthly PR Activity Trends"
 %%{init: {"themeVariables": {"xyChart": {"plotColorPalette": "#FF6384, #36A2EB"}}}}%%
-    x-axis ["Nov 2024", "Dec 2024", "Jan 2025", "Feb 2025", "Mar 2025", "Apr 2025", "May 2025"]
+    x-axis ["Apr 2025", "May 2025", "Jun 2025", "Jul 2025", "Aug 2025", "Sep 2025", "Oct 2025"]
     y-axis "Number of PRs"
-    line "Created PRs" [18, 8, 60, 47, 56, 50, 53]
-    line "Completed PRs" [15, 6, 52, 36, 53, 49, 44]
+    line "Created PRs" [50, 56, 35, 13, 13, 35, 1]
+    line "Completed PRs" [49, 47, 27, 11, 14, 23, 5]
 ```
 
 ### PR Activity Chart Legend
@@ -67,9 +44,9 @@ This chart shows PR completion trends by week (Monday-Friday work weeks).
 
 xychart-beta
     title "Weekly PR Completion Activity (Last 26 Weeks)"
-    x-axis ["46", "47", "48", "49", "50", "51", "52", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21"]
+    x-axis ["13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40"]
     y-axis "Number of PRs"
-    bar [8, 2, 2, 4, 0, 2, 0, 0, 7, 11, 16, 18, 11, 8, 7, 12, 10, 18, 12, 7, 16, 8, 3, 17, 11, 10, 11, 21]
+    bar [7, 16, 8, 3, 17, 11, 10, 11, 22, 2, 6, 11, 5, 4, 6, 3, 3, 0, 2, 5, 3, 1, 3, 3, 3, 4, 8, 8]
 ```
 
 ## PR Completion Time by Size
@@ -81,8 +58,8 @@ The size of a PR significantly impacts how long it takes to review and merge.
 xychart-beta
     title "Average Days to Complete by PR Size"
     x-axis ["Small (≤5 files)", "Medium (6-20 files)", "Large (>20 files)"]
-    y-axis "Days" 2 --> 4.9
-    bar [2.7, 2.9, 3.9]
+    y-axis "Days" 2 --> 7.3
+    bar [2.5, 2.9, 6.3]
 ```
 
 ## PR Completion Time Distribution
@@ -91,10 +68,10 @@ xychart-beta
 
 pie showData
     title "PR Completion Time Distribution"
-    "Under 1 Day" : 116
-    "1-3 Days" : 80
-    "4-7 Days" : 45
-    "Over 7 Days" : 24
+    "Under 1 Day" : 143
+    "1-3 Days" : 103
+    "4-7 Days" : 62
+    "Over 7 Days" : 40
 ```
 
 ## SLO Compliance Trend
@@ -105,10 +82,10 @@ The following chart shows the trend of SLO compliance percentage over time (48 h
 %%{init: {"themeVariables": {"xyChart": {"plotColorPalette": "#4BC0C0, #FF6384"}}}}%%
 xychart-beta
     title "Weekly SLO Compliance and PR Closure"
-    x-axis ["41", "42", "43", "44", "45", "46", "47", "48", "49", "50", "51", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21"]
+    x-axis ["41", "42", "43", "44", "45", "46", "47", "48", "49", "50", "51", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40"]
     y-axis "Percentage" 0 --> 100
-    line [100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 90.9, 100, 100, 100, 93.3, 100, 88.9, 88.9, 100, 100, 87.5, 100, 100, 100, 93.3, 100, 95]
-    bar [0, 19, 4.8, 23.8, 14.3, 38.1, 9.5, 9.5, 19, 0, 9.5, 33.3, 52.4, 76.2, 85.7, 52.4, 38.1, 33.3, 57.1, 47.6, 85.7, 57.1, 33.3, 76.2, 38.1, 14.3, 81, 52.4, 47.6, 52.4, 100]
+    line [100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 90.9, 100, 100, 100, 93.3, 100, 88.9, 88.9, 100, 100, 87.5, 100, 100, 100, 93.3, 100, 95, 75, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100]
+    bar [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 27.3, 36.4, 31.8, 54.5, 45.5, 81.8, 54.5, 31.8, 72.7, 36.4, 13.6, 77.3, 50, 45.5, 50, 100, 9.1, 27.3, 50, 22.7, 18.2, 27.3, 13.6, 13.6, 0, 9.1, 22.7, 13.6, 4.5, 13.6, 13.6, 13.6, 18.2, 36.4, 36.4]
 ```
 
 ### Chart Legend
@@ -116,7 +93,7 @@ xychart-beta
 | Metric           | Description                                                                   | Color                                   |
 |------------------|-------------------------------------------------------------------------------|-----------------------------------------|
 | SLO Compliance % | Percentage of PRs meeting the 48 hour response window                         | <span style='color:#4BC0C0'>■■■■</span> |
-| PRs Closed       | Total number of PRs closed in each week (scaled to percentage of maximum: 21) | <span style='color:#FF6384'>■■■■</span> |
+| PRs Closed       | Total number of PRs closed in each week (scaled to percentage of maximum: 22) | <span style='color:#FF6384'>■■■■</span> |
 
 ## GitHub Copilot Impact
 
@@ -126,24 +103,24 @@ The following chart shows PR complexity metrics over time:
 %%{init: {"themeVariables": {"xyChart": {"plotColorPalette": "#4BC0C0, #FF6384, #36A2EB, #9966FF, #FFCE56"}}}}%%
 xychart-beta
     title "PR Complexity and Contributors"
-x-axis ["Oct 2024", "Nov 2024", "Dec 2024", "Jan 2025", "Feb 2025", "Mar 2025", "Apr 2025", "May 2025"]
-y-axis "Value (scaled)" 0 --> 124
-line "Avg Files Changed" [16.5, 27.6, 37.5, 65.8, 55.6, 52.1, 101.1, 66.4]
-line "Avg Days to Complete" [100, 68.2, 62.5, 86.5, 95.2, 60.8, 97.5, 62.5]
-line "Avg Files/Day" [12.3, 30.3, 45, 57.2, 43.8, 64.2, 77.9, 79.6]
-line "Avg Lines/Day" [5.8, 100, 50.9, 47.5, 33.1, 74.7, 106.3, 111.3]
-line "Total Contributors" [16, 32, 24, 80, 80, 112, 96, 96]
+x-axis ["Oct 2024", "Nov 2024", "Dec 2024", "Jan 2025", "Feb 2025", "Mar 2025", "Apr 2025", "May 2025", "Jun 2025", "Jul 2025", "Aug 2025", "Sep 2025", "Oct 2025"]
+y-axis "Value (scaled)" 0 --> 330
+line "Avg Files Changed" [16.5, 27.6, 37.5, 90.6, 55.6, 52.1, 101.1, 62.8, 134.6, 104.1, 124, 132.8, 0]
+line "Avg Days to Complete" [100, 68.2, 62.5, 86.5, 95.2, 60.8, 97.5, 67, 103.8, 200, 123.2, 90.2, 90]
+line "Avg Files/Day" [12.3, 30.3, 45, 78.6, 43.8, 64.2, 77.9, 70.4, 97.4, 39, 75.4, 110.4, 0]
+line "Avg Lines/Day" [5.8, 100, 50.9, 81.4, 33.1, 74.7, 106.3, 100.4, 299.8, 20.7, 132.7, 142.7, 0]
+line "Total Contributors" [16, 32, 24, 80, 80, 112, 96, 96, 64, 40, 56, 80, 24]
 ```
 
 ### PR Complexity Chart Legend
 
-| Metric                                                       | Description                                                     | Actual Value Range   | Scaling Factor |
-|--------------------------------------------------------------|-----------------------------------------------------------------|----------------------|----------------|
-| <span style='color:#4BC0C0'>■■■■</span> Avg Files Changed    | Average number of files modified per PR                         | 3.3-20.2 files       | ×5             |
-| <span style='color:#FF6384'>■■■■</span> Avg Days to Complete | Average time (in days) taken to complete PRs                    | 2.4-4 days           | ×25            |
-| <span style='color:#36A2EB'>■■■■</span> Avg Files/Day        | Productivity metric (files changed divided by days to complete) | 0.8-5.3 files/day    | ×15            |
-| <span style='color:#9966FF'>■■■■</span> Avg Lines/Day        | Productivity metric (lines changed divided by days to complete) | 14.4-278.4 lines/day | ×0.4           |
-| <span style='color:#FFCE56'>■■■■</span> Total Contributors   | Count of unique contributors (new + returning) per month        | 2-14 contributors    | ×8             |
+| Metric                                                       | Description                                                     | Actual Value Range | Scaling Factor |
+|--------------------------------------------------------------|-----------------------------------------------------------------|--------------------|----------------|
+| <span style='color:#4BC0C0'>■■■■</span> Avg Files Changed    | Average number of files modified per PR                         | 0-26.9 files       | ×5             |
+| <span style='color:#FF6384'>■■■■</span> Avg Days to Complete | Average time (in days) taken to complete PRs                    | 2.4-8 days         | ×25            |
+| <span style='color:#36A2EB'>■■■■</span> Avg Files/Day        | Productivity metric (files changed divided by days to complete) | 0-7.4 files/day    | ×15            |
+| <span style='color:#9966FF'>■■■■</span> Avg Lines/Day        | Productivity metric (lines changed divided by days to complete) | 0-749.6 lines/day  | ×0.4           |
+| <span style='color:#FFCE56'>■■■■</span> Total Contributors   | Count of unique contributors (new + returning) per month        | 2-14 contributors  | ×8             |
 
 *Note: Scaling factors are applied to make different metrics comparable on the same chart.*
 
@@ -153,80 +130,82 @@ The following metrics show GitHub Copilot's impact on development productivity:
 
 | Metric                | Before Copilot | After Copilot | % Change |
 |-----------------------|----------------|---------------|----------|
-| Files Changed per PR  | 10.4           | 14.5          | 38.5%    |
-| Lines Changed per PR  | 389.9          | 705.2         | 80.9%    |
-| Days to Complete PR   | 3.4            | 2.6           | -24.3%   |
-| Files Changed per Day | 3.5            | 4.8           | 39.4%    |
+| Files Changed per PR  | 12.7           | 17.5          | 38.1%    |
+| Lines Changed per PR  | 523.6          | 1062          | 102.8%   |
+| Days to Complete PR   | 3.4            | 3.2           | -4.8%    |
+| Files Changed per Day | 4.2            | 5.8           | 37.8%    |
 
-**Note**: GitHub Copilot was introduced on February 25, 2025. PR completion time has decreased by 24.3% since Copilot adoption, while developer productivity (measured by files changed per day) has increased by 39.4%.
+**Note**: GitHub Copilot was introduced on February 25, 2025. PR completion time has decreased by 4.8% since Copilot adoption, while developer productivity (measured by files changed per day) has increased by 37.8%.
 
 ## Contributor Summary
 
 Over the past 3 months:
 
-- **Total Unique Contributors**: 31
-- **New Contributors**: 13 (29.5%)
-- **Returning Contributors**: 31 (70.5%)
-- **Total Unique Reviewers**: 24
+- **Total Unique Contributors**: 39
+- **New Contributors**: 6 (28.6%)
+- **Returning Contributors**: 15 (71.4%)
+- **Total Unique Reviewers**: 26
 
 ### Contributors
 
 <!-- cspell:disable -->
 | Contributor               | PRs | Files Changed | Lines Added | Lines Deleted | Work Items Closed |
 |---------------------------|-----|---------------|-------------|---------------|-------------------|
-| Alain Uyidi               | 4   | 4             | 141         | 15            | 4                 |
-| Allen Greaves             | 41  | 1327          | 32909       | 15204         | 42                |
+| Alain Uyidi               | 8   | 26            | 1325        | 17            | 8                 |
+| Allen Greaves             | 66  | 1870          | 59591       | 20139         | 70                |
 | Andrej Kyselica           | 2   | 4             | 49          | 9             | 1                 |
 | Andrew Malkov             | 1   | 2             | 1390        | 0             | 1                 |
-| Andrew Nguyen             | 2   | 24            | 1223        | 8             | 2                 |
+| Andrew Nguyen             | 8   | 126           | 8140        | 487           | 10                |
 | Audrey Olson              | 2   | 10            | 708         | 7             | 2                 |
 | Basia Mahoney             | 1   | 1             | 1           | 1             | 1                 |
-| Bill Berry                | 106 | 594           | 36660       | 8739          | 186               |
+| Ben Brooks                | 1   | 13            | 125         | 63            | 1                 |
+| Bill Berry                | 123 | 1094          | 111300      | 15968         | 211               |
 | Braden Eriksen            | 1   | 3             | 126         | 38            | 1                 |
 | Cheng Chen                | 2   | 3             | 307         | 0             | 2                 |
-| Dariusz Porowski          | 2   | 15            | 21          | 21            | 2                 |
+| Dariusz Porowski          | 2   | 16            | 35          | 21            | 2                 |
+| David Ruttka              | 1   | 1             | 41          | 13            | 1                 |
 | Efrat Lecker              | 1   | 1             | 7           | 0             | 1                 |
-| Eliise Seling             | 14  | 374           | 6170        | 3855          | 22                |
-| Eugene Fedorenko          | 6   | 11            | 599         | 6             | 6                 |
+| Eliise Seling             | 18  | 637           | 20636       | 5793          | 29                |
+| Eugene Fedorenko          | 7   | 27            | 2532        | 7             | 9                 |
+| Hemavathy Alaganandam     | 1   | 2             | 107         | 18            | 1                 |
 | Jeffrey Feng              | 5   | 14            | 6095        | 4             | 4                 |
+| Jessica Ern               | 1   | 0             | 0           | 0             | 1                 |
 | Joshua Phelps             | 2   | 17            | 1575        | 3             | 2                 |
-| Katrien De Graeve         | 40  | 418           | 14684       | 3360          | 56                |
+| Katrien De Graeve         | 52  | 518           | 16825       | 4223          | 70                |
+| Kevin Mwangi              | 1   | 193           | 1211        | 697           | 1                 |
 | Lauren Luttrell (SHE HER) | 1   | 1             | 7           | 7             | 1                 |
-| Lee Cattarin              | 3   | 6             | 285         | 20            | 3                 |
+| Lee Cattarin              | 3   | 54            | 833         | 691           | 3                 |
 | Liam Moat                 | 1   | 2             | 13          | 13            | 2                 |
 | Madhav Annamraju          | 3   | 7             | 1672        | 0             | 3                 |
-| Marcel Bindseil           | 29  | 301           | 6294        | 618           | 35                |
+| Maho Pacheco              | 2   | 5             | 768         | 0             | 2                 |
+| Marcel Bindseil           | 43  | 616           | 13083       | 1760          | 49                |
+| MerlinBot                 | 1   | 0             | 0           | 0             | 1                 |
 | Michael Brown (ISE)       | 10  | 85            | 1847        | 153           | 10                |
-| Mykhailo Skuba            | 1   | 2             | 42          | 3             | 1                 |
-| Olha Konstantinova        | 1   | 19            | 703         | 11            | 1                 |
-| Omer Demir                | 2   | 6             | 360         | 6             | 2                 |
-| Paul Bouwer               | 3   | 7             | 172         | 24            | 3                 |
-| Rahul Dani                | 2   | 32            | 1040        | 55            | 2                 |
-| Suneet Nangia             | 3   | 2             | 359         | 0             | 3                 |
-| Vy Ta                     | 3   | 31            | 1469        | 20            | 8                 |
 
 ## Reviewers
 
 | Reviewer            | Approvals | Comments |
 |---------------------|-----------|----------|
-| Alain Uyidi         | 23        | 42       |
-| Allen Greaves       | 137       | 408      |
+| Alain Uyidi         | 38        | 75       |
+| Allen Greaves       | 178       | 523      |
+| Andrew Nguyen       | 10        | 3        |
 | Basia Mahoney       | 1         | 2        |
-| Bill Berry          | 139       | 524      |
+| Bill Berry          | 190       | 681      |
 | Braden Eriksen      | 2         | 15       |
 | Cheng Chen          | 3         | 13       |
+| Chris Montazer      | 3         | 8        |
 | Daisuke Inoue       | 1         | 6        |
 | Dariusz Porowski    | 1         | 8        |
-| Eliise Seling       | 52        | 87       |
+| Eliise Seling       | 56        | 87       |
 | Emmeline Hoops      | 2         | 22       |
 | Engin Polat         | 1         | 11       |
 | Eugene Fedorenko    | 1         | 2        |
-| Katrien De Graeve   | 101       | 246      |
-| Larry Lieberman     | 44        | 5        |
+| Katrien De Graeve   | 148       | 404      |
+| Larry Lieberman     | 46        | 5        |
 | Madhav Annamraju    | 1         | 16       |
-| Marcel Bindseil     | 43        | 65       |
+| Marcel Bindseil     | 59        | 78       |
 | Marcia Dos Santos   | 1         | 10       |
-| Michael Brown (ISE) | 12        | 10       |
+| Michael Brown (ISE) | 13        | 11       |
 | Olha Konstantinova  | 1         | 6        |
 | Paul Bouwer         | 3         | 7        |
 | Rahul Dani          | 4         | 2        |
@@ -244,10 +223,10 @@ This chart shows the pattern of new vs. returning contributors over time:
 
 xychart-beta
     title "Contributor Trends: New vs. Returning"
-    x-axis ["Nov 2024", "Dec 2024", "Jan 2025", "Feb 2025", "Mar 2025", "Apr 2025", "May 2025"]
+    x-axis ["Apr 2025", "May 2025", "Jun 2025", "Jul 2025", "Aug 2025", "Sep 2025", "Oct 2025"]
     y-axis "Number of Contributors"
-    line [3, 1, 8, 5, 6, 3, 4]
-    line [3, 4, 8, 7, 10, 8, 13]
+    line [3, 4, 2, 0, 3, 3, 0]
+    line [8, 14, 7, 5, 6, 8, 1]
 ```
 
 ### Contributor Chart Legend
@@ -261,42 +240,48 @@ xychart-beta
 
 | File Type                | Current Branch Files | % of Files | PR Changes Count | % of Changes |
 |--------------------------|----------------------|------------|------------------|--------------|
-| Terraform                | 330                  | 36.9%      | 1669             | 38.9%        |
-| Documentation (Markdown) | 239                  | 26.7%      | 1311             | 30.5%        |
-| Bicep/ARM Templates      | 82                   | 9.2%       | 508              | 11.8%        |
-| YAML                     | 58                   | 6.5%       | 371              | 8.6%         |
-| Shell Scripts            | 36                   | 4.0%       | 185              | 4.3%         |
-| Other                    | 91                   | 10.2%      | 159              | 3.7%         |
-| PowerShell               | 19                   | 2.1%       | 58               | 1.4%         |
-| Python                   | 4                    | 0.4%       | 16               | 0.4%         |
-| C#                       | 11                   | 1.2%       | 11               | 0.3%         |
-| Rust                     | 4                    | 0.4%       | 4                | 0.1%         |
-| Configuration Files      | 1                    | 0.1%       | 0                | 0.0%         |
-| Docker                   | 3                    | 0.3%       | 0                | 0.0%         |
-| JSON                     | 16                   | 1.8%       | 0                | 0.0%         |
-| **Total**                | **894**              | **100%**   | **4292**         | **100%**     |
+| Terraform                | 506                  | 32.8%      | 2487             | 38.3%        |
+| Documentation (Markdown) | 521                  | 33.8%      | 2349             | 36.2%        |
+| Bicep/ARM Templates      | 90                   | 5.8%       | 573              | 8.8%         |
+| YAML                     | 105                  | 6.8%       | 497              | 7.6%         |
+| Shell Scripts            | 60                   | 3.9%       | 227              | 3.5%         |
+| Other                    | 119                  | 7.7%       | 205              | 3.2%         |
+| PowerShell               | 39                   | 2.5%       | 83               | 1.3%         |
+| Python                   | 15                   | 1.0%       | 23               | 0.4%         |
+| Rust                     | 19                   | 1.2%       | 20               | 0.3%         |
+| CSS/SCSS                 | 0                    | 0.0%       | 19               | 0.3%         |
+| C#                       | 11                   | 0.7%       | 11               | 0.2%         |
+| HTML                     | 0                    | 0.0%       | 2                | 0.0%         |
+| JavaScript               | 0                    | 0.0%       | 1                | 0.0%         |
+| Docker                   | 9                    | 0.6%       | 0                | 0.0%         |
+| Configuration Files      | 4                    | 0.3%       | 0                | 0.0%         |
+| HTML/CSS                 | 20                   | 1.3%       | 0                | 0.0%         |
+| XML                      | 4                    | 0.3%       | 0                | 0.0%         |
+| JSON                     | 20                   | 1.3%       | 0                | 0.0%         |
+| JavaScript/TypeScript    | 1                    | 0.1%       | 0                | 0.0%         |
+| **Total**                | **1543**             | **100%**   | **6497**         | **100%**     |
 
 ## Focus Area Trends
 
 The xy-chart below tracks how development focus areas have evolved over time in the project:
 
 ``` mermaid
-%%{init: {"themeVariables": {"xyChart": {"plotColorPalette": "#9966FF, #FF6384, #36A2EB, #4BC0C0, #FF9F40, #326CE5, #8B8000"}}}}%%
+%%{init: {"themeVariables": {"xyChart": {"plotColorPalette": "#9966FF, #FF6384, #36A2EB, #FF9F40, #4BC0C0, #F58220, #C9CBCF"}}}}%%
 xychart-beta
     title "Focus Area Trends Over Time (% of monthly PRs)"
-    x-axis ["Oct 2024", "Nov 2024", "Dec 2024", "Jan 2025", "Feb 2025", "Mar 2025", "Apr 2025", "May 2025"]
+    x-axis ["Mar 2025", "Apr 2025", "May 2025", "Jun 2025", "Jul 2025", "Aug 2025", "Sep 2025", "Oct 2025"]
     y-axis "Percentage of PRs (log scale)" 1 --> 100
-        line "Features" [35.7, 72.2, 75, 51.7, 42.6, 53.6, 70, 79.2]     line "CI/CD" [7.1, 50, 50, 31.7, 40.4, 46.4, 38, 43.4]     line "Documentation" [28.6, 16.7, 25, 40, 27.7, 42.9, 52, 47.2]     line "Bug Fixes" [28.6, 33.3, 50, 36.7, 21.3, 44.6, 34, 18.9]     line "Terraform" [0.1, 22.2, 25, 15, 14.9, 21.4, 16, 41.5]     line "Kubernetes" [7.1, 16.7, 25, 11.7, 10.6, 17.9, 10, 20.8]     line "Refactoring" [14.3, 5.6, 12.5, 13.3, 8.5, 10.7, 18, 26.4]
+        line "Features" [53.6, 70, 82.1, 88.6, 69.2, 76.9, 71.4, 100]     line "CI/CD" [46.4, 38, 42.9, 51.4, 38.5, 46.2, 80, 100]     line "Documentation" [42.9, 52, 46.4, 34.3, 53.8, 23.1, 40, 0.1]     line "Terraform" [21.4, 16, 42.9, 42.9, 30.8, 23.1, 8.6, 100]     line "Bug Fixes" [44.6, 34, 23.2, 54.3, 38.5, 30.8, 54.3, 0.1]     line "IoT Operations" [8.9, 4, 19.6, 14.3, 38.5, 7.7, 20, 100]     line "Bicep/ARM" [10.7, 24, 23.2, 17.1, 15.4, 15.4, 2.9, 100]
 ```
 
 ### Focus Area Chart Legend
 
-| Focus Area    | Color                                   | Focus Area  | Color                                   |
-|---------------|-----------------------------------------|-------------|-----------------------------------------|
-| Features      | <span style='color:#9966FF'>■■■■</span> | Terraform   | <span style='color:#FF9F40'>■■■■</span> |
-| CI/CD         | <span style='color:#FF6384'>■■■■</span> | Kubernetes  | <span style='color:#326CE5'>■■■■</span> |
-| Documentation | <span style='color:#36A2EB'>■■■■</span> | Refactoring | <span style='color:#8B8000'>■■■■</span> |
-| Bug Fixes     | <span style='color:#4BC0C0'>■■■■</span> |             |                                         |
+| Focus Area    | Color                                   | Focus Area     | Color                                   |
+|---------------|-----------------------------------------|----------------|-----------------------------------------|
+| Features      | <span style='color:#9966FF'>■■■■</span> | Bug Fixes      | <span style='color:#4BC0C0'>■■■■</span> |
+| CI/CD         | <span style='color:#FF6384'>■■■■</span> | IoT Operations | <span style='color:#F58220'>■■■■</span> |
+| Documentation | <span style='color:#36A2EB'>■■■■</span> | Bicep/ARM      | <span style='color:#C9CBCF'>■■■■</span> |
+| Terraform     | <span style='color:#FF9F40'>■■■■</span> |                |                                         |
 
 ## Industry Backlog Visualization
 
@@ -324,15 +309,14 @@ config:
 ---
 sankey-beta
 %% Top 5 Scenarios (by Customer Weighting) - Mermaid does not render title for sankey-beta directly in diagram
-"Predictive Maintenance","VM Host Infrastructure",8
 "Operational Performance Monitoring","Cloud Container Platform Infrastructure",8
 "Predictive Maintenance","Cloud Container Platform Infrastructure",8
 "Yield Process Optimization","Cloud Container Platform Infrastructure",6
-"Digital Inspection / Survey","Cloud Data Platform",7
-"Operational Performance Monitoring","Cloud Data Platform",8
-"Predictive Maintenance","Cloud Data Platform",8
-"Quality Process Optimization & Automation","Cloud Data Platform",7
-"Yield Process Optimization","Cloud Data Platform",6
+"Digital Inspection / Survey","Cloud Data Platform Services",7
+"Operational Performance Monitoring","Cloud Data Platform Services",8
+"Predictive Maintenance","Cloud Data Platform Services",8
+"Quality Process Optimization & Automation","Cloud Data Platform Services",7
+"Yield Process Optimization","Cloud Data Platform Services",6
 "Digital Inspection / Survey","Cloud Identity Management",7
 "Operational Performance Monitoring","Cloud Identity Management",8
 "Predictive Maintenance","Cloud Identity Management",8
@@ -387,13 +371,13 @@ sankey-beta
 "Predictive Maintenance","Stamp Architecture Deployment",8
 "Quality Process Optimization & Automation","Stamp Architecture Deployment",7
 "Yield Process Optimization","Stamp Architecture Deployment",6
-"VM Host Infrastructure","Cloud Virtual Machine Host(s) (050-vm-host)",10
+"Predictive Maintenance","VM Host Infrastructure",8
 "Cloud Container Platform Infrastructure","Cloud AKS Cluster and ACR (060-aks-acr)",9
 "OCP UA Closed-Loop Control","Cloud AKS Cluster and ACR (060-aks-acr)",9
-"Cloud Data Platform","Cloud Data Persistence (030-data)",33
+"Cloud Data Platform Services","Cloud Data Persistence (030-data)",33
 "Cloud Messaging and Event Infrastructure","Edge Messaging & Data Routing (130-messaging)",33
 "OPC UA Data Ingestion","Edge Messaging & Data Routing (130-messaging)",11
-"Cloud Data Platform","Edge Messaging & Data Routing (130-messaging)",33
+"Cloud Data Platform Services","Edge Messaging & Data Routing (130-messaging)",33
 "Edge Compute Orchestration Platform","Cloud Security and Identity (010-security-identity)",26
 "Cloud Secret and Certificate Management","Cloud Security and Identity (010-security-identity)",33
 "Cloud Identity Management","Cloud Security and Identity (010-security-identity)",33
@@ -417,6 +401,7 @@ sankey-beta
 "Stamp Architecture Deployment","Industry Solution Blueprints Framework",33
 "Stamp Architecture Deployment","Integration Environment for IaC Upgrade Testing",33
 "Stamp Architecture Deployment","Ephemeral Environment Testing for Blueprints",33
+"VM Host Infrastructure","Cloud Virtual Machine Host(s) (050-vm-host)",10
 ```
 
 ### Other Scenarios (Customer Weighting >= 2, Excluding Top 5)
@@ -436,32 +421,28 @@ config:
 ---
 sankey-beta
 %% Other Scenarios (Customer Weighting >= 2, Excluding Top 5) - Mermaid does not render title for sankey-beta directly in diagram
-"Automated Quality Diagnostics & Simulation","VM Host Infrastructure",4
-"Facility Design & Simulation","VM Host Infrastructure",3
-"Immersive Remote Operations","VM Host Infrastructure",5
-"Semi-Autonomous Cell","VM Host Infrastructure",2
 "Automated Quality Diagnostics & Simulation","Cloud Container Platform Infrastructure",4
 "Autonomous Cell","Cloud Container Platform Infrastructure",2
-"Facility Design & Simulation","Cloud Container Platform Infrastructure",3
+"Facility Design & Simulation","Cloud Container Platform Infrastructure",4
 "Immersive Remote Operations","Cloud Container Platform Infrastructure",5
 "Intelligent Assistant (CoPilot/Companion)","Cloud Container Platform Infrastructure",7
 "Semi-Autonomous Cell","Cloud Container Platform Infrastructure",2
-"Automated Quality Diagnostics & Simulation","Cloud Data Platform",4
-"Autonomous Cell","Cloud Data Platform",2
-"End-to-end Material Handling","Cloud Data Platform",2
-"Enhanced Personal Safety","Cloud Data Platform",3
-"Facility Design & Simulation","Cloud Data Platform",3
-"Immersive Remote Operations","Cloud Data Platform",5
-"Intelligent Assistant (CoPilot/Companion)","Cloud Data Platform",7
-"Inventory Optimization","Cloud Data Platform",3
-"Logistics Optimization & Automation","Cloud Data Platform",2
-"Packaging Line Performance Optimization","Cloud Data Platform",3
-"Semi-Autonomous Cell","Cloud Data Platform",2
+"Automated Quality Diagnostics & Simulation","Cloud Data Platform Services",4
+"Autonomous Cell","Cloud Data Platform Services",2
+"End-to-end Material Handling","Cloud Data Platform Services",2
+"Enhanced Personal Safety","Cloud Data Platform Services",3
+"Facility Design & Simulation","Cloud Data Platform Services",4
+"Immersive Remote Operations","Cloud Data Platform Services",5
+"Intelligent Assistant (CoPilot/Companion)","Cloud Data Platform Services",7
+"Inventory Optimization","Cloud Data Platform Services",3
+"Logistics Optimization & Automation","Cloud Data Platform Services",2
+"Packaging Line Performance Optimization","Cloud Data Platform Services",3
+"Semi-Autonomous Cell","Cloud Data Platform Services",2
 "Automated Quality Diagnostics & Simulation","Cloud Identity Management",4
 "Autonomous Cell","Cloud Identity Management",2
 "End-to-end Material Handling","Cloud Identity Management",2
 "Enhanced Personal Safety","Cloud Identity Management",3
-"Facility Design & Simulation","Cloud Identity Management",3
+"Facility Design & Simulation","Cloud Identity Management",4
 "Immersive Remote Operations","Cloud Identity Management",5
 "Intelligent Assistant (CoPilot/Companion)","Cloud Identity Management",7
 "Inventory Optimization","Cloud Identity Management",3
@@ -472,7 +453,7 @@ sankey-beta
 "Autonomous Cell","Cloud Messaging and Event Infrastructure",2
 "End-to-end Material Handling","Cloud Messaging and Event Infrastructure",2
 "Enhanced Personal Safety","Cloud Messaging and Event Infrastructure",3
-"Facility Design & Simulation","Cloud Messaging and Event Infrastructure",3
+"Facility Design & Simulation","Cloud Messaging and Event Infrastructure",4
 "Immersive Remote Operations","Cloud Messaging and Event Infrastructure",5
 "Intelligent Assistant (CoPilot/Companion)","Cloud Messaging and Event Infrastructure",7
 "Inventory Optimization","Cloud Messaging and Event Infrastructure",3
@@ -483,7 +464,7 @@ sankey-beta
 "Autonomous Cell","Cloud Observability Foundation",2
 "End-to-end Material Handling","Cloud Observability Foundation",2
 "Enhanced Personal Safety","Cloud Observability Foundation",3
-"Facility Design & Simulation","Cloud Observability Foundation",3
+"Facility Design & Simulation","Cloud Observability Foundation",4
 "Immersive Remote Operations","Cloud Observability Foundation",5
 "Intelligent Assistant (CoPilot/Companion)","Cloud Observability Foundation",7
 "Inventory Optimization","Cloud Observability Foundation",3
@@ -494,15 +475,15 @@ sankey-beta
 "Autonomous Cell","Cloud Secret and Certificate Management",2
 "End-to-end Material Handling","Cloud Secret and Certificate Management",2
 "Enhanced Personal Safety","Cloud Secret and Certificate Management",3
-"Facility Design & Simulation","Cloud Secret and Certificate Management",3
+"Facility Design & Simulation","Cloud Secret and Certificate Management",4
 "Immersive Remote Operations","Cloud Secret and Certificate Management",5
 "Intelligent Assistant (CoPilot/Companion)","Cloud Secret and Certificate Management",7
 "Inventory Optimization","Cloud Secret and Certificate Management",3
 "Logistics Optimization & Automation","Cloud Secret and Certificate Management",2
 "Packaging Line Performance Optimization","Cloud Secret and Certificate Management",3
 "Semi-Autonomous Cell","Cloud Secret and Certificate Management",2
-"Autonomous Cell","Constrained Edge Device",2
-"Semi-Autonomous Cell","Constrained Edge Device",2
+"Autonomous Cell","Constrained Device Management Platform",2
+"Semi-Autonomous Cell","Constrained Device Management Platform",2
 "Automated Quality Diagnostics & Simulation","Edge Camera Control",4
 "Autonomous Cell","Edge Camera Control",2
 "End-to-end Material Handling","Edge Camera Control",2
@@ -520,7 +501,7 @@ sankey-beta
 "Autonomous Cell","Edge Dashboard Visualization",2
 "End-to-end Material Handling","Edge Dashboard Visualization",2
 "Enhanced Personal Safety","Edge Dashboard Visualization",3
-"Facility Design & Simulation","Edge Dashboard Visualization",3
+"Facility Design & Simulation","Edge Dashboard Visualization",4
 "Immersive Remote Operations","Edge Dashboard Visualization",5
 "Intelligent Assistant (CoPilot/Companion)","Edge Dashboard Visualization",7
 "Inventory Optimization","Edge Dashboard Visualization",3
@@ -546,7 +527,7 @@ sankey-beta
 "Autonomous Cell","Resource Group Management",2
 "End-to-end Material Handling","Resource Group Management",2
 "Enhanced Personal Safety","Resource Group Management",3
-"Facility Design & Simulation","Resource Group Management",3
+"Facility Design & Simulation","Resource Group Management",4
 "Immersive Remote Operations","Resource Group Management",5
 "Intelligent Assistant (CoPilot/Companion)","Resource Group Management",7
 "Inventory Optimization","Resource Group Management",3
@@ -557,20 +538,23 @@ sankey-beta
 "Autonomous Cell","Stamp Architecture Deployment",2
 "End-to-end Material Handling","Stamp Architecture Deployment",2
 "Enhanced Personal Safety","Stamp Architecture Deployment",3
-"Facility Design & Simulation","Stamp Architecture Deployment",3
+"Facility Design & Simulation","Stamp Architecture Deployment",4
 "Immersive Remote Operations","Stamp Architecture Deployment",5
 "Intelligent Assistant (CoPilot/Companion)","Stamp Architecture Deployment",7
 "Inventory Optimization","Stamp Architecture Deployment",3
 "Logistics Optimization & Automation","Stamp Architecture Deployment",2
 "Packaging Line Performance Optimization","Stamp Architecture Deployment",3
 "Semi-Autonomous Cell","Stamp Architecture Deployment",2
-"VM Host Infrastructure","Cloud Virtual Machine Host(s) (050-vm-host)",10
+"Automated Quality Diagnostics & Simulation","VM Host Infrastructure",4
+"Facility Design & Simulation","VM Host Infrastructure",4
+"Immersive Remote Operations","VM Host Infrastructure",5
+"Semi-Autonomous Cell","VM Host Infrastructure",2
 "Cloud Container Platform Infrastructure","Cloud AKS Cluster and ACR (060-aks-acr)",9
 "OCP UA Closed-Loop Control","Cloud AKS Cluster and ACR (060-aks-acr)",9
-"Cloud Data Platform","Cloud Data Persistence (030-data)",33
+"Cloud Data Platform Services","Cloud Data Persistence (030-data)",33
 "Cloud Messaging and Event Infrastructure","Edge Messaging & Data Routing (130-messaging)",33
 "OPC UA Data Ingestion","Edge Messaging & Data Routing (130-messaging)",11
-"Cloud Data Platform","Edge Messaging & Data Routing (130-messaging)",33
+"Cloud Data Platform Services","Edge Messaging & Data Routing (130-messaging)",33
 "Edge Compute Orchestration Platform","Cloud Security and Identity (010-security-identity)",26
 "Cloud Secret and Certificate Management","Cloud Security and Identity (010-security-identity)",33
 "Cloud Identity Management","Cloud Security and Identity (010-security-identity)",33
@@ -594,6 +578,7 @@ sankey-beta
 "Stamp Architecture Deployment","Industry Solution Blueprints Framework",33
 "Stamp Architecture Deployment","Integration Environment for IaC Upgrade Testing",33
 "Stamp Architecture Deployment","Ephemeral Environment Testing for Blueprints",33
+"VM Host Infrastructure","Cloud Virtual Machine Host(s) (050-vm-host)",10
 ```
 
 ### Scenarios with No Direct Customer Weighting (Value <= 1)
@@ -613,26 +598,21 @@ config:
 ---
 sankey-beta
 %% Scenarios with No Direct Customer Weighting (Value <= 1) - Mermaid does not render title for sankey-beta directly in diagram
-"Automated Formula Management","VM Host Infrastructure",0
-"Integrated Maintenance/Work Orders","VM Host Infrastructure",1
-"Product Innovation","VM Host Infrastructure",0
-"Product Lifecycle Simulation","VM Host Infrastructure",0
-"Virtual Training","VM Host Infrastructure",0
-"Automated Formula Management","Cloud Data Platform",0
-"Automated Product Design","Cloud Data Platform",0
-"Autonomous Material Movement","Cloud Data Platform",0
-"Changeover & Cycle Time Optimization","Cloud Data Platform",1
-"Compressed Air Optimization","Cloud Data Platform",0
-"Connected Consumer Insights","Cloud Data Platform",1
-"Ecosystem Decision Support","Cloud Data Platform",1
-"Ecosystem Orchestration","Cloud Data Platform",0
-"End-to-end Batch Planning and Optimization","Cloud Data Platform",0
-"Integrated Maintenance/Work Orders","Cloud Data Platform",1
-"Product Innovation","Cloud Data Platform",0
-"Product Lifecycle Simulation","Cloud Data Platform",0
-"Virtual Training","Cloud Data Platform",0
-"Waste Circular Economy","Cloud Data Platform",0
-"Water Usage Optimization","Cloud Data Platform",1
+"Automated Formula Management","Cloud Data Platform Services",0
+"Automated Product Design","Cloud Data Platform Services",0
+"Autonomous Material Movement","Cloud Data Platform Services",0
+"Changeover & Cycle Time Optimization","Cloud Data Platform Services",1
+"Compressed Air Optimization","Cloud Data Platform Services",0
+"Connected Consumer Insights","Cloud Data Platform Services",1
+"Ecosystem Decision Support","Cloud Data Platform Services",1
+"Ecosystem Orchestration","Cloud Data Platform Services",0
+"End-to-end Batch Planning and Optimization","Cloud Data Platform Services",0
+"Integrated Maintenance/Work Orders","Cloud Data Platform Services",1
+"Product Innovation","Cloud Data Platform Services",0
+"Product Lifecycle Simulation","Cloud Data Platform Services",0
+"Virtual Training","Cloud Data Platform Services",0
+"Waste Circular Economy","Cloud Data Platform Services",0
+"Water Usage Optimization","Cloud Data Platform Services",1
 "Automated Formula Management","Cloud Identity Management",0
 "Automated Product Design","Cloud Identity Management",0
 "Autonomous Material Movement","Cloud Identity Management",0
@@ -693,7 +673,7 @@ sankey-beta
 "Virtual Training","Cloud Secret and Certificate Management",0
 "Waste Circular Economy","Cloud Secret and Certificate Management",0
 "Water Usage Optimization","Cloud Secret and Certificate Management",1
-"Product Innovation","Constrained Edge Device",0
+"Product Innovation","Constrained Device Management Platform",0
 "Integrated Maintenance/Work Orders","Edge Camera Control",1
 "Automated Formula Management","Edge Compute Orchestration Platform",0
 "Autonomous Material Movement","Edge Compute Orchestration Platform",0
@@ -759,12 +739,16 @@ sankey-beta
 "Virtual Training","Stamp Architecture Deployment",0
 "Waste Circular Economy","Stamp Architecture Deployment",0
 "Water Usage Optimization","Stamp Architecture Deployment",1
-"VM Host Infrastructure","Cloud Virtual Machine Host(s) (050-vm-host)",10
+"Automated Formula Management","VM Host Infrastructure",0
+"Integrated Maintenance/Work Orders","VM Host Infrastructure",1
+"Product Innovation","VM Host Infrastructure",0
+"Product Lifecycle Simulation","VM Host Infrastructure",0
+"Virtual Training","VM Host Infrastructure",0
 "OCP UA Closed-Loop Control","Cloud AKS Cluster and ACR (060-aks-acr)",9
-"Cloud Data Platform","Cloud Data Persistence (030-data)",33
+"Cloud Data Platform Services","Cloud Data Persistence (030-data)",33
 "Cloud Messaging and Event Infrastructure","Edge Messaging & Data Routing (130-messaging)",33
 "OPC UA Data Ingestion","Edge Messaging & Data Routing (130-messaging)",11
-"Cloud Data Platform","Edge Messaging & Data Routing (130-messaging)",33
+"Cloud Data Platform Services","Edge Messaging & Data Routing (130-messaging)",33
 "Edge Compute Orchestration Platform","Cloud Security and Identity (010-security-identity)",26
 "Cloud Secret and Certificate Management","Cloud Security and Identity (010-security-identity)",33
 "Cloud Identity Management","Cloud Security and Identity (010-security-identity)",33
@@ -788,15 +772,11 @@ sankey-beta
 "Stamp Architecture Deployment","Industry Solution Blueprints Framework",33
 "Stamp Architecture Deployment","Integration Environment for IaC Upgrade Testing",33
 "Stamp Architecture Deployment","Ephemeral Environment Testing for Blueprints",33
+"VM Host Infrastructure","Cloud Virtual Machine Host(s) (050-vm-host)",10
 ```
 
 *Note: Link widths represent the strength of relationships between connected items. The diagrams show the complex relationships between scenarios, capabilities, and features in the product backlog.*
 
 ## Report Generation
 
-This report was generated on 2025-05-23 using data from all 306 pull requests in the edge-ai project.
-
-<!-- markdownlint-disable MD036 -->
-*🤖 Crafted with precision by ✨Copilot following brilliant human instruction,
-then carefully refined by our team of discerning human reviewers.*
-<!-- markdownlint-enable MD036 -->
+This report was generated on 2025-10-01 using data from all 406 pull requests in the edge-ai project.

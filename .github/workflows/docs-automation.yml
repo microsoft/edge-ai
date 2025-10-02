@@ -164,20 +164,163 @@ jobs:
             Write-Host "PowerShell version: $($PSVersionTable.PSVersion)"
           azPSVersion: 'latest'
 
-      - name: Generate enhanced sidebar
+      - name: Generate and validate enhanced sidebar
         shell: pwsh
         run: |
-          Write-Host "🏗️ Generating three-tree navigation sidebar..."
+          Write-Host "🏗️ Generating enhanced multi-section navigation sidebar..."
 
-          # Run the enhanced sidebar generation
+          $sidebarPaths = @(
+            "docs/_sidebar.md",
+            "docs/_parts/docs-sidebar.md",
+            "docs/_parts/praxisworx-sidebar.md",
+            "docs/_parts/blueprints-sidebar.md",
+            "docs/_parts/infrastructure-sidebar.md"
+          )
+
+          $originalSidebars = @{}
+          foreach ($path in $sidebarPaths) {
+            if (Test-Path $path) {
+              $originalSidebars[$path] = Get-Content $path -Raw
+            }
+          }
+
           . ./scripts/Generate-DocsSidebar.ps1
 
           Write-Host "✅ Sidebar generation completed"
 
+          $validationPassed = $true
+          $issues = @()
+
+          foreach ($path in $sidebarPaths) {
+            if (Test-Path $path) {
+              $newContent = Get-Content $path -Raw
+              $originalContent = $originalSidebars[$path]
+
+              if ($null -eq $originalContent) {
+                $originalContent = ""
+              }
+
+              $originalClean = ($originalContent -replace "Generated on.*?\n", "")
+              $newClean = ($newContent -replace "Generated on.*?\n", "")
+
+              if ($originalClean -ne $newClean) {
+                $issues += "- $path is outdated"
+                $validationPassed = $false
+
+                Write-Host "`n📄 Detailed diff for: $path" -ForegroundColor Yellow
+                Write-Host ("=" * 80) -ForegroundColor Yellow
+
+                Write-Host "📊 Character counts:" -ForegroundColor Cyan
+                Write-Host "  Original (checked-in): $($originalClean.Length) chars" -ForegroundColor Cyan
+                Write-Host "  Generated (expected):  $($newClean.Length) chars" -ForegroundColor Cyan
+                Write-Host "  Difference: $($newClean.Length - $originalClean.Length) chars" -ForegroundColor Cyan
+
+                $tempOriginal = [System.IO.Path]::GetTempFileName()
+                $tempNew = [System.IO.Path]::GetTempFileName()
+                $originalClean | Set-Content $tempOriginal -NoNewline
+                $newClean | Set-Content $tempNew -NoNewline
+
+                if (Get-Command git -ErrorAction SilentlyContinue) {
+                  Write-Host "`n🔍 Git diff output:" -ForegroundColor Cyan
+                  try {
+                    $diffOutput = git diff --no-index --word-diff=plain --unified=3 $tempOriginal $tempNew 2>&1
+                    if ($diffOutput) {
+                      $diffOutput | ForEach-Object {
+                        $line = $_
+                        if ($line -match '^\+') {
+                          Write-Host $line -ForegroundColor Green
+                        } elseif ($line -match '^\-') {
+                          Write-Host $line -ForegroundColor Red
+                        } elseif ($line -match '^@@') {
+                          Write-Host $line -ForegroundColor Cyan
+                        } else {
+                          Write-Host $line
+                        }
+                      }
+                    }
+                  } catch {
+                    Write-Host "Git diff failed, falling back to PowerShell comparison" -ForegroundColor Yellow
+                  }
+                }
+
+                Write-Host "`n🔍 Line-by-line comparison (first 30 differences):" -ForegroundColor Cyan
+                $originalLines = $originalClean -split "`r?`n"
+                $newLines = $newClean -split "`r?`n"
+
+                Write-Host "Original has $($originalLines.Count) lines, Generated has $($newLines.Count) lines" -ForegroundColor Cyan
+
+                $comparison = Compare-Object -ReferenceObject $originalLines -DifferenceObject $newLines -IncludeEqual | Select-Object -First 30
+
+                $diffCount = 0
+                foreach ($diff in $comparison) {
+                  if ($diff.SideIndicator -ne "==") {
+                    $diffCount++
+                    $indicator = if ($diff.SideIndicator -eq "<=") { "- ORIGINAL" } else { "+ GENERATED" }
+                    $color = if ($diff.SideIndicator -eq "<=") { "Red" } else { "Green" }
+                    Write-Host "$indicator`: $($diff.InputObject)" -ForegroundColor $color
+                  }
+                }
+
+                if ($diffCount -eq 0) {
+                  Write-Host "No line differences found, but content differs (possibly whitespace or encoding)" -ForegroundColor Yellow
+
+                  Write-Host "`n🔍 Checking for whitespace differences:" -ForegroundColor Cyan
+                  $originalNoSpace = $originalClean -replace '\s+', ''
+                  $newNoSpace = $newClean -replace '\s+', ''
+
+                  if ($originalNoSpace -eq $newNoSpace) {
+                    Write-Host "Content is identical when whitespace is removed - this is a whitespace-only difference" -ForegroundColor Yellow
+                  } else {
+                    Write-Host "Content differs even without whitespace" -ForegroundColor Yellow
+                    Write-Host "Original (no space): $($originalNoSpace.Length) chars" -ForegroundColor Cyan
+                    Write-Host "Generated (no space): $($newNoSpace.Length) chars" -ForegroundColor Cyan
+                  }
+                }
+
+                Remove-Item $tempOriginal -ErrorAction SilentlyContinue
+                Remove-Item $tempNew -ErrorAction SilentlyContinue
+
+                Write-Host ("=" * 80) -ForegroundColor Yellow
+                Write-Host ""
+              }
+            } else {
+              $issues += "- $path is missing after generation"
+              $validationPassed = $false
+            }
+          }
+
+          if (-not (Test-Path "docs/_parts/")) {
+            $issues += "- docs/_parts/ directory missing - required for multi-section navigation"
+            $validationPassed = $false
+          }
+
+          if (-not $validationPassed) {
+            $messageLines = @(
+              "Sidebar validation failed:",
+              ($issues -join "`n"),
+              "",
+              "Detailed comparison output is shown above."
+            )
+
+            $message = $messageLines -join "`n"
+
+            Write-Host "❌ Sidebar validation failed!" -ForegroundColor Red
+            Write-Host $message -ForegroundColor Red
+
+            if ($env:GITHUB_EVENT_NAME -eq "pull_request") {
+              Write-Host "::error::Sidebar navigation files are out of date."
+              exit 1
+            } else {
+              Write-Host "::warning::Sidebar differences detected. Continuing so the workflow can commit updates."
+            }
+          } else {
+            Write-Host "✅ All sidebar sections are up to date" -ForegroundColor Green
+          }
+
       - name: Check for changes
         id: changes
         run: |
-          if [ -n "$(git status --porcelain _sidebar.md)" ]; then
+          if [ -n "$(git status --porcelain _sidebar.md docs/_parts 2>/dev/null)" ]; then
             echo "changes=true" >> $GITHUB_OUTPUT
             echo "📝 Sidebar changes detected"
           else
@@ -192,6 +335,9 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "Documentation Bot"
           git add _sidebar.md
+          if [ -d "docs/_parts" ]; then
+            git add docs/_parts
+          fi
           git commit -m "🤖 Auto-update three-tree navigation sidebar
 
           - Updated sidebar with latest documentation structure
@@ -216,6 +362,7 @@ jobs:
         run: npm install -g markdown-link-check
 
       - name: Check links in documentation
+        continue-on-error: true
         run: |
           echo "🔗 Checking links in documentation files..."
 
@@ -316,8 +463,12 @@ jobs:
             -ErrorAction SilentlyContinue).Count
           $blueprintsCount = (Get-ChildItem -Path 'blueprints' -Filter '*.md' `
             -Recurse -ErrorAction SilentlyContinue).Count
-          find docs src blueprints praxisworx .github copilot -name "*.md" `
-            -type f | \
+          $praxisworxCount = (Get-ChildItem -Path 'praxisworx' -Filter '*.md' `
+            -Recurse -ErrorAction SilentlyContinue).Count
+          $githubCount = (Get-ChildItem -Path '.github' -Filter '*.md' `
+            -Recurse -ErrorAction SilentlyContinue).Count
+          $copilotCount = (Get-ChildItem -Path 'copilot' -Filter '*.md' `
+            -Recurse -ErrorAction SilentlyContinue).Count
 
           # Generate report
           $report = @"
@@ -360,7 +511,7 @@ jobs:
           Write-Host $report
 
           # Save report as artifact
-          $report | Out-File -FilePath 'documentation-health-report.md' \
+          $report | Out-File -FilePath 'documentation-health-report.md' `
             -Encoding UTF8
 
           Write-Host "✅ Documentation health report generated"

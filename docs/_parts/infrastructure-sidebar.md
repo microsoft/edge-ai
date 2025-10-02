@@ -1,7 +1,7 @@
 <!-- markdownlint-disable MD041 -->
 <!-- markdownlint-disable MD051 -->
 <!-- infrastructure Section Sidebar -->
-<!-- Generated on: 2025-09-28 20:12:14 UTC -->
+<!-- Generated on: 2025-10-01 18:18:24 UTC -->
 
 - [Infrastructure Overview](#/src/README.md)
 
@@ -27,6 +27,7 @@
   - [Rust Telemetry](#/src/500-application/501-rust-telemetry/README.md)
   - [Rust Http Connector](#/src/500-application/502-rust-http-connector/README.md)
   - [Media Capture Service](#/src/500-application/503-media-capture-service/README.md)
+  - [Ros2 Connector](#/src/500-application/506-ros2-connector/README.md)
 
 - [Ci Cd](#/src/501-ci-cd/README.md)
 

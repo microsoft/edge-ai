@@ -10,6 +10,7 @@
 # - Performs link validation across all documentation folders (docs, src, blueprints, praxisworx, .github, copilot)
 # - Checks frontmatter consistency and required fields using Validate-MarkdownFrontmatter.ps1
 # - Validates section-based navigation architecture with Generate-DocsSidebar.ps1
+# - Ensures links don't contain language-specific paths (e.g., 'en-us') across entire repository
 # - Provides detailed documentation health reporting with enhanced statistics
 # - Supports the full enhanced documentation structure from Generate-DocsSidebar.ps1
 #
@@ -54,7 +55,8 @@ parameters:
   # Condition for when to run this job
   - name: condition
     type: string
-    default: succeeded()  # Whether to break the build on validation issues (true) or just show warnings (false)
+    default: succeeded()
+  # Whether to break the build on validation issues (true) or just show warnings (false)
   - name: breakBuild
     type: boolean
     default: false
@@ -80,18 +82,81 @@ jobs:
 
       # Checkout repo
       - checkout: self
-        clean: true      # Set up PowerShell environment
+        clean: true
+
+      - task: PowerShell@2
+        displayName: "Detect Markdown Changes"
+        condition: and( not(failed()), not(canceled()) )
+        inputs:
+          targetType: 'inline'
+          script: |
+            Write-Host "Scanning for markdown changes..."
+            git config --global --add safe.directory "$env:BUILD_SOURCESDIRECTORY"
+
+            $docsChanged = $false
+            $changedFiles = New-Object System.Collections.Generic.List[string]
+
+            $targetBranch = $env:System_PullRequest_TargetBranch
+            if ([string]::IsNullOrEmpty($targetBranch)) {
+              $targetBranch = "refs/heads/$env:BUILD_SOURCEBRANCHNAME"
+            }
+            if ([string]::IsNullOrEmpty($targetBranch)) {
+              $targetBranch = "refs/heads/main"
+            }
+            $targetBranch = $targetBranch -replace '^refs/heads/', ''
+
+            try {
+              git fetch origin $targetBranch --depth=200 | Out-Null
+              $mergeBase = git merge-base HEAD ("origin/" + $targetBranch)
+            } catch {
+              $mergeBase = ""
+            }
+
+            if ([string]::IsNullOrEmpty($mergeBase)) {
+              try {
+                $mergeBase = git rev-parse HEAD~1
+              } catch {
+                $mergeBase = ""
+              }
+            }
+
+            if ([string]::IsNullOrEmpty($mergeBase)) {
+              $diff = git diff --name-only
+            } else {
+              $diff = git diff --name-only $mergeBase HEAD
+            }
+
+            if (-not [string]::IsNullOrEmpty($diff)) {
+              foreach ($file in $diff.Split("`n", [System.StringSplitOptions]::RemoveEmptyEntries)) {
+                $trimmed = $file.Trim()
+                if ($trimmed.ToLower().EndsWith('.md')) {
+                  $docsChanged = $true
+                  $changedFiles.Add($trimmed)
+                }
+              }
+            }
+
+            if ($docsChanged) {
+              Write-Host "Markdown changes detected:"
+              $changedFiles | Sort-Object | ForEach-Object { Write-Host " - $_" }
+              Write-Host "##vso[task.setvariable variable=DocsValidationShouldRun]true"
+            } else {
+              Write-Host "No markdown changes detected; skipping documentation validation steps."
+              Write-Host "##vso[task.setvariable variable=DocsValidationShouldRun]false"
+            }
+
       - task: PowerShell@2
         inputs:
           targetType: 'inline'
           script: |
             Write-Host "PowerShell version: $($PSVersionTable.PSVersion)"
-        displayName: "Setup PowerShell Environment"      # Validate frontmatter consistency
+        displayName: "Setup PowerShell Environment"
       - task: PowerShell@2
         inputs:
           targetType: 'inline'
           script: |
-            Write-Host "🔍 Starting frontmatter validation..."            # Determine which files to validate
+            Write-Host "🔍 Starting frontmatter validation..."
+            # Determine which files to validate
             $validateOnlyChanged = "${{ parameters.onlyChangedFiles }}" -eq "True"
 
             if ($validateOnlyChanged) {
@@ -128,7 +193,7 @@ jobs:
               Write-Host "✅ Frontmatter validation completed successfully" -ForegroundColor Green
             }
         displayName: "Validate Frontmatter Consistency"
-        condition: and( not(failed()), not(canceled()) )
+        condition: and( not(failed()), not(canceled()), eq(variables.DocsValidationShouldRun, 'true') )
 
       # Validate enhanced multi-section sidebar navigation
       - task: PowerShell@2
@@ -172,18 +237,102 @@ jobs:
                 if ($originalClean -ne $newClean) {
                   $issues += "- $path is outdated"
                   $validationPassed = $false
+
+                  Write-Host "`n📄 Detailed diff for: $path" -ForegroundColor Yellow
+                  Write-Host ("=" * 80) -ForegroundColor Yellow
+
+                  # Show character counts to help identify differences
+                  Write-Host "📊 Character counts:" -ForegroundColor Cyan
+                  Write-Host "  Original (checked-in): $($originalClean.Length) chars" -ForegroundColor Cyan
+                  Write-Host "  Generated (expected):  $($newClean.Length) chars" -ForegroundColor Cyan
+                  Write-Host "  Difference: $($newClean.Length - $originalClean.Length) chars" -ForegroundColor Cyan
+
+                  # Save to temp files for comparison
+                  $tempOriginal = [System.IO.Path]::GetTempFileName()
+                  $tempNew = [System.IO.Path]::GetTempFileName()
+                  $originalClean | Set-Content $tempOriginal -NoNewline
+                  $newClean | Set-Content $tempNew -NoNewline
+
+                  if (Get-Command git -ErrorAction SilentlyContinue) {
+                    Write-Host "`n🔍 Git diff output:" -ForegroundColor Cyan
+                    try {
+                      $diffOutput = git diff --no-index --word-diff=plain --unified=3 $tempOriginal $tempNew 2>&1
+                      if ($diffOutput) {
+                        $diffOutput | ForEach-Object {
+                          $line = $_
+                          if ($line -match '^\+') {
+                            Write-Host $line -ForegroundColor Green
+                          } elseif ($line -match '^\-') {
+                            Write-Host $line -ForegroundColor Red
+                          } elseif ($line -match '^@@') {
+                            Write-Host $line -ForegroundColor Cyan
+                          } else {
+                            Write-Host $line
+                          }
+                        }
+                      }
+                    } catch {
+                      Write-Host "Git diff failed, falling back to PowerShell comparison" -ForegroundColor Yellow
+                    }
+                  }
+
+                  Write-Host "`n🔍 Line-by-line comparison (first 30 differences):" -ForegroundColor Cyan
+                  $originalLines = $originalClean -split "`r?`n"
+                  $newLines = $newClean -split "`r?`n"
+
+                  Write-Host "Original has $($originalLines.Count) lines, Generated has $($newLines.Count) lines" -ForegroundColor Cyan
+
+                  $comparison = Compare-Object -ReferenceObject $originalLines -DifferenceObject $newLines -IncludeEqual | Select-Object -First 30
+
+                  $diffCount = 0
+                  foreach ($diff in $comparison) {
+                    if ($diff.SideIndicator -ne "==") {
+                      $diffCount++
+                      $indicator = if ($diff.SideIndicator -eq "<=") { "- ORIGINAL" } else { "+ GENERATED" }
+                      $color = if ($diff.SideIndicator -eq "<=") { "Red" } else { "Green" }
+                      Write-Host "$indicator`: $($diff.InputObject)" -ForegroundColor $color
+                    }
+                  }
+
+                  if ($diffCount -eq 0) {
+                    Write-Host "No line differences found, but content differs (possibly whitespace or encoding)" -ForegroundColor Yellow
+
+                    Write-Host "`n🔍 Checking for whitespace differences:" -ForegroundColor Cyan
+                    $originalNoSpace = $originalClean -replace '\s+', ''
+                    $newNoSpace = $newClean -replace '\s+', ''
+
+                    if ($originalNoSpace -eq $newNoSpace) {
+                      Write-Host "Content is identical when whitespace is removed - this is a whitespace-only difference" -ForegroundColor Yellow
+                    } else {
+                      Write-Host "Content differs even without whitespace" -ForegroundColor Yellow
+                      Write-Host "Original (no space): $($originalNoSpace.Length) chars" -ForegroundColor Cyan
+                      Write-Host "Generated (no space): $($newNoSpace.Length) chars" -ForegroundColor Cyan
+                    }
+                  }
+
+                  Remove-Item $tempOriginal -ErrorAction SilentlyContinue
+                  Remove-Item $tempNew -ErrorAction SilentlyContinue
+
+                  Write-Host ("=" * 80) -ForegroundColor Yellow
+                  Write-Host ""
                 }
               }
             }
 
-            # Check if docs/_parts/ directory structure exists
             if (-not (Test-Path "docs/_parts/")) {
               $issues += "- docs/_parts/ directory missing - required for multi-section navigation"
               $validationPassed = $false
             }
 
             if (-not $validationPassed) {
-              $message = "Sidebar validation failed:`n$($issues -join "`n")`n`nPlease run: pwsh -File ./scripts/Generate-DocsSidebar.ps1"
+              $messageLines = @(
+                "Sidebar validation failed:",
+                ($issues -join "`n"),
+                "",
+                "Detailed comparison output is shown above."
+              )
+              $message = $messageLines -join "`n"
+
               Write-Host "❌ Sidebar validation failed!" -ForegroundColor Red
               Write-Host $message -ForegroundColor Red
 
@@ -197,26 +346,28 @@ jobs:
               Write-Host "✅ All sidebar sections are up to date" -ForegroundColor Green
             }
 
-            # Restore original sidebars if they were temporarily modified
             foreach ($path in $originalSidebars.Keys) {
               if ($originalSidebars[$path] -ne "") {
                 $originalSidebars[$path] | Set-Content $path -NoNewline
               }
             }
         displayName: "Validate Enhanced Multi-Section Sidebar Navigation"
-        condition: and( not(failed()), not(canceled()) )
+        condition: and( not(failed()), not(canceled()), eq(variables.DocsValidationShouldRun, 'true') )
 
       # Set up Node.js for link validation
       - task: NodeTool@0
         inputs:
           versionSpec: '18'
         displayName: "Setup Node.js"
+        condition: and( not(failed()), not(canceled()), eq(variables.DocsValidationShouldRun, 'true') )
 
       # Install markdown-link-check
       - bash: |
           npm install -g markdown-link-check
         displayName: "Install markdown-link-check"
-        condition: and( not(failed()), not(canceled()) )      # Validate documentation links
+        condition: and( not(failed()), not(canceled()), eq(variables.DocsValidationShouldRun, 'true') )
+
+      # Validate documentation links
       - bash: |
           echo "🔗 Checking links in documentation files..."
 
@@ -305,7 +456,7 @@ jobs:
             echo "✅ Link validation completed"
           fi
         displayName: "Validate Documentation Links"
-        condition: and( not(failed()), not(canceled()) )
+        condition: and( not(failed()), not(canceled()), eq(variables.DocsValidationShouldRun, 'true') )
 
       # Generate documentation health report
       - task: PowerShell@2
@@ -385,11 +536,44 @@ jobs:
 
             Write-Host "✅ Documentation health report generated"
         displayName: "Generate Documentation Health Report"
-        condition: always()
+        condition: and( always(), eq(variables.DocsValidationShouldRun, 'true') )
+
+      # Check for en-us links in docs
+      - task: PowerShell@2
+        displayName: "Check for language path segments in links"
+        inputs:
+          targetType: 'inline'
+          script: |
+            Write-Host "Checking for language path segments (en-us) in links..."
+
+            # Run the PowerShell script and capture JSON output
+            $jsonOutput = & "$(System.DefaultWorkingDirectory)/scripts/linting/Link-Lang-Check.ps1"
+            $links = $jsonOutput | ConvertFrom-Json
+
+            if ($links.Count -gt 0) {
+              Write-Host "Found $($links.Count) URLs with language path segments (en-us)."
+
+              $breakBuild = "${{ parameters.breakBuild }}" -eq "true" -or "${{ parameters.breakBuild }}" -eq "True"
+
+              foreach ($link in $links) {
+                $issueType = if ($breakBuild) { "error" } else { "warning" }
+                $message = "URL contains language path segment (en-us): $($link.original_url)"
+                Write-Host "##vso[task.logissue type=$issueType;sourcepath=$($link.file);linenumber=$($link.line_number);]$message"
+              }
+
+              if ($breakBuild) {
+                Write-Host "##vso[task.complete result=Failed;]Build failed due to language path segments in URLs"
+                exit 1
+              }
+            } else {
+              Write-Host "No URLs with language path segments (en-us) found."
+            }
+          workingDirectory: '$(System.DefaultWorkingDirectory)'
+        condition: and( not(failed()), not(canceled()), eq(variables.DocsValidationShouldRun, 'true') )
 
       # Upload documentation health report as artifact
       - task: PublishPipelineArtifact@1
-        condition: always()
+        condition: and( always(), eq(variables.DocsValidationShouldRun, 'true') )
         displayName: Upload Documentation Health Report
         inputs:
           targetPath: "documentation-health-report.md"

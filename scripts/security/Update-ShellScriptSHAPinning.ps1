@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env pwsh
+#!/usr/bin/env pwsh
 <#
 .SYNOPSIS
     Pins shell script external dependencies to immutable SHA references for supply chain security.
@@ -356,7 +356,7 @@ function Invoke-ShellScriptProcessing {
                         Extension      = $ExtensionName
                         Recommendation = "Pin extension to specific version using --version parameter"
                         ExampleFix     = "az extension add --name $ExtensionName --version 1.2.3"
-                        References     = "https://docs.microsoft.com/en-us/cli/azure/azure-cli-extensions-overview"
+                        References     = "https://docs.microsoft.com/cli/azure/azure-cli-extensions-overview"
                     }
                 }
             }

@@ -113,6 +113,16 @@ $KataOrder = @(
     'troubleshooting'
 )
 
+# Logging helpers
+function Write-InfoMessage {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Message
+    )
+
+    Write-Information -MessageData $Message -InformationAction Continue
+}
+
 # Core Functions
 
 function Get-MarkdownFile {
@@ -427,7 +437,7 @@ function Get-SortedMarkdownFile {
             }
         }
         if ($priorityIndex -ge 0) {
-            Write-Host "DEBUG: $fileName matched priority file, sort key: 0000$priorityIndex" -ForegroundColor Yellow
+            Write-Debug "DEBUG: $fileName matched priority file, sort key: 0000$priorityIndex"
             return "0000$priorityIndex"
         }
 
@@ -438,12 +448,12 @@ function Get-SortedMarkdownFile {
                 $readmeFile = $ReadmeOrder[$i].FileName.ToLower()
                 $readmeLink = $ReadmeOrder[$i].Link.ToLower()
 
-                Write-Host "DEBUG: Comparing '$fileName' with readme entry '$readmeFile'" -ForegroundColor Gray
+                Write-Debug "DEBUG: Comparing '$fileName' with readme entry '$readmeFile'"
 
                 # Use exact matching first
                 if ($fileName -eq $readmeFile) {
                     $orderIndex = $i
-                    Write-Host "DEBUG: ✅ EXACT MATCH found! $fileName == $readmeFile at index $i" -ForegroundColor Green
+                    Write-Debug "DEBUG: ✅ EXACT MATCH found! $fileName == $readmeFile at index $i"
                     break
                 }
 
@@ -451,31 +461,82 @@ function Get-SortedMarkdownFile {
                 $linkFileName = [System.IO.Path]::GetFileNameWithoutExtension($readmeLink).ToLower()
                 if ($fileName -eq $linkFileName) {
                     $orderIndex = $i
-                    Write-Host "DEBUG: ✅ LINK MATCH found! $fileName == $linkFileName (from link: $readmeLink) at index $i" -ForegroundColor Green
+                    Write-Debug "DEBUG: ✅ LINK MATCH found! $fileName == $linkFileName (from link: $readmeLink) at index $i"
                     break
                 }
             }
             if ($orderIndex -ge 0) {
                 $sortKey = "001$(($orderIndex + 100).ToString().PadLeft(3, '0'))"
-                Write-Host "DEBUG: $fileName from README order, sort key: $sortKey" -ForegroundColor Yellow
+                Write-Debug "DEBUG: $fileName from README order, sort key: $sortKey"
                 return $sortKey
             } else {
-                Write-Host "DEBUG: $fileName not found in README order" -ForegroundColor Red
+                Write-Debug "DEBUG: $fileName not found in README order"
             }
         }
 
         # Priority 3: Files with numbered prefixes
         if ($fileName -match '^(\d{3,4})-') {
-            Write-Host "DEBUG: $fileName has numbered prefix, sort key: 002$($Matches[1])" -ForegroundColor Yellow
+            Write-Debug "DEBUG: $fileName has numbered prefix, sort key: 002$($Matches[1])"
             return "002$($Matches[1])"
         }
 
         # Priority 4: Alphabetical order
-        Write-Host "DEBUG: $fileName using alphabetical sort, sort key: 999$fileName" -ForegroundColor Yellow
+        Write-Debug "DEBUG: $fileName using alphabetical sort, sort key: 999$fileName"
         return "999$fileName"
     }
 
     return $sorted
+}
+
+function Get-InfrastructureSortKey {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$RelativeItemPath
+    )
+
+    if ([string]::IsNullOrWhiteSpace($RelativeItemPath)) {
+        return '99-zzz'
+    }
+
+    $normalized = $RelativeItemPath.Trim()
+    $normalized = $normalized -replace '^[\\/]+', ''
+    $normalized = $normalized -replace '\\', '/'
+
+    if ($normalized.ToLowerInvariant() -eq 'readme.md') {
+        return '00-root'
+    }
+
+    $segments = $normalized -split '/'
+    $keyParts = @()
+
+    foreach ($segment in $segments) {
+        $segmentLower = $segment.ToLowerInvariant()
+
+        if ($segmentLower -eq 'readme.md') {
+            continue
+        }
+
+        if ($segmentLower -match '^(\d{3,4})-') {
+            $numeric = [int]$Matches[1]
+            $keyParts += ('10-{0:D4}' -f $numeric)
+            continue
+        }
+
+        switch ($segmentLower) {
+            'terraform' { $keyParts += '80-terraform'; continue }
+            'bicep'     { $keyParts += '81-bicep'; continue }
+            'modules'   { $keyParts += '82-modules'; continue }
+            'tests'     { $keyParts += '83-tests'; continue }
+            'ci'        { $keyParts += '84-ci'; continue }
+            default     { $keyParts += '90-' + $segmentLower }
+        }
+    }
+
+    if ($keyParts.Count -eq 0) {
+        $keyParts += '99-' + $normalized.ToLowerInvariant()
+    }
+
+    return ($keyParts -join '-')
 }
 
 function Build-MainSidebar {
@@ -517,13 +578,13 @@ function Build-MainSidebar {
         return ""
     }
 
-    Write-Host "Found $($rootFiles.Count) root-level markdown files" -ForegroundColor Green
+    Write-InfoMessage "Found $($rootFiles.Count) root-level markdown files"
 
     # Debug: Show all files found
-    Write-Host "Root-level files found:" -ForegroundColor Yellow
+    Write-InfoMessage "Root-level files found:"
     foreach ($file in $rootFiles) {
         $relativePath = Get-DocsifyRelativePath -FilePath $file.FullName -RootPath $RootPath
-        Write-Host "  $relativePath" -ForegroundColor Cyan
+        Write-InfoMessage "  $relativePath"
     }
 
     # Get README order if it exists
@@ -692,7 +753,14 @@ function Build-TerraformSidebar {
 
     $sidebar = ""
 
-    foreach ($dir in $terraformDirs | Sort-Object FullName) {
+    $sortedTerraformDirs = $terraformDirs | Sort-Object {
+        $relativePath = $_.FullName -replace [regex]::Escape($SrcPath), ''
+    $relativePath = $relativePath -replace '^[\\/]+', ''
+    $relativePath = $relativePath -replace '\\', '/'
+        return Get-InfrastructureSortKey("$relativePath/README.md")
+    }
+
+    foreach ($dir in $sortedTerraformDirs) {
         $readmeFile = Join-Path $dir.FullName "README.md"
         if (Test-Path $readmeFile) {
             $componentName = Split-Path (Split-Path $dir.FullName -Parent) -Leaf
@@ -728,7 +796,7 @@ function Add-TerraformModulesSidebar {
     $indent = "  " * $IndentLevel
 
     # Scan for individual module subdirectories
-    $moduleSubdirs = Get-ChildItem -Path $ModulesPath -Directory | Sort-Object Name
+    $moduleSubdirs = Get-ChildItem -Path $ModulesPath -Directory | Sort-Object { $_.Name.ToLowerInvariant() }
 
     if ($moduleSubdirs.Count -gt 0) {
         foreach ($moduleDir in $moduleSubdirs) {
@@ -772,7 +840,14 @@ function Build-BicepSidebar {
 
     $sidebar = ""
 
-    foreach ($dir in $bicepDirs | Sort-Object FullName) {
+    $sortedBicepDirs = $bicepDirs | Sort-Object {
+        $relativePath = $_.FullName -replace [regex]::Escape($SrcPath), ''
+        $relativePath = $relativePath -replace '^[\\/]+', ''
+        $relativePath = $relativePath -replace '\\', '/'
+        return Get-InfrastructureSortKey("$relativePath/README.md")
+    }
+
+    foreach ($dir in $sortedBicepDirs) {
         $readmeFile = Join-Path $dir.FullName "README.md"
         if (Test-Path $readmeFile) {
             $componentName = Split-Path (Split-Path $dir.FullName -Parent) -Leaf
@@ -816,7 +891,7 @@ function Add-BicepModulesSidebar {
     }
 
     # Scan for subdirectories with README.md files (proper documentation approach)
-    $moduleSubdirs = Get-ChildItem -Path $ModulesPath -Directory | Sort-Object Name
+    $moduleSubdirs = Get-ChildItem -Path $ModulesPath -Directory | Sort-Object { $_.Name.ToLowerInvariant() }
 
     if ($moduleSubdirs.Count -gt 0) {
         foreach ($moduleDir in $moduleSubdirs) {
@@ -857,7 +932,8 @@ function Build-ComponentsSidebar {
     # Find all README.md files but exclude terraform/ and bicep/ subdirectories
     $allReadmeFiles = Get-ChildItem -Path $SrcPath -Filter "README.md" -Recurse | Where-Object {
         $relativePath = $_.FullName -replace [regex]::Escape($SrcPath), ''
-        $relativePath = $relativePath.TrimStart('\', '/') -replace '\\', '/'
+        $relativePath = $relativePath -replace '^[\\/]+', ''
+        $relativePath = $relativePath -replace '\\', '/'
 
         # Exclude terraform and bicep subdirectories
         $relativePath -notmatch '/terraform/' -and $relativePath -notmatch '/bicep/' -and
@@ -868,27 +944,18 @@ function Build-ComponentsSidebar {
     $sidebar = ""
     $foundComponents = 0
 
-    # Sort README files by their path for consistent ordering
+    # Sort README files using a deterministic hierarchy-aware key
     $sortedReadmeFiles = $allReadmeFiles | Sort-Object {
         $relativePath = $_.FullName -replace [regex]::Escape($SrcPath), ''
-        $relativePath = $relativePath.TrimStart('\', '/') -replace '\\', '/'
-
-        # Root README.md comes first
-        if ($relativePath -eq "README.md") { return "000" }
-
-        # Then numbered components (000-cloud, 100-edge, etc.)
-        if ($relativePath -match '^(\d{3})-') { return "001$($Matches[1])" }
-
-        # Then numbered sub-components (010-security, 020-observability, etc.)
-        if ($relativePath -match '/(\d{3})-[^/]+/README\.md$') { return "002$($Matches[1])" }
-
-        # Then other components alphabetically
-        return "999$relativePath"
+        $relativePath = $relativePath -replace '^[\\/]+', ''
+        $relativePath = $relativePath -replace '\\', '/'
+        return Get-InfrastructureSortKey($relativePath)
     }
 
     foreach ($readmeFile in $sortedReadmeFiles) {
         $relativePath = $readmeFile.FullName -replace [regex]::Escape($SrcPath), ''
-        $relativePath = $relativePath.TrimStart('\', '/') -replace '\\', '/'
+        $relativePath = $relativePath -replace '^[\\/]+', ''
+        $relativePath = $relativePath -replace '\\', '/'
 
         # Generate display name from the path
         $displayName = ""
@@ -917,7 +984,7 @@ function Build-ComponentsSidebar {
         return ""
     }
 
-    Write-Host "Added $foundComponents component README files to sidebar" -ForegroundColor Green
+    Write-InfoMessage "Added $foundComponents component README files to sidebar"
 
     return $sidebar
 }
@@ -930,7 +997,7 @@ function Build-DynamicDocsSection {
         [string]$RootPath
     )
 
-    Write-Host "📁 Generating dynamic documentation sections..." -ForegroundColor Yellow
+    Write-InfoMessage "📁 Generating dynamic documentation sections..."
 
     $dynamicSections = ""
 
@@ -957,8 +1024,8 @@ function Build-DynamicDocsSection {
     }
 
     foreach ($directory in $docsDirectories) {
-        $displayName = Get-DisplayName -FilePath $directory.Name
-        Write-Host "� Processing docs section: $displayName" -ForegroundColor Cyan
+    $displayName = Get-DisplayName -FilePath $directory.Name
+    Write-InfoMessage "📚 Processing docs section: $displayName"
 
         $dynamicSections += "- $displayName`n"
         $dynamicSections += Build-ComponentsSidebar -SrcPath $directory.FullName -RootPath $rootPath
@@ -977,7 +1044,7 @@ function Build-SpecialFilesSidebar {
         [string]$RootPath
     )
 
-    Write-Host "📄 Adding special documentation files..." -ForegroundColor Yellow
+    Write-InfoMessage "📄 Adding special documentation files..."
 
     $specialSidebar = ""
     $specialFiles = @(
@@ -1007,7 +1074,7 @@ function Build-PraxisWorxSectionSidebar {
         [string]$RootPath
     )
 
-    Write-Host "📚 Processing PraxisWorx section with custom ordering..." -ForegroundColor Cyan
+    Write-InfoMessage "📚 Processing PraxisWorx section with custom ordering..."
 
     $sidebar = ""
 
@@ -1129,7 +1196,7 @@ function Build-DocsSectionSidebar {
         [Parameter(Mandatory = $true)]
         [string]$RootPath    )
 
-    Write-Host "📚 Processing docs section: $(Split-Path $SectionPath -Leaf)" -ForegroundColor Cyan
+    Write-InfoMessage "📚 Processing docs section: $(Split-Path $SectionPath -Leaf)"
 
     $sidebar = ""
 
@@ -1230,7 +1297,7 @@ function Build-GitHubResourcesSidebar {
         [string]$RootPath
     )
 
-    Write-Host "🔗 Generating GitHub Copilot Resources section..." -ForegroundColor Yellow
+    Write-InfoMessage "🔗 Generating GitHub Copilot Resources section..."
 
     $githubPath = Join-Path $RootPath ".github"
     $sidebar = ""
@@ -1314,7 +1381,7 @@ function Build-CopilotGuidesSidebar {
         [string]$RootPath
     )
 
-    Write-Host "🤖 Generating Copilot Guides section..." -ForegroundColor Yellow
+    Write-InfoMessage "🤖 Generating Copilot Guides section..."
 
     $copilotPath = Join-Path $RootPath "copilot"
     $sidebar = ""
@@ -1399,14 +1466,14 @@ function Build-SectionSidebar {
         [string]$RootPath
     )
 
-    Write-Host "📝 Generating $SectionName section sidebar..." -ForegroundColor Yellow
+    Write-InfoMessage "📝 Generating $SectionName section sidebar..."
 
     $sidebarContent = ""
 
     switch ($SectionName.ToLower()) {
         'docs' {
             # Documentation section sidebar
-            Write-Host "🚀 Processing Documentation section..." -ForegroundColor Cyan
+            Write-InfoMessage "🚀 Processing Documentation section..."
 
             # Main documentation section
             $mainSidebar = Build-MainSidebar -DocsPath $DocsPath -RootPath $RootPath
@@ -1560,7 +1627,7 @@ function Build-SectionSidebar {
 
         'praxisworx' {
             # PraxisWorx section sidebar
-            Write-Host "🎓 Processing PraxisWorx section..." -ForegroundColor Cyan
+            Write-InfoMessage "🎓 Processing PraxisWorx section..."
             $praxisWorxPath = Join-Path $RootPath "praxisworx"
             if (Test-Path $praxisWorxPath) {
                 $praxisWorxReadme = Join-Path $praxisWorxPath "README.md"
@@ -1600,7 +1667,7 @@ function Build-SectionSidebar {
 
         'blueprints' {
             # Blueprints section sidebar
-            Write-Host "📋 Processing Blueprints section..." -ForegroundColor Cyan
+            Write-InfoMessage "📋 Processing Blueprints section..."
             $blueprintsPath = Join-Path $RootPath "blueprints"
             if (Test-Path $blueprintsPath) {
                 $blueprintsReadme = Join-Path $blueprintsPath "README.md"
@@ -1654,7 +1721,7 @@ function Build-SectionSidebar {
 
         'infrastructure' {
             # Infrastructure section sidebar
-            Write-Host "🏗️ Processing Infrastructure section..." -ForegroundColor Cyan
+            Write-InfoMessage "🏗️ Processing Infrastructure section..."
             if ($SrcPath -and (Test-Path $SrcPath)) {
                 # Infrastructure overview
                 $srcReadme = Join-Path $SrcPath "README.md"
@@ -1725,7 +1792,7 @@ function Build-SectionSidebar {
 
         'home' {
             # Home section sidebar - clean and focused navigation
-            Write-Host "🏠 Processing Home section..." -ForegroundColor Cyan
+            Write-InfoMessage "🏠 Processing Home section..."
 
             # Welcome/Overview
             $docsIndex = Join-Path $DocsPath "index.md"
@@ -1775,7 +1842,7 @@ function Build-SectionSidebar {
 
         'copilot' {
             # Copilot Resources section sidebar - comprehensive GitHub Copilot resources
-            Write-Host "🤖 Processing Copilot Resources section..." -ForegroundColor Cyan
+            Write-InfoMessage "🤖 Processing Copilot Resources section..."
 
             # Copilot Guides Overview
             $copilotPath = Join-Path $RootPath "copilot"
@@ -1950,13 +2017,13 @@ function Update-NavbarMarkdown {
     )
 
     if (-not (Test-Path $NavbarPath)) {
-        Write-Host "⚠️ Navbar file not found: $NavbarPath" -ForegroundColor Yellow
+        Write-Warning "Navbar file not found: $NavbarPath"
         return
     }
 
     $originalContent = Get-Content -Path $NavbarPath -Raw
     if ($null -eq $originalContent) {
-        Write-Host "⚠️ Navbar file is empty: $NavbarPath" -ForegroundColor Yellow
+        Write-Warning "Navbar file is empty: $NavbarPath"
         return
     }
 
@@ -2017,16 +2084,16 @@ function Update-NavbarMarkdown {
     if ($modified -or $updatedContent -ne $normalizedOriginal) {
         if ($PSCmdlet.ShouldProcess($NavbarPath, 'Update navbar lint directives')) {
             Set-Content -Path $NavbarPath -Value $updatedContent -Encoding UTF8 -NoNewline
-            Write-Host "✅ Navbar lint directives updated: $NavbarPath" -ForegroundColor Green
+            Write-InfoMessage "✅ Navbar lint directives updated: $NavbarPath"
         }
     } else {
-        Write-Host "ℹ️ Navbar lint directives already up to date: $NavbarPath" -ForegroundColor Gray
+        Write-InfoMessage "ℹ️ Navbar lint directives already up to date: $NavbarPath"
     }
 }
 
 function Main {
-    Write-Host "�🚀 Enhanced Docsify Sidebar Generator" -ForegroundColor Cyan
-    Write-Host "=====================================" -ForegroundColor Cyan
+    Write-InfoMessage "🚀 Enhanced Docsify Sidebar Generator"
+    Write-InfoMessage "====================================="
 
     # Resolve paths to absolute paths
     try {
@@ -2047,13 +2114,13 @@ function Main {
     # Use parameters explicitly to ensure PSScriptAnalyzer recognizes them as used
     $sidebarFilePath = Join-Path $resolvedDocsPath $SidebarFile
 
-    Write-Host "Current working directory: $(Get-Location)" -ForegroundColor Gray
-    Write-Host "Docs directory path: $resolvedDocsPath" -ForegroundColor Gray
+    Write-InfoMessage "Current working directory: $(Get-Location)"
+    Write-InfoMessage "Docs directory path: $resolvedDocsPath"
     if ($resolvedSrcPath) {
-        Write-Host "Src directory path: $resolvedSrcPath" -ForegroundColor Gray
+        Write-InfoMessage "Src directory path: $resolvedSrcPath"
     }
-    Write-Host "Sidebar file path: $sidebarFilePath" -ForegroundColor Gray
-    Write-Host "Section: $Section" -ForegroundColor Gray
+    Write-InfoMessage "Sidebar file path: $sidebarFilePath"
+    Write-InfoMessage "Section: $Section"
 
     try {
         # Get root path for Docsify-compatible path generation (absolute path)
@@ -2061,13 +2128,13 @@ function Main {
 
         # Handle generating all section-specific sidebars
         if ($AllSections) {
-            Write-Host "`n🔄 Generating all section-specific sidebars..." -ForegroundColor Magenta
+            Write-InfoMessage "`n🔄 Generating all section-specific sidebars..."
 
             # Determine output directory for sections in _parts folder
             $partsDir = Join-Path $resolvedDocsPath "_parts"
             if (-not (Test-Path $partsDir)) {
                 New-Item -ItemType Directory -Path $partsDir -Force | Out-Null
-                Write-Host "Created directory: $partsDir" -ForegroundColor Green
+                Write-InfoMessage "Created directory: $partsDir"
             }
 
             # Generate sidebars for all sections
@@ -2075,10 +2142,10 @@ function Main {
             $successCount = 0
 
             foreach ($sectionName in $sections) {
-                Write-Host "`n📝 Generating section-specific sidebar for: $sectionName" -ForegroundColor Yellow
+                Write-InfoMessage "`n📝 Generating section-specific sidebar for: $sectionName"
 
                 $sectionSidebarPath = Join-Path $partsDir "$sectionName-sidebar.md"
-                Write-Host "Section-specific sidebar file path: $sectionSidebarPath" -ForegroundColor Gray
+                Write-InfoMessage "Section-specific sidebar file path: $sectionSidebarPath"
 
                 # Generate section-specific sidebar
                 $sectionSidebar = Build-SectionSidebar -SectionName $sectionName -DocsPath $resolvedDocsPath -SrcPath $resolvedSrcPath -RootPath $rootPath
@@ -2100,33 +2167,33 @@ $sectionSidebar
                     # Write sidebar file
                     Set-Content -Path $sectionSidebarPath -Value $sidebarContent -Encoding UTF8 -NoNewline
 
-                    Write-Host "✅ Section-specific sidebar generated: $sectionSidebarPath" -ForegroundColor Green
+                    Write-InfoMessage "✅ Section-specific sidebar generated: $sectionSidebarPath"
                     $successCount++
                 } else {
                     Write-Warning "Failed to generate section-specific sidebar for: $sectionName"
                 }
             }
 
-            Write-Host "`n🎉 Completed generating all section-specific sidebars!" -ForegroundColor Magenta
-            Write-Host "📊 Successfully generated: $successCount of $($sections.Count) sidebars" -ForegroundColor Green
+            Write-InfoMessage "`n🎉 Completed generating all section-specific sidebars!"
+            Write-InfoMessage "📊 Successfully generated: $successCount of $($sections.Count) sidebars"
 
             # Also generate the main sidebar (all sections combined)
-            Write-Host "`n📝 Also generating main sidebar (all sections combined)..." -ForegroundColor Yellow
+            Write-InfoMessage "`n📝 Also generating main sidebar (all sections combined)..."
         }
 
         # Handle section-specific sidebar generation
         elseif ($Section -ne 'all') {
-            Write-Host "`n📝 Generating section-specific sidebar for: $Section" -ForegroundColor Yellow
+            Write-InfoMessage "`n📝 Generating section-specific sidebar for: $Section"
 
             # Determine output file path for section in _parts folder
             $partsDir = Join-Path $resolvedDocsPath "_parts"
             if (-not (Test-Path $partsDir)) {
                 New-Item -ItemType Directory -Path $partsDir -Force | Out-Null
-                Write-Host "Created directory: $partsDir" -ForegroundColor Green
+                Write-InfoMessage "Created directory: $partsDir"
             }
 
             $sidebarFilePath = Join-Path $partsDir "$Section-sidebar.md"
-            Write-Host "Section-specific sidebar file path: $sidebarFilePath" -ForegroundColor Gray
+            Write-InfoMessage "Section-specific sidebar file path: $sidebarFilePath"
 
             # Generate section-specific sidebar
             $sectionSidebar = Build-SectionSidebar -SectionName $Section -DocsPath $resolvedDocsPath -SrcPath $resolvedSrcPath -RootPath $rootPath
@@ -2148,8 +2215,8 @@ $sectionSidebar
                 # Write sidebar file
                 Set-Content -Path $sidebarFilePath -Value $sidebarContent -Encoding UTF8 -NoNewline
 
-                Write-Host "`n✅ Section-specific sidebar generated: $sidebarFilePath" -ForegroundColor Green
-                Write-Host "📋 Section: $Section" -ForegroundColor Green
+                Write-InfoMessage "`n✅ Section-specific sidebar generated: $sidebarFilePath"
+                Write-InfoMessage "📋 Section: $Section"
                 return
             } else {
                 Write-Error "Failed to generate section-specific sidebar for: $Section"
@@ -2157,7 +2224,7 @@ $sectionSidebar
             }
         }
 
-        Write-Host "`n📝 Generating complete sidebar with README ordering..." -ForegroundColor Yellow
+        Write-InfoMessage "`n📝 Generating complete sidebar with README ordering..."
         $rootPath = Split-Path $resolvedDocsPath -Parent
 
         # Generate main documentation sidebar (only for root-level docs files)
@@ -2166,7 +2233,7 @@ $sectionSidebar
         # Generate infrastructure sections
         $infrastructureSidebar = ""
         if ($resolvedSrcPath) {
-            Write-Host "📁 Generating Infrastructure Code sections..." -ForegroundColor Yellow
+            Write-InfoMessage "📁 Generating Infrastructure Code sections..."
             # Check for README.md in src
             $srcReadme = Join-Path $resolvedSrcPath "README.md"
             if (Test-Path $srcReadme) {
@@ -2185,7 +2252,7 @@ $sectionSidebar
         $gettingStartedPath = Join-Path $resolvedDocsPath "getting-started"
         $gettingStartedSidebar = ""
         if (Test-Path $gettingStartedPath) {
-            Write-Host "🚀 Generating Getting Started section..." -ForegroundColor Yellow
+            Write-InfoMessage "🚀 Generating Getting Started section..."
             # Check for index.md or README.md
             $gettingStartedIndex = Join-Path $gettingStartedPath "index.md"
             $gettingStartedReadme = Join-Path $gettingStartedPath "README.md"
@@ -2207,7 +2274,7 @@ $sectionSidebar
         $praxisWorxPath = Join-Path $rootPath "praxisworx"
         $praxisWorxSidebar = ""
         if (Test-Path $praxisWorxPath) {
-            Write-Host "🎓 Generating PraxisWorx section..." -ForegroundColor Yellow
+            Write-InfoMessage "🎓 Generating PraxisWorx section..."
             $praxisWorxReadme = Join-Path $praxisWorxPath "README.md"
             if (Test-Path $praxisWorxReadme) {
                 $relativePath = Get-DocsifyRelativePath -FilePath $praxisWorxReadme -RootPath $rootPath
@@ -2223,7 +2290,7 @@ $sectionSidebar
         $buildCicdPath = Join-Path $docsPath "build-cicd"
         $buildCicdSidebar = ""
         if (Test-Path $buildCicdPath) {
-            Write-Host "🔧 Generating Build CI/CD section..." -ForegroundColor Yellow
+            Write-InfoMessage "🔧 Generating Build CI/CD section..."
             # Check for index.md or README.md
             $buildCicdIndex = Join-Path $buildCicdPath "index.md"
             $buildCicdReadme = Join-Path $buildCicdPath "README.md"
@@ -2245,7 +2312,7 @@ $sectionSidebar
         $contributingPath = Join-Path $docsPath "contributing"
         $contributingSidebar = ""
         if (Test-Path $contributingPath) {
-            Write-Host "🤝 Generating Contributing section..." -ForegroundColor Yellow
+            Write-InfoMessage "🤝 Generating Contributing section..."
             # Check for index.md or README.md
             $contributingIndex = Join-Path $contributingPath "index.md"
             $contributingReadme = Join-Path $contributingPath "README.md"
@@ -2267,7 +2334,7 @@ $sectionSidebar
         $projectPlanningPath = Join-Path $docsPath "project-planning"
         $projectPlanningSidebar = ""
         if (Test-Path $projectPlanningPath) {
-            Write-Host "📋 Generating Project Planning section..." -ForegroundColor Yellow
+            Write-InfoMessage "📋 Generating Project Planning section..."
             # Check for index.md or README.md
             $projectPlanningIndex = Join-Path $projectPlanningPath "index.md"
             $projectPlanningReadme = Join-Path $projectPlanningPath "README.md"
@@ -2289,7 +2356,7 @@ $sectionSidebar
         $observabilityPath = Join-Path $docsPath "observability"
         $observabilitySidebar = ""
         if (Test-Path $observabilityPath) {
-            Write-Host "📊 Generating Observability section..." -ForegroundColor Yellow
+            Write-InfoMessage "📊 Generating Observability section..."
             # Check for index.md or README.md
             $observabilityIndex = Join-Path $observabilityPath "index.md"
             $observabilityReadme = Join-Path $observabilityPath "README.md"
@@ -2311,7 +2378,7 @@ $sectionSidebar
         $solutionAdrPath = Join-Path $docsPath "solution-adr-library"
         $solutionAdrSidebar = ""
         if (Test-Path $solutionAdrPath) {
-            Write-Host "📚 Generating Solution ADR Library section..." -ForegroundColor Yellow
+            Write-InfoMessage "📚 Generating Solution ADR Library section..."
             # Check for index.md or README.md
             $solutionAdrIndex = Join-Path $solutionAdrPath "index.md"
             $solutionAdrReadme = Join-Path $solutionAdrPath "README.md"
@@ -2333,7 +2400,7 @@ $sectionSidebar
         $solutionSecurityPath = Join-Path $docsPath "solution-security-plan-library"
         $solutionSecuritySidebar = ""
         if (Test-Path $solutionSecurityPath) {
-            Write-Host "🔒 Generating Solution Security Plan Library section..." -ForegroundColor Yellow
+            Write-InfoMessage "🔒 Generating Solution Security Plan Library section..."
             # Check for index.md or README.md
             $solutionSecurityIndex = Join-Path $solutionSecurityPath "index.md"
             $solutionSecurityReadme = Join-Path $solutionSecurityPath "README.md"
@@ -2355,7 +2422,7 @@ $sectionSidebar
         $solutionTechPath = Join-Path $docsPath "solution-technology-paper-library"
         $solutionTechSidebar = ""
         if (Test-Path $solutionTechPath) {
-            Write-Host "🔬 Generating Solution Technology Paper Library section..." -ForegroundColor Yellow
+            Write-InfoMessage "🔬 Generating Solution Technology Paper Library section..."
             # Check for index.md or README.md
             $solutionTechIndex = Join-Path $solutionTechPath "index.md"
             $solutionTechReadme = Join-Path $solutionTechPath "README.md"
@@ -2377,7 +2444,7 @@ $sectionSidebar
         $templatesPath = Join-Path $docsPath "templates"
         $templatesSidebar = ""
         if (Test-Path $templatesPath) {
-            Write-Host "📄 Generating Templates section..." -ForegroundColor Yellow
+            Write-InfoMessage "📄 Generating Templates section..."
             $templatesSidebar += "- Templates`n"
             $templatesSidebar += Build-DocsSectionSidebar -SectionPath $templatesPath -RootPath $rootPath
         }
@@ -2386,7 +2453,7 @@ $sectionSidebar
         $blueprintsPath = Join-Path $rootPath "blueprints"
         $blueprintsSidebar = ""
         if (Test-Path $blueprintsPath) {
-            Write-Host "📋 Generating Blueprints sections..." -ForegroundColor Yellow
+            Write-InfoMessage "📋 Generating Blueprints sections..."
             # Check for README.md in blueprints
             $blueprintsReadme = Join-Path $blueprintsPath "README.md"
             if (Test-Path $blueprintsReadme) {
@@ -2455,18 +2522,19 @@ $($allSections -join "`n`n")
         # Write sidebar file
         Set-Content -Path $sidebarFilePath -Value $sidebarContent -Encoding UTF8 -NoNewline
 
-        Write-Host "`n✅ Enhanced sidebar generated: $sidebarFilePath" -ForegroundColor Green
-        Write-Host "📋 Features enabled:" -ForegroundColor Green
-        Write-Host "  • README.md/index.md-based ordering" -ForegroundColor Gray
-        Write-Host "  • Overview/index files prioritized" -ForegroundColor Gray
-        Write-Host "  • Numbered prefix handling (000-, 001-, etc.)" -ForegroundColor Gray
-        Write-Host "  • Directory-first organization" -ForegroundColor Gray
-        Write-Host "  • Flexible title matching" -ForegroundColor Gray
-        Write-Host "  • Dynamic docs sections with multi-framework support" -ForegroundColor Gray
-        Write-Host "  • Special files (accessibility, contributions, tags)" -ForegroundColor Gray
-        if ($enableInfrastructure) {
-            Write-Host "  • Infrastructure Code documentation sections" -ForegroundColor Gray
-            Write-Host "  • Component cross-references" -ForegroundColor Gray
+        Write-InfoMessage "`n✅ Enhanced sidebar generated: $sidebarFilePath"
+        Write-InfoMessage "📋 Features enabled:"
+        Write-InfoMessage "  • README.md/index.md-based ordering"
+        Write-InfoMessage "  • Overview/index files prioritized"
+        Write-InfoMessage "  • Numbered prefix handling (000-, 001-, etc.)"
+        Write-InfoMessage "  • Directory-first organization"
+        Write-InfoMessage "  • Flexible title matching"
+        Write-InfoMessage "  • Dynamic docs sections with multi-framework support"
+        Write-InfoMessage "  • Special files (accessibility, contributions, tags)"
+        $hasInfrastructureSection = -not [string]::IsNullOrWhiteSpace($infrastructureSidebar)
+        if ($hasInfrastructureSection) {
+            Write-InfoMessage "  • Infrastructure Code documentation sections"
+            Write-InfoMessage "  • Component cross-references"
         }
 
         $navbarPath = Join-Path $resolvedDocsPath "_navbar.md"

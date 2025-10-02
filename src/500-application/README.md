@@ -321,7 +321,7 @@ While the sample applications in this repository are reference implementations a
 
 - **SLSA Framework**: [https://slsa.dev/](https://slsa.dev/)
 - **GitHub SLSA Generator**: [slsa-framework/slsa-github-generator](https://github.com/slsa-framework/slsa-github-generator)
-- **Azure DevOps SLSA**: [Microsoft DevSecOps for SLSA](https://learn.microsoft.com/en-us/azure/devops/pipelines/security/overview)
+- **Azure DevOps SLSA**: [Microsoft DevSecOps for SLSA](https://learn.microsoft.com/azure/devops/pipelines/security/overview)
 - **Container Signing**: [Cosign](https://github.com/sigstore/cosign) for container image signing and verification
 
 #### Integration with Existing Security Infrastructure
