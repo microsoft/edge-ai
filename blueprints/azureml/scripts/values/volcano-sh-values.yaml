@@ -1,7 +1,7 @@
 ---
 custom:
   scheduler_log_level: 4
-  # Refer to https://learn.microsoft.com/en-us/azure/machine-learning/how-to-troubleshoot-kubernetes-extension?view=azureml-api-2#volcano-scheduler-integration-supporting-cluster-autoscaler
+  # Refer to https://learn.microsoft.com/azure/machine-learning/how-to-troubleshoot-kubernetes-extension?view=azureml-api-2#volcano-scheduler-integration-supporting-cluster-autoscaler
   scheduler_config_override: |
     actions: "enqueue, allocate, backfill"
     tiers:

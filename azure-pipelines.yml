@@ -241,7 +241,7 @@ stages:
           dependsOn: MegaLinter
           displayName: "Enhanced Documentation Validation"
           condition: succeeded()
-          breakBuild: false  # Only show warnings by default
+          breakBuild: true  # Fail build on documentation issues
           agentPool:
             name: $(poolName)
             vmImage: $(vmImage)
@@ -251,7 +251,7 @@ stages:
           dependsOn: MegaLinter
           displayName: "Terraform Documentation Quality Check"
           condition: succeeded()
-          breakBuild: false  # Only show warnings by default
+          breakBuild: true  # Fail build on documentation issues
           agentPool:
             name: $(poolName)
             vmImage: $(vmImage)
@@ -261,7 +261,7 @@ stages:
           dependsOn: MegaLinter
           displayName: "Bicep Documentation Quality Check"
           condition: succeeded()
-          breakBuild: false  # Only show warnings by default
+          breakBuild: true  # Fail build on documentation issues
           agentPool:
             name: $(poolName)
             vmImage: $(vmImage)

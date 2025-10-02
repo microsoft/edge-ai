@@ -1,9 +1,10 @@
 <!-- markdownlint-disable MD041 -->
 <!-- markdownlint-disable MD051 -->
 <!-- docs Section Sidebar -->
-<!-- Generated on: 2025-09-28 20:12:13 UTC -->
+<!-- Generated on: 2025-10-01 18:18:23 UTC -->
 
 - [AI on Edge Flagship Accelerator](#/docs/index.md)
+- [Security Analysis with Work Item Management](#/docs/security-analysis-workflow.md)
 
 - [Getting Started](#/docs/getting-started/index.md)
   - [Blueprint Developer Guide - Getting Started](#/docs/getting-started/blueprint-developer.md)
@@ -219,6 +220,7 @@
   - [AI Prompts](#/.github/prompts/README.md)
     - [Ado Get Build Info](#/.github/prompts/ado-get-build-info.prompt.md)
     - [Ado Update Wit Items](#/.github/prompts/ado-update-wit-items.prompt.md)
+    - [Ado Wit Discovery](#/.github/prompts/ado-wit-discovery.prompt.md)
     - [Adr Create](#/.github/prompts/adr-create.prompt.md)
     - [Create My Work Items Handoff](#/.github/prompts/create-my-work-items-handoff.prompt.md)
     - [Deploy](#/.github/prompts/deploy.prompt.md)
@@ -249,6 +251,7 @@
   - [Instructions](#/.github/instructions/README.md)
     - [Ado Get Build Info](#/.github/instructions/ado-get-build-info.instructions.md)
     - [Ado Update Wit Items](#/.github/instructions/ado-update-wit-items.instructions.md)
+    - [Ado Wit Discovery](#/.github/instructions/ado-wit-discovery.instructions.md)
     - [Ado Wit Planning](#/.github/instructions/ado-wit-planning.instructions.md)
     - [Application](#/.github/instructions/application.instructions.md)
     - [Bash](#/.github/instructions/bash.instructions.md)
