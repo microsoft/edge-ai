@@ -4,8 +4,8 @@
 		{
 			"label": "Terraform Build",
 			"dependsOn": [
-				"Terraform Lint Fix and Fmt",
-				"Terraform Validate",
+				"Terraform Lint Fix and Fmt All",
+				"Terraform Validate All",
 				"Terraform Docs Generation"
 			],
 			"isBackground": false,
@@ -18,15 +18,15 @@
 				"group": "ci",
 				"clear": true
 			},
-			"detail": "Run Terraform linting/formatting and validation in sequence (default build task)"
+			"detail": "Runs scripts/az-sub-init.sh then Terraform linting/formatting and validation in sequence (default build task)"
 		},
 		{
-			"label": "Terraform Validate",
+			"label": "Terraform Validate All",
 			"type": "shell",
 			"command": "npm",
 			"args": [
 				"run",
-				"tf-validate"
+				"tf-validate-all"
 			],
 			"isBackground": false,
 			"problemMatcher": [],
@@ -34,7 +34,24 @@
 				"group": "ci",
 				"clear": true
 			},
-			"detail": "Run Terraform validation and linting across all components"
+			"detail": "Runs scripts/az-sub-init.sh then Terraform validation and linting across all components and blueprints"
+		},
+		{
+			"label": "Terraform Validate",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"run",
+				"tf-validate",
+				"--",
+				"${relativeFileDirname}"
+			],
+			"presentation": {
+				"clear": true
+			},
+			"isBackground": false,
+			"problemMatcher": [],
+			"detail": "Runs scripts/az-sub-init.sh then terraform validate in folder for current focused file"
 		},
 		{
 			"label": "Terraform Docs Generation",
@@ -53,12 +70,12 @@
 			"detail": "Generate Terraform documentation for all components"
 		},
 		{
-			"label": "Terraform Lint Fix and Fmt",
+			"label": "Terraform Lint Fix and Fmt All",
 			"type": "shell",
 			"command": "npm",
 			"args": [
 				"run",
-				"tflint-fix-fast"
+				"tflint-fix-all"
 			],
 			"isBackground": false,
 			"problemMatcher": [],
@@ -66,7 +83,24 @@
 				"group": "ci",
 				"clear": true
 			},
-			"detail": "Fix Terraform linting issues and formatting"
+			"detail": "Fix Terraform linting issues and formatting across all components and blueprints"
+		},
+		{
+			"label": "Terraform Lint Fix and Fmt",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"run",
+				"tflint-fix",
+				"--",
+				"${relativeFileDirname}"
+			],
+			"isBackground": false,
+			"problemMatcher": [],
+			"presentation": {
+				"clear": true
+			},
+			"detail": "Fix Terraform linting issues and formatting in folder for current file"
 		},
 		{
 			"label": "Markdown Lint Fix",
@@ -83,7 +117,7 @@
 			"problemMatcher": [
 				"$markdownlint"
 			],
-			"detail": "Fix Markdown formatting and linting issues"
+			"detail": "Fix all Markdown formatting and linting issues"
 		},
 		{
 			"label": "Terraform Init Upgrade",
@@ -98,7 +132,7 @@
 			},
 			"isBackground": false,
 			"problemMatcher": [],
-			"detail": "Run terraform init -upgrade project-wide on all terraform folders (needed when upgrading providers)"
+			"detail": "Runs scripts/az-sub-init.sh then terraform init -upgrade project-wide on all terraform folders (needed when upgrading providers)"
 		},
 		{
 			"label": "Terraform Test",
@@ -115,7 +149,7 @@
 			},
 			"isBackground": false,
 			"problemMatcher": [],
-			"detail": "Run terraform test in folder for current focused file"
+			"detail": "Runs scripts/az-sub-init.sh then terraform test in folder for current focused file"
 		},
 		{
 			"label": "Terraform Test All",
@@ -130,7 +164,24 @@
 			},
 			"isBackground": false,
 			"problemMatcher": [],
-			"detail": "Run terraform test in every terraform folder (only use after changes to tests)"
-		}
+			"detail": "Runs scripts/az-sub-init.sh then terraform test in every terraform folder (only use after changes to tests)"
+		},
+		{
+			"label": "Terraform Plan (With Required Test Vars)",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"run",
+				"tf-plan-test",
+				"--",
+				"${relativeFileDirname}"
+			],
+			"presentation": {
+				"clear": true
+			},
+			"isBackground": false,
+			"problemMatcher": [],
+			"detail": "Runs scripts/az-sub-init.sh then terraform plan with required vars for testing terraform plan, in folder for current focused file"
+		},
 	]
 }

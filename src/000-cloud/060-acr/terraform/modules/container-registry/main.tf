@@ -6,8 +6,10 @@
  */
 
 locals {
-  sanitized_location          = lower(replace(var.location, " ", ""))
-  should_enable_data_endpoint = alltrue([var.should_create_acr_private_endpoint, lower(var.sku) == "premium"])
+  allowed_public_ip_ranges       = try(var.allowed_public_ip_ranges, [])
+  sanitized_location             = lower(replace(var.location, " ", ""))
+  should_enable_data_endpoint    = alltrue([var.should_enable_data_endpoints, var.should_create_acr_private_endpoint, lower(var.sku) == "premium"])
+  should_configure_network_rules = alltrue([var.public_network_access_enabled, length(local.allowed_public_ip_ranges) > 0])
 }
 
 resource "azurerm_container_registry" "acr" {
@@ -15,8 +17,22 @@ resource "azurerm_container_registry" "acr" {
   resource_group_name           = var.resource_group.name
   location                      = var.location
   sku                           = var.sku
-  public_network_access_enabled = !var.should_create_acr_private_endpoint
+  public_network_access_enabled = var.public_network_access_enabled
   data_endpoint_enabled         = local.should_enable_data_endpoint
+  network_rule_bypass_option    = var.allow_trusted_services ? "AzureServices" : "None"
+
+  dynamic "network_rule_set" {
+    for_each = local.should_configure_network_rules ? [1] : []
+    content {
+      default_action = "Deny"
+      ip_rule = [
+        for ip_cidr in local.allowed_public_ip_ranges : {
+          action   = "Allow"
+          ip_range = ip_cidr
+        }
+      ]
+    }
+  }
 }
 
 resource "azurerm_private_endpoint" "pep" {

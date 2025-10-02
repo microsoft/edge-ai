@@ -170,6 +170,10 @@ module "cloud_acr" {
   should_create_acr_private_endpoint = var.should_enable_private_endpoints
   default_outbound_access_enabled    = local.default_outbound_access_enabled
   sku                                = var.acr_sku
+  allow_trusted_services             = var.acr_allow_trusted_services
+  allowed_public_ip_ranges           = var.acr_allowed_public_ip_ranges
+  public_network_access_enabled      = var.acr_public_network_access_enabled
+  should_enable_data_endpoints       = var.acr_data_endpoint_enabled
 }
 
 module "cloud_kubernetes" {

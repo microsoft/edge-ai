@@ -40,5 +40,9 @@ module "container_registry" {
 
   // Optional parameters
   should_create_acr_private_endpoint = var.should_create_acr_private_endpoint
+  allow_trusted_services             = var.allow_trusted_services
+  allowed_public_ip_ranges           = var.allowed_public_ip_ranges
+  public_network_access_enabled      = var.public_network_access_enabled
   sku                                = var.sku
+  should_enable_data_endpoints       = var.should_enable_data_endpoints
 }
