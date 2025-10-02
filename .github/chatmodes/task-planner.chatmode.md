@@ -245,9 +245,6 @@ Follow all instructions from #file:{{relative_path}}/.github/instructions/task-i
 
 <!-- <implementation-prompt-template> -->
 ````markdown
----
-mode: agent
----
 <!-- markdownlint-disable-file -->
 # Implementation Prompt: {{task_name}}
 

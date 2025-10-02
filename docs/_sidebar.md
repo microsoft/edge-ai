@@ -1,6 +1,6 @@
 <!-- markdownlint-disable MD041 -->
 <!-- markdownlint-disable MD051 -->
-<!-- Generated on: 2025-10-01 18:18:28 UTC -->
+<!-- Generated on: 2025-10-02 12:32:57 UTC -->
 
 - [AI on Edge Flagship Accelerator](#/docs/index.md)
 - [Security Analysis with Work Item Management](#/docs/security-analysis-workflow.md)
@@ -240,6 +240,7 @@
 
 - GitHub Copilot Resources
   - [AI Prompts](#/.github/prompts/README.md)
+    - [Ado Create Pull Request](#/.github/prompts/ado-create-pull-request.prompt.md)
     - [Ado Get Build Info](#/.github/prompts/ado-get-build-info.prompt.md)
     - [Ado Update Wit Items](#/.github/prompts/ado-update-wit-items.prompt.md)
     - [Ado Wit Discovery](#/.github/prompts/ado-wit-discovery.prompt.md)
@@ -263,6 +264,7 @@
   - [Chat Modes](#/.github/chatmodes/README.md)
     - [Ado Prd To Wit](#/.github/chatmodes/ado-prd-to-wit.chatmode.md)
     - [Adr Creation](#/.github/chatmodes/adr-creation.chatmode.md)
+    - [Pr Review](#/.github/chatmodes/pr-review.chatmode.md)
     - [Praxisworx Kata Coach](#/.github/chatmodes/praxisworx-kata-coach.chatmode.md)
     - [Praxisworx Lab Coach](#/.github/chatmodes/praxisworx-lab-coach.chatmode.md)
     - [Prd Builder](#/.github/chatmodes/prd-builder.chatmode.md)
@@ -271,6 +273,7 @@
     - [Task Planner](#/.github/chatmodes/task-planner.chatmode.md)
     - [Task Researcher](#/.github/chatmodes/task-researcher.chatmode.md)
   - [Instructions](#/.github/instructions/README.md)
+    - [Ado Create Pull Request](#/.github/instructions/ado-create-pull-request.instructions.md)
     - [Ado Get Build Info](#/.github/instructions/ado-get-build-info.instructions.md)
     - [Ado Update Wit Items](#/.github/instructions/ado-update-wit-items.instructions.md)
     - [Ado Wit Discovery](#/.github/instructions/ado-wit-discovery.instructions.md)
