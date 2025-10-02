@@ -4,9 +4,7 @@
 
 variable "acr" {
   type = object({
-    id   = optional(string)
-    name = optional(string)
-    sku  = optional(string)
+    id = optional(string)
   })
   description = "Azure Container Registry object from 060-acr component (optional)."
 }

@@ -64,6 +64,17 @@ output "storage_account" {
   })
 }
 
+output "acr_network_posture" {
+  description = "Azure Container Registry network posture metadata."
+  value = var.should_create_acr ? module.cloud_acr[0].acr_network_posture : {
+    allow_trusted_services        = var.acr_allow_trusted_services
+    allowed_public_ip_ranges      = var.acr_allowed_public_ip_ranges
+    data_endpoint_enabled         = var.acr_data_endpoint_enabled
+    network_rule_bypass_option    = null
+    public_network_access_enabled = var.acr_public_network_access_enabled
+  }
+}
+
 /*
  * VPN Gateway Outputs
  */

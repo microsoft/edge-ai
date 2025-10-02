@@ -437,6 +437,30 @@ variable "acr_sku" {
   default     = "Premium"
 }
 
+variable "acr_allow_trusted_services" {
+  type        = bool
+  description = "Whether trusted Azure services can bypass ACR network rules"
+  default     = true
+}
+
+variable "acr_allowed_public_ip_ranges" {
+  type        = list(string)
+  description = "CIDR ranges permitted to reach the ACR public endpoint"
+  default     = []
+}
+
+variable "acr_data_endpoint_enabled" {
+  type        = bool
+  description = "Whether to enable the dedicated ACR data endpoint"
+  default     = true
+}
+
+variable "acr_public_network_access_enabled" {
+  type        = bool
+  description = "Whether to enable the ACR public endpoint alongside private connectivity"
+  default     = false
+}
+
 /*
  * Identity and Key Vault Parameters
  */

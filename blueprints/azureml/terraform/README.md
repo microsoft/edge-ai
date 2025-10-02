@@ -58,7 +58,11 @@ Adds Azure Machine Learning capabilities with optional foundational resource cre
 | environment | Environment for all resources in this module: dev, test, or prod | `string` | n/a | yes |
 | location | Location for all resources in this module | `string` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
+| acr\_allow\_trusted\_services | Whether trusted Azure services can bypass ACR network rules | `bool` | `true` | no |
+| acr\_allowed\_public\_ip\_ranges | CIDR ranges permitted to reach the ACR public endpoint | `list(string)` | `[]` | no |
+| acr\_data\_endpoint\_enabled | Whether to enable the dedicated ACR data endpoint | `bool` | `true` | no |
 | acr\_name | Existing or desired ACR name when not creating (Otherwise computed) | `string` | `null` | no |
+| acr\_public\_network\_access\_enabled | Whether to enable the ACR public endpoint alongside private connectivity | `bool` | `false` | no |
 | acr\_sku | SKU name for the Azure Container Registry | `string` | `"Premium"` | no |
 | aks\_cluster\_name | Existing AKS cluster name for ML integration (Otherwise 'aks-{resource\_prefix}-{environment}-{instance}') | `string` | `null` | no |
 | aks\_cluster\_purpose | Purpose of AKS cluster: DevTest, DenseProd, or FastProd | `string` | `"DevTest"` | no |
@@ -155,6 +159,7 @@ Adds Azure Machine Learning capabilities with optional foundational resource cre
 
 | Name | Description |
 |------|-------------|
+| acr\_network\_posture | Azure Container Registry network posture metadata. |
 | aks\_cluster | The AKS cluster object when created or discovered for ML integration. |
 | aks\_oidc\_issuer\_url | The OIDC issuer URL for the AKS cluster when workload identity is enabled. |
 | application\_insights | Application Insights object used for the workspace. |

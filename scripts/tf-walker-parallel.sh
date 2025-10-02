@@ -1,19 +1,22 @@
 #!/bin/bash
 
 # tf-walker-parallel.sh - Walk through terraform directories and execute commands in parallel
-# Usage: tf-walker-parallel.sh "command to execute" [out_folder] [need_auth] [max_jobs]
+# Usage: tf-walker-parallel.sh "command to execute" [out_folder] [need_auth] [max_jobs] [dir_filter]
 
 set -e
+
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Parse arguments
 cmd="$1"
 out_folder="${2:-tf-walker-$(date +%Y%m%d-%H%M%S)}"
 need_auth="${3:-false}"
 max_jobs="${4:-4}"  # Default to 4 parallel jobs (may need to determine based on user's cpu count)
+dir_filter="${5:-}"
 
 if [ -z "$cmd" ]; then
-    echo "Usage: tf-walker-parallel.sh \"command to execute\" [out_folder] [need_auth] [max_jobs]"
-    echo "Example: tf-walker-parallel.sh \"terraform init; terraform test\" \"test-run-1\" true"
+    echo "Usage: tf-walker-parallel.sh \"command to execute\" [out_folder] [need_auth] [max_jobs] [dir_filter]"
+    echo "Example: tf-walker-parallel.sh \"terraform test\" \"test-run\" true 4 ci"
     exit 1
 fi
 
@@ -54,15 +57,23 @@ if [ "$need_auth" = "true" ]; then
     saved_args=("$@")
     set --  # Clear arguments
     # shellcheck source=/dev/null
-    source ./scripts/az-sub-init.sh
+    source "${script_dir}/az-sub-init.sh"
     set -- "${saved_args[@]}"  # Restore arguments
 fi
 
 # Find all terraform directories
-echo "Searching for terraform directories..."
+if [[ -n "${dir_filter}" ]]; then
+    echo "Searching for terraform directories matching filter: ${dir_filter}"
+else
+    echo "Searching for terraform directories..."
+fi
 terraform_dirs=()
 while IFS= read -r dir; do
-    # Check if directory contains .tf files
+    if [[ -n "${dir_filter}" && "$dir" != *${dir_filter}* ]]; then
+        echo "Skipping $dir (does not match filter)"
+        continue
+    fi
+
     if ls "$dir"/*.tf >/dev/null 2>&1; then
         terraform_dirs+=("$dir")
     else

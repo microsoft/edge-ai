@@ -51,6 +51,11 @@ output "container_registry" {
   value       = module.cloud_acr.acr
 }
 
+output "acr_network_posture" {
+  description = "Azure Container Registry network posture metadata."
+  value       = module.cloud_acr.acr_network_posture
+}
+
 output "kubernetes" {
   description = "Azure Kubernetes Service resources."
   value       = try(module.cloud_kubernetes[0].aks, null)

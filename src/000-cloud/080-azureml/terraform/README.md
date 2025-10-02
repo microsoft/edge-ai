@@ -42,7 +42,7 @@ existing cloud infrastructure including Key Vault, Storage Account, Application 
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| acr | Azure Container Registry object from 060-acr component (optional). | ```object({ id = optional(string) name = optional(string) sku = optional(string) })``` | n/a | yes |
+| acr | Azure Container Registry object from 060-acr component (optional). | ```object({ id = optional(string) })``` | n/a | yes |
 | application\_insights | Application Insights object from 020-observability component. | ```object({ id = string name = string instrumentation_key = string })``` | n/a | yes |
 | environment | The environment for the deployment. | `string` | n/a | yes |
 | key\_vault | Key Vault object from 010-security-identity component. | ```object({ id = string name = string })``` | n/a | yes |

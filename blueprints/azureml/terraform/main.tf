@@ -228,6 +228,11 @@ module "cloud_acr" {
   subnet_address_prefixes_acr        = var.subnet_address_prefixes_acr
   default_outbound_access_enabled    = local.default_outbound_access_enabled
   nat_gateway                        = try(module.cloud_networking[0].nat_gateway, null)
+
+  allow_trusted_services        = var.acr_allow_trusted_services
+  allowed_public_ip_ranges      = var.acr_allowed_public_ip_ranges
+  public_network_access_enabled = var.acr_public_network_access_enabled
+  should_enable_data_endpoints  = var.acr_data_endpoint_enabled
 }
 
 module "cloud_kubernetes" {

@@ -22,6 +22,41 @@ variable "subnet_address_prefixes_acr" {
 }
 
 /*
+ * Public Access Controls - Optional
+ */
+
+variable "allow_trusted_services" {
+  type        = bool
+  description = "Whether trusted Azure services can bypass registry network rules when the public endpoint is restricted"
+  default     = true
+}
+
+variable "allowed_public_ip_ranges" {
+  type        = list(string)
+  description = "CIDR ranges permitted to reach the registry public endpoint"
+  default     = []
+
+  validation {
+    condition = alltrue([
+      for cidr in var.allowed_public_ip_ranges : can(regex("^([0-9]{1,3}\\.){3}[0-9]{1,3}/[0-9]{1,2}$", cidr))
+    ])
+    error_message = "Each public IP range must be provided in CIDR notation (for example, 203.0.113.24/32)."
+  }
+}
+
+variable "public_network_access_enabled" {
+  type        = bool
+  description = "Whether to enable the registry public endpoint alongside private connectivity"
+  default     = false
+}
+
+variable "should_enable_data_endpoints" {
+  type        = bool
+  description = "Whether to enable dedicated data endpoints for the registry"
+  default     = true
+}
+
+/*
  * Outbound Access Controls - Optional
  */
 

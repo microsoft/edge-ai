@@ -1,9 +1,14 @@
 output "acr" {
   description = "The Azure Container Registry resource created by this module."
   value = {
-    id   = azurerm_container_registry.acr.id
-    name = azurerm_container_registry.acr.name
-    sku  = azurerm_container_registry.acr.sku
+    allow_trusted_services        = var.allow_trusted_services
+    allowed_public_ip_ranges      = local.allowed_public_ip_ranges
+    data_endpoint_enabled         = azurerm_container_registry.acr.data_endpoint_enabled
+    id                            = azurerm_container_registry.acr.id
+    name                          = azurerm_container_registry.acr.name
+    network_rule_bypass_option    = azurerm_container_registry.acr.network_rule_bypass_option
+    public_network_access_enabled = azurerm_container_registry.acr.public_network_access_enabled
+    sku                           = azurerm_container_registry.acr.sku
   }
 }
 

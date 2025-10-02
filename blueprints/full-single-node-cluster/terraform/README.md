@@ -43,6 +43,10 @@ for a single-node cluster deployment, including observability, messaging, and da
 | environment | Environment for all resources in this module: dev, test, or prod | `string` | n/a | yes |
 | location | Location for all resources in this module | `string` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
+| acr\_allow\_trusted\_services | Whether trusted Azure services can bypass ACR network rules | `bool` | `true` | no |
+| acr\_allowed\_public\_ip\_ranges | CIDR ranges permitted to reach the ACR public endpoint | `list(string)` | `[]` | no |
+| acr\_data\_endpoint\_enabled | Whether to enable the dedicated ACR data endpoint | `bool` | `true` | no |
+| acr\_public\_network\_access\_enabled | Whether to enable the ACR public endpoint alongside private connectivity | `bool` | `false` | no |
 | acr\_sku | SKU name for the Azure Container Registry | `string` | `"Premium"` | no |
 | aio\_features | AIO instance features with mode ('Stable', 'Preview', 'Disabled') and settings ('Enabled', 'Disabled') | ```map(object({ mode = optional(string) settings = optional(map(string)) }))``` | `null` | no |
 | aks\_should\_enable\_private\_cluster | Whether to enable private cluster mode for AKS | `bool` | `true` | no |
@@ -101,6 +105,7 @@ for a single-node cluster deployment, including observability, messaging, and da
 
 | Name | Description |
 |------|-------------|
+| acr\_network\_posture | Azure Container Registry network posture metadata. |
 | arc\_connected\_cluster | Azure Arc connected cluster resources. |
 | assets | IoT asset resources. |
 | azure\_iot\_operations | Azure IoT Operations deployment details. |

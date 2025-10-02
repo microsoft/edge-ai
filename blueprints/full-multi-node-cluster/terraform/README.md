@@ -58,6 +58,10 @@ with the single-node blueprint while preserving multi-node specific capabilities
 | environment | Environment for all resources in this module: dev, test, or prod | `string` | n/a | yes |
 | location | Location for all resources in this module | `string` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
+| acr\_allow\_trusted\_services | Whether trusted Azure services can bypass ACR network rules | `bool` | `true` | no |
+| acr\_allowed\_public\_ip\_ranges | CIDR ranges permitted to reach the ACR public endpoint | `list(string)` | `[]` | no |
+| acr\_data\_endpoint\_enabled | Whether to enable the dedicated ACR data endpoint | `bool` | `true` | no |
+| acr\_public\_network\_access\_enabled | Whether to enable the ACR public endpoint alongside private connectivity | `bool` | `false` | no |
 | acr\_sku | SKU name for the Azure Container Registry | `string` | `"Premium"` | no |
 | aio\_features | AIO instance features with mode ('Stable', 'Preview', 'Disabled') and settings ('Enabled', 'Disabled') | ```map(object({ mode = optional(string) settings = optional(map(string)) }))``` | `null` | no |
 | aks\_private\_dns\_zone\_id | ID of the private DNS zone to use for AKS private cluster. Use 'system', 'none', or a resource ID | `string` | `null` | no |
@@ -126,5 +130,12 @@ with the single-node blueprint while preserving multi-node specific capabilities
 | vpn\_site\_connections | Site-to-site VPN connection definitions. Provide on-premises address spaces that do not overlap with Azure VNets | ```list(object({ name = string address_spaces = list(string) shared_key_reference = string connection_mode = optional(string, "Default") dpd_timeout_seconds = optional(number) gateway_fqdn = optional(string) gateway_ip_address = optional(string) ike_protocol = optional(string, "IKEv2") use_policy_based_selectors = optional(bool, false) bgp_settings = optional(object({ asn = number peer_address = string peer_weight = optional(number) })) ipsec_policy = optional(object({ dh_group = string ike_encryption = string ike_integrity = string ipsec_encryption = string ipsec_integrity = string pfs_group = string sa_datasize_kb = optional(number) sa_lifetime_seconds = optional(number) })) }))``` | `[]` | no |
 | vpn\_site\_default\_ipsec\_policy | Fallback IPsec parameters applied when site definitions omit ipsec\_policy | ```object({ dh_group = string ike_encryption = string ike_integrity = string ipsec_encryption = string ipsec_integrity = string pfs_group = string sa_datasize_kb = optional(number) sa_lifetime_seconds = optional(number) })``` | `null` | no |
 | vpn\_site\_shared\_keys | Pre-shared keys for site connections keyed by shared\_key\_reference. Manage values in secure secret stores | `map(string)` | `{}` | no |
+
+## Outputs
+
+| Name | Description |
+|------|-------------|
+| acr\_network\_posture | Azure Container Registry network posture metadata. |
+| container\_registry | Azure Container Registry resources. |
 <!-- markdown-table-prettify-ignore-end -->
 <!-- END_TF_DOCS -->
