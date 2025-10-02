@@ -1,6 +1,6 @@
 ---
-description: "Required protocol for discovering, planning, and handing off Azure DevOps Features and User Stories."
-applyTo: '**/.copilot-tracking/workitems/**'
+description: "Required protocol for discovering, planning, and handing off Azure DevOps User Stories and Bugs."
+applyTo: '**/.copilot-tracking/workitems/discovery/**'
 ---
 
 # Azure DevOps Work Item Discovery & Handoff
@@ -9,195 +9,161 @@ Follow all instructions from #file:./ado-wit-planning.instructions.md while exec
 
 ## Scope
 
-* Apply this procedure when research, plans, or repository changes must be translated into Azure DevOps Features or User Stories.
-* Output lives under `.copilot-tracking/workitems/<planning-type>/<artifact-normalized-name>/` and includes `artifact-analysis.md`, `work-items.md`, `planning-log.md`, and `handoff.md`.
-* Default Azure DevOps project derives from `${input:adoProject}`. Override only when the user provides a different project.
+Apply this procedure when research, plans, or repository changes must be translated into Azure DevOps User Stories or Bugs.
+
+* Primary focus: Discover, update, or create work items of type `${input:witFocus}` (default: `User Story`).
+* When `${input:witFocus}` is `User Story`:
+  * Discover related Epics and Features for linking only; do not create or update Epics or Features unless explicitly requested by the user.
+  * Link User Stories to existing parent Features when appropriate.
+* When `${input:witFocus}` is `Bug`:
+  * Skip Feature and Epic discovery entirely.
+  * Bugs are standalone and do not require parent linking.
+* Output planning files under `.copilot-tracking/workitems/discovery/<folder-name>/` where `<folder-name>` is determined by analyzing the work being discovered (documents, branch changes, requirements) and creating a descriptive kebab-case name that represents the work scope.
+* Default Azure DevOps project: `${input:adoProject}`
 
 ## Deliverables
 
-* Planning workspace synchronized across `artifact-analysis.md`, `work-items.md`, and `planning-log.md` for every WI reference.
-* `handoff.md` with Create actions listed before Update actions, each referencing supporting artifacts.
-* ACTIVE KEYWORD GROUPS, similarity calculations, and decision notes logged in `planning-log.md`.
-* Final conversational recap summarizing counts, parent decisions, unresolved reviews, and the planning folder path.
+* `artifact-analysis.md`, `work-items.md`, `planning-log.md`, and `handoff.md` synchronized per #file:./ado-wit-planning.instructions.md
+* `handoff.md` with Create actions before Update actions, then No Change entries.
+* ACTIVE KEYWORD GROUPS, similarity calculations, and decisions logged in `planning-log.md`.
+* When authoritative external sources inform requirements or notes, add an **External References** section into the Description-like section for the work item in the work-items.md file that lists links with a brief context and summary.
+  * Omit the External References section when no qualified references exist.
+* Final conversational recap summarizing counts, parent links, and planning folder path.
 
 ## Tooling
 
-* `run_in_terminal` (zsh) for git context **only when no research documents or user direction are provided**:
-   * `git fetch origin --prune`
-   * `git status --short`
-   * `git diff --stat ${input:baseBranch}..HEAD`
-   * `git diff --name-only ${input:baseBranch}..HEAD`
-   * `git log --oneline --decorate ${input:baseBranch}..HEAD`
+* `run_in_terminal` (zsh) for git context **only when `${input:includeBranchChanges}` is `true` and no documents are provided**:
+   1. Extract remote name from `${input:baseBranch}` (e.g., `origin` from `origin/main`)
+   2. Sync remote base branch: `git fetch <remote> <branch-name> --prune`
+   3. Generate structured diff XML: `scripts/pr-ref-gen.sh --base-branch "${input:baseBranch}" --output ".copilot-tracking/workitems/discovery/<folder-name>/git-branch-diff.xml"`
+   4. Read complete XML with `read_file` (page through entire file if >2000 lines)
+   5. Extract commit history, changed files, and diff context from XML structure
 * Azure DevOps MCP tools:
-  * `mcp_ado_search_workitem` for discovery.
-  * `mcp_ado_wit_get_work_item` or `mcp_ado_wit_get_work_items_batch_by_ids` for hydration.
-  * `mcp_ado_wit_list_backlogs` and `mcp_ado_wit_list_backlog_work_items` for hierarchy context when required.
+   * `mcp_ado_search_workitem` for discovery.
+   * `mcp_ado_wit_get_work_item` or `mcp_ado_wit_get_work_items_batch_by_ids` for hydration.
 * Workspace utilities: `list_dir`, `read_file`, `grep_search` to locate artifacts.
-* Avoid disallowed tools (e.g., `mcp_ado_wit_my_work_items`). Persist all tool output into planning files per #file:./ado-wit-planning.instructions.md
+* Persist all tool output into planning files per #file:./ado-wit-planning.instructions.md
 
-````markdown
-<!-- <example-git-diff-commands> -->
-```bash
-git fetch origin --prune
-git status --short
-git diff --stat ${input:baseBranch}...HEAD
-git diff --name-only ${input:baseBranch}...HEAD
-git log --oneline --decorate ${input:baseBranch}..HEAD
+<!-- <example-git-branch-diff-xml> -->
+**Example git-branch-diff.xml structure:**
+
+```xml
+<commit_history>
+  <current_branch>feat/acr-private-public-update</current_branch>
+  <base_branch>origin/main</base_branch>
+  <commits>
+    <commit hash="a1b2c3d" date="2025-01-15">
+      <message>
+        <subject><![CDATA[Add ACR dual access support]]></subject>
+        <body><![CDATA[Implement both public and private endpoint access for ACR]]></body>
+      </message>
+    </commit>
+  </commits>
+  <full_diff>
+    diff --git a/src/000-cloud/060-acr/terraform/main.tf...
+  </full_diff>
+</commit_history>
 ```
-<!-- </example-git-diff-commands> -->
-````
+<!-- </example-git-branch-diff-xml> -->
 
-## Inputs & Artifact Selection
+## Artifact Selection & Context Gathering
 
 1. Prioritize artifacts in this order:
-   * Explicit `${input:researchDocuments}` paths.
-   * `${input:taskPlan}` or `${input:taskDetails}`.
-   * Documents or attachments inferred from the conversation.
-   * Current branch diff versus `${input:baseBranch}` when no documents or explicit user direction are available.
-2. Normalize artifact names per #file:./ado-wit-planning.instructions.md and create/reuse the planning folder (common types: `research`, `plan`, `details`, `changes`).
+   * Explicit `${input:documents}` paths or attachments.
+   * Documents inferred from conversation context.
+   * Git diff analysis when `${input:includeBranchChanges}` is `true` and no documents exist.
+2. Determine a descriptive folder name for the planning workspace:
+   * Analyze the work being discovered from documents, branch changes, requirements, and context.
+   * Create a concise, descriptive kebab-case folder name (e.g., `acr-dual-access-support`, `telemetry-bug-fixes`, `oauth2-authentication`).
+   * The folder name should represent the work scope, not mirror artifact filenames.
+   * Create/reuse the planning folder at `.copilot-tracking/workitems/discovery/<folder-name>/`.
 3. Log each artifact in `planning-log.md` under **Discovered Artifacts & Related Files** with status `Not Started` before analysis.
+4. When using git context:
+   * Generate `git-branch-diff.xml` using the workflow from **Tooling** section.
+   * Read the complete XML file using `read_file` (page through if necessary).
+   * Extract commit messages, changed file paths, and diff context from XML elements.
+   * Log `git-branch-diff.xml` as an artifact in `planning-log.md`.
+   * Use extracted information to derive requirements, affected components, and keyword groups.
+   * Treat git context as supplemental artifacts for requirements derivation.
 
-### Discovery-Only Mode (`${input:discoverUserStoriesOnly}`)
+## Workflow
 
-* When this optional input is `true`, run the workflow in discovery-only mode.
-* Discovery-only mode requires locating existing User Stories that best match the provided context without creating new work items or modifying existing ones.
-* Capture all surfaced User Stories in planning files with action `No Change` and include rationale linking them to the analyzed artifacts.
-* Skip drafting new descriptions, acceptance criteria, or field updates; point back to the current state captured from Azure DevOps.
-* Ensure the handoff lists each discovered User Story marked as `No Change` and cites supporting artifacts.
-
-## Workflow Overview
-
-### Phase 0 – Prepare Context
-
-1. When no documents or explicit user direction exist, run the git commands above with `${input:baseBranch}` as the comparison branch; record changed files, commit summaries, and diff stats in `planning-log.md`.
-2. Treat all changed paths and commits as supplemental artifacts when deriving requirements whenever git context is collected.
-
-### Phase 1 – Analyze Source Material
+### Phase 1 – Analyze Artifacts
 
 1. Read each provided or inferred document to completion (`read_file` paging to EOF as needed).
-2. Capture key findings, requirements, and open questions in `artifact-analysis.md` and `planning-log.md`.
-3. Note cross references between artifacts and store excerpts under the planning templates defined in #file:./ado-wit-planning.instructions.md
+   * When `${input:includeBranchChanges}` is `true` and git context is used, read the complete `git-branch-diff.xml` file.
+   * Parse XML to extract commit subjects/bodies, changed files, and diff hunks.
+2. Capture key findings, requirements, and questions in `artifact-analysis.md` and `planning-log.md` per templates in #file:./ado-wit-planning.instructions.md
+   * For git-based analysis, include commit messages, affected file paths, and code changes in findings.
+3. Extract capability-oriented requirements grouped by persona or system impact.
+   * Derive requirements from both explicit documents and git changes (commits + diffs).
+4. Build ACTIVE KEYWORD GROUPS combining nouns, verbs, component names, and file paths for Azure DevOps search per #file:./ado-wit-planning.instructions.md
+   * Include component names and file paths from git-branch-diff.xml changed files when applicable.
 
-### Phase 2 – Build Requirements & Keyword Groups
+### Phase 2 – Discover Existing Work Items
 
-1. Translate artifact findings and git insights into capability-oriented requirements grouped by persona or system impact.
-2. Maintain ACTIVE KEYWORD GROUPS combining nouns and verbs for Azure DevOps search; include component names or file paths when relevant.
-
-````markdown
-<!-- <example-keyword-groups> -->
-```text
-("azureml" OR "workload identity") AND ("acr" OR "dual access")
-("terraform" OR "blueprint") AND ("firewall" OR "allow list")
-```
-<!-- </example-keyword-groups> -->
-````
-
-### Phase 3 – Discover Existing Work Items
+**Primary Work Items**:
 
 1. For each keyword group, call `mcp_ado_search_workitem` with:
-   * `project`: `[${input:adoProject}]` unless overridden.
-   * `searchText`: constructed from ACTIVE KEYWORD GROUPS using OR/AND syntax.
-   * `workItemType`: first `["Epic"]` to catalog existing parents for Features. Do not plan to update or create epics within this workflow.
-   * `top`: 50 (reduce only if required) and increment `skip` until fewer results return than requested.
-   * Optional filters: `areaPath`, `iterationPath`. Always include a `state` filter that covers `New`, `Active`, and `Resolved` unless the user specifies a different state set.
-2. Repeat the search for `["Feature"]`, biasing selections toward existing work. Favor alignment to the closest existing Feature even if story scope needs consolidation, and prioritize results in `New`, `Active`, or `Resolved` state.
-3. Perform a final pass for `["User Story"]` only after capturing candidate epics and features so duplicate narratives are avoided. Include `New`, `Active`, and `Resolved` stories so related but closed work can be linked or left unchanged.
-4. Hydrate results immediately via `mcp_ado_wit_get_work_item` (batch variant allowed) and log outcomes under **Discovered ADO Work Items** in `planning-log.md`.
-5. Compute similarity using the matrix from #file:./ado-wit-planning.instructions.md recording scores (e.g., `ADO-1234=0.78`) in both `planning-log.md` and `work-items.md`, capturing the current `System.State` for traceability.
-6. Capture titles, states, parents, and acceptance criteria in `artifact-analysis.md` for quick reference, noting epic-to-feature relationships.
-7. When `${input:discoverUserStoriesOnly}` is `true`, prioritize the `User Story` searches first, recording relevant parent Features for context but skipping Epic/Feature creation discussions entirely. Continue to limit the search to stories in `New`, `Active`, or `Resolved` state.
+   * `project`: `${input:adoProject}`
+   * `searchText`: constructed from ACTIVE KEYWORD GROUPS using OR/AND syntax per #file:./ado-wit-planning.instructions.md
+   * `workItemType`: Use `${input:witFocus}` value (e.g., `["User Story"]` or `["Bug"]`)
+   * `state`: Parse `${input:workItemStates}` (default: `["New", "Active", "Resolved"]`)
+   * `top`: 50; increment `skip` until fewer results return than requested.
+   * Optional filters: `${input:areaPath}`, `${input:iterationPath}`
+2. Hydrate results immediately via `mcp_ado_wit_get_work_item` (batch variant preferred) and log under **Discovered ADO Work Items** in `planning-log.md`.
+3. Compute similarity using the matrix from #file:./ado-wit-planning.instructions.md Record scores (e.g., `ADO-1234=0.78`) in both `planning-log.md` and `work-items.md`.
+4. Capture current `System.State`, titles, descriptions, and acceptance criteria (or repro steps for Bugs) in `artifact-analysis.md`.
 
-### Phase 4 – Decide Parents & Scope
+**Features and Epics (Conditional - User Stories Only)**:
 
-1. Combine user guidance, artifact intent, and similarity scores to anchor every Feature beneath an existing Epic. If no Epic meets a similarity of ≥ 0.60, flag the gap in `planning-log.md` under **Notes** and request clarification instead of proposing a new Epic.
-2. Reconcile requirements against existing Features before considering new ones:
-   * Similarity ≥ 0.70 (or user-specified) → adopt the existing Feature.
-   * Similarity 0.50-0.69 → mark as `Review` with rationale describing alignment adjustments needed.
-   * Similarity < 0.50 → only plan a new Feature when the user explicitly approves or the scope cannot be merged into any existing Feature without breaking intent.
-3. Document reasoning and selected parents in `planning-log.md`, including Epic references and justification for any new Feature requests.
-4. Structure User Story scope to remain broad and persona-focused; consolidate overlapping requirements into the fewest stories that still deliver value under the chosen Feature.
-5. Validate every referenced Epic and Feature using `mcp_ado_wit_get_work_item`; record confirmations and note that epics must remain unchanged by this workflow.
-6. When `${input:discoverUserStoriesOnly}` is `true`, skip parent selection changes entirely and instead align each discovered User Story with its existing parent hierarchy while documenting why it satisfies the requested work.
+1. **Skip this section entirely when `${input:witFocus}` is `Bug`.**
+2. Do not plan updates or creation for Features or Epics unless the user explicitly requests it.
+3. When `${input:witFocus}` is `User Story`, search for `["Feature"]` using relevant keyword groups to identify potential parent Features.
+   * If no suitable Features are found with initial search terms, broaden the search using more general keyword groups (e.g., remove file-specific terms, use higher-level component names, or use capability-area terms).
+   * New User Stories must be linked to a parent Feature; continue broadening search terms until at least one suitable parent Feature is identified.
+4. For each discovered Feature, capture its parent Epic reference if present.
+5. Hydrate Feature and Epic details for context; log in `planning-log.md`.
 
-### Phase 5 – Draft & Document Work Items
+### Phase 3 – Plan Work Items
 
-1. Author titles:
-   * Features → concise capability statement (e.g., `Enable AzureML registry firewall posture propagation`).
-   * User Stories → `As a <persona>, I <need|want|would like> <outcome>` and keep the outcome broad enough to encompass the combined requirements.
-2. Build descriptions and requirements; include persona sentence, rationale (`So that...`), and aggregated requirements covering the collected artifacts and branch changes in as few bullets as possible.
-3. Populate acceptance criteria with verifiable bullet points. Preserve validated legacy content during updates and ensure criteria remain extensible for adjacent work. When leveraging a `Resolved` User Story, prefer an action of `No Change` and add a `Related` link from any new or updated story back to the resolved item.
+**Update Existing Work Items**:
 
-````markdown
-<!-- <template-user-story-description> -->
-```markdown
-As a {{persona}}, I {{need|want|would like}} {{capability}}.
+1. For each work item with similarity ≥ 0.70, plan an Update action:
+   * Merge new requirements into existing description and acceptance criteria (or `Microsoft.VSTS.TCM.ReproSteps` for Bugs).
+   * Preserve validated legacy content; extend rather than replace.
+   * Update `System.Title` if the scope has broadened significantly.
+2. For similarity 0.50-0.69, mark as **Needs Review** in `handoff.md` with rationale.
+3. For similarity < 0.50, consider for new work item creation.
 
-So that {{outcome or business value}}.
+**Create New Work Items**:
 
-## Requirements
-* {{Requirement derived from artifact or diff}}
-* {{Requirement covering dependency or non-functional behavior}}
+1. Consolidate related requirements into the fewest work items that deliver unified outcomes:
+   * Prefer creating **one** work item unless:
+     * Work is large enough to require multiple items (e.g., multiple personas, distinct outcomes).
+2. Author titles per #file:./ado-wit-planning.instructions.md
+   * User Stories: `As a <persona>, I <need|want|would like> <outcome>`, do not include a `so that...` or rationale in the title as that will go into the description.
+   * Bugs: Concise problem statement describing the defect.
+3. Build descriptions:
+   * User Stories: `As a <persona>, I <need|want|would like> <outcome> so that <rationale>`, include aggregated requirements covering artifacts and changes, include external references.
+   * Bugs: Use `Microsoft.VSTS.TCM.ReproSteps` field with clear reproduction steps.
+4. Populate acceptance criteria:
+   * User Stories: Verifiable Markdown style checkbox list `- [ ]` in `Microsoft.VSTS.Common.AcceptanceCriteria`.
+   * Bugs: Verification steps can be included in repro steps or as acceptance criteria.
+     * Acceptance criteria should be a Markdown style checkbox list `- [ ]`.
+     * Repro steps should be a Markdown style ordered list, with sub lists when needed `1.`, `2.`, etc.
+5. Link User Stories to existing parent Features when appropriate; document the parent in `work-items.md`. Skip parent linking for Bugs.
 
-## Notes
-* {{Optional implementation constraints or references}}
-```
-<!-- </template-user-story-description> -->
-````
+**Resolved Work Items**:
 
-````markdown
-<!-- <example-acceptance-criteria> -->
-```markdown
-* Blueprint plan shows new variables with defaults documented.
-* Deploying with allow list populated restricts registry access to provided CIDRs.
-* AzureML workspace output references posture metadata without breaking existing consumers.
-```
-<!-- </example-acceptance-criteria> -->
-````
+1. When a `Resolved` work item satisfies the requirement without updates, set action to `No Change`.
+2. If creating a new or updating an existing work item, add a `Related` link back to the `Resolved` item for traceability.
 
-4. Update planning files after each major step:
-   * `artifact-analysis.md` → working titles, descriptions, acceptance criteria, suggested field values, related artifacts.
-   * `work-items.md` → action (Create/Update), similarity scores, field deltas, relationship mapping, git diff highlights.
-   * `planning-log.md` → status updates, discovery notes, pending investigations.
-5. When `${input:discoverUserStoriesOnly}` is `true`, set the action to `No Change`, record the discovered User Story details verbatim, and capture supporting context explaining why the existing item remains sufficient.
+### Phase 4 – Assemble Handoff & Validate
 
-### Phase 6 – Assemble Handoff & Validate
-
-1. Build `handoff.md` with Create entries first, followed by Updates; include checkboxes, summaries, relationships, and supporting artifacts.
-2. Ensure planning file paths appear in the **Planning Files** section for quick navigation.
-3. Verify consistency across planning files and `handoff.md` (aligned WI references, totals, and decisions).
-4. Confirm every User Story references an existing Feature or a user-approved new Feature; log unresolved questions under **Notes** in `planning-log.md`.
-5. Deliver the final conversational recap covering counts, parents, unresolved reviews, and the planning workspace location.
-6. When `${input:discoverUserStoriesOnly}` is `true`, list each surfaced User Story under **Work Items** with a `(No Change)` action and summarize why it remains the best fit for the requested work.
-
-````markdown
-<!-- <example-handoff-entry> -->
-```markdown
-* [ ] (Create) WI003 User Story
-   * Parent: Existing Feature WI872 (Reusable ACR dual access posture)
-   * Summary: Document AzureML posture defaults within the shared dual-access pattern.
-  * Supports: .copilot-tracking/research/20250928-acr-dual-access-blueprint-extension-research.md
-```
-<!-- </example-handoff-entry> -->
-````
-
-## Compliance Checklist
-
-<!-- <important-compliance-checklist> -->
-- [ ] When documents or explicit user direction are absent, git context captured and logged before discovery
-- [ ] All referenced artifacts fully read and summarized in planning files
-- [ ] ACTIVE KEYWORD GROUPS documented and reused for work item search
-- [ ] Epics and Features discovered (in that order) with hydration for every candidate before inspecting User Stories
-- [ ] Similarity scores recorded with rationale in planning files
-- [ ] Persona titles, consolidated requirements, and acceptance criteria present for each User Story
-- [ ] `work-items.md`, `artifact-analysis.md`, `planning-log.md`, and `handoff.md` are synchronized
-- [ ] Create entries precede Update entries in `handoff.md`, with supporting artifact references
-- [ ] No new Epics proposed; existing Features preferred with justification for any new Feature requests
-- [ ] Final response includes counts, parent selections, outstanding reviews, and planning folder path
-<!-- </important-compliance-checklist> -->
-
-## Success Criteria
-
-* Planning files capture traceability from artifacts and git diffs to proposed work items.
-* `handoff.md` references supporting documents and orders actions correctly for #file:../prompts/ado-update-wit-items.prompt.md
-* Parent-child relationships, titles, requirements, and acceptance criteria follow mandated formats.
-* Documented decisions reflect user guidance, and only necessary Features are proposed.
+1. Build `handoff.md` per template in #file:./ado-wit-planning.instructions.md
+   * Create entries first, followed by Updates, then No Change entries.
+   * Include checkboxes, summaries, relationships, and supporting artifact references.
+2. Ensure planning file paths appear in **Planning Files** section.
+3. Verify consistency across all planning files (aligned WI references, totals, decisions).
+4. Deliver final conversational recap covering counts, parent links, and planning workspace location.

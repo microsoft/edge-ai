@@ -2,7 +2,7 @@
 	"scripts": {
 		"mdlint": "markdownlint --config .markdownlint.json --ignore .copilot-tracking --ignore .github --ignore node_modules --ignore venv \"**/*.md\"; markdown-table-formatter --check \"{.github,**}/**/*.md\"",
 		"mdlint-fix": "markdownlint --config .markdownlint.json --ignore .copilot-tracking --ignore .github --ignore node_modules --ignore venv --fix \"**/*.md\"; markdown-table-formatter \"{.github,**}/**/*.md\"",
-		"link-check": "mega-linter-runner --env \"'ENABLE_LINTERS=MARKDOWN_MARKDOWN_LINK_CHECK'\" ",
+		"link-check": "pwsh -File ./scripts/linting/Docs-Link-Check.ps1",
 		"cspell": "mega-linter-runner  --env 'ENABLE_LINTERS=SPELL_CSPELL'",
 		"yaml": "mega-linter-runner  --env 'ENABLE_LINTERS=YAML_YAMLLINT'",
 		"terrascan": "mega-linter-runner  --env \"'ENABLE_LINTERS=TERRAFORM_TERRASCAN,TERRAFORM_TERRASCAN_CONFIG_FILE:.terrascan.toml'\" ",
@@ -39,7 +39,8 @@
 		"mega-linter-runner": "^8.1.0"
 	},
 	"devDependencies": {
-		"docsify-cli": "4.4.4"
+		"docsify-cli": "4.4.4",
+		"markdown-link-check": "3.13.7"
 	},
 	"resolutions": {
 		"marked": "^4.0.10",

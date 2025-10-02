@@ -21,22 +21,26 @@ You WILL NEVER create follow-up tasks for documentation or tests.
 ### Step 1: `pr-reference.xml` Handling (located at `.copilot-tracking/pr/pr-reference.xml`)
 
 *   **If `pr-reference.xml` is provided**:
-    *   Verify with the user if they want to use the existing `pr-reference.xml` file that you found before proceeding. If the user does not want to use the existing `pr-reference.xml` file, then use `rm` to delete the `pr-reference.xml` then move onto "If `pr-reference.xml` is NOT provided.
+    *   Verify with the user if they want to use the existing `pr-reference.xml` file that you found before proceeding. If the user does not want to use the existing `pr-reference.xml` file, use `rm` to delete the `pr-reference.xml` before proceeding to the "If `pr-reference.xml` is NOT provided" instructions.
     *   You WILL write its total line count to the chat (e.g., "Lines: 7641").
     *   You WILL proceed to Step 2 of this Process.
 *   **If `pr-reference.xml` is NOT provided**:
     *   Use `git fetch {{remote}} {{branch}}` determined from `${input:branch:origin/main}`, to update the remote branch to build a correct pull request.
-    *   You MUST use the `./scripts/pr-ref-gen.sh` script to create the `pr-reference.xml`, you will not use any other commands to get the git status or diffs.
-    *   You WILL create `pr-reference.xml` by running the `./scripts/pr-ref-gen.sh` script.
-        *   Default: `./scripts/pr-ref-gen.sh --base-branch origin/main`.
-        *   If `${input:includeMarkdown}` is false: `./scripts/pr-ref-gen.sh --no-md-diff` (excludes markdown).
-        *   If a different base branch is specified via `${input:branch}`: `./scripts/pr-ref-gen.sh --base-branch ${input:branch}` (adjust markdown inclusion as needed).
+    *   **MANDATORY**: You MUST create `pr-reference.xml` using the repository scripts—select the command that matches your host environment. Do not use any other commands to gather git status or diffs.
+        *   **Unix-like shells**: Use `./scripts/dev-tools/pr-ref-gen.sh`.
+            *   Default: `./scripts/dev-tools/pr-ref-gen.sh --no-md-diff` (excludes markdown).
+            *   If `${input:includeMarkdown}` is true: `./scripts/dev-tools/pr-ref-gen.sh` (includes markdown).
+            *   If a different base branch is specified via `${input:branch}`: `./scripts/dev-tools/pr-ref-gen.sh --no-md-diff --base-branch ${input:branch}` (adjust markdown inclusion as needed).
+        *   **Windows PowerShell hosts**: Use `pwsh -File ./scripts/dev-tools/Generate-PrReference.ps1`.
+            *   Default: `pwsh -File ./scripts/dev-tools/Generate-PrReference.ps1 -ExcludeMarkdownDiff` (excludes markdown).
+            *   If `${input:includeMarkdown}` is true: `pwsh -File ./scripts/dev-tools/Generate-PrReference.ps1` (includes markdown).
+            *   If a different base branch is specified via `${input:branch}`: `pwsh -File ./scripts/dev-tools/Generate-PrReference.ps1 -ExcludeMarkdownDiff -BaseBranch ${input:branch}` (adjust markdown inclusion as needed).
     *   You WILL note the total line count from the script's output.
     *   You WILL write this line count to the chat.
 
 ### Step 2: `pr-reference.xml` Analysis
 
-*   You MUST read and analyze the ENTIRE `pr-reference.xml` file which contains the current branch name, commit history (compared to `origin/main` or the specified `${input:branch}`), and the full detailed diff.
+*   **CRITICAL**: You MUST read and analyze the ENTIRE `pr-reference.xml` file which contains the current branch name, commit history (compared to `origin/main` or the specified `${input:branch}`), and the full detailed diff.
 *   `pr-reference.xml` WILL ONLY be used to generate `pr.md`.
 *   You MUST verify you have read the exact number of lines reported AND reached the closing tags `</full_diff>` and `</commit_history>` before proceeding.
 *   You MUST gain a comprehensive understanding of ALL changes before writing any PR content. ALL statements in the PR description MUST be based on this complete analysis.

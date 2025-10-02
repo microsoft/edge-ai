@@ -31,7 +31,6 @@ trigger:
       - main
       - internal-eng
       - pre-release
-      - pre-release
 
 # Add parameters section for manual trigger option
 parameters:
