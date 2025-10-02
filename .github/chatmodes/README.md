@@ -22,6 +22,42 @@ Chat modes are advanced AI assistant configurations that enable specialized coac
 
 ## Available Chat Modes
 
+### [ADR Creation](adr-creation.chatmode.md)
+
+Interactive architectural decision record creation with comprehensive research and analysis capabilities.
+
+- **Purpose**: Guide users through collaborative ADR creation using solution library templates
+- **Capabilities**: Real-time document building, research integration, decision analysis, template compliance
+- **Best For**: Architecture decisions, technical documentation, collaborative analysis
+- **Philosophy**: Interactive markdown collaboration with progressive content development
+
+### [ADO PRD to Work Item](ado-prd-to-wit.chatmode.md)
+
+Product Manager expert for analyzing PRDs and planning Azure DevOps work item hierarchies.
+
+- **Purpose**: Transform Product Requirements Documents into structured Azure DevOps work item plans
+- **Capabilities**: PRD analysis, codebase discovery, work item planning, handoff documentation
+- **Best For**: Epic/Feature/User Story planning, work item creation, backlog management
+- **Philosophy**: Progressive planning with phased discovery and structured handoff
+
+### [PR Review](pr-review.chatmode.md)
+
+Comprehensive Pull Request review assistant ensuring code quality, security, and convention compliance.
+
+- **Purpose**: Conduct thorough PR reviews with expert-level scrutiny across all quality dimensions
+- **Capabilities**: Multi-phase review workflow, instruction compliance checking, actionable feedback generation
+- **Best For**: Code reviews, security validation, convention enforcement, quality assurance
+- **Philosophy**: Holistic systems perspective with focus on long-term maintainability
+
+### [PRD Builder](prd-builder.chatmode.md)
+
+Product Requirements Document builder with guided Q&A and reference integration.
+
+- **Purpose**: Create comprehensive, actionable PRDs through structured discovery and iterative refinement
+- **Capabilities**: Progressive questioning, reference integration, state tracking, session resumption
+- **Best For**: Product planning, requirements gathering, stakeholder alignment
+- **Philosophy**: Build through conversation with measurable, testable requirements
+
 ### [PraxisWorx Kata Coach](praxisworx-kata-coach.chatmode.md)
 
 Interactive AI coaching for focused practice exercises with progress tracking and resumption capabilities.
@@ -39,33 +75,6 @@ Complex training lab coaching for multi-component systems and comprehensive scen
 - **Capabilities**: Multi-component guidance, system integration coaching, troubleshooting
 - **Best For**: Advanced labs, system deployments, complex integrations
 - **Philosophy**: Structured guidance for comprehensive real-world scenarios
-
-### [Task Planner](task-planner.chatmode.md)
-
-Comprehensive task planning with research capabilities and systematic implementation planning.
-
-- **Purpose**: Create actionable task plans through iterative research and progressive planning
-- **Capabilities**: Research automation, plan documentation, requirement analysis
-- **Best For**: Project planning, requirement gathering, implementation strategy
-- **Philosophy**: Research-first planning with validated project context
-
-### [Task Researcher](task-researcher.chatmode.md)
-
-Specialized research-only assistant for comprehensive project analysis and documentation.
-
-- **Purpose**: Perform deep, comprehensive analysis for task planning through evidence-based discovery
-- **Capabilities**: Multi-source analysis, evidence documentation, technical investigation
-- **Best For**: Research phases, information gathering, technical analysis
-- **Philosophy**: Research-only operations with evidence-based findings
-
-### [ADR Creation](adr-creation.chatmode.md)
-
-Interactive architectural decision record creation with comprehensive research and analysis capabilities.
-
-- **Purpose**: Guide users through collaborative ADR creation using solution library templates
-- **Capabilities**: Real-time document building, research integration, decision analysis, template compliance
-- **Best For**: Architecture decisions, technical documentation, collaborative analysis
-- **Philosophy**: Interactive markdown collaboration with progressive content development
 
 ### [Prompt Builder](prompt-builder.chatmode.md)
 
@@ -85,17 +94,38 @@ Expert security architect for creating comprehensive cloud security plans with t
 - **Best For**: Security planning, threat modeling, compliance documentation, risk assessment
 - **Philosophy**: Component-specific analysis with actionable, implementable security measures
 
+### [Task Planner](task-planner.chatmode.md)
+
+Comprehensive task planning with research capabilities and systematic implementation planning.
+
+- **Purpose**: Create actionable task plans through iterative research and progressive planning
+- **Capabilities**: Research automation, plan documentation, requirement analysis
+- **Best For**: Project planning, requirement gathering, implementation strategy
+- **Philosophy**: Research-first planning with validated project context
+
+### [Task Researcher](task-researcher.chatmode.md)
+
+Specialized research-only assistant for comprehensive project analysis and documentation.
+
+- **Purpose**: Perform deep, comprehensive analysis for task planning through evidence-based discovery
+- **Capabilities**: Multi-source analysis, evidence documentation, technical investigation
+- **Best For**: Research phases, information gathering, technical analysis
+- **Philosophy**: Research-only operations with evidence-based findings
+
 ## Usage Guidelines
 
 ### Selecting the Right Mode
 
-1. **Learning and Skill Building**: Use PraxisWorx Kata Coach for focused practice
-2. **Complex System Work**: Use PraxisWorx Lab Coach for multi-component scenarios
-3. **Research and Analysis**: Use Task Researcher for comprehensive project investigation
-4. **Project Planning**: Use Task Planner for strategic planning after research is complete
-5. **Architecture Documentation**: Use ADR Creation for collaborative decision records
-6. **Prompt Development**: Use Prompt Builder for AI instruction optimization
-7. **Security Planning**: Use Security Plan Creator for threat analysis and security documentation
+1. **Architecture Documentation**: Use ADR Creation for collaborative decision records
+2. **Work Item Planning**: Use ADO PRD to Work Item for transforming PRDs into Azure DevOps work items
+3. **Code Review**: Use PR Review for comprehensive pull request analysis and quality assurance
+4. **Product Planning**: Use PRD Builder for creating and refining product requirements documents
+5. **Learning and Skill Building**: Use PraxisWorx Kata Coach for focused practice
+6. **Complex System Work**: Use PraxisWorx Lab Coach for multi-component scenarios
+7. **Prompt Development**: Use Prompt Builder for AI instruction optimization
+8. **Security Planning**: Use Security Plan Creator for threat analysis and security documentation
+9. **Project Planning**: Use Task Planner for strategic planning after research is complete
+10. **Research and Analysis**: Use Task Researcher for comprehensive project investigation
 
 ### Activation
 

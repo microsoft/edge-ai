@@ -45,6 +45,8 @@ These instructions define the Markdown style guide enforced by markdownlint in t
 ## Lists
 
 * Use unordered list markers consistently across a file; for the same level, do not mix `*`, `+`, `-`.
+  * Try to always use `*` for unordered lists.
+  * Avoid using `-` and `+` for unordered lists unless the file already uses these.
 * Indent unordered sublist content by 2 spaces per level.
 * Keep indentation consistent for items at the same nesting level.
 * Use one space between any list marker and the list text for both ordered and unordered lists.

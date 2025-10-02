@@ -33,6 +33,7 @@ Prompts can be invoked in GitHub Copilot Chat using `/prompt-name` syntax (e.g.,
 
 - **[Getting Started](./getting-started.prompt.md)** - Project onboarding and initial setup guidance
 - **[Project Planning](./edge-ai-project-planning.prompt.md)** - Edge AI project planning guidance
+- **[Task Planner](./task-planner-plan.prompt.md)** - Creates implementation plans from research documents
 
 ### Implementation & Delivery
 
@@ -43,14 +44,19 @@ Prompts can be invoked in GitHub Copilot Chat using `/prompt-name` syntax (e.g.,
 
 ### Source Control & Commit Quality
 
-- **[Commit (Stage + Commit)](./commit.prompt.md)** - Stages all changes and creates a Conventional Commit automatically
-- **[Generate Commit Message](./gen-commit-message.prompt.md)** - Generates a compliant commit message for currently staged changes
+- **[Git Commit (Stage + Commit)](./git-commit.prompt.md)** - Stages all changes and creates a Conventional Commit automatically
+- **[Git Commit Message Generator](./git-commit-message.prompt.md)** - Generates a compliant commit message for currently staged changes
+- **[Git Merge](./git-merge.prompt.md)** - Git merge, rebase, and rebase --onto workflows with conflict handling
 - **[Git Setup](./git-setup.prompt.md)** - Verification-first Git configuration assistant
 
-### Work Tracking & Summarization
+### Azure DevOps Integration
 
+- **[ADO Create Pull Request](./ado-create-pull-request.prompt.md)** - Creates Azure DevOps PRs with work item discovery and reviewer identification
+- **[ADO Get Build Info](./ado-get-build-info.prompt.md)** - Retrieves Azure DevOps build information for PRs or specific builds
+- **[ADO Work Item Discovery](./ado-wit-discovery.prompt.md)** - Discovers and plans Azure DevOps User Stories and Bugs from research or changes
+- **[ADO Update Work Items](./ado-update-wit-items.prompt.md)** - Updates work items based on planning files
 - **[Get My Work Items](./get-my-work-items.prompt.md)** - Retrieves ordered @Me Azure DevOps work items and exports raw JSON
-- **[Summarize My Work Items](./summarize-my-work-items.prompt.md)** - Resumable enrichment + summary with repo context & handoff payloads
+- **[Create Work Items Handoff](./create-my-work-items-handoff.prompt.md)** - Generates comprehensive work item handoff markdown with repo context enrichment
 
 ### Documentation & Process
 
@@ -72,11 +78,15 @@ Prompts can be invoked in GitHub Copilot Chat using `/prompt-name` syntax (e.g.,
 
 1. **New to the project?** Start with [Getting Started](./getting-started.prompt.md)
 2. **Planning scope or roadmap?** Use [Project Planning](./edge-ai-project-planning.prompt.md)
-3. **Need deployment help?** Try [Deploy](./deploy.prompt.md)
-4. **Working on infra translation?** Use [Terraform from Blueprint](./terraform-from-blueprint.prompt.md)
-5. **Committing changes?** Use [Generate Commit Message](./gen-commit-message.prompt.md) or [Commit](./commit.prompt.md)
-6. **Tracking your work?** Run [Get My Work Items](./get-my-work-items.prompt.md) then [Summarize My Work Items](./summarize-my-work-items.prompt.md)
-7. **Creating documentation?** Use [ADR Creation](./adr-create.prompt.md) or [Pull Request](./pull-request.prompt.md)
+3. **Creating implementation plans?** Try [Task Planner](./task-planner-plan.prompt.md)
+4. **Need deployment help?** Use [Deploy](./deploy.prompt.md)
+5. **Working on infra translation?** Use [Terraform from Blueprint](./terraform-from-blueprint.prompt.md)
+6. **Committing changes?** Use [Git Commit Message Generator](./git-commit-message.prompt.md) or [Git Commit](./git-commit.prompt.md)
+7. **Handling merge conflicts?** Use [Git Merge](./git-merge.prompt.md)
+8. **Tracking your work?** Run [Get My Work Items](./get-my-work-items.prompt.md) then [Create Work Items Handoff](./create-my-work-items-handoff.prompt.md)
+9. **Creating Azure DevOps PRs?** Use [ADO Create Pull Request](./ado-create-pull-request.prompt.md)
+10. **Checking build status?** Use [ADO Get Build Info](./ado-get-build-info.prompt.md)
+11. **Creating documentation?** Use [ADR Creation](./adr-create.prompt.md) or [Pull Request](./pull-request.prompt.md)
 
 ## Related Resources
 

@@ -21,73 +21,167 @@ Instructions provide focused guidance for specific development contexts, technol
 
 ## Available Instructions
 
-### [Bash Instructions](bash.instructions.md)
+### Azure DevOps Integration
 
-Comprehensive guidance for bash script development and shell command execution.
+#### [ADO Create Pull Request Instructions](ado-create-pull-request.instructions.md)
 
-- **Context**: Shell scripting, automation scripts, CI/CD workflows
-- **Scope**: Bash syntax standards, error handling, script structure
-- **Apply When**: Writing bash scripts or shell automation
+Required protocol for creating Azure DevOps pull requests with work item discovery, reviewer identification, and automated linking.
 
-### [Bicep Instructions](bicep.instructions.md)
+- **Context**: Pull request creation workflows in Azure DevOps
+- **Scope**: PR creation, work item linking, reviewer assignment, automated tracking
+- **Apply When**: Creating pull requests in `**/.copilot-tracking/pr/new/**` pattern
 
-Infrastructure as Code implementation guidance for Azure Bicep development.
+#### [ADO Get Build Info Instructions](ado-get-build-info.instructions.md)
 
-- **Context**: Azure infrastructure deployment, Bicep templates
-- **Scope**: Bicep syntax, module organization, deployment patterns
-- **Apply When**: Creating or modifying Bicep infrastructure code
+Required instructions for retrieving Azure DevOps build information including status, logs, and details.
 
-### [C# Instructions](csharp.instructions.md)
+- **Context**: Azure DevOps pipeline monitoring and troubleshooting
+- **Scope**: Build status checks, log retrieval, pipeline analysis
+- **Apply When**: Working with `**/.copilot-tracking/pr/*-build-*.md` or investigating build issues
 
-Development standards and practices for C# code implementation.
+#### [ADO Update Work Items Instructions](ado-update-wit-items.instructions.md)
 
-- **Context**: C# application development, .NET projects
-- **Scope**: Code structure, naming conventions, best practices
-- **Apply When**: Writing C# code or .NET applications
+Required instructions for work item updating and creation leveraging MCP ADO tool calls.
 
-### [Commit Message Instructions](commit-message.instructions.md)
+- **Context**: Azure DevOps work item management and updates
+- **Scope**: Work item creation, updates, state transitions, field modifications
+- **Apply When**: Working with `**/.copilot-tracking/workitems/**/handoff-logs.md`
 
-Standardized commit message formatting using Conventional Commit patterns.
+#### [ADO Work Item Discovery Instructions](ado-wit-discovery.instructions.md)
 
-- **Context**: Git commit message creation
-- **Scope**: Message format, types, scopes, standardization
-- **Apply When**: Creating commit messages or reviewing version control
+Required protocol for discovering, planning, and handing off Azure DevOps User Stories and Bugs.
 
-### [Python Script Instructions](python-script.instructions.md)
+- **Context**: Work item discovery and analysis workflows
+- **Scope**: Work item queries, discovery, planning, handoff documentation
+- **Apply When**: Working in `**/.copilot-tracking/workitems/discovery/**` pattern
 
-Enhanced guidance for Python script development specifically targeting utility scripts in the `/scripts` directory.
+#### [ADO Work Item Planning Instructions](ado-wit-planning.instructions.md)
 
-- **Context**: Python automation scripts, build system utilities, deployment tools
-- **Scope**: PEP 8 compliance, error handling, testing, documentation
-- **Apply When**: Working with Python scripts in the `/scripts/**/*.py` pattern
+Required instructions for work item planning and creation or updating leveraging MCP ADO tool calls.
 
-### [Shell Instructions](shell.instructions.md)
+- **Context**: Work item planning and structured task breakdown
+- **Scope**: Sprint planning, task creation, dependency mapping, estimation
+- **Apply When**: Working with `**/.copilot-tracking/workitems/**` pattern
 
-General shell environment and command-line interface guidance.
+### Development Workflows
 
-- **Context**: Shell operations, command-line tools, system interaction
-- **Scope**: Shell usage patterns, command structure, environment setup
-- **Apply When**: Working with shell environments and CLI tools
+#### [Git Merge Instructions](git-merge.instructions.md)
 
-### [Task Implementation Instructions](task-implementation.instructions.md)
+Required protocol for Git merge, rebase, and rebase --onto workflows with conflict handling and stop controls.
+
+- **Context**: Git branch operations, conflict resolution, history management
+- **Scope**: Merge strategies, rebase workflows, conflict resolution, history cleanup
+- **Apply When**: Performing git merge, rebase, or complex branch operations
+
+#### [Task Implementation Instructions](task-implementation.instructions.md)
 
 Systematic process for implementing comprehensive task plans and tracking progress.
 
 - **Context**: Task plan execution, implementation tracking
 - **Scope**: Plan analysis, progressive implementation, change documentation
-- **Apply When**: Following implementation plans from `.copilot-tracking/plans/`
+- **Apply When**: Following implementation plans from `**/.copilot-tracking/changes/*.md`
 
-### [Terraform Instructions](terraform.instructions.md)
+### Infrastructure as Code
+
+#### [Bicep Instructions](bicep.instructions.md)
+
+Infrastructure as Code implementation guidance for Azure Bicep development.
+
+- **Context**: Azure infrastructure deployment, Bicep templates
+- **Scope**: Bicep syntax, module organization, deployment patterns
+- **Apply When**: Creating or modifying Bicep infrastructure code in `**/*.bicep` files
+
+#### [Terraform Instructions](terraform.instructions.md)
 
 Infrastructure as Code implementation guidance for HashiCorp Terraform development.
 
 - **Context**: Multi-cloud infrastructure deployment, Terraform modules
 - **Scope**: Terraform syntax, module design, provider configuration
-- **Apply When**: Creating or modifying Terraform infrastructure code
+- **Apply When**: Creating or modifying Terraform infrastructure in `**/*.{tf,hcl,tfvars}` files
+
+#### [Terraform Variable Consistency Manager Instructions](tf-variable-consistency-manager.instructions.md)
+
+Required instructions for Terraform variable consistency including canonical definitions, requirements, and detailed instructions.
+
+- **Context**: Terraform variable validation and standardization
+- **Scope**: Variable naming, type definitions, validation rules, documentation
+- **Apply When**: Working with `.copilot-tracking/chore/tf-variable-check.md`
+
+### Application Development
+
+#### [Application Instructions](application.instructions.md)
+
+Instructions for creating, importing, and managing edge applications.
+
+- **Context**: Edge application development and deployment
+- **Scope**: Application structure, deployment patterns, edge-specific requirements
+- **Apply When**: Working in `**/src/500-application/**` pattern
+
+#### [C# Instructions](csharp.instructions.md)
+
+Development standards and practices for C# code implementation.
+
+- **Context**: C# application development, .NET projects
+- **Scope**: Code structure, naming conventions, best practices
+- **Apply When**: Writing C# code in `**/*.cs` files
+
+### Scripting and Automation
+
+#### [Bash Instructions](bash.instructions.md)
+
+Comprehensive guidance for bash script development and shell command execution.
+
+- **Context**: Shell scripting, automation scripts, CI/CD workflows
+- **Scope**: Bash syntax standards, error handling, script structure
+- **Apply When**: Writing bash scripts in `**/src/**/*.sh` pattern
+
+#### [Python Script Instructions](python-script.instructions.md)
+
+Enhanced guidance for Python script development specifically targeting utility scripts.
+
+- **Context**: Python automation scripts, build system utilities, deployment tools
+- **Scope**: PEP 8 compliance, error handling, testing, documentation
+- **Apply When**: Working with Python scripts in `**/scripts/**/*.py` pattern
+
+#### [Shell Instructions](shell.instructions.md)
+
+General shell environment and command-line interface guidance.
+
+- **Context**: Shell operations, command-line tools, system interaction
+- **Scope**: Shell usage patterns, command structure, environment setup
+- **Apply When**: Working with shell files in `**/*.sh` pattern
+
+### Documentation
+
+#### [Commit Message Instructions](commit-message.instructions.md)
+
+Standardized commit message formatting using Conventional Commit patterns.
+
+- **Context**: Git commit message creation
+- **Scope**: Message format, types, scopes, standardization
+- **Apply When**: Creating commit messages in `**/` pattern
+
+#### [Markdown Instructions](markdown.instructions.md)
+
+Required instructions for creating or editing any Markdown files.
+
+- **Context**: Documentation, README files, markdown content
+- **Scope**: Markdown syntax, formatting standards, frontmatter, structure
+- **Apply When**: Creating or editing `**/*.md` files
 
 ## Usage Guidelines
 
-### Adding Instructions to Context
+### Automatic Application
+
+Instructions are automatically discovered and applied by GitHub Copilot based on file patterns and contexts defined in each instruction file's frontmatter or metadata. The system uses pattern matching to determine which instructions are relevant:
+
+- **File Patterns**: Instructions apply to specific file glob patterns (e.g., `**/*.tf`, `**/*.md`)
+- **Directory Contexts**: Instructions apply to specific directory structures (e.g., `.copilot-tracking/workitems/**`)
+- **Workflow Contexts**: Instructions apply during specific operations (e.g., pull request creation, work item planning)
+
+### Manual Application
+
+To manually add instructions to a Copilot conversation:
 
 1. Open GitHub Copilot Chat
 2. Select **Add Context > Instructions**
@@ -95,21 +189,33 @@ Infrastructure as Code implementation guidance for HashiCorp Terraform developme
 4. Add additional context (files, folders) as needed
 5. Provide your development prompt
 
-### When to Apply Instructions
+### When to Manually Apply Instructions
 
-Instructions are automatically applied based on their `applyTo` scope when the context matches. Manually add instructions when:
+While instructions are automatically applied, you may want to manually add them when:
 
-- Working in specific technology contexts (Bicep, Terraform, C#)
-- Following systematic implementation processes
-- Ensuring consistency with project standards
-- Maintaining code quality and conventions
+- Working across multiple technology contexts simultaneously
+- Ensuring compliance with specific workflows or protocols
+- Providing explicit context for complex multi-step operations
+- Overriding or emphasizing specific standards
+
+### Pattern Matching Examples
+
+The instruction system uses sophisticated pattern matching to automatically apply relevant guidance:
+
+| Working On                                             | Auto-Applied Instructions                                 |
+|--------------------------------------------------------|-----------------------------------------------------------|
+| `src/000-cloud/010-security/terraform/main.tf`         | `terraform.instructions.md`                               |
+| `blueprints/full-single-node-cluster/bicep/main.bicep` | `bicep.instructions.md`                                   |
+| `scripts/deploy-infrastructure.py`                     | `python-script.instructions.md`                           |
+| `.copilot-tracking/pr/new/feature-123.md`              | `ado-create-pull-request.instructions.md`                 |
+| `src/500-application/501-rust-telemetry/README.md`     | `markdown.instructions.md`, `application.instructions.md` |
 
 ### Best Practices
 
-- **Single Context**: Use one primary instruction file per conversation for focus
-- **Relevant Scope**: Choose instructions that match your current development task
-- **Combined Context**: Add project files and folders alongside instructions
-- **Progressive Application**: Apply task implementation instructions for complex work
+- **Context Awareness**: Trust the automatic pattern matching to apply relevant instructions
+- **Focused Work**: Instructions are designed to work together; multiple instructions may apply simultaneously
+- **Progressive Application**: Task implementation and planning instructions guide multi-step workflows
+- **Validation**: Instructions include validation steps and checklists to ensure compliance
 
 ## Related Resources
 
