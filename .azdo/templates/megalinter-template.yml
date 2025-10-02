@@ -141,6 +141,8 @@ jobs:
             }
           }
 
+          $isMainOrPreReleaseBranch = ($sourceBranch -eq 'main' -or $sourceBranch -eq 'pre-release')
+
           if ([string]::IsNullOrWhiteSpace($sourceBranch)) {
             Write-Host "No branch detected; skipping branch cleanup."
             exit 0
@@ -254,7 +256,7 @@ jobs:
           Write-Host "Remote branches after cleanup:"
           Invoke-Git -Args @('for-each-ref', '--format=  %(refname:strip=2)', "refs/remotes/$remoteName")
         displayName: 'Limit remote branches for MegaLinter diff mode'
-        condition: and(succeeded(), or(eq(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/main')))
+        condition: and(succeeded(), or(eq(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/main'), eq(variables['Build.SourceBranch'], 'refs/heads/pre-release')))
 
       - pwsh: |
           $ErrorActionPreference = 'Stop'
@@ -264,9 +266,11 @@ jobs:
           $buildSourceBranch = '$(Build.SourceBranch)'
           $value = ''
 
+          $isMainOrPreReleaseBranch = ($buildSourceBranch -eq 'refs/heads/main' -or $buildSourceBranch -eq 'refs/heads/pre-release')
+
           if ($buildReason -eq 'PullRequest') {
             $value = '--log-opts="origin/$(System.PullRequest.TargetBranch)..HEAD"'
-          } elseif ($buildSourceBranch -eq 'refs/heads/main') {
+          } elseif ($isMainOrPreReleaseBranch) {
             $commitCount = 0
             try {
               $commitCount = [int](& git rev-list --count HEAD 2>$null)

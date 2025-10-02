@@ -39,12 +39,6 @@ run "create_default_cluster" {
     condition     = module.iot_ops_instance != null
     error_message = "iot_ops_instance module should be created"
   }
-
-  # Check that iot_ops_instance_post is being created
-  assert {
-    condition     = module.iot_ops_instance_post != null
-    error_message = "iot_ops_instance_post module should be created"
-  }
 }
 
 # Test CustomerManagedGenerateIssuer configuration with provided CA

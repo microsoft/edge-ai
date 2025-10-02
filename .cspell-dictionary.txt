@@ -59,7 +59,6 @@ WCAG
 wcag
 XBRL
 ZTNA
-KMGTPE
 
 # Development Tools & Technologies
 ansible
@@ -75,6 +74,7 @@ distroless
 cyberattacks
 Dapr
 docker
+Dockerfiles
 explainability
 Explainability
 Fairlearn
@@ -93,9 +93,11 @@ jupyter
 kaggle
 linkerd
 Multus
+myregistry
 nojekyll
 Opsgenie
 rollouts
+rosbag
 Rundeck
 Sankey
 Seldon
@@ -218,6 +220,7 @@ workday
 
 # Networking & Infrastructure
 cidr
+cyclonedds
 dns
 firewall
 loadbalancer
@@ -1582,7 +1585,6 @@ Terrascan
 UAMI
 acrpull
 acsa
-adrns
 agentpool
 agentsvc
 arck

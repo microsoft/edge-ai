@@ -118,7 +118,7 @@ Assigns the required Kubernetes Cluster - Azure Arc Onboarding role to a managed
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|arcOnboardingRoleAssignment|`Microsoft.Authorization/roleAssignments`|2022-04-01|
+|[guid(resourceGroup().id, parameters('arcOnboardingPrincipalId'), '34e09817-6cbe-4d01-b1a2-e0eac5743d41')]|`Microsoft.Authorization/roleAssignments`|2022-04-01|
 
 #### Outputs for roleAssignment
 

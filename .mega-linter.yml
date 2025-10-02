@@ -124,6 +124,9 @@ SPELL_CSPELL_FILE_EXTENSIONS: [".md"]
 # PowerShell configuration
 POWERSHELL_POWERSHELL_CONFIG_FILE: PSScriptAnalyzerSettings.psd1
 
+# Dockerfile Hadolint configuration
+DOCKERFILE_HADOLINT_ARGUMENTS: "--ignore SC1091"
+
 # Terrascan configuration (currently disabled)
 # TERRAFORM_TERRASCAN_CONFIG_FILE: .terrascan.toml
 # TERRAFORM_TERRASCAN_DISABLE_ERRORS: true

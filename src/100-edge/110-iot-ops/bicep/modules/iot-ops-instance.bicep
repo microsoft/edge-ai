@@ -127,7 +127,7 @@ var aioMqBrokerAddress = 'mqtts://${aioMqBrokerConfig.brokerListenerServiceName}
   Resources
 */
 
-resource schemaRegistry 'Microsoft.DeviceRegistry/schemaRegistries@2024-09-01-preview' existing = {
+resource schemaRegistry 'Microsoft.DeviceRegistry/schemaRegistries@2025-07-01-preview' existing = {
   name: schemaRegistryName
 }
 
@@ -335,6 +335,11 @@ resource broker 'Microsoft.IoTOperations/instances/brokers@2025-07-01-preview' =
         frontend: {
           replicas: aioMqBrokerConfig.frontendReplicas
           workers: aioMqBrokerConfig.frontendWorkers
+        }
+      }
+      diagnostics: {
+        logs: {
+          level: aioMqBrokerConfig.logsLevel
         }
       }
     },

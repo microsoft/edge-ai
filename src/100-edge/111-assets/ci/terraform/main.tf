@@ -22,7 +22,7 @@ data "azapi_resource" "custom_location" {
   response_export_values = ["name", "id", "properties.hostResourceId", "properties.namespace", "properties.displayName"]
 }
 
-// ADR Namespce
+// ADR Namespace
 data "azapi_resource" "adr_namespace" {
   type      = "Microsoft.DeviceRegistry/namespaces@2025-07-01-preview"
   parent_id = data.azurerm_resource_group.aio.id

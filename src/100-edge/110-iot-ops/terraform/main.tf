@@ -64,11 +64,17 @@ module "iot_ops_init" {
 
   depends_on = [module.role_assignments]
 
-  arc_connected_cluster_id = var.arc_connected_cluster.id
-  aio_platform_config      = var.aio_platform_config
-  platform                 = var.platform
-  edge_storage_accelerator = var.edge_storage_accelerator
-  secret_sync_controller   = var.secret_sync_controller
+  arc_connected_cluster_id     = var.arc_connected_cluster.id
+  aio_platform_config          = var.aio_platform_config
+  platform                     = var.platform
+  edge_storage_accelerator     = var.edge_storage_accelerator
+  secret_sync_controller       = var.secret_sync_controller
+  resource_group               = var.resource_group
+  connected_cluster_name       = var.arc_connected_cluster.name
+  secret_sync_identity         = var.secret_sync_identity
+  enable_instance_secret_sync  = var.enable_instance_secret_sync
+  aio_namespace                = var.operations_config.namespace
+  aio_user_managed_identity_id = var.aio_identity.id
 }
 
 module "customer_managed_trust_issuer" {
@@ -114,7 +120,7 @@ module "iot_ops_instance" {
   source     = "./modules/iot-ops-instance"
   depends_on = [module.apply_scripts_post_init]
 
-  resource_group_id                       = var.resource_group.id
+  resource_group                          = var.resource_group
   arc_connected_cluster_id                = var.arc_connected_cluster.id
   connected_cluster_location              = var.arc_connected_cluster.location
   connected_cluster_name                  = var.arc_connected_cluster.name
@@ -134,22 +140,9 @@ module "iot_ops_instance" {
   aio_features                            = var.aio_features
   should_create_anonymous_broker_listener = var.should_create_anonymous_broker_listener
   broker_listener_anonymous_config        = var.broker_listener_anonymous_config
-}
-
-module "iot_ops_instance_post" {
-  source     = "./modules/iot-ops-instance-post"
-  depends_on = [module.iot_ops_instance]
-
-  resource_group               = var.resource_group
-  connected_cluster_location   = var.arc_connected_cluster.location
-  connected_cluster_name       = var.arc_connected_cluster.name
-  key_vault                    = var.secret_sync_key_vault
-  enable_instance_secret_sync  = var.enable_instance_secret_sync
-  custom_location_id           = module.iot_ops_instance.custom_locations.id
-  aio_namespace                = var.operations_config.namespace
-  sse_user_managed_identity    = var.secret_sync_identity
-  aio_user_managed_identity_id = var.aio_identity.id
-  aio_instance_name            = module.iot_ops_instance.aio_instance.name
+  key_vault                               = var.secret_sync_key_vault
+  secret_sync_identity                    = var.secret_sync_identity
+  enable_instance_secret_sync             = var.enable_instance_secret_sync
 }
 
 /*
@@ -161,7 +154,7 @@ module "opc_ua_simulator" {
 
   source = "./modules/opc-ua-simulator"
 
-  depends_on = [module.iot_ops_instance_post]
+  depends_on = [module.iot_ops_instance]
 
   resource_group         = var.resource_group
   connected_cluster_name = var.arc_connected_cluster.name

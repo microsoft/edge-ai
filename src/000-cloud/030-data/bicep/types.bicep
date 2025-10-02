@@ -1,8 +1,6 @@
 metadata name = 'Data Component Types'
 metadata description = 'Type definitions for the Data Component, including Storage Account and Schema Registry settings.'
 
-import * as core from './types.core.bicep'
-
 /*
   Type Definitions
 */

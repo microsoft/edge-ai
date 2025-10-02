@@ -75,7 +75,7 @@ type AioPlatformExtension = {
 @export()
 var aioPlatformExtensionDefaults = {
   release: {
-    version: '0.7.25'
+    version: '0.7.29'
     train: 'preview'
   }
   settings: {
@@ -104,7 +104,7 @@ type AioExtension = {
 @export()
 var aioExtensionDefaults = {
   release: {
-    version: '1.2.36'
+    version: '1.2.72'
     train: 'preview'
   }
   settings: {
@@ -310,6 +310,9 @@ type AioMqBroker = {
   @description('The service type for the broker (ClusterIP, LoadBalancer, NodePort).')
   serviceType: string
 
+  @description('The log level for broker diagnostics (info, debug, trace).')
+  logsLevel: string
+
   @description('Broker persistence configuration for disk-backed message storage.')
   persistence: BrokerPersistence?
 }
@@ -319,13 +322,14 @@ var aioMqBrokerDefaults = {
   brokerListenerServiceName: 'aio-broker'
   brokerListenerPort: 18883
   serviceAccountAudience: 'aio-internal'
-  frontendReplicas: 1
-  frontendWorkers: 1
+  frontendReplicas: 2
+  frontendWorkers: 2
   backendRedundancyFactor: 2
-  backendWorkers: 1
-  backendPartitions: 1
-  memoryProfile: 'Low'
+  backendWorkers: 2
+  backendPartitions: 2
+  memoryProfile: 'Medium'
   serviceType: 'ClusterIp'
+  logsLevel: 'info'
 }
 
 @export()

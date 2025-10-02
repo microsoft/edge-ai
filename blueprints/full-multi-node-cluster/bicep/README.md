@@ -17,6 +17,7 @@ Deploys a complete end-to-end environment for Azure IoT Operations on a multi-no
 |adminPassword|Password used for the host VM.|`securestring`|n/a|yes|
 |hostMachineCount|The number of host VMs to create for the cluster. (The first host VM will be the cluster server)|`int`|3|no|
 |customLocationsOid|The object id of the Custom Locations Entra ID application for your tenant.<br>Can be retrieved using:<br><br>  <pre><code class="language-sh">  az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv<br>  </code></pre><br>|`string`|n/a|yes|
+|serverToken|The token that will be given to the server for the cluster or used by agent nodes. (Required for multi-node clusters where hostMachineCount > 1)|`securestring`|n/a|no|
 |shouldCreateAcrPrivateEndpoint|Whether to create a private endpoint for the Azure Container Registry.|`bool`|`false`|no|
 |shouldCreateAks|Whether to create an Azure Kubernetes Service cluster.|`bool`|`false`|no|
 |shouldCreateAnonymousBrokerListener|Whether to enable an insecure anonymous AIO MQ Broker Listener. (Should only be used for dev or test environments)|`bool`|`false`|no|

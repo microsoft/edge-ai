@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Local docker-compose Cyclone DDS configuration.
+     Uses static peer IPs defined by docker-compose network assignments. -->
+<CycloneDDS xmlns="https://cdds.io/config">
+  <Domain id="any">
+    <General>
+      <AllowMulticast>false</AllowMulticast>
+    </General>
+    <Discovery>
+      <ParticipantIndex>auto</ParticipantIndex>
+      <Peers>
+        <!-- Static peer addresses for local testing (ros2-connector & ros2-simulator) -->
+        <Peer Address="192.168.0.10" />
+        <Peer Address="192.168.0.11" />
+      </Peers>
+    </Discovery>
+    <Tracing>
+      <Verbosity>info</Verbosity>
+    </Tracing>
+  </Domain>
+</CycloneDDS>

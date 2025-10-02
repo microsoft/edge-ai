@@ -46,6 +46,10 @@ Can be retrieved using:
 ''')
 param customLocationsOid string
 
+@description('The token that will be given to the server for the cluster or used by agent nodes. (Required for multi-node clusters where hostMachineCount > 1)')
+@secure()
+param serverToken string?
+
 /*
   Container Registry Parameters
 */
@@ -114,6 +118,15 @@ resource attribution 'Microsoft.Resources/deployments@2020-06-01' = if (!telemet
     }
   }
 }
+
+/*
+  Variables
+*/
+
+// Validate that serverToken is provided for multi-node clusters
+var validatedServerToken = hostMachineCount > 1 && serverToken == null
+  ? fail('serverToken is required when hostMachineCount > 1. Multi-node clusters require a token for agent nodes to join the cluster.')
+  : serverToken
 
 /*
   Modules
@@ -225,6 +238,7 @@ module edgeCncfCluster '../../../src/100-edge/100-cncf-cluster/bicep/main.bicep'
     common: common
     customLocationsOid: customLocationsOid
     deployKeyVaultName: cloudSecurityIdentity.outputs.keyVaultName!
+    serverToken: validatedServerToken
   }
 }
 

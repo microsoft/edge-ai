@@ -26,7 +26,7 @@ data "azurerm_user_assigned_identity" "aio" {
 }
 
 data "azapi_resource" "schema_registry" {
-  type      = "Microsoft.DeviceRegistry/schemaRegistries@2024-09-01-preview"
+  type      = "Microsoft.DeviceRegistry/schemaRegistries@2025-07-01-preview"
   parent_id = data.azurerm_resource_group.aio.id
   name      = "sr-${var.resource_prefix}-${var.environment}-${var.instance}"
 

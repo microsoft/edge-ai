@@ -1,0 +1,14 @@
+---
+apiVersion: v2
+name: ros2-connector
+description: A Helm chart for ROS2 Connector
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+keywords:
+  - ros2
+  - connector
+  - robotics
+maintainers:
+  - name: Edge AI Team
+    email: edge-ai@microsoft.com

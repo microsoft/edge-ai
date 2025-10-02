@@ -13,7 +13,7 @@ variable "platform" {
     train   = string
   })
   default = {
-    version = "0.7.25"
+    version = "0.7.29"
     train   = "preview"
   }
 }

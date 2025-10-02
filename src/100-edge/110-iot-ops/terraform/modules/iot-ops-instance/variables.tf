@@ -1,8 +1,3 @@
-variable "resource_group_id" {
-  type        = string
-  description = "The ID for the Resource Group for the resources."
-}
-
 variable "connected_cluster_name" {
   type        = string
   description = "The name of the connected cluster to deploy Azure IoT Operations to"
@@ -95,6 +90,7 @@ variable "mqtt_broker_config" {
     backendPartitions         = number
     memoryProfile             = string
     serviceType               = string
+    logsLevel                 = optional(string, "info")
   })
 }
 
@@ -295,4 +291,33 @@ variable "mqtt_broker_persistence_config" {
     )
     error_message = "persistent_volume_claim_spec.selector.match_expressions[].operator must be one of: 'In', 'NotIn', 'Exists', or 'DoesNotExist'."
   }
+}
+
+variable "resource_group" {
+  type = object({
+    id   = string
+    name = string
+  })
+  description = "Resource group object containing name and id where resources will be deployed"
+}
+
+variable "key_vault" {
+  type = object({
+    name = string
+    id   = string
+  })
+  description = "The Key Vault object containing id and name properties"
+}
+
+variable "secret_sync_identity" {
+  type = object({
+    id        = string
+    client_id = string
+  })
+  description = "Secret Sync Extension user managed identity id and client id"
+}
+
+variable "enable_instance_secret_sync" {
+  type        = bool
+  description = "Whether to enable secret sync on the Azure IoT Operations instance"
 }

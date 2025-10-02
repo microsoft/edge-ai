@@ -18,7 +18,7 @@ variable "operations_config" {
   default = {
     namespace                      = "azure-iot-operations"
     kubernetesDistro               = "K3s"
-    version                        = "1.2.36"
+    version                        = "1.2.72"
     train                          = "preview"
     agentOperationTimeoutInMinutes = 120
   }
@@ -70,18 +70,20 @@ variable "mqtt_broker_config" {
     backendPartitions         = number
     memoryProfile             = string
     serviceType               = string
+    logsLevel                 = optional(string, "info")
   })
   default = {
     brokerListenerServiceName = "aio-broker"
     brokerListenerPort        = 18883
     serviceAccountAudience    = "aio-internal"
-    frontendReplicas          = 1
-    frontendWorkers           = 1
+    frontendReplicas          = 2
+    frontendWorkers           = 2
     backendRedundancyFactor   = 2
-    backendWorkers            = 1
-    backendPartitions         = 1
-    memoryProfile             = "Low"
+    backendWorkers            = 2
+    backendPartitions         = 2
+    memoryProfile             = "Medium"
     serviceType               = "ClusterIp"
+    logsLevel                 = "info"
   }
 }
 

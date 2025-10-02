@@ -35,7 +35,14 @@ locals {
     otelCollectorAddress  = var.should_enable_otel_collector ? "aio-otel-collector.${var.operations_config.namespace}.svc.cluster.local:4317" : ""
     exportIntervalSeconds = 60
   }
+
+  spc_name_hash_input = "${var.connected_cluster_name}-${var.resource_group.name}-${local.aio_instance_name}"
+  spc_name            = "spc-ops-${substr(sha256(local.spc_name_hash_input), 0, 7)}"
 }
+
+
+data "azurerm_subscription" "current" {}
+
 
 resource "azurerm_arc_kubernetes_cluster_extension" "iot_operations" {
   name           = "iot-ops"
@@ -88,7 +95,7 @@ resource "azapi_resource" "custom_location" {
   type      = "Microsoft.ExtendedLocation/customLocations@2021-08-31-preview"
   name      = local.custom_location_name
   location  = var.connected_cluster_location
-  parent_id = var.resource_group_id
+  parent_id = var.resource_group.id
   identity {
     type = "SystemAssigned"
   }
@@ -107,9 +114,9 @@ resource "azapi_resource" "custom_location" {
 resource "azapi_resource" "aio_sync_rule" {
   type      = "Microsoft.ExtendedLocation/customLocations/resourceSyncRules@2021-08-31-preview"
   name      = "${azapi_resource.custom_location.name}-broker-sync"
-  location  = var.connected_cluster_location
   parent_id = azapi_resource.custom_location.id
   body = {
+    location = var.connected_cluster_location
     properties = {
       priority = 400
       selector = {
@@ -117,7 +124,7 @@ resource "azapi_resource" "aio_sync_rule" {
           "management.azure.com/provider-name" : "microsoft.iotoperations"
         }
       }
-      targetResourceGroup = var.resource_group_id
+      targetResourceGroup = var.resource_group.id
     }
   }
 
@@ -127,10 +134,10 @@ resource "azapi_resource" "aio_sync_rule" {
 resource "azapi_resource" "aio_device_registry_sync_rule" {
   type      = "Microsoft.ExtendedLocation/customLocations/resourceSyncRules@2021-08-31-preview"
   name      = "${azapi_resource.custom_location.name}-adr-sync"
-  location  = var.connected_cluster_location
   parent_id = azapi_resource.custom_location.id
 
   body = {
+    location = var.connected_cluster_location
     properties = {
       priority = 200
       selector = {
@@ -138,7 +145,7 @@ resource "azapi_resource" "aio_device_registry_sync_rule" {
           "management.azure.com/provider-name" : "Microsoft.DeviceRegistry"
         }
       }
-      targetResourceGroup = var.resource_group_id
+      targetResourceGroup = var.resource_group.id
     }
   }
 
@@ -149,7 +156,7 @@ resource "azapi_resource" "instance" {
   type      = "Microsoft.IoTOperations/instances@2025-07-01-preview"
   name      = local.aio_instance_name
   location  = var.connected_cluster_location
-  parent_id = var.resource_group_id
+  parent_id = var.resource_group.id
   identity {
     type         = "UserAssigned"
     identity_ids = [var.aio_uami_id]
@@ -198,6 +205,11 @@ resource "azapi_resource" "broker" {
           frontend = {
             replicas = var.mqtt_broker_config.frontendReplicas
             workers  = var.mqtt_broker_config.frontendWorkers
+          }
+        }
+        diagnostics = {
+          logs = {
+            level = var.mqtt_broker_config.logsLevel
           }
         }
       },
@@ -497,4 +509,44 @@ resource "azapi_resource" "data_endpoint" {
   depends_on = [azapi_resource.custom_location, azapi_resource.instance]
 
   schema_validation_enabled = false # Disable schema validation for azapi_resource for 2025-07-01-preview until azapi provider supports it
+}
+
+resource "azapi_resource" "default_aio_keyvault_secret_provider_class" {
+  count = var.enable_instance_secret_sync ? 1 : 0
+
+  type      = "Microsoft.SecretSyncController/azureKeyVaultSecretProviderClasses@2024-08-21-preview"
+  name      = local.spc_name
+  location  = var.connected_cluster_location
+  parent_id = var.resource_group.id
+
+  body = {
+    extendedLocation = {
+      name = azapi_resource.custom_location.output.id
+      type = "CustomLocation"
+    }
+    properties = {
+      clientId     = var.secret_sync_identity.client_id
+      keyvaultName = var.key_vault.name
+      tenantId     = data.azurerm_subscription.current.tenant_id
+    }
+  }
+
+  depends_on = [azapi_resource.custom_location]
+}
+
+resource "azapi_update_resource" "aio_instance_secret_sync_update" {
+  count     = var.enable_instance_secret_sync ? 1 : 0
+  type      = "Microsoft.IoTOperations/instances@2025-07-01-preview"
+  name      = local.aio_instance_name
+  parent_id = var.resource_group.id
+
+  body = {
+    properties = {
+      defaultSecretProviderClassRef = {
+        resourceId = azapi_resource.default_aio_keyvault_secret_provider_class[0].id
+      }
+    }
+  }
+
+  depends_on = [azapi_resource.default_aio_keyvault_secret_provider_class, azapi_resource.instance]
 }

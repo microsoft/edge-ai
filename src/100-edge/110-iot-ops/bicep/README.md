@@ -229,7 +229,7 @@ Runs deployment scripts for IoT Operations using an Azure deploymentScript resou
 
 |Name|Description|Type|Default|Required|
 | :--- | :--- | :--- | :--- | :--- |
-|common|The common component configuration.|`[_2.Common](#user-defined-types)`|n/a|yes|
+|common|The common component configuration.|`[_1.Common](#user-defined-types)`|n/a|yes|
 |deployIdentityId|The resource ID of the deploy Managed Identity used to execute the scripts.|`string`|n/a|no|
 |deploySpClientId|The Client ID for a Service Principal for deployment scripts.|`string`|n/a|no|
 |deploySpSecret|The Client Secret for a Service Principal for deployment scripts.|`securestring`|n/a|no|
@@ -372,7 +372,7 @@ Runs deployment scripts for IoT Operations using an Azure deploymentScript resou
 
 |Name|Description|Type|Default|Required|
 | :--- | :--- | :--- | :--- | :--- |
-|common|The common component configuration.|`[_2.Common](#user-defined-types)`|n/a|yes|
+|common|The common component configuration.|`[_1.Common](#user-defined-types)`|n/a|yes|
 |deployIdentityId|The resource ID of the deploy Managed Identity used to execute the scripts.|`string`|n/a|no|
 |deploySpClientId|The Client ID for a Service Principal for deployment scripts.|`string`|n/a|no|
 |deploySpSecret|The Client Secret for a Service Principal for deployment scripts.|`securestring`|n/a|no|
@@ -472,6 +472,7 @@ The settings for the Azure IoT Operations MQ Broker.
 |backendPartitions|`int`|The number of partitions for the backend of the broker.|
 |memoryProfile|`string`|The memory profile for the broker (Low, Medium, High).|
 |serviceType|`string`|The service type for the broker (ClusterIP, LoadBalancer, NodePort).|
+|logsLevel|`string`|The log level for broker diagnostics (info, debug, trace).|
 |persistence|`[_1.BrokerPersistence](#user-defined-types)`|Broker persistence configuration for disk-backed message storage.|
 
 ### `_1.AioMqBrokerAnonymous`

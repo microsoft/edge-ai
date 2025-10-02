@@ -16,7 +16,7 @@ data "azurerm_user_assigned_identity" "aio" {
 }
 
 data "azapi_resource" "aio_instance" {
-  type      = "Microsoft.IoTOperations/instances@2024-11-01"
+  type      = "Microsoft.IoTOperations/instances@2025-07-01-preview"
   parent_id = data.azurerm_resource_group.aio.id
   name      = "arck-${var.resource_prefix}-${var.environment}-${var.instance}-ops-instance"
 
