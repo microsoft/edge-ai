@@ -35,7 +35,7 @@ Apply this procedure when research, plans, or repository changes must be transla
 * `run_in_terminal` (zsh) for git context **only when `${input:includeBranchChanges}` is `true` and no documents are provided**:
    1. Extract remote name from `${input:baseBranch}` (e.g., `origin` from `origin/main`)
    2. Sync remote base branch: `git fetch <remote> <branch-name> --prune`
-   3. Generate structured diff XML: `scripts/pr-ref-gen.sh --base-branch "${input:baseBranch}" --output ".copilot-tracking/workitems/discovery/<folder-name>/git-branch-diff.xml"`
+   3. Generate structured diff XML: `scripts/dev-tools/pr-ref-gen.sh --base-branch "${input:baseBranch}" --output ".copilot-tracking/workitems/discovery/<folder-name>/git-branch-diff.xml"`
    4. Read complete XML with `read_file` (page through entire file if >2000 lines)
    5. Extract commit history, changed files, and diff context from XML structure
 * Azure DevOps MCP tools:

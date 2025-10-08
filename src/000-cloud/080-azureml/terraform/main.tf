@@ -175,26 +175,10 @@ module "inference_cluster_integration" {
   // Kubernetes compute configuration
   default_instance_type            = var.cluster_integration_default_instance_type
   extension_instance_release_train = var.cluster_integration_extension_instance_release_train
-  instance_types = coalesce(var.cluster_integration_instance_types, {
-    defaultinstancetype = {
-      nodeSelector = null
-      resources = {
-        limits = {
-          cpu              = "2"
-          memory           = "8Gi"
-          "nvidia.com/gpu" = null
-        }
-        requests = {
-          cpu              = "0.1"
-          memory           = "500Mi"
-          "nvidia.com/gpu" = null
-        }
-      }
-    }
-  })
-  kubernetes_namespace  = var.cluster_integration_kubernetes_namespace
-  workspace_identity_id = var.cluster_integration_workspace_identity_id
-  vc_name               = var.cluster_integration_vc_name
+  instance_types                   = var.cluster_integration_instance_types
+  kubernetes_namespace             = var.cluster_integration_kubernetes_namespace
+  workspace_identity_id            = var.cluster_integration_workspace_identity_id
+  vc_name                          = var.cluster_integration_vc_name
 
   ml_workload_identity = var.ml_workload_identity
   ml_workload_subjects = var.ml_workload_subjects

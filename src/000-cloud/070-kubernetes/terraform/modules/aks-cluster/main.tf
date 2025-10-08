@@ -91,7 +91,7 @@ resource "azurerm_kubernetes_cluster" "aks" {
 }
 
 /*
- * Azure Monitor Data Collection Rule Association
+ * Azure Monitor Data Collection Associations
  */
 
 resource "azurerm_monitor_data_collection_rule_association" "aks_metrics" {
@@ -101,6 +101,15 @@ resource "azurerm_monitor_data_collection_rule_association" "aks_metrics" {
   target_resource_id      = azurerm_kubernetes_cluster.aks.id
   data_collection_rule_id = var.metrics_data_collection_rule.id
   description             = "Associates AKS cluster with metrics data collection rule for custom Azure Monitor workspace"
+}
+
+resource "azurerm_monitor_data_collection_rule_association" "aks_logs" {
+  count = var.logs_data_collection_rule != null ? 1 : 0
+
+  name                    = "dcra-aks-logs-${var.resource_prefix}-${var.environment}-${var.instance}"
+  target_resource_id      = azurerm_kubernetes_cluster.aks.id
+  data_collection_rule_id = var.logs_data_collection_rule.id
+  description             = "Associates AKS cluster with logs data collection rule for custom Azure Monitor workspace"
 }
 
 /*

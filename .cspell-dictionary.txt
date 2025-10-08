@@ -1063,6 +1063,8 @@ pmks
 pngs
 pnrp
 pocs
+pod
+podmonitor
 pointnext
 popout
 porowski

@@ -82,7 +82,7 @@ Adds Azure Machine Learning capabilities with optional foundational resource cre
 | cluster\_integration\_default\_instance\_type | Default instance type for the Kubernetes compute. | `string` | `"defaultinstancetype"` | no |
 | cluster\_integration\_description | Description for the AKS integration compute target. Otherwise, 'Azure ML AKS compute target for {resource\_prefix}-{environment}-{instance}'. | `string` | `null` | no |
 | cluster\_integration\_disable\_local\_auth | Whether to disable local authentication for the AKS integration compute target. | `bool` | `true` | no |
-| cluster\_integration\_instance\_types | Instance types configuration for Kubernetes compute. Key is the instance type name, value contains nodeSelector and resource specifications. | ```map(object({ nodeSelector = optional(map(string)) resources = optional(object({ requests = optional(map(string)) limits = optional(map(string)) })) }))``` | `null` | no |
+| cluster\_integration\_instance\_types | Instance types configuration for Kubernetes compute. Key is the instance type name, value contains nodeSelector and resource specifications. | ```map(object({ nodeSelector = optional(map(string)) resources = optional(object({ requests = optional(map(any)) limits = optional(map(any)) })) }))``` | `null` | no |
 | compute\_cluster\_idle\_duration | Time to wait before scaling down idle nodes. Format: PT{minutes}M (e.g., PT15M for 30 minutes) | `string` | `"PT30M"` | no |
 | compute\_cluster\_max\_nodes | Maximum number of nodes in compute cluster for auto-scaling. Default: 1 (cost-optimized for single-model training) | `number` | `1` | no |
 | compute\_cluster\_min\_nodes | Minimum number of nodes in compute cluster for auto-scaling. Default: 0 (cost-optimized, scales to zero when idle) | `number` | `0` | no |
@@ -119,11 +119,12 @@ Adds Azure Machine Learning capabilities with optional foundational resource cre
 | should\_create\_storage | Whether to create cloud data component (storage account) when not already deployed | `bool` | `false` | no |
 | should\_deploy\_azureml\_registry | Whether to deploy AzureML Registry with private endpoint support | `bool` | `false` | no |
 | should\_deploy\_edge\_extension | Whether to deploy the Azure ML edge extension on a connected cluster | `bool` | `false` | no |
+| should\_disable\_aks\_local\_account | Whether to disable the local admin account for the AKS cluster | `bool` | `false` | no |
 | should\_enable\_cluster\_inference | Whether to enable inference workloads on the AKS cluster | `bool` | `true` | no |
 | should\_enable\_cluster\_training | Whether to enable training workloads on the AKS cluster | `bool` | `true` | no |
 | should\_enable\_inference\_router\_ha | Whether to enable high availability for inference router | `bool` | `true` | no |
 | should\_enable\_managed\_outbound\_access | Whether to enable managed outbound egress via NAT gateway instead of platform default internet access | `bool` | `true` | no |
-| should\_enable\_private\_endpoints | Whether to enable private endpoints for Key Vault and Storage Account. Requires networking to be created or existing. | `bool` | `false` | no |
+| should\_enable\_private\_endpoints | Whether to enable private endpoints across Key Vault, Storage Account, and observability resources to support managed Prometheus ingestion. Requires networking to be created or existing | `bool` | `false` | no |
 | should\_enable\_private\_resolver | Whether to enable Azure Private Resolver for VPN client DNS resolution of private endpoints. Only used when should\_enable\_vpn\_gateway is true | `bool` | `true` | no |
 | should\_enable\_public\_network\_access | Whether to enable public network access to the Azure ML workspace | `bool` | `false` | no |
 | should\_enable\_vpn\_gateway | Whether to create a VPN Gateway for secure access to private endpoints. Requires networking to be created or existing. | `bool` | `false` | no |

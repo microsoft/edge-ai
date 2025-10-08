@@ -184,7 +184,7 @@ variable "should_add_current_user_cluster_admin" {
 variable "should_disable_local_account" {
   type        = bool
   description = "Whether to disable local admin account for the AKS cluster. Recommended for security compliance (CKV_AZURE_141)."
-  default     = true
+  default     = false
 }
 
 /*

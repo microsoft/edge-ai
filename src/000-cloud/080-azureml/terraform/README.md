@@ -56,7 +56,7 @@ existing cloud infrastructure including Key Vault, Storage Account, Application 
 | cluster\_integration\_description | Description for the AKS integration compute target. Otherwise, 'Azure ML AKS compute target for {resource\_prefix}-{environment}-{instance}'. | `string` | `null` | no |
 | cluster\_integration\_disable\_local\_auth | Whether to disable local authentication for the AKS integration compute target. | `bool` | `true` | no |
 | cluster\_integration\_extension\_instance\_release\_train | Extension instance release train for Azure ML extension. | `string` | `"Stable"` | no |
-| cluster\_integration\_instance\_types | Instance types configuration for Kubernetes compute. Key is the instance type name, value contains nodeSelector and resource specifications. | ```map(object({ nodeSelector = optional(map(string)) resources = optional(object({ requests = optional(map(string)) limits = optional(map(string)) })) }))``` | `null` | no |
+| cluster\_integration\_instance\_types | Instance types configuration for Kubernetes compute. Key is the instance type name, value contains nodeSelector and resource specifications. | ```map(object({ nodeSelector = optional(map(string)) resources = optional(object({ requests = optional(map(any)) limits = optional(map(any)) })) }))``` | `null` | no |
 | cluster\_integration\_kubernetes\_namespace | Kubernetes namespace for ML workloads. Otherwise, 'azureml'. | `string` | `"azureml"` | no |
 | cluster\_integration\_vc\_name | Virtual Cluster (VC) name for advanced Kubernetes compute configuration. | `string` | `null` | no |
 | cluster\_integration\_workspace\_identity\_id | Resource ID of user-assigned managed identity for the compute target. If null, SystemAssigned identity will be used. | `string` | `null` | no |

@@ -50,7 +50,7 @@ ML training and inference workloads.
 | inference\_router\_ha | Whether to enable high availability for inference router. | `bool` | n/a | yes |
 | inference\_router\_service\_type | Service type for inference router. | `string` | n/a | yes |
 | instance | Instance identifier for the deployment. | `string` | n/a | yes |
-| instance\_types | Instance types configuration for Kubernetes compute. Key is the instance type name, value contains nodeSelector and resource specifications. | ```map(object({ nodeSelector = optional(map(string)) resources = optional(object({ requests = optional(map(string)) limits = optional(map(string)) })) }))``` | n/a | yes |
+| instance\_types | Instance types configuration for Kubernetes compute. Key is the instance type name, value contains nodeSelector and resource specifications. | ```map(object({ nodeSelector = optional(map(string)) resources = optional(object({ requests = optional(map(any)) limits = optional(map(any)) })) }))``` | n/a | yes |
 | kubernetes\_cluster\_id | The resource ID of the AKS cluster to integrate with Azure ML. | `string` | n/a | yes |
 | kubernetes\_cluster\_name | The name of the AKS cluster to integrate with Azure ML. | `string` | n/a | yes |
 | kubernetes\_cluster\_resource\_group\_name | Name of the resource group containing the AKS cluster. | `string` | n/a | yes |

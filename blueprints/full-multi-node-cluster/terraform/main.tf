@@ -204,6 +204,8 @@ module "cloud_kubernetes" {
 
   source = "../../../src/000-cloud/070-kubernetes/terraform"
 
+  depends_on = [module.cloud_networking, module.cloud_acr, module.cloud_observability]
+
   environment     = var.environment
   resource_prefix = var.resource_prefix
   location        = var.location
@@ -219,6 +221,7 @@ module "cloud_kubernetes" {
   acr                          = module.cloud_acr.acr
   log_analytics_workspace      = module.cloud_observability.log_analytics_workspace
   metrics_data_collection_rule = module.cloud_observability.metrics_data_collection_rule
+  logs_data_collection_rule    = module.cloud_observability.logs_data_collection_rule
   aks_identity                 = module.cloud_security_identity.aks_identity
 
   default_outbound_access_enabled = local.default_outbound_access_enabled

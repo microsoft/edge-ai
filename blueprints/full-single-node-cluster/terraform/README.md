@@ -85,7 +85,7 @@ for a single-node cluster deployment, including observability, messaging, and da
 | should\_enable\_managed\_outbound\_access | Whether to enable managed outbound egress via NAT gateway instead of platform default internet access | `bool` | `true` | no |
 | should\_enable\_oidc\_issuer | Whether to enable the OIDC issuer URL for the cluster | `bool` | `true` | no |
 | should\_enable\_opc\_ua\_simulator | Whether to deploy the OPC UA simulator to the cluster | `bool` | `false` | no |
-| should\_enable\_private\_endpoints | Whether to enable private endpoints for Key Vault and the storage account | `bool` | `false` | no |
+| should\_enable\_private\_endpoints | Whether to enable private endpoints across Key Vault, storage, and observability resources to route monitoring ingestion through private link | `bool` | `false` | no |
 | should\_enable\_private\_resolver | Whether to enable Azure Private Resolver for VPN client DNS resolution of private endpoints | `bool` | `false` | no |
 | should\_enable\_storage\_public\_network\_access | Whether to enable public network access for the storage account | `bool` | `true` | no |
 | should\_enable\_vpn\_gateway | Whether to create a VPN gateway for secure access to private endpoints | `bool` | `false` | no |

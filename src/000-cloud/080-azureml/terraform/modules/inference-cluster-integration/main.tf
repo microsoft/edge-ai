@@ -81,6 +81,24 @@ locals {
   )
 
   ml_workload_subjects = var.ml_workload_subjects
+
+  default_instance_type = {
+    defaultinstancetype = {
+      nodeSelector = null
+      resources = {
+        limits = {
+          cpu              = "2"
+          memory           = "2Gi"
+          "nvidia.com/gpu" = null
+        }
+        requests = {
+          cpu              = "0.1"
+          memory           = "500Mi"
+          "nvidia.com/gpu" = null
+        }
+      }
+    }
+  }
 }
 
 // OIDC issuer lookup for workload identity federation
@@ -163,7 +181,7 @@ resource "terraform_data" "replace_kubernetes_compute" {
         properties = {
           namespace                     = var.kubernetes_namespace
           defaultInstanceType           = var.default_instance_type
-          instanceTypes                 = var.instance_types
+          instanceTypes                 = merge(local.default_instance_type, var.instance_types)
           extensionInstanceReleaseTrain = var.extension_instance_release_train
           vcName                        = var.vc_name
           extensionPrincipalId          = azurerm_kubernetes_cluster_extension.azureml.aks_assigned_identity[0].principal_id
@@ -189,6 +207,8 @@ resource "azapi_resource" "kubernetes_compute" {
   name      = local.aks_compute_target_name
   parent_id = var.machine_learning_workspace_id
 
+  schema_validation_enabled = false
+
   body = terraform_data.replace_kubernetes_compute.output.body
 
   dynamic "identity" {
@@ -211,6 +231,7 @@ resource "azapi_resource" "kubernetes_compute" {
     ignore_changes = [
       body.properties.properties.relayConnectionString,
       body.properties.properties.serviceBusConnectionString,
+      body.properties.properties.instanceTypes,
     ]
 
     replace_triggered_by = [
