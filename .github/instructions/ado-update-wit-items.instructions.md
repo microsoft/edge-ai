@@ -59,7 +59,53 @@ Processing protocol:
 ## 3. Process Work Items
 
 * Mandatory: must continually map temporary WI[Reference Number] to ADO System.Id for relationships
-* Mandatory: unless otherwise specified, `format` should always be provided and set to `Markdown`
+* Mandatory: when a field must store Markdown content, include the `format` parameter and set it to `Markdown`
+* Mandatory: use `mcp_ado_wit_update_work_items_batch` to add or update any Acceptance Criteria fields; other tools must not be used for this purpose
+* Mandatory: payloads must mirror the content in `work-items.md` and related planning files exactly—do not revise wording, structure, or Markdown beyond formatting required by Azure DevOps
+
+### MCP Tool Parameter Guidance
+
+Always source parameter values from the active planning artifacts (`work-items.md`, `handoff.md`, `planning-log.md`) before issuing a tool call. Confirm the latest `System.Id` for every WI reference prior to constructing payloads, and keep field text identical to the planning content.
+
+**`mcp_ado_wit_create_work_item`**
+* `project`: use the `Project` value from `work-items.md`.
+* `workItemType`: use the Work Item Type recorded for the WI reference.
+* `fields`: supply an array of objects with `name` and `value`; include `format: "Markdown"` for multi-line fields such as `System.Description` or `Microsoft.VSTS.Common.AcceptanceCriteria`. Preserve existing organization-specific fields when provided, and copy values verbatim from planning artifacts.
+
+**`mcp_ado_wit_add_child_work_items`**
+* `parentId`: resolved `System.Id` of the parent work item (usually sourced from a previously created item or an Update entry).
+* `project`: same value used for the parent.
+* `workItemType`: child type (e.g., `User Story`, `Bug`).
+* `items`: each child must include `title` and `description`; set `format: "Markdown"` whenever the description block is Markdown. Apply `areaPath` and `iterationPath` only when explicitly provided in planning artifacts. Do not modify the text captured in planning.
+
+**`mcp_ado_wit_update_work_items_batch`**
+* Each entry in `updates` must include `id` (resolved ADO `System.Id`), `path` (e.g., `/fields/System.Description`), and `value`. The `value` must match the planning document content exactly.
+* Choose `op` (`add`, `replace`, or `remove`) based on whether the field is new, changed, or cleared. Default `add` is acceptable when replacing entire field content.
+* Set `format: "Markdown"` on updates for Markdown-backed fields (Acceptance Criteria, Description, Repro Steps, etc.).
+* Batch related field edits together to minimize tool calls while keeping payloads readable in `handoff-logs.md`.
+
+**`mcp_ado_wit_work_items_link`**
+* Provide `project` from `work-items.md`.
+* Each item in `updates` must declare `id` (source work item), `linkToId` (target `System.Id`), and `type` (e.g., `Child`, `Parent`, `Related`). Add a `comment` when the planning documents capture rationale that should appear in ADO history. Use the note text exactly as written in planning files.
+
+````markdown
+<!-- <example-ado-wit-update-batch> -->
+```json
+{
+  "project": "edge-ai",
+  "updates": [
+    {
+      "id": 1234,
+      "path": "/fields/Microsoft.VSTS.Common.AcceptanceCriteria",
+      "value": "* Acceptance criterion pulled from handoff-logs.md",
+      "op": "add",
+      "format": "Markdown"
+    }
+  ]
+}
+```
+<!-- </example-ado-wit-update-batch> -->
+````
 
 1. **Create Top Level Work Items**: mcp_ado_wit_create_work_item
 2. **Create Child Work Items**: mcp_ado_wit_add_child_work_items
