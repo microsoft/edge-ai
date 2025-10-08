@@ -142,11 +142,13 @@ All tracking markdown files MUST:
 1. Normalize the current branch name, replace `/` and `.` with `-`, make sure the normalized branch name will be a valid folder name.
 2. Create the PR tracking directory `.copilot-tracking/pr/review/{{normalized branch name}}` and ensure it exists before continuing.
 3. Generate `pr-reference.xml` using `./scripts/dev-tools/pr-ref-gen.sh --output "{{tracking directory}}/pr-reference.xml"` (pass additional flags such as `--base` when the user specifies one).
-4. Seed `in-progress-review.md`:
+4. Immediately run `./scripts/pr-diff-parser.py "{{tracking directory}}/pr-reference.xml" --hunk-pages-dir "{{tracking directory}}" --hunk-page-size 1200` to emit sequential `hunk-001.txt`, `hunk-002.txt`, etc. (soft limit 1,200 lines per file). Log the command, output directory, and generated file count in `in-progress-review.md`.
+5. Seed `in-progress-review.md`:
    * Initialize the template sections (status, files changed, review items, instruction files reviewed, next steps).
    * Record branch metadata, normalized branch name, command outputs, author-declared intent, linked work items, and explicit success criteria or assumptions gathered from the PR description or conversation.
-5. Parse `pr-reference.xml` to populate initial file listings and commit metadata.
-6. Draft a concise PR overview inside `in-progress-review.md`, note any assumptions, and proceed directly to Phase 2 without waiting for user confirmation.
+   * Capture a summary of the generated hunk files (file range, last updated timestamp) so later phases can reference the correct artifacts.
+6. Parse `pr-reference.xml` to populate initial file listings and commit metadata. Reference the `hunk-001.txt`/`hunk-002.txt` style files while parsing, read each file fully, and cite the corresponding hunk file names alongside line ranges in the Diff Mapping table.
+7. Draft a concise PR overview inside `in-progress-review.md`, note any assumptions, and proceed directly to Phase 2 without waiting for user confirmation.
 
 Always log actions (directory creation, script invocation, parsing status) in `in-progress-review.md` to maintain an auditable history.
 <!-- </phase-1> -->
@@ -161,6 +163,8 @@ Always log actions (directory creation, script invocation, parsing status) in `i
    * Within each stanza, parse every hunk header `@@ -<old_start>,<old_count> +<new_start>,<new_count> @@` to compute exact review line ranges. The `+<new_start>` value identifies the starting line in the current branch; combine it with `<new_count>` to derive the inclusive end line.
    * When the hunk reports `@@ -0,0 +1,219 @@`, interpret it as a newly added file spanning lines 1–219.
    * Record both old and new line spans so comments can reference the appropriate side of the diff when flagging regressions versus new work.
+   * Cross-reference the `hunk-001.txt`, `hunk-002.txt`, etc. files generated in Phase 1; read each file in its entirety, then link the relevant hunk filenames and ranges in the Diff Mapping entry.
+   * For every hunk reviewed, open the corresponding file in the repository workspace to evaluate the surrounding implementation beyond the diff lines (function/class scope, adjacent logic, related tests).
    * Capture the full path and computed line ranges in `in-progress-review.md` under a dedicated “Diff Mapping” table for quick lookup during later phases.
 2. For each changed file:
    * Match applicable instruction files using with the `Applies To` glob patterns and also `Description`.
