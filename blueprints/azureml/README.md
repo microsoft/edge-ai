@@ -356,6 +356,88 @@ For permission or provider registration errors, ensure you have run the provider
 - Set `should_install_nvidia_device_plugin = true` and `should_install_dcgm_exporter = true` to deploy the required DaemonSets automatically. If you prefer manual installation, apply the NVIDIA device plugin manifest after deployment.
 - Optional: When using spot-priced GPU nodes, set the pool `priority = "Spot"`, add the Azure spot taint (for example, `kubernetes.azure.com/scalesetpriority=spot:NoSchedule`), and include a corresponding toleration in `workload_tolerations`. The sample `terraform.tfvars` above shows a full configuration that combines spot taints with GPU tolerations so that job scheduling remains predictable during preemptions.
 
+## GPU Metrics Monitoring
+
+GPU metrics are collected from the NVIDIA DCGM exporter (installed by the GPU Operator) and published to Azure Managed Prometheus when you run `./scripts/install-chart-releases.sh`.
+
+### Automatic PodMonitor deployment
+
+The installation script automatically:
+
+- Applies the `manifests/gpu-podmonitor.yaml` resource to the `kube-system` namespace
+- Scrapes the DCGM exporter pods in the `gpu-operator` namespace using the `app=nvidia-dcgm-exporter` label selector
+- Streams metrics into the Azure Monitor workspace configured by the blueprint
+- Keeps PodMonitor removal in sync via `./scripts/uninstall-chart-releases.sh`
+
+### Viewing GPU metrics
+
+#### Azure Portal Prometheus explorer
+
+1. Open your Azure Monitor workspace.
+1. Navigate to **Metrics > Prometheus explorer**.
+1. Run PromQL queries such as:
+
+  ```promql
+  DCGM_FI_DEV_GPU_UTIL
+  DCGM_FI_DEV_FB_USED
+  DCGM_FI_DEV_GPU_TEMP
+  ```
+
+#### Azure Managed Grafana dashboard import
+
+1. Download the NVIDIA DCGM dashboard JSON:
+
+  ```bash
+  curl -o dcgm-exporter-dashboard.json \
+    https://raw.githubusercontent.com/NVIDIA/dcgm-exporter/main/grafana/dcgm-exporter-dashboard.json
+  ```
+
+1. In Azure Managed Grafana, go to **Dashboards > Import**, upload the JSON file, and choose your Azure Monitor workspace as the data source.
+1. Review GPU utilization, memory, temperature, and power panels that ship with the NVIDIA dashboard.
+
+### Available DCGM metrics
+
+| Metric                      | Description                                |
+|-----------------------------|--------------------------------------------|
+| `DCGM_FI_DEV_GPU_UTIL`      | GPU utilization percentage                 |
+| `DCGM_FI_DEV_FB_USED`       | Frame buffer memory used (MB)              |
+| `DCGM_FI_DEV_FB_FREE`       | Frame buffer memory free (MB)              |
+| `DCGM_FI_DEV_GPU_TEMP`      | GPU temperature in °C                      |
+| `DCGM_FI_DEV_POWER_USAGE`   | GPU power draw in watts                    |
+| `DCGM_FI_DEV_SM_CLOCK`      | Streaming multiprocessor clock speed (MHz) |
+| `DCGM_FI_DEV_MEM_CLOCK`     | Memory clock speed (MHz)                   |
+| `DCGM_FI_DEV_PCIE_TX_BYTES` | PCIe transmit throughput (bytes)           |
+| `DCGM_FI_DEV_PCIE_RX_BYTES` | PCIe receive throughput (bytes)            |
+| `DCGM_FI_DEV_XID_ERRORS`    | GPU XID error count                        |
+
+Common labels include `gpu` (index), `modelName`, `hostname`, `namespace`, and `pod` to help you pinpoint hot spots.
+
+### Troubleshooting GPU metrics
+
+1. Confirm DCGM exporter pods are healthy:
+
+  ```bash
+  kubectl get pods -n gpu-operator | grep dcgm
+  ```
+
+1. Inspect the PodMonitor resource:
+
+  ```bash
+  kubectl get podmonitor -n kube-system nvidia-dcgm-exporter
+  kubectl describe podmonitor -n kube-system nvidia-dcgm-exporter
+  ```
+
+1. Validate the metrics endpoint locally:
+
+  ```bash
+  kubectl port-forward -n gpu-operator <dcgm-pod-name> 9400:9400
+  curl http://localhost:9400/metrics | grep DCGM
+  ```
+
+If metrics still do not appear, verify that Azure Monitor workspace ingestion is enabled and check for Kubernetes network policies blocking access between `kube-system` and `gpu-operator` namespaces.
+
+Run `./scripts/validate-gpu-metrics.sh` for an automated health check. Set `AZMON_PROMETHEUS_ENDPOINT=https://<workspace>.<region>.prometheus.monitor.azure.com` (and optionally `AZMON_PROMETHEUS_QUERY`) to include a live Prometheus query.
+
 ## Sample GPU workload
 
 ```yaml

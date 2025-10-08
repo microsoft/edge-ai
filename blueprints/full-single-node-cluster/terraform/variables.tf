@@ -316,7 +316,7 @@ variable "resolver_subnet_address_prefix" {
 
 variable "should_enable_private_endpoints" {
   type        = bool
-  description = "Whether to enable private endpoints for Key Vault and the storage account"
+  description = "Whether to enable private endpoints across Key Vault, storage, and observability resources to route monitoring ingestion through private link"
   default     = false
 }
 

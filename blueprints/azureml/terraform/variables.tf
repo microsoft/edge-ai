@@ -162,6 +162,12 @@ variable "node_pools" {
   default     = {}
 }
 
+variable "should_disable_aks_local_account" {
+  type        = bool
+  description = "Whether to disable the local admin account for the AKS cluster"
+  default     = false
+}
+
 /*
  *  Scenario Selection Flags - Optional
  */
@@ -355,7 +361,7 @@ variable "virtual_network_config" {
 
 variable "should_enable_private_endpoints" {
   type        = bool
-  description = "Whether to enable private endpoints for Key Vault and Storage Account. Requires networking to be created or existing."
+  description = "Whether to enable private endpoints across Key Vault, Storage Account, and observability resources to support managed Prometheus ingestion. Requires networking to be created or existing"
   default     = false
 }
 
@@ -772,8 +778,8 @@ variable "cluster_integration_instance_types" {
   type = map(object({
     nodeSelector = optional(map(string))
     resources = optional(object({
-      requests = optional(map(string))
-      limits   = optional(map(string))
+      requests = optional(map(any))
+      limits   = optional(map(any))
     }))
   }))
   description = "Instance types configuration for Kubernetes compute. Key is the instance type name, value contains nodeSelector and resource specifications."

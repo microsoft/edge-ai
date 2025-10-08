@@ -35,6 +35,12 @@ helm upgrade -i --wait gpu-operator -n gpu-operator --version 24.9.1 \
 	--create-namespace nvidia/gpu-operator --disable-openapi-validation \
 	-f ./values/nvidia-gpu-operator-values.yaml
 
+###
+# GPU Metrics Monitoring
+###
+kubectl apply -f ./manifests/gpu-podmonitor.yaml
+kubectl get podmonitor -n kube-system nvidia-dcgm-exporter
+
 # Install KAI Scheduler into the cluster for NVIDIA OSMO
 helm fetch oci://ghcr.io/nvidia/kai-scheduler/kai-scheduler --version v0.5.5
 helm upgrade -i --wait -n kai-scheduler kai-scheduler kai-scheduler-v0.5.5.tgz \

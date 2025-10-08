@@ -86,6 +86,7 @@ Creates a new Azure Monitor Workspace, Log Analytics Workspace and Azure Managed
 | application\_insights | The Application Insights resource object with connection details for monitoring applications. |
 | azure\_managed\_grafana | n/a |
 | azure\_monitor\_workspace | n/a |
+| data\_collection\_endpoint | n/a |
 | log\_analytics\_workspace | n/a |
 | logs\_data\_collection\_rule | n/a |
 | metrics\_data\_collection\_rule | n/a |

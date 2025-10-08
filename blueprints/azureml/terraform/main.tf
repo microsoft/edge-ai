@@ -239,7 +239,7 @@ module "cloud_kubernetes" {
   count  = var.should_create_aks_cluster ? 1 : 0
   source = "../../../src/000-cloud/070-kubernetes/terraform"
 
-  depends_on = [module.cloud_networking, module.cloud_acr]
+  depends_on = [module.cloud_networking, module.cloud_acr, module.cloud_observability]
 
   environment     = var.environment
   resource_prefix = var.resource_prefix
@@ -276,6 +276,7 @@ module "cloud_kubernetes" {
   // Azure Monitor configuration
   log_analytics_workspace      = try(module.cloud_observability[0].log_analytics_workspace, null)
   metrics_data_collection_rule = try(module.cloud_observability[0].metrics_data_collection_rule, null)
+  logs_data_collection_rule    = try(module.cloud_observability[0].logs_data_collection_rule, null)
 
   // Enable workload identity by default for Azure ML scenarios
   should_enable_workload_identity = true
@@ -283,6 +284,7 @@ module "cloud_kubernetes" {
 
   default_outbound_access_enabled = local.default_outbound_access_enabled
   nat_gateway                     = try(module.cloud_networking[0].nat_gateway, null)
+  should_disable_local_account    = var.should_disable_aks_local_account
 
   // AKS Command Invoke Configuration for chart installation
   aks_command_invoke_configurations = var.should_install_charts ? {

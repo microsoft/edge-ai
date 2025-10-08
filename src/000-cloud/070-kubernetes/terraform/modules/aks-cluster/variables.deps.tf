@@ -57,3 +57,12 @@ variable "metrics_data_collection_rule" {
   description = "Metrics data collection rule object from observability component for custom Azure Monitor workspace association"
   default     = null
 }
+
+variable "logs_data_collection_rule" {
+  type = object({
+    id = string
+  })
+  description = "Logs data collection rule object from observability component for custom Azure Monitor workspace association"
+  default     = null
+}
+

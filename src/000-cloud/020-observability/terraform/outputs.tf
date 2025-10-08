@@ -24,6 +24,10 @@ output "metrics_data_collection_rule" {
   sensitive = true
 }
 
+output "data_collection_endpoint" {
+  value = azurerm_monitor_data_collection_endpoint.data_collection_endpoint
+}
+
 output "application_insights" {
   description = "The Application Insights resource object with connection details for monitoring applications."
   value       = module.application_insights.application_insights

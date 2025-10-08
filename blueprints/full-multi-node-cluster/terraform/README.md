@@ -112,7 +112,7 @@ with the single-node blueprint while preserving multi-node specific capabilities
 | should\_enable\_oidc\_issuer | Whether to enable the OIDC issuer URL for the cluster | `bool` | `true` | no |
 | should\_enable\_opc\_ua\_simulator | Whether to deploy the OPC UA simulator to the cluster | `bool` | `false` | no |
 | should\_enable\_otel\_collector | Whether to deploy the OpenTelemetry Collector and Azure Monitor ConfigMap | `bool` | `true` | no |
-| should\_enable\_private\_endpoints | Whether to enable private endpoints for Key Vault, storage, and other services | `bool` | `false` | no |
+| should\_enable\_private\_endpoints | Whether to enable private endpoints across Key Vault, storage, and observability resources so Prometheus ingestion remains on private link | `bool` | `false` | no |
 | should\_enable\_private\_resolver | Whether to enable Azure Private Resolver for VPN client DNS resolution of private endpoints | `bool` | `false` | no |
 | should\_enable\_storage\_public\_network\_access | Whether to enable public network access for the storage account | `bool` | `true` | no |
 | should\_enable\_vpn\_gateway | Whether to create a VPN gateway for secure access to private endpoints | `bool` | `false` | no |

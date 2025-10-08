@@ -210,8 +210,8 @@ variable "instance_types" {
   type = map(object({
     nodeSelector = optional(map(string))
     resources = optional(object({
-      requests = optional(map(string))
-      limits   = optional(map(string))
+      requests = optional(map(any))
+      limits   = optional(map(any))
     }))
   }))
   description = "Instance types configuration for Kubernetes compute. Key is the instance type name, value contains nodeSelector and resource specifications."

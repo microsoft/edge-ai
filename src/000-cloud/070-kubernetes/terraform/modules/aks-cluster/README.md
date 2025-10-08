@@ -10,12 +10,13 @@ Supports private clusters with optional private endpoints and DNS zone managemen
 | Name | Version |
 |------|---------|
 | terraform | >= 1.9.8, < 2.0 |
+| azurerm | >= 4.8.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| azurerm | n/a |
+| azurerm | >= 4.8.0 |
 
 ## Resources
 
@@ -23,6 +24,7 @@ Supports private clusters with optional private endpoints and DNS zone managemen
 |------|------|
 | [azurerm_kubernetes_cluster.aks](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/kubernetes_cluster) | resource |
 | [azurerm_kubernetes_cluster_node_pool.additional](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/kubernetes_cluster_node_pool) | resource |
+| [azurerm_monitor_data_collection_rule_association.aks_logs](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_data_collection_rule_association) | resource |
 | [azurerm_monitor_data_collection_rule_association.aks_metrics](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_data_collection_rule_association) | resource |
 | [azurerm_private_dns_a_record.aks_a_record](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_dns_a_record) | resource |
 | [azurerm_private_dns_zone.aks_private_dns_zone](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_dns_zone) | resource |
@@ -64,6 +66,7 @@ Supports private clusters with optional private endpoints and DNS zone managemen
 | azure\_monitor\_labels\_allowed | Comma-separated list of additional Kubernetes resource labels to scrape for Azure Monitor. Format: "pods=[label1,...],namespaces=[label2,...]". When null, only name and namespace labels are included (recommended for performance). | `string` | `null` | no |
 | cluster\_admin\_oid | The Object ID that will be given Azure Kubernetes Cluster Admin Role permissions on the cluster. | `string` | `null` | no |
 | log\_analytics\_workspace | Log Analytics workspace object for Microsoft Defender configuration | ```object({ id = string })``` | `null` | no |
+| logs\_data\_collection\_rule | Logs data collection rule object from observability component for custom Azure Monitor workspace association | ```object({ id = string })``` | `null` | no |
 | metrics\_data\_collection\_rule | Metrics data collection rule object from observability component for custom Azure Monitor workspace association | ```object({ id = string })``` | `null` | no |
 | should\_enable\_azure\_monitor\_metrics | Whether to enable Azure Monitor Metrics (Prometheus) extension for the AKS cluster. | `bool` | `true` | no |
 | should\_enable\_oidc\_issuer | Whether to enable the OIDC issuer URL for the cluster. Required for workload identity. | `bool` | `false` | no |

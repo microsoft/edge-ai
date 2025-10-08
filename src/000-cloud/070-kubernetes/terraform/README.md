@@ -57,6 +57,7 @@ Deploys Azure Kubernetes Service resources
 | enable\_auto\_scaling | Should enable auto-scaler for the default node pool. | `bool` | `false` | no |
 | instance | Instance identifier for naming resources: 001, 002, etc | `string` | `"001"` | no |
 | log\_analytics\_workspace | Log Analytics workspace object for Microsoft Defender configuration. | ```object({ id = string name = string workspace_id = string primary_shared_key = string })``` | `null` | no |
+| logs\_data\_collection\_rule | Logs data collection rule object from observability component for custom Azure Monitor workspace association | ```object({ id = string })``` | `null` | no |
 | max\_count | The maximum number of nodes which should exist in the default node pool. Valid values are between 0 and 1000. | `number` | `null` | no |
 | metrics\_data\_collection\_rule | Metrics data collection rule object from observability component for custom Azure Monitor workspace association | ```object({ id = string })``` | `null` | no |
 | min\_count | The minimum number of nodes which should exist in the default node pool. Valid values are between 0 and 1000. | `number` | `null` | no |
@@ -69,7 +70,7 @@ Deploys Azure Kubernetes Service resources
 | should\_add\_current\_user\_cluster\_admin | Whether to assign the current logged in user Azure Kubernetes Cluster Admin Role permissions on the cluster when 'cluster\_admin\_oid' is not provided. | `bool` | `true` | no |
 | should\_create\_aks | Should create Azure Kubernetes Service. Default is false. | `bool` | `false` | no |
 | should\_create\_arc\_cluster\_instance | Should create an Azure Arc Cluster Instance. Default is false. | `bool` | `false` | no |
-| should\_disable\_local\_account | Whether to disable local admin account for the AKS cluster. Recommended for security compliance (CKV\_AZURE\_141). | `bool` | `true` | no |
+| should\_disable\_local\_account | Whether to disable local admin account for the AKS cluster. Recommended for security compliance (CKV\_AZURE\_141). | `bool` | `false` | no |
 | should\_enable\_azure\_monitor\_metrics | Whether to enable Azure Monitor Metrics (Prometheus) extension for the AKS cluster. | `bool` | `true` | no |
 | should\_enable\_oidc\_issuer | Whether to enable the OIDC issuer URL for the cluster. Required for workload identity. | `bool` | `false` | no |
 | should\_enable\_private\_cluster | Whether to enable private cluster mode for AKS | `bool` | `false` | no |

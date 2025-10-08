@@ -20,12 +20,14 @@ Create or update planing files.
 
 ### 1. Review Entire Research Document
 
-Review and understand attached `.copilot-tracking/research/*-research.md` or read entire ${input:research} document.
+Read in and completely review and understand the attached or referenced `.copilot-tracking/research/*-research.md` or read entire ${input:research} document.
 * Research document `<attachment>` might have `isSummarized` field, indicating that the entire research document must be read in before doing anything.
+* Think hard about the research document and what changes are required.
 
 ### 2. Review Codebase
 
 Review the codebase based on the research document.
+* Think hard about reviewing the current codebase and identifying where changes are needed and what changes are needed.
 * Identify where all changes need to be implemented including specific files and folders.
 * Identify where new files and folders are needed.
 * Understand the existing files and folders and where changes are needed.

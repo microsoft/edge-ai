@@ -61,6 +61,7 @@ module "aks_cluster" {
   aks_identity                 = var.aks_identity
   log_analytics_workspace      = var.log_analytics_workspace
   metrics_data_collection_rule = var.metrics_data_collection_rule
+  logs_data_collection_rule    = var.logs_data_collection_rule
 
   // Core parameters next
   environment     = var.environment

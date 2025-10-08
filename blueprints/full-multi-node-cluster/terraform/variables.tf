@@ -331,7 +331,7 @@ variable "should_enable_oidc_issuer" {
 
 variable "should_enable_private_endpoints" {
   type        = bool
-  description = "Whether to enable private endpoints for Key Vault, storage, and other services"
+  description = "Whether to enable private endpoints across Key Vault, storage, and observability resources so Prometheus ingestion remains on private link"
   default     = false
 }
 
