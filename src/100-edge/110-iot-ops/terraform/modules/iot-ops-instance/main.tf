@@ -176,6 +176,7 @@ resource "azapi_resource" "instance" {
       features = try(var.aio_features, null)
     }
   }
+  depends_on             = [azurerm_arc_kubernetes_cluster_extension.iot_operations]
   response_export_values = ["name", "id"]
 
   schema_validation_enabled = false # Disable schema validation for azapi_resource for 2025-07-01-preview until azapi provider supports it
