@@ -335,6 +335,7 @@ module "edge_messaging" {
   aio_identity         = module.cloud_security_identity.aio_identity
   eventgrid            = module.cloud_messaging.eventgrid
   eventhub             = module.cloud_messaging.eventhubs[0]
+  adr_namespace        = module.cloud_data.adr_namespace
 }
 
 module "edge_azureml" {

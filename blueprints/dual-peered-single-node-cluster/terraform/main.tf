@@ -256,6 +256,7 @@ module "cluster_a_edge_messaging" {
   aio_identity         = module.cluster_a_cloud_security_identity.aio_identity
   eventgrid            = module.cluster_a_cloud_messaging.eventgrid
   eventhub             = module.cluster_a_cloud_messaging.eventhubs[0]
+  adr_namespace        = module.cluster_a_cloud_data.adr_namespace
 }
 
 // Cluster B - Secondary cluster with second address space
@@ -498,6 +499,7 @@ module "cluster_b_edge_messaging" {
   aio_identity         = module.cluster_b_cloud_security_identity.aio_identity
   eventgrid            = module.cluster_b_cloud_messaging.eventgrid
   eventhub             = module.cluster_b_cloud_messaging.eventhubs[0]
+  adr_namespace        = module.cluster_b_cloud_data.adr_namespace
 }
 
 // VNet Peering between Cluster A and Cluster B

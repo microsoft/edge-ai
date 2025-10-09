@@ -32,6 +32,15 @@ param aioDataflowProfileName string = 'default'
 @description('The resource ID of the Custom Location.')
 param customLocationId string
 
+@description('The name of the Azure IoT Operations Device Registry namespace used when referencing assets.')
+param adrNamespaceName string?
+
+/*
+  Variables
+*/
+
+var assetRef = !empty(adrNamespaceName) ? '${adrNamespaceName}/${assetName}' : assetName
+
 /*
   Resources
 */
@@ -84,7 +93,7 @@ resource dataflowToEventGrid 'Microsoft.IoTOperations/instances/dataflowProfiles
         operationType: 'Source'
         sourceSettings: {
           endpointRef: 'default'
-          assetRef: assetName
+          assetRef: assetRef
           serializationFormat: 'Json'
           dataSources: ['azure-iot-operations/data/${assetName}']
         }

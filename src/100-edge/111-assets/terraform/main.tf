@@ -82,7 +82,7 @@ locals {
   }
 
   default_namespaced_asset = {
-    name         = "namespaced-oven"
+    name         = "namespace-oven"
     display_name = "oven namespaced"
     device_ref = {
       device_name   = local.default_namespaced_device.name
@@ -123,7 +123,7 @@ locals {
           {
             target = "Mqtt"
             configuration = {
-              topic  = "azure-iot-operations/data/oven-ns"
+              topic  = "azure-iot-operations/data/namespace-oven"
               retain = "Never"
               qos    = "Qos1"
             }

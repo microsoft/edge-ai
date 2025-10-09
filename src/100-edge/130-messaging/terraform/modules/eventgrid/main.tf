@@ -4,6 +4,10 @@
  * Provisions the ARM based data flow endpoint and data flow for Event Grid, requires Asset
  */
 
+locals {
+  asset_ref = var.adr_namespace != null ? "${var.adr_namespace.name}/${var.asset_name}" : var.asset_name
+}
+
 resource "azapi_resource" "dataflow_endpoint_to_eventgrid" {
   type      = "Microsoft.IoTOperations/instances/dataflowEndpoints@2025-07-01-preview"
   name      = "dfe-eg-${var.resource_prefix}-${var.environment}-sample-${var.instance}"
@@ -52,7 +56,7 @@ resource "azapi_resource" "dataflow_to_eventgrid" {
           operationType = "Source"
           sourceSettings = {
             endpointRef         = "default"
-            assetRef            = var.asset_name
+            assetRef            = local.asset_ref
             serializationFormat = "Json"
             dataSources         = ["azure-iot-operations/data/${var.asset_name}"]
           }
