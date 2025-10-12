@@ -102,13 +102,24 @@ This template depends on the following:
 
 The template executes a series of steps to run MegaLinter and process the results:
 
-1. **MegaLinter Execution**:
-   - Pulls the MegaLinter Docker image from the registry
+1. **Docker Cleanup (Before MegaLinter)**:
+   - Removes unused Docker images, containers, and volumes to prevent disk exhaustion
+   - Reports disk usage before and after cleanup
+   - Frees ~10-20 GB of disk space on agents
+   - Adds ~30-60 seconds to pipeline duration
+
+2. **MegaLinter Execution**:
+   - Pulls the MegaLinter Docker image from the registry (~12 GB uncompressed)
    - Runs the Docker container with repository-specific configuration
    - Mounts the repository as a volume for analysis
    - Sets environment variables to control MegaLinter behavior
 
-2. **Result Processing**:
+3. **Docker Cleanup (After MegaLinter)**:
+   - Frees MegaLinter container and images immediately (~12 GB)
+   - Prevents disk space accumulation across concurrent builds
+   - Ensures agents remain healthy for subsequent builds
+
+4. **Result Processing**:
    - Publishes linting results as a pipeline artifact
    - Posts comments to the pull request if the Azure Reporter is enabled
    - Fails the build if linting issues are found and configured to do so
@@ -116,8 +127,37 @@ The template executes a series of steps to run MegaLinter and process the result
 ### Key Components
 
 - **Docker Container**: Runs MegaLinter in an isolated environment with all necessary tools
+- **Docker Cleanup**: Runs before and after MegaLinter to prevent disk exhaustion on agent pool VMs
 - **Configuration Files**: Controls which linters run and how they evaluate code
 - **Azure Reporter**: Integrates with Azure DevOps PR system to provide feedback directly in code reviews
+
+### Docker Disk Management
+
+**Why Cleanup is Required**:
+
+Azure Managed DevOps Pool agents have limited disk space (typically 128 GB OS disk). Without cleanup:
+
+- MegaLinter consumes ~12 GB per run (uncompressed image + containers)
+- Application builds consume 40-50 GB (media capture, ROS2, Rust services)
+- With 4 concurrent agents, disk exhaustion occurs within 2-3 build cycles
+
+**Cleanup Strategy**:
+
+- **Before MegaLinter**: Clears disk space from previous builds (ensures clean start)
+- **After MegaLinter**: Frees MegaLinter's ~12 GB immediately (prevents accumulation)
+
+**Command Used**: `docker system prune -af --volumes`
+
+- `-a`: Remove ALL unused images, not just dangling ones
+- `-f`: Force (no confirmation prompt, required for CI/CD)
+- `--volumes`: Remove unused volumes
+
+**Expected Impact**:
+
+- Frees 10-20 GB per cleanup operation
+- Adds ~90-120 seconds total to pipeline (2 cleanups × 45-60s each)
+- Prevents "No space left on device" build failures
+- Enables reliable concurrent builds
 
 ### Error Handling
 
