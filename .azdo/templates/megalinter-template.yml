@@ -87,6 +87,21 @@ jobs:
         fetchTags: false
         persistCredentials: true
 
+      # Docker cleanup before MegaLinter
+      - script: |
+          echo "=== Docker System Cleanup (Before MegaLinter) ==="
+          echo "Disk usage BEFORE cleanup:"
+          docker system df
+          echo ""
+          echo "Removing unused Docker resources to prevent disk exhaustion..."
+          docker system prune -af --volumes
+          echo ""
+          echo "Disk usage AFTER cleanup:"
+          docker system df
+          echo "=== Cleanup Complete ==="
+        displayName: 'Docker Cleanup - Before MegaLinter'
+        condition: succeededOrFailed()
+
       - pwsh: |
           $ErrorActionPreference = 'Stop'
           Set-StrictMode -Version 3.0
@@ -400,4 +415,19 @@ jobs:
             done < "$f"
           done
         displayName: Emit MegaLinter error details
+        condition: succeededOrFailed()
+
+      # Docker cleanup after MegaLinter
+      - script: |
+          echo "=== Docker System Cleanup (After MegaLinter) ==="
+          echo "Disk usage BEFORE cleanup:"
+          docker system df
+          echo ""
+          echo "Freeing MegaLinter artifacts (~12 GB)..."
+          docker system prune -af --volumes
+          echo ""
+          echo "Disk usage AFTER cleanup:"
+          docker system df
+          echo "=== Cleanup Complete ==="
+        displayName: 'Docker Cleanup - After MegaLinter'
         condition: succeededOrFailed()
