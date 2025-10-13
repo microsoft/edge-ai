@@ -7,7 +7,7 @@
 # =============================================================================
 
 # STAGE 1: Builder - Builds Python wheels for dependencies
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/cbl-mariner/base/python:3.9 AS builder
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/azurelinux/base/python:3.12.9-4-azl3.0.20250910@sha256:4033c29d6a292bd24a68cf0c42b650222a1f1a40474486461accaf9ae51a5ca2 AS builder
 
 WORKDIR /app
 
@@ -16,7 +16,7 @@ COPY src/requirements.txt .
 RUN pip wheel --no-cache-dir --wheel-dir /wheels -r requirements.txt
 
 # STAGE 2: Runtime - Creates the minimal production image
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/cbl-mariner/base/python:3.9 AS runtime
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/azurelinux/base/python:3.12.9-4-azl3.0.20250910@sha256:4033c29d6a292bd24a68cf0c42b650222a1f1a40474486461accaf9ae51a5ca2 AS runtime
 
 WORKDIR /app
 

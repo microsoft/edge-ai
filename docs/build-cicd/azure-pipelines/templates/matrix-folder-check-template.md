@@ -2,7 +2,7 @@
 title: Matrix Folder Check Template
 description: Azure DevOps pipeline template for detecting directory changes and creating dynamic outputs for conditional execution
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 09/21/2025
 ms.topic: concept
 estimated_reading_time: 7
 keywords:
@@ -52,7 +52,7 @@ optimizing pipeline execution time and resources.
 | `dependsOn`         | object  | No       | `[]`                                   | Specifies which jobs this job depends on                                             |
 | `displayName`       | string  | No       | `'Check for changes in src directory'` | Custom display name for the job                                                      |
 | `condition`         | string  | No       | `succeeded()`                          | Condition that determines when this job runs                                         |
-| `includeAllFolders` | boolean | No       | `false`                                | When true, returns all folders with Terraform and Bicep files, not just changed ones |
+| `includeIaCFolders` | boolean | No       | `false`                                | When true, returns all folders with Terraform and Bicep files, not just changed ones |
 
 ## Outputs
 
@@ -105,7 +105,7 @@ jobs:
   - template: .azdo/templates/matrix-folder-check-template.yml
     parameters:
       displayName: "Include All Components"
-      includeAllFolders: true
+      includeIaCFolders: true
 ```
 
 ## Implementation Details
@@ -113,7 +113,7 @@ jobs:
 The template executes a series of steps to identify changes and create structured outputs:
 
 1. **Repository Checkout**: Checks out the repository with full history (`fetchDepth: 0`)
-2. **Change Detection**: Uses the `detect-folder-changes.sh` script to process changes
+2. **Change Detection**: Uses the `Detect-Folder-Changes.ps1` script to process changes
 3. **Output Processing**: Extracts values from the script's JSON output and sets them as pipeline variables
 
 The script handles:
@@ -126,7 +126,7 @@ The script handles:
 
 ### Key Components
 
-- **External Script**: Uses `./scripts/build/detect-folder-changes.sh` for efficient change detection
+- **External Script**: Uses `./scripts/build/Detect-Folder-Changes.ps1` for efficient change detection
 - **Script Parameters**:
 - `--include-all-folders`: When provided, returns all folders with Terraform and Bicep files, not just changed ones
 - `--base-branch`: Allows specifying a different base branch (defaults to origin/main)
@@ -190,7 +190,7 @@ jobs:
   - template: .azdo/templates/matrix-folder-check-template.yml
     parameters:
       displayName: "Get All Components"
-      includeAllFolders: true
+      includeIaCFolders: true
 
   - job: TestAllComponents
     dependsOn: MatrixBuildFolderCheck
@@ -208,7 +208,7 @@ Common issues and their solutions:
 1. **Empty Matrix Error**:
    - **Symptom**: Downstream job fails with "A matrix job cannot be empty"
    - **Solution**: The condition should check if changes were detected before referencing the matrix variable
-   - **Note**: When using `includeAllFolders: true`, this is less likely to occur as it will find all relevant folders
+   - **Note**: When using `includeIaCFolders: true`, this is less likely to occur as it will find all relevant folders
 
 2. **JSON Format Issues**:
    - **Symptom**: Azure DevOps complains about matrix format
@@ -216,12 +216,12 @@ Common issues and their solutions:
 
 3. **Script Execution Issues**:
    - **Symptom**: The pipeline fails with script execution errors
-   - **Solution**: Ensure the detect-folder-changes.sh script has execute permissions and is properly located at ./scripts/build/detect-folder-changes.sh
+   - **Solution**: Ensure the Detect-Folder-Changes.ps1 script exists and is properly located at ./scripts/build/Detect-Folder-Changes.ps1
 
 4. **Git History Issues**:
    - **Symptom**: Change detection isn't finding changes that you know exist
    - **Solution**: Ensure the repository is checked out with `fetchDepth: 0` to get full history
-   - **Alternative**: Use `includeAllFolders: true` to bypass change detection entirely
+   - **Alternative**: Use `includeIaCFolders: true` to bypass change detection entirely
 
 5. **Variable Access Errors**:
    - **Symptom**: Downstream jobs can't access the output variables

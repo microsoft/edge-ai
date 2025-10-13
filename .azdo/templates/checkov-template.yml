@@ -50,6 +50,18 @@ jobs:
     steps:
       - checkout: self
 
+      # For PR builds, checkout the source branch HEAD instead of merge ref
+      - task: Bash@3
+        displayName: 'Checkout PR source branch HEAD'
+        condition: eq(variables['Build.Reason'], 'PullRequest')
+        inputs:
+          targetType: 'inline'
+          script: |
+            BRANCH_NAME=$(echo "$(System.PullRequest.SourceBranch)" | sed 's|^refs/heads/||')
+            echo "Switching to PR source branch HEAD: $BRANCH_NAME"
+            git checkout "$BRANCH_NAME"
+            git log -1 --oneline
+
       - task: UsePythonVersion@0
         inputs:
           versionSpec: '3.9'
@@ -64,7 +76,7 @@ jobs:
             Write-Host "Detecting folders with IaC files..."
 
             # Capture the JSON string output directly from the script
-            & "$(Build.SourcesDirectory)/scripts/Detect-Folder-Changes.ps1" -IncludeAllFolders | `
+            & "$(Build.SourcesDirectory)/scripts/build/Detect-Folder-Changes.ps1"           -IncludeIaCFolders | `
               & "$(Build.SourcesDirectory)/scripts/Run-Checkov.ps1" `
                 -OutputFolder "$(Build.SourcesDirectory)/checkov-results" `
                 -OutputFile "code-analysis.xml"

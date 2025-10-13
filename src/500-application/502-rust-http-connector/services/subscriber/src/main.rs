@@ -1,13 +1,11 @@
 use azure_iot_operations_mqtt::control_packet::QoS;
 use azure_iot_operations_mqtt::interface::{ManagedClient, MqttPubSub, PubReceiver};
-use azure_iot_operations_mqtt::session::{
-    Session, SessionManagedClient, SessionOptionsBuilder,
-};
+use azure_iot_operations_mqtt::session::{Session, SessionManagedClient, SessionOptionsBuilder};
 use azure_iot_operations_mqtt::MqttConnectionSettingsBuilder;
 use std::env;
 use tokio::task;
+use tracing::{event, info, Level};
 use tracing_subscriber::filter::EnvFilter;
-use tracing::{info, Level, event};
 
 // Environment variable names for MQTT configuration
 const MQ_DATA_TOPIC_VAR: &str = "MQ_DATA_TOPIC";
@@ -44,8 +42,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let client = session.create_managed_client();
 
     // Spawn tasks for both data and error topic subscribers
-    let data_handle = task::spawn(subscribe_and_receive(client.clone(), MQ_DATA_TOPIC_VAR, "data"));
-    let error_handle = task::spawn(subscribe_and_receive(client.clone(), MQ_ERROR_TOPIC_VAR, "error"));
+    let data_handle = task::spawn(subscribe_and_receive(
+        client.clone(),
+        MQ_DATA_TOPIC_VAR,
+        "data",
+    ));
+    let error_handle = task::spawn(subscribe_and_receive(
+        client.clone(),
+        MQ_ERROR_TOPIC_VAR,
+        "error",
+    ));
 
     // Run the MQTT session concurrently (this is required for message processing)
     session.run().await.unwrap();
@@ -61,16 +67,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 /// - `client`: The managed MQTT client.
 /// - `topic_env_var`: The environment variable name for the topic.
 /// - `label`: A label for logging (e.g., "data" or "error").
-async fn subscribe_and_receive(
-    client: SessionManagedClient,
-    topic_env_var: &str,
-    label: &str,
-) {
+async fn subscribe_and_receive(client: SessionManagedClient, topic_env_var: &str, label: &str) {
     // Retrieve the topic name from environment variables
     let topic = match env::var(topic_env_var) {
         Ok(val) => val,
         Err(_) => {
-            event!(Level::ERROR, "Environment variable '{}' not found", topic_env_var);
+            event!(
+                Level::ERROR,
+                "Environment variable '{}' not found",
+                topic_env_var
+            );
             return;
         }
     };
@@ -81,7 +87,12 @@ async fn subscribe_and_receive(
     let mut receiver = match client.create_filtered_pub_receiver(&topic) {
         Ok(r) => r,
         Err(e) => {
-            event!(Level::ERROR, "Failed to create filtered pub receiver for {}: {:?}", label, e);
+            event!(
+                Level::ERROR,
+                "Failed to create filtered pub receiver for {}: {:?}",
+                label,
+                e
+            );
             return;
         }
     };
@@ -90,7 +101,13 @@ async fn subscribe_and_receive(
 
     // Subscribe to the MQTT topic with QoS level AtLeastOnce
     if let Err(e) = client.subscribe(topic.clone(), QoS::AtLeastOnce).await {
-        event!(Level::ERROR, "Failed to subscribe to {} topic {}: {:?}", label, topic, e);
+        event!(
+            Level::ERROR,
+            "Failed to subscribe to {} topic {}: {:?}",
+            label,
+            topic,
+            e
+        );
         return;
     }
 

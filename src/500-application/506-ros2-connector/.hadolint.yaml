@@ -1,0 +1,10 @@
+# Hadolint configuration for ROS2 connector application
+#
+# ROS2 images are exempt from SHA256 pinning (DL3006) due to upstream team's
+# rolling tag strategy and build pruning practices. Timestamped ROS2 builds
+# are regularly deleted by the upstream team, making SHA256 pins unstable.
+#
+# See: scripts/security/Ros2ExclusionHelper.ps1
+---
+ignored:
+  - DL3006  # Ignore missing SHA256 digests on FROM statements

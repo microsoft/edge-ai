@@ -1,2 +1,5 @@
+[registries.crates-io]
+protocol = "sparse"
+
 [registries]
 aio-sdks = { index = "sparse+https://pkgs.dev.azure.com/azure-iot-sdks/iot-operations/_packaging/preview/Cargo/index/" }

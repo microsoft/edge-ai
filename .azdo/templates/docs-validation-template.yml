@@ -70,6 +70,14 @@ parameters:
     default:
       name: 'ai-on-edge-managed-pool'
       vmImage: 'ubuntu-latest'
+  # Target branch for change comparison (default: main)
+  - name: targetBranch
+    type: string
+    default: 'main'
+  # Automatically detect PR target branch (overrides targetBranch when Build.Reason == PullRequest)
+  - name: autoDetectTargetBranch
+    type: boolean
+    default: true
 
 jobs:
   - job: DocsValidation
@@ -83,6 +91,30 @@ jobs:
       # Checkout repo
       - checkout: self
         clean: true
+
+      # For PR builds, checkout the source branch HEAD instead of merge ref
+      - task: Bash@3
+        displayName: 'Checkout PR source branch HEAD'
+        condition: eq(variables['Build.Reason'], 'PullRequest')
+        inputs:
+          targetType: 'inline'
+          script: |
+            BRANCH_NAME=$(echo "$(System.PullRequest.SourceBranch)" | sed 's|^refs/heads/||')
+            echo "Switching to PR source branch HEAD: $BRANCH_NAME"
+            git checkout "$BRANCH_NAME"
+            git log -1 --oneline
+
+      # Dynamically detect target branch for change comparison
+      - bash: |
+          if [ "$(Build.Reason)" == "PullRequest" ] && [ "${{ parameters.autoDetectTargetBranch }}" == "True" ]; then
+            TARGET_BRANCH=$(echo "$(System.PullRequest.TargetBranch)" | sed 's|^refs/heads/||')
+            echo "Auto-detected PR target branch: $TARGET_BRANCH"
+          else
+            TARGET_BRANCH="${{ parameters.targetBranch }}"
+            echo "Using configured target branch: $TARGET_BRANCH"
+          fi
+          echo "##vso[task.setvariable variable=ComparisonTargetBranch]$TARGET_BRANCH"
+        displayName: 'Detect comparison target branch'
 
       - task: PowerShell@2
         displayName: "Detect Markdown Changes"
@@ -231,8 +263,8 @@ jobs:
                 $originalContent = $originalSidebars[$path]
 
                 # Compare content excluding timestamp differences
-                $originalClean = ($originalContent -replace "Generated on.*?\n", "")
-                $newClean = ($newContent -replace "Generated on.*?\n", "")
+                $originalClean = ($originalContent -replace "<!-- Generated on:.*?-->", "")
+                $newClean = ($newContent -replace "<!-- Generated on:.*?-->", "")
 
                 if ($originalClean -ne $newClean) {
                   $issues += "- $path is outdated"
@@ -344,8 +376,10 @@ jobs:
               }
             } else {
               Write-Host "✅ All sidebar sections are up to date" -ForegroundColor Green
+              exit 0
             }
 
+            # If we reach here, validation failed - restore content before exit
             foreach ($path in $originalSidebars.Keys) {
               if ($originalSidebars[$path] -ne "") {
                 $originalSidebars[$path] | Set-Content $path -NoNewline
@@ -401,8 +435,9 @@ jobs:
 
             # Get changed markdown files
             changed_files=""
-            if git merge-base HEAD origin/main >/dev/null 2>&1; then
-              changed_files=$(git diff --name-only $(git merge-base HEAD origin/main) HEAD | grep '\.md$' || true)
+            comparison_target="origin/$(ComparisonTargetBranch)"
+            if git merge-base HEAD "$comparison_target" >/dev/null 2>&1; then
+              changed_files=$(git diff --name-only $(git merge-base HEAD "$comparison_target") HEAD | grep '\.md$' || true)
             else
               # Fallback to HEAD~1 if merge-base fails
               changed_files=$(git diff --name-only HEAD~1 HEAD | grep '\.md$' || true)

@@ -34,6 +34,7 @@ services:
 
   # Bridge container: connected to both simulator and connector networks
   ros2-connector:
+    image: ${REGISTRY:-local}/${APPLICATION:-ros2-connector}/ros2-connector:${BUILD_ID:-latest}
     build:
       context: .
       dockerfile: ./services/ros2-connector/Dockerfile
@@ -75,6 +76,7 @@ services:
 
   # ROS2 Robot Simulator for testing (isolated on simulator-network)
   ros2-simulator:
+    image: ${REGISTRY:-local}/${APPLICATION:-ros2-connector}/ros2-simulator:${BUILD_ID:-latest}
     build:
       context: .
       dockerfile: ./services/ros2-simulator/Dockerfile

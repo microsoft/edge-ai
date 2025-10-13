@@ -1,6 +1,6 @@
-use serde_json::Value;
+use crate::json_validator::validate_instance;
 use jsonschema::{Draft, JSONSchema};
-use crate::json_validator::{validate_instance};
+use serde_json::Value;
 
 pub fn parse_json_schema(schema_str: &str) -> Result<Value, String> {
     // Parse the schema string
@@ -8,7 +8,7 @@ pub fn parse_json_schema(schema_str: &str) -> Result<Value, String> {
     Ok(schema)
 }
 
-pub fn validate_json(schema: Value, instance: Value, device_id: &str,) -> Result<String, String> {
+pub fn validate_json(schema: Value, instance: Value, device_id: &str) -> Result<String, String> {
     // Compile the schema and validate the instance
     let compiled = JSONSchema::options()
         .with_draft(Draft::Draft7)

@@ -211,6 +211,125 @@ For example:
 
 This naming convention is used by the build pipeline to properly tag and push images to the Azure Container Registry.
 
+### Rust Enterprise Package Feeds
+
+Applications using Rust reference packages may need a private artifact feed in enterprise environments. This repository uses Cargo's named registry feature to access packages from enterprise feeds.
+
+#### How Cargo Named Registries Work
+
+Cargo supports multiple package registries beyond the default crates.io. The build system uses a simple, transparent approach:
+
+**Registry Configuration** (`.cargo/config.toml`):
+
+```toml
+[registries]
+aio-sdks = { index = "sparse+https://pkgs.dev.azure.com/azure-iot-sdks/iot-operations/_packaging/preview/Cargo/index/" }
+```
+
+This configuration defines a named registry called `aio-sdks` that points to an Azure DevOps Artifacts feed containing Azure IoT Operations packages.
+
+**Application Dependencies** (application `Cargo.toml`):
+
+```toml
+[dependencies]
+azure_iot_operations_mqtt = { version = "0.9.0", registry = "aio-sdks" }
+```
+
+Applications explicitly specify `registry = "aio-sdks"` for packages from the private feed. This tells Cargo to fetch these packages from the Azure DevOps registry instead of crates.io.
+
+**Authentication:**
+
+- **Local Development**: Developers must authenticate to Azure DevOps using `cargo login --registry aio-sdks` with a Personal Access Token (PAT)
+- **Azure Pipelines**: Build pipeline automatically authenticates using managed service credentials configured in the pipeline
+
+#### Why This Approach is Used
+
+**Transparent Registry Access:**
+
+- Named registries allow packages from multiple sources without conflicts
+- No patching, stub implementations, or feature flag complexity required
+- Standard Cargo functionality with explicit registry declarations
+- Packages from crates.io and Azure DevOps artifact feeds coexist naturally
+
+**Enterprise Package Management:**
+
+- Private registries ensure intellectual property protection and controlled distribution
+- Enables dependency auditing and compliance tracking for regulated industries
+- Organizations maintain private Rust crates for proprietary algorithms and internal libraries
+
+**Build System Integration:**
+
+The build orchestrator (`scripts/build/application-builder.ps1`) includes basic Rust project detection via `Initialize-RustRegistryConfiguration`, which logs when a Rust project is detected and relies on the registry configuration already present in `.cargo/config.toml`.
+
+#### Dynamic Cargo.lock Generation for Multi-Registry Builds
+
+**Important**: Applications that switch between public (e.g. crates.io) and private (e.g. Azure DevOps Artifacts) package registries must **NOT** commit `Cargo.lock` files to version control. Instead, `Cargo.lock` should be generated dynamically during the Docker build process.
+
+**Dockerfile Pattern for Dynamic Lock File Generation:**
+
+```dockerfile
+# Copy workspace crates to root /crates for path dependencies
+COPY ./crates /crates
+
+# Generate lock files for workspace crates dynamically (uses find -execdir for resilience)
+RUN find /crates -name Cargo.toml -execdir cargo generate-lockfile \;
+
+WORKDIR /app
+
+# Copy dependency files first for better Docker layer caching
+COPY ./Cargo.toml ./Cargo.toml
+COPY ./.cargo ./.cargo
+
+# Generate Cargo.lock dynamically (supports registry switching)
+RUN cargo generate-lockfile
+
+# Continue with build...
+```
+
+**Why This Pattern is Required:**
+
+- **Registry Switching**: `Cargo.lock` files are environment-specific and contain resolved dependencies from different registries
+- **Local vs CI/CD**: Local development uses crates.io, Azure Pipelines use authenticated Azure DevOps Artifacts feeds
+- **Build Reproducibility**: Each environment generates its own lock file with correct registry URLs and authentication context
+- **Workspace Dependencies**: Workspace crates (in `crates/` directory) also need dynamic lock file generation
+- **Resilient Discovery**: Uses `find -execdir` to reliably discover and process all workspace crates regardless of directory structure or naming
+
+**Gitignore Configuration:**
+
+Ensure your application's `.gitignore` includes:
+
+```gitignore
+Cargo.lock
+```
+
+This prevents committing environment-specific lock files that would break builds in different contexts.
+
+**Reference Implementation:**
+
+See `503-media-capture-service/services/media-capture-service/Dockerfile` for a complete example of this pattern in production use.
+
+#### Adding New Private Packages
+
+When adding applications that reference new private packages from a registry:
+
+1. **Add dependency** in application `Cargo.toml` with explicit registry:
+
+   ```toml
+   [dependencies]
+   your_private_package = { version = "0.1.0", registry = "aio-sdks" }
+   ```
+
+2. **Authenticate locally** (one-time setup):
+
+   ```bash
+   cargo login --registry aio-sdks
+   # Enter your Azure DevOps Personal Access Token when prompted
+   ```
+
+3. **Build and test** - Cargo automatically fetches from the correct registry
+
+**Note:** All packages must explicitly specify `registry = "aio-sdks"` to use the private feed. Standard dependencies without a registry specification will continue to use crates.io.
+
 ## Supply Chain Security for Production Deployments
 
 ### SLSA Attestation Best Practices
@@ -334,6 +453,74 @@ This repository implements comprehensive supply chain security through:
 - **Dependency Management**: Automated updates via Dependabot and Azure DevOps scanning
 
 When implementing SLSA attestation for production deployments, build upon these existing security practices for comprehensive supply chain protection.
+
+### Docker Base Image Security Standards
+
+#### SHA256 Pinning Requirement
+
+All Docker base images MUST be pinned to SHA256 digests for supply chain security. This prevents supply chain attacks by ensuring immutable base image references.
+
+**Required Format:**
+
+```dockerfile
+FROM mcr.microsoft.com/azurelinux/base/core:3.0.20250910@sha256:919cfecd0ffe136adff3bea7030f3e6abc6633a4069a6de44b2070bb86c40c81
+```
+
+**Prohibited Format:**
+
+```dockerfile
+FROM mcr.microsoft.com/azurelinux/base/core:3.0.20250910
+```
+
+#### Policy Enforcement
+
+SHA256 pinning is enforced through multiple mechanisms:
+
+- **Hadolint DL3006 Rule:** Automated linting via MegaLinter (`.mega-linter.yml`) enforces SHA256 digests on all FROM statements
+- **Pre-Build Validation:** GitHub Actions workflow (`.github/workflows/application-matrix-builds.yml`) validates Dockerfiles before builds
+- **Security Gate:** Build pipeline fails if Dockerfiles lack SHA256 digests, preventing non-compliant images from being built
+
+#### Exception: ROS2 Images
+
+Applications in `506-ros2-connector` are exempt from SHA256 pinning due to upstream team's rolling tag strategy and build pruning practices. Timestamped ROS2 builds are regularly deleted by the upstream team, making SHA256 pins unstable.
+
+See: `src/500-application/506-ros2-connector/.hadolint.yaml` for local configuration
+
+#### Maintenance
+
+**Automated Updates:**
+
+- **Azure DevOps Dependabot:** Weekly SHA256 digest updates configured in `.azdo/pipelines/dependabot.yml`
+- **GitHub Dependabot:** Configured for GitHub-hosted repositories via `.github/dependabot.yml`
+
+**Manual Updates:**
+
+```powershell
+# Update all SHA256 digests across application Dockerfiles
+pwsh scripts/security/Update-DockerSHAPinning.ps1 -Force
+
+# Preview changes before applying (dry-run mode)
+pwsh scripts/security/Update-DockerSHAPinning.ps1 -WhatIf
+```
+
+**Staleness Monitoring:**
+
+```powershell
+# Check for outdated SHA256 digests (90-day threshold)
+pwsh scripts/security/Test-SHAStaleness.ps1 -MaxAgeDays 90
+
+# Generate detailed staleness report
+pwsh scripts/security/Test-SHAStaleness.ps1 -MaxAgeDays 90 -Detailed
+```
+
+#### Integration with Supply Chain Security
+
+This SHA256 pinning requirement complements the SLSA attestation practices documented above:
+
+- **Immutable Base Images:** SHA256 digests prevent supply chain tampering at the base image layer
+- **Combined Provenance:** Use SHA256 pinning with SLSA attestation for complete supply chain provenance tracking
+- **Automated Monitoring:** Security templates (`.azdo/templates/security-*.yml`) monitor both SHA staleness and attestation validity
+- **Defense in Depth:** Multiple enforcement layers (MegaLinter, pre-build validation, security gates) ensure compliance
 
 ---
 

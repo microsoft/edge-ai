@@ -9,20 +9,20 @@
 //! 3. Providing a function to extract the sender's span context from message metadata
 //! 4. Setting the parent context to maintain the trace across services
 
-use opentelemetry::Context;
 use opentelemetry::propagation::Extractor;
+use opentelemetry::Context;
+use opentelemetry::{global, trace::TracerProvider};
+use opentelemetry_otlp::SpanExporter;
 use tracing::Span;
 use tracing_opentelemetry::OpenTelemetrySpanExt;
 use tracing_subscriber::EnvFilter;
-use opentelemetry::{global, trace::TracerProvider};
-use opentelemetry_otlp::SpanExporter;
 
+use opentelemetry_sdk::propagation::TraceContextPropagator;
 use opentelemetry_sdk::trace::SdkTracerProvider;
 use opentelemetry_sdk::Resource;
-use tracing_subscriber::prelude::*;
-use opentelemetry_sdk::propagation::TraceContextPropagator;
-use tracing::{info, warn};
 use std::env;
+use tracing::{info, warn};
+use tracing_subscriber::prelude::*;
 
 /// Initialize the OpenTelemetry tracer provider with optional OTLP exporter
 ///
@@ -42,7 +42,10 @@ fn init_traces() -> SdkTracerProvider {
     // Check if the OTEL_EXPORTER_OTLP_ENDPOINT environment variable is set
     if let Ok(endpoint) = env::var("OTEL_EXPORTER_OTLP_ENDPOINT") {
         // OTEL_EXPORTER_OTLP_ENDPOINT is set, create an exporter
-        info!("OTEL_EXPORTER_OTLP_ENDPOINT is set to {}, enabling OpenTelemetry exporter", endpoint);
+        info!(
+            "OTEL_EXPORTER_OTLP_ENDPOINT is set to {}, enabling OpenTelemetry exporter",
+            endpoint
+        );
 
         // Try to create the OTLP exporter
         if let Ok(exporter) = SpanExporter::builder().with_tonic().build() {
@@ -109,9 +112,7 @@ pub fn setup_otel_tracing(tracer_name: &str) {
         info!("OpenTelemetry tracing initialized with OTLP exporter");
     } else {
         // Only use the fmt layer
-        tracing_subscriber::registry()
-            .with(fmt_layer)
-            .init();
+        tracing_subscriber::registry().with(fmt_layer).init();
         info!("OpenTelemetry tracing initialized without OTLP exporter");
     }
 }
@@ -127,7 +128,8 @@ impl<'a> Extractor for CustomUserDataExtractor<'a> {
     ///
     /// Used by the propagator to extract values like 'traceparent' header
     fn get(&self, key: &str) -> Option<&str> {
-        self.0.iter()
+        self.0
+            .iter()
             .find(|(k, _)| k == key)
             .map(|(_, v)| v.as_str())
     }
@@ -179,7 +181,10 @@ pub fn set_cloud_event_attributes(
     // Required CloudEvent attributes (as defined in the CloudEvents spec v1.0.2)
     span.set_attribute("cloudevents.id", cloud_event.id.to_string());
     span.set_attribute("cloudevents.source", cloud_event.source.to_string());
-    span.set_attribute("cloudevents.specversion", cloud_event.spec_version.to_string());
+    span.set_attribute(
+        "cloudevents.specversion",
+        cloud_event.spec_version.to_string(),
+    );
     span.set_attribute("cloudevents.type", cloud_event.event_type.to_string());
 
     // Optional CloudEvent attributes
@@ -221,5 +226,4 @@ pub fn handle_receive_trace(custom_user_data: &Vec<(String, String)>) {
     // Set the parent context to link this span to the sender's trace
     // This creates a continuous trace across services
     span.set_parent(cx);
-
 }

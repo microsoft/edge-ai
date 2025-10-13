@@ -1,0 +1,431 @@
+---
+# Application Build Template for Azure DevOps
+#
+# Purpose:
+# This template builds applications detected by matrix-folder-check-template. It consumes
+# application matrix data and executes generic builds for each changed application and its
+# services using Docker conventions and standardized build patterns.
+#
+# Functionality:
+# - Consumes application matrix data from matrix-folder-check-template
+# - Builds each application service using generic Docker build patterns
+# - Supports both single-service and multi-service applications
+# - Integrates with Azure Container Registry for image storage
+# - Generates SLSA-style security bundles per application
+# - Provides structured logging and build metrics
+#
+# Usage:
+# Call this template after matrix-folder-check-template, passing the application
+# matrix JSON output. The template will build all detected applications and their
+# services, pushing container images to the specified registry.
+#
+# Example Integration:
+# - template: templates/matrix-folder-check-template.yml
+# - ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
+#   - template: templates/application-build-template.yml
+#     parameters:
+#       applicationMatrix: $(ApplicationMatrixJson)
+#       pushImages: true
+
+parameters:
+  # Job name for this instance of the template
+  - name: jobName
+    type: string
+    default: 'ApplicationMatrixBuild'
+
+  # Dependencies for this job
+  - name: dependsOn
+    type: object
+    default: []
+
+  # Display name for the job
+  - name: displayName
+    type: string
+    default: 'Application Matrix Build'
+
+  # Condition for when to run this job
+  - name: condition
+    type: string
+    default: succeeded()
+
+  # Matrix variable from matrix-folder-check-template
+  - name: matrixVariable
+    type: string
+    default: 'dependencies.MatrixBuildFolderCheck.outputs[''matrixBuildFolderCheckTask.changedApplicationFolders'']'
+
+  # Changes flag from matrix-folder-check-template
+  - name: hasChangesVariable
+    type: string
+    default: 'dependencies.MatrixBuildFolderCheck.outputs[''matrixBuildFolderCheckTask.changesInApplications'']'
+
+  # Whether to break the build on security scan failures
+  - name: breakBuild
+    type: boolean
+    default: false
+
+  # Agent pool configuration
+  - name: agentPool
+    type: object
+    default:
+      name: 'ai-on-edge-managed-pool'
+      vmImage: 'ubuntu-latest'
+
+  # Container registry configuration
+  - name: registryName
+    type: string
+    default: 'local'
+
+  # Base tag for container images
+  - name: baseImageTag
+    type: string
+    default: '$(Build.BuildId)'
+
+  # Enable pushing images to registry
+  - name: pushImages
+    type: boolean
+    default: false
+
+  # Enable SLSA bundle generation
+  - name: enableSLSA
+    type: boolean
+    default: true
+
+  # Enable security scanning of built images
+  - name: enableSecurityScan
+    type: boolean
+    default: true
+
+  # Security vulnerability threshold (critical, high, medium, low, negligible)
+  - name: securityThreshold
+    type: string
+    default: 'critical'
+
+  # Additional Docker build arguments
+  - name: dockerBuildArgs
+    type: string
+    default: ''
+
+  # Maximum number of parallel application builds
+  - name: maxParallel
+    type: number
+    default: 5
+
+jobs:
+  - job: ${{ parameters.jobName }}
+    displayName: ${{ parameters.displayName }}
+    dependsOn: ${{ parameters.dependsOn }}
+    condition: ${{ parameters.condition }}
+    pool: ${{ parameters.agentPool }}
+    strategy:
+      matrix: $[ ${{ parameters.matrixVariable }} ]
+      maxParallel: ${{ parameters.maxParallel }}
+    steps:
+      - checkout: self
+        fetchDepth: 0
+        displayName: 'Checkout repository'
+
+      # For PR builds, checkout the source branch HEAD instead of merge ref
+      - task: Bash@3
+        displayName: 'Checkout PR source branch HEAD'
+        condition: eq(variables['Build.Reason'], 'PullRequest')
+        inputs:
+          targetType: 'inline'
+          script: |
+            BRANCH_NAME=$(echo "$(System.PullRequest.SourceBranch)" | sed 's|^refs/heads/||')
+            echo "Switching to PR source branch HEAD: $BRANCH_NAME"
+            git checkout "$BRANCH_NAME"
+            git log -1 --oneline
+
+      - task: PowerShell@2
+        displayName: 'Setup build environment'
+        inputs:
+          targetType: 'inline'
+          script: |
+            Write-Host "Setting up build environment..."
+
+            # Ensure Docker is available
+            if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
+              Write-Error "Docker is required but not installed"
+              exit 1
+            }
+
+            # Ensure jq is available for JSON processing
+            if (-not (Get-Command jq -ErrorAction SilentlyContinue)) {
+              Write-Host "Installing jq for JSON processing"
+              # Installation handled by agent or dev container
+            }
+
+            Write-Host "Build environment ready"
+
+      - task: Bash@3
+        displayName: 'Install Grype vulnerability scanner'
+        inputs:
+          targetType: 'inline'
+          script: |
+            echo "Installing Grype vulnerability scanner..."
+            curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin
+
+            echo "Verifying Grype installation..."
+            grype version
+
+            echo "Grype installed successfully"
+
+      - task: PowerShell@2
+        displayName: 'Install PowerShell Modules'
+        inputs:
+          targetType: 'inline'
+          pwsh: true
+          script: |
+            # Install powershell-yaml module for docker-compose.yml parsing
+            Write-Host "Installing PowerShell modules..."
+            Install-Module -Name powershell-yaml -Force -Scope CurrentUser -Repository PSGallery
+            Write-Host "PowerShell modules installed successfully"
+
+            # Verify module is available
+            Get-Module -Name powershell-yaml -ListAvailable
+
+
+      - task: PowerShell@2
+        displayName: 'Build application: $(appName)'
+        name: 'build_application'
+        inputs:
+          targetType: 'inline'
+          script: |
+            Write-Host "=== Building Application using Matrix Variables ==="
+
+            $appName = "$(appName)"
+            $appPath = "$(directory)"
+
+            Write-Host "Application Name: $appName"
+            Write-Host "Application Path: $appPath"
+
+            if ([string]::IsNullOrWhiteSpace($appPath)) {
+              Write-Error "Application path is empty or null"
+              exit 1
+            }
+
+            $buildStart = Get-Date
+
+            $builderParams = [ordered]@{
+              AppPath        = $appPath
+              AppName        = $appName
+              Registry       = '${{ parameters.registryName }}'
+              BuildId        = "$(Build.BuildId)"
+              BuildEnv       = "$(Agent.JobName)"
+              CommitSha      = "$(Build.SourceVersion)"
+              BaseImageTag   = '${{ parameters.baseImageTag }}'
+            }
+
+            if (-not [string]::IsNullOrWhiteSpace('${{ parameters.dockerBuildArgs }}')) {
+              $builderParams["DockerBuildArgs"] = '${{ parameters.dockerBuildArgs }}'
+            }
+
+            if ('${{ parameters.pushImages }}' -eq 'True') {
+              $builderParams["PushImages"] = $true
+            }
+
+            if ('${{ parameters.enableSLSA }}' -eq 'True') {
+              $builderParams["GenerateSlsa"] = $true
+            }
+
+            if ('${{ parameters.enableSecurityScan }}' -eq 'True') {
+              $builderParams["EnableSecurityScan"] = $true
+              $builderParams["SecurityThreshold"] = '${{ parameters.securityThreshold }}'
+            }
+
+            $commandPreview = $builderParams.GetEnumerator() | ForEach-Object {
+              if (($_.Value -is [bool]) -and ($_.Value -eq $true)) {
+                "-$($_.Name)"
+              } elseif ($null -eq $_.Value -or ([string]::IsNullOrWhiteSpace([string]$_.Value))) {
+                "-$($_.Name)"
+              } else {
+                "-$($_.Name) $($_.Value)"
+              }
+            }
+            Write-Host "Calling: ./scripts/build/Application-Builder.ps1 $($commandPreview -join ' ')"
+
+            try {
+              $buildOutput = & "./scripts/build/Application-Builder.ps1" @builderParams 2>&1
+              $buildError = $LASTEXITCODE
+
+              Write-Host "Build Script Output:"
+              Write-Host $buildOutput
+
+              if ($buildError -eq 0) {
+                Write-Host "✅ Successfully built application $appName"
+
+                try {
+                  $buildResult = $buildOutput | ConvertFrom-Json
+                  $buildResultJson = $buildResult | ConvertTo-Json -Depth 10 -Compress
+                  $imagesBuilt = ($buildResult.services | Where-Object { $_.success }).Count
+
+                  Write-Host "##vso[task.setvariable variable=AppBuildResult;isOutput=true]$buildResultJson"
+                  Write-Host "##vso[task.setvariable variable=AppBuildSuccess;isOutput=true]true"
+                  Write-Host "##vso[task.setvariable variable=AppImagesBuilt;isOutput=true]$imagesBuilt"
+
+                  if ($buildResult.dependencyAudits -and $buildResult.dependencyAudits.enabled) {
+                    Write-Host "##vso[task.setvariable variable=DependencyAuditVulnerabilities;isOutput=true]$($buildResult.dependencyAudits.vulnerableAudits)"
+                    Write-Host "##vso[task.setvariable variable=DependencyAuditErrors;isOutput=true]$($buildResult.dependencyAudits.errorAudits)"
+
+                    if ($buildResult.dependencyAudits.vulnerableAudits -gt 0) {
+                      Write-Warning "⚠️ Dependency vulnerabilities detected - review audit results"
+                    }
+                  }
+
+                  if ($buildResult.securityScans -and $buildResult.securityScans.enabled) {
+                    Write-Host "##vso[task.setvariable variable=SecurityScansPassed;isOutput=true]$($buildResult.securityScans.scansPassed)"
+                    Write-Host "##vso[task.setvariable variable=SecurityScansFailed;isOutput=true]$($buildResult.securityScans.scansFailed)"
+
+                    $criticalCount = 0
+                    $highCount = 0
+                    foreach ($scan in $buildResult.securityScans.results) {
+                      if ($scan.vulnerabilities) {
+                        $criticalCount += $scan.vulnerabilities.critical ?? 0
+                        $highCount += $scan.vulnerabilities.high ?? 0
+                      }
+                    }
+
+                    Write-Host "##vso[task.setvariable variable=CriticalVulnerabilities;isOutput=true]$criticalCount"
+                    Write-Host "##vso[task.setvariable variable=HighVulnerabilities;isOutput=true]$highCount"
+
+                    if ($criticalCount -gt 0) {
+                      Write-Warning "⚠️ Critical vulnerabilities detected - immediate remediation required"
+                    }
+                    if ($highCount -gt 0) {
+                      Write-Warning "⚠️ High severity vulnerabilities detected - review and remediate"
+                    }
+                  }
+                }
+                catch {
+                  Write-Warning "Could not parse build output as JSON: $_"
+                  Write-Host "##vso[task.setvariable variable=AppBuildSuccess;isOutput=true]true"
+                }
+              } else {
+                Write-Error "❌ Failed to build application $appName"
+                Write-Host "##vso[task.setvariable variable=AppBuildSuccess;isOutput=true]false"
+                exit 1
+              }
+            }
+            catch {
+              Write-Error "Exception during application build: $_"
+              Write-Host "##vso[task.setvariable variable=AppBuildSuccess;isOutput=true]false"
+              exit 1
+            }
+
+            $buildEnd = Get-Date
+            $buildDuration = ($buildEnd - $buildStart).TotalMinutes
+            Write-Host "Build Duration: $([math]::Round($buildDuration, 2)) minutes"
+          workingDirectory: '$(System.DefaultWorkingDirectory)'
+
+      # Security Gate Enforcement
+      - task: PowerShell@2
+        displayName: 'Security Gate Enforcement'
+        condition: always()
+        inputs:
+          targetType: 'filePath'
+          filePath: 'scripts/security/Invoke-SecurityGate.ps1'
+          arguments: >-
+            -SecurityResultsPath "./security-reports"
+            -ConfigFile "./.security-gate.yml"
+            -Environment "$(Build.Reason)"
+            -OutputFormat "junit"
+            -ExitOnFailure $true
+          workingDirectory: '$(System.DefaultWorkingDirectory)'
+          pwsh: true
+
+      # Consolidate and compress all build artifacts
+      - task: PowerShell@2
+        displayName: 'Prepare Consolidated Build Artifacts'
+        condition: always()
+        inputs:
+          targetType: 'inline'
+          script: |
+            Write-Host "=== Preparing Consolidated Build Artifacts ==="
+
+            # Create consolidated artifacts directory
+            $artifactsDir = "consolidated-build-artifacts"
+            New-Item -Path $artifactsDir -ItemType Directory -Force | Out-Null
+
+            # Compress security reports before consolidation
+            if (Test-Path "security-reports") {
+              Write-Host "Compressing security reports for artifact upload..."
+
+              try {
+                & "$(Build.SourcesDirectory)/scripts/security/Invoke-SecurityReportCompression.ps1" `
+                  -SecurityReportsPath "security-reports" `
+                  -OutputPath "compressed-security-reports" `
+                  -CompressionLevel 9
+
+                if ($LASTEXITCODE -eq 0 -and (Test-Path "compressed-security-reports")) {
+                  Copy-Item -Path "compressed-security-reports" -Destination "$artifactsDir/security-reports" -Recurse -Force
+                  Write-Host "Copied compressed security reports to consolidated artifacts"
+                } else {
+                  Copy-Item -Path "security-reports" -Destination "$artifactsDir/security-reports" -Recurse -Force
+                  Write-Host "Copied uncompressed security reports to consolidated artifacts (compression failed)"
+                }
+              }
+              catch {
+                Write-Warning "Failed to compress security reports: $_"
+                Copy-Item -Path "security-reports" -Destination "$artifactsDir/security-reports" -Recurse -Force
+                Write-Host "Copied uncompressed security reports to consolidated artifacts (compression error)"
+              }
+            }
+
+            if (Test-Path ".slsa-bundles") {
+              Copy-Item -Path ".slsa-bundles" -Destination "$artifactsDir/slsa-bundles" -Recurse -Force
+              Write-Host "Copied SLSA bundles to consolidated artifacts"
+            }
+
+            if (Test-Path "build-logs") {
+              Copy-Item -Path "build-logs" -Destination "$artifactsDir/build-logs" -Recurse -Force
+              Write-Host "Copied build logs to consolidated artifacts"
+            }
+
+            # Create build summary file
+            $buildSummary = @{
+              buildId = "$(Build.BuildId)"
+              buildTime = Get-Date -Format "yyyy-MM-ddTHH:mm:ss.fffZ"
+              buildReason = "$(Build.Reason)"
+              sourceVersion = "$(Build.SourceVersion)"
+              repository = "$(Build.Repository.Name)"
+              branch = "$(Build.SourceBranchName)"
+              artifactTypes = @()
+            }
+
+            if (Test-Path "$artifactsDir/security-reports") {
+              $buildSummary.artifactTypes += "security-reports"
+            }
+            if (Test-Path "$artifactsDir/slsa-bundles") {
+              $buildSummary.artifactTypes += "slsa-bundles"
+            }
+            if (Test-Path "$artifactsDir/build-logs") {
+              $buildSummary.artifactTypes += "build-logs"
+            }
+
+            $buildSummary | ConvertTo-Json -Depth 5 | Set-Content -Path "$artifactsDir/build-summary.json" -Encoding UTF8
+            Write-Host "Created build summary file"
+
+            # Get directory size for optimization metrics
+            $totalSize = (Get-ChildItem -Path $artifactsDir -Recurse -File | Measure-Object -Property Length -Sum).Sum
+            Write-Host "Total consolidated artifact size: $([math]::Round($totalSize / 1MB, 2)) MB"
+          workingDirectory: '$(System.DefaultWorkingDirectory)'
+
+      # Upload consolidated artifacts with optimized retention
+      - task: PublishBuildArtifacts@1
+        displayName: 'Upload Consolidated Build Artifacts'
+        condition: always()
+        inputs:
+          PathtoPublish: 'consolidated-build-artifacts'
+          ArtifactName: 'build-artifacts-$(Build.BuildId)'
+          publishLocation: 'Container'
+
+      # Upload security test results separately for ADO integration
+      - task: PublishTestResults@2
+        displayName: 'Publish Security Gate Results'
+        condition: always()
+        inputs:
+          testResultsFormat: 'JUnit'
+          testResultsFiles: '**/security-gate-results.xml'
+          testRunTitle: 'Security Gate Enforcement - Application Matrix Build'
+          failTaskOnFailedTests: true
+          publishRunAttachments: true

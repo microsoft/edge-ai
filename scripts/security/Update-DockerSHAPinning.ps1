@@ -50,6 +50,8 @@ param(
 Set-StrictMode -Version 3.0
 $ErrorActionPreference = 'Stop'
 
+. "$PSScriptRoot/Ros2ExclusionHelper.ps1"
+
 # Explicit parameter usage to satisfy static analyzer
 Write-Debug "Parameters: OutputFormat=$OutputFormat, Force=$Force, SkipShellScripts=$SkipShellScripts"
 
@@ -197,15 +199,20 @@ function Write-SecurityLog {
         $Message = "No message provided"
     }
 
-    Write-Output "[$timestamp] [$Level] $Message"
+    switch ($Level) {
+        'Info' { Write-Information "[$timestamp] [$Level] $Message" -InformationAction Continue }
+        'Success' { Write-Information "[$timestamp] [$Level] $Message" -InformationAction Continue }
+        'Warning' { Write-Warning "[$timestamp] [$Level] $Message" }
+        'Error' { Write-Error "[$timestamp] [$Level] $Message" }
+    }
 }
 
 # Docker registry and image SHA mappings
 # This maps common images to their current SHA256 digests
 $DockerImageSHAMap = @{
     # Microsoft Container Registry Images
-    'mcr.microsoft.com/dotnet/runtime:9.0'                 = 'mcr.microsoft.com/dotnet/runtime:9.0@sha256:c7f3e4154ba9f6dcdcbb4b7c81ff1b1be5057fcf78b55e46b50be0c1a5a7bced'
-    'mcr.microsoft.com/dotnet/sdk:9.0'                     = 'mcr.microsoft.com/dotnet/sdk:9.0@sha256:c97a488465b7c0e3f193b7bb4b41d6b6e8530f388b5503c1413cb6b3b648b4f3'
+    'mcr.microsoft.com/dotnet/runtime:9.0'                 = 'mcr.microsoft.com/dotnet/runtime:9.0@sha256:e7cd42242b524ef92228d509dd65eae7ea71b3758e887cb064b55c6a4c00adde'
+    'mcr.microsoft.com/dotnet/sdk:9.0'                     = 'mcr.microsoft.com/dotnet/sdk:9.0@sha256:02db4ba0d86bd754c1ca9ff1f1faff178fa921f32d576d4f3b8ef3a8c04a88e8'
     'mcr.microsoft.com/cbl-mariner/base/core:2.0'          = 'mcr.microsoft.com/cbl-mariner/base/core:2.0@sha256:b462b8e95dfa12b3fefc95025a627306a527de61db17b8519a59b8e25f1663c7'
     'mcr.microsoft.com/devcontainers/python:3.11-bookworm' = 'mcr.microsoft.com/devcontainers/python:3.11-bookworm@sha256:17b9b47f293b5b6e4b6a6e67d8bba0d5e0e5b6d6d2c3f4e5a6b7c8d9e0f1a2b3'
     'mcr.microsoft.com/devcontainers/base:ubuntu-24.04'    = 'mcr.microsoft.com/devcontainers/base:ubuntu-24.04@sha256:ad92cae7c25cafb1e7bb5aa7520b81be85fac022ea92e404b94a11127631fae3'
@@ -227,6 +234,9 @@ $DockerImageSHAMap = @{
     'ubuntu:24.04'                                         = 'ubuntu:24.04@sha256:353675e2a41babd526e2b837d7ec780c2a05bca0164f7ea5dbbd433d21d166fc'
 }
 
+# ROS2 components rely on rolling tags; upstream prunes timestamped builds so we skip SHA pinning. See docs/build-cicd/security-analysis-workflow.md.
+$Ros2ImageExclusionPatterns = Get-Ros2ImageExclusionList
+
 # Shell script external dependency patterns
 $ShellScriptPatterns = @{
     'curl.*https://sh.rustup.rs' = @{
@@ -243,6 +253,88 @@ $ShellScriptPatterns = @{
 # Docker Image SHA Pinning Functions
 # =============================================================================
 
+function Get-CaseInsensitivePropertyValue {
+    param(
+        [Parameter(Mandatory)]
+        [object]$InputObject,
+
+        [Parameter(Mandatory)]
+        [string]$PropertyName
+    )
+
+    if (-not $InputObject) {
+        return $null
+    }
+
+    $property = $InputObject.PSObject.Properties | Where-Object { $_.Name -ieq $PropertyName } | Select-Object -First 1
+    if ($property) {
+        return $property.Value
+    }
+
+    return $null
+}
+
+function Get-ManifestDigestValue {
+    param(
+        [Parameter(Mandatory)]
+        [object]$ManifestObject,
+
+        [Parameter()]
+        [string]$PreferredArchitecture = 'amd64'
+    )
+
+    $candidates = @()
+    if ($ManifestObject -is [System.Array]) {
+        $candidates = $ManifestObject
+    }
+    elseif ($ManifestObject) {
+        $candidates = @($ManifestObject)
+    }
+
+    foreach ($candidate in $candidates) {
+        if (-not $candidate) {
+            continue
+        }
+
+        $descriptor = Get-CaseInsensitivePropertyValue -InputObject $candidate -PropertyName 'descriptor'
+        $descriptorDigest = Get-CaseInsensitivePropertyValue -InputObject $descriptor -PropertyName 'digest'
+        if ($descriptorDigest -and $descriptorDigest -match '^sha256:[0-9a-f]{64}$') {
+            return $descriptorDigest
+        }
+
+        $directDigest = Get-CaseInsensitivePropertyValue -InputObject $candidate -PropertyName 'digest'
+        if ($directDigest -and $directDigest -match '^sha256:[0-9a-f]{64}$') {
+            return $directDigest
+        }
+
+        $manifestList = Get-CaseInsensitivePropertyValue -InputObject $candidate -PropertyName 'manifests'
+        if ($manifestList) {
+            $ordered = @()
+
+            $preferred = $manifestList | Where-Object {
+                $platform = Get-CaseInsensitivePropertyValue -InputObject $_ -PropertyName 'platform'
+                $architecture = Get-CaseInsensitivePropertyValue -InputObject $platform -PropertyName 'architecture'
+                $architecture -and $architecture -ieq $PreferredArchitecture
+            }
+
+            if ($preferred) {
+                $ordered += $preferred
+            }
+
+            $ordered += $manifestList
+
+            foreach ($manifest in $ordered) {
+                $manifestDigest = Get-CaseInsensitivePropertyValue -InputObject $manifest -PropertyName 'digest'
+                if ($manifestDigest -and $manifestDigest -match '^sha256:[0-9a-f]{64}$') {
+                    return $manifestDigest
+                }
+            }
+        }
+    }
+
+    return $null
+}
+
 function Get-DockerImageDigest {
     param(
         [Parameter(Mandatory)]
@@ -250,10 +342,24 @@ function Get-DockerImageDigest {
     )
 
     try {
-        # Try to get digest using docker manifest inspect
-        $manifest = docker manifest inspect $ImageReference 2>$null | ConvertFrom-Json
-        if ($manifest -and $manifest.Descriptor -and $manifest.Descriptor.digest) {
-            return $manifest.Descriptor.digest
+        $digest = $null
+
+        $manifestVerbose = docker manifest inspect --verbose $ImageReference 2>$null
+        if ($LASTEXITCODE -eq 0 -and $manifestVerbose) {
+            $manifestObject = $manifestVerbose | ConvertFrom-Json
+            $digest = Get-ManifestDigestValue -ManifestObject $manifestObject
+        }
+
+        if (-not $digest) {
+            $manifestStandard = docker manifest inspect $ImageReference 2>$null
+            if ($LASTEXITCODE -eq 0 -and $manifestStandard) {
+                $manifestObject = $manifestStandard | ConvertFrom-Json
+                $digest = Get-ManifestDigestValue -ManifestObject $manifestObject
+            }
+        }
+
+        if ($digest) {
+            return $digest
         }
 
         # Fallback: Try to get digest from registry API
@@ -464,7 +570,41 @@ function Convert-DockerComposeImage {
                 Write-SecurityLog -Level 'Success' -Message "Pinned: $cleanImageRef -> $shaImageRef"
             }
             else {
-                Write-SecurityLog -Level 'Warning' -Message "No SHA mapping found for: $cleanImageRef"
+                $isLocalBuildImage = $false
+                if ($match.Index -gt 0) {
+                    $priorSegment = $Content.Substring(0, $match.Index)
+                    $priorLines = $priorSegment -split "`n"
+                    $currentIndentLength = ([regex]::Match($fullMatch, '^\s*')).Value.Length
+                    for ($i = $priorLines.Length - 1; $i -ge 0; $i--) {
+                        $line = $priorLines[$i]
+                        if ($line -match '^\s*$') {
+                            continue
+                        }
+                        if ($line -match '^\s*#') {
+                            continue
+                        }
+
+                        $lineIndentLength = ([regex]::Match($line, '^\s*')).Value.Length
+                        if ($lineIndentLength -lt $currentIndentLength) {
+                            break
+                        }
+
+                        if ($line -match '^\s*build\s*:') {
+                            $isLocalBuildImage = $true
+                            break
+                        }
+                    }
+                }
+
+                if ($isLocalBuildImage) {
+                    Write-SecurityLog -Level 'Info' -Message "Skipping SHA pinning for locally built image: $cleanImageRef"
+                }
+                elseif ($cleanImageRef -match ':local$') {
+                    Write-SecurityLog -Level 'Info' -Message "Skipping SHA pinning for local tag: $cleanImageRef"
+                }
+                else {
+                    Write-SecurityLog -Level 'Warning' -Message "No SHA mapping found for: $cleanImageRef"
+                }
             }
         }
     }
@@ -599,8 +739,24 @@ function Main {
 
     $totalProcessed = 0
     $totalChanged = 0
+    $totalSkipped = 0
 
     foreach ($file in $dockerFiles) {
+        # Check if file path matches exclusion patterns
+        $shouldSkip = $false
+        foreach ($pattern in $Ros2ImageExclusionPatterns) {
+            if ($file.FullName -like $pattern) {
+                $shouldSkip = $true
+                Write-SecurityLog -Level 'Info' -Message "Skipping excluded ROS2 image: $($file.FullName)"
+                $totalSkipped++
+                break
+            }
+        }
+
+        if ($shouldSkip) {
+            continue
+        }
+
         Write-SecurityLog -Level 'Info' -Message "Processing file: $($file.FullName)"
 
         try {
@@ -616,8 +772,8 @@ function Main {
                 $result = Convert-DockerComposeImage -FilePath $file.FullName -Content $content
             }
             elseif ($file.Name -eq "devcontainer.json") {
-                Write-SecurityLog -Level 'Info' -Message "Update-DevcontainerImages: $($file.Name)"
-                $result = Update-DevcontainerImages -FilePath $file.FullName -Content $content
+                Write-SecurityLog -Level 'Info' -Message "Convert-DevcontainerImage: $($file.Name)"
+                $result = Convert-DevcontainerImage -FilePath $file.FullName -Content $content
             }
 
             if ($result -and $result.PSObject.Properties.Match('Changed') -and $result.Changed) {
@@ -671,6 +827,9 @@ function Main {
     Write-SecurityLog -Level 'Info' -Message '=== Docker SHA Pinning Summary ==='
     Write-SecurityLog -Level 'Info' -Message "Docker files processed: $totalProcessed"
     Write-SecurityLog -Level 'Success' -Message "Docker files changed: $totalChanged"
+    if ($totalSkipped -gt 0) {
+        Write-SecurityLog -Level 'Info' -Message "Docker files skipped: $totalSkipped"
+    }
 
     if ($WhatIfPreference) {
         Write-SecurityLog -Level 'Info' -Message 'WhatIf mode: No files were modified. Run without -WhatIf to apply changes.'
@@ -694,6 +853,7 @@ function Main {
     $summaryData = @{
         dockerFilesProcessed = $totalProcessed
         dockerFilesChanged   = $totalChanged
+        dockerFilesSkipped   = $totalSkipped
         securityIssuesFound  = $script:SecurityIssues.Count
         whatIfMode           = $WhatIfPreference
     }

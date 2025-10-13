@@ -11,6 +11,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
     PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
 
 SHELL ["/bin/bash","-o","pipefail","-c"]
+# hadolint ignore=DL3008
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
     curl=8.5.0-2ubuntu10.6 \
@@ -27,15 +28,15 @@ RUN apt-get update \
     build-essential=12.10ubuntu1 \
     git=1:2.43.0-1ubuntu7.3 \
     python3-pip=24.0+dfsg-1ubuntu1.3 \
-    ros-jazzy-ros-base=0.11.0-1noble.20250915.233203 \
-    ros-jazzy-geometry-msgs=5.3.6-1noble.20250824.000124 \
-    ros-jazzy-sensor-msgs=5.3.6-1noble.20250824.003044 \
-    ros-jazzy-nav-msgs=5.3.6-1noble.20250824.002357 \
-    ros-jazzy-std-msgs=5.3.6-1noble.20250823.231150 \
-    ros-jazzy-diagnostic-msgs=5.3.6-1noble.20250824.002016 \
-    ros-jazzy-rmw-cyclonedds-cpp=2.2.3-1noble.20250823.225558 \
-    ros-jazzy-rosidl-default-generators=1.6.0-3noble.20250823.224231 \
-    ros-jazzy-ament-cmake=2.5.4-1noble.20250424.104545 \
+    ros-jazzy-ros-base \
+    ros-jazzy-geometry-msgs \
+    ros-jazzy-sensor-msgs \
+    ros-jazzy-nav-msgs \
+    ros-jazzy-std-msgs \
+    ros-jazzy-diagnostic-msgs \
+    ros-jazzy-rmw-cyclonedds-cpp \
+    ros-jazzy-rosidl-default-generators \
+    ros-jazzy-ament-cmake \
   && rm -rf /var/lib/apt/lists/*
 WORKDIR /workspace
 COPY resources/ros-interfaces/edge-ros-interface/ /workspace/edge-ros-interface/
@@ -49,6 +50,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
     PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
 
 SHELL ["/bin/bash","-o","pipefail","-c"]
+# hadolint ignore=DL3008
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
     curl=8.5.0-2ubuntu10.6 \
@@ -63,14 +65,14 @@ RUN apt-get update \
   && echo "deb [arch=${arch} signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu ${codename} main" > /etc/apt/sources.list.d/ros2.list \
   && apt-get update \
   && apt-get install -y --no-install-recommends \
-    ros-jazzy-ros-base=0.11.0-1noble.20250915.233203 \
-    ros-jazzy-geometry-msgs=5.3.6-1noble.20250824.000124 \
-    ros-jazzy-sensor-msgs=5.3.6-1noble.20250824.003044 \
-    ros-jazzy-nav-msgs=5.3.6-1noble.20250824.002357 \
-    ros-jazzy-std-msgs=5.3.6-1noble.20250823.231150 \
-    ros-jazzy-diagnostic-msgs=5.3.6-1noble.20250824.002016 \
-    ros-jazzy-rmw-cyclonedds-cpp=2.2.3-1noble.20250823.225558 \
-    ros-jazzy-rosbag2-storage-mcap=0.26.9-1noble.20250913.082107 \
+    ros-jazzy-ros-base \
+    ros-jazzy-geometry-msgs \
+    ros-jazzy-sensor-msgs \
+    ros-jazzy-nav-msgs \
+    ros-jazzy-std-msgs \
+    ros-jazzy-diagnostic-msgs \
+    ros-jazzy-rmw-cyclonedds-cpp \
+    ros-jazzy-rosbag2-storage-mcap \
   && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app

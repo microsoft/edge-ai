@@ -28,7 +28,7 @@ The Checkov template automates security scanning for Infrastructure as Code (IaC
 
 ## Features
 
-- **Automatic Folder Detection**: Uses the PowerShell script `Detect-Folder-Changes.ps1` to find all folders containing Terraform or Bicep files
+- **Automatic Folder Detection**: Uses the PowerShell script `build/Detect-Folder-Changes.ps1` to find all folders containing Terraform or Bicep files
 - **Consolidated Scanning**: Processes all detected folders and produces a single aggregated report
 - **Configurable Scope**: Allows scanning only Terraform files, only Bicep files, or both based on parameters
 - **Version Control**: Supports specific Checkov versions or defaults to latest for consistent scanning
@@ -49,7 +49,7 @@ The Checkov template automates security scanning for Infrastructure as Code (IaC
 This template depends on the following:
 
 - **Required Scripts**:
-- `/scripts/Detect-Folder-Changes.ps1` - Identifies folders containing IaC files
+- `/scripts/build/Detect-Folder-Changes.ps1` - Identifies folders containing IaC files
 - `/scripts/Run-Checkov.ps1` - Runs Checkov on identified folders and aggregates results
 - **Required Agent Capabilities**: Python 3.9+ support, PowerShell 7+ (pwsh)
 
@@ -87,7 +87,7 @@ This template depends on the following:
 
 The template executes security scanning in three distinct phases:
 
-1. **Folder Detection**: Uses the `Detect-Folder-Changes.ps1` script with the `-IncludeAllFolders` flag to identify all folders containing Terraform and/or Bicep files.
+1. **Folder Detection**: Uses the `build/Detect-Folder-Changes.ps1` script with the `-IncludeIaCFolders` flag to identify all folders containing Terraform and/or Bicep files.
 
 2. **Security Scanning**: Installs Checkov with the specified version, then pipes the detected folders to `Run-Checkov.ps1` which handles the scanning of each folder.
 

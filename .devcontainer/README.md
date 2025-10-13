@@ -107,7 +107,7 @@ npm run cspell
 
 > **NOTE**
 >
-> If cspell detects an unknown word which should be ignored, add the word to the excluded word dictionary file `cspell-cse.txt`. If you think it's a common computing word, you can make a PR against [the cspell software terms dictionary](https://github.com/streetsidesoftware/cspell-dicts/tree/main/dictionaries/software-terms/src)
+> If cspell detects an unknown word which should be ignored, add the word to the excluded word dictionary file `cspell-dictionary.txt`. If you think it's a common computing word, you can make a PR against [the cspell software terms dictionary](https://github.com/streetsidesoftware/cspell-dicts/tree/main/dictionaries/software-terms/src)
 
 ### Security Scanning
 
@@ -125,7 +125,7 @@ npm run checkov-all
 
 The scanning process:
 
-1. Detects which folders have changed (or includes all folders with the `-IncludeAllFolders` flag)
+1. Detects which folders have changed (or includes all folders with the `-IncludeIaCFolders` flag)
 2. Runs Checkov security scanner on those folders
 3. Aggregates results into a JUnit XML report file at `./checkov-results/code-analysis.xml`
 

@@ -17,6 +17,7 @@
 # - condition: Condition for running this job
 # - enableAzureReporter: When true, posts results as comments on Azure DevOps PRs
 # - pullRequestId: ID of the pull request (required for PR comments)
+# - pullRequestIdOverride: Manual override for PR ID (for manual triggers when System.PullRequest.PullRequestId is not valid)
 # - sourceRepoUri: URI of the source repository (required for PR comments)
 # - agentPool: Agent pool configuration with name and vmImage properties
 #
@@ -32,6 +33,14 @@
 #   parameters:
 #     enableAzureReporter: true
 #     pullRequestId: $(System.PullRequest.PullRequestId)
+#     sourceRepoUri: $(System.PullRequest.SourceRepositoryURI)
+#
+# # With manual PR ID override (for manual triggers):
+# - template: .azdo/templates/megalinter-template.yml
+#   parameters:
+#     enableAzureReporter: true
+#     pullRequestId: $(System.PullRequest.PullRequestId)
+#     pullRequestIdOverride: "12345"
 #     sourceRepoUri: $(System.PullRequest.SourceRepositoryURI)
 # ```
 #
@@ -59,6 +68,10 @@ parameters:
   - name: pullRequestId
     type: string
     default: ''
+  # Manual override for pull request ID (for manual triggers)
+  - name: pullRequestIdOverride
+    type: string
+    default: ''
   # URI of the source repository
   - name: sourceRepoUri
     type: string
@@ -69,6 +82,10 @@ parameters:
     default:
       name: 'ai-on-edge-managed-pool'
       vmImage: 'ubuntu-latest'
+  # MegaLinter container image reference
+  - name: megaLinterImage
+    type: string
+    default: 'ghcr.io/oxsecurity/megalinter:v8'
 
 jobs:
   - job: MegaLinter
@@ -82,10 +99,23 @@ jobs:
     steps:
       # Checkout repo
       - checkout: self
+        displayName: 'Checkout repository'
         clean: true
         fetchDepth: 0
         fetchTags: false
         persistCredentials: true
+
+      # For PR builds, checkout the source branch HEAD instead of merge ref
+      - task: Bash@3
+        displayName: 'Checkout PR source branch HEAD'
+        condition: eq(variables['Build.Reason'], 'PullRequest')
+        inputs:
+          targetType: 'inline'
+          script: |
+            BRANCH_NAME=$(echo "$(System.PullRequest.SourceBranch)" | sed 's|^refs/heads/||')
+            echo "Switching to PR source branch HEAD: $BRANCH_NAME"
+            git checkout "$BRANCH_NAME"
+            git log -1 --oneline
 
       # Docker cleanup before MegaLinter
       - script: |
@@ -101,175 +131,6 @@ jobs:
           echo "=== Cleanup Complete ==="
         displayName: 'Docker Cleanup - Before MegaLinter'
         condition: succeededOrFailed()
-
-      - pwsh: |
-          $ErrorActionPreference = 'Stop'
-          Set-StrictMode -Version 3.0
-
-          function Invoke-Git {
-            param(
-              [Parameter(Mandatory)]
-              [string[]]$Args,
-              [switch]$AllowFailure
-            )
-
-            & git @Args
-            $exitCode = $LASTEXITCODE
-            if ($exitCode -ne 0) {
-              if ($AllowFailure) {
-                Write-Host "git $($Args -join ' ') exited with $exitCode; continuing."
-              } else {
-                throw "git $($Args -join ' ') exited with $exitCode"
-              }
-            }
-            return $exitCode
-          }
-
-          Write-Host "Remote branches before cleanup:"
-          Invoke-Git -Args @('for-each-ref', '--format=  %(refname:strip=2)', 'refs/remotes/origin')
-
-          $buildSourceBranch = $env:BUILD_SOURCEBRANCH
-          $sourceBranch = $env:SYSTEM_PULLREQUEST_SOURCEBRANCH
-          $targetBranch = $env:SYSTEM_PULLREQUEST_TARGETBRANCH
-
-          if ($null -ne $sourceBranch) {
-            $sourceBranch = $sourceBranch -replace '^refs/heads/', ''
-          } else {
-            $sourceBranch = ''
-          }
-
-          if ($null -ne $targetBranch) {
-            $targetBranch = $targetBranch -replace '^refs/heads/', ''
-          } else {
-            $targetBranch = ''
-          }
-
-          if ([string]::IsNullOrWhiteSpace($sourceBranch)) {
-            if ($buildSourceBranch -match '^refs/heads/(.+)$') {
-              $sourceBranch = $Matches[1]
-            }
-          }
-
-          if ([string]::IsNullOrWhiteSpace($targetBranch)) {
-            if ($buildSourceBranch -match '^refs/heads/(.+)$') {
-              $targetBranch = $Matches[1]
-            }
-          }
-
-          if ([string]::IsNullOrWhiteSpace($sourceBranch)) {
-            Write-Host "No branch detected; skipping branch cleanup."
-            exit 0
-          }
-
-          if ([string]::IsNullOrWhiteSpace($targetBranch)) {
-            $targetBranch = $env:BUILD_SOURCEBRANCHNAME
-          }
-
-          if ([string]::IsNullOrWhiteSpace($targetBranch)) {
-            $targetBranch = 'main'
-          }
-
-          $remoteName = 'origin'
-
-          $refspecs = @()
-
-          if (-not [string]::IsNullOrWhiteSpace($sourceBranch)) {
-            $sourceExit = Invoke-Git -Args @('ls-remote', '--exit-code', '--heads', $remoteName, $sourceBranch) -AllowFailure
-            if ($sourceExit -eq 0) {
-              $refspecs += "+refs/heads/$sourceBranch:refs/remotes/$remoteName/$sourceBranch"
-            } else {
-              Write-Host "Source branch '$sourceBranch' not found on $remoteName; skipping remote fetch for it."
-            }
-          }
-
-          $targetCandidates = @()
-
-          if (-not [string]::IsNullOrWhiteSpace($targetBranch)) {
-            $targetCandidates += $targetBranch
-          }
-
-          $remoteHeadBranch = ''
-          try {
-            $headOutput = (& git symbolic-ref "refs/remotes/$remoteName/HEAD" 2>$null)
-            if ($LASTEXITCODE -eq 0 -and $null -ne $headOutput) {
-              $headRef = $headOutput | Select-Object -First 1
-              if ($null -ne $headRef) {
-                $headRef = $headRef.Trim()
-                if ($headRef -match "^refs/remotes/$remoteName/(.+)$") {
-                  $remoteHeadBranch = $Matches[1]
-                }
-              }
-            }
-          } catch {
-            $remoteHeadBranch = ''
-          }
-
-          if (-not [string]::IsNullOrWhiteSpace($remoteHeadBranch) -and $targetCandidates -notcontains $remoteHeadBranch) {
-            $targetCandidates += $remoteHeadBranch
-          }
-
-          if ($targetCandidates -notcontains 'main') {
-            $targetCandidates += 'main'
-          }
-
-          $masterExists = Invoke-Git -Args @('show-ref', '--verify', '--quiet', "refs/remotes/$remoteName/master") -AllowFailure
-          if ($masterExists -eq 0 -and $targetCandidates -notcontains 'master') {
-            $targetCandidates += 'master'
-          }
-
-          $targetAdded = $false
-
-          foreach ($candidate in $targetCandidates) {
-            if ([string]::IsNullOrWhiteSpace($candidate)) {
-              continue
-            }
-
-            if ($candidate -eq $sourceBranch) {
-              $targetAdded = $true
-              $targetBranch = $candidate
-              break
-            }
-
-            $targetExit = Invoke-Git -Args @('ls-remote', '--exit-code', '--heads', $remoteName, $candidate) -AllowFailure
-
-            if ($targetExit -eq 0) {
-              $refspecs += "+refs/heads/$candidate:refs/remotes/$remoteName/$candidate"
-              $targetBranch = $candidate
-              $targetAdded = $true
-              break
-            }
-          }
-
-          if (-not $targetAdded) {
-            Write-Host "Target branch '$targetBranch' not found on $remoteName; relying on fallbacks."
-          }
-
-          Invoke-Git -Args @('config', '--unset-all', 'remote.origin.fetch') -AllowFailure
-
-          if ($refspecs.Count -eq 0) {
-            Write-Host 'No matching remote branches detected; restoring default fetch configuration.'
-            Invoke-Git -Args @('config', '--add', 'remote.origin.fetch', "+refs/heads/*:refs/remotes/$remoteName/*")
-            Invoke-Git -Args @('fetch', $remoteName, '--prune', '--prune-tags', '--no-recurse-submodules') -AllowFailure
-            Invoke-Git -Args @('remote', 'set-head', $remoteName, '--auto') -AllowFailure
-            Write-Host "Remote branches after cleanup:"
-            Invoke-Git -Args @('for-each-ref', '--format=  %(refname:strip=2)', "refs/remotes/$remoteName")
-            exit 0
-          }
-
-          foreach ($refspec in $refspecs) {
-            Invoke-Git -Args @('config', '--add', 'remote.origin.fetch', $refspec)
-          }
-
-          Write-Host "Configuring remote.origin.fetch for source=$sourceBranch target=$targetBranch"
-
-          Invoke-Git -Args @('fetch', $remoteName, '--prune', '--prune-tags', '--no-recurse-submodules')
-
-          Invoke-Git -Args @('remote', 'set-head', $remoteName, '--auto') -AllowFailure
-
-          Write-Host "Remote branches after cleanup:"
-          Invoke-Git -Args @('for-each-ref', '--format=  %(refname:strip=2)', "refs/remotes/$remoteName")
-        displayName: 'Limit remote branches for MegaLinter diff mode'
-        condition: and(succeeded(), or(eq(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/main')))
 
       - pwsh: |
           $ErrorActionPreference = 'Stop'
@@ -300,17 +161,51 @@ jobs:
           Write-Host "##vso[task.setvariable variable=MegaLinterGitleaksArgs]$value"
         displayName: 'Configure MegaLinter Git diff arguments'
 
+      # Determine the correct PR ID to use, validating it's a number
+      - pwsh: |
+          $prIdFromSystem = '${{ parameters.pullRequestId }}'
+          $prIdOverride = '${{ parameters.pullRequestIdOverride }}'
+
+          Write-Host "System PR ID: '$prIdFromSystem'"
+          Write-Host "Override PR ID: '$prIdOverride'"
+
+          # Treat example text or empty as not provided
+          if (-not [string]::IsNullOrEmpty($prIdOverride) -and $prIdOverride -notmatch '^e\.g\.,|^example|^\s*$') {
+              $finalPrId = $prIdOverride
+              Write-Host "Using override PR ID: $finalPrId"
+          } else {
+              $finalPrId = $prIdFromSystem
+              Write-Host "Using system PR ID: $finalPrId"
+              if ($prIdOverride -match '^e\.g\.,|^example') {
+                  Write-Host "Note: Override contains example text - treating as empty"
+              }
+          }
+
+          # Validate that it's a number (not the literal string)
+          if ($finalPrId -match '^\d+$') {
+              Write-Host "Valid numeric PR ID: $finalPrId"
+              Write-Host "##vso[task.setvariable variable=VALIDATED_PR_ID]$finalPrId"
+              Write-Host "##vso[task.setvariable variable=ENABLE_PR_REPORTER]true"
+          } else {
+              Write-Host "Invalid or non-numeric PR ID: '$finalPrId' - this likely indicates a manual trigger or non-PR build"
+              Write-Host "##vso[task.setvariable variable=VALIDATED_PR_ID]"
+              Write-Host "##vso[task.setvariable variable=ENABLE_PR_REPORTER]false"
+          }
+        displayName: 'Validate Pull Request ID'
+        condition: ${{ eq(parameters.enableAzureReporter, true) }}
+
       - script: |
 
           # Pull MegaLinter from GitHub registry
           echo "Pulling MegaLinter from GitHub registry..."
-          docker pull ghcr.io/oxsecurity/megalinter:v8
+          docker pull ${{ parameters.megaLinterImage }}
 
         displayName: MegaLinter Pull
         condition: not(canceled())
 
       # Run MegaLinter with different configurations based on Azure Reporter setting
       - ${{ if eq(parameters.enableAzureReporter, true) }}:
+          # Run with PR reporting enabled only if we have a valid PR ID
           - script: |
               GITLEAKS_ENV=""
               if [ -n "$(MegaLinterGitleaksArgs)" ]; then
@@ -323,15 +218,29 @@ jobs:
                 -e GIT_AUTHORIZATION_BEARER=$(System.AccessToken) \
                 ${GITLEAKS_ENV} \
                 -e SYSTEM_COLLECTIONURI='$(System.CollectionUri)' \
-                -e SYSTEM_PULLREQUEST_PULLREQUESTID='${{ parameters.pullRequestId }}' \
+                -e SYSTEM_PULLREQUEST_PULLREQUESTID='$(VALIDATED_PR_ID)' \
                 -e SYSTEM_PULLREQUEST_SOURCEREPOSITORYURI='${{ parameters.sourceRepoUri }}' \
                 -e SYSTEM_TEAMPROJECT='$(System.TeamProject)' \
                 -e BUILD_BUILDID='$(Build.BuildId)' \
                 -e BUILD_REPOSITORY_ID='$(Build.Repository.ID)' \
                 -e AZURE_COMMENT_REPORTER='true' \
-                oxsecurity/megalinter:v8
+                ${{ parameters.megaLinterImage }}
 
-            displayName: Run MegaLinter
+            displayName: Run MegaLinter with PR Reporting
+            condition: and(succeeded(), eq(variables['ENABLE_PR_REPORTER'], 'true'))
+
+          # Run without PR reporting if we don't have a valid PR ID
+          - script: |
+
+              docker run -v $(System.DefaultWorkingDirectory):/tmp/lint \
+                --env-file <(env | grep -e SYSTEM_ -e BUILD_ -e TF_ -e AGENT_) \
+                -e SYSTEM_ACCESSTOKEN=$(System.AccessToken) \
+                -e GIT_AUTHORIZATION_BEARER=$(System.AccessToken) \
+                -e AZURE_COMMENT_REPORTER='false' \
+                ${{ parameters.megaLinterImage }}
+
+            displayName: Run MegaLinter without PR Reporting
+            condition: and(succeeded(), eq(variables['ENABLE_PR_REPORTER'], 'false'))
 
       - ${{ if eq(parameters.enableAzureReporter, false) }}:
           - script: |
@@ -346,7 +255,7 @@ jobs:
                 -e GIT_AUTHORIZATION_BEARER=$(System.AccessToken) \
                 ${GITLEAKS_ENV} \
                 -e AZURE_COMMENT_REPORTER='false' \
-                oxsecurity/megalinter:v8
+                ${{ parameters.megaLinterImage }}
 
             displayName: Run MegaLinter
 

@@ -7,6 +7,8 @@
     This script scans GitHub Actions workflows and replaces mutable tag references with immutable SHA commits.
     This prevents supply chain attacks through compromised action repositories by ensuring reproducible builds.
 
+    With -UpdateStale, the script will fetch the latest commit SHAs from GitHub and update already-pinned actions.
+
 .PARAMETER WorkflowPath
     Path to the .github/workflows directory. Defaults to current repository structure.
 
@@ -20,6 +22,10 @@
 .EXAMPLE
     ./Update-ActionSHAPinning.ps1
     Apply SHA pinning to all workflows and update files.
+
+.EXAMPLE
+    ./Update-ActionSHAPinning.ps1 -UpdateStale
+    Update already-pinned-but-stale GitHub Actions to their latest commit SHAs.
 #>
 
 [CmdletBinding(SupportsShouldProcess)]
@@ -32,9 +38,15 @@ param(
 
     [Parameter()]
     [ValidateSet("json", "azdo", "github", "console", "BuildWarning", "Summary")]
-    [string]$OutputFormat = "console"
+    [string]$OutputFormat = "console",
+
+    [Parameter()]
+    [switch]$UpdateStale
 )Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+
+# Explicit parameter usage to satisfy static analyzer
+Write-Debug "Parameters: WorkflowPath=$WorkflowPath, OutputReport=$OutputReport, OutputFormat=$OutputFormat, UpdateStale=$UpdateStale"
 
 # Common GitHub Actions and their current SHA references
 $ActionSHAMap = @{
@@ -158,7 +170,7 @@ function Add-SecurityIssue {
 function Write-OutputResult {
     param(
         [Parameter(Mandatory)]
-        [ValidateSet("json", "BuildWarning", "Summary")]
+        [ValidateSet("json", "azdo", "github", "console", "BuildWarning", "Summary")]
         [string]$OutputFormat,
 
         [Parameter()]
@@ -208,6 +220,43 @@ function Write-OutputResult {
             }
             return
         }
+        "github" {
+            if (@($Results).Count -eq 0) {
+                Write-Output "::notice::No GitHub Actions security issues found"
+                return
+            }
+
+            foreach ($issue in $Results) {
+                $message = "[$($issue.Severity)] $($issue.Title) - $($issue.Description)"
+                if ($issue.File) {
+                    $normalizedPath = $issue.File -replace '\\', '/'
+                    Write-Output "::warning file=$normalizedPath::$message"
+                }
+                else {
+                    Write-Output "::warning::$message"
+                }
+            }
+            return
+        }
+        "azdo" {
+            if (@($Results).Count -eq 0) {
+                Write-Output "##vso[task.logissue type=info]No GitHub Actions security issues found"
+                return
+            }
+
+            foreach ($issue in $Results) {
+                $message = "[$($issue.Severity)] $($issue.Title) - $($issue.Description)"
+                $sourcePath = $issue.File
+                if ($sourcePath) {
+                    Write-Output "##vso[task.logissue type=warning;sourcepath=$sourcePath]$message"
+                }
+                else {
+                    Write-Output "##vso[task.logissue type=warning]$message"
+                }
+            }
+            Write-Output "##vso[task.complete result=SucceededWithIssues]"
+            return
+        }
         default {
             # Console format - existing behavior maintained
             if (@($script:SecurityIssues).Count -gt 0) {
@@ -248,6 +297,47 @@ function Get-ActionReference {
     return $actions
 }
 
+function Get-LatestCommitSHA {
+    param(
+        [Parameter(Mandatory)]
+        [string]$Owner,
+
+        [Parameter(Mandatory)]
+        [string]$Repo,
+
+        [Parameter()]
+        [string]$Branch
+    )
+
+    try {
+        $headers = @{
+            'Accept'     = 'application/vnd.github+json'
+            'User-Agent' = 'edge-ai-sha-pinning-updater'
+        }
+
+        # Add GitHub token if available (increases rate limit)
+        if ($env:GITHUB_TOKEN) {
+            $headers['Authorization'] = "Bearer $env:GITHUB_TOKEN"
+        }
+
+        # If no branch specified, detect the repository's default branch
+        if (-not $Branch) {
+            $repoApiUrl = "https://api.github.com/repos/$Owner/$Repo"
+            $repoInfo = Invoke-RestMethod -Uri $repoApiUrl -Headers $headers -ErrorAction Stop
+            $Branch = $repoInfo.default_branch
+            Write-SecurityLog "Detected default branch for $Owner/$Repo : $Branch" -Level 'Info' | Out-Null
+        }
+
+        $apiUrl = "https://api.github.com/repos/$Owner/$Repo/commits/$Branch"
+        $response = Invoke-RestMethod -Uri $apiUrl -Headers $headers -ErrorAction Stop
+        return $response.sha
+    }
+    catch {
+        Write-SecurityLog "Failed to fetch latest SHA for $Owner/$Repo : $($_.Exception.Message)" -Level 'Warning'
+        return $null
+    }
+}
+
 function Get-SHAForAction {
     param(
         [Parameter(Mandatory)]
@@ -256,19 +346,73 @@ function Get-SHAForAction {
 
     # Check if already SHA-pinned (40-character hex string)
     if ($ActionRef -match '@[a-f0-9]{40}$') {
-        Write-SecurityLog "Action already SHA-pinned: $ActionRef" -Level 'Info'
+        # If UpdateStale is enabled, fetch the latest SHA and compare
+        if ($UpdateStale) {
+            # Extract owner/repo from action reference
+            if ($ActionRef -match '^([^/]+/[^/@]+)@([a-f0-9]{40})$') {
+                $actionPath = $matches[1]
+                $currentSHA = $matches[2]
+
+                # Handle actions with subpaths (e.g., github/codeql-action/init)
+                $parts = $actionPath -split '/'
+                $owner = $parts[0]
+                $repo = $parts[1]
+
+                Write-SecurityLog "Checking for updates: $actionPath (current: $($currentSHA.Substring(0,8))...)" -Level 'Info'
+
+                # Fetch latest SHA from GitHub
+                $latestSHA = Get-LatestCommitSHA -Owner $owner -Repo $repo
+
+                if ($latestSHA -and $latestSHA -ne $currentSHA) {
+                    Write-SecurityLog "Update available: $actionPath ($($currentSHA.Substring(0,8))... -> $($latestSHA.Substring(0,8))...)" -Level 'Success'
+                    return "$actionPath@$latestSHA"
+                }
+                elseif ($latestSHA -eq $currentSHA) {
+                    Write-SecurityLog "Already up-to-date: $actionPath" -Level 'Info'
+                }
+
+                return $ActionRef
+            }
+        }
+
+        Write-SecurityLog "Action already SHA-pinned: $ActionRef" -Level 'Info' | Out-Null
         return $ActionRef
     }
 
     # Look up in pre-defined SHA map
     if ($ActionSHAMap.ContainsKey($ActionRef)) {
         $pinnedRef = $ActionSHAMap[$ActionRef]
-        Write-SecurityLog "Found SHA mapping: $ActionRef -> $pinnedRef" -Level 'Success'
-        return $pinnedRef
-    }
 
-    # For unmapped actions, suggest manual review
-    Write-SecurityLog "No SHA mapping found for: $ActionRef - requires manual review" -Level 'Warning'
+        # If UpdateStale is enabled, check if we should fetch the latest SHA instead
+        if ($UpdateStale) {
+            # Extract owner/repo from the pinned reference
+            if ($pinnedRef -match '^([^/]+/[^/@]+)@([a-f0-9]{40})$') {
+                $actionPath = $matches[1]
+                $mappedSHA = $matches[2]
+
+                $parts = $actionPath -split '/'
+                $owner = $parts[0]
+                $repo = $parts[1]
+
+                Write-SecurityLog "Checking ActionSHAMap entry for updates: $ActionRef (mapped: $($mappedSHA.Substring(0,8))...)" -Level 'Info' | Out-Null
+
+                # Fetch latest SHA from GitHub
+                $latestSHA = Get-LatestCommitSHA -Owner $owner -Repo $repo
+
+                if ($latestSHA -and $latestSHA -ne $mappedSHA) {
+                    Write-SecurityLog "Update available for mapping: $ActionRef ($($mappedSHA.Substring(0,8))... -> $($latestSHA.Substring(0,8))...)" -Level 'Success' | Out-Null
+                    return "$actionPath@$latestSHA"
+                }
+                elseif ($latestSHA -eq $mappedSHA) {
+                    Write-SecurityLog "ActionSHAMap entry up-to-date: $ActionRef" -Level 'Info' | Out-Null
+                }
+            }
+        }
+
+        Write-SecurityLog "Found SHA mapping: $ActionRef -> $pinnedRef" -Level 'Success' | Out-Null
+        return $pinnedRef
+    }    # For unmapped actions, suggest manual review
+    Write-SecurityLog "No SHA mapping found for: $ActionRef - requires manual review" -Level 'Warning' | Out-Null
     return $null
 }
 
@@ -320,7 +464,7 @@ function Update-WorkflowFile {
                     ChangeType = 'SHA-Pinned'
                 }
                 $actionsPinned++
-                Write-SecurityLog "Pinned: $originalRef -> $pinnedRef" -Level 'Success'
+                Write-SecurityLog "Pinned: $originalRef -> $pinnedRef" -Level 'Success' | Out-Null
             }
             elseif ($pinnedRef -eq $originalRef) {
                 $changes += @{
@@ -399,9 +543,65 @@ function Export-SecurityReport {
     return $reportPath
 }
 
+# Add Set-ContentPreservePermission function for cross-platform compatibility
+function Set-ContentPreservePermission {
+    [CmdletBinding(SupportsShouldProcess)]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Path,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Value,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$NoNewline
+    )
+
+    # Get original file permissions before writing
+    $OriginalMode = $null
+    if (Test-Path $Path) {
+        try {
+            # Get file mode using ls -la (cross-platform)
+            $lsOutput = & ls -la $Path 2>$null
+            if ($LASTEXITCODE -eq 0 -and $lsOutput -match '^([drwx-]+)') {
+                $OriginalMode = $Matches[1]
+            }
+        }
+        catch {
+            Write-SecurityLog "Warning: Could not determine original file permissions for $Path" -Level 'Warning'
+        }
+    }
+
+    # Write content
+    if ($NoNewline) {
+        Set-Content -Path $Path -Value $Value -NoNewline
+    }
+    else {
+        Set-Content -Path $Path -Value $Value
+    }
+
+    # Restore original permissions if they were executable
+    if ($OriginalMode -and $OriginalMode -match '^-rwxr-xr-x') {
+        try {
+            & chmod +x $Path 2>$null
+            if ($LASTEXITCODE -eq 0) {
+                Write-SecurityLog "Restored execute permissions for $Path" -Level 'Info'
+            }
+        }
+        catch {
+            Write-SecurityLog "Warning: Could not restore execute permissions for $Path" -Level 'Warning'
+        }
+    }
+}
+
 # Main execution
 try {
-    Write-SecurityLog "Starting GitHub Actions SHA pinning process..." -Level 'Info'
+    if ($UpdateStale) {
+        Write-SecurityLog "Starting GitHub Actions SHA update process (updating stale pins)..." -Level 'Info'
+    }
+    else {
+        Write-SecurityLog "Starting GitHub Actions SHA pinning process..." -Level 'Info'
+    }
 
     if (-not (Test-Path -Path $WorkflowPath)) {
         throw "Workflow path not found: $WorkflowPath"

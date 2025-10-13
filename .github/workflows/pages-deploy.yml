@@ -105,22 +105,22 @@ jobs:
       hashes: ${{ steps.hash.outputs.hashes }}
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+        uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493
         with:
           fetch-depth: 0
           ref: ${{ inputs.source_branch }}
 
       - name: Setup Pages
-        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b
+        uses: actions/configure-pages@d5606572c479bee637007364c6b4800ac4fc8573
 
       - name: Setup Node.js
-        uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b
+        uses: actions/setup-node@89d709d423dc495668cd762a18dd4a070611be3f
         with:
           node-version: '18'
           cache: 'npm'
 
       - name: Cache Docsify CLI
-        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: ~/.npm
           key: ${{ runner.os }}-docsify-${{ hashFiles('**/package-lock.json') }}
@@ -176,8 +176,8 @@ jobs:
           fi
 
           # Compare content excluding timestamp differences
-          original_content=$(echo "$original_sidebar" | sed 's/Generated on:.*//')
-          new_content=$(echo "$new_sidebar" | sed 's/Generated on:.*//')
+          original_content=$(echo "$original_sidebar" | sed 's/<!-- Generated on:.*-->//')
+          new_content=$(echo "$new_sidebar" | sed 's/<!-- Generated on:.*-->//')
 
           if [ "$original_content" != "$new_content" ]; then
             echo "❌ Sidebar is outdated and needs regeneration!"
@@ -566,14 +566,14 @@ jobs:
           echo "🔐 SLSA subjects: $SUBJECTS_JSON"
 
       - name: Upload build artifact
-        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874
+        uses: actions/upload-artifact@2848b2cda0e5190984587ec6bb1f36730ca78d50
         with:
           name: documentation-build-${{ github.run_number }}
           path: site-artifact.tar.gz
           retention-days: 30
 
       - name: Upload pages artifact
-        uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa
+        uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b
         with:
           # Adjust this path to match your documentation output directory
           path: './_site'
@@ -602,7 +602,7 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e
+        uses: actions/deploy-pages@854d7aa1b99e4509c4d1b53d69b7ba4eaf39215a
 
       - name: Verify deployment
         run: |

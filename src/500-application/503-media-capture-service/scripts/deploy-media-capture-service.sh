@@ -27,8 +27,9 @@ set -euo pipefail
 # Default values
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly SCRIPT_DIR
-readonly COMPONENT_DIR="${SCRIPT_DIR}/../services/media-capture-service"
-readonly YAML_DIR="${SCRIPT_DIR}/../yaml"
+readonly COMPONENT_ROOT="${SCRIPT_DIR}/.."
+readonly COMPONENT_DIR="${COMPONENT_ROOT}/services/media-capture-service"
+readonly YAML_DIR="${COMPONENT_ROOT}/yaml"
 readonly DEFAULT_IMAGE_NAME="media-capture-service"
 readonly DEFAULT_IMAGE_VERSION="latest"
 readonly DEFAULT_RUST_LOG="info"
@@ -200,12 +201,12 @@ connect_to_cluster() {
 step1_build_and_push_image() {
   echo "Step 1: Building and pushing container image..."
 
-  cd "${COMPONENT_DIR}"
+  cd "${COMPONENT_ROOT}"
 
   local image_tag="${ACR_NAME}.azurecr.io/${IMAGE_NAME}:${IMAGE_VERSION}"
 
   echo "Building Docker image: ${image_tag}"
-  docker build -t "${image_tag}" .
+  docker build -f "${COMPONENT_DIR}/Dockerfile" -t "${image_tag}" .
 
   echo "Logging into Azure Container Registry..."
   az acr login --name "${ACR_NAME}"

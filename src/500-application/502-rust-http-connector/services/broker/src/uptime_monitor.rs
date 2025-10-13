@@ -1,5 +1,5 @@
-use std::time::{Duration, Instant};
 use azure_iot_operations_mqtt::session::SessionConnectionMonitor;
+use std::time::{Duration, Instant};
 use tracing::{event, Level};
 
 pub async fn uptime_monitor(monitor: SessionConnectionMonitor) {

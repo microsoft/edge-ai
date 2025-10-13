@@ -77,6 +77,18 @@ jobs:
       - checkout: self
         clean: true
 
+      # For PR builds, checkout the source branch HEAD instead of merge ref
+      - task: Bash@3
+        displayName: 'Checkout PR source branch HEAD'
+        condition: eq(variables['Build.Reason'], 'PullRequest')
+        inputs:
+          targetType: 'inline'
+          script: |
+            BRANCH_NAME=$(echo "$(System.PullRequest.SourceBranch)" | sed 's|^refs/heads/||')
+            echo "Switching to PR source branch HEAD: $BRANCH_NAME"
+            git checkout "$BRANCH_NAME"
+            git log -1 --oneline
+
       # Run Pester tests for the resource provider scripts
       - bash: |
           pwsh ./scripts/Invoke-Pester.ps1 -Path ./src/azure-resource-providers -OutputFile $(testResultsOutput)

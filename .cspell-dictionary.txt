@@ -36,6 +36,7 @@ BCDR
 BYOK
 CCPA
 CMMS
+C-SCRM
 CUDA
 FMEA
 GTDN
@@ -106,6 +107,7 @@ Tekton
 terraform
 terragrunt
 Terragrunt
+TOCTOU
 YARA
 Zeebe
 Zeek
@@ -1678,3 +1680,5 @@ msrc
 usin
 Multiprotocol
 Subvolume
+edgeai
+Dockerfiles
