@@ -1,4 +1,21 @@
-[workspace]
-members = ["./src/500-application/501-rust-telemetry/services/receiver", "./src/500-application/501-rust-telemetry/services/sender","./src/500-application/502-rust-http-connector/services/broker","./src/500-application/502-rust-http-connector/services/subscriber"]
-resolver = "2"
+# Workspace disabled - each Rust service has independent Cargo.lock for microservices architecture
+# This supports:
+# - Independent service deployment lifecycles
+# - Per-service SBOMs for supply chain security
+# - Simplified Docker builds (lockfile in build context)
+# - Service-level dependency evolution
+#
+# [workspace]
+# members = [
+# 	"./src/500-application/501-rust-telemetry/services/receiver",
+# 	"./src/500-application/501-rust-telemetry/services/sender",
+# 	"./src/500-application/502-rust-http-connector/services/broker",
+# 	"./src/500-application/502-rust-http-connector/services/subscriber",
+# ]
+# exclude = [
+# 	"./src/500-application/503-media-capture-service/services/media-capture-service",
+# 	"./src/500-application/503-media-capture-service/crates/notify-types",
+# 	"./src/500-application/503-media-capture-service/crates/notify-types/original",
+# ]
+# resolver = "2"
 

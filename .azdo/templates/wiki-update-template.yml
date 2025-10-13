@@ -112,6 +112,20 @@ jobs:
       - checkout: self
         persistCredentials: true
         path: $(BRANCH_REPO_FOLDER)
+
+      # For PR builds, checkout the source branch HEAD instead of merge ref
+      - task: Bash@3
+        displayName: 'Checkout PR source branch HEAD'
+        condition: eq(variables['Build.Reason'], 'PullRequest')
+        inputs:
+          targetType: 'inline'
+          workingDirectory: $(BRANCH_REPO_FOLDER)
+          script: |
+            BRANCH_NAME=$(echo "$(System.PullRequest.SourceBranch)" | sed 's|^refs/heads/||')
+            echo "Switching to PR source branch HEAD: $BRANCH_NAME"
+            git checkout "$BRANCH_NAME"
+            git log -1 --oneline
+
       - checkout: ${{ parameters.wikiRepo }}
         persistCredentials: true
         path: $(WIKI_REPO_FOLDER)

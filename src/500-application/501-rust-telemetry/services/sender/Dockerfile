@@ -18,10 +18,10 @@
 # =============================================================================
 # STAGE 1: Builder - Compiles the Rust application
 # =============================================================================
-FROM mcr.microsoft.com/cbl-mariner/base/core:2.0@sha256:b462b8e95dfa12b3fefc95025a627306a527de61db17b8519a59b8e25f1663c7 AS builder
+FROM mcr.microsoft.com/azurelinux/base/core:3.0.20250910@sha256:919cfecd0ffe136adff3bea7030f3e6abc6633a4069a6de44b2070bb86c40c81 AS builder
 
 # Install OpenSSL development libraries, C compiler, curl, CA certificates, and other build dependencies
-RUN tdnf install -y openssl-devel-1.1.1k-36.cm2 gcc-11.2.0-8.cm2 make-4.3-2.cm2 binutils-2.37-14.cm2 glibc-devel-2.35-7.cm2 curl-8.8.0-5.cm2 ca-certificates-2.0.0-19.cm2 && \
+RUN tdnf install -y openssl-devel gcc make binutils glibc-devel curl ca-certificates && \
     tdnf clean all
 
 # Set shell options for better error handling with pipes
@@ -44,6 +44,7 @@ WORKDIR /usr/src/app
 # Copy only the files needed for dependency resolution
 # This leverages Docker's layer caching for faster rebuilds
 COPY ./Cargo.toml ./Cargo.toml
+COPY ./Cargo.lock ./Cargo.lock
 
 # Define a build argument to control whether to use replace-with (default to false for local builds)
 ARG USE_REPLACE_WITH=false
@@ -76,10 +77,12 @@ RUN touch src/main.rs && cargo build --release
 # =============================================================================
 # STAGE 2: Runtime - Creates the minimal production image
 # =============================================================================
-FROM mcr.microsoft.com/cbl-mariner/base/core:2.0@sha256:b462b8e95dfa12b3fefc95025a627306a527de61db17b8519a59b8e25f1663c7 AS runtime
+FROM mcr.microsoft.com/azurelinux/base/core:3.0.20250910@sha256:919cfecd0ffe136adff3bea7030f3e6abc6633a4069a6de44b2070bb86c40c81
+# Upgrade all packages to latest versions to fix vulnerabilities
+RUN tdnf upgrade -y && tdnf clean all
 
-# Install only the necessary runtime dependencies and create a non-root user
-RUN tdnf install -y ca-certificates-2.0.0-19.cm2 shadow-utils-4.9-13.cm2 && \
+# Install CA certificates and shadow-utils for creating users
+RUN tdnf install -y ca-certificates shadow-utils && \
     tdnf clean all && \
     groupadd -r appuser && useradd -r -g appuser appuser
 

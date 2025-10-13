@@ -36,10 +36,13 @@ This document provides documentation for Azure DevOps CI/CD pipelines used in th
 
 ## Overview
 
-The Edge AI Accelerator project uses Azure DevOps for automated infrastructure testing and deployment. The pipeline system provides:
+The Edge AI Accelerator project uses Azure DevOps for automated infrastructure testing, application builds, and deployment. The pipeline system provides:
 
+- **Dynamic Application Builds**: Matrix-based building for changed applications and services
+- **Multi-Language Support**: .NET, Rust, Node.js, Python application orchestration
+- **Integrated Security Scanning**: Container vulnerability assessment and dependency audits
 - **Automated Testing**: Matrix-based testing for Terraform and Bicep components
-- **Security Scanning**: Integrated security validation with Checkov
+- **Security Validation**: Infrastructure security scanning with Checkov
 - **Quality Assurance**: Documentation validation and compliance checking
 - **Version Management**: Automated component version checking
 
@@ -68,7 +71,9 @@ Runs daily for security and update scanning:
 
 Runs on pull requests and main branch commits:
 
-- **Change detection** to identify modified components
+- **Change detection** to identify modified components and applications
+- **Application matrix builds** for changed applications and services
+- **Security scanning** with container vulnerability assessment
 - **Matrix testing** for affected Terraform components
 - **Bicep validation** for affected Bicep components
 - **Script testing** for PowerShell scripts
@@ -80,6 +85,7 @@ Located in `.azdo/templates/`, these templates provide reusable pipeline functio
 ### Core templates
 
 - **`matrix-folder-check-template.yml`**: Detects changes and generates test matrices
+- **`application-build-template.yaml`**: Multi-language application build orchestration
 - **`cluster-test-terraform-template.yml`**: Terraform component testing
 - **`checkov-template.yml`**: Security scanning with Checkov
 - **`megalinter-template.yml`**: Code quality and linting
@@ -91,11 +97,12 @@ Located in `.azdo/templates/`, these templates provide reusable pipeline functio
 - **`variable-compliance-bicep-template.yml`**: Bicep variable compliance
 - **`docs-check-terraform-template.yml`**: Terraform documentation validation
 - **`docs-check-bicep-template.yml`**: Bicep documentation validation
+- **`docs-validation-template.yml`**: Comprehensive documentation validation
 
 ### Utility templates
 
-- **`resource-provider-pwsh-tests-template.yml`**: PowerShell script testing
-- **`wiki-update-template.yml`**: Documentation updates
+- **`resource-provider-pwsh-tests-template.yml`**: Azure resource provider registration tests
+- **`wiki-update-template.yml`**: Documentation synchronization and updates
 
 ### GitHub integration
 

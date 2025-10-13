@@ -14,7 +14,7 @@ futures = "0.3.17"
 # Azure IoT Operations dependencies
 azure_iot_operations_protocol = { version = "0.9.0", registry = "aio-sdks" }
 azure_iot_operations_mqtt = { version = "0.9.0", registry = "aio-sdks" }
-azure_iot_operations_services = { version = "0.8.0", registry = "aio-sdks", features = ["state_store"] }
+azure_iot_operations_services = { version = "0.8.0", features = ["state_store"], registry = "aio-sdks" }
 
 # Serialization/deserialization
 serde = { version = "1.0.130", features = ["derive"] }

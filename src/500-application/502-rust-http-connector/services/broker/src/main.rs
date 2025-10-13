@@ -1,25 +1,25 @@
-use std::str;
-use std::time::Duration;
 use azure_iot_operations_mqtt::session::{
     Session, SessionConnectionMonitor, SessionManagedClient, SessionOptionsBuilder,
 };
 use azure_iot_operations_mqtt::MqttConnectionSettingsBuilder;
+use std::str;
+use std::time::Duration;
 
 use reqwest::get;
-use std::env;
 use serde_json::Value;
-mod mqtt_publisher;
-mod json_validator;
-mod error_handler;
+use std::env;
 mod error;
+mod error_handler;
+mod json_validator;
+mod mqtt_publisher;
 mod uptime_monitor;
-use crate::mqtt_publisher::mqtt_publish_message;
-use uptime_monitor::uptime_monitor;
-use crate::error::{validate_json, parse_json_schema};
+use crate::error::{parse_json_schema, validate_json};
 use crate::error_handler::ErrorAlert;
+use crate::mqtt_publisher::mqtt_publish_message;
 use tokio::time;
+use tracing::{event, info, span, Level};
 use tracing_subscriber::filter::EnvFilter;
-use tracing::{info, Level, event, span};
+use uptime_monitor::uptime_monitor;
 
 const HTTP_DEVICE_ENDPOINT_VAR: &str = "HTTP_DEVICE_ENDPOINT";
 const MQ_DATA_TOPIC_VAR: &str = "MQ_DATA_TOPIC";
@@ -50,7 +50,12 @@ async fn read_sensor(
     match get(device_url).await {
         Ok(resp) => {
             // Extract response body as text
-            let mut body = resp.text().await.unwrap().trim_end_matches('\n').to_string();
+            let mut body = resp
+                .text()
+                .await
+                .unwrap()
+                .trim_end_matches('\n')
+                .to_string();
 
             info!("Receiving: {}", &body);
 
@@ -76,23 +81,35 @@ async fn read_sensor(
                     match validate_json(json_schema, json, device_id) {
                         Ok(_) => {
                             // Publish validated data to MQTT data topic
-                            mqtt_publish_message(client.clone(), monitor.clone(), mq_data_topic.to_string(), body.clone()).await;
+                            mqtt_publish_message(
+                                client.clone(),
+                                monitor.clone(),
+                                mq_data_topic.to_string(),
+                                body.clone(),
+                            )
+                            .await;
                         }
                         Err(alert) => {
                             // Publish validation error alert to MQTT error topic
                             event!(
                                 Level::ERROR,
                                 error_code = ERROR_VALIDATING_JSON,
-                                "Generating json schema validation error alert: {}", alert
+                                "Generating json schema validation error alert: {}",
+                                alert
                             );
-                            mqtt_publish_message(client.clone(), monitor.clone(), mq_error_topic.to_string(), alert.clone()).await;
+                            mqtt_publish_message(
+                                client.clone(),
+                                monitor.clone(),
+                                mq_error_topic.to_string(),
+                                alert.clone(),
+                            )
+                            .await;
                         }
                     }
                 }
                 Err(err) => {
                     // Handle JSON parsing errors
-                    let error_message =
-                        format!("Failed to parse JSON from sensor: {:?}", err);
+                    let error_message = format!("Failed to parse JSON from sensor: {:?}", err);
                     let error_alert = ErrorAlert::generate_alert(
                         device_id.to_string(),
                         ERROR_PARSING_JSON.to_string(),
@@ -101,9 +118,16 @@ async fn read_sensor(
                     event!(
                         Level::ERROR,
                         error_code = ERROR_PARSING_JSON,
-                        "Generating Data Not Available error alert: {}", error_alert
+                        "Generating Data Not Available error alert: {}",
+                        error_alert
                     );
-                    mqtt_publish_message(client.clone(), monitor.clone(), mq_error_topic.to_string(), error_alert.clone()).await;
+                    mqtt_publish_message(
+                        client.clone(),
+                        monitor.clone(),
+                        mq_error_topic.to_string(),
+                        error_alert.clone(),
+                    )
+                    .await;
                 }
             }
         }
@@ -118,9 +142,16 @@ async fn read_sensor(
             event!(
                 Level::ERROR,
                 error_code = ERROR_GETTING_DATA,
-                "Generating Device Not Responding error alert: {}", error_alert
+                "Generating Device Not Responding error alert: {}",
+                error_alert
             );
-            mqtt_publish_message(client.clone(), monitor.clone(),mq_error_topic.to_string(), error_alert.clone()).await;
+            mqtt_publish_message(
+                client.clone(),
+                monitor.clone(),
+                mq_error_topic.to_string(),
+                error_alert.clone(),
+            )
+            .await;
         }
     }
 }
@@ -156,8 +187,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .map(|(_, value)| value)
         .expect("No MQ_DATA_TOPIC environment variable found");
 
-    let mq_error_topic = env::var(MQ_ERROR_TOPIC_VAR)
-        .expect("No MQ_ERROR_TOPIC environment variable found");
+    let mq_error_topic =
+        env::var(MQ_ERROR_TOPIC_VAR).expect("No MQ_ERROR_TOPIC environment variable found");
 
     let polling_interval = env::var(POLLING_INTERVAL_VAR)
         .unwrap_or_else(|_| "10".to_string())
@@ -216,17 +247,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         &device_id_clone[..],
                         client.clone(),
                         monitor.clone(),
-                    ).await;
+                    )
+                    .await;
                     info!("Sleeping for {} seconds", polling_interval);
                     time::sleep(Duration::from_secs(polling_interval)).await;
                 }
             }));
         }
         Err(e) => {
-            event!(
-                Level::ERROR,
-                "Failed to parse JSON schema: {}", e
-            );
+            event!(Level::ERROR, "Failed to parse JSON schema: {}", e);
             drop(_enter);
             return Err(e.into());
         }

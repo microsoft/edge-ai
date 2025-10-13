@@ -62,6 +62,8 @@ if (!(Test-Path $LogDir)) {
     New-Item -ItemType Directory -Path $LogDir -Force | Out-Null
 }
 
+. "$PSScriptRoot/Ros2ExclusionHelper.ps1"
+
 function Write-SecurityLog {
     param(
         [Parameter(Mandatory = $true)]
@@ -98,8 +100,69 @@ function Write-SecurityLog {
     }
 }
 
+# ROS2 components rely on rolling tags; upstream prunes timestamped builds so digest checks are skipped. See docs/build-cicd/security-analysis-workflow.md.
+$Ros2ImageExclusionPatterns = Get-Ros2ImageExclusionList
+
 # Structure to hold stale dependency information
 $StaleDependencies = @()
+
+function Get-DockerHubManifestDigest {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Repository,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Tag,
+
+        [Parameter(Mandatory = $true)]
+        [string]$CurrentDigest
+    )
+
+    $scope = [Uri]::EscapeDataString("repository:$Repository:pull")
+    $tokenUri = "https://auth.docker.io/token?service=registry.docker.io&scope=$scope"
+    $manifestUri = "https://registry-1.docker.io/v2/$Repository/manifests/$Tag"
+
+    $commonHeaders = @{ 'User-Agent' = 'edge-ai-sha-staleness-check' }
+    Write-SecurityLog ("Requesting Docker Hub token for {0}:{1}" -f $Repository, $Tag) -Level Info
+    $tokenResponse = Invoke-RestMethod -Uri $tokenUri -Headers $commonHeaders -ErrorAction Stop
+    if (-not $tokenResponse.token) {
+        throw "Docker Hub token response did not include a token"
+    }
+
+    $headers = @{
+        Authorization = "Bearer $($tokenResponse.token)"
+        Accept        = "application/vnd.docker.distribution.manifest.list.v2+json"
+        'User-Agent'  = 'edge-ai-sha-staleness-check'
+    }
+    Write-SecurityLog ("Fetching Docker Hub manifest for {0}:{1}" -f $Repository, $Tag) -Level Info
+    $manifestResponse = Invoke-WebRequest -Uri $manifestUri -Headers $headers -ErrorAction Stop
+    $remoteDigest = $manifestResponse.Headers['Docker-Content-Digest']
+
+    if (-not $remoteDigest) {
+        $headers['Accept'] = "application/vnd.docker.distribution.manifest.v2+json"
+        $manifestResponse = Invoke-WebRequest -Uri $manifestUri -Headers $headers -ErrorAction Stop
+        $remoteDigest = $manifestResponse.Headers['Docker-Content-Digest']
+    }
+
+    if (-not $remoteDigest) {
+        throw "Docker Hub response did not include Docker-Content-Digest header"
+    }
+
+    $isStale = $false
+    $message = "Digest matches Docker Hub manifest"
+
+    if ($CurrentDigest -ne $remoteDigest) {
+        $isStale = $true
+        $message = "Pinned digest $CurrentDigest differs from Docker Hub manifest $remoteDigest"
+    }
+
+    return @{
+        CurrentDigest = $CurrentDigest
+        LatestDigest  = $remoteDigest
+        IsStale       = $isStale
+        Message       = $message
+    }
+}
 
 function Get-BulkGitHubActionsStalenesss {
     param(
@@ -196,8 +259,19 @@ function Get-BulkGitHubActionsStalenesss {
         }
     }
     catch {
-        Write-SecurityLog "Repository GraphQL query failed: $($_.Exception.Message)" -Level Error
-        return @()
+        $statusCode = $null
+        if ($_.Exception.Response -and $_.Exception.Response.StatusCode) {
+            $statusCode = [int]$_.Exception.Response.StatusCode
+        }
+
+        if ($statusCode -in 403, 429) {
+            Write-SecurityLog "Repository GraphQL query hit rate limit ($statusCode). Falling back to REST checks." -Level Warning
+        }
+        else {
+            Write-SecurityLog "Repository GraphQL query failed: $($_.Exception.Message)" -Level Error
+        }
+
+        throw
     }
 
     # Collect commit queries for all current SHAs
@@ -344,37 +418,56 @@ function Get-DockerImageLatestDigest {
     )
 
     try {
-        # Parse registry and image name
-        $Parts = $ImageName -split "/"
-        if ($Parts.Count -ge 2) {
-            if ($ImageName.StartsWith("mcr.microsoft.com")) {
-                # Microsoft Container Registry - use Azure REST API approach
-                # For now, mark as unknown since MCR doesn't have public API
-                return @{
-                    CurrentDigest = $CurrentDigest
-                    LatestDigest  = "unknown"
-                    IsStale       = $false
-                    Message       = "MCR digest checking not implemented"
-                }
-            }
-            elseif ($ImageName.StartsWith("docker.io") -or !$ImageName.Contains(".")) {
-                # Docker Hub - use Docker Hub API
-                # For now, mark as needs manual review
-                return @{
-                    CurrentDigest = $CurrentDigest
-                    LatestDigest  = "manual-review-needed"
-                    IsStale       = $true
-                    Message       = "Docker Hub digest checking requires manual review"
-                }
+        $separatorIndex = $ImageName.IndexOf(':')
+        if ($separatorIndex -lt 0) {
+            throw "Image name $ImageName is missing a tag"
+        }
+
+        $repositoryPart = $ImageName.Substring(0, $separatorIndex)
+        $tag = $ImageName.Substring($separatorIndex + 1)
+
+        $segments = $repositoryPart.Split('/')
+        if ($segments.Count -eq 0) {
+            throw "Unable to parse repository from $ImageName"
+        }
+
+        $registryCandidate = $segments[0]
+        $registry = "docker.io"
+        $repoSegments = $segments
+
+        if ($segments.Count -gt 1 -and ($registryCandidate -like "*.*" -or $registryCandidate -like "*:*" -or $registryCandidate -eq "localhost")) {
+            $registry = $registryCandidate
+            $repoSegments = $segments[1..($segments.Count - 1)]
+        }
+
+        if ($registry -eq "mcr.microsoft.com") {
+            return @{
+                CurrentDigest = $CurrentDigest
+                LatestDigest  = "unknown"
+                IsStale       = $false
+                Message       = "MCR digest checking not implemented"
             }
         }
 
-        return @{
-            CurrentDigest = $CurrentDigest
-            LatestDigest  = "unknown"
-            IsStale       = $false
-            Message       = "Registry not supported for automated checking"
+        if ($registry -ne "docker.io") {
+            return @{
+                CurrentDigest = $CurrentDigest
+                LatestDigest  = "unknown"
+                IsStale       = $false
+                Message       = "Registry not supported for automated checking"
+            }
         }
+
+        if ($repoSegments.Count -eq 0) {
+            throw "Docker Hub repository path not found for $ImageName"
+        }
+
+        $repositoryPath = $repoSegments -join '/'
+        if ($repoSegments.Count -eq 1) {
+            $repositoryPath = "library/$repositoryPath"
+        }
+
+        return Get-DockerHubManifestDigest -Repository $repositoryPath -Tag $tag -CurrentDigest $CurrentDigest
     }
     catch {
         Write-SecurityLog "Failed to check Docker image $ImageName`: $($_.Exception.Message)" -Level Warning
@@ -450,6 +543,8 @@ function Test-GitHubActionsForStaleness {
         Write-SecurityLog "Bulk GraphQL check failed, falling back to individual checks: $($_.Exception.Message)" -Level Warning
 
         # Fallback to individual REST API calls if GraphQL fails
+        $defaultBranchCache = @{}
+        $rateLimitExceeded = $false
         foreach ($key in $shaToActionMap.Keys) {
             $action = $shaToActionMap[$key]
 
@@ -462,11 +557,35 @@ function Test-GitHubActionsForStaleness {
                     $headers['Authorization'] = "token $env:GITHUB_TOKEN"
                 }
 
-                $BranchInfo = Invoke-RestMethod -Uri "https://api.github.com/repos/$($action.Repo)/branches/main" -Headers $headers -ErrorAction Stop
+                $repoSegments = $action.Repo.Split('/')
+                if ($repoSegments.Count -lt 2) {
+                    Write-SecurityLog "Invalid GitHub Action repository format: $($action.Repo)" -Level Warning
+                    continue
+                }
+
+                $owner = $repoSegments[0]
+                $repoName = $repoSegments[1]
+                $repoLookup = "$owner/$repoName"
+
+                if (-not $defaultBranchCache.ContainsKey($repoLookup)) {
+                    try {
+                        $repoInfo = Invoke-RestMethod -Uri "https://api.github.com/repos/$repoLookup" -Headers $headers -ErrorAction Stop
+                        $defaultBranch = if ($repoInfo.default_branch) { $repoInfo.default_branch } else { "main" }
+                        $defaultBranchCache[$repoLookup] = $defaultBranch
+                    }
+                    catch {
+                        Write-SecurityLog "Failed to discover default branch for $repoLookup, defaulting to 'main': $($_.Exception.Message)" -Level Warning
+                        $defaultBranchCache[$repoLookup] = "main"
+                    }
+                }
+
+                $branchName = $defaultBranchCache[$repoLookup]
+
+                $BranchInfo = Invoke-RestMethod -Uri "https://api.github.com/repos/$repoLookup/branches/$branchName" -Headers $headers -ErrorAction Stop
                 $LatestSHA = $BranchInfo.commit.sha
 
                 if ($action.SHA -ne $LatestSHA) {
-                    $CurrentCommit = Invoke-RestMethod -Uri "https://api.github.com/repos/$($action.Repo)/commits/$($action.SHA)" -Headers $headers -ErrorAction Stop
+                    $CurrentCommit = Invoke-RestMethod -Uri "https://api.github.com/repos/$repoLookup/commits/$($action.SHA)" -Headers $headers -ErrorAction Stop
                     $CurrentDate = [DateTime]::Parse($CurrentCommit.commit.author.date)
                     $DaysOld = [Math]::Round((Get-Date).Subtract($CurrentDate).TotalDays)
 
@@ -486,20 +605,31 @@ function Test-GitHubActionsForStaleness {
                     }
                 }
             }
-            catch [System.Net.WebException] {
-                $response = $_.Exception.Response
-                if ($response) {
-                    $statusCode = [int]$response.StatusCode
-                    if ($statusCode -eq 403 -or $statusCode -eq 429) {
-                        Write-SecurityLog "GitHub API rate limit exceeded for $($action.Repo) - skipping" -Level Warning
-                        continue
-                    }
-                }
-                Write-SecurityLog "Failed to check GitHub Action $($action.Repo): $($_.Exception.Message)" -Level Warning
-            }
             catch {
-                Write-SecurityLog "Failed to check GitHub Action $($action.Repo): $($_.Exception.Message)" -Level Warning
+                $statusCode = $null
+                if ($_.Exception.Response -and $_.Exception.Response.StatusCode) {
+                    $statusCode = [int]$_.Exception.Response.StatusCode
+                }
+                elseif ($_.Exception.StatusCode) {
+                    $statusCode = [int]$_.Exception.StatusCode
+                }
+
+                if ($statusCode -eq 403 -or $statusCode -eq 429) {
+                    Write-SecurityLog "GitHub API rate limit exceeded for $($action.Repo) - skipping remaining GitHub Action checks" -Level Warning
+                    $rateLimitExceeded = $true
+                }
+                else {
+                    Write-SecurityLog "Failed to check GitHub Action $($action.Repo): $($_.Exception.Message)" -Level Warning
+                }
             }
+
+            if ($rateLimitExceeded) {
+                break
+            }
+        }
+
+        if ($rateLimitExceeded) {
+            Write-SecurityLog "GitHub Action staleness results are incomplete due to API rate limiting. Provide a token via GITHUB_TOKEN to enable full coverage." -Level Warning
         }
     }
 }
@@ -510,6 +640,19 @@ function Test-DockerImagesForStaleness {
     $DockerFiles = Get-ChildItem -Path "." -Recurse -Include "Dockerfile", "docker-compose.yml", "docker-compose.yaml" | Where-Object { $_.FullName -notmatch "node_modules" }
 
     foreach ($File in $DockerFiles) {
+        $skipRos2 = $false
+        foreach ($pattern in $Ros2ImageExclusionPatterns) {
+            if ($File.FullName -like $pattern) {
+                $skipRos2 = $true
+                Write-SecurityLog "Skipping ROS2 image staleness check: $($File.FullName)" -Level Info
+                break
+            }
+        }
+
+        if ($skipRos2) {
+            continue
+        }
+
         $Content = Get-Content -Path $File.FullName -Raw
 
         # Find SHA-pinned Docker images
@@ -524,7 +667,7 @@ function Test-DockerImagesForStaleness {
             $StalenessInfo = Get-DockerImageLatestDigest -ImageName $ImageName -CurrentDigest $CurrentDigest
 
             if ($StalenessInfo.IsStale) {
-                $StaleDependencies = $StaleDependencies + [PSCustomObject]@{
+                $script:StaleDependencies += [PSCustomObject]@{
                     Type           = "DockerImage"
                     File           = $File.FullName
                     Name           = $ImageName
@@ -555,7 +698,7 @@ function Test-ShellScriptsForStaleness {
         foreach ($Match in $TodoMatches) {
             $DependencyUrl = $Match.Groups[1].Value
 
-            $StaleDependencies = $StaleDependencies + [PSCustomObject]@{
+            $script:StaleDependencies += [PSCustomObject]@{
                 Type           = "ShellScriptDependency"
                 File           = $Script.FullName
                 Name           = $DependencyUrl
@@ -642,7 +785,7 @@ function Write-OutputResult {
                     Write-SecurityLog "[$($Dep.Severity)] $($Dep.Type): $($Dep.Name)" -Level Warning
                     Write-SecurityLog "  File: $($Dep.File)" -Level Info
                     Write-SecurityLog "  Message: $($Dep.Message)" -Level Info
-                    Write-SecurityLog "" -Level Info
+                    Write-Information "" -InformationAction Continue
                 }
                 Write-SecurityLog "Total stale dependencies: $($Dependencies.Count)" -Level Warning
             }

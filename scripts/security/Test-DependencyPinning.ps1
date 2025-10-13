@@ -29,7 +29,7 @@
     Comma-separated list of paths to exclude from scanning (glob patterns supported).
 
 .PARAMETER IncludeTypes
-    Comma-separated list of dependency types to check. Options: github-actions, docker, npm, pip, go-mod.
+    Comma-separated list of dependency types to check. Options: github-actions, docker, npm, pip, go-mod, rust-cargo.
     Default is all types.
 
 .PARAMETER Remediate
@@ -82,12 +82,14 @@ param(
     [string]$ExcludePaths = "",
 
     [Parameter(Mandatory = $false)]
-    [string]$IncludeTypes = "github-actions,docker,npm,pip,go-mod"
+    [string]$IncludeTypes = "github-actions,docker,npm,pip,go-mod,rust-cargo"
 
 )
 
 # Set error action preference for consistent error handling
 $ErrorActionPreference = 'Stop'
+
+. "$PSScriptRoot/Ros2ExclusionHelper.ps1"
 
 # Define dependency patterns for different ecosystems
 $DependencyPatterns = @{
@@ -160,7 +162,17 @@ $DependencyPatterns = @{
         SHAPattern      = '^v[0-9]+\.[0-9]+\.[0-9]+-[0-9]+-[a-f0-9]{12}$'
         RemediationUrl  = 'https://proxy.golang.org/{0}/@v/{1}.info'
     }
+
+    'rust-cargo'     = @{
+        FilePatterns    = @('src/500-application/**/services/**/Cargo.toml')
+        LockfilePattern = 'Cargo.lock'
+        Description     = 'Rust Cargo.lock presence validation for supply chain security'
+        RemediationUrl  = 'https://doc.rust-lang.org/cargo/faq.html#why-have-cargolock-in-version-control'
+    }
 }
+
+# ROS2 components rely on rolling tags; upstream prunes timestamped builds so digest checks are skipped. See docs/build-cicd/security-analysis-workflow.md.
+$Ros2ImageExclusionPatterns = Get-Ros2ImageExclusionList
 
 class DependencyViolation {
     [string]$File
@@ -243,6 +255,20 @@ function Get-FilesToScan {
                         $files = Get-ChildItem -Path $searchPath -File -ErrorAction SilentlyContinue
                     }
 
+                    if ($type -eq 'docker' -and $Ros2ImageExclusionPatterns.Count -gt 0) {
+                        $files = $files | Where-Object {
+                            $fullName = $_.FullName
+                            $isExcluded = $false
+                            foreach ($pattern in $Ros2ImageExclusionPatterns) {
+                                if ($fullName -like $pattern) {
+                                    $isExcluded = $true
+                                    break
+                                }
+                            }
+                            -not $isExcluded
+                        }
+                    }
+
                     # Apply exclusion filters
                     if ($ExcludePatterns) {
                         foreach ($exclude in $ExcludePatterns) {
@@ -300,6 +326,30 @@ function Get-DependencyViolation {
     $fileType = $FileInfo.Type
 
     if (!(Test-Path $filePath)) {
+        return $violations
+    }
+
+    # Special handling for rust-cargo: check lockfile presence
+    if ($fileType -eq 'rust-cargo') {
+        $lockfilePath = Join-Path (Split-Path $filePath) $DependencyPatterns[$fileType].LockfilePattern
+
+        if (!(Test-Path $lockfilePath)) {
+            $violation = [DependencyViolation]::new()
+            $violation.File = $FileInfo.RelativePath
+            $violation.Line = 1
+            $violation.Type = $fileType
+            $violation.Name = "Cargo.lock"
+            $violation.Version = "missing"
+            $violation.CurrentRef = "No Cargo.lock file found"
+            $violation.Description = "Missing Cargo.lock for supply chain security: Cargo.toml requires committed Cargo.lock"
+            $violation.Severity = 'High'
+            $violation.Remediation = "Run 'cargo generate-lockfile' in $(Split-Path $FileInfo.RelativePath) and commit the result"
+            $violation.Metadata['LockfilePath'] = [System.IO.Path]::GetRelativePath($Path, $lockfilePath)
+            $violation.Metadata['CargoTomlPath'] = $FileInfo.RelativePath
+
+            $violations += $violation
+        }
+
         return $violations
     }
 
@@ -365,13 +415,19 @@ function Get-RemediationSuggestion {
         [DependencyViolation]$Violation
     )
 
-    if (!$Remediate) {
-        return "Enable -Remediate flag for specific SHA suggestions"
-    }
-
     $type = $Violation.Type
     $name = $Violation.Name
     $version = $Violation.Version
+
+    # Handle Cargo.lock missing case
+    if ($type -eq 'rust-cargo' -and $name -eq 'Cargo.lock') {
+        $cargoDir = Split-Path $Violation.Metadata['CargoTomlPath']
+        return "Run 'cd $cargoDir && cargo generate-lockfile' then commit the generated Cargo.lock file"
+    }
+
+    if (!$Remediate) {
+        return "Enable -Remediate flag for specific SHA suggestions"
+    }
 
     try {
         switch ($type) {

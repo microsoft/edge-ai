@@ -5,20 +5,20 @@ author: Edge AI Team
 ms.date: 06/06/2025
 ms.topic: reference
 keywords:
-  - github actions
-  - workflows
-  - ci-cd
-  - automation
-  - validation
-  - deployment
-  - continuous integration
-  - infrastructure as code
-  - terraform
-  - bicep
-  - azure integration
-  - service principal
-  - reusable workflows
-  - templates
+- github actions
+- workflows
+- ci-cd
+- automation
+- validation
+- deployment
+- continuous integration
+- infrastructure as code
+- terraform
+- bicep
+- azure integration
+- service principal
+- reusable workflows
+- templates
 estimated_reading_time: 5
 ---
 
@@ -56,15 +56,18 @@ Navigate to "Settings" → "Secrets and variables" → "Actions" and add:
 
 ### Main workflows
 
-| Workflow                | Purpose                        | Documentation                                |
-|-------------------------|--------------------------------|----------------------------------------------|
-| Main CI/CD              | Primary orchestration workflow | [Details](./github-actions/main.md)          |
-| Pull Request Validation | Comprehensive PR validation    | [Details](./github-actions/pr-validation.md) |
+| Workflow                  | Purpose                        | Documentation                                            |
+|---------------------------|--------------------------------|----------------------------------------------------------|
+| Main CI/CD                | Primary orchestration workflow | [Details](./github-actions/main.md)                      |
+| Pull Request Validation   | Comprehensive PR validation    | [Details](./github-actions/pr-validation.md)             |
+| Application Matrix Builds | Dynamic application building   | [Details](./github-actions/application-matrix-builds.md) |
 
 ### Key features
 
-- **Matrix builds** on only modified resources
-- **Security scanning** with vulnerability assessment
+- **Dynamic matrix builds** detecting only modified applications and services
+- **Multi-language application builds** (.NET, Rust, Node.js, Python)
+- **Integrated security scanning** with container vulnerability assessment
+- **Language-specific dependency audits** and security gates
 - **Documentation validation** for Terraform and Bicep
 - **Variable compliance** checking across modules
 - **Automated deployment** with approval workflows

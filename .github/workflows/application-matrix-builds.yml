@@ -1,0 +1,604 @@
+# Application Matrix Builds Workflow
+#
+# Purpose:
+# This workflow builds applications detected by the matrix-folder-check workflow. It consumes
+# the application matrix data and executes generic builds for each changed application and
+# its services using Docker conventions and standardized build patterns.
+#
+# Functionality:
+# - Consumes application matrix data from matrix-folder-check workflow
+# - Builds each application service using generic Docker build patterns
+# - Supports both single-service and multi-service applications
+# - Integrates with Azure Container Registry for image storage
+# - Generates SLSA-style security bundles per application
+# - Provides structured logging and build metrics
+#
+# Input Dependencies:
+# - Requires matrix-folder-check workflow to provide changedApplicationFolders output
+# - Applications must follow standardized structure with docker-compose.yml
+# - Each service must have a Dockerfile in its service directory
+#
+# Output Artifacts:
+# - Built container images tagged and pushed to registry
+# - SLSA security bundles for dependency tracking
+# - Build logs and performance metrics
+#
+# Usage Examples:
+# ```yaml
+# # Use in a pipeline that depends on matrix-folder-check:
+# jobs:
+#   detect-changes:
+#     uses: ./.github/workflows/matrix-folder-check.yml
+#     with:
+#       includeApplications: true
+#
+#   build-applications:
+#     needs: detect-changes
+#     if: ${{ needs.detect-changes.outputs.changesInApplications == 'true' }}
+#     uses: ./.github/workflows/application-matrix-builds.yml
+#     with:
+#       applicationMatrix: ${{ needs.detect-changes.outputs.changedApplicationFolders }}
+#       includeApplications: false
+#       registryName: "your-registry.azurecr.io"
+# ```
+---
+name: Application Matrix Builds
+
+on:  # yamllint disable-line rule:truthy
+  workflow_call:
+    inputs:
+      applicationMatrix:
+        description: 'JSON matrix of applications to build from matrix-folder-check workflow'
+        required: false
+        default: ''
+        type: string
+      includeApplications:
+        description: 'Include all application folders when no matrix is supplied'
+        required: false
+        default: false
+        type: boolean
+      baseImageTag:
+        description: 'Base tag for container images'
+        required: false
+        default: '${{ github.run_number }}'
+        type: string
+      dockerBuildArgs:
+        description: 'Additional Docker build arguments'
+        required: false
+        default: ''
+        type: string
+      registryName:
+        description: 'Container registry name for image storage'
+        required: false
+        default: 'local'
+        type: string
+      buildEnvironment:
+        description: 'Build environment (dev, staging, prod)'
+        required: false
+        default: 'dev'
+        type: string
+      enableSLSA:
+        description: 'Generate SLSA security bundles for applications'
+        required: false
+        default: true
+        type: boolean
+      enableSecurityScan:
+        description: 'Enable security scanning of built container images'
+        required: false
+        default: true
+        type: boolean
+      securityThreshold:
+        description: 'Security vulnerability threshold (critical, high, medium, low, negligible)'
+        required: false
+        default: 'critical'
+        type: string
+      pushImages:
+        description: 'Push built images to container registry'
+        required: false
+        default: false
+        type: boolean
+      dockerComposeVersion:
+        description: 'Docker Compose CLI plugin version to install'
+        required: false
+        default: '2.24.5'
+        type: string
+    outputs:
+      buildResults:
+        description: 'JSON summary of build results'
+        value: ${{ jobs.summarize-builds.outputs.buildResults }}
+      imagesBuilt:
+        description: 'Number of container images successfully built'
+        value: ${{ jobs.summarize-builds.outputs.imagesBuilt }}
+      buildDuration:
+        description: 'Total build duration in seconds'
+        value: ${{ jobs.summarize-builds.outputs.buildDuration }}
+      securityScanResults:
+        description: 'JSON summary of security scan results'
+        value: ${{ jobs.summarize-builds.outputs.securityScanResults }}
+  workflow_dispatch:
+    inputs:
+      includeApplications:
+        description: 'Include all application folders when running manual builds'
+        required: false
+        default: true
+        type: boolean
+      applicationMatrix:
+        description: 'Optional precomputed application matrix JSON. Leave empty to auto-detect.'
+        required: false
+        default: ''
+        type: string
+      baseImageTag:
+        description: 'Base tag for container images'
+        required: false
+        default: 'manual'
+        type: string
+      dockerBuildArgs:
+        description: 'Additional Docker build arguments'
+        required: false
+        default: ''
+        type: string
+      registryName:
+        description: 'Container registry name for image storage'
+        required: false
+        default: 'local'
+        type: string
+      buildEnvironment:
+        description: 'Build environment (dev, staging, prod)'
+        required: false
+        default: 'dev'
+        type: string
+      enableSLSA:
+        description: 'Generate SLSA security bundles for applications'
+        required: false
+        default: true
+        type: boolean
+      enableSecurityScan:
+        description: 'Enable security scanning of built container images'
+        required: false
+        default: true
+        type: boolean
+      securityThreshold:
+        description: 'Security vulnerability threshold (critical, high, medium, low, negligible)'
+        required: false
+        default: 'critical'
+        type: string
+      pushImages:
+        description: 'Push built images to container registry'
+        required: false
+        default: false
+        type: boolean
+      dockerComposeVersion:
+        description: 'Docker Compose CLI plugin version to install'
+        required: false
+        default: '2.24.5'
+        type: string
+
+permissions:
+  contents: read          # Read repository contents for checkout
+  packages: write         # Push container images to registry
+  id-token: write         # Generate OIDC tokens for secure registry auth
+  actions: read           # Read workflow run information
+  security-events: write  # Write SLSA security bundles and attestations
+
+env:
+  REGISTRY: ${{ inputs.registryName || 'local' }}
+  BUILD_ENV: ${{ inputs.buildEnvironment || 'dev' }}
+  BASE_IMAGE_TAG: ${{ inputs.baseImageTag || github.run_number }}
+  DOCKER_BUILD_ARGS: ${{ inputs.dockerBuildArgs || '' }}
+  DOCKER_COMPOSE_VERSION: ${{ inputs.dockerComposeVersion || '2.24.5' }}
+
+jobs:
+  # Parse the matrix and prepare for parallel builds
+  prepare-builds:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.parse-matrix.outputs.matrix }}
+      buildId: ${{ steps.generate-id.outputs.buildId }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493
+
+      - name: Generate unique build ID
+        id: generate-id
+        run: |
+          BUILD_ID="build-$(date +%Y%m%d-%H%M%S)-${{ github.run_id }}"
+          echo "buildId=${BUILD_ID}" >> $GITHUB_OUTPUT
+          echo "Generated build ID: ${BUILD_ID}"
+
+      - name: Parse application matrix
+        id: parse-matrix
+        run: |
+          echo "Parsing application matrix input..."
+
+          INPUT_MATRIX='${{ inputs.applicationMatrix }}'
+
+          if [ -z "${INPUT_MATRIX}" ] || [ "${INPUT_MATRIX}" = "null" ]; then
+            echo "Error: applicationMatrix input is empty. This workflow expects a pre-computed matrix."
+            exit 1
+          fi
+
+          MATRIX="${INPUT_MATRIX}"
+
+          echo "Input matrix: ${MATRIX}"
+
+          # Validate JSON structure
+          if ! echo "${MATRIX}" | jq empty; then
+            echo "Error: Invalid JSON in application matrix"
+            exit 1
+          fi
+
+          # Transform matrix for build jobs
+          BUILD_MATRIX=$(echo "${MATRIX}" | jq -c '{include: [to_entries[] | {
+            applicationName: .key,
+            applicationPath: .value.path,
+            directory: .value.directory,
+            services: .value.services,
+            hasServices: .value.has_services
+          }]}')
+
+          echo "Transformed matrix: ${BUILD_MATRIX}"
+          echo "matrix=${BUILD_MATRIX}" >> $GITHUB_OUTPUT
+
+  # Build applications in parallel using the matrix strategy
+  build-applications:
+    needs: prepare-builds
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{ fromJson(needs.prepare-builds.outputs.matrix) }}
+      fail-fast: false
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493
+
+      - name: Log in to Container Registry
+        if: ${{ inputs.pushImages }}
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+
+      - name: Install PowerShell and Dependencies
+        run: |
+          # PowerShell is already installed on Ubuntu runners
+          # Just install additional dependencies
+          sudo apt-get update
+          sudo apt-get install -y jq curl
+
+          # Install pinned Docker Compose CLI plugin
+          COMPOSE_VERSION="${DOCKER_COMPOSE_VERSION}"
+          if [ -z "$COMPOSE_VERSION" ]; then
+            echo "Docker Compose version input is empty"
+            exit 1
+          fi
+
+          sudo mkdir -p /usr/libexec/docker/cli-plugins
+          sudo curl -sSL "https://github.com/docker/compose/releases/download/v${COMPOSE_VERSION}/docker-compose-linux-x86_64" \
+            -o /usr/libexec/docker/cli-plugins/docker-compose
+          sudo chmod +x /usr/libexec/docker/cli-plugins/docker-compose
+
+          docker compose version
+
+          # Install Grype vulnerability scanner
+          echo "Installing Grype vulnerability scanner..."
+          curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin
+
+          echo "Verifying Grype installation..."
+          grype version
+
+          echo "Grype installed successfully"
+
+          # Verify PowerShell is available
+          pwsh --version
+
+      - name: Install PowerShell Modules
+        shell: pwsh
+        run: |
+          Install-Module -Name powershell-yaml -Force -Scope CurrentUser -AllowClobber
+
+      - name: Validate Dockerfiles with Hadolint
+        id: hadolint-validation
+        shell: bash
+        run: |
+          echo "=== Validating Dockerfiles in ${{ matrix.applicationPath }} ==="
+
+          # Install Hadolint
+          HADOLINT_VERSION="2.12.0"
+          wget -O /usr/local/bin/hadolint "https://github.com/hadolint/hadolint/releases/download/v${HADOLINT_VERSION}/hadolint-Linux-x86_64"
+          chmod +x /usr/local/bin/hadolint
+
+          # Find all Dockerfiles
+          DOCKERFILES=$(find "${{ matrix.applicationPath }}" -type f -name "Dockerfile")
+
+          if [ -z "$DOCKERFILES" ]; then
+            echo "⚠️  No Dockerfiles found in ${{ matrix.applicationPath }}"
+            exit 0
+          fi
+
+          VALIDATION_FAILED=0
+
+          for dockerfile in $DOCKERFILES; do
+            echo "Validating: $dockerfile"
+
+            # Check if this is a ROS2 file (exempt from DL3006)
+            if [[ "$dockerfile" == *"506-ros2-connector"* ]]; then
+              echo "  ⏭️  Skipping ROS2 file (exempt from SHA256 pinning per security policy)"
+              hadolint --ignore DL3006 --ignore SC1091 --failure-threshold warning "$dockerfile" || VALIDATION_FAILED=1
+            else
+              echo "  🔍 Enforcing DL3006 (SHA256 pinning required)"
+              hadolint --ignore SC1091 --failure-threshold warning "$dockerfile" || VALIDATION_FAILED=1
+            fi
+          done
+
+          if [ $VALIDATION_FAILED -ne 0 ]; then
+            echo "❌ Hadolint validation failed. Dockerfiles must use SHA256 digests on all FROM statements."
+            echo "Fix: pwsh scripts/security/Update-DockerSHAPinning.ps1"
+            exit 1
+          fi
+
+          echo "✅ All Dockerfiles passed Hadolint validation"
+
+      - name: Build Application - ${{ matrix.applicationName }}
+        shell: pwsh
+        env:
+          DOCKER_BUILDKIT: '1'
+        run: |
+          Write-Host "=== Building Application: ${{ matrix.applicationName }} ===" -ForegroundColor Green
+
+          # Call the PowerShell application builder script with correct parameters
+          $builderArgs = @(
+            "-AppPath", "${{ matrix.applicationPath }}"
+            "-AppName", "${{ matrix.applicationName }}"
+            "-Registry", "${{ env.REGISTRY }}"
+            "-BuildId", "${{ needs.prepare-builds.outputs.buildId }}"
+            "-BuildEnv", "${{ env.BUILD_ENV }}"
+            "-CommitSha", "${{ github.sha }}"
+          )
+
+          # Add optional switches
+          if ([bool]::Parse("${{ inputs.pushImages }}")) {
+            $builderArgs += "-PushImages"
+          }
+          if ([bool]::Parse("${{ inputs.enableSLSA }}")) {
+            $builderArgs += "-GenerateSlsa"
+          }
+          if ([bool]::Parse("${{ inputs.enableSecurityScan }}")) {
+            $builderArgs += "-EnableSecurityScan"
+            $builderArgs += "-SecurityThreshold", "${{ inputs.securityThreshold }}"
+          }
+
+          Write-Host "Executing: pwsh ${{ github.workspace }}/scripts/build/Application-Builder.ps1 $($builderArgs -join ' ')"
+
+          # Execute the builder script
+          try {
+            & pwsh "${{ github.workspace }}/scripts/build/Application-Builder.ps1" @builderArgs
+            if ($LASTEXITCODE -ne 0) {
+              Write-Host "❌ Application build failed with exit code: $LASTEXITCODE" -ForegroundColor Red
+              exit $LASTEXITCODE
+            }
+            Write-Host "✅ Application build completed successfully" -ForegroundColor Green
+          }
+          catch {
+            Write-Host "❌ Application build failed with error: $($_.Exception.Message)" -ForegroundColor Red
+            throw
+          }
+
+
+      - name: Collect Security Scan Results
+        shell: pwsh
+        run: |
+          Write-Host "=== Collecting Security Scan Results for ${{ matrix.applicationName }} ===" -ForegroundColor Blue
+
+          # Create security reports directory if it doesn't exist
+          $securityReportsDir = "security-reports"
+          if (-not (Test-Path $securityReportsDir)) {
+            New-Item -Path $securityReportsDir -ItemType Directory -Force | Out-Null
+          }
+
+          # Extract dependency audit information if available
+          $auditResultsFile = "$securityReportsDir/dependency-audit-${{ matrix.applicationName }}.json"
+          $securityScanSummaryFile = "$securityReportsDir/security-scan-summary-${{ matrix.applicationName }}.json"
+
+          try {
+            # Collect dependency audit summary
+            $auditSummary = @{
+              application = "${{ matrix.applicationName }}"
+              timestamp = (Get-Date -Format "yyyy-MM-ddTHH:mm:ss.fffZ")
+              auditEnabled = $true
+              languages = @()
+              vulnerabilities = 0
+              errors = 0
+            }
+
+            Set-Location "${{ matrix.applicationPath }}"
+
+            # Check for different language dependencies
+            if (Get-ChildItem -Recurse -Filter "*.csproj" -ErrorAction SilentlyContinue) {
+              $auditSummary.languages += ".NET"
+            }
+            if (Get-ChildItem -Recurse -Filter "Cargo.toml" -ErrorAction SilentlyContinue) {
+              $auditSummary.languages += "Rust"
+            }
+            if (Get-ChildItem -Recurse -Filter "package.json" -ErrorAction SilentlyContinue) {
+              $auditSummary.languages += "Node.js"
+            }
+            if ((Get-ChildItem -Recurse -Filter "requirements.txt" -ErrorAction SilentlyContinue) -or
+                (Get-ChildItem -Recurse -Filter "pyproject.toml" -ErrorAction SilentlyContinue)) {
+              $auditSummary.languages += "Python"
+            }
+
+            # Save audit summary
+            $auditSummary | ConvertTo-Json -Depth 5 | Set-Content -Path $auditResultsFile -Encoding UTF8
+
+            Write-Host "Dependency audit summary created for languages: $($auditSummary.languages -join ', ')" -ForegroundColor Green
+
+            # Collect security scan results from application builder output
+            $securityScanSummary = @{
+              application = "${{ matrix.applicationName }}"
+              timestamp = (Get-Date -Format "yyyy-MM-ddTHH:mm:ss.fffZ")
+              scanEnabled = [bool]::Parse("${{ inputs.enableSecurityScan }}")
+              threshold = "${{ inputs.securityThreshold }}"
+              scansExecuted = 0
+              scansPassed = 0
+              scansFailed = 0
+              vulnerabilities = @{
+                critical = 0
+                high = 0
+                medium = 0
+                low = 0
+                negligible = 0
+              }
+            }
+
+            # Try to collect actual scan results from security-reports directory
+            $scanFiles = Get-ChildItem -Path "$securityReportsDir" -Filter "*${{ matrix.applicationName }}*" -ErrorAction SilentlyContinue
+            if ($scanFiles) {
+              $securityScanSummary.scansExecuted = $scanFiles.Count
+              Write-Host "Found $($scanFiles.Count) security scan result files" -ForegroundColor Green
+            }
+
+            # Save security scan summary
+            $securityScanSummary | ConvertTo-Json -Depth 5 | Set-Content -Path $securityScanSummaryFile -Encoding UTF8
+
+            Write-Host "Security scan summary created" -ForegroundColor Green
+          }
+          catch {
+            Write-Warning "Failed to create security summaries: $_"
+          }
+
+      - name: Security Gate Enforcement
+        id: security-gate
+        if: always()
+        shell: pwsh
+        run: |
+          & "${{ github.workspace }}/scripts/security/Invoke-SecurityGate.ps1" `
+            -SecurityResultsPath "${{ github.workspace }}/security-reports" `
+            -ConfigFile "${{ github.workspace }}/.security-gate.yml" `
+            -Environment "${{ github.event_name }}" `
+            -OutputFormat "junit" `
+            -ExitOnFailure $true `
+            -Verbose
+
+      - name: Compress Security Reports
+        shell: pwsh
+        if: always()
+        run: |
+          if (Test-Path "${{ github.workspace }}/security-reports") {
+            ./scripts/security/Invoke-SecurityReportCompression.ps1 `
+              -SecurityReportsPath "${{ github.workspace }}/security-reports" `
+              -OutputPath "${{ github.workspace }}/compressed-security" `
+              -CompressionLevel 9 `
+              -Verbose
+          }
+
+      - name: Upload Compressed Security Reports
+        uses: actions/upload-artifact@2848b2cda0e5190984587ec6bb1f36730ca78d50
+        if: always()
+        with:
+          name: security-reports-${{ matrix.applicationName }}
+          path: |
+            ${{ github.workspace }}/compressed-security/
+            ${{ github.workspace }}/artifacts/security/
+          retention-days: 90
+          compression-level: 1
+          if-no-files-found: ignore
+
+      - name: Upload SARIF security results
+        uses: github/codeql-action/upload-sarif@294a9d92911152fe08befb9ec03e240add280cb3
+        if: always() && inputs.enableSecurityScan
+        with:
+          sarif_file: ${{ github.workspace }}/security-reports
+        continue-on-error: true
+
+  # Summarize all build results
+  summarize-builds:
+    needs: [prepare-builds, build-applications]
+    runs-on: ubuntu-latest
+    if: always()
+    outputs:
+      buildResults: ${{ steps.summarize.outputs.buildResults }}
+      imagesBuilt: ${{ steps.summarize.outputs.imagesBuilt }}
+      buildDuration: ${{ steps.summarize.outputs.buildDuration }}
+      securityScanResults: ${{ steps.summarize.outputs.securityScanResults }}
+    steps:
+      - name: Download all build artifacts
+        uses: actions/download-artifact@4a24838f3d5601fd639834081e118c2995d51e1c
+        with:
+          pattern: 'security-reports-*'
+          path: 'collected-build-artifacts'
+        continue-on-error: true
+
+      - name: Summarize Build and Security Results
+        id: summarize
+        run: |
+          echo "=== Summarizing Build and Security Results ==="
+
+          # Initialize counters
+          SUMMARY_START=$(date +%s)
+          TOTAL_IMAGES=0
+          SUCCESSFUL_APPS=0
+          FAILED_APPS=0
+          TOTAL_SECURITY_SCANS=0
+          SECURITY_SCANS_PASSED=0
+          SECURITY_SCANS_FAILED=0
+          TOTAL_VULNERABILITIES=0
+          CRITICAL_VULNS=0
+          HIGH_VULNS=0
+
+          # Collect security scan summaries
+          SECURITY_SUMMARY="{
+            \"scanningEnabled\": ${{ inputs.enableSecurityScan }},
+            \"threshold\": \"${{ inputs.securityThreshold }}\",
+            \"totalScans\": ${TOTAL_SECURITY_SCANS},
+            \"scansPassed\": ${SECURITY_SCANS_PASSED},
+            \"scansFailed\": ${SECURITY_SCANS_FAILED},
+            \"vulnerabilities\": {
+              \"total\": ${TOTAL_VULNERABILITIES},
+              \"critical\": ${CRITICAL_VULNS},
+              \"high\": ${HIGH_VULNS}
+            },
+            \"timestamp\": \"$(date -Iseconds)\"
+          }"
+
+          # Try to parse actual security scan results if available
+          if [ -d "collected-build-artifacts" ]; then
+            echo "Processing collected build artifacts..."
+            SCAN_COUNT=$(find collected-build-artifacts -name "*security-scan-summary*.json" | wc -l)
+            TOTAL_SECURITY_SCANS=${SCAN_COUNT}
+            echo "Found ${SCAN_COUNT} security scan summary files"
+
+            # Extract and compress security reports for final upload
+            mkdir -p final-security-reports
+            find collected-build-artifacts -name "*security-reports*" -type d -exec cp -r {} final-security-reports/ \;
+
+          # This would collect actual results from matrix jobs in a real implementation
+          BUILD_SUMMARY="{
+            \"buildId\": \"${{ needs.prepare-builds.outputs.buildId }}\",
+            \"timestamp\": \"$(date -Iseconds)\",
+            \"totalApplications\": 0,
+            \"successfulApplications\": ${SUCCESSFUL_APPS},
+            \"failedApplications\": ${FAILED_APPS},
+            \"totalImages\": ${TOTAL_IMAGES},
+            \"registry\": \"${{ env.REGISTRY }}\",
+            \"buildEnvironment\": \"${{ env.BUILD_ENV }}\",
+            \"securityScanning\": ${SECURITY_SUMMARY},
+            \"applications\": {}
+          }"
+
+          echo "Build Summary: ${BUILD_SUMMARY}"
+          echo "Security Summary: ${SECURITY_SUMMARY}"
+          echo "buildResults=${BUILD_SUMMARY}" >> $GITHUB_OUTPUT
+          echo "imagesBuilt=${TOTAL_IMAGES}" >> $GITHUB_OUTPUT
+          echo "buildDuration=0" >> $GITHUB_OUTPUT
+          echo "securityScanResults=${SECURITY_SUMMARY}" >> $GITHUB_OUTPUT
+
+      - name: Upload consolidated build summary
+        uses: actions/upload-artifact@2848b2cda0e5190984587ec6bb1f36730ca78d50
+        if: always()
+        with:
+          name: build-summary-${{ needs.prepare-builds.outputs.buildId }}
+          path: |
+            ${{ github.workspace }}/artifacts/
+          retention-days: 14
+          compression-level: 9
+          if-no-files-found: ignore

@@ -28,19 +28,167 @@ The Edge AI Accelerator implements comprehensive security scanning and supply ch
 - **Supply Chain Security**: Immutable dependency pinning, runtime monitoring, SLSA compliance
 - **Infrastructure as Code**: Terraform and Bicep security validation
 - **Dependencies**: Package and library vulnerability assessment with automated updates
-- **Containers**: Docker and Kubernetes configuration scanning with SHA pinning
+- **Container Images**: Docker image vulnerability scanning with Grype
+- **Container Configuration**: Docker and Kubernetes configuration scanning with SHA pinning
+- **Language-Specific**: .NET, Rust, Node.js, Python dependency audits
 - **Configuration**: CI/CD and secret management validation
 - **Runtime Security**: Egress filtering, network monitoring, and runtime attestation
 
 ### Integration Points
 
+- **Matrix Builds**: Security scanning integrated into application build matrix
 - **Pull Requests**: Security checks block non-compliant changes
 - **GitHub Actions**: Automated scanning, hardening, and monitoring
 - **Azure DevOps**: Enterprise security validation with full template parity
+- **Security Gate**: Centralized security gate enforcement
 - **Local Development**: Pre-commit security validation and SHA pinning
 - **Runtime**: StepSecurity Harden-Runner and egress filtering
 
 ## Supply Chain Security
+
+### Committed Dependency Lockfiles
+
+All dependency lockfiles MUST be committed to version control and validated in CI/CD pipelines.
+
+#### Policy Requirements
+
+**Required lockfiles**:
+
+- **Rust**: `Cargo.lock` (per-service for microservices)
+- **Node.js**: `package-lock.json`
+- **Python**: `requirements.txt` with pinned versions
+- **Go**: `go.sum`
+
+**Rationale**:
+
+1. **NIST SP 800-161 Compliance**: Satisfies supply chain risk management requirements for component inventory (C-SCRM-1), integrity verification (C-SCRM-5), and provenance tracking (C-SCRM-6)
+2. **TOCTOU Prevention**: Eliminates dependency confusion, version hijacking, registry compromise, and build non-reproducibility attacks
+3. **Consistency with SHA Pinning**: Extends immutable dependency pinning to application-level dependencies
+
+#### Rust Cargo.lock Architecture
+
+**Per-Service Lockfiles (Microservices Pattern)**:
+
+All Rust microservices maintain independent `Cargo.lock` files:
+
+```text
+src/500-application/
+├── 501-rust-telemetry/services/
+│   ├── sender/Cargo.lock      # 265 packages, azure_iot_operations_* v0.9.0
+│   └── receiver/Cargo.lock    # 265 packages, independent dependency tree
+├── 502-rust-http-connector/services/
+│   ├── broker/Cargo.lock      # 332 packages, includes jsonschema, reqwest
+│   └── subscriber/Cargo.lock  # 154 packages, minimal dependencies
+└── 503-media-capture-service/services/
+    └── media-capture-service/Cargo.lock  # OpenCV, ffmpeg-next dependencies
+```
+
+**Benefits of per-service lockfiles**:
+
+- **Microservices independence**: Different deployment lifecycles and scaling characteristics
+- **Docker build alignment**: Lockfile in service directory matches `COPY ./Cargo.lock` commands
+- **Isolated security impact**: CVE in one service doesn't trigger false positives in others
+- **Targeted CI/CD**: Change detection and rebuilds only for affected services
+- **Component-level SBOM**: Each deployable artifact has exact dependency manifest
+
+See [Cargo Workspace Removal ADR](../../.copilot-tracking/decisions/cargo-workspace-removal-rationale.md) for architectural rationale.
+
+**Registry-Aware Build Strategy**:
+
+- **Local builds** (developers):
+  - Use committed `Cargo.lock` as-is
+  - No network access to private registry required
+  - Reproducible builds from locked dependencies
+
+- **CI/CD builds** (with private `aio-sdks` registry):
+  - Detect private registry in `Cargo.toml`: `registry = "aio-sdks"`
+  - Regenerate `Cargo.lock` with `cargo generate-lockfile`
+  - Ensures access to latest private Azure IoT Operations SDKs
+  - Committed lockfile serves as baseline
+
+- **Fallback** (missing lockfile):
+  - Generate lockfile automatically
+  - Log warning (should not occur in normal operation)
+  - CI/CD security gate fails validation
+
+Implementation: `scripts/build/application-builder.ps1` lines 233-297
+
+#### Lockfile Validation
+
+**Script**: `scripts/security/Test-DependencyPinning.ps1`
+
+```powershell
+# Validate all lockfiles
+pwsh Test-DependencyPinning.ps1 -IncludeTypes rust-cargo,npm,pip,go-mod -FailOnUnpinned
+
+# Validate specific language
+pwsh Test-DependencyPinning.ps1 -IncludeTypes rust-cargo
+```
+
+**Validation rules**:
+
+- Every `Cargo.toml` MUST have corresponding `Cargo.lock` in same directory
+- Every `package.json` MUST have corresponding `package-lock.json`
+- Every `go.mod` MUST have corresponding `go.sum`
+- All lockfiles MUST be committed (not in `.gitignore`)
+
+**CI/CD integration**:
+
+- GitHub Actions: `.github/workflows/application-matrix-builds.yml`
+- Azure DevOps: `.azdo/templates/application-build-template.yaml`
+- Fails build immediately if validation fails (before building container images)
+
+**Security gate configuration** (`.security-gate.yml`):
+
+```yaml
+dependencies:
+  lockfiles:
+    enforce_lockfile_commits: true
+    fail_on_missing: true
+    types: [rust-cargo, npm, pip, go-mod]
+```
+
+#### Developer Workflow
+
+**Adding dependencies**:
+
+```bash
+# Navigate to service directory
+cd src/500-application/*/services/*/
+
+# Add dependency (Cargo automatically updates Cargo.lock)
+cargo add <crate-name>
+
+# Commit both files
+git add Cargo.toml Cargo.lock
+git commit -m "feat(app): add <crate-name> dependency"
+```
+
+**Updating dependencies**:
+
+```bash
+# Update specific dependency
+cargo update -p <crate-name>
+
+# Update all dependencies
+cargo update
+
+# Commit updated lockfile
+git add Cargo.lock
+git commit -m "chore(deps): update Rust dependencies"
+```
+
+**Never ignore lockfiles**:
+
+```gitignore
+# ❌ WRONG - defeats supply chain security
+Cargo.lock
+package-lock.json
+go.sum
+
+# ✅ CORRECT - lockfiles must be committed
+# (no .gitignore entries for lockfiles)
+```
 
 ### SHA Pinning & Dependency Management
 
@@ -94,6 +242,9 @@ Monitors pinned dependencies for security updates and generates build warnings f
 
 # Generate JSON report for CI/CD integration
 ./scripts/security/Test-SHAStaleness.ps1 -Path ".github/workflows" -OutputFormat "JSON"
+
+# Update stale SHA pins and re-scan
+./scripts/security/Update-ActionSHAPinning.ps1 -Path ".github/workflows" -UpdateStale
 ```
 
 ### Automated Dependency Management
@@ -146,18 +297,61 @@ Automated supply chain security analysis using OpenSSF Scorecard for comprehensi
 
 ## Traditional Security Scanning
 
+### Grype - Container Image Vulnerability Scanning
+
+**Primary Tool**: [Grype][grype-tool] for container image vulnerability assessment
+**Script**: `./scripts/security/Invoke-ContainerSecurityScan.ps1`
+
+#### Grype Capabilities
+
+- **Multi-Registry Support**: Docker Hub, Azure Container Registry, private registries
+- **Comprehensive Databases**: CVE, Alpine SecDB, Debian Security Tracker
+- **Multiple Output Formats**: SARIF, JSON, table, template formats
+- **Language Support**: Java, Python, Ruby, .NET, Go, Rust, JavaScript
+
+#### Grype Usage Examples
+
+```powershell
+# Scan container image
+./scripts/security/Invoke-ContainerSecurityScan.ps1 -ImageName "myapp:latest" -OutputFormat "sarif"
+
+# Scan with custom severity threshold
+./scripts/security/Invoke-ContainerSecurityScan.ps1 -ImageName "myapp:latest" -FailOnSeverity "high"
+
+# Generate detailed report
+grype myregistry.azurecr.io/myapp:latest -o json > vulnerability-report.json
+```
+
+### Language-Specific Security Audits
+
+**Integrated Audits**: Built into application build matrix
+
+#### Supported Languages
+
+- **.NET**: `dotnet list package --vulnerable`
+- **Rust**: `cargo audit`
+- **Node.js**: `npm audit`
+- **Python**: `pip-audit`
+
+#### Build Integration
+
+```powershell
+# Run language-specific security audit
+./scripts/build/application-builder.ps1 -ApplicationPath "src/500-application/myapp" -Language "dotnet" -SecurityScan
+```
+
 ### Checkov - Infrastructure Security
 
-**Primary Tool**: [Checkov][checkov-tool] for Infrastructure as Code scanning
+**Tool**: [Checkov][checkov-tool] for Infrastructure as Code scanning
 **Script**: `./scripts/Run-Checkov.ps1`
 
-#### Key Capabilities
+#### Checkov Capabilities
 
 - **Multi-Platform**: Terraform, Bicep, Docker, Kubernetes, ARM
 - **Policy Libraries**: CIS benchmarks, NIST, SOC2, custom policies
 - **Remediation**: Actionable fix recommendations
 
-#### Usage Examples
+#### Checkov Usage Examples
 
 ```powershell
 # Scan Terraform files
@@ -168,6 +362,31 @@ Automated supply chain security analysis using OpenSSF Scorecard for comprehensi
 
 # Scan specific file
 checkov -f src/000-cloud/010-security-identity/terraform/main.tf
+```
+
+### Security Gate Enforcement
+
+**Script**: `./scripts/security/Invoke-SecurityGate.ps1`
+**Purpose**: Centralized security gate evaluation and enforcement
+
+#### Gate Capabilities
+
+- **Multi-Tool Integration**: Grype, Checkov, language-specific audits
+- **Configurable Thresholds**: Per-tool severity and count limits
+- **Report Aggregation**: SARIF, JUnit XML, JSON output formats
+- **Failure Handling**: Configurable gate behavior (fail/warn/info)
+
+#### Security Gate Usage Examples
+
+```powershell
+# Run security gate with default configuration
+./scripts/security/Invoke-SecurityGate.ps1 -ConfigPath "./security-config.json"
+
+# Custom severity thresholds
+./scripts/security/Invoke-SecurityGate.ps1 -GrypeSeverityThreshold "medium" -CheckovSeverityThreshold "high"
+
+# Generate reports only (no gate enforcement)
+./scripts/security/Invoke-SecurityGate.ps1 -ReportOnly
 ```
 
 ### MegaLinter - Code Quality & Security
@@ -183,6 +402,19 @@ checkov -f src/000-cloud/010-security-identity/terraform/main.tf
 - **Configuration Security**: YAML, JSON validation
 
 ## CI/CD Security Integration
+
+### Matrix Build Integration
+
+Security scanning is automatically integrated into application matrix builds:
+
+```yaml
+- name: Application Security Scan
+  run: |
+    ./scripts/build/application-builder.ps1 \
+      -ApplicationPath "${{ matrix.application.path }}" \
+      -Language "${{ matrix.application.language }}" \
+      -SecurityScan
+```
 
 ### GitHub Actions Workflows
 
@@ -208,17 +440,53 @@ jobs:
           ./scripts/security/Test-SHAStaleness.ps1 -Path ".github/workflows" -OutputFormat "BuildWarning"
 ```
 
-#### Pull Request Security Validation
+#### Container Image Security Scanning
+
+```yaml
+- name: Container Security Scan
+  run: |
+    ./scripts/security/Invoke-ContainerSecurityScan.ps1 \
+      -ImageName "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}" \
+      -OutputFormat "sarif" \
+      -FailOnSeverity "high"
+
+- name: Upload Security Results
+  uses: github/codeql-action/upload-sarif@v2
+  with:
+    sarif_file: grype-results.sarif
+```
+
+#### Infrastructure Security Validation
 
 ```yaml
 - name: Infrastructure Security Scan
   run: |
     ./scripts/Run-Checkov.ps1 -Path "src/" -Output "sarif"
 
-- name: Upload Security Results
-  uses: github/codeql-action/upload-sarif@v3
+- name: Upload Infrastructure Security Results
+  uses: github/codeql-action/upload-sarif@0b21cf2492b6b02c465a3e5d7c473717ad7721ba # v3
   with:
     sarif_file: checkov-results.sarif
+```
+
+#### Language-Specific Dependency Audits
+
+```yaml
+# .NET packages
+- name: .NET Security Audit
+  run: dotnet list package --vulnerable --include-transitive
+
+# Rust packages
+- name: Rust Security Audit
+  run: cargo audit
+
+# npm packages
+- name: NPM Security Audit
+  run: npm audit --audit-level=moderate
+
+# Python packages
+- name: Python Security Scan
+  run: pip-audit --requirement requirements.txt
 ```
 
 ### Azure DevOps Pipeline Integration
@@ -238,6 +506,24 @@ All security templates integrated for full parity:
 #### Security Template Examples
 
 **Staleness Monitoring**: `.azdo/templates/security-staleness-check.yml`
+
+#### Application Build Template Security
+
+```yaml
+- task: PowerShell@2
+  displayName: 'Application Security Scan'
+  inputs:
+    filePath: './scripts/build/application-builder.ps1'
+    arguments: '-ApplicationPath "$(ApplicationPath)" -Language "$(Language)" -SecurityScan'
+
+- task: PowerShell@2
+  displayName: 'Security Gate Evaluation'
+  inputs:
+    filePath: './scripts/security/Invoke-SecurityGate.ps1'
+    arguments: '-ConfigPath "$(SecurityGateConfig)"'
+```
+
+#### Infrastructure Security Scanning
 
 ```yaml
 - task: PowerShell@2
@@ -313,6 +599,39 @@ checkov --list
 checkov --check CKV_AZURE_1 -f terraform-file.tf
 ```
 
+## Security Report Management
+
+### Report Compression
+
+Security scan results are automatically compressed to optimize artifact storage:
+
+**Script**: `./scripts/security/Invoke-SecurityReportCompression.ps1`
+
+#### Compression Features
+
+- **Multi-Format Support**: SARIF, JSON, JUnit XML, text reports
+- **Metadata Preservation**: Maintains scan context and timestamps
+- **Size Optimization**: Reduces artifact storage by 60-80%
+- **Validation**: Ensures compression integrity
+
+#### Usage Example
+
+```powershell
+# Compress all security reports in directory
+./scripts/security/Invoke-SecurityReportCompression.ps1 -InputPath "./security-reports" -OutputPath "./compressed-reports"
+
+# Compress specific report types
+./scripts/security/Invoke-SecurityReportCompression.ps1 -InputPath "./reports" -FilePattern "*.sarif,*.json"
+```
+
+### Artifact Retention
+
+Security reports follow optimized retention policies:
+
+- **Security Reports**: 30 days retention with maximum compression
+- **SARIF Results**: Uploaded to GitHub Security tab for long-term tracking
+- **Build Artifacts**: Standard retention based on build type
+
 ## Best Practices
 
 ### Supply Chain Best Practices
@@ -326,10 +645,13 @@ checkov --check CKV_AZURE_1 -f terraform-file.tf
 ### Scanning Best Practices
 
 - **Early Integration**: Scan early in development workflow
+- **Matrix Build Integration**: Leverage application matrix for comprehensive coverage
 - **Incremental Scanning**: Only scan changed files for efficiency
 - **Fast Feedback**: Provide quick security feedback to developers
 - **Baseline Tracking**: Establish security baseline and track changes
 - **Actionable Results**: Include clear remediation guidance
+- **Report Compression**: Use compression for large security datasets
+- **Language-Specific Audits**: Include dependency scanning for all supported languages
 
 ## Related Documentation
 
@@ -337,6 +659,7 @@ checkov --check CKV_AZURE_1 -f terraform-file.tf
 - [Azure DevOps Pipelines](azure-pipelines/) - Azure DevOps security integration
 
 <!-- Reference Links -->
+[grype-tool]: https://github.com/anchore/grype
 [checkov-tool]: https://www.checkov.io/
 [megalinter-tool]: https://megalinter.io/
 

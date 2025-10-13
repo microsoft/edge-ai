@@ -1,10 +1,10 @@
-use std::time::Duration;
-use azure_iot_operations_mqtt::interface::MqttPubSub;
 use azure_iot_operations_mqtt::control_packet::QoS;
+use azure_iot_operations_mqtt::interface::MqttPubSub;
 use azure_iot_operations_mqtt::session::{SessionConnectionMonitor, SessionManagedClient};
+use std::time::Duration;
 use tokio::time::timeout;
-use tracing::{event, Level};
 use tokio_retry::{strategy::ExponentialBackoff, Retry};
+use tracing::{event, Level};
 
 pub const DEFAULT_MAX_PUBLISH_ATTEMPTS: usize = 5;
 pub const DEFAULT_PUBLISH_RETRY_DELAY: u64 = 2; // in seconds
@@ -97,5 +97,8 @@ pub async fn mqtt_publish_message(
         );
     }
 
-    event!(Level::INFO, "Disconnected from MQTT broker using SessionManagedClient.");
+    event!(
+        Level::INFO,
+        "Disconnected from MQTT broker using SessionManagedClient."
+    );
 }

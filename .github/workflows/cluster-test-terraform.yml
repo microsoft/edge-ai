@@ -55,7 +55,7 @@
 ---
 name: Cluster Terraform Testing
 
-on: # yamllint disable-line rule:truthy
+on:  # yamllint disable-line rule:truthy
   workflow_call:
     inputs:
       working-directory:
@@ -128,7 +128,7 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+        uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493
 
       # Process working directory: extract paths and check for CI folders
       - name: Process working directories
@@ -174,13 +174,13 @@ jobs:
           fi
 
       - name: Azure Login
-        uses: azure/login@92a5484dfaf04ca78a94597f4f19fea633851fa2
+        uses: azure/login@bbcc074a232a35d7283353c18aabf0de1d557775
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
           enable-AzPSSession: true
 
       - name: Get secrets from Key Vault
-        uses: azure/get-keyvault-secrets@b5c723b9ac7870c022b8c35befe620b7009b336f
+        uses: azure/get-keyvault-secrets@c2b531e47fab4ca7cd8df09d44a65256651bf46e
         with:
           keyvault: ${{ inputs.keyvault-name }}
           secrets: '*'
@@ -188,7 +188,7 @@ jobs:
         if: inputs.keyvault-name != ''
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@651471c36a6092792c552e8b1bef71e592b462d8
+        uses: hashicorp/setup-terraform@afa38526df51b6d16447109ab1e21fada7d93d63
         with:
           terraform_version: ${{ inputs.terraform-version }}
           cli_config_credentials_token: ${{ secrets.TERRAFORM_API_TOKEN }}
@@ -206,7 +206,7 @@ jobs:
         run: |
           BACKEND_ARGS=""
           if [ "${{ inputs.backend-config }}" != "{}" ]; then
-            BACKEND_CONFIG=$(echo '${{ inputs.backend-config }}' | jq -r 'to_entries | map("-backend-config=\"\(.key)=\(.value)\"") | join(" ")')
+            BACKEND_CONFIG=$(echo "${{ inputs.backend-config }}" | jq -r 'to_entries | map("-backend-config=\"\(.key)=\(.value)\"") | join(" ")')
             BACKEND_ARGS="$BACKEND_CONFIG"
           else
             BACKEND_ARGS="-backend-config=resource_group_name=${{ inputs.backend-resource-group }} \
@@ -225,7 +225,7 @@ jobs:
         run: |
           BACKEND_ARGS=""
           if [ "${{ inputs.backend-config }}" != "{}" ]; then
-            BACKEND_CONFIG=$(echo '${{ inputs.backend-config }}' | jq -r 'to_entries | map("-backend-config=\"\(.key)=\(.value)\"") | join(" ")')
+            BACKEND_CONFIG=$(echo "${{ inputs.backend-config }}" | jq -r 'to_entries | map("-backend-config=\"\(.key)=\(.value)\"") | join(" ")')
             BACKEND_ARGS="$BACKEND_CONFIG"
           else
             BACKEND_ARGS="-backend-config=resource_group_name=${{ inputs.backend-resource-group }} \
@@ -337,7 +337,7 @@ jobs:
         run: exit 1
 
       - name: Setup Node.js for test processing
-        uses: actions/setup-node@5e21ff4d9bc06a74674ebf3f11c5d9bb6f561e3b
+        uses: actions/setup-node@89d709d423dc495668cd762a18dd4a070611be3f
         with:
           node-version: '22.x'
         if: steps.workingDirProcessor.outputs.tfTestsExist == 'true'
@@ -418,7 +418,7 @@ jobs:
       #     check_name: "${{ steps.workingDirProcessor.outputs.folderPathSafe }} Test Results"
 
       - name: Upload Terraform Plan
-        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808
+        uses: actions/upload-artifact@2848b2cda0e5190984587ec6bb1f36730ca78d50
         with:
           name: ${{ steps.workingDirProcessor.outputs.folderPathSafe }}-terraform-plan
           path: ${{ github.workspace }}/${{ github.run_id }}.${{ steps.workingDirProcessor.outputs.folderPathSafe }}.tfplan
@@ -426,7 +426,7 @@ jobs:
           if-no-files-found: ignore
 
       - name: Upload Terraform Test Output
-        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808
+        uses: actions/upload-artifact@2848b2cda0e5190984587ec6bb1f36730ca78d50
         if: steps.workingDirProcessor.outputs.tfTestsExist == 'true'
         with:
           name: ${{ steps.workingDirProcessor.outputs.folderPathSafe }}-test-output

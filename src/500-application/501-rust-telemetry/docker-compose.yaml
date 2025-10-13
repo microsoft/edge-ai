@@ -2,7 +2,7 @@
 services:
 
   mosquitto-broker:
-    image: eclipse-mosquitto@sha256:7b77b81b6d25b1fc6cc5ed1eb8ae48c247d4fd6f9aef1f7ee88b4a8e0b7f2b3e
+    image: eclipse-mosquitto@sha256:7b77b81b6d25b1fc6cc5ed1eb8ae48c247d4fd6f9aef1f7ee88b4a8e0b7f2b3e@sha256:7b77b81b6d25b1fc6cc5ed1eb8ae48c247d4fd6f9aef1f7ee88b4a8e0b7f2b3e
     ports:
       - "1883:1883"
       - "9001:9001"
@@ -12,6 +12,7 @@ services:
       - rust-telemetry
 
   sender:
+    image: ${REGISTRY:-local}/${APPLICATION:-rust-telemetry}/sender:${BUILD_ID:-latest}
     build:
       context: ./services/sender
       dockerfile: Dockerfile
@@ -39,6 +40,7 @@ services:
       - rust-telemetry
 
   receiver:
+    image: ${REGISTRY:-local}/${APPLICATION:-rust-telemetry}/receiver:${BUILD_ID:-latest}
     build:
       context: ./services/receiver
       dockerfile: Dockerfile
@@ -67,7 +69,7 @@ services:
 
   # OpenTelemetry collector for observability
   otel-collector:
-    image: otel/opentelemetry-collector-contrib:latest@sha256:a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2
+    image: otel/opentelemetry-collector-contrib:latest@sha256:a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2@sha256:c2356da46d45c4d230470f5a52f2bfe7c909ef6a786fd8cd99dd35815363c692
     container_name: otel-collector
     restart: unless-stopped
     command: ["--config=/etc/otel-collector-config.yaml"]
@@ -93,7 +95,7 @@ services:
 
   # Grafana OTEL-LGTM stack (Loki, Grafana, Tempo, Mimir)
   grafana-otel:
-    image: grafana/otel-lgtm:latest@sha256:b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3
+    image: grafana/otel-lgtm:latest@sha256:b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3@sha256:3d9610ec2b8c390e5b4df60c02b035e232732ea6482a245323661f5cb12232bf
     container_name: grafana-otel
     restart: unless-stopped
     ports:

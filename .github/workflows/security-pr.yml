@@ -56,13 +56,13 @@ jobs:
       egress-violations: ${{ steps.egress.outputs.violations }}
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@5c7944e73c4c2a096b17a9cb74d65b6c2bbafbde
+        uses: step-security/harden-runner@92c522aaa6f53af082553dedc1596c80b71aba33
         with:
           egress-policy: audit
           allowed-endpoints: ${{ inputs.allowed-endpoints }}
 
       - name: Checkout Repository
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+        uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493
 
       - name: Setup PowerShell Core
         run: |
@@ -120,7 +120,7 @@ jobs:
           }
 
       - name: Upload Security Artifacts
-        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808
+        uses: actions/upload-artifact@2848b2cda0e5190984587ec6bb1f36730ca78d50
         if: always()
         with:
           name: security-pr-results

@@ -9,20 +9,21 @@
 /// - Subscribes to configurable MQTT topics
 /// - Deserializes JSON payloads
 /// - Maintains OpenTelemetry trace context across services
-
 mod otel;
 
 // Azure IoT Operations imports
 use azure_iot_operations_mqtt::{
     interface::AckToken,
-    MqttConnectionSettingsBuilder,
     session::{Session, SessionManagedClient, SessionOptionsBuilder},
+    MqttConnectionSettingsBuilder,
 };
 use azure_iot_operations_protocol::{
     application::ApplicationContextBuilder,
     common::{
         aio_protocol_error::AIOProtocolError,
-        payload_serialize::{DeserializationError, FormatIndicator, PayloadSerialize, SerializedPayload},
+        payload_serialize::{
+            DeserializationError, FormatIndicator, PayloadSerialize, SerializedPayload,
+        },
     },
     telemetry,
 };
@@ -32,12 +33,11 @@ use serde_json::Value;
 use tracing::{debug, error, info, instrument, warn};
 
 // Local imports
-use otel::{set_cloud_event_attributes, handle_receive_trace, setup_otel_tracing};
+use otel::{handle_receive_trace, set_cloud_event_attributes, setup_otel_tracing};
 
 /// The default MQTT topic to subscribe to for receiving telemetry messages
 /// Can be overridden with the TOPIC environment variable
 const DEFAULT_TOPIC: &str = "sample/telemetry";
-
 
 /// Entry point for the telemetry receiver application
 ///
@@ -173,8 +173,6 @@ async fn telemetry_processing_loop(
     Ok(())
 }
 
-
-
 /// Payload wrapper for telemetry data
 ///
 /// This struct wraps a serde_json::Value to allow for flexible JSON payloads.
@@ -182,7 +180,6 @@ async fn telemetry_processing_loop(
 /// to convert between wire format and application data structures.
 #[derive(Clone, Debug)]
 pub struct Payload(pub Value);
-
 
 // Implement serialization/deserialization for the original telemetry message
 impl PayloadSerialize for Payload {
@@ -242,7 +239,7 @@ impl PayloadSerialize for Payload {
             Ok(json) => {
                 debug!("Payload successfully parsed as JSON: {:?}", json);
                 json
-            },
+            }
             Err(e) => {
                 error!("Failed to parse payload as JSON: {:?}", e);
                 return Err(DeserializationError::InvalidPayload(format!(
@@ -255,4 +252,3 @@ impl PayloadSerialize for Payload {
         Ok(Payload(payload))
     }
 }
-

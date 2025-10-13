@@ -1,4 +1,3 @@
-
 //! # Telemetry Sender Application
 //!
 //! This application demonstrates how to send telemetry data using Azure IoT Operations MQTT client.
@@ -12,13 +11,13 @@ use std::time::Duration;
 
 // Azure IoT Operations imports
 use azure_iot_operations_mqtt::{
-    MqttConnectionSettingsBuilder,
     session::{Session, SessionManagedClient, SessionOptionsBuilder},
+    MqttConnectionSettingsBuilder,
 };
 use azure_iot_operations_protocol::{
     application::ApplicationContextBuilder,
     common::payload_serialize::{
-        DeserializationError, FormatIndicator, PayloadSerialize, SerializedPayload
+        DeserializationError, FormatIndicator, PayloadSerialize, SerializedPayload,
     },
     telemetry,
 };
@@ -43,7 +42,6 @@ const DEFAULT_CE_SOURCE: &str = "urn:edge-ai:telemetry:sensor:temperature-001";
 /// The default message expiry time in seconds
 /// Can be overridden with the MESSAGE_EXPIRY_SECS environment variable
 const DEFAULT_MESSAGE_EXPIRY_SECS: u64 = 30;
-
 
 /// Entry point for the telemetry sender application.
 ///
@@ -141,7 +139,7 @@ async fn telemetry_loop(
 #[instrument(skip_all)]
 async fn simulate_and_send(
     sender: &telemetry::Sender<Payload, SessionManagedClient>,
-    source: &str
+    source: &str,
 ) -> Result<(), Box<dyn std::error::Error>> {
     // Simulate temperature change
     let payload = Payload(serde_json::json!({
@@ -180,7 +178,7 @@ async fn send_telemetry(
 
     let cloud_event = telemetry::sender::CloudEventBuilder::default()
         .source(source)
-        .time(chrono::Utc::now())  // Add event occurrence time
+        .time(chrono::Utc::now()) // Add event occurrence time
         .build()?;
 
     // Inject current OpenTelemetry span context into the message
@@ -189,10 +187,10 @@ async fn send_telemetry(
 
     // Create the message with all required attributes
     let message = telemetry::sender::MessageBuilder::default()
-        .custom_user_data(custom_user_data)  // Add trace context
-        .payload(payload)?                   // Add the JSON payload
-        .message_expiry(Duration::from_secs(message_expiry_secs))  // Message TTL from env or default
-        .cloud_event(cloud_event)            // Add CloudEvent metadata
+        .custom_user_data(custom_user_data) // Add trace context
+        .payload(payload)? // Add the JSON payload
+        .message_expiry(Duration::from_secs(message_expiry_secs)) // Message TTL from env or default
+        .cloud_event(cloud_event) // Add CloudEvent metadata
         .build()
         .unwrap();
 
@@ -202,8 +200,6 @@ async fn send_telemetry(
 
     Ok(())
 }
-
-
 
 /// Payload wrapper for telemetry data
 ///

@@ -10,23 +10,28 @@
 # - Detects changes in PowerShell scripts (.ps1) in the subscription setup folder
 # - Creates a dynamic matrix of Terraform folders that have changed
 # - Creates a dynamic matrix of Bicep folders that have changed
+# - Creates a dynamic matrix of Application folders that have changed (when enabled)
 # - Optionally can return all folders containing Terraform or Bicep files, not just those with changes
-# - Uses the detect-folder-changes.sh script to efficiently identify changes
+# - Optionally can return all application folders with docker-compose files, not just those with changes
+# - Uses the Detect-Folder-Changes.ps1 PowerShell script for cross-platform change detection
 #
 # Parameters:
 # - dependsOn: Jobs that this job depends on
 # - displayName: Display name for this job
 # - condition: Condition for running this job
-# - includeAllFolders: When true, returns all folders containing Terraform and Bicep files
+# - includeAllIaC: When true, returns all folders containing Terraform and Bicep files
+# - includeAllApplications: When true, returns all application folders (from src/500-application)
 # - agentPool: Agent pool configuration with name and vmImage properties
 #
 # Output Variables:
 # - matrixBuildFolderCheckTask.changesInRpEnablementShell: true/false if shell scripts changed in subscription setup
 # - matrixBuildFolderCheckTask.changesInRpEnablementPwsh: true/false if PowerShell scripts changed in subscription setup
 # - matrixBuildFolderCheckTask.changesInTfInstall: true/false if any Terraform files changed
-# - matrixBuildFolderCheckTask.changedTFFolders: JSON object with Terraform folder names (changed or all depending on parameters)
+# - matrixBuildFolderCheckTask.changedTfFolders: JSON object with Terraform folder names (changed or all depending on parameters)
 # - matrixBuildFolderCheckTask.changesInBicepInstall: true/false if any Bicep files changed
 # - matrixBuildFolderCheckTask.changedBicepFolders: JSON object with Bicep folder names (changed or all depending on parameters)
+# - matrixBuildFolderCheckTask.changesInApplications: true/false if any Application folders changed (when includeAllApplications=true)
+# - matrixBuildFolderCheckTask.changedApplicationFolders: JSON object with Application folder details (when includeAllApplications=true)
 #
 # Usage Examples:
 # ```yaml
@@ -42,10 +47,10 @@
 #   parameters:
 #     dependsOn: PreviousJob
 #     displayName: "Check all component folders"
-#     includeAllFolders: true
+#     includeAllIaC: true
 #
 # The output of this template is used by downstream jobs to conditionally run tests only
-# on components that have changed (or all components when includeAllFolders is true),
+# on components that have changed (or all components when includeAllIaC is true),
 # improving pipeline efficiency.
 ---
 parameters:
@@ -68,7 +73,13 @@ parameters:
   # Whether to include all folders for a complete Terraform run
   # This is useful for testing all Terraform files in the src directory
   # regardless of whether they have changed or not, e.g. Scheduled Builds
-  - name: includeAllFolders
+  - name: includeAllIaC
+    type: boolean
+    default: false
+  # Whether to include all application folders for complete builds
+  # This is useful for building all applications in the src/500-application directory
+  # regardless of whether they have changed or not, e.g. Scheduled Builds
+  - name: includeAllApplications
     type: boolean
     default: false
   # Agent pool configuration
@@ -77,6 +88,14 @@ parameters:
     default:
       name: 'ai-on-edge-managed-pool'
       vmImage: 'ubuntu-latest'
+  # Target branch for change comparison (default: main)
+  - name: targetBranch
+    type: string
+    default: 'main'
+  # Automatically detect PR target branch (overrides targetBranch when Build.Reason == PullRequest)
+  - name: autoDetectTargetBranch
+    type: boolean
+    default: true
 
 jobs:
   - job: ${{ parameters.jobName }}
@@ -89,74 +108,197 @@ jobs:
       - checkout: self
         fetchDepth: "0"
         clean: true
+        persistCredentials: true
 
-      # Use the detect-folder-changes.sh script instead of inline bash
+      # For PR builds, checkout the source branch HEAD instead of merge ref
+      - task: Bash@3
+        displayName: 'Checkout PR source branch HEAD'
+        condition: eq(variables['Build.Reason'], 'PullRequest')
+        inputs:
+          targetType: 'inline'
+          script: |
+            BRANCH_NAME=$(echo "$(System.PullRequest.SourceBranch)" | sed 's|^refs/heads/||')
+            echo "Switching to PR source branch HEAD: $BRANCH_NAME"
+            git checkout "$BRANCH_NAME"
+            git log -1 --oneline
+
+          # Dynamically fetch target branch for change detection (supports main, pre-release, etc.)
       - bash: |
-          # Echo parameters for debugging
-          echo "Debug: includeAllFolders = ${{ parameters.includeAllFolders }}"
-
-          # Initialize parameters string
-          params=""
-
-          # Add parameters based on conditions
-          if [[ "$(echo ${{ parameters.includeAllFolders }} | tr '[:upper:]' '[:lower:]')" == "true" ]]; then
-            echo "Debug: Adding --include-all-folders parameter"
-            params="--include-all-folders"
+          if [ "$(Build.Reason)" == "PullRequest" ] && [ "${{ parameters.autoDetectTargetBranch }}" == "True" ]; then
+            TARGET_BRANCH=$(echo "$(System.PullRequest.TargetBranch)" | sed 's|^refs/heads/||')
+            echo "Auto-detected PR target branch: $TARGET_BRANCH"
+          else
+            TARGET_BRANCH="${{ parameters.targetBranch }}"
+            echo "Using configured target branch: $TARGET_BRANCH"
           fi
+          echo "##vso[task.setvariable variable=ComparisonTargetBranch]$TARGET_BRANCH"
+          git fetch origin "$TARGET_BRANCH:refs/remotes/origin/$TARGET_BRANCH" --depth=50
+        displayName: 'Fetch comparison target branch for change detection'
+        workingDirectory: $(Build.SourcesDirectory)      # Use PowerShell detection script for cross-platform compatibility
+      - pwsh: |
+          # Echo parameters for debugging
+          Write-Host "Debug: includeAllIaC = ${{ parameters.includeAllIaC }}"
+          Write-Host "Debug: includeAllApplications = ${{ parameters.includeAllApplications }}"
+
+          # Build parameters hashtable for splatting
+          $params = @{}
+
+          if ("${{ parameters.includeAllIaC }}" -eq "True") {
+              Write-Host "Debug: Adding IncludeAllIaC switch"
+              $params["IncludeAllIaC"] = $true
+          }
+
+          if ("${{ parameters.includeAllApplications }}" -eq "True") {
+              Write-Host "Debug: Adding IncludeAllApplications switch"
+              $params["IncludeAllApplications"] = $true
+          }
 
           # Log the parameters
-          echo "Debug: Final parameters = [$params]"
-          echo "Running detect-folder-changes.sh with parameters: $params"
+          $paramSummary = if ($params.Count -gt 0) {
+              ($params.Keys | ForEach-Object { "-$_" }) -join ' '
+          }
+          else {
+              "(none)"
+          }
+          Write-Host "Debug: Final parameters = [$paramSummary]"
+          Write-Host "Running Detect-Folder-Changes.ps1 with parameters: $paramSummary"
 
-          # Run the script and capture its JSON output
-          script_output=$(bash ./scripts/build/detect-folder-changes.sh $params)
-          echo "Script completed successfully"
+          # Run the PowerShell script and capture output
+          $scriptOutput = & "./scripts/build/Detect-Folder-Changes.ps1" @params
+          Write-Host "Script completed successfully"
 
           # Echo the raw script output for debugging
-          echo "======== RAW SCRIPT OUTPUT ========"
-          echo "$script_output"
-          echo "======== END RAW SCRIPT OUTPUT ========"
+          Write-Host "======== RAW SCRIPT OUTPUT ========"
+          Write-Host "$scriptOutput"
+          Write-Host "======== END RAW SCRIPT OUTPUT ========"
 
-          # Parse the JSON output using jq and set pipeline variables
-          shell_changes=$(echo "$script_output" | jq -r '.subscription.shell_changes')
-          pwsh_changes=$(echo "$script_output" | jq -r '.subscription.powershell_changes')
-          tf_has_changes=$(echo "$script_output" | jq -r '.terraform.has_changes')
-          tf_folders=$(echo "$script_output" | jq -c '.terraform.folders')
-          bicep_has_changes=$(echo "$script_output" | jq -r '.bicep.has_changes')
-          bicep_folders=$(echo "$script_output" | jq -c '.bicep.folders')
+          # Parse the JSON output
+          $jsonData = $scriptOutput | ConvertFrom-Json
+
+          # Extract subscription data (always present)
+          $shellChanges = $jsonData.subscription.shell_changes
+          $pwshChanges = $jsonData.subscription.powershell_changes
+
+          # Extract terraform data (always present)
+          $tfHasChanges = $jsonData.terraform.has_changes
+          $tfFolders = $jsonData.terraform.folders | ConvertTo-Json -Compress -Depth 10
+
+          # Extract bicep data (always present)
+          $bicepHasChanges = $jsonData.bicep.has_changes
+          $bicepFolders = $jsonData.bicep.folders | ConvertTo-Json -Compress -Depth 10
+
+          # Extract application data (present when -IncludeAllApplications is used)
+          if ($jsonData.PSObject.Properties.Name -contains "applications") {
+              $appHasChanges = $jsonData.applications.has_changes
+              $appFolders = $jsonData.applications.folders | ConvertTo-Json -Compress -Depth 10
+          } else {
+              $appHasChanges = $false
+              $appFolders = "{}"
+          }
 
           # Echo folders objects directly for debugging
-          echo "======== TERRAFORM FOLDERS ========"
-          echo "$tf_folders"
-          echo "======== END TERRAFORM FOLDERS ========"
+          Write-Host "======== TERRAFORM FOLDERS ========"
+          Write-Host "$tfFolders"
+          Write-Host "======== END TERRAFORM FOLDERS ========"
 
-          echo "======== BICEP FOLDERS ========"
-          echo "$bicep_folders"
-          echo "======== END BICEP FOLDERS ========"
+          Write-Host "======== BICEP FOLDERS ========"
+          Write-Host "$bicepFolders"
+          Write-Host "======== END BICEP FOLDERS ========"
+
+          Write-Host "======== APPLICATION FOLDERS ========"
+          Write-Host "$appFolders"
+          Write-Host "======== END APPLICATION FOLDERS ========"
 
           # Set output variables for downstream jobs
-          echo "##vso[task.setvariable variable=changesInRpEnablementShell;isOutput=true]$shell_changes"
-          echo "##vso[task.setvariable variable=changesInRpEnablementPwsh;isOutput=true]$pwsh_changes"
-          echo "##vso[task.setvariable variable=changesInTfInstall;isOutput=true]$tf_has_changes"
-          echo "##vso[task.setvariable variable=changesInBicepInstall;isOutput=true]$bicep_has_changes"
+          Write-Host "##vso[task.setvariable variable=changesInRpEnablementShell;isOutput=true]$shellChanges"
+          Write-Host "##vso[task.setvariable variable=changesInRpEnablementPwsh;isOutput=true]$pwshChanges"
+          Write-Host "##vso[task.setvariable variable=changesInTfInstall;isOutput=true]$tfHasChanges"
+          Write-Host "##vso[task.setvariable variable=changesInBicepInstall;isOutput=true]$bicepHasChanges"
+          Write-Host "##vso[task.setvariable variable=changesInApplications;isOutput=true]$appHasChanges"
 
-          # Set the terraform folders output (will be 'none' if no changes)
-          if [ "$tf_has_changes" = "true" ]; then
-            echo "Changes detected in Terraform folders"
-            echo "##vso[task.setvariable variable=changedTfFolders;isOutput=true]$tf_folders"
-          else
-            echo "No changes detected in Terraform folders"
-            echo "##vso[task.setvariable variable=changedTfFolders;isOutput=true]none"
-          fi
+          # Set the terraform folders output
+          # When includeAllIaC is true, always output folders if any exist
+          # When includeAllIaC is false, only output if changes detected
+          $shouldOutputTf = $false
+          if ("${{ parameters.includeAllIaC }}" -eq "True") {
+              # Include all folders mode: output if any folders returned
+              $shouldOutputTf = ($tfFolders -ne "{}" -and $tfFolders -ne "null" -and $tfFolders.Trim() -ne "")
+              if ($shouldOutputTf) {
+                  Write-Host "Including all Terraform folders (includeAllIaC=true)"
+              } else {
+                  Write-Host "No Terraform folders found (includeAllIaC=true)"
+              }
+          } else {
+              # Changes only mode: output only if changes detected
+              $shouldOutputTf = ($tfHasChanges -eq $true)
+              if ($shouldOutputTf) {
+                  Write-Host "Changes detected in Terraform folders"
+              } else {
+                  Write-Host "No changes detected in Terraform folders"
+              }
+          }
 
-          # Set the bicep folders output (will be 'none' if no changes)
-          if [ "$bicep_has_changes" = "true" ]; then
-            echo "Changes detected in Bicep folders"
-            echo "##vso[task.setvariable variable=changedBicepFolders;isOutput=true]$bicep_folders"
-          else
-            echo "No changes detected in Bicep folders"
-            echo "##vso[task.setvariable variable=changedBicepFolders;isOutput=true]none"
-          fi
+          if ($shouldOutputTf) {
+              Write-Host "##vso[task.setvariable variable=changedTfFolders;isOutput=true]$tfFolders"
+          } else {
+              Write-Host "##vso[task.setvariable variable=changedTfFolders;isOutput=true]{}"
+          }
+
+          # Set the bicep folders output
+          # When includeAllIaC is true, always output folders if any exist
+          # When includeAllIaC is false, only output if changes detected
+          $shouldOutputBicep = $false
+          if ("${{ parameters.includeAllIaC }}" -eq "True") {
+              # Include all folders mode: output if any folders returned
+              $shouldOutputBicep = ($bicepFolders -ne "{}" -and $bicepFolders -ne "null" -and $bicepFolders.Trim() -ne "")
+              if ($shouldOutputBicep) {
+                  Write-Host "Including all Bicep folders (includeAllIaC=true)"
+              } else {
+                  Write-Host "No Bicep folders found (includeAllIaC=true)"
+              }
+          } else {
+              # Changes only mode: output only if changes detected
+              $shouldOutputBicep = ($bicepHasChanges -eq $true)
+              if ($shouldOutputBicep) {
+                  Write-Host "Changes detected in Bicep folders"
+              } else {
+                  Write-Host "No changes detected in Bicep folders"
+              }
+          }
+
+          if ($shouldOutputBicep) {
+              Write-Host "##vso[task.setvariable variable=changedBicepFolders;isOutput=true]$bicepFolders"
+          } else {
+              Write-Host "##vso[task.setvariable variable=changedBicepFolders;isOutput=true]{}"
+          }
+
+          # Set the application folders output
+          # When includeAllApplications is true, always output folders if any exist
+          # When includeAllApplications is false, only output if changes detected
+          $shouldOutputApps = $false
+          if ("${{ parameters.includeAllApplications }}" -eq "True") {
+              # Include all applications mode: output if any folders returned
+              $shouldOutputApps = ($appFolders -ne "{}" -and $appFolders -ne "null" -and $appFolders.Trim() -ne "")
+              if ($shouldOutputApps) {
+                  Write-Host "Including all Application folders (includeAllApplications=true)"
+              } else {
+                  Write-Host "No Application folders found (includeAllApplications=true)"
+              }
+          } else {
+              # Changes only mode: output only if changes detected
+              $shouldOutputApps = ($appHasChanges -eq $true)
+              if ($shouldOutputApps) {
+                  Write-Host "Changes detected in Application folders"
+              } else {
+                  Write-Host "No changes detected in Application folders"
+              }
+          }
+
+          if ($shouldOutputApps) {
+              Write-Host "##vso[task.setvariable variable=changedApplicationFolders;isOutput=true]$appFolders"
+          } else {
+              Write-Host "##vso[task.setvariable variable=changedApplicationFolders;isOutput=true]{}"
+          }
 
         displayName: Check for changes in src folders
         name: matrixBuildFolderCheckTask

@@ -1,0 +1,92 @@
+# Security Gate Configuration
+# This file defines security thresholds and policies for CI/CD enforcement
+
+# Vulnerability Thresholds
+vulnerability:
+  # Maximum severity level allowed (critical, high, medium, low, negligible)
+  threshold: "high"
+
+  # Maximum number of vulnerabilities by severity
+  max_critical: 0
+  max_high: 5
+  max_medium: 20
+  max_low: 50
+  max_negligible: 100
+
+# Infrastructure as Code Security
+iac:
+  # Whether to enforce IaC security policies (Checkov)
+  enforce: true
+
+  # Maximum number of IaC security violations allowed
+  max_violations: 0
+
+# Dependency Security
+dependencies:
+  # Whether to fail builds on dependency vulnerabilities
+  fail_on_vulnerabilities: false
+
+  # Languages to audit (all enabled by default)
+  languages:
+    - dotnet
+    - rust
+    - nodejs
+    - python
+
+  # Lockfile enforcement for supply chain security
+  lockfiles:
+    # Whether to enforce committed lockfiles (prevents TOCTOU attacks)
+    enforce_lockfile_commits: true
+
+    # Lockfile types to validate
+    types:
+      - rust-cargo      # Cargo.lock for Rust projects
+      - npm             # package-lock.json for Node.js projects
+      - pip             # requirements.txt with pinned versions
+      - go-mod          # go.sum for Go projects
+
+    # Whether to fail builds on missing lockfiles
+    fail_on_missing: true
+
+# Container Security
+containers:
+  # Whether to scan container images with Grype
+  scan_images: true
+
+  # Base image allowlist (empty means all allowed)
+  allowed_base_images: []
+
+# Reporting
+reporting:
+  # Output format (junit, json, sarif, console)
+  format: "junit"
+
+  # Whether to generate detailed vulnerability reports
+  detailed_reports: true
+
+  # Whether to upload reports to CI/CD artifacts
+  upload_artifacts: true
+
+# Environment-specific overrides
+environments:
+  # Development environment (more lenient)
+  development:
+    vulnerability:
+      threshold: "medium"
+      max_critical: 2
+      max_high: 10
+      max_medium: 50
+    dependencies:
+      fail_on_vulnerabilities: false
+
+  # Production environment (strictest)
+  production:
+    vulnerability:
+      threshold: "critical"
+      max_critical: 0
+      max_high: 0
+      max_medium: 5
+    dependencies:
+      fail_on_vulnerabilities: true
+    iac:
+      max_violations: 0

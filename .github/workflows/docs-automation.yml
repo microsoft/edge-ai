@@ -65,10 +65,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493 # v4.1.7
 
       - name: Run docs health check
-        uses: azure/powershell@1c589a2e445c71fe2cea92c69f7b80b572760c3b # v2
+        uses: azure/powershell@f711c0fc926921f126e18d152ae1d2a35b9876fd # v2
         with:
           inlineScript: |
             Write-Host "PowerShell version: $($PSVersionTable.PSVersion)"
@@ -153,12 +153,12 @@ jobs:
     needs: validate-frontmatter
     steps:
       - name: Checkout repository
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493 # v4.1.7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup PowerShell
-        uses: azure/powershell@1c589a2e445c71fe2cea92c69f7b80b572760c3b # v2
+        uses: azure/powershell@f711c0fc926921f126e18d152ae1d2a35b9876fd # v2
         with:
           inlineScript: |
             Write-Host "PowerShell version: $($PSVersionTable.PSVersion)"
@@ -351,10 +351,10 @@ jobs:
     needs: generate-sidebar
     steps:
       - name: Checkout repository
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493 # v4.1.7
 
       - name: Setup Node.js
-        uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.1.1
+        uses: actions/setup-node@89d709d423dc495668cd762a18dd4a070611be3f # v4.1.1
         with:
           node-version: '18'
 
@@ -401,10 +401,10 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - name: Checkout repository
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493 # v4.1.7
 
       - name: Setup Node.js
-        uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.1.1
+        uses: actions/setup-node@89d709d423dc495668cd762a18dd4a070611be3f # v4.1.1
         with:
           node-version: '18'
 
@@ -449,7 +449,7 @@ jobs:
       issues: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493 # v4.1.7
 
       - name: Generate documentation metrics
         shell: pwsh
@@ -517,7 +517,7 @@ jobs:
           Write-Host "✅ Documentation health report generated"
 
       - name: Upload report
-        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.4.0
+        uses: actions/upload-artifact@2848b2cda0e5190984587ec6bb1f36730ca78d50 # v4.4.0
         with:
           name: documentation-health-report
           path: documentation-health-report.md
@@ -525,7 +525,7 @@ jobs:
 
       - name: Comment on PR with report
         if: github.event_name == 'pull_request'
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v7.0.1
         with:
           script: |
             const fs = require('fs');

@@ -119,7 +119,7 @@ function Compare-FileContent {
 }
 
 # Main script execution starts here
-Write-Host "Comparing Azure DevOps templates with GitHub workflow files..." -ForegroundColor Cyan
+Write-Information "Comparing Azure DevOps templates with GitHub workflow files..." -InformationAction Continue
 
 # Verify paths exist
 if (-not (Test-Path -Path $AzDoPath)) {
@@ -135,10 +135,10 @@ if (-not (Test-Path -Path $GitHubPath)) {
 # Get all template/workflow files
 $azDoFiles = Get-ChildItem -Path $AzDoPath -Filter "*-template.yml" -Recurse
 $githubFiles = Get-ChildItem -Path $GitHubPath -Filter "*.yml" -Recurse |
-    Where-Object { -not $_.Name.EndsWith("-template.yml") } |
-    Where-Object { $ExcludeFiles -notcontains $_.Name }
+Where-Object { -not $_.Name.EndsWith("-template.yml") } |
+Where-Object { $ExcludeFiles -notcontains $_.Name }
 
-Write-Host "Found $($azDoFiles.Count) Azure DevOps templates and $($githubFiles.Count) GitHub workflows" -ForegroundColor Green
+Write-Information "Found $($azDoFiles.Count) Azure DevOps templates and $($githubFiles.Count) GitHub workflows" -InformationAction Continue
 
 # Create mapping of base names to files
 $azDoBaseNames = @{}
@@ -193,23 +193,23 @@ foreach ($baseName in $allBaseNames) {
         }
 
         # Display results to console
-        Write-Host "`nComparing files for base name: $baseName" -ForegroundColor Yellow
-        Write-Host "  Azure DevOps: $($azDoFile.Name) $(if($azDoNamingCorrect){"✅"}else{"❌"})"
-        Write-Host "  GitHub: $($githubFile.Name) $(if($githubNamingCorrect){"✅"}else{"❌"})"
+        Write-Information "`nComparing files for base name: $baseName" -InformationAction Continue
+        Write-Information "  Azure DevOps: $($azDoFile.Name) $(if($azDoNamingCorrect){"✅"}else{"❌"})" -InformationAction Continue
+        Write-Information "  GitHub: $($githubFile.Name) $(if($githubNamingCorrect){"✅"}else{"❌"})" -InformationAction Continue
 
         if ($contentComparison.ParameterDifferences.Count -gt 0) {
-            Write-Host "  Parameter differences found:" -ForegroundColor Magenta
+            Write-Information "  Parameter differences found:" -InformationAction Continue
 
             if ($contentComparison.ParameterDifferences.OnlyInAzDo.Count -gt 0) {
-                Write-Host "    - Only in Azure DevOps: $($contentComparison.ParameterDifferences.OnlyInAzDo -join ', ')"
+                Write-Information "    - Only in Azure DevOps: $($contentComparison.ParameterDifferences.OnlyInAzDo -join ', ')" -InformationAction Continue
             }
 
             if ($contentComparison.ParameterDifferences.OnlyInGitHub.Count -gt 0) {
-                Write-Host "    - Only in GitHub: $($contentComparison.ParameterDifferences.OnlyInGitHub -join ', ')"
+                Write-Information "    - Only in GitHub: $($contentComparison.ParameterDifferences.OnlyInGitHub -join ', ')" -InformationAction Continue
             }
         }
 
-        Write-Host "  Content similarity: $(100 - [Math]::Round($contentComparison.ContentSimilarity.DifferencePercent, 1))%"
+        Write-Information "  Content similarity: $(100 - [Math]::Round($contentComparison.ContentSimilarity.DifferencePercent, 1))%" -InformationAction Continue
     }
     else {
         # Missing in one of the systems
@@ -226,17 +226,17 @@ foreach ($baseName in $allBaseNames) {
         }
 
         # Display results
-        Write-Host "`nFile missing for base name: $baseName" -ForegroundColor Red
+        Write-Information "`nFile missing for base name: $baseName" -InformationAction Continue
 
         if ($hasAzDo) {
-            Write-Host "  Azure DevOps: $($azDoBaseNames[$baseName].Name) ✅"
-            Write-Host "  GitHub: Missing ❌"
-            Write-Host "  Expected GitHub file name would be: $baseName.yml"
+            Write-Information "  Azure DevOps: $($azDoBaseNames[$baseName].Name) ✅" -InformationAction Continue
+            Write-Information "  GitHub: Missing ❌" -InformationAction Continue
+            Write-Information "  Expected GitHub file name would be: $baseName.yml" -InformationAction Continue
         }
         else {
-            Write-Host "  Azure DevOps: Missing ❌"
-            Write-Host "  GitHub: $($githubBaseNames[$baseName].Name) ✅"
-            Write-Host "  Expected Azure DevOps file name would be: $baseName-template.yml"
+            Write-Information "  Azure DevOps: Missing ❌" -InformationAction Continue
+            Write-Information "  GitHub: $($githubBaseNames[$baseName].Name) ✅" -InformationAction Continue
+            Write-Information "  Expected Azure DevOps file name would be: $baseName-template.yml" -InformationAction Continue
         }
     }
 
@@ -247,20 +247,20 @@ foreach ($baseName in $allBaseNames) {
 if ($Report) {
     $reportPath = "ci-consistency-report.json"
     $results | ConvertTo-Json -Depth 5 | Out-File -FilePath $reportPath
-    Write-Host "`nDetailed report saved to: $reportPath" -ForegroundColor Cyan
+    Write-Information "`nDetailed report saved to: $reportPath" -InformationAction Continue
 }
 
 # Summary
-Write-Host "`n==== Summary ====" -ForegroundColor Cyan
-Write-Host "Total files analyzed: $($allBaseNames.Count)" -ForegroundColor White
-Write-Host "Files with naming inconsistencies: $inconsistentFiles" -ForegroundColor $(if ($inconsistentFiles -gt 0) { "Red" } else { "Green" })
-Write-Host "Files missing in one system: $missingFiles" -ForegroundColor $(if ($missingFiles -gt 0) { "Red" } else { "Green" })
+Write-Information "`n==== Summary ====" -InformationAction Continue
+Write-Information "Total files analyzed: $($allBaseNames.Count)" -InformationAction Continue
+Write-Information "Files with naming inconsistencies: $inconsistentFiles" -InformationAction Continue
+Write-Information "Files missing in one system: $missingFiles" -InformationAction Continue
 
 if ($inconsistentFiles -gt 0 -or $missingFiles -gt 0) {
-    Write-Host "`n❌ Inconsistencies found. Please review and align Azure DevOps templates with GitHub workflows." -ForegroundColor Red
+    Write-Information "`n❌ Inconsistencies found. Please review and align Azure DevOps templates with GitHub workflows." -InformationAction Continue
     exit 1
 }
 else {
-    Write-Host "`n✅ All files are consistent between Azure DevOps and GitHub." -ForegroundColor Green
+    Write-Information "`n✅ All files are consistent between Azure DevOps and GitHub." -InformationAction Continue
     exit 0
 }

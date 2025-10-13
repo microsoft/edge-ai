@@ -32,7 +32,7 @@ permissions:
   checks: write
   statuses: write
 
-on: # yamllint disable-line rule:truthy
+on:  # yamllint disable-line rule:truthy
   pull_request:
     # Only run on PRs targeting the main branch
     branches:
@@ -40,8 +40,8 @@ on: # yamllint disable-line rule:truthy
     types: [opened, synchronize, reopened]
   workflow_dispatch:
     inputs:
-      includeAllTerraformFolders:
-        description: 'Include all folders in the matrix check'
+      includeIaCFolders:
+        description: 'Include all Infrastructure as Code folders in the matrix check'
         required: true
         default: false
         type: boolean
@@ -90,10 +90,10 @@ jobs:
     # needs: [codeql-analysis]
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+        uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493
 
       - name: Dependency Review
-        uses: actions/dependency-review-action@72eb03d02c7872a771aacd928f3123ac62ad6d3a
+        uses: actions/dependency-review-action@56339e523c0409420f6c2c9a2f4292bbb3c07dd3
 
   # Security monitoring job for PRs - using modular security workflow
   security-monitoring:
@@ -160,7 +160,8 @@ jobs:
     uses: ./.github/workflows/matrix-folder-check.yml
     with:
       displayName: 'Detect component changes for PR validation'
-      includeAllFolders: ${{ github.event_name == 'workflow_dispatch' && inputs.includeAllFolders || false }}
+      includeIaCFolders: ${{ github.event_name == 'workflow_dispatch' && inputs.includeIaCFolders || false }}
+      includeApplications: false
 
   # PowerShell Resource Provider Tests for PRs
   pwsh-provider-tests:
@@ -198,4 +199,14 @@ jobs:
       working-directory: ${{ matrix.folderName }}
       terraform-version: '1.9.8'
       test-apply: false
+    secrets: inherit
+
+  # Application matrix builds for each changed application
+  application-matrix-builds:
+    name: Application Matrix Builds
+    needs: [matrix-changes]
+    if: needs.matrix-changes.outputs.changesInApplications == 'true' && fromJson(needs.matrix-changes.outputs.changedApplicationFolders).folderName[0] != null
+    uses: ./.github/workflows/application-matrix-builds.yml
+    with:
+      applicationMatrix: ${{ needs.matrix-changes.outputs.changedApplicationFolders }}
     secrets: inherit

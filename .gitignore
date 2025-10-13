@@ -445,3 +445,19 @@ security-plan-outputs/
 
 # certs for mq cert authentication
 certs/
+
+# Allow lockfiles for all Rust application services to satisfy supply chain security policy
+!src/500-application/501-rust-telemetry/services/**/Cargo.lock
+!src/500-application/502-rust-http-connector/services/**/Cargo.lock
+!src/500-application/503-media-capture-service/services/**/Cargo.lock
+
+# Rust build artifacts
+target/
+
+# Build outputs and security reports
+tmp/
+security-reports/
+
+# SLSA bundles and generated crates
+.slsa-bundles/
+crates/
