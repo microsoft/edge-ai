@@ -49,6 +49,7 @@ The Dev Container provides a consistent, pre-configured development environment 
    ```
 
 3. **Reopen in Dev Container**:
+
    - When prompted, click "Reopen in Container"
    - Or use Command Palette: `Remote-Containers: Reopen in Container`
 
@@ -67,6 +68,7 @@ If you prefer local development, install these tools:
 
 - [Azure CLI][azure-cli]
 - [Terraform][terraform-install] (>= 1.0)
+- [terraform-docs][terraform-docs-install] (for generating variable templates)
 - [kubectl][kubectl-install]
 - [Docker][docker-install]
 - [Python][python-install]
@@ -82,8 +84,11 @@ Blueprints are pre-configured deployment templates. Select one based on your sce
 | [minimum-single-node-cluster][blueprint-minimum]       | Minimal single-node setup       | Resource-constrained environments |
 | [only-cloud-single-node-cluster][blueprint-cloud-only] | Cloud components only           | Cloud-first deployments           |
 
+> **📋 More Blueprints Available**: Additional blueprints are available including `fabric`, `fabric-rti`, `dual-peered-single-node-cluster`, `only-edge-iot-ops`, `azureml`, and more. Check the [`/blueprints`](/blueprints/) directory for the complete list and detailed descriptions.
+
 ### Blueprint Directory Structure
 
+```text
 blueprints/
 ├── full-single-node-cluster/
 │   ├── terraform/
@@ -94,6 +99,7 @@ blueprints/
 └── minimum-single-node-cluster/
     ├── terraform/
     └── bicep/
+```
 
 ## Step 3: Deploy Your Blueprint
 
@@ -113,85 +119,133 @@ blueprints/
    terraform init
    ```
 
-3. **Create configuration file**:
+3. **Generate and create configuration file**:
 
    ```bash
-   # Copy example configuration
-   cp terraform.tfvars.example terraform.tfvars
+   # Generate terraform.tfvars template using terraform-docs
+   terraform-docs tfvars hcl .
+   ```
 
-   # Edit with your values
+   The generated output will look similar to the following:
+
+   ```terraform
+   # Required variables
+   environment     = "dev"                 # Environment type (dev, test, prod)
+   resource_prefix = "myprefix"            # Short unique prefix for resource naming
+   location        = "eastus2"             # Azure region location
+   # Optional (recommended) variables
+   instance        = "001"                 # Deployment instance number
+   ```
+
+   Copy this output to a file named `terraform.tfvars` and fill in your specific values:
+
+   ```bash
+   # Create and edit your configuration file
    code terraform.tfvars
    ```
 
-4. **Plan the deployment**:
+   > **⚠️ Important**: Review and update these key variables before deployment:
+   >
+   > - `resource_prefix`: Use a unique prefix (max 8 chars, alphanumeric only)
+   > - `environment`: Set to "dev", "test", or "prod"
+   > - `location`: Choose your preferred Azure region
+   > - Update any optional values that you want to change as well
+   >
+   > **💡 Tip**: To have Terraform automatically use your variables, you can name your tfvars file `terraform.auto.tfvars`. Terraform will use variables from any `*.auto.tfvars` files located in the same deployment folder.
+
+4. **Set up environment variables and initialize Terraform**:
 
    ```bash
-   terraform plan
+   # Set required environment variable for Terraform Azure provider
+   export ARM_SUBSCRIPTION_ID=$(az account show --query id -o tsv)
+
+   # Initialize Terraform (pulls down providers and modules)
+   terraform init -upgrade
    ```
 
-5. **Apply the configuration**:
+5. **Plan and apply the deployment**:
 
    ```bash
-   terraform apply
+   # Preview changes before applying
+   terraform plan -var-file=terraform.tfvars
+
+   # Review resource change list, then deploy
+   terraform apply -var-file=terraform.tfvars
    ```
 
-#### Automated Deployment
-
-Use our deployment script for simplified deployment:
-
-```bash
-# Set environment variables
-export ARM_SUBSCRIPTION_ID="your-subscription-id"
-export ARM_TENANT_ID="your-tenant-id"
-
-# Run deployment script
-./scripts/deploy-blueprint.sh full-single-node-cluster terraform
-```
+   > **🔍 Pre-Apply Checklist**:
+   >
+   > - Verify your `terraform.tfvars` has the correct `resource_prefix`, `environment`, and `location`
+   > - Ensure you're logged into the correct Azure subscription (`az account show`)
+   > - Review the `terraform plan` output to confirm expected resources
+   >
+   > **Note**: Add `-auto-approve` to the apply command to skip confirmation, or use `-var-file` if not using `*.auto.tfvars` file
 
 ### Using Bicep
 
 #### Interactive Bicep Deployment
 
-1. **Navigate to your chosen blueprint**:
+**Navigate to your chosen blueprint**:
 
    ```bash
    cd blueprints/full-single-node-cluster/bicep
    ```
 
-2. **Login to Azure**:
+**Login to Azure and set up environment**:
 
    ```bash
    az login
    az account set --subscription "your-subscription-id"
+
+   # Get the custom locations OID and export it as an environment variable
+   export CUSTOM_LOCATIONS_OID=$(az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv)
+
+   # Verify the environment variable is set correctly
+   echo $CUSTOM_LOCATIONS_OID
    ```
 
-3. **Create resource group**:
-
-   ```bash
-   az group create --name "rg-edge-ai" --location "East US"
-   ```
-
-4. **Deploy the blueprint**:
-
-   ```bash
-   az deployment group create \
-     --resource-group "rg-edge-ai" \
-     --template-file main.bicep \
-     --parameters @parameters.json
-   ```
-
-#### Automated Bicep Deployment
-
-Use our deployment script for simplified deployment:
+**Create the parameters file**:
 
 ```bash
-# Set environment variables
-export AZURE_SUBSCRIPTION_ID="your-subscription-id"
-export AZURE_RESOURCE_GROUP="rg-edge-ai"
+# Create main.bicepparam with the required parameters
+cat <<'EOF' > main.bicepparam
+using './main.bicep'
 
-# Run deployment script
-./scripts/deploy-blueprint.sh full-single-node-cluster bicep
+// Required parameters for the common object
+param common = {
+    resourcePrefix: 'prf01a2'     // Keep short (max 8 chars) to avoid resource naming issues
+    location: 'eastus2'           // Replace with your Azure region
+    environment: 'dev'            // 'dev', 'test', or 'prod'
+    instance: '001'               // For multiple deployments
+}
+
+param resourceGroupName = 'rg-${common.resourcePrefix}-${common.environment}-${common.instance}'
+param useExistingResourceGroup = false
+param telemetry_opt_out = false
+param adminPassword = '' // Supply a secure password
+param shouldCreateAcrPrivateEndpoint = false
+param shouldCreateAks = false
+param customLocationsOid = '' // Replace with 'CUSTOM_LOCATIONS_OID' retrieved earlier
+param shouldCreateAnonymousBrokerListener = false
+EOF
 ```
+
+   After creating the file, open it in your editor (`code main.bicepparam`) and replace the sample values with the settings for your deployment. Replace `customLocationsOid` with the correct value from the environment variable `CUSTOM_LOCATIONS_OID`.
+
+> **⚠️ Important**: Confirm the `common` object matches your environment, choose the correct region, and review each optional parameter flag before continuing.
+
+**Deploy the blueprint**:
+
+   > **🔍 Pre-Deploy Checklist**:
+   >
+   > - Verify your `main.bicepparam` has the correct `resourcePrefix`, `environment`, and `location`
+   > - Ensure `customLocationsOid` is set correctly
+   > - Confirm you're logged into the correct Azure subscription (`az account show`)
+
+   ```bash
+   # Deploy using Azure CLI at subscription level (keep the `--name` value under 8 characters and unique)
+   az deployment sub create --name deploy01 --location eastus2 --parameters ./main.bicepparam
+   ```
 
 ## Step 4: Verify Deployment
 
@@ -200,21 +254,23 @@ After deployment completes, verify your resources:
 ### Check Azure Resources
 
 ```bash
-# List deployed resources
-az resource list --resource-group "rg-edge-ai" --output table
+# Get the resource group name (using your resource prefix, environment, and instance)
+RG_NAME="rg-<prefix>-<environment>-<instance>"
 
-# Check specific services
-az aks list --resource-group "rg-edge-ai" --output table
-az iot hub list --resource-group "rg-edge-ai" --output table
+# List deployed resources
+az resource list --resource-group $RG_NAME --output table
 ```
 
 ### Connect to Kubernetes Cluster
 
 ```bash
-# Get cluster credentials
-az aks get-credentials --resource-group "rg-edge-ai" --name "your-cluster-name"
+# Get the arc connected cluster name after deployment
+ARC_CONNECTED_CLUSTER_NAME="arck-{resource_prefix}-{environment}-{instance}"
 
-# Verify connection
+# Access the Kubernetes cluster (in one terminal)
+az connectedk8s proxy -n $ARC_CONNECTED_CLUSTER_NAME -g $RG_NAME
+
+# Verify connection (in a separate terminal)
 kubectl get nodes
 kubectl get pods --all-namespaces
 ```
@@ -362,10 +418,11 @@ After successful deployment:
 
 ---
 
-*This guide is part of the AI on Edge Flagship Accelerator project. For the latest updates and comprehensive resources, visit our [project repository][project-repo].*
+_This guide is part of the AI on Edge Flagship Accelerator project. For the latest updates and comprehensive resources, visit our [project repository][project-repo]._
 
 [azure-cli]: https://docs.microsoft.com/cli/azure/install-azure-cli
 [terraform-install]: https://learn.hashicorp.com/tutorials/terraform/install-cli
+[terraform-docs-install]: https://terraform-docs.io/user-guide/installation/
 [kubectl-install]: https://kubernetes.io/docs/tasks/tools/install-kubectl/
 [docker-install]: https://docs.docker.com/get-docker/
 [blueprint-full-single]: blueprints/full-single-node-cluster/
@@ -377,9 +434,11 @@ After successful deployment:
 [project-repo]: {{REPO_URL}}
 [python-install]: https://www.python.org/downloads/
 
-*AI and automation capabilities described in this scenario should be implemented following responsible AI principles, including fairness, reliability, safety, privacy, inclusiveness, transparency, and accountability. Organizations should ensure appropriate governance, monitoring, and human oversight are in place for all AI-powered solutions.*
+_AI and automation capabilities described in this scenario should be implemented following responsible AI principles, including fairness, reliability, safety, privacy, inclusiveness, transparency, and accountability. Organizations should ensure appropriate governance, monitoring, and human oversight are in place for all AI-powered solutions._
 
 <!-- markdownlint-disable MD036 -->
-*🤖 Crafted with precision by ✨Copilot following brilliant human instruction,
-then carefully refined by our team of discerning human reviewers.*
+
+_🤖 Crafted with precision by ✨Copilot following brilliant human instruction,
+then carefully refined by our team of discerning human reviewers._
+
 <!-- markdownlint-enable MD036 -->
