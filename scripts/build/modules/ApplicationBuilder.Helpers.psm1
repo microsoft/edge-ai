@@ -70,7 +70,7 @@ function Write-BuildLog {
             Write-Verbose $formattedMessage
         }
 
-        [Console]::Error.WriteLine($formattedMessage)
+        [Console]::Error.WriteLine("{0}", $formattedMessage)
     }
 }
 
@@ -136,7 +136,7 @@ function Write-Info {
             Write-Verbose $formattedMessage
         }
 
-        [Console]::Error.WriteLine($formattedMessage)
+        [Console]::Error.WriteLine("{0}", $formattedMessage)
     }
 }
 
@@ -1596,7 +1596,7 @@ function Get-ApplicationStructure {
                                 continue
                             }
 
-                            $result.Add("{0}={1}" -f $key, $value[$key]) | Out-Null
+                            $result.Add("$key=$($value[$key])") | Out-Null
                         }
                         return $result.ToArray()
                     }
@@ -1604,7 +1604,7 @@ function Get-ApplicationStructure {
                     if ($value -is [PSCustomObject]) {
                         foreach ($property in $value.PSObject.Properties) {
                             if (-not [string]::IsNullOrWhiteSpace($property.Name)) {
-                                $result.Add("{0}={1}" -f $property.Name, $property.Value) | Out-Null
+                                $result.Add("$($property.Name)=$($property.Value)") | Out-Null
                             }
                         }
                         return $result.ToArray()
@@ -1844,7 +1844,9 @@ function Get-ApplicationStructure {
                             $repositoryValue = $null
                             if ($imageName) {
                                 $repositoryValue = ($imageName -split ':', 2)[0]
-                            }                            $profilesCandidate = Get-SafeProperty $definition 'profiles'
+                            }
+
+                            $profilesCandidate = Get-SafeProperty $definition 'profiles'
                             $profilesValue = & $convertToStringArray $profilesCandidate
                             if (@($profilesValue).Count -eq 0) {
                                 $profilesCandidate = Get-SafeProperty $definition 'Profiles'
