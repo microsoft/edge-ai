@@ -283,6 +283,17 @@ This workflow follows a progressive confirmation model where user reviews and ap
 
 **Critical**: Do NOT present all information at once. Present each confirmation gate separately and wait for user response before proceeding to the next gate.
 
+### No-Gates Mode
+
+When `${input:noGates}` is true:
+* Skip Phase 5 (all confirmation gates) entirely
+* After completing Phase 4, proceed directly to Phase 6
+* Use all discovered work items (no user selection)
+* If Phase 3a created a work item, use that created work item automatically
+* Add minimum of 2 optional reviewers (top 2 by contribution score)
+* Create PR immediately with all discovered linkages
+* Deliver final recap in Phase 7 as usual
+
 ## Workflow
 
 ### Phase 1 – Setup & PR Reference Generation (Silent)
@@ -394,6 +405,54 @@ Execute without presenting to user yet:
 5. Filter work items with similarity >= `${input:similarityThreshold}`.
 6. Capture findings in `pr-analysis.md` with relevance reasoning.
 7. Log discovered work items in `planning-log.md`.
+8. If NO viable work items are discovered (zero work items with similarity >= threshold):
+   * Proceed to Phase 3a - Create Work Item for PR
+   * After Phase 3a completion, continue to Phase 4
+
+### Phase 3a – Create Work Item for PR (Conditional)
+
+**Execute this phase ONLY when Phase 3 discovers zero viable work items.**
+
+Read in and follow instructions from ado-wit-discovery.instructions.md and ado-update-wit-items.instructions.md to create a work item for this PR:
+
+1. **Setup Work Item Discovery Planning**:
+   * Determine folder name from PR context (e.g., branch name without `feat/`, `fix/`, etc.)
+   * Create planning directory: `.copilot-tracking/workitems/discovery/<folder-name>/`
+   * Initialize planning files following ado-wit-discovery.instructions.md templates
+
+2. **Reuse PR Analysis Artifacts**:
+   * Copy or reference `pr-reference.xml` from PR planning directory
+   * Use existing PR title, description, and change analysis from Phase 2
+   * Use existing ACTIVE KEYWORD GROUPS from Phase 3
+   * Skip git-branch-diff.xml generation (already have pr-reference.xml)
+
+3. **Execute Work Item Discovery Workflow**:
+   * Follow Phase 1 of ado-wit-discovery.instructions.md using PR artifacts
+   * Create `artifact-analysis.md` from PR context (commits, files, changes)
+   * Follow Phase 2 to discover Features for potential parent linking (User Stories only)
+   * Follow Phase 3 to plan work item creation:
+     * Create ONE User Story or Bug based on PR content
+     * Derive work item type from branch name or commit type (feat → User Story, fix → Bug)
+     * Title: Extract from PR title following work item conventions
+     * Description: Adapt from PR description with rationale
+     * Acceptance Criteria: Derive from PR changes and commit messages
+     * Link to parent Feature if discovered (User Stories only)
+   * Follow Phase 4 to assemble `handoff.md` with Create action
+
+4. **Execute Work Item Creation**:
+   * Follow instructions from ado-update-wit-items.instructions.md
+   * Create `handoff-logs.md` in work item planning directory
+   * Process the Create action from `handoff.md`
+   * Use `mcp_ado_wit_create_work_item` to create the work item
+   * Capture created work item ID in `handoff-logs.md`
+   * Log creation result in PR `planning-log.md`
+
+5. **Link Created Work Item to PR Flow**:
+   * Store created work item ID for use in Phase 6 linking
+   * Update PR `pr-analysis.md` with created work item details
+   * Log in PR `planning-log.md` that work item was created for this PR
+
+**Note**: This phase creates exactly ONE work item representing the PR's purpose. Skip Feature/Epic creation. Keep planning files in work item discovery folder separate from PR planning folder.
 
 ### Phase 4 – Identify Potential Reviewers (Silent)
 
@@ -419,6 +478,12 @@ Execute without presenting to user yet:
 7. Log potential reviewers and resolution status in `planning-log.md`.
 
 ### Phase 5 – User Review & Confirmation (Progressive Gates)
+
+**Skip this entire phase if `${input:noGates}` is true. Proceed directly to Phase 6 with:**
+* All discovered work items from Phase 3
+* If Phase 3a created a work item, use that created work item
+* Top 2 reviewers by contribution score from Phase 4 (minimum 2 optional reviewers)
+* Auto-approve all content from Phases 1-4
 
 **Critical**: Present each gate separately. Wait for user approval/modification before proceeding to next gate.
 
@@ -546,12 +611,13 @@ Please review the PR content. You can:
 #### Gate 3: Work Items Review
 
 1. If `${input:workItemIds}` was provided: Present those work items for confirmation.
-2. If discovered in Phase 3: Present up to 10 highest similarity work items.
-3. For each work item provide:
+2. If work item was created in Phase 3a: Present the created work item for confirmation.
+3. If discovered in Phase 3: Present up to 10 highest similarity work items.
+4. For each work item provide:
    * Work item ID and type
    * Title
    * Current state
-   * Similarity score (percentage)
+   * Similarity score (percentage) - or "Created for this PR" if from Phase 3a
    * 1-2 sentence relevance reasoning
 
 <!-- <example-gate3> -->
@@ -560,6 +626,15 @@ Please review the PR content. You can:
 ```markdown
 ## 🔗 Work Items to Link
 
+[If work item was created in Phase 3a:]
+I created a new work item for this PR since no existing work items matched:
+
+### ADO-[ID] - [Type] - New
+**Title**: [Work item title]
+**Status**: Created for this PR
+**Why link**: Work item created to track this pull request's changes
+
+[If work items were discovered in Phase 3:]
 I found [count] work items that may relate to your changes:
 
 ### ADO-[ID] - [Type] - [State]
@@ -740,6 +815,7 @@ When user requests modifications at any gate:
    * Tool: `mcp_ado_repo_update_pull_request_reviewers`
    * Parameters: `repositoryId`, `pullRequestId`, `reviewerIds` (array of GUIDs), `action: "add"`
    * **Important**: All reviewers are added as **optional** reviewers by default
+   * **No-Gates Mode**: If `${input:noGates}` is true, add top 2 reviewers by contribution score (minimum 2 optional reviewers)
    * Add all reviewers with resolved identity IDs in a single batch call
    * For reviewers without resolved IDs, document in final recap for manual addition via Azure DevOps UI
    * Log reviewer addition results in `planning-log.md`
@@ -842,7 +918,8 @@ All artifacts saved to: `.copilot-tracking/pr/new/[normalized-branch]/`
 ## Error Recovery
 
 * **Phase 1**: PR reference generation fails → verify git state, branch existence, base branch validity
-* **Phase 3**: Too many/no work items → adjust similarity threshold or keyword groups; proceed without links if necessary
+* **Phase 3**: Too many/no work items → adjust similarity threshold or keyword groups; if still none, proceed to Phase 3a to create work item
+* **Phase 3a**: Work item creation fails → log error, inform user, proceed to Phase 4 without work item (user can link manually later)
 * **Phase 4**: Identity resolution fails → mark reviewer for manual addition via Azure DevOps UI
 * **Phase 6**: Repository/Project ID not found → search workspace config or request from user
 * **Phase 6**: PR creation fails → verify branch refs, permissions, no duplicate PR
