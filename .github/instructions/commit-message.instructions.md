@@ -21,7 +21,7 @@ Types MUST be one of the following:
 - `perf` - A code change that improves performance
 - `style` - Changes that do not affect the meaning of the code
 - `test` - Adding missing tests or correcting existing tests
-- `docs` - Documentation only changes
+- `docs` - Documentation only changes (excluding: `*.instructions.md`, `*.prompt.md`, `*.chatmode.md`, as these are prompts and instructions likely meaning the changes are `feat`, `chore`, etc)
 - `build` - Changes that affect the build system or external dependencies
 - `ops` - Changes to operational components
 - `chore` - Other changes that don't modify src or test files
