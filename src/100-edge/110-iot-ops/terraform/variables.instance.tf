@@ -71,6 +71,7 @@ variable "mqtt_broker_config" {
     memoryProfile             = string
     serviceType               = string
     logsLevel                 = optional(string, "info")
+    resourceLimitsCpu         = string
   })
   default = {
     brokerListenerServiceName = "aio-broker"
@@ -84,6 +85,7 @@ variable "mqtt_broker_config" {
     memoryProfile             = "Medium"
     serviceType               = "ClusterIp"
     logsLevel                 = "info"
+    resourceLimitsCpu         = "Disabled"
   }
 }
 

@@ -195,7 +195,7 @@ resource "azapi_resource" "broker" {
       {
         memoryProfile = var.mqtt_broker_config.memoryProfile
         generateResourceLimits = {
-          cpu = "Disabled"
+          cpu = var.mqtt_broker_config.resourceLimitsCpu
         }
         cardinality = {
           backendChain = {
