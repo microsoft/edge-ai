@@ -461,3 +461,6 @@ security-reports/
 # SLSA bundles and generated crates
 .slsa-bundles/
 crates/
+
+# Ignore beads files
+.beads/

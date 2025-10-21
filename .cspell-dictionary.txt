@@ -1276,6 +1276,7 @@ sstp
 statefulness
 stderr
 stdout
+steveyegge
 stig
 stonith
 stopwords

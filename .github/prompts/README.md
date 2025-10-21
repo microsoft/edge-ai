@@ -31,6 +31,7 @@ Prompts can be invoked in GitHub Copilot Chat using `/prompt-name` syntax (e.g.,
 
 ### Onboarding & Planning
 
+- **[Beads Planner Implementation Planning](../../copilot/beads/prompts/bd-planner-plan.prompt.md)** - Beads-first implementation planner for Beads-exclusive workflows
 - **[Getting Started](./getting-started.prompt.md)** - Project onboarding and initial setup guidance
 - **[Project Planning](./edge-ai-project-planning.prompt.md)** - Edge AI project planning guidance
 - **[Task Planner](./task-planner-plan.prompt.md)** - Creates implementation plans from research documents
