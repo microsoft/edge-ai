@@ -151,7 +151,7 @@ code .
 # Everything gets installed automatically 🎉
 ```
 
-**Alternative:** [Manual setup instructions](docs/getting-started/development-environment.md) (for the brave)
+**Alternative:** [Manual setup instructions](docs/contributing/development-environment.md) (for the brave)
 
 > **Note on Telemetry:** If you wish to opt-out of sending telemetry data to Microsoft when deploying Azure resources with Terraform, you can set the environment variable `ARM_DISABLE_TERRAFORM_PARTNER_ID=true` before running any `terraform` commands.
 

@@ -243,6 +243,7 @@
     - [Ado Update Wit Items](.github/prompts/ado-update-wit-items.prompt.md)
     - [Ado Wit Discovery](.github/prompts/ado-wit-discovery.prompt.md)
     - [Adr Create](.github/prompts/adr-create.prompt.md)
+    - [Beads Planner Implementation Planning](copilot/beads/prompts/bd-planner-plan.prompt.md)
     - [Create My Work Items Handoff](.github/prompts/create-my-work-items-handoff.prompt.md)
     - [Deploy](.github/prompts/deploy.prompt.md)
     - [Edge Ai Project Planning](.github/prompts/edge-ai-project-planning.prompt.md)
