@@ -354,7 +354,7 @@ jobs:
         uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493 # v4.1.7
 
       - name: Setup Node.js
-        uses: actions/setup-node@89d709d423dc495668cd762a18dd4a070611be3f # v4.1.1
+        uses: actions/setup-node@dda4788290998366da86b6a4f497909644397bb2 # v4.1.1
         with:
           node-version: '18'
 
@@ -404,7 +404,7 @@ jobs:
         uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493 # v4.1.7
 
       - name: Setup Node.js
-        uses: actions/setup-node@89d709d423dc495668cd762a18dd4a070611be3f # v4.1.1
+        uses: actions/setup-node@dda4788290998366da86b6a4f497909644397bb2 # v4.1.1
         with:
           node-version: '18'
 
