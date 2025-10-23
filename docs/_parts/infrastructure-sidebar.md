@@ -27,6 +27,7 @@
   - [Rust Http Connector](src/500-application/502-rust-http-connector/README.md)
   - [Media Capture Service](src/500-application/503-media-capture-service/README.md)
   - [Ros2 Connector](src/500-application/506-ros2-connector/README.md)
+  - [AI Inference Service](src/500-application/507-ai-inference/README.md)
 
 - [Ci Cd](src/501-ci-cd/README.md)
 

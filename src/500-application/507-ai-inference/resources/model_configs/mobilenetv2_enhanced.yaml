@@ -1,0 +1,55 @@
+# MobileNetV2 Enhanced Configuration for Industrial Classification
+# Based on universal computer vision runtime approach
+---
+model:
+  name: "mobilenetv2-industrial"
+  version: "1.4.0"
+  model_type: "image_classification"
+  description: "MobileNetV2 optimized for industrial equipment classification"
+  path: "/models/mobilenetv2.onnx"
+  size_mb: 9.2
+  backends: ["onnx"]
+  performance:
+    avg_inference_ms: 25.0
+    memory_usage_mb: 15.0
+    accuracy: 0.72
+    target_hardware: "cpu"
+
+input:
+  shape: [1, 3, 224, 224]
+  dtype: "float32"
+  format: "NCHW"
+  color_space: "RGB"
+
+output:
+  shape: [1, 1000]
+  dtype: "float32"
+  format: "classification"
+
+preprocessing:
+  resize_strategy: "center_crop"
+  target_size: [224, 224]
+  normalize_with_imagenet: true
+  mean: [0.485, 0.456, 0.406]
+  std: [0.229, 0.224, 0.225]
+  additional_steps:
+    - "center_crop_after_resize"
+
+postprocessing:
+  format: "classification"
+  confidence_threshold: 0.1
+  max_predictions: 5
+  apply_softmax: true
+
+industrial_classes:
+  equipment:
+    - 491   # "chain saw"
+    - 650   # "motor scooter"
+    - 757   # "school bus"
+    - 867   # "tow truck"
+  safety:
+    - 518   # "crash helmet"
+    - 835   # "sunglasses"
+  environment:
+    - 415   # "bridge"
+    - 611   # "maypole"

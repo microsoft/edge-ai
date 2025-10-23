@@ -1,5 +1,5 @@
 <!-- markdownlint-disable MD041 -->
-<!-- Generated on: 2025-10-06 03:33:14 UTC -->
+<!-- Generated on: 2025-10-23 16:16:43 UTC -->
 
 - [AI on Edge Flagship Accelerator](docs/index.md)
 
@@ -204,6 +204,7 @@
 
 - [Solution ADR Library](docs/solution-adr-library/README.md)
   - [ADR Title](docs/solution-adr-library/adr-template-solutions.md)
+  - [AI Edge Inference with Dual Backend Architecture](docs/solution-adr-library/ai-edge-inference-dual-backend-architecture.md)
   - [Scale deployment of Azure ML models to edge Arc-enabled K8s clusters in a PoC](docs/solution-adr-library/aml-on-arc-enabled-k8s.md)
   - [Asset Connectivity Monitoring](docs/solution-adr-library/asset-connectivity-monitoring.md)
   - [Asset and Metadata Creation](docs/solution-adr-library/asset-creation-and-metadata-publishing.md)
@@ -243,7 +244,6 @@
     - [Ado Update Wit Items](.github/prompts/ado-update-wit-items.prompt.md)
     - [Ado Wit Discovery](.github/prompts/ado-wit-discovery.prompt.md)
     - [Adr Create](.github/prompts/adr-create.prompt.md)
-    - [Beads Planner Implementation Planning](copilot/beads/prompts/bd-planner-plan.prompt.md)
     - [Create My Work Items Handoff](.github/prompts/create-my-work-items-handoff.prompt.md)
     - [Deploy](.github/prompts/deploy.prompt.md)
     - [Edge Ai Project Planning](.github/prompts/edge-ai-project-planning.prompt.md)
@@ -317,6 +317,9 @@
   - [Rust Http Connector](src/500-application/502-rust-http-connector/README.md)
   - [Media Capture Service](src/500-application/503-media-capture-service/README.md)
   - [Ros2 Connector](src/500-application/506-ros2-connector/README.md)
+  - [Ai Inference](src/500-application/507-ai-inference/README.md)
+  - [Ai Edge Inference Crate](src/500-application/507-ai-inference/services/ai-edge-inference-crate/README.md)
+  - [Ai Edge Inference](src/500-application/507-ai-inference/services/ai-edge-inference/README.md)
   - [Application](src/500-application/README.md)
   - [Basic Inference Cicd](src/501-ci-cd/basic-inference-cicd/README.md)
   - [Ci Cd](src/501-ci-cd/README.md)

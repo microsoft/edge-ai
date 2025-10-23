@@ -18,7 +18,7 @@ estimated_reading_time: 7
 
 ## Edge Applications
 
-This directory contains application projects that can be built and deployed to edge or cloud systems. Applications are organized using a numbered folder structure (`5xx-application-name`) with each service containerized via Docker and deployed to Azure Container Registry (ACR). The `500-basic-inference` project serves as a reference implementation.
+This directory contains application projects that can be built and deployed to edge or cloud systems. Applications are organized using a numbered folder structure (`5xx-application-name`) with each service containerized via Docker and deployed to Azure Container Registry (ACR). The `500-basic-inference` project serves as a basic reference implementation, while `507-ai-inference` provides a production-ready dual-backend solution.
 
 ## Adding a New Application
 
@@ -53,11 +53,31 @@ Your application should include the following structure:
 ├── yaml/                      # Kubernetes manifests and other YAML files
 └── services/                  # Service implementations
     ├── service1/
-    │   ├── Dockerfile
-    │   └── src/               # Source code
-    └── service2/
-        └── ...
+│   ├── Dockerfile
+│   └── src/               # Source code
+└── service2/
+    └── ...
 ```
+
+## Available Applications
+
+The following applications are currently available in this directory:
+
+- **[500-basic-inference](./500-basic-inference/README.md)** - Reference implementation for basic ML inference workloads
+- **[501-rust-telemetry](./501-rust-telemetry/README.md)** - Rust-based telemetry collection service
+- **[502-rust-http-connector](./502-rust-http-connector/README.md)** - HTTP connector service built in Rust
+- **[503-media-capture-service](./503-media-capture-service/README.md)** - Media capture and processing service
+- **[505-akri-rest-http-connector](./505-akri-rest-http-connector/README.md)** - Akri REST HTTP connector for IoT Operations device discovery
+- **[507-ai-inference](./507-ai-inference/README.md)** - Production-ready AI inference service with dual backend support (ONNX Runtime and Candle)
+
+The following applications are currently available in this directory:
+
+- **[500-basic-inference](./500-basic-inference/README.md)** - Reference implementation for basic ML inference workloads
+- **[501-rust-telemetry](./501-rust-telemetry/README.md)** - Rust-based telemetry collection service
+- **[502-rust-http-connector](./502-rust-http-connector/README.md)** - HTTP connector service built in Rust
+- **[503-media-capture-service](./503-media-capture-service/README.md)** - Media capture and processing service
+- **[505-akri-rest-http-connector](./505-akri-rest-http-connector/README.md)** - Akri REST HTTP connector for IoT Operations device discovery
+- **[507-ai-inference](./507-ai-inference/README.md)** - Production-ready AI inference service with dual backend support (ONNX Runtime and Candle)
 
 ## Service Implementation
 
@@ -440,7 +460,7 @@ While the sample applications in this repository are reference implementations a
 
 - **SLSA Framework**: [https://slsa.dev/](https://slsa.dev/)
 - **GitHub SLSA Generator**: [slsa-framework/slsa-github-generator](https://github.com/slsa-framework/slsa-github-generator)
-- **Azure DevOps SLSA**: [Microsoft DevSecOps for SLSA](https://learn.microsoft.com/azure/devops/pipelines/security/overview)
+- **Azure DevOps SLSA**: [Microsoft DevSecOps for SLSA](https://learn.microsoft.com/en-us/azure/devops/pipelines/security/overview)
 - **Container Signing**: [Cosign](https://github.com/sigstore/cosign) for container image signing and verification
 
 #### Integration with Existing Security Infrastructure
