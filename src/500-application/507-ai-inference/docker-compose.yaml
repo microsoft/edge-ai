@@ -1,0 +1,55 @@
+---
+services:
+
+  # AI Edge Inference Service with configurable backend
+  ai-edge-inference:
+    build:
+      context: ./services
+      dockerfile: ai-edge-inference/Dockerfile.unified
+      args:
+        BACKEND: ${AI_BACKEND:-onnx}  # Default to ONNX, override with AI_BACKEND env var
+    image: ${REGISTRY:-local}/${APPLICATION:-ai-inference}/ai-edge-inference:${BUILD_ID:-onnx-local}
+    ports:
+      - "8081:8081"  # Health endpoint
+    environment:
+      # MQTT connection settings
+      AIO_MQTT_USE_TLS: "false"
+      AIO_MQTT_CLIENT_ID: "ai-edge-inference"
+      AIO_BROKER_HOSTNAME: "host.docker.internal"  # Use existing MQTT broker
+      AIO_BROKER_TCP_PORT: "1883"
+
+      # Topic configuration
+      MQTT_INPUT_TOPICS: "edge-ai/+/+/camera/snapshots"
+      TOPIC_PREFIX: "edge-ai/business_unit/facility/gateway_id"
+
+      # Model configuration
+      MODEL_CONFIG_PATH: "/app/resources/model_configs/industrial-safety.yaml"
+      MODELS_DIRECTORY: "/app/resources/models"
+      DEFAULT_MODELS: "default"
+
+      # Backend configuration (should match build arg)
+      DEFAULT_BACKEND: "${AI_BACKEND:-onnx}"
+      ENABLE_DUAL_BACKEND: "false"  # Single backend per container
+
+      # Logging
+      RUST_LOG: "info,ai_edge_inference=debug"
+
+    volumes:
+      - "./resources/model_configs:/app/resources/model_configs:ro"
+      - "./resources/models:/app/resources/models:ro"
+    networks:
+      - edge-ai-inference
+
+  # Optional: MQTT client for testing
+  mqtt-client:
+    image: eclipse-mosquitto:latest
+    command: mosquitto_sub -h mosquitto-broker -t "edge-ai/+/+/inference/results" -v
+    depends_on:
+      - mosquitto-broker
+    networks:
+      - edge-ai-inference
+    profiles:
+      - testing
+
+networks:
+  edge-ai-inference: null

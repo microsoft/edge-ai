@@ -1,0 +1,3 @@
+# Override parent workspace registry configuration
+[source.crates-io]
+# Don't replace with any other registry - use standard crates.io

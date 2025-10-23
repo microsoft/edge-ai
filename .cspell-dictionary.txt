@@ -29,6 +29,7 @@ onedrive
 onenote
 powerbi
 sharepoint
+youracr
 
 # Industry Standards & Protocols
 ASME
@@ -195,8 +196,12 @@ bigdata
 dataops
 etl
 elt
+GPIO
+GRPC
+Hadoop
 lakehouse
 lakehouses
+Linfa
 mlops
 nosql
 olap
@@ -204,6 +209,7 @@ oltp
 polybase
 realtime
 timeseries
+tinyyolov
 
 # Business & Enterprise
 chargeback
@@ -316,6 +322,7 @@ Upselling
 agile
 cicd
 devops
+dmqtt
 gitops
 scrum
 kanban

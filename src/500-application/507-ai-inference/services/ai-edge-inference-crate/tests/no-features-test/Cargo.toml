@@ -1,0 +1,13 @@
+# Test case specifically for the no-features scenario
+# This creates a completely empty project to test fallback behavior
+
+[package]
+name = "ai-edge-test-no-features"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+ai-edge-inference-crate = { path = "../..", default-features = false }
+
+# Exclude from parent workspace
+[workspace]
