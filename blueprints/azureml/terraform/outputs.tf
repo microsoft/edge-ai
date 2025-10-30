@@ -98,3 +98,28 @@ output "private_resolver_dns_ip" {
   description = "Private Resolver DNS IP address for VPN client configuration."
   value       = try(module.cloud_networking[0].dns_server_ip, null)
 }
+
+/*
+ * VM Host Outputs
+ */
+
+output "vm_host_ssh_command" {
+  description = "Azure AD SSH command to connect to the first VM host."
+  value       = try(module.cloud_vm_host[0].vm_connection_instructions.azure_ad_public, null)
+}
+
+output "vm_host_public_ips" {
+  description = "Public IP addresses of VM hosts."
+  value       = try(module.cloud_vm_host[0].public_ips, [])
+}
+
+output "vm_host_private_ips" {
+  description = "Private IP addresses of VM hosts for VPN/internal access."
+  value       = try(module.cloud_vm_host[0].private_ips, [])
+}
+
+output "vm_host_ssh_private_key_path" {
+  description = "Path to SSH private key for VM host access."
+  value       = try(module.cloud_vm_host[0].ssh_private_key_path, null)
+  sensitive   = true
+}

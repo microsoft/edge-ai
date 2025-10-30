@@ -1,25 +1,41 @@
 /*
- * SSH Connection Outputs
+ * VM Connection Instructions
  */
 
-output "public_ssh" {
-  description = "SSH command to connect to the first VM."
-  value       = "ssh -i ../.ssh/vm-${local.label_prefix}-id_rsa ${local.vm_username}@${module.virtual_machine[0].public_fqdn}"
+output "vm_connection_instructions" {
+  description = "Connection instructions for VMs with Azure AD authentication and optional fallback methods."
+  value = {
+    azure_ad_public   = try("az ssh vm -g ${var.resource_group.name} -n ${module.virtual_machine[0].linux_virtual_machine_name}", null)
+    azure_ad_private  = try("az ssh vm --ip ${module.virtual_machine[0].private_ip} (requires VPN/ExpressRoute/peered VNet)", null)
+    fallback_ssh      = try("ssh -i ../.ssh/vm-${local.label_prefix}-id_rsa ${local.vm_username}@${module.virtual_machine[0].public_fqdn}", null)
+    fallback_password = try(random_password.vm_admin[0].result, null)
+  }
 }
 
+/*
+ * Authentication Outputs
+ */
+
 output "public_ssh_permissions" {
-  description = "File permissions for the SSH private key."
-  value       = local_sensitive_file.private_key.file_permission
+  description = "File permissions for the SSH private key. Only available when SSH key generation enabled."
+  value       = try(local_sensitive_file.private_key[0].file_permission, null)
 }
 
 output "ssh_private_key_path" {
-  description = "The path to the SSH private key file."
-  value       = local_sensitive_file.private_key.filename
+  description = "The path to the SSH private key file. Only available when SSH key generation enabled."
+  value       = try(local_sensitive_file.private_key[0].filename, null)
 }
 
 output "ssh_public_key" {
-  description = "The SSH public key for all VMs."
-  value       = tls_private_key.ssh.public_key_openssh
+  description = "The SSH public key for all VMs. Only available when SSH key generation enabled."
+  value       = try(tls_private_key.ssh[0].public_key_openssh, null)
+  sensitive   = true
+}
+
+output "vm_admin_passwords" {
+  description = "The generated admin passwords for all VMs. Only available when password authentication is enabled."
+  value       = try(random_password.vm_admin[*].result, null)
+  sensitive   = true
 }
 
 /*

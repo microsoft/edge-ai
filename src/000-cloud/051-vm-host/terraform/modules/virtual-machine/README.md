@@ -2,7 +2,8 @@
 <!-- markdown-table-prettify-ignore-start -->
 # Virtual Machine Module
 
-Deploys a Linux VM with configuration for Arc-connected K3s cluster
+Deploys a Linux VM with Azure AD RBAC authentication and optional Arc connectivity.
+SSH keys are optional for emergency fallback; Azure AD authentication is primary.
 
 ## Requirements
 
@@ -29,15 +30,20 @@ Deploys a Linux VM with configuration for Arc-connected K3s cluster
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| admin\_password | Admin password for VM authentication. Can be null for SSH key-only authentication. | `string` | n/a | yes |
 | label\_prefix | Prefix to be used for all resource names | `string` | n/a | yes |
 | location | Azure region where all resources will be deployed | `string` | n/a | yes |
 | resource\_group\_name | Name of the resource group | `string` | n/a | yes |
-| ssh\_public\_key | SSH public key to use for VM authentication | `string` | n/a | yes |
-| subnet\_id | The ID of the subnet to deploy the VM host in | `string` | n/a | yes |
+| should\_create\_public\_ip | Whether to create a public IP address for the VM | `bool` | n/a | yes |
+| subnet\_id | ID of the subnet to deploy the VM in | `string` | n/a | yes |
+| vm\_eviction\_policy | Eviction policy for Spot VMs: Deallocate or Delete | `string` | n/a | yes |
 | vm\_index | Index of the VM for deployment of multiple VMs | `number` | n/a | yes |
+| vm\_max\_bid\_price | Maximum price per hour in USD for Spot VM. -1 for no price-based eviction | `number` | n/a | yes |
+| vm\_priority | VM priority: Regular or Spot | `string` | n/a | yes |
+| vm\_sku\_size | Size of the VM | `string` | n/a | yes |
 | vm\_username | Username for the VM admin account | `string` | n/a | yes |
-| arc\_onboarding\_identity\_id | ID of the user assigned identity for Arc onboarding | `string` | `null` | no |
-| vm\_sku\_size | Size of the VM | `string` | `"Standard_D8s_v3"` | no |
+| arc\_onboarding\_identity\_id | ID of the User Assigned Managed Identity for Arc onboarding. Can be null for VMs without Arc connectivity | `string` | `null` | no |
+| ssh\_public\_key | SSH public key for VM authentication. Can be null for Azure AD-only authentication | `string` | `null` | no |
 
 ## Outputs
 

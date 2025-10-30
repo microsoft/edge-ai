@@ -48,6 +48,7 @@ Adds Azure Machine Learning capabilities with optional foundational resource cre
 | cloud\_networking | ../../../src/000-cloud/050-networking/terraform | n/a |
 | cloud\_observability | ../../../src/000-cloud/020-observability/terraform | n/a |
 | cloud\_security\_identity | ../../../src/000-cloud/010-security-identity/terraform | n/a |
+| cloud\_vm\_host | ../../../src/000-cloud/051-vm-host/terraform | n/a |
 | cloud\_vpn\_gateway | ../../../src/000-cloud/055-vpn-gateway/terraform | n/a |
 | edge\_azureml | ../../../src/100-edge/140-azureml/terraform | n/a |
 
@@ -108,6 +109,7 @@ Adds Azure Machine Learning capabilities with optional foundational resource cre
 | registry\_should\_enable\_public\_network\_access | Whether to enable public network access to the AzureML Registry | `bool` | `false` | no |
 | resolver\_subnet\_address\_prefix | Address prefix for the Private Resolver subnet. Must be /28 or larger and not overlap with other subnets | `string` | `"10.0.9.0/28"` | no |
 | resource\_group\_name | Existing resource group name containing foundational and ML resources (Otherwise 'rg-{resource\_prefix}-{environment}-{instance}') | `string` | `null` | no |
+| should\_assign\_current\_user\_vm\_admin | Whether to assign the current Azure AD user the Virtual Machine Administrator Login role (sudo access). Requires Microsoft Graph provider permissions | `bool` | `true` | no |
 | should\_create\_acr | Whether to create an Azure Container Registry for ML image storage | `bool` | `false` | no |
 | should\_create\_aks\_cluster | Whether to create an AKS cluster for Azure ML compute integration | `bool` | `false` | no |
 | should\_create\_aks\_identity | Whether to create a user-assigned identity for AKS cluster when using custom private DNS zones. | `bool` | `true` | no |
@@ -117,6 +119,8 @@ Adds Azure Machine Learning capabilities with optional foundational resource cre
 | should\_create\_observability | Whether to create observability component (Application Insights) when not already deployed | `bool` | `false` | no |
 | should\_create\_security\_identity | Whether to create security + identity component (Key Vault, identities) when not already deployed | `bool` | `false` | no |
 | should\_create\_storage | Whether to create cloud data component (storage account) when not already deployed | `bool` | `false` | no |
+| should\_create\_vm\_host | Whether to create a VM host for GPU workloads, edge testing, or jump box access | `bool` | `false` | no |
+| should\_create\_vm\_ssh\_key | Generate SSH key pair for VM fallback access. Defaults to true to ensure emergency access when Azure AD authentication is unavailable | `bool` | `true` | no |
 | should\_deploy\_azureml\_registry | Whether to deploy AzureML Registry with private endpoint support | `bool` | `false` | no |
 | should\_deploy\_edge\_extension | Whether to deploy the Azure ML edge extension on a connected cluster | `bool` | `false` | no |
 | should\_disable\_aks\_local\_account | Whether to disable the local admin account for the AKS cluster | `bool` | `false` | no |
@@ -134,6 +138,7 @@ Adds Azure Machine Learning capabilities with optional foundational resource cre
 | should\_install\_prom\_op | Whether to install Prometheus operator for monitoring in Azure ML extension. Set to false if Azure Monitor is already enabled on AKS | `bool` | `false` | no |
 | should\_install\_volcano | Whether to install Volcano scheduler for job scheduling in Azure ML extension | `bool` | `true` | no |
 | should\_integrate\_aks\_cluster | Whether to integrate an AKS cluster as a compute target with the workspace | `bool` | `false` | no |
+| should\_use\_vm\_password\_auth | Use password authentication for VM access. When enabled, a random secure password will be generated and stored in Terraform state | `bool` | `false` | no |
 | ssl\_cert\_pem | PEM-encoded TLS certificate chain (server first then intermediates) or empty when not using HTTPS | `string` | `null` | no |
 | ssl\_cname | CNAME used for HTTPS endpoint; required when providing cert/key; otherwise empty | `string` | `null` | no |
 | ssl\_key\_pem | PEM-encoded unencrypted private key matching ssl\_cert\_pem or empty when not using HTTPS | `string` | `null` | no |
@@ -145,6 +150,13 @@ Adds Azure Machine Learning capabilities with optional foundational resource cre
 | system\_tolerations | Tolerations for AzureML extension system components to schedule on tainted nodes. Useful for dedicated GPU nodes or spot instances. Default: empty list (no tolerations). | ```list(object({ key = optional(string) operator = optional(string, "Exists") value = optional(string) effect = optional(string) }))``` | `[]` | no |
 | virtual\_network\_config | Configuration for the virtual network including address space and subnet prefix | ```object({ address_space = string subnet_address_prefix = string })``` | ```{ "address_space": "10.0.0.0/16", "subnet_address_prefix": "10.0.1.0/24" }``` | no |
 | virtual\_network\_name | Existing or desired virtual network name (Otherwise 'vnet-{resource\_prefix}-{environment}-{instance}') | `string` | `null` | no |
+| vm\_admin\_principals | Map of Azure AD principals for Virtual Machine Administrator Login role (sudo access). Keys are descriptive identifiers (e.g., '<user@company.com>'), values are principal object IDs. | `map(string)` | `{}` | no |
+| vm\_eviction\_policy | Eviction policy for Spot VMs: Deallocate (recommended - VM stopped, can restart later) or Delete (VM and disks removed). Only applies when vm\_priority is Spot | `string` | `"Deallocate"` | no |
+| vm\_host\_count | Number of VM hosts to create for multi-node scenarios | `number` | `1` | no |
+| vm\_max\_bid\_price | Maximum hourly price in USD for Spot VM. Set to -1 (recommended) to pay current spot price without price-based eviction. Custom values support up to 5 decimal places. Only applies when vm\_priority is Spot | `number` | `-1` | no |
+| vm\_priority | VM priority: Regular (production, guaranteed capacity) or Spot (cost-optimized, up to 90% savings, can be evicted). Recommended: Spot for dev/test GPU workloads | `string` | `"Regular"` | no |
+| vm\_sku\_size | VM SKU size for the host. Examples: Standard\_D8s\_v3 (general purpose), Standard\_NV36ads\_A10\_v5 (GPU workload) | `string` | `"Standard_D8s_v3"` | no |
+| vm\_user\_principals | Map of Azure AD principals for Virtual Machine User Login role (standard access). Keys are descriptive identifiers (e.g., '<user@company.com>'), values are principal object IDs. | `map(string)` | `{}` | no |
 | vpn\_gateway\_azure\_ad\_config | Azure AD configuration for VPN Gateway authentication. tenant\_id is required when vpn\_gateway\_should\_use\_azure\_ad\_auth is true. audience defaults to Microsoft-registered app. issuer will default to `https://sts.windows.net/{tenant_id}/` when not provided | ```object({ tenant_id = optional(string) audience = optional(string, "c632b3df-fb67-4d84-bdcf-b95ad541b5c8") issuer = optional(string) })``` | `{}` | no |
 | vpn\_gateway\_config | VPN Gateway configuration including SKU, generation, client address pool, and supported protocols | ```object({ sku = optional(string, "VpnGw1") generation = optional(string, "Generation1") client_address_pool = optional(list(string), ["192.168.200.0/24"]) protocols = optional(list(string), ["OpenVPN", "IkeV2"]) })``` | `{}` | no |
 | vpn\_gateway\_should\_generate\_ca | Whether to generate a new CA certificate. When false, uses existing certificate from Key Vault | `bool` | `true` | no |
@@ -172,6 +184,10 @@ Adds Azure Machine Learning capabilities with optional foundational resource cre
 | nat\_gateway\_public\_ips | Public IP resources associated with the NAT gateway when managed outbound access is enabled. |
 | private\_resolver\_dns\_ip | Private Resolver DNS IP address for VPN client configuration. |
 | storage\_account | Storage Account object used for the workspace. |
+| vm\_host\_private\_ips | Private IP addresses of VM hosts for VPN/internal access. |
+| vm\_host\_public\_ips | Public IP addresses of VM hosts. |
+| vm\_host\_ssh\_command | Azure AD SSH command to connect to the first VM host. |
+| vm\_host\_ssh\_private\_key\_path | Path to SSH private key for VM host access. |
 | vpn\_client\_connection\_info | VPN client connection information including download URLs. |
 | vpn\_gateway | VPN Gateway configuration when enabled. |
 | vpn\_gateway\_public\_ip | VPN Gateway public IP address for client configuration. |
