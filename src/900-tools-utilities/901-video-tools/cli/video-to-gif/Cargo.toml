@@ -1,0 +1,25 @@
+[package]
+name = "video-to-gif"
+version = "0.1.0"
+edition = "2021"
+authors = ["Edge AI Team"]
+description = "CLI tool to convert video files to optimized GIFs using FFmpeg"
+
+[workspace]
+# This is an independent project, not part of the root workspace
+
+[dependencies]
+# CLI argument parsing
+clap = { version = "4.5", features = ["derive"] }
+
+# Error handling
+anyhow = "1.0"
+
+# Logging and telemetry
+tracing = { version = "0.1", features = ["std", "attributes"] }
+tracing-subscriber = { version = "0.3", features = ["env-filter", "registry", "std", "fmt"] }
+
+[profile.release]
+lto = true
+codegen-units = 1
+strip = true

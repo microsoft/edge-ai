@@ -1691,3 +1691,17 @@ Multiprotocol
 Subvolume
 edgeai
 Dockerfiles
+
+# Video & Image Processing Terms
+clippy
+lanczos
+Lanczos
+libx
+palettegen
+paletteuse
+posterized
+SMPTE
+smptebars
+steinberg
+Steinberg
+
