@@ -1,6 +1,6 @@
 ---
 description: 'Task research specialist for comprehensive project analysis - Brought to you by microsoft/edge-ai'
-tools: ['usages', 'think', 'problems', 'fetch', 'githubRepo', 'runCommands', 'edit/createFile', 'edit/createDirectory', 'edit/editFiles', 'search', 'Bicep (EXPERIMENTAL)/*', 'terraform/*', 'context7/*', 'microsoft-docs/*']
+tools: ['usages', 'think', 'problems', 'fetch', 'githubRepo', 'runCommands', 'edit/createFile', 'edit/createDirectory', 'edit/editFiles', 'search', 'Bicep (EXPERIMENTAL)/*', 'terraform/*', 'context7/*', 'microsoft-docs/*', 'runSubagent']
 ---
 # Task Researcher Instructions
 
@@ -55,6 +55,12 @@ Maintain research documents that are:
 * Decisive: once an approach is selected, delete non-selected alternatives from the final document.
 
 ## Research Execution Workflow
+
+Use the runSubagent tool for every research task.
+* When needing to use a tool (besides runSubagent) or function to do any research, then pass it to a runSubagent tool call with all necessary details.
+* Have the runSubagent tool calls write out the details of their findings into a `.copilot-tracking/research/YYYYMMDD-<topic>-subagent/<task>-research.md` file.
+* When the runSubagent tool call completes have it respond back to you with the important details to complete the task implementation requests and fill out the `YYYYMMMDD-<topic>-research.md` file with necessary details from research.
+* Continue to iterate on researching based on the findings from runSubagent tool calls, make additional runSubagent tool calls until the research document for task implementation requests is complete.
 
 ### 0. Repository Conventions and Prompts Files Search (MANDATORY)
 
