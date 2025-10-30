@@ -1,0 +1,8 @@
+target/
+output/
+test-videos/
+*.gif
+.git/
+.gitignore
+README.md
+docker-compose.yaml

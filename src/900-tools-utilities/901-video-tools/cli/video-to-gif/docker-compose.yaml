@@ -1,0 +1,18 @@
+---
+services:
+
+  video-to-gif:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ${REGISTRY:-local}/video-to-gif:${BUILD_ID:-latest}
+    volumes:
+      - ./test-videos:/input:ro
+      - ./output:/output
+    environment:
+      - RUST_LOG=info
+    command: >
+      --input /input/sample.mp4
+      --output /output/sample.gif
+      --fps 10
+      --width 480

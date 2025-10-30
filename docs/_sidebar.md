@@ -1,5 +1,5 @@
 <!-- markdownlint-disable MD041 -->
-<!-- Generated on: 2025-10-23 16:16:43 UTC -->
+<!-- Generated on: 2025-10-30 11:12:51 UTC -->
 
 - [AI on Edge Flagship Accelerator](docs/index.md)
 
@@ -323,6 +323,10 @@
   - [Application](src/500-application/README.md)
   - [Basic Inference Cicd](src/501-ci-cd/basic-inference-cicd/README.md)
   - [Ci Cd](src/501-ci-cd/README.md)
+  - [Video To Gif](src/900-tools-utilities/901-video-tools/cli/video-to-gif/README.md)
+  - [Video Tools](src/900-tools-utilities/901-video-tools/README.md)
+  - [Test Assets](src/900-tools-utilities/901-video-tools/test-assets/README.md)
+  - [Tools Utilities](src/900-tools-utilities/README.md)
   - [Azure Resource Providers](src/azure-resource-providers/README.md)
   - [Dataflows Acsa Egmqtt Bidirectional](src/starter-kit/dataflows-acsa-egmqtt-bidirectional/README.md)
   - [Resource Group](src/000-cloud/000-resource-group/bicep/README.md)
