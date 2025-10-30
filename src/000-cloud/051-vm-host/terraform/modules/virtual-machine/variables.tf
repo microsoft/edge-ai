@@ -1,6 +1,12 @@
+variable "admin_password" {
+  type        = string
+  description = "Admin password for VM authentication. Can be null for SSH key-only authentication."
+  sensitive   = true
+}
+
 variable "arc_onboarding_identity_id" {
   type        = string
-  description = "ID of the user assigned identity for Arc onboarding"
+  description = "ID of the User Assigned Managed Identity for Arc onboarding. Can be null for VMs without Arc connectivity"
   default     = null
 }
 
@@ -19,14 +25,25 @@ variable "resource_group_name" {
   description = "Name of the resource group"
 }
 
+variable "should_create_public_ip" {
+  type        = bool
+  description = "Whether to create a public IP address for the VM"
+}
+
 variable "ssh_public_key" {
   type        = string
-  description = "SSH public key to use for VM authentication"
+  description = "SSH public key for VM authentication. Can be null for Azure AD-only authentication"
+  default     = null
 }
 
 variable "subnet_id" {
   type        = string
-  description = "The ID of the subnet to deploy the VM host in"
+  description = "ID of the subnet to deploy the VM in"
+}
+
+variable "vm_eviction_policy" {
+  type        = string
+  description = "Eviction policy for Spot VMs: Deallocate or Delete"
 }
 
 variable "vm_index" {
@@ -34,10 +51,19 @@ variable "vm_index" {
   description = "Index of the VM for deployment of multiple VMs"
 }
 
+variable "vm_max_bid_price" {
+  type        = number
+  description = "Maximum price per hour in USD for Spot VM. -1 for no price-based eviction"
+}
+
+variable "vm_priority" {
+  type        = string
+  description = "VM priority: Regular or Spot"
+}
+
 variable "vm_sku_size" {
   type        = string
   description = "Size of the VM"
-  default     = "Standard_D8s_v3"
 }
 
 variable "vm_username" {

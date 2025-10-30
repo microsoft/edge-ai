@@ -207,6 +207,36 @@ module "cloud_data" {
   should_enable_public_network_access = var.should_enable_public_network_access
 }
 
+module "cloud_vm_host" {
+  count  = var.should_create_vm_host ? 1 : 0
+  source = "../../../src/000-cloud/051-vm-host/terraform"
+
+  depends_on = [module.cloud_networking, module.cloud_security_identity]
+
+  environment     = var.environment
+  location        = var.location
+  resource_prefix = var.resource_prefix
+  instance        = var.instance
+
+  resource_group     = data.azurerm_resource_group.existing
+  subnet_id          = try(module.cloud_networking[0].subnet_id, data.azurerm_subnet.existing[0].id)
+  vm_sku_size        = var.vm_sku_size
+  host_machine_count = var.vm_host_count
+
+  // Spot pricing configuration
+  vm_priority        = var.vm_priority
+  vm_eviction_policy = var.vm_eviction_policy
+  vm_max_bid_price   = var.vm_max_bid_price
+
+  // Azure AD authentication and access configuration
+  should_assign_current_user_vm_admin = var.should_assign_current_user_vm_admin
+  vm_admin_principals                 = var.vm_admin_principals
+  vm_user_principals                  = var.vm_user_principals
+  should_create_ssh_key               = var.should_create_vm_ssh_key
+  should_use_password_auth            = var.should_use_vm_password_auth
+  should_create_public_ip             = !var.should_enable_private_endpoints
+}
+
 // Conditional foundational modules
 
 module "cloud_acr" {

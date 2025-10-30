@@ -36,7 +36,7 @@
 					"beads": {
 						"type": "stdio",
 						"command": "uvx",
-						"args": ["beads-mcp"]
+						"args": ["-n", "beads-mcp"]
 					}
 				}
 			},
@@ -109,13 +109,15 @@
 	},
 	"onCreateCommand": {
 		"uv": "pip install uv",
-		"beads": "go install github.com/steveyegge/beads/cmd/bd@latest",
 		"pip": "pip install -r requirements.txt",
 		"npm": "npm install -g npm && npm ci",
 		"apt": "sudo apt update && sudo apt install -y shellcheck",
 		"go": "go install mvdan.cc/sh/v3/cmd/shfmt@latest",
 		"tflint": "curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash",
 		"update-bashrc": "echo 'export PATH=\"${containerWorkspaceFolder}/scripts:$PATH\"' | sudo tee -a  ~/.bashrc"
+	},
+	"postAttachCommand": {
+		"beads": "go install github.com/steveyegge/beads/cmd/bd@latest"
 	},
 	"remoteUser": "vscode"
 }

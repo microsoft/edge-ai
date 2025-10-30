@@ -15,17 +15,18 @@ run "create_default_vm" {
   command = plan
 
   variables {
-    resource_prefix    = run.setup_tests.resource_prefix
-    environment        = "test"
-    location           = run.setup_tests.location
-    resource_group     = run.setup_tests.aio_resource_group
-    subnet_id          = run.setup_tests.subnet_id
-    host_machine_count = 1
+    resource_prefix                     = run.setup_tests.resource_prefix
+    environment                         = "test"
+    location                            = run.setup_tests.location
+    resource_group                      = run.setup_tests.aio_resource_group
+    subnet_id                           = run.setup_tests.subnet_id
+    host_machine_count                  = 1
+    should_assign_current_user_vm_admin = false
   }
 
   # SSH key assertions
   assert {
-    condition     = local_sensitive_file.private_key.file_permission == "600"
+    condition     = local_sensitive_file.private_key[0].file_permission == "600"
     error_message = "SSH permissions should be set to 600"
   }
 
@@ -57,15 +58,16 @@ run "create_non_default_vm_with_uami" {
   command = plan
 
   variables {
-    resource_prefix         = run.setup_tests.resource_prefix
-    location                = run.setup_tests.location
-    environment             = "test"
-    subnet_id               = run.setup_tests.subnet_id
-    vm_username             = "testuser"
-    vm_sku_size             = "Standard_D8s_v3"
-    resource_group          = run.setup_tests.aio_resource_group
-    arc_onboarding_identity = run.setup_tests.arc_onboarding_user_assigned_identity
-    host_machine_count      = 1
+    resource_prefix                     = run.setup_tests.resource_prefix
+    location                            = run.setup_tests.location
+    environment                         = "test"
+    subnet_id                           = run.setup_tests.subnet_id
+    vm_username                         = "testuser"
+    vm_sku_size                         = "Standard_D8s_v3"
+    resource_group                      = run.setup_tests.aio_resource_group
+    arc_onboarding_identity             = run.setup_tests.arc_onboarding_user_assigned_identity
+    host_machine_count                  = 1
+    should_assign_current_user_vm_admin = false
   }
 
   # Custom username assertion

@@ -213,6 +213,78 @@ module "azureml_edge" {
 }
 ```
 
+### VM Host with GPU and Spot Pricing
+
+Deploy VM hosts for GPU workloads, development environments, or jump box access with optional Azure Spot pricing for cost optimization.
+
+```hcl
+module "azureml_with_gpu" {
+  source = "./blueprints/azureml/terraform"
+
+  environment     = "dev"
+  location        = "eastus2"
+  resource_prefix = "mycoai"
+  instance        = "001"
+
+  should_create_networking        = true
+  should_create_security_identity = true
+  should_create_vm_host           = true
+
+  # GPU VM Configuration
+  vm_sku_size   = "Standard_NV36ads_A10_v5"  # NVIDIA A10 GPU
+  vm_host_count = 1
+
+  # Spot Pricing (80-90% cost savings)
+  vm_priority        = "Spot"
+  vm_eviction_policy = "Deallocate"
+  vm_max_bid_price   = -1  # No price-based eviction
+}
+```
+
+#### Cost Optimization with Spot VMs
+
+| Configuration                                 | Use Case             | Cost Savings          | Eviction Risk       |
+|-----------------------------------------------|----------------------|-----------------------|---------------------|
+| `vm_priority = "Regular"`                     | Production workloads | 0% (standard pricing) | No eviction         |
+| `vm_priority = "Spot"`, `max_bid_price = -1`  | Dev/test, batch jobs | 80-90% savings        | Capacity-based only |
+| `vm_priority = "Spot"`, `max_bid_price = 0.5` | Budget-constrained   | Up to 90% savings     | Price + capacity    |
+| `eviction_policy = "Deallocate"`              | Can restart later    | Disk storage costs    | VM can restart      |
+| `eviction_policy = "Delete"`                  | Ephemeral workloads  | No disk charges       | VM cannot restart   |
+
+**Recommendations**:
+
+- ✅ Use Spot pricing for dev/test GPU workloads (80-90% savings)
+- ✅ Set `max_bid_price = -1` to avoid price-based eviction
+- ✅ Set `eviction_policy = "Deallocate"` for restartable workloads
+- ⚠️ Do not use Spot VMs for production requiring high availability
+- ⚠️ Implement Azure Scheduled Events for 30-second eviction warnings
+
+#### VPN Access for Private VMs
+
+When `should_enable_vpn_gateway = true`, VMs are accessible via private IPs:
+
+```bash
+# Connect to VPN using downloaded configuration from Azure Portal
+
+# SSH to VM using private IP (recommended for production)
+ssh -i path/to/private/key azureuser@<vm_private_ip>
+
+# Private IP available from blueprint output: vm_host_private_ips
+```
+
+Benefits:
+
+- No public internet exposure for VMs
+- Access Azure ML workspace, Key Vault, Storage via private endpoints
+- Works across VPN, ExpressRoute, and peered VNets
+
+#### GPU VM SKU Examples
+
+- **Standard_NV36ads_A10_v5**: NVIDIA A10 GPU (36 vCPUs, 220 GB RAM)
+- **Standard_NV12ads_A10_v5**: NVIDIA A10 GPU (12 vCPUs, 110 GB RAM)
+- **Standard_NV6ads_A10_v5**: NVIDIA A10 GPU (6 vCPUs, 55 GB RAM)
+- **Standard_D8s_v3**: General purpose (8 vCPUs, 32 GB RAM, default)
+
 ## Variables
 
 The complete and authoritative input reference is generated from the Terraform module. Review the latest definitions, defaults, and validation rules in the [blueprint Terraform README](./terraform/README.md). Use the `terraform-docs tfvars hcl .` output in `blueprints/azureml/terraform` to scaffold your `terraform.tfvars` file.

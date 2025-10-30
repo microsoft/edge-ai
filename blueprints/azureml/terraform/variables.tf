@@ -607,6 +607,92 @@ variable "acr_public_network_access_enabled" {
 }
 
 /*
+ * VM Host Configuration - Optional
+ */
+
+variable "should_create_vm_host" {
+  type        = bool
+  description = "Whether to create a VM host for GPU workloads, edge testing, or jump box access"
+  default     = false
+}
+
+variable "vm_host_count" {
+  type        = number
+  description = "Number of VM hosts to create for multi-node scenarios"
+  default     = 1
+  validation {
+    condition     = var.vm_host_count >= 1
+    error_message = "VM host count must be at least 1."
+  }
+}
+
+variable "vm_sku_size" {
+  type        = string
+  description = "VM SKU size for the host. Examples: Standard_D8s_v3 (general purpose), Standard_NV36ads_A10_v5 (GPU workload)"
+  default     = "Standard_D8s_v3"
+}
+
+variable "vm_priority" {
+  type        = string
+  description = "VM priority: Regular (production, guaranteed capacity) or Spot (cost-optimized, up to 90% savings, can be evicted). Recommended: Spot for dev/test GPU workloads"
+  default     = "Regular"
+  validation {
+    condition     = contains(["Regular", "Spot"], var.vm_priority)
+    error_message = "VM priority must be either 'Regular' or 'Spot'."
+  }
+}
+
+variable "vm_eviction_policy" {
+  type        = string
+  description = "Eviction policy for Spot VMs: Deallocate (recommended - VM stopped, can restart later) or Delete (VM and disks removed). Only applies when vm_priority is Spot"
+  default     = "Deallocate"
+  validation {
+    condition     = contains(["Deallocate", "Delete"], var.vm_eviction_policy)
+    error_message = "Eviction policy must be either 'Deallocate' or 'Delete'."
+  }
+}
+
+variable "vm_max_bid_price" {
+  type        = number
+  description = "Maximum hourly price in USD for Spot VM. Set to -1 (recommended) to pay current spot price without price-based eviction. Custom values support up to 5 decimal places. Only applies when vm_priority is Spot"
+  default     = -1
+  validation {
+    condition     = var.vm_max_bid_price == -1 || var.vm_max_bid_price > 0
+    error_message = "Max bid price must be -1 or a positive number."
+  }
+}
+
+variable "should_assign_current_user_vm_admin" {
+  type        = bool
+  description = "Whether to assign the current Azure AD user the Virtual Machine Administrator Login role (sudo access). Requires Microsoft Graph provider permissions"
+  default     = true
+}
+
+variable "vm_admin_principals" {
+  type        = map(string)
+  description = "Map of Azure AD principals for Virtual Machine Administrator Login role (sudo access). Keys are descriptive identifiers (e.g., 'user@company.com'), values are principal object IDs."
+  default     = {}
+}
+
+variable "vm_user_principals" {
+  type        = map(string)
+  description = "Map of Azure AD principals for Virtual Machine User Login role (standard access). Keys are descriptive identifiers (e.g., 'user@company.com'), values are principal object IDs."
+  default     = {}
+}
+
+variable "should_create_vm_ssh_key" {
+  type        = bool
+  description = "Generate SSH key pair for VM fallback access. Defaults to true to ensure emergency access when Azure AD authentication is unavailable"
+  default     = true
+}
+
+variable "should_use_vm_password_auth" {
+  type        = bool
+  description = "Use password authentication for VM access. When enabled, a random secure password will be generated and stored in Terraform state"
+  default     = false
+}
+
+/*
  *  AKS Integration Configuration - Optional
  */
 

@@ -12,6 +12,7 @@ locals {
   deploy_script_secrets = file("${path.module}/../../../scripts/deploy-script-secrets.sh")
 
   script_env_vars = {
+    CLIENT_ID          = try(var.arc_onboarding_identity.client_id, "")
     KEY_VAULT_NAME     = try(coalesce(var.key_vault.name), "")
     KUBERNETES_DISTRO  = var.kubernetes_distro
     NODE_TYPE          = var.node_type

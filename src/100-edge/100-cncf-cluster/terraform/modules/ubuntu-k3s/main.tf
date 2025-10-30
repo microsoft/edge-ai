@@ -41,17 +41,19 @@ locals {
 
   # Server specific environment variables for the k3s node setup.
   server_env_var = {
-    K3S_NODE_TYPE     = "server"
     CLUSTER_ADMIN_OID = coalesce(var.cluster_admin_oid, "$${CLUSTER_ADMIN_OID}")
     CLUSTER_ADMIN_UPN = coalesce(var.cluster_admin_upn, "$${CLUSTER_ADMIN_UPN}")
+    CLIENT_ID         = "$${CLIENT_ID}"
+    K3S_NODE_TYPE     = "server"
     SKIP_ARC_CONNECT  = "$${SKIP_ARC_CONNECT}"
   }
 
   # Agent specific environment variables for the k3s node setup.
   node_env_var = {
-    K3S_NODE_TYPE     = "agent"
     CLUSTER_ADMIN_OID = "$${CLUSTER_ADMIN_OID}"
     CLUSTER_ADMIN_UPN = "$${CLUSTER_ADMIN_UPN}"
+    CLIENT_ID         = "$${CLIENT_ID}"
+    K3S_NODE_TYPE     = "agent"
     SKIP_ARC_CONNECT  = "true"
   }
 

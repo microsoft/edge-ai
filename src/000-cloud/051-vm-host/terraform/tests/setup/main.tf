@@ -35,6 +35,7 @@ output "location" {
 
 output "aio_resource_group" {
   value = {
+    id       = "${local.subscription_id_part}/resourceGroups/${local.resource_group_name}"
     name     = local.resource_group_name
     location = local.location
   }
