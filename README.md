@@ -163,6 +163,55 @@ code .
 - **Multiple IaC frameworks** - Terraform & Bicep
 - **Comprehensive testing** - because empowering reliable edge infrastructure deployments is our mission
 
+## 🔗 Want to Use Edge-AI Tools in Your Own Repository?
+
+Share our AI instructions, chatmodes, and prompts across your projects with a simple dev container setup:
+
+**Step 1:** Clone both repositories into the same workspace
+
+```bash
+git clone https://github.com/Microsoft/edge-ai.git
+git clone https://github.com/<your-organization>/<your-project>.git  # Replace with your own repository URL
+```
+
+**Step 2:** Add mount to your project's `devcontainer.json`
+
+```json
+{
+  "mounts": [
+    "source=${localWorkspaceFolder}/../edge-ai,target=/workspaces/edge-ai,type=bind,consistency=cached"
+  ]
+}
+```
+
+**Step 3:** Update your project's `.vscode/settings.json`
+
+```json
+{
+  "chat.modeFilesLocations": {
+    ".github/chatmodes": true,
+    "../edge-ai/.github/chatmodes": true
+  },
+  "chat.instructionsFilesLocations": {
+    ".github/instructions": true,
+    "../edge-ai/.github/instructions": true
+  },
+  "chat.promptFilesLocations": {
+    ".github/prompts": true,
+    "../edge-ai/.github/prompts": true
+  }
+}
+```
+
+**Result:** Rebuild your dev container and gain instant access to:
+
+- ✅ **Task researcher** and **task planner** modes
+- ✅ **AI-assisted engineering** workflows
+- ✅ **Coding standards** and conventions
+- ✅ **Always up-to-date** - no file copying needed
+
+*💡 Perfect for teams wanting to adopt AI-assisted development patterns without duplicating files across repositories.*
+
 ## 🎓 PraxisWorx Learning Platform
 
 **Empower your team to achieve proficiency in AI-assisted, hyper-velocity engineering** through hands-on training labs and focused practice exercises (Katas).
