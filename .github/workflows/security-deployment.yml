@@ -263,7 +263,7 @@ jobs:
             api.github.com:443
 
       - name: Download all security artifacts
-        uses: actions/download-artifact@4a24838f3d5601fd639834081e118c2995d51e1c # v4.1.8
+        uses: actions/download-artifact@f093f21ca4cfa7c75ccbbc2be54da76a0c7e1f05 # v4.1.8
         with:
           path: security-results
 
