@@ -372,6 +372,8 @@ resource "azapi_resource" "broker" {
   }
   depends_on = [azapi_resource.custom_location, azapi_resource.instance]
 
+  replace_triggers_external_values = [var.mqtt_broker_config]
+
   schema_validation_enabled = false # Disable schema validation for azapi_resource for 2025-07-01-preview until azapi provider supports it
 }
 
