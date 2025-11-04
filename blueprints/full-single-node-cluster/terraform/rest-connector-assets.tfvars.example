@@ -1,0 +1,268 @@
+/*
+ * REST HTTP Connector Assets Configuration Example
+ *
+ * This file demonstrates how to configure REST HTTP connector devices and assets
+ * for the Akri REST connector integration with Azure IoT Operations.
+ *
+ * Usage:
+ *   terraform apply -var-file="rest-connector-assets.tfvars"
+ *
+ * Or copy this file to terraform.tfvars to automatically load these values.
+ */
+
+/*
+ * Enable REST HTTP Connector Template
+ *
+ * REQUIRED: Must be set to true to deploy the Akri REST HTTP Connector template.
+ * Without this, the connector template will not be available and assets cannot be created.
+ */
+should_enable_akri_rest_connector = true
+
+/*
+ * REST HTTP Connector Devices
+ *
+ * Defines REST HTTP endpoints that will be discovered and managed by the Akri connector.
+ * Each device represents a REST/HTTP endpoint with its authentication and configuration.
+ */
+namespaced_devices = [
+  // Weather Station - Anonymous Access
+  {
+    name    = "rest-weather-sensor"
+    enabled = true
+    endpoints = {
+      outbound = { assigned = {} }
+      inbound = {
+        "rest-weather-sensor-endpoint" = {
+          endpoint_type = "Microsoft.Http"
+          address       = "http://weather-station:8080"
+          version       = "1.0"
+          additionalConfiguration = jsonencode({
+            tlsEnabled     = false
+            timeoutSeconds = 30
+          })
+          authentication = {
+            method = "Anonymous"
+          }
+          trustSettings = null
+        }
+      }
+    }
+  },
+
+  // Generic Sensor - Anonymous Access
+  {
+    name    = "rest-generic-sensor"
+    enabled = true
+    endpoints = {
+      outbound = { assigned = {} }
+      inbound = {
+        "generic-sensor-endpoint" = {
+          endpoint_type = "Microsoft.Http"
+          address       = "http://sensor-simulator:8081"
+          version       = "1.0"
+          additionalConfiguration = jsonencode({
+            tlsEnabled     = false
+            timeoutSeconds = 30
+            headers = {
+              "X-Custom-Header" = "sensor-data"
+            }
+          })
+          authentication = {
+            method = "Anonymous"
+          }
+          trustSettings = null
+        }
+      }
+    }
+  },
+
+  // Authenticated Device - Basic Authentication
+  {
+    name    = "rest-auth-device"
+    enabled = true
+    endpoints = {
+      outbound = { assigned = {} }
+      inbound = {
+        "auth-device-endpoint" = {
+          endpoint_type = "Microsoft.Http"
+          address       = "http://auth-device:8082"
+          version       = "1.0"
+          additionalConfiguration = jsonencode({
+            tlsEnabled     = false
+            timeoutSeconds = 45
+          })
+          authentication = {
+            method = "UsernamePassword"
+            usernamePasswordCredentials = {
+              usernameSecretName = "device-username"
+              passwordSecretName = "device-password"
+            }
+          }
+          trustSettings = null
+        }
+      }
+    }
+  }
+]
+
+/*
+ * REST HTTP Connector Assets
+ *
+ * Defines the actual assets that reference the devices above and configure
+ * how data is collected, processed, and routed to MQTT topics or other destinations.
+ */
+namespaced_assets = [
+  // Weather Station Asset - 10 second polling
+  {
+    name         = "rest-weather-sensor-asset"
+    display_name = "Weather Sensor Station"
+    enabled      = true
+    device_ref = {
+      device_name   = "rest-weather-sensor"
+      endpoint_name = "rest-weather-sensor-endpoint"
+    }
+    description       = "REST HTTP weather station providing temperature, humidity, and pressure data"
+    documentation_uri = "https://github.com/microsoft/edge-ai/tree/main/src/500-application/505-akri-rest-http-connector"
+    manufacturer      = "Contoso"
+    manufacturer_uri  = "https://contoso.com"
+    model             = "WeatherStation-3000"
+    product_code      = "WS3000"
+    serial_number     = "WS-001"
+    software_revision = "1.0.0"
+    attributes = {
+      deviceType = "weather-sensor"
+      location   = "building-a"
+      floor      = "2"
+    }
+    datasets = [
+      {
+        name = "weather-sensor-dataset"
+        data_points = [
+          {
+            name        = "weather-input"
+            data_source = "weather/input"
+            data_point_configuration = jsonencode({
+              samplingIntervalInMilliseconds = 10000
+            })
+          }
+        ]
+        destinations = [
+          {
+            target = "Mqtt"
+            configuration = {
+              topic  = "telemetry/company/cloud/region/environment/weather-sensor-01/data/input"
+              retain = "Never"
+              qos    = "Qos1"
+            }
+          }
+        ]
+      }
+    ]
+    default_datasets_configuration = jsonencode({
+      publishingInterval = 10000
+      samplingInterval   = 10000
+      queueSize          = 1
+    })
+    default_events_configuration = jsonencode({
+      publishingInterval = 10000
+      samplingInterval   = 10000
+      queueSize          = 1
+    })
+  },
+
+  // Generic Sensor Asset - 15 second polling
+  {
+    name         = "rest-generic-sensor-asset"
+    display_name = "Generic IoT Sensor"
+    enabled      = true
+    device_ref = {
+      device_name   = "rest-generic-sensor"
+      endpoint_name = "generic-sensor-endpoint"
+    }
+    description  = "Generic REST HTTP sensor for IoT data collection"
+    manufacturer = "EdgeTech"
+    model        = "GenSensor-500"
+    serial_number = "GS-002"
+    attributes = {
+      deviceType = "generic-sensor"
+      location   = "building-b"
+    }
+    datasets = [
+      {
+        name = "sensor-data"
+        data_points = [
+          {
+            name        = "sensor-reading"
+            data_source = "api/sensor/data"
+            data_point_configuration = jsonencode({
+              samplingIntervalInMilliseconds = 15000
+            })
+          }
+        ]
+        destinations = [
+          {
+            target = "Mqtt"
+            configuration = {
+              topic  = "telemetry/company/cloud/region/environment/generic-sensor-01/data"
+              retain = "Never"
+              qos    = "Qos1"
+            }
+          }
+        ]
+      }
+    ]
+    default_datasets_configuration = jsonencode({
+      publishingInterval = 15000
+      samplingInterval   = 15000
+      queueSize          = 1
+    })
+  },
+
+  // Authenticated Device Asset - 20 second polling
+  {
+    name         = "rest-auth-device-asset"
+    display_name = "Authenticated REST Device"
+    enabled      = true
+    device_ref = {
+      device_name   = "rest-auth-device"
+      endpoint_name = "auth-device-endpoint"
+    }
+    description  = "Secure REST HTTP device with basic authentication"
+    manufacturer = "SecureIoT"
+    model        = "SecureDevice-1000"
+    serial_number = "SD-003"
+    attributes = {
+      deviceType     = "secure-device"
+      security_level = "basic-auth"
+    }
+    datasets = [
+      {
+        name = "device-status"
+        data_points = [
+          {
+            name        = "status-data"
+            data_source = "api/device/status"
+            data_point_configuration = jsonencode({
+              samplingIntervalInMilliseconds = 20000
+            })
+          }
+        ]
+        destinations = [
+          {
+            target = "Mqtt"
+            configuration = {
+              topic  = "telemetry/company/cloud/region/environment/auth-device-01/status"
+              retain = "Never"
+              qos    = "Qos1"
+            }
+          }
+        ]
+      }
+    ]
+    default_datasets_configuration = jsonencode({
+      publishingInterval = 20000
+      samplingInterval   = 20000
+      queueSize          = 1
+    })
+  }
+]

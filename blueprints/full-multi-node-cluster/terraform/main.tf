@@ -329,9 +329,10 @@ module "edge_iot_ops" {
   should_deploy_resource_sync_rules       = var.should_deploy_resource_sync_rules
   should_create_anonymous_broker_listener = var.should_create_anonymous_broker_listener
 
-  aio_features                 = var.aio_features
-  enable_opc_ua_simulator      = var.should_enable_opc_ua_simulator
-  should_enable_otel_collector = var.should_enable_otel_collector
+  aio_features                      = var.aio_features
+  enable_opc_ua_simulator           = var.should_enable_opc_ua_simulator
+  should_enable_akri_rest_connector = var.should_enable_akri_rest_connector
+  should_enable_otel_collector      = var.should_enable_otel_collector
 }
 
 module "edge_assets" {

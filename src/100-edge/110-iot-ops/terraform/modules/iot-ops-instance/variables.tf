@@ -91,7 +91,6 @@ variable "mqtt_broker_config" {
     memoryProfile             = string
     serviceType               = string
     logsLevel                 = optional(string, "info")
-    resourceLimitsCpu         = string
   })
 }
 

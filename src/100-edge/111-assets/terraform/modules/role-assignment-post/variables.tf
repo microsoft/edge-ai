@@ -6,7 +6,7 @@
 
 variable "custom_location_id" {
   type        = string
-  description = "The resource ID of the Custom Location"
+  description = "The resource ID of the Custom Location."
 }
 
 variable "k8s_bridge_principal_id" {

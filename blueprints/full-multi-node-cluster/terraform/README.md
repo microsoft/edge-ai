@@ -103,6 +103,7 @@ with the single-node blueprint while preserving multi-node specific capabilities
 | should\_deploy\_azureml | Whether to deploy the Azure Machine Learning workspace and optional compute cluster | `bool` | `false` | no |
 | should\_deploy\_edge\_azureml | Whether to deploy the Azure Machine Learning edge extension when Azure ML is enabled | `bool` | `false` | no |
 | should\_deploy\_resource\_sync\_rules | Whether to deploy resource sync rules | `bool` | `false` | no |
+| should\_enable\_akri\_rest\_connector | Whether to deploy the Akri REST HTTP Connector template to the IoT Operations instance | `bool` | `false` | no |
 | should\_enable\_key\_vault\_public\_network\_access | Whether to enable public network access for the Key Vault | `bool` | `true` | no |
 | should\_enable\_managed\_outbound\_access | Whether to enable managed outbound egress via NAT gateway instead of platform default internet access | `bool` | `true` | no |
 | should\_enable\_oidc\_issuer | Whether to enable the OIDC issuer URL for the cluster | `bool` | `true` | no |

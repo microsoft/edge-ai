@@ -38,3 +38,22 @@ output "aio_mqtt_broker" {
   description = "The MQTT Broker configuration details."
   value       = module.iot_ops_instance.aio_mqtt_broker
 }
+
+/*
+ * Akri REST HTTP Connector Outputs
+ */
+
+output "akri_rest_connector" {
+  description = "The Akri REST HTTP connector template details"
+  value       = var.should_enable_akri_rest_connector ? module.akri_rest_connector[0].connector_template : null
+}
+
+output "akri_rest_connector_template_id" {
+  description = "The ID of the Akri REST HTTP Connector template"
+  value       = var.should_enable_akri_rest_connector ? module.akri_rest_connector[0].connector_template_id : null
+}
+
+output "akri_rest_connector_template_name" {
+  description = "The name of the Akri REST HTTP Connector template"
+  value       = var.should_enable_akri_rest_connector ? module.akri_rest_connector[0].connector_template_name : null
+}

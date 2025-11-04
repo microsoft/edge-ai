@@ -1677,3 +1677,5 @@ msrc
 usin
 Multiprotocol
 Subvolume
+azureiotoperations
+dmqtt

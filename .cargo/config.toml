@@ -3,6 +3,8 @@ aio-sdks = { index = "sparse+https://pkgs.dev.azure.com/azure-iot-sdks/iot-opera
 
 # This section is required to satisfy the CFS0042/FixCargoConfig validator
 [source.crates-io]
+# Disabled replace-with to allow public crates (assert_cmd, predicates, etc.) to resolve without auth during
+# emulator feature development. Reinstate if private feed mirroring becomes required again.
 replace-with = "aio-sdks"
 
 # Note: Docker builds use a different config that does NOT include the replace-with directive

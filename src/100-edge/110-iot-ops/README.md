@@ -23,6 +23,15 @@ Component to deploy Azure IoT Operations to an Arc Connected K3s Kubernetes clus
 
 Learn more about the required configuration by reading the [./terraform/README.md](./terraform/README.md)
 
+## Features
+
+- **Core IoT Operations**: Complete Azure IoT Operations instance deployment
+- **Trust Management**: Support for self-signed, customer-managed, and BYO issuer certificates
+- **MQTT Broker**: Built-in MQTT broker with configurable listeners and authentication
+- **OPC UA Simulator**: Optional OPC UA device simulator for testing (enabled by default)
+- **OpenTelemetry**: Integrated observability and monitoring
+- **Akri REST Connector**: Optional REST/HTTP device discovery and integration (disabled by default)
+
 ## Terraform
 
 Refer to [Terraform Components - Getting Started](../README.md#terraform-components---getting-started) for
@@ -30,12 +39,39 @@ deployment instructions.
 
 Learn more about the required configuration by reading the [./terraform/README.md](./terraform/README.md)
 
+### Akri REST HTTP Connector
+
+This component includes optional integration with the Akri REST HTTP Connector, which enables discovery and management of REST/HTTP endpoints as IoT assets. This is useful for integrating with devices, sensors, and systems that expose REST APIs.
+
+To enable the REST connector, add the following to your `terraform.tfvars` file:
+
+```hcl
+should_enable_akri_rest_connector = true
+
+# Optional: Configure connector settings
+akri_rest_connector_config = {
+  template_name     = "my-rest-connector"
+  image_tag         = "latest"
+  log_level         = "Info"
+  replicas          = 1
+  mqtt_broker_host  = "aio-mq-dmqtt-frontend:8883"
+  mqtt_broker_audience = "aio-mq"
+  mqtt_ca_configmap = "aio-ca-trust-bundle-test-only"
+}
+```
+
+**Note**: The REST connector template only provides the runtime infrastructure. You'll need to separately deploy:
+
+- Asset Endpoint Profiles (using the 111-assets component)
+- Asset definitions that reference your REST endpoints
+- Authentication configurations for your specific devices
+
 ### Customer Managed Trust - TLS
 
 If you wish to configure custom trust settings for `Issuer` and trust bundle `ConfigMap`, you have two options:
 
 - Option 1 - If you wish to manage and provide trust with a TLS certificate from Key Vault along with having all
-  AIO MQ trust and issuer resources __automatically__ generated from this certificate, update the following variables
+  AIO MQ trust and issuer resources **automatically** generated from this certificate, update the following variables
   into your `terraform.tfvars` file before deploying AIO:
 
   ```hcl
@@ -75,7 +111,7 @@ If you wish to configure custom trust settings for `Issuer` and trust bundle `Co
   }
   ```
 
-  > ⚠️ __Warning__: The scripts are not able to detect if your resources exist on the cluster, and installation will fail before completion. Error message may be unclear.
+  > ⚠️ **Warning**: The scripts are not able to detect if your resources exist on the cluster, and installation will fail before completion. Error message may be unclear.
   > We recommend you have `kubectl` access to the cluster and run `kubectl get` commands to validate the resources before continuing with this option.
 
 ## Test OPC UA connectivity with MQTT Broker

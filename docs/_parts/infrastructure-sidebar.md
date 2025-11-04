@@ -27,6 +27,7 @@
   - [Rust Telemetry](#/src/500-application/501-rust-telemetry/README.md)
   - [Rust Http Connector](#/src/500-application/502-rust-http-connector/README.md)
   - [Media Capture Service](#/src/500-application/503-media-capture-service/README.md)
+  - [Akri Rest Http Connector](#/src/500-application/505-akri-rest-http-connector/README.md)
 
 - [Ci Cd](#/src/501-ci-cd/README.md)
 

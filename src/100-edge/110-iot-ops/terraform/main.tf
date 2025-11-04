@@ -121,6 +121,10 @@ module "iot_ops_instance" {
   depends_on = [module.apply_scripts_post_init]
 
   resource_group                          = var.resource_group
+  key_vault                               = var.secret_sync_key_vault
+  enable_instance_secret_sync             = var.enable_instance_secret_sync
+  secret_sync_identity                    = var.secret_sync_identity
+  mqtt_broker_persistence_config          = var.mqtt_broker_persistence_config
   arc_connected_cluster_id                = var.arc_connected_cluster.id
   connected_cluster_location              = var.arc_connected_cluster.location
   connected_cluster_name                  = var.arc_connected_cluster.name
@@ -129,7 +133,6 @@ module "iot_ops_instance" {
   schema_registry_id                      = var.adr_schema_registry.id
   adr_namespace_id                        = try(var.adr_namespace.id, null)
   mqtt_broker_config                      = var.mqtt_broker_config
-  mqtt_broker_persistence_config          = var.mqtt_broker_persistence_config
   dataflow_instance_count                 = var.dataflow_instance_count
   should_deploy_resource_sync_rules       = var.should_deploy_resource_sync_rules
   customer_managed_trust_settings         = local.customer_managed_trust_settings
@@ -140,9 +143,6 @@ module "iot_ops_instance" {
   aio_features                            = var.aio_features
   should_create_anonymous_broker_listener = var.should_create_anonymous_broker_listener
   broker_listener_anonymous_config        = var.broker_listener_anonymous_config
-  key_vault                               = var.secret_sync_key_vault
-  secret_sync_identity                    = var.secret_sync_identity
-  enable_instance_secret_sync             = var.enable_instance_secret_sync
 }
 
 /*
@@ -158,4 +158,28 @@ module "opc_ua_simulator" {
 
   resource_group         = var.resource_group
   connected_cluster_name = var.arc_connected_cluster.name
+}
+
+/*
+ * Akri REST HTTP Connector
+ */
+
+module "akri_rest_connector" {
+  count = var.should_enable_akri_rest_connector ? 1 : 0
+
+  source = "./modules/akri-rest-connector"
+
+  depends_on = [module.iot_ops_instance]
+
+  # Required inputs
+  aio_instance_id    = module.iot_ops_instance.aio_instance.id
+  custom_location_id = module.iot_ops_instance.custom_locations.id
+
+  # Common variables (derived from available resources)
+  environment     = "prod" # Default since not available in parent
+  resource_prefix = "aio"  # Default since not available in parent
+  location        = var.resource_group.location
+
+  # Connector configuration (pass the entire config object)
+  akri_rest_connector_config = var.akri_rest_connector_config
 }

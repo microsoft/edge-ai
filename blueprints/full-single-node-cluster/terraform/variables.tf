@@ -206,6 +206,12 @@ variable "should_enable_opc_ua_simulator" {
   default     = false
 }
 
+variable "should_enable_akri_rest_connector" {
+  type        = bool
+  description = "Whether to deploy the Akri REST HTTP Connector template to the IoT Operations instance"
+  default     = false
+}
+
 /*
  * Azure Functions Parameters
  */

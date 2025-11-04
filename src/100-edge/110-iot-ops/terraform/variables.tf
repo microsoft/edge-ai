@@ -86,3 +86,42 @@ variable "should_assign_key_vault_roles" {
   type        = bool
   default     = true
 }
+
+/*
+ * Akri REST HTTP Connector Configuration
+ */
+
+variable "should_enable_akri_rest_connector" {
+  type        = bool
+  default     = false
+  description = "Deploy Akri REST HTTP Connector template to the IoT Operations instance"
+}
+
+variable "akri_rest_connector_config" {
+  type = object({
+    template_name        = optional(string, "rest-http-connector")
+    image_tag            = optional(string, "latest")
+    log_level            = optional(string, "Info")
+    replicas             = optional(number, 1)
+    mqtt_broker_host     = optional(string, "aio-mq-dmqtt-frontend:8883")
+    mqtt_broker_audience = optional(string, "aio-mq")
+    mqtt_ca_configmap    = optional(string, "aio-ca-trust-bundle-test-only")
+  })
+  default     = {}
+  description = "Configuration for the Akri REST HTTP Connector. Only used when should_enable_akri_rest_connector is true."
+
+  validation {
+    condition     = can(regex("^[a-z0-9][a-z0-9-]*[a-z0-9]$", var.akri_rest_connector_config.template_name))
+    error_message = "Connector template name must contain only lowercase letters, numbers, and hyphens, and cannot start or end with a hyphen."
+  }
+
+  validation {
+    condition     = contains(["Trace", "Debug", "Info", "Warning", "Error", "Critical"], var.akri_rest_connector_config.log_level)
+    error_message = "Log level must be one of: Trace, Debug, Info, Warning, Error, Critical."
+  }
+
+  validation {
+    condition     = var.akri_rest_connector_config.replicas >= 1 && var.akri_rest_connector_config.replicas <= 10
+    error_message = "Connector replicas must be between 1 and 10."
+  }
+}
