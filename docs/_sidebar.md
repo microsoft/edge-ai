@@ -1,5 +1,5 @@
 <!-- markdownlint-disable MD041 -->
-<!-- Generated on: 2025-10-30 11:12:51 UTC -->
+<!-- Generated on: 2025-11-04 07:37:49 UTC -->
 
 - [AI on Edge Flagship Accelerator](docs/index.md)
 
@@ -326,6 +326,7 @@
   - [Video To Gif](src/900-tools-utilities/901-video-tools/cli/video-to-gif/README.md)
   - [Video Tools](src/900-tools-utilities/901-video-tools/README.md)
   - [Test Assets](src/900-tools-utilities/901-video-tools/test-assets/README.md)
+  - [Aio Sidekick](src/900-tools-utilities/902-aio-sidekick/README.md)
   - [Tools Utilities](src/900-tools-utilities/README.md)
   - [Azure Resource Providers](src/azure-resource-providers/README.md)
   - [Dataflows Acsa Egmqtt Bidirectional](src/starter-kit/dataflows-acsa-egmqtt-bidirectional/README.md)
