@@ -11,18 +11,21 @@ Deploys Microsoft Fabric capacity, workspace, lakehouse, and eventhouse resource
 | terraform | >= 1.9.8, < 2.0 |
 | azurerm | >= 4.8.0 |
 | fabric | 1.3.0 |
+| msgraph | >= 0.2.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
 | azurerm | >= 4.8.0 |
+| msgraph | >= 0.2.0 |
 | terraform | n/a |
 
 ## Resources
 
 | Name | Type |
 |------|------|
+| [msgraph_resource_action.current_user](https://registry.terraform.io/providers/microsoft/msgraph/latest/docs/resources/resource_action) | resource |
 | [terraform_data.defer](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data) | resource |
 | [azurerm_resource_group.existing](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/resource_group) | data source |
 
@@ -39,6 +42,7 @@ Deploys Microsoft Fabric capacity, workspace, lakehouse, and eventhouse resource
 | environment | Environment for all resources in this module: dev, test, or prod | `string` | n/a | yes |
 | location | Azure region where all resources will be deployed | `string` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
+| fabric\_capacity\_admins\_list | List of user principal names (UPNs) or Azure AD object IDs for Fabric capacity administrators. For users, provide UPN (<user@domain.com>) or Object ID. For service principals, provide Application ID or Object ID. If left empty, current user will be added as admin. | `list(string)` | `[]` | no |
 | fabric\_workspace\_name | The name of the Microsoft Fabric workspace. Otherwise, 'ws-{resource\_prefix}-{environment}-{instance}' | `string` | `null` | no |
 | instance | Instance identifier for naming resources: 001, 002, etc | `string` | `"001"` | no |
 | resource\_group\_name | Name of the resource group | `string` | `null` | no |
