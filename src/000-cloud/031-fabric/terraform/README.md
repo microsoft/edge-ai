@@ -23,8 +23,10 @@ Contains all the resources needed for Fabric based resources.
 
 | Name | Type |
 |------|------|
-| [terraform_data.defer_fabric_capacity](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data) | resource |
+| [terraform_data.defer_fabric_capacity_created](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data) | resource |
+| [terraform_data.defer_fabric_capacity_existing](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data) | resource |
 | [terraform_data.defer_fabric_workspace](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data) | resource |
+| [fabric_capacity.created](https://registry.terraform.io/providers/microsoft/fabric/1.3.0/docs/data-sources/capacity) | data source |
 | [fabric_capacity.existing](https://registry.terraform.io/providers/microsoft/fabric/1.3.0/docs/data-sources/capacity) | data source |
 | [fabric_workspace.existing](https://registry.terraform.io/providers/microsoft/fabric/1.3.0/docs/data-sources/workspace) | data source |
 
@@ -47,11 +49,11 @@ Contains all the resources needed for Fabric based resources.
 | resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
 | additional\_kql\_databases | Additional KQL databases to create within the eventhouse. | ```map(object({ display_name = string description = string }))``` | `{}` | no |
 | eventhouse\_description | The description of the Microsoft Fabric eventhouse | `string` | `"Eventhouse for real-time analytics of Edge device data"` | no |
-| fabric\_capacity\_admins | List of AAD object IDs for Fabric capacity administrators. | `list(string)` | `[]` | no |
-| fabric\_capacity\_name | The name of the Microsoft Fabric capacity. Otherwise, 'cap-{resource\_prefix}-{environment}-{instance}'. | `string` | `null` | no |
+| fabric\_capacity\_admins | List of user principal names (UPNs) or Azure AD object IDs for Fabric capacity administrators. For users, provide UPN (<user@domain.com>) or Object ID. For service principals, provide Application ID or Object ID. At least one administrator is required when creating a capacity. | `list(string)` | `[]` | no |
+| fabric\_capacity\_name | The name of the Microsoft Fabric capacity. Otherwise, 'cap{resource\_prefix\_no\_hyphens}{environment}{instance}'. | `string` | `null` | no |
 | fabric\_capacity\_sku | The SKU name for the Fabric capacity. | `string` | `"F2"` | no |
 | fabric\_eventhouse\_name | The name of the Microsoft Fabric eventhouse. Otherwise, 'evh-{resource\_prefix}-{environment}-{instance}' | `string` | `null` | no |
-| fabric\_lakehouse\_name | The name of the Microsoft Fabric lakehouse. Otherwise, 'lh-{resource\_prefix}-{environment}-{instance}'. | `string` | `null` | no |
+| fabric\_lakehouse\_name | The name of the Microsoft Fabric lakehouse. Otherwise, 'lh\_{resource\_prefix}\_{environment}\_{instance}'. | `string` | `null` | no |
 | fabric\_workspace\_name | The name of the Microsoft Fabric workspace. Otherwise, 'ws-{resource\_prefix}-{environment}-{instance}' | `string` | `null` | no |
 | instance | Instance identifier for naming resources: 001, 002, etc | `string` | `"001"` | no |
 | lakehouse\_description | The description of the Microsoft Fabric lakehouse | `string` | `"Lakehouse for storing and analyzing data from Edge devices"` | no |

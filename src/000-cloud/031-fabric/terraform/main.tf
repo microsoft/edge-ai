@@ -6,17 +6,30 @@
 
 locals {
   fabric_workspace_name  = coalesce(var.fabric_workspace_name, "ws-${var.resource_prefix}-${var.environment}-${var.instance}")
-  fabric_lakehouse_name  = coalesce(var.fabric_lakehouse_name, "lh-${var.resource_prefix}-${var.environment}-${var.instance}")
+  fabric_lakehouse_name  = coalesce(var.fabric_lakehouse_name, "lh_${replace(var.resource_prefix, "-", "_")}_${var.environment}_${var.instance}")
   fabric_eventhouse_name = coalesce(var.fabric_eventhouse_name, "evh-${var.resource_prefix}-${var.environment}-${var.instance}")
-  fabric_capacity_name   = coalesce(var.fabric_capacity_name, "cap-${var.resource_prefix}-${var.environment}-${var.instance}")
+  fabric_capacity_name   = coalesce(var.fabric_capacity_name, "cap${replace(var.resource_prefix, "-", "")}${var.environment}${var.instance}")
 
-  capacity_id  = try(module.fabric_capacity[0].capacity.id, data.fabric_capacity.existing[0].id, null)
+  capacity_id  = try(data.fabric_capacity.created[0].id, data.fabric_capacity.existing[0].id, null)
   workspace_id = try(module.fabric_workspace[0].workspace.id, data.fabric_workspace.existing[0].id, null)
 }
 
 // Defer computation to prevent `data` objects from querying for state on `terraform plan`.
 // Needed for testing and build system compatibility.
-resource "terraform_data" "defer_fabric_capacity" {
+resource "terraform_data" "defer_fabric_capacity_created" {
+  count = var.should_create_fabric_capacity ? 1 : 0
+  input = {
+    display_name = local.fabric_capacity_name
+  }
+  depends_on = [module.fabric_capacity]
+}
+
+data "fabric_capacity" "created" {
+  count        = length(terraform_data.defer_fabric_capacity_created)
+  display_name = terraform_data.defer_fabric_capacity_created[0].output.display_name
+}
+
+resource "terraform_data" "defer_fabric_capacity_existing" {
   count = var.should_create_fabric_capacity ? 0 : var.should_create_fabric_workspace ? 1 : 0
   input = {
     display_name = local.fabric_capacity_name
@@ -24,8 +37,8 @@ resource "terraform_data" "defer_fabric_capacity" {
 }
 
 data "fabric_capacity" "existing" {
-  count        = length(terraform_data.defer_fabric_capacity)
-  display_name = terraform_data.defer_fabric_capacity[0].output.display_name
+  count        = length(terraform_data.defer_fabric_capacity_existing)
+  display_name = terraform_data.defer_fabric_capacity_existing[0].output.display_name
 }
 
 resource "terraform_data" "defer_fabric_workspace" {

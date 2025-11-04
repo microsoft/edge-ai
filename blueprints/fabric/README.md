@@ -10,13 +10,12 @@ keywords:
   - blueprint
   - data analytics
   - real-time intelligence
-  - eventstream
   - eventhouse
   - lakehouse
   - terraform
 ---
 
-This blueprint deploys Microsoft Fabric components for data analytics and optionally real-time intelligence (RTI) scenarios.
+This blueprint deploys Microsoft Fabric components for data analytics scenarios.
 
 ## Overview
 
@@ -25,25 +24,18 @@ This blueprint creates Microsoft Fabric resources including:
 - Fabric workspace (optional)
 - Fabric capacity (optional)
 - Fabric lakehouse for data analytics
-- Fabric EventStream for data ingestion
-- Fabric Eventhouse for real-time intelligence (RTI scenarios)
+- Fabric Eventhouse for real-time intelligence (optional)
 
 ## Architecture
 
-### Traditional Analytics (Default)
+This blueprint provisions the foundational Microsoft Fabric infrastructure:
 
-- EventStream with Event Hub source
-- Data flows to Fabric Lakehouse
-- Batch analytics and data science workflows
+- **Fabric Capacity**: Compute resources for Fabric workloads (optional, can use existing or free tier)
+- **Fabric Workspace**: Container for organizing Fabric items
+- **Fabric Lakehouse**: Data lake and data warehouse for analytics workloads
+- **Fabric Eventhouse**: Real-time analytics engine with KQL database (optional)
 
-### Real-Time Intelligence (RTI)
-
-For RTI scenarios, the blueprint supports:
-
-- EventStream with custom endpoint source
-- Data flows to Fabric Eventhouse
-- Real-time analytics and streaming scenarios
-- Integration with Azure IoT Operations via custom endpoints
+**For complete Real-Time Intelligence integration with Azure IoT Operations**, including EventStream with CustomEndpoint and dataflow configuration, use the **`fabric-rti` blueprint** instead.
 
 ## Prerequisites
 
@@ -51,65 +43,62 @@ For RTI scenarios, the blueprint supports:
 - Microsoft Fabric capacity (optional - can use free tier)
 - Terraform >= 1.9.8
 - Azure CLI authenticated
+- Existing resource group (default naming: `rg-{resource_prefix}-{environment}-{instance}`)
 
 ## Usage
 
-### Basic Fabric Workspace
+### Basic Fabric Workspace with Lakehouse
 
 ```hcl
 module "fabric_blueprint" {
   source = "./blueprints/fabric/terraform"
 
-  environment                    = "dev"
-  location                      = "eastus2"
-  resource_prefix               = "mycompany"
-  instance                      = "001"
+  environment     = "dev"
+  location        = "eastus2"
+  resource_prefix = "mycompany"
+  instance        = "001"
 
   should_create_fabric_workspace = true
   should_create_fabric_lakehouse = true
 }
 ```
 
-### With EventStream
+### With Fabric Capacity
 
 ```hcl
 module "fabric_blueprint" {
   source = "./blueprints/fabric/terraform"
 
-  environment                    = "dev"
-  location                      = "eastus2"
-  resource_prefix               = "mycompany"
-  instance                      = "001"
+  environment     = "dev"
+  location        = "eastus2"
+  resource_prefix = "mycompany"
+  instance        = "001"
 
-  should_create_fabric_workspace   = true
-  should_create_fabric_lakehouse   = true
-  should_create_fabric_eventstream = true
-  eventhub_endpoint               = "your-eventhub-endpoint"
+  should_create_fabric_capacity  = true
+  should_create_fabric_workspace = true
+  should_create_fabric_lakehouse = true
+
+  fabric_capacity_admins_list = ["user-object-id-1", "user-object-id-2"]
 }
 ```
 
-### RTI Scenarios
-
-For Real-Time Intelligence scenarios with custom endpoints:
+### With Eventhouse for Real-Time Analytics (RTI)
 
 ```hcl
 module "fabric_blueprint" {
   source = "./blueprints/fabric/terraform"
 
-  environment                     = "dev"
-  location                       = "eastus2"
-  resource_prefix                = "mycompany"
-  instance                       = "001"
+  environment     = "dev"
+  location        = "eastus2"
+  resource_prefix = "mycompany"
+  instance        = "001"
 
   should_create_fabric_workspace   = true
   should_create_fabric_eventhouse  = true
-  should_create_fabric_eventstream = true
-  eventstream_template_type       = "custom-endpoint"
 }
 ```
 
-**Note**: Full RTI support requires enhanced Fabric component implementation.
-For complete RTI integration with Azure IoT Operations, use the `fabric-rti` blueprint instead.
+**For Azure IoT Operations integration with EventStream and dataflow endpoints**, use the **`fabric-rti`** blueprint which provides complete Real-Time Intelligence integration.
 
 ## Variables
 
@@ -123,39 +112,39 @@ For complete RTI integration with Azure IoT Operations, use the `fabric-rti` blu
 
 ### Optional Variables
 
-| Name                               | Description                                            | Type     | Default       |
-|------------------------------------|--------------------------------------------------------|----------|---------------|
-| `instance`                         | Instance identifier for naming resources               | `string` | `"001"`       |
-| `capacity_id`                      | Fabric capacity ID (optional for free tier)            | `string` | `null`        |
-| `should_create_fabric_capacity`    | Whether to create new Fabric capacity                  | `bool`   | `false`       |
-| `should_create_fabric_workspace`   | Whether to create new Fabric workspace                 | `bool`   | `false`       |
-| `should_create_fabric_lakehouse`   | Whether to create Fabric lakehouse                     | `bool`   | `false`       |
-| `should_create_fabric_eventstream` | Whether to create Fabric EventStream                   | `bool`   | `false`       |
-| `should_create_fabric_eventhouse`  | Whether to create Fabric Eventhouse for RTI            | `bool`   | `false`       |
-| `eventstream_template_type`        | EventStream template: 'event-hub' or 'custom-endpoint' | `string` | `"event-hub"` |
-| `eventhub_endpoint`                | Event Hub endpoint for traditional scenarios           | `string` | `null`        |
+| Name                               | Description                                                                                      | Type           | Default |
+|------------------------------------|--------------------------------------------------------------------------------------------------|----------------|---------|------|
+| `instance`                         | Instance identifier for naming resources                                                         | `string`       | `"001"` |
+| `resource_group_name`              | Name of the resource group                                                                       | `string`       | `null`  |
+| `fabric_workspace_name`            | The name of the Microsoft Fabric workspace                                                       | `string`       | `null`  |
+| `fabric_capacity_admins_list`      | List of AAD object IDs for Fabric capacity administrators (if left empty, current user is used) | `list(string)` | `[]`    |
+| `should_create_fabric_capacity`    | Whether to create a new Fabric capacity                                                          | `bool`         | `false` |
+| `should_create_fabric_workspace`   | Whether to create a new Microsoft Fabric workspace                                               | `bool`         | `false` |
+| `should_create_fabric_lakehouse`   | Whether to create a Microsoft Fabric lakehouse                                                   | `bool`         | `false` |
+| `should_create_fabric_eventhouse`  | Whether to create a Microsoft Fabric Eventhouse for real-time intelligence scenarios             | `bool`         | `false` |
 
 ## Outputs
 
-The blueprint outputs depend on the enabled features and may include:
+| Name                | Description                                 |
+|---------------------|---------------------------------------------|
+| `fabric_capacity`   | The Microsoft Fabric capacity details       |
+| `fabric_eventhouse` | The Microsoft Fabric eventhouse details     |
+| `fabric_lakehouse`  | The Microsoft Fabric lakehouse details      |
+| `fabric_workspace`  | The Microsoft Fabric workspace details      |
+| `resource_group`    | The resource group for the fabric resources |
 
-- Fabric workspace details
-- Fabric lakehouse information
-- Fabric EventStream configuration
-- Fabric Eventhouse details (RTI scenarios)
-- Connection information for integration
+## Real-Time Intelligence Integration
 
-## RTI Integration
+For Azure IoT Operations integration with EventStream, CustomEndpoint, and dataflow configuration:
 
-For full Real-Time Intelligence integration with Azure IoT Operations:
+**Use the `fabric-rti` blueprint**: `blueprints/fabric-rti/terraform`
 
-1. **Use the dedicated RTI blueprint**: `blueprints/fabric-rti/terraform`
-2. **Or configure this blueprint for RTI**:
-   - Set `eventstream_template_type = "custom-endpoint"`
-   - Enable `should_create_fabric_eventhouse = true`
-   - Disable `should_create_fabric_lakehouse = false`
+The RTI blueprint provides:
 
-The RTI blueprint provides a complete end-to-end solution with Azure IoT Operations integration.
+- EventStream with CustomEndpoint source for AIO integration
+- Dataflow endpoint configuration for secure data transmission
+- Eventhouse with KQL database for real-time analytics
+- Complete end-to-end solution on top of existing AIO infrastructure
 
 ## Deployment
 
@@ -187,9 +176,9 @@ terraform destroy -var-file="terraform.tfvars"
 
 ## Related Blueprints
 
-- **fabric-rti**: Complete RTI integration with Azure IoT Operations
-- **full-single-node-cluster**: Complete AIO deployment
-- **only-cloud-single-node-cluster**: Cloud-only AIO resources
+- **fabric-rti**: Real-Time Intelligence integration with Azure IoT Operations (EventStream + dataflow)
+- **full-single-node-cluster**: Complete AIO deployment with cloud and edge infrastructure
+- **only-cloud-single-node-cluster**: Cloud-only AIO resources without edge components
 
 ## External References
 

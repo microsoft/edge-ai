@@ -25,10 +25,10 @@
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| admin\_members | List of user principal names (UPNs) or Azure AD object IDs for Fabric capacity administrators. For users, provide UPN (<user@domain.com>) or Object ID. For service principals, provide Application ID or Object ID. At least one administrator is required. | `list(string)` | n/a | yes |
 | location | Azure region where all resources will be deployed | `string` | n/a | yes |
 | name | The name of the Fabric capacity. | `string` | n/a | yes |
 | resource\_group\_name | Name of the resource group | `string` | n/a | yes |
-| admin\_members | List of AAD object IDs for Fabric capacity administrators. | `list(string)` | `[]` | no |
 | sku | SKU name for the resource | `string` | `"F2"` | no |
 | tags | Tags to apply to all resources | `map(string)` | `{}` | no |
 

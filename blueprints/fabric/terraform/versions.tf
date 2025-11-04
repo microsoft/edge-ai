@@ -8,6 +8,10 @@ terraform {
       source  = "microsoft/fabric"
       version = "1.3.0"
     }
+    msgraph = {
+      source  = "microsoft/msgraph"
+      version = ">= 0.2.0"
+    }
   }
   required_version = ">= 1.9.8, < 2.0"
 }
