@@ -96,6 +96,7 @@ linkerd
 Multus
 myregistry
 nojekyll
+ollama
 Opsgenie
 rollouts
 rosbag
@@ -346,6 +347,7 @@ adrs
 adventure works
 adventure works cycles
 agentless
+agentic
 alam
 alation
 allowlist
