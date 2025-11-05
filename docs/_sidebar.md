@@ -271,6 +271,7 @@
     - [Security Plan Creator](.github/chatmodes/security-plan-creator.chatmode.md)
     - [Task Planner](.github/chatmodes/task-planner.chatmode.md)
     - [Task Researcher](.github/chatmodes/task-researcher.chatmode.md)
+    - [Workback](.github/chatmodes/Workback.chatmode.md)
   - [Instructions](.github/instructions/README.md)
     - [Ado Create Pull Request](.github/instructions/ado-create-pull-request.instructions.md)
     - [Ado Get Build Info](.github/instructions/ado-get-build-info.instructions.md)

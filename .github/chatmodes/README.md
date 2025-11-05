@@ -112,6 +112,15 @@ Specialized research-only assistant for comprehensive project analysis and docum
 - **Best For**: Research phases, information gathering, technical analysis
 - **Philosophy**: Research-only operations with evidence-based findings
 
+### [Workback](workback.chatmode.md)
+
+AI-powered assistant for creating and refining workback schedules with strategic insights.
+
+- **Purpose**: Streamline engagement planning by automating schedule calculations and surfacing actionable options
+- **Capabilities**: Generate workback schedules based on inputs (scope, resources, timeline), quantify gaps between target vs. feasible deployment, suggest strategic options with risk assessment, future roadmap includes visual charts (Gantt) and holiday-aware scheduling
+- **Best For**: Program managers, project leads, and teams managing complex timelines and resource constraints
+- **Philosophy**: Empower decision-making through data-driven insights—reduce manual effort, increase clarity, and enable collaboration
+
 ## Usage Guidelines
 
 ### Selecting the Right Mode
@@ -126,6 +135,7 @@ Specialized research-only assistant for comprehensive project analysis and docum
 8. **Security Planning**: Use Security Plan Creator for threat analysis and security documentation
 9. **Project Planning**: Use Task Planner for strategic planning after research is complete
 10. **Research and Analysis**: Use Task Researcher for comprehensive project investigation
+11. **Schedule Planning**: Use Workback for creating workback schedules and managing complex timelines
 
 ### Activation
 
