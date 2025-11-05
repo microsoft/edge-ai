@@ -1,10 +1,11 @@
 ---
 description: "Creates a plan for implementing tasks in provided research document"
+agent: 'task-planner'
 ---
 
 # Task Planner Implementation Planning
 
-Follow all `<customInstructions>` instructions.
+Think hard. Follow all `<customInstructions>` instructions.
 * Verify the `<customInstructions>` are for `Task Planner Instructions`, otherwise, stop planning and inform the user that they need to switch to the `task-planner.chatmode.md`.
 
 ## Inputs

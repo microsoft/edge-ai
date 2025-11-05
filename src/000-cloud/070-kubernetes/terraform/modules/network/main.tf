@@ -28,7 +28,7 @@ resource "azurerm_subnet" "snet_aks" {
 }
 
 resource "azurerm_subnet_nat_gateway_association" "snet_aks" {
-  count = var.nat_gateway_id != null ? 1 : 0
+  count = var.should_enable_nat_gateway ? 1 : 0
 
   nat_gateway_id = var.nat_gateway_id
   subnet_id      = azurerm_subnet.snet_aks.id
@@ -54,7 +54,7 @@ resource "azurerm_subnet" "snet_aks_pod" {
 }
 
 resource "azurerm_subnet_nat_gateway_association" "snet_aks_pod" {
-  count = var.nat_gateway_id != null ? 1 : 0
+  count = var.should_enable_nat_gateway ? 1 : 0
 
   nat_gateway_id = var.nat_gateway_id
   subnet_id      = azurerm_subnet.snet_aks_pod.id
@@ -71,7 +71,7 @@ resource "azurerm_subnet" "snet_aks_node_pool" {
 }
 
 resource "azurerm_subnet_nat_gateway_association" "snet_aks_node_pool" {
-  for_each = var.nat_gateway_id != null ? var.node_pools : {}
+  for_each = var.should_enable_nat_gateway ? var.node_pools : {}
 
   nat_gateway_id = var.nat_gateway_id
   subnet_id      = azurerm_subnet.snet_aks_node_pool[each.key].id
@@ -99,7 +99,7 @@ resource "azurerm_subnet" "snet_aks_node_pool_pod" {
 }
 
 resource "azurerm_subnet_nat_gateway_association" "snet_aks_node_pool_pod" {
-  for_each = var.nat_gateway_id != null ? var.node_pools : {}
+  for_each = var.should_enable_nat_gateway ? var.node_pools : {}
 
   nat_gateway_id = var.nat_gateway_id
   subnet_id      = azurerm_subnet.snet_aks_node_pool_pod[each.key].id

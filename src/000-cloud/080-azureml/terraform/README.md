@@ -84,27 +84,29 @@ existing cloud infrastructure including Key Vault, Storage Account, Application 
 | registry\_should\_enable\_public\_network\_access | Whether to enable public network access to the registry. | `bool` | `false` | no |
 | registry\_storage\_account | Storage account for registry (from cloud data component) | ```object({ id = string name = string })``` | `null` | no |
 | should\_assign\_current\_user\_workspace\_roles | Whether to assign the current Azure AD user roles for accessing and using the Machine Learning workspace (Contributor on workspace and Storage Blob Data Contributor on storage account). | `bool` | `true` | no |
+| should\_assign\_ml\_workload\_identity\_roles | Whether to assign dependent resource roles and federation for the ML workload managed identity | `bool` | `false` | no |
 | should\_assign\_workspace\_managed\_identity\_roles | Whether to assign the workspace system-assigned managed identity roles to access dependent Azure services (Storage, ACR, Key Vault, Application Insights). | `bool` | `true` | no |
+| should\_associate\_network\_security\_group | Whether to associate the Azure ML subnet with a network security group | `bool` | `false` | no |
 | should\_create\_compute\_cluster | Whether to create a compute cluster for ML training workloads. | `bool` | `true` | no |
 | should\_create\_compute\_cluster\_snet | Whether to create the subnet for the Azure ML compute cluster. | `bool` | `true` | no |
 | should\_deploy\_registry | Whether to deploy AzureML Registry. | `bool` | `false` | no |
 | should\_enable\_aks\_inference | Whether to enable inference workloads on the AKS cluster. | `bool` | `true` | no |
 | should\_enable\_aks\_training | Whether to enable training workloads on the AKS cluster. | `bool` | `true` | no |
 | should\_enable\_inference\_router\_ha | Whether to enable high availability for inference router. | `bool` | `true` | no |
+| should\_enable\_nat\_gateway | Whether to associate the Azure ML subnet with a NAT gateway for managed outbound egress | `bool` | `false` | no |
 | should\_enable\_private\_endpoint | Whether to create a private endpoint for the Azure ML workspace | `bool` | `false` | no |
 | should\_enable\_public\_network\_access | Whether to enable public network access to the workspace. | `bool` | `false` | no |
 | should\_install\_dcgm\_exporter | Whether to install DCGM exporter for GPU metrics collection in Azure ML extension. | `bool` | `true` | no |
 | should\_install\_nvidia\_device\_plugin | Whether to install NVIDIA Device Plugin for GPU hardware support in Azure ML extension. | `bool` | `false` | no |
 | should\_install\_prom\_op | Whether to install Prometheus operator for monitoring in Azure ML extension. Set to false if Azure Monitor is already enabled on AKS. | `bool` | `false` | no |
-| should\_install\_volcano | Whether to install Volcano scheduler for job scheduling in Azure ML extension. | `bool` | `true` | no |
+| should\_install\_volcano | Whether to install Volcano scheduler for job scheduling in Azure ML extension. | `bool` | `false` | no |
 | should\_integrate\_aks\_cluster | Whether to integrate an existing AKS cluster as compute target for ML workloads. | `bool` | `false` | no |
 | ssl\_cert\_pem | PEM-encoded TLS certificate chain (server first then intermediates) or empty when not using HTTPS. | `string` | `null` | no |
 | ssl\_cname | CNAME used for HTTPS endpoint; required when providing cert/key; otherwise empty. | `string` | `null` | no |
 | ssl\_key\_pem | PEM-encoded unencrypted private key matching ssl\_cert\_pem or empty when not using HTTPS. | `string` | `null` | no |
 | subnet\_address\_prefixes\_azureml | Address prefixes for the Azure ML compute cluster subnet. | `list(string)` | ```[ "10.0.4.0/24" ]``` | no |
 | system\_tolerations | Tolerations for AzureML extension system components to schedule on tainted nodes. Default: empty list (no tolerations). | ```list(object({ key = optional(string) operator = optional(string, "Exists") value = optional(string) effect = optional(string) }))``` | `[]` | no |
-| virtual\_network | Virtual network from 050-networking component. | ```object({ name = string })``` | `null` | no |
-| virtual\_network\_id | The ID of the virtual network to link to the private DNS zone | `string` | `null` | no |
+| virtual\_network | Virtual network from 050-networking component. | ```object({ id = string name = string })``` | `null` | no |
 | workload\_tolerations | Tolerations for AzureML workloads (training and inference) to schedule on tainted nodes. Default: empty list (no tolerations). | ```list(object({ key = optional(string) operator = optional(string, "Exists") value = optional(string) effect = optional(string) }))``` | `[]` | no |
 | workspace\_friendly\_name | Friendly display name for the workspace. (Default, {var.resource\_prefix}-{var.environment}-{var.instance} ML Workspace) | `string` | `null` | no |
 | workspace\_name | Name of the Azure Machine Learning workspace. Otherwise, 'mlw-{resource\_prefix}-{environment}-{instance}'. | `string` | `null` | no |

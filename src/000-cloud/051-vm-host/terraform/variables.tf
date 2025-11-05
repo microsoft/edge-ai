@@ -92,12 +92,12 @@ variable "should_assign_current_user_vm_admin" {
 
 variable "vm_admin_principals" {
   type        = map(string)
-  description = "Map of Azure AD principals for Virtual Machine Administrator Login role (sudo access). Keys are descriptive identifiers (e.g., 'user@company.com'), values are principal object IDs."
+  description = "Map of Azure AD principals for Virtual Machine Administrator Login role (sudo access). Keys are descriptive identifiers (e.g., `user@company.com`), values are principal object IDs."
   default     = {}
 }
 
 variable "vm_user_principals" {
   type        = map(string)
-  description = "Map of Azure AD principals for Virtual Machine User Login role (standard access). Keys are descriptive identifiers (e.g., 'user@company.com'), values are principal object IDs."
+  description = "Map of Azure AD principals for Virtual Machine User Login role (standard access). Keys are descriptive identifiers (e.g., `user@company.com`), values are principal object IDs."
   default     = {}
 }

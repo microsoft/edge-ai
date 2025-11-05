@@ -76,6 +76,7 @@ ML training and inference workloads.
 | workload\_tolerations | List of tolerations for AzureML workloads (training and inference jobs) to schedule on tainted nodes. | ```list(object({ key = optional(string) operator = string value = optional(string) effect = optional(string) }))``` | n/a | yes |
 | workspace\_identity\_id | Resource ID of user-assigned managed identity for the compute target. If null, SystemAssigned identity will be used. | `string` | n/a | yes |
 | workspace\_identity\_principal\_id | Principal ID of the workspace managed identity for cluster role assignments. | `string` | n/a | yes |
+| should\_configure\_ml\_workload\_identity | Whether to configure workload identity federation for AzureML workloads | `bool` | `false` | no |
 
 ## Outputs
 

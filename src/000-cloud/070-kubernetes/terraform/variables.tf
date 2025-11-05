@@ -90,6 +90,12 @@ variable "default_outbound_access_enabled" {
   default     = false
 }
 
+variable "should_enable_nat_gateway" {
+  type        = bool
+  description = "Whether to associate AKS subnets with a NAT gateway for managed outbound egress"
+  default     = false
+}
+
 variable "node_pools" {
   type = map(object({
     node_count                  = optional(number, null)
@@ -140,12 +146,6 @@ variable "should_enable_private_endpoint" {
 variable "private_endpoint_subnet_id" {
   type        = string
   description = "The ID of the subnet where the private endpoint will be created"
-  default     = null
-}
-
-variable "virtual_network_id" {
-  type        = string
-  description = "The ID of the virtual network to link to the private DNS zone"
   default     = null
 }
 

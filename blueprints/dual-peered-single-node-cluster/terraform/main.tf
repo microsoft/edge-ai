@@ -136,6 +136,7 @@ module "cluster_a_cloud_acr" {
   should_create_acr_private_endpoint = var.should_enable_private_endpoints
   subnet_address_prefixes_acr        = var.cluster_a_subnet_address_prefixes_acr
   default_outbound_access_enabled    = local.default_outbound_access_enabled
+  should_enable_nat_gateway          = var.should_enable_managed_outbound_access
 }
 
 module "cluster_a_cloud_kubernetes" {
@@ -158,6 +159,7 @@ module "cluster_a_cloud_kubernetes" {
   acr = module.cluster_a_cloud_acr.acr
 
   default_outbound_access_enabled = local.default_outbound_access_enabled
+  should_enable_nat_gateway       = var.should_enable_managed_outbound_access
 
   node_count                      = var.cluster_a_node_count
   node_vm_size                    = var.cluster_a_node_vm_size
@@ -377,6 +379,7 @@ module "cluster_b_cloud_acr" {
   should_create_acr_private_endpoint = var.should_enable_private_endpoints
   subnet_address_prefixes_acr        = var.cluster_b_subnet_address_prefixes_acr
   default_outbound_access_enabled    = local.default_outbound_access_enabled
+  should_enable_nat_gateway          = var.should_enable_managed_outbound_access
 }
 
 module "cluster_b_cloud_kubernetes" {
@@ -399,6 +402,7 @@ module "cluster_b_cloud_kubernetes" {
   acr = module.cluster_b_cloud_acr.acr
 
   default_outbound_access_enabled = local.default_outbound_access_enabled
+  should_enable_nat_gateway       = var.should_enable_managed_outbound_access
   node_count                      = var.cluster_b_node_count
   node_vm_size                    = var.cluster_b_node_vm_size
   enable_auto_scaling             = var.cluster_b_enable_auto_scaling

@@ -59,12 +59,12 @@ Deploys one or more Linux VMs for Arc-connected K3s cluster
 | should\_create\_public\_ip | Create public IP address for VM. Set to false for private VNet scenarios using Azure Bastion or VPN connectivity. | `bool` | `true` | no |
 | should\_create\_ssh\_key | Generate SSH key pair for VM fallback access. Defaults to true to ensure emergency access when Azure AD authentication is unavailable. | `bool` | `true` | no |
 | should\_use\_password\_auth | Use password authentication for VM access. When enabled, a random secure password will be generated and stored in Terraform state. | `bool` | `false` | no |
-| vm\_admin\_principals | Map of Azure AD principals for Virtual Machine Administrator Login role (sudo access). Keys are descriptive identifiers (e.g., '<user@company.com>'), values are principal object IDs. | `map(string)` | `{}` | no |
+| vm\_admin\_principals | Map of Azure AD principals for Virtual Machine Administrator Login role (sudo access). Keys are descriptive identifiers (e.g., `user@company.com`), values are principal object IDs. | `map(string)` | `{}` | no |
 | vm\_eviction\_policy | Eviction policy for Spot VMs: Deallocate (VM stopped, disk retained, can restart) or Delete (VM and disks removed, no storage charges). Only used when vm\_priority is Spot | `string` | `"Delete"` | no |
 | vm\_max\_bid\_price | Maximum price per hour in USD for Spot VM. Set to -1 (default) for no price-based eviction - VM will not be evicted for price reasons. Custom values support up to 5 decimal places (e.g., 0.98765). Only used when vm\_priority is Spot | `number` | `-1` | no |
 | vm\_priority | VM priority: Regular (production, guaranteed capacity) or Spot (cost-optimized, can be evicted with 30s notice). Spot VMs offer up to 90% cost savings | `string` | `"Regular"` | no |
 | vm\_sku\_size | Size of the VM | `string` | `"Standard_D8s_v3"` | no |
-| vm\_user\_principals | Map of Azure AD principals for Virtual Machine User Login role (standard access). Keys are descriptive identifiers (e.g., '<user@company.com>'), values are principal object IDs. | `map(string)` | `{}` | no |
+| vm\_user\_principals | Map of Azure AD principals for Virtual Machine User Login role (standard access). Keys are descriptive identifiers (e.g., `user@company.com`), values are principal object IDs. | `map(string)` | `{}` | no |
 | vm\_username | Username for the VM admin account | `string` | `null` | no |
 
 ## Outputs

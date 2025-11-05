@@ -95,7 +95,7 @@ resource "azurerm_kubernetes_cluster" "aks" {
  */
 
 resource "azurerm_monitor_data_collection_rule_association" "aks_metrics" {
-  count = var.should_enable_azure_monitor_metrics && var.metrics_data_collection_rule != null ? 1 : 0
+  count = var.should_enable_azure_monitor_metrics ? 1 : 0
 
   name                    = "dcra-aks-metrics-${var.resource_prefix}-${var.environment}-${var.instance}"
   target_resource_id      = azurerm_kubernetes_cluster.aks.id
@@ -104,7 +104,7 @@ resource "azurerm_monitor_data_collection_rule_association" "aks_metrics" {
 }
 
 resource "azurerm_monitor_data_collection_rule_association" "aks_logs" {
-  count = var.logs_data_collection_rule != null ? 1 : 0
+  count = var.should_enable_azure_monitor_metrics ? 1 : 0
 
   name                    = "dcra-aks-logs-${var.resource_prefix}-${var.environment}-${var.instance}"
   target_resource_id      = azurerm_kubernetes_cluster.aks.id

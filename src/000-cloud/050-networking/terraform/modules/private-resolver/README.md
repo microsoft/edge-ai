@@ -36,10 +36,11 @@ This solves the common issue where VPN clients cannot resolve private endpoints.
 | environment | Environment for all resources in this module: dev, test, or prod | `string` | n/a | yes |
 | instance | Instance identifier for naming resources: 001, 002, etc | `string` | n/a | yes |
 | location | Location for all resources in this module | `string` | n/a | yes |
-| nat\_gateway\_id | NAT gateway resource id for associating the resolver subnet | `string` | n/a | yes |
+| nat\_gateway\_id | NAT gateway resource ID for associating the resolver subnet. Only used when should\_enable\_nat\_gateway is true | `string` | n/a | yes |
 | resolver\_subnet\_address\_prefix | Address prefix for the Private Resolver subnet (e.g., '10.0.254.0/28') | `string` | n/a | yes |
 | resource\_group | Resource group object containing name and id | ```object({ name = string })``` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
+| should\_enable\_nat\_gateway | Whether NAT gateway association should be enabled for the resolver subnet | `bool` | n/a | yes |
 | virtual\_network | Virtual network object containing id and name | ```object({ id = string name = string })``` | n/a | yes |
 
 ## Outputs

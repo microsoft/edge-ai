@@ -8,14 +8,19 @@ variable "nat_gateway_id" {
   description = "NAT gateway resource id for associating AKS subnets"
 }
 
+variable "should_enable_nat_gateway" {
+  type        = bool
+  description = "Whether to associate AKS subnets with a NAT gateway for managed egress"
+}
+
 variable "subnet_address_prefixes_aks" {
   type        = list(string)
-  description = "Address prefixes for the AKS subnet."
+  description = "Address prefixes for the AKS subnet"
 }
 
 variable "subnet_address_prefixes_aks_pod" {
   type        = list(string)
-  description = "Address prefixes for the AKS pod subnet."
+  description = "Address prefixes for the AKS pod subnet"
 }
 
 variable "node_pools" {
@@ -23,11 +28,11 @@ variable "node_pools" {
     subnet_address_prefixes     = list(string)
     pod_subnet_address_prefixes = list(string)
   }))
-  description = "Configuration for additional node pool subnets. Map key is used as the node pool name."
+  description = "Configuration for additional node pool subnets; map key is used as the node pool name"
   default     = {}
 }
 
 variable "should_enable_private_endpoint" {
   type        = bool
-  description = "Whether to enable private endpoint for AKS cluster. When true, subnet delegations are created."
+  description = "Whether to enable private endpoint for AKS cluster; when true, subnet delegations are created"
 }

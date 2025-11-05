@@ -192,6 +192,7 @@ module "cloud_acr" {
 
   should_create_acr_private_endpoint = var.should_enable_private_endpoints
   default_outbound_access_enabled    = local.default_outbound_access_enabled
+  should_enable_nat_gateway          = var.should_enable_managed_outbound_access
   sku                                = var.acr_sku
   allow_trusted_services             = var.acr_allow_trusted_services
   allowed_public_ip_ranges           = var.acr_allowed_public_ip_ranges
@@ -225,6 +226,7 @@ module "cloud_kubernetes" {
   aks_identity                 = module.cloud_security_identity.aks_identity
 
   default_outbound_access_enabled = local.default_outbound_access_enabled
+  should_enable_nat_gateway       = var.should_enable_managed_outbound_access
 
   node_count                      = var.node_count
   node_vm_size                    = var.node_vm_size
@@ -243,7 +245,6 @@ module "cloud_kubernetes" {
   private_dns_zone_id                       = var.aks_private_dns_zone_id
   should_enable_private_endpoint            = var.should_enable_private_endpoints
   private_endpoint_subnet_id                = var.should_enable_private_endpoints ? module.cloud_networking.subnet_id : null
-  virtual_network_id                        = var.should_enable_private_endpoints ? module.cloud_networking.virtual_network.id : null
 }
 
 module "cloud_azureml" {
@@ -266,16 +267,19 @@ module "cloud_azureml" {
   nat_gateway            = try(module.cloud_networking.nat_gateway, null)
   kubernetes             = try(module.cloud_kubernetes[0].aks, null)
 
-  default_outbound_access_enabled     = local.default_outbound_access_enabled
-  should_enable_public_network_access = var.azureml_should_enable_public_network_access
-  should_create_compute_cluster       = var.azureml_should_create_compute_cluster
-  ml_workload_identity                = try(module.cloud_security_identity.ml_workload_identity, null)
-  ml_workload_subjects                = var.azureml_ml_workload_subjects
+  default_outbound_access_enabled         = local.default_outbound_access_enabled
+  should_associate_network_security_group = true
+  should_enable_nat_gateway               = var.should_enable_managed_outbound_access
+  should_enable_public_network_access     = var.azureml_should_enable_public_network_access
+  should_create_compute_cluster           = var.azureml_should_create_compute_cluster
+  ml_workload_identity                    = try(module.cloud_security_identity.ml_workload_identity, null)
+  ml_workload_subjects                    = var.azureml_ml_workload_subjects
+
+  should_assign_ml_workload_identity_roles = var.azureml_should_create_ml_workload_identity
 
   // Private endpoint configuration
   should_enable_private_endpoint               = var.azureml_should_enable_private_endpoint
   private_endpoint_subnet_id                   = var.azureml_should_enable_private_endpoint ? module.cloud_networking.subnet_id : null
-  virtual_network_id                           = var.azureml_should_enable_private_endpoint ? module.cloud_networking.virtual_network.id : null
   should_deploy_registry                       = var.azureml_should_deploy_registry
   registry_should_enable_public_network_access = var.azureml_registry_should_enable_public_network_access
 

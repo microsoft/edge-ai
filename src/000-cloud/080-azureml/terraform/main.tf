@@ -42,9 +42,11 @@ module "network" {
   instance        = var.instance
 
   // Optional parameters
-  default_outbound_access_enabled = var.default_outbound_access_enabled
-  nat_gateway_id                  = try(var.nat_gateway.id, null)
-  subnet_address_prefixes_azureml = var.subnet_address_prefixes_azureml
+  default_outbound_access_enabled         = var.default_outbound_access_enabled
+  should_associate_network_security_group = var.should_associate_network_security_group
+  should_enable_nat_gateway               = var.should_enable_nat_gateway
+  nat_gateway_id                          = var.should_enable_nat_gateway ? var.nat_gateway.id : null
+  subnet_address_prefixes_azureml         = var.subnet_address_prefixes_azureml
 }
 
 // Azure Machine Learning Workspace
@@ -69,6 +71,7 @@ module "workspace" {
   should_assign_current_user_workspace_roles = var.should_assign_current_user_workspace_roles
   current_user_object_id                     = try(msgraph_resource_action.current_user[0].output.oid, null)
   ml_workload_identity                       = var.ml_workload_identity
+  should_assign_ml_workload_identity_roles   = var.should_assign_ml_workload_identity_roles
 
   // Role assignment configuration
   should_assign_workspace_managed_identity_roles = var.should_assign_workspace_managed_identity_roles
@@ -76,7 +79,7 @@ module "workspace" {
   // Private endpoint configuration
   should_enable_private_endpoint = var.should_enable_private_endpoint
   private_endpoint_subnet_id     = var.private_endpoint_subnet_id
-  virtual_network_id             = var.virtual_network_id
+  virtual_network_id             = try(var.virtual_network.id, null)
 }
 
 // Optional Registry for ML model and environment management
@@ -180,9 +183,10 @@ module "inference_cluster_integration" {
   workspace_identity_id            = var.cluster_integration_workspace_identity_id
   vc_name                          = var.cluster_integration_vc_name
 
-  ml_workload_identity = var.ml_workload_identity
-  ml_workload_subjects = var.ml_workload_subjects
-  resource_group_name  = var.resource_group.name
+  ml_workload_identity                  = var.ml_workload_identity
+  ml_workload_subjects                  = var.ml_workload_subjects
+  should_configure_ml_workload_identity = var.should_assign_ml_workload_identity_roles
+  resource_group_name                   = var.resource_group.name
 
   // App Configuration integration for volcano scheduler
   volcano_scheduler_configmap_name = try(var.kubernetes.app_configuration_configmap_name, null)

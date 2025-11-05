@@ -103,7 +103,7 @@ locals {
 
 // OIDC issuer lookup for workload identity federation
 data "azurerm_kubernetes_cluster" "aks" {
-  count = var.ml_workload_identity != null ? 1 : 0
+  count = var.should_configure_ml_workload_identity ? 1 : 0
 
   name                = var.kubernetes_cluster_name
   resource_group_name = var.kubernetes_cluster_resource_group_name
@@ -111,7 +111,7 @@ data "azurerm_kubernetes_cluster" "aks" {
 
 // Federated identity credentials for ML workload service accounts
 resource "azurerm_federated_identity_credential" "ml_workload" {
-  for_each = var.ml_workload_identity != null && length(coalesce(local.ml_workload_subjects, [])) > 0 ? {
+  for_each = var.should_configure_ml_workload_identity && length(coalesce(local.ml_workload_subjects, [])) > 0 ? {
     for subject in local.ml_workload_subjects : subject => subject
   } : {}
 

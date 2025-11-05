@@ -430,7 +430,23 @@ For permission or provider registration errors, ensure you have run the provider
 
 ## GPU Metrics Monitoring
 
-GPU metrics are collected from the NVIDIA DCGM exporter (installed by the GPU Operator) and published to Azure Managed Prometheus when you run `./scripts/install-chart-releases.sh`.
+GPU metrics are collected from the NVIDIA DCGM exporter (installed by the GPU Operator) and published to Azure Managed Prometheus. Chart installation is handled by the robotics module.
+
+### Chart Installation Components
+
+This blueprint delegates chart installation to the [robotics module](../modules/robotics/), which provides modular installation scripts:
+
+**Robotics Charts** (installed via `install-robotics-charts.sh`):
+
+- NVIDIA GPU Operator (v24.9.1) → `gpu-operator` namespace
+- KAI Scheduler (v0.5.5) → `kai-scheduler` namespace
+- GPU PodMonitor → `kube-system` namespace
+
+**AzureML Charts** (installed via `install-azureml-charts.sh`):
+
+- Volcano Scheduler (v1.12.2) → `azureml` namespace
+
+For manual installation or troubleshooting, see the [robotics module scripts documentation](../modules/robotics/terraform/scripts/).
 
 ### Automatic PodMonitor deployment
 
@@ -439,7 +455,7 @@ The installation script automatically:
 - Applies the `manifests/gpu-podmonitor.yaml` resource to the `kube-system` namespace
 - Scrapes the DCGM exporter pods in the `gpu-operator` namespace using the `app=nvidia-dcgm-exporter` label selector
 - Streams metrics into the Azure Monitor workspace configured by the blueprint
-- Keeps PodMonitor removal in sync via `./scripts/uninstall-chart-releases.sh`
+- Keeps PodMonitor removal in sync via the robotics module's uninstall scripts
 
 ### Viewing GPU metrics
 
@@ -508,7 +524,14 @@ Common labels include `gpu` (index), `modelName`, `hostname`, `namespace`, and `
 
 If metrics still do not appear, verify that Azure Monitor workspace ingestion is enabled and check for Kubernetes network policies blocking access between `kube-system` and `gpu-operator` namespaces.
 
-Run `./scripts/validate-gpu-metrics.sh` for an automated health check. Set `AZMON_PROMETHEUS_ENDPOINT=https://<workspace>.<region>.prometheus.monitor.azure.com` (and optionally `AZMON_PROMETHEUS_QUERY`) to include a live Prometheus query.
+From the robotics module scripts directory, run `./validate-gpu-metrics.sh` for an automated health check:
+
+```bash
+cd ../modules/robotics/terraform/scripts
+./validate-gpu-metrics.sh
+```
+
+Set `AZMON_PROMETHEUS_ENDPOINT=https://<workspace>.<region>.prometheus.monitor.azure.com` (and optionally `AZMON_PROMETHEUS_QUERY`) to include a live Prometheus query.
 
 ## Sample GPU workload
 

@@ -37,7 +37,7 @@ resource "azurerm_subnet" "resolver_subnet" {
 }
 
 resource "azurerm_subnet_nat_gateway_association" "resolver" {
-  count = var.nat_gateway_id != null ? 1 : 0
+  count = var.should_enable_nat_gateway ? 1 : 0
 
   nat_gateway_id = var.nat_gateway_id
   subnet_id      = azurerm_subnet.resolver_subnet.id
