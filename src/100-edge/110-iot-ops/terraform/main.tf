@@ -12,7 +12,7 @@ locals {
     issuer_name = "issuer-custom-root-ca-cert"
     issuer_kind = "ClusterIssuer"
     // This needs to be set as ClusterIssuer when using CustomerManagedGenerateIssuer, since current implementation does not support Issuer kind. Validate if adapt in future.
-    configmap_name = "bundle-custom-ca-cert"
+    configmap_name = "${var.operations_config.namespace}-aio-ca-trust-bundle"
     configmap_key  = "ca.crt"
   })
 
