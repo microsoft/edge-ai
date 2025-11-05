@@ -62,6 +62,7 @@ and optional private endpoint configuration.
 | should\_assign\_workspace\_managed\_identity\_roles | Whether to assign the workspace system-assigned managed identity roles to access dependent Azure services (Storage, ACR, Key Vault, Application Insights). | `bool` | n/a | yes |
 | storage\_account\_id | Resource ID of the Storage Account for ML artifacts. | `string` | n/a | yes |
 | private\_endpoint\_subnet\_id | The ID of the subnet where the private endpoint will be created | `string` | `null` | no |
+| should\_assign\_ml\_workload\_identity\_roles | Whether to assign dependent resource roles to the ML workload managed identity | `bool` | `false` | no |
 | should\_enable\_private\_endpoint | Whether to create a private endpoint for the Azure ML workspace | `bool` | `false` | no |
 | virtual\_network\_id | The ID of the virtual network to link to the private DNS zone | `string` | `null` | no |
 

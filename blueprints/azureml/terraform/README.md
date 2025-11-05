@@ -2,7 +2,7 @@
 <!-- markdown-table-prettify-ignore-start -->
 # Azure ML Unified Blueprint
 
-Adds Azure Machine Learning capabilities with optional foundational resource creation and scenario-driven deployment.
+This blueprint provides Azure Machine Learning capabilities with optional foundational resource creation and scenario-driven deployment.
 
 ## Requirements
 
@@ -14,43 +14,11 @@ Adds Azure Machine Learning capabilities with optional foundational resource cre
 | azurerm | >= 4.8.0 |
 | tls | >= 4.0.6 |
 
-## Providers
-
-| Name | Version |
-|------|---------|
-| azapi | >= 2.3.0 |
-| azurerm | >= 4.8.0 |
-| terraform | n/a |
-
-## Resources
-
-| Name | Type |
-|------|------|
-| [terraform_data.defer](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data) | resource |
-| [azapi_resource.arc_connected_cluster](https://registry.terraform.io/providers/Azure/azapi/latest/docs/data-sources/resource) | data source |
-| [azurerm_application_insights.existing](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/application_insights) | data source |
-| [azurerm_container_registry.existing](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/container_registry) | data source |
-| [azurerm_key_vault.existing](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/key_vault) | data source |
-| [azurerm_kubernetes_cluster.existing](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/kubernetes_cluster) | data source |
-| [azurerm_resource_group.existing](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/resource_group) | data source |
-| [azurerm_storage_account.existing](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/storage_account) | data source |
-| [azurerm_subnet.existing](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/subnet) | data source |
-| [azurerm_virtual_network.existing](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/virtual_network) | data source |
-
 ## Modules
 
 | Name | Source | Version |
 |------|--------|---------|
-| cloud\_acr | ../../../src/000-cloud/060-acr/terraform | n/a |
-| cloud\_azureml | ../../../src/000-cloud/080-azureml/terraform | n/a |
-| cloud\_data | ../../../src/000-cloud/030-data/terraform | n/a |
-| cloud\_kubernetes | ../../../src/000-cloud/070-kubernetes/terraform | n/a |
-| cloud\_networking | ../../../src/000-cloud/050-networking/terraform | n/a |
-| cloud\_observability | ../../../src/000-cloud/020-observability/terraform | n/a |
-| cloud\_security\_identity | ../../../src/000-cloud/010-security-identity/terraform | n/a |
-| cloud\_vm\_host | ../../../src/000-cloud/051-vm-host/terraform | n/a |
-| cloud\_vpn\_gateway | ../../../src/000-cloud/055-vpn-gateway/terraform | n/a |
-| edge\_azureml | ../../../src/100-edge/140-azureml/terraform | n/a |
+| robotics | ../../modules/robotics/terraform | n/a |
 
 ## Inputs
 
@@ -78,8 +46,6 @@ Adds Azure Machine Learning capabilities with optional foundational resource cre
 | azureml\_workspace\_name | Existing or desired Azure ML workspace name (Otherwise 'mlw-{resource\_prefix}-{environment}-{instance}') | `string` | `null` | no |
 | certificate\_subject | Certificate subject information for auto-generated certificates | ```object({ common_name = optional(string, "Azure ML VPN Gateway Root Certificate") organization = optional(string, "Edge AI Accelerator") organizational_unit = optional(string, "IT") country = optional(string, "US") province = optional(string, "WA") locality = optional(string, "Redmond") })``` | `{}` | no |
 | certificate\_validity\_days | Validity period in days for auto-generated certificates | `number` | `365` | no |
-| charts\_install\_script\_name | Name of the chart installation script. | `string` | `"install-chart-releases.sh"` | no |
-| charts\_scripts\_folder\_path | Path to the folder containing chart installation scripts. (Otherwise, '{path.module}/../scripts') | `string` | `null` | no |
 | cluster\_integration\_default\_instance\_type | Default instance type for the Kubernetes compute. | `string` | `"defaultinstancetype"` | no |
 | cluster\_integration\_description | Description for the AKS integration compute target. Otherwise, 'Azure ML AKS compute target for {resource\_prefix}-{environment}-{instance}'. | `string` | `null` | no |
 | cluster\_integration\_disable\_local\_auth | Whether to disable local authentication for the AKS integration compute target. | `bool` | `true` | no |
@@ -136,7 +102,7 @@ Adds Azure Machine Learning capabilities with optional foundational resource cre
 | should\_install\_dcgm\_exporter | Whether to install DCGM exporter for GPU metrics collection in Azure ML extension | `bool` | `false` | no |
 | should\_install\_nvidia\_device\_plugin | Whether to install NVIDIA Device Plugin for GPU hardware support in Azure ML extension | `bool` | `false` | no |
 | should\_install\_prom\_op | Whether to install Prometheus operator for monitoring in Azure ML extension. Set to false if Azure Monitor is already enabled on AKS | `bool` | `false` | no |
-| should\_install\_volcano | Whether to install Volcano scheduler for job scheduling in Azure ML extension | `bool` | `true` | no |
+| should\_install\_volcano | Whether to install Volcano scheduler for job scheduling in Azure ML extension | `bool` | `false` | no |
 | should\_integrate\_aks\_cluster | Whether to integrate an AKS cluster as a compute target with the workspace | `bool` | `false` | no |
 | should\_use\_vm\_password\_auth | Use password authentication for VM access. When enabled, a random secure password will be generated and stored in Terraform state | `bool` | `false` | no |
 | ssl\_cert\_pem | PEM-encoded TLS certificate chain (server first then intermediates) or empty when not using HTTPS | `string` | `null` | no |
@@ -150,13 +116,13 @@ Adds Azure Machine Learning capabilities with optional foundational resource cre
 | system\_tolerations | Tolerations for AzureML extension system components to schedule on tainted nodes. Useful for dedicated GPU nodes or spot instances. Default: empty list (no tolerations). | ```list(object({ key = optional(string) operator = optional(string, "Exists") value = optional(string) effect = optional(string) }))``` | `[]` | no |
 | virtual\_network\_config | Configuration for the virtual network including address space and subnet prefix | ```object({ address_space = string subnet_address_prefix = string })``` | ```{ "address_space": "10.0.0.0/16", "subnet_address_prefix": "10.0.1.0/24" }``` | no |
 | virtual\_network\_name | Existing or desired virtual network name (Otherwise 'vnet-{resource\_prefix}-{environment}-{instance}') | `string` | `null` | no |
-| vm\_admin\_principals | Map of Azure AD principals for Virtual Machine Administrator Login role (sudo access). Keys are descriptive identifiers (e.g., '<user@company.com>'), values are principal object IDs. | `map(string)` | `{}` | no |
+| vm\_admin\_principals | Map of Azure AD principals for Virtual Machine Administrator Login role (sudo access). Keys are descriptive identifiers (e.g., `user@company.com`), values are principal object IDs. | `map(string)` | `{}` | no |
 | vm\_eviction\_policy | Eviction policy for Spot VMs: Deallocate (recommended - VM stopped, can restart later) or Delete (VM and disks removed). Only applies when vm\_priority is Spot | `string` | `"Deallocate"` | no |
 | vm\_host\_count | Number of VM hosts to create for multi-node scenarios | `number` | `1` | no |
 | vm\_max\_bid\_price | Maximum hourly price in USD for Spot VM. Set to -1 (recommended) to pay current spot price without price-based eviction. Custom values support up to 5 decimal places. Only applies when vm\_priority is Spot | `number` | `-1` | no |
 | vm\_priority | VM priority: Regular (production, guaranteed capacity) or Spot (cost-optimized, up to 90% savings, can be evicted). Recommended: Spot for dev/test GPU workloads | `string` | `"Regular"` | no |
 | vm\_sku\_size | VM SKU size for the host. Examples: Standard\_D8s\_v3 (general purpose), Standard\_NV36ads\_A10\_v5 (GPU workload) | `string` | `"Standard_D8s_v3"` | no |
-| vm\_user\_principals | Map of Azure AD principals for Virtual Machine User Login role (standard access). Keys are descriptive identifiers (e.g., '<user@company.com>'), values are principal object IDs. | `map(string)` | `{}` | no |
+| vm\_user\_principals | Map of Azure AD principals for Virtual Machine User Login role (standard access). Keys are descriptive identifiers (e.g., `user@company.com`), values are principal object IDs. | `map(string)` | `{}` | no |
 | vpn\_gateway\_azure\_ad\_config | Azure AD configuration for VPN Gateway authentication. tenant\_id is required when vpn\_gateway\_should\_use\_azure\_ad\_auth is true. audience defaults to Microsoft-registered app. issuer will default to `https://sts.windows.net/{tenant_id}/` when not provided | ```object({ tenant_id = optional(string) audience = optional(string, "c632b3df-fb67-4d84-bdcf-b95ad541b5c8") issuer = optional(string) })``` | `{}` | no |
 | vpn\_gateway\_config | VPN Gateway configuration including SKU, generation, client address pool, and supported protocols | ```object({ sku = optional(string, "VpnGw1") generation = optional(string, "Generation1") client_address_pool = optional(list(string), ["192.168.200.0/24"]) protocols = optional(list(string), ["OpenVPN", "IkeV2"]) })``` | `{}` | no |
 | vpn\_gateway\_should\_generate\_ca | Whether to generate a new CA certificate. When false, uses existing certificate from Key Vault | `bool` | `true` | no |

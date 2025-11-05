@@ -40,6 +40,7 @@ module "network" {
 
   // Optional parameters
   default_outbound_access_enabled = var.default_outbound_access_enabled
+  should_enable_nat_gateway       = var.should_enable_nat_gateway
   nat_gateway_id                  = try(var.nat_gateway.id, null)
   subnet_address_prefixes_aks     = var.subnet_address_prefixes_aks
   subnet_address_prefixes_aks_pod = var.subnet_address_prefixes_aks_pod
@@ -99,7 +100,7 @@ module "aks_cluster" {
   private_dns_zone_id                       = var.private_dns_zone_id
   should_enable_private_endpoint            = var.should_enable_private_endpoint
   private_endpoint_subnet_id                = var.private_endpoint_subnet_id
-  virtual_network_id                        = var.virtual_network_id
+  virtual_network_id                        = var.virtual_network.id
 
   // Azure Monitor configuration
   should_enable_azure_monitor_metrics = var.should_enable_azure_monitor_metrics

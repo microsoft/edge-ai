@@ -72,6 +72,7 @@ Deploys Azure Kubernetes Service resources
 | should\_create\_arc\_cluster\_instance | Should create an Azure Arc Cluster Instance. Default is false. | `bool` | `false` | no |
 | should\_disable\_local\_account | Whether to disable local admin account for the AKS cluster. Recommended for security compliance (CKV\_AZURE\_141). | `bool` | `false` | no |
 | should\_enable\_azure\_monitor\_metrics | Whether to enable Azure Monitor Metrics (Prometheus) extension for the AKS cluster. | `bool` | `true` | no |
+| should\_enable\_nat\_gateway | Whether to associate AKS subnets with a NAT gateway for managed outbound egress | `bool` | `false` | no |
 | should\_enable\_oidc\_issuer | Whether to enable the OIDC issuer URL for the cluster. Required for workload identity. | `bool` | `false` | no |
 | should\_enable\_private\_cluster | Whether to enable private cluster mode for AKS | `bool` | `false` | no |
 | should\_enable\_private\_cluster\_public\_fqdn | Whether to enable public FQDN for private cluster | `bool` | `false` | no |
@@ -79,7 +80,6 @@ Deploys Azure Kubernetes Service resources
 | should\_enable\_workload\_identity | Whether to enable Azure AD Workload Identity for the cluster. Requires OIDC issuer to be enabled. | `bool` | `false` | no |
 | subnet\_address\_prefixes\_aks | Address prefixes for the AKS subnet. | `list(string)` | ```[ "10.0.5.0/24" ]``` | no |
 | subnet\_address\_prefixes\_aks\_pod | Address prefixes for the AKS pod subnet. | `list(string)` | ```[ "10.0.6.0/24" ]``` | no |
-| virtual\_network\_id | The ID of the virtual network to link to the private DNS zone | `string` | `null` | no |
 
 ## Outputs
 

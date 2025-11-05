@@ -128,6 +128,12 @@ variable "ml_workload_identity" {
   description = "AzureML workload managed identity object containing id, client_id, principal_id, name, and tenant_id."
 }
 
+variable "should_configure_ml_workload_identity" {
+  type        = bool
+  description = "Whether to configure workload identity federation for AzureML workloads"
+  default     = false
+}
+
 variable "ml_workload_subjects" {
   type        = list(string)
   description = "Custom Kubernetes service account subjects for AzureML workload federation."

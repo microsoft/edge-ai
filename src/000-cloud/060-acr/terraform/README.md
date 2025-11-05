@@ -36,6 +36,7 @@ Deploys Azure Container Registry resources
 | public\_network\_access\_enabled | Whether to enable the registry public endpoint alongside private connectivity | `bool` | `false` | no |
 | should\_create\_acr\_private\_endpoint | Whether to create a private endpoint for the Azure Container Registry (default false) | `bool` | `false` | no |
 | should\_enable\_data\_endpoints | Whether to enable dedicated data endpoints for the registry | `bool` | `true` | no |
+| should\_enable\_nat\_gateway | Whether to associate the ACR subnet with a NAT gateway for managed outbound egress | `bool` | `false` | no |
 | sku | SKU name for the resource | `string` | `"Premium"` | no |
 | subnet\_address\_prefixes\_acr | Address prefixes for the ACR subnet | `list(string)` | ```[ "10.0.3.0/24" ]``` | no |
 

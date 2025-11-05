@@ -1,4 +1,13 @@
 /*
+ * Azure ML Blueprint Variables
+ *
+ * This blueprint wraps the robotics module with AzureML-specific defaults.
+ * All variables are passed through to the underlying robotics module.
+ *
+ * See blueprints/modules/robotics/terraform/README.md for complete module documentation.
+ */
+
+/*
  *  Core Variables - Required
  */
 
@@ -670,13 +679,13 @@ variable "should_assign_current_user_vm_admin" {
 
 variable "vm_admin_principals" {
   type        = map(string)
-  description = "Map of Azure AD principals for Virtual Machine Administrator Login role (sudo access). Keys are descriptive identifiers (e.g., 'user@company.com'), values are principal object IDs."
+  description = "Map of Azure AD principals for Virtual Machine Administrator Login role (sudo access). Keys are descriptive identifiers (e.g., `user@company.com`), values are principal object IDs."
   default     = {}
 }
 
 variable "vm_user_principals" {
   type        = map(string)
-  description = "Map of Azure AD principals for Virtual Machine User Login role (standard access). Keys are descriptive identifiers (e.g., 'user@company.com'), values are principal object IDs."
+  description = "Map of Azure AD principals for Virtual Machine User Login role (standard access). Keys are descriptive identifiers (e.g., `user@company.com`), values are principal object IDs."
   default     = {}
 }
 
@@ -771,7 +780,7 @@ variable "should_install_prom_op" {
 variable "should_install_volcano" {
   type        = bool
   description = "Whether to install Volcano scheduler for job scheduling in Azure ML extension"
-  default     = true
+  default     = false
 }
 
 variable "aks_cluster_purpose" {
@@ -883,17 +892,6 @@ variable "should_install_charts" {
   default     = false
 }
 
-variable "charts_scripts_folder_path" {
-  type        = string
-  description = "Path to the folder containing chart installation scripts. (Otherwise, '{path.module}/../scripts')"
-  default     = null
-}
-
-variable "charts_install_script_name" {
-  type        = string
-  description = "Name of the chart installation script."
-  default     = "install-chart-releases.sh"
-}
 
 
 

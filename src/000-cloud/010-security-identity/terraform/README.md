@@ -14,18 +14,19 @@ access to resources.
 | azapi | >= 2.3.0 |
 | azuread | >= 3.0.2 |
 | azurerm | >= 4.8.0 |
+| msgraph | >= 0.2.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| azurerm | >= 4.8.0 |
+| msgraph | >= 0.2.0 |
 
 ## Resources
 
 | Name | Type |
 |------|------|
-| [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/client_config) | data source |
+| [msgraph_resource_action.current_user](https://registry.terraform.io/providers/microsoft/msgraph/latest/docs/resources/resource_action) | resource |
 
 ## Modules
 

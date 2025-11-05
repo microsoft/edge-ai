@@ -9,10 +9,10 @@ locals {
 }
 
 resource "azurerm_subnet_network_security_group_association" "snet_nsg_azureml" {
-  count = var.network_security_group != null ? 1 : 0
+  count = var.should_associate_network_security_group ? 1 : 0
 
   subnet_id                 = azurerm_subnet.snet_azureml.id
-  network_security_group_id = var.network_security_group.id
+  network_security_group_id = try(var.network_security_group.id, null)
 }
 
 resource "azurerm_subnet" "snet_azureml" {
@@ -24,7 +24,7 @@ resource "azurerm_subnet" "snet_azureml" {
 }
 
 resource "azurerm_subnet_nat_gateway_association" "snet_azureml" {
-  count = var.nat_gateway_id != null ? 1 : 0
+  count = var.should_enable_nat_gateway ? 1 : 0
 
   nat_gateway_id = var.nat_gateway_id
   subnet_id      = azurerm_subnet.snet_azureml.id

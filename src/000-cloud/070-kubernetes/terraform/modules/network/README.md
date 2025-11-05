@@ -44,11 +44,12 @@ Deploys virtual network resources for AKS
 | network\_security\_group | n/a | ```object({ id = string })``` | n/a | yes |
 | resource\_group | Resource group object containing name and id where resources will be deployed | ```object({ name = string })``` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
-| should\_enable\_private\_endpoint | Whether to enable private endpoint for AKS cluster. When true, subnet delegations are created. | `bool` | n/a | yes |
-| subnet\_address\_prefixes\_aks | Address prefixes for the AKS subnet. | `list(string)` | n/a | yes |
-| subnet\_address\_prefixes\_aks\_pod | Address prefixes for the AKS pod subnet. | `list(string)` | n/a | yes |
+| should\_enable\_nat\_gateway | Whether to associate AKS subnets with a NAT gateway for managed egress | `bool` | n/a | yes |
+| should\_enable\_private\_endpoint | Whether to enable private endpoint for AKS cluster; when true, subnet delegations are created | `bool` | n/a | yes |
+| subnet\_address\_prefixes\_aks | Address prefixes for the AKS subnet | `list(string)` | n/a | yes |
+| subnet\_address\_prefixes\_aks\_pod | Address prefixes for the AKS pod subnet | `list(string)` | n/a | yes |
 | virtual\_network | n/a | ```object({ name = string })``` | n/a | yes |
-| node\_pools | Configuration for additional node pool subnets. Map key is used as the node pool name. | ```map(object({ subnet_address_prefixes = list(string) pod_subnet_address_prefixes = list(string) }))``` | `{}` | no |
+| node\_pools | Configuration for additional node pool subnets; map key is used as the node pool name | ```map(object({ subnet_address_prefixes = list(string) pod_subnet_address_prefixes = list(string) }))``` | `{}` | no |
 
 ## Outputs
 

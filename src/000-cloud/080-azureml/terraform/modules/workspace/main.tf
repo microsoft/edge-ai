@@ -120,7 +120,7 @@ resource "azurerm_role_assignment" "workspace_appinsights_contributor" {
  */
 
 resource "azurerm_role_assignment" "ml_workload_key_vault_user" {
-  count = var.ml_workload_identity != null ? 1 : 0
+  count = var.should_assign_ml_workload_identity_roles ? 1 : 0
 
   principal_id                     = var.ml_workload_identity.principal_id
   role_definition_name             = "Key Vault Secrets User"
@@ -129,7 +129,7 @@ resource "azurerm_role_assignment" "ml_workload_key_vault_user" {
 }
 
 resource "azurerm_role_assignment" "ml_workload_blob_contributor" {
-  count = var.ml_workload_identity != null ? 1 : 0
+  count = var.should_assign_ml_workload_identity_roles ? 1 : 0
 
   principal_id                     = var.ml_workload_identity.principal_id
   role_definition_name             = "Storage Blob Data Contributor"
@@ -138,7 +138,7 @@ resource "azurerm_role_assignment" "ml_workload_blob_contributor" {
 }
 
 resource "azurerm_role_assignment" "ml_workload_file_contributor" {
-  count = var.ml_workload_identity != null ? 1 : 0
+  count = var.should_assign_ml_workload_identity_roles ? 1 : 0
 
   principal_id                     = var.ml_workload_identity.principal_id
   role_definition_name             = "Storage File Data SMB Share Contributor"
@@ -147,7 +147,7 @@ resource "azurerm_role_assignment" "ml_workload_file_contributor" {
 }
 
 resource "azurerm_role_assignment" "ml_workload_acr_pull" {
-  count = var.ml_workload_identity != null ? 1 : 0
+  count = var.should_assign_ml_workload_identity_roles ? 1 : 0
 
   principal_id                     = var.ml_workload_identity.principal_id
   role_definition_name             = "AcrPull"
@@ -156,7 +156,7 @@ resource "azurerm_role_assignment" "ml_workload_acr_pull" {
 }
 
 resource "azurerm_role_assignment" "ml_workload_workspace_contributor" {
-  count = var.ml_workload_identity != null ? 1 : 0
+  count = var.should_assign_ml_workload_identity_roles ? 1 : 0
 
   principal_id                     = var.ml_workload_identity.principal_id
   role_definition_name             = "Contributor"

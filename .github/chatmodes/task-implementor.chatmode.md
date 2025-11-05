@@ -1,10 +1,27 @@
 ---
-applyTo: '**/.copilot-tracking/changes/*.md'
 description: 'Required instructions for implementing task plans located in .copilot-tracking/plans and .copilot-tracking/details folders, with progressive tracking and change records - Brought to you by microsoft/edge-ai'
 ---
 # Task Plan Implementation Instructions
 
-Implementers must fulfill task plans instructions located in `.copilot-tracking/plans/**` by applying the paired task plan details and research references. Progress is tracked in matching change logs located in `.copilot-tracking/changes/**`.
+* Fulfill task plans instructions located in `.copilot-tracking/plans/**` by applying the paired task plan details and research references.
+* Progress is tracked in matching change logs located in `.copilot-tracking/changes/**`.
+
+### runSubagent Tool
+
+Use the runSubagent tool:
+* When needing to read the details or the research document for details on implementing a task or phase in the plan.
+* When reading and reviewing the codebase for details to complete the task or phase.
+* When needing to gather additional research from tools to complete the task with high quality.
+* When additional tasks or Phases are identified or needed through runSubagent tool calls then update the task plan and details with additional phases and/or tasks.
+
+Each runSubagent tool call should do the following:
+* runSubagent tool calls should have a single responsibility.
+* runSubagent tool calls must have a clear understanding of its purpose and response.
+* runSubagent tool calls should always follow the conventions and standards of the codebase.
+  * runSubagent tool calls could require indicating which instructions files to read and follow.
+  * runSubagent tool calls could require indicating which files to use as examples or templates.
+* When using runSubagent tool calls to gather details, make sure only the required details are returned to fulfill its purpose.
+  * Make sure the runSubagent tool avoids summarizing details that must be known exactly.
 
 ## Scope and Purpose
 
@@ -74,10 +91,29 @@ Follow these steps in order until all task plan phases and tasks are complete.
 
 ## Implementation Standards
 
+* Every implementation must produce self-sufficient, working code aligned with task details.
+* Success validations must include verifiable outcomes, commands, or validation steps aligned with repository tooling from `package.json` for `npm run` when available.
+* Implementation must follow exact file paths, schemas, and instruction documents cited in the task details and research references.
+* Changes log must stay synchronized with task progress; update the changes file after every task completion.
+* **Existing** tests and scripts should be reviewed for additions, removals, or fixes when needed but never create new tests or scripts unless explicitly specified in the task details.
+
+### Code Quality
+
 * Mirror existing patterns for architecture, data flow, and naming found in the current repository.
 * Keep code self-contained, avoiding partial implementations that leave completed tasks in an indeterminate state.
 * Run required validation commands (linters, validation, only run tests if specified or implementing tests) relevant to the artifacts you touched.
 * Document complex logic with concise comments only when necessary for maintainers.
+
+### Explicit Implementation Constraints
+
+Avoid implementing the following unless explicitly specified in the task details:
+* Never create new tests, test files, or testing infrastructure.
+* Never create one-off or non-standard scripts for functionality around testing, validation, examples, non-standard building, or deployments.
+* Never create scripts or tests into non-standard locations in the codebase.
+* Never create one-off or non-standard markdown documents.
+* Never implement backwards compatibility or workarounds for potentially breaking changes. Breaking changes are always allowed.
+* Never add one-off or non-standard documentation or comments into code files.
+* Never update auto-generated README.md files in framework directories (e.g., `{component}/{framework}/README.md`). Use `npm run` instead.
 
 ## Completion Checks
 
