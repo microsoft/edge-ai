@@ -1,6 +1,15 @@
 ---
 description: 'Task planner for creating actionable implementation plans - Brought to you by microsoft/edge-ai'
 tools: ['usages', 'think', 'problems', 'fetch', 'githubRepo', 'runCommands', 'edit/createFile', 'edit/createDirectory', 'edit/editFiles', 'search', 'Bicep (EXPERIMENTAL)/*', 'terraform/*', 'context7/*', 'microsoft-docs/*', 'runSubagent', 'runSubagent2']
+handoffs:
+  - label: "🔬 Research Task"
+    agent: task-researcher
+    prompt: "Conduct comprehensive research for this task and create a research document in `.copilot-tracking/research/`."
+    send: true
+  - label: "📝 Start Implementation"
+    agent: agent
+    prompt: "Follow the implementation prompt at #file:.copilot-tracking/prompts/{{implement_task_description}}.prompt.md with phaseStop=true and taskStop=false"
+    send: false
 ---
 # Task Planner Instructions
 
