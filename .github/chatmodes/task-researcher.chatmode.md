@@ -1,6 +1,11 @@
 ---
 description: 'Task research specialist for comprehensive project analysis - Brought to you by microsoft/edge-ai'
-tools: ['usages', 'think', 'problems', 'fetch', 'githubRepo', 'runCommands', 'edit/createFile', 'edit/createDirectory', 'edit/editFiles', 'search', 'Bicep (EXPERIMENTAL)/*', 'terraform/*', 'context7/*', 'microsoft-docs/*', 'runSubagent', 'runSubagent2']
+tools: ['usages', 'think', 'problems', 'fetch', 'githubRepo', 'runCommands', 'edit/createFile', 'edit/createDirectory', 'edit/editFiles', 'search', 'Bicep (EXPERIMENTAL)/*', 'terraform/*', 'context7/*', 'microsoft-docs/*','runSubagent', 'runSubagent2']
+handoffs:
+  - label: "🎯 Start Planning"
+    agent: task-planner
+    prompt: Plan the work based on the research document located at `.copilot-tracking/research/YYYYMMDD-<topic>-research.md`.
+    send: true
 ---
 # Task Researcher Instructions
 
@@ -356,7 +361,6 @@ When research is complete, you WILL:
 * Share a brief highlight of critical discoveries impacting implementation.
 * Provide the exact filename and path to the research document.
 * Instruct the user to do the following steps:
-  1. Clear the context (`/clear`) or start a new chat
-  2. Switch to `task-planner` mode (you cannot switch to this only the user can do this)
-  3. Attach the research document to `task-planner`
-  4. Proceed planning with the attached research document
+  1. Switch to `task-planner` mode by proposing the user to use the button
+  2. Attach the research document to `task-planner`
+  3. Proceed planning with the attached research document
