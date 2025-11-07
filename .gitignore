@@ -445,3 +445,10 @@ security-plan-outputs/
 
 # certs for mq cert authentication
 certs/
+
+# Rust build output
+target/
+
+# Rust incremental compilation
+**/*.rs.bk
+**/*.rs.swp

@@ -2,7 +2,7 @@
 title: Akri REST HTTP Connector
 description: Complete standalone development and demo environment for integrating REST/HTTP endpoints with Azure IoT Operations using the Akri connector framework
 author: Edge AI Team
-ms.date: 10/22/2025
+ms.date: 11/05/2025
 ms.topic: reference
 estimated_reading_time: 8
 keywords:
@@ -48,7 +48,7 @@ The Docker Compose environment simulates a complete Azure IoT Operations ecosyst
 
 For Azure IoT Operations deployments, the component uses:
 
-- **Connector Templates**: Deployed via the 110-iot-ops component's akri-rest-connector module
+- **Connector Templates**: Deployed via the `110-iot-ops` component's `akri-connectors` module
 - **Asset Endpoint Profiles**: Kubernetes resources defining REST endpoint configurations
 - **Asset Definitions**: Resources configuring data sources and destinations
 - **Device Registry Integration**: Automatic asset registration with Azure Device Registry
@@ -144,6 +144,268 @@ kubectl exec -it mqtt-client -n azure-iot-operations -- \
 **Configuration Reference**: See `blueprints/full-single-node-cluster/terraform/rest-connector-assets.tfvars.example`
 for a complete example of all available configuration options.
 
+## Field-Based API
+
+The sensor-simulator now serves field-centric endpoints for retrieving individual field values or
+collections in a single call. These routes back the connector test client and the new Helm chart.
+
+### Endpoints
+
+#### Get Single Field Value
+
+```bash
+curl http://localhost:8081/sensor/fields/temp-celsius-01
+```
+
+Response:
+
+```json
+{
+   "field_id": "temp-celsius-01",
+   "name": "Temperature Sensor 01 - Celsius",
+   "data_type": "float",
+   "value": 23.45,
+   "units": "°C",
+   "timestamp": "2025-11-05T14:30:45.123456Z",
+   "quality": "good",
+   "metadata": {
+      "sensor_location": "Room A",
+      "measurement_range": "15.0 to 35.0"
+   }
+}
+```
+
+#### Get Multiple Field Values
+
+```bash
+curl "http://localhost:8081/sensor/array/field?field_id=temp-celsius-01&field_id=humidity-pct-01"
+```
+
+#### List All Fields
+
+```bash
+curl http://localhost:8081/sensor/fields
+```
+
+#### Health Check
+
+```bash
+curl http://localhost:8081/health
+```
+
+## Configuring Dataset Assets for Sensor Simulator
+
+When configuring assets in your `terraform.tfvars` or `rest-connector-assets.tfvars`, you can reference multiple sensor simulator fields in a single dataset by using the `/sensor/array/field` endpoint with multiple `field_id` query parameters.
+
+### Dataset Configuration Example
+
+```hcl
+namespaced_assets = [
+  {
+    name         = "rest-http-simulator-asset"
+    display_name = "REST HTTP Simulator Streams"
+    enabled      = true
+    device_ref = {
+      device_name   = "rest-generic-sensor"
+      endpoint_name = "generic-sensor-endpoint"
+    }
+    description   = "Asset definition for the REST HTTP simulator telemetry sources"
+    manufacturer  = "SimTech"
+    model         = "REST-SIM-500"
+    serial_number = "RS-001"
+    attributes = {
+      assetId   = "rest-http-simulator-asset"
+      assetType = "rest-http-simulator"
+      location  = "Test Environment"
+    }
+    datasets = [
+      // Dataset 1: Temperature, Humidity, Pressure - 5 second polling
+      {
+        name                  = "telemetry"
+        data_source           = "/sensor/array/field?field_id=temp-celsius-01&field_id=humidity-pct-01&field_id=pressure-kpa-01"
+        dataset_configuration = "{\"samplingIntervalInMilliseconds\":5000}"
+        data_points           = []
+        destinations = [
+          {
+            target = "Mqtt"
+            configuration = {
+              topic  = "rest-http-simulator/telemetry"
+              retain = "Never"
+              qos    = "Qos1"
+            }
+          }
+        ]
+      },
+      // Dataset 2: Status and Alarm - 15 second polling
+      {
+        name                  = "status-alarms"
+        data_source           = "/sensor/array/field?field_id=status-indicator-01&field_id=alarm-active-01"
+        dataset_configuration = "{\"samplingIntervalInMilliseconds\":15000}"
+        data_points           = []
+        destinations = [
+          {
+            target = "Mqtt"
+            configuration = {
+              topic  = "rest-http-simulator/status-alarms"
+              retain = "Never"
+              qos    = "Qos1"
+            }
+          }
+        ]
+      }
+    ]
+    default_datasets_configuration = "{\"publishingInterval\":5000,\"samplingInterval\":5000,\"queueSize\":1}"
+  }
+]
+```
+
+### Key Configuration Points
+
+- **data_source**: Use `/sensor/array/field?field_id=<id1>&field_id=<id2>` to retrieve multiple fields in one request
+- **dataset_configuration**: Inline JSON string specifying `samplingIntervalInMilliseconds` for polling frequency
+- **Multiple datasets**: You can define multiple datasets per asset, each with different field combinations and polling intervals
+- **MQTT destinations**: Configure topic routing, QoS levels, and retention policies for each dataset
+
+For a complete example, refer to `blueprints/full-single-node-cluster/terraform/rest-connector-assets.tfvars.example`.
+
+## Field Configuration
+
+Field metadata drives the simulator responses. By default, the container loads
+`/app/field_sources.json`, which mirrors the file found at `resources/field_sources.json` in the
+repository. Override the path by setting the `FIELD_CONFIG_PATH` environment variable.
+
+### Field Configuration Schema
+
+```json
+{
+   "fields": {
+      "field-id": {
+         "name": "Human-readable field name",
+         "data_type": "float|integer|string|boolean",
+         "units": "Measurement units",
+         "min_value": 0.0,
+         "max_value": 100.0,
+         "string_options": ["OPTION1", "OPTION2"],
+         "metadata": {
+            "custom_key": "custom_value"
+         }
+      }
+   },
+   "simulator_metadata": {
+      "device_id": "field-sensor-simulator-001",
+      "version": "2.0.0",
+      "description": "Field-based sensor data simulator"
+   }
+}
+```
+
+### Validation Rules
+
+When configuring custom field sources, the following validation rules apply:
+
+- **String type fields**: Must include `string_options` array with at least one option
+
+  ```json
+  {
+    "data_type": "string",
+    "string_options": ["OK", "WARNING", "ERROR"]  // Required for string type
+  }
+  ```
+
+- **Numeric range validation**: If both `min_value` and `max_value` are provided, must satisfy `max_value >= min_value`
+
+  ```json
+  {
+    "data_type": "float",
+    "min_value": 15.0,
+    "max_value": 35.0  // Must be >= min_value
+  }
+  ```
+
+- **Data type constraints**:
+  - `integer`: Generates random integers within specified range
+  - `float`: Generates random floating-point values (rounded to 2 decimal places)
+  - `string`: Randomly selects from `string_options` array
+  - `boolean`: Randomly generates `true` or `false`
+
+- **Optional fields**: `units`, `min_value`, `max_value`, `metadata` are all optional
+- **Required fields**: `name` and `data_type` are required for all field configurations
+
+### Custom Field Configuration Example
+
+```json
+{
+   "fields": {
+      "temp-celsius-01": {
+         "name": "Temperature Sensor 01 - Celsius",
+         "data_type": "float",
+         "units": "degC",
+         "min_value": 15.0,
+         "max_value": 35.0,
+         "metadata": {
+            "sensor_location": "Room A",
+            "measurement_type": "ambient_temperature"
+         }
+      },
+      "status-indicator-01": {
+         "name": "Device Status Indicator",
+         "data_type": "string",
+         "units": "",
+         "string_options": ["OK", "WARNING", "ERROR", "OFFLINE", "MAINTENANCE"],
+         "metadata": {
+            "indicator_type": "device_health"
+         }
+      },
+      "alarm-active-01": {
+         "name": "High Temperature Alarm",
+         "data_type": "boolean",
+         "units": "",
+         "metadata": {
+            "alarm_threshold": "35 degC",
+            "alarm_type": "temperature_high"
+         }
+      }
+   }
+}
+```
+
+Supported data types include floating-point, integer, string (requiring `string_options`), and
+boolean values. Update `resources/field_sources.json` to customize existing entries or mount your
+own file using Docker Compose or Kubernetes volumes.
+
+## Helm Deployment
+
+A dedicated Helm chart is available at `charts/sensor-simulator` for production deployments.
+
+1. **Build and push the container image** to Azure Container Registry (ACR).
+2. **Create an image pull secret** (for example, `acr-auth`) in the
+    `azure-iot-operations` namespace.
+3. **Install the chart**:
+
+    ```bash
+    cd src/500-application/505-akri-rest-http-connector/charts
+    export ACR_NAME="your-acr"
+    export IMAGE_TAG="1.0.0"
+
+    helm install sensor-simulator ./sensor-simulator \
+       --namespace azure-iot-operations \
+       --create-namespace \
+       --set image.repository="${ACR_NAME}.azurecr.io/sensor-simulator" \
+       --set image.tag="${IMAGE_TAG}"
+    ```
+
+4. **Verify the deployment**:
+
+    ```bash
+    kubectl get pods -n azure-iot-operations -l app.kubernetes.io/name=sensor-simulator
+    kubectl port-forward -n azure-iot-operations svc/sensor-simulator 8081:8081
+    curl http://localhost:8081/health
+    ```
+
+Override `fieldConfig` values in `values.yaml` or via `--set-file`/`--values` during installation to
+customize simulated fields. Configuration changes trigger a rollout through the embedded checksum
+annotation on the ConfigMap.
+
 ## Development Workflow
 
 ### Local Testing and Development
@@ -161,7 +423,13 @@ for a complete example of all available configuration options.
    # Weather station (anonymous access)
    curl http://localhost:8080/api/weather
 
-   # Sensor device (anonymous access)
+   # Sensor device - retrieve specific fields
+   curl "http://localhost:8081/sensor/array/field?field_id=temp-celsius-01&field_id=humidity-pct-01"
+
+   # Sensor device - list available fields
+   curl http://localhost:8081/sensor/fields
+
+   # Legacy endpoint (deprecated but available for testing)
    curl http://localhost:8081/api/sensor/data
 
    # Authenticated device (basic auth)
@@ -275,7 +543,7 @@ Key configuration includes:
 |-----------------------|--------------|--------------------------------------|----------------|
 | mosquitto-broker      | 11883, 19001 | MQTT broker for message routing      | None           |
 | weather-station       | 8080         | Mock weather API endpoint            | Anonymous      |
-| sensor-simulator      | 8081         | Mock temperature/humidity sensor     | Anonymous      |
+| sensor-simulator      | 8081         | Field-based sensor simulation API    | Anonymous      |
 | authenticated-device  | 8082         | Mock device with authentication      | Basic Auth     |
 | connector-test-client | -            | Simulates Akri connector behavior    | -              |
 | mqtt-monitor          | -            | Displays MQTT messages for debugging | -              |
@@ -299,7 +567,7 @@ Test the local mock endpoints:
 ```bash
 # Test specific endpoints
 curl http://localhost:8080/api/weather | jq .
-curl http://localhost:8081/api/sensor/data | jq .
+curl "http://localhost:8081/sensor/array/field?field_id=temp-celsius-01&field_id=humidity-pct-01" | jq .
 curl -u deviceuser:devicepass123 http://localhost:8082/api/device/status | jq .
 ```
 
@@ -405,7 +673,7 @@ kubectl exec -it mqtt-client -n azure-iot-operations -- \
 
 This component integrates with the broader edge-ai project architecture:
 
-- **Infrastructure Foundation**: Uses the akri-rest-connector module from `src/100-edge/110-iot-ops`
+- **Infrastructure Foundation**: Uses the `akri-connectors` module from `src/100-edge/110-iot-ops`
 - **Blueprint Integration**: Can be included in blueprints like `full-single-node-cluster`
 - **Asset Management**: Works with `src/100-edge/111-assets` for device discovery
 - **Application Layer**: Part of the `500-application` workload components

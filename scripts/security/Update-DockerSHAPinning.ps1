@@ -209,6 +209,7 @@ $DockerImageSHAMap = @{
     'mcr.microsoft.com/cbl-mariner/base/core:2.0'          = 'mcr.microsoft.com/cbl-mariner/base/core:2.0@sha256:b462b8e95dfa12b3fefc95025a627306a527de61db17b8519a59b8e25f1663c7'
     'mcr.microsoft.com/devcontainers/python:3.11-bookworm' = 'mcr.microsoft.com/devcontainers/python:3.11-bookworm@sha256:17b9b47f293b5b6e4b6a6e67d8bba0d5e0e5b6d6d2c3f4e5a6b7c8d9e0f1a2b3'
     'mcr.microsoft.com/devcontainers/base:ubuntu-24.04'    = 'mcr.microsoft.com/devcontainers/base:ubuntu-24.04@sha256:ad92cae7c25cafb1e7bb5aa7520b81be85fac022ea92e404b94a11127631fae3'
+    'mcr.microsoft.com/azurelinux/base/python:3.12'        = 'mcr.microsoft.com/azurelinux/base/python:3.12@sha256:1b978ce8a21fa7d698ea844d3ad4b2b69452c29be163395aca614d5f2ea44a94'
     'mcr.microsoft.com/cbl-mariner/base/rust:1.72'         = 'mcr.microsoft.com/cbl-mariner/base/rust:1.72@sha256:b9fcab32d29e74b9178437797f57732b8654e9b5db93423080a58c35528accd3'
 
     # Eclipse Foundation Images

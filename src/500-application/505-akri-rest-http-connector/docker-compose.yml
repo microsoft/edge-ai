@@ -47,21 +47,24 @@ services:
   # Mock REST API Endpoint - Generic Sensor Simulator
   sensor-simulator:
     build:
-      context: ./services/sensor-simulator
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./services/sensor-simulator/Dockerfile
     container_name: sensor-simulator
     ports:
       - "8081:8081"    # HTTP API port
     environment:
       - PORT=8081
-      - DEVICE_ID=generic-sensor-001
-      - SENSOR_TYPE=temperature-humidity
-      - RUST_LOG=info
+      - DEVICE_ID=field-sensor-simulator-001
+      - SENSOR_TYPE=field-sensor
+      - LOG_LEVEL=info
+      - FIELD_CONFIG_PATH=/app/field_sources.json
+    volumes:
+      - ./resources/field_sources.json:/app/field_sources.json:ro
     networks:
       - akri-rest-connector
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8081/health"]
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8081/health')"]
       interval: 15s
       timeout: 5s
       retries: 3
@@ -106,7 +109,8 @@ services:
 
       # REST Endpoint Configurations
       - WEATHER_ENDPOINT=http://weather-station:8080/api/weather
-      - SENSOR_ENDPOINT=http://sensor-simulator:8081/api/sensor/data
+      - SENSOR_FIELDS_ENDPOINT=http://sensor-simulator:8081/sensor/array/field
+      - SENSOR_FIELD_IDS=temp-celsius-01,humidity-pct-01,pressure-kpa-01,status-indicator-01,alarm-active-01
       - AUTH_ENDPOINT=http://authenticated-device:8082/api/device/status
       - AUTH_USERNAME=deviceuser
       - AUTH_PASSWORD=devicepass123

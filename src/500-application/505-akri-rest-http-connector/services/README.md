@@ -19,8 +19,9 @@ This docker-compose.yml provides a complete development and testing environment 
 
 - **sensor-simulator**: Simulates a generic temperature/humidity sensor
   - Port: 8081
-  - Endpoints: `/api/sensor/data`, `/api/sensor/status`, `/health`
+  - Endpoints: `/sensor/fields`, `/sensor/fields/<field_id>`, `/sensor/array/field`, `/api/sensor/data`, `/health`
   - Authentication: None (anonymous access)
+  - Field configuration: `../resources/field_sources.json`
 
 - **authenticated-device**: Simulates a device requiring HTTP Basic Authentication
   - Port: 8082
@@ -66,6 +67,8 @@ This docker-compose.yml provides a complete development and testing environment 
    curl http://localhost:8080/api/weather
 
    # Sensor device (no auth)
+   curl http://localhost:8081/sensor/fields
+   curl -s "http://localhost:8081/sensor/array/field?field_id=temp-celsius-01&field_id=humidity-pct-01" | jq .
    curl http://localhost:8081/api/sensor/data
 
    # Authenticated device (basic auth required)

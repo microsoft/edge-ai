@@ -65,6 +65,7 @@ ansible
 azurecontainer
 bicepconfig
 bicepparam
+Bucketized
 commitish
 containerd
 contravariance
@@ -523,6 +524,8 @@ opinsights
 orchestration
 platform
 platforms
+PYTHONDONTWRITEBYTECODE
+PYTHONUNBUFFERED
 realtime
 scalability
 scalesetpriority
@@ -1591,6 +1594,7 @@ arck
 azapi
 azmon
 azuredevops
+azurelinux
 azuremonitor
 azureml
 cloudedge

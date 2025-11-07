@@ -287,9 +287,13 @@ module "edge_iot_ops" {
   should_deploy_resource_sync_rules       = var.should_deploy_resource_sync_rules
   should_create_anonymous_broker_listener = var.should_create_anonymous_broker_listener
 
-  aio_features                      = var.aio_features
-  enable_opc_ua_simulator           = var.should_enable_opc_ua_simulator
-  should_enable_akri_rest_connector = var.should_enable_akri_rest_connector
+  aio_features                       = var.aio_features
+  enable_opc_ua_simulator            = var.should_enable_opc_ua_simulator
+  should_enable_akri_rest_connector  = var.should_enable_akri_rest_connector
+  should_enable_akri_media_connector = var.should_enable_akri_media_connector
+  should_enable_akri_onvif_connector = var.should_enable_akri_onvif_connector
+  should_enable_akri_sse_connector   = var.should_enable_akri_sse_connector
+  custom_akri_connectors             = var.custom_akri_connectors
 }
 
 module "edge_assets" {

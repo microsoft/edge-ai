@@ -161,13 +161,19 @@ module "opc_ua_simulator" {
 }
 
 /*
- * Akri REST HTTP Connector
+ * Akri Connectors
  */
 
-module "akri_rest_connector" {
-  count = var.should_enable_akri_rest_connector ? 1 : 0
+module "akri_connectors" {
+  count = anytrue([
+    var.should_enable_akri_rest_connector,
+    var.should_enable_akri_media_connector,
+    var.should_enable_akri_onvif_connector,
+    var.should_enable_akri_sse_connector,
+    length(var.custom_akri_connectors) > 0
+  ]) ? 1 : 0
 
-  source = "./modules/akri-rest-connector"
+  source = "./modules/akri-connectors"
 
   depends_on = [module.iot_ops_instance]
 
@@ -175,11 +181,31 @@ module "akri_rest_connector" {
   aio_instance_id    = module.iot_ops_instance.aio_instance.id
   custom_location_id = module.iot_ops_instance.custom_locations.id
 
-  # Common variables (derived from available resources)
-  environment     = "prod" # Default since not available in parent
-  resource_prefix = "aio"  # Default since not available in parent
-  location        = var.resource_group.location
+  # Build connector templates list from enabled types
+  connector_templates = concat(
+    var.should_enable_akri_rest_connector ? [{
+      name = "rest-http-connector"
+      type = "rest"
+    }] : [],
+    var.should_enable_akri_media_connector ? [{
+      name = "media-connector"
+      type = "media"
+    }] : [],
+    var.should_enable_akri_onvif_connector ? [{
+      name = "onvif-connector"
+      type = "onvif"
+    }] : [],
+    var.should_enable_akri_sse_connector ? [{
+      name = "sse-connector"
+      type = "sse"
+    }] : [],
+    var.custom_akri_connectors
+  )
 
-  # Connector configuration (pass the entire config object)
-  akri_rest_connector_config = var.akri_rest_connector_config
+  # Shared MQTT configuration
+  mqtt_shared_config = {
+    host         = "aio-broker:18883"
+    audience     = "aio-internal"
+    ca_configmap = "azure-iot-operations-aio-ca-trust-bundle"
+  }
 }

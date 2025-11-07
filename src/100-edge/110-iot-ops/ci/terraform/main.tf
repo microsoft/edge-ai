@@ -59,4 +59,7 @@ module "ci" {
   adr_schema_registry   = data.azapi_resource.schema_registry.output
   arc_connected_cluster = data.azapi_resource.arc_connected_cluster.output
   adr_namespace         = data.azapi_resource.adr_namespace.output
+
+  # Enable REST connector for CI validation
+  should_enable_akri_rest_connector = true
 }

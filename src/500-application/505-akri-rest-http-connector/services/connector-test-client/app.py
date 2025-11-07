@@ -5,15 +5,17 @@ Simulates the behavior of an Akri REST connector by polling REST endpoints
 and publishing data to MQTT topics
 """
 
-import os
-import time
-import requests
-from datetime import datetime, timezone
-import schedule
-import threading
-from requests.auth import HTTPBasicAuth
-import paho.mqtt.client as mqtt
 import logging
+import os
+import threading
+import time
+from datetime import datetime, timezone
+from typing import Any, Dict
+
+import paho.mqtt.client as mqtt
+import requests
+import schedule
+from requests.auth import HTTPBasicAuth
 
 # Configure logging
 logging.basicConfig(level=logging.INFO,
@@ -35,8 +37,18 @@ class RestConnectorClient:
         # REST Endpoints Configuration
         self.weather_endpoint = os.environ.get(
             'WEATHER_ENDPOINT', 'http://weather-station:8080/api/weather')
-        self.sensor_endpoint = os.environ.get(
-            'SENSOR_ENDPOINT', 'http://sensor-simulator:8081/api/sensor/data')
+        self.sensor_fields_endpoint = os.environ.get(
+            'SENSOR_FIELDS_ENDPOINT', 'http://sensor-simulator:8081/sensor/array/field')
+        self.sensor_field_ids = [
+            field_id.strip()
+            for field_id in os.environ.get(
+                'SENSOR_FIELD_IDS',
+                'temp-celsius-01,humidity-pct-01,pressure-kpa-01,status-indicator-01,alarm-light-01'
+            ).split(',')
+            if field_id.strip()
+        ]
+        self.field_config_path = os.environ.get(
+            'FIELD_CONFIG_PATH', '/app/resources/field_sources.json')
         self.auth_endpoint = os.environ.get(
             'AUTH_ENDPOINT', 'http://authenticated-device:8082/api/device/status')
         self.auth_username = os.environ.get('AUTH_USERNAME', 'deviceuser')
@@ -170,6 +182,52 @@ class RestConnectorClient:
 
         self.publish_to_mqtt(self.error_topic, error_data)
 
+    def _build_fields_url(self) -> str:
+        """Construct the sensor fields endpoint URL with requested field IDs."""
+        if not self.sensor_field_ids:
+            return self.sensor_fields_endpoint
+
+        # requests handles query construction and encoding
+        request_obj = requests.Request(
+            method='GET',
+            url=self.sensor_fields_endpoint,
+            params=[('field_id', field_id)
+                    for field_id in self.sensor_field_ids]
+        ).prepare()
+        return request_obj.url
+
+    def _normalize_sensor_payload(self, payload: Any) -> Dict[str, Any] | None:
+        """Normalize sensor payloads into a consistent structure."""
+        if isinstance(payload, list):
+            return {
+                'fields': payload,
+                'count': len(payload),
+                'source': 'list',
+                'original_payload': payload,
+            }
+
+        if not isinstance(payload, dict):
+            return None
+
+        if isinstance(payload.get('fields'), list):
+            return {
+                'fields': payload.get('fields', []),
+                'count': payload.get('count', len(payload.get('fields', []))),
+                'source': payload.get('source', 'fields-array'),
+                'original_payload': payload,
+            }
+
+        required_single_field_keys = {'field_id', 'value', 'data_type'}
+        if required_single_field_keys.issubset(payload.keys()):
+            return {
+                'fields': [payload],
+                'count': 1,
+                'source': 'single-field',
+                'original_payload': payload,
+            }
+
+        return None
+
     def poll_weather_station(self):
         """Poll weather station endpoint"""
         logger.info("Polling weather station...")
@@ -189,22 +247,38 @@ class RestConnectorClient:
                                "Failed to retrieve weather data")
 
     def poll_sensor_device(self):
-        """Poll generic sensor endpoint"""
+        """Poll sensor device using field-based endpoint."""
         logger.info("Polling sensor device...")
-        data = self.fetch_with_retry(
-            self.sensor_endpoint, endpoint_name="sensor-device")
 
-        if data:
-            # Add connector metadata
-            data["connector_metadata"] = {
-                "connector_type": "akri-rest-connector",
-                "polling_interval": self.polling_interval,
-                "collection_time": datetime.now(timezone.utc).isoformat()
-            }
-            self.publish_to_mqtt(self.sensor_topic, data)
-        else:
+        endpoint_url = self._build_fields_url()
+        data = self.fetch_with_retry(
+            endpoint_url,
+            endpoint_name="sensor-device-fields"
+        )
+
+        if data is None:
             self.publish_error(
                 "sensor-device", "Failed to retrieve sensor data")
+            return
+
+        normalized = self._normalize_sensor_payload(data)
+        if not normalized:
+            self.publish_error(
+                "sensor-device", "Received unexpected sensor payload format")
+            return
+
+        normalized.setdefault('connector_metadata', {})
+        normalized['connector_metadata'].update({
+            "connector_type": "akri-rest-connector",
+            "polling_interval": self.polling_interval,
+            "collection_time": datetime.now(timezone.utc).isoformat(),
+            "source_mode": normalized.get('source', 'fields-array'),
+            "endpoint_used": endpoint_url,
+            "field_ids": self.sensor_field_ids,
+            "field_count": normalized.get('count', 0),
+        })
+
+        self.publish_to_mqtt(self.sensor_topic, normalized)
 
     def poll_authenticated_device(self):
         """Poll authenticated device endpoint"""
@@ -261,6 +335,9 @@ class RestConnectorClient:
         logger.info(f"  TLS Enabled: {self.mqtt_use_tls}")
         logger.info(f"  Polling Interval: {self.polling_interval}s")
         logger.info(f"  Retry Attempts: {self.retry_attempts}")
+        logger.info(f"  Sensor Fields Endpoint: {self.sensor_fields_endpoint}")
+        logger.info(f"  Sensor Field IDs: {self.sensor_field_ids}")
+        logger.info(f"  Field Config Path: {self.field_config_path}")
 
         # Setup MQTT connection
         if not self.setup_mqtt():

@@ -36,10 +36,7 @@ namespaced_devices = [
           endpoint_type = "Microsoft.Http"
           address       = "http://weather-station:8080"
           version       = "1.0"
-          additionalConfiguration = jsonencode({
-            tlsEnabled     = false
-            timeoutSeconds = 30
-          })
+          additionalConfiguration = "{\"tlsEnabled\":false,\"timeoutSeconds\":30}"
           authentication = {
             method = "Anonymous"
           }
@@ -60,13 +57,7 @@ namespaced_devices = [
           endpoint_type = "Microsoft.Http"
           address       = "http://sensor-simulator:8081"
           version       = "1.0"
-          additionalConfiguration = jsonencode({
-            tlsEnabled     = false
-            timeoutSeconds = 30
-            headers = {
-              "X-Custom-Header" = "sensor-data"
-            }
-          })
+          additionalConfiguration = "{\"tlsEnabled\":false,\"timeoutSeconds\":30,\"headers\":{\"X-Custom-Header\":\"sensor-data\"}}"
           authentication = {
             method = "Anonymous"
           }
@@ -87,10 +78,7 @@ namespaced_devices = [
           endpoint_type = "Microsoft.Http"
           address       = "http://auth-device:8082"
           version       = "1.0"
-          additionalConfiguration = jsonencode({
-            tlsEnabled     = false
-            timeoutSeconds = 45
-          })
+          additionalConfiguration = "{\"tlsEnabled\":false,\"timeoutSeconds\":45}"
           authentication = {
             method = "UsernamePassword"
             usernamePasswordCredentials = {
@@ -136,16 +124,10 @@ namespaced_assets = [
     }
     datasets = [
       {
-        name = "weather-sensor-dataset"
-        data_points = [
-          {
-            name        = "weather-input"
-            data_source = "weather/input"
-            data_point_configuration = jsonencode({
-              samplingIntervalInMilliseconds = 10000
-            })
-          }
-        ]
+        name                  = "weather-sensor-dataset"
+        data_source           = "weather/input"
+        dataset_configuration = "{\"samplingIntervalInMilliseconds\":10000}"
+        data_points = []
         destinations = [
           {
             target = "Mqtt"
@@ -158,16 +140,8 @@ namespaced_assets = [
         ]
       }
     ]
-    default_datasets_configuration = jsonencode({
-      publishingInterval = 10000
-      samplingInterval   = 10000
-      queueSize          = 1
-    })
-    default_events_configuration = jsonencode({
-      publishingInterval = 10000
-      samplingInterval   = 10000
-      queueSize          = 1
-    })
+    default_datasets_configuration = "{\"publishingInterval\":10000,\"samplingInterval\":10000,\"queueSize\":1}"
+    default_events_configuration   = "{\"publishingInterval\":10000,\"samplingInterval\":10000,\"queueSize\":1}"
   },
 
   // Generic Sensor Asset - 15 second polling
@@ -189,16 +163,10 @@ namespaced_assets = [
     }
     datasets = [
       {
-        name = "sensor-data"
-        data_points = [
-          {
-            name        = "sensor-reading"
-            data_source = "api/sensor/data"
-            data_point_configuration = jsonencode({
-              samplingIntervalInMilliseconds = 15000
-            })
-          }
-        ]
+        name                  = "sensor-data"
+        data_source           = "sensor/array/field?field_id=temp-celsius-01&field_id=humidity-pct-01"
+        dataset_configuration = "{\"samplingIntervalInMilliseconds\":15000}"
+        data_points = []
         destinations = [
           {
             target = "Mqtt"
@@ -211,11 +179,7 @@ namespaced_assets = [
         ]
       }
     ]
-    default_datasets_configuration = jsonencode({
-      publishingInterval = 15000
-      samplingInterval   = 15000
-      queueSize          = 1
-    })
+    default_datasets_configuration = "{\"publishingInterval\":15000,\"samplingInterval\":15000,\"queueSize\":1}"
   },
 
   // Authenticated Device Asset - 20 second polling
@@ -237,16 +201,10 @@ namespaced_assets = [
     }
     datasets = [
       {
-        name = "device-status"
-        data_points = [
-          {
-            name        = "status-data"
-            data_source = "api/device/status"
-            data_point_configuration = jsonencode({
-              samplingIntervalInMilliseconds = 20000
-            })
-          }
-        ]
+        name                  = "device-status"
+        data_source           = "api/device/status"
+        dataset_configuration = "{\"samplingIntervalInMilliseconds\":20000}"
+        data_points = []
         destinations = [
           {
             target = "Mqtt"
@@ -259,10 +217,6 @@ namespaced_assets = [
         ]
       }
     ]
-    default_datasets_configuration = jsonencode({
-      publishingInterval = 20000
-      samplingInterval   = 20000
-      queueSize          = 1
-    })
+    default_datasets_configuration = "{\"publishingInterval\":20000,\"samplingInterval\":20000,\"queueSize\":1}"
   }
 ]

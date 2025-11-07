@@ -40,20 +40,16 @@ output "aio_mqtt_broker" {
 }
 
 /*
- * Akri REST HTTP Connector Outputs
+ * Akri Connectors Outputs
  */
 
-output "akri_rest_connector" {
-  description = "The Akri REST HTTP connector template details"
-  value       = var.should_enable_akri_rest_connector ? module.akri_rest_connector[0].connector_template : null
-}
-
-output "akri_rest_connector_template_id" {
-  description = "The ID of the Akri REST HTTP Connector template"
-  value       = var.should_enable_akri_rest_connector ? module.akri_rest_connector[0].connector_template_id : null
-}
-
-output "akri_rest_connector_template_name" {
-  description = "The name of the Akri REST HTTP Connector template"
-  value       = var.should_enable_akri_rest_connector ? module.akri_rest_connector[0].connector_template_name : null
+output "akri_connector_templates" {
+  description = "Map of deployed Akri connector templates by name with id and type. Returns null if no connectors are deployed."
+  value = anytrue([
+    var.should_enable_akri_rest_connector,
+    var.should_enable_akri_media_connector,
+    var.should_enable_akri_onvif_connector,
+    var.should_enable_akri_sse_connector,
+    length(var.custom_akri_connectors) > 0
+  ]) ? module.akri_connectors[0].connector_templates : null
 }

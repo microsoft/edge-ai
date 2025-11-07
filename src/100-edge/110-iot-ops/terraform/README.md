@@ -19,7 +19,7 @@ Instance can be created, and after.
 
 | Name | Source | Version |
 |------|--------|---------|
-| akri\_rest\_connector | ./modules/akri-rest-connector | n/a |
+| akri\_connectors | ./modules/akri-connectors | n/a |
 | apply\_scripts\_post\_init | ./modules/apply-scripts | n/a |
 | customer\_managed\_self\_signed\_ca | ./modules/self-signed-ca | n/a |
 | customer\_managed\_trust\_issuer | ./modules/customer-managed-trust-issuer | n/a |
@@ -42,9 +42,9 @@ Instance can be created, and after.
 | aio\_ca | CA certificate for the MQTT broker, can be either Root CA or Root CA with any number of Intermediate CAs. If not provided, a self-signed Root CA with a intermediate will be generated. Only valid when Trust Source is set to CustomerManaged | ```object({ root_ca_cert_pem = string ca_cert_chain_pem = string ca_key_pem = string })``` | `null` | no |
 | aio\_features | AIO Instance features with mode ('Stable', 'Preview', 'Disabled') and settings ('Enabled', 'Disabled'). | ```map(object({ mode = optional(string) settings = optional(map(string)) }))``` | `null` | no |
 | aio\_platform\_config | Install cert-manager and trust-manager extensions | ```object({ install_cert_manager = bool install_trust_manager = bool })``` | ```{ "install_cert_manager": true, "install_trust_manager": true }``` | no |
-| akri\_rest\_connector\_config | Configuration for the Akri REST HTTP Connector. Only used when should\_enable\_akri\_rest\_connector is true. | ```object({ template_name = optional(string, "rest-http-connector") image_tag = optional(string, "latest") log_level = optional(string, "Info") replicas = optional(number, 1) mqtt_broker_host = optional(string, "aio-mq-dmqtt-frontend:8883") mqtt_broker_audience = optional(string, "aio-mq") mqtt_ca_configmap = optional(string, "aio-ca-trust-bundle-test-only") })``` | `{}` | no |
 | broker\_listener\_anonymous\_config | Configuration for the insecure anonymous AIO MQ Broker Listener.  For additional information, refer to: <https://learn.microsoft.com/azure/iot-operations/manage-mqtt-broker/howto-test-connection?tabs=bicep#node-port> | ```object({ serviceName = string port = number nodePort = number })``` | ```{ "nodePort": 31884, "port": 18884, "serviceName": "aio-broker-anon" }``` | no |
 | byo\_issuer\_trust\_settings | Settings for CustomerManagedByoIssuer (Bring Your Own Issuer) trust configuration | ```object({ issuer_name = string issuer_kind = string configmap_name = string configmap_key = string })``` | `null` | no |
+| custom\_akri\_connectors | List of custom Akri connector templates with user-defined endpoint types and container images. Supports built-in types (rest, media, onvif, sse) or custom types with custom\_endpoint\_type and custom\_image\_name. Built-in connectors default to mcr.microsoft.com/azureiotoperations/akri-connectors/connector\_type:0.5.1. | ```list(object({ name = string type = string // "rest", "media", "onvif", "sse", "custom" // Custom Connector Fields (required when type = "custom") custom_endpoint_type = optional(string) // e.g., "Contoso.Modbus", "Acme.CustomProtocol" custom_image_name = optional(string) // e.g., "my_acr.azurecr.io/custom-connector" custom_endpoint_version = optional(string, "1.0") // Runtime Configuration (defaults applied based on connector type) registry = optional(string) // Defaults: mcr.microsoft.com for built-in types image_tag = optional(string) // Defaults: 0.5.1 for built-in types, latest for custom replicas = optional(number, 1) image_pull_policy = optional(string) // Default: IfNotPresent // Diagnostics log_level = optional(string) // Default: info (lowercase: trace, debug, info, warning, error, critical) // MQTT Override (uses shared config if not provided) mqtt_config = optional(object({ host = string audience = string ca_configmap = string keep_alive_seconds = optional(number, 60) max_inflight_messages = optional(number, 100) session_expiry_seconds = optional(number, 600) })) // Optional Advanced Fields aio_min_version = optional(string) aio_max_version = optional(string) allocation = optional(object({ policy = string // "Bucketized" bucket_size = number // 1-100 })) additional_configuration = optional(map(string)) secrets = optional(list(object({ secret_alias = string secret_key = string secret_ref = string }))) trust_settings = optional(object({ trust_list_secret_ref = string })) }))``` | `[]` | no |
 | dataflow\_instance\_count | Number of dataflow instances. Defaults to 1. | `number` | `1` | no |
 | edge\_storage\_accelerator | n/a | ```object({ version = string train = string diskStorageClass = string faultToleranceEnabled = bool diskMountPoint = string })``` | ```{ "diskMountPoint": "/mnt", "diskStorageClass": "", "faultToleranceEnabled": false, "train": "stable", "version": "2.6.0" }``` | no |
 | enable\_instance\_secret\_sync | Whether to enable secret sync on the Azure IoT Operations instance | `bool` | `true` | no |
@@ -57,7 +57,10 @@ Instance can be created, and after.
 | should\_assign\_key\_vault\_roles | Whether to assign Key Vault roles to provided Secret Sync identity. | `bool` | `true` | no |
 | should\_create\_anonymous\_broker\_listener | Whether to enable an insecure anonymous AIO MQ Broker Listener. Should only be used for dev or test environments | `bool` | `false` | no |
 | should\_deploy\_resource\_sync\_rules | Deploys resource sync rules if set to true | `bool` | `false` | no |
-| should\_enable\_akri\_rest\_connector | Deploy Akri REST HTTP Connector template to the IoT Operations instance | `bool` | `false` | no |
+| should\_enable\_akri\_media\_connector | Deploy Akri Media Connector template to the IoT Operations instance. | `bool` | `false` | no |
+| should\_enable\_akri\_onvif\_connector | Deploy Akri ONVIF Connector template to the IoT Operations instance. | `bool` | `false` | no |
+| should\_enable\_akri\_rest\_connector | Deploy Akri REST HTTP Connector template to the IoT Operations instance. | `bool` | `false` | no |
+| should\_enable\_akri\_sse\_connector | Deploy Akri SSE Connector template to the IoT Operations instance. | `bool` | `false` | no |
 | should\_enable\_otel\_collector | Whether to deploy the OpenTelemetry Collector and Azure Monitor ConfigMap | `bool` | `true` | no |
 | trust\_config\_source | TrustConfig source must be one of 'SelfSigned', 'CustomerManagedByoIssuer' or 'CustomerManagedGenerateIssuer'. Defaults to SelfSigned. When choosing CustomerManagedGenerateIssuer, ensure connectedk8s proxy is enabled on the cluster for current user. When choosing CustomerManagedByoIssuer, ensure an Issuer and ConfigMap resources exist in the cluster. | `string` | `"SelfSigned"` | no |
 
@@ -70,9 +73,7 @@ Instance can be created, and after.
 | aio\_instance | The Azure IoT Operations instance. |
 | aio\_mqtt\_broker | The MQTT Broker configuration details. |
 | aio\_namespace | The Azure IoT Operations namespace. |
-| akri\_rest\_connector | The Akri REST HTTP connector template details |
-| akri\_rest\_connector\_template\_id | The ID of the Akri REST HTTP Connector template |
-| akri\_rest\_connector\_template\_name | The name of the Akri REST HTTP Connector template |
+| akri\_connector\_templates | Map of deployed Akri connector templates by name with id and type. Returns null if no connectors are deployed. |
 | custom\_locations | The custom location details. |
 <!-- markdown-table-prettify-ignore-end -->
 <!-- END_TF_DOCS -->

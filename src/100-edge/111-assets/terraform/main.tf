@@ -255,11 +255,11 @@ locals {
         }
       ]
       default_datasets_configuration = coalesce(
-        asset.default_datasets_configuration,
+        try(asset.default_datasets_configuration, null),
         "{\"publishingInterval\":1000,\"samplingInterval\":500,\"queueSize\":1}"
       )
       default_events_configuration = coalesce(
-        asset.default_events_configuration,
+        try(asset.default_events_configuration, null),
         "{\"publishingInterval\":1000,\"samplingInterval\":500,\"queueSize\":1}"
       )
     }
@@ -347,7 +347,10 @@ resource "azapi_resource" "namespaced_asset" {
       datasets = [
         for dataset in each.value.datasets : merge(
           {
-            name = dataset.name
+            name         = dataset.name
+            destinations = try(dataset.destinations, [])
+          },
+          length(dataset.data_points) > 0 ? {
             dataPoints = [
               for data_point in dataset.data_points : merge(
                 {
@@ -361,8 +364,7 @@ resource "azapi_resource" "namespaced_asset" {
                 data_point.rest_state_store_key != null ? { stateStoreKey = data_point.rest_state_store_key } : {}
               )
             ]
-            destinations = try(dataset.destinations, [])
-          },
+          } : {},
           dataset.dataset_configuration != null ? { datasetConfiguration = dataset.dataset_configuration } : {},
           dataset.data_source != null ? { dataSource = dataset.data_source } : {},
           dataset.type_ref != null ? { typeRef = dataset.type_ref } : {}
