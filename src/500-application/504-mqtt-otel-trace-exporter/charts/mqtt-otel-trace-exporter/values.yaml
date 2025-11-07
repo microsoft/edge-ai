@@ -1,0 +1,114 @@
+replicaCount: 1
+
+image:
+  repository: <your-registry>.azurecr.io/mqtt-otel-trace-exporter
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+imagePullSecrets: []
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext: {}
+securityContext: {}
+
+service:
+  enabled: true
+  type: ClusterIP
+  port: 8080
+  targetPort: 8080
+
+satAuth:
+  enabled: true
+  secretName: mqtt-sat-token
+  tokenKey: sat.token
+  caCertKey: ca.crt
+  mountPath: /var/secrets/mqtt
+  create: false
+  secret:
+    token: ""
+    caCert: ""
+
+x509Auth:
+  enabled: false
+  secretName: ""
+  certKey: tls.crt
+  keyKey: tls.key
+  caCertKey: ca.crt
+  mountPath: /var/secrets/mqtt-x509
+  create: false
+  secret:
+    cert: ""
+    key: ""
+    caCert: ""
+
+config:
+  logLevel: info
+  telemetry:
+    collectorEndpoint: ""
+    serviceName: mqtt-otel-trace-exporter
+    serviceNamespace: edge-ai
+    samplingRatio: 1.0
+    maxExportBatchSize: 512
+    maxQueueSize: 2048
+    scheduledDelayMillis: 5000
+    exportTimeoutMillis: 30000
+  mqtt:
+    brokerHost: mqtt-broker
+    brokerPort: 1883
+    clientId: ""
+    topicFilters:
+      - telemetry/#
+    sharedSubscriptionGroup: edge-ai
+    sessionExpirySecs: 86400
+    receiveMax: 128
+    keepAliveSecs: 30
+    retryMinBackoffSecs: 5
+    retryMaxBackoffSecs: 60
+    useTls: true
+  correlation:
+    fieldName: correlationId
+    allowGenerated: true
+  health:
+    host: 0.0.0.0
+    port: 8080
+    livenessPath: /healthz
+    readinessPath: /readyz
+
+health:
+  enabled: true
+  livenessProbe:
+    initialDelaySeconds: 5
+    periodSeconds: 15
+    timeoutSeconds: 2
+    failureThreshold: 3
+  readinessProbe:
+    initialDelaySeconds: 5
+    periodSeconds: 15
+    timeoutSeconds: 2
+    failureThreshold: 3
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 250m
+    memory: 256Mi
+
+affinity: {}
+nodeSelector: {}
+tolerations: []
+
+priorityClassName: ""
+
+extraEnv: []
+
+extraVolumeMounts: []
+extraVolumes: []

@@ -1,0 +1,34 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "mqtt-otel-trace-exporter.fullname" . }}
+  labels:
+    {{- include "mqtt-otel-trace-exporter.labels" . | nindent 4 }}
+data:
+  APP_LOG_LEVEL: {{ .Values.config.logLevel | quote }}
+  MQTT_BROKER_HOST: {{ .Values.config.mqtt.brokerHost | quote }}
+  MQTT_BROKER_PORT: {{ printf "%d" (int .Values.config.mqtt.brokerPort) | quote }}
+  MQTT_TOPIC_FILTERS: {{ join "," .Values.config.mqtt.topicFilters | quote }}
+  MQTT_SHARED_SUBSCRIPTION: {{ .Values.config.mqtt.sharedSubscriptionGroup | quote }}
+  MQTT_SESSION_EXPIRY_SECS: {{ printf "%d" (int .Values.config.mqtt.sessionExpirySecs) | quote }}
+  MQTT_RECEIVE_MAX: {{ printf "%d" (int .Values.config.mqtt.receiveMax) | quote }}
+  MQTT_KEEP_ALIVE_SECS: {{ printf "%d" (int .Values.config.mqtt.keepAliveSecs) | quote }}
+  MQTT_RETRY_MIN_BACKOFF_SECS: {{ printf "%d" (int .Values.config.mqtt.retryMinBackoffSecs) | quote }}
+  MQTT_RETRY_MAX_BACKOFF_SECS: {{ printf "%d" (int .Values.config.mqtt.retryMaxBackoffSecs) | quote }}
+  MQTT_USE_TLS: {{ ternary "true" "false" .Values.config.mqtt.useTls | quote }}
+  CORRELATION_ID_FIELD: {{ .Values.config.correlation.fieldName | quote }}
+  CORRELATION_ALLOW_GENERATED: {{ ternary "true" "false" .Values.config.correlation.allowGenerated | quote }}
+  OTEL_SERVICE_NAME: {{ .Values.config.telemetry.serviceName | quote }}
+  OTEL_SERVICE_NAMESPACE: {{ .Values.config.telemetry.serviceNamespace | quote }}
+  OTEL_TRACES_SAMPLER_ARG: {{ printf "%g" .Values.config.telemetry.samplingRatio | quote }}
+  OTEL_BSP_MAX_EXPORT_BATCH_SIZE: {{ printf "%d" (int .Values.config.telemetry.maxExportBatchSize) | quote }}
+  OTEL_BSP_MAX_QUEUE_SIZE: {{ printf "%d" (int .Values.config.telemetry.maxQueueSize) | quote }}
+  OTEL_BSP_SCHEDULE_DELAY: {{ printf "%d" (int .Values.config.telemetry.scheduledDelayMillis) | quote }}
+  OTEL_BSP_EXPORT_TIMEOUT: {{ printf "%d" (int .Values.config.telemetry.exportTimeoutMillis) | quote }}
+  OTEL_EXPORTER_OTLP_ENDPOINT: {{ .Values.config.telemetry.collectorEndpoint | quote }}
+  HTTP_HEALTH_ADDR: {{ printf "%s:%d" (default "0.0.0.0" .Values.config.health.host) (int (default 8080 .Values.config.health.port)) | quote }}
+  HTTP_HEALTH_LIVENESS_PATH: {{ (default "/healthz" .Values.config.health.livenessPath) | quote }}
+  HTTP_HEALTH_READINESS_PATH: {{ (default "/readyz" .Values.config.health.readinessPath) | quote }}
+{{- if .Values.config.mqtt.clientId }}
+  MQTT_CLIENT_ID: {{ .Values.config.mqtt.clientId | quote }}
+{{- end }}
