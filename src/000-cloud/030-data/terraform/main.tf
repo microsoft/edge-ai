@@ -25,6 +25,8 @@ module "storage_account" {
   should_enable_private_endpoint       = var.should_enable_private_endpoint
   should_enable_public_network_access  = var.should_enable_public_network_access
   virtual_network_id                   = var.virtual_network_id
+  should_create_blob_dns_zone          = var.should_create_blob_dns_zone
+  blob_dns_zone                        = var.blob_dns_zone
 }
 
 module "schema_registry" {

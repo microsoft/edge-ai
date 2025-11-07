@@ -13,14 +13,14 @@ dependent on extension deployment completion.
 |------|---------|
 | terraform | >= 1.9.8, < 2.0 |
 | azapi | >= 2.3.0 |
-| azurerm | >= 4.8.0 |
+| azurerm | >= 4.51.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
 | azapi | >= 2.3.0 |
-| azurerm | >= 4.8.0 |
+| azurerm | >= 4.51.0 |
 
 ## Resources
 

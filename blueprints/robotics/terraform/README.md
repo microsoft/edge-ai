@@ -12,7 +12,7 @@ and optional Azure Machine Learning integration.
 | terraform | >= 1.9.8, < 2.0 |
 | azapi | >= 2.3.0 |
 | azuread | >= 3.0.2 |
-| azurerm | >= 4.8.0 |
+| azurerm | >= 4.51.0 |
 | tls | >= 4.0.6 |
 
 ## Modules
@@ -43,6 +43,23 @@ and optional Azure Machine Learning integration.
 | node\_count | Number of nodes for the agent pool in the AKS cluster | `number` | `1` | no |
 | node\_pools | Additional node pools for the AKS cluster. Map key is used as the node pool name | ```map(object({ node_count = optional(number, null) vm_size = string subnet_address_prefixes = list(string) pod_subnet_address_prefixes = list(string) node_taints = optional(list(string), []) enable_auto_scaling = optional(bool, false) min_count = optional(number, null) max_count = optional(number, null) priority = optional(string, "Regular") zones = optional(list(string), null) eviction_policy = optional(string, "Deallocate") gpu_driver = optional(string, null) }))``` | `{}` | no |
 | node\_vm\_size | VM size for the agent pool in the AKS cluster. Default is Standard\_D8ds\_v5 | `string` | `"Standard_D8ds_v5"` | no |
+| postgresql\_admin\_password | Administrator password for PostgreSQL server. (Otherwise, generated when postgresql\_should\_generate\_admin\_password is true). | `string` | `null` | no |
+| postgresql\_admin\_username | Administrator username for PostgreSQL server | `string` | `"pgadmin"` | no |
+| postgresql\_databases | Map of databases to create with collation and charset | ```map(object({ collation = string charset = string }))``` | `null` | no |
+| postgresql\_delegated\_subnet\_id | Subnet ID with delegation to Microsoft.DBforPostgreSQL/flexibleServers. (Otherwise, created when should\_create\_networking is true). | `string` | `null` | no |
+| postgresql\_should\_enable\_extensions | Whether to enable PostgreSQL extensions via azure.extensions | `bool` | `true` | no |
+| postgresql\_should\_enable\_geo\_redundant\_backup | Whether to enable geo-redundant backups for PostgreSQL | `bool` | `false` | no |
+| postgresql\_should\_enable\_timescaledb | Whether to enable TimescaleDB extension for PostgreSQL | `bool` | `true` | no |
+| postgresql\_should\_generate\_admin\_password | Whether to auto-generate PostgreSQL admin password. | `bool` | `true` | no |
+| postgresql\_should\_store\_credentials\_in\_key\_vault | Whether to store PostgreSQL admin credentials in Key Vault. | `bool` | `true` | no |
+| postgresql\_sku\_name | SKU name for PostgreSQL server | `string` | `"GP_Standard_D2s_v3"` | no |
+| postgresql\_storage\_mb | Storage size in megabytes for PostgreSQL | `number` | `32768` | no |
+| postgresql\_subnet\_address\_prefixes | Address prefixes for the PostgreSQL delegated subnet. | `list(string)` | ```[ "10.0.12.0/24" ]``` | no |
+| postgresql\_version | PostgreSQL server version | `string` | `"16"` | no |
+| redis\_access\_keys\_authentication\_enabled | Whether to enable access key authentication for Redis. Set to true to use access keys (not recommended for production) | `bool` | `false` | no |
+| redis\_clustering\_policy | Clustering policy for Redis cache (OSSCluster or EnterpriseCluster) | `string` | `"OSSCluster"` | no |
+| redis\_should\_enable\_high\_availability | Whether to enable high availability for Redis cache | `bool` | `true` | no |
+| redis\_sku\_name | SKU name for Azure Managed Redis cache | `string` | `"Balanced_B10"` | no |
 | resource\_group\_name | Existing resource group name containing foundational and ML resources (Otherwise 'rg-{resource\_prefix}-{environment}-{instance}') | `string` | `null` | no |
 | should\_assign\_current\_user\_vm\_admin | Whether to assign current user VM admin role for Azure AD login | `bool` | `true` | no |
 | should\_create\_acr | Whether to create Azure Container Registry for robotics images | `bool` | `true` | no |
@@ -57,6 +74,8 @@ and optional Azure Machine Learning integration.
 | should\_create\_vm\_ssh\_key | Whether to generate SSH key pair for VM access | `bool` | `true` | no |
 | should\_deploy\_azureml\_registry | Whether to deploy AzureML Registry for model management | `bool` | `false` | no |
 | should\_deploy\_edge\_extension | Whether to deploy Azure ML edge extension on a connected cluster | `bool` | `false` | no |
+| should\_deploy\_postgresql | Whether to deploy PostgreSQL Flexible Server component | `bool` | `false` | no |
+| should\_deploy\_redis | Whether to deploy Azure Managed Redis component | `bool` | `false` | no |
 | should\_enable\_managed\_outbound\_access | Whether to enable managed outbound egress via NAT gateway instead of platform default internet access | `bool` | `true` | no |
 | should\_enable\_private\_endpoints | Whether to enable private endpoints across resources for secure connectivity | `bool` | `false` | no |
 | should\_enable\_vpn\_gateway | Whether to create VPN Gateway for remote access | `bool` | `false` | no |
@@ -66,6 +85,7 @@ and optional Azure Machine Learning integration.
 | should\_install\_robotics\_charts | Whether to install robotics charts (NVIDIA related) | `bool` | `true` | no |
 | should\_install\_volcano | Whether to install Volcano scheduler (prefer should\_install\_azureml\_charts) | `bool` | `false` | no |
 | should\_integrate\_aks\_cluster | Whether to integrate an AKS cluster as a compute target with the workspace | `bool` | `false` | no |
+| should\_use\_current\_user\_key\_vault\_admin | Whether to give the current user the Key Vault Secrets Officer Role | `bool` | `true` | no |
 | should\_use\_vm\_password\_auth | Whether to use password authentication for VM access | `bool` | `false` | no |
 | subnet\_address\_prefixes\_aks | Address prefixes for the AKS subnet | `list(string)` | ```[ "10.0.5.0/24" ]``` | no |
 | subnet\_address\_prefixes\_aks\_pod | Address prefixes for the AKS pod subnet | `list(string)` | ```[ "10.0.6.0/24" ]``` | no |
@@ -89,6 +109,8 @@ and optional Azure Machine Learning integration.
 | aks\_cluster | AKS cluster for robotics workloads |
 | aks\_oidc\_issuer\_url | OIDC issuer URL for workload identity |
 | azureml\_workspace | Azure ML workspace when AzureML charts are enabled |
+| managed\_redis | Azure Managed Redis cache object. |
+| managed\_redis\_connection\_info | Azure Managed Redis connection information. |
 | resource\_group | Resource group for robotics infrastructure |
 | virtual\_network | Virtual network for robotics infrastructure |
 <!-- markdown-table-prettify-ignore-end -->

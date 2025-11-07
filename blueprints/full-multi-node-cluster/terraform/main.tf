@@ -144,6 +144,70 @@ module "cloud_data" {
   virtual_network_id                  = var.should_enable_private_endpoints ? module.cloud_networking.virtual_network.id : null
   should_enable_public_network_access = var.should_enable_storage_public_network_access
   storage_account_is_hns_enabled      = var.storage_account_is_hns_enabled && !var.should_deploy_azureml
+
+  should_create_blob_dns_zone = !var.should_enable_private_endpoints
+  blob_dns_zone               = var.should_enable_private_endpoints ? module.cloud_observability.blob_private_dns_zone : null
+}
+
+module "cloud_postgresql" {
+  count  = var.should_deploy_postgresql ? 1 : 0
+  source = "../../../src/000-cloud/035-postgresql/terraform"
+
+  depends_on = [module.cloud_networking, module.cloud_security_identity]
+
+  environment     = var.environment
+  resource_prefix = var.resource_prefix
+  location        = var.location
+  instance        = var.instance
+
+  resource_group  = module.cloud_resource_group.resource_group
+  virtual_network = module.cloud_networking.virtual_network
+  key_vault       = module.cloud_security_identity.key_vault
+
+  delegated_subnet_id = var.postgresql_delegated_subnet_id
+
+  admin_username                        = var.postgresql_admin_username
+  admin_password                        = var.postgresql_admin_password
+  should_generate_admin_password        = var.postgresql_should_generate_admin_password
+  should_store_credentials_in_key_vault = var.postgresql_should_store_credentials_in_key_vault
+
+  postgres_version                   = var.postgresql_version
+  sku_name                           = var.postgresql_sku_name
+  storage_mb                         = var.postgresql_storage_mb
+  should_enable_extensions           = var.postgresql_should_enable_extensions
+  should_enable_timescaledb          = var.postgresql_should_enable_timescaledb
+  should_enable_geo_redundant_backup = var.postgresql_should_enable_geo_redundant_backup
+  databases                          = var.postgresql_databases
+}
+
+module "cloud_managed_redis" {
+  count  = var.should_deploy_redis ? 1 : 0
+  source = "../../../src/000-cloud/036-managed-redis/terraform"
+
+  depends_on = [module.cloud_networking, module.cloud_security_identity]
+
+  environment     = var.environment
+  resource_prefix = var.resource_prefix
+  location        = var.location
+  instance        = var.instance
+
+  resource_group = module.cloud_resource_group.resource_group
+
+  // Private endpoint configuration
+  should_enable_private_endpoint = var.should_enable_private_endpoints
+  private_endpoint_subnet = var.should_enable_private_endpoints ? {
+    id = module.cloud_networking.subnet_id
+  } : null
+  virtual_network = var.should_enable_private_endpoints ? module.cloud_networking.virtual_network : null
+
+  // Entra ID authentication (default)
+  access_keys_authentication_enabled = false
+  managed_identity                   = module.cloud_security_identity.aio_identity
+
+  // Redis configuration
+  sku_name                        = var.redis_sku_name
+  should_enable_high_availability = var.redis_should_enable_high_availability
+  clustering_policy               = var.redis_clustering_policy
 }
 
 module "cloud_messaging" {

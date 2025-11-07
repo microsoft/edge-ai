@@ -64,6 +64,12 @@ variable "virtual_network_id" {
   default     = null
 }
 
+variable "should_create_blob_dns_zone" {
+  description = "Whether to create the blob private DNS zone. Set to false if using a shared DNS zone from observability component."
+  type        = bool
+  default     = true
+}
+
 /*
  * Blob Container - Optional
  */

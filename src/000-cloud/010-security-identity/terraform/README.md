@@ -13,7 +13,7 @@ access to resources.
 | terraform | >= 1.9.8, < 2.0 |
 | azapi | >= 2.3.0 |
 | azuread | >= 3.0.2 |
-| azurerm | >= 4.8.0 |
+| azurerm | >= 4.51.0 |
 | msgraph | >= 0.2.0 |
 
 ## Providers
@@ -57,7 +57,7 @@ access to resources.
 | should\_create\_ml\_workload\_identity | Whether to create a user-assigned identity for AzureML workloads. | `bool` | `false` | no |
 | should\_create\_secret\_sync\_identity | Whether to create a user-assigned identity for Secret Sync Extension. | `bool` | `true` | no |
 | should\_enable\_public\_network\_access | Whether to enable public network access for the Key Vault | `bool` | `true` | no |
-| should\_use\_current\_user\_key\_vault\_admin | Whether to give the current user the Key Vault Secrets Officer Role. | `string` | `true` | no |
+| should\_use\_current\_user\_key\_vault\_admin | Whether to give the current user the Key Vault Secrets Officer Role. | `bool` | `true` | no |
 
 ## Outputs
 

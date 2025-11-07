@@ -70,15 +70,6 @@ resource "azurerm_role_assignment" "workspace_storage_contributor" {
   scope                = var.storage_account_id
 }
 
-// Storage Account - Storage Blob Data Contributor (data plane)
-resource "azurerm_role_assignment" "workspace_storage_blob_data_contributor" {
-  count = var.should_assign_workspace_managed_identity_roles ? 1 : 0
-
-  principal_id         = azurerm_machine_learning_workspace.this.identity[0].principal_id
-  role_definition_name = "Storage Blob Data Contributor"
-  scope                = var.storage_account_id
-}
-
 // Azure Container Registry - Contributor
 resource "azurerm_role_assignment" "workspace_acr_contributor" {
   count = var.should_assign_workspace_managed_identity_roles ? 1 : 0
@@ -94,15 +85,6 @@ resource "azurerm_role_assignment" "workspace_keyvault_contributor" {
 
   principal_id         = azurerm_machine_learning_workspace.this.identity[0].principal_id
   role_definition_name = "Contributor"
-  scope                = var.key_vault_id
-}
-
-// Key Vault - Key Vault Administrator (data plane for RBAC permission model)
-resource "azurerm_role_assignment" "workspace_keyvault_administrator" {
-  count = var.should_assign_workspace_managed_identity_roles ? 1 : 0
-
-  principal_id         = azurerm_machine_learning_workspace.this.identity[0].principal_id
-  role_definition_name = "Key Vault Administrator"
   scope                = var.key_vault_id
 }
 

@@ -1027,6 +1027,7 @@ oras
 organisation
 organisations
 organised
+ossp
 otel
 otlp
 overfitting
@@ -1057,6 +1058,7 @@ peerings
 performant
 personalizer
 petya
+pgadmin
 pgsql
 phpinfo
 phpmyadmin

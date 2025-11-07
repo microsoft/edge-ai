@@ -530,6 +530,125 @@ variable "storage_account_is_hns_enabled" {
 }
 
 /*
+ * PostgreSQL Configuration
+ */
+
+variable "should_deploy_postgresql" {
+  type        = bool
+  description = "Whether to deploy PostgreSQL Flexible Server component"
+  default     = false
+}
+
+variable "postgresql_admin_password" {
+  type        = string
+  description = "Administrator password for PostgreSQL server. (Otherwise, generated when postgresql_should_generate_admin_password is true)."
+  sensitive   = true
+  default     = null
+}
+
+variable "postgresql_should_generate_admin_password" {
+  type        = bool
+  description = "Whether to auto-generate PostgreSQL admin password."
+  default     = true
+}
+
+variable "postgresql_should_store_credentials_in_key_vault" {
+  type        = bool
+  description = "Whether to store PostgreSQL admin credentials in Key Vault."
+  default     = true
+}
+
+variable "postgresql_admin_username" {
+  type        = string
+  description = "Administrator username for PostgreSQL server"
+  default     = "pgadmin"
+}
+
+variable "postgresql_databases" {
+  type = map(object({
+    collation = string
+    charset   = string
+  }))
+  description = "Map of databases to create with collation and charset"
+  default     = null
+}
+
+variable "postgresql_delegated_subnet_id" {
+  type        = string
+  description = "Subnet ID with delegation to Microsoft.DBforPostgreSQL/flexibleServers"
+  default     = null
+}
+
+variable "postgresql_should_enable_geo_redundant_backup" {
+  type        = bool
+  description = "Whether to enable geo-redundant backups for PostgreSQL"
+  default     = false
+}
+
+variable "postgresql_should_enable_extensions" {
+  type        = bool
+  description = "Whether to enable PostgreSQL extensions via azure.extensions"
+  default     = true
+}
+
+variable "postgresql_should_enable_timescaledb" {
+  type        = bool
+  description = "Whether to enable TimescaleDB extension for PostgreSQL"
+  default     = true
+}
+
+variable "postgresql_sku_name" {
+  type        = string
+  description = "SKU name for PostgreSQL server"
+  default     = "GP_Standard_D2s_v3"
+}
+
+variable "postgresql_storage_mb" {
+  type        = number
+  description = "Storage size in megabytes for PostgreSQL"
+  default     = 32768
+}
+
+variable "postgresql_version" {
+  type        = string
+  description = "PostgreSQL server version"
+  default     = "16"
+}
+
+/*
+ * Azure Managed Redis Configuration
+ */
+
+variable "should_deploy_redis" {
+  type        = bool
+  description = "Whether to deploy Azure Managed Redis component"
+  default     = false
+}
+
+variable "redis_sku_name" {
+  type        = string
+  description = "SKU name for Azure Managed Redis cache"
+  default     = "Balanced_B10"
+}
+
+variable "redis_should_enable_high_availability" {
+  type        = bool
+  description = "Whether to enable high availability for Redis cache"
+  default     = true
+}
+
+variable "redis_clustering_policy" {
+  type        = string
+  description = "Clustering policy for Redis cache (OSSCluster or EnterpriseCluster)"
+  default     = "OSSCluster"
+
+  validation {
+    condition     = contains(["OSSCluster", "EnterpriseCluster"], var.redis_clustering_policy)
+    error_message = "Clustering policy must be either OSSCluster or EnterpriseCluster."
+  }
+}
+
+/*
  * VPN Gateway Parameters
  */
 

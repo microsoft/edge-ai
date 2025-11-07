@@ -12,7 +12,7 @@ facilitates the management of custom Kubernetes resources and manifests.
 | terraform | >= 1.9.8, < 2.0 |
 | azapi | >= 2.3.0 |
 | azuread | >= 2.0.0 |
-| azurerm | >= 4.8.0 |
+| azurerm | >= 4.51.0 |
 
 ## Providers
 

@@ -59,6 +59,27 @@ module "robotics" {
   storage_account_name               = var.storage_account_name
   should_create_storage              = var.should_create_storage
 
+  // PostgreSQL configuration
+  should_deploy_postgresql                         = var.should_deploy_postgresql
+  postgresql_admin_username                        = var.postgresql_admin_username
+  postgresql_admin_password                        = var.postgresql_admin_password
+  postgresql_should_generate_admin_password        = var.postgresql_should_generate_admin_password
+  postgresql_should_store_credentials_in_key_vault = var.postgresql_should_store_credentials_in_key_vault
+  postgresql_delegated_subnet_id                   = var.postgresql_delegated_subnet_id
+  postgresql_databases                             = var.postgresql_databases
+  postgresql_should_enable_extensions              = var.postgresql_should_enable_extensions
+  postgresql_should_enable_geo_redundant_backup    = var.postgresql_should_enable_geo_redundant_backup
+  postgresql_should_enable_timescaledb             = var.postgresql_should_enable_timescaledb
+  postgresql_sku_name                              = var.postgresql_sku_name
+  postgresql_storage_mb                            = var.postgresql_storage_mb
+  postgresql_version                               = var.postgresql_version
+
+  // Azure Managed Redis configuration
+  should_deploy_redis                   = var.should_deploy_redis
+  redis_sku_name                        = var.redis_sku_name
+  redis_should_enable_high_availability = var.redis_should_enable_high_availability
+  redis_clustering_policy               = var.redis_clustering_policy
+
   // Azure ML workspace additional configuration
   workspace_friendly_name = var.workspace_friendly_name
 

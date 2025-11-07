@@ -11,7 +11,7 @@ This blueprint deploys a complete end-to-end cloud environment as preparation fo
 | terraform | >= 1.9.8, < 2.0 |
 | azapi | >= 2.3.0 |
 | azuread | >= 3.0.2 |
-| azurerm | >= 4.8.0 |
+| azurerm | >= 4.51.0 |
 
 ## Modules
 

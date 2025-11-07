@@ -27,8 +27,8 @@ resource "azurerm_log_analytics_workspace" "monitor" {
   retention_in_days = var.log_retention_in_days
   daily_quota_gb    = var.daily_quota_in_gb
 
-  // Disable public network access when private endpoints are enabled
-  internet_ingestion_enabled = !var.should_enable_private_endpoints
+  // Keep ingestion public to avoid Application Insights billing feature lookup issues when enabling private endpoints
+  internet_ingestion_enabled = true
   internet_query_enabled     = !var.should_enable_private_endpoints
 
   identity {
@@ -63,8 +63,8 @@ module "application_insights" {
   application_type  = var.app_insights_application_type
   retention_in_days = var.app_insights_retention_in_days
 
-  // Disable public network access when private endpoints are enabled
-  internet_ingestion_enabled = !var.should_enable_private_endpoints
+  // Keep ingestion public to avoid Application Insights billing feature lookup issues when enabling private endpoints
+  internet_ingestion_enabled = true
   internet_query_enabled     = !var.should_enable_private_endpoints
 
   tags = var.tags
@@ -284,8 +284,15 @@ resource "azurerm_private_endpoint" "monitor_private_endpoint" {
       azurerm_private_dns_zone.oms_opinsights_azure_com[0].id,
       azurerm_private_dns_zone.ods_opinsights_azure_com[0].id,
       azurerm_private_dns_zone.agentsvc_azure_automation_net[0].id,
+      azurerm_private_dns_zone.blob_core_windows_net[0].id,
     ]
   }
+
+  depends_on = [
+    azurerm_monitor_private_link_scoped_service.log_analytics,
+    azurerm_monitor_private_link_scoped_service.application_insights,
+    azurerm_monitor_private_link_scoped_service.data_collection_endpoint,
+  ]
 }
 
 // Private DNS zones for Azure Monitor private link
@@ -314,6 +321,13 @@ resource "azurerm_private_dns_zone" "agentsvc_azure_automation_net" {
   count = var.should_enable_private_endpoints ? 1 : 0
 
   name                = "privatelink.agentsvc.azure-automation.net"
+  resource_group_name = var.azmon_resource_group.name
+}
+
+resource "azurerm_private_dns_zone" "blob_core_windows_net" {
+  count = var.should_enable_private_endpoints ? 1 : 0
+
+  name                = "privatelink.blob.core.windows.net"
   resource_group_name = var.azmon_resource_group.name
 }
 
@@ -354,6 +368,16 @@ resource "azurerm_private_dns_zone_virtual_network_link" "agentsvc_azure_automat
   name                  = "vnet-link-agentsvc-${var.resource_prefix}-${var.environment}-${var.instance}"
   resource_group_name   = var.azmon_resource_group.name
   private_dns_zone_name = azurerm_private_dns_zone.agentsvc_azure_automation_net[0].name
+  virtual_network_id    = var.virtual_network_id
+  registration_enabled  = false
+}
+
+resource "azurerm_private_dns_zone_virtual_network_link" "blob_core_windows_net" {
+  count = var.should_enable_private_endpoints ? 1 : 0
+
+  name                  = "vnet-link-blob-${var.resource_prefix}-${var.environment}-${var.instance}"
+  resource_group_name   = var.azmon_resource_group.name
+  private_dns_zone_name = azurerm_private_dns_zone.blob_core_windows_net[0].name
   virtual_network_id    = var.virtual_network_id
   registration_enabled  = false
 }

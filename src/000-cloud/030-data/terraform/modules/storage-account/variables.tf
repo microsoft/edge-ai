@@ -51,3 +51,8 @@ variable "virtual_network_id" {
   description = "The ID of the virtual network to link to the private DNS zones"
   type        = string
 }
+
+variable "should_create_blob_dns_zone" {
+  description = "Whether to create the blob private DNS zone. Set to false if using a shared DNS zone from observability component."
+  type        = bool
+}

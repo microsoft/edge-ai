@@ -10,13 +10,13 @@ and optional private endpoint configuration.
 | Name | Version |
 |------|---------|
 | terraform | >= 1.9.8, < 2.0 |
-| azurerm | >= 4.8.0 |
+| azurerm | >= 4.51.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| azurerm | >= 4.8.0 |
+| azurerm | >= 4.51.0 |
 
 ## Resources
 
@@ -35,9 +35,7 @@ and optional private endpoint configuration.
 | [azurerm_role_assignment.workspace_acr_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) | resource |
 | [azurerm_role_assignment.workspace_appinsights_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) | resource |
 | [azurerm_role_assignment.workspace_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) | resource |
-| [azurerm_role_assignment.workspace_keyvault_administrator](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) | resource |
 | [azurerm_role_assignment.workspace_keyvault_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) | resource |
-| [azurerm_role_assignment.workspace_storage_blob_data_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) | resource |
 | [azurerm_role_assignment.workspace_storage_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) | resource |
 
 ## Inputs

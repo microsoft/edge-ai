@@ -9,7 +9,7 @@ Contains all the resources needed for Fabric based resources.
 | Name | Version |
 |------|---------|
 | terraform | >= 1.9.8, < 2.0.0 |
-| azurerm | >= 4.23.0 |
+| azurerm | >= 4.51.0 |
 | fabric | 1.3.0 |
 
 ## Providers

@@ -8,7 +8,7 @@
 
 locals {
   key_vault_admin_principal_id         = try(coalesce(var.key_vault_admin_principal_id, msgraph_resource_action.current_user[0].output.oid), null)
-  should_add_key_vault_role_assignment = alltrue([var.key_vault_admin_principal_id != null, var.should_use_current_user_key_vault_admin])
+  should_add_key_vault_role_assignment = anytrue([var.key_vault_admin_principal_id != null, var.should_use_current_user_key_vault_admin])
 }
 
 /*
