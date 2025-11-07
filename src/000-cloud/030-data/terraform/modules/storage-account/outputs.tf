@@ -33,13 +33,13 @@ output "private_endpoints" {
 output "private_dns_zones" {
   description = "The private DNS zones for Storage Account."
   value = var.should_enable_private_endpoint ? {
-    blob = {
+    blob = try({
       id   = azurerm_private_dns_zone.blob_dns_zone[0].id
       name = azurerm_private_dns_zone.blob_dns_zone[0].name
-    }
-    file = {
+    }, null)
+    file = try({
       id   = azurerm_private_dns_zone.file_dns_zone[0].id
       name = azurerm_private_dns_zone.file_dns_zone[0].name
-    }
+    }, null)
   } : null
 }

@@ -127,12 +127,13 @@ module "cloud_security_identity" {
 
   aio_resource_group = data.azurerm_resource_group.existing
 
-  should_create_identities           = true
-  should_create_aio_identity         = false
-  should_create_secret_sync_identity = false
-  onboard_identity_type              = "skip"
-  should_create_aks_identity         = var.should_create_aks_identity
-  should_create_ml_workload_identity = var.should_create_ml_workload_identity
+  should_create_identities                = true
+  should_create_aio_identity              = false
+  should_create_secret_sync_identity      = false
+  onboard_identity_type                   = "skip"
+  should_create_aks_identity              = var.should_create_aks_identity
+  should_create_ml_workload_identity      = var.should_create_ml_workload_identity
+  should_use_current_user_key_vault_admin = var.should_use_current_user_key_vault_admin
 
   # Private endpoint configuration
   should_create_key_vault_private_endpoint = var.should_enable_private_endpoints
@@ -205,6 +206,81 @@ module "cloud_data" {
   private_endpoint_subnet_id          = try(module.cloud_networking[0].subnet_id, data.azurerm_subnet.existing[0].id, null)
   virtual_network_id                  = try(module.cloud_networking[0].virtual_network.id, data.azurerm_virtual_network.existing[0].id, null)
   should_enable_public_network_access = var.should_enable_public_network_access
+
+  should_create_blob_dns_zone = !var.should_enable_private_endpoints
+  blob_dns_zone               = var.should_enable_private_endpoints ? module.cloud_observability[0].blob_private_dns_zone : null
+}
+
+module "cloud_postgresql" {
+  count  = var.should_deploy_postgresql ? 1 : 0
+  source = "../../../../src/000-cloud/035-postgresql/terraform"
+
+  depends_on = [module.cloud_networking, module.cloud_security_identity]
+
+  // Core parameters
+  environment     = var.environment
+  resource_prefix = var.resource_prefix
+  location        = var.location
+  instance        = var.instance
+
+  // Resource dependencies
+  resource_group  = data.azurerm_resource_group.existing
+  virtual_network = try(module.cloud_networking[0].virtual_network, data.azurerm_virtual_network.existing[0])
+  key_vault       = try(module.cloud_security_identity[0].key_vault, data.azurerm_key_vault.existing[0], null)
+
+  // Networking configuration
+  should_create_delegated_subnet  = var.should_create_networking
+  subnet_address_prefixes         = var.postgresql_subnet_address_prefixes
+  default_outbound_access_enabled = local.default_outbound_access_enabled
+  should_enable_nat_gateway       = var.should_enable_managed_outbound_access
+  nat_gateway                     = try(module.cloud_networking[0].nat_gateway, null)
+  network_security_group          = try(module.cloud_networking[0].network_security_group, null)
+  delegated_subnet_id             = var.postgresql_delegated_subnet_id
+
+  // Credential configuration
+  admin_username                        = var.postgresql_admin_username
+  admin_password                        = var.postgresql_admin_password
+  should_generate_admin_password        = var.postgresql_should_generate_admin_password
+  should_store_credentials_in_key_vault = var.postgresql_should_store_credentials_in_key_vault
+
+  // PostgreSQL configuration
+  postgres_version                   = var.postgresql_version
+  sku_name                           = var.postgresql_sku_name
+  storage_mb                         = var.postgresql_storage_mb
+  should_enable_extensions           = var.postgresql_should_enable_extensions
+  should_enable_timescaledb          = var.postgresql_should_enable_timescaledb
+  should_enable_geo_redundant_backup = var.postgresql_should_enable_geo_redundant_backup
+  databases                          = var.postgresql_databases
+}
+
+module "cloud_managed_redis" {
+  count  = var.should_deploy_redis ? 1 : 0
+  source = "../../../../src/000-cloud/036-managed-redis/terraform"
+
+  depends_on = [module.cloud_networking, module.cloud_security_identity]
+
+  environment     = var.environment
+  resource_prefix = var.resource_prefix
+  location        = var.location
+  instance        = var.instance
+
+  resource_group = data.azurerm_resource_group.existing
+
+  // Private endpoint configuration
+  should_enable_private_endpoint = var.should_enable_private_endpoints
+  private_endpoint_subnet = var.should_enable_private_endpoints ? {
+    id = try(module.cloud_networking[0].subnet_id, data.azurerm_subnet.existing[0].id)
+  } : null
+  virtual_network = var.should_enable_private_endpoints ? try(module.cloud_networking[0].virtual_network, data.azurerm_virtual_network.existing[0]) : null
+
+  // Authentication configuration
+  access_keys_authentication_enabled = var.redis_access_keys_authentication_enabled
+  managed_identity                   = try(module.cloud_security_identity[0].aio_identity, null)
+
+  // Redis configuration
+  sku_name                        = var.redis_sku_name
+  should_enable_high_availability = var.redis_should_enable_high_availability
+  clustering_policy               = var.redis_clustering_policy
 }
 
 module "cloud_vm_host" {

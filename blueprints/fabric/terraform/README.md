@@ -9,7 +9,7 @@ Deploys Microsoft Fabric capacity, workspace, lakehouse, and eventhouse resource
 | Name | Version |
 |------|---------|
 | terraform | >= 1.9.8, < 2.0 |
-| azurerm | >= 4.8.0 |
+| azurerm | >= 4.51.0 |
 | fabric | 1.3.0 |
 | msgraph | >= 0.2.0 |
 
@@ -17,7 +17,7 @@ Deploys Microsoft Fabric capacity, workspace, lakehouse, and eventhouse resource
 
 | Name | Version |
 |------|---------|
-| azurerm | >= 4.8.0 |
+| azurerm | >= 4.51.0 |
 | msgraph | >= 0.2.0 |
 | terraform | n/a |
 

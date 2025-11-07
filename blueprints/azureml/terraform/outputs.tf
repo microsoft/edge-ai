@@ -107,3 +107,18 @@ output "vm_host_ssh_private_key_path" {
   value       = module.robotics.vm_host_ssh_private_key_path
   sensitive   = true
 }
+
+/*
+ * Azure Managed Redis Outputs
+ */
+
+output "managed_redis" {
+  description = "Azure Managed Redis cache object."
+  value       = module.robotics.managed_redis
+}
+
+output "managed_redis_connection_info" {
+  description = "Azure Managed Redis connection information."
+  sensitive   = true
+  value       = module.robotics.managed_redis_connection_info
+}

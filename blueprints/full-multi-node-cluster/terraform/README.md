@@ -12,14 +12,14 @@ with the single-node blueprint while preserving multi-node specific capabilities
 | terraform | >= 1.9.8, < 2.0 |
 | azapi | >= 2.3.0 |
 | azuread | >= 3.0.2 |
-| azurerm | >= 4.8.0 |
+| azurerm | >= 4.51.0 |
 | fabric | 1.3.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| azurerm | >= 4.8.0 |
+| azurerm | >= 4.51.0 |
 | terraform | n/a |
 
 ## Resources
@@ -37,9 +37,11 @@ with the single-node blueprint while preserving multi-node specific capabilities
 | cloud\_azureml | ../../../src/000-cloud/080-azureml/terraform | n/a |
 | cloud\_data | ../../../src/000-cloud/030-data/terraform | n/a |
 | cloud\_kubernetes | ../../../src/000-cloud/070-kubernetes/terraform | n/a |
+| cloud\_managed\_redis | ../../../src/000-cloud/036-managed-redis/terraform | n/a |
 | cloud\_messaging | ../../../src/000-cloud/040-messaging/terraform | n/a |
 | cloud\_networking | ../../../src/000-cloud/050-networking/terraform | n/a |
 | cloud\_observability | ../../../src/000-cloud/020-observability/terraform | n/a |
+| cloud\_postgresql | ../../../src/000-cloud/035-postgresql/terraform | n/a |
 | cloud\_resource\_group | ../../../src/000-cloud/000-resource-group/terraform | n/a |
 | cloud\_security\_identity | ../../../src/000-cloud/010-security-identity/terraform | n/a |
 | cloud\_vm\_host | ../../../src/000-cloud/051-vm-host/terraform | n/a |
@@ -97,6 +99,21 @@ with the single-node blueprint while preserving multi-node specific capabilities
 | node\_count | Number of nodes for the agent pool in the AKS cluster | `number` | `1` | no |
 | node\_pools | Additional node pools for the AKS cluster; map key is used as the node pool name | ```map(object({ node_count = number vm_size = string subnet_address_prefixes = list(string) pod_subnet_address_prefixes = list(string) node_taints = optional(list(string), []) enable_auto_scaling = optional(bool, false) min_count = optional(number, null) max_count = optional(number, null) }))``` | `{}` | no |
 | node\_vm\_size | VM size for the agent pool in the AKS cluster | `string` | `"Standard_D8ds_v5"` | no |
+| postgresql\_admin\_password | Administrator password for PostgreSQL server. (Otherwise, generated when postgresql\_should\_generate\_admin\_password is true). | `string` | `null` | no |
+| postgresql\_admin\_username | Administrator username for PostgreSQL server | `string` | `"pgadmin"` | no |
+| postgresql\_databases | Map of databases to create with collation and charset | ```map(object({ collation = string charset = string }))``` | `null` | no |
+| postgresql\_delegated\_subnet\_id | Subnet ID with delegation to Microsoft.DBforPostgreSQL/flexibleServers | `string` | `null` | no |
+| postgresql\_should\_enable\_extensions | Whether to enable PostgreSQL extensions via azure.extensions | `bool` | `true` | no |
+| postgresql\_should\_enable\_geo\_redundant\_backup | Whether to enable geo-redundant backups for PostgreSQL | `bool` | `false` | no |
+| postgresql\_should\_enable\_timescaledb | Whether to enable TimescaleDB extension for PostgreSQL | `bool` | `true` | no |
+| postgresql\_should\_generate\_admin\_password | Whether to auto-generate PostgreSQL admin password. | `bool` | `true` | no |
+| postgresql\_should\_store\_credentials\_in\_key\_vault | Whether to store PostgreSQL admin credentials in Key Vault. | `bool` | `true` | no |
+| postgresql\_sku\_name | SKU name for PostgreSQL server | `string` | `"GP_Standard_D2s_v3"` | no |
+| postgresql\_storage\_mb | Storage size in megabytes for PostgreSQL | `number` | `32768` | no |
+| postgresql\_version | PostgreSQL server version | `string` | `"16"` | no |
+| redis\_clustering\_policy | Clustering policy for Redis cache (OSSCluster or EnterpriseCluster) | `string` | `"OSSCluster"` | no |
+| redis\_should\_enable\_high\_availability | Whether to enable high availability for Redis cache | `bool` | `true` | no |
+| redis\_sku\_name | SKU name for Azure Managed Redis cache | `string` | `"Balanced_B10"` | no |
 | resolver\_subnet\_address\_prefix | Address prefix for the private resolver subnet; must be /28 or larger and not overlap with other subnets | `string` | `"10.0.9.0/28"` | no |
 | resource\_group\_name | Name of the resource group to create or use. Otherwise, 'rg-{resource\_prefix}-{environment}-{instance}' | `string` | `null` | no |
 | should\_add\_current\_user\_cluster\_admin | Whether to give the current signed-in user cluster-admin permissions on the new cluster | `bool` | `true` | no |
@@ -106,6 +123,8 @@ with the single-node blueprint while preserving multi-node specific capabilities
 | should\_create\_azure\_functions | Whether to create the Azure Functions resources including the App Service plan | `bool` | `false` | no |
 | should\_deploy\_azureml | Whether to deploy the Azure Machine Learning workspace and optional compute cluster | `bool` | `false` | no |
 | should\_deploy\_edge\_azureml | Whether to deploy the Azure Machine Learning edge extension when Azure ML is enabled | `bool` | `false` | no |
+| should\_deploy\_postgresql | Whether to deploy PostgreSQL Flexible Server component | `bool` | `false` | no |
+| should\_deploy\_redis | Whether to deploy Azure Managed Redis component | `bool` | `false` | no |
 | should\_deploy\_resource\_sync\_rules | Whether to deploy resource sync rules | `bool` | `false` | no |
 | should\_enable\_key\_vault\_public\_network\_access | Whether to enable public network access for the Key Vault | `bool` | `true` | no |
 | should\_enable\_managed\_outbound\_access | Whether to enable managed outbound egress via NAT gateway instead of platform default internet access | `bool` | `true` | no |
@@ -137,5 +156,10 @@ with the single-node blueprint while preserving multi-node specific capabilities
 |------|-------------|
 | acr\_network\_posture | Azure Container Registry network posture metadata. |
 | container\_registry | Azure Container Registry resources. |
+| managed\_redis | Azure Managed Redis cache object. |
+| managed\_redis\_connection\_info | Azure Managed Redis connection information. |
+| postgresql\_connection\_info | PostgreSQL connection information. |
+| postgresql\_databases | Map of PostgreSQL databases. |
+| postgresql\_server | PostgreSQL Flexible Server object. |
 <!-- markdown-table-prettify-ignore-end -->
 <!-- END_TF_DOCS -->

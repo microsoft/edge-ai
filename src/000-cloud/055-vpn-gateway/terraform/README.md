@@ -11,7 +11,7 @@ certificate-based and Azure Entra ID authentication methods.
 | Name | Version |
 |------|---------|
 | terraform | >= 1.9.8, < 2.0 |
-| azurerm | >= 4.8.0 |
+| azurerm | >= 4.51.0 |
 | tls | >= 4.0.6 |
 
 ## Modules

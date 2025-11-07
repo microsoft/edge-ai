@@ -10,13 +10,13 @@ Contains all the resources needed for Cloud based data persistence.
 |------|---------|
 | terraform | >= 1.9.8, < 2.0.0 |
 | azapi | >= 2.3.0 |
-| azurerm | >= 4.23.0 |
+| azurerm | >= 4.51.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| azurerm | >= 4.23.0 |
+| azurerm | >= 4.51.0 |
 
 ## Resources
 
@@ -40,6 +40,7 @@ Contains all the resources needed for Cloud based data persistence.
 | location | Azure region where all resources will be deployed | `string` | n/a | yes |
 | resource\_group | Resource group object containing name and id where resources will be deployed | ```object({ name = string id = optional(string) })``` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
+| blob\_dns\_zone | Blob private DNS zone object from observability component with id and name properties. If not provided, a new zone will be created when should\_create\_blob\_dns\_zone is true. | ```object({ id = string name = string })``` | `null` | no |
 | blob\_soft\_delete\_retention\_days | Number of days to retain deleted blobs | `number` | `7` | no |
 | container\_access\_type | The Access Level for the container (blob, container or private) | `string` | `"private"` | no |
 | container\_soft\_delete\_retention\_days | Number of days to retain deleted containers | `number` | `7` | no |
@@ -51,6 +52,7 @@ Contains all the resources needed for Cloud based data persistence.
 | file\_share\_quota\_gb | Maximum size of the file share in GB | `number` | `5` | no |
 | instance | Instance identifier for naming resources: 001, 002, etc | `string` | `"001"` | no |
 | private\_endpoint\_subnet\_id | ID of the subnet to deploy the private endpoint | `string` | `null` | no |
+| should\_create\_blob\_dns\_zone | Whether to create the blob private DNS zone. Set to false if using a shared DNS zone from observability component. | `bool` | `true` | no |
 | should\_create\_data\_lake | Whether or not to create the data lake which includes a Blob Container and Data Lake Filesystem. | `bool` | `true` | no |
 | should\_create\_data\_lake\_file\_share | Whether to create a file share | `bool` | `false` | no |
 | should\_create\_schema\_registry | Whether to crate the Schema Registry resources. | `bool` | `true` | no |

@@ -12,7 +12,7 @@ existing cloud infrastructure including Key Vault, Storage Account, Application 
 |------|---------|
 | terraform | >= 1.9.8, < 2.0 |
 | azapi | >= 2.3.0 |
-| azurerm | >= 4.8.0 |
+| azurerm | >= 4.51.0 |
 | msgraph | >= 0.2.0 |
 | tls | >= 4.0.0 |
 

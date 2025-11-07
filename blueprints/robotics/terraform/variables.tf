@@ -55,6 +55,12 @@ variable "should_create_security_identity" {
   default     = true
 }
 
+variable "should_use_current_user_key_vault_admin" {
+  type        = bool
+  description = "Whether to give the current user the Key Vault Secrets Officer Role"
+  default     = true
+}
+
 variable "should_create_observability" {
   type        = bool
   description = "Whether to create observability resources"
@@ -65,6 +71,137 @@ variable "should_create_storage" {
   type        = bool
   description = "Whether to create storage resources"
   default     = true
+}
+
+/*
+ * PostgreSQL Configuration
+ */
+
+variable "should_deploy_postgresql" {
+  type        = bool
+  description = "Whether to deploy PostgreSQL Flexible Server component"
+  default     = false
+}
+
+variable "postgresql_admin_password" {
+  type        = string
+  description = "Administrator password for PostgreSQL server. (Otherwise, generated when postgresql_should_generate_admin_password is true)."
+  sensitive   = true
+  default     = null
+}
+
+variable "postgresql_should_generate_admin_password" {
+  type        = bool
+  description = "Whether to auto-generate PostgreSQL admin password."
+  default     = true
+}
+
+variable "postgresql_should_store_credentials_in_key_vault" {
+  type        = bool
+  description = "Whether to store PostgreSQL admin credentials in Key Vault."
+  default     = true
+}
+
+variable "postgresql_admin_username" {
+  type        = string
+  description = "Administrator username for PostgreSQL server"
+  default     = "pgadmin"
+}
+
+variable "postgresql_databases" {
+  type = map(object({
+    collation = string
+    charset   = string
+  }))
+  description = "Map of databases to create with collation and charset"
+  default     = null
+}
+
+variable "postgresql_delegated_subnet_id" {
+  type        = string
+  description = "Subnet ID with delegation to Microsoft.DBforPostgreSQL/flexibleServers. (Otherwise, created when should_create_networking is true)."
+  default     = null
+}
+
+variable "postgresql_subnet_address_prefixes" {
+  type        = list(string)
+  description = "Address prefixes for the PostgreSQL delegated subnet."
+  default     = ["10.0.12.0/24"]
+}
+
+variable "postgresql_should_enable_geo_redundant_backup" {
+  type        = bool
+  description = "Whether to enable geo-redundant backups for PostgreSQL"
+  default     = false
+}
+
+variable "postgresql_should_enable_extensions" {
+  type        = bool
+  description = "Whether to enable PostgreSQL extensions via azure.extensions"
+  default     = true
+}
+
+variable "postgresql_should_enable_timescaledb" {
+  type        = bool
+  description = "Whether to enable TimescaleDB extension for PostgreSQL"
+  default     = true
+}
+
+variable "postgresql_sku_name" {
+  type        = string
+  description = "SKU name for PostgreSQL server"
+  default     = "GP_Standard_D2s_v3"
+}
+
+variable "postgresql_storage_mb" {
+  type        = number
+  description = "Storage size in megabytes for PostgreSQL"
+  default     = 32768
+}
+
+variable "postgresql_version" {
+  type        = string
+  description = "PostgreSQL server version"
+  default     = "16"
+}
+
+/*
+ * Azure Managed Redis Configuration - Optional
+ */
+
+variable "should_deploy_redis" {
+  type        = bool
+  description = "Whether to deploy Azure Managed Redis component"
+  default     = false
+}
+
+variable "redis_sku_name" {
+  type        = string
+  description = "SKU name for Azure Managed Redis cache"
+  default     = "Balanced_B10"
+}
+
+variable "redis_should_enable_high_availability" {
+  type        = bool
+  description = "Whether to enable high availability for Redis cache"
+  default     = true
+}
+
+variable "redis_clustering_policy" {
+  type        = string
+  description = "Clustering policy for Redis cache (OSSCluster or EnterpriseCluster)"
+  default     = "OSSCluster"
+
+  validation {
+    condition     = contains(["OSSCluster", "EnterpriseCluster"], var.redis_clustering_policy)
+    error_message = "Clustering policy must be either OSSCluster or EnterpriseCluster."
+  }
+}
+
+variable "redis_access_keys_authentication_enabled" {
+  type        = bool
+  description = "Whether to enable access key authentication for Redis. Set to true to use access keys (not recommended for production)"
+  default     = false
 }
 
 variable "should_create_ml_workload_identity" {

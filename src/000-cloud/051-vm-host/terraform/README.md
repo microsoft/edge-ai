@@ -9,7 +9,7 @@ Deploys one or more Linux VMs for Arc-connected K3s cluster
 | Name | Version |
 |------|---------|
 | terraform | >= 1.9.8, < 2.0 |
-| azurerm | >= 4.8.0 |
+| azurerm | >= 4.51.0 |
 | local | >= 2.5.0 |
 | msgraph | >= 0.2.0 |
 | random | >= 3.6.0 |
@@ -19,7 +19,7 @@ Deploys one or more Linux VMs for Arc-connected K3s cluster
 
 | Name | Version |
 |------|---------|
-| azurerm | >= 4.8.0 |
+| azurerm | >= 4.51.0 |
 | local | >= 2.5.0 |
 | msgraph | >= 0.2.0 |
 | random | >= 3.6.0 |

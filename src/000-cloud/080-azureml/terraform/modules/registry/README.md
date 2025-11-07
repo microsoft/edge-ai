@@ -10,14 +10,14 @@ Creates an Azure Machine Learning Registry with optional private endpoint suppor
 |------|---------|
 | terraform | >= 1.9.8, < 2.0 |
 | azapi | >= 1.0.0 |
-| azurerm | >= 4.8.0 |
+| azurerm | >= 4.51.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
 | azapi | >= 1.0.0 |
-| azurerm | >= 4.8.0 |
+| azurerm | >= 4.51.0 |
 
 ## Resources
 

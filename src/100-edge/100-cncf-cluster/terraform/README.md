@@ -13,7 +13,7 @@ install extensions for cluster connect and custom locations.
 | terraform | >= 1.9.8, < 2.0 |
 | azapi | >= 2.3.0 |
 | azuread | >= 3.0.2 |
-| azurerm | >= 4.8.0 |
+| azurerm | >= 4.51.0 |
 
 ## Providers
 
@@ -21,7 +21,7 @@ install extensions for cluster connect and custom locations.
 |------|---------|
 | azapi | >= 2.3.0 |
 | azuread | >= 3.0.2 |
-| azurerm | >= 4.8.0 |
+| azurerm | >= 4.51.0 |
 | terraform | n/a |
 
 ## Resources

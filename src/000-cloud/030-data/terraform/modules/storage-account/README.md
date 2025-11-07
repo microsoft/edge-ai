@@ -52,9 +52,11 @@ Create a new Azure Storage Account with the specified configuration.
 | private\_endpoint\_subnet\_id | ID of the subnet to deploy the private endpoint | `string` | n/a | yes |
 | resource\_group | Resource group object containing name and id where resources will be deployed | ```object({ id = string name = string })``` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
+| should\_create\_blob\_dns\_zone | Whether to create the blob private DNS zone. Set to false if using a shared DNS zone from observability component. | `bool` | n/a | yes |
 | should\_enable\_private\_endpoint | Whether to create a private endpoint for the storage account | `bool` | n/a | yes |
 | should\_enable\_public\_network\_access | Whether to enable public network access for the storage account | `bool` | n/a | yes |
 | virtual\_network\_id | The ID of the virtual network to link to the private DNS zones | `string` | n/a | yes |
+| blob\_dns\_zone | Blob private DNS zone object from observability component with id and name properties. If not provided, a new zone will be created when should\_create\_blob\_dns\_zone is true. | ```object({ id = string name = string })``` | `null` | no |
 
 ## Outputs
 

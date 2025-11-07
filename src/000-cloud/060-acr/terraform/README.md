@@ -9,7 +9,7 @@ Deploys Azure Container Registry resources
 | Name | Version |
 |------|---------|
 | terraform | >= 1.9.8, < 2.0 |
-| azurerm | >= 4.8.0 |
+| azurerm | >= 4.51.0 |
 
 ## Modules
 

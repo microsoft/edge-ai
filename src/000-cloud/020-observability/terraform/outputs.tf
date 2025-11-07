@@ -61,5 +61,14 @@ output "private_dns_zones" {
     oms_opinsights_azure_com      = azurerm_private_dns_zone.oms_opinsights_azure_com[0]
     ods_opinsights_azure_com      = azurerm_private_dns_zone.ods_opinsights_azure_com[0]
     agentsvc_azure_automation_net = azurerm_private_dns_zone.agentsvc_azure_automation_net[0]
+    blob_core_windows_net         = azurerm_private_dns_zone.blob_core_windows_net[0]
+  }, null)
+}
+
+output "blob_private_dns_zone" {
+  description = "The blob private DNS zone object for sharing with storage account component."
+  value = try({
+    id   = azurerm_private_dns_zone.blob_core_windows_net[0].id
+    name = azurerm_private_dns_zone.blob_core_windows_net[0].name
   }, null)
 }

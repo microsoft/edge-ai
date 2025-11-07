@@ -11,7 +11,7 @@ Adds Azure Machine Learning capabilities with optional foundational resource cre
 | terraform | >= 1.9.8, < 2.0 |
 | azapi | >= 2.3.0 |
 | azuread | >= 3.0.2 |
-| azurerm | >= 4.8.0 |
+| azurerm | >= 4.51.0 |
 | tls | >= 4.0.6 |
 
 ## Providers
@@ -19,7 +19,7 @@ Adds Azure Machine Learning capabilities with optional foundational resource cre
 | Name | Version |
 |------|---------|
 | azapi | >= 2.3.0 |
-| azurerm | >= 4.8.0 |
+| azurerm | >= 4.51.0 |
 | terraform | n/a |
 
 ## Resources
@@ -45,8 +45,10 @@ Adds Azure Machine Learning capabilities with optional foundational resource cre
 | cloud\_azureml | ../../../../src/000-cloud/080-azureml/terraform | n/a |
 | cloud\_data | ../../../../src/000-cloud/030-data/terraform | n/a |
 | cloud\_kubernetes | ../../../../src/000-cloud/070-kubernetes/terraform | n/a |
+| cloud\_managed\_redis | ../../../../src/000-cloud/036-managed-redis/terraform | n/a |
 | cloud\_networking | ../../../../src/000-cloud/050-networking/terraform | n/a |
 | cloud\_observability | ../../../../src/000-cloud/020-observability/terraform | n/a |
+| cloud\_postgresql | ../../../../src/000-cloud/035-postgresql/terraform | n/a |
 | cloud\_security\_identity | ../../../../src/000-cloud/010-security-identity/terraform | n/a |
 | cloud\_vm\_host | ../../../../src/000-cloud/051-vm-host/terraform | n/a |
 | cloud\_vpn\_gateway | ../../../../src/000-cloud/055-vpn-gateway/terraform | n/a |
@@ -104,6 +106,23 @@ Adds Azure Machine Learning capabilities with optional foundational resource cre
 | node\_count | Number of nodes for the agent pool in the AKS cluster. | `number` | `1` | no |
 | node\_pools | Additional node pools for the AKS cluster. Map key is used as the node pool name. | ```map(object({ node_count = optional(number, null) vm_size = string subnet_address_prefixes = list(string) pod_subnet_address_prefixes = list(string) node_taints = optional(list(string), []) enable_auto_scaling = optional(bool, false) min_count = optional(number, null) max_count = optional(number, null) priority = optional(string, "Regular") zones = optional(list(string), null) eviction_policy = optional(string, "Deallocate") gpu_driver = optional(string, null) }))``` | `{}` | no |
 | node\_vm\_size | VM size for the agent pool in the AKS cluster. Default is Standard\_D8ds\_v5. | `string` | `"Standard_D8ds_v5"` | no |
+| postgresql\_admin\_password | Administrator password for PostgreSQL server. (Otherwise, generated when postgresql\_should\_generate\_admin\_password is true). | `string` | `null` | no |
+| postgresql\_admin\_username | Administrator username for PostgreSQL server | `string` | `"pgadmin"` | no |
+| postgresql\_databases | Map of databases to create with collation and charset | ```map(object({ collation = string charset = string }))``` | `null` | no |
+| postgresql\_delegated\_subnet\_id | Subnet ID with delegation to Microsoft.DBforPostgreSQL/flexibleServers. (Otherwise, created when should\_create\_networking is true). | `string` | `null` | no |
+| postgresql\_should\_enable\_extensions | Whether to enable PostgreSQL extensions via azure.extensions | `bool` | `true` | no |
+| postgresql\_should\_enable\_geo\_redundant\_backup | Whether to enable geo-redundant backups for PostgreSQL | `bool` | `false` | no |
+| postgresql\_should\_enable\_timescaledb | Whether to enable TimescaleDB extension for PostgreSQL | `bool` | `true` | no |
+| postgresql\_should\_generate\_admin\_password | Whether to auto-generate PostgreSQL admin password. | `bool` | `true` | no |
+| postgresql\_should\_store\_credentials\_in\_key\_vault | Whether to store PostgreSQL admin credentials in Key Vault. | `bool` | `true` | no |
+| postgresql\_sku\_name | SKU name for PostgreSQL server | `string` | `"GP_Standard_D2s_v3"` | no |
+| postgresql\_storage\_mb | Storage size in megabytes for PostgreSQL | `number` | `32768` | no |
+| postgresql\_subnet\_address\_prefixes | Address prefixes for the PostgreSQL delegated subnet. | `list(string)` | ```[ "10.0.12.0/24" ]``` | no |
+| postgresql\_version | PostgreSQL server version | `string` | `"16"` | no |
+| redis\_access\_keys\_authentication\_enabled | Whether to enable access key authentication for Redis | `bool` | `false` | no |
+| redis\_clustering\_policy | Clustering policy for Redis cache (OSSCluster or EnterpriseCluster) | `string` | `"OSSCluster"` | no |
+| redis\_should\_enable\_high\_availability | Whether to enable high availability for Redis cache | `bool` | `true` | no |
+| redis\_sku\_name | SKU name for Azure Managed Redis cache | `string` | `"Balanced_B10"` | no |
 | registry\_should\_enable\_public\_network\_access | Whether to enable public network access to the AzureML Registry | `bool` | `false` | no |
 | resolver\_subnet\_address\_prefix | Address prefix for the Private Resolver subnet. Must be /28 or larger and not overlap with other subnets | `string` | `"10.0.9.0/28"` | no |
 | resource\_group\_name | Existing resource group name containing foundational and ML resources (Otherwise 'rg-{resource\_prefix}-{environment}-{instance}') | `string` | `null` | no |
@@ -121,6 +140,8 @@ Adds Azure Machine Learning capabilities with optional foundational resource cre
 | should\_create\_vm\_ssh\_key | Generate SSH key pair for VM fallback access. Defaults to true to ensure emergency access when Azure AD authentication is unavailable | `bool` | `true` | no |
 | should\_deploy\_azureml\_registry | Whether to deploy AzureML Registry with private endpoint support | `bool` | `false` | no |
 | should\_deploy\_edge\_extension | Whether to deploy the Azure ML edge extension on a connected cluster | `bool` | `false` | no |
+| should\_deploy\_postgresql | Whether to deploy PostgreSQL Flexible Server component | `bool` | `false` | no |
+| should\_deploy\_redis | Whether to deploy Azure Managed Redis component | `bool` | `false` | no |
 | should\_disable\_aks\_local\_account | Whether to disable the local admin account for the AKS cluster | `bool` | `false` | no |
 | should\_enable\_cluster\_inference | Whether to enable inference workloads on the AKS cluster | `bool` | `true` | no |
 | should\_enable\_cluster\_training | Whether to enable training workloads on the AKS cluster | `bool` | `true` | no |
@@ -137,6 +158,7 @@ Adds Azure Machine Learning capabilities with optional foundational resource cre
 | should\_install\_robotics\_charts | Whether to install robotics-specific charts (NVIDIA related charts). | `bool` | `false` | no |
 | should\_install\_volcano | Whether to install Volcano scheduler for job scheduling in Azure ML extension | `bool` | `false` | no |
 | should\_integrate\_aks\_cluster | Whether to integrate an AKS cluster as a compute target with the workspace | `bool` | `false` | no |
+| should\_use\_current\_user\_key\_vault\_admin | Whether to give the current user the Key Vault Secrets Officer Role | `bool` | `true` | no |
 | should\_use\_vm\_password\_auth | Use password authentication for VM access. When enabled, a random secure password will be generated and stored in Terraform state | `bool` | `false` | no |
 | ssl\_cert\_pem | PEM-encoded TLS certificate chain (server first then intermediates) or empty when not using HTTPS | `string` | `null` | no |
 | ssl\_cname | CNAME used for HTTPS endpoint; required when providing cert/key; otherwise empty | `string` | `null` | no |
@@ -179,8 +201,13 @@ Adds Azure Machine Learning capabilities with optional foundational resource cre
 | azureml\_edge\_extension | The Azure ML edge extension deployment object when deployed. |
 | azureml\_workspace | The Azure ML workspace object when created or discovered. |
 | key\_vault | Key Vault object used for the workspace. |
+| managed\_redis | Azure Managed Redis cache object. |
+| managed\_redis\_connection\_info | Azure Managed Redis connection information. |
 | nat\_gateway | The NAT gateway resource used for managed outbound access when networking is created. |
 | nat\_gateway\_public\_ips | Public IP resources associated with the NAT gateway when managed outbound access is enabled. |
+| postgresql\_connection\_info | PostgreSQL connection information. |
+| postgresql\_databases | Map of PostgreSQL databases. |
+| postgresql\_server | PostgreSQL Flexible Server object. |
 | private\_resolver\_dns\_ip | Private Resolver DNS IP address for VPN client configuration. |
 | resource\_group | The resource group object for the deployment. |
 | storage\_account | Storage Account object used for the workspace. |
