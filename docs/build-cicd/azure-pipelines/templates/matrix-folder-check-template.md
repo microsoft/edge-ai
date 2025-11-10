@@ -2,7 +2,7 @@
 title: Matrix Folder Check Template
 description: Azure DevOps pipeline template for detecting directory changes and creating dynamic outputs for conditional execution
 author: Edge AI Team
-ms.date: 09/21/2025
+ms.date: 2025-06-06
 ms.topic: concept
 estimated_reading_time: 7
 keywords:

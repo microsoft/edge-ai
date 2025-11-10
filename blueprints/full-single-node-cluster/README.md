@@ -2,7 +2,7 @@
 title: Full Single Cluster Blueprint
 description: Complete end-to-end deployment of Azure IoT Operations on a single-node, Arc-enabled Kubernetes cluster with all components from VM creation to AIO installation
 author: Edge AI Team
-ms.date: 06/07/2025
+ms.date: 2025-06-07
 ms.topic: reference
 keywords:
   - azure iot operations

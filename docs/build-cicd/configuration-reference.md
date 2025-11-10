@@ -2,7 +2,7 @@
 title: Configuration reference
 description: Reference guide for build and CI/CD configuration files used in the Edge AI Accelerator project
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: reference
 keywords:
   - configuration

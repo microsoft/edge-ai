@@ -1,0 +1,282 @@
+/* === PROFESSIONAL ACCESSIBILITY ENHANCEMENTS === */
+/* Comprehensive keyboard navigation and screen reader support for sidebar */
+
+/* === CLICKABLE HEADERS === */
+
+/* Enhanced cursor indication for clickable headers */
+.markdown-section h1[id],
+.markdown-section h2[id],
+.markdown-section h3[id],
+.markdown-section h4[id],
+.markdown-section h5[id],
+.markdown-section h6[id] {
+  cursor: pointer;
+}
+
+/* === FOCUS MANAGEMENT === */
+
+/* Enhanced focus outline system */
+:root {
+  --focus-outline-color: var(--theme-color);
+  --focus-outline-width: 2px;
+  --focus-outline-offset: 2px;
+  --focus-outline-style: solid;
+  --focus-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-color) 25%, transparent);
+}
+
+/* Professional focus states for all interactive elements */
+.sidebar *:focus-visible {
+  outline: var(--focus-outline-width) var(--focus-outline-style) var(--focus-outline-color);
+  outline-offset: var(--focus-outline-offset);
+  box-shadow: var(--focus-shadow);
+  border-radius: var(--border-radius-sm);
+  transition: all 0.15s ease;
+}
+
+/* Enhanced sidebar navigation focus states */
+.sidebar-nav ul li a:focus-visible {
+  background: color-mix(in srgb, var(--sidebar-nav-hover-bg) 80%, var(--theme-color) 20%);
+  color: var(--sidebar-text-primary);
+  text-decoration: none;
+
+  /* Enhanced focus indicators */
+  border-left: 3px solid var(--theme-color);
+  transform: translateX(2px);
+
+  /* Smooth focus transitions */
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Active navigation states */
+.sidebar-nav ul li.active a:focus-visible {
+  background: color-mix(in srgb, var(--theme-color) 15%, var(--sidebar-nav-hover-bg));
+  border-left-color: var(--theme-color);
+  box-shadow:
+    var(--focus-shadow),
+    inset 3px 0 0 var(--theme-color);
+}
+
+/* Toggle button accessibility */
+.sidebar-toggle:focus-visible {
+  outline: var(--focus-outline-width) var(--focus-outline-style) var(--focus-outline-color);
+  outline-offset: var(--focus-outline-offset);
+  box-shadow: var(--focus-shadow);
+  transform: scale(1.05);
+  background: var(--sidebar-nav-hover-bg);
+}
+
+/* === KEYBOARD NAVIGATION === */
+
+/* Skip links for accessibility */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: var(--sidebar-bg-primary);
+  color: var(--sidebar-text-primary);
+  padding: 8px;
+  text-decoration: none;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--sidebar-border-color);
+  z-index: var(--z-skip-link, 9999);
+  font-weight: var(--font-weight-medium);
+  box-shadow: var(--shadow-md);
+  transition: all 0.2s ease;
+}
+
+.skip-link:focus {
+  top: 6px;
+  outline: var(--focus-outline-width) var(--focus-outline-style) var(--focus-outline-color);
+  outline-offset: var(--focus-outline-offset);
+}
+
+/* Enhanced keyboard navigation for sidebar */
+.sidebar-nav {
+  /* Ensure proper tab order */
+  isolation: isolate;
+}
+
+.sidebar-nav ul li a {
+  /* Enhanced keyboard interaction */
+  position: relative;
+}
+
+/* Keyboard shortcut indicators */
+.sidebar-nav ul li a[data-shortcut]::after {
+  content: attr(data-shortcut);
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: color-mix(in srgb, var(--sidebar-text-secondary) 20%, transparent);
+  color: var(--sidebar-text-secondary);
+  font-size: 0.75em;
+  padding: 2px 6px;
+  border-radius: var(--border-radius-sm);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.sidebar-nav ul li a:focus-visible[data-shortcut]::after,
+.sidebar-nav ul li a:hover[data-shortcut]::after {
+  opacity: 1;
+}
+
+/* === SCREEN READER SUPPORT === */
+
+/* Screen reader only content */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Screen reader announcements */
+.sidebar[aria-expanded="true"] .sidebar-nav::before {
+  content: "Navigation menu expanded";
+  position: absolute;
+  left: -9999px;
+}
+
+.sidebar[aria-expanded="false"] .sidebar-nav::before {
+  content: "Navigation menu collapsed";
+  position: absolute;
+  left: -9999px;
+}
+
+/* Enhanced ARIA support */
+.sidebar-nav ul li a[aria-current="page"] {
+  background: color-mix(in srgb, var(--theme-color) 10%, var(--sidebar-nav-hover-bg));
+  border-left: 3px solid var(--theme-color);
+  font-weight: var(--font-weight-semibold);
+  color: var(--sidebar-text-primary);
+}
+
+.sidebar-nav ul li a[aria-expanded="true"] .chevron {
+  transform: rotate(90deg);
+  color: var(--theme-color);
+}
+
+/* === HIGH CONTRAST MODE SUPPORT === */
+
+@media (prefers-contrast: high) {
+  .sidebar {
+    border: 2px solid var(--sidebar-border-color);
+    background: var(--sidebar-bg-primary);
+  }
+
+  .sidebar-nav ul li a {
+    border: 1px solid transparent;
+  }
+
+  .sidebar-nav ul li a:focus-visible,
+  .sidebar-nav ul li a:hover {
+    border-color: var(--theme-color);
+    background: var(--sidebar-nav-hover-bg);
+  }
+
+  .sidebar-toggle {
+    border: 2px solid var(--sidebar-border-color);
+  }
+
+  .sidebar-toggle:focus-visible {
+    border-color: var(--theme-color);
+    border-width: 3px;
+  }
+}
+
+/* === REDUCED MOTION SUPPORT === */
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar,
+  .sidebar-nav,
+  .sidebar-nav ul li a,
+  .sidebar-toggle {
+    transition: none !important;
+    animation: none !important;
+  }
+
+  /* Maintain focus indicators without motion */
+  .sidebar-nav ul li a:focus-visible {
+    transform: none;
+    border-left: 4px solid var(--theme-color);
+  }
+
+  .sidebar-toggle:focus-visible {
+    transform: none;
+    border-width: 3px;
+  }
+}
+
+/* Desktop-only interaction accessibility */
+
+/* === DARK MODE ACCESSIBILITY === */
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --focus-outline-color: color-mix(in srgb, var(--theme-color) 80%, white 20%);
+    --focus-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-color) 30%, transparent);
+  }
+
+  /* Enhanced dark mode focus states */
+  .sidebar-nav ul li a:focus-visible {
+    background: color-mix(in srgb, var(--sidebar-nav-hover-bg) 70%, var(--theme-color) 30%);
+    color: var(--sidebar-text-primary);
+  }
+
+  /* Better contrast for dark mode */
+  .skip-link {
+    background: var(--sidebar-bg-secondary);
+    border-color: var(--theme-color);
+  }
+}
+
+/* === PRINT ACCESSIBILITY === */
+
+@media print {
+  .sidebar,
+  .sidebar-toggle,
+  .skip-link {
+    display: none !important;
+  }
+}
+
+/* === LANGUAGE DIRECTION SUPPORT === */
+
+[dir="rtl"] .sidebar {
+  left: auto;
+  right: 0;
+  border-left: none;
+  border-right: 1px solid var(--sidebar-border-color);
+}
+
+[dir="rtl"] .sidebar-nav ul li a {
+  text-align: right;
+  border-left: none;
+  border-right: 3px solid transparent;
+}
+
+[dir="rtl"] .sidebar-nav ul li a:focus-visible,
+[dir="rtl"] .sidebar-nav ul li a[aria-current="page"] {
+  border-right-color: var(--theme-color);
+  transform: translateX(-2px);
+}
+
+[dir="rtl"] .sidebar-toggle {
+  left: auto;
+  right: 20px;
+}
+
+[dir="rtl"] .chevron {
+  transform: scaleX(-1);
+}
+
+[dir="rtl"] .sidebar-nav ul li a[aria-expanded="true"] .chevron {
+  transform: scaleX(-1) rotate(90deg);
+}

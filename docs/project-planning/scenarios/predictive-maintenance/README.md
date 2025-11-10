@@ -1,8 +1,8 @@
 ---
 title: "Predictive Maintenance"
-description: "AI-driven predictive analysis for critical asset lifecycle management, enabling proactive maintenance strategies to minimize downtime, extend asset life, and optimize maintenance costs."
+description: "AI-driven predictive analysis for critical asset lifecycle management using sensor data, machine learning, and analytics to prevent equipment failures before they occur."
 author: "Edge AI Team"
-ms.date: 06/06/2025
+ms.date: 2025-07-20
 ms.topic: conceptual
 estimated_reading_time: 8
 keywords:
@@ -11,388 +11,309 @@ keywords:
   - condition-monitoring
   - ai-analytics
   - equipment-optimization
-  - maintenance-automation
 ---
-## Scenario Overview
 
-Predictive Maintenance enables AI-driven predictive analysis for critical asset lifecycle management, providing proactive maintenance strategies that minimize equipment downtime, extend asset life, and optimize maintenance costs. This solution transforms traditional reactive maintenance approaches into predictive, data-driven maintenance programs that prevent failures before they occur.
+## 📊 Scenario Overview
 
-## Capability Evaluation Framework
+Predictive Maintenance delivers AI-driven predictive analysis for critical asset lifecycle management through sensor data collection, machine learning algorithms, and advanced analytics to prevent equipment failures before they occur. This approach provides proactive maintenance strategies, minimized downtime, and optimized maintenance costs compared to reactive maintenance approaches.
 
-This scenario has been evaluated across four key dimensions:
+The scenario combines IoT sensors for equipment monitoring, machine learning for failure prediction, and analytics platforms that identify maintenance needs before critical failures occur. This results in reduced unplanned downtime, extended asset life, and optimized maintenance schedules, along with comprehensive asset health visibility and maintenance cost optimization.
 
-- **Technical Fit** (0-10): Direct requirement match, performance alignment, integration complexity
-- **Business Value** (0-10): Impact magnitude, value realization timeline, ROI potential
-- **Implementation Practicality** (0-10): Complexity assessment, resource requirements, risk level
-- **Platform Cohesion** (0-10): Cross-capability benefits, data flow optimization, shared infrastructure
+**Use cases include equipment failure prediction, maintenance schedule optimization, and asset health monitoring** - particularly where equipment uptime, maintenance cost control, and asset lifecycle optimization are critical business requirements.
 
-## Critical Capabilities & Implementation Details
+## 🗓️ Development Planning Framework
+
+This planning guide outlines the Predictive Maintenance scenario and identifies the capabilities required at each implementation phase. Each phase defines the scope of capabilities needed to achieve specific business outcomes.
+
+**Component status definitions**:
+
+- **✅ Ready to Deploy**: Components available for immediate deployment with minimal configuration
+- **🔵 Development Required**: Framework and APIs provided, custom logic development needed
+- **🟣 Planned Components**: Scheduled for future accelerator releases - plan accordingly
+- **🟪 External Integration**: Requires third-party solutions or custom development
+
+## ⚙️ Critical Capabilities & Development Planning
 
 <!-- markdownlint-disable MD033 -->
-| Capability Group                                                                             | Critical Capabilities                                                                                                                                                                                                | Implementation Details for Predictive Maintenance                                                                                                                                                | Status                                                                           |
-|----------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------|
-| **[Protocol Translation & Device Management][protocol-translation-device-management]**       | - [OPC UA Data Ingestion][opc-ua-data-ingestion]<br>- [Device Twin Management][device-twin-management]<br>- [Broad Industrial Protocol Support][broad-industrial-protocol-support]                                   | - Connect to equipment sensors and condition monitoring systems<br>- Create digital twins of critical assets and equipment<br>- Support protocols for diverse maintenance and monitoring devices | [Available][available]<br>[Available][available]<br>In Development               |
-| **[Edge Cluster Platform][edge-cluster-platform]**                                           | - [Edge Compute Orchestration][edge-compute-orchestration]<br>- [Edge Application CI/CD][edge-application-cicd]                                                                                                      | - Deploy local processing for maintenance analytics systems<br>- Manage containerized predictive maintenance applications                                                                        | [Available][available-2]<br>[Available][available-2]                             |
-| **[Edge Industrial Application Platform][edge-industrial-application-platform]**             | - [Edge Data Stream Processing][edge-data-stream-processing]<br>- [Edge Inferencing Application Framework][edge-inferencing-application-framework]<br>- [Edge Dashboard Visualization][edge-dashboard-visualization] | - Process real-time sensor and condition monitoring data<br>- Run failure prediction and anomaly detection models<br>- Display asset health metrics and maintenance recommendations              | [Available][available-4]<br>[Available][available-5]<br>[Available][available-4] |
-| **[Cloud Data Platform][cloud-data-platform]**                                               | - [Cloud Data Platform Services][cloud-data-platform-services]<br>- [Data Governance & Lineage][data-governance-lineage]<br>- [Machine Learning Feature Store][machine-learning-feature-store]                       | - Store asset condition data and maintenance history<br>- Maintain asset data traceability and maintenance lineage<br>- Manage features for predictive maintenance models                        | [Available][available-7]<br>In Development<br>In Development                     |
-| **[Cloud AI Platform][cloud-ai-platform]**                                                   | - [Cloud AI/ML Model Training][cloud-ai-ml-model-training]<br>- [MLOps Toolchain][mlops-toolchain]                                                                                                                   | - Train advanced failure prediction and maintenance optimization models<br>- Manage model lifecycle for predictive maintenance<br>                                                               | Planned<br>Planned                                                               |
-| **[Cloud Insights Platform][cloud-insights-platform]**                                       | - [Automated Incident Response & Remediation][automated-incident-response-remediation]<br>- [Cloud Observability Foundation][cloud-observability-foundation]                                                         | - Automate responses to equipment failures and maintenance alerts<br>- Apply advanced analytics to maintenance and asset data                                                                    | In Development<br>In Development                                                 |
-| **[Advanced Simulation & Digital Twin Platform][advanced-simulation-digital-twin-platform]** | - [3D Digital Twin][3d-digital-twin]<br>- [Augmented Reality Visualization][augmented-reality-visualization]                                                                                                         | - 3D models of assets and maintenance optimization systems<br>- AR-assisted maintenance workflows and asset visualization                                                                        | External<br>External                                                             |
+| Capability Group                                                                             | Critical Capabilities                                                                                                                                                                                                | Implementation Requirements                                                                                            | Accelerator Support                                               |
+|----------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------|
+| **[Protocol Translation & Device Management][protocol-translation-device-management]**       | - [OPC UA Data Ingestion][opc-ua-data-ingestion]<br>- [Device Twin Management][device-twin-management]<br>- [Broad Industrial Protocol Support][broad-industrial-protocol-support]                                   | - Equipment sensor integration<br>- Digital twins for asset monitoring<br>- Maintenance system protocol support        | ✅ Ready to Deploy<br>🔵 Development Required<br>🟣 Planned        |
+| **[Edge Cluster Platform][edge-cluster-platform]**                                           | - [Edge Compute Orchestration][edge-compute-orchestration]<br>- [Edge Application CI/CD][edge-application-cicd]                                                                                                      | - Maintenance application deployment environment<br>- CI/CD pipeline for predictive models                             | ✅ Ready to Deploy<br>✅ Ready to Deploy                            |
+| **[Edge Industrial Application Platform][edge-industrial-application-platform]**             | - [Edge Data Stream Processing][edge-data-stream-processing]<br>- [Edge Inferencing Application Framework][edge-inferencing-application-framework]<br>- [Edge Dashboard Visualization][edge-dashboard-visualization] | - Real-time sensor data processing<br>- Predictive maintenance model deployment<br>- Maintenance dashboards and alerts | ✅ Ready to Deploy<br>🔵 Development Required<br>✅ Ready to Deploy |
+| **[Cloud Data Platform][cloud-data-platform]**                                               | - [Cloud Data Platform Services][cloud-data-platform-services]<br>- [Data Governance & Lineage][data-governance-lineage]                                                                                             | - Equipment data storage and analytics<br>- Maintenance history and asset traceability                                 | ✅ Ready to Deploy<br>🔵 Development Required                      |
+| **[Cloud AI Platform][cloud-ai-platform]**                                                   | - [Cloud AI/ML Model Training][cloud-ai-ml-model-training]<br>- [MLOps Toolchain][mlops-toolchain]                                                                                                                   | - Failure prediction model training<br>- Maintenance model lifecycle management                                        | 🟣 Planned<br>🟣 Planned                                          |
+| **[Cloud Insights Platform][cloud-insights-platform]**                                       | - [Automated Incident Response & Remediation][automated-incident-response-remediation]<br>- [Cloud Observability Foundation][cloud-observability-foundation]                                                         | - Automated maintenance alerts and workflow triggers<br>- Asset health monitoring and analytics                        | 🔵 Development Required<br>🔵 Development Required                |
+| **[Advanced Simulation & Digital Twin Platform][advanced-simulation-digital-twin-platform]** | - [Asset Digital Twin Platform][asset-digital-twin-platform]<br>- [Predictive Analytics Engine][predictive-analytics-engine]                                                                                         | - Advanced asset simulation and modeling<br>- Predictive maintenance analytics platforms                               | 🟪 External Dependencies<br>🟪 External Dependencies              |
 <!-- markdownlint-enable MD033 -->
 
-## Maturity-Based Implementation Roadmap
+---
 
-### Proof of Concept (PoC) Phase - 3 weeks
+## 🛣️ Predictive Maintenance Implementation Roadmap
 
-**Focus**: Basic condition monitoring and asset data collection
+This roadmap outlines the typical progression for implementing Predictive Maintenance scenarios. Each phase defines the capabilities required and the business outcomes typically achieved.
 
-**Core Capabilities**:
+### Scenario Implementation Phases
 
-- **[Edge Data Stream Processing][edge-data-stream-processing]** (Technical: 9, Business: 8, Practical: 9, Cohesion: 9)
-  - Real-time sensor data processing and condition monitoring
-  - Vibration, temperature, and performance data analytics
-  - Asset health scoring and trend analysis
+| Phase             | Duration  | Scenario Scope                                             | Business Value Achievement                   | Accelerator Support                               |
+|-------------------|-----------|------------------------------------------------------------|----------------------------------------------|---------------------------------------------------|
+| 🧪 **PoC**        | 3 weeks   | Basic condition monitoring and alert system                | 15-25% reduction in unplanned downtime       | ✅ Ready to Start - [Use Edge-AI][getting-started] |
+| 🚀 **PoV**        | 10 weeks  | AI-powered failure prediction and maintenance optimization | 40-60% improvement in maintenance efficiency | 🔵 Development Required                           |
+| 🏭 **Production** | 6 months  | Enterprise maintenance platform with automated workflows   | 60-80% reduction in equipment failures       | 🟣 Planned Components                             |
+| 📈 **Scale**      | 15 months | Intelligent asset ecosystem with supply chain integration  | 80-95% optimization of asset lifecycle       | 🟪 External Integration Required                  |
 
-- **[Edge Dashboard Visualization][edge-dashboard-visualization]** (Technical: 8, Business: 9, Practical: 9, Cohesion: 7)
-  - Asset condition dashboards and health monitoring
-  - Real-time equipment performance visualization
-  - Maintenance alert and notification systems
+---
 
-- **[OPC UA Data Ingestion][opc-ua-data-ingestion]** (Technical: 9, Business: 8, Practical: 9, Cohesion: 8)
-  - Integration with equipment sensors and monitoring systems
-  - High-frequency condition monitoring data acquisition
-  - Equipment operational data synchronization
+### 🧪 PoC Phase (3 weeks) - Basic Condition Monitoring
 
-- **[Edge Compute Orchestration][edge-compute-orchestration]** (Technical: 8, Business: 7, Practical: 9, Cohesion: 8)
-  - Deployment of maintenance monitoring applications
-  - Container orchestration for maintenance analytics services
-  - Edge infrastructure management for asset monitoring
+**Scenario Goal**: Establish basic equipment monitoring and alerting to validate technical feasibility and demonstrate immediate maintenance improvements.
 
-**Suggested Expected Value**: 15-25% improvement in equipment health visibility and early issue detection
+**Technical Scope**: Implement sensor-based condition monitoring on critical equipment with real-time data collection and threshold-based alerting.
 
-### Proof of Value (PoV) Phase - 10 weeks
+| Capability Area        | Capability                                                   | Accelerator Support | Implementation Requirements                                                   | Priority |
+|------------------------|--------------------------------------------------------------|---------------------|-------------------------------------------------------------------------------|----------|
+| **Data Processing**    | [Edge Data Stream Processing][edge-data-stream-processing]   | ✅ Ready to Deploy   | Implement real-time sensor data processing with configurable alert thresholds | High     |
+| **Visualization**      | [Edge Dashboard Visualization][edge-dashboard-visualization] | ✅ Ready to Deploy   | Deploy equipment health dashboard with condition monitoring and alerts        | High     |
+| **Device Integration** | [OPC UA Data Ingestion][opc-ua-data-ingestion]               | ✅ Ready to Deploy   | Connect to existing equipment sensors and monitoring systems                  | Medium   |
+| **Platform**           | [Edge Compute Orchestration][edge-compute-orchestration]     | ✅ Ready to Deploy   | Deploy edge computing environment for maintenance applications                | Medium   |
 
-**Focus**: AI-powered failure prediction and maintenance optimization
+**Implementation Sequence**:
 
-**Additional Capabilities**:
+1. **Week 1**: **[Edge Data Stream Processing][edge-data-stream-processing]** - Configure sensor data processing pipeline with configurable thresholds and automated alert generation
+2. **Week 2**: **[Edge Dashboard Visualization][edge-dashboard-visualization]** - Deploy equipment health dashboard with real-time condition monitoring and maintenance alerts
+3. **Week 3**: **[OPC UA Data Ingestion][opc-ua-data-ingestion]** - Integrate with existing equipment + **[Edge Compute Orchestration][edge-compute-orchestration]** - Deploy maintenance application environment
 
-- **[Edge Inferencing Application Framework][edge-inferencing-application-framework]** (Technical: 9, Business: 9, Practical: 7, Cohesion: 9)
-  - Real-time failure prediction models and anomaly detection
-  - Equipment remaining useful life (RUL) calculations
-  - Automated maintenance scheduling recommendations
+**Typical Team Requirements**: 3-4 engineers (1 maintenance engineer, 1 data engineer, 1-2 integration developers)
 
-- **[Device Twin Management][device-twin-management]** (Technical: 8, Business: 8, Practical: 8, Cohesion: 8)
-  - Digital representation of critical assets and equipment
-  - Virtual state tracking of asset health and performance
-  - Asset lifecycle and maintenance history modeling
+---
 
-- **[Cloud Data Platform Services][cloud-data-platform-services]** (Technical: 8, Business: 8, Practical: 8, Cohesion: 9)
-  - Centralized asset data repository and maintenance history
-  - Historical failure pattern analytics and trending
-  - Cross-facility asset performance comparison
+### 🚀 PoV Phase (10 weeks) - AI-Powered Failure Prediction
 
-- **[Broad Industrial Protocol Support][broad-industrial-protocol-support]** (Technical: 8, Business: 7, Practical: 7, Cohesion: 8)
-  - Integration with diverse maintenance and monitoring equipment
-  - Support for legacy asset monitoring systems
-  - Multi-vendor equipment and sensor integration
+**Scenario Goal**: Implement predictive analytics and automated maintenance workflows to demonstrate business value and stakeholder buy-in for enterprise deployment.
 
-**Suggested Expected Value**: 25-40% reduction in unplanned downtime and 20-35% improvement in maintenance efficiency
+**Technical Scope**: Deploy machine learning models for failure prediction, automated maintenance scheduling, and comprehensive asset analytics across multiple equipment types.
 
-### Production Phase - 6 months
+| Capability Area       | Capability                                                                           | Accelerator Support     | Implementation Requirements                                                                | Priority |
+|-----------------------|--------------------------------------------------------------------------------------|-------------------------|--------------------------------------------------------------------------------------------|----------|
+| **AI Platform**       | [Edge Inferencing Application Framework][edge-inferencing-application-framework]     | 🔵 Development Required | Develop failure prediction models with custom inference logic for maintenance optimization | High     |
+| **Device Management** | [Device Twin Management][device-twin-management]                                     | 🔵 Development Required | Create digital twins for equipment with automated maintenance scheduling capabilities      | High     |
+| **Data Platform**     | [Cloud Data Platform Services][cloud-data-platform-services]                         | ✅ Ready to Deploy       | Implement equipment data lake with historical analysis and failure pattern identification  | Medium   |
+| **Incident Response** | [Automated Incident Response & Remediation][automated-incident-response-remediation] | 🔵 Development Required | Establish automated maintenance workflows with escalation and scheduling integration       | Medium   |
 
-**Focus**: Enterprise maintenance automation and digital twin integration
-
-**Additional Capabilities**:
+**Implementation Sequence**:
 
-- **[Data Governance & Lineage][data-governance-lineage]** (Technical: 8, Business: 7, Practical: 7, Cohesion: 8)
-  - Asset data traceability across maintenance operations
-  - Regulatory compliance for maintenance and safety records
-  - Complete maintenance audit trail and documentation
+1. **Weeks 1-3**: **[Edge Inferencing Application Framework][edge-inferencing-application-framework]** - Develop and deploy failure prediction models with real-time inference and automated maintenance recommendations
+2. **Weeks 4-6**: **[Device Twin Management][device-twin-management]** - Implement digital twins for equipment with automated maintenance scheduling and workflow management capabilities
+3. **Weeks 7-8**: **[Cloud Data Platform Services][cloud-data-platform-services]** - Deploy equipment data lake with historical analysis and failure pattern identification
+4. **Weeks 9-10**: **[Automated Incident Response & Remediation][automated-incident-response-remediation]** - Establish automated maintenance workflows with escalation and CMMS integration
 
-- **[Automated Incident Response & Remediation][automated-incident-response-remediation]** (Technical: 7, Business: 9, Practical: 7, Cohesion: 8)
-  - Automated maintenance workflow initiation and work order generation
-  - Equipment shutdown and safety procedure automation
-  - Integration with computerized maintenance management systems (CMMS)
-
-- **[Cloud AI/ML Model Training][cloud-ai-ml-model-training]** (Technical: 8, Business: 9, Practical: 7, Cohesion: 8)
-  - Advanced failure prediction and maintenance optimization models
-  - Continuous model training on asset and maintenance data
-  - Maintenance strategy optimization algorithm development
-
-- **[Edge Application CI/CD][edge-application-cicd]** (Technical: 8, Business: 7, Practical: 8, Cohesion: 8)
-  - Automated deployment of maintenance analytics applications
-  - Continuous integration for maintenance model updates
-  - Version control for maintenance algorithms and configurations
-
-**Suggested Expected Value**: 40-60% reduction in unplanned downtime and 30-50% reduction in maintenance costs
-
-### Scale Phase - 15 months
-
-**Focus**: Advanced maintenance intelligence and enterprise-wide optimization
-
-**Additional Capabilities**:
-
-- **[MLOps Toolchain][mlops-toolchain]** (Technical: 8, Business: 8, Practical: 7, Cohesion: 9)
-  - Automated maintenance model lifecycle management
-  - Continuous maintenance model improvement and optimization
-  - Enterprise maintenance model governance and standards
-
-- **[Machine Learning Feature Store][machine-learning-feature-store]** (Technical: 8, Business: 8, Practical: 7, Cohesion: 9)
-  - Centralized management of asset condition and maintenance features
-  - Feature reuse across maintenance prediction models
-  - Accelerated maintenance model development and deployment
-
-- **[3D Digital Twin][3d-digital-twin]** (Technical: 9, Business: 8, Practical: 6, Cohesion: 8)
-  - Complete 3D modeling of assets and maintenance systems
-  - Virtual maintenance simulation and optimization
-  - Digital asset lifecycle management and planning
-
-- **[Augmented Reality Visualization][augmented-reality-visualization]** (Technical: 9, Business: 8, Practical: 6, Cohesion: 8)
-  - AR-assisted maintenance workflows and procedures
-  - Visual guidance for complex maintenance tasks
-  - Real-time overlay of asset health and maintenance information
-
-**Suggested Expected Value**: 60-80% reduction in unplanned downtime and 50-70% optimization in maintenance costs
-
-## Implementation Phase Legend
-
-| Phase          | Duration  | Focus                                                              | Value Achievement                                 |
-|----------------|-----------|--------------------------------------------------------------------|---------------------------------------------------|
-| **PoC**        | 3 weeks   | Basic condition monitoring and asset data collection               | 15-25% improvement in equipment health visibility |
-| **PoV**        | 10 weeks  | AI-powered failure prediction and maintenance optimization         | 25-40% reduction in unplanned downtime            |
-| **Production** | 6 months  | Enterprise maintenance automation and digital twin integration     | 40-60% reduction in unplanned downtime            |
-| **Scale**      | 15 months | Advanced maintenance intelligence and enterprise-wide optimization | 60-80% reduction in unplanned downtime            |
-
-## Enhanced Key Capabilities Mapping with Implementation Phases
-
-```mermaid
-%%{init: {
-  'theme': 'default',
-  'themeVariables': { 'fontSize': '14px', 'fontFamily': 'trebuchet ms', 'lineHeight': '1.4' },
-  'flowchart': { 'htmlLabels': true, 'curve': 'basis' },
-  'width': '1600px',
-  'height': '1200px'
-}}%%
-graph RL
-    classDef main fill:#4285F4,stroke:#0D47A1,color:white,stroke-width:3px
-    classDef capabilityGroup fill:#1976D2,stroke:#0D47A1,color:white,stroke-width:2px
-    classDef categoryPoC fill:#9C27B0,stroke:#6A1B9A,color:white,stroke-width:2px
-    classDef categoryPoV fill:#FF5722,stroke:#D84315,color:white,stroke-width:2px
-    classDef categoryProd fill:#607D8B,stroke:#455A64,color:white,stroke-width:2px
-    classDef categoryScale fill:#795548,stroke:#5D4037,color:white,stroke-width:2px
-
-    %% Capability status classes
-    classDef available fill:#00C853,stroke:#009624,color:white,stroke-width:1px
-    classDef inDevelopment fill:#FFD600,stroke:#FFAB00,color:black,stroke-width:1px
-    classDef planned fill:#FF6D00,stroke:#FF3D00,color:white,stroke-width:1px
-    classDef external fill:#8D6E63,stroke:#5D4037,color:white,stroke-width:1px
-
-    %% Main Scenario
-    MainScenario[Predictive Maintenance<br/>AI-Driven Asset Lifecycle Management]
-
-    %% PoC Phase Capabilities (3 weeks)
-    EdgeStreamMaint[Edge Data Stream Processing<br/>Score: 9/8/9/9]
-    EdgeDashMaint[Edge Dashboard Visualization<br/>Score: 8/9/9/7]
-    OPCMaintData[OPC UA Data Ingestion<br/>Score: 9/8/9/8]
-    EdgeComputeMaint[Edge Compute Orchestration<br/>Score: 8/7/9/8]
-
-    %% PoV Phase Capabilities (10 weeks)
-    EdgeInferenceMaint[Edge Inferencing Framework<br/>Score: 9/9/7/9]
-    DeviceTwinMaint[Device Twin Management<br/>Score: 8/8/8/8]
-    CloudDataMaint[Cloud Data Platform<br/>Score: 8/8/8/9]
-    IndustrialProtocolMaint[Broad Industrial Protocol Support<br/>Score: 8/7/7/8]
-
-    %% Production Phase Capabilities (6 months)
-    DataGovernanceMaint[Data Governance & Lineage<br/>Score: 8/7/7/8]
-    AutoIncidentMaint[Automated Incident Response<br/>Score: 7/9/7/8]
-    CloudMLMaint[Cloud AI/ML Model Training<br/>Score: 8/9/7/8]
-    EdgeCICDMaint[Edge Application CI/CD<br/>Score: 8/7/8/8]
-
-    %% Scale Phase Capabilities (15 months)
-    MLOpsMaint[MLOps Toolchain<br/>Score: 8/8/7/9]
-    FeatureStoreMaint[ML Feature Store<br/>Score: 8/8/7/9]
-    DigitalTwinMaint[3D Digital Twin<br/>Score: 9/8/6/8]
-    ARVisualizationMaint[Augmented Reality Visualization<br/>Score: 9/8/6/8]
-
-    %% Phase-specific Capability Groups
-    EdgeIndustrialAppMaintPoC[PoC: Edge Industrial Application Platform<br/>3 weeks]
-    ProtocolTranslationMaintPoC[PoC: Protocol Translation & Device Management<br/>3 weeks]
-    EdgeClusterMaintPoC[PoC: Edge Cluster Platform<br/>3 weeks]
-
-    EdgeIndustrialAppMaintPoV[PoV: Edge Industrial Application Platform<br/>10 weeks]
-    ProtocolTranslationMaintPoV[PoV: Protocol Translation & Device Management<br/>10 weeks]
-    CloudDataPlatformMaintPoV[PoV: Cloud Data Platform<br/>10 weeks]
-
-    CloudDataPlatformMaintProd[Production: Cloud Data Platform<br/>6 months]
-    CloudInsightsPlatformMaintProd[Production: Cloud Insights Platform<br/>6 months]
-    CloudAIPlatformMaintProd[Production: Cloud AI Platform<br/>6 months]
-    EdgeClusterMaintProd[Production: Edge Cluster Platform<br/>6 months]
-
-    CloudAIPlatformMaintScale[Scale: Cloud AI Platform<br/>15 months]
-    CloudDataPlatformMaintScale[Scale: Cloud Data Platform<br/>15 months]
-    AdvancedSimulationMaintScale[Scale: Advanced Simulation & Digital Twin<br/>15 months]
-
-    %% Individual Capabilities to Phase-specific Groups
-    EdgeStreamMaint --> EdgeIndustrialAppMaintPoC
-    EdgeDashMaint --> EdgeIndustrialAppMaintPoC
-    OPCMaintData --> ProtocolTranslationMaintPoC
-    EdgeComputeMaint --> EdgeClusterMaintPoC
-
-    EdgeInferenceMaint --> EdgeIndustrialAppMaintPoV
-    DeviceTwinMaint --> ProtocolTranslationMaintPoV
-    CloudDataMaint --> CloudDataPlatformMaintPoV
-    IndustrialProtocolMaint --> ProtocolTranslationMaintPoV
-
-    DataGovernanceMaint --> CloudDataPlatformMaintProd
-    AutoIncidentMaint --> CloudInsightsPlatformMaintProd
-    CloudMLMaint --> CloudAIPlatformMaintProd
-    EdgeCICDMaint --> EdgeClusterMaintProd
-
-    MLOpsMaint --> CloudAIPlatformMaintScale
-    FeatureStoreMaint --> CloudDataPlatformMaintScale
-    DigitalTwinMaint --> AdvancedSimulationMaintScale
-    ARVisualizationMaint --> AdvancedSimulationMaintScale
-
-    %% Phase-specific Groups to Main Scenario
-    EdgeIndustrialAppMaintPoC --> MainScenario
-    ProtocolTranslationMaintPoC --> MainScenario
-    EdgeClusterMaintPoC --> MainScenario
-
-    EdgeIndustrialAppMaintPoV --> MainScenario
-    ProtocolTranslationMaintPoV --> MainScenario
-    CloudDataPlatformMaintPoV --> MainScenario
-
-    CloudDataPlatformMaintProd --> MainScenario
-    CloudInsightsPlatformMaintProd --> MainScenario
-    CloudAIPlatformMaintProd --> MainScenario
-    EdgeClusterMaintProd --> MainScenario
-
-    CloudAIPlatformMaintScale --> MainScenario
-    CloudDataPlatformMaintScale --> MainScenario
-    AdvancedSimulationMaintScale --> MainScenario
-
-    %% Apply styles
-    MainScenario:::main
-
-    EdgeIndustrialAppMaintPoC:::categoryPoC
-    ProtocolTranslationMaintPoC:::categoryPoC
-    EdgeClusterMaintPoC:::categoryPoC
-
-    EdgeIndustrialAppMaintPoV:::categoryPoV
-    ProtocolTranslationMaintPoV:::categoryPoV
-    CloudDataPlatformMaintPoV:::categoryPoV
-
-    CloudDataPlatformMaintProd:::categoryProd
-    CloudInsightsPlatformMaintProd:::categoryProd
-    CloudAIPlatformMaintProd:::categoryProd
-    EdgeClusterMaintProd:::categoryProd
-
-    CloudAIPlatformMaintScale:::categoryScale
-    CloudDataPlatformMaintScale:::categoryScale
-    AdvancedSimulationMaintScale:::categoryScale
-
-    %% Apply capability status styles
-    EdgeStreamMaint:::available
-    EdgeDashMaint:::available
-    OPCMaintData:::available
-    EdgeComputeMaint:::available
-    EdgeInferenceMaint:::available
-    DeviceTwinMaint:::available
-    CloudDataMaint:::available
-    EdgeCICDMaint:::available
-
-    DataGovernanceMaint:::inDevelopment
-    AutoIncidentMaint:::inDevelopment
-    IndustrialProtocolMaint:::inDevelopment
-    FeatureStoreMaint:::inDevelopment
-
-    CloudMLMaint:::planned
-    MLOpsMaint:::planned
-
-    DigitalTwinMaint:::external
-    ARVisualizationMaint:::external
-
-    linkStyle default stroke-width:2px,fill:none,stroke:#999
-```
-
-## Capability Status Legend
+**Typical Team Requirements**: 6-8 engineers (2 data scientists, 2 maintenance engineers, 2 integration developers, 1-2 DevOps specialists)
+
+**MVP Requirements**: 30% improvement in maintenance efficiency, 50% reduction in emergency maintenance, predictive accuracy of 80% for critical equipment failures
+
+---
+
+### 🏭 Production Phase (6 months) - Enterprise Maintenance Platform
+
+**Scenario Goal**: Deploy enterprise-scale maintenance platform with automated workflows, comprehensive analytics, and integration with existing enterprise systems.
+
+**Technical Scope**: Implement enterprise maintenance management system with automated scheduling, advanced analytics, and integration with existing CMMS and ERP systems.
+
+| Capability Area     | Capability                                                       | Accelerator Support     | Implementation Requirements                                                                     | Priority |
+|---------------------|------------------------------------------------------------------|-------------------------|-------------------------------------------------------------------------------------------------|----------|
+| **ML Operations**   | [MLOps Toolchain][mlops-toolchain]                               | 🟣 Planned Components   | Deploy advanced maintenance model training with enterprise MLOps and model lifecycle management | High     |
+| **Data Governance** | [Data Governance & Lineage][data-governance-lineage]             | 🔵 Development Required | Implement maintenance data governance with full traceability and compliance automation          | Medium   |
+| **Cloud Training**  | [Cloud AI/ML Model Training][cloud-ai-ml-model-training]         | 🟣 Planned Components   | Establish cloud-based model training with enterprise maintenance analytics capabilities         | High     |
+| **Observability**   | [Cloud Observability Foundation][cloud-observability-foundation] | 🔵 Development Required | Deploy comprehensive asset health monitoring with advanced analytics and intelligence           | Medium   |
+
+**Implementation Sequence**:
+
+1. **Months 1-2**: **[MLOps Toolchain][mlops-toolchain]** - Deploy advanced maintenance model training + **[Data Governance & Lineage][data-governance-lineage]** - Implement maintenance data governance
+2. **Months 3-4**: **[Cloud AI/ML Model Training][cloud-ai-ml-model-training]** - Establish cloud-based model training with enterprise maintenance analytics capabilities
+3. **Months 5-6**: **[Cloud Observability Foundation][cloud-observability-foundation]** - Deploy comprehensive asset health monitoring with advanced analytics
+
+**Typical Team Requirements**: 8-12 engineers (3 data scientists, 3 maintenance engineers, 3 integration developers, 2-3 DevOps specialists)
+
+---
+
+### 📈 Scale Phase (15 months) - Intelligent Asset Ecosystem
+
+**Scenario Goal**: Implement intelligent asset ecosystem with supply chain integration, autonomous maintenance optimization, and comprehensive asset intelligence across the entire value chain.
+
+**Technical Scope**: Deploy advanced asset intelligence platform with supply chain integration, autonomous maintenance optimization, and comprehensive enterprise asset management capabilities.
+
+| Capability Area           | Capability                                                             | Accelerator Support     | Implementation Requirements                                                                 | Priority |
+|---------------------------|------------------------------------------------------------------------|-------------------------|---------------------------------------------------------------------------------------------|----------|
+| **Digital Twin Platform** | [Asset Digital Twin Platform][asset-digital-twin-platform]             | 🟪 External Integration | Implement advanced asset simulation with comprehensive digital twin capabilities            | High     |
+| **Predictive Analytics**  | [Predictive Analytics Engine][predictive-analytics-engine]             | 🟪 External Integration | Deploy predictive analytics engine with comprehensive maintenance optimization capabilities | High     |
+| **Protocol Support**      | [Broad Industrial Protocol Support][broad-industrial-protocol-support] | 🟣 Planned Components   | Implement comprehensive protocol support for supply chain asset integration                 | Medium   |
+| **Application CI/CD**     | [Edge Application CI/CD][edge-application-cicd]                        | ✅ Ready to Deploy       | Establish enterprise-grade deployment pipeline for maintenance applications                 | Medium   |
+
+**Implementation Sequence**:
+
+1. **Months 1-6**: **[Asset Digital Twin Platform][asset-digital-twin-platform]** - Implement advanced asset simulation + **[Predictive Analytics Engine][predictive-analytics-engine]** - Deploy comprehensive predictive analytics
+2. **Months 7-12**: **[Broad Industrial Protocol Support][broad-industrial-protocol-support]** - Implement comprehensive protocol support with supply chain asset integration
+3. **Months 13-15**: **[Edge Application CI/CD][edge-application-cicd]** - Establish enterprise-grade deployment pipeline with comprehensive maintenance application capabilities
+
+**Typical Team Requirements**: 12-16 engineers (4 data scientists, 4 maintenance engineers, 4 integration developers, 3-4 DevOps specialists)
+
+---
+
+## 💼 Business Planning & ROI Analysis
+
+This section provides investment and return projections based on industry benchmarks and implementation data.
+
+### Investment & Return Projections
+
+| Phase          | Investment Level | Expected ROI                                 | Timeline to Value | Key Metrics                                                                            |
+|----------------|------------------|----------------------------------------------|-------------------|----------------------------------------------------------------------------------------|
+| **PoC**        | Low              | 15-25% reduction in unplanned downtime       | 3-6 weeks         | Downtime improvement, 40% faster fault detection                                       |
+| **PoV**        | Medium           | 30-50% improvement in maintenance efficiency | 10-16 weeks       | 60% automation of maintenance scheduling, 25-35% faster maintenance decisions          |
+| **Production** | High             | 50-70% reduction in equipment failures       | 6-12 months       | 80% automation of maintenance processes, enterprise maintenance excellence achievement |
+| **Scale**      | Enterprise       | 80-90% optimization of asset lifecycle       | 12-18 months      | 95% automation of maintenance processes, comprehensive asset intelligence              |
+
+### Risk Assessment & Mitigation
+
+| Risk Category                      | Probability | Impact | Mitigation Strategy                                                                           |
+|------------------------------------|-------------|--------|-----------------------------------------------------------------------------------------------|
+| **🔧 Technical Integration**       | Medium      | High   | Phase-based deployment with proven maintenance frameworks and comprehensive testing           |
+| **👥 Skills & Training**           | High        | Medium | Maintenance engineering training programs and partnership with maintenance automation vendors |
+| **💻 Legacy System Compatibility** | Medium      | High   | Protocol translation layers and gradual maintenance system integration approaches             |
+| **📊 Data Quality & Governance**   | Medium      | Medium | Equipment data validation frameworks and automated data quality monitoring                    |
+| **🏭 Operational Disruption**      | Low         | High   | Parallel maintenance system deployment and comprehensive rollback procedures                  |
+
+### Expected Business Outcomes
+
+| Outcome Category           | Improvement Range   | Business Impact                                                     | Measurement Timeline |
+|----------------------------|---------------------|---------------------------------------------------------------------|----------------------|
+| **Unplanned Downtime**     | 50-80% reduction    | Improved production availability and reduced emergency costs        | 3-6 months           |
+| **Maintenance Efficiency** | 30-60% improvement  | Reduced maintenance costs and improved resource utilization         | 6-12 months          |
+| **Equipment Failures**     | 60-90% reduction    | Increased equipment reliability and extended asset life             | 6-18 months          |
+| **Maintenance Scheduling** | 40-70% automation   | Improved maintenance planning and reduced manual coordination       | 3-9 months           |
+| **Asset Lifecycle**        | 80-95% optimization | Enhanced asset value and improved capital efficiency                | 12-24 months         |
+| **Emergency Maintenance**  | 70-90% reduction    | Reduced emergency response costs and improved operational stability | 6-15 months          |
+| **Spare Parts Inventory**  | 30-50% optimization | Reduced inventory costs and improved parts availability             | 9-18 months          |
+| **Maintenance Costs**      | 25-45% reduction    | Lower total maintenance costs and improved operational efficiency   | 12-24 months         |
+| **Asset Utilization**      | 20-35% improvement  | Enhanced production capacity and improved asset ROI                 | 12-24 months         |
+
+---
+
+## ✅ Implementation Success Checklist
+
+This checklist provides a structured approach to preparation and validation for Predictive Maintenance implementation.
+
+### Pre-Implementation Assessment
+
+- [ ] **Asset Inventory**: Critical equipment identified and maintenance requirements documented
+- [ ] **Sensor Infrastructure**: Equipment monitoring capabilities assessed and sensor integration requirements documented
+- [ ] **Data Integration**: Maintenance data sources identified and CMMS integration requirements established
+- [ ] **Maintenance Processes**: Current maintenance workflows mapped and optimization opportunities identified
+- [ ] **Team Readiness**: Maintenance engineering team skills assessed and training needs identified
+
+### Phase Advancement Criteria
 
 <!-- markdownlint-disable MD033 -->
-| Status                                                  | Description                                                                            |
-|---------------------------------------------------------|----------------------------------------------------------------------------------------|
-| <span style="color:#00C853">■</span> **Available**      | These capabilities are mostly implemented and ready to use in the edge-ai platform     |
-| <span style="color:#FFD600">■</span> **In Development** | These capabilities are partially implemented or currently in active development        |
-| <span style="color:#FF6D00">■</span> **Planned**        | These capabilities are on our roadmap but implementation has not yet started           |
-| <span style="color:#8D6E63">■</span> **External**       | These capabilities require integration with external systems or third-party components |
+| Phase Transition             | Success Criteria                                                                 | Target Metrics                                                                            | Validation Method                                                                         |
+|------------------------------|----------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------|
+| **🧪 PoC → 🚀 PoV**          | Basic condition monitoring operational and equipment health visibility validated | • 15% reduction in unplanned downtime<br>• 40% faster fault detection                     | • Equipment health dashboard operational<br>• Alert accuracy validation                   |
+| **🚀 PoV → 🏭 Production**   | AI-powered failure prediction operational and maintenance optimization validated | • 40% improvement in maintenance efficiency<br>• 60% automation of maintenance scheduling | • Failure prediction accuracy validation<br>• Maintenance workflow automation measurement |
+| **🏭 Production → 📈 Scale** | Enterprise maintenance platform operational and asset optimization validated     | • 70% reduction in equipment failures<br>• 80% automation of maintenance processes        | • Enterprise system integration validation<br>• Asset lifecycle optimization measurement  |
 <!-- markdownlint-enable MD033 -->
 
-> **Important**: Before implementing this scenario, review the [Prerequisites][prerequisites] document for hardware, software, permissions, and system requirements.
+This **phase-based approach** provides clear visibility into:
 
-## Expected Outcomes
+- **⏱️ Timeline**: Each phase has specific duration and focus areas
+- **🎯 Priority**: Left-to-right flow shows implementation order within each phase
+- **📈 Value**: Progressive value delivery from 15% to 95% maintenance process optimization
+- **🔄 Dependencies**: Each phase builds upon previous achievements
 
-- Reduction in unplanned downtime by 60-80%
-- Decrease in maintenance costs by 30-50%
-- Extension of asset lifecycle and useful life by 20-40%
-- Improvement in maintenance efficiency and productivity by 40-70%
-- Enhanced equipment reliability and availability by 50-80%
-- Reduced maintenance inventory and spare parts costs by 25-45%
-- More predictable maintenance scheduling and resource planning by 60-90%
-- Improved safety through predictive equipment monitoring by 30-60%
-- Enhanced compliance and maintenance documentation by 40-80%
+The visual progression makes it easy to understand **what gets built when** and **how capabilities connect** to deliver incremental business value.
 
-## Advanced Capability Extensions
+> **Important**: Before implementing this scenario, review the prerequisites documentation for hardware, software, permissions, and system requirements.
 
-- **[MLOps Toolchain][mlops-toolchain]** (Technical: 8, Business: 8, Practical: 7, Cohesion: 9)
-  - Automated maintenance model lifecycle management framework
-  - Continuous maintenance model improvement capabilities
-  - Enterprise maintenance model governance and versioning
+## 🚀 Advanced Capability Extensions
 
-- **[Data Governance & Lineage][data-governance-lineage]** (Technical: 8, Business: 7, Practical: 7, Cohesion: 8)
-  - Complete traceability of asset data across maintenance operations
-  - Regulatory compliance for maintenance and safety management systems
-  - Audit trail for maintenance verification and validation
+These capabilities extend beyond the core Predictive Maintenance scenario to enable advanced asset intelligence applications.
 
-## Next Steps & Related Resources
+| Capability                           | Technical Complexity | Business Value | Implementation Effort | Integration Points                                                        |
+|--------------------------------------|----------------------|----------------|-----------------------|---------------------------------------------------------------------------|
+| **Supply Chain Asset Intelligence**  | Very High            | Medium         | 12-18 months          | ERP systems, Supplier portals, Asset management systems                   |
+| **Regulatory Compliance Automation** | Very High            | High           | 9-15 months           | Regulatory systems, Documentation platforms, Audit systems                |
+| **Energy Optimization Integration**  | Very High            | High           | 12-24 months          | Energy management systems, Sustainability platforms, Efficiency analytics |
+| **Safety-Driven Maintenance**        | High                 | Medium         | 6-12 months           | Safety systems, Risk management platforms, Compliance analytics           |
 
-- Review the [Prerequisites][prerequisites] for implementation requirements
-- Explore the [Capability Group Mapping][capability-group-mapping] for detailed capability assessment
+**Note**: Core capabilities like Condition Monitoring, Failure Prediction, Maintenance Optimization, and Asset Analytics are integrated into the main scenario phases as essential components.
+
+## 🔗 Related Scenarios & Synergies
+
+Maximize platform investment by leveraging shared capabilities across multiple use cases:
+
+| Related Scenario                                                                       | Shared Capabilities                                          | Potential Synergies                     | Implementation Benefits                         |
+|----------------------------------------------------------------------------------------|--------------------------------------------------------------|-----------------------------------------|-------------------------------------------------|
+| **[Quality Process Optimization Automation][quality-process-optimization-automation]** | Edge Data Processing, AI Platform, Cloud Analytics           | Quality-driven maintenance optimization | 30% shared infrastructure costs                 |
+| **[Operational Performance Monitoring][operational-performance-monitoring]**           | Edge Platform, Dashboard Visualization, Cloud Insights       | Unified operational intelligence        | 40% operational efficiency gains                |
+| **[Energy Optimization Management][energy-optimization-management]**                   | IoT Integration, Analytics Platform, Optimization Algorithms | Energy-efficient maintenance strategies | 25% improved sustainability metrics             |
+| **[Yield Process Optimization][yield-process-optimization]**                           | Data Processing, Analytics Platform, Digital Twin            | Comprehensive production optimization   | 35% overall equipment effectiveness improvement |
+
+### 🔄 Cross-Scenario Implementation Strategy
+
+Strategic multi-scenario deployment maximizes platform investment by building shared capabilities that compound value across implementations:
+
+| Implementation Phase                                 | Primary Scenario                                                                                            | Add-On Scenarios                        | Shared Platform Benefits                                                 | Expected ROI Improvement |
+|------------------------------------------------------|-------------------------------------------------------------------------------------------------------------|-----------------------------------------|--------------------------------------------------------------------------|--------------------------|
+| **🏗️ Phase 1 - Foundation** (6 months)              | **Predictive Maintenance** (this scenario)                                                                  | None                                    | Establish comprehensive asset intelligence platform                      | Baseline ROI: 50-70%     |
+| **⚡ Phase 2 - Quality Integration** (3 months)       | Predictive Maintenance + [Quality Process Optimization Automation][quality-process-optimization-automation] | Quality-driven maintenance workflows    | 35% shared infrastructure, unified asset and quality intelligence        | +25-35% additional ROI   |
+| **🔮 Phase 3 - Operational Intelligence** (4 months) | Add [Operational Performance Monitoring][operational-performance-monitoring]                                | Comprehensive operational monitoring    | 40% shared edge platform, combined operational and maintenance analytics | +20-30% additional ROI   |
+| **🎯 Phase 4 - Energy Excellence** (3 months)        | Add [Energy Optimization Management][energy-optimization-management]                                        | Energy-efficient maintenance strategies | 50% shared platform, holistic sustainability optimization                | +15-25% additional ROI   |
+
+**Platform Benefits**: Multi-scenario deployment achieves 110-160% cumulative ROI with 40-60% faster implementation for additional scenarios due to shared platform components.
+
+## 🚀 Next Steps & Related Resources
+
+- 📋 Review the [prerequisites][prerequisites] for implementation requirements
+- 🎯 Explore the [capability group mapping][capabilities-overview] for detailed capability assessment
 - See the [Blueprints README][blueprints-readme] for deployment options
-- Review [Implementation Guide][implementation-guide] for step-by-step deployment instructions
+- Review the [Getting Started Guide][getting-started] for step-by-step deployment instructions
 
 <!-- Reference Links -->
-[available]: /src/100-edge/110-iot-ops
-[available-2]: /src/100-edge/100-cncf-cluster
-[available-4]: /src/100-edge/120-observability
-[available-5]: /src/100-edge/130-ml-ops
-[available-7]: /src/000-cloud/030-data
-[prerequisites]: ./prerequisites.md
-[capability-group-mapping]: ./predictive-maintenance-capability-mapping.md
+
+<!-- Capability Group Links -->
+[protocol-translation-device-management]: /docs/project-planning/capabilities/protocol-translation-device-management/README.md
+[edge-cluster-platform]: /docs/project-planning/capabilities/edge-cluster-platform/README.md
+[edge-industrial-application-platform]: /docs/project-planning/capabilities/edge-industrial-application-platform/README.md
+[cloud-data-platform]: /docs/project-planning/capabilities/cloud-data-platform/README.md
+[cloud-ai-platform]: /docs/project-planning/capabilities/cloud-ai-platform/README.md
+[cloud-insights-platform]: /docs/project-planning/capabilities/cloud-insights-platform/README.md
+[advanced-simulation-digital-twin-platform]: /docs/project-planning/capabilities/advanced-simulation-digital-twin-platform/README.md
+
+<!-- Individual Capability Links -->
+[opc-ua-data-ingestion]: /docs/project-planning/capabilities/protocol-translation-device-management/opc-ua-data-ingestion.md
+[device-twin-management]: /docs/project-planning/capabilities/protocol-translation-device-management/device-twin-management.md
+[broad-industrial-protocol-support]: /docs/project-planning/capabilities/protocol-translation-device-management/broad-industrial-protocol-support.md
+[edge-compute-orchestration]: /docs/project-planning/capabilities/edge-cluster-platform/edge-compute-orchestration.md
+[edge-application-cicd]: /docs/project-planning/capabilities/edge-cluster-platform/edge-application-cicd.md
+[edge-data-stream-processing]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-data-stream-processing.md
+[edge-inferencing-application-framework]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-inferencing-application-framework.md
+[edge-dashboard-visualization]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-dashboard-visualization.md
+[cloud-data-platform-services]: /docs/project-planning/capabilities/cloud-data-platform/cloud-data-platform-services.md
+[data-governance-lineage]: /docs/project-planning/capabilities/cloud-data-platform/data-governance-lineage.md
+[cloud-ai-ml-model-training]: /docs/project-planning/capabilities/cloud-ai-platform/cloud-ai-ml-model-training.md
+[mlops-toolchain]: /docs/project-planning/capabilities/cloud-ai-platform/mlops-toolchain.md
+[automated-incident-response-remediation]: /docs/project-planning/capabilities/cloud-insights-platform/automated-incident-response-remediation.md
+[cloud-observability-foundation]: /docs/project-planning/capabilities/cloud-insights-platform/cloud-observability-foundation.md
+[asset-digital-twin-platform]: /docs/project-planning/capabilities/advanced-simulation-digital-twin-platform/asset-digital-twin-platform.md
+[predictive-analytics-engine]: /docs/project-planning/capabilities/advanced-simulation-digital-twin-platform/predictive-analytics-engine.md
+
+<!-- Documentation Links -->
+[getting-started]: /docs/getting-started/README.md
 [blueprints-readme]: /blueprints/README.md
-[implementation-guide]: /docs/implementation-guides/predictive-maintenance-implementation.md
-[protocol-translation-device-management]: /docs/capabilities/protocol-translation-device-management/README.md
-[opc-ua-data-ingestion]: /docs/capabilities/protocol-translation-device-management/opc-ua-data-ingestion.md
-[device-twin-management]: /docs/capabilities/protocol-translation-device-management/device-twin-management.md
-[broad-industrial-protocol-support]: /docs/capabilities/protocol-translation-device-management/broad-industrial-protocol-support.md
-[edge-cluster-platform]: /docs/capabilities/edge-cluster-platform/README.md
-[edge-compute-orchestration]: /docs/capabilities/edge-cluster-platform/edge-compute-orchestration-platform.md
-[edge-application-cicd]: /docs/capabilities/edge-cluster-platform/edge-application-cicd.md
-[edge-industrial-application-platform]: /docs/capabilities/edge-industrial-application-platform/README.md
-[edge-data-stream-processing]: /docs/capabilities/edge-industrial-application-platform/edge-data-stream-processing.md
-[edge-inferencing-application-framework]: /docs/capabilities/edge-industrial-application-platform/edge-inferencing-application-framework.md
-[edge-dashboard-visualization]: /docs/capabilities/edge-industrial-application-platform/edge-dashboard-visualization.md
-[cloud-data-platform]: /docs/capabilities/cloud-data-platform/README.md
-[cloud-data-platform-services]: /docs/capabilities/cloud-data-platform/cloud-data-platform-services.md
-[data-governance-lineage]: /docs/capabilities/cloud-data-platform/data-governance-lineage.md
-[machine-learning-feature-store]: /docs/capabilities/cloud-data-platform/machine-learning-feature-store.md
-[cloud-ai-platform]: /docs/capabilities/cloud-ai-platform/README.md
-[cloud-ai-ml-model-training]: /docs/capabilities/cloud-ai-platform/cloud-ai-ml-model-training-management.md
-[mlops-toolchain]: /docs/capabilities/cloud-ai-platform/mlops-toolchain.md
-[cloud-insights-platform]: /docs/capabilities/cloud-insights-platform/README.md
-[automated-incident-response-remediation]: /docs/capabilities/cloud-insights-platform/automated-incident-response-remediation.md
-[cloud-observability-foundation]: /docs/capabilities/cloud-insights-platform/cloud-observability-foundation.md
-[advanced-simulation-digital-twin-platform]: /docs/capabilities/advanced-simulation-digital-twin-platform/README.md
-[3d-digital-twin]: /docs/capabilities/advanced-simulation-digital-twin-platform/3d-digital-twin.md
-[augmented-reality-visualization]: /docs/capabilities/advanced-simulation-digital-twin-platform/augmented-reality-visualization.md
+[prerequisites]: /docs/project-planning/scenarios/predictive-maintenance/prerequisites.md
+[capabilities-overview]: /docs/project-planning/capabilities/README.md
+
+<!-- Related Scenario Links -->
+[quality-process-optimization-automation]: /docs/project-planning/scenarios/quality-process-optimization-automation/README.md
+[operational-performance-monitoring]: /docs/project-planning/scenarios/operational-performance-monitoring/README.md
+[energy-optimization-management]: /docs/project-planning/scenarios/energy-optimization-management/README.md
+[yield-process-optimization]: /docs/project-planning/scenarios/yield-process-optimization/README.md
 
 ---
 

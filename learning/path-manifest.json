@@ -1,0 +1,402 @@
+{
+  "generated": "2025-11-05T21:27:49Z",
+  "version": "1.0",
+  "paths": [
+    {
+      "pathId": "path-expert-data-analytics-integration",
+      "metadata": {
+        "description": "Build edge-to-cloud data pipelines with Microsoft Fabric Real-Time Intelligence for advanced analytics",
+        "title": "Expert: Data & Analytics Integration",
+        "ms.date": "10/24/2025",
+        "estimated_reading_time": "8",
+        "author": "Edge AI Team",
+        "ms.topic": "learning-path",
+        "difficulty": "expert"
+      },
+      "title": "Expert: Data & Analytics Integration",
+      "katas": [
+        {
+          "kataId": "200-prerequisite-full-deployment",
+          "category": "fabric-integration",
+          "fullId": "fabric-integration-200-prerequisite-full-deployment"
+        },
+        {
+          "kataId": "200-fabric-workspace-configuration",
+          "category": "fabric-integration",
+          "fullId": "fabric-integration-200-fabric-workspace-configuration"
+        },
+        {
+          "kataId": "100-fabric-rti-blueprint-deployment",
+          "category": "fabric-integration",
+          "fullId": "fabric-integration-100-fabric-rti-blueprint-deployment"
+        },
+        {
+          "kataId": "300-edge-to-cloud-data-pipeline",
+          "category": "fabric-integration",
+          "fullId": "fabric-integration-300-edge-to-cloud-data-pipeline"
+        },
+        {
+          "kataId": "400-fabric-analytics-dashboards",
+          "category": "fabric-integration",
+          "fullId": "fabric-integration-400-fabric-analytics-dashboards"
+        },
+        {
+          "kataId": "400-multi-component-debugging",
+          "category": "troubleshooting",
+          "fullId": "troubleshooting-400-multi-component-debugging"
+        },
+        {
+          "kataId": "400-performance-optimization",
+          "category": "troubleshooting",
+          "fullId": "troubleshooting-400-performance-optimization"
+        },
+        {
+          "kataId": "500-learning-platform-extraction",
+          "category": "task-planning",
+          "fullId": "task-planning-500-learning-platform-extraction"
+        },
+        {
+          "kataId": "400-ai-asset-extraction",
+          "category": "task-planning",
+          "fullId": "task-planning-400-ai-asset-extraction"
+        },
+        {
+          "kataId": "400-pr-generation",
+          "category": "task-planning",
+          "fullId": "task-planning-400-pr-generation"
+        }
+      ],
+      "description": "Build edge-to-cloud data pipelines with Microsoft Fabric Real-Time Intelligence for advanced analytics",
+      "difficulty": "expert"
+    },
+    {
+      "pathId": "path-expert-enterprise-integration",
+      "metadata": {
+        "description": "Orchestrate complex multi-system integrations at enterprise scale with comprehensive task planning and cross-team coordination",
+        "title": "Expert: Enterprise Integration Specialist",
+        "ms.date": "10/24/2025",
+        "estimated_reading_time": "10",
+        "author": "Edge AI Team",
+        "ms.topic": "learning-path",
+        "difficulty": "expert"
+      },
+      "title": "Expert: Enterprise Integration Specialist",
+      "katas": [
+        {
+          "kataId": "100-edge-documentation-planning",
+          "category": "task-planning",
+          "fullId": "task-planning-100-edge-documentation-planning"
+        },
+        {
+          "kataId": "300-repository-analysis-planning",
+          "category": "task-planning",
+          "fullId": "task-planning-300-repository-analysis-planning"
+        },
+        {
+          "kataId": "100-fabric-rti-blueprint-deployment",
+          "category": "fabric-integration",
+          "fullId": "fabric-integration-100-fabric-rti-blueprint-deployment"
+        },
+        {
+          "kataId": "400-advanced-strategic-planning",
+          "category": "project-planning",
+          "fullId": "project-planning-400-advanced-strategic-planning"
+        },
+        {
+          "kataId": "400-enterprise-architecture-planning",
+          "category": "project-planning",
+          "fullId": "project-planning-400-enterprise-architecture-planning"
+        },
+        {
+          "kataId": "300-edge-to-cloud-data-pipeline",
+          "category": "fabric-integration",
+          "fullId": "fabric-integration-300-edge-to-cloud-data-pipeline"
+        },
+        {
+          "kataId": "400-fabric-analytics-dashboards",
+          "category": "fabric-integration",
+          "fullId": "fabric-integration-400-fabric-analytics-dashboards"
+        },
+        {
+          "kataId": "100-basic-prd-creation",
+          "category": "product-requirements",
+          "fullId": "product-requirements-100-basic-prd-creation"
+        },
+        {
+          "kataId": "400-advanced-capability-integration",
+          "category": "task-planning",
+          "fullId": "task-planning-400-advanced-capability-integration"
+        },
+        {
+          "kataId": "500-cross-site-industrial-data-architecture",
+          "category": "adr-creation",
+          "fullId": "adr-creation-500-cross-site-industrial-data-architecture"
+        },
+        {
+          "kataId": "500-learning-platform-extraction",
+          "category": "task-planning",
+          "fullId": "task-planning-500-learning-platform-extraction"
+        },
+        {
+          "kataId": "500-deployment-expert",
+          "category": "edge-deployment",
+          "fullId": "edge-deployment-500-deployment-expert"
+        },
+        {
+          "kataId": "400-stakeholder-alignment-strategies",
+          "category": "project-planning",
+          "fullId": "project-planning-400-stakeholder-alignment-strategies"
+        }
+      ],
+      "description": "Orchestrate complex multi-system integrations at enterprise scale with comprehensive task planning and cross-team coordination",
+      "difficulty": "expert"
+    },
+    {
+      "pathId": "path-foundation-ai-first-engineering",
+      "metadata": {
+        "description": "Build proficiency in AI-powered documentation, research, and code generation through hands-on practice with AI-assisted development workflows",
+        "title": "Foundation: AI-First Engineering",
+        "ms.date": "10/24/2025",
+        "estimated_reading_time": "10",
+        "author": "Edge AI Team",
+        "ms.topic": "learning-path",
+        "difficulty": "foundation",
+        "prerequisites": "[]"
+      },
+      "title": "Foundation: AI-First Engineering",
+      "katas": [
+        {
+          "kataId": "100-inline-suggestions-basics",
+          "category": "ai-assisted-engineering",
+          "fullId": "ai-assisted-engineering-100-inline-suggestions-basics"
+        },
+        {
+          "kataId": "100-inline-chat-quick-edits",
+          "category": "ai-assisted-engineering",
+          "fullId": "ai-assisted-engineering-100-inline-chat-quick-edits"
+        },
+        {
+          "kataId": "100-ai-development-fundamentals",
+          "category": "ai-assisted-engineering",
+          "fullId": "ai-assisted-engineering-100-ai-development-fundamentals"
+        },
+        {
+          "kataId": "100-copilot-modes",
+          "category": "ai-assisted-engineering",
+          "fullId": "ai-assisted-engineering-100-copilot-modes"
+        },
+        {
+          "kataId": "100-basic-messaging-architecture",
+          "category": "adr-creation",
+          "fullId": "adr-creation-100-basic-messaging-architecture"
+        },
+        {
+          "kataId": "100-basic-prompt-usage",
+          "category": "project-planning",
+          "fullId": "project-planning-100-basic-prompt-usage"
+        },
+        {
+          "kataId": "200-copilot-edit-mode-basics",
+          "category": "ai-assisted-engineering",
+          "fullId": "ai-assisted-engineering-200-copilot-edit-mode-basics"
+        },
+        {
+          "kataId": "200-copilot-edit-mode-iac-patterns",
+          "category": "ai-assisted-engineering",
+          "fullId": "ai-assisted-engineering-200-copilot-edit-mode-iac-patterns"
+        },
+        {
+          "kataId": "200-advanced-observability-stack",
+          "category": "adr-creation",
+          "fullId": "adr-creation-200-advanced-observability-stack"
+        },
+        {
+          "kataId": "400-service-mesh-selection",
+          "category": "adr-creation",
+          "fullId": "adr-creation-400-service-mesh-selection"
+        },
+        {
+          "kataId": "300-comprehensive-two-scenario",
+          "category": "project-planning",
+          "fullId": "project-planning-300-comprehensive-two-scenario"
+        },
+        {
+          "kataId": "300-context-optimization",
+          "category": "prompt-engineering",
+          "fullId": "prompt-engineering-300-context-optimization"
+        },
+        {
+          "kataId": "300-getting-started-advanced",
+          "category": "ai-assisted-engineering",
+          "fullId": "ai-assisted-engineering-300-getting-started-advanced"
+        },
+        {
+          "kataId": "100-edge-documentation-planning",
+          "category": "task-planning",
+          "fullId": "task-planning-100-edge-documentation-planning"
+        },
+        {
+          "kataId": "300-repository-analysis-planning",
+          "category": "task-planning",
+          "fullId": "task-planning-300-repository-analysis-planning"
+        },
+        {
+          "kataId": "100-basic-prd-creation",
+          "category": "product-requirements",
+          "fullId": "product-requirements-100-basic-prd-creation"
+        },
+        {
+          "kataId": "400-advanced-strategic-planning",
+          "category": "project-planning",
+          "fullId": "project-planning-400-advanced-strategic-planning"
+        },
+        {
+          "kataId": "400-advanced-capability-integration",
+          "category": "task-planning",
+          "fullId": "task-planning-400-advanced-capability-integration"
+        }
+      ],
+      "description": "Build proficiency in AI-powered documentation, research, and code generation through hands-on practice with AI-assisted development workflows",
+      "difficulty": "foundation"
+    },
+    {
+      "pathId": "path-intermediate-devops-excellence",
+      "metadata": {
+        "description": "Deploy, troubleshoot, and optimize edge-to-cloud systems with advanced deployment patterns and diagnostic techniques",
+        "title": "Intermediate: DevOps Excellence",
+        "ms.date": "10/24/2025",
+        "estimated_reading_time": "8",
+        "author": "Edge AI Team",
+        "ms.topic": "learning-path",
+        "difficulty": "skill"
+      },
+      "title": "Intermediate: DevOps Excellence",
+      "katas": [
+        {
+          "kataId": "100-deployment-basics",
+          "category": "edge-deployment",
+          "fullId": "edge-deployment-100-deployment-basics"
+        },
+        {
+          "kataId": "100-resource-management",
+          "category": "edge-deployment",
+          "fullId": "edge-deployment-100-resource-management"
+        },
+        {
+          "kataId": "300-multi-blueprint-coordination",
+          "category": "edge-deployment",
+          "fullId": "edge-deployment-300-multi-blueprint-coordination"
+        },
+        {
+          "kataId": "400-enterprise-compliance-validation",
+          "category": "edge-deployment",
+          "fullId": "edge-deployment-400-enterprise-compliance-validation"
+        },
+        {
+          "kataId": "300-prompt-creation-and-refactoring-workflow",
+          "category": "prompt-engineering",
+          "fullId": "prompt-engineering-300-prompt-creation-and-refactoring-workflow"
+        },
+        {
+          "kataId": "300-ai-assisted-diagnostics",
+          "category": "troubleshooting",
+          "fullId": "troubleshooting-300-ai-assisted-diagnostics"
+        },
+        {
+          "kataId": "400-multi-component-debugging",
+          "category": "troubleshooting",
+          "fullId": "troubleshooting-400-multi-component-debugging"
+        },
+        {
+          "kataId": "400-performance-optimization",
+          "category": "troubleshooting",
+          "fullId": "troubleshooting-400-performance-optimization"
+        },
+        {
+          "kataId": "500-deployment-expert",
+          "category": "edge-deployment",
+          "fullId": "edge-deployment-500-deployment-expert"
+        },
+        {
+          "kataId": "400-stakeholder-alignment-strategies",
+          "category": "project-planning",
+          "fullId": "project-planning-400-stakeholder-alignment-strategies"
+        }
+      ],
+      "description": "Deploy, troubleshoot, and optimize edge-to-cloud systems with advanced deployment patterns and diagnostic techniques",
+      "difficulty": "skill"
+    },
+    {
+      "pathId": "path-intermediate-infrastructure-architect",
+      "metadata": {
+        "description": "Design and deploy edge-to-cloud infrastructure with architectural rigor using ADRs and deployment automation",
+        "title": "Intermediate: Infrastructure Architect",
+        "ms.date": "10/24/2025",
+        "estimated_reading_time": "10",
+        "author": "Edge AI Team",
+        "ms.topic": "learning-path",
+        "difficulty": "skill"
+      },
+      "title": "Intermediate: Infrastructure Architect",
+      "katas": [
+        {
+          "kataId": "100-basic-messaging-architecture",
+          "category": "adr-creation",
+          "fullId": "adr-creation-100-basic-messaging-architecture"
+        },
+        {
+          "kataId": "200-advanced-observability-stack",
+          "category": "adr-creation",
+          "fullId": "adr-creation-200-advanced-observability-stack"
+        },
+        {
+          "kataId": "400-service-mesh-selection",
+          "category": "adr-creation",
+          "fullId": "adr-creation-400-service-mesh-selection"
+        },
+        {
+          "kataId": "100-deployment-basics",
+          "category": "edge-deployment",
+          "fullId": "edge-deployment-100-deployment-basics"
+        },
+        {
+          "kataId": "100-resource-management",
+          "category": "edge-deployment",
+          "fullId": "edge-deployment-100-resource-management"
+        },
+        {
+          "kataId": "300-multi-blueprint-coordination",
+          "category": "edge-deployment",
+          "fullId": "edge-deployment-300-multi-blueprint-coordination"
+        },
+        {
+          "kataId": "400-enterprise-architecture-planning",
+          "category": "project-planning",
+          "fullId": "project-planning-400-enterprise-architecture-planning"
+        },
+        {
+          "kataId": "500-edge-ai-inference-platform-selection",
+          "category": "adr-creation",
+          "fullId": "adr-creation-500-edge-ai-inference-platform-selection"
+        },
+        {
+          "kataId": "500-cross-site-industrial-data-architecture",
+          "category": "adr-creation",
+          "fullId": "adr-creation-500-cross-site-industrial-data-architecture"
+        },
+        {
+          "kataId": "400-enterprise-compliance-validation",
+          "category": "edge-deployment",
+          "fullId": "edge-deployment-400-enterprise-compliance-validation"
+        },
+        {
+          "kataId": "500-deployment-expert",
+          "category": "edge-deployment",
+          "fullId": "edge-deployment-500-deployment-expert"
+        }
+      ],
+      "description": "Design and deploy edge-to-cloud infrastructure with architectural rigor using ADRs and deployment automation",
+      "difficulty": "skill"
+    }
+  ]
+}

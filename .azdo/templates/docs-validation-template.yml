@@ -7,7 +7,7 @@
 #
 # Enhanced Functionality:
 # - Validates enhanced multi-section sidebar navigation (docs/_parts/ structure)
-# - Performs link validation across all documentation folders (docs, src, blueprints, praxisworx, .github, copilot)
+# - Performs link validation across all documentation folders (docs, src, blueprints, learning, .github, copilot)
 # - Checks frontmatter consistency and required fields using Validate-MarkdownFrontmatter.ps1
 # - Validates section-based navigation architecture with Generate-DocsSidebar.ps1
 # - Ensures links don't contain language-specific paths (e.g., 'en-us') across entire repository
@@ -239,7 +239,7 @@ jobs:
             $sidebarPaths = @(
               "docs/_sidebar.md",
               "docs/_parts/docs-sidebar.md",
-              "docs/_parts/praxisworx-sidebar.md",
+              "docs/_parts/learning-sidebar.md",
               "docs/_parts/blueprints-sidebar.md",
               "docs/_parts/infrastructure-sidebar.md"
             )
@@ -469,7 +469,7 @@ jobs:
             echo "📋 Validating links in all documentation files"
 
             # Check all markdown files in tracked folders (includes enhanced documentation structure)
-            find docs src blueprints praxisworx .github copilot -name "*.md" -type f 2>/dev/null | \
+            find docs src blueprints learning .github copilot -name "*.md" -type f 2>/dev/null | \
               grep -v node_modules | \
               while read file; do
                 echo "Checking: $file"
@@ -504,7 +504,7 @@ jobs:
             $docsCount = (Get-ChildItem -Path 'docs' -Filter '*.md' -Recurse -ErrorAction SilentlyContinue).Count
             $srcCount = (Get-ChildItem -Path 'src' -Filter '*.md' -Recurse -ErrorAction SilentlyContinue).Count
             $blueprintsCount = (Get-ChildItem -Path 'blueprints' -Filter '*.md' -Recurse -ErrorAction SilentlyContinue).Count
-            $praxisworxCount = (Get-ChildItem -Path 'praxisworx' -Filter '*.md' -Recurse -ErrorAction SilentlyContinue).Count
+            $learningCount = (Get-ChildItem -Path 'learning' -Filter '*.md' -Recurse -ErrorAction SilentlyContinue).Count
             $githubCount = (Get-ChildItem -Path '.github' -Filter '*.md' -Recurse -ErrorAction SilentlyContinue).Count
             $copilotCount = (Get-ChildItem -Path 'copilot' -Filter '*.md' -Recurse -ErrorAction SilentlyContinue).Count
 
@@ -512,7 +512,7 @@ jobs:
             $sectionStructure = @()
             $sectionPaths = @(
               "docs/_parts/docs-sidebar.md",
-              "docs/_parts/praxisworx-sidebar.md",
+              "docs/_parts/learning-sidebar.md",
               "docs/_parts/blueprints-sidebar.md",
               "docs/_parts/infrastructure-sidebar.md"
             )
@@ -536,10 +536,10 @@ jobs:
             | Main Documentation | $docsCount |
             | Infrastructure Components | $srcCount |
             | Blueprints | $blueprintsCount |
-            | Learning Platform (PraxisWorx) | $praxisworxCount |
+            | Learning Platform | $learningCount |
             | GitHub Resources | $githubCount |
             | AI Assistant Guides (Copilot) | $copilotCount |
-            | **Total** | **$($docsCount + $srcCount + $blueprintsCount + $praxisworxCount + $githubCount + $copilotCount)** |
+            | **Total** | **$($docsCount + $srcCount + $blueprintsCount + $learningCount + $githubCount + $copilotCount)** |
 
             ## 🏗️ Multi-Section Navigation Architecture
 

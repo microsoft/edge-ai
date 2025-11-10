@@ -2,7 +2,7 @@
 title: Resource Provider Testing Template
 description: Azure DevOps pipeline template for automated testing of PowerShell scripts that manage Azure resource provider registration
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: concept
 estimated_reading_time: 7
 keywords:

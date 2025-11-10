@@ -209,27 +209,32 @@ This plan outlines the steps to refactor {{prompt_name}} to improve clarity, con
 Here's how you would follow this prompt to refactor an existing prompt file:
 
 1. First, create and update the plan file:
-   ```
+
+   ```text
    I've created a plan file at `.copilot-tracking/refactor/terraform-standards.prompt.md.plan.md` and documented the analysis of the current document.
    ```
 
 2. After planning the refactoring approach:
-   ```
+
+   ```text
    I've updated the plan with a detailed plan for refactoring, focusing on reorganizing the structure and standardizing prompting terminology.
    ```
 
 3. When making changes, report back on each iteration:
-   ```
+
+   ```text
    I've completed Iteration 1: Reorganized the main structure of the document to improve flow and clarity.
    ```
 
 4. For subsequent iterations:
-   ```
+
+   ```text
    I've completed Iteration 2: Standardized all prompting terminology to use imperative "You WILL" format consistently.
    ```
 
 5. At completion:
-   ```
+
+   ```text
    I've completed all the planned refactoring steps. The document now has a clear structure, consistent terminology, and more concise examples while maintaining all original concepts.
 
    I've deleted the plan file as all changes are now complete.

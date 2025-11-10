@@ -2,7 +2,7 @@
 title: Vector DBs Comparison for offline RAG Search Running on In-car Embedded System
 description: Architecture Decision Record comparing vector database solutions (ChromaDB, Qdrant, FAISS) for offline Retrieval-Augmented Generation (RAG) search in automotive embedded systems. Evaluates resource consumption, performance, compatibility, offline capabilities, and deployment considerations for Qualcomm Android Automotive OS (AAOS) environments with technical documentation search use cases.
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: architecture-decision-record
 estimated_reading_time: 11
 keywords:

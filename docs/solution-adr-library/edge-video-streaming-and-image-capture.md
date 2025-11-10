@@ -2,7 +2,7 @@
 title: Video and Image Capture from Edge-Attached Cameras
 description: Architecture Decision Record for implementing secure video streaming and image capture from edge-attached IP cameras using Azure IoT Operations Media Connector. Covers live RTSP streaming, snapshot/clip storage workflows, MQTT integration, Azure Container Storage enabled by Azure Arc (ACSA), and media synchronization with Azure Blob Storage for anomaly detection scenarios.
 author: Alain Uyidi
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: architecture-decision-record
 estimated_reading_time: 10
 keywords:
@@ -129,7 +129,7 @@ could allow for additional analysis and better confidence of whether the capture
 
 In addition, an mRPC request can be sent to the Media Connector to enable a live feed. This live feed is transmitted to a [MediaMTX Media Server](https://github.com/bluenviron/mediamtx) in the cloud and displayed in a UI.
 
-The chosen approach lends itself to be used simultaneous with other components such as [Azure Container Storage enabled by Azure Arc](https://learn.microsoft.com/azure/azure-arc/container-storage/overview) (ACSA) which moves clips associated with the event timeframe from local shared storage to cloud ingest storage. These clips are then synchronized with Azure Blob Storage in the cloud.
+The chosen approach lends itself to be used simultaneous with other components such as [Azure Container Storage enabled by Azure Arc](https://learn.microsoft.com/azure/azure-arc/container-storage/overview) (ACSA) which moves clips associated with the event time frame from local shared storage to cloud ingest storage. These clips are then synchronized with Azure Blob Storage in the cloud.
 
 ## Considered Options (optional)
 
@@ -137,7 +137,7 @@ The use of OSS Akri to detect and discover network attached IP camera was consid
 
 ## Consequences
 
-We justified that Media Connector used in conjuction with the Media Server is suitable for current edge environment and solution scenario.
+We justified that Media Connector used in conjunction with the Media Server is suitable for current edge environment and solution scenario.
 
 ## Future Considerations (optional)
 

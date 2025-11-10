@@ -2,7 +2,7 @@
 title: Deploy Azure IoT Operations
 description: Component to deploy Azure IoT Operations to an Arc Connected K3s Kubernetes cluster and required dependencies
 author: Edge AI Team
-ms.date: 06/07/2025
+ms.date: 2025-06-07
 ms.topic: reference
 keywords:
   - azure iot operations
@@ -64,10 +64,10 @@ If you wish to configure custom trust settings for `Issuer` and trust bundle `Co
   trust_config_source       = "CustomerManagedByoIssuer"
 
   byo_issuer_trust_settings = {
-      iissuer_name    = "<>"
-      iissuer_kind    = "<>"
-      cconfigmap_name = "<>"
-      cconfigmap_key  = "<>"
+      issuer_name    = "<>"
+      issuer_kind    = "<>"
+      configmap_name = "<>"
+      configmap_key  = "<>"
   }
   aio_platform_config = {
       install_cert_manager  = false

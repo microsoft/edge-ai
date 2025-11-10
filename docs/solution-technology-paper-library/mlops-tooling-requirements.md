@@ -2,7 +2,7 @@
 title: MLOps Tooling for Vision Model Edge Inference with Intensive Real-Time Video Stream
 description: Comprehensive technology paper evaluating MLOps tooling approaches for edge vision inference scenarios with real-time video streams. Compares Azure Machine Learning vs custom training with GitOps/Flux deployment, addressing autoscaling challenges, hardware acceleration, ONNX optimization, distributed training/inference, and proprietary model frameworks for computer vision workloads at scale.
 author: Cheng Chen
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: technology-paper
 estimated_reading_time: 18
 keywords:
@@ -224,4 +224,4 @@ For future considerations, if any AIO deployment tool that will be publicly avai
 
 ---
 
-*This documentation is part of the [Edge AI Platform](../index.md) project.*
+*This documentation is part of the [Edge AI Platform](../README.md) project.*

@@ -2,7 +2,7 @@
 title: Rust Telemetry with OpenTelemetry
 description: Distributed tracing with OpenTelemetry and an MQTT broker written in Rust, leveraging the Azure IoT Operations SDK for observable microservices deployed to edge environments
 author: Edge AI Team
-ms.date: 06/07/2025
+ms.date: 2025-06-07
 ms.topic: tutorial
 keywords:
   - rust

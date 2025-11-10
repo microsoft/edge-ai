@@ -2,7 +2,7 @@
 title: Cloud Data Platform
 description: Comprehensive enterprise data ecosystem that aggregates seven critical platform capabilities to deliver transformational data management, analytics, and intelligence solutions across enterprise-scale hybrid cloud and edge computing initiatives through intelligent data integration and governance
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: concept
 estimated_reading_time: 19
 keywords:

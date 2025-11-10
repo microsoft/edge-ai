@@ -39,8 +39,8 @@ Apply this procedure when research, plans, or repository changes must be transla
    4. Read complete XML with `read_file` (page through entire file if >2000 lines)
    5. Extract commit history, changed files, and diff context from XML structure
 * Azure DevOps MCP tools:
-   * `mcp_ado_search_workitem` for discovery.
-   * `mcp_ado_wit_get_work_item` or `mcp_ado_wit_get_work_items_batch_by_ids` for hydration.
+  * `mcp_ado_search_workitem` for discovery.
+  * `mcp_ado_wit_get_work_item` or `mcp_ado_wit_get_work_items_batch_by_ids` for hydration.
 * Workspace utilities: `list_dir`, `read_file`, `grep_search` to locate artifacts.
 * Persist all tool output into planning files per #file:./ado-wit-planning.instructions.md
 

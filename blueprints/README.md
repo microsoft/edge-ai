@@ -2,7 +2,7 @@
 title: Blueprints
 description: Infrastructure as Code composition mechanism providing ready-to-deploy end-to-end solutions for edge computing environments with Azure IoT Operations
 author: Edge AI Team
-ms.date: 06/07/2025
+ms.date: 2025-06-07
 ms.topic: reference
 keywords:
   - blueprints
@@ -36,6 +36,17 @@ to build complex multi-stage solutions that meet your specific requirements.
 | [Azure Fabric Environment](./fabric/terraform/README.md)                       | Provisions Azure Fabric environment  *Terraform only currently*                                                                                    |
 | [Dual Peered Single Node Cluster](./dual-peered-single-node-cluster/README.md) | Deploys a two single-node clusters with peered networks for proving secured communication via multiple instances of AIO MQ                         |
 | *More coming soon...*                                                          |                                                                                                                                                    |
+
+## Bicep Architecture
+
+Each Bicep blueprint in this repository follows a consistent structure:
+
+- **Main Configuration**: Root module that orchestrates component deployment using Azure's declarative syntax
+- **Parameters**: Defined with type safety and validation rules, with descriptions and default values
+- **Outputs**: Critical resource information returned after deployment
+- **Type Definitions**: Shared type definitions in `types.core.bicep` or component-specific types for parameter consistency
+- **Reusable Modules**: Leverages components from `/src` to ensure consistency and maintainability
+- **Deployment Scope**: Supports both subscription-level and resource group-level deployments
 
 ## Terraform Architecture
 
@@ -230,7 +241,7 @@ Bicep provides an alternative Infrastructure as Code (IaC) approach that's nativ
    @secure()
    param adminPassword = 'YourSecurePassword123!' // Replace with a secure password
 
-   // When customeLocationsOid is required:
+   // When customLocationsOid is required:
    param customLocationsOid = readEnvironmentVariable('CUSTOM_LOCATIONS_OID') // Read from environment variable
 
    // Any additional parameters with defaults, example:
