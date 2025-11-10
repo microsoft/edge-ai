@@ -130,7 +130,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@92c522aaa6f53af082553dedc1596c80b71aba33 # v2.10.2
+        uses: step-security/harden-runner@95d9a5deda9de15063e7595e9719c11c38c90ae2 # v2.10.2
         with:
           egress-policy: audit
           allowed-endpoints: >
@@ -159,7 +159,7 @@ jobs:
       threshold-failed: ${{ steps.staleness-check.outputs.threshold-failed }}
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@92c522aaa6f53af082553dedc1596c80b71aba33 # v2.10.2
+        uses: step-security/harden-runner@95d9a5deda9de15063e7595e9719c11c38c90ae2 # v2.10.2
         with:
           egress-policy: audit
           allowed-endpoints: >
@@ -228,7 +228,7 @@ jobs:
       threshold-failed: ${{ steps.scorecard-check.outputs.threshold-failed }}
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@92c522aaa6f53af082553dedc1596c80b71aba33 # v2.10.2
+        uses: step-security/harden-runner@95d9a5deda9de15063e7595e9719c11c38c90ae2 # v2.10.2
         with:
           egress-policy: audit
           allowed-endpoints: >
@@ -290,7 +290,7 @@ jobs:
       egress-violations: ${{ steps.egress-check.outputs.violations }}
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@92c522aaa6f53af082553dedc1596c80b71aba33 # v2.10.2
+        uses: step-security/harden-runner@95d9a5deda9de15063e7595e9719c11c38c90ae2 # v2.10.2
         with:
           egress-policy: block
           allowed-endpoints: ${{ inputs.allowed-endpoints }}
@@ -326,7 +326,7 @@ jobs:
       version-issues: ${{ steps.aio-check.outputs.issues }}
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@92c522aaa6f53af082553dedc1596c80b71aba33 # v2.10.2
+        uses: step-security/harden-runner@95d9a5deda9de15063e7595e9719c11c38c90ae2 # v2.10.2
         with:
           egress-policy: audit
           allowed-endpoints: >
@@ -387,7 +387,7 @@ jobs:
       dashboard-path: ${{ steps.dashboard-generation.outputs.dashboard-path }}
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@92c522aaa6f53af082553dedc1596c80b71aba33 # v2.10.2
+        uses: step-security/harden-runner@95d9a5deda9de15063e7595e9719c11c38c90ae2 # v2.10.2
         with:
           egress-policy: audit
           allowed-endpoints: >
@@ -501,7 +501,7 @@ jobs:
       deployment-approved: ${{ steps.summary.outputs.deployment-approved }}
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@92c522aaa6f53af082553dedc1596c80b71aba33 # v2.10.2
+        uses: step-security/harden-runner@95d9a5deda9de15063e7595e9719c11c38c90ae2 # v2.10.2
         with:
           egress-policy: audit
           allowed-endpoints: >
