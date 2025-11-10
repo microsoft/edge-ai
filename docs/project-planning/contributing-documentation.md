@@ -3,7 +3,7 @@ title: Contributing Documentation to the Project Planning Framework
 description: This guide explains how to contribute new scenarios, capabilities, and
   capability groups to the Edge AI Project Planning...
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: hub-page
 keywords:
   - contributing

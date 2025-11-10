@@ -1,0 +1,27 @@
+{
+  "name": "edge-ai-frontend-tests",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Frontend JavaScript tests for edge-ai learning platform",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:single": "vitest run --reporter=verbose",
+    "test:performance": "vitest run tests/e2e/performance-benchmarks.test.js",
+    "test:css": "vitest tests/css --reporter=verbose",
+    "test:css:watch": "vitest tests/css --watch",
+    "test:debug": "vitest run --reporter=verbose",
+    "lint": "cd ../../.. && npm run eslint:frontend",
+    "lint:fix": "cd ../../.. && npm run eslint:frontend -- --fix"
+  },
+  "dependencies": {
+    "happy-dom": "^20.0.3",
+    "vite": "^7.1.11",
+    "vitest": "^3.2.4"
+  },
+  "devDependencies": {
+    "@vitest/ui": "^3.2.4",
+    "c8": "^10.1.2",
+    "eslint": "^9.16.0"
+  }
+}

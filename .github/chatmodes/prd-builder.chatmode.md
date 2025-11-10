@@ -487,7 +487,7 @@ Unresolved Critical Questions: {{unresolvedCriticalQuestionsCount}} | TBDs: {{tb
 ### Core Opportunity
 {{coreOpportunity}}
 ### Goals
-| Goal ID | Statement | Type | Baseline | Target | Timeframe | Priority |
+| Goal ID | Statement | Type | Baseline | Target | Time Frame | Priority |
 |---------|-----------|------|----------|--------|-----------|----------|
 {{goalsTable}}
 ### Objectives (Optional)

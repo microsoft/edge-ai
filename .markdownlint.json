@@ -76,7 +76,9 @@
   "MD033": {
     "allowed_elements": [
       "details",
-      "summary"
+      "summary",
+      "time",
+      "difficulty"
     ]
   },
   "MD034": true,

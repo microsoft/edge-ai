@@ -2,7 +2,7 @@
 title: Observability solution options in fully disconnected Kubernetes clusters
 description: Architecture Decision Record evaluating observability solutions for monitoring, logging, and tracing in air-gapped Kubernetes environments with no external connectivity. Compares OpenTelemetry Collector, Prometheus, Grafana stack, Jaeger, Zipkin, and ELK stack for defense customers requiring fully disconnected edge deployments while supporting both connected and disconnected scenarios.
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: architecture-decision-record
 estimated_reading_time: 11
 keywords:

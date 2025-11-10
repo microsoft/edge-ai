@@ -2,7 +2,7 @@
 title: Dual Peered Single Node Cluster Blueprint
 description: Deploys two complete Azure IoT Operations environments with different address spaces and VNet peering for cross-cluster communication
 author: Edge AI Team
-ms.date: 01/11/2025
+ms.date: 2025-01-11
 ms.topic: reference
 keywords:
   - azure iot operations

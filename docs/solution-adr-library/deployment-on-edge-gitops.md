@@ -2,7 +2,7 @@
 title: Deployment on the Edge with GitOps
 description: Architecture Decision Record establishing GitOps as the primary deployment technique for Kubernetes clusters across edge and cloud environments. Addresses scalability, security, and connectivity challenges in edge computing through pull-based deployment approach, comparing against traditional push-based methods for fleet management of hundreds to thousands of edge clusters.
 author: Eugene Fedorenko
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: architecture-decision-record
 estimated_reading_time: 8
 keywords:

@@ -2,7 +2,7 @@
 title: Comprehensive Scenario to Capability Mapping
 description: '## Overview'
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: hub-page
 keywords:
   - scenario-mapping

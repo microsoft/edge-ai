@@ -1,0 +1,198 @@
+/* Dark Mode Toggle - Enhanced Design with Layout Coordinator Integration */
+/* Provides enhanced visual design that integrates with the LayoutCoordinator system */
+
+.dark-mode-toggle {
+  /* Independent Fixed Positioning - as expected by tests */
+  position: fixed !important;
+  top: var(--spacing-lg-minus, 1rem) !important;
+  right: var(--spacing-lg-minus, 1rem) !important;
+  z-index: var(--z-dark-mode-toggle, 2100) !important;
+  margin: 0 !important;
+
+  /* Enhanced Touch Target Size - Larger and more prominent */
+  min-width: 48px;
+  min-height: 48px;
+  width: 48px;
+  height: 48px;
+
+  /* Enhanced Visual Styling - Modern gradient and effects */
+  background: linear-gradient(135deg, var(--theme-color) 0%, #005a9f 100%);
+  color: var(--bg-primary);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--border-radius-lg);
+  cursor: pointer;
+
+  /* Enhanced Typography - More prominent text */
+  font-size: 20px;
+  font-family: inherit;
+  font-weight: 600;
+  line-height: 1;
+
+  /* Flexbox Centering */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* Enhanced Smooth Transitions - More sophisticated easing */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Enhanced Effects - Multi-layer shadows and backdrop filter with vendor prefixes */
+  box-shadow:
+    0 4px 12px rgba(0, 120, 212, 0.3),
+    0 2px 4px rgba(0, 0, 0, 0.1);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+
+  /* Accessibility */
+  outline: none;
+
+  /* Remove any container dependencies */
+  padding: 0;
+}
+
+/* Enhanced Icon Display - JavaScript will set innerHTML directly */
+/* No ::before pseudo-element needed since JS sets innerHTML */
+
+/* Enhanced Hover States - More dramatic interactions */
+.dark-mode-toggle:hover {
+  background: linear-gradient(135deg, #106ebe 0%, #004578 100%);
+  transform: translateY(-2px) scale(1.05);
+  box-shadow:
+    0 8px 24px rgba(0, 120, 212, 0.4),
+    0 4px 8px rgba(0, 0, 0, 0.15);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Enhanced Focus States (Accessibility) - More prominent focus ring */
+.dark-mode-toggle:focus {
+  outline: 3px solid var(--theme-color-light);
+  outline-offset: 3px;
+  box-shadow:
+    0 0 0 6px rgba(64, 169, 255, 0.3),
+    0 4px 12px rgba(0, 120, 212, 0.3),
+    0 2px 4px rgba(0, 0, 0, 0.1);
+  transform: scale(1.02);
+}
+
+/* Enhanced Active State */
+.dark-mode-toggle:active {
+  transform: translateY(-1px) scale(1.02);
+  box-shadow:
+    0 2px 8px rgba(0, 120, 212, 0.3),
+    0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Enhanced Dark Mode Specific Styling */
+.dark .dark-mode-toggle {
+  background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+  color: var(--text-primary);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.4),
+    0 2px 4px rgba(255, 255, 255, 0.1);
+}
+
+/* Dark mode icon is set by JavaScript innerHTML */
+
+.dark .dark-mode-toggle:hover {
+  background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.5),
+    0 4px 8px rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px) scale(1.05);
+}
+
+.dark .dark-mode-toggle:focus {
+  outline-color: var(--theme-color);
+  box-shadow:
+    0 0 0 6px rgba(0, 120, 212, 0.3),
+    0 4px 12px rgba(0, 0, 0, 0.4),
+    0 2px 4px rgba(255, 255, 255, 0.1);
+}
+
+/* Subtle Animation Enhancement */
+@keyframes togglePulse {
+  0%, 100% {
+    box-shadow:
+      0 4px 12px rgba(0, 120, 212, 0.3),
+      0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  50% {
+    box-shadow:
+      0 4px 16px rgba(0, 120, 212, 0.4),
+      0 2px 6px rgba(0, 0, 0, 0.15);
+  }
+}
+
+.dark-mode-toggle {
+  animation: togglePulse 3s ease-in-out infinite;
+}
+
+.dark-mode-toggle:hover {
+  animation: none; /* Stop pulse on hover to avoid conflict */
+}
+
+/* Independent Positioning - Always Visible Across All Breakpoints */
+@media (max-width: 1200px) {
+  .dark-mode-toggle {
+    /* Ensure toggle remains visible even when TOC is hidden */
+    display: flex !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    position: fixed !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .dark-mode-toggle {
+    /* Maintain accessibility standards on mobile - minimum 44px touch target */
+    min-width: 44px !important;
+    min-height: 44px !important;
+    width: 44px !important;
+    height: 44px !important;
+    font-size: 18px;
+    /* Keep fixed positioning */
+    position: fixed !important;
+    display: flex !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .dark-mode-toggle {
+    /* Maintain minimum accessibility standards even on very small screens */
+    min-width: 44px !important;
+    min-height: 44px !important;
+    width: 44px !important;
+    height: 44px !important;
+    font-size: 16px;
+  }
+}
+
+/* High Contrast Mode Support - Enhanced visibility */
+@media (prefers-contrast: high) {
+  .dark-mode-toggle {
+    border: 3px solid currentColor;
+    background: var(--theme-color); /* Simplified for high contrast */
+  }
+}
+
+/* Reduced Motion Support - Accessibility first */
+@media (prefers-reduced-motion: reduce) {
+  .dark-mode-toggle {
+    transition: background-color 0.2s ease;
+    animation: none;
+  }
+
+  .dark-mode-toggle:hover,
+  .dark-mode-toggle:active {
+    transform: none;
+  }
+}
+
+/* Print Styles - Hide Toggle */
+@media print {
+  .dark-mode-toggle {
+    display: none;
+  }
+}

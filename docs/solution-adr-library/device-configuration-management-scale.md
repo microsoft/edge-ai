@@ -2,7 +2,7 @@
 title: 'ADR: Device configuration and management at scale'
 description: Architecture Decision Record evaluating solutions for managing and configuring edge devices at scale. Compares Azure Arc for Servers against GitOps with Ansible for capabilities including OS updates, Kubernetes platform updates, observability, troubleshooting, access management, and scalability across hundreds of edge devices.
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: architecture-decision-record
 estimated_reading_time: 10
 keywords:

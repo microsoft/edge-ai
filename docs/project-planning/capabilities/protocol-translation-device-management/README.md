@@ -2,7 +2,7 @@
 title: Protocol Translation & Device Management
 description: Comprehensive industrial connectivity and device lifecycle ecosystem that orchestrates six critical platform capabilities to deliver unified industrial asset management, protocol interoperability, and secure device operations across heterogeneous manufacturing and process automation environments through Azure Arc-enabled edge infrastructure
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: concept
 estimated_reading_time: 18
 keywords:

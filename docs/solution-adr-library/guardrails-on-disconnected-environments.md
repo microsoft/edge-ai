@@ -2,7 +2,7 @@
 title: AI Guardrails Implementation in a Disconnected Environment
 description: Architecture Decision Record for implementing AI content moderation guardrails in disconnected/air-gapped environments without cloud dependencies. Evaluates locally deployed models including Llama-Guard-3-1B and Llama-Guard-3-8B for content safety, comparing performance metrics, datasets, and selecting optimal solutions for offline AI safety compliance in high-security environments.
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: architecture-decision-record
 estimated_reading_time: 11
 keywords:

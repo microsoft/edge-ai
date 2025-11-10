@@ -1,0 +1,207 @@
+/* Docsify Sidebar Search - Performance Optimized Implementation */
+
+/*
+ * Note: Many !important declarations are necessary due to Docsify's CSS loading order.
+ * Docsify's CSS loads after our custom CSS, requiring !important to override defaults.
+ */
+
+/* Performance-optimized search box with CSS containment */
+.sidebar .search {
+  position: sticky !important;
+  top: 0 !important;
+  width: 100% !important;
+  max-width: none !important;
+  padding: var(--spacing-lg-minus) var(--spacing-lg-minus) var(--spacing-md-minus) var(--spacing-lg-minus) !important;
+  margin: 0 !important;
+  z-index: 1000 !important;
+  order: -1000 !important; /* Ensure search appears at the very top */
+  background: var(--sidebar-bg-primary, #f8f9fa) !important;
+  border-bottom: 1px solid var(--border-color, #e5e5e5) !important;
+  contain: layout style !important; /* CSS containment for performance */
+  transition: transform 0.2s ease, opacity 0.2s ease !important;
+  will-change: transform, opacity !important;
+}
+
+/* Ensure sidebar container uses flexbox to respect order */
+.sidebar {
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* Ensure ALL sidebar elements have proper order */
+.sidebar > * {
+  order: 100 !important; /* Default high order for all sidebar children */
+}
+
+/* Search gets highest priority (most negative order) */
+.sidebar .search {
+  order: -1000 !important;
+}
+
+/* Sidebar navigation gets specific order after search */
+.sidebar-nav {
+  order: 1 !important;
+  flex: 1 !important;
+}
+
+/* Ensure other sidebar elements appear after search */
+.sidebar .sidebar-toggle,
+.sidebar .app-name,
+.sidebar h1,
+.sidebar .app-name-link {
+  order: 0 !important; /* Appears after search but before nav */
+}
+
+/* Search positioning states for optimized transitions */
+.sidebar .search.positioning {
+  pointer-events: none !important;
+  opacity: 0.8 !important;
+}
+
+.sidebar .search.positioned {
+  pointer-events: auto !important;
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+}
+
+/* Search input wrapper styling */
+.sidebar .search .input-wrap {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border: 1px solid var(--border-color, #e5e5e5) !important;
+  border-radius: var(--spacing-md-minus) !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  contain: layout style !important; /* Isolate input wrapper */
+}
+
+/* Search input field styling */
+.sidebar .search input {
+  padding: var(--spacing-md) var(--spacing-lg-minus) !important;
+  font-size: var(--spacing-md-plus) !important;
+  border: none !important;
+  background: transparent !important;
+  width: 100% !important;
+  color: var(--text-primary, #2c3e50) !important;
+}
+
+.sidebar .search input::placeholder {
+  color: var(--text-secondary, #666) !important;
+  opacity: 0.7 !important;
+}
+
+/* Dark mode search styling */
+body.dark .sidebar .search .input-wrap {
+  background: rgba(45, 55, 72, 0.9) !important;
+  border-color: var(--border-color, #4a5568) !important;
+}
+
+body.dark .sidebar .search input {
+  color: var(--text-primary, #e2e8f0) !important;
+}
+
+body.dark .sidebar .search input::placeholder {
+  color: var(--text-secondary, #a0aec0) !important;
+}
+
+/* Performance-optimized search results with containment */
+.sidebar .search .results-panel {
+  position: absolute !important;
+  top: 100% !important;
+  left: var(--spacing-md-minus) !important;
+  right: var(--spacing-md-minus) !important;
+  width: auto !important;
+  margin-top: var(--spacing-sm) !important;
+  background: var(--bg-primary, white) !important;
+  border: 1px solid var(--border-color, #e5e5e5) !important;
+  border-radius: var(--spacing-md-minus) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15) !important;
+  max-height: var(--spacing-layout-lg) !important;
+  overflow-y: auto !important;
+  z-index: 1000 !important;
+  contain: layout style !important; /* Isolate search results */
+}
+
+/* Enhanced visual separation for search results */
+.sidebar .search .results-panel::before {
+  content: '' !important;
+  position: absolute !important;
+  top: calc(-1 * var(--spacing-md-minus)) !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: 0 !important;
+  height: 0 !important;
+  border-left: var(--spacing-md-minus) solid transparent !important;
+  border-right: var(--spacing-md-minus) solid transparent !important;
+  border-bottom: var(--spacing-md-minus) solid var(--bg-primary, white) !important;
+  z-index: 1001 !important;
+}
+
+/* Style search results to look more integrated */
+.sidebar .search .results-panel .matching-post {
+  padding: var(--spacing-md) var(--spacing-lg-minus) !important;
+  border-bottom: 1px solid var(--border-color, #f0f0f0) !important;
+  transition: background-color 0.15s ease !important;
+}
+
+.sidebar .search .results-panel .matching-post:hover {
+  background-color: var(--bg-secondary, #f8f9fa) !important;
+}
+
+.sidebar .search .results-panel .matching-post:last-child {
+  border-bottom: none !important;
+}
+
+/* Search result text styling */
+.sidebar .search .results-panel .matching-post h2 {
+  color: var(--text-primary, #2c3e50) !important;
+  font-size: var(--spacing-md) !important;
+  font-weight: 500 !important;
+  margin: 0 0 var(--spacing-xs) 0 !important;
+}
+
+.sidebar .search .results-panel .matching-post p {
+  color: var(--text-secondary, #666) !important;
+  font-size: var(--spacing-sm-plus) !important;
+  margin: 0 !important;
+  line-height: 1.4 !important;
+}
+
+/* Dark mode search results */
+body.dark .sidebar .search .results-panel {
+  background: var(--bg-primary, #2d3748) !important;
+  border-color: var(--border-color, #4a5568) !important;
+}
+
+body.dark .sidebar .search .results-panel::before {
+  border-bottom-color: var(--bg-primary, #2d3748) !important;
+}
+
+body.dark .sidebar .search .results-panel .matching-post {
+  border-bottom-color: var(--border-color, #4a5568) !important;
+}
+
+body.dark .sidebar .search .results-panel .matching-post:hover {
+  background-color: var(--bg-secondary, #4a5568) !important;
+}
+
+body.dark .sidebar .search .results-panel .matching-post h2 {
+  color: var(--text-primary, #e2e8f0) !important;
+}
+
+body.dark .sidebar .search .results-panel .matching-post p {
+  color: var(--text-secondary, #a0aec0) !important;
+}
+
+/* Responsive adjustments for search */
+@media (max-width: 768px) {
+  .sidebar .search {
+    padding: var(--spacing-md) var(--spacing-md) var(--spacing-sm) var(--spacing-md) !important;
+  }
+
+  .sidebar .search .results-panel {
+    left: var(--spacing-sm) !important;
+    right: var(--spacing-sm) !important;
+    max-height: var(--spacing-layout-md) !important;
+  }
+}

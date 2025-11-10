@@ -1,0 +1,220 @@
+/* Notification System Component Styles */
+
+/* Notification containers positioned at viewport edges */
+.notification-container {
+  position: fixed;
+  z-index: 2000;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.notification-container-top-right {
+  top: var(--space-lg);
+  right: var(--space-lg);
+}
+
+.notification-container-top-left {
+  top: var(--space-lg);
+  left: var(--space-lg);
+}
+
+.notification-container-bottom-right {
+  bottom: var(--space-lg);
+  right: var(--space-lg);
+}
+
+.notification-container-bottom-left {
+  bottom: var(--space-lg);
+  left: var(--space-lg);
+}
+
+/* Individual notification styling */
+.notification {
+  pointer-events: auto;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  border-radius: var(--space-xs);
+  box-shadow: 0 var(--space-xs) var(--space-lg) rgba(0, 0, 0, 0.15);
+  max-width: var(--layout-xs);
+  min-width: var(--layout-xxs);
+  background: white;
+  border: 1px solid #e9ecef;
+  opacity: 0;
+  transform: translateX(100%);
+  transition: all 0.3s ease;
+}
+
+/* Notification entrance animation */
+.notification.notification-enter {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Notification exit animation */
+.notification.notification-exit {
+  opacity: 0;
+  transform: translateX(100%);
+}
+
+/* Left-positioned notifications slide from left */
+.notification-container-top-left .notification,
+.notification-container-bottom-left .notification {
+  transform: translateX(-100%);
+}
+
+.notification-container-top-left .notification.notification-enter,
+.notification-container-bottom-left .notification.notification-enter {
+  transform: translateX(0);
+}
+
+.notification-container-top-left .notification.notification-exit,
+.notification-container-bottom-left .notification.notification-exit {
+  transform: translateX(-100%);
+}
+
+/* Notification type styling */
+.notification-success {
+  border-left: var(--space-xs) solid #28a745;
+  background: #f8fff9;
+}
+
+.notification-error {
+  border-left: var(--space-xs) solid #dc3545;
+  background: #fff8f8;
+}
+
+.notification-warning {
+  border-left: var(--space-xs) solid #ffc107;
+  background: #fffef8;
+}
+
+.notification-info {
+  border-left: var(--space-xs) solid #17a2b8;
+  background: #f8fcfd;
+}
+
+.notification-completion {
+  border-left: var(--space-xs) solid #6f42c1;
+  background: #f8f7ff;
+}
+
+/* Notification icon */
+.notification-icon {
+  font-size: var(--space-lg);
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+/* Notification content */
+.notification-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.notification-title {
+  font-weight: 600;
+  font-size: var(--space-md);
+  color: #2c3e50;
+  margin-bottom: var(--space-xs);
+  line-height: 1.3;
+}
+
+.notification-message {
+  font-size: var(--space-sm);
+  color: #6c757d;
+  line-height: 1.4;
+  margin-bottom: var(--space-xs);
+}
+
+/* Notification actions */
+.notification-actions {
+  display: flex;
+  gap: var(--space-xs);
+  margin-top: var(--space-sm);
+}
+
+.notification-action {
+  padding: var(--space-xxs) var(--space-sm);
+  border: none;
+  border-radius: var(--space-xs);
+  font-size: var(--space-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.notification-action-primary {
+  background: #007bff;
+  color: white;
+}
+
+.notification-action-primary:hover {
+  background: #0056b3;
+}
+
+.notification-action-secondary {
+  background: #6c757d;
+  color: white;
+}
+
+.notification-action-secondary:hover {
+  background: #545b62;
+}
+
+.notification-action-default {
+  background: #f8f9fa;
+  color: #6c757d;
+  border: 1px solid #dee2e6;
+}
+
+.notification-action-default:hover {
+  background: #e2e6ea;
+}
+
+/* Close button */
+.notification-close {
+  background: none;
+  border: none;
+  font-size: var(--space-lg);
+  color: #adb5bd;
+  cursor: pointer;
+  padding: 0;
+  width: var(--space-xl);
+  height: var(--space-xl);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--space-xs);
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.notification-close:hover {
+  background: #f8f9fa;
+  color: #6c757d;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .notification-container {
+    left: var(--space-xs-plus) !important;
+    right: var(--space-xs-plus) !important;
+  }
+
+  .notification {
+    max-width: none;
+    min-width: 0;
+  }
+
+  .notification-actions {
+    flex-direction: column;
+  }
+
+  .notification-action {
+    text-align: center;
+  }
+}

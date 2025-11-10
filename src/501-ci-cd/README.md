@@ -2,7 +2,7 @@
 title: CI/CD Component
 description: GitOps CI/CD workflows and setup utilities for Edge AI applications
 author: Edge AI Team
-ms.date: 01/08/2025
+ms.date: 2025-01-08
 ms.topic: tutorial
 estimated_reading_time: 5
 keywords:

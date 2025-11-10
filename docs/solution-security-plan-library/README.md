@@ -2,7 +2,7 @@
 title: Solution Security Plan Library
 description: Comprehensive collection of pre-constructed security plans and frameworks extracted from ISE customer projects for edge computing solutions, featuring threat analysis methodologies, security decision-making frameworks, identity management strategies, compliance guidelines, and reusable security architecture templates with contribution guidelines for extending the library
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: hub-page
 estimated_reading_time: 5
 keywords:

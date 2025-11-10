@@ -2,7 +2,7 @@
 title: Resource Provider PowerShell Tests
 description: GitHub Actions reusable workflow for validating PowerShell scripts that manage Azure resource provider registration
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: concept
 estimated_reading_time: 7
 keywords:

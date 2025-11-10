@@ -1,0 +1,37 @@
+/* Code Block Component */
+/* Prevents code blocks from causing layout issues and overflow */
+
+/* Ensure pre and code elements don't overflow container */
+.markdown-section pre {
+  max-width: 100%;
+  overflow-x: auto;
+  white-space: pre;
+  word-wrap: normal;
+  box-sizing: border-box;
+}
+
+.markdown-section pre code {
+  max-width: 100%;
+  white-space: pre;
+  word-wrap: normal;
+  display: block;
+  overflow-x: auto;
+}
+
+/* Language-specific code blocks */
+.markdown-section pre[data-lang],
+.markdown-section pre code[class*="lang-"],
+.markdown-section pre code[class*="language-"] {
+  max-width: 100%;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+/* Inline code shouldn't break layout */
+.markdown-section code:not(pre code) {
+  white-space: nowrap;
+  word-break: break-all;
+  max-width: 100%;
+  display: inline-block;
+  vertical-align: top;
+}

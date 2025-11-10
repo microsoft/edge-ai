@@ -1,0 +1,29 @@
+/* Font Performance Optimizations */
+
+/* Optimize Material Design Icons font loading */
+.mdi, [class^="mdi-"], [class*=" mdi-"] {
+  font-display: swap; /* Use font-display: swap for better performance */
+}
+
+/* Optimize general font loading performance */
+* {
+  font-display: swap;
+}
+
+/* Preload optimization for Material Design Icons */
+.mdi {
+  font-variation-settings: normal; /* Reduce font variation complexity */
+}
+
+/* System font stack fallback for better performance */
+body, .sidebar, .content {
+  font-family:
+    "Source Sans Pro",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    "Helvetica Neue",
+    Arial,
+    sans-serif;
+}

@@ -2,7 +2,7 @@
 title: Edge Observability Component
 description: Edge-side observability infrastructure that connects Azure IoT Operations to cloud monitoring services through Arc Kubernetes extensions for comprehensive edge-to-cloud visibility
 author: Edge AI Team
-ms.date: 06/07/2025
+ms.date: 2025-06-07
 ms.topic: reference
 keywords:
   - edge observability

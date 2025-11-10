@@ -27,7 +27,7 @@ Before you begin, ensure you have:
 - **Docker Desktop** installed and running (for Dev Container)
 - **Visual Studio Code** with the Dev Containers extension
 
-> **💡 New to edge AI deployments?** Check out our [PraxisWorx Training Platform](/praxisworx/) for hands-on learning experiences that complement this guide. Start with our [Edge-to-Cloud Systems Track](/praxisworx/training-labs/02-edge-to-cloud-systems/) to build your expertise, learning to use AI and accelerate your solution development.
+> **💡 New to edge AI deployments?** Check out our [Learning Platform](/learning/) for hands-on learning experiences that complement this guide. Start with our [Edge-to-Cloud Systems Track](/learning/training-labs/02-edge-to-cloud-systems/) to build your expertise, learning to use AI and accelerate your solution development.
 
 ## Step 1: Set Up Development Environment
 

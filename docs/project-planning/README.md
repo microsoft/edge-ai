@@ -2,7 +2,7 @@
 title: Edge AI Project Planning
 description: Comprehensive project planning guide for Edge AI Platform covering scenarios, capabilities, templates, and AI-powered assistance for edge AI solutions
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: hub-page
 keywords:
   - project-planning

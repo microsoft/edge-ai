@@ -1,0 +1,297 @@
+/**
+ * Progressive Disclosure Component Styles
+ * Implements styling for <details>/<summary> and other expandable UI elements
+ * Desktop-only design with smooth animations and accessibility support
+ */
+
+/* ===== Details/Summary Elements ===== */
+
+/* Main details container */
+details {
+  margin-bottom: 1rem;
+  border: 1px solid var(--border-color, #e1e5e9);
+  border-radius: 6px;
+  background-color: var(--background-color, #f8f9fa);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.2s ease-in-out;
+}
+
+details:hover {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+/* Summary element (clickable header) */
+summary {
+  cursor: pointer;
+  padding: 12px 16px;
+  font-weight: 600;
+  color: var(--text-primary, #212529);
+  background-color: var(--background-color, #f8f9fa);
+  border-radius: 6px 6px 0 0;
+  transition: background-color 0.2s ease-in-out;
+  -webkit-user-select: none;
+  user-select: none;
+  list-style: none; /* Remove default arrow */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+summary:hover {
+  background-color: var(--hover-background, rgba(0, 0, 0, 0.05));
+}
+
+summary:focus {
+  outline: 2px solid var(--accent-color, #0066cc);
+  outline-offset: 2px;
+}
+
+/* Custom disclosure arrow */
+summary::after {
+  content: '▼';
+  font-size: 12px;
+  color: var(--text-secondary, #666);
+  transition: transform 0.2s ease-in-out;
+  margin-left: 8px;
+}
+
+details[open] summary::after {
+  transform: rotate(180deg);
+}
+
+/* Content area styling */
+details .details-content,
+details > div:not(summary),
+details > ul,
+details > ol,
+details > p {
+  padding: 16px;
+  margin-top: 8px;
+  border-top: 1px solid var(--border-light, rgba(0, 0, 0, 0.1));
+  background-color: var(--content-background, rgba(255, 255, 255, 0.5));
+}
+
+/* Nested list styling within details */
+details ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+details li {
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+/* ===== Expandable Cards ===== */
+
+.expandable-card {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background-color: var(--background-color);
+  margin-bottom: 16px;
+  overflow: hidden;
+  transition: all 0.2s ease-in-out;
+}
+
+.expandable-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.expandable-card .card-header {
+  padding: 16px;
+  background-color: var(--header-background, rgba(0, 0, 0, 0.02));
+  border-bottom: 1px solid var(--border-light, rgba(0, 0, 0, 0.1));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+}
+
+.expandable-card .card-header h3,
+.expandable-card .card-header h4 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.expandable-card .expand-toggle {
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text-secondary, #666);
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s ease-in-out;
+}
+
+.expandable-card .expand-toggle:hover {
+  background-color: var(--hover-light, rgba(0, 0, 0, 0.05));
+  color: var(--text-primary);
+}
+
+.expandable-card .expand-toggle:focus {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
+}
+
+.expandable-card .card-content {
+  padding: 16px;
+  background-color: var(--background-color);
+}
+
+/* ===== Collapsible Sections ===== */
+
+.collapsible-section {
+  margin-bottom: 16px;
+  border: 1px solid var(--border-light, rgba(0, 0, 0, 0.1));
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.collapsible-section .section-header {
+  cursor: pointer;
+  padding: 8px 12px;
+  background-color: var(--section-header-bg, rgba(0, 0, 0, 0.02));
+  border-bottom: 1px solid var(--border-light, rgba(0, 0, 0, 0.1));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.collapsible-section .section-header:hover {
+  background-color: var(--hover-light, rgba(0, 0, 0, 0.05));
+}
+
+.collapsible-section .section-header h4 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.collapsible-section .collapse-indicator {
+  font-size: 14px;
+  font-weight: bold;
+  color: var(--text-secondary, #666);
+  transition: transform 0.2s ease-in-out;
+}
+
+.collapsible-section .section-content {
+  padding: 12px;
+  background-color: var(--background-color);
+  transition: all 0.3s ease-in-out;
+}
+
+/* Collapsed state */
+.collapsible-section.collapsed .section-content {
+  display: none;
+}
+
+.collapsible-section.collapsed .collapse-indicator {
+  transform: rotate(90deg);
+}
+
+/* ===== Animation States ===== */
+
+/* Smooth open/close transitions */
+details {
+  transition: all 0.3s ease-in-out;
+}
+
+details[open] {
+  animation: detailsOpen 0.3s ease-in-out;
+}
+
+@keyframes detailsOpen {
+  0% {
+    opacity: 0.8;
+    transform: translateY(-4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Content fade-in animation */
+details .details-content,
+details > div:not(summary) {
+  animation: contentFadeIn 0.2s ease-in-out 0.1s both;
+}
+
+@keyframes contentFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===== Accessibility Enhancements ===== */
+
+/* Focus indicators */
+summary:focus,
+.expandable-card .card-header:focus,
+.collapsible-section .section-header:focus {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  details,
+  .expandable-card,
+  .collapsible-section {
+    border-width: 2px;
+  }
+
+  summary,
+  .expandable-card .card-header,
+  .collapsible-section .section-header {
+    font-weight: 700;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  details,
+  summary::after,
+  .expandable-card,
+  .expand-toggle,
+  .collapse-indicator,
+  .details-content {
+    transition: none;
+    animation: none;
+  }
+}
+
+/* ===== Print Styles ===== */
+
+@media print {
+  details,
+  .expandable-card,
+  .collapsible-section {
+    break-inside: avoid;
+    box-shadow: none;
+    border: 1px solid #000;
+  }
+
+  /* Show all content when printing */
+  details .details-content,
+  .expandable-card .card-content,
+  .collapsible-section.collapsed .section-content {
+    display: block !important;
+  }
+
+  summary::after,
+  .expand-toggle,
+  .collapse-indicator {
+    display: none;
+  }
+}

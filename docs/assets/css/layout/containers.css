@@ -1,0 +1,109 @@
+/* Container-Based Layout System */
+
+/* Main Layout Container */
+.docsify-layout {
+  display: grid;
+  grid-template-areas:
+    "sidebar header toc"
+    "sidebar content toc";
+  grid-template-columns: var(--sidebar-width) 1fr var(--toc-width);
+  grid-template-rows: var(--navbar-height) 1fr;
+  min-height: 100vh;
+  width: 100vw;
+}
+
+/* Sidebar Container */
+.sidebar {
+  grid-area: sidebar;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: var(--sidebar-width);
+  height: 100vh;
+  z-index: var(--z-sidebar);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Header Container */
+.header-container {
+  grid-area: header;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--navbar-height);
+  z-index: var(--z-app-nav);
+  background: var(--bg-primary);
+}
+
+/* Main Content Container */
+.content-container {
+  grid-area: content;
+  margin-left: var(--sidebar-width);
+  margin-right: var(--toc-width);
+  padding-top: var(--navbar-height);
+  min-height: calc(100vh - var(--navbar-height));
+  max-width: var(--content-max-width);
+  margin-inline: auto;
+  padding-inline: var(--content-margin-inline);
+}
+
+/* TOC Container */
+.toc-container {
+  grid-area: toc;
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: var(--toc-width);
+  height: 100vh;
+  z-index: var(--z-toc-nav);
+  padding-top: var(--navbar-height);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Responsive Container Behavior */
+@container (max-width: 1200px) {
+  .toc-container {
+    display: none;
+  }
+
+  .content-container {
+    margin-right: var(--content-min-margin);
+  }
+
+  .header-container {
+    right: var(--content-min-margin);
+  }
+}
+
+@container (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+    transition: transform var(--transition-medium);
+  }
+
+  .sidebar.show {
+    transform: translateX(0);
+  }
+
+  .content-container {
+    margin-left: var(--content-min-margin);
+  }
+
+  .header-container {
+    left: var(--content-min-margin);
+  }
+}
+
+/* Flexible Content Adaptation */
+.content-area {
+  container-type: inline-size;
+  width: 100%;
+}
+
+.content-area > * {
+  max-width: 100%;
+  width: auto;
+}

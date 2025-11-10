@@ -1,0 +1,75 @@
+/* === MINIMAL DOCSIFY OVERRIDES === */
+/* Just the essentials to prevent Docsify from interfering */
+
+/* Remove any default Docsify colors but let sidebar.css handle styling */
+.sidebar,
+.sidebar-nav {
+  background: var(--sidebar-gradient) !important;
+  border-right: 1px solid var(--sidebar-border-color) !important;
+}
+
+/* Remove any min-height from sidebar elements */
+.sidebar-nav a,
+.sidebar-nav li,
+.sidebar-nav ul li a {
+  min-height: unset !important;
+  height: auto !important;
+}
+
+/* Kill app-sub-sidebar elements that don't belong in left sidebar */
+.sidebar-nav .app-sub-sidebar,
+.sidebar .app-sub-sidebar {
+  display: none !important;
+}
+
+/* Active sidebar item styling - clean background highlight */
+.sidebar-nav .active,
+.sidebar-nav .current,
+.sidebar .active,
+.sidebar .current {
+  color: var(--theme-color, #0078d4) !important;
+  background: rgba(0, 120, 212, 0.08) !important;
+  font-weight: 500 !important;
+  border-radius: 4px !important;
+  margin: 1px 0 !important;
+}
+
+/* Active link specific styling */
+.sidebar-nav li.active > a,
+.sidebar ul li.active a,
+.sidebar-nav li.active a {
+  color: var(--theme-color, #0078d4) !important;
+  background: rgba(0, 120, 212, 0.08) !important;
+  font-weight: 500 !important;
+  border-radius: 4px !important;
+  margin: 1px 0 !important;
+}
+
+/* Custom .active class for our scroll manager highlighting */
+.sidebar-nav a.active,
+.sidebar a.active {
+  color: var(--theme-color, #0078d4) !important;
+  background: rgba(0, 120, 212, 0.12) !important;
+  font-weight: 600 !important;
+  border-radius: 4px !important;
+  margin: 1px 0 !important;
+  box-shadow: 0 1px 3px rgba(0, 120, 212, 0.2) !important;
+}
+
+/* Minimal scrollbar */
+.sidebar-nav::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar-nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--theme-color) 25%, transparent);
+  border-radius: 3px;
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--theme-color) 40%, transparent);
+}

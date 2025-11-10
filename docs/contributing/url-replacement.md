@@ -2,7 +2,7 @@
 title: URL Replacement System
 description: Documentation for the URL replacement system used to maintain consistent links across the Edge AI project documentation
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: concept
 estimated_reading_time: 8
 keywords:

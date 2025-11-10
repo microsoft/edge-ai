@@ -1,80 +1,90 @@
 {
-	"$schema": "https://raw.githubusercontent.com/streetsidesoftware/cspell/main/packages/cspell-types/cspell.schema.json",
-	"version": "0.2",
-	"language": "en-US",
-	"noConfigSearch": true,
-	"flagWords": [
-		"TODO"
-	],
-	"ignorePaths": [
-		"**/.github/chatmodes/**",
-		"**/node_modules/**",
-		"**/vscode-extension/**",
-		"**/.git/**",
-		"**/.pnpm-lock.json",
-		".vscode",
-		"megalinter",
-		"package-lock.json",
-		"report",
-		"**/.gitignore",
-		".vscodeignore",
-		".gitattributes",
-		"**/.devcontainer/**",
-		"**/.github/workflows/**",
-		"*.lock",
-		"*.log",
-		".cspell.json",
-		".cspell-dictionary.txt",
-		"**/.mega-linter.yml",
-		"*megalinter_file_names_cspell.txt"
-	],
-	"dictionaryDefinitions": [
-		{
-			"name": "cspell-dictionary",
-			"path": ".cspell-dictionary.txt",
-			"addWords": false
-		}
-	],
-	"dictionaries": [
-		"en_US",
-		"!en-GB",
-		"!en_GB",
-		"companies",
-		"softwareTerms",
-		"misc",
-		"typescript",
-		"node",
-		"php",
-		"go",
-		"python",
-		"powershell",
-		"html",
-		"css",
-		"cpp",
-		"csharp",
-		"latex",
-		"bash",
-		"filetypes",
-		"npm",
-		"cspell-dictionary"
-	],
-	"caseSensitive": false,
-	"useGitignore": true,
-	"ignoreRegExpList": [
-		"/^\\s*```[\\s\\S]*?^\\s*```/gm",
-		"/^authors?:.*(?:\\r?\\n\\s*-.*)*$/gmi"
-	],
-	"words": [
-		"ˈpræksɪs",
-		"Chronograf",
-		"Kapacitor",
-		"kata",
-		"katas",
-		"myorg",
-		"myorga",
-		"myorgb",
-		"praxisworx",
-		"SARIF",
-		"πρᾶξις"
-	]
+  "version": "0.2",
+  "language": "en",
+  "cache": {
+    "useCache": false
+  },
+  "ignorePaths": [
+    "node_modules/**",
+    "**/node_modules/**",
+    "packages/**",
+    "**/packages/**",
+    "vendor/**",
+    "**/vendor/**",
+    "dist/**",
+    "build/**",
+    ".git/**",
+    "**/.terraform/**",
+    "**/.terraform.lock.hcl",
+    ".vscode/**",
+    ".github/copilot-instructions.md",
+    "**/*.min.js",
+    "**/*.min.css",
+    ".mega-linter.yml",
+    "package-lock.json",
+    "**/package-lock.json",
+    "Cargo.lock",
+    "**/Cargo.lock"
+  ],
+  "ignoreRegExpList": [
+    "/#.*/g",
+    "/^authors?:.*(?:\\r?\\n\\s*-.*)*$/gmi"
+  ],
+  "dictionaryDefinitions": [
+    {
+      "name": "azure-services",
+      "path": "./.cspell/azure-services.txt"
+    },
+    {
+      "name": "iot-operations",
+      "path": "./.cspell/iot-operations.txt"
+    },
+    {
+      "name": "microsoft-sample-companies",
+      "path": "./.cspell/microsoft-sample-companies.txt"
+    },
+    {
+      "name": "industry-acronyms",
+      "path": "./.cspell/industry-acronyms.txt"
+    },
+    {
+      "name": "project-specific",
+      "path": "./.cspell/project-specific.txt"
+    },
+    {
+      "name": "general-technical",
+      "path": "./.cspell/general-technical.txt"
+    }
+  ],
+  "dictionaries": [
+    "k8s",
+    "docker",
+    "rust",
+    "data-science",
+    "aws",
+    "terraform",
+    "azure-services",
+    "iot-operations",
+    "microsoft-sample-companies",
+    "industry-acronyms",
+    "project-specific",
+    "general-technical"
+  ],
+  "words": [
+    "ˈpræksɪs",
+    "behaviour",
+    "Chronograf",
+    "edgeai",
+    "GHCP",
+    "Kapacitor",
+    "kata",
+    "katas",
+    "learning",
+    "myorg",
+    "myorga",
+    "myorgb",
+    "SARIF",
+    "Segoe",
+    "πρᾶξις"
+  ]
 }

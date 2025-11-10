@@ -2,7 +2,7 @@
 title: Azure Machine Learning Arc Extension Component
 description: Azure Machine Learning extension for Arc-enabled Kubernetes clusters with TLS configuration for secure inference endpoints
 author: Edge AI Team
-ms.date: 09/15/2025
+ms.date: 2025-09-15
 ms.topic: reference
 keywords:
   - azure machine learning

@@ -2,7 +2,7 @@
 title: Capability Description Template
 description: Template for documenting individual platform capabilities with detailed technical specifications, implementation guidance, and integration patterns
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: template
 estimated_reading_time: 3
 keywords:

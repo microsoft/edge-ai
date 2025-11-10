@@ -50,7 +50,7 @@ Follow these steps in order until all task plan phases and tasks are complete.
 1. **Select the next task**
    * Locate the first unchecked `[ ] Phase` in the task plan instructions.
    * Within that phase, choose the earliest unchecked `[ ] Task`.
-   * If every ttask is complete, move to the completion checks section below.
+   * If every task is complete, move to the completion checks section below.
 
 2. **Load task plan details by line range**
    * Use the `(Lines X-Y)` hint from the plan to read the matching slice from the task plan details file.

@@ -2,7 +2,7 @@
 title: Edge Applications
 description: Directory containing application projects that can be built and deployed to an edge or cloud based system with Docker containers and Azure Container Registry
 author: Edge AI Team
-ms.date: 06/07/2025
+ms.date: 2025-06-07
 ms.topic: reference
 keywords:
   - application

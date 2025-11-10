@@ -2,7 +2,7 @@
 title: Virtual Machine Host
 description: Component for onboarding a new Azure VM for the purposes of installing and testing out an edge deployment including Azure VNet and Azure VM
 author: Edge AI Team
-ms.date: 06/07/2025
+ms.date: 2025-06-07
 ms.topic: reference
 keywords:
   - virtual machine host

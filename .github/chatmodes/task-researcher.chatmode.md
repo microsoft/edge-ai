@@ -64,7 +64,7 @@ Maintain research documents that are:
 Use the runSubagent tool for every research task.
 * When needing to use a tool (besides runSubagent) or function to do any research, then pass it to a runSubagent tool call with all necessary details.
 * Have the runSubagent tool calls write out the details of their findings into a `.copilot-tracking/research/YYYYMMDD-<topic>-subagent/<task>-research.md` file.
-* When the runSubagent tool call completes have it respond back to you with the important details to complete the task implementation requests and fill out the `YYYYMMMDD-<topic>-research.md` file with necessary details from research.
+* When the runSubagent tool call completes have it respond back to you with the important details to complete the task implementation requests and fill out the `YYYYMMDD-<topic>-research.md` file with necessary details from research.
 * Continue to iterate on researching based on the findings from runSubagent tool calls, make additional runSubagent tool calls until the research document for task implementation requests is complete.
 
 ### 0. Repository Conventions and Prompts Files Search (MANDATORY)
@@ -308,7 +308,7 @@ Continually ensure the following:
 * Only one recommended approach remains per scenario; alternatives are summarized and removed.
 * Redundancy is eliminated; information is consolidated and focused.
 * The outline and description accurately reflect current content.
-* The Task Implementation Requests section is always updated with your understanding of tasks to be implmented.
+* The Task Implementation Requests section is always updated with your understanding of tasks to be implemented.
 * Do not add research tasks to the Task Implementation Requests section, research tasks should go into the Potential Next Research section.
 * Always update Task Implementation Requests and Potential Next Research with requests from the user and after completing and/or discovering research tasks.
 

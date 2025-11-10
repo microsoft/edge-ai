@@ -1,0 +1,343 @@
+/**
+ * Assessment Completion Modal Styles
+ * Styles for the completion modal dialog
+ */
+
+.assessment-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+  backdrop-filter: blur(2px);
+}
+
+.assessment-modal-content {
+  background: var(--base-background-color);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  max-width: 600px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.assessment-modal-header {
+  padding: 24px 24px 16px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.assessment-modal-header h2 {
+  margin: 0;
+  color: var(--heading-color);
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.assessment-modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  color: var(--text-color-secondary);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+}
+
+.assessment-modal-close:hover {
+  background: var(--sidebar-toggle-background);
+  color: var(--text-color-base);
+  transform: scale(1.1);
+}
+
+.assessment-modal-close:focus {
+  outline: 2px solid var(--theme-color);
+  outline-offset: 2px;
+}
+
+.assessment-modal-body {
+  padding: 24px;
+}
+
+.assessment-results,
+.learning-path-recommendation,
+.next-steps {
+  margin-bottom: 32px;
+}
+
+.assessment-results:last-child,
+.learning-path-recommendation:last-child,
+.next-steps:last-child {
+  margin-bottom: 0;
+}
+
+.skill-level-display {
+  margin-bottom: 24px;
+}
+
+.skill-level-display h3 {
+  margin: 0 0 12px 0;
+  color: var(--heading-color);
+  font-size: 1.2rem;
+  font-weight: 500;
+}
+
+.skill-badge {
+  display: inline-block;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.skill-badge.foundation-builder {
+  background: linear-gradient(135deg, #4CAF50, #66BB6A);
+  color: white;
+}
+
+.skill-badge.skill-developer {
+  background: linear-gradient(135deg, #2196F3, #42A5F5);
+  color: white;
+}
+
+.skill-badge.expert-practitioner {
+  background: linear-gradient(135deg, #9C27B0, #BA68C8);
+  color: white;
+}
+
+.assessment-summary {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.assessment-summary p {
+  margin: 0;
+  padding: 12px 16px;
+  background: var(--sidebar-toggle-background);
+  border-radius: 8px;
+  font-weight: 500;
+  flex: 1;
+  min-width: 160px;
+}
+
+.completion-percentage {
+  color: var(--theme-color);
+}
+
+.overall-score {
+  color: var(--success-color);
+}
+
+.learning-path-recommendation h3,
+.next-steps h3 {
+  margin: 0 0 16px 0;
+  color: var(--heading-color);
+  font-size: 1.2rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.recommended-path-content {
+  background: var(--sidebar-toggle-background);
+  padding: 20px;
+  border-radius: 8px;
+  border-left: 4px solid var(--theme-color);
+}
+
+.path-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--heading-color);
+  margin-bottom: 8px;
+}
+
+.path-description {
+  color: var(--text-color-base);
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+.estimated-duration {
+  font-size: 0.9rem;
+  color: var(--text-color-secondary);
+  font-weight: 500;
+}
+
+.chatmode-recommendation {
+  background: var(--sidebar-toggle-background);
+  padding: 20px;
+  border-radius: 8px;
+  border-left: 4px solid var(--theme-color);
+}
+
+.chatmode-recommendation p {
+  margin: 0 0 8px 0;
+}
+
+.chatmode-recommendation p:last-child {
+  margin: 0;
+}
+
+.chatmode-description {
+  color: var(--text-color-secondary);
+  font-style: italic;
+}
+
+.assessment-modal-footer {
+  padding: 16px 24px 24px;
+  border-top: 1px solid var(--border-color);
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.modal-actions button {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 120px;
+  justify-content: center;
+}
+
+.btn-primary {
+  background: var(--theme-color);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: var(--theme-color-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 120, 212, 0.2);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--text-color-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+  background: var(--sidebar-nav-link-color--hover);
+  color: var(--text-color-base);
+}
+
+.btn-icon {
+  font-size: 1rem;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .assessment-modal-overlay {
+    background: rgba(0, 0, 0, 0.8);
+  }
+
+  .assessment-modal-content {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  }
+}
+
+/* Responsive design */
+@media (max-width: 640px) {
+  .assessment-modal-content {
+    width: 95%;
+    max-height: 95vh;
+    margin: 0 auto;
+  }
+
+  .assessment-modal-header,
+  .assessment-modal-body,
+  .assessment-modal-footer {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .assessment-summary {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .modal-actions {
+    flex-direction: column;
+  }
+
+  .modal-actions button {
+    width: 100%;
+  }
+}
+
+/* Focus management */
+.assessment-modal-content:focus-within {
+  outline: 2px solid var(--theme-color);
+  outline-offset: 2px;
+}
+
+.modal-actions button:focus {
+  outline: 2px solid var(--theme-color);
+  outline-offset: 2px;
+}
+
+/* Loading states */
+.modal-actions button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.modal-actions button.loading::before {
+  content: '';
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: buttonSpin 1s linear infinite;
+  margin-right: 8px;
+}
+
+@keyframes buttonSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -2,7 +2,7 @@
 title: GitHub Actions Configuration
 description: Configuration guide for GitHub Actions workflows and CI/CD setup for the Edge AI Accelerator repository
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: hub-page
 estimated_reading_time: 7
 keywords:

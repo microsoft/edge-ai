@@ -2,7 +2,7 @@
 title: Using build-docs.md.template with Copilot
 description: Step-by-step guide for using the standardized documentation template with GitHub Copilot to create docs for reusable workflows and pipeline templates
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: how-to
 keywords:
   - documentation
@@ -145,7 +145,7 @@ Update the template header for your specific documentation:
 title: [Your Workflow/Template Name]
 description: [Concise description of purpose and functionality]
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: reference
 estimated_reading_time: 3
 keywords:

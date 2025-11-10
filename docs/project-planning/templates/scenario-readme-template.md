@@ -2,7 +2,7 @@
 title: Scenario README Template
 description: Template for creating comprehensive scenario overview documentation with navigation, technical summaries, and implementation guidance
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: template
 estimated_reading_time: 2
 keywords:
@@ -80,7 +80,7 @@ IMPORTANT INSTRUCTIONS FOR USING THIS TEMPLATE:
 
 **Strategic Value:** [Key business outcomes and competitive advantages this scenario delivers - 2-3 sentences]
 
-**Implementation Scope:** This scenario demonstrates [specific scope description] through [number] implementation phases, leveraging [number] platform capabilities to deliver [key outcomes] across [timeframe].
+**Implementation Scope:** This scenario demonstrates [specific scope description] through [number] implementation phases, leveraging [number] platform capabilities to deliver [key outcomes] across [time frame].
 
 ## Implementation Approach
 

@@ -1,400 +1,321 @@
 ---
 title: "Quality Process Optimization Automation"
-description: "AI-driven quality process automation leveraging real-time analytics, predictive modeling, and digital twins to optimize manufacturing quality control, reduce defects, and enable continuous process improvement."
+description: "Automated quality control system using computer vision, IoT sensors, and predictive analytics for real-time defect detection and process optimization."
 author: "Edge AI Team"
-ms.date: 06/06/2025
+ms.date: 2025-07-20
 ms.topic: conceptual
 estimated_reading_time: 8
 keywords:
-  - quality-automation
+  - quality-control
+  - defect-detection
   - process-optimization
-  - ai-analytics
-  - predictive-quality
-  - digital-twins
-  - manufacturing-excellence
+  - computer-vision
+  - predictive-analytics
 ---
-## Scenario Overview
 
-Quality Process Optimization Automation enables AI-driven quality process automation leveraging real-time analytics, predictive modeling, and digital twins to optimize manufacturing quality control, reduce defects, and enable continuous process improvement. This solution transforms traditional reactive quality management into proactive, predictive quality assurance that prevents defects before they occur.
+## 📊 Scenario Overview
 
-## Capability Evaluation Framework
+Quality Process Optimization Automation delivers automated quality control through computer vision, IoT sensors, and predictive analytics for real-time defect detection and process optimization. This approach provides consistent quality measurement, reduced inspection time, and proactive process adjustment compared to manual quality control processes.
 
-This scenario has been evaluated across four key dimensions:
+The scenario combines computer vision for defect detection, IoT sensors for process monitoring, and predictive analytics that identify quality issues before they impact production. This results in reduced defect rates, improved product consistency, and optimized manufacturing processes, along with comprehensive quality traceability and compliance reporting.
 
-- **Technical Fit** (0-10): Direct requirement match, performance alignment, integration complexity
-- **Business Value** (0-10): Impact magnitude, value realization timeline, ROI potential
-- **Implementation Practicality** (0-10): Complexity assessment, resource requirements, risk level
-- **Platform Cohesion** (0-10): Cross-capability benefits, data flow optimization, shared infrastructure
+**Use cases include defect detection on production lines, process parameter optimization, and quality compliance reporting** - particularly where consistent product quality, regulatory compliance, and manufacturing efficiency are critical business requirements.
 
-## Critical Capabilities & Implementation Details
+## 🗓️ Development Planning Framework
+
+This planning guide outlines the Quality Process Optimization Automation scenario and identifies the capabilities required at each implementation phase. Each phase defines the scope of capabilities needed to achieve specific business outcomes.
+
+**Component status definitions**:
+
+- **✅ Ready to Deploy**: Components available for immediate deployment with minimal configuration
+- **🔵 Development Required**: Framework and APIs provided, custom logic development needed
+- **🟣 Planned Components**: Scheduled for future accelerator releases - plan accordingly
+- **🟪 External Integration**: Requires third-party solutions or custom development
+
+## ⚙️ Critical Capabilities & Development Planning
 
 <!-- markdownlint-disable MD033 -->
-| Capability Group                                                                             | Critical Capabilities                                                                                                                                                                                                                                                | Implementation Details for Quality Process Automation                                                                                                                                                                  | Status                                                                                                       |
-|----------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------|
-| **[Protocol Translation & Device Management][protocol-translation-device-management]**       | - [OPC UA Data Ingestion][opc-ua-data-ingestion]<br>- [Device Twin Management][device-twin-management]<br>- [Broad Industrial Protocol Support][broad-industrial-protocol-support]                                                                                   | - Connect to quality measurement equipment and sensors<br>- Create digital twins of quality control systems<br>- Support protocols for diverse quality inspection devices                                              | [Available][available]<br>[Available][available]<br>In Development                                           |
-| **[Edge Cluster Platform][edge-cluster-platform]**                                           | - [Edge Compute Orchestration][edge-compute-orchestration]<br>- [Edge Application CI/CD][edge-application-cicd]                                                                                                                                                      | - Deploy local processing for quality control systems<br>- Manage containerized quality analytics applications                                                                                                         | [Available][available-2]<br>[Available][available-2]                                                         |
-| **[Edge Industrial Application Platform][edge-industrial-application-platform]**             | - [Edge Data Stream Processing][edge-data-stream-processing]<br>- [Edge Inferencing Application Framework][edge-inferencing-application-framework]<br>- [Edge Dashboard Visualization][edge-dashboard-visualization]<br>- [Edge Camera Control][edge-camera-control] | - Process real-time quality measurement data streams<br>- Run quality prediction and defect detection models<br>- Display quality metrics and control charts<br>- Manage quality inspection cameras and vision systems | [Available][available-4]<br>[Available][available-5]<br>[Available][available-4]<br>[Available][available-4] |
-| **[Cloud Data Platform][cloud-data-platform]**                                               | - [Cloud Data Platform Services][cloud-data-platform-services]<br>- [Data Governance & Lineage][data-governance-lineage]<br>- [Machine Learning Feature Store][machine-learning-feature-store]                                                                       | - Store quality measurement data and inspection results<br>- Maintain quality data traceability and audit trails<br>- Manage features for quality prediction models                                                    | [Available][available-8]<br>In Development<br>In Development                                                 |
-| **[Cloud AI Platform][cloud-ai-platform]**                                                   | - [Cloud AI/ML Model Training][cloud-ai-ml-model-training]<br>- [MLOps Toolchain][mlops-toolchain]<br>- [Computer Vision Platform][computer-vision-platform]                                                                                                         | - Train advanced quality prediction and optimization models<br>- Manage model lifecycle for quality control<br>- Develop specialized vision models for quality inspection                                              | Planned<br>Planned<br>Planned                                                                                |
-| **[Cloud Insights Platform][cloud-insights-platform]**                                       | - [Automated Incident Response & Remediation][automated-incident-response-remediation]<br>- [Cloud Observability Foundation][cloud-observability-foundation]                                                                                                         | - Automate responses to quality deviations and alerts<br>- Apply advanced analytics to quality control data                                                                                                            | In Development<br>In Development                                                                             |
-| **[Advanced Simulation & Digital Twin Platform][advanced-simulation-digital-twin-platform]** | - [3D Digital Twin][3d-digital-twin]<br>- [Augmented Reality Visualization][augmented-reality-visualization]                                                                                                                                                         | - 3D models of quality control processes and equipment<br>- AR-assisted quality inspection and process optimization                                                                                                    | External<br>External                                                                                         |
+| Capability Group                                                                             | Critical Capabilities                                                                                                                                                                                                                                                | Implementation Requirements                                                                                                                        | Accelerator Support                                                                    |
+|----------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------|
+| **[Protocol Translation & Device Management][protocol-translation-device-management]**       | - [OPC UA Data Ingestion][opc-ua-data-ingestion]<br>- [Device Twin Management][device-twin-management]<br>- [Broad Industrial Protocol Support][broad-industrial-protocol-support]                                                                                   | - Quality inspection equipment integration<br>- Digital twins for quality control processes<br>- Quality measurement device protocol support       | ✅ Ready to Deploy<br>🔵 Development Required<br>🟣 Planned                             |
+| **[Edge Cluster Platform][edge-cluster-platform]**                                           | - [Edge Compute Orchestration][edge-compute-orchestration]<br>- [Edge Application CI/CD][edge-application-cicd]                                                                                                                                                      | - Quality application deployment environment<br>- CI/CD pipeline for quality models                                                                | ✅ Ready to Deploy<br>✅ Ready to Deploy                                                 |
+| **[Edge Industrial Application Platform][edge-industrial-application-platform]**             | - [Edge Camera Control][edge-camera-control]<br>- [Edge Data Stream Processing][edge-data-stream-processing]<br>- [Edge Inferencing Application Framework][edge-inferencing-application-framework]<br>- [Edge Dashboard Visualization][edge-dashboard-visualization] | - Visual inspection camera systems<br>- Real-time quality data processing<br>- Quality prediction model deployment<br>- Quality metrics dashboards | ✅ Ready to Deploy<br>✅ Ready to Deploy<br>🔵 Development Required<br>✅ Ready to Deploy |
+| **[Cloud Data Platform][cloud-data-platform]**                                               | - [Cloud Data Platform Services][cloud-data-platform-services]<br>- [Data Governance & Lineage][data-governance-lineage]                                                                                                                                             | - Quality data storage and analytics<br>- Quality process traceability and compliance                                                              | ✅ Ready to Deploy<br>🔵 Development Required                                           |
+| **[Cloud AI Platform][cloud-ai-platform]**                                                   | - [Cloud AI/ML Model Training][cloud-ai-ml-model-training]<br>- [MLOps Toolchain][mlops-toolchain]<br>- [Computer Vision Platform][computer-vision-platform]                                                                                                         | - Quality prediction model training<br>- Quality model lifecycle management<br>- Visual defect detection models                                    | 🟣 Planned<br>🟣 Planned<br>🟣 Planned                                                 |
+| **[Cloud Insights Platform][cloud-insights-platform]**                                       | - [Automated Incident Response & Remediation][automated-incident-response-remediation]<br>- [Cloud Observability Foundation][cloud-observability-foundation]                                                                                                         | - Automated quality alerts and remediation<br>- Quality process monitoring and analytics                                                           | 🔵 Development Required<br>🔵 Development Required                                     |
+| **[Advanced Simulation & Digital Twin Platform][advanced-simulation-digital-twin-platform]** | - [Quality Digital Twin Platform][quality-digital-twin-platform]<br>- [Process Simulation Engine][process-simulation-engine]                                                                                                                                         | - Advanced quality process simulation<br>- Predictive quality modeling platforms                                                                   | 🟪 External Dependencies<br>🟪 External Dependencies                                   |
 <!-- markdownlint-enable MD033 -->
 
-## Maturity-Based Implementation Roadmap
+---
 
-### Proof of Concept (PoC) Phase - 3 weeks
+## 🛣️ Quality Process Optimization Automation Implementation Roadmap
 
-**Focus**: Basic quality data collection and real-time monitoring
+This roadmap outlines the typical progression for implementing Quality Process Optimization Automation scenarios. Each phase defines the capabilities required and the business outcomes typically achieved.
 
-**Core Capabilities**:
+### Scenario Implementation Phases
 
-- **[Edge Data Stream Processing][edge-data-stream-processing]** (Technical: 9, Business: 8, Practical: 9, Cohesion: 9)
-  - Real-time quality measurement data processing
-  - Statistical process control calculations
-  - Quality alert generation and notification
+| Phase             | Duration  | Scenario Scope                                              | Business Value Achievement                   | Accelerator Support                               |
+|-------------------|-----------|-------------------------------------------------------------|----------------------------------------------|---------------------------------------------------|
+| 🧪 **PoC**        | 3 weeks   | Basic quality monitoring and defect detection               | 15-25% reduction in defect escape rates      | ✅ Ready to Start - [Use Edge-AI][getting-started] |
+| 🚀 **PoV**        | 10 weeks  | AI-powered quality prediction and process optimization      | 40-60% improvement in first-pass yield       | 🔵 Development Required                           |
+| 🏭 **Production** | 6 months  | Enterprise quality platform with automated optimization     | 60-80% reduction in quality-related downtime | 🟣 Planned Components                             |
+| 📈 **Scale**      | 15 months | Intelligent quality ecosystem with supply chain integration | 80-95% automation of quality processes       | 🟪 External Integration Required                  |
 
-- **[Edge Dashboard Visualization][edge-dashboard-visualization]** (Technical: 8, Business: 9, Practical: 9, Cohesion: 7)
-  - Quality control charts and dashboards
-  - Real-time process capability monitoring
-  - Quality trend visualization and alerts
+---
 
-- **[OPC UA Data Ingestion][opc-ua-data-ingestion]** (Technical: 9, Business: 7, Practical: 9, Cohesion: 8)
-  - Integration with quality measurement equipment
-  - Capture of quality sensor and inspection data
-  - Synchronization with production process data
+### 🧪 PoC Phase (3 weeks) - Basic Quality Monitoring
 
-- **[Edge Compute Orchestration][edge-compute-orchestration]** (Technical: 8, Business: 7, Practical: 9, Cohesion: 8)
-  - Deployment of quality monitoring applications
-  - Container orchestration for quality services
-  - Edge infrastructure management for quality systems
+**Scenario Goal**: Establish automated defect detection and basic quality monitoring to validate technical feasibility and demonstrate immediate quality improvements.
 
-**Suggested Expected Value**: 15-25% improvement in quality issue detection speed
+**Technical Scope**: Implement computer vision-based defect detection on a single production line with real-time quality data collection and basic alerting.
 
-### Proof of Value (PoV) Phase - 10 weeks
+| Capability Area        | Capability                                                   | Accelerator Support | Implementation Requirements                                                        | Priority |
+|------------------------|--------------------------------------------------------------|---------------------|------------------------------------------------------------------------------------|----------|
+| **Edge Vision**        | [Edge Camera Control][edge-camera-control]                   | ✅ Ready to Deploy   | Configure cameras for quality inspection with appropriate lighting and positioning | High     |
+| **Data Processing**    | [Edge Data Stream Processing][edge-data-stream-processing]   | ✅ Ready to Deploy   | Implement real-time quality data processing with configurable quality thresholds   | High     |
+| **Visualization**      | [Edge Dashboard Visualization][edge-dashboard-visualization] | ✅ Ready to Deploy   | Deploy quality metrics dashboard with defect rate tracking and alerts              | Medium   |
+| **Device Integration** | [OPC UA Data Ingestion][opc-ua-data-ingestion]               | ✅ Ready to Deploy   | Connect to existing quality measurement equipment and process sensors              | Medium   |
 
-**Focus**: AI-powered quality prediction and automated control
+**Implementation Sequence**:
 
-**Additional Capabilities**:
+1. **Week 1**: **[Edge Camera Control][edge-camera-control]** - Configure vision systems for quality inspection with baseline defect detection algorithms and validation against existing quality standards
+2. **Week 2**: **[Edge Data Stream Processing][edge-data-stream-processing]** - Implement quality data processing pipeline with configurable thresholds and automated quality reporting integration
+3. **Week 3**: **[Edge Dashboard Visualization][edge-dashboard-visualization]** - Deploy quality dashboard + **[OPC UA Data Ingestion][opc-ua-data-ingestion]** - Integrate with existing measurement systems
 
-- **[Edge Inferencing Application Framework][edge-inferencing-application-framework]** (Technical: 8, Business: 9, Practical: 7, Cohesion: 9)
-  - Real-time quality prediction models
-  - Defect classification and root cause analysis
-  - Process optimization recommendations
+**Typical Team Requirements**: 3-4 engineers (1 computer vision specialist, 1 process engineer, 1-2 integration developers)
 
-- **[Device Twin Management][device-twin-management]** (Technical: 8, Business: 7, Practical: 8, Cohesion: 8)
-  - Digital representation of quality control equipment
-  - Virtual state tracking of measurement devices
-  - Equipment parameter optimization
+---
 
-- **[Cloud Data Platform Services][cloud-data-platform-services]** (Technical: 8, Business: 8, Practical: 8, Cohesion: 9)
-  - Centralized quality data repository
-  - Historical quality trend analytics
-  - Cross-facility quality comparison
+### 🚀 PoV Phase (10 weeks) - AI-Powered Quality Prediction
 
-- **[Edge Camera Control][edge-camera-control]** (Technical: 8, Business: 8, Practical: 8, Cohesion: 8)
-  - Automated visual quality inspection
-  - Camera-based defect detection systems
-  - Visual quality measurement integration
+**Scenario Goal**: Implement predictive quality analytics and process optimization to demonstrate business value and stakeholder buy-in for enterprise deployment.
 
-**Suggested Expected Value**: 25-40% reduction in quality defects and 30-50% faster quality response
+**Technical Scope**: Deploy machine learning models for quality prediction, automated process parameter optimization, and comprehensive quality analytics across multiple production lines.
 
-### Production Phase - 6 months
+| Capability Area       | Capability                                                                       | Accelerator Support     | Implementation Requirements                                                                 | Priority |
+|-----------------------|----------------------------------------------------------------------------------|-------------------------|---------------------------------------------------------------------------------------------|----------|
+| **AI Platform**       | [Edge Inferencing Application Framework][edge-inferencing-application-framework] | 🔵 Development Required | Develop quality prediction models with custom inference logic for process optimization      | High     |
+| **Device Management** | [Device Twin Management][device-twin-management]                                 | 🔵 Development Required | Create digital twins for quality processes with automated parameter adjustment capabilities | High     |
+| **Data Platform**     | [Cloud Data Platform Services][cloud-data-platform-services]                     | ✅ Ready to Deploy       | Implement quality data lake with historical analysis and trend identification               | Medium   |
+| **ML Operations**     | [MLOps Toolchain][mlops-toolchain]                                               | 🟣 Planned              | Establish model training pipeline for continuous quality model improvement                  | Medium   |
 
-**Focus**: Enterprise quality automation and digital twin integration
-
-**Additional Capabilities**:
+**Implementation Sequence**:
 
-- **[Data Governance & Lineage][data-governance-lineage]** (Technical: 8, Business: 8, Practical: 7, Cohesion: 8)
-  - Quality data traceability across production
-  - Regulatory compliance for quality records
-  - Complete quality audit trail management
+1. **Weeks 1-3**: **[Edge Inferencing Application Framework][edge-inferencing-application-framework]** - Develop and validate quality prediction models with process parameter optimization algorithms
+2. **Weeks 4-6**: **[Device Twin Management][device-twin-management]** - Implement digital twins for quality processes with automated adjustment capabilities and validation
+3. **Weeks 7-8**: **[Cloud Data Platform Services][cloud-data-platform-services]** - Deploy quality data platform with historical analysis and predictive analytics foundation
+4. **Weeks 9-10**: **[MLOps Toolchain][mlops-toolchain]** - Establish model lifecycle management with continuous improvement workflows and validation processes
 
-- **[Automated Incident Response & Remediation][automated-incident-response-remediation]** (Technical: 7, Business: 9, Practical: 7, Cohesion: 8)
-  - Automated quality incident workflows
-  - Process adjustment recommendations
-  - Integration with quality management systems
-
-- **[Cloud AI/ML Model Training][cloud-ai-ml-model-training]** (Technical: 8, Business: 9, Practical: 7, Cohesion: 8)
-  - Advanced quality prediction models
-  - Continuous model training on quality data
-  - Process optimization algorithm development
-
-- **[Broad Industrial Protocol Support][broad-industrial-protocol-support]** (Technical: 8, Business: 7, Practical: 7, Cohesion: 8)
-  - Integration with diverse quality equipment
-  - Support for legacy quality measurement systems
-  - Multi-vendor quality device integration
-
-**Suggested Expected Value**: 40-60% reduction in quality defects and 50-70% improvement in process capability
-
-### Scale Phase - 15 months
-
-**Focus**: Advanced quality intelligence and enterprise-wide optimization
-
-**Additional Capabilities**:
-
-- **[MLOps Toolchain][mlops-toolchain]** (Technical: 8, Business: 8, Practical: 7, Cohesion: 9)
-  - Automated quality model lifecycle management
-  - Continuous quality model improvement
-  - Enterprise quality model governance
-
-- **[Machine Learning Feature Store][machine-learning-feature-store]** (Technical: 8, Business: 8, Practical: 7, Cohesion: 9)
-  - Centralized management of quality features
-  - Feature reuse across quality models
-  - Accelerated quality model development
-
-- **[3D Digital Twin][3d-digital-twin]** (Technical: 9, Business: 8, Practical: 6, Cohesion: 8)
-  - Complete 3D modeling of quality processes
-  - Virtual quality process optimization
-  - Digital quality process simulation
-
-- **[Computer Vision Platform][computer-vision-platform]** (Technical: 9, Business: 9, Practical: 7, Cohesion: 8)
-  - Advanced vision-based quality inspection
-  - Automated quality classification systems
-  - Multi-modal quality assessment capabilities
-
-**Suggested Expected Value**: 60-80% reduction in quality defects and 70-90% improvement in quality efficiency
-
-## Implementation Phase Legend
-
-| Phase          | Duration  | Focus                                                          | Value Achievement                             |
-|----------------|-----------|----------------------------------------------------------------|-----------------------------------------------|
-| **PoC**        | 3 weeks   | Basic quality data collection and real-time monitoring         | 15-25% improvement in quality issue detection |
-| **PoV**        | 10 weeks  | AI-powered quality prediction and automated control            | 25-40% reduction in quality defects           |
-| **Production** | 6 months  | Enterprise quality automation and digital twin integration     | 40-60% reduction in quality defects           |
-| **Scale**      | 15 months | Advanced quality intelligence and enterprise-wide optimization | 60-80% reduction in quality defects           |
-
-## Enhanced Key Capabilities Mapping with Implementation Phases
-
-```mermaid
-%%{init: {
-  'theme': 'default',
-  'themeVariables': { 'fontSize': '14px', 'fontFamily': 'trebuchet ms', 'lineHeight': '1.4' },
-  'flowchart': { 'htmlLabels': true, 'curve': 'basis' },
-  'width': '1600px',
-  'height': '1200px'
-}}%%
-graph RL
-    classDef main fill:#4285F4,stroke:#0D47A1,color:white,stroke-width:3px
-    classDef capabilityGroup fill:#1976D2,stroke:#0D47A1,color:white,stroke-width:2px
-    classDef categoryPoC fill:#9C27B0,stroke:#6A1B9A,color:white,stroke-width:2px
-    classDef categoryPoV fill:#FF5722,stroke:#D84315,color:white,stroke-width:2px
-    classDef categoryProd fill:#607D8B,stroke:#455A64,color:white,stroke-width:2px
-    classDef categoryScale fill:#795548,stroke:#5D4037,color:white,stroke-width:2px
-
-    %% Capability status classes
-    classDef available fill:#00C853,stroke:#009624,color:white,stroke-width:1px
-    classDef inDevelopment fill:#FFD600,stroke:#FFAB00,color:black,stroke-width:1px
-    classDef planned fill:#FF6D00,stroke:#FF3D00,color:white,stroke-width:1px
-    classDef external fill:#8D6E63,stroke:#5D4037,color:white,stroke-width:1px
-
-    %% Main Scenario
-    MainScenario[Quality Process Optimization Automation<br/>AI-Driven Quality Excellence]
-
-    %% PoC Phase Capabilities (3 weeks)
-    EdgeStreamQuality[Edge Data Stream Processing<br/>Score: 9/8/9/9]
-    EdgeDashQuality[Edge Dashboard Visualization<br/>Score: 8/9/9/7]
-    OPCQualityData[OPC UA Data Ingestion<br/>Score: 9/7/9/8]
-    EdgeComputeQuality[Edge Compute Orchestration<br/>Score: 8/7/9/8]
-
-    %% PoV Phase Capabilities (10 weeks)
-    EdgeInferenceQuality[Edge Inferencing Framework<br/>Score: 8/9/7/9]
-    DeviceTwinQuality[Device Twin Management<br/>Score: 8/7/8/8]
-    CloudDataQuality[Cloud Data Platform<br/>Score: 8/8/8/9]
-    EdgeCameraQuality[Edge Camera Control<br/>Score: 8/8/8/8]
-
-    %% Production Phase Capabilities (6 months)
-    DataGovernanceQuality[Data Governance & Lineage<br/>Score: 8/8/7/8]
-    AutoIncidentQuality[Automated Incident Response<br/>Score: 7/9/7/8]
-    CloudMLQuality[Cloud AI/ML Model Training<br/>Score: 8/9/7/8]
-    IndustrialProtocolQuality[Broad Industrial Protocol Support<br/>Score: 8/7/7/8]
-
-    %% Scale Phase Capabilities (15 months)
-    MLOpsQuality[MLOps Toolchain<br/>Score: 8/8/7/9]
-    FeatureStoreQuality[ML Feature Store<br/>Score: 8/8/7/9]
-    DigitalTwinQuality[3D Digital Twin<br/>Score: 9/8/6/8]
-    ComputerVisionQuality[Computer Vision Platform<br/>Score: 9/9/7/8]
-
-    %% Phase-specific Capability Groups
-    EdgeIndustrialAppQualityPoC[PoC: Edge Industrial Application Platform<br/>3 weeks]
-    ProtocolTranslationQualityPoC[PoC: Protocol Translation & Device Management<br/>3 weeks]
-    EdgeClusterQualityPoC[PoC: Edge Cluster Platform<br/>3 weeks]
-
-    EdgeIndustrialAppQualityPoV[PoV: Edge Industrial Application Platform<br/>10 weeks]
-    ProtocolTranslationQualityPoV[PoV: Protocol Translation & Device Management<br/>10 weeks]
-    CloudDataPlatformQualityPoV[PoV: Cloud Data Platform<br/>10 weeks]
-
-    CloudDataPlatformQualityProd[Production: Cloud Data Platform<br/>6 months]
-    CloudInsightsPlatformQualityProd[Production: Cloud Insights Platform<br/>6 months]
-    CloudAIPlatformQualityProd[Production: Cloud AI Platform<br/>6 months]
-    ProtocolTranslationQualityProd[Production: Protocol Translation & Device Management<br/>6 months]
-
-    CloudAIPlatformQualityScale[Scale: Cloud AI Platform<br/>15 months]
-    CloudDataPlatformQualityScale[Scale: Cloud Data Platform<br/>15 months]
-    AdvancedSimulationQualityScale[Scale: Advanced Simulation & Digital Twin<br/>15 months]
-
-    %% Individual Capabilities to Phase-specific Groups
-    EdgeStreamQuality --> EdgeIndustrialAppQualityPoC
-    EdgeDashQuality --> EdgeIndustrialAppQualityPoC
-    OPCQualityData --> ProtocolTranslationQualityPoC
-    EdgeComputeQuality --> EdgeClusterQualityPoC
-
-    EdgeInferenceQuality --> EdgeIndustrialAppQualityPoV
-    DeviceTwinQuality --> ProtocolTranslationQualityPoV
-    CloudDataQuality --> CloudDataPlatformQualityPoV
-    EdgeCameraQuality --> EdgeIndustrialAppQualityPoV
-
-    DataGovernanceQuality --> CloudDataPlatformQualityProd
-    AutoIncidentQuality --> CloudInsightsPlatformQualityProd
-    CloudMLQuality --> CloudAIPlatformQualityProd
-    IndustrialProtocolQuality --> ProtocolTranslationQualityProd
-
-    MLOpsQuality --> CloudAIPlatformQualityScale
-    FeatureStoreQuality --> CloudDataPlatformQualityScale
-    DigitalTwinQuality --> AdvancedSimulationQualityScale
-    ComputerVisionQuality --> CloudAIPlatformQualityScale
-
-    %% Phase-specific Groups to Main Scenario
-    EdgeIndustrialAppQualityPoC --> MainScenario
-    ProtocolTranslationQualityPoC --> MainScenario
-    EdgeClusterQualityPoC --> MainScenario
-
-    EdgeIndustrialAppQualityPoV --> MainScenario
-    ProtocolTranslationQualityPoV --> MainScenario
-    CloudDataPlatformQualityPoV --> MainScenario
-
-    CloudDataPlatformQualityProd --> MainScenario
-    CloudInsightsPlatformQualityProd --> MainScenario
-    CloudAIPlatformQualityProd --> MainScenario
-    ProtocolTranslationQualityProd --> MainScenario
-
-    CloudAIPlatformQualityScale --> MainScenario
-    CloudDataPlatformQualityScale --> MainScenario
-    AdvancedSimulationQualityScale --> MainScenario
-
-    %% Apply styles
-    MainScenario:::main
-
-    EdgeIndustrialAppQualityPoC:::categoryPoC
-    ProtocolTranslationQualityPoC:::categoryPoC
-    EdgeClusterQualityPoC:::categoryPoC
-
-    EdgeIndustrialAppQualityPoV:::categoryPoV
-    ProtocolTranslationQualityPoV:::categoryPoV
-    CloudDataPlatformQualityPoV:::categoryPoV
-
-    CloudDataPlatformQualityProd:::categoryProd
-    CloudInsightsPlatformQualityProd:::categoryProd
-    CloudAIPlatformQualityProd:::categoryProd
-    ProtocolTranslationQualityProd:::categoryProd
-
-    CloudAIPlatformQualityScale:::categoryScale
-    CloudDataPlatformQualityScale:::categoryScale
-    AdvancedSimulationQualityScale:::categoryScale
-
-    %% Apply capability status styles
-    EdgeStreamQuality:::available
-    EdgeDashQuality:::available
-    OPCQualityData:::available
-    EdgeComputeQuality:::available
-    EdgeInferenceQuality:::available
-    DeviceTwinQuality:::available
-    CloudDataQuality:::available
-    EdgeCameraQuality:::available
-
-    DataGovernanceQuality:::inDevelopment
-    AutoIncidentQuality:::inDevelopment
-    IndustrialProtocolQuality:::inDevelopment
-    FeatureStoreQuality:::inDevelopment
-
-    CloudMLQuality:::planned
-    MLOpsQuality:::planned
-    ComputerVisionQuality:::planned
-
-    DigitalTwinQuality:::external
-
-    linkStyle default stroke-width:2px,fill:none,stroke:#999
-```
-
-## Capability Status Legend
+**Typical Team Requirements**: 6-8 engineers (2 ML specialists, 2 process engineers, 2 data engineers, 1-2 integration developers)
+
+**MVP Requirements**: Demonstrate 20% improvement in first-pass yield with predictive quality alerts reducing defect escape rate by 30%
+
+---
+
+### 🏭 Production Phase (6 months) - Enterprise Quality Platform
+
+**Scenario Goal**: Deploy enterprise-scale quality platform with automated optimization and comprehensive quality governance across the manufacturing organization.
+
+**Technical Scope**: Implement organization-wide quality intelligence with automated process optimization, regulatory compliance reporting, and supply chain quality integration.
+
+| Capability Area   | Capability                                                                           | Accelerator Support     | Implementation Requirements                                                                 | Priority |
+|-------------------|--------------------------------------------------------------------------------------|-------------------------|---------------------------------------------------------------------------------------------|----------|
+| **Governance**    | [Data Governance & Lineage][data-governance-lineage]                                 | 🔵 Development Required | Implement quality data governance with regulatory compliance and audit trail capabilities   | High     |
+| **Automation**    | [Automated Incident Response & Remediation][automated-incident-response-remediation] | 🔵 Development Required | Deploy automated quality incident response with process adjustment and escalation workflows | Medium   |
+| **Observability** | [Cloud Observability Foundation][cloud-observability-foundation]                     | 🔵 Development Required | Establish enterprise quality monitoring with comprehensive analytics and reporting          | High     |
+| **Integration**   | [Broad Industrial Protocol Support][broad-industrial-protocol-support]               | 🟣 Planned              | Support diverse quality equipment with standardized integration patterns and data models    | Medium   |
+
+**Implementation Sequence**:
+
+1. **Months 1-2**: **[Data Governance & Lineage][data-governance-lineage]** - Implement quality data governance + **[Cloud Observability Foundation][cloud-observability-foundation]** - Deploy enterprise monitoring
+2. **Months 3-4**: **[Automated Incident Response & Remediation][automated-incident-response-remediation]** - Deploy automated quality response with process optimization workflows
+3. **Months 5-6**: **[Broad Industrial Protocol Support][broad-industrial-protocol-support]** - Expand equipment integration with standardized quality data models and reporting
+
+**Typical Team Requirements**: 8-12 engineers (3 ML specialists, 3 process engineers, 2 data engineers, 2-3 integration developers, 1-2 governance specialists)
+
+---
+
+### 📈 Scale Phase (15 months) - Intelligent Quality Ecosystem
+
+**Scenario Goal**: Achieve intelligent quality ecosystem with supply chain integration, advanced simulation capabilities, and autonomous quality optimization.
+
+**Technical Scope**: Deploy advanced quality intelligence with supply chain quality integration, predictive quality simulation, and autonomous process optimization across the extended enterprise.
+
+| Capability Area        | Capability                                                     | Accelerator Support      | Implementation Requirements                                                                             | Priority |
+|------------------------|----------------------------------------------------------------|--------------------------|---------------------------------------------------------------------------------------------------------|----------|
+| **AI Training**        | [Cloud AI/ML Model Training][cloud-ai-ml-model-training]       | 🟣 Planned               | Establish advanced quality model training with multi-site data federation and continuous learning       | High     |
+| **Vision Platform**    | [Computer Vision Platform][computer-vision-platform]           | 🟣 Planned               | Deploy enterprise computer vision platform with advanced defect classification and process optimization | High     |
+| **Digital Twin**       | [Quality Digital Twin Platform][quality-digital-twin-platform] | 🟪 External Dependencies | Implement advanced quality process simulation with predictive optimization and scenario planning        | Medium   |
+| **Process Simulation** | [Process Simulation Engine][process-simulation-engine]         | 🟪 External Dependencies | Deploy process simulation capabilities with quality prediction and optimization recommendations         | Medium   |
+
+**Implementation Sequence**:
+
+1. **Months 1-6**: **[Cloud AI/ML Model Training][cloud-ai-ml-model-training]** - Establish advanced model training + **[Computer Vision Platform][computer-vision-platform]** - Deploy enterprise vision platform
+2. **Months 7-12**: **[Quality Digital Twin Platform][quality-digital-twin-platform]** - Implement advanced quality simulation with predictive optimization capabilities
+3. **Months 13-15**: **[Process Simulation Engine][process-simulation-engine]** - Deploy process simulation with autonomous optimization and comprehensive quality intelligence
+
+**Typical Team Requirements**: 12-15 engineers (4 ML specialists, 4 process engineers, 3 data engineers, 2-3 integration developers, 2 simulation specialists, 1-2 governance specialists)
+
+---
+
+## 💼 Business Planning & ROI Analysis
+
+This section provides investment and return projections based on industry benchmarks and implementation data.
+
+### Investment & Return Projections
+
+| Phase          | Investment Level | Expected ROI                            | Timeline to Value | Key Metrics                                      |
+|----------------|------------------|-----------------------------------------|-------------------|--------------------------------------------------|
+| **PoC**        | Low              | 15-25% reduction in defect escape rates | 3-6 weeks         | Quality improvement, 30% faster inspection       |
+| **PoV**        | Medium           | 30-50% improvement in first-pass yield  | 10-16 weeks       | 40% quality automation, 20-30% yield improvement |
+| **Production** | High             | 50-70% reduction in quality costs       | 6-12 months       | 60% quality automation, enterprise compliance    |
+| **Scale**      | Enterprise       | 80-90% quality process automation       | 12-18 months      | 95% automated quality, supply chain integration  |
+
+### Risk Assessment & Mitigation
+
+| Risk Category                      | Probability | Impact | Mitigation Strategy                                                                  |
+|------------------------------------|-------------|--------|--------------------------------------------------------------------------------------|
+| **🔧 Technical Integration**       | Medium      | High   | Phased integration with existing quality systems and comprehensive testing protocols |
+| **👥 Skills & Training**           | High        | Medium | Quality engineer training programs and partnerships with technology vendors          |
+| **💻 Legacy System Compatibility** | Medium      | High   | API-first integration patterns and gradual migration strategies                      |
+| **📊 Data Quality & Governance**   | Medium      | Medium | Comprehensive data validation frameworks and automated quality checks                |
+| **🏭 Operational Disruption**      | Low         | High   | Parallel deployment strategies and comprehensive rollback procedures                 |
+
+### Expected Business Outcomes
+
+| Outcome Category          | Improvement Range          | Business Impact                                        | Measurement Timeline |
+|---------------------------|----------------------------|--------------------------------------------------------|----------------------|
+| **Defect Reduction**      | 25-40% reduction           | Reduced rework costs and customer complaints           | 3-6 months           |
+| **First-Pass Yield**      | 20-30% improvement         | Increased production efficiency and throughput         | 6-12 months          |
+| **Inspection Speed**      | 30-50% faster              | Reduced labor costs and increased capacity             | 3-6 months           |
+| **Quality Consistency**   | 40-60% variation reduction | Improved product quality and customer satisfaction     | 6-18 months          |
+| **Compliance Automation** | 60-80% automation          | Reduced compliance costs and audit risks               | 12-18 months         |
+| **Process Optimization**  | 15-25% efficiency gain     | Optimized resource utilization and reduced waste       | 6-12 months          |
+| **Quality Costs**         | 30-50% reduction           | Lower rework, scrap, and warranty costs                | 12-24 months         |
+| **Response Time**         | 70-90% faster              | Rapid quality issue identification and resolution      | 6-12 months          |
+| **Supply Chain Quality**  | 20-35% improvement         | Enhanced supplier quality and reduced incoming defects | 18-24 months         |
+
+---
+
+## ✅ Implementation Success Checklist
+
+This checklist provides a structured approach to preparation and validation for Quality Process Optimization Automation implementation.
+
+### Pre-Implementation Assessment
+
+- [ ] **Quality Process Mapping**: Current quality control processes documented and improvement opportunities identified
+- [ ] **Equipment Compatibility**: Existing quality equipment integration capabilities assessed and validated
+- [ ] **Data Infrastructure**: Quality data collection and storage systems evaluated for integration readiness
+- [ ] **Regulatory Requirements**: Compliance obligations and quality standards documented and validated
+- [ ] **Team Readiness**: Quality engineering skills assessed and training needs identified
+
+### Phase Advancement Criteria
 
 <!-- markdownlint-disable MD033 -->
-| Status                                                  | Description                                                                            |
-|---------------------------------------------------------|----------------------------------------------------------------------------------------|
-| <span style="color:#00C853">■</span> **Available**      | These capabilities are mostly implemented and ready to use in the edge-ai platform     |
-| <span style="color:#FFD600">■</span> **In Development** | These capabilities are partially implemented or currently in active development        |
-| <span style="color:#FF6D00">■</span> **Planned**        | These capabilities are on our roadmap but implementation has not yet started           |
-| <span style="color:#8D6E63">■</span> **External**       | These capabilities require integration with external systems or third-party components |
+| Phase Transition             | Success Criteria                                                                    | Target Metrics                                                               | Validation Method                                                  |
+|------------------------------|-------------------------------------------------------------------------------------|------------------------------------------------------------------------------|--------------------------------------------------------------------|
+| **🧪 PoC → 🚀 PoV**          | Automated defect detection operational with measurable quality improvement          | • 15-25% reduction in defect escape rate<br>• 30% faster inspection speed    | • Quality metrics comparison<br>• Process validation testing       |
+| **🚀 PoV → 🏭 Production**   | Predictive quality analytics demonstrating business value and stakeholder approval  | • 20-30% improvement in first-pass yield<br>• 40% quality process automation | • Business case validation<br>• Stakeholder acceptance testing     |
+| **🏭 Production → 📈 Scale** | Enterprise quality platform operational with compliance and governance capabilities | • 60% quality automation<br>• Enterprise compliance reporting                | • Governance audit validation<br>• Enterprise readiness assessment |
 <!-- markdownlint-enable MD033 -->
 
-> **Important**: Before implementing this scenario, review the [Prerequisites][prerequisites] document for hardware, software, permissions, and system requirements.
+This **phase-based approach** provides clear visibility into:
 
-## Expected Outcomes
+- **⏱️ Timeline**: Each phase has specific duration and focus areas
+- **🎯 Priority**: Left-to-right flow shows implementation order within each phase
+- **📈 Value**: Progressive value delivery from 15% to 95% quality improvement
+- **🔄 Dependencies**: Each phase builds upon previous achievements
 
-- Reduction in quality defects by 40-80%
-- Improvement in process capability indices (Cpk) by 25-50%
-- Decrease in quality-related costs by 30-60%
-- Faster quality issue detection and resolution by 50-75%
-- Enhanced quality data traceability and compliance by 60-90%
-- Reduced quality inspection time by 40-70%
-- More consistent quality performance across facilities by 40-80%
-- Improved customer satisfaction through better quality by 20-40%
-- Enhanced production yield through quality optimization by 10-25%
+The visual progression makes it easy to understand **what gets built when** and **how capabilities connect** to deliver incremental business value.
 
-## Advanced Capability Extensions
+> **Important**: Before implementing this scenario, review the prerequisites documentation for hardware, software, permissions, and system requirements.
 
-- **[Computer Vision Platform][computer-vision-platform]** (Technical: 9, Business: 9, Practical: 7, Cohesion: 8)
-  - Advanced vision-based quality inspection framework
-  - Multi-modal quality assessment capabilities
-  - Automated quality classification and defect detection
+## 🚀 Advanced Capability Extensions
 
-- **[Data Governance & Lineage][data-governance-lineage]** (Technical: 8, Business: 8, Practical: 7, Cohesion: 8)
-  - Complete traceability of quality data across production
-  - Regulatory compliance for quality management systems
-  - Audit trail for quality verification and validation
+These capabilities extend beyond the core Quality Process Optimization Automation scenario to enable advanced manufacturing intelligence applications.
 
-## Next Steps & Related Resources
+| Capability                           | Technical Complexity | Business Value | Implementation Effort | Integration Points                                                        |
+|--------------------------------------|----------------------|----------------|-----------------------|---------------------------------------------------------------------------|
+| **Supply Chain Quality Integration** | Very High            | Medium         | 12-18 months          | ERP systems, Supplier portals, Quality management systems                 |
+| **Regulatory Compliance Automation** | Very High            | High           | 9-15 months           | Regulatory systems, Documentation platforms, Audit systems                |
+| **Energy Quality Integration**       | Very High            | High           | 12-24 months          | Energy management systems, Sustainability platforms, Efficiency analytics |
+| **Safety-Driven Quality**            | High                 | Medium         | 6-12 months           | Safety systems, Risk management platforms, Compliance analytics           |
 
-- Review the [Prerequisites][prerequisites] for implementation requirements
-- Explore the [Capability Group Mapping][capability-group-mapping] for detailed capability assessment
+**Note**: Core capabilities like Computer Vision, Defect Detection, Quality Analytics, and Process Optimization are integrated into the main scenario phases as essential components.
+
+## 🔗 Related Scenarios & Synergies
+
+Maximize platform investment by leveraging shared capabilities across multiple use cases:
+
+| Related Scenario                                                             | Shared Capabilities                                          | Potential Synergies                          | Implementation Benefits                         |
+|------------------------------------------------------------------------------|--------------------------------------------------------------|----------------------------------------------|-------------------------------------------------|
+| **[Predictive Maintenance][predictive-maintenance]**                         | Edge Data Processing, AI Platform, Cloud Analytics           | Quality-driven maintenance optimization      | 30% shared infrastructure costs                 |
+| **[Operational Performance Monitoring][operational-performance-monitoring]** | Edge Platform, Dashboard Visualization, Cloud Insights       | Unified quality and performance intelligence | 40% operational efficiency gains                |
+| **[Energy Optimization Management][energy-optimization-management]**         | IoT Integration, Analytics Platform, Optimization Algorithms | Energy-efficient quality strategies          | 25% improved sustainability metrics             |
+| **[Yield Process Optimization][yield-process-optimization]**                 | Data Processing, Analytics Platform, Digital Twin            | Comprehensive quality-yield optimization     | 35% overall equipment effectiveness improvement |
+
+### 🔄 Cross-Scenario Implementation Strategy
+
+Strategic multi-scenario deployment maximizes platform investment by building shared capabilities that compound value across implementations:
+
+| Implementation Phase                                 | Primary Scenario                                                                           | Add-On Scenarios                                 | Shared Platform Benefits                                                | Expected ROI Improvement |
+|------------------------------------------------------|--------------------------------------------------------------------------------------------|--------------------------------------------------|-------------------------------------------------------------------------|--------------------------|
+| **🏗️ Phase 1 - Foundation** (6 months)              | **Quality Process Optimization Automation** (this scenario)                                | None                                             | Establish comprehensive quality intelligence platform                   | Baseline ROI: 50-70%     |
+| **⚡ Phase 2 - Maintenance Integration** (3 months)   | Quality Process Optimization Automation + [Predictive Maintenance][predictive-maintenance] | Quality-driven maintenance workflows             | 35% shared infrastructure, unified quality and maintenance intelligence | +25-35% additional ROI   |
+| **🔮 Phase 3 - Performance Intelligence** (4 months) | Add [Operational Performance Monitoring][operational-performance-monitoring]               | Comprehensive operational and quality monitoring | 40% shared edge platform, combined operational and quality analytics    | +20-30% additional ROI   |
+| **🎯 Phase 4 - Energy Excellence** (3 months)        | Add [Energy Optimization Management][energy-optimization-management]                       | Energy-efficient quality strategies              | 50% shared platform, holistic sustainability optimization               | +15-25% additional ROI   |
+
+**Platform Benefits**: Multi-scenario deployment achieves 110-160% cumulative ROI with 40-60% faster implementation for additional scenarios due to shared platform components.
+
+## 🚀 Next Steps & Related Resources
+
+- 📋 Review the [prerequisites][prerequisites] for implementation requirements
+- 🎯 Explore the [capability group mapping][capabilities-overview] for detailed capability assessment
 - See the [Blueprints README][blueprints-readme] for deployment options
-- Review [Implementation Guide][implementation-guide] for step-by-step deployment instructions
+- Review the [Getting Started Guide][getting-started] for step-by-step deployment instructions
 
 <!-- Reference Links -->
-[available]: /src/100-edge/110-iot-ops
-[available-2]: /src/100-edge/100-cncf-cluster
-[available-4]: /src/100-edge/120-observability
-[available-5]: /src/100-edge/130-ml-ops
-[available-8]: /src/000-cloud/030-data
-[prerequisites]: ./prerequisites.md
-[capability-group-mapping]: ./quality-process-optimization-automation-capability-mapping.md
+
+<!-- Capability Group Links -->
+[protocol-translation-device-management]: /docs/project-planning/capabilities/protocol-translation-device-management/README.md
+[edge-cluster-platform]: /docs/project-planning/capabilities/edge-cluster-platform/README.md
+[edge-industrial-application-platform]: /docs/project-planning/capabilities/edge-industrial-application-platform/README.md
+[cloud-data-platform]: /docs/project-planning/capabilities/cloud-data-platform/README.md
+[cloud-ai-platform]: /docs/project-planning/capabilities/cloud-ai-platform/README.md
+[cloud-insights-platform]: /docs/project-planning/capabilities/cloud-insights-platform/README.md
+[advanced-simulation-digital-twin-platform]: /docs/project-planning/capabilities/advanced-simulation-digital-twin-platform/README.md
+
+<!-- Individual Capability Links -->
+[opc-ua-data-ingestion]: /docs/project-planning/capabilities/protocol-translation-device-management/opc-ua-data-ingestion.md
+[device-twin-management]: /docs/project-planning/capabilities/protocol-translation-device-management/device-twin-management.md
+[broad-industrial-protocol-support]: /docs/project-planning/capabilities/protocol-translation-device-management/broad-industrial-protocol-support.md
+[edge-compute-orchestration]: /docs/project-planning/capabilities/edge-cluster-platform/edge-compute-orchestration.md
+[edge-application-cicd]: /docs/project-planning/capabilities/edge-cluster-platform/edge-application-cicd.md
+[edge-camera-control]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-camera-control.md
+[edge-data-stream-processing]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-data-stream-processing.md
+[edge-inferencing-application-framework]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-inferencing-application-framework.md
+[edge-dashboard-visualization]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-dashboard-visualization.md
+[cloud-data-platform-services]: /docs/project-planning/capabilities/cloud-data-platform/cloud-data-platform-services.md
+[data-governance-lineage]: /docs/project-planning/capabilities/cloud-data-platform/data-governance-lineage.md
+[cloud-ai-ml-model-training]: /docs/project-planning/capabilities/cloud-ai-platform/cloud-ai-ml-model-training.md
+[mlops-toolchain]: /docs/project-planning/capabilities/cloud-ai-platform/mlops-toolchain.md
+[computer-vision-platform]: /docs/project-planning/capabilities/cloud-ai-platform/computer-vision-platform.md
+[automated-incident-response-remediation]: /docs/project-planning/capabilities/cloud-insights-platform/automated-incident-response-remediation.md
+[cloud-observability-foundation]: /docs/project-planning/capabilities/cloud-insights-platform/cloud-observability-foundation.md
+[quality-digital-twin-platform]: /docs/project-planning/capabilities/advanced-simulation-digital-twin-platform/quality-digital-twin-platform.md
+[process-simulation-engine]: /docs/project-planning/capabilities/advanced-simulation-digital-twin-platform/process-simulation-engine.md
+
+<!-- Documentation Links -->
+[getting-started]: /docs/getting-started/README.md
 [blueprints-readme]: /blueprints/README.md
-[implementation-guide]: /docs/implementation-guides/quality-process-optimization-implementation.md
-[protocol-translation-device-management]: /docs/capabilities/protocol-translation-device-management/README.md
-[opc-ua-data-ingestion]: /docs/capabilities/protocol-translation-device-management/opc-ua-data-ingestion.md
-[device-twin-management]: /docs/capabilities/protocol-translation-device-management/device-twin-management.md
-[broad-industrial-protocol-support]: /docs/capabilities/protocol-translation-device-management/broad-industrial-protocol-support.md
-[edge-cluster-platform]: /docs/capabilities/edge-cluster-platform/README.md
-[edge-compute-orchestration]: /docs/capabilities/edge-cluster-platform/edge-compute-orchestration-platform.md
-[edge-application-cicd]: /docs/capabilities/edge-cluster-platform/edge-application-cicd.md
-[edge-industrial-application-platform]: /docs/capabilities/edge-industrial-application-platform/README.md
-[edge-data-stream-processing]: /docs/capabilities/edge-industrial-application-platform/edge-data-stream-processing.md
-[edge-inferencing-application-framework]: /docs/capabilities/edge-industrial-application-platform/edge-inferencing-application-framework.md
-[edge-dashboard-visualization]: /docs/capabilities/edge-industrial-application-platform/edge-dashboard-visualization.md
-[edge-camera-control]: /docs/capabilities/edge-industrial-application-platform/edge-camera-control.md
-[cloud-data-platform]: /docs/capabilities/cloud-data-platform/README.md
-[cloud-data-platform-services]: /docs/capabilities/cloud-data-platform/cloud-data-platform-services.md
-[data-governance-lineage]: /docs/capabilities/cloud-data-platform/data-governance-lineage.md
-[machine-learning-feature-store]: /docs/capabilities/cloud-data-platform/machine-learning-feature-store.md
-[cloud-ai-platform]: /docs/capabilities/cloud-ai-platform/README.md
-[cloud-ai-ml-model-training]: /docs/capabilities/cloud-ai-platform/cloud-ai-ml-model-training-management.md
-[mlops-toolchain]: /docs/capabilities/cloud-ai-platform/mlops-toolchain.md
-[computer-vision-platform]: /docs/capabilities/cloud-ai-platform/computer-vision-platform.md
-[cloud-insights-platform]: /docs/capabilities/cloud-insights-platform/README.md
-[automated-incident-response-remediation]: /docs/capabilities/cloud-insights-platform/automated-incident-response-remediation.md
-[cloud-observability-foundation]: /docs/capabilities/cloud-insights-platform/cloud-observability-foundation.md
-[advanced-simulation-digital-twin-platform]: /docs/capabilities/advanced-simulation-digital-twin-platform/README.md
-[3d-digital-twin]: /docs/capabilities/advanced-simulation-digital-twin-platform/3d-digital-twin.md
-[augmented-reality-visualization]: /docs/capabilities/advanced-simulation-digital-twin-platform/augmented-reality-visualization.md
+[prerequisites]: /docs/project-planning/scenarios/quality-process-optimization-automation/prerequisites.md
+[capabilities-overview]: /docs/project-planning/capabilities/README.md
+
+<!-- Related Scenario Links -->
+[predictive-maintenance]: /docs/project-planning/scenarios/predictive-maintenance/README.md
+[operational-performance-monitoring]: /docs/project-planning/scenarios/operational-performance-monitoring/README.md
+[energy-optimization-management]: /docs/project-planning/scenarios/energy-optimization-management/README.md
+[yield-process-optimization]: /docs/project-planning/scenarios/yield-process-optimization/README.md
 
 ---
 

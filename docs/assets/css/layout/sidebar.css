@@ -1,89 +1,128 @@
-/* Sidebar Navigation Styling */
+/* === PERFORMANCE-OPTIMIZED SIDEBAR NAVIGATION === */
+/* Transform and opacity-only animations for 60fps performance */
 
-/* Logo in sidebar */
-.sidebar .app-name img {
-  max-width: 40px;
-  height: auto;
-  margin-right: 10px;
-  vertical-align: middle;
-}
-
-/* Sidebar title styling */
-.sidebar .app-name {
-  font-size: 1.2em;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  padding: 0 15px;
-}
-
-/* Sidebar - only for page navigation */
+/* Sidebar container with CSS containment for performance */
 .sidebar {
-  z-index: 999 !important;
+  background: var(--sidebar-gradient);
+  border-right: 1px solid var(--sidebar-border-color);
+  padding: 0;
+  contain: layout style; /* CSS containment for performance isolation */
 }
 
-/* Ensure sidebar navigation is clean and focused on pages only */
-.sidebar-nav > ul > li > a {
+/* Navigation container with performance optimization */
+.sidebar-nav {
+  padding: 8px 0;
+  margin: 0;
+  contain: layout style; /* Isolate navigation animations */
+}
+
+/* App name/title area with containment */
+.sidebar .app-name {
+  font-size: 1.3em;
   font-weight: 600;
+  padding: 16px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--sidebar-border-color);
+  color: var(--theme-color);
+  contain: layout style; /* Isolate app name area */
+}
+
+/* Reset all list styling with containment */
+.sidebar-nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  contain: layout style; /* Isolate list elements */
+}
+
+.sidebar-nav li {
+  margin: 0;
+  padding: 0;
+  contain: layout style; /* Isolate individual list items */
+}
+
+/* Performance-optimized navigation links - opacity-only hover effects */
+.sidebar-nav a {
+  display: flex;
+  align-items: flex-start;
+  padding: 6px 16px;
+  margin: 1px 8px;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--sidebar-text-primary);
+  text-decoration: none;
+  border-radius: 4px;
+  transition: opacity 0.2s ease, background-color 0.2s ease;
+  background: transparent;
+  border: none;
+  height: auto;
+  will-change: opacity, background-color; /* GPU acceleration hint */
+  contain: layout style; /* Isolate link elements for performance */
+  white-space: normal; /* Allow text wrapping */
+  word-wrap: break-word; /* Break long words */
+  overflow-wrap: break-word; /* Modern word breaking */
+}
+
+/* Top-level navigation - slightly larger but still compact */
+.sidebar-nav > ul > li > a {
+  font-size: 16px;
+  font-weight: 600;
+  padding: 8px 16px;
+  margin: 2px 8px;
   color: var(--theme-color);
 }
 
-/* Make bold elements in sidebar actually render as bold */
-.sidebar-nav strong {
-  font-weight: bold !important;
+/* Second-level navigation - compact indented styling */
+.sidebar-nav ul ul a {
+  font-size: 14px;
+  font-weight: 400;
+  padding: 4px 12px 4px 32px;
+  margin: 1px 12px;
+  color: var(--sidebar-text-secondary);
+}
+
+/* Third-level navigation - more indented but compact */
+.sidebar-nav ul ul ul a {
+  padding: 3px 12px 3px 44px;
+  font-size: 13px;
+}
+
+/* Optimized hover states - no layout-triggering properties */
+.sidebar-nav a:hover {
   color: var(--theme-color);
+  background: var(--sidebar-nav-hover-bg);
+  opacity: 0.9;
+  /* Removed translateX transform to eliminate layout shifts */
 }
 
-.sidebar-nav ul ul {
-  padding-left: 20px;
+/* Mobile responsive - optimized for performance */
+@media (max-width: 768px) {
+  .sidebar-nav a {
+    padding: 8px 16px;
+    font-size: 16px;
+    margin: 2px 8px;
+    display: flex;
+    align-items: center;
+    transition: opacity 0.2s ease, background-color 0.2s ease; /* Performance-optimized transitions */
+    contain: layout style; /* Enhanced containment for mobile */
+  }
+
+  .sidebar-nav > ul > li > a {
+    font-size: 17px;
+    padding: 10px 16px;
+    contain: layout style; /* Mobile containment for top-level items */
+  }
 }
 
-/* Disable any automatic heading generation in sidebar */
-.sidebar .sidebar-nav .auto-header {
-  display: none !important;
+/* Dark mode adjustments - performance-optimized */
+body.dark .sidebar-nav a {
+  color: var(--sidebar-text-primary);
+  transition: opacity 0.2s ease, background-color 0.2s ease;
 }
 
-/* High priority rules to hide app-sub-sidebar elements */
-.sidebar .sidebar-nav .app-sub-sidebar,
-.sidebar .app-sub-sidebar,
-.sidebar-nav .app-sub-sidebar,
-.app-sub-sidebar,
-[class*="app-sub-sidebar"],
-div.app-sub-sidebar,
-ul.app-sub-sidebar,
-li.app-sub-sidebar,
-.sidebar .sidebar-nav ul.app-sub-sidebar,
-.sidebar .sidebar-nav li.app-sub-sidebar,
-.sidebar .sidebar-nav div.app-sub-sidebar {
-  display: none !important;
-  visibility: hidden !important;
-  opacity: 0 !important;
-  height: 0 !important;
-  overflow: hidden !important;
-  position: absolute !important;
-  left: -9999px !important;
-}
-
-/* Sidebar collapse button styling */
-.sidebar-toggle {
-  background: var(--theme-color) !important;
-  border-radius: 0 6px 6px 0 !important;
-}
-
-.sidebar-toggle:hover {
-  background: var(--theme-color-secondary) !important;
-}
-
-/* Dark mode sidebar styling */
-body.dark .sidebar {
-  background: var(--theme-sidebar-bg, #2d3748);
-  border-right: 1px solid var(--theme-sidebar-border, #4a5568);
-}
-
-body.dark .sidebar ul li a {
-  color: var(--theme-text-secondary, #cbd5e0);
-}
-
-body.dark .sidebar ul li a:hover {
-  color: var(--theme-heading-color, #63b3ed);
+body.dark .sidebar-nav a:hover {
+  color: var(--theme-color-light);
+  background: var(--sidebar-nav-hover-bg);
+  opacity: 0.9;
 }

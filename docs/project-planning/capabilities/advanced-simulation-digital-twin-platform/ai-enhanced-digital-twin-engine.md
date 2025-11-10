@@ -2,7 +2,7 @@
 title: AI-Enhanced Digital Twin Engine
 description: '## Abstract Description'
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: concept
 keywords:
   - overview

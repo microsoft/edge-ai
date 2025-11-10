@@ -217,22 +217,26 @@ This plan outlines the steps to create/update {{prompt_name}} based on the sourc
 Here's how you would follow this prompt to create a new prompt file:
 
 1. First, create the plan file and report it to the user:
-   ```
+
+   ```text
    I've created a plan file at `.copilot-tracking/prompts/bicep-types.plan.md`
    ```
 
 2. After analyzing the source files, update the plan and mention it:
-   ```
+
+   ```text
    I've updated the plan with insights from the Bicep files, including type conventions and structure patterns.
    ```
 
 3. When making changes, report back on each iteration:
-   ```
+
+   ```text
    I've completed Iteration 1: Created the initial structure for the Bicep types prompt file.
    ```
 
 4. At completion, share the summary sections from the plan:
-   ```
+
+   ```text
    ## Summary of Changes
    - Created new bicep-types.md prompt with sections on type system, naming conventions, and examples
    - Added clear imperative instructions for type definitions

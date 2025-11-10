@@ -2,7 +2,7 @@
 title: Fabric Blueprint
 description: Microsoft Fabric components for data analytics and optionally real-time intelligence (RTI) scenarios
 author: Edge AI Team
-ms.date: 07/29/2025
+ms.date: 2025-07-29
 ms.topic: reference
 estimated_reading_time: 7
 keywords:
