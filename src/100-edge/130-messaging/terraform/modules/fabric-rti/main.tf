@@ -6,6 +6,10 @@
  * via Kafka-compatible interface with managed identity authentication.
  */
 
+locals {
+  asset_ref = var.adr_namespace != null ? "${var.adr_namespace.name}/${var.asset_name}" : var.asset_name
+}
+
 // Role assignment for AIO managed identity to Fabric workspace
 resource "fabric_workspace_role_assignment" "fabric_workspace_contributor" {
   workspace_id = var.fabric_workspace.id
@@ -68,7 +72,7 @@ resource "azapi_resource" "fabric_rti_dataflow" {
           operationType = "Source"
           sourceSettings = {
             endpointRef = "default"
-            assetRef    = var.asset_name
+            assetRef    = local.asset_ref
             dataSources = [
               "azure-iot-operations/data/${var.asset_name}"
             ]

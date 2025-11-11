@@ -82,7 +82,7 @@ locals {
   }
 
   default_namespaced_asset = {
-    name         = "namespaced-oven"
+    name         = "namespace-oven"
     display_name = "oven namespaced"
     device_ref = {
       device_name   = local.default_namespaced_device.name
@@ -123,7 +123,7 @@ locals {
           {
             target = "Mqtt"
             configuration = {
-              topic  = "azure-iot-operations/data/oven-ns"
+              topic  = "azure-iot-operations/data/namespace-oven"
               retain = "Never"
               qos    = "Qos1"
             }
@@ -136,6 +136,7 @@ locals {
   }
 
   /* Processed collections for legacy assets with enhanced logic */
+
   processed_asset_endpoint_profiles = {
     for profile in concat(
       var.should_create_default_asset ? [local.default_asset_endpoint_profile] : [],
@@ -233,13 +234,32 @@ locals {
       serial_number     = try(asset.serial_number, null)
       software_revision = try(asset.software_revision, null)
       attributes        = try(asset.attributes, {})
-      datasets          = try(asset.datasets, [])
+      datasets = [
+        for dataset in try(asset.datasets, []) : {
+          name                  = dataset.name
+          dataset_configuration = try(dataset.dataset_configuration, null)
+          data_source           = try(dataset.data_source, null)
+          type_ref              = try(dataset.type_ref, null)
+          data_points = [
+            for data_point in dataset.data_points : {
+              name                      = data_point.name
+              data_source               = data_point.data_source
+              data_point_configuration  = data_point.data_point_configuration
+              rest_sampling_interval_ms = try(data_point.rest_sampling_interval_ms, null)
+              rest_mqtt_topic           = try(data_point.rest_mqtt_topic, null)
+              rest_include_state_store  = try(data_point.rest_include_state_store, null)
+              rest_state_store_key      = try(data_point.rest_state_store_key, null)
+            }
+          ]
+          destinations = try(dataset.destinations, [])
+        }
+      ]
       default_datasets_configuration = coalesce(
-        asset.default_datasets_configuration,
+        try(asset.default_datasets_configuration, null),
         "{\"publishingInterval\":1000,\"samplingInterval\":500,\"queueSize\":1}"
       )
       default_events_configuration = coalesce(
-        asset.default_events_configuration,
+        try(asset.default_events_configuration, null),
         "{\"publishingInterval\":1000,\"samplingInterval\":500,\"queueSize\":1}"
       )
     }
@@ -248,7 +268,7 @@ locals {
   /* Check if any asset endpoint profile has asset discovery enabled */
   should_enable_opc_asset_discovery = anytrue([
     for profile in concat(
-      (var.should_create_default_asset || var.should_create_default_namespaced_asset) ? [local.default_asset_endpoint_profile] : [],
+      var.should_create_default_asset ? [local.default_asset_endpoint_profile] : [],
       var.asset_endpoint_profiles
     ) : try(profile.should_enable_opc_asset_discovery, false)
   ])
@@ -290,9 +310,9 @@ resource "azapi_resource" "namespaced_device" {
   }
 }
 
-# /*
-#  * Namespaced Asset Instances
-#  */
+/*
+ * Namespaced Asset Instances
+ */
 resource "azapi_resource" "namespaced_asset" {
   for_each = local.processed_namespaced_assets
 
@@ -325,17 +345,30 @@ resource "azapi_resource" "namespaced_asset" {
       softwareRevision = each.value.software_revision
       attributes       = each.value.attributes
       datasets = [
-        for dataset in each.value.datasets : {
-          name = dataset.name
-          dataPoints = [
-            for data_point in dataset.data_points : {
-              name                   = data_point.name
-              dataSource             = data_point.data_source
-              dataPointConfiguration = data_point.data_point_configuration
-            }
-          ]
-          destinations = try(dataset.destinations, [])
-        }
+        for dataset in each.value.datasets : merge(
+          {
+            name         = dataset.name
+            destinations = try(dataset.destinations, [])
+          },
+          length(dataset.data_points) > 0 ? {
+            dataPoints = [
+              for data_point in dataset.data_points : merge(
+                {
+                  name                   = data_point.name
+                  dataSource             = data_point.data_source
+                  dataPointConfiguration = data_point.data_point_configuration
+                },
+                data_point.rest_sampling_interval_ms != null ? { samplingIntervalMs = data_point.rest_sampling_interval_ms } : {},
+                data_point.rest_mqtt_topic != null ? { mqttTopic = data_point.rest_mqtt_topic } : {},
+                data_point.rest_include_state_store != null ? { includeStateStore = data_point.rest_include_state_store } : {},
+                data_point.rest_state_store_key != null ? { stateStoreKey = data_point.rest_state_store_key } : {}
+              )
+            ]
+          } : {},
+          dataset.dataset_configuration != null ? { datasetConfiguration = dataset.dataset_configuration } : {},
+          dataset.data_source != null ? { dataSource = dataset.data_source } : {},
+          dataset.type_ref != null ? { typeRef = dataset.type_ref } : {}
+        )
       ]
       defaultDatasetsConfiguration = each.value.default_datasets_configuration
       defaultEventsConfiguration   = each.value.default_events_configuration
@@ -369,6 +402,8 @@ resource "azapi_resource" "asset_endpoint_profile" {
       targetAddress       = each.value.target_address
     }
   }
+
+  schema_validation_enabled = false # Support for REST HTTP protocol and preview API versions
 }
 
 /*

@@ -30,7 +30,7 @@ Assigns Azure Kubernetes Service Arc Contributor Role to K8 Bridge principal.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| custom\_location\_id | The resource ID of the Custom Location | `string` | n/a | yes |
+| custom\_location\_id | The resource ID of the Custom Location. | `string` | n/a | yes |
 | k8s\_bridge\_principal\_id | Optional. The principal ID of the K8 Bridge for Azure IoT Operations. Required only if enable\_asset\_discovery=true and automatic retrieval fails. If null and enable\_asset\_discovery=true, will be automatically retrieved using the service principal data source.  Can be retrieved manually using:    az ad sp list --display-name \"K8 Bridge\" --query \"[0].appId\" -o tsv | `string` | `null` | no |
 
 ## Outputs

@@ -13,43 +13,6 @@ data "azapi_resource" "enterprise_aio_broker" {
   parent_id = var.enterprise_aio_instance.id
 }
 
-// Site MQTT Endpoint
-resource "azapi_resource" "site_mqtt_endpoint" {
-  type      = "Microsoft.IoTOperations/instances/dataflowEndpoints@2025-04-01"
-  name      = "mqtt-local"
-  parent_id = var.site_aio_instance.id
-
-  body = {
-    extendedLocation = {
-      type = "CustomLocation"
-      name = var.site_custom_locations.id
-    }
-    properties = {
-      endpointType = "Mqtt"
-      mqttSettings = {
-        authentication = {
-          method = "Anonymous"
-        }
-        clientIdPrefix       = "local-mqtt-client"
-        cloudEventAttributes = "Propagate"
-        host                 = "aio-broker-loadbalancer:18883"
-        keepAliveSeconds     = 60
-        maxInflightMessages  = 100
-        protocol             = "Mqtt"
-        qos                  = 1
-        retain               = "Keep"
-        sessionExpirySeconds = 3600
-        tls = {
-          mode                             = "Enabled"
-          trustedCaCertificateConfigMapRef = "azure-iot-operations-aio-ca-trust-bundle"
-        }
-      }
-    }
-  }
-
-  schema_validation_enabled = false # Disable schema validation for azapi_resource for 2025-04-01 until azapi provider supports it
-}
-
 // Enterprise MQTT Endpoint with Certificate Authentication
 resource "azapi_resource" "enterprise_mqtt_endpoint_cert_auth" {
   type      = "Microsoft.IoTOperations/instances/dataflowEndpoints@2025-04-01"
@@ -108,7 +71,7 @@ resource "azapi_resource" "site_enterprise_route_cert_auth" {
           operationType = "Source"
           sourceSettings = {
             dataSources         = ["input"]
-            endpointRef         = "mqtt-local"
+            endpointRef         = "default"
             serializationFormat = "Json"
           }
         },

@@ -1,0 +1,170 @@
+---
+services:
+
+  # Local Mosquitto MQTT Broker for development and testing
+  mosquitto-broker:
+    image: eclipse-mosquitto:2.0.18
+    container_name: mosquitto-broker
+    ports:
+      - "11883:1883"    # MQTT non-TLS port (high port to avoid conflicts)
+      - "19001:9001"    # WebSocket port (high port to avoid conflicts)
+    volumes:
+      - "./resources/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro"
+      - "mosquitto-data:/mosquitto/data"
+    networks:
+      - akri-rest-connector
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mosquitto_sub", "-h", "localhost", "-t", "$$SYS/broker/uptime", "-C", "1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Mock REST API Endpoint - Weather Station Simulator
+  weather-station:
+    build:
+      context: ./services/weather-station
+      dockerfile: Dockerfile
+    container_name: weather-station
+    ports:
+      - "8080:8080"    # HTTP API port
+    environment:
+      - PORT=8080
+      - DEVICE_ID=weather-station-001
+      - LOCATION=Seattle
+      - RUST_LOG=info
+    networks:
+      - akri-rest-connector
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # Mock REST API Endpoint - Generic Sensor Simulator
+  sensor-simulator:
+    build:
+      context: .
+      dockerfile: ./services/sensor-simulator/Dockerfile
+    container_name: sensor-simulator
+    ports:
+      - "8081:8081"    # HTTP API port
+    environment:
+      - PORT=8081
+      - DEVICE_ID=field-sensor-simulator-001
+      - SENSOR_TYPE=field-sensor
+      - LOG_LEVEL=info
+      - FIELD_CONFIG_PATH=/app/field_sources.json
+    volumes:
+      - ./resources/field_sources.json:/app/field_sources.json:ro
+    networks:
+      - akri-rest-connector
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8081/health')"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # Mock REST API Endpoint with Basic Authentication
+  authenticated-device:
+    build:
+      context: ./services/authenticated-device
+      dockerfile: Dockerfile
+    container_name: authenticated-device
+    ports:
+      - "8082:8082"    # HTTP API port
+    environment:
+      - PORT=8082
+      - DEVICE_ID=auth-device-001
+      - API_USERNAME=deviceuser
+      - API_PASSWORD=devicepass123
+      - RUST_LOG=info
+    networks:
+      - akri-rest-connector
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "-u", "deviceuser:devicepass123", "http://localhost:8082/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # REST Connector Test Client (simulates connector behavior for testing)
+  connector-test-client:
+    build:
+      context: ./services/connector-test-client
+      dockerfile: Dockerfile
+    container_name: connector-test-client
+    environment:
+      # MQTT Broker Configuration
+      - AIO_MQTT_USE_TLS=false
+      - AIO_MQTT_CLIENT_ID=akri-rest-connector-test
+      - AIO_BROKER_HOSTNAME=mosquitto-broker
+      - AIO_BROKER_TCP_PORT=1883
+
+      # REST Endpoint Configurations
+      - WEATHER_ENDPOINT=http://weather-station:8080/api/weather
+      - SENSOR_FIELDS_ENDPOINT=http://sensor-simulator:8081/sensor/array/field
+      - SENSOR_FIELD_IDS=temp-celsius-01,humidity-pct-01,pressure-kpa-01,status-indicator-01,alarm-active-01
+      - AUTH_ENDPOINT=http://authenticated-device:8082/api/device/status
+      - AUTH_USERNAME=deviceuser
+      - AUTH_PASSWORD=devicepass123
+
+      # MQTT Topics
+      - WEATHER_TOPIC=akri/weather-station-001/data
+      - SENSOR_TOPIC=akri/generic-sensor-001/data
+      - AUTH_DEVICE_TOPIC=akri/auth-device-001/status
+      - ERROR_TOPIC=akri/errors
+
+      # Polling Configuration
+      - POLLING_INTERVAL_SECONDS=30
+      - RETRY_ATTEMPTS=3
+      - RETRY_DELAY_SECONDS=5
+
+      # Logging
+      - RUST_LOG=info
+
+    depends_on:
+      mosquitto-broker:
+        condition: service_healthy
+      weather-station:
+        condition: service_healthy
+      sensor-simulator:
+        condition: service_healthy
+      authenticated-device:
+        condition: service_healthy
+
+    networks:
+      - akri-rest-connector
+    restart: unless-stopped
+
+  # MQTT Subscriber for monitoring messages
+  mqtt-monitor:
+    image: eclipse-mosquitto:2.0.18
+    container_name: mqtt-monitor
+    command: |
+      sh -c "
+        echo 'Starting MQTT Monitor...'
+        echo 'Subscribing to akri/# topics...'
+        mosquitto_sub -h mosquitto-broker -t 'akri/#' -v
+      "
+    depends_on:
+      mosquitto-broker:
+        condition: service_healthy
+    networks:
+      - akri-rest-connector
+    restart: unless-stopped
+
+networks:
+  akri-rest-connector:
+    driver: bridge
+    name: akri-rest-connector
+
+volumes:
+  mosquitto-data:
+    name: akri-rest-connector-mosquitto-data

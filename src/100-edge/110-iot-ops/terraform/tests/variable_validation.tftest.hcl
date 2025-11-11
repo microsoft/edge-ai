@@ -464,7 +464,7 @@ run "test_persistence_config_invalid_max_size" {
     # Variables under test - Testing invalid max_size format
     mqtt_broker_persistence_config = {
       enabled  = true
-      max_size = "invalid-size" # Should follow pattern ^[0-9]+[KMGTPE]$
+      max_size = "invalid-size"
     }
   }
   expect_failures = [var.mqtt_broker_persistence_config, var.mqtt_broker_persistence_config.max_size]
@@ -674,7 +674,7 @@ run "test_mqtt_broker_persistence_config_invalid_max_size" {
     # Variables under test - Testing invalid max_size format
     mqtt_broker_persistence_config = {
       enabled  = true
-      max_size = "invalid-size" # Should match pattern ^[0-9]+[KMGTPE]$
+      max_size = "invalid-size"
     }
   }
   expect_failures = [var.mqtt_broker_persistence_config]
@@ -911,6 +911,154 @@ run "test_mqtt_broker_persistence_config_valid_configuration" {
         }
       }
     }
+  }
+  # This should pass validation
+}
+
+# Test custom Akri connector with invalid type
+run "test__custom_akri_connectors__error_with_invalid_type" {
+  command = plan
+  variables {
+    resource_group        = run.setup_tests.aio_resource_group
+    secret_sync_key_vault = run.setup_tests.sse_key_vault
+    secret_sync_identity  = run.setup_tests.sse_user_assigned_identity
+    aio_identity          = run.setup_tests.aio_user_assigned_identity
+    arc_connected_cluster = run.setup_tests.arc_connected_cluster
+    adr_schema_registry   = run.setup_tests.adr_schema_registry
+    adr_namespace         = run.setup_tests.adr_namespace
+
+    custom_akri_connectors = [
+      {
+        name = "test-connector"
+        type = "invalid-type" # Invalid type
+      }
+    ]
+  }
+  expect_failures = [var.custom_akri_connectors]
+}
+
+# Test custom Akri connector missing required fields for custom type
+run "test__custom_akri_connectors__error_with_missing_custom_fields" {
+  command = plan
+  variables {
+    resource_group        = run.setup_tests.aio_resource_group
+    secret_sync_key_vault = run.setup_tests.sse_key_vault
+    secret_sync_identity  = run.setup_tests.sse_user_assigned_identity
+    aio_identity          = run.setup_tests.aio_user_assigned_identity
+    arc_connected_cluster = run.setup_tests.arc_connected_cluster
+    adr_schema_registry   = run.setup_tests.adr_schema_registry
+    adr_namespace         = run.setup_tests.adr_namespace
+
+    custom_akri_connectors = [
+      {
+        name = "test-connector"
+        type = "custom"
+        # Missing custom_endpoint_type and custom_image_name
+      }
+    ]
+  }
+  expect_failures = [var.custom_akri_connectors]
+}
+
+# Test custom Akri connector with invalid name format
+run "test__custom_akri_connectors__error_with_invalid_name" {
+  command = plan
+  variables {
+    resource_group        = run.setup_tests.aio_resource_group
+    secret_sync_key_vault = run.setup_tests.sse_key_vault
+    secret_sync_identity  = run.setup_tests.sse_user_assigned_identity
+    aio_identity          = run.setup_tests.aio_user_assigned_identity
+    arc_connected_cluster = run.setup_tests.arc_connected_cluster
+    adr_schema_registry   = run.setup_tests.adr_schema_registry
+    adr_namespace         = run.setup_tests.adr_namespace
+
+    custom_akri_connectors = [
+      {
+        name                 = "Test_Connector" # Invalid: contains uppercase and underscore
+        type                 = "custom"
+        custom_endpoint_type = "Contoso.Modbus"
+        custom_image_name    = "my_acr.azurecr.io/modbus-connector"
+      }
+    ]
+  }
+  expect_failures = [var.custom_akri_connectors]
+}
+
+# Test custom Akri connector with invalid log level
+run "test__custom_akri_connectors__error_with_invalid_log_level" {
+  command = plan
+  variables {
+    resource_group        = run.setup_tests.aio_resource_group
+    secret_sync_key_vault = run.setup_tests.sse_key_vault
+    secret_sync_identity  = run.setup_tests.sse_user_assigned_identity
+    aio_identity          = run.setup_tests.aio_user_assigned_identity
+    arc_connected_cluster = run.setup_tests.arc_connected_cluster
+    adr_schema_registry   = run.setup_tests.adr_schema_registry
+    adr_namespace         = run.setup_tests.adr_namespace
+
+    custom_akri_connectors = [
+      {
+        name                 = "test-connector"
+        type                 = "custom"
+        custom_endpoint_type = "Contoso.Modbus"
+        custom_image_name    = "my_acr.azurecr.io/modbus-connector"
+        log_level            = "invalid" # Invalid log level
+      }
+    ]
+  }
+  expect_failures = [var.custom_akri_connectors]
+}
+
+# Test custom Akri connector with invalid replicas count
+run "test__custom_akri_connectors__error_with_invalid_replicas" {
+  command = plan
+  variables {
+    resource_group        = run.setup_tests.aio_resource_group
+    secret_sync_key_vault = run.setup_tests.sse_key_vault
+    secret_sync_identity  = run.setup_tests.sse_user_assigned_identity
+    aio_identity          = run.setup_tests.aio_user_assigned_identity
+    arc_connected_cluster = run.setup_tests.arc_connected_cluster
+    adr_schema_registry   = run.setup_tests.adr_schema_registry
+    adr_namespace         = run.setup_tests.adr_namespace
+
+    custom_akri_connectors = [
+      {
+        name                 = "test-connector"
+        type                 = "custom"
+        custom_endpoint_type = "Contoso.Modbus"
+        custom_image_name    = "my_acr.azurecr.io/modbus-connector"
+        replicas             = 15 # Invalid: exceeds maximum of 10
+      }
+    ]
+  }
+  expect_failures = [var.custom_akri_connectors]
+}
+
+# Test custom Akri connector with valid custom configuration
+run "test__custom_akri_connectors__valid_custom_configuration" {
+  command = plan
+  variables {
+    resource_group        = run.setup_tests.aio_resource_group
+    secret_sync_key_vault = run.setup_tests.sse_key_vault
+    secret_sync_identity  = run.setup_tests.sse_user_assigned_identity
+    aio_identity          = run.setup_tests.aio_user_assigned_identity
+    arc_connected_cluster = run.setup_tests.arc_connected_cluster
+    adr_schema_registry   = run.setup_tests.adr_schema_registry
+    adr_namespace         = run.setup_tests.adr_namespace
+
+    custom_akri_connectors = [
+      {
+        name                    = "modbus-telemetry-connector"
+        type                    = "custom"
+        custom_endpoint_type    = "Contoso.Modbus"
+        custom_image_name       = "my_acr.azurecr.io/modbus-telemetry-connector"
+        custom_endpoint_version = "2.0"
+        registry                = "my_acr.azurecr.io"
+        image_tag               = "latest"
+        replicas                = 3
+        log_level               = "debug"
+      }
+    ]
   }
   # This should pass validation
 }

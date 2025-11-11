@@ -53,15 +53,23 @@ Your application should include the following structure:
 ├── yaml/                      # Kubernetes manifests and other YAML files
 └── services/                  # Service implementations
     ├── service1/
-    │   ├── Dockerfile
-    │   └── src/               # Source code
-    └── service2/
-        └── ...
+│   ├── Dockerfile
+│   └── src/               # Source code
+└── service2/
+    └── ...
 ```
 
-## Service Implementation
+## Available Applications
 
-### Docker and Containerization
+The following applications are currently available in this directory:
+
+- **[500-basic-inference](./500-basic-inference/README.md)** - Reference implementation for basic ML inference workloads
+- **[501-rust-telemetry](./501-rust-telemetry/README.md)** - Rust-based telemetry collection service
+- **[502-rust-http-connector](./502-rust-http-connector/README.md)** - HTTP connector service built in Rust
+- **[503-media-capture-service](./503-media-capture-service/README.md)** - Media capture and processing service
+- **[505-akri-rest-http-connector](./505-akri-rest-http-connector/README.md)** - Akri REST HTTP connector for IoT Operations device discovery
+
+## Service Implementation### Docker and Containerization
 
 Each application must contain at least one `Dockerfile` within its respective service directory under `services/`. Use multi-stage builds to keep images small and secure by separating build and runtime environments.
 
@@ -321,7 +329,7 @@ While the sample applications in this repository are reference implementations a
 
 - **SLSA Framework**: [https://slsa.dev/](https://slsa.dev/)
 - **GitHub SLSA Generator**: [slsa-framework/slsa-github-generator](https://github.com/slsa-framework/slsa-github-generator)
-- **Azure DevOps SLSA**: [Microsoft DevSecOps for SLSA](https://learn.microsoft.com/azure/devops/pipelines/security/overview)
+- **Azure DevOps SLSA**: [Microsoft DevSecOps for SLSA](https://learn.microsoft.com/en-us/azure/devops/pipelines/security/overview)
 - **Container Signing**: [Cosign](https://github.com/sigstore/cosign) for container image signing and verification
 
 #### Integration with Existing Security Infrastructure

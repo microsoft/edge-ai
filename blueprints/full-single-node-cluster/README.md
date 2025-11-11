@@ -151,6 +151,61 @@ Ensure you have the following prerequisites:
 - Registered resource providers (see deployment instructions)
 - Appropriate permissions to create resources
 
+## Advanced Configuration
+
+### REST HTTP Connector Assets
+
+This blueprint supports deploying REST HTTP connector devices and assets using the `111-assets` component. This provides Infrastructure as Code (IaC) management of REST endpoints with full state management.
+
+**Key Benefits:**
+
+- ✅ Declarative configuration using Terraform variables
+- ✅ Version control for asset definitions
+- ✅ Integrated with blueprint deployment
+- ✅ Replaces manual kubectl and YAML management
+
+**Quick Example:**
+
+```hcl
+namespaced_devices = [
+  {
+    name = "rest-weather-sensor"
+    endpoints = {
+      inbound = {
+        "weather-endpoint" = {
+          endpoint_type = "Microsoft.Http"
+          address       = "http://weather-station:8080"
+          authentication = { method = "Anonymous" }
+        }
+      }
+    }
+  }
+]
+
+namespaced_assets = [
+  {
+    name = "rest-weather-sensor-asset"
+    device_ref = {
+      device_name   = "rest-weather-sensor"
+      endpoint_name = "weather-endpoint"
+    }
+    datasets = [{
+      name = "weather-data"
+      data_points = [{
+        name        = "temperature"
+        data_source = "api/weather"
+      }]
+      destinations = [{
+        target = "Mqtt"
+        configuration = { topic = "telemetry/weather" }
+      }]
+    }]
+  }
+]
+```
+
+See [rest-connector-assets.tfvars.example](terraform/rest-connector-assets.tfvars.example) for complete configuration examples.
+
 ## Deploy Blueprint
 
 Follow detailed deployment instructions from the blueprints README.md, [Detailed Deployment Workflow](../README.md#detailed-deployment-workflow)

@@ -329,9 +329,14 @@ module "edge_iot_ops" {
   should_deploy_resource_sync_rules       = var.should_deploy_resource_sync_rules
   should_create_anonymous_broker_listener = var.should_create_anonymous_broker_listener
 
-  aio_features                 = var.aio_features
-  enable_opc_ua_simulator      = var.should_enable_opc_ua_simulator
-  should_enable_otel_collector = var.should_enable_otel_collector
+  aio_features                       = var.aio_features
+  enable_opc_ua_simulator            = var.should_enable_opc_ua_simulator
+  should_enable_akri_rest_connector  = var.should_enable_akri_rest_connector
+  should_enable_akri_media_connector = var.should_enable_akri_media_connector
+  should_enable_akri_onvif_connector = var.should_enable_akri_onvif_connector
+  should_enable_akri_sse_connector   = var.should_enable_akri_sse_connector
+  custom_akri_connectors             = var.custom_akri_connectors
+  should_enable_otel_collector       = var.should_enable_otel_collector
 }
 
 module "edge_assets" {
@@ -378,6 +383,7 @@ module "edge_messaging" {
   aio_identity         = module.cloud_security_identity.aio_identity
   eventgrid            = module.cloud_messaging.eventgrid
   eventhub             = module.cloud_messaging.eventhubs[0]
+  adr_namespace        = module.cloud_data.adr_namespace
 }
 
 module "edge_azureml" {

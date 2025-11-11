@@ -288,6 +288,7 @@ module edgeMessaging '../../../src/100-edge/130-messaging/bicep/main.bicep' = {
     aioCustomLocationName: edgeIotOps.outputs.customLocationName
     aioInstanceName: edgeIotOps.outputs.aioInstanceName
     aioDataflowProfileName: edgeIotOps.outputs.dataFlowProfileName
+    adrNamespaceName: cloudData.outputs.adrNamespaceName
 
     // Optional event hub and event grid parameters passed from cloud messaging
     eventHub: cloudMessaging.outputs.eventHubConfig

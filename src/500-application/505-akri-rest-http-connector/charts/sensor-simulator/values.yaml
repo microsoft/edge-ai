@@ -1,0 +1,131 @@
+---
+# Default values for sensor-simulator
+replicaCount: 1
+
+image:
+  repository: your-registry.azurecr.io/sensor-simulator
+  pullPolicy: Always
+  tag: "latest"
+
+imagePullSecrets:
+  - name: acr-auth
+
+nameOverride: ""
+fullnameOverride: ""
+
+# Kubernetes namespace
+namespace: azure-iot-operations
+
+service:
+  type: ClusterIP
+  port: 8081
+  targetPort: 8081
+
+# Field configuration used by the simulator
+fieldConfig:
+  fields:
+    temp-celsius-01:
+      name: "Temperature Sensor 01 - Celsius"
+      data_type: "float"
+      units: "degC"
+      min_value: 15.0
+      max_value: 35.0
+      metadata:
+        sensor_location: "Room A"
+        measurement_type: "ambient_temperature"
+    temp-fahrenheit-01:
+      name: "Temperature Sensor 01 - Fahrenheit"
+      data_type: "float"
+      units: "degF"
+      min_value: 59.0
+      max_value: 95.0
+      metadata:
+        sensor_location: "Room A"
+        measurement_type: "ambient_temperature"
+    humidity-pct-01:
+      name: "Humidity Sensor 01 - Percent"
+      data_type: "float"
+      units: "percent"
+      min_value: 20.0
+      max_value: 90.0
+      metadata:
+        sensor_location: "Room A"
+        measurement_type: "relative_humidity"
+    pressure-kpa-01:
+      name: "Pressure Sensor 01 - kPa"
+      data_type: "integer"
+      units: "kPa"
+      min_value: 95
+      max_value: 105
+      metadata:
+        sensor_location: "Room A"
+        measurement_type: "atmospheric_pressure"
+    status-indicator-01:
+      name: "Device Status Indicator"
+      data_type: "string"
+      units: ""
+      string_options:
+        - "OK"
+        - "WARNING"
+        - "ERROR"
+        - "OFFLINE"
+        - "MAINTENANCE"
+      metadata:
+        indicator_type: "device_health"
+    alarm-active-01:
+      name: "High Temperature Alarm"
+      data_type: "boolean"
+      units: ""
+      metadata:
+        alarm_threshold: "35 degC"
+        alarm_type: "temperature_high"
+  simulator_metadata:
+    device_id: "field-sensor-simulator-001"
+    version: "2.0.0"
+    description: "Field-based sensor data simulator"
+
+# Environment variables injected into the container
+env:
+  PORT: "8081"
+  LOG_LEVEL: "INFO"
+  FIELD_CONFIG_PATH: "/app/field_sources.json"
+
+# Pod security context
+podSecurityContext:
+  fsGroup: 1000
+  runAsNonRoot: true
+  runAsUser: 1000
+
+# Container security context
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: false
+  runAsNonRoot: true
+  runAsUser: 1000
+
+# Resource requests and limits
+resources:
+  limits:
+    cpu: 250m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+# Node selector
+nodeSelector: {}
+
+# Tolerations
+tolerations: []
+
+# Affinity
+affinity: {}
+
+# Pod annotations
+podAnnotations: {}
+
+# Pod labels
+podLabels: {}

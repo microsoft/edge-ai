@@ -530,3 +530,166 @@ run "create_with_minimal_persistence_config" {
     error_message = "Retain policy should be null when not specified"
   }
 }
+
+# Test Akri REST connector enabled
+run "create_with_akri_rest_connector" {
+  command = plan
+  variables {
+    resource_group                    = run.setup_tests.aio_resource_group
+    secret_sync_key_vault             = run.setup_tests.sse_key_vault
+    secret_sync_identity              = run.setup_tests.sse_user_assigned_identity
+    aio_identity                      = run.setup_tests.aio_user_assigned_identity
+    adr_schema_registry               = run.setup_tests.adr_schema_registry
+    adr_namespace                     = run.setup_tests.adr_namespace
+    arc_connected_cluster             = run.setup_tests.arc_connected_cluster
+    should_enable_akri_rest_connector = true
+  }
+
+  # Verify that REST connector is enabled
+  assert {
+    condition     = var.should_enable_akri_rest_connector == true
+    error_message = "should_enable_akri_rest_connector should be true"
+  }
+
+  # Verify akri_connectors module would be created
+  assert {
+    condition     = length(module.akri_connectors) > 0
+    error_message = "akri_connectors module should be created when REST connector is enabled"
+  }
+}
+
+# Test REST connector deployment with detailed validation
+run "validate_rest_connector_deployment" {
+  command = plan
+  variables {
+    resource_group                    = run.setup_tests.aio_resource_group
+    secret_sync_key_vault             = run.setup_tests.sse_key_vault
+    secret_sync_identity              = run.setup_tests.sse_user_assigned_identity
+    aio_identity                      = run.setup_tests.aio_user_assigned_identity
+    adr_schema_registry               = run.setup_tests.adr_schema_registry
+    adr_namespace                     = run.setup_tests.adr_namespace
+    arc_connected_cluster             = run.setup_tests.arc_connected_cluster
+    should_enable_akri_rest_connector = true
+  }
+
+  # Verify akri_connectors module is instantiated
+  assert {
+    condition     = length(module.akri_connectors) == 1
+    error_message = "akri_connectors module should be created with exactly one instance"
+  }
+
+  # Verify the module receives correct inputs
+  assert {
+    condition     = var.should_enable_akri_rest_connector == true
+    error_message = "REST connector should be enabled"
+  }
+}
+
+# Test custom Akri connector deployment
+run "validate_custom_connector_deployment" {
+  command = plan
+  variables {
+    resource_group        = run.setup_tests.aio_resource_group
+    secret_sync_key_vault = run.setup_tests.sse_key_vault
+    secret_sync_identity  = run.setup_tests.sse_user_assigned_identity
+    aio_identity          = run.setup_tests.aio_user_assigned_identity
+    adr_schema_registry   = run.setup_tests.adr_schema_registry
+    adr_namespace         = run.setup_tests.adr_namespace
+    arc_connected_cluster = run.setup_tests.arc_connected_cluster
+    custom_akri_connectors = [
+      {
+        name                    = "modbus-telemetry-connector"
+        type                    = "custom"
+        custom_endpoint_type    = "Contoso.Modbus"
+        custom_image_name       = "my_acr.azurecr.io/modbus-telemetry-connector"
+        custom_endpoint_version = "2.0"
+        registry                = "my_acr.azurecr.io"
+        image_tag               = "v1.2.3"
+        replicas                = 2
+        log_level               = "debug"
+      }
+    ]
+  }
+
+  # Verify akri_connectors module is instantiated for custom connector
+  assert {
+    condition     = length(module.akri_connectors) == 1
+    error_message = "akri_connectors module should be created when custom connectors are provided"
+  }
+
+  # Verify custom connector configuration is provided
+  assert {
+    condition     = length(var.custom_akri_connectors) == 1
+    error_message = "Should have exactly one custom connector configured"
+  }
+
+  # Verify custom connector has required fields
+  assert {
+    condition     = var.custom_akri_connectors[0].type == "custom"
+    error_message = "Custom connector type should be 'custom'"
+  }
+
+  assert {
+    condition     = var.custom_akri_connectors[0].custom_endpoint_type == "Contoso.Modbus"
+    error_message = "Custom connector should have the specified endpoint type"
+  }
+
+  assert {
+    condition     = var.custom_akri_connectors[0].custom_image_name == "my_acr.azurecr.io/modbus-telemetry-connector"
+    error_message = "Custom connector should have the specified image name"
+  }
+
+  # Verify optional configuration is applied
+  assert {
+    condition     = var.custom_akri_connectors[0].replicas == 2
+    error_message = "Custom connector replicas should be set to 2"
+  }
+
+  assert {
+    condition     = var.custom_akri_connectors[0].log_level == "debug"
+    error_message = "Custom connector log level should be set to debug"
+  }
+}
+
+# Test multiple connectors (built-in and custom) deployment
+run "validate_multiple_connectors_deployment" {
+  command = plan
+  variables {
+    resource_group                     = run.setup_tests.aio_resource_group
+    secret_sync_key_vault              = run.setup_tests.sse_key_vault
+    secret_sync_identity               = run.setup_tests.sse_user_assigned_identity
+    aio_identity                       = run.setup_tests.aio_user_assigned_identity
+    adr_schema_registry                = run.setup_tests.adr_schema_registry
+    adr_namespace                      = run.setup_tests.adr_namespace
+    arc_connected_cluster              = run.setup_tests.arc_connected_cluster
+    should_enable_akri_rest_connector  = true
+    should_enable_akri_onvif_connector = true
+    custom_akri_connectors = [
+      {
+        name                 = "custom-sse-connector"
+        type                 = "custom"
+        custom_endpoint_type = "Acme.ServerSentEvents"
+        custom_image_name    = "my_acr.azurecr.io/sse-connector"
+        replicas             = 1
+      }
+    ]
+  }
+
+  # Verify akri_connectors module is instantiated when multiple connectors are enabled
+  assert {
+    condition     = length(module.akri_connectors) == 1
+    error_message = "akri_connectors module should be created when any connector is enabled"
+  }
+
+  # Verify multiple built-in connectors are enabled
+  assert {
+    condition     = var.should_enable_akri_rest_connector == true && var.should_enable_akri_onvif_connector == true
+    error_message = "Both REST and ONVIF connectors should be enabled"
+  }
+
+  # Verify custom connector is also configured
+  assert {
+    condition     = length(var.custom_akri_connectors) == 1
+    error_message = "Should have one custom connector in addition to built-in connectors"
+  }
+}
