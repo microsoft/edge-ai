@@ -47,6 +47,7 @@ autodetect
 autodetected
 autodetecting
 autodetection
+autolinks
 autolabeling
 automanage
 automations
@@ -660,8 +661,10 @@ multithreaded
 multithreading
 multizone
 mundhada
+myedge
 mysql
 namespace
+nameof
 namespaces
 ncdc
 nei
@@ -912,6 +915,7 @@ schedules
 schwinn
 scom
 scoped
+secretproviderclass
 scsp
 sdk
 sdks
@@ -982,6 +986,7 @@ stylecop
 subcomponent
 subcomponents
 subfolders
+sublist
 submillisecond
 submittext
 subnetting
