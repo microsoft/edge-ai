@@ -2,7 +2,6 @@ metadata name = 'Full Multi-node Cluster Blueprint'
 metadata description = 'Deploys a complete end-to-end environment for Azure IoT Operations on a multi-node, Arc-enabled Kubernetes cluster.'
 
 import * as core from './types.core.bicep'
-import * as iotOpsTypes from '../../../src/100-edge/110-iot-ops/bicep/types.bicep'
 
 targetScope = 'subscription'
 
@@ -46,6 +45,10 @@ Can be retrieved using:
   ```
 ''')
 param customLocationsOid string
+
+@description('The token that will be given to the server for the cluster or used by agent nodes. (Required for multi-node clusters where hostMachineCount > 1)')
+@secure()
+param serverToken string?
 
 /*
   Container Registry Parameters
@@ -117,6 +120,15 @@ resource attribution 'Microsoft.Resources/deployments@2020-06-01' = if (!telemet
 }
 
 /*
+  Variables
+*/
+
+// Validate that serverToken is provided for multi-node clusters
+var validatedServerToken = hostMachineCount > 1 && serverToken == null
+  ? fail('serverToken is required when hostMachineCount > 1. Multi-node clusters require a token for agent nodes to join the cluster.')
+  : serverToken
+
+/*
   Modules
 */
 
@@ -153,6 +165,7 @@ module cloudData '../../../src/000-cloud/030-data/bicep/main.bicep' = {
   dependsOn: [cloudResourceGroup]
   params: {
     common: common
+    shouldCreateAdrNamespace: true
   }
 }
 
@@ -225,6 +238,7 @@ module edgeCncfCluster '../../../src/100-edge/100-cncf-cluster/bicep/main.bicep'
     common: common
     customLocationsOid: customLocationsOid
     deployKeyVaultName: cloudSecurityIdentity.outputs.keyVaultName!
+    serverToken: validatedServerToken
   }
 }
 
@@ -243,6 +257,7 @@ module edgeIotOps '../../../src/100-edge/110-iot-ops/bicep/main.bicep' = {
     // Azure IoT Operations Instance Parameters
     aioIdentityName: cloudSecurityIdentity.outputs.aioIdentityName
     schemaRegistryName: cloudData.outputs.schemaRegistryName
+    adrNamespaceName: cloudData.outputs.adrNamespaceName
     shouldDeployAio: shouldDeployAio
     shouldCreateAnonymousBrokerListener: shouldCreateAnonymousBrokerListener
     shouldEnableOtelCollector: shouldEnableOtelCollector
@@ -288,6 +303,7 @@ module edgeMessaging '../../../src/100-edge/130-messaging/bicep/main.bicep' = {
     aioCustomLocationName: edgeIotOps.outputs.customLocationName
     aioInstanceName: edgeIotOps.outputs.aioInstanceName
     aioDataflowProfileName: edgeIotOps.outputs.dataFlowProfileName
+    adrNamespaceName: cloudData.outputs.adrNamespaceName
 
     // Optional event hub and event grid parameters passed from cloud messaging
     eventHub: cloudMessaging.outputs.eventHubConfig

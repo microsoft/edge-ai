@@ -28,6 +28,7 @@ Contains all the resources needed for Cloud based data persistence.
 
 | Name | Source | Version |
 |------|--------|---------|
+| adr\_namespace | ./modules/adr-namespace | n/a |
 | data\_lake | ./modules/data-lake | n/a |
 | schema\_registry | ./modules/schema-registry | n/a |
 | storage\_account | ./modules/storage-account | n/a |
@@ -40,6 +41,9 @@ Contains all the resources needed for Cloud based data persistence.
 | location | Azure region where all resources will be deployed | `string` | n/a | yes |
 | resource\_group | Resource group object containing name and id where resources will be deployed | ```object({ name = string id = optional(string) })``` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
+| adr\_namespace\_enable\_identity | Whether to enable system-assigned managed identity for the ADR namespace. | `bool` | `true` | no |
+| adr\_namespace\_messaging\_endpoints | Dictionary of messaging endpoints for the ADR namespace. | ```map(object({ endpointType = string address = string resourceId = optional(string) }))``` | `null` | no |
+| adr\_namespace\_name | The name of the ADR namespace. Otherwise, 'adrns-{resource\_prefix}-{environment}-{instance}'. | `string` | `null` | no |
 | blob\_dns\_zone | Blob private DNS zone object from observability component with id and name properties. If not provided, a new zone will be created when should\_create\_blob\_dns\_zone is true. | ```object({ id = string name = string })``` | `null` | no |
 | blob\_soft\_delete\_retention\_days | Number of days to retain deleted blobs | `number` | `7` | no |
 | container\_access\_type | The Access Level for the container (blob, container or private) | `string` | `"private"` | no |
@@ -52,6 +56,7 @@ Contains all the resources needed for Cloud based data persistence.
 | file\_share\_quota\_gb | Maximum size of the file share in GB | `number` | `5` | no |
 | instance | Instance identifier for naming resources: 001, 002, etc | `string` | `"001"` | no |
 | private\_endpoint\_subnet\_id | ID of the subnet to deploy the private endpoint | `string` | `null` | no |
+| should\_create\_adr\_namespace | Whether to create an Azure Device Registry namespace. | `bool` | `true` | no |
 | should\_create\_blob\_dns\_zone | Whether to create the blob private DNS zone. Set to false if using a shared DNS zone from observability component. | `bool` | `true` | no |
 | should\_create\_data\_lake | Whether or not to create the data lake which includes a Blob Container and Data Lake Filesystem. | `bool` | `true` | no |
 | should\_create\_data\_lake\_file\_share | Whether to create a file share | `bool` | `false` | no |
@@ -68,6 +73,7 @@ Contains all the resources needed for Cloud based data persistence.
 
 | Name | Description |
 |------|-------------|
+| adr\_namespace | The Azure Device Registry namespace resource. |
 | data\_lake\_blob\_container\_name | The name for the Data Lake Blob Container. |
 | data\_lake\_file\_share\_name | The name for the Data Lake File Share. |
 | data\_lake\_filesystem\_name | The name for the Data Lake Gen2 Filesystem. |

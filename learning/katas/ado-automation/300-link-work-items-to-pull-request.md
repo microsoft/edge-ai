@@ -165,8 +165,8 @@ search_keywords:
 
 ### Help Resources
 
-- **PR Work Item Linking**: [Link work items to pull requests](https://learn.microsoft.com/en-us/azure/devops/boards/github/link-to-from-github)
-- **State Transition Rules**: [Automate work item state transitions](https://learn.microsoft.com/en-us/azure/devops/boards/work-items/workflow-and-state-categories)
+- **PR Work Item Linking**: [Link work items to pull requests](https://learn.microsoft.com/azure/devops/boards/github/link-to-from-github)
+- **State Transition Rules**: [Automate work item state transitions](https://learn.microsoft.com/azure/devops/boards/work-items/workflow-and-state-categories)
 - **GitHub Copilot**: Use for generating PR descriptions with work item references
 
 ### Professional Tips

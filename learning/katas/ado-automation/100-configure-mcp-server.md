@@ -187,8 +187,8 @@ search_keywords:
 
 ### Help Resources
 
-- **Microsoft Learn**: [Use Personal Access Tokens](https://learn.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate)
-- **OAuth Scopes Reference**: [Azure DevOps OAuth Scopes](https://learn.microsoft.com/en-us/azure/devops/integrate/get-started/authentication/oauth#available-scopes)
+- **Microsoft Learn**: [Use Personal Access Tokens](https://learn.microsoft.com/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate)
+- **OAuth Scopes Reference**: [Azure DevOps OAuth Scopes](https://learn.microsoft.com/azure/devops/integrate/get-started/authentication/oauth#available-scopes)
 - **GitHub Copilot**: Use for troubleshooting MCP connection issues
 
 ### Professional Tips

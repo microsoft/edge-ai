@@ -55,7 +55,6 @@ Creates a Linux virtual machine with networking components for Azure IoT Operati
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|arcOnboardingIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2024-11-30|
 |publicIp|`Microsoft.Network/publicIPAddresses`|2024-05-01|
 |networkInterface|`Microsoft.Network/networkInterfaces`|2024-05-01|
 |linuxVm|`Microsoft.Compute/virtualMachines`|2024-07-01|

@@ -34,6 +34,9 @@ param aioDataflowProfileName string = 'default'
 @description('The name of the Azure IoT Operations Device Registry Asset resource to send its data from edge to cloud.')
 param assetName string = 'oven'
 
+@description('The name of the Azure IoT Operations Device Registry namespace to use when referencing the asset.')
+param adrNamespaceName string?
+
 @description('Values for the existing Event Hub namespace and Event Hub. If not provided, Event Hub dataflow will not be created.')
 param eventHub types.EventHub?
 
@@ -86,6 +89,7 @@ module eventHubDataflow 'modules/event-hub.bicep' = if (eventHub != null) {
     aioInstanceName: aioInstanceName
     aioDataflowProfileName: aioDataflowProfileName
     customLocationId: aioCustomLocation.id
+    adrNamespaceName: adrNamespaceName
   }
 }
 
@@ -100,5 +104,6 @@ module eventGridDataflow 'modules/event-grid.bicep' = if (eventGrid != null) {
     aioInstanceName: aioInstanceName
     aioDataflowProfileName: aioDataflowProfileName
     customLocationId: aioCustomLocation.id
+    adrNamespaceName: adrNamespaceName
   }
 }

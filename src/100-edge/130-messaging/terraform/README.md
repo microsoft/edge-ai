@@ -31,7 +31,8 @@ Event Hub and Event Grid endpoints for edge-to-cloud data transmission.
 | aio\_instance | The Azure IoT Operations instance | ```object({ id = string })``` | n/a | yes |
 | environment | Environment for all resources in this module: dev, test, or prod | `string` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
-| asset\_name | The name of the Azure IoT Operations Device Registry Asset resource to send its data from edge to cloud. | `string` | `"oven"` | no |
+| adr\_namespace | Azure Device Registry namespace to use with Azure IoT Operations. Otherwise, not configured. | ```object({ id = string, name = string })``` | `null` | no |
+| asset\_name | The name of the Azure IoT Operations Device Registry Asset resource to send its data from edge to cloud. | `string` | `"namespace-oven"` | no |
 | eventgrid | Values for the existing Event Grid | ```object({ topic_name = string endpoint = string })``` | `null` | no |
 | eventhub | Values for the existing Event Hub namespace and Event Hub. | ```object({ namespace_name = string eventhub_name = string })``` | `null` | no |
 | fabric\_eventstream\_endpoint | Fabric RTI connection details from EventStream. If provided, creates a Fabric RTI dataflow endpoint. | ```object({ bootstrap_server = string topic_name = string endpoint_type = string })``` | `null` | no |

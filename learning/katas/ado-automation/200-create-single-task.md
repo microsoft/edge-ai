@@ -162,8 +162,8 @@ search_keywords:
 
 ### Help Resources
 
-- **Azure DevOps Work Item Fields**: [Work item field index](https://learn.microsoft.com/en-us/azure/devops/boards/work-items/guidance/work-item-field)
-- **Task Work Item Type**: [Tasks in Azure Boards](https://learn.microsoft.com/en-us/azure/devops/boards/backlogs/add-tasks)
+- **Azure DevOps Work Item Fields**: [Work item field index](https://learn.microsoft.com/azure/devops/boards/work-items/guidance/work-item-field)
+- **Task Work Item Type**: [Tasks in Azure Boards](https://learn.microsoft.com/azure/devops/boards/backlogs/add-tasks)
 - **GitHub Copilot**: Use for generating task descriptions and acceptance criteria
 
 ### Professional Tips

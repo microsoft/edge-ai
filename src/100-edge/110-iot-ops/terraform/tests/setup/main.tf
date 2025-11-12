@@ -21,6 +21,8 @@ locals {
   aio_user_assigned_identity_id   = "${local.resource_group_id}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${local.aio_user_assigned_identity_name}"
   adr_schema_registry_name        = "adr-${local.resource_prefix}"
   adr_schema_registry_id          = "${local.resource_group_id}/providers/Microsoft.DeviceRegistry/schemaRegistries/${local.adr_schema_registry_name}"
+  adr_namespace_name              = "adrns-${local.resource_prefix}"
+  adr_namespace_id                = "${local.resource_group_id}/providers/Microsoft.DeviceRegistry/namespaces/${local.adr_namespace_name}"
   arc_connected_cluster_name      = "arck-${local.resource_prefix}"
   arc_connected_cluster_id        = "${local.resource_group_id}/providers/Microsoft.Kubernetes/connectedClusters/${local.arc_connected_cluster_name}"
 }
@@ -80,6 +82,13 @@ output "adr_schema_registry" {
   value = {
     id   = local.adr_schema_registry_id
     name = local.adr_schema_registry_name
+  }
+}
+
+output "adr_namespace" {
+  value = {
+    id   = local.adr_namespace_id
+    name = local.adr_namespace_name
   }
 }
 

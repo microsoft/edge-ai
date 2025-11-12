@@ -24,6 +24,7 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 |aioMqBrokerConfig|The settings for the Azure IoT Operations MQ Broker.|`[_1.AioMqBroker](#user-defined-types)`|[variables('_1.aioMqBrokerDefaults')]|no|
 |brokerListenerAnonymousConfig|Configuration for the insecure anonymous AIO MQ Broker Listener.|`[_1.AioMqBrokerAnonymous](#user-defined-types)`|[variables('_1.aioMqBrokerAnonymousDefaults')]|no|
 |schemaRegistryName|The resource name for the ADR Schema Registry for Azure IoT Operations.|`string`|n/a|yes|
+|adrNamespaceName|The resource name for the ADR Namespace for Azure IoT Operations.|`string`|n/a|no|
 |shouldDeployAio|Whether to deploy an Azure IoT Operations Instance and all of its required components into the connected cluster.|`bool`|`true`|no|
 |shouldDeployResourceSyncRules|Whether or not to deploy the Custom Locations Resource Sync Rules for the Azure IoT Operations resources.|`bool`|`true`|no|
 |shouldCreateAnonymousBrokerListener|Whether to enable an insecure anonymous AIO MQ Broker Listener. (Should only be used for dev or test environments)|`bool`|`false`|no|
@@ -57,7 +58,6 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 |postInitScriptsSecrets|`Microsoft.Resources/deployments`|2022-09-01|
 |postInitScripts|`Microsoft.Resources/deployments`|2022-09-01|
 |iotOpsInstance|`Microsoft.Resources/deployments`|2022-09-01|
-|iotOpsInstancePost|`Microsoft.Resources/deployments`|2022-09-01|
 |postInstanceScriptsSecrets|`Microsoft.Resources/deployments`|2022-09-01|
 |postInstanceScripts|`Microsoft.Resources/deployments`|2022-09-01|
 |opcUaSimulator|`Microsoft.Resources/deployments`|2022-09-01|
@@ -73,7 +73,6 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 |postInitScriptsSecrets|Creates secrets in Key Vault for deployment script setup and initialization for Azure IoT Operations.|
 |postInitScripts|Runs deployment scripts for IoT Operations using an Azure deploymentScript resource, including tool installation and script execution.|
 |iotOpsInstance|Deploys Azure IoT Operations instance, broker, authentication, listeners, and data flow components on an Azure Arc-enabled Kubernetes cluster.|
-|iotOpsInstancePost|Configures federated identity credentials for Azure IoT Operations and Secret Sync Extension service accounts and sets up Key Vault Secret Provider Class.|
 |postInstanceScriptsSecrets|Creates secrets in Key Vault for deployment script setup and initialization for Azure IoT Operations.|
 |postInstanceScripts|Runs deployment scripts for IoT Operations using an Azure deploymentScript resource, including tool installation and script execution.|
 |opcUaSimulator|Deploy and configure the OPC UA Simulator|
@@ -230,7 +229,7 @@ Runs deployment scripts for IoT Operations using an Azure deploymentScript resou
 
 |Name|Description|Type|Default|Required|
 | :--- | :--- | :--- | :--- | :--- |
-|common|The common component configuration.|`[_2.Common](#user-defined-types)`|n/a|yes|
+|common|The common component configuration.|`[_1.Common](#user-defined-types)`|n/a|yes|
 |deployIdentityId|The resource ID of the deploy Managed Identity used to execute the scripts.|`string`|n/a|no|
 |deploySpClientId|The Client ID for a Service Principal for deployment scripts.|`string`|n/a|no|
 |deploySpSecret|The Client Secret for a Service Principal for deployment scripts.|`securestring`|n/a|no|
@@ -270,10 +269,13 @@ Deploys Azure IoT Operations instance, broker, authentication, listeners, and da
 |aioExtensionConfig|The settings for the Azure IoT Operations Extension.|`[_1.AioExtension](#user-defined-types)`|n/a|yes|
 |aioPlatformExtensionId|The resource ID for the Azure IoT Operations Platform Extension.|`string`|n/a|yes|
 |aioFeatures||`[_1.AioFeatures](#user-defined-types)`|n/a|no|
+|sseIdentityName|The name of the User Assigned Managed Identity for Secret Sync.|`string`|n/a|yes|
+|sseKeyVaultName|The name of the Key Vault for Secret Sync.|`string`|n/a|yes|
 |secretStoreExtensionId|The resource ID for the Secret Store Extension.|`string`|n/a|yes|
 |trustSource|The source for trust for Azure IoT Operations.|`[_1.TrustSource](#user-defined-types)`|n/a|yes|
 |trustIssuerSettings|The trust settings for Azure IoT Operations.|`[_1.TrustSettingsConfig](#user-defined-types)`|n/a|no|
 |schemaRegistryName|The resource name for the ADR Schema Registry for Azure IoT Operations.|`string`|n/a|yes|
+|adrNamespaceId|The resource ID for the ADR Namespace for Azure IoT Operations.|`string`|n/a|no|
 |shouldEnableOtelCollector|Whether or not to enable the Open Telemetry Collector for Azure IoT Operations.|`bool`|n/a|yes|
 |brokerListenerAnonymousConfig|Configuration for the insecure anonymous AIO MQ Broker Listener.|`[_1.AioMqBrokerAnonymous](#user-defined-types)`|n/a|yes|
 |aioMqBrokerConfig|The settings for the Azure IoT Operations MQ Broker.|`[_1.AioMqBroker](#user-defined-types)`|n/a|yes|
@@ -286,17 +288,20 @@ Deploys Azure IoT Operations instance, broker, authentication, listeners, and da
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
+|sseIdentity::sseFedCred|`Microsoft.ManagedIdentity/userAssignedIdentities/federatedIdentityCredentials`|2023-01-31|
+|aioIdentity::aioFedCred|`Microsoft.ManagedIdentity/userAssignedIdentities/federatedIdentityCredentials`|2023-01-31|
 |aioExtension|`Microsoft.KubernetesConfiguration/extensions`|2023-05-01|
 |customLocation|`Microsoft.ExtendedLocation/customLocations`|2021-08-31-preview|
 |aioSyncRule|`Microsoft.ExtendedLocation/customLocations/resourceSyncRules`|2021-08-31-preview|
 |adrSyncRule|`Microsoft.ExtendedLocation/customLocations/resourceSyncRules`|2021-08-31-preview|
-|aioInstance|`Microsoft.IoTOperations/instances`|2025-04-01|
-|broker|`Microsoft.IoTOperations/instances/brokers`|2025-04-01|
-|brokerAuthn|`Microsoft.IoTOperations/instances/brokers/authentications`|2025-04-01|
-|brokerListener|`Microsoft.IoTOperations/instances/brokers/listeners`|2025-04-01|
-|brokerListenerAnonymous|`Microsoft.IoTOperations/instances/brokers/listeners`|2025-04-01|
-|dataFlowProfile|`Microsoft.IoTOperations/instances/dataflowProfiles`|2025-04-01|
-|dataFlowEndpoint|`Microsoft.IoTOperations/instances/dataflowEndpoints`|2025-04-01|
+|defaultSecretSyncSecretProviderClass|`Microsoft.SecretSyncController/azureKeyVaultSecretProviderClasses`|2024-08-21-preview|
+|aioInstance|`Microsoft.IoTOperations/instances`|2025-10-01|
+|broker|`Microsoft.IoTOperations/instances/brokers`|2025-10-01|
+|brokerAuthn|`Microsoft.IoTOperations/instances/brokers/authentications`|2025-10-01|
+|brokerListener|`Microsoft.IoTOperations/instances/brokers/listeners`|2025-10-01|
+|brokerListenerAnonymous|`Microsoft.IoTOperations/instances/brokers/listeners`|2025-10-01|
+|dataFlowProfile|`Microsoft.IoTOperations/instances/dataflowProfiles`|2025-10-01|
+|dataFlowEndpoint|`Microsoft.IoTOperations/instances/dataflowEndpoints`|2025-10-01|
 
 #### Outputs for iotOpsInstance
 
@@ -324,30 +329,6 @@ Deploys Azure IoT Operations instance, broker, authentication, listeners, and da
 |brokerAuthnId|`string`|The ID of the deployed AIO MQ Broker Authentication.|
 |brokerListenerName|`string`|The name of the deployed AIO MQ Broker Listener.|
 |brokerListenerId|`string`|The ID of the deployed AIO MQ Broker Listener.|
-
-### iotOpsInstancePost
-
-Configures federated identity credentials for Azure IoT Operations and Secret Sync Extension service accounts and sets up Key Vault Secret Provider Class.
-
-#### Parameters for iotOpsInstancePost
-
-|Name|Description|Type|Default|Required|
-| :--- | :--- | :--- | :--- | :--- |
-|common|The common component configuration.|`[_1.Common](#user-defined-types)`|n/a|yes|
-|arcConnectedClusterName|Name of the existing arc-enabled cluster where AIO will be deployed.|`string`|n/a|yes|
-|customLocationId|The resource Id for the Custom Locations for Azure IoT Operations.|`string`|n/a|yes|
-|sseIdentityName|The name of the User Assigned Managed Identity for Secret Sync.|`string`|n/a|yes|
-|aioIdentityName|The name of the User Assigned Managed Identity for Azure IoT Operations.|`string`|n/a|yes|
-|sseKeyVaultName|The name of the Key Vault for Secret Sync. (Required when providing sseUserManagedIdentityName)|`string`|n/a|yes|
-|aioNamespace|The namespace for Azure IoT Operations in the cluster.|`string`|n/a|yes|
-
-#### Resources for iotOpsInstancePost
-
-|Name|Type|API Version|
-| :--- | :--- | :--- |
-|sseIdentity::sseFedCred|`Microsoft.ManagedIdentity/userAssignedIdentities/federatedIdentityCredentials`|2023-01-31|
-|aioIdentity::aioFedCred|`Microsoft.ManagedIdentity/userAssignedIdentities/federatedIdentityCredentials`|2023-01-31|
-|defaultSecretSyncSecretProviderClass|`Microsoft.SecretSyncController/azureKeyVaultSecretProviderClasses`|2024-08-21-preview|
 
 ### postInstanceScriptsSecrets
 
@@ -391,7 +372,7 @@ Runs deployment scripts for IoT Operations using an Azure deploymentScript resou
 
 |Name|Description|Type|Default|Required|
 | :--- | :--- | :--- | :--- | :--- |
-|common|The common component configuration.|`[_2.Common](#user-defined-types)`|n/a|yes|
+|common|The common component configuration.|`[_1.Common](#user-defined-types)`|n/a|yes|
 |deployIdentityId|The resource ID of the deploy Managed Identity used to execute the scripts.|`string`|n/a|no|
 |deploySpClientId|The Client ID for a Service Principal for deployment scripts.|`string`|n/a|no|
 |deploySpSecret|The Client Secret for a Service Principal for deployment scripts.|`securestring`|n/a|no|
@@ -426,19 +407,20 @@ Deploy and configure the OPC UA Simulator
 | :--- | :--- | :--- | :--- | :--- |
 |common|The common component configuration.|`[_1.Common](#user-defined-types)`|n/a|yes|
 |customLocationId|The ID of the custom location.|`string`|n/a|yes|
+|adrNamespaceId|The ID of the ADR namespace.|`string`|n/a|yes|
 
 #### Resources for opcUaSimulator
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|assetEndpoint|`Microsoft.DeviceRegistry/assetEndpointProfiles`|2024-11-01|
-|asset|`Microsoft.DeviceRegistry/assets`|2024-11-01|
+|device|`Microsoft.DeviceRegistry/namespaces/devices`|2025-10-01|
+|asset|`Microsoft.DeviceRegistry/namespaces/assets`|2025-10-01|
 
 #### Outputs for opcUaSimulator
 
 |Name|Type|Description|
 | :--- | :--- | :--- |
-|assetEndpointId|`string`|The ID of the asset endpoint.|
+|deviceId|`string`|The ID of the device.|
 |assetId|`string`|The ID of the asset.|
 
 ## User Defined Types
@@ -490,6 +472,8 @@ The settings for the Azure IoT Operations MQ Broker.
 |backendPartitions|`int`|The number of partitions for the backend of the broker.|
 |memoryProfile|`string`|The memory profile for the broker (Low, Medium, High).|
 |serviceType|`string`|The service type for the broker (ClusterIP, LoadBalancer, NodePort).|
+|logsLevel|`string`|The log level for broker diagnostics (info, debug, trace).|
+|persistence|`[_1.BrokerPersistence](#user-defined-types)`|Broker persistence configuration for disk-backed message storage.|
 
 ### `_1.AioMqBrokerAnonymous`
 
@@ -509,6 +493,21 @@ The settings for the Azure IoT Operations Platform Extension.
 | :--- | :--- | :--- |
 |release|`[_1.Release](#user-defined-types)`|The common settings for the extension.|
 |settings|`object`||
+
+### `_1.BrokerPersistence`
+
+Broker persistence configuration for disk-backed message storage.
+
+|Property|Type|Description|
+| :--- | :--- | :--- |
+|enabled|`bool`|Whether persistence is enabled.|
+|maxSize|`string`|Maximum size of the message buffer on disk (e.g., "500M", "1G").|
+|encryption|`object`|Encryption configuration for the persistence database.|
+|dynamicSettings|`object`|Dynamic settings for MQTTv5 user property-based persistence control.|
+|retain|`object`|Controls which retained messages should be persisted to disk.|
+|stateStore|`object`|Controls which state store keys should be persisted to disk.|
+|subscriberQueue|`object`|Controls which subscriber queues should be persisted to disk.|
+|persistentVolumeClaimSpec|`object`|Persistent volume claim specification for storage.|
 
 ### `_1.ContainerStorageExtension`
 

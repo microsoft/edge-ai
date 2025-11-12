@@ -33,6 +33,7 @@ via Kafka-compatible interface with managed identity authentication.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| adr\_namespace | Azure Device Registry namespace to use with Azure IoT Operations. Otherwise, not configured. | ```object({ id = string, name = string })``` | n/a | yes |
 | aio\_dataflow\_profile | The AIO dataflow profile | ```object({ id = string })``` | n/a | yes |
 | aio\_identity | Azure IoT Operations managed identity for workspace access | ```object({ id = string principal_id = string tenant_id = string client_id = string })``` | n/a | yes |
 | aio\_instance | The Azure IoT Operations instance | ```object({ id = string })``` | n/a | yes |

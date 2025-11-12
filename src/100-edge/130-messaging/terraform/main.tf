@@ -16,6 +16,7 @@ module "sample_eventhub_dataflow" {
   custom_location_id   = var.aio_custom_locations.id
   eventhub             = var.eventhub
   asset_name           = var.asset_name
+  adr_namespace        = var.adr_namespace
   aio_uami_tenant_id   = var.aio_identity.tenant_id
   aio_uami_client_id   = var.aio_identity.client_id
   aio_instance         = var.aio_instance
@@ -34,6 +35,7 @@ module "sample_eventgrid_dataflow" {
   aio_instance         = var.aio_instance
   eventgrid            = var.eventgrid
   asset_name           = var.asset_name
+  adr_namespace        = var.adr_namespace
   aio_uami_tenant_id   = var.aio_identity.tenant_id
   aio_uami_client_id   = var.aio_identity.client_id
   aio_dataflow_profile = var.aio_dataflow_profile
@@ -49,6 +51,7 @@ module "sample_fabric_rti_dataflow" {
   instance                    = var.instance
   custom_location_id          = var.aio_custom_locations.id
   asset_name                  = var.asset_name
+  adr_namespace               = var.adr_namespace
   aio_instance                = var.aio_instance
   aio_dataflow_profile        = var.aio_dataflow_profile
   aio_identity                = var.aio_identity

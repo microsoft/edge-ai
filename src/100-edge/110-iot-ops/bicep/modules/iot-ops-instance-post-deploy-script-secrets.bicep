@@ -1,7 +1,6 @@
 metadata name = 'Deploy Script Setup Secrets'
 metadata description = 'Creates secrets in Key Vault for deployment script setup and initialization for Azure IoT Operations.'
 
-import * as core from '../types.core.bicep'
 import * as types from '../types.bicep'
 
 /*

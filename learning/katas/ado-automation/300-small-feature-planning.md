@@ -188,8 +188,8 @@ search_keywords:
 
 ### Help Resources
 
-- **Feature Planning**: [Organize work with features in Azure Boards](https://learn.microsoft.com/en-us/azure/devops/boards/backlogs/define-features-epics)
-- **Story Points**: [Story point estimation guidance](https://learn.microsoft.com/en-us/azure/devops/boards/backlogs/create-your-backlog#estimates)
+- **Feature Planning**: [Organize work with features in Azure Boards](https://learn.microsoft.com/azure/devops/boards/backlogs/define-features-epics)
+- **Story Points**: [Story point estimation guidance](https://learn.microsoft.com/azure/devops/boards/backlogs/create-your-backlog#estimates)
 - **GitHub Copilot**: Use for decomposing features into stories and generating task breakdowns
 
 ### Professional Tips

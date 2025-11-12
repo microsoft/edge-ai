@@ -1,7 +1,7 @@
 <!-- markdownlint-disable MD041 -->
 <!-- markdownlint-disable MD051 -->
 <!-- blueprints Section Sidebar -->
-<!-- Generated on: 2025-11-08 17:04:58 UTC -->
+<!-- Generated on: 2025-11-11 09:14:40 UTC -->
 - [Blueprints Overview](/blueprints/README)
 
 - [Blueprint Components](/blueprints/README?id=blueprints)

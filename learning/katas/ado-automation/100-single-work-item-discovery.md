@@ -176,8 +176,8 @@ search_keywords:
 
 ### Help Resources
 
-- **Azure DevOps REST API**: [Work Items - Get](https://learn.microsoft.com/en-us/rest/api/azure/devops/wit/work-items/get-work-item)
-- **Azure DevOps WIQL**: [Work Item Query Language](https://learn.microsoft.com/en-us/azure/devops/boards/queries/wiql-syntax)
+- **Azure DevOps REST API**: [Work Items - Get](https://learn.microsoft.com/rest/api/azure/devops/wit/work-items/get-work-item)
+- **Azure DevOps WIQL**: [Work Item Query Language](https://learn.microsoft.com/azure/devops/boards/queries/wiql-syntax)
 - **GitHub Copilot**: Use for building complex query patterns
 
 ### Professional Tips

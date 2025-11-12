@@ -58,12 +58,12 @@ resource aioCustomLocations 'Microsoft.ExtendedLocation/customLocations@2021-08-
   name: 'arck-${common.resourcePrefix}-${common.environment}-${common.instance}-cl'
 }
 
-resource aioInstance 'Microsoft.IoTOperations/instances@2025-04-01' existing = {
+resource aioInstance 'Microsoft.IoTOperations/instances@2025-10-01' existing = {
   scope: resourceGroup(arcConnectedClusterResourceGroupName)
   name: 'arck-${common.resourcePrefix}-${common.environment}-${common.instance}-ops-instance'
 }
 
-resource aioDataflowProfile 'Microsoft.IoTOperations/instances/dataflowProfiles@2025-04-01' existing = {
+resource aioDataflowProfile 'Microsoft.IoTOperations/instances/dataflowProfiles@2025-10-01' existing = {
   parent: aioInstance
   name: 'default'
 }

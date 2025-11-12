@@ -352,6 +352,7 @@ module "edge_iot_ops" {
   depends_on = [module.edge_cncf_cluster]
 
   adr_schema_registry   = module.cloud_data.schema_registry
+  adr_namespace         = module.cloud_data.adr_namespace
   resource_group        = module.cloud_resource_group.resource_group
   aio_identity          = module.cloud_security_identity.aio_identity
   arc_connected_cluster = module.edge_cncf_cluster.arc_connected_cluster
@@ -361,8 +362,13 @@ module "edge_iot_ops" {
   should_deploy_resource_sync_rules       = var.should_deploy_resource_sync_rules
   should_create_anonymous_broker_listener = var.should_create_anonymous_broker_listener
 
-  aio_features            = var.aio_features
-  enable_opc_ua_simulator = var.should_enable_opc_ua_simulator
+  aio_features                       = var.aio_features
+  enable_opc_ua_simulator            = var.should_enable_opc_ua_simulator
+  should_enable_akri_rest_connector  = var.should_enable_akri_rest_connector
+  should_enable_akri_media_connector = var.should_enable_akri_media_connector
+  should_enable_akri_onvif_connector = var.should_enable_akri_onvif_connector
+  should_enable_akri_sse_connector   = var.should_enable_akri_sse_connector
+  custom_akri_connectors             = var.custom_akri_connectors
 }
 
 module "edge_assets" {
@@ -373,10 +379,11 @@ module "edge_assets" {
   location           = var.location
   resource_group     = module.cloud_resource_group.resource_group
   custom_location_id = module.edge_iot_ops.custom_locations.id
+  adr_namespace      = module.cloud_data.adr_namespace
 
-  should_create_default_asset = var.should_enable_opc_ua_simulator
-  asset_endpoint_profiles     = var.asset_endpoint_profiles
-  assets                      = var.assets
+  should_create_default_namespaced_asset = var.should_enable_opc_ua_simulator
+  namespaced_devices                     = var.namespaced_devices
+  namespaced_assets                      = var.namespaced_assets
 }
 
 module "edge_observability" {
@@ -408,6 +415,7 @@ module "edge_messaging" {
   aio_identity         = module.cloud_security_identity.aio_identity
   eventgrid            = module.cloud_messaging.eventgrid
   eventhub             = module.cloud_messaging.eventhubs[0]
+  adr_namespace        = module.cloud_data.adr_namespace
 }
 
 module "edge_azureml" {

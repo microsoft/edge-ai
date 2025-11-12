@@ -271,4 +271,4 @@ This project is licensed under the [MIT License](./LICENSE).
 then carefully refined by our team of discerning human reviewers.*
 <!-- markdownlint-enable MD036 -->
 
-[responsible-ai]: https://www.microsoft.com/en-us/ai/responsible-ai
+[responsible-ai]: https://www.microsoft.com/ai/responsible-ai
