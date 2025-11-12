@@ -32,20 +32,29 @@ param aioDataflowProfileName string = 'default'
 @description('The resource ID of the Custom Location.')
 param customLocationId string
 
+@description('The name of the Azure IoT Operations Device Registry namespace used when referencing assets.')
+param adrNamespaceName string?
+
+/*
+  Variables
+*/
+
+var assetRef = !empty(adrNamespaceName) ? '${adrNamespaceName}/${assetName}' : assetName
+
 /*
   Resources
 */
 
-resource aioInstanceResource 'Microsoft.IoTOperations/instances@2025-04-01' existing = {
+resource aioInstanceResource 'Microsoft.IoTOperations/instances@2025-10-01' existing = {
   name: aioInstanceName
 }
 
-resource aioDataflowProfileResource 'Microsoft.IoTOperations/instances/dataflowProfiles@2025-04-01' existing = {
+resource aioDataflowProfileResource 'Microsoft.IoTOperations/instances/dataflowProfiles@2025-10-01' existing = {
   parent: aioInstanceResource
   name: aioDataflowProfileName
 }
 
-resource dataflowEndpointToEventGrid 'Microsoft.IoTOperations/instances/dataflowEndpoints@2025-04-01' = {
+resource dataflowEndpointToEventGrid 'Microsoft.IoTOperations/instances/dataflowEndpoints@2025-10-01' = {
   name: 'dfe-eg-${common.resourcePrefix}-${common.environment}-sample-${common.instance}'
   parent: aioInstanceResource
   extendedLocation: {
@@ -70,7 +79,7 @@ resource dataflowEndpointToEventGrid 'Microsoft.IoTOperations/instances/dataflow
   }
 }
 
-resource dataflowToEventGrid 'Microsoft.IoTOperations/instances/dataflowProfiles/dataflows@2025-04-01' = {
+resource dataflowToEventGrid 'Microsoft.IoTOperations/instances/dataflowProfiles/dataflows@2025-10-01' = {
   parent: aioDataflowProfileResource
   name: 'df-eg-${common.resourcePrefix}-${common.environment}-passthrough-${common.instance}'
   extendedLocation: {
@@ -84,7 +93,7 @@ resource dataflowToEventGrid 'Microsoft.IoTOperations/instances/dataflowProfiles
         operationType: 'Source'
         sourceSettings: {
           endpointRef: 'default'
-          assetRef: assetName
+          assetRef: assetRef
           serializationFormat: 'Json'
           dataSources: ['azure-iot-operations/data/${assetName}']
         }

@@ -305,7 +305,7 @@ then carefully refined by our team of discerning human reviewers.*
 <!-- markdownlint-enable MD036 -->
 
 <!-- Reference Links -->
-[azure-devops-docs]: https://learn.microsoft.com/en-us/azure/devops/
+[azure-devops-docs]: https://learn.microsoft.com/azure/devops/
 [mcp-docs]: https://modelcontextprotocol.io/
 [module-1-details]: #module-1-requirement-analysis--work-item-discovery-coming-soon
 [module-2-details]: #module-2-work-item-hierarchy-planning-coming-soon
@@ -316,9 +316,9 @@ then carefully refined by our team of discerning human reviewers.*
 [chatmode-docs]: /.github/chatmodes/README
 [instruction-files]: /.github/instructions/README
 [prompt-templates]: /.github/prompts/README
-[ado-rest-api]: https://learn.microsoft.com/en-us/rest/api/azure/devops
-[ado-work-items]: https://learn.microsoft.com/en-us/azure/devops/boards/work-items/about-work-items
-[ado-pull-requests]: https://learn.microsoft.com/en-us/azure/devops/repos/git/pull-requests
-[ado-pipelines]: https://learn.microsoft.com/en-us/azure/devops/pipelines/
+[ado-rest-api]: https://learn.microsoft.com/rest/api/azure/devops
+[ado-work-items]: https://learn.microsoft.com/azure/devops/boards/work-items/about-work-items
+[ado-pull-requests]: https://learn.microsoft.com/azure/devops/repos/git/pull-requests
+[ado-pipelines]: https://learn.microsoft.com/azure/devops/pipelines/
 [edge-ai-discussions]: https://github.com/microsoft/edge-ai/discussions
 [ado-community]: https://developercommunity.visualstudio.com/spaces/21/index.html

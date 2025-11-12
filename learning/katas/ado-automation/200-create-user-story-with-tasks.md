@@ -168,8 +168,8 @@ search_keywords:
 
 ### Help Resources
 
-- **User Story Guidance**: [Create user stories in Azure Boards](https://learn.microsoft.com/en-us/azure/devops/boards/work-items/guidance/agile-process-workflow)
-- **Parent-Child Links**: [Link work items in Azure DevOps](https://learn.microsoft.com/en-us/azure/devops/boards/backlogs/add-link)
+- **User Story Guidance**: [Create user stories in Azure Boards](https://learn.microsoft.com/azure/devops/boards/work-items/guidance/agile-process-workflow)
+- **Parent-Child Links**: [Link work items in Azure DevOps](https://learn.microsoft.com/azure/devops/boards/backlogs/add-link)
 - **GitHub Copilot**: Use for generating task decompositions from user stories
 
 ### Professional Tips

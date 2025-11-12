@@ -1,7 +1,7 @@
 <!-- markdownlint-disable MD041 -->
 <!-- markdownlint-disable MD051 -->
 <!-- learning Section Sidebar -->
-<!-- Generated on: 2025-11-08 17:04:44 UTC -->
+<!-- Generated on: 2025-11-11 09:14:39 UTC -->
 - [Learning Overview](/learning/README)
   - [Learning Catalog](/learning/catalog)
   - [Contributing to the Learning Platform](/learning/contributing)
@@ -16,8 +16,8 @@
       - [Kata: 100 - Getting Started Basics](/learning/katas/ai-assisted-engineering/100-getting-started-basics)
       - [Kata: 100 - Inline Chat Quick Edits](/learning/katas/ai-assisted-engineering/100-inline-chat-quick-edits)
       - [Kata: 100 - Inline Suggestions Basics](/learning/katas/ai-assisted-engineering/100-inline-suggestions-basics)
-      - [Kata: 200 - Copilot Edit Mode Basics](/learning/katas/ai-assisted-engineering/200-copilot-edit-mode-basics)
-      - [Kata: 200 - GitHub Copilot Edit Mode for IaC Patterns](/learning/katas/ai-assisted-engineering/200-copilot-edit-mode-iac-patterns)
+      - [Kata: 200 - Copilot Edit Chat Mode Basics](/learning/katas/ai-assisted-engineering/200-copilot-edit-mode-basics)
+      - [Kata: 200 - GitHub Copilot Edit Chat Mode for IaC Patterns](/learning/katas/ai-assisted-engineering/200-copilot-edit-mode-iac-patterns)
       - [Kata: 200 - Token-Efficient Context Strategies](/learning/katas/ai-assisted-engineering/200-token-efficient-context)
       - [Kata: 300 - Getting Started Advanced](/learning/katas/ai-assisted-engineering/300-getting-started-advanced)
     - [Task Planning](/learning/katas/task-planning/README)

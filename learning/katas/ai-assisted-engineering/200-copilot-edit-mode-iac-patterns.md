@@ -333,6 +333,6 @@ then carefully refined by our team of discerning human reviewers.*
 
 [kata-coach]: /.github/chatmodes/learning-kata-coach.chatmode.md
 [terraform-docs]: https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs
-[bicep-types]: https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/user-defined-data-types
+[bicep-types]: https://learn.microsoft.com/azure/azure-resource-manager/bicep/user-defined-data-types
 [azure-tags]: https://learn.microsoft.com/azure/azure-resource-manager/management/tag-resources
 [kata-300]: /learning/katas/ai-assisted-engineering/300-getting-started-advanced.md

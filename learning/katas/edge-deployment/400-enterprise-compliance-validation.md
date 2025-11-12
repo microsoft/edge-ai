@@ -210,9 +210,9 @@ then carefully refined by our team of discerning human reviewers.*
 <!-- markdownlint-enable MD036 -->
 
 <!-- Reference Links -->
-[azure-security-center]: https://learn.microsoft.com/en-us/azure/security-center/
+[azure-security-center]: https://learn.microsoft.com/azure/security-center/
 [checkov]: https://www.checkov.io/
-[azure-compliance]: https://learn.microsoft.com/en-us/azure/compliance/
-[enterprise-governance]: https://learn.microsoft.com/en-us/azure/governance/
-[azure-policy]: https://learn.microsoft.com/en-us/azure/governance/policy/
-[security-best-practices]: https://learn.microsoft.com/en-us/azure/security/fundamentals/best-practices-and-patterns
+[azure-compliance]: https://learn.microsoft.com/azure/compliance/
+[enterprise-governance]: https://learn.microsoft.com/azure/governance/
+[azure-policy]: https://learn.microsoft.com/azure/governance/policy/
+[security-best-practices]: https://learn.microsoft.com/azure/security/fundamentals/best-practices-and-patterns

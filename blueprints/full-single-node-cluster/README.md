@@ -151,6 +151,90 @@ Ensure you have the following prerequisites:
 - Registered resource providers (see deployment instructions)
 - Appropriate permissions to create resources
 
+## Advanced Configuration
+
+### REST HTTP Connector Assets in Terraform
+
+This blueprint supports deploying REST HTTP connector devices and assets using the `111-assets` component. This provides Infrastructure as Code (IaC) management of REST endpoints with full state management.
+
+**Key Benefits:**
+
+- ✅ Declarative configuration using Terraform variables
+- ✅ Version control for asset definitions
+- ✅ Integrated with blueprint deployment
+- ✅ Replaces manual kubectl and YAML management
+
+**Quick Example:**
+
+```hcl
+namespaced_devices = [
+   {
+    name    = "rest-auth-device"
+    enabled = true
+    endpoints = {
+      outbound = { assigned = {} }
+      inbound = {
+        "auth-device-endpoint" = {
+          endpoint_type = "Microsoft.Http"
+          address       = "http://auth-device:8082"
+          version       = "1.0"
+          additionalConfiguration = "{\"tlsEnabled\":false,\"timeoutSeconds\":45}"
+          authentication = {
+            method = "UsernamePassword"
+            usernamePasswordCredentials = {
+              usernameSecretName = "device-username"
+              passwordSecretName = "device-password"
+            }
+          }
+          trustSettings = null
+        }
+      }
+    }
+  }
+]
+
+namespaced_assets = [
+  {
+    name         = "rest-auth-device-asset"
+    display_name = "Authenticated REST Device"
+    enabled      = true
+    device_ref = {
+      device_name   = "rest-auth-device"
+      endpoint_name = "auth-device-endpoint"
+    }
+    description  = "Secure REST HTTP device with basic authentication"
+    manufacturer = "SecureIoT"
+    model        = "SecureDevice-1000"
+    serial_number = "SD-003"
+    attributes = {
+      deviceType     = "secure-device"
+      security_level = "basic-auth"
+    }
+    datasets = [
+      {
+        name                  = "device-status"
+        data_source           = "api/device/status"
+        dataset_configuration = "{\"samplingIntervalInMilliseconds\":20000}"
+        data_points = []
+        destinations = [
+          {
+            target = "Mqtt"
+            configuration = {
+              topic  = "telemetry/company/cloud/region/environment/auth-device-01/status"
+              retain = "Never"
+              qos    = "Qos1"
+            }
+          }
+        ]
+      }
+    ]
+    default_datasets_configuration = "{\"publishingInterval\":20000,\"samplingInterval\":20000,\"queueSize\":1}"
+  }
+]
+```
+
+See [rest-connector-assets.tfvars.example](terraform/rest-connector-assets.tfvars.example) for complete configuration examples.
+
 ## Deploy Blueprint
 
 Follow detailed deployment instructions from the blueprints README.md, [Detailed Deployment Workflow](../README.md#detailed-deployment-workflow)

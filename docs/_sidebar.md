@@ -1,6 +1,6 @@
 <!-- markdownlint-disable MD041 -->
 <!-- markdownlint-disable MD051 -->
-<!-- Generated on: 2025-11-08 17:09:53 UTC -->
+<!-- Generated on: 2025-11-11 09:14:46 UTC -->
 
 - [AI on Edge Flagship Accelerator](/docs/README)
 - [Edge AI Accelerator Roadmap](/docs/roadmap)
@@ -24,8 +24,8 @@
       - [Kata: 100 - Getting Started Basics](/learning/katas/ai-assisted-engineering/100-getting-started-basics)
       - [Kata: 100 - Inline Chat Quick Edits](/learning/katas/ai-assisted-engineering/100-inline-chat-quick-edits)
       - [Kata: 100 - Inline Suggestions Basics](/learning/katas/ai-assisted-engineering/100-inline-suggestions-basics)
-      - [Kata: 200 - Copilot Edit Mode Basics](/learning/katas/ai-assisted-engineering/200-copilot-edit-mode-basics)
-      - [Kata: 200 - GitHub Copilot Edit Mode for IaC Patterns](/learning/katas/ai-assisted-engineering/200-copilot-edit-mode-iac-patterns)
+      - [Kata: 200 - Copilot Edit Chat Mode Basics](/learning/katas/ai-assisted-engineering/200-copilot-edit-mode-basics)
+      - [Kata: 200 - GitHub Copilot Edit Chat Mode for IaC Patterns](/learning/katas/ai-assisted-engineering/200-copilot-edit-mode-iac-patterns)
       - [Kata: 200 - Token-Efficient Context Strategies](/learning/katas/ai-assisted-engineering/200-token-efficient-context)
       - [Kata: 300 - Getting Started Advanced](/learning/katas/ai-assisted-engineering/300-getting-started-advanced)
     - [Task Planning](/learning/katas/task-planning/README)
@@ -388,6 +388,8 @@
   - [Media Capture Service](/src/500-application/503-media-capture-service/README)
   - [Mqtt Otel Trace Exporter](/src/500-application/504-mqtt-otel-trace-exporter/README)
   - [Docs](/src/500-application/504-mqtt-otel-trace-exporter/docs/README)
+  - [Akri Rest Http Connector](/src/500-application/505-akri-rest-http-connector/README)
+  - [Services](/src/500-application/505-akri-rest-http-connector/services/README)
   - [Ros2 Connector](/src/500-application/506-ros2-connector/README)
   - [Ai Inference](/src/500-application/507-ai-inference/README)
   - [Ai Edge Inference](/src/500-application/507-ai-inference/services/ai-edge-inference/README)
@@ -422,6 +424,7 @@
   - [Observability](/src/000-cloud/020-observability/terraform/README)
     - [Application Insights](/src/000-cloud/020-observability/terraform/modules/application-insights/README)
   - [Data](/src/000-cloud/030-data/terraform/README)
+    - [Adr Namespace](/src/000-cloud/030-data/terraform/modules/adr-namespace/README)
     - [Data Lake](/src/000-cloud/030-data/terraform/modules/data-lake/README)
     - [Schema Registry](/src/000-cloud/030-data/terraform/modules/schema-registry/README)
     - [Storage Account](/src/000-cloud/030-data/terraform/modules/storage-account/README)
@@ -472,11 +475,11 @@
     - [Vm Script Deployment](/src/100-edge/100-cncf-cluster/terraform/modules/vm-script-deployment/README)
   - [Ci](/src/100-edge/100-cncf-cluster/ci/terraform/README)
   - [Iot Ops](/src/100-edge/110-iot-ops/terraform/README)
+    - [Akri Connectors](/src/100-edge/110-iot-ops/terraform/modules/akri-connectors/README)
     - [Apply Scripts](/src/100-edge/110-iot-ops/terraform/modules/apply-scripts/README)
     - [Customer Managed Trust Issuer](/src/100-edge/110-iot-ops/terraform/modules/customer-managed-trust-issuer/README)
     - [Iot Ops Init](/src/100-edge/110-iot-ops/terraform/modules/iot-ops-init/README)
     - [Iot Ops Instance](/src/100-edge/110-iot-ops/terraform/modules/iot-ops-instance/README)
-    - [Iot Ops Instance Post](/src/100-edge/110-iot-ops/terraform/modules/iot-ops-instance-post/README)
     - [Opc Ua Simulator](/src/100-edge/110-iot-ops/terraform/modules/opc-ua-simulator/README)
     - [Role Assignment](/src/100-edge/110-iot-ops/terraform/modules/role-assignment/README)
     - [Self Signed Ca](/src/100-edge/110-iot-ops/terraform/modules/self-signed-ca/README)

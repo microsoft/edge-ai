@@ -1,7 +1,7 @@
 <!-- markdownlint-disable MD041 -->
 <!-- markdownlint-disable MD051 -->
 <!-- infrastructure Section Sidebar -->
-<!-- Generated on: 2025-11-08 17:05:00 UTC -->
+<!-- Generated on: 2025-11-11 09:14:40 UTC -->
 - [Infrastructure Overview](/src/README)
 
 - [Cloud](/src/000-cloud/README)
@@ -29,6 +29,7 @@
   - [Rust Http Connector](/src/500-application/502-rust-http-connector/README)
   - [Media Capture Service](/src/500-application/503-media-capture-service/README)
   - [Mqtt Otel Trace Exporter](/src/500-application/504-mqtt-otel-trace-exporter/README)
+  - [Akri Rest Http Connector](/src/500-application/505-akri-rest-http-connector/README)
   - [Ros2 Connector](/src/500-application/506-ros2-connector/README)
   - [Ai Inference](/src/500-application/507-ai-inference/README)
 

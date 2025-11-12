@@ -164,8 +164,8 @@ search_keywords:
 
 ### Help Resources
 
-- **Azure Pipelines API**: [Get build information](https://learn.microsoft.com/en-us/rest/api/azure/devops/build/builds)
-- **Work Item Updates**: [Update work items programmatically](https://learn.microsoft.com/en-us/rest/api/azure/devops/wit/work-items)
+- **Azure Pipelines API**: [Get build information](https://learn.microsoft.com/rest/api/azure/devops/build/builds)
+- **Work Item Updates**: [Update work items programmatically](https://learn.microsoft.com/rest/api/azure/devops/wit/work-items)
 - **GitHub Copilot**: Use for parsing build logs and extracting error messages
 
 ### Professional Tips

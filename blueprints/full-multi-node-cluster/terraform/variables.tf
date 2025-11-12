@@ -166,47 +166,78 @@ variable "aio_features" {
   }
 }
 
-variable "asset_endpoint_profiles" {
+variable "namespaced_devices" {
   type = list(object({
-    name                  = string
-    target_address        = string
-    endpoint_profile_type = optional(string)
-    method                = optional(string)
-
-    should_enable_opc_asset_discovery = optional(bool)
-    opc_additional_config_string      = optional(string)
+    name    = string
+    enabled = optional(bool, true)
+    endpoints = object({
+      outbound = optional(object({
+        assigned = object({})
+      }), { assigned = {} })
+      inbound = map(object({
+        endpoint_type           = string
+        address                 = string
+        version                 = optional(string, null)
+        additionalConfiguration = optional(string)
+        authentication = object({
+          method = string
+          usernamePasswordCredentials = optional(object({
+            usernameSecretName = string
+            passwordSecretName = string
+          }))
+          x509Credentials = optional(object({
+            certificateSecretName = string
+          }))
+        })
+        trustSettings = optional(object({
+          trustList = string
+        }))
+      }))
+    })
   }))
-  description = "List of asset endpoint profiles to create; otherwise, an empty list"
+  description = "List of namespaced devices to create; otherwise, an empty list"
   default     = []
 }
 
-variable "assets" {
+variable "namespaced_assets" {
   type = list(object({
-    asset_endpoint_profile_ref = string
+    name         = string
+    display_name = optional(string)
+    device_ref = object({
+      device_name   = string
+      endpoint_name = string
+    })
+    description       = optional(string)
+    documentation_uri = optional(string)
+    enabled           = optional(bool, true)
+    hardware_revision = optional(string)
+    manufacturer      = optional(string)
+    manufacturer_uri  = optional(string)
+    model             = optional(string)
+    product_code      = optional(string)
+    serial_number     = optional(string)
+    software_revision = optional(string)
+    attributes        = optional(map(string), {})
     datasets = optional(list(object({
-      data_points = list(object({
-        data_point_configuration = optional(string)
-        data_source              = string
-        name                     = string
-        observability_mode       = optional(string)
-      }))
       name = string
+      data_points = list(object({
+        name                     = string
+        data_source              = string
+        data_point_configuration = optional(string)
+      }))
+      destinations = optional(list(object({
+        target = string
+        configuration = object({
+          topic  = optional(string)
+          retain = optional(string)
+          qos    = optional(string)
+        })
+      })), [])
     })), [])
     default_datasets_configuration = optional(string)
-    description                    = optional(string)
-    display_name                   = optional(string)
-    documentation_uri              = optional(string)
-    enabled                        = optional(bool)
-    hardware_revision              = optional(string)
-    manufacturer                   = optional(string)
-    manufacturer_uri               = optional(string)
-    model                          = optional(string)
-    name                           = string
-    product_code                   = optional(string)
-    serial_number                  = optional(string)
-    software_revision              = optional(string)
+    default_events_configuration   = optional(string)
   }))
-  description = "List of assets to create; otherwise, an empty list"
+  description = "List of namespaced assets to create; otherwise, an empty list"
   default     = []
 }
 
@@ -763,4 +794,128 @@ variable "vpn_site_shared_keys" {
   description = "Pre-shared keys for site connections keyed by shared_key_reference. Manage values in secure secret stores"
   default     = {}
   sensitive   = true
+}
+
+
+/*
+ * Akri Connector Configuration - Optional
+ */
+
+variable "should_enable_akri_rest_connector" {
+  type        = bool
+  description = "Whether to deploy the Akri REST HTTP Connector template to the IoT Operations instance."
+  default     = false
+}
+
+variable "should_enable_akri_media_connector" {
+  type        = bool
+  description = "Whether to deploy the Akri Media Connector template to the IoT Operations instance."
+  default     = false
+}
+
+variable "should_enable_akri_onvif_connector" {
+  type        = bool
+  description = "Whether to deploy the Akri ONVIF Connector template to the IoT Operations instance."
+  default     = false
+}
+
+variable "should_enable_akri_sse_connector" {
+  type        = bool
+  description = "Whether to deploy the Akri SSE Connector template to the IoT Operations instance."
+  default     = false
+}
+
+variable "custom_akri_connectors" {
+  type = list(object({
+    name = string
+    type = string // "rest", "media", "onvif", "sse", "custom"
+
+    // Custom Connector Fields (required when type = "custom")
+    custom_endpoint_type    = optional(string) // e.g., "Contoso.Modbus", "Acme.CustomProtocol"
+    custom_image_name       = optional(string) // e.g., "my_acr.azurecr.io/custom-connector"
+    custom_endpoint_version = optional(string, "1.0")
+
+    // Runtime Configuration (defaults applied based on connector type)
+    registry          = optional(string) // Defaults: mcr.microsoft.com for built-in types
+    image_tag         = optional(string) // Defaults: 0.5.1 for built-in types, latest for custom
+    replicas          = optional(number, 1)
+    image_pull_policy = optional(string) // Default: IfNotPresent
+
+    // Diagnostics
+    log_level = optional(string) // Default: info (lowercase: trace, debug, info, warning, error, critical)
+
+    // MQTT Override (uses shared config if not provided)
+    mqtt_config = optional(object({
+      host                   = string
+      audience               = string
+      ca_configmap           = string
+      keep_alive_seconds     = optional(number, 60)
+      max_inflight_messages  = optional(number, 100)
+      session_expiry_seconds = optional(number, 600)
+    }))
+
+    // Optional Advanced Fields
+    aio_min_version = optional(string)
+    aio_max_version = optional(string)
+    allocation = optional(object({
+      policy      = string // "Bucketized"
+      bucket_size = number // 1-100
+    }))
+    additional_configuration = optional(map(string))
+    secrets = optional(list(object({
+      secret_alias = string
+      secret_key   = string
+      secret_ref   = string
+    })))
+    trust_settings = optional(object({
+      trust_list_secret_ref = string
+    }))
+  }))
+
+  default     = []
+  description = <<-EOT
+    List of custom Akri connector templates with user-defined endpoint types and container images.
+    Supports built-in types (rest, media, onvif, sse) or custom types with custom_endpoint_type and custom_image_name.
+    Built-in connectors default to mcr.microsoft.com/azureiotoperations/akri-connectors/connector_type:0.5.1.
+  EOT
+
+  validation {
+    condition = alltrue([
+      for conn in var.custom_akri_connectors :
+      contains(["rest", "media", "onvif", "sse", "custom"], conn.type)
+    ])
+    error_message = "Connector type must be one of: rest, media, onvif, sse, custom."
+  }
+
+  validation {
+    condition = alltrue([
+      for conn in var.custom_akri_connectors :
+      conn.type != "custom" || (conn.custom_endpoint_type != null && conn.custom_image_name != null)
+    ])
+    error_message = "Custom connector types must provide custom_endpoint_type and custom_image_name."
+  }
+
+  validation {
+    condition = alltrue([
+      for conn in var.custom_akri_connectors :
+      can(regex("^[a-z0-9][a-z0-9-]*[a-z0-9]$", conn.name))
+    ])
+    error_message = "Connector name must contain only lowercase letters, numbers, and hyphens, and cannot start or end with a hyphen."
+  }
+
+  validation {
+    condition = alltrue([
+      for conn in var.custom_akri_connectors :
+      contains(["trace", "debug", "info", "warning", "error", "critical"], lower(coalesce(conn.log_level, "info")))
+    ])
+    error_message = "Log level must be one of: trace, debug, info, warning, error, critical (case insensitive)."
+  }
+
+  validation {
+    condition = alltrue([
+      for conn in var.custom_akri_connectors :
+      coalesce(conn.replicas, 1) >= 1 && coalesce(conn.replicas, 1) <= 10
+    ])
+    error_message = "Connector replicas must be between 1 and 10."
+  }
 }

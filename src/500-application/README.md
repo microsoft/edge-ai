@@ -83,7 +83,11 @@ The following applications are currently available in this directory:
 
 ### Docker and Containerization
 
-Each application must contain at least one `Dockerfile` within its respective service directory under `services/`. Use multi-stage builds to keep images small and secure by separating build and runtime environments.
+1. **Dockerfile**: Each application must contain at least one `Dockerfile` for building service images.
+   - For a single-service application, place the `Dockerfile` at the root of your application directory.
+   - For multi-service applications, place each `Dockerfile` within its respective service directory under `services/`.
+   - **Use multi-stage builds where possible** to keep images small and secure. This approach separates the build
+     environment from the runtime environment.
 
 Example multi-stage Dockerfile:
 
@@ -161,7 +165,7 @@ services:
   your-service:
     build: ./services/your-service
     env_file:
-      - .env  # Primary configuration file
+      - .env # Primary configuration file
     environment:
       # Only override critical local development settings
       - ENVIRONMENT=development
@@ -396,33 +400,33 @@ While the sample applications in this repository are reference implementations a
 
 1. **Enable SLSA in CI/CD Workflows:**
 
-    ```yaml
-    # Example GitHub Actions workflow with SLSA attestation
-    jobs:
-    build:
-        runs-on: ubuntu-latest
-        outputs:
-        hashes: ${{ steps.hash.outputs.hashes }}
-        steps:
-        - uses: actions/checkout@v4
-        - name: Build container
-            run: docker build -t myapp:${{ github.sha }} .
-        - name: Generate artifact hashes
-            id: hash
-            run: |
-            # Generate SHA256 hash of container image
-            HASH=$(docker images --digests myapp:${{ github.sha }} --format '{{.Digest}}')
-            echo "hashes={\"myapp:${{ github.sha }}\":\"sha256:$HASH\"}" >> "$GITHUB_OUTPUT"
+   ```yaml
+   # Example GitHub Actions workflow with SLSA attestation
+   jobs:
+   build:
+       runs-on: ubuntu-latest
+       outputs:
+       hashes: ${{ steps.hash.outputs.hashes }}
+       steps:
+       - uses: actions/checkout@v4
+       - name: Build container
+           run: docker build -t myapp:${{ github.sha }} .
+       - name: Generate artifact hashes
+           id: hash
+           run: |
+           # Generate SHA256 hash of container image
+           HASH=$(docker images --digests myapp:${{ github.sha }} --format '{{.Digest}}')
+           echo "hashes={\"myapp:${{ github.sha }}\":\"sha256:$HASH\"}" >> "$GITHUB_OUTPUT"
 
-    slsa-attestation:
-        needs: build
-        permissions:
-        id-token: write
-        contents: read
-        uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v2.0.0
-        with:
-        base64-subjects: "${{ needs.build.outputs.hashes }}"
-    ```
+   slsa-attestation:
+       needs: build
+       permissions:
+       id-token: write
+       contents: read
+       uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v2.0.0
+       with:
+       base64-subjects: "${{ needs.build.outputs.hashes }}"
+   ```
 
 2. **Configure Container Registry Integration:**
 
@@ -545,6 +549,8 @@ This SHA256 pinning requirement complements the SLSA attestation practices docum
 ---
 
 <!-- markdownlint-disable MD036 -->
-*🤖 Crafted with precision by ✨Copilot following brilliant human instruction,
-then carefully refined by our team of discerning human reviewers.*
+
+_🤖 Crafted with precision by ✨Copilot following brilliant human instruction,
+then carefully refined by our team of discerning human reviewers._
+
 <!-- markdownlint-enable MD036 -->

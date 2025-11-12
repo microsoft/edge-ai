@@ -311,5 +311,5 @@ then carefully refined by our team of discerning human reviewers.*
 [task-researcher]: /.github/chatmodes/task-researcher.chatmode.md
 [adr-create]: /.github/chatmodes/adr-creation.chatmode.md
 [adr-library]: /docs/solution-adr-library/
-[ms-azure-monitor]: https://docs.microsoft.com/en-us/azure/azure-monitor/
-[ms-application-insights]: https://docs.microsoft.com/en-us/azure/azure-monitor/app/app-insights-overview
+[ms-azure-monitor]: https://docs.microsoft.com/azure/azure-monitor/
+[ms-application-insights]: https://docs.microsoft.com/azure/azure-monitor/app/app-insights-overview

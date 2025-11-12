@@ -1355,6 +1355,7 @@ gpu
 iot
 sql
 tcp
+tulpn
 udp
 url
 uri

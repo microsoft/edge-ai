@@ -211,8 +211,8 @@ then carefully refined by our team of discerning human reviewers.*
 
 <!-- Reference Links -->
 [project-blueprints]: /blueprints/README
-[azure-resource-manager]: https://learn.microsoft.com/en-us/azure/azure-resource-manager/
-[azure-disaster-recovery]: https://learn.microsoft.com/en-us/azure/site-recovery/site-recovery-overview
-[azure-monitor]: https://learn.microsoft.com/en-us/azure/azure-monitor/
-[azure-advisor]: https://learn.microsoft.com/en-us/azure/advisor/
-[azure-architecture-center]: https://learn.microsoft.com/en-us/azure/architecture/
+[azure-resource-manager]: https://learn.microsoft.com/azure/azure-resource-manager/
+[azure-disaster-recovery]: https://learn.microsoft.com/azure/site-recovery/site-recovery-overview
+[azure-monitor]: https://learn.microsoft.com/azure/azure-monitor/
+[azure-advisor]: https://learn.microsoft.com/azure/advisor/
+[azure-architecture-center]: https://learn.microsoft.com/azure/architecture/

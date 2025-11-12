@@ -1,8 +1,6 @@
 metadata name = 'ACR Component Types'
 metadata description = 'Type definitions and defaults for the ACR component.'
 
-import * as core from './types.core.bicep'
-
 /*
   Container Registry Configuration
 */

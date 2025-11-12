@@ -391,7 +391,7 @@ jobs:
       # Set up Node.js for link validation
       - task: NodeTool@0
         inputs:
-          versionSpec: '18'
+          versionSpec: '20.x'
         displayName: "Setup Node.js"
         condition: and( not(failed()), not(canceled()), eq(variables.DocsValidationShouldRun, 'true') )
 

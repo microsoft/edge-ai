@@ -16,6 +16,7 @@ Deploys Dataflow endpoints and dataflows for Azure IoT Operations messaging inte
 |aioInstanceName|The name of the Azure IoT Operations Instance.|`string`|n/a|yes|
 |aioDataflowProfileName|The name of the Azure IoT Operations Dataflow Profile.|`string`|default|no|
 |assetName|The name of the Azure IoT Operations Device Registry Asset resource to send its data from edge to cloud.|`string`|oven|no|
+|adrNamespaceName|The name of the Azure IoT Operations Device Registry namespace to use when referencing the asset.|`string`|n/a|no|
 |eventHub|Values for the existing Event Hub namespace and Event Hub. If not provided, Event Hub dataflow will not be created.|`[_1.EventHub](#user-defined-types)`|n/a|no|
 |eventGrid|Values for the existing Event Grid. If not provided, Event Grid dataflow will not be created.|`[_1.EventGrid](#user-defined-types)`|n/a|no|
 |telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|`false`|no|
@@ -24,8 +25,6 @@ Deploys Dataflow endpoints and dataflows for Azure IoT Operations messaging inte
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|aioIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2023-01-31|
-|aioCustomLocation|`Microsoft.ExtendedLocation/customLocations`|2021-08-31-preview|
 |eventHubDataflow|`Microsoft.Resources/deployments`|2022-09-01|
 |eventGridDataflow|`Microsoft.Resources/deployments`|2022-09-01|
 
@@ -54,15 +53,14 @@ Provisions the ARM based data flow endpoint and data flow for Event Hub, require
 |aioInstanceName|The name of the Azure IoT Operations Instance.|`string`|n/a|yes|
 |aioDataflowProfileName|The name of the Azure IoT Operations Dataflow Profile.|`string`|default|no|
 |customLocationId|The resource ID of the Custom Location.|`string`|n/a|yes|
+|adrNamespaceName|The name of the Azure IoT Operations Device Registry namespace used when referencing assets.|`string`|n/a|no|
 
 #### Resources for eventHubDataflow
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|aioInstanceResource|`Microsoft.IoTOperations/instances`|2025-04-01|
-|aioDataflowProfileResource|`Microsoft.IoTOperations/instances/dataflowProfiles`|2025-04-01|
-|dataflowEndpointToEventHub|`Microsoft.IoTOperations/instances/dataflowEndpoints`|2025-04-01|
-|dataflowToEventHub|`Microsoft.IoTOperations/instances/dataflowProfiles/dataflows`|2025-04-01|
+|dataflowEndpointToEventHub|`Microsoft.IoTOperations/instances/dataflowEndpoints`|2025-10-01|
+|dataflowToEventHub|`Microsoft.IoTOperations/instances/dataflowProfiles/dataflows`|2025-10-01|
 
 ### eventGridDataflow
 
@@ -80,15 +78,14 @@ Provisions the ARM based data flow endpoint and data flow for Event Grid, requir
 |aioInstanceName|The name of the Azure IoT Operations Instance.|`string`|n/a|yes|
 |aioDataflowProfileName|The name of the Azure IoT Operations Dataflow Profile.|`string`|default|no|
 |customLocationId|The resource ID of the Custom Location.|`string`|n/a|yes|
+|adrNamespaceName|The name of the Azure IoT Operations Device Registry namespace used when referencing assets.|`string`|n/a|no|
 
 #### Resources for eventGridDataflow
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|aioInstanceResource|`Microsoft.IoTOperations/instances`|2025-04-01|
-|aioDataflowProfileResource|`Microsoft.IoTOperations/instances/dataflowProfiles`|2025-04-01|
-|dataflowEndpointToEventGrid|`Microsoft.IoTOperations/instances/dataflowEndpoints`|2025-04-01|
-|dataflowToEventGrid|`Microsoft.IoTOperations/instances/dataflowProfiles/dataflows`|2025-04-01|
+|dataflowEndpointToEventGrid|`Microsoft.IoTOperations/instances/dataflowEndpoints`|2025-10-01|
+|dataflowToEventGrid|`Microsoft.IoTOperations/instances/dataflowProfiles/dataflows`|2025-10-01|
 
 ## User Defined Types
 

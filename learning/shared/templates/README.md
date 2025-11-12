@@ -49,8 +49,8 @@ When creating new content types, consider creating a corresponding template to e
 [kata-template]: /learning/shared/templates/kata-template
 [training-lab-template]: /learning/shared/templates/training-lab-template
 [contributing-guide]: /learning/contributing
-[documentation-standards]: https://learn.microsoft.com/en-us/style-guide/welcome
-[markdown-guide]: https://learn.microsoft.com/en-us/contribute/markdown-reference
+[documentation-standards]: https://learn.microsoft.com/style-guide/welcome
+[markdown-guide]: https://learn.microsoft.com/contribute/markdown-reference
 
 <!-- markdownlint-disable MD036 -->
 *🤖 Crafted with precision by ✨Copilot following brilliant human instruction,

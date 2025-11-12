@@ -362,5 +362,5 @@ then carefully refined by our team of discerning human reviewers.*
 
 <!-- Reference Links -->
 [project-blueprints]: /blueprints/README
-[azure-resource-manager]: https://learn.microsoft.com/en-us/azure/azure-resource-manager/
+[azure-resource-manager]: https://learn.microsoft.com/azure/azure-resource-manager/
 [terraform-state]: https://developer.hashicorp.com/terraform/language/state

@@ -1,5 +1,8 @@
+adrns
 AKRI
 akri
+azureiotoperations
+Bucketized
 cloudedge
 cloudedge002
 clusterrolebinding
@@ -77,3 +80,7 @@ Profinet
 thermodyanmics
 fanout
 opcfoundation
+secretproviderclass
+connectorinstance
+connectorinstances
+connectortemplate

@@ -197,8 +197,8 @@ After completing these katas, you'll be able to:
 
 ## References
 
-- [Product Requirements Document Best Practices](https://learn.microsoft.com/en-us/azure/architecture/guide/)
-- [Azure IoT Operations Documentation](https://learn.microsoft.com/en-us/azure/iot-operations/)
+- [Product Requirements Document Best Practices](https://learn.microsoft.com/azure/architecture/guide/)
+- [Azure IoT Operations Documentation](https://learn.microsoft.com/azure/iot-operations/)
 - [User Story Mapping Guide](https://www.nngroup.com/articles/user-story-mapping/)
 - [MoSCoW Prioritization Method](https://en.wikipedia.org/wiki/MoSCoW_method)
 
