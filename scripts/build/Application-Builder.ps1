@@ -325,6 +325,18 @@ try {
     Write-BuildLog "Detecting application structure"
     Get-ApplicationStructure -Context $context
 
+    # Check if component is marked as non-buildable (dev-only with .nobuild marker)
+    if (-not $context.Compose.Available -and $context.Compose.DetectedServices.Count -eq 0) {
+        $noBuildMarker = Join-Path -Path $context.App.Path -ChildPath ".nobuild"
+        if (Test-Path -LiteralPath $noBuildMarker) {
+            Write-BuildLog "Skipping build phases for non-buildable component"
+            Write-BuildLog "Generating build output"
+            $output = Get-BuildOutput -Context $context
+            Write-Output $output
+            exit 0
+        }
+    }
+
     # Phase 6: Build Orchestration (Compose or Individual)
     # Build all services
     Write-BuildLog "Building services"

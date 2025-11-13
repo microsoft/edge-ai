@@ -7,6 +7,8 @@ azuremcp
 azuretool
 bicepconfig
 bicepparam
+bluenviron
+colorbars
 COMMITMSG
 commitish
 docsmcp
@@ -52,10 +54,13 @@ reputational
 Keycloak
 Grype
 grype
+Hikvision
 timescaledb
 xychart
 feedz
 fixability
+FWDI
+fwdi
 namespacing
 securepassword
 testpassword
@@ -68,6 +73,9 @@ sorahex
 snakefoot
 inproc
 stretchr
+mediamtx
+Minioadmin
+minioadmin
 nlog
 Kalypso
 kalypso
@@ -93,5 +101,7 @@ tensorrt
 toolkits
 yolov
 WIQL
+Wowza
+wowza
 steveyegge
 dorny
