@@ -1543,6 +1543,17 @@ function Get-ApplicationStructure {
     process {
         $appPath = $Context.App.Path
 
+        # Check for .nobuild marker (dev-only components with no buildable artifacts)
+        $noBuildMarker = Join-Path -Path $appPath -ChildPath ".nobuild"
+        if (Test-Path -LiteralPath $noBuildMarker) {
+            Write-BuildLog "Component marked as non-buildable (.nobuild marker found) - skipping build"
+            Write-Info "This is a development-only component with no custom application code to build"
+            $Context.Compose.Available = $false
+            $Context.Compose.DetectedServices = @()
+            $Context.Compose.BuildableServices = @()
+            return
+        }
+
         $composeCandidates = @(
             "docker-compose.yml",
             "docker-compose.yaml",

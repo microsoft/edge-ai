@@ -2,7 +2,7 @@
 title: Video and Image Capture from Edge-Attached Cameras
 description: Architecture Decision Record for implementing secure video streaming and image capture from edge-attached IP cameras using Azure IoT Operations Media Connector. Covers live RTSP streaming, snapshot/clip storage workflows, MQTT integration, Azure Container Storage enabled by Azure Arc (ACSA), and media synchronization with Azure Blob Storage for anomaly detection scenarios.
 author: Alain Uyidi
-ms.date: 2025-06-06
+ms.date: 2025-11-12
 ms.topic: architecture-decision-record
 estimated_reading_time: 10
 keywords:
@@ -30,9 +30,9 @@ keywords:
 
 ## Status
 
-- [X] Draft
+- [ ] Draft
 - [ ] Proposed
-- [ ] Accepted
+- [X] Accepted
 - [ ] Deprecated
 
 ## Context
@@ -56,9 +56,9 @@ Data flow:
 
 (1) - Camera streams a video
 
-(2)(3) - Operations Team sends a command to an MQTT 'stream-to-rtsp' topic through MQTT Mosquitto Client
+(2)(3) - Operations Team sends a command to an MQTT topic through MQTT client
 
-(4) - Media Connector is subscribed to MQTT 'stream-to-rtsp' topic, receives JSON with the stream configuration
+(4) - Media Connector is subscribed to the stream control topic, receives JSON with the stream configuration
 
 (5) - Media Connector starts streaming an RTSP feed to Media Server based on received configuration.
 
@@ -78,11 +78,11 @@ Data flow:
 
 (2) - A bash script calls on Mosquitto MQTT client.
 
-(3) - Mosquitto MQTT client publishes to the AIO MQTT Broker with a message to start saving clips/snapshots to a file system destination.
+(3) - MQTT client publishes to the AIO MQTT Broker with a message to start saving clips/snapshots to a file system destination.
 
-(4) - Media Connector is subscribed to the 'clips-fs/snapshots-fs' topic, receives JSON with the storage configuration.
+(4) - Media Connector is subscribed to the asset task topics, receives JSON with the storage configuration for `clip-to-fs` or `snapshot-to-fs` tasks.
 
-(4) - Media Connector starts saving clips/snapshots to a persisted volume with unbacked [Azure Container Storage enabled by Azure Arc](https://learn.microsoft.com/azure/azure-arc/container-storage/overview) (ACSA)
+(5) - Media Connector starts saving clips/snapshots to a persisted volume with unbacked [Azure Container Storage enabled by Azure Arc](https://learn.microsoft.com/azure/azure-arc/container-storage/overview) (ACSA)
 
 ### 2.2 Move files from unbacked to backed ACSA for confirmed events
 
@@ -120,14 +120,24 @@ Data flow:
 
 ## Decision
 
-Based on the features available for to securely interact and operate an edge-attached camera provided by the [Media Connector](https://learn.microsoft.com/azure/iot-operations/discover-manage-assets/overview-media-connector). The connector deploys to an Arc-enabled Kubernetes cluster on the edge as part of an Azure IoT Operations deployment.
+Based on the features available to securely interact and operate edge-attached cameras provided by the [Media Connector](https://learn.microsoft.com/azure/iot-operations/discover-manage-assets/overview-media-connector). The connector deploys to an Arc-enabled Kubernetes cluster on the edge as part of an Azure IoT Operations deployment.
+
+**Production Deployment**: The Media Connector is deployed via blueprints (e.g., `blueprints/full-single-node-cluster`) by enabling the `should_enable_akri_media_connector` flag or using the `custom_akri_connectors` variable for advanced configuration.
+
+**Local Development**: A Docker Compose development environment is available in `src/500-application/508-media-connector` for testing without requiring a full Kubernetes cluster.
 
 ## Decision Drivers (optional)
 
-The main purpose of the media connector for the solutions's use case is to interact with the edge-attached camera with the ability to perform a number of mRPC requests such as start/stop a live rtsp feed from the camera and record snapshots on-demand for further analysis. Furthermore, the capability to send snapshots to the AIO MQTT Broker through the Media Connector to get a realtime prediction based on the snapshot data from MQTT. Combining confidence scores with data received from other sources
-could allow for additional analysis and better confidence of whether the captured video meets the threshold to trigger an event.
+The main purpose of the media connector for the solution's use case is to interact with edge-attached cameras through Asset task configurations:
 
-In addition, an mRPC request can be sent to the Media Connector to enable a live feed. This live feed is transmitted to a [MediaMTX Media Server](https://github.com/bluenviron/mediamtx) in the cloud and displayed in a UI.
+- **snapshot-to-mqtt**: Capture snapshots and publish to MQTT topics for real-time AI inference
+- **clip-to-fs**: Save video clips to local file system with Azure Container Storage integration
+- **snapshot-to-fs**: Save snapshots to persistent storage
+- **stream-to-rtsp/stream-to-rtsps**: Proxy live streams to RTSP endpoints for operator access
+
+Snapshots published to the AIO MQTT Broker enable real-time predictions based on the snapshot data. Combining confidence scores with data received from other sources allows for additional analysis and better confidence of whether the captured video meets the threshold to trigger an event.
+
+For live operator access, the Media Connector can proxy live feeds to a media server (e.g., [MediaMTX](https://github.com/bluenviron/mediamtx)) for display in operator dashboards. **Note**: MediaMTX or equivalent media server deployment is required for production when using `stream-to-rtsp` or `stream-to-rtsps` task types.
 
 The chosen approach lends itself to be used simultaneous with other components such as [Azure Container Storage enabled by Azure Arc](https://learn.microsoft.com/azure/azure-arc/container-storage/overview) (ACSA) which moves clips associated with the event time frame from local shared storage to cloud ingest storage. These clips are then synchronized with Azure Blob Storage in the cloud.
 
@@ -143,9 +153,10 @@ We justified that Media Connector used in conjunction with the Media Server is s
 
 In the current ADR, the following is out-of-scope:
 
-- Using other feature and components to wrap functionality of performing pre-defined mRPC commands to the Media Connector
-- Providing continuous realtime inference and indexing on the live video frames
+- Providing continuous real-time inference and indexing on live video frames
 - Implementation of a Web UI Application that connects to the Media Server and receives the RTSP Stream
-- Manage camera username and passwords with Azure Key Vault to ensure security of the user credentials defined in the asset endpoint profile [https://docs.microsoft.com/azure/key-vault/secrets/overview-storage-keys](https://docs.microsoft.com/azure/key-vault/secrets/overview-storage-keys)
+- Management of camera credentials with Azure Key Vault integration for asset endpoint profiles
+- Automated camera discovery and registration workflows
+- Multi-site media synchronization and federated storage
 
 *AI and automation capabilities described in this scenario should be implemented following responsible AI principles, including fairness, reliability, safety, privacy, inclusiveness, transparency, and accountability. Organizations should ensure appropriate governance, monitoring, and human oversight are in place for all AI-powered solutions.*

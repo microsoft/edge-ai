@@ -347,6 +347,7 @@ contosoads
 coprocessing
 correlated
 correlations
+cooldown
 cosmosdb
 couchbase
 cpps
@@ -444,6 +445,7 @@ gartner
 gbps
 geeksforgeeks
 geofiltering
+getenv
 geolocation
 georedundancy
 georedundant
@@ -719,6 +721,7 @@ oras
 organisation
 organisations
 organised
+isoformat
 otel
 otlp
 overfitting
@@ -732,6 +735,7 @@ overtightening
 owasp
 owaspzap
 paas
+paho
 palantir
 palo
 parallelization

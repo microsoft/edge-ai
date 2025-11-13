@@ -53,6 +53,8 @@ HVAC
 hvac
 HMAC
 hmac
+MIPI
+mipi
 PKCS
 pkcs
 NOKEY
