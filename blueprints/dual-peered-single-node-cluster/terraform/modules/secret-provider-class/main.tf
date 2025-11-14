@@ -25,7 +25,7 @@ resource "azapi_resource" "cluster_a_secret_provider_class" {
       clientId     = var.cluster_a_secret_sync_identity.client_id
       keyvaultName = var.cluster_a_key_vault.name
       tenantId     = data.azurerm_subscription.current.tenant_id
-      objects      = "array: |\n  - |\n    objectName: client-intermediate-ca-crt\n    objectType: secret\n    objectVersionHistory: 1\n  - |\n    objectName: client-leaf-ca-crt\n    objectType: secret\n    objectVersionHistory: 1\n  - |\n    objectName: client-leaf-ca-key\n    objectType: secret\n    objectVersionHistory: 1"
+      objects      = "array:\n  - |\n    objectName: client-intermediate-ca-crt\n    objectType: secret\n  - |\n    objectName: client-leaf-ca-crt\n    objectType: secret\n  - |\n    objectName: client-leaf-ca-key\n    objectType: secret\n"
     }
   }
 }
@@ -46,7 +46,7 @@ resource "azapi_resource" "cluster_b_secret_provider_class" {
       clientId     = var.cluster_b_secret_sync_identity.client_id
       keyvaultName = var.cluster_b_key_vault.name
       tenantId     = data.azurerm_subscription.current.tenant_id
-      objects      = "array: |\n  - |\n    objectName: server-leaf-ca-crt\n    objectType: secret\n    objectVersionHistory: 1\n  - |\n    objectName: server-leaf-ca-key\n    objectType: secret\n    objectVersionHistory: 1"
+      objects      = "array:\n  - |\n    objectName: server-leaf-ca-crt\n    objectType: secret\n  - |\n    objectName: server-leaf-ca-key\n    objectType: secret\n"
     }
   }
 }

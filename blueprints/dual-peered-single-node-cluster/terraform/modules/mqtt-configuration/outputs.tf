@@ -1,8 +1,3 @@
-output "site_mqtt_endpoint" {
-  description = "The site MQTT endpoint resource."
-  value       = azapi_resource.site_mqtt_endpoint
-}
-
 output "enterprise_mqtt_endpoint_cert_auth" {
   description = "The enterprise MQTT endpoint with certificate authentication."
   value       = azapi_resource.enterprise_mqtt_endpoint_cert_auth
