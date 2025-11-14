@@ -67,17 +67,11 @@ The following applications are currently available in this directory:
 - **[501-rust-telemetry](./501-rust-telemetry/README.md)** - Rust-based telemetry collection service
 - **[502-rust-http-connector](./502-rust-http-connector/README.md)** - HTTP connector service built in Rust
 - **[503-media-capture-service](./503-media-capture-service/README.md)** - Media capture and processing service
-- **[505-akri-rest-http-connector](./505-akri-rest-http-connector/README.md)** - Akri REST HTTP connector for IoT Operations device discovery
+- **[504-mqtt-otel-trace-exporter](./504-mqtt-otel-trace-exporter/README.md)** - MQTT OpenTelemetry trace exporter for observability
+- **[505-akri-rest-http-connector](./505-akri-rest-http-connector/README.md)** - Akri REST HTTP connector for Azure IoT Operations
+- **[506-ros2-connector](./506-ros2-connector/README.md)** - ROS2 connector integration for robotics workloads
 - **[507-ai-inference](./507-ai-inference/README.md)** - Production-ready AI inference service with dual backend support (ONNX Runtime and Candle)
-
-The following applications are currently available in this directory:
-
-- **[500-basic-inference](./500-basic-inference/README.md)** - Reference implementation for basic ML inference workloads
-- **[501-rust-telemetry](./501-rust-telemetry/README.md)** - Rust-based telemetry collection service
-- **[502-rust-http-connector](./502-rust-http-connector/README.md)** - HTTP connector service built in Rust
-- **[503-media-capture-service](./503-media-capture-service/README.md)** - Media capture and processing service
-- **[505-akri-rest-http-connector](./505-akri-rest-http-connector/README.md)** - Akri REST HTTP connector for IoT Operations device discovery
-- **[507-ai-inference](./507-ai-inference/README.md)** - Production-ready AI inference service with dual backend support (ONNX Runtime and Candle)
+- **[508-media-connector](./508-media-connector/README.md)** - Akri media connector for camera integration with Azure IoT Operations
 
 ## Service Implementation
 
