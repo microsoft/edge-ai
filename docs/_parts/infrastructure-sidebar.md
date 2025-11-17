@@ -1,7 +1,7 @@
 <!-- markdownlint-disable MD041 -->
 <!-- markdownlint-disable MD051 -->
 <!-- infrastructure Section Sidebar -->
-<!-- Generated on: 2025-11-11 09:14:40 UTC -->
+<!-- Generated on: 2025-11-17 15:26:47 UTC -->
 - [Infrastructure Overview](/src/README)
 
 - [Cloud](/src/000-cloud/README)
@@ -32,6 +32,7 @@
   - [Akri Rest Http Connector](/src/500-application/505-akri-rest-http-connector/README)
   - [Ros2 Connector](/src/500-application/506-ros2-connector/README)
   - [Ai Inference](/src/500-application/507-ai-inference/README)
+  - [Media Connector](/src/500-application/508-media-connector/README)
 
 - [Ci Cd](/src/501-ci-cd/README)
 

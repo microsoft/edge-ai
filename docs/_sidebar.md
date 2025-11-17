@@ -1,6 +1,6 @@
 <!-- markdownlint-disable MD041 -->
 <!-- markdownlint-disable MD051 -->
-<!-- Generated on: 2025-11-11 09:14:46 UTC -->
+<!-- Generated on: 2025-11-17 15:27:54 UTC -->
 
 - [AI on Edge Flagship Accelerator](/docs/README)
 - [Edge AI Accelerator Roadmap](/docs/roadmap)
@@ -394,6 +394,7 @@
   - [Ai Inference](/src/500-application/507-ai-inference/README)
   - [Ai Edge Inference](/src/500-application/507-ai-inference/services/ai-edge-inference/README)
   - [Ai Edge Inference Crate](/src/500-application/507-ai-inference/services/ai-edge-inference-crate/README)
+  - [Media Connector](/src/500-application/508-media-connector/README)
   - [Ci Cd](/src/501-ci-cd/README)
   - [Basic Inference Cicd](/src/501-ci-cd/basic-inference-cicd/README)
   - [Tools Utilities](/src/900-tools-utilities/README)

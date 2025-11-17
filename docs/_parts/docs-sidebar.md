@@ -1,7 +1,7 @@
 <!-- markdownlint-disable MD041 -->
 <!-- markdownlint-disable MD051 -->
 <!-- docs Section Sidebar -->
-<!-- Generated on: 2025-11-11 09:14:38 UTC -->
+<!-- Generated on: 2025-11-17 15:26:32 UTC -->
 - [AI on Edge Flagship Accelerator](/docs/README)
 - [Edge AI Accelerator Roadmap](/docs/roadmap)
 
