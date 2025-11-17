@@ -2317,12 +2317,10 @@ function Main {
                 $sectionSidebar = Build-SectionSidebar -SectionName $sectionName -DocsPath $resolvedDocsPath -SrcPath $resolvedSrcPath -RootPath $rootPath
 
                 if ($sectionSidebar) {
-                    $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss UTC"
                     $sidebarContent = @"
 <!-- markdownlint-disable MD041 -->
 <!-- markdownlint-disable MD051 -->
 <!-- $sectionName Section Sidebar -->
-<!-- Generated on: $timestamp -->
 $sectionSidebar
 "@
 
@@ -2365,12 +2363,10 @@ $sectionSidebar
             $sectionSidebar = Build-SectionSidebar -SectionName $Section -DocsPath $resolvedDocsPath -SrcPath $resolvedSrcPath -RootPath $rootPath
 
             if ($sectionSidebar) {
-                $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss UTC"
                 $sidebarContent = @"
 <!-- markdownlint-disable MD041 -->
 <!-- markdownlint-disable MD051 -->
 <!-- $Section Section Sidebar -->
-<!-- Generated on: $timestamp -->
 
 $sectionSidebar
 "@
@@ -2667,7 +2663,6 @@ $sectionSidebar
         # Remove Copilot Guides section from sidebar generation (instructions files are now listed under Instructions)
 
         # Combine all sections with proper spacing
-        $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss UTC"
         $allSections = @()
 
         # Add each non-empty section
@@ -2703,7 +2698,6 @@ $sectionSidebar
         $sidebarContent = @"
 <!-- markdownlint-disable MD041 -->
 <!-- markdownlint-disable MD051 -->
-<!-- Generated on: $timestamp -->
 
 $($allSections -join "`n`n")
 "@

@@ -243,11 +243,7 @@ jobs:
             new_sidebar=$(cat docs/_sidebar.md)
           fi
 
-          # Compare content excluding timestamp differences
-          original_content=$(echo "$original_sidebar" | sed 's/<!-- Generated on:.*-->//')
-          new_content=$(echo "$new_sidebar" | sed 's/<!-- Generated on:.*-->//')
-
-          if [ "$original_content" != "$new_content" ]; then
+          if [ "$original_sidebar" != "$new_sidebar" ]; then
             echo "[ERROR] Sidebar is outdated and needs regeneration!"
             echo "The sidebar doesn't match the current documentation structure."
             echo "Please run the following command locally and commit the changes:"
