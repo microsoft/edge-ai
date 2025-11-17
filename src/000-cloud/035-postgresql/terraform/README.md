@@ -48,7 +48,7 @@ private networking, and optional geo-redundant backups.
 | databases | Map of databases to create with collation and charset. | ```map(object({ collation = string charset = string }))``` | `null` | no |
 | default\_outbound\_access\_enabled | Whether to enable default outbound internet access for PostgreSQL subnet. | `bool` | `false` | no |
 | delegated\_subnet\_id | Subnet ID with delegation to Microsoft.DBforPostgreSQL/flexibleServers. (Otherwise, created when should\_create\_delegated\_subnet is true). | `string` | `null` | no |
-| extensions | List of PostgreSQL extensions to enable. Otherwise, ['timescaledb', 'pg\_stat\_statements', 'uuid-ossp']. | `list(string)` | ```[ "timescaledb", "pg_stat_statements", "uuid-ossp" ]``` | no |
+| extensions | List of PostgreSQL extensions to enable. Otherwise, ['timescaledb', 'pg\_stat\_statements', 'uuid-ossp', 'hstore']. | `list(string)` | ```[ "timescaledb", "pg_stat_statements", "uuid-ossp", "hstore" ]``` | no |
 | instance | Instance identifier for naming resources: 001, 002, etc | `string` | `"001"` | no |
 | key\_vault | Key Vault object for storing PostgreSQL admin credentials. | ```object({ id = string name = string })``` | `null` | no |
 | nat\_gateway | NAT gateway object from networking component for managed outbound access. | ```object({ id = string name = string })``` | `null` | no |

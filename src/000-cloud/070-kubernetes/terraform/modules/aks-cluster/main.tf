@@ -123,6 +123,33 @@ resource "azurerm_role_assignment" "acr_pull" {
   skip_service_principal_aad_check = true
 }
 
+// Network Contributor role for cluster control plane identity to manage network resources
+// Required for creating load balancers and managing network configurations in custom VNETs
+resource "azurerm_role_assignment" "network_contributor" {
+  scope                            = var.virtual_network_id
+  role_definition_name             = "Network Contributor"
+  principal_id                     = local.should_use_user_assigned_identity ? var.aks_identity.principal_id : azurerm_kubernetes_cluster.aks.identity[0].principal_id
+  skip_service_principal_aad_check = true
+}
+
+// Network Contributor role for kubelet identity on AKS subnet
+// Required for kubelet to join VMs to load balancer backend pools
+resource "azurerm_role_assignment" "network_contributor_kubelet_aks" {
+  scope                            = var.snet_aks.id
+  role_definition_name             = "Network Contributor"
+  principal_id                     = local.kubelet_identity_principal_id
+  skip_service_principal_aad_check = true
+}
+
+// Network Contributor role for kubelet identity on AKS pod subnet
+// Required for kubelet to join VMs to load balancer backend pools
+resource "azurerm_role_assignment" "network_contributor_kubelet_pod" {
+  scope                            = var.snet_aks_pod.id
+  role_definition_name             = "Network Contributor"
+  principal_id                     = local.kubelet_identity_principal_id
+  skip_service_principal_aad_check = true
+}
+
 resource "azurerm_role_assignment" "cluster_admin" {
   count = var.should_assign_cluster_admin ? 1 : 0
 

@@ -53,9 +53,9 @@ variable "databases" {
 }
 
 variable "extensions" {
-  description = "List of PostgreSQL extensions to enable. Otherwise, ['timescaledb', 'pg_stat_statements', 'uuid-ossp']."
+  description = "List of PostgreSQL extensions to enable. Otherwise, ['timescaledb', 'pg_stat_statements', 'uuid-ossp', 'hstore']."
   type        = list(string)
-  default     = ["timescaledb", "pg_stat_statements", "uuid-ossp"]
+  default     = ["timescaledb", "pg_stat_statements", "uuid-ossp", "hstore"]
 }
 
 variable "postgres_version" {
