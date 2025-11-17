@@ -1,7 +1,6 @@
 <!-- markdownlint-disable MD041 -->
 <!-- markdownlint-disable MD051 -->
 <!-- copilot Section Sidebar -->
-<!-- Generated on: 2025-11-17 15:26:51 UTC -->
 - [🤖 Copilot Overview](/copilot/README)
 - [📋 Copilot Instructions](/.github/copilot-instructions)
 

@@ -1,7 +1,6 @@
 <!-- markdownlint-disable MD041 -->
 <!-- markdownlint-disable MD051 -->
 <!-- infrastructure Section Sidebar -->
-<!-- Generated on: 2025-11-17 15:26:47 UTC -->
 - [Infrastructure Overview](/src/README)
 
 - [Cloud](/src/000-cloud/README)
@@ -40,5 +39,7 @@
   - [Mqtt Tools](/src/900-tools-utilities/900-mqtt-tools/README)
   - [Video Tools](/src/900-tools-utilities/901-video-tools/README)
   - [Aio Sidekick](/src/900-tools-utilities/902-aio-sidekick/README)
+
+- Blueprints
 
 - [Azure Resource Providers](/src/azure-resource-providers/README)

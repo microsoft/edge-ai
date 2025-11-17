@@ -262,11 +262,7 @@ jobs:
                 $newContent = Get-Content $path -Raw
                 $originalContent = $originalSidebars[$path]
 
-                # Compare content excluding timestamp differences
-                $originalClean = ($originalContent -replace "<!-- Generated on:.*?-->", "")
-                $newClean = ($newContent -replace "<!-- Generated on:.*?-->", "")
-
-                if ($originalClean -ne $newClean) {
+                if ($originalContent -ne $newContent) {
                   $issues += "- $path is outdated"
                   $validationPassed = $false
 
@@ -275,15 +271,15 @@ jobs:
 
                   # Show character counts to help identify differences
                   Write-Host "📊 Character counts:" -ForegroundColor Cyan
-                  Write-Host "  Original (checked-in): $($originalClean.Length) chars" -ForegroundColor Cyan
-                  Write-Host "  Generated (expected):  $($newClean.Length) chars" -ForegroundColor Cyan
-                  Write-Host "  Difference: $($newClean.Length - $originalClean.Length) chars" -ForegroundColor Cyan
+                  Write-Host "  Original (checked-in): $($originalContent.Length) chars" -ForegroundColor Cyan
+                  Write-Host "  Generated (expected):  $($newContent.Length) chars" -ForegroundColor Cyan
+                  Write-Host "  Difference: $($newContent.Length - $originalContent.Length) chars" -ForegroundColor Cyan
 
                   # Save to temp files for comparison
                   $tempOriginal = [System.IO.Path]::GetTempFileName()
                   $tempNew = [System.IO.Path]::GetTempFileName()
-                  $originalClean | Set-Content $tempOriginal -NoNewline
-                  $newClean | Set-Content $tempNew -NoNewline
+                  $originalContent | Set-Content $tempOriginal -NoNewline
+                  $newContent | Set-Content $tempNew -NoNewline
 
                   if (Get-Command git -ErrorAction SilentlyContinue) {
                     Write-Host "`n🔍 Git diff output:" -ForegroundColor Cyan
@@ -309,8 +305,8 @@ jobs:
                   }
 
                   Write-Host "`n🔍 Line-by-line comparison (first 30 differences):" -ForegroundColor Cyan
-                  $originalLines = $originalClean -split "`r?`n"
-                  $newLines = $newClean -split "`r?`n"
+                  $originalLines = $originalContent -split "`r?`n"
+                  $newLines = $newContent -split "`r?`n"
 
                   Write-Host "Original has $($originalLines.Count) lines, Generated has $($newLines.Count) lines" -ForegroundColor Cyan
 
@@ -330,8 +326,8 @@ jobs:
                     Write-Host "No line differences found, but content differs (possibly whitespace or encoding)" -ForegroundColor Yellow
 
                     Write-Host "`n🔍 Checking for whitespace differences:" -ForegroundColor Cyan
-                    $originalNoSpace = $originalClean -replace '\s+', ''
-                    $newNoSpace = $newClean -replace '\s+', ''
+                    $originalNoSpace = $originalContent -replace '\s+', ''
+                    $newNoSpace = $newContent -replace '\s+', ''
 
                     if ($originalNoSpace -eq $newNoSpace) {
                       Write-Host "Content is identical when whitespace is removed - this is a whitespace-only difference" -ForegroundColor Yellow

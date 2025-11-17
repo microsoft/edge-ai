@@ -139,13 +139,11 @@ try {
     }
 
     # Generate timestamp
-    $timestamp = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss.fffZ')
     $environment = if ($Development) { 'Development' } else { 'GitHub Pages' }
 
     # Generate the configuration content
     $configContent = @"
 // Auto-generated URL replacement configuration for $context
-// Generated on: $timestamp
 // Repository: $Repository
 // Branch: $SourceBranch
 // Environment: $environment
