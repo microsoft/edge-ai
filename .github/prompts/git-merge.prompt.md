@@ -14,8 +14,8 @@ Manage Git merge, rebase, and rebase --onto sequences with standardized stop con
 ## Inputs
 
 * ${input:operation:merge} – Selects the workflow (`merge`, `rebase`, or `rebase-onto`).
-* ${input:branch:origin/main} – Branch or ref that receives the merge or becomes the rebase target.
-* ${input:onto:origin/main} – Optional new base required when `${input:operation}` is `rebase-onto`.
+* ${input:branch:origin/dev} – Branch or ref that receives the merge or becomes the rebase target.
+* ${input:onto:origin/dev} – Optional new base required when `${input:operation}` is `rebase-onto`.
 * ${input:upstream} – Optional upstream branch or commit that bounds the commits to move during `rebase-onto`.
 * ${input:conflictStop:false} – When `true`, pause after each conflict fix for user review before continuing.
 

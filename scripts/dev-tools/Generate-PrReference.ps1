@@ -8,7 +8,7 @@ mirroring the behaviour of scripts/pr-ref-gen.sh. Supports excluding markdown
 files from the diff and specifying an alternate base branch for comparisons.
 
 .PARAMETER BaseBranch
-Git branch used as the comparison base. Defaults to "main".
+Git branch used as the comparison base. Defaults to "dev".
 
 .PARAMETER ExcludeMarkdownDiff
 When supplied, excludes markdown (*.md) files from the diff output.
@@ -16,7 +16,7 @@ When supplied, excludes markdown (*.md) files from the diff output.
 [CmdletBinding()]
 param(
     [Parameter()]
-    [string]$BaseBranch = "main",
+    [string]$BaseBranch = "dev",
 
     [Parameter()]
     [switch]$ExcludeMarkdownDiff
@@ -25,7 +25,7 @@ param(
 $ErrorActionPreference = 'Stop'
 
 function Test-GitAvailability {
-<#
+    <#
 .SYNOPSIS
 Verifies the git executable is available.
 .DESCRIPTION
@@ -37,7 +37,7 @@ Throws a terminating error when git can't be resolved from PATH.
 }
 
 function Get-RepositoryRoot {
-<#
+    <#
 .SYNOPSIS
 Gets the repository root path.
 .DESCRIPTION
@@ -54,7 +54,7 @@ System.String
 }
 
 function New-PrDirectory {
-<#
+    <#
 .SYNOPSIS
 Creates the PR tracking directory when missing.
 .DESCRIPTION
@@ -81,7 +81,7 @@ System.String
 }
 
 function Resolve-ComparisonReference {
-<#
+    <#
 .SYNOPSIS
 Resolves the git reference used for comparisons.
 .DESCRIPTION
@@ -107,7 +107,8 @@ PSCustomObject
         if ($LASTEXITCODE -eq 0) {
             $label = if ($candidate -eq $BaseBranch) {
                 $BaseBranch
-            } else {
+            }
+            else {
                 "$BaseBranch (via $candidate)"
             }
 
@@ -122,7 +123,7 @@ PSCustomObject
 }
 
 function Get-ShortCommitHash {
-<#
+    <#
 .SYNOPSIS
 Retrieves the short commit hash for a ref.
 .DESCRIPTION
@@ -146,7 +147,7 @@ System.String
 }
 
 function Get-CommitEntry {
-<#
+    <#
 .SYNOPSIS
 Collects formatted commit metadata.
 .DESCRIPTION
@@ -178,7 +179,7 @@ System.String[]
 }
 
 function Get-CommitCount {
-<#
+    <#
 .SYNOPSIS
 Counts commits between HEAD and the comparison ref.
 .DESCRIPTION
@@ -206,7 +207,7 @@ System.Int32
 }
 
 function Get-DiffOutput {
-<#
+    <#
 .SYNOPSIS
 Builds the git diff output for the comparison ref.
 .DESCRIPTION
@@ -240,7 +241,7 @@ System.String[]
 }
 
 function Get-DiffSummary {
-<#
+    <#
 .SYNOPSIS
 Summarizes the diff for quick reporting.
 .DESCRIPTION
@@ -278,7 +279,7 @@ System.String
 }
 
 function Get-PrXmlContent {
-<#
+    <#
 .SYNOPSIS
 Constructs the PR reference XML document.
 .DESCRIPTION
@@ -310,13 +311,15 @@ System.String
 
     $commitBlock = if ($CommitEntries) {
         ($CommitEntries | ForEach-Object { "  $_" }) -join [Environment]::NewLine
-    } else {
+    }
+    else {
         ""
     }
 
     $diffBlock = if ($DiffOutput) {
         ($DiffOutput | ForEach-Object { "  $_" }) -join [Environment]::NewLine
-    } else {
+    }
+    else {
         ""
     }
 
@@ -342,7 +345,7 @@ $diffBlock
 }
 
 function Get-LineImpact {
-<#
+    <#
 .SYNOPSIS
 Calculates total line impact from a diff summary.
 .DESCRIPTION
@@ -369,7 +372,7 @@ System.Int32
 }
 
 function Invoke-PrReferenceGeneration {
-<#
+    <#
 .SYNOPSIS
 Generates the pr-reference.xml file.
 .DESCRIPTION
@@ -405,12 +408,12 @@ System.IO.FileInfo
         $currentBranch = (& git --no-pager branch --show-current).Trim()
         $comparisonInfo = Resolve-ComparisonReference -BaseBranch $BaseBranch
         $baseCommit = Get-ShortCommitHash -Ref $comparisonInfo.Ref
-    $commitEntries = Get-CommitEntry -ComparisonRef $comparisonInfo.Ref
+        $commitEntries = Get-CommitEntry -ComparisonRef $comparisonInfo.Ref
         $commitCount = Get-CommitCount -ComparisonRef $comparisonInfo.Ref
         $diffOutput = Get-DiffOutput -ComparisonRef $comparisonInfo.Ref -ExcludeMarkdownDiff:$ExcludeMarkdownDiff
         $diffSummary = Get-DiffSummary -ComparisonRef $comparisonInfo.Ref -ExcludeMarkdownDiff:$ExcludeMarkdownDiff
 
-    $xmlContent = Get-PrXmlContent -CurrentBranch $currentBranch -BaseBranch $BaseBranch -CommitEntries $commitEntries -DiffOutput $diffOutput
+        $xmlContent = Get-PrXmlContent -CurrentBranch $currentBranch -BaseBranch $BaseBranch -CommitEntries $commitEntries -DiffOutput $diffOutput
         $xmlContent | Set-Content -LiteralPath $prReferencePath
     }
     finally {

@@ -13,7 +13,7 @@ Follow all instructions from #file:../instructions/ado-wit-discovery.instruction
 * ${input:witFocus:User Story}: Work item type to focus on (`User Story` or `Bug`). Determines which work items to discover, create, and update.
 * ${input:documents}: (Optional) Comma-separated relative paths or attachments for source material (research, plans, details). Infer from conversation context when omitted.
 * ${input:includeBranchChanges:false}: (Optional) Include git diff analysis for work item discovery when no documents are provided.
-* ${input:baseBranch:origin/main}: (Optional) Git comparison base for diff and commit analysis.
+* ${input:baseBranch:origin/dev}: (Optional) Git comparison base for diff and commit analysis.
 * ${input:areaPath}: (Optional) Area Path filter for work item searches.
 * ${input:iterationPath}: (Optional) Iteration Path filter for work item searches.
 * ${input:workItemStates:New,Active,Resolved}: (Optional) Comma-separated states to include in searches.

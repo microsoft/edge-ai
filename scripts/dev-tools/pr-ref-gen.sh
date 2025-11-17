@@ -3,7 +3,7 @@
 # Script to generate a PR reference file with commit history and full diff
 # This file will be used by GitHub Copilot to generate accurate PR descriptions
 #
-# The script compares the current branch with a specified base branch (default: main)
+# The script compares the current branch with a specified base branch (default: dev)
 # and generates an XML file with commit history and diff information
 
 # Display usage information
@@ -12,7 +12,7 @@ function show_usage {
   echo ""
   echo "Options:"
   echo "  --no-md-diff       Exclude markdown files (*.md) from the diff output"
-  echo "  --base-branch      Specify the base branch to compare against (default: main)"
+  echo "  --base-branch      Specify the base branch to compare against (default: dev)"
   echo "  --output           Specify output file path (default: .copilot-tracking/pr/pr-reference.xml)"
   exit 1
 }
@@ -22,7 +22,7 @@ REPO_ROOT=$(git rev-parse --show-toplevel)
 
 # Process command line arguments
 NO_MD_DIFF=false
-BASE_BRANCH="origin/main"
+BASE_BRANCH="origin/dev"
 OUTPUT_FILE="${REPO_ROOT}/.copilot-tracking/pr/pr-reference.xml"
 while [[ $# -gt 0 ]]; do
   case "$1" in
