@@ -25,7 +25,7 @@ You WILL NEVER create follow-up tasks for documentation or tests.
   * You WILL write its total line count to the chat (e.g., "Lines: 7641").
   * You WILL proceed to Step 2 of this Process.
 * **If `pr-reference.xml` is NOT provided**:
-  * Use `git fetch {{remote}} {{branch}}` determined from `${input:branch:origin/main}`, to update the remote branch to build a correct pull request.
+  * Use `git fetch {{remote}} {{branch}}` determined from `${input:branch:origin/dev}`, to update the remote branch to build a correct pull request.
   * **MANDATORY**: You MUST create `pr-reference.xml` using the repository scripts—select the command that matches your host environment. Do not use any other commands to gather git status or diffs.
     * **Unix-like shells**: Use `./scripts/dev-tools/pr-ref-gen.sh`.
       * Default: `./scripts/dev-tools/pr-ref-gen.sh`.
@@ -40,7 +40,7 @@ You WILL NEVER create follow-up tasks for documentation or tests.
 
 ### Step 2: `pr-reference.xml` Analysis
 
-* **CRITICAL**: You MUST read and analyze the ENTIRE `pr-reference.xml` file which contains the current branch name, commit history (compared to `origin/main` or the specified `${input:branch}`), and the full detailed diff.
+* **CRITICAL**: You MUST read and analyze the ENTIRE `pr-reference.xml` file which contains the current branch name, commit history (compared to `origin/dev` or the specified `${input:branch}`), and the full detailed diff.
 * `pr-reference.xml` WILL ONLY be used to generate `pr.md`.
 * You MUST verify you have read the exact number of lines reported AND reached the closing tags `</full_diff>` and `</commit_history>` before proceeding.
 * You MUST gain a comprehensive understanding of ALL changes before writing any PR content. ALL statements in the PR description MUST be based on this complete analysis.

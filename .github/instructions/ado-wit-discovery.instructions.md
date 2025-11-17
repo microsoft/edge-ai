@@ -33,7 +33,7 @@ Apply this procedure when research, plans, or repository changes must be transla
 ## Tooling
 
 * `run_in_terminal` (zsh) for git context **only when `${input:includeBranchChanges}` is `true` and no documents are provided**:
-   1. Extract remote name from `${input:baseBranch}` (e.g., `origin` from `origin/main`)
+   1. Extract remote name from `${input:baseBranch}` (e.g., `origin` from `origin/dev`)
    2. Sync remote base branch: `git fetch <remote> <branch-name> --prune`
    3. Generate structured diff XML: `scripts/dev-tools/pr-ref-gen.sh --base-branch "${input:baseBranch}" --output ".copilot-tracking/workitems/discovery/<folder-name>/git-branch-diff.xml"`
    4. Read complete XML with `read_file` (page through entire file if >2000 lines)
@@ -50,7 +50,7 @@ Apply this procedure when research, plans, or repository changes must be transla
 ```xml
 <commit_history>
   <current_branch>feat/acr-private-public-update</current_branch>
-  <base_branch>origin/main</base_branch>
+  <base_branch>origin/dev</base_branch>
   <commits>
     <commit hash="a1b2c3d" date="2025-01-15">
       <message>

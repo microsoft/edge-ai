@@ -798,7 +798,7 @@ When user requests modifications at any gate:
 
 2. **Prepare Source and Target Branch References**:
    * Source: `refs/heads/${input:sourceBranch}` (or current branch)
-   * Target: Extract branch name from `${input:baseBranch}` (e.g., `origin/main` → `refs/heads/main`)
+   * Target: Extract branch name from `${input:baseBranch}` (e.g., `origin/dev` → `refs/heads/dev`)
 
 3. **Create Pull Request**:
    * Tool: `mcp_ado_repo_create_pull_request`
@@ -849,7 +849,7 @@ When user requests modifications at any gate:
 mcp_ado_repo_create_pull_request({
   repositoryId: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
   sourceRefName: "refs/heads/feat/acr-dual-access",
-  targetRefName: "refs/heads/main",
+  targetRefName: "refs/heads/dev",
   title: "feat(acr): add dual public/private access support",
   description: "## Summary\n\nAdds support for dual access patterns...",
   isDraft: false
