@@ -553,7 +553,7 @@ In production, camera credentials are managed through **Azure Key Vault** and au
 
 3. **Reference secrets in Device configuration** using the operations experience UI or Azure CLI
 
-For detailed instructions on secret management, see [Manage secrets for your Azure IoT Operations deployment](https://learn.microsoft.com/en-us/azure/iot-operations/secure-iot-ops/howto-manage-secrets).
+For detailed instructions on secret management, see [Manage secrets for your Azure IoT Operations deployment](https://learn.microsoft.com/azure/iot-operations/secure-iot-ops/howto-manage-secrets).
 
 > **Note**: Terraform/Bicep automation for creating and syncing Azure Key Vault secrets to device configurations is planned for a future release. Currently, secrets must be created manually via Azure Portal, Azure CLI, or the operations experience UI. Track progress in the project backlog.
 
@@ -1160,17 +1160,17 @@ Please see [CONTRIBUTING.md](../../../CONTRIBUTING.md) for general guidelines on
 
 ### Azure IoT Operations
 
-- [Azure IoT Operations Media Connector Overview](https://learn.microsoft.com/en-us/azure/iot-operations/discover-manage-assets/overview-media-connector)
-- [How to use the Media Connector](https://learn.microsoft.com/en-us/azure/iot-operations/discover-manage-assets/howto-use-media-connector)
-- [Azure Container Storage for Arc](https://learn.microsoft.com/en-us/azure/azure-arc/container-storage/overview)
-- [Azure IoT Operations MQTT Broker](https://learn.microsoft.com/en-us/azure/iot-operations/connect-to-cloud/overview-dataflow)
+- [Azure IoT Operations Media Connector Overview](https://learn.microsoft.com/azure/iot-operations/discover-manage-assets/overview-media-connector)
+- [How to use the Media Connector](https://learn.microsoft.com/azure/iot-operations/discover-manage-assets/howto-use-media-connector)
+- [Azure Container Storage for Arc](https://learn.microsoft.com/azure/azure-arc/container-storage/overview)
+- [Azure IoT Operations MQTT Broker](https://learn.microsoft.com/azure/iot-operations/connect-to-cloud/overview-dataflow)
 
 ### Monitoring and Observability
 
-- [Azure Managed Grafana](https://learn.microsoft.com/en-us/azure/managed-grafana/overview)
-- [Azure Monitor for Kubernetes](https://learn.microsoft.com/en-us/azure/azure-monitor/containers/kubernetes-monitoring-enable)
-- [Container Insights for Arc-enabled Kubernetes](https://learn.microsoft.com/en-us/azure/azure-monitor/containers/container-insights-enable-arc-enabled-clusters)
-- [Prometheus Metrics in Azure Monitor](https://learn.microsoft.com/en-us/azure/azure-monitor/essentials/prometheus-metrics-overview)
+- [Azure Managed Grafana](https://learn.microsoft.com/azure/managed-grafana/overview)
+- [Azure Monitor for Kubernetes](https://learn.microsoft.com/azure/azure-monitor/containers/kubernetes-monitoring-enable)
+- [Container Insights for Arc-enabled Kubernetes](https://learn.microsoft.com/azure/azure-monitor/containers/container-insights-enable-arc-enabled-clusters)
+- [Prometheus Metrics in Azure Monitor](https://learn.microsoft.com/azure/azure-monitor/essentials/prometheus-metrics-overview)
 
 ---
 
