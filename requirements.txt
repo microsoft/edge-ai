@@ -13,3 +13,5 @@ asteval>=1.0.6                   # Safe mathematical expression evaluator
                                  # Pinned >=1.0.6 to resolve CVE-2021-11025 (RCE) and CVE-2021-11026 (DoS)
 urllib3>=2.5.0                   # HTTP client library
                                  # Pinned >=2.5.0 to resolve CVE-2024-37891 (SSRF vulnerability)
+requests>=2.32.4                 # HTTP client library
+                                 # Pinned >=2.32.4 to resolve advisory GHSA-9hjg-9r4m-mvj7

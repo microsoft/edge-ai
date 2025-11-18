@@ -16,6 +16,7 @@ alation
 allowlist
 allowlisted
 allowlisting
+alphanum
 ammp
 amqp
 amsr
@@ -104,6 +105,7 @@ cname
 codd
 codefresh
 codegen
+consumergroups
 codeowners
 codespace
 codespaces
@@ -1457,6 +1459,10 @@ JMESPath
 shfmt
 reflog
 subshells
+nameof
+sublist
+autolinks
+nodepools
 
 # Video & Image Processing
 drawtext

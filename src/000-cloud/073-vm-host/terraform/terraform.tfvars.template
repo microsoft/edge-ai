@@ -1,0 +1,20 @@
+# Required variables
+
+environment     = "<environment>"
+resource_prefix = "<resource-prefix>"
+location        = "<location>"
+
+# Optional variables
+
+# existing_resource_group_name = "<existing_resource_group_name>"
+# vm_sku_size                  = "<vm_sku_size>"
+# vm_username                  = "<vm_username>"
+
+# Optionally do not add clusterrolebinding to enable 'az connectedk8s proxy' for current user/principal - this will disable the proxy command and fail subsequent IaC runs requiring kubectl
+# add_current_entra_user_cluster_admin = false
+
+# By default set to false, recommended to use Managed Identity
+# use_service_principal_for_arc_onboarding_instead_of_managed_identity = true
+
+# Tip: check the docs, typically required if Azure logged-in user is a Service Principal without required permissions
+# custom_locations_oid = "<custom_locations_oid>"
