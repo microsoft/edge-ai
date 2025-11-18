@@ -65,7 +65,7 @@ function Get-MainBranchPRMetric {
         [string]$RepositoryPath,
 
         [Parameter(Mandatory=$false)]
-        [string]$MainBranch = "main",
+        [string]$MainBranch = "dev",
 
         [Parameter(Mandatory=$false)]
         [string]$MergeCommitSha = $null
