@@ -1,0 +1,86 @@
+---
+services:
+  onvif-camera-simulator:
+    image: ${REGISTRY:-local}/${APPLICATION:-onvif-connector}/onvif-camera-simulator:${BUILD_ID:-latest}
+    build:
+      context: ./services/onvif-camera-simulator
+      dockerfile: Dockerfile
+    container_name: onvif-camera-simulator
+    ports:
+      - "8080:8080"
+    environment:
+      - ONVIF_DEVICE_ID=${ONVIF_DEVICE_ID:-onvif-camera-001}
+      - ONVIF_HOST=0.0.0.0
+      - ONVIF_PORT=8080
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - onvif-network
+
+  onvif-mosquitto-broker:
+    image: eclipse-mosquitto:2.0
+    container_name: onvif-mosquitto-broker
+    ports:
+      - "11883:1883"
+      - "19001:9001"
+    command: ["mosquitto", "-c", "/mosquitto-no-auth.conf"]
+    healthcheck:
+      test: ["CMD", "mosquitto_sub", "-h", "localhost", "-t", "$$SYS/#", "-C", "1", "-W", "1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+    restart: unless-stopped
+    networks:
+      - onvif-network
+
+  onvif-connector-client:
+    image: ${REGISTRY:-local}/${APPLICATION:-onvif-connector}/onvif-connector-client:${BUILD_ID:-latest}
+    build:
+      context: ./services/onvif-connector-client
+      dockerfile: Dockerfile
+    container_name: onvif-connector-client
+    environment:
+      - ONVIF_HOST=onvif-camera-simulator
+      - ONVIF_PORT=8080
+      - MQTT_BROKER=onvif-mosquitto-broker
+      - MQTT_PORT=1883
+      - MQTT_CLIENT_ID=${MQTT_CLIENT_ID:-onvif-connector-client}
+      - MQTT_TOPIC_PREFIX=${MQTT_TOPIC_PREFIX:-onvif-camera}
+      - EVENT_POLL_INTERVAL=${EVENT_POLL_INTERVAL:-5}
+    restart: unless-stopped
+    depends_on:
+      onvif-camera-simulator:
+        condition: service_healthy
+      onvif-mosquitto-broker:
+        condition: service_healthy
+    networks:
+      - onvif-network
+
+  onvif-mqtt-monitor:
+    image: eclipse-mosquitto:2.0
+    container_name: onvif-mqtt-monitor
+    command: >
+      sh -c "
+      echo 'ONVIF MQTT Monitor - Subscribing to all ONVIF camera topics...'
+      mosquitto_sub -h onvif-mosquitto-broker -t 'onvif-camera/#' -v
+      "
+    restart: unless-stopped
+    depends_on:
+      onvif-mosquitto-broker:
+        condition: service_healthy
+    networks:
+      - onvif-network
+
+networks:
+  onvif-network:
+    driver: bridge
+    name: akri-onvif-connector
+    ipam:
+      config:
+        - subnet: 172.25.0.0/16
