@@ -267,6 +267,7 @@
 - [Solution ADR Library](/docs/solution-adr-library/README)
   - [ADR Title](/docs/solution-adr-library/adr-template-solutions)
   - [AI Edge Inference with Dual Backend Architecture](/docs/solution-adr-library/ai-edge-inference-dual-backend-architecture)
+  - [Architecture Decision Record: Akri Connector Component Organization](/docs/solution-adr-library/akri-connector-component-organization)
   - [Scale deployment of Azure ML models to edge Arc-enabled K8s clusters in a PoC](/docs/solution-adr-library/aml-on-arc-enabled-k8s)
   - [Asset Connectivity Monitoring](/docs/solution-adr-library/asset-connectivity-monitoring)
   - [Asset and Metadata Creation](/docs/solution-adr-library/asset-creation-and-metadata-publishing)
