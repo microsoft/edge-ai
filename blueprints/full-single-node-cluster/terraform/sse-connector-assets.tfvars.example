@@ -1,0 +1,241 @@
+/*
+ * SSE HTTP Connector Assets Configuration Example
+ *
+ * This file demonstrates how to configure SSE (Server-Sent Events) HTTP connector
+ * devices and assets for the Akri SSE connector integration with Azure IoT Operations.
+ *
+ * The SSE connector enables real-time streaming of events from SSE endpoints, which is
+ * ideal for continuous data streams, monitoring systems, and event-driven applications.
+ *
+ * Usage:
+ *   terraform apply -var-file="sse-connector-assets.tfvars"
+ *
+ * Or copy this file to terraform.tfvars to automatically load these values.
+ */
+
+/*
+ * Enable SSE HTTP Connector Template
+ *
+ * REQUIRED: Must be set to true to deploy the Akri SSE HTTP Connector template.
+ * Without this, the connector template will not be available and assets cannot be created.
+ */
+should_enable_akri_sse_connector = true
+
+/*
+ * SSE HTTP Connector Devices
+ *
+ * Defines SSE HTTP endpoints that will be discovered and managed by the Akri connector.
+ * Each device represents an SSE endpoint with its authentication and configuration.
+ *
+ * SSE endpoints maintain persistent connections and stream events in real-time.
+ */
+namespaced_devices = [
+  // Analytics Camera - Server-Sent Events Stream
+  {
+    name    = "analytics-camera"
+    enabled = true
+    endpoints = {
+      outbound = { assigned = {} }
+      inbound = {
+        "analytics-camera-endpoint" = {
+          endpoint_type = "Microsoft.SSEHttp"
+          address       = "http://sse-server:8080/camera-events"
+          version       = "1.1"
+          authentication = {
+            method = "Anonymous"
+          }
+          trustSettings = null
+        }
+      }
+    }
+  },
+
+  // Generic SSE Event Source
+  {
+    name    = "generic-sse-device"
+    enabled = true
+    endpoints = {
+      outbound = { assigned = {} }
+      inbound = {
+        "generic-events-endpoint" = {
+          endpoint_type = "Microsoft.SSEHttp"
+          address       = "http://sse-server:8081/events"
+          version       = "1.1"
+          authentication = {
+            method = "Anonymous"
+          }
+          trustSettings = null
+        }
+      }
+    }
+  }
+]
+
+/*
+ * SSE HTTP Connector Assets
+ *
+ * Defines the actual assets that reference the devices above and configure
+ * how SSE events are captured, processed, and routed to MQTT topics or other destinations.
+ *
+ * Unlike REST connectors that poll endpoints, SSE connectors maintain persistent connections
+ * and receive events as they occur. Each event type can be mapped to different MQTT topics.
+ */
+namespaced_assets = [
+  // Analytics Camera Asset - Multiple Event Types
+  {
+    name         = "analytics-camera-asset"
+    display_name = "Analytics Camera SSE System"
+    enabled      = true
+    device_ref = {
+      device_name   = "analytics-camera"
+      endpoint_name = "analytics-camera-endpoint"
+    }
+    description       = "Analytics camera providing real-time leak detection via SSE"
+    documentation_uri = "https://github.com/microsoft/edge-ai/tree/main/src/500-application/509-sse-connector"
+    manufacturer      = "Vision Analytics Inc"
+    manufacturer_uri  = "https://vision-analytics.example.com"
+    model             = "Analytics-SSE-3000"
+    product_code      = "AN3000"
+    serial_number     = "AN-SSE-001"
+    software_revision = "2.1.0"
+    attributes = {
+      deviceType     = "analytics-camera"
+      location       = "facility-north"
+      zone           = "monitoring-area-1"
+      analytics_type = "leak-detection"
+    }
+
+    // SSE Connectors use Events instead of Datasets for real-time streaming
+    events = [
+      {
+        name           = "HEARTBEAT"
+        event_notifier = "HEARTBEAT"
+        destinations = [
+          {
+            target = "Mqtt"
+            configuration = {
+              topic  = "events/company/cloud/region/environment/analytics-camera-01/heartbeat"
+              retain = "Never"
+              qos    = "Qos1"
+            }
+          }
+        ]
+      },
+      {
+        name           = "ALERT"
+        event_notifier = "ALERT"
+        destinations = [
+          {
+            target = "Mqtt"
+            configuration = {
+              topic  = "events/company/cloud/region/environment/analytics-camera-01/alert"
+              retain = "Never"
+              qos    = "Qos1"
+            }
+          }
+        ]
+      },
+      {
+        name           = "ALERT_DLQC"
+        event_notifier = "ALERT_DLQC"
+        destinations = [
+          {
+            target = "Mqtt"
+            configuration = {
+              topic  = "events/company/cloud/region/environment/analytics-camera-01/alert-dlqc"
+              retain = "Never"
+              qos    = "Qos1"
+            }
+          }
+        ]
+      },
+      {
+        name           = "ANALYTICS_ENABLED"
+        event_notifier = "ANALYTICS_ENABLED"
+        destinations = [
+          {
+            target = "Mqtt"
+            configuration = {
+              topic  = "events/company/cloud/region/environment/analytics-camera-01/analytics-enabled"
+              retain = "Never"
+              qos    = "Qos1"
+            }
+          }
+        ]
+      },
+      {
+        name           = "ANALYTICS_DISABLED"
+        event_notifier = "ANALYTICS_DISABLED"
+        destinations = [
+          {
+            target = "Mqtt"
+            configuration = {
+              topic  = "events/company/cloud/region/environment/analytics-camera-01/analytics-disabled"
+              retain = "Never"
+              qos    = "Qos1"
+            }
+          }
+        ]
+      }
+    ]
+
+    // No datasets for SSE connectors - use events instead
+    datasets = []
+
+    default_events_configuration = "{\"publishingInterval\":1000,\"samplingInterval\":1000,\"queueSize\":10}"
+  },
+
+  // Generic SSE Device Asset
+  {
+    name         = "generic-sse-asset"
+    display_name = "Generic SSE Event Source"
+    enabled      = true
+    device_ref = {
+      device_name   = "generic-sse-device"
+      endpoint_name = "generic-events-endpoint"
+    }
+    description  = "Generic SSE event source for real-time notifications"
+    manufacturer = "EdgeTech"
+    model        = "SSE-EventSource-100"
+    serial_number = "SSE-GEN-002"
+    attributes = {
+      deviceType = "sse-event-source"
+      location   = "datacenter-1"
+    }
+
+    events = [
+      {
+        name           = "notification"
+        event_notifier = "notification"
+        destinations = [
+          {
+            target = "Mqtt"
+            configuration = {
+              topic  = "events/company/cloud/region/environment/generic-sse/notifications"
+              retain = "Never"
+              qos    = "Qos1"
+            }
+          }
+        ]
+      },
+      {
+        name           = "status-change"
+        event_notifier = "status"
+        destinations = [
+          {
+            target = "Mqtt"
+            configuration = {
+              topic  = "events/company/cloud/region/environment/generic-sse/status-changes"
+              retain = "Never"
+              qos    = "Qos1"
+            }
+          }
+        ]
+      }
+    ]
+
+    datasets = []
+
+    default_events_configuration = "{\"publishingInterval\":1000,\"samplingInterval\":1000,\"queueSize\":5}"
+  }
+]
