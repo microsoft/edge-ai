@@ -376,7 +376,7 @@ For existing systems using legacy deployment scripts:
 ## References
 
 - [Server-Sent Events Specification](https://html.spec.whatwg.org/multipage/server-sent-events.html)
-- [Azure IoT Operations Documentation](https://learn.microsoft.com/en-us/azure/iot-operations/)
+- [Azure IoT Operations Documentation](https://learn.microsoft.com/azure/iot-operations/)
 - [Akri Connector Framework](https://github.com/Azure/iot-operations-sdks)
 - [SSE Connector Implementation](../../src/500-application/509-sse-connector/README.md)
 - [Blueprint Configuration Example](../../blueprints/full-single-node-cluster/terraform/sse-connector-assets.tfvars.example)

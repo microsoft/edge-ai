@@ -72,6 +72,8 @@ The following applications are currently available in this directory:
 - **[506-ros2-connector](./506-ros2-connector/README.md)** - ROS2 connector integration for robotics workloads
 - **[507-ai-inference](./507-ai-inference/README.md)** - Production-ready AI inference service with dual backend support (ONNX Runtime and Candle)
 - **[508-media-connector](./508-media-connector/README.md)** - Akri media connector for camera integration with Azure IoT Operations
+- **[509-sse-connector](./509-sse-connector/README.md)** - Server-Sent Events (SSE) connector for real-time event streaming with Azure IoT Operations
+- **[510-onvif-connector](./510-onvif-connector/README.md)** - ONVIF connector for IP camera integration with Azure IoT Operations
 
 ## Service Implementation
 

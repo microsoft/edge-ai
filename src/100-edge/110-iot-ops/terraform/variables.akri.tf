@@ -78,6 +78,77 @@ variable "custom_akri_connectors" {
     List of custom Akri connector templates with user-defined endpoint types and container images.
     Supports built-in types (rest, media, onvif, sse) or custom types with custom_endpoint_type and custom_image_name.
     Built-in connectors default to mcr.microsoft.com/azureiotoperations/akri-connectors/connector_type:0.5.1.
+
+    Examples:
+
+    # ONVIF Camera Connector (Built-in)
+    custom_akri_connectors = [
+      {
+        name      = "warehouse-camera-connector"
+        type      = "onvif"
+        replicas  = 2
+        log_level = "info"
+      }
+    ]
+
+    # SSE Event Connector (Built-in)
+    custom_akri_connectors = [
+      {
+        name      = "analytics-camera-connector"
+        type      = "sse"
+        replicas  = 1
+        log_level = "info"
+      }
+    ]
+
+    # REST API Connector (Built-in)
+    custom_akri_connectors = [
+      {
+        name      = "sensor-api-connector"
+        type      = "rest"
+        replicas  = 1
+        log_level = "info"
+      }
+    ]
+
+    # Custom Modbus Connector
+    custom_akri_connectors = [
+      {
+        name                    = "modbus-telemetry-connector"
+        type                    = "custom"
+        custom_endpoint_type    = "Contoso.Modbus"
+        custom_image_name       = "my_acr.azurecr.io/modbus-telemetry-connector"
+        custom_endpoint_version = "2.0"
+        registry                = "my_acr.azurecr.io"
+        image_tag               = "v1.2.3"
+        replicas                = 2
+        log_level               = "debug"
+      }
+    ]
+
+    # Multiple Connectors with MQTT Override
+    custom_akri_connectors = [
+      {
+        name      = "warehouse-ptz-cameras"
+        type      = "onvif"
+        replicas  = 3
+        log_level = "info"
+        mqtt_config = {
+          host                   = "aio-broker.azure-iot-operations"
+          audience               = "aio-broker"
+          ca_configmap           = "aio-ca-trust-bundle"
+          keep_alive_seconds     = 60
+          max_inflight_messages  = 100
+          session_expiry_seconds = 600
+        }
+      },
+      {
+        name      = "analytics-event-stream"
+        type      = "sse"
+        replicas  = 2
+        log_level = "debug"
+      }
+    ]
   EOT
 
   validation {

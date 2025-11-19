@@ -1546,3 +1546,10 @@ extneded
 Clis
 clis
 interceptable
+
+# Camera & Video Equipment Vendors
+Hikvision
+Dahua
+connectorinstance
+connectortemplate
+tptz
