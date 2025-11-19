@@ -11,6 +11,9 @@ bluenviron
 colorbars
 COMMITMSG
 commitish
+curlimages
+DLQC
+dlqc
 docsmcp
 docstool
 docsify
