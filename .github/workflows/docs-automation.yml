@@ -32,6 +32,13 @@ permissions:
   actions: read
 
 on:  # yamllint disable-line rule:truthy
+  workflow_call:
+    inputs:
+      force_regenerate:
+        description: 'Force regeneration of all documentation'
+        required: false
+        default: false
+        type: boolean
   push:
     branches: [main, develop]
     paths:
