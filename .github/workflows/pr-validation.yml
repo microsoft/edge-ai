@@ -209,4 +209,19 @@ jobs:
     uses: ./.github/workflows/application-matrix-builds.yml
     with:
       applicationMatrix: ${{ needs.matrix-changes.outputs.changedApplicationFolders }}
+      registryName: ${{ vars.REGISTRY_NAME || 'ghcr.io' }}
+      buildConfig: |
+        {
+          "pushImages": false,
+          "enableSLSA": false,
+          "dockerBuildKit": "1",
+          "dockerComposeVersion": "2.24.5",
+          "hadolintVersion": "2.12.0",
+          "grypeVersion": "0.74.4"
+        }
+      securityConfig: |
+        {
+          "enableSecurityScan": true,
+          "securityThreshold": "high"
+        }
     secrets: inherit
