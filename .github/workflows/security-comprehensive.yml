@@ -1,13 +1,13 @@
 ---
 # Comprehensive Security Monitoring Workflow
 # Enhanced security monitoring workflow matching Azure DevOps scheduled stage approach.
-# Includes dependency staleness, OSSF Scorecard, egress monitoring, AIO version checks,
+# Includes dependency staleness, OSSF Scorecard, AIO version checks,
 # and comprehensive security analysis for complete supply chain security validation.
 
 # Security Comprehensive Monitoring Workflow - Complete security monitoring suite
 # This workflow performs comprehensive security analysis and monitoring.
 # Mirrors the Azure DevOps Scheduled stage approach with full security coverage.
-# Includes dependency staleness, OSSF scorecard, egress monitoring, and AIO version checks.
+# Includes dependency staleness, OSSF scorecard, and AIO version checks.
 
 name: Security Comprehensive Monitoring
 
@@ -78,11 +78,6 @@ on:
         required: false
         type: number
         default: 30
-      allowed-endpoints:
-        description: 'Comma-separated list of allowed network endpoints for egress monitoring'
-        required: false
-        type: string
-        default: 'github.com,registry-1.docker.io,*.azurecr.io,packages.microsoft.com,*.azure.com'
       iac-types:
         description: 'Infrastructure types to validate (all, terraform, bicep)'
         required: false
@@ -280,42 +275,6 @@ jobs:
         with:
           sarif_file: scorecard-results.sarif
 
-  # Network egress monitoring for build security validation
-  egress-monitoring:
-    name: Network Egress Monitoring
-    runs-on: ubuntu-latest
-    needs: security-hardening
-    timeout-minutes: 15
-    outputs:
-      egress-violations: ${{ steps.egress-check.outputs.violations }}
-    steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@92c522aaa6f53af082553dedc1596c80b71aba33 # v2.10.2
-        with:
-          egress-policy: block
-          allowed-endpoints: ${{ inputs.allowed-endpoints }}
-
-      - name: Checkout repository
-        uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493 # v4.2.2
-
-      - name: Test network egress controls
-        id: egress-check
-        run: |
-          echo "Testing network egress controls for comprehensive monitoring..."
-          echo "Allowed endpoints: ${{ inputs.allowed-endpoints }}"
-
-          violations=0
-
-          # Test that we can reach allowed endpoints
-          echo "Testing connectivity to allowed endpoints..."
-          if ! curl -s --max-time 5 https://github.com >/dev/null 2>&1; then
-            echo "Warning: GitHub connection failed"
-            violations=$((violations + 1))
-          fi
-
-          echo "violations=$violations" >> $GITHUB_OUTPUT
-          echo "Network egress monitoring completed with $violations violations"
-
   # AIO version checking for comprehensive validation
   aio-version-check:
     name: AIO Version Validation
@@ -379,7 +338,7 @@ jobs:
   security-analysis:
     name: Security Analysis & Dashboard
     runs-on: ubuntu-latest
-    needs: [security-hardening, dependency-staleness, ossf-scorecard, egress-monitoring, aio-version-check]
+    needs: [security-hardening, dependency-staleness, ossf-scorecard, aio-version-check]
     timeout-minutes: 25
     outputs:
       pinning-compliance: ${{ steps.pinning-analysis.outputs.compliance }}
@@ -492,7 +451,7 @@ jobs:
   security-summary:
     name: Comprehensive Security Summary
     runs-on: ubuntu-latest
-    needs: [dependency-staleness, ossf-scorecard, egress-monitoring, aio-version-check, security-analysis]
+    needs: [dependency-staleness, ossf-scorecard, aio-version-check, security-analysis]
     if: always()
     timeout-minutes: 10
     outputs:
@@ -523,13 +482,11 @@ jobs:
           stale_count="${{ needs.dependency-staleness.outputs.stale-count }}"
           scorecard_score="${{ needs.ossf-scorecard.outputs.score }}"
           pinning_compliance="${{ needs.security-analysis.outputs.pinning-compliance }}"
-          egress_violations="${{ needs.egress-monitoring.outputs.egress-violations }}"
           aio_issues="${{ needs.aio-version-check.outputs.version-issues }}"
 
           echo "- Dependency Staleness: $stale_count stale dependencies" >> comprehensive-security-summary.md
           echo "- OSSF Scorecard Score: $scorecard_score/10" >> comprehensive-security-summary.md
           echo "- Dependency Pinning: $pinning_compliance%" >> comprehensive-security-summary.md
-          echo "- Network Egress: $egress_violations violations" >> comprehensive-security-summary.md
           echo "- AIO Version Issues: $aio_issues" >> comprehensive-security-summary.md
           echo "" >> comprehensive-security-summary.md
 
@@ -538,7 +495,6 @@ jobs:
           if [[ "$stale_failed" == "true" ]]; then critical_issues=$((critical_issues + 1)); fi
           if [[ "$scorecard_failed" == "true" ]]; then critical_issues=$((critical_issues + 1)); fi
           if [[ "$pinning_failed" == "true" ]]; then critical_issues=$((critical_issues + 1)); fi
-          if [[ "$egress_violations" -gt "0" ]]; then critical_issues=$((critical_issues + 1)); fi
           if [[ "$aio_issues" -gt "0" ]]; then critical_issues=$((critical_issues + 1)); fi
 
           echo "critical-issues=$critical_issues" >> $GITHUB_OUTPUT
