@@ -41,15 +41,12 @@
 #       registryName: "ghcr.io/your-org/your-repo"
 #       buildConfig: |
 #         {
-#           "pushImages": true,
-#           "enableSLSA": true,
-#           "dockerBuildKit": "1",
-#           "dockerComposeVersion": "2.24.5",
-#           "hadolintVersion": "2.12.0",
-#           "grypeVersion": "0.74.4"
+#           "dockerComposeVersion": "2.24.5"
 #         }
 #       securityConfig: |
 #         {
+#           "pushImages": true,
+#           "enableSLSA": true,
 #           "enableSecurityScan": true,
 #           "securityThreshold": "high"
 #         }
@@ -57,8 +54,8 @@
 # # workflow_dispatch Example - Manual execution with JSON inputs:
 # # In GitHub UI, provide these as JSON strings in the input fields:
 # # applicationMatrix: {"app1": {"path": "src/500-application/500-basic-inference", "directory": "500-basic-inference", "services": ["inference-service"], "has_services": true}}
-# # buildConfig: {"pushImages": true, "enableSLSA": false, "dockerBuildKit": "1", "dockerComposeVersion": "2.24.5", "hadolintVersion": "2.12.0", "grypeVersion": "0.74.4"}
-# # securityConfig: {"enableSecurityScan": true, "securityThreshold": "critical"}
+# # buildConfig: {"dockerComposeVersion": "2.24.5"}
+# # securityConfig: {"pushImages": true, "enableSLSA": false, "enableSecurityScan": true, "securityThreshold": "critical"}
 # ```
 ---
 name: Application Matrix Builds
@@ -171,7 +168,7 @@ jobs:
         run: |
           echo "Parsing consolidated configuration inputs..."
 
-          # Parse buildConfig JSON with defaults
+          # Extract properties from buildConfig and securityConfig JSON objects with shell-level defaults
           BUILD_CONFIG='${{ inputs.buildConfig }}'
           if [ -z "$BUILD_CONFIG" ] || [ "$BUILD_CONFIG" = "null" ] || [ "$BUILD_CONFIG" = "{}" ]; then
             BUILD_CONFIG='{}'
@@ -183,23 +180,28 @@ jobs:
             SECURITY_CONFIG='{}'
           fi
 
+          # Two-tier fallback pattern for configuration values:
+          # 1. JQ tier: Extract from JSON using '// empty' (returns nothing if property missing/null)
+          # 2. Shell tier: Check if empty and apply default value
+          # This pattern enables consolidated JSON inputs while maintaining robust defaults
+
           # Extract buildConfig values with defaults
-          REGISTRY_NAME=$(echo "$BUILD_CONFIG" | jq -r '.registryName // "${{ inputs.registryName }}"')
+          REGISTRY_NAME=$(echo "$BUILD_CONFIG" | jq -r '.registryName // empty')
           if [ -z "$REGISTRY_NAME" ] || [ "$REGISTRY_NAME" = "null" ]; then
             REGISTRY_NAME="local"
           fi
 
-          BUILD_ENVIRONMENT=$(echo "$BUILD_CONFIG" | jq -r '.buildEnvironment // "${{ inputs.buildEnvironment }}"')
+          BUILD_ENVIRONMENT=$(echo "$BUILD_CONFIG" | jq -r '.buildEnvironment // empty')
           if [ -z "$BUILD_ENVIRONMENT" ] || [ "$BUILD_ENVIRONMENT" = "null" ]; then
             BUILD_ENVIRONMENT="dev"
           fi
 
-          BASE_IMAGE_TAG=$(echo "$BUILD_CONFIG" | jq -r '.baseImageTag // "${{ inputs.baseImageTag }}"')
+          BASE_IMAGE_TAG=$(echo "$BUILD_CONFIG" | jq -r '.baseImageTag // empty')
           if [ -z "$BASE_IMAGE_TAG" ] || [ "$BASE_IMAGE_TAG" = "null" ]; then
             BASE_IMAGE_TAG="${{ github.run_number }}"
           fi
 
-          DOCKER_BUILD_ARGS=$(echo "$BUILD_CONFIG" | jq -r '.dockerBuildArgs // "${{ inputs.dockerBuildArgs }}"')
+          DOCKER_BUILD_ARGS=$(echo "$BUILD_CONFIG" | jq -r '.dockerBuildArgs // empty')
           if [ -z "$DOCKER_BUILD_ARGS" ] || [ "$DOCKER_BUILD_ARGS" = "null" ]; then
             DOCKER_BUILD_ARGS=""
           fi
@@ -210,22 +212,22 @@ jobs:
           fi
 
           # Extract securityConfig values with defaults
-          ENABLE_SLSA=$(echo "$SECURITY_CONFIG" | jq -r '.enableSLSA // "${{ inputs.enableSLSA }}"')
+          ENABLE_SLSA=$(echo "$SECURITY_CONFIG" | jq -r '.enableSLSA // empty')
           if [ -z "$ENABLE_SLSA" ] || [ "$ENABLE_SLSA" = "null" ]; then
             ENABLE_SLSA="true"
           fi
 
-          ENABLE_SECURITY_SCAN=$(echo "$SECURITY_CONFIG" | jq -r '.enableSecurityScan // "${{ inputs.enableSecurityScan }}"')
+          ENABLE_SECURITY_SCAN=$(echo "$SECURITY_CONFIG" | jq -r '.enableSecurityScan // empty')
           if [ -z "$ENABLE_SECURITY_SCAN" ] || [ "$ENABLE_SECURITY_SCAN" = "null" ]; then
             ENABLE_SECURITY_SCAN="true"
           fi
 
-          SECURITY_THRESHOLD=$(echo "$SECURITY_CONFIG" | jq -r '.securityThreshold // "${{ inputs.securityThreshold }}"')
+          SECURITY_THRESHOLD=$(echo "$SECURITY_CONFIG" | jq -r '.securityThreshold // empty')
           if [ -z "$SECURITY_THRESHOLD" ] || [ "$SECURITY_THRESHOLD" = "null" ]; then
             SECURITY_THRESHOLD="critical"
           fi
 
-          PUSH_IMAGES=$(echo "$SECURITY_CONFIG" | jq -r '.pushImages // "${{ inputs.pushImages }}"')
+          PUSH_IMAGES=$(echo "$SECURITY_CONFIG" | jq -r '.pushImages // empty')
           if [ -z "$PUSH_IMAGES" ] || [ "$PUSH_IMAGES" = "null" ]; then
             PUSH_IMAGES="false"
           fi

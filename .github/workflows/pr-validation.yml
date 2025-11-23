@@ -212,15 +212,12 @@ jobs:
       registryName: ${{ vars.REGISTRY_NAME || 'ghcr.io' }}
       buildConfig: |
         {
-          "pushImages": false,
-          "enableSLSA": false,
-          "dockerBuildKit": "1",
-          "dockerComposeVersion": "2.24.5",
-          "hadolintVersion": "2.12.0",
-          "grypeVersion": "0.74.4"
+          "dockerComposeVersion": "2.24.5"
         }
       securityConfig: |
         {
+          "pushImages": false,
+          "enableSLSA": false,
           "enableSecurityScan": true,
           "securityThreshold": "high"
         }
