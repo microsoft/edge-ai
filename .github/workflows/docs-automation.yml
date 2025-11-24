@@ -84,75 +84,17 @@ jobs:
       - name: Validate frontmatter consistency
         shell: pwsh
         run: |
-          # Import frontmatter validation functions
-          . ./scripts/Generate-DocsSidebar.ps1
-
           Write-Host "🔍 Validating frontmatter across all markdown files..."
 
-          $errors = @()
-          $warnings = @()
+          # Use the dedicated validation script (same as Azure DevOps pipeline)
+          & "./scripts/Validate-MarkdownFrontmatter.ps1" -Paths @('docs', 'src', 'blueprints') -Verbose
 
-          # Get all markdown files
-          $markdownFiles = Get-ChildItem -Path @('docs', 'src', 'blueprints') `
-            -Filter '*.md' -Recurse -ErrorAction SilentlyContinue
-
-          Write-Host "Found $($markdownFiles.Count) markdown files to validate"
-
-          foreach ($file in $markdownFiles) {
-            $frontmatter = Get-MarkdownFile -FilePath $file.FullName
-
-            if ($frontmatter) {
-              # Validate required fields
-              $requiredFields = @('title', 'description', 'author', `
-                'ms.date', 'ms.topic')
-
-              foreach ($field in $requiredFields) {
-                if (-not $frontmatter.Frontmatter.ContainsKey($field)) {
-                  $errors += "Missing required field '$field' in: " + `
-                    "$($file.FullName)"
-                }
-              }
-
-              # Validate date format
-              if ($frontmatter.Frontmatter.ContainsKey('ms.date')) {
-                $date = $frontmatter.Frontmatter['ms.date']
-                if ($date -notmatch '^\d{2}/\d{2}/\d{4}$') {
-                  $warnings += "Invalid date format in: $($file.FullName). " + `
-                    "Expected MM/DD/YYYY, got: $date"
-                }
-              }
-
-              # Validate keywords array
-              if ($frontmatter.Frontmatter.ContainsKey('keywords')) {
-                $keywords = $frontmatter.Frontmatter['keywords']
-                if ($keywords -isnot [array] -and $keywords -notmatch ',') {
-                  $warnings += "Keywords should be an array in: " + `
-                    "$($file.FullName)"
-                }
-              }
-            } else {
-              $warnings += "No frontmatter found in: $($file.FullName)"
-            }
-          }
-
-          # Output results
-          if ($warnings.Count -gt 0) {
-            Write-Host "⚠️ Warnings found:" -ForegroundColor Yellow
-            $warnings | ForEach-Object {
-              Write-Host "  $_" -ForegroundColor Yellow
-            }
-          }
-
-          if ($errors.Count -gt 0) {
-            Write-Host "❌ Errors found:" -ForegroundColor Red
-            $errors | ForEach-Object {
-              Write-Host "  $_" -ForegroundColor Red
-            }
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "❌ Frontmatter validation failed" -ForegroundColor Red
             exit 1
           }
 
-          Write-Host "✅ Frontmatter validation completed successfully" `
-            -ForegroundColor Green
+          Write-Host "✅ Frontmatter validation completed successfully" -ForegroundColor Green
 
   generate-sidebar:
     name: 🏗️ Generate Three-Tree Sidebar
