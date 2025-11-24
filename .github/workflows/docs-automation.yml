@@ -133,7 +133,7 @@ jobs:
             }
           }
 
-          . ./scripts/Generate-DocsSidebar.ps1
+          . ./scripts/Generate-DocsSidebar.ps1 -AllSections
 
           Write-Host "✅ Sidebar generation completed"
 
