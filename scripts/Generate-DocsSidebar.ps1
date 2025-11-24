@@ -844,6 +844,10 @@ function Build-ComponentsSidebar {
     )
 
     Write-Verbose "Generating Components overview sidebar"
+    
+    # Strip PowerShell provider prefix if present (e.g., "Microsoft.PowerShell.Core\FileSystem::")
+    $SrcPath = $SrcPath -replace '^[^:]+::', ''
+    Write-Verbose "Using source path: $SrcPath"
 
     # Auto-discover all component README files in src directory
     # Find all README.md files but exclude terraform/ and bicep/ subdirectories

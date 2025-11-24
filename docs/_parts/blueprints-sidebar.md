@@ -5,6 +5,7 @@
 
 - Blueprint Components
   - Component Overview
+  - [Source Code Overview](blueprints/README.md)
   - [Azureml](blueprints/azureml/README.md)
   - [Dual Peered Single Node Cluster](blueprints/dual-peered-single-node-cluster/README.md)
   - [Fabric Rti](blueprints/fabric-rti/README.md)
@@ -16,7 +17,6 @@
   - [Only Edge Iot Ops](blueprints/only-edge-iot-ops/README.md)
   - [Only Output Cncf Cluster Script](blueprints/only-output-cncf-cluster-script/README.md)
   - [Partial Single Node Cluster](blueprints/partial-single-node-cluster/README.md)
-  - [Blueprints](blueprints/README.md)
 
 - Bicep Blueprints
   - Bicep Documentation
