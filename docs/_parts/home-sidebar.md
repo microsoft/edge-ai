@@ -1,6 +1,6 @@
 <!-- markdownlint-disable MD041 -->
 <!-- home Section Sidebar -->
-<!-- Generated on: 2025-10-05 03:20:10 UTC -->
+<!-- Generated on: 2025-11-23 20:52:34 UTC -->
 
 - [🏠 Welcome](docs/index.md)
 
