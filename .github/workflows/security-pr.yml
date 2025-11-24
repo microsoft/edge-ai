@@ -1,6 +1,5 @@
 # Security PR Validation Workflow - Ultra-fast security checks for pull requests
 # This workflow provides immediate security feedback during PR validation.
-# Focuses on harden-runner for quick feedback (< 3 minutes).
 # Designed for fast developer feedback without blocking the PR process.
 
 name: Security PR Validation
