@@ -149,8 +149,8 @@ jobs:
                 $originalContent = ""
               }
 
-              $originalClean = ($originalContent -replace "Generated on.*?\n", "")
-              $newClean = ($newContent -replace "Generated on.*?\n", "")
+              $originalClean = ($originalContent -replace "<!-- Generated on:.*?-->", "")
+              $newClean = ($newContent -replace "<!-- Generated on:.*?-->", "")
 
               if ($originalClean -ne $newClean) {
                 $issues += "- $path is outdated"
