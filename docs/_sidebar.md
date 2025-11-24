@@ -1,5 +1,5 @@
 <!-- markdownlint-disable MD041 -->
-<!-- Generated on: 2025-10-06 03:33:14 UTC -->
+<!-- Generated on: 2025-11-23 20:27:58 UTC -->
 
 - [AI on Edge Flagship Accelerator](docs/index.md)
 
@@ -158,7 +158,6 @@
     - [Scenario README Template](docs/project-planning/templates/scenario-readme-template.md)
 
 - [Blueprints](blueprints/README.md)
-  - [Source Code Overview](blueprints/README.md)
   - [Azureml](blueprints/azureml/README.md)
   - [Dual Peered Single Node Cluster](blueprints/dual-peered-single-node-cluster/README.md)
   - [Fabric Rti](blueprints/fabric-rti/README.md)
@@ -170,6 +169,7 @@
   - [Only Edge Iot Ops](blueprints/only-edge-iot-ops/README.md)
   - [Only Output Cncf Cluster Script](blueprints/only-output-cncf-cluster-script/README.md)
   - [Partial Single Node Cluster](blueprints/partial-single-node-cluster/README.md)
+  - [Blueprints](blueprints/README.md)
   - [Full Multi Node Cluster](blueprints/full-multi-node-cluster/bicep/README.md)
   - [Full Single Node Cluster](blueprints/full-single-node-cluster/bicep/README.md)
   - [Minimum Single Node Cluster](blueprints/minimum-single-node-cluster/bicep/README.md)
@@ -294,7 +294,9 @@
     - [Pull Request Template](.github/PULL_REQUEST_TEMPLATE.md)
 
 - [Infrastructure Code](src/README.md)
-  - [Source Code Overview](src/README.md)
+  - [Azure Resource Providers](src/azure-resource-providers/README.md)
+  - [Src](src/README.md)
+  - [Dataflows Acsa Egmqtt Bidirectional](src/starter-kit/dataflows-acsa-egmqtt-bidirectional/README.md)
   - [Resource Group](src/000-cloud/000-resource-group/README.md)
   - [Security Identity](src/000-cloud/010-security-identity/README.md)
   - [Observability](src/000-cloud/020-observability/README.md)
@@ -319,8 +321,6 @@
   - [Application](src/500-application/README.md)
   - [Basic Inference Cicd](src/501-ci-cd/basic-inference-cicd/README.md)
   - [Ci Cd](src/501-ci-cd/README.md)
-  - [Azure Resource Providers](src/azure-resource-providers/README.md)
-  - [Dataflows Acsa Egmqtt Bidirectional](src/starter-kit/dataflows-acsa-egmqtt-bidirectional/README.md)
   - [Resource Group](src/000-cloud/000-resource-group/bicep/README.md)
   - [Security Identity](src/000-cloud/010-security-identity/bicep/README.md)
   - [Observability](src/000-cloud/020-observability/bicep/README.md)
