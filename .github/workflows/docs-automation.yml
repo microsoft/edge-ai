@@ -149,6 +149,21 @@ jobs:
                 $originalContent = ""
               }
 
+              # DEBUG: Show what we're removing
+              Write-Host "`n🔍 DEBUG: Timestamp detection for $path" -ForegroundColor Magenta
+              if ($originalContent -match "<!-- Generated on:.*?-->") {
+                Write-Host "  Original has timestamp: $($Matches[0])" -ForegroundColor Magenta
+              } else {
+                Write-Host "  Original has NO timestamp comment" -ForegroundColor Yellow
+              }
+              if ($newContent -match "<!-- Generated on:.*?-->") {
+                Write-Host "  Generated has timestamp: $($Matches[0])" -ForegroundColor Magenta
+              } else {
+                Write-Host "  Generated has NO timestamp comment" -ForegroundColor Yellow
+              }
+              Write-Host "  Regex pattern: '<!-- Generated on:.*?-->'" -ForegroundColor Magenta
+              Write-Host ""
+
               $originalClean = ($originalContent -replace "<!-- Generated on:.*?-->", "")
               $newClean = ($newContent -replace "<!-- Generated on:.*?-->", "")
 
