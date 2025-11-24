@@ -46,12 +46,6 @@ jobs:
     outputs:
       security-status: ${{ steps.hardening.outputs.status }}
     steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@92c522aaa6f53af082553dedc1596c80b71aba33
-        with:
-          egress-policy: audit
-          allowed-endpoints: api.github.com:443 github.com:443 objects.githubusercontent.com:443 registry-1.docker.io:443 auth.docker.io:443 production.cloudflare.docker.com:443 *.azurecr.io:443 packages.microsoft.com:443 *.nuget.org:443 pypi.org:443 files.pythonhosted.org:443
-
       - name: Checkout Repository
         uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493
 

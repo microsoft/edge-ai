@@ -124,15 +124,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@92c522aaa6f53af082553dedc1596c80b71aba33 # v2.10.2
-        with:
-          egress-policy: audit
-          allowed-endpoints: >
-            github.com:443
-            api.github.com:443
-            objects.githubusercontent.com:443
-
       - name: Checkout repository
         uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493 # v4.2.2
         with:
@@ -153,17 +144,6 @@ jobs:
       stale-count: ${{ steps.staleness-check.outputs.stale-count }}
       threshold-failed: ${{ steps.staleness-check.outputs.threshold-failed }}
     steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@92c522aaa6f53af082553dedc1596c80b71aba33 # v2.10.2
-        with:
-          egress-policy: audit
-          allowed-endpoints: >
-            github.com:443
-            api.github.com:443
-            objects.githubusercontent.com:443
-            pypi.org:443
-            files.pythonhosted.org:443
-
       - name: Checkout repository
         uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493 # v4.2.2
         with:
@@ -222,16 +202,6 @@ jobs:
       score: ${{ steps.scorecard-check.outputs.score }}
       threshold-failed: ${{ steps.scorecard-check.outputs.threshold-failed }}
     steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@92c522aaa6f53af082553dedc1596c80b71aba33 # v2.10.2
-        with:
-          egress-policy: audit
-          allowed-endpoints: >
-            github.com:443
-            api.github.com:443
-            oss-fuzz-build-logs.storage.googleapis.com:443
-            www.bestpractices.dev:443
-
       - name: Checkout repository
         uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493 # v4.2.2
         with:
@@ -284,17 +254,6 @@ jobs:
     outputs:
       version-issues: ${{ steps.aio-check.outputs.issues }}
     steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@92c522aaa6f53af082553dedc1596c80b71aba33 # v2.10.2
-        with:
-          egress-policy: audit
-          allowed-endpoints: >
-            github.com:443
-            api.github.com:443
-            objects.githubusercontent.com:443
-            pypi.org:443
-            files.pythonhosted.org:443
-
       - name: Checkout repository
         uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493 # v4.2.2
 
@@ -345,15 +304,6 @@ jobs:
       pinning-threshold-failed: ${{ steps.pinning-analysis.outputs.threshold-failed }}
       dashboard-path: ${{ steps.dashboard-generation.outputs.dashboard-path }}
     steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@92c522aaa6f53af082553dedc1596c80b71aba33 # v2.10.2
-        with:
-          egress-policy: audit
-          allowed-endpoints: >
-            github.com:443
-            api.github.com:443
-            objects.githubusercontent.com:443
-
       - name: Checkout repository
         uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493 # v4.2.2
         with:
@@ -459,14 +409,6 @@ jobs:
       critical-issues: ${{ steps.summary.outputs.critical-issues }}
       deployment-approved: ${{ steps.summary.outputs.deployment-approved }}
     steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@92c522aaa6f53af082553dedc1596c80b71aba33 # v2.10.2
-        with:
-          egress-policy: audit
-          allowed-endpoints: >
-            github.com:443
-            api.github.com:443
-
       - name: Generate comprehensive security summary
         id: summary
         run: |
