@@ -844,7 +844,7 @@ function Build-ComponentsSidebar {
     )
 
     Write-Verbose "Generating Components overview sidebar"
-    
+
     # Strip PowerShell provider prefix if present (e.g., "Microsoft.PowerShell.Core\FileSystem::")
     $SrcPath = $SrcPath -replace '^[^:]+::', ''
     Write-Verbose "Using source path: $SrcPath"

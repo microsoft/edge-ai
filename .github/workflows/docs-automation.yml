@@ -276,9 +276,11 @@ jobs:
               exit 1
             } else {
               Write-Host "::warning::Sidebar differences detected. Continuing so the workflow can commit updates."
+              exit 0
             }
           } else {
             Write-Host "✅ All sidebar sections are up to date" -ForegroundColor Green
+            exit 0
           }
 
       - name: Check for changes
