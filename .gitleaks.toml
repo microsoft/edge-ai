@@ -1,0 +1,48 @@
+# .gitleaks.toml - Custom gitleaks configuration for MegaLinter
+# Purpose: Suppress false positive secret detections in example code and documentation
+# Repository: microsoft/edge-ai
+# Date: 2025-01-28
+
+[extend]
+# Use default gitleaks rules as base
+useDefault = true
+
+# Suppress generic-api-key detections in example configuration files
+[[rules]]
+id = "generic-api-key"
+description = "Generic API Key"
+
+[[rules.allowlist]]
+description = "Ignore example configuration files"
+paths = [
+  '''.*\.tfvars\.example$''',
+  '''.*\.env\.example$''',
+  '''.*\.config\.example$''',
+  '''.*/examples?/.*''',
+]
+
+# Suppress curl-auth-user detections in documentation and localhost examples
+[[rules]]
+id = "curl-auth-user"
+description = "Curl authentication flag with user credentials"
+
+[[rules.allowlist]]
+description = "Ignore documentation and localhost examples"
+paths = [
+  '''.*README\.md$''',
+  '''.*\.md$''',
+  '''.*Dockerfile$''',
+]
+regexes = [
+  '''curl.*localhost''',
+  '''curl.*127\.0\.0\.1''',
+  '''curl.*\$\{.*\}''',  # Allow environment variable placeholders
+]
+
+# Global allowlist for all rules
+[allowlist]
+description = "Global patterns to ignore"
+paths = [
+  '''.copilot-tracking/.*''',  # Ignore research and tracking files
+  '''.github/prompts/.*''',     # Ignore instruction files
+]
