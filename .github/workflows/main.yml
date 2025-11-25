@@ -116,6 +116,8 @@ jobs:
   docs-check-terraform-main:
     name: Terraform Documentation Check
     needs: [mega-linter-main]
+    permissions:
+      contents: read
     uses: ./.github/workflows/docs-check-terraform.yml
     with:
       break_build: false
@@ -125,6 +127,8 @@ jobs:
   docs-check-bicep-main:
     name: Bicep Documentation Check
     needs: [mega-linter-main]
+    permissions:
+      contents: read
     uses: ./.github/workflows/docs-check-bicep.yml
     with:
       break_build: false
@@ -133,6 +137,10 @@ jobs:
   # Security monitoring job for main branch
   security-monitoring:
     name: Security Monitoring
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
     uses: ./.github/workflows/security-comprehensive.yml
     secrets: inherit
 
