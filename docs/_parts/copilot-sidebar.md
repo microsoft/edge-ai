@@ -1,6 +1,7 @@
 <!-- markdownlint-disable MD041 -->
 <!-- markdownlint-disable MD051 -->
 <!-- copilot Section Sidebar -->
+
 - [🤖 Copilot Overview](/copilot/README)
 - [📋 Copilot Instructions](/.github/copilot-instructions)
 
