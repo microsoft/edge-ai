@@ -1,6 +1,5 @@
 <!-- markdownlint-disable MD041 -->
 <!-- copilot Section Sidebar -->
-<!-- Generated on: 2025-10-05 03:20:10 UTC -->
 
 - [🤖 Copilot Overview](copilot/README.md)
 - [🚀 Getting Started](copilot/getting-started.md)

@@ -3,7 +3,7 @@
 
 # Web framework for health checks
 flask==3.0.3
-werkzeug==3.0.4
+werkzeug==3.0.6
 
 # Data processing and utilities
 numpy>=1.26.0

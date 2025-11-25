@@ -25,7 +25,7 @@
 #
 # Usage Examples:
 # ```yaml
-# # Use in a pipeline that depends on matrix-folder-check:
+# # workflow_call Example - Use in a pipeline that depends on matrix-folder-check:
 # jobs:
 #   detect-changes:
 #     uses: ./.github/workflows/matrix-folder-check.yml
@@ -38,8 +38,24 @@
 #     uses: ./.github/workflows/application-matrix-builds.yml
 #     with:
 #       applicationMatrix: ${{ needs.detect-changes.outputs.changedApplicationFolders }}
-#       includeApplications: false
-#       registryName: "your-registry.azurecr.io"
+#       registryName: "ghcr.io/your-org/your-repo"
+#       buildConfig: |
+#         {
+#           "dockerComposeVersion": "2.24.5"
+#         }
+#       securityConfig: |
+#         {
+#           "pushImages": true,
+#           "enableSLSA": true,
+#           "enableSecurityScan": true,
+#           "securityThreshold": "high"
+#         }
+#
+# # workflow_dispatch Example - Manual execution with JSON inputs:
+# # In GitHub UI, provide these as JSON strings in the input fields:
+# # applicationMatrix: {"app1": {"path": "src/500-application/500-basic-inference", "directory": "500-basic-inference", "services": ["inference-service"], "has_services": true}}
+# # buildConfig: {"dockerComposeVersion": "2.24.5"}
+# # securityConfig: {"pushImages": true, "enableSLSA": false, "enableSecurityScan": true, "securityThreshold": "critical"}
 # ```
 ---
 name: Application Matrix Builds
@@ -57,50 +73,20 @@ on:  # yamllint disable-line rule:truthy
         required: false
         default: false
         type: boolean
-      baseImageTag:
-        description: 'Base tag for container images'
-        required: false
-        default: '${{ github.run_number }}'
-        type: string
-      dockerBuildArgs:
-        description: 'Additional Docker build arguments'
-        required: false
-        default: ''
-        type: string
       registryName:
         description: 'Container registry name for image storage'
         required: false
         default: 'local'
         type: string
-      buildEnvironment:
-        description: 'Build environment (dev, staging, prod)'
+      buildConfig:
+        description: 'JSON object with build configuration: {"baseImageTag":"value","dockerBuildArgs":"value","buildEnvironment":"dev|staging|prod","dockerComposeVersion":"2.24.5"}'
         required: false
-        default: 'dev'
+        default: '{}'
         type: string
-      enableSLSA:
-        description: 'Generate SLSA security bundles for applications'
+      securityConfig:
+        description: 'JSON object with security configuration: {"enableSLSA":true,"enableSecurityScan":true,"securityThreshold":"critical|high|medium|low|negligible","pushImages":false}'
         required: false
-        default: true
-        type: boolean
-      enableSecurityScan:
-        description: 'Enable security scanning of built container images'
-        required: false
-        default: true
-        type: boolean
-      securityThreshold:
-        description: 'Security vulnerability threshold (critical, high, medium, low, negligible)'
-        required: false
-        default: 'critical'
-        type: string
-      pushImages:
-        description: 'Push built images to container registry'
-        required: false
-        default: false
-        type: boolean
-      dockerComposeVersion:
-        description: 'Docker Compose CLI plugin version to install'
-        required: false
-        default: '2.24.5'
+        default: '{}'
         type: string
     outputs:
       buildResults:
@@ -127,50 +113,20 @@ on:  # yamllint disable-line rule:truthy
         required: false
         default: ''
         type: string
-      baseImageTag:
-        description: 'Base tag for container images'
-        required: false
-        default: 'manual'
-        type: string
-      dockerBuildArgs:
-        description: 'Additional Docker build arguments'
-        required: false
-        default: ''
-        type: string
       registryName:
         description: 'Container registry name for image storage'
         required: false
         default: 'local'
         type: string
-      buildEnvironment:
-        description: 'Build environment (dev, staging, prod)'
+      buildConfig:
+        description: 'JSON: {"baseImageTag":"manual","dockerBuildArgs":"","buildEnvironment":"dev","dockerComposeVersion":"2.24.5"}'
         required: false
-        default: 'dev'
+        default: '{"baseImageTag":"manual"}'
         type: string
-      enableSLSA:
-        description: 'Generate SLSA security bundles for applications'
+      securityConfig:
+        description: 'JSON: {"enableSLSA":true,"enableSecurityScan":true,"securityThreshold":"critical","pushImages":false}'
         required: false
-        default: true
-        type: boolean
-      enableSecurityScan:
-        description: 'Enable security scanning of built container images'
-        required: false
-        default: true
-        type: boolean
-      securityThreshold:
-        description: 'Security vulnerability threshold (critical, high, medium, low, negligible)'
-        required: false
-        default: 'critical'
-        type: string
-      pushImages:
-        description: 'Push built images to container registry'
-        required: false
-        default: false
-        type: boolean
-      dockerComposeVersion:
-        description: 'Docker Compose CLI plugin version to install'
-        required: false
-        default: '2.24.5'
+        default: '{}'
         type: string
 
 permissions:
@@ -182,14 +138,123 @@ permissions:
 
 env:
   REGISTRY: ${{ inputs.registryName || 'local' }}
-  BUILD_ENV: ${{ inputs.buildEnvironment || 'dev' }}
-  BASE_IMAGE_TAG: ${{ inputs.baseImageTag || github.run_number }}
-  DOCKER_BUILD_ARGS: ${{ inputs.dockerBuildArgs || '' }}
-  DOCKER_COMPOSE_VERSION: ${{ inputs.dockerComposeVersion || '2.24.5' }}
+  BUILD_ENV: 'dev'
+  BASE_IMAGE_TAG: ${{ github.run_number }}
+  DOCKER_BUILD_ARGS: ''
+  DOCKER_COMPOSE_VERSION: '2.24.5'
 
 jobs:
-  # Parse the matrix and prepare for parallel builds
+  # Parse consolidated JSON inputs (buildConfig, securityConfig) and extract configuration values
+  # This job enables workflow_dispatch to work within GitHub's 10-input limit by accepting
+  # configuration as JSON objects and outputting individual values for downstream jobs.
+  parse-configuration:
+    runs-on: ubuntu-latest
+    outputs:
+      registryName: ${{ steps.parse.outputs.registryName }}
+      buildEnvironment: ${{ steps.parse.outputs.buildEnvironment }}
+      baseImageTag: ${{ steps.parse.outputs.baseImageTag }}
+      dockerBuildArgs: ${{ steps.parse.outputs.dockerBuildArgs }}
+      dockerComposeVersion: ${{ steps.parse.outputs.dockerComposeVersion }}
+      enableSLSA: ${{ steps.parse.outputs.enableSLSA }}
+      enableSecurityScan: ${{ steps.parse.outputs.enableSecurityScan }}
+      securityThreshold: ${{ steps.parse.outputs.securityThreshold }}
+      pushImages: ${{ steps.parse.outputs.pushImages }}
+      applicationMatrix: ${{ steps.parse.outputs.applicationMatrix }}
+      includeApplications: ${{ steps.parse.outputs.includeApplications }}
+    steps:
+      - name: Parse consolidated configuration inputs
+        id: parse
+        shell: bash
+        run: |
+          echo "Parsing consolidated configuration inputs..."
+
+          # Extract properties from buildConfig and securityConfig JSON objects with shell-level defaults
+          BUILD_CONFIG='${{ inputs.buildConfig }}'
+          if [ -z "$BUILD_CONFIG" ] || [ "$BUILD_CONFIG" = "null" ] || [ "$BUILD_CONFIG" = "{}" ]; then
+            BUILD_CONFIG='{}'
+          fi
+
+          # Parse securityConfig JSON with defaults
+          SECURITY_CONFIG='${{ inputs.securityConfig }}'
+          if [ -z "$SECURITY_CONFIG" ] || [ "$SECURITY_CONFIG" = "null" ] || [ "$SECURITY_CONFIG" = "{}" ]; then
+            SECURITY_CONFIG='{}'
+          fi
+
+          # Two-tier fallback pattern for configuration values:
+          # 1. JQ tier: Extract from JSON using '// empty' (returns nothing if property missing/null)
+          # 2. Shell tier: Check if empty and apply default value
+          # This pattern enables consolidated JSON inputs while maintaining robust defaults
+
+          # Extract buildConfig values with defaults
+          REGISTRY_NAME=$(echo "$BUILD_CONFIG" | jq -r '.registryName // empty')
+          if [ -z "$REGISTRY_NAME" ] || [ "$REGISTRY_NAME" = "null" ]; then
+            REGISTRY_NAME="local"
+          fi
+
+          BUILD_ENVIRONMENT=$(echo "$BUILD_CONFIG" | jq -r '.buildEnvironment // empty')
+          if [ -z "$BUILD_ENVIRONMENT" ] || [ "$BUILD_ENVIRONMENT" = "null" ]; then
+            BUILD_ENVIRONMENT="dev"
+          fi
+
+          BASE_IMAGE_TAG=$(echo "$BUILD_CONFIG" | jq -r '.baseImageTag // empty')
+          if [ -z "$BASE_IMAGE_TAG" ] || [ "$BASE_IMAGE_TAG" = "null" ]; then
+            BASE_IMAGE_TAG="${{ github.run_number }}"
+          fi
+
+          DOCKER_BUILD_ARGS=$(echo "$BUILD_CONFIG" | jq -r '.dockerBuildArgs // empty')
+          if [ -z "$DOCKER_BUILD_ARGS" ] || [ "$DOCKER_BUILD_ARGS" = "null" ]; then
+            DOCKER_BUILD_ARGS=""
+          fi
+
+          DOCKER_COMPOSE_VERSION=$(echo "$BUILD_CONFIG" | jq -r '.dockerComposeVersion // empty')
+          if [ -z "$DOCKER_COMPOSE_VERSION" ] || [ "$DOCKER_COMPOSE_VERSION" = "null" ]; then
+            DOCKER_COMPOSE_VERSION="2.24.5"
+          fi
+
+          # Extract securityConfig values with defaults
+          ENABLE_SLSA=$(echo "$SECURITY_CONFIG" | jq -r '.enableSLSA // empty')
+          if [ -z "$ENABLE_SLSA" ] || [ "$ENABLE_SLSA" = "null" ]; then
+            ENABLE_SLSA="true"
+          fi
+
+          ENABLE_SECURITY_SCAN=$(echo "$SECURITY_CONFIG" | jq -r '.enableSecurityScan // empty')
+          if [ -z "$ENABLE_SECURITY_SCAN" ] || [ "$ENABLE_SECURITY_SCAN" = "null" ]; then
+            ENABLE_SECURITY_SCAN="true"
+          fi
+
+          SECURITY_THRESHOLD=$(echo "$SECURITY_CONFIG" | jq -r '.securityThreshold // empty')
+          if [ -z "$SECURITY_THRESHOLD" ] || [ "$SECURITY_THRESHOLD" = "null" ]; then
+            SECURITY_THRESHOLD="critical"
+          fi
+
+          PUSH_IMAGES=$(echo "$SECURITY_CONFIG" | jq -r '.pushImages // empty')
+          if [ -z "$PUSH_IMAGES" ] || [ "$PUSH_IMAGES" = "null" ]; then
+            PUSH_IMAGES="false"
+          fi
+
+          # Pass through matrix inputs unchanged
+          APPLICATION_MATRIX='${{ inputs.applicationMatrix }}'
+          INCLUDE_APPLICATIONS='${{ inputs.includeApplications }}'
+
+          # Set outputs
+          echo "registryName=${REGISTRY_NAME}" >> $GITHUB_OUTPUT
+          echo "buildEnvironment=${BUILD_ENVIRONMENT}" >> $GITHUB_OUTPUT
+          echo "baseImageTag=${BASE_IMAGE_TAG}" >> $GITHUB_OUTPUT
+          echo "dockerBuildArgs=${DOCKER_BUILD_ARGS}" >> $GITHUB_OUTPUT
+          echo "dockerComposeVersion=${DOCKER_COMPOSE_VERSION}" >> $GITHUB_OUTPUT
+          echo "enableSLSA=${ENABLE_SLSA}" >> $GITHUB_OUTPUT
+          echo "enableSecurityScan=${ENABLE_SECURITY_SCAN}" >> $GITHUB_OUTPUT
+          echo "securityThreshold=${SECURITY_THRESHOLD}" >> $GITHUB_OUTPUT
+          echo "pushImages=${PUSH_IMAGES}" >> $GITHUB_OUTPUT
+          echo "applicationMatrix=${APPLICATION_MATRIX}" >> $GITHUB_OUTPUT
+          echo "includeApplications=${INCLUDE_APPLICATIONS}" >> $GITHUB_OUTPUT
+
+          echo "Configuration parsing complete"
+
+  # Parse application matrix and prepare for parallel builds
+  # Depends on parse-configuration to access parsed applicationMatrix output
   prepare-builds:
+    needs: parse-configuration
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.parse-matrix.outputs.matrix }}
@@ -210,7 +275,7 @@ jobs:
         run: |
           echo "Parsing application matrix input..."
 
-          INPUT_MATRIX='${{ inputs.applicationMatrix }}'
+          INPUT_MATRIX='${{ needs.parse-configuration.outputs.applicationMatrix }}'
 
           if [ -z "${INPUT_MATRIX}" ] || [ "${INPUT_MATRIX}" = "null" ]; then
             echo "Error: applicationMatrix input is empty. This workflow expects a pre-computed matrix."
@@ -240,8 +305,10 @@ jobs:
           echo "matrix=${BUILD_MATRIX}" >> $GITHUB_OUTPUT
 
   # Build applications in parallel using the matrix strategy
+  # Uses parsed configuration from parse-configuration job (pushImages, enableSLSA, enableSecurityScan, etc.)
+  # and matrix from prepare-builds job
   build-applications:
-    needs: prepare-builds
+    needs: [parse-configuration, prepare-builds]
     runs-on: ubuntu-latest
     strategy:
       matrix: ${{ fromJson(needs.prepare-builds.outputs.matrix) }}
@@ -251,7 +318,7 @@ jobs:
         uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493
 
       - name: Log in to Container Registry
-        if: ${{ inputs.pushImages }}
+        if: ${{ needs.parse-configuration.outputs.pushImages == 'true' }}
         uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef
         with:
           registry: ${{ env.REGISTRY }}
@@ -356,15 +423,15 @@ jobs:
           )
 
           # Add optional switches
-          if ([bool]::Parse("${{ inputs.pushImages }}")) {
+          if ([bool]::Parse("${{ needs.parse-configuration.outputs.pushImages }}")) {
             $builderArgs += "-PushImages"
           }
-          if ([bool]::Parse("${{ inputs.enableSLSA }}")) {
+          if ([bool]::Parse("${{ needs.parse-configuration.outputs.enableSLSA }}")) {
             $builderArgs += "-GenerateSlsa"
           }
-          if ([bool]::Parse("${{ inputs.enableSecurityScan }}")) {
+          if ([bool]::Parse("${{ needs.parse-configuration.outputs.enableSecurityScan }}")) {
             $builderArgs += "-EnableSecurityScan"
-            $builderArgs += "-SecurityThreshold", "${{ inputs.securityThreshold }}"
+            $builderArgs += "-SecurityThreshold", "${{ needs.parse-configuration.outputs.securityThreshold }}"
           }
 
           Write-Host "Executing: pwsh ${{ github.workspace }}/scripts/build/Application-Builder.ps1 $($builderArgs -join ' ')"
@@ -436,8 +503,8 @@ jobs:
             $securityScanSummary = @{
               application = "${{ matrix.applicationName }}"
               timestamp = (Get-Date -Format "yyyy-MM-ddTHH:mm:ss.fffZ")
-              scanEnabled = [bool]::Parse("${{ inputs.enableSecurityScan }}")
-              threshold = "${{ inputs.securityThreshold }}"
+              scanEnabled = [bool]::Parse("${{ needs.parse-configuration.outputs.enableSecurityScan }}")
+              threshold = "${{ needs.parse-configuration.outputs.securityThreshold }}"
               scansExecuted = 0
               scansPassed = 0
               scansFailed = 0
@@ -505,14 +572,15 @@ jobs:
 
       - name: Upload SARIF security results
         uses: github/codeql-action/upload-sarif@294a9d92911152fe08befb9ec03e240add280cb3
-        if: always() && inputs.enableSecurityScan
+        if: always() && needs.parse-configuration.outputs.enableSecurityScan == 'true'
         with:
           sarif_file: ${{ github.workspace }}/security-reports
         continue-on-error: true
 
-  # Summarize all build results
+  # Summarize all build results and security scan findings
+  # Uses parsed security configuration (enableSecurityScan, securityThreshold) from parse-configuration job
   summarize-builds:
-    needs: [prepare-builds, build-applications]
+    needs: [parse-configuration, prepare-builds, build-applications]
     runs-on: ubuntu-latest
     if: always()
     outputs:
@@ -547,8 +615,8 @@ jobs:
 
           # Collect security scan summaries
           SECURITY_SUMMARY="{
-            \"scanningEnabled\": ${{ inputs.enableSecurityScan }},
-            \"threshold\": \"${{ inputs.securityThreshold }}\",
+            \"scanningEnabled\": ${{ needs.parse-configuration.outputs.enableSecurityScan }},
+            \"threshold\": \"${{ needs.parse-configuration.outputs.securityThreshold }}\",
             \"totalScans\": ${TOTAL_SECURITY_SCANS},
             \"scansPassed\": ${SECURITY_SCANS_PASSED},
             \"scansFailed\": ${SECURITY_SCANS_FAILED},
