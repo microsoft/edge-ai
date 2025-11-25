@@ -1,10 +1,6 @@
-// For format details, see https://aka.ms/devcontainer.json. For config options, see the
-// README at: https://github.com/devcontainers/templates/tree/main/src/ubuntu
 {
-	"name": "edge-ai-devcontainer",
-	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
+	"name": "edge-ai-beads-devcontainer",
 	"image": "mcr.microsoft.com/devcontainers/python:3.11-bookworm",
-	// Features to add to the dev container. More info: https://containers.dev/features.
 	"features": {
 		"ghcr.io/devcontainers/features/common-utils:2": {},
 		"ghcr.io/devcontainers/features/docker-in-docker:2": {},
@@ -20,10 +16,8 @@
 		"ghcr.io/devcontainers/features/terraform:1": {
 			"installTerraformDocs": true
 		},
-    	"ghcr.io/rio/features/k3d:1": {},
+		"ghcr.io/rio/features/k3d:1": {},
 		"ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {
- 			// "version": "latest" uses https://dl.k8s.io/release/stable.txt which experiences outages during heavy load.
-			// Update this back to "latest" or continue to upgrade the version periodically.
 			"version": "1.33.2",
 			"helm": "latest",
 			"minikube": "none"
@@ -37,12 +31,30 @@
 	},
 	"customizations": {
 		"vscode": {
+			"mcp": {
+				"servers": {
+					"beads": {
+						"type": "stdio",
+						"command": "uvx",
+						"args": ["beads-mcp"]
+					}
+				}
+			},
 			"settings": {
 				"terminal.integrated.profiles.linux": {
 					"bash": {
 						"path": "/bin/bash"
 					}
-				}
+				},
+				"chat.modeFilesLocations": {
+					"copilot/beads/chatmodes": true
+				},
+				"chat.instructionsFilesLocations": {
+					"copilot/beads/instructions": true
+				},
+				"chat.promptFilesLocations": {
+					"copilot/beads/prompts": true
+				},
 			},
 			"extensions": [
 				"charliermarsh.ruff",
@@ -91,17 +103,13 @@
 			]
 		}
 	},
-
-	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	"forwardPorts": [8080],
-
-	// Container environment variables
 	"containerEnv": {
 		"BROWSER": "code --new-window"
 	},
-
 	"onCreateCommand": {
 		"uv": "pip install uv",
+		"beads": "go install github.com/steveyegge/beads/cmd/bd@latest",
 		"pip": "pip install -r requirements.txt",
 		"npm": "npm install -g npm && npm ci",
 		"apt": "sudo apt update && sudo apt install -y shellcheck",
@@ -109,12 +117,5 @@
 		"tflint": "curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash",
 		"update-bashrc": "echo 'export PATH=\"${containerWorkspaceFolder}/scripts:$PATH\"' | sudo tee -a  ~/.bashrc"
 	},
-
-	// DONT USE 'postCreateCommand', it ruins your global .gitconfig https://github.com/devcontainers/cli/issues/787
-
-	// Replace when using a ptrace-based debugger like C++, Go, and Rust
-	// "runArgs": [ "--init", "--cap-add=SYS_PTRACE", "--security-opt", "seccomp=unconfined" ],
-
-	// Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
 	"remoteUser": "vscode"
 }

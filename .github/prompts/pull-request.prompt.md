@@ -28,12 +28,12 @@ You WILL NEVER create follow-up tasks for documentation or tests.
     *   Use `git fetch {{remote}} {{branch}}` determined from `${input:branch:origin/main}`, to update the remote branch to build a correct pull request.
     *   **MANDATORY**: You MUST create `pr-reference.xml` using the repository scripts—select the command that matches your host environment. Do not use any other commands to gather git status or diffs.
         *   **Unix-like shells**: Use `./scripts/dev-tools/pr-ref-gen.sh`.
-            *   Default: `./scripts/dev-tools/pr-ref-gen.sh --no-md-diff` (excludes markdown).
-            *   If `${input:includeMarkdown}` is true: `./scripts/dev-tools/pr-ref-gen.sh` (includes markdown).
+            *   Default: `./scripts/dev-tools/pr-ref-gen.sh`.
+            *   If `${input:excludeMarkdown}` is true: `./scripts/dev-tools/pr-ref-gen.sh  --no-md-diff` (excludes markdown).
             *   If a different base branch is specified via `${input:branch}`: `./scripts/dev-tools/pr-ref-gen.sh --no-md-diff --base-branch ${input:branch}` (adjust markdown inclusion as needed).
         *   **Windows PowerShell hosts**: Use `pwsh -File ./scripts/dev-tools/Generate-PrReference.ps1`.
-            *   Default: `pwsh -File ./scripts/dev-tools/Generate-PrReference.ps1 -ExcludeMarkdownDiff` (excludes markdown).
-            *   If `${input:includeMarkdown}` is true: `pwsh -File ./scripts/dev-tools/Generate-PrReference.ps1` (includes markdown).
+            *   Default: `pwsh -File ./scripts/dev-tools/Generate-PrReference.ps1`.
+            *   If `${input:excludeMarkdown}` is true: `pwsh -File ./scripts/dev-tools/Generate-PrReference.ps1 -ExcludeMarkdownDiff` (excludes markdown).
             *   If a different base branch is specified via `${input:branch}`: `pwsh -File ./scripts/dev-tools/Generate-PrReference.ps1 -ExcludeMarkdownDiff -BaseBranch ${input:branch}` (adjust markdown inclusion as needed).
     *   You WILL note the total line count from the script's output.
     *   You WILL write this line count to the chat.

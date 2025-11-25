@@ -49,6 +49,6 @@
       "type": "stdio",
       "command": "npx",
       "args": ["-y", "@azure-devops/mcp", "${input:ado_org}", "--tenant", "${input:ado_tenant}", "-d", "core", "work", "work-items", "search", "repositories", "pipelines"]
-    }
+    },
   }
 }

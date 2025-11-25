@@ -20,6 +20,7 @@ Follow all instructions from #file:../instructions/ado-create-pull-request.instr
 * ${input:areaPath}: (Optional) Area Path filter for work item searches.
 * ${input:iterationPath}: (Optional) Iteration Path filter for work item searches.
 * ${input:workItemStates:New,Active,Resolved}: (Optional) Comma-separated states to include in work item searches.
+* ${input:noGates:false}: Skip all confirmation gates and create PR immediately with discovered work items and minimum 2 optional reviewers.
 
 ## Instructions
 
