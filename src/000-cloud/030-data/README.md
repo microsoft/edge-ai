@@ -2,7 +2,7 @@
 title: Cloud Data Persistence
 description: Central data management foundation of the Edge AI Accelerator architecture, bridging edge computing with cloud-based analytics capabilities through Azure Storage and Microsoft Fabric integration
 author: Edge AI Team
-ms.date: 06/07/2025
+ms.date: 2025-06-07
 ms.topic: reference
 keywords:
   - cloud data persistence

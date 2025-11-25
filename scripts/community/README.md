@@ -100,7 +100,7 @@ graph TD
 **Set PAT token via environment variable (replace `YOUR_PAT_TOKEN_HERE` and verify the variable name used by the script):**
 
 ```powershell
-$env:AZDO_PAT = "YOUR_PAT_TOKEN_HERE"
+$env:AZURE_DEVOPS_PAT = "YOUR_PAT_TOKEN_HERE"
 .\get-azure-devops-prs.ps1
 ```
 

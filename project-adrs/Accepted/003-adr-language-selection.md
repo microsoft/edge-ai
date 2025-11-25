@@ -17,15 +17,15 @@ Select language and runtime of compiler/generator of IaC, scripts and charts for
 ## Context
 
 Selecting a language for the CLI is important for both consumption and contribution. On the consumption side there is friction in downloading a developer environment that is not easy to secure in constrained corporate environments.
-On the contribution front, selecting an ecosystem known by a majority of developers, and has a low learning curve for new developers is critical.Secondarily, the ability to easily process text files in a meta-programming/text parsing fashion is also within focus as a driving factor.  
+On the contribution front, selecting an ecosystem known by a majority of developers, and has a low learning curve for new developers is critical.Secondarily, the ability to easily process text files in a meta-programming/text parsing fashion is also within focus as a driving factor.
 
 ## Decision drivers (optional)
 
 The Primary drivers for this decision are related to ease of customer use and breath of community engagement/participation in maintaining and extending the tool.
 
 - Community participation and ease of on-boarding developers for new contributions or through extension development efforts.
-- Easy to run the tool in highly restrcted development and operational environments.
-- 70% pf all language use for IoT Edge and Hub was with Javascript, with .NET as in the majority use for cloud side service controllers  
+- Easy to run the tool in highly restricted development and operational environments.
+- 70% pf all language use for IoT Edge and Hub was with Javascript, with .NET as in the majority use for cloud side service controllers
 - Python will play as a driver in edge solutions focused on AI, but will likely be relegated to API and data science workloads
 - Most "popular" languages are moving towards support of WASM/WASI decreasing pressure on customers needing rust ecosystem expertise
 - Python has very intuitive string handling/parsing and template engines have a low learning curve

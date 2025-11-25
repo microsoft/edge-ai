@@ -47,7 +47,12 @@ variable "default_outbound_access_enabled" {
   description = "Whether to enable default outbound internet access for the Private Resolver subnet"
 }
 
+variable "should_enable_nat_gateway" {
+  type        = bool
+  description = "Whether NAT gateway association should be enabled for the resolver subnet"
+}
+
 variable "nat_gateway_id" {
   type        = string
-  description = "NAT gateway resource id for associating the resolver subnet"
+  description = "NAT gateway resource ID for associating the resolver subnet. Only used when should_enable_nat_gateway is true"
 }

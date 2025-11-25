@@ -2,7 +2,7 @@
 title: Capability Group Description Template
 description: Template for documenting groups of related platform capabilities with overview documentation and cross-capability integration patterns
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: template
 estimated_reading_time: 2
 keywords:

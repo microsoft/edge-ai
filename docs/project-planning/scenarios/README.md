@@ -2,7 +2,7 @@
 title: Edge AI Implementation Scenarios
 description: Real-world implementation scenarios demonstrating how different industries and use cases leverage the Edge AI Platform with detailed guidance on implementation approaches and technical requirements
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: hub-page
 estimated_reading_time: 6
 keywords:

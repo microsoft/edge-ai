@@ -13,7 +13,7 @@ install extensions for cluster connect and custom locations.
 | terraform | >= 1.9.8, < 2.0 |
 | azapi | >= 2.3.0 |
 | azuread | >= 3.0.2 |
-| azurerm | >= 4.8.0 |
+| azurerm | >= 4.51.0 |
 
 ## Providers
 
@@ -21,7 +21,7 @@ install extensions for cluster connect and custom locations.
 |------|---------|
 | azapi | >= 2.3.0 |
 | azuread | >= 3.0.2 |
-| azurerm | >= 4.8.0 |
+| azurerm | >= 4.51.0 |
 | terraform | n/a |
 
 ## Resources
@@ -55,7 +55,7 @@ install extensions for cluster connect and custom locations.
 | resource\_group | Resource group object containing name and id where resources will be deployed | ```object({ name = string id = optional(string) })``` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
 | should\_get\_custom\_locations\_oid | Whether to get Custom Locations Object ID using Terraform's azuread provider. (Otherwise, provided by 'custom\_locations\_oid' or `az connectedk8s enable-features` for custom-locations on cluster setup if not provided.) | `bool` | n/a | yes |
-| arc\_onboarding\_identity | The Principal ID for the identity that will be used for onboarding the cluster to Arc | ```object({ principal_id = string })``` | `null` | no |
+| arc\_onboarding\_identity | The User Assigned Managed Identity that will be used for onboarding the cluster to Arc | ```object({ id = string name = string principal_id = string client_id = string tenant_id = string })``` | `null` | no |
 | arc\_onboarding\_principal\_ids | The Principal IDs for the identity or service principal that will be used for onboarding the cluster to Arc | `list(string)` | `null` | no |
 | arc\_onboarding\_sp | n/a | ```object({ client_id = string object_id = string client_secret = string })``` | `null` | no |
 | cluster\_admin\_oid | The Object ID that will be given cluster-admin permissions with the new cluster. (Otherwise, current logged in user Object ID if 'should\_add\_current\_user\_cluster\_admin=true') | `string` | `null` | no |

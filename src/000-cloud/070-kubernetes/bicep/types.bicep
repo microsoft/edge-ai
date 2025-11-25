@@ -1,8 +1,6 @@
 metadata name = 'AKS Component Types'
 metadata description = 'Type definitions and defaults for the AKS component.'
 
-import * as core from './types.core.bicep'
-
 /*
   Kubernetes Cluster Configuration
 */

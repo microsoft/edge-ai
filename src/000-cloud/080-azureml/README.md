@@ -2,7 +2,7 @@
 title: Azure Machine Learning Component
 description: Azure Machine Learning workspace infrastructure with optional compute cluster for AI model training and deployment at the edge
 author: Edge AI Team
-ms.date: 08/06/2025
+ms.date: 2025-08-06
 ms.topic: reference
 keywords:
   - azure machine learning

@@ -2,7 +2,7 @@
 title: ADR Title
 description: '[The title should be unique within the library, provide a longer title if needed to differentiate with other ADRs]'
 author: Name of author(s)
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: architecture
 estimated_reading_time: 2
 keywords:

@@ -1,43 +1,89 @@
-# Scripts Directory
+---
+title: Scripts Directory
+description: Comprehensive documentation for utility scripts, automation tools, and deployment helpers in the edge-ai repository
+author: microsoft/edge-ai
+ms.date: 2025-10-16
+ms.topic: reference
+keywords:
+  - scripts
+  - automation
+  - utilities
+  - deployment
+  - terraform
+  - bicep
+  - azure
+estimated_reading_time: 25 minutes
+---
+
+## Scripts Directory
 
 This directory contains utility scripts used by both developers and the
 Azure DevOps build system for managing and validating the project's IaC.
 
-## Table of Contents
+## Learning Catalog Generation
 
-- [Scripts Directory](#scripts-directory)
-  - [Table of Contents](#table-of-contents)
-  - [Terraform Documentation and Validation Scripts](#terraform-documentation-and-validation-scripts)
-    - [update-all-terraform-docs.sh](#update-all-terraform-docssh)
-    - [tf-docs-check.sh](#tf-docs-checksh)
-    - [tf-vars-compliance-check.py](#tf-vars-compliance-checkpy)
-    - [tf-provider-version-check.sh](#tf-provider-version-checksh)
-    - [install-terraform-docs.sh](#install-terraform-docssh)
-  - [Bicep Documentation and Validation Scripts](#bicep-documentation-and-validation-scripts)
-    - [generate-bicep-docs.py](#generate-bicep-docspy)
-    - [update-all-bicep-docs.sh](#update-all-bicep-docssh)
-    - [bicep-docs-check.sh](#bicep-docs-checksh)
-  - [Security Scanning Scripts](#security-scanning-scripts)
-    - [build/Detect-Folder-Changes.ps1](#builddetect-folder-changesps1)
-    - [Run-Checkov.ps1](#run-checkovps1)
-  - [Azure IoT Operations Scripts](#azure-iot-operations-scripts)
-    - [aio-version-checker.py](#aio-version-checkerpy)
-  - [Blueprint Deployment Preparation Scripts](#blueprint-deployment-preparation-scripts)
-    - [location-check.sh](#location-checksh)
-  - [Documentation and Link Validation Scripts](#documentation-and-link-validation-scripts)
-    - [Link-Lang-Check.ps1](#link-lang-checkps1)
-    - [Build-Wiki.ps1](#build-wikips1)
-    - [wiki-build.sh (deprecated)](#wiki-buildsh-deprecated)
-  - [GitHub Integration Scripts](#github-integration-scripts)
-    - [github/create-pr.sh](#githubcreate-prsh)
-    - [github/access-tokens-url.sh](#githubaccess-tokens-urlsh)
-  - [Community Analysis Scripts](#community-analysis-scripts)
-    - [community/get-azure-devops-prs.ps1](#communityget-azure-devops-prsps1)
-    - [community/modules/AzDO](#communitymodulesazdo)
-  - [Test Framework Scripts](#test-framework-scripts)
-    - [Invoke-Pester.ps1](#invoke-pesterps1)
-  - [Error Handling](#error-handling)
-  - [Build System Integration](#build-system-integration)
+### Generate-LearningCatalog.ps1
+
+Generates unified learning catalog markdown files from YAML frontmatter across katas, training labs, and learning paths.
+
+- **Usage**: `npm run generate:catalog` or `npm run catalog:generate`
+- **Location**: `scripts/learning/Generate-LearningCatalog.ps1`
+- **Dependencies**: PowerShell 7+ with PowerShell-Yaml module
+- **What It Generates**:
+  1. **Main Catalog** (`learning/catalog.md`) - Complete catalog of ~48 learning items
+  2. **Paths Directory Index** (`learning/paths/README.md`) - 5 signature learning paths
+  3. **Kata Category Indexes** (`learning/katas/{category}/README.md`) - 11 category files
+- **When to Use**:
+  - After adding new katas, training labs, or learning paths
+  - After updating YAML frontmatter in existing learning content
+  - When learning content metadata changes (title, description, difficulty, etc.)
+- **Features**:
+  - Parses YAML frontmatter with multi-category tag support
+  - Generates consistent `.catalog-item` structure for plugin hydration
+  - Adds auto-generated headers to prevent manual editing
+  - Supports katas appearing in multiple categories via tags field
+  - Validates exactly 5 signature paths exist
+- **Build Integration**:
+  - Available via npm scripts: `npm run generate:catalog`, `npm run catalog:generate`
+  - Validates catalog integrity: `npm run validate:catalog`
+- **Plugin Integration**:
+  - Generated files work seamlessly with catalog hydration plugin
+  - Supports selection checkboxes for "My Learning" path building
+  - Enables real-time progress tracking via API integration
+  - Integrates with skill assessment recommendations
+- **Best Practice**:
+  - Always run after modifying learning content YAML frontmatter
+  - Commit generated files to git (required for GitHub Pages)
+  - Do not manually edit AUTO-GENERATED sections in output files
+  - Run `npm run mdlint-fix` after generation to fix any formatting issues
+
+**Example Workflow**:
+
+```powershell
+# 1. Add or update kata YAML frontmatter
+vim learning/katas/my-category/01-new-kata.md
+
+# 2. Regenerate catalog files
+npm run generate:catalog
+
+# 3. Validate catalog integrity
+npm run validate:catalog
+
+# 4. Fix markdown formatting
+npm run mdlint-fix
+
+# 5. Commit changes
+git add learning/
+git commit -m "feat(learning): add new kata to catalog"
+```
+
+**Troubleshooting**:
+
+- **PowerShell-Yaml Module Missing**: Install with `Install-Module -Name PowerShell-Yaml -Scope CurrentUser`
+- **Invalid YAML Frontmatter**: Check for syntax errors in kata/path frontmatter
+- **Wrong Path Count**: Verify only 5 signature paths exist in `learning/paths/`
+- **Missing Tags**: Ensure katas have `tags` array in frontmatter for category grouping
+- **Plugin Not Working**: Verify generated files use `.catalog-item` CSS class structure
 
 ## Terraform Documentation and Validation Scripts
 
@@ -298,14 +344,14 @@ PowerShell script that finds and optionally fixes URLs with language path segmen
 ### Build-Wiki.ps1
 
 PowerShell script that generates Azure DevOps Wiki content from markdown files in the repository.
-Parses the navigation structure from docs/_sidebar.md and includes comprehensive content coverage
+Parses the navigation structure from docs/_parts/_sidebar.md and includes comprehensive content coverage
 from all documentation folders throughout the repository.
 
 - **Usage**: `./Build-Wiki.ps1`
 - **Features**:
-  - Parses docs/_sidebar.md to extract complete 4-level navigation hierarchy
+  - Parses docs/_parts/_sidebar.md to extract complete 4-level navigation hierarchy
   - Creates wiki structure with proper directory hierarchy and .order files at every level
-  - Includes standalone content from all documentation folders (.github/prompts, .github/chatmodes, .github/instructions, copilot/, praxisworx/)
+  - Includes standalone content from all documentation folders (.github/prompts, .github/chatmodes, .github/instructions, copilot/, learning/)
   - Updates relative links to work correctly in the new wiki structure
   - Handles URL token replacement for Azure DevOps integration
   - Integrates blueprint documentation seamlessly
@@ -315,7 +361,7 @@ from all documentation folders throughout the repository.
   - Blueprint documentation from blueprints/*/README.md
   - GitHub resources including prompts, chatmodes, and instructions
   - AI Assistant guides from copilot/ folder
-  - Learning platform materials from praxisworx/ folder
+  - Learning platform materials from learning/ folder
 - **Build Integration**: Used by the [wiki-update-template.yml](../.azdo/wiki-update-template.yml) job to rebuild the Azure DevOps wiki
 - **When to Use**: Generally only used by the build system after merges to main
 - **Notes**: Creates a .wiki directory and organizes documentation to match the sidebar navigation exactly, with additional sections for comprehensive content coverage
@@ -418,11 +464,16 @@ Most scripts follow these error handling practices:
 
 The following Azure DevOps pipeline templates depend on these scripts:
 
-| Azure DevOps Template                                                                                                                       | Script Dependencies                                                           |
-|---------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------|
-| [docs-check-terraform-template.yml](../docs/build-cicd/pipelines/azure-devops/templates/docs-check-terraform-template.md)                   | install-terraform-docs.sh, tf-docs-check.sh, Link-Lang-Check.ps1 (PowerShell) |
-| [aio-version-checker-template.yml](../docs/build-cicd/pipelines/azure-devops/templates/aio-version-checker-template.md)                     | aio-version-checker.py                                                        |
-| [variable-compliance-terraform-template.yml](../docs/build-cicd/pipelines/azure-devops/templates/variable-compliance-terraform-template.md) | tf-vars-compliance-check.py                                                   |
-| [cluster-test-terraform-template.yml](../docs/build-cicd/pipelines/azure-devops/templates/cluster-test-terraform-template.md)               | tf-provider-version-check.sh                                                  |
-| [resource-provider-pwsh-tests-template.yml](../docs/build-cicd/pipelines/azure-devops/templates/resource-provider-pwsh-tests-template.md)   | Invoke-Pester.ps1                                                             |
-| [wiki-update-template.yml](../docs/build-cicd/pipelines/azure-devops/templates/wiki-update-template.md)                                     | Build-Wiki.ps1                                                                |
+| Azure DevOps Template                                                                                                                       | Script Dependencies                                             |
+|---------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------|
+| [docs-check-terraform-template.yml](../docs/build-cicd/pipelines/azure-devops/templates/docs-check-terraform-template.md)                   | install-terraform-docs.sh, tf-docs-check.sh, link-lang-check.py |
+| [aio-version-checker-template.yml](../docs/build-cicd/pipelines/azure-devops/templates/aio-version-checker-template.md)                     | aio-version-checker.py                                          |
+| [variable-compliance-terraform-template.yml](../docs/build-cicd/pipelines/azure-devops/templates/variable-compliance-terraform-template.md) | tf-vars-compliance-check.py                                     |
+| [cluster-test-terraform-template.yml](../docs/build-cicd/pipelines/azure-devops/templates/cluster-test-terraform-template.md)               | tf-provider-version-check.sh                                    |
+| [resource-provider-pwsh-tests-template.yml](../docs/build-cicd/pipelines/azure-devops/templates/resource-provider-pwsh-tests-template.md)   | Invoke-Pester.ps1                                               |
+| [wiki-update-template.yml](../docs/build-cicd/pipelines/azure-devops/templates/wiki-update-template.md)                                     | Build-Wiki.ps1                                                  |
+
+<!-- markdownlint-disable MD036 -->
+*🤖 Crafted with precision by ✨Copilot following brilliant human instruction,
+then carefully refined by our team of discerning human reviewers.*
+<!-- markdownlint-enable MD036 -->

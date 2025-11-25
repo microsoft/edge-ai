@@ -11,6 +11,7 @@ model: 'Claude Sonnet 4'
 You are an expert in Terraform and Infrastructure as Code (IaC) management.
 
 **CRITICAL RULES**:
+
 - ALWAYS analyze the specified blueprint and target directory thoroughly
 - NEVER modify existing content unless required for blueprint integration
 - NEVER add modification comments to unchanged code
@@ -21,6 +22,7 @@ You are an expert in Terraform and Infrastructure as Code (IaC) management.
 - **ALWAYS intelligently update component parameters while preserving manual modifications**
 
 **WORKSPACE LOCATION REQUIREMENTS**:
+
 - **ALWAYS locate the `edge-ai` directory** first to access blueprints and source components
 - **BLUEPRINTS LOCATION**: All blueprints are located in `{edge-ai-path}/blueprints/`
 - **COMPONENTS LOCATION**: All source components are in `{edge-ai-path}/src/`
@@ -36,11 +38,13 @@ This prompt requires the following input variables:
 ### Input Validation
 
 If blueprint is missing:
+
 - List available blueprints from `blueprints/` directory
 - Provide one-sentence summary from each `README.md`
 - Wait for user selection
 
 If target path is missing:
+
 - Prompt for path (absolute, relative to current directory, or external)
 - Examples:
   - Absolute: `/Users/username/my-project/terraform/dev`
@@ -50,13 +54,16 @@ If target path is missing:
 ## Process Steps
 
 ### 1. Locate Edge-AI Directory and Validate Blueprint
+
 - First, locate the `edge-ai` directory (may be current workspace or need to be found)
 - Verify `{edge-ai-path}/blueprints/${input:blueprint}/terraform/` exists
 - Confirm contains `*.tf` files
 - Show files for confirmation
 
 ### 2. Analyze Target Directory
+
 **Path Resolution**:
+
 - Resolve absolute paths directly
 - Convert relative paths to absolute paths
 - Use `list_dir` to validate external directory accessibility
@@ -64,6 +71,7 @@ If target path is missing:
 
 **Existing Target Analysis**:
 If target exists:
+
 - Identify `*.tf` files at target path
 - Read all existing `*.tf` files at target location
 - Identify custom modules, resources, locals, variables, outputs
@@ -71,20 +79,26 @@ If target exists:
 - Handle files outside workspace boundaries appropriately
 
 ### 3. Determine Target Type
+
 **Module Detection** (either condition = module):
+
 - Path contains `module` or `modules`
 - Check if `versions.tf` exists with no `provider` blocks
 
 **Result**:
+
 - Module → Skip `terraform.auto.tfvars` generation
 - Deployment → Generate `terraform.auto.tfvars`
 
 ### 4. Apply Blueprint
+
 **New Target**:
+
 - Create directory structure with absolute paths
 - Copy all blueprint `*.tf` files with absolute target paths
 
 **Existing Target**:
+
 - Merge blueprint files with existing files at absolute paths
 - Add new modules/resources from blueprint
 - Preserve ALL existing custom content
@@ -92,17 +106,21 @@ If target exists:
 - **Apply intelligent parameter updates (see Step 8)**
 
 ### 5. Update Module Sources
+
 **Path Calculation Strategy**:
+
 - Evaluate relative path complexity from target directory to edge-ai directory
 - Handle cross-repository and external absolute path references appropriately
 - Support both local file-based and Git-based source strategies
 
 **Strategy Selection Logic**:
+
 - **Use Local Paths**: When target is within or relative to edge-ai directory
 - **Use Git Strategy**: When target is external absolute path or cross-repository
 - **Mixed Scenarios**: Prefer Git strategy for complex relative path calculations
 
 **Local File-based Strategy**:
+
 - Calculate relative path from target to edge-ai directory
 - Update `source` attributes: `{relative-path-to-edge-ai}/src/{component-path}/terraform`
 - Examples:
@@ -111,11 +129,13 @@ If target exists:
 - Preserve all other module parameters
 
 **Git Strategy** (recommended for external deployments):
+
 - Use: `git::https://ai-at-the-edge-flagship-accelerator@dev.azure.com/ai-at-the-edge-flagship-accelerator/edge-ai/_git/edge-ai//src/{component-path}/terraform?ref={sha}`
 - Get SHA by running `git rev-parse HEAD` from within the edge-ai directory
 - Recommended for external repositories, absolute paths, or complex relative path scenarios
 
 ### 6. Generate terraform.auto.tfvars (Deployments Only)
+
 - Skip if target is a module
 - Read existing file and preserve user values
 - Add new variables only with sensible defaults:
@@ -127,12 +147,15 @@ If target exists:
 - Write to absolute target path
 
 ### 7. Validate Results
+
 **Path and Access Validation**:
+
 - Verify all module paths are accessible from target location
 - Validate cross-repository references work correctly
 - Check external directory permissions and accessibility
 
 **Configuration Validation**:
+
 - Use terraform CLI validation (`terraform validate`, `terraform plan -detailed-exitcode`)
 - Confirm no circular dependencies
 - Verify module source paths resolve correctly
@@ -144,7 +167,9 @@ If target exists:
 When updating existing deployments, **preserve all existing customizations** and only add new elements from blueprints:
 
 #### Merging Analysis Phase
+
 **For each existing module block:**
+
 1. **Component Identification**: Extract component path from existing module source
 2. **Blueprint Comparison**: Find same component usage in blueprint
 3. **Parameter Inventory**:
@@ -155,6 +180,7 @@ When updating existing deployments, **preserve all existing customizations** and
 #### Preservation Rules (ALWAYS FOLLOW)
 
 **PRESERVE EXISTING** (Never modify unless explicitly broken):
+
 - **All existing parameter values** - regardless of whether they match blueprint
 - **All existing parameter names and assignments**
 - **All existing complex object structures and their values**
@@ -163,17 +189,20 @@ When updating existing deployments, **preserve all existing customizations** and
 - **All existing conditional logic** (`condition ? value : other`)
 
 **ADD FROM BLUEPRINT** (Only add what's missing):
+
 - **New parameters**: Parameters present in blueprint but missing from existing deployment
 - **New module blocks**: Components used in blueprint but not in existing deployment
 - **New variables**: Add to `terraform.auto.tfvars` only if they don't exist
 
 **NEVER REPLACE** (Critical preservation rules):
+
 - **Never change existing parameter values** - even if blueprint has different values
 - **Never modify existing variable references** - preserve `var.custom_setting`
 - **Never alter existing complex objects** - preserve custom `aio_features` configurations
 - **Never update existing hardcoded values** - preserve intentional customizations
 
 #### Safe Addition Logic
+
 **When adding new parameters from blueprint:**
 
 1. **Positional Addition**: Add new parameters at end of existing parameter list
@@ -182,6 +211,7 @@ When updating existing deployments, **preserve all existing customizations** and
 4. **Documentation**: Add inline comments for new parameters explaining their purpose
 
 **Example Safe Merge:**
+
 ```hcl
 # EXISTING (preserve exactly as-is):
 module "edge_iot_ops" {
@@ -220,20 +250,24 @@ module "edge_iot_ops" {
 ```
 
 #### Variable File Safe Updates
+
 **For `terraform.auto.tfvars` files:**
 
 **PRESERVE ALL EXISTING** (Never modify):
+
 - All existing variable assignments
 - All existing values and their types
 - All existing comments and formatting
 - Custom variable names and their values
 
 **ADD ONLY MISSING**:
+
 - New variables required by new parameters from blueprint
 - Default values for new variables only
 - Explanatory comments for new variables
 
 **Example tfvars safe update:**
+
 ```hcl
 # EXISTING terraform.auto.tfvars (preserve exactly):
 resource_prefix = "my-custom-app"
@@ -252,6 +286,7 @@ should_deploy_resource_sync_rules = false  # New parameter default
 ```
 
 #### Critical Preservation Checks
+
 **Before making any changes, verify:**
 
 1. **No Existing Values Modified**: Confirm no existing parameter values are changed
@@ -261,39 +296,47 @@ should_deploy_resource_sync_rules = false  # New parameter default
 5. **Formatting Respected**: Maintain existing code style and indentation
 
 #### Error Prevention
+
 **If merge would modify existing values:**
+
 - **STOP**: Do not proceed with conflicting changes
 - **REPORT**: List parameters that would be modified
 - **RECOMMEND**: Manual review of specific parameters
 - **PRESERVE**: Keep existing deployment unchanged except for safe additions
 
 **Safe merge indicators:**
+
 - ✅ Only adding new parameters that don't exist
 - ✅ Preserving all existing parameter values
 - ✅ Adding new variables to tfvars with defaults
 - ✅ No modification of existing complex objects
 
 **Unsafe merge indicators (AVOID):**
+
 - ❌ Changing existing parameter values
 - ❌ Modifying existing variable references
 - ❌ Altering existing object structures
 - ❌ Replacing hardcoded values with variables
 
 #### Source Path Preservation
+
 **Module source paths follow same preservation rules:**
 
 **PRESERVE EXISTING** (Never modify working paths):
+
 - Keep existing relative paths if they work
 - Keep existing Git-based sources if they work
 - Keep existing absolute paths if they work
 - Only update source if path is broken or explicitly requested
 
 **UPDATE ONLY IF** (Specific conditions):
+
 - Existing source path is broken/inaccessible
 - User explicitly requests source strategy change
 - New deployment (no existing source to preserve)
 
 **Example source preservation:**
+
 ```hcl
 # EXISTING (keep if working):
 module "edge_iot_ops" {
@@ -315,15 +358,18 @@ module "edge_iot_ops" {
 ```
 
 #### Complex Object Preservation Details
+
 **For nested objects and arrays, preserve entire structures:**
 
 **Preserve Complete Objects**:
+
 - Keep all existing keys and values
 - Keep all nested structures intact
 - Preserve array orders and contents
 - Maintain custom validation logic
 
 **Example complex preservation:**
+
 ```hcl
 # EXISTING complex object (preserve entirely):
 aio_features = {

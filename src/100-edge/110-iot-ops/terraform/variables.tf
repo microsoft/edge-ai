@@ -86,3 +86,8 @@ variable "should_assign_key_vault_roles" {
   type        = bool
   default     = true
 }
+
+/*
+ * Required Variables
+ */
+

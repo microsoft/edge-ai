@@ -2,7 +2,7 @@
 title: Security Plan - Project Name
 description: Comprehensive security plan template for documenting project security architecture, threat modeling, data flow analysis, authentication and authorization controls, secrets management inventory, and security mitigation strategies following ISE security development practices
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: template
 estimated_reading_time: 3
 keywords:

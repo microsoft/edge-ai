@@ -1,0 +1,192 @@
+/**
+ * Sidebar Collapse Styling
+ * Provides visual styling for collapsible sidebar navigation
+ */
+
+/* Folder chevron styling with smooth transitions */
+.folder-chevron {
+  display: inline-block;
+  margin-right: 6px;
+  font-size: 10px;
+  transition:
+    transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    color 0.2s ease-out;
+  color: var(--text-color-secondary, #666);
+  -webkit-user-select: none;
+  user-select: none;
+  font-weight: bold;
+  width: 10px;
+  text-align: center;
+  cursor: pointer;
+  vertical-align: middle;
+  will-change: transform, color;
+  backface-visibility: hidden;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* Folder toggle link styling with smooth transitions */
+.folder-toggle {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  position: relative;
+  width: 100%;
+  transition: color 0.2s ease-out, background-color 0.2s ease-out;
+  border-radius: 3px;
+  padding: 2px 4px;
+}
+
+/* Text-only folder headers with smooth transitions */
+.folder-toggle.folder-text {
+  font-weight: bold;
+  color: var(--text-color-primary, #333);
+  padding: 4px 4px;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s ease-out, transform 0.1s ease-out;
+}
+
+.folder-toggle.folder-text:hover {
+  transform: translateX(2px);
+}
+
+/* Ensure proper layout for folder toggles */
+.collapsible-folder > .folder-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+/* Hide default list styling for collapsible items */
+.collapsible-folder {
+  list-style: none;
+  margin: 0;
+  padding-left: 0;
+  position: relative;
+  opacity: 0;
+  animation: fadeInSlideDown 0.3s ease-out forwards;
+  animation-delay: calc(var(--folder-index, 0) * 0.05s);
+}
+
+/* Ensure chevron is always at the start */
+.folder-chevron {
+  order: -1;
+  flex-shrink: 0;
+}
+
+.folder-toggle:hover .folder-chevron {
+  color: var(--theme-color, #0074D9);
+}
+
+.folder-text:hover {
+  color: var(--theme-color, #0074D9);
+}
+
+@keyframes fadeInSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/*
+ * Consolidated Collapsed/Expanded State Management
+ * !important declarations are required to override Docsify's default behavior
+ */
+
+/* Smooth transitions for expand/collapse with enhanced performance */
+.sidebar-nav li.collapsible-item > ul,
+.collapsible-folder > ul {
+  transition:
+    max-height 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    opacity 0.3s ease-out,
+    transform 0.3s ease-out;
+  overflow: hidden;
+  transform-origin: top;
+  will-change: max-height, opacity, transform;
+  backface-visibility: hidden;
+}
+
+/* Collapsed state - consolidated for both sidebar navigation and collapsible folders */
+.collapsible-folder.collapsed > ul,
+.sidebar-nav li.collapsible-item.collapse > ul {
+  max-height: 0 !important;
+  opacity: 0 !important;
+  transform: scaleY(0) !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  overflow: hidden !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+/* Expanded state - consolidated for both sidebar navigation and collapsible folders */
+.collapsible-folder:not(.collapsed) > ul,
+.sidebar-nav li.collapsible-item:not(.collapse) > ul {
+  max-height: 1000px !important;
+  opacity: 1 !important;
+  transform: scaleY(1) !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  overflow: visible !important;
+}
+
+/* Arrow rotation - Use consistent symbols with smooth transitions */
+.collapsible-folder.collapsed .folder-chevron {
+  transform: rotate(-90deg) scale(1.05);
+}
+
+.collapsible-folder.collapsed .folder-chevron::before {
+  content: '▶';
+}
+
+.collapsible-folder:not(.collapsed) .folder-chevron {
+  transform: rotate(0deg) scale(1.05);
+}
+
+.collapsible-folder:not(.collapsed) .folder-chevron::before {
+  content: '▼';
+}
+
+/* Consolidated hover effects with smooth transitions */
+.folder-toggle:hover {
+  color: var(--theme-color, #0074D9);
+  background-color: rgba(66, 184, 131, 0.1);
+  transform: translateX(2px);
+}
+
+.folder-toggle:active {
+  transform: translateX(2px) scale(0.98);
+  transition: transform 0.1s ease-out;
+}
+
+/* Accessibility improvements */
+.folder-toggle:focus {
+  outline: 2px solid var(--theme-color, #0074D9);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Dark mode support */
+.dark-mode .folder-chevron {
+  color: var(--text-color-secondary-dark, #999);
+}
+
+.dark-mode .folder-toggle:hover .folder-chevron {
+  color: var(--theme-color-dark, #40a9ff);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .folder-chevron {
+    font-size: 14px;
+    margin-left: 6px;
+  }
+}

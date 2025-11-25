@@ -11,14 +11,14 @@ if you are not using Azure CLI provided by the ubuntu-k3s module.
 |------|---------|
 | terraform | >= 1.9.8, < 2.0 |
 | azapi | >= 2.3.0 |
-| azurerm | >= 4.8.0 |
+| azurerm | >= 4.51.0 |
 | helm | >= 2.17.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| azurerm | >= 4.8.0 |
+| azurerm | >= 4.51.0 |
 | helm | >= 2.17.0 |
 | http | n/a |
 

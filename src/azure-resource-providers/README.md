@@ -2,7 +2,7 @@
 title: Register Azure Resource Providers
 description: Scripts for registering required Azure resource providers in your subscription for Azure IoT Operations edge deployment
 author: Edge AI Team
-ms.date: 06/07/2025
+ms.date: 2025-06-07
 ms.topic: tutorial
 keywords:
   - azure resource providers

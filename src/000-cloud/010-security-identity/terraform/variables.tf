@@ -16,7 +16,7 @@ variable "key_vault_admin_principal_id" {
 
 variable "should_use_current_user_key_vault_admin" {
   description = "Whether to give the current user the Key Vault Secrets Officer Role."
-  type        = string
+  type        = bool
   default     = true
 }
 

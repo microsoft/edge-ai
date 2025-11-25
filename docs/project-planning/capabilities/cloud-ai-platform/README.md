@@ -2,7 +2,7 @@
 title: Cloud AI Platform
 description: Comprehensive artificial intelligence ecosystem that aggregates five critical platform capabilities to deliver transformational machine learning and cognitive computing solutions across enterprise-scale digital transformation initiatives through intelligent automation and responsible AI governance
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: concept
 estimated_reading_time: 17
 keywords:

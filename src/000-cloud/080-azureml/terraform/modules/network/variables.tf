@@ -16,6 +16,11 @@ variable "network_security_group" {
   description = "Network security group to apply to the subnets."
 }
 
+variable "should_associate_network_security_group" {
+  type        = bool
+  description = "Whether to associate the Azure ML subnet with a network security group."
+}
+
 variable "virtual_network" {
   type = object({
     name = string
@@ -26,6 +31,11 @@ variable "virtual_network" {
 variable "default_outbound_access_enabled" {
   type        = bool
   description = "Whether to enable default outbound internet access for Azure ML subnets"
+}
+
+variable "should_enable_nat_gateway" {
+  type        = bool
+  description = "Whether to associate the Azure ML subnet with a NAT gateway for managed egress"
 }
 
 /*

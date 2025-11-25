@@ -25,6 +25,8 @@ module "storage_account" {
   should_enable_private_endpoint       = var.should_enable_private_endpoint
   should_enable_public_network_access  = var.should_enable_public_network_access
   virtual_network_id                   = var.virtual_network_id
+  should_create_blob_dns_zone          = var.should_create_blob_dns_zone
+  blob_dns_zone                        = var.blob_dns_zone
 }
 
 module "schema_registry" {
@@ -38,6 +40,18 @@ module "schema_registry" {
   resource_group  = var.resource_group
   resource_prefix = var.resource_prefix
   storage_account = module.storage_account.storage_account
+}
+
+module "adr_namespace" {
+  count = var.should_create_adr_namespace ? 1 : 0
+
+  source = "./modules/adr-namespace"
+
+  location                        = var.location
+  resource_group                  = var.resource_group
+  adr_namespace_name              = coalesce(var.adr_namespace_name, "adrns-${var.resource_prefix}-${var.environment}-${var.instance}")
+  messaging_endpoints             = var.adr_namespace_messaging_endpoints
+  enable_system_assigned_identity = var.adr_namespace_enable_identity
 }
 
 module "data_lake" {

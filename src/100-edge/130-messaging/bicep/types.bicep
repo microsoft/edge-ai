@@ -1,8 +1,6 @@
 metadata name = 'Component Types for Azure IoT Operations Messaging'
 metadata description = 'Provides component-specific type definitions and defaults for messaging components.'
 
-import * as core from './types.core.bicep'
-
 /*
   Type Definitions
 */

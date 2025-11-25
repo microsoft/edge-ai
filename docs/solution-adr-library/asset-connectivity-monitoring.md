@@ -2,7 +2,7 @@
 title: Asset Connectivity Monitoring
 description: Architecture Decision Record for monitoring asset connectivity state in Azure IoT Operations environments. Addresses tracking device connectivity using OPC UA Broker logging, OpenTelemetry Collector, Loki log aggregation, and Grafana dashboards with LogQL queries to provide transparency and notifications for operational teams and subsystems dependent on OT data.
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: architecture-decision-record
 estimated_reading_time: 7
 keywords:
@@ -60,7 +60,7 @@ OPC UA Broker can log connectivity state of an asset and needs to be configured 
 
 ```sh
 az iot ops create --cluster <> --resource-group <> --name <> \
-    --otherparams <...> \
+    --<other-params> <...> \
     --ops-config observability.metrics.openTelemetryCollectorAddress=<> \
     --ops-config connectors.values.openTelemetry.endpoints.default.emitLogs=true
 ```

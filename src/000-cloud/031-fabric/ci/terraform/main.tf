@@ -19,8 +19,9 @@ module "ci" {
   location        = data.azurerm_resource_group.aio.location
 
   // Resource names using terraform_data defer outputs
-  fabric_capacity_name  = terraform_data.defer.output.fabric_capacity_name
-  fabric_workspace_name = terraform_data.defer.output.fabric_workspace_name
+  fabric_capacity_name   = terraform_data.defer.output.fabric_capacity_name
+  fabric_workspace_name  = terraform_data.defer.output.fabric_workspace_name
+  fabric_capacity_admins = var.fabric_capacity_admins
 
   // Resource creation flags
   should_create_fabric_capacity   = var.should_create_fabric_capacity

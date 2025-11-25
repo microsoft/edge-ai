@@ -2,7 +2,7 @@
 title: Tags Overview
 description: Comprehensive catalog of all documentation tags organized alphabetically and by category area
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: reference
 keywords:
   - tags
@@ -15,31 +15,6 @@ estimated_reading_time: 5
 ## Tags Overview
 
 This page provides a comprehensive overview of all tags used throughout the Edge AI Platform documentation, organized both alphabetically and by category area to help you discover related content.
-
-## Quick Navigation
-
-- [Tags Overview](#tags-overview)
-- [Quick Navigation](#quick-navigation)
-- [Tags by Functional Area](#tags-by-functional-area)
-  - [Project Planning \& Architecture](#project-planning--architecture)
-  - [Build \& CI/CD](#build--cicd)
-  - [Industrial Scenarios](#industrial-scenarios)
-  - [Technical Areas](#technical-areas)
-  - [Documentation \& Meta](#documentation--meta)
-- [Alphabetical Tag Index](#alphabetical-tag-index)
-  - [A](#a)
-  - [B](#b)
-  - [C](#c)
-  - [D](#d)
-  - [E-F](#e-f)
-  - [G-H](#g-h)
-  - [I-L](#i-l)
-  - [M-O](#m-o)
-  - [P](#p)
-  - [Q-S](#q-s)
-  - [T-Z](#t-z)
-- [Tag Usage Guidelines](#tag-usage-guidelines)
-- [Related Pages](#related-pages)
 
 Tags help you find related content across the documentation. You can:
 
@@ -251,7 +226,7 @@ When adding tags to documentation:
 
 ## Related Pages
 
-- [Index](index.md) - Main documentation index
+- [Index](README.md) - Main documentation index
 - [Accessibility](accessibility.md) - Documentation accessibility guidelines
 - [Contributions](contributions.md) - How to contribute to documentation
 

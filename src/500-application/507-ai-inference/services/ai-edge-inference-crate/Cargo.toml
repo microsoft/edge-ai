@@ -1,0 +1,81 @@
+[package]
+name = "ai-edge-inference-crate"
+version = "0.2.0"
+edition = "2021"
+authors = ["Industrial AI Team"]
+description = "ONNX-based AI inference library for industrial edge computing"
+license = "MIT"
+repository = "https://github.com/industrial-ai/ai-edge-inference"
+keywords = ["onnx", "ai", "inference", "edge", "industrial"]
+categories = ["computer-vision", "multimedia::audio", "text-processing"]
+
+[lib]
+name = "ai_edge_inference_crate"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+# ONNX Runtime for AI inference (optional)
+ort = { version = "2.0.0-rc.10", features = ["download-binaries"], optional = true }
+ndarray = { version = "0.15", optional = true }
+
+# Core utilities
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+uuid = { version = "1.7.0", features = ["v4"] }
+chrono = { version = "0.4", features = ["serde"] }
+thiserror = "1.0"
+anyhow = "1.0"
+
+# Async runtime and utilities
+tokio = { version = "1.14.0", features = ["rt", "rt-multi-thread", "fs", "io-util", "macros"] }
+async-trait = "0.1"
+futures = "0.3"
+
+# Image processing
+image = { version = "0.24", features = ["jpeg", "png"] }
+
+# Audio processing
+hound = "3.5"
+dasp = { version = "0.11", features = ["all"] }
+
+# Base64 encoding for data transfer
+base64 = "0.21"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Configuration
+config = "0.14"
+lazy_static = "1.4"
+serde_yaml = "0.9"
+
+# Optional pure Rust ML fallback
+candle-core = { version = "0.9", optional = true }
+candle-nn = { version = "0.9", optional = true }
+candle-transformers = { version = "0.9", optional = true }
+candle-onnx = { version = "0.9", optional = true }
+
+[dev-dependencies]
+serial_test = "3.0"
+tempfile = "3.8"
+approx = "0.5"
+tokio-test = "0.4"
+criterion = "0.5"
+mockall = "0.11"
+
+[features]
+default = ["onnx"]
+minimal = []
+onnx = ["ort", "ndarray"]
+onnx-runtime = ["ort", "ndarray"]  # Legacy alias
+candle = ["candle-core", "candle-nn", "candle-transformers", "candle-onnx"]
+gpu = ["ort?/cuda", "ort?/tensorrt"]
+cpu-only = []
+pure-rust = ["candle-core", "candle-nn", "candle-transformers"]
+
+[package.metadata.docs.rs]
+features = ["gpu"]
+
+# Opt out of workspace - independent microservice with its own Cargo.lock
+[workspace]

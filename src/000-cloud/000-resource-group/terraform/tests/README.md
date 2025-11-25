@@ -2,7 +2,7 @@
 title: Testing Terraform
 description: Tests for the Terraform implementation of the resource group component, including testing the use_existing_resource_group functionality
 author: Edge AI Team
-ms.date: 06/07/2025
+ms.date: 2025-06-07
 ms.topic: reference
 keywords:
   - testing

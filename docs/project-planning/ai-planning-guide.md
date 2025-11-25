@@ -2,7 +2,7 @@
 title: Using AI for Edge AI Project Planning
 description: Guide to leveraging GitHub Copilot and specialized prompts for accelerating edge AI project planning with automated scenario and capability mapping
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: hub-page
 keywords:
   - ai-assistance
@@ -28,108 +28,142 @@ This guide shows you how to leverage GitHub Copilot and our specialized project 
 - Component acceleration using existing /src implementations
 - Step-by-step planning methodology
 
+**🎯 For hands-on learning, try the [Project Planning Katas][project-planning-katas] which provide:**
+
+- Progressive practice exercises using the interactive project planner
+- Real scenarios for predictive maintenance, quality optimization, and packaging efficiency
+- Multi-scenario planning and integration techniques
+- Enterprise-scale strategic planning methodologies
+
 ## Quick Start: AI-Powered Project Planning
 
-### 1. Load the Project Planning Prompt
+### 1. Activate the Interactive Project Planner
 
-In GitHub Copilot Chat, reference our specialized project planning prompt:
-
-```text
-@workspace Use the edge-ai-project-planning.prompt.md to help me plan my edge AI project
-```
-
-### 2. Describe Your Project
-
-Provide a clear description of your project objectives, context, and requirements:
+In GitHub Copilot Chat, activate our specialized interactive project planner:
 
 ```text
-I'm planning an edge AI project for [your industry/use case]. Here's my project description:
-
-[Paste your project description here - include business objectives, technical requirements, constraints, timeline, etc.]
-
-Help me:
-1. Identify relevant scenarios from the documentation
-2. Map my requirements to platform capabilities
-3. Create a preliminary implementation plan
-4. Identify prerequisites and potential challenges
+@edge-ai-project-planner
 ```
 
-### 3. Interactive Planning Session
+The interactive project planner provides:
 
-The AI assistant will guide you through a structured planning process:
+- **Guided Discovery**: Step-by-step requirements gathering with focused questions
+- **Scenario Matching**: AI-powered analysis to identify the best scenarios for your project
+- **Capability Mapping**: Automatic mapping of scenarios to platform capabilities
+- **Documentation Generation**: Complete project documentation created and saved to `./.copilot-tracking/`
 
-- **Scenario Analysis**: Matching your needs to documented implementation scenarios
-- **Capability Mapping**: Identifying required platform capabilities and dependencies
-- **Implementation Planning**: Creating a phased roadmap for your project
-- **Risk Assessment**: Highlighting potential challenges and mitigation strategies
+### 2. Interactive Project Requirements Gathering
+
+The project planner will guide you through focused questions to understand your project:
+
+```text
+I have a manufacturing facility with packaging equipment that breaks down frequently, causing production delays and high maintenance costs. We want to implement predictive maintenance to prevent equipment failures before they occur.
+```
+
+**The planner will ask follow-up questions like:**
+
+- What industry are you in?
+- Are you looking for a pilot project or enterprise-wide implementation?
+- What's your primary goal - improving quality, reducing costs, or increasing efficiency?
+
+**Answer these questions to help the AI match your requirements to appropriate scenarios.**
+
+### 3. Automatic Scenario Selection and Documentation Generation
+
+The AI assistant will:
+
+- **Scenario Analysis**: Present 1-3 recommended scenarios that match your requirements
+- **Capability Mapping**: Automatically identify required platform capabilities and dependencies
+- **Implementation Planning**: Create a phased roadmap with specific milestones
+- **Complete Documentation**: Generate comprehensive project documentation in `./.copilot-tracking/project-plan-[timestamp]/`
+
+**Documentation includes:**
+
+- Project README with overview and implementation guide
+- Detailed scenario documentation with prerequisites and capability mappings
+- Implementation roadmap with phased deployment plan
+- Risk assessment and mitigation strategies
 
 ## Example Planning Sessions
 
 ### Manufacturing Quality Control
 
+**Initial Input:**
+
 ```text
-I'm planning an edge AI project for automated quality control in our electronics manufacturing line. We want to:
+@edge-ai-project-planner
 
-- Detect defects in real-time during production
-- Reduce manual inspection overhead by 80%
-- Integrate with our existing MES system
-- Deploy across 5 manufacturing lines initially
-- Scale to 20+ lines within 12 months
-
-We have basic IoT sensors but limited AI/ML experience. Our network infrastructure is good but we need to maintain strict quality compliance.
-
-Help me plan this implementation.
+I'm planning an edge AI project for automated quality control in our electronics manufacturing line. We want to detect defects in real-time during production and reduce manual inspection overhead by 80%.
 ```
 
-**Expected AI Response**: Analysis mapping to Digital Inspection & Survey scenario, required capabilities (Cloud AI Platform, Edge Cluster Platform, etc.), phased implementation plan, and risk mitigation strategies.
+**Planner Response:**
+
+The project planner will ask focused questions about your manufacturing type, integration requirements, and implementation scope, then recommend the **Quality Process Optimization Automation** scenario with detailed capability mapping.
+
+**Generated Documentation:** Complete project plan in `./.copilot-tracking/` with scenario documentation, prerequisites, and implementation roadmap.
 
 ### Predictive Maintenance
 
+**Initial Input:**
+
 ```text
-I need to implement predictive maintenance for our industrial equipment fleet:
+@edge-ai-project-planner
 
-- 200+ pieces of critical equipment across 3 facilities
-- Currently reactive maintenance causing 15% unplanned downtime
-- Goal: Reduce unplanned downtime to <5%
-- Have vibration, temperature, and pressure sensors on most equipment
-- Need integration with existing CMMS system
-- Compliance with ISO 55000 asset management standards
-
-Our team has data analytics skills but limited ML experience. Budget approved for 18-month implementation.
-
-Create a comprehensive implementation plan.
+I need to implement predictive maintenance for our industrial equipment fleet. We have 200+ pieces of critical equipment causing 15% unplanned downtime. Goal is to reduce this to less than 5%.
 ```
 
-**Expected AI Response**: Analysis mapping to Predictive Maintenance scenario, capability requirements, skills development plan, compliance considerations, and detailed 18-month roadmap.
+**Planner Response:**
+
+The project planner will gather details about your equipment types, existing sensor infrastructure, and compliance requirements, then recommend the **Predictive Maintenance** scenario with implementation phases.
+
+**Generated Documentation:** Comprehensive 18-month implementation plan with capability requirements, skills development recommendations, and compliance considerations.
+
+## Learning Path: From Beginner to Expert
+
+### Practice with Hands-On Katas
+
+Before planning your real project, practice with our [Project Planning Katas][project-planning-katas]:
+
+1. **[01 - Basic Prompt Usage][kata-01-basic]** (30 min): Learn project planner fundamentals with predictive maintenance
+2. **[02 - Comprehensive Two-Scenario][kata-02-comprehensive]** (35 min): Practice multi-scenario analysis and integration
+3. **[03 - Advanced Strategic Planning][kata-03-advanced]** (50 min): Master enterprise-scale planning with complex scenarios
+
+### From Kata to Real Project
+
+The katas teach you to:
+
+- Navigate the interactive project planner effectively
+- Understand scenario selection and capability mapping
+- Generate comprehensive project documentation
+- Plan multi-scenario implementations strategically
+
+Apply these skills to your actual Edge AI projects for faster, more effective planning.
 
 ## Advanced Planning Techniques
 
-### Iterative Refinement
+### Multi-Scenario Integration
 
-Work iteratively with the AI to refine your plan:
-
-```text
-Based on your analysis, I have some additional constraints:
-- Must integrate with our existing SAP system
-- Need to comply with FDA regulations
-- Budget limit of $500K for pilot phase
-- Team of 3 developers, 1 data scientist
-
-How does this change your recommendations?
-```
-
-### Scenario Comparison
-
-Compare multiple scenarios for complex projects:
+Use the project planner for complex scenarios involving multiple use cases:
 
 ```text
-My project could fit multiple scenarios - both operational monitoring and predictive maintenance. Help me:
+@edge-ai-project-planner
 
-1. Compare the complexity and ROI of each approach
-2. Understand if I can implement both incrementally
-3. Recommend which to start with for maximum impact
-4. Plan a roadmap that builds from one to the other
+I want to implement both Quality Process Optimization and Packaging Line Performance Optimization. Can you help me create an integrated implementation plan that identifies shared capabilities and optimizes implementation sequence?
 ```
+
+**Expected Result**: Integrated implementation plan with shared capability optimization and coordinated deployment phases.
+
+### Enterprise-Scale Planning
+
+For complex multi-facility implementations:
+
+```text
+@edge-ai-project-planner
+
+I'm architecting Edge AI transformation for a global manufacturing conglomerate with 12 facilities. We need predictive maintenance, quality optimization, and performance monitoring across diverse product lines with 24-month phased rollout.
+```
+
+**Expected Result**: Strategic implementation orchestration plan with governance framework, shared platform optimization, and progressive value delivery milestones.
 
 ### Capability Deep Dive
 
@@ -144,130 +178,38 @@ I'm particularly interested in the Cloud AI Platform capabilities. For my [speci
 4. Model deployment and updating strategies
 ```
 
-### Custom Scenario Development
+### Getting the Most Value from AI-Assisted Planning
 
-When existing scenarios don't perfectly match your needs, leverage our comprehensive templates:
-
-```text
-I have a unique edge AI use case that doesn't perfectly match your existing scenarios. Help me use the scenario templates to:
-
-1. Document my custom requirements systematically
-2. Map my needs to platform capabilities
-3. Create a structured implementation plan
-4. Identify components that can accelerate development
-
-My use case: [Describe your unique requirements and context]
-```
-
-**Expected AI Response**: Guidance on using scenario description template, capability mapping process, identification of relevant existing components, and structured planning approach.
-
-### Template-Driven Planning
-
-Create comprehensive documentation for complex implementations:
-
-```text
-I need to create detailed documentation for a complex edge AI implementation that combines elements from multiple scenarios. Guide me through using the templates to:
-
-1. Structure comprehensive requirements analysis
-2. Document prerequisite assessment
-3. Create detailed capability mappings
-4. Plan integration with existing components in /src
-
-Help me organize this documentation systematically.
-```
-
-**Expected AI Response**: Step-by-step template usage guidance, integration planning, component acceleration recommendations, and documentation organization strategies.
-
-## Best Practices for AI-Assisted Planning
-
-### Provide Rich Context
-
-The more context you provide, the better the planning assistance:
-
-- **Business Context**: Industry, company size, objectives, success criteria
-- **Technical Context**: Current infrastructure, team skills, technology constraints
-- **Operational Context**: Compliance requirements, timeline, budget, risk tolerance
-
-### Ask Specific Questions
-
-Get more targeted assistance with specific questions:
-
-- "What are the key technical risks for this implementation?"
-- "How should I sequence capability deployment to minimize risk?"
-- "What skills development will my team need?"
-- "How can I validate this approach with a small pilot?"
-
-### Validate Recommendations
-
-Use the AI to validate your own ideas:
-
-```text
-I'm thinking about starting with operational monitoring and then adding predictive capabilities. Does this align with best practices? What are the pros and cons of this approach?
-```
-
-### Plan for Iteration
-
-Treat planning as an iterative process:
-
-```text
-We've completed our pilot implementation. Based on lessons learned [describe what you learned], how should we adjust our plan for production rollout?
-```
-
-## Integration with Documentation
-
-The AI assistant has deep knowledge of all project planning documentation:
-
-- **Scenarios**: Detailed implementation guidance for real-world use cases
-- **Capabilities**: Comprehensive platform capability documentation
-- **Prerequisites**: Technical and organizational preparation requirements
-- **Best Practices**: Proven approaches and lessons learned
-- **Comprehensive Mappings**: 30+ industry scenarios mapped to platform capabilities with technical fit analysis
-- **Industry Overview**: Complete catalog of scenarios across 8 industry pillars
-- **Mapping Methodology**: Systematic approach for scenario-capability evaluation
-
-The assistant will always reference relevant documentation sections and provide links for deeper exploration.
-
-### Leveraging Comprehensive Reference Materials
-
-The AI assistant can help you navigate the extensive reference materials:
-
-```text
-Based on the comprehensive scenario mapping, help me compare these 3 scenarios for my manufacturing use case and recommend the best starting point.
-```
-
-```text
-Using the industry scenarios overview, identify all scenarios relevant to [specific industry] and rank them by implementation complexity.
-```
-
-## Getting the Most Value
-
-### Start with Clear Objectives
+#### Start with Clear Objectives
 
 - Define specific business outcomes you want to achieve
 - Identify measurable success criteria
 - Understand your constraints and requirements
 
-### Embrace Incremental Planning
+#### Use the Interactive Process
 
-- Start with pilot projects to validate assumptions
-- Plan for iterative capability expansion
-- Build confidence through early wins
+- Answer the project planner's questions completely
+- Provide specific business metrics and technical context
+- Let the AI guide you through scenario selection
 
-### Leverage Community Knowledge
+#### Leverage Generated Documentation
 
-- Use the AI to understand how others have solved similar challenges
-- Learn from documented scenarios and best practices
-- Validate your approach against proven patterns
+- Review all generated files in `./.copilot-tracking/project-plan-[timestamp]/`
+- Customize the documentation for your specific organization
+- Use the capability mappings to plan infrastructure and skills development
 
-### Plan for Production
+#### Practice Before Production
 
-- Consider operational requirements from the beginning
-- Plan for monitoring, maintenance, and updates
-- Think about scaling and expansion early
+- Complete the [project planning katas][project-planning-katas] to build fluency with the tools:
+  - Start with [01 - Basic Prompt Usage][kata-01-basic] for project planner fundamentals
+  - Progress to [02 - Comprehensive Two-Scenario][kata-02-comprehensive] for multi-scenario planning
+  - Become proficient with [03 - Advanced Strategic Planning][kata-03-advanced] for enterprise-scale implementations
+- Practice with sample scenarios before planning your real project
+- Understand the full planning process through hands-on experience
 
 ---
 
-*Ready to start planning? Load the project planning prompt and describe your edge AI project vision. The AI assistant will guide you through a comprehensive planning process using our structured documentation and proven approaches.*
+*Ready to start planning? Try `@edge-ai-project-planner` in GitHub Copilot Chat to begin your interactive planning session. For hands-on practice, start with the [Project Planning Katas][project-planning-katas] to build fluency with the planning tools and process.*
 
 <!-- markdownlint-disable MD036 -->
 *🤖 Crafted with precision by ✨Copilot following brilliant human instruction,
@@ -276,3 +218,7 @@ then carefully refined by our team of discerning human reviewers.*
 
 <!-- Reference Links -->
 [project-planning-readme]: ./README.md
+[project-planning-katas]: /learning/katas/project-planning/README.md
+[kata-01-basic]: /learning/katas/project-planning/01-basic-prompt-usage.md
+[kata-02-comprehensive]: /learning/katas/project-planning/02-comprehensive-two-scenario.md
+[kata-03-advanced]: /learning/katas/project-planning/03-advanced-strategic-planning.md

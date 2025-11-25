@@ -50,8 +50,6 @@ Creates subnets for ACR private endpoints in an existing Virtual Network.
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|vnet|`Microsoft.Network/virtualNetworks`|2024-05-01|
-|nsg|`Microsoft.Network/networkSecurityGroups`|2024-05-01|
 |snetAcr|`Microsoft.Network/virtualNetworks/subnets`|2024-05-01|
 
 #### Outputs for network
@@ -78,7 +76,6 @@ Deploys an Azure Container Registry with optional private endpoint.
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|vnet|`Microsoft.Network/virtualNetworks`|2024-05-01|
 |acr|`Microsoft.ContainerRegistry/registries`|2023-01-01-preview|
 |privateEndpoint|`Microsoft.Network/privateEndpoints`|2022-07-01|
 |privateDnsZone|`Microsoft.Network/privateDnsZones`|2020-06-01|

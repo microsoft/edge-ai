@@ -2,7 +2,7 @@
 title: GitHub Copilot Instructions
 description: Context-specific development instructions for systematic AI-assisted implementation
 author: Edge AI Team
-ms.date: 06/18/2025
+ms.date: 2025-01-11
 ms.topic: reference
 estimated_reading_time: 3
 keywords:

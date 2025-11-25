@@ -1,0 +1,64 @@
+/* Desktop-Only Layout System */
+
+/* Desktop fixed layout variables */
+:root {
+  --toc-width: 280px;
+  --sidebar-width: 280px;
+}
+
+/* Layout containers */
+.layout-container {
+  width: 100%;
+  min-height: 100vh;
+}
+
+.content-area {
+  width: 100%;
+}
+
+/* Essential desktop layout elements */
+.toc-container {
+  width: var(--toc-width);
+}
+
+.sidebar {
+  width: var(--sidebar-width);
+  transition: transform var(--transition-medium);
+}
+
+.content-area {
+  margin-left: var(--sidebar-width);
+  margin-right: var(--toc-width);
+  padding-top: var(--content-margin-inline);
+  transition: margin var(--transition-medium);
+}
+
+/* Desktop-only ultra-wide enhancements */
+@media (min-width: 1600px) {
+  .sidebar {
+    width: min(var(--sidebar-width), 300px);
+    background: linear-gradient(
+      135deg,
+      var(--sidebar-bg-primary) 0%,
+      color-mix(in srgb, var(--sidebar-bg-primary) 90%, var(--theme-color) 10%) 50%,
+      var(--sidebar-bg-secondary) 100%
+    );
+  }
+}
+
+/* Desktop navigation */
+.app-nav {
+  width: 100%;
+}
+
+/* Smooth desktop transitions */
+.sidebar,
+.content-area,
+.toc-container,
+.app-nav {
+  transition:
+    margin-left var(--transition-medium),
+    margin-right var(--transition-medium),
+    width var(--transition-medium),
+    transform var(--transition-medium);
+}

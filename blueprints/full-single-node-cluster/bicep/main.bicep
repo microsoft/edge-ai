@@ -151,6 +151,7 @@ module cloudData '../../../src/000-cloud/030-data/bicep/main.bicep' = {
   dependsOn: [cloudResourceGroup]
   params: {
     common: common
+    shouldCreateAdrNamespace: true
   }
 }
 
@@ -240,6 +241,7 @@ module edgeIotOps '../../../src/100-edge/110-iot-ops/bicep/main.bicep' = {
     // Azure IoT Operations Instance Parameters
     aioIdentityName: cloudSecurityIdentity.outputs.aioIdentityName
     schemaRegistryName: cloudData.outputs.schemaRegistryName
+    adrNamespaceName: cloudData.outputs.adrNamespaceName
     shouldDeployAio: shouldDeployAio
     shouldCreateAnonymousBrokerListener: shouldCreateAnonymousBrokerListener
     shouldEnableOtelCollector: shouldEnableOtelCollector
@@ -286,6 +288,7 @@ module edgeMessaging '../../../src/100-edge/130-messaging/bicep/main.bicep' = {
     aioCustomLocationName: edgeIotOps.outputs.customLocationName
     aioInstanceName: edgeIotOps.outputs.aioInstanceName
     aioDataflowProfileName: edgeIotOps.outputs.dataFlowProfileName
+    adrNamespaceName: cloudData.outputs.adrNamespaceName
 
     // Optional event hub and event grid parameters passed from cloud messaging
     eventHub: cloudMessaging.outputs.eventHubConfig

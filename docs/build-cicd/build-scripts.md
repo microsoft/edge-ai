@@ -2,7 +2,7 @@
 title: Build scripts guide
 description: Essential build scripts for documentation generation, compliance validation, and security scanning in the Edge AI Accelerator project.
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: reference
 keywords:
   - build scripts

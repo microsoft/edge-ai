@@ -20,6 +20,12 @@ variable "ml_workload_identity" {
   description = "AzureML workload managed identity object containing id and principal_id."
 }
 
+variable "should_assign_ml_workload_identity_roles" {
+  type        = bool
+  description = "Whether to assign dependent resource roles to the ML workload managed identity"
+  default     = false
+}
+
 variable "description" {
   type        = string
   description = "Description of the workspace."

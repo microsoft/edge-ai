@@ -68,3 +68,13 @@ variable "key_vault" {
   description = "The Key Vault object containing id, name, and vault_uri properties"
   default     = null
 }
+
+variable "arc_onboarding_identity" {
+  type = object({
+    id           = string
+    client_id    = string
+    principal_id = string
+  })
+  description = "Arc onboarding User Assigned Managed Identity for Key Vault authentication. When provided, the client_id will be used to authenticate with Azure CLI."
+  default     = null
+}

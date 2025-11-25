@@ -2,7 +2,7 @@
 title: Development Environment Setup
 description: Comprehensive guide for setting up your development environment using Dev Container with Visual Studio Code, including prerequisites, installation steps, and tool configurations
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: how-to
 estimated_reading_time: 6
 keywords:
@@ -408,6 +408,6 @@ With your development environment configured:
 1. Review the [Contributing Guidelines](./contributing.md)
 2. Understand the [Coding Conventions](./coding-conventions.md)
 3. Explore [AI-Assisted Engineering](./ai-assisted-engineering.md) workflows
-4. Choose a [Getting Started guide](../getting-started/index.md) based on your role
+4. Choose a [Getting Started guide](../getting-started/README.md) based on your role
 
 *🤖 Crafted with precision by ✨Copilot following brilliant human instruction, then carefully refined by our team of discerning human reviewers.*

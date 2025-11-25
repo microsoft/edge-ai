@@ -68,7 +68,7 @@ The scripts handle primary and secondary node(s) setup, cluster administration, 
 |arcOnboardingSpPrincipalId|Service Principal Object Id used when assigning roles for Arc onboarding.|`string`|n/a|no|
 |arcOnboardingIdentityName|The resource name for the identity used for Arc onboarding.|`string`|n/a|no|
 |customLocationsOid|The object id of the Custom Locations Entra ID application for your tenant.<br>Can be retrieved using:<br><br>  <pre><code class="language-sh">  az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv<br>  </code></pre><br>|`string`|n/a|yes|
-|shouldAddCurrentUserClusterAdmin|Whether to add the current user as a cluster admin.|`bool`|True|no|
+|shouldAddCurrentUserClusterAdmin|Whether to add the current user as a cluster admin.|`bool`|`true`|no|
 |shouldEnableArcAutoUpgrade|Whether to enable auto-upgrade for Azure Arc agents.|`bool`|[not(equals(parameters('common').environment, 'prod'))]|no|
 |clusterAdminOid|The Object ID that will be given cluster-admin permissions.|`string`|n/a|no|
 |clusterAdminUpn|The User Principal Name that will be given cluster-admin permissions.|`string`|n/a|no|
@@ -77,23 +77,22 @@ The scripts handle primary and secondary node(s) setup, cluster administration, 
 |clusterServerHostMachineUsername|Username used for the host machines that will be given kube-config settings on setup. (Otherwise, resource_prefix if it exists as a user)|`string`|[parameters('common').resourcePrefix]|no|
 |clusterServerIp|The IP address for the server for the cluster. (Needed for mult-node cluster)|`string`|n/a|no|
 |serverToken|The token that will be given to the server for the cluster or used by agent nodes.|`securestring`|n/a|no|
-|shouldAssignRoles|Whether to assign roles for Arc Onboarding.|`bool`|True|no|
-|shouldDeployScriptToVm|Whether to deploy the scripts to the VM.|`bool`|True|no|
-|shouldSkipInstallingAzCli|Should skip downloading and installing Azure CLI on the server.|`bool`|False|no|
-|shouldSkipAzCliLogin|Should skip login process with Azure CLI on the server.|`bool`|False|no|
+|shouldAssignRoles|Whether to assign roles for Arc Onboarding.|`bool`|`true`|no|
+|shouldDeployScriptToVm|Whether to deploy the scripts to the VM.|`bool`|`true`|no|
+|shouldSkipInstallingAzCli|Should skip downloading and installing Azure CLI on the server.|`bool`|`false`|no|
+|shouldSkipAzCliLogin|Should skip login process with Azure CLI on the server.|`bool`|`false`|no|
 |deployUserTokenSecretName|The name for the deploy user token secret in Key Vault.|`string`|deploy-user-token|no|
 |deployKeyVaultName|The name of the Key Vault that will have scripts and secrets for deployment.|`string`|n/a|yes|
 |deployKeyVaultResourceGroupName|The resource group name where the Key Vault is located. Defaults to the current resource group.|`string`|[resourceGroup().name]|no|
 |k3sTokenSecretName|The name for the K3s token secret in Key Vault.|`string`|k3s-server-token|no|
 |nodeScriptSecretName|The name for the node script secret in Key Vault.|`string`|cluster-node-ubuntu-k3s|no|
 |serverScriptSecretName|The name for the server script secret in Key Vault.|`string`|cluster-server-ubuntu-k3s|no|
-|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|False|no|
+|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|`false`|no|
 
 #### Resources for edgeCncfCluster
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|arcOnboardingIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2024-11-30|
 |ubuntuK3s|`Microsoft.Resources/deployments`|2022-09-01|
 |roleAssignment|`Microsoft.Resources/deployments`|2022-09-01|
 |keyVaultRoleAssignments|`Microsoft.Resources/deployments`|2022-09-01|

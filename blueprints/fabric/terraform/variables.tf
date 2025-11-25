@@ -43,6 +43,17 @@ variable "fabric_workspace_name" {
  * Fabric Configuration - Optional
  */
 
+variable "fabric_capacity_admins_list" {
+  description = <<-EOT
+    List of user principal names (UPNs) or Azure AD object IDs for Fabric capacity administrators.
+    For users, provide UPN (<user@domain.com>) or Object ID.
+    For service principals, provide Application ID or Object ID.
+    If left empty, current user will be added as admin.
+  EOT
+  type        = list(string)
+  default     = []
+}
+
 variable "should_create_fabric_capacity" {
   description = "Whether to create a new Fabric capacity or use an existing one."
   type        = bool

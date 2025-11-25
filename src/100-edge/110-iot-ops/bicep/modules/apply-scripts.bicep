@@ -2,7 +2,6 @@ metadata name = 'Apply Scripts'
 metadata description = 'Runs deployment scripts for IoT Operations using an Azure deploymentScript resource, including tool installation and script execution.'
 
 import * as core from '../types.core.bicep'
-import * as types from '../types.bicep'
 
 /*
   Common Parameters

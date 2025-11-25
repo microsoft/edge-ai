@@ -2,7 +2,7 @@
 title: Cloud Communications Platform
 description: Comprehensive hybrid connectivity and security ecosystem that aggregates five critical platform capabilities to deliver transformational communication infrastructure, identity management, and secure integration solutions across enterprise-scale cloud and edge computing environments
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: concept
 estimated_reading_time: 15
 keywords:

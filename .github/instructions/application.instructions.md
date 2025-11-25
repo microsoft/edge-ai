@@ -15,6 +15,7 @@ Applications are containerized services that can be deployed to edge or cloud sy
 Applications use a sequential numbering system starting with `5xx`:
 
 1. List existing applications to find the next available number:
+
    ```bash
    ls -la src/500-application/
    ```
@@ -152,6 +153,7 @@ Common issues and their solutions.
 ## Contributing
 
 Guidelines for contributing to this specific application.
+
 ```
 
 #### Environment Configuration (.env)
@@ -597,6 +599,7 @@ If not already containerized:
 To add a new service to an existing multi-service application:
 
 1. **Create Service Directory**:
+
    ```bash
    mkdir -p src/5xx-your-app-name/services/new-service/src
    ```
@@ -657,6 +660,7 @@ Applications follow this naming convention:
 - **Multi-service applications**: `<application-name-without-5xx>.<service-name>:YYYY-MM-dd-<short-commit-sha>`
 
 Examples:
+
 - `basic-inference:2024-08-18-a1b2c3d` (single service)
 - `media-capture.api:2024-08-18-a1b2c3d` (multi-service)
 
@@ -751,6 +755,7 @@ The build pipeline automatically:
 ### Sample Templates
 
 Reference the existing applications in `src/500-application/` for:
+
 - Directory structure examples
 - Docker and Docker Compose configurations
 - Helm chart implementations

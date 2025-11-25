@@ -1,0 +1,162 @@
+/* Docsify Search Plugin Integration */
+
+/*
+ * This file provides search bar positioning and styling that works WITH Docsify's
+ * search plugin. The layout coordinator system handles positioning, so this file
+ * focuses on styling and functionality.
+ */
+
+/* Search container - positioning handled by layout coordinator when active */
+.search {
+  /* Default positioning for fallback when layout coordinator not active */
+  position: fixed;
+  top: 20px;
+  left: 320px; /* Position after sidebar */
+  z-index: 100;
+  width: 300px;
+  max-width: calc(100vw - 340px);
+}
+
+/* Layout coordinator integration - override default positioning */
+.layout-header-row .search {
+  /* When in header row, use relative positioning and adjusted styling */
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+  width: 280px !important;
+  max-width: 280px !important;
+  z-index: auto !important;
+}
+
+/* Search input wrapper styling */
+.search .input-wrap {
+  background: rgba(255, 255, 255, 0.95);
+  border: 2px solid #e9ecef;
+  border-radius: 25px;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Header row search wrapper - simplified styling for integration */
+.layout-header-row .search .input-wrap {
+  background: var(--search-bg, white);
+  border: 1px solid var(--border-color, #e5e5e5);
+  border-radius: 6px;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
+}
+
+.search .input-wrap:focus-within {
+  border-color: var(--theme-color, #42b983);
+  box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.1);
+}
+
+.layout-header-row .search .input-wrap:focus-within {
+  border-color: var(--theme-color, #0078d4);
+  box-shadow: 0 0 0 2px rgba(0, 120, 212, 0.1);
+}
+
+/* Search input styling */
+.search input {
+  background: transparent;
+  border: none;
+  padding: 12px 20px;
+  font-size: 16px;
+  width: 100%;
+  color: var(--color-text, #2c3e50);
+}
+
+.search input::placeholder {
+  color: var(--color-text, #2c3e50);
+  opacity: 0.6;
+}
+
+.search input:focus {
+  outline: none;
+}
+
+/* Dark mode search styling */
+body.dark .search .input-wrap {
+  background: rgba(45, 55, 72, 0.95);
+  border-color: var(--theme-border-color, #4a5568);
+}
+
+body.dark .search input {
+  color: var(--theme-text-primary, #e2e8f0);
+}
+
+body.dark .search input::placeholder {
+  color: var(--theme-text-primary, #e2e8f0);
+  opacity: 0.6;
+}
+
+body.dark .search .input-wrap:focus-within {
+  border-color: var(--theme-color, #42b983);
+  box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.1);
+}
+
+/* Search results positioning - overlay style when hideOtherSidebarContent: true */
+.search .results-panel {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 8px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  max-height: 400px;
+  overflow-y: auto;
+  z-index: 1001; /* Higher than sidebar to appear as overlay */
+}
+
+/* Search results panel styling */
+.search .matching-post {
+  padding: 12px;
+  border-bottom: 1px solid #e9ecef;
+  transition: background-color 0.2s ease;
+}
+
+.search .matching-post:hover {
+  background-color: rgba(66, 185, 131, 0.05);
+}
+
+.search .matching-post:last-child {
+  border-bottom: none;
+}
+
+.search .matching-post h2 {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--theme-color, #42b983);
+}
+
+.search .matching-post p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-text-secondary, #666);
+  line-height: 1.4;
+}
+
+body.dark .search .results-panel {
+  background: rgba(45, 55, 72, 0.95);
+  border-color: var(--theme-border-color, #4a5568);
+}
+
+body.dark .search .matching-post {
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+body.dark .search .matching-post:hover {
+  background-color: rgba(66, 185, 131, 0.1);
+}
+
+/* Responsive search positioning handled by layout coordinator */
+/* Layout coordinator JavaScript manages responsive behavior */

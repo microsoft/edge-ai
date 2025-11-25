@@ -120,8 +120,7 @@ jobs:
 
           $sidebarPaths = @(
             "docs/_sidebar.md",
-            "docs/_parts/docs-sidebar.md",
-            "docs/_parts/praxisworx-sidebar.md",
+            "docs/_parts/home-sidebar.md",
             "docs/_parts/blueprints-sidebar.md",
             "docs/_parts/infrastructure-sidebar.md"
           )
@@ -354,7 +353,7 @@ jobs:
           EOF
 
           # Check all markdown files
-          find docs src blueprints praxisworx .github copilot \
+          find docs src blueprints learning .github copilot \
             -name "*.md" -type f | \
             grep -v node_modules | \
             xargs -I {} sh -c 'echo "Checking: {}" &&
@@ -429,7 +428,7 @@ jobs:
             -ErrorAction SilentlyContinue).Count
           $blueprintsCount = (Get-ChildItem -Path 'blueprints' -Filter '*.md' `
             -Recurse -ErrorAction SilentlyContinue).Count
-          $praxisworxCount = (Get-ChildItem -Path 'praxisworx' -Filter '*.md' `
+          $learningCount = (Get-ChildItem -Path 'learning' -Filter '*.md' `
             -Recurse -ErrorAction SilentlyContinue).Count
           $githubCount = (Get-ChildItem -Path '.github' -Filter '*.md' `
             -Recurse -ErrorAction SilentlyContinue).Count
@@ -449,11 +448,11 @@ jobs:
           | Main Documentation | $docsCount |
           | Infrastructure Components | $srcCount |
           | Blueprints | $blueprintsCount |
-          | Learning Platform (PraxisWorx) | $praxisworxCount |
+          | Learning Platform | $learningCount |
           | GitHub Resources | $githubCount |
           | AI Assistant Guides (Copilot) | $copilotCount |
           | **Total** | **$($docsCount + $srcCount + $blueprintsCount + `
-            $praxisworxCount + $githubCount + $copilotCount)** |
+            $learningCount + $githubCount + $copilotCount)** |
 
           ## 🏗️ Three-Tree Architecture Status
 

@@ -65,3 +65,9 @@ variable "default_outbound_access_enabled" {
   description = "Whether to enable default outbound internet access for the ACR subnet"
   default     = false
 }
+
+variable "should_enable_nat_gateway" {
+  type        = bool
+  description = "Whether to associate the ACR subnet with a NAT gateway for managed outbound egress"
+  default     = false
+}

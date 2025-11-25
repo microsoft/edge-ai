@@ -3,7 +3,7 @@ title: GitHub Push Pipeline
 description: Azure DevOps pipeline configuration for GitHub push event handling and
   continuous integration workflows
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: concept
 estimated_reading_time: 7
 keywords:

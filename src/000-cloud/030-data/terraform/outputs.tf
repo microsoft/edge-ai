@@ -32,3 +32,8 @@ output "schema_registry" {
   description = "The new ADR Schema Registry resource."
   value       = try(module.schema_registry[0].schema_registry, null)
 }
+
+output "adr_namespace" {
+  description = "The Azure Device Registry namespace resource."
+  value       = try(module.adr_namespace[0].adr_namespace, null)
+}

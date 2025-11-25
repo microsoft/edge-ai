@@ -2,7 +2,7 @@
 title: Support
 description: Community support commitments, response times, and escalation paths for the Edge AI Accelerator project
 author: Edge AI Team
-ms.date: 09/29/2025
+ms.date: 2025-09-29
 ms.topic: reference
 keywords:
   - support
@@ -80,12 +80,6 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the complete contribution workflow.
 Support for this project is limited to the community support described above. This is an open-source project and does not include enterprise-level SLA commitments.
 
 For enterprise support related to Azure services used by Edge AI components (Azure IoT Operations, Azure Arc, Azure Kubernetes Service, etc.), please contact [Azure Support](https://azure.microsoft.com/support/options/).
-
-## Additional Resources
-
-* **Documentation**: [docs/](docs/) folder and [GitHub Pages site](https://microsoft.github.io/edge-ai)
-* **Learning Platform**: [the Learning Platform](praxisworx/) with katas, labs, and skill assessments
-* **Project Metrics**: [Pull Request Analysis](docs/contributions.md)
 
 ---
 

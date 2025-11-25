@@ -1,0 +1,80 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: model-downloader
+  namespace: azure-iot-operations
+  labels:
+    app: model-downloader
+    component: ai-inference
+    part-of: edge-ai-inference
+spec:
+  template:
+    metadata:
+      labels:
+        app: model-downloader
+        component: ai-inference
+        part-of: edge-ai-inference
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: model-downloader
+          image: curlimages/curl:latest
+          command: ["/bin/sh"]
+          args:
+            - -c
+            - |
+              set -e
+              echo "Starting model download..."
+              mkdir -p /models/tiny-yolov2
+              mkdir -p /models/yolov4
+              echo "Downloading Tiny YOLOv2 model..."
+              curl -L -o /models/tiny-yolov2/tinyyolov2-8.onnx \
+                "https://github.com/onnx/models/raw/main/validated/vision/object_detection_segmentation/tiny-yolov2/model/tinyyolov2-8.onnx"
+              echo "Downloading YOLOv4 model..."
+              curl -L -o /models/yolov4/yolov4.onnx \
+                "https://github.com/onnx/models/raw/main/validated/vision/object_detection_segmentation/yolov4/model/yolov4.onnx"
+              cat > /models/models.json << EOF
+              {
+                "models": [
+                  {
+                    "name": "tiny-yolov2",
+                    "path": "/models/tiny-yolov2/tinyyolov2-8.onnx",
+                    "type": "object_detection",
+                    "input_shape": [1, 3, 416, 416],
+                    "output_shape": [1, 125, 13, 13],
+                    "confidence_threshold": 0.5,
+                    "classes": 20
+                  },
+                  {
+                    "name": "yolov4",
+                    "path": "/models/yolov4/yolov4.onnx",
+                    "type": "object_detection",
+                    "input_shape": [1, 3, 608, 608],
+                    "output_shape": [1, 25200, 85],
+                    "confidence_threshold": 0.5,
+                    "classes": 80
+                  }
+                ]
+              }
+              EOF
+              echo "Model download completed!"
+              echo "Downloaded models:"
+              ls -la /models/
+              ls -la /models/*/
+              echo "Total size:"
+              du -sh /models/
+          volumeMounts:
+            - name: models-volume
+              mountPath: /models
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "200m"
+      volumes:
+        - name: models-volume
+          persistentVolumeClaim:
+            claimName: ai-models-pvc

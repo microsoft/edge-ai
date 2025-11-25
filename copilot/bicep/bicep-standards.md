@@ -166,7 +166,7 @@ type AioExtension = {
     @description('The distro for Kubernetes for the cluster.')
     kubernetesDistro: 'K3s' | 'K8s' | 'MicroK8s'
 
-    @description('The length of time in minutes before an operation for an agent timesout.')
+    @description('The length of time in minutes before an operation for an agent times out.')
     agentOperationTimeoutInMinutes: int
   }
 }
