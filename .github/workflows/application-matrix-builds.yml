@@ -559,7 +559,7 @@ jobs:
           }
 
       - name: Upload Compressed Security Reports
-        uses: actions/upload-artifact@2848b2cda0e5190984587ec6bb1f36730ca78d50
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4
         if: always()
         with:
           name: security-reports-${{ matrix.applicationName }}
@@ -661,7 +661,7 @@ jobs:
           echo "securityScanResults=${SECURITY_SUMMARY}" >> $GITHUB_OUTPUT
 
       - name: Upload consolidated build summary
-        uses: actions/upload-artifact@2848b2cda0e5190984587ec6bb1f36730ca78d50
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4
         if: always()
         with:
           name: build-summary-${{ needs.prepare-builds.outputs.buildId }}

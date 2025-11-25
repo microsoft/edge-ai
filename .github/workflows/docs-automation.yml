@@ -483,7 +483,7 @@ jobs:
           Write-Host "✅ Documentation health report generated"
 
       - name: Upload report
-        uses: actions/upload-artifact@2848b2cda0e5190984587ec6bb1f36730ca78d50 # v4.4.0
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v4.4.0
         with:
           name: documentation-health-report
           path: documentation-health-report.md
@@ -510,7 +510,7 @@ jobs:
 
       - name: Upload PR context artifact
         if: github.event_name == 'pull_request'
-        uses: actions/upload-artifact@2848b2cda0e5190984587ec6bb1f36730ca78d50 # v4.4.0
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v4.4.0
         with:
           name: docs-validation-results-${{ github.run_id }}
           path: pr-context.json

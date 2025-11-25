@@ -566,7 +566,7 @@ jobs:
           echo "🔐 SLSA subjects: $SUBJECTS_JSON"
 
       - name: Upload build artifact
-        uses: actions/upload-artifact@2848b2cda0e5190984587ec6bb1f36730ca78d50
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4
         with:
           name: documentation-build-${{ github.run_number }}
           path: site-artifact.tar.gz
