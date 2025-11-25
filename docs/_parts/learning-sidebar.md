@@ -1,6 +1,7 @@
 <!-- markdownlint-disable MD041 -->
 <!-- markdownlint-disable MD051 -->
 <!-- learning Section Sidebar -->
+
 - [Learning Overview](/learning/README)
   - [Learning Catalog](/learning/catalog)
   - [Contributing to the Learning Platform](/learning/contributing)

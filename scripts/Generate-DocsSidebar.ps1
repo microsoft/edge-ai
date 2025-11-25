@@ -2321,6 +2321,7 @@ function Main {
                 $sectionSidebar = Build-SectionSidebar -SectionName $sectionName -DocsPath $resolvedDocsPath -SrcPath $resolvedSrcPath -RootPath $rootPath
 
                 if ($sectionSidebar) {
+                    $sectionSidebar = $sectionSidebar.Trim()
                     $sidebarContent = @"
 <!-- markdownlint-disable MD041 -->
 <!-- markdownlint-disable MD051 -->
@@ -2368,6 +2369,7 @@ $sectionSidebar
             $sectionSidebar = Build-SectionSidebar -SectionName $Section -DocsPath $resolvedDocsPath -SrcPath $resolvedSrcPath -RootPath $rootPath
 
             if ($sectionSidebar) {
+                $sectionSidebar = $sectionSidebar.Trim()
                 $sidebarContent = @"
 <!-- markdownlint-disable MD041 -->
 <!-- markdownlint-disable MD051 -->
