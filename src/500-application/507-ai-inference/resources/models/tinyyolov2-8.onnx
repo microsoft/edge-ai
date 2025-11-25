@@ -1,0 +1,18 @@
+# TinyYOLO v2 ONNX Model Placeholder
+#
+# This is a placeholder file for the TinyYOLO v2 ONNX model.
+# The actual model file should be approximately 63.5MB.
+#
+# To use real models:
+# 1. Download TinyYOLO v2 ONNX model from ONNX Model Zoo
+# 2. Replace this file with the actual tinyyolov2-8.onnx
+# 3. Ensure the file is named exactly "tinyyolov2-8.onnx"
+#
+# Model specifications:
+# - Size: ~63.5MB
+# - Input: 1x3x416x416 (NCHW format)
+# - Output: Object detection boxes and classes
+# - Framework: ONNX Runtime compatible
+#
+# For development and testing purposes, this placeholder allows
+# the Docker Compose configuration to build and run without errors.

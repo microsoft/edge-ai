@@ -13,7 +13,7 @@ variable "platform" {
     train   = string
   })
   default = {
-    version = "0.7.25"
+    version = "0.7.29"
     train   = "preview"
   }
 }
@@ -41,7 +41,7 @@ variable "secret_sync_controller" {
     train   = string
   })
   default = {
-    version = "0.10.0"
-    train   = "preview"
+    version = "1.0.2"
+    train   = "stable"
   }
 }

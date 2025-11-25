@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Table Component Test Fixtures</title>
+    <style>
+        /* Base styles for testing environment */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 20px;
+            background-color: var(--color-background-primary, #ffffff);
+            color: var(--color-text-primary, #333333);
+        }
+
+        .fixture-section {
+            margin-bottom: 3rem;
+            padding: 1.5rem;
+            border: 1px solid var(--color-border-primary, #e0e0e0);
+            border-radius: 8px;
+        }
+
+        .fixture-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--color-text-primary, #333333);
+        }
+
+        .fixture-description {
+            font-size: 0.875rem;
+            color: var(--color-text-secondary, #666666);
+            margin-bottom: 1rem;
+        }
+
+        /* Dark mode support for testing */
+        body.dark {
+            --color-background-primary: #1a1a1a;
+            --color-text-primary: #ffffff;
+            --color-text-secondary: #cccccc;
+            --color-border-primary: #404040;
+        }
+    </style>
+</head>
+<body>
+    <h1>Table Component Test Fixtures</h1>
+    <p>This file contains various table examples for testing the table styling component across different scenarios and accessibility requirements.</p>
+
+    <!-- Basic Table Fixture -->
+    <div class="fixture-section">
+        <h2 class="fixture-title">Basic Table</h2>
+        <p class="fixture-description">Simple table structure with header and body content for basic styling tests.</p>
+
+        <table class="table-component" data-testid="basic-table">
+            <thead>
+                <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">Email</th>
+                    <th scope="col">Role</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Alice Johnson</td>
+                    <td>alice@example.com</td>
+                    <td>Student</td>
+                </tr>
+                <tr>
+                    <td>Bob Smith</td>
+                    <td>bob@example.com</td>
+                    <td>Instructor</td>
+                </tr>
+                <tr>
+                    <td>Carol Davis</td>
+                    <td>carol@example.com</td>
+                    <td>Admin</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Table with Caption for Accessibility -->
+    <div class="fixture-section">
+        <h2 class="fixture-title">Table with Caption</h2>
+        <p class="fixture-description">Table with descriptive caption for screen reader accessibility testing.</p>
+
+        <table class="table-component" data-testid="captioned-table" aria-label="Student progress tracking">
+            <caption>Student Learning Progress Summary</caption>
+            <thead>
+                <tr>
+                    <th scope="col">Student Name</th>
+                    <th scope="col">Course</th>
+                    <th scope="col">Progress</th>
+                    <th scope="col">Grade</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Emma Wilson</td>
+                    <td>Web Development Fundamentals</td>
+                    <td>85%</td>
+                    <td>B+</td>
+                </tr>
+                <tr>
+                    <td>James Brown</td>
+                    <td>Database Design</td>
+                    <td>92%</td>
+                    <td>A-</td>
+                </tr>
+                <tr>
+                    <td>Sarah Lee</td>
+                    <td>UI/UX Design Principles</td>
+                    <td>78%</td>
+                    <td>B</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Striped Table Variant -->
+    <div class="fixture-section">
+        <h2 class="fixture-title">Striped Table</h2>
+        <p class="fixture-description">Table with alternating row backgrounds for improved readability.</p>
+
+        <table class="table-component table-striped" data-testid="striped-table">
+            <thead>
+                <tr>
+                    <th scope="col">Course ID</th>
+                    <th scope="col">Course Name</th>
+                    <th scope="col">Instructor</th>
+                    <th scope="col">Enrollment</th>
+                    <th scope="col">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>CS101</td>
+                    <td>Introduction to Computer Science</td>
+                    <td>Dr. Johnson</td>
+                    <td>45</td>
+                    <td>Active</td>
+                </tr>
+                <tr>
+                    <td>WD201</td>
+                    <td>Advanced Web Development</td>
+                    <td>Prof. Smith</td>
+                    <td>32</td>
+                    <td>Active</td>
+                </tr>
+                <tr>
+                    <td>DB301</td>
+                    <td>Database Administration</td>
+                    <td>Dr. Davis</td>
+                    <td>28</td>
+                    <td>Full</td>
+                </tr>
+                <tr>
+                    <td>UX401</td>
+                    <td>User Experience Design</td>
+                    <td>Ms. Wilson</td>
+                    <td>35</td>
+                    <td>Active</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Bordered Table Variant -->
+    <div class="fixture-section">
+        <h2 class="fixture-title">Bordered Table</h2>
+        <p class="fixture-description">Table with visible borders around all cells for data separation.</p>
+
+        <table class="table-component table-bordered" data-testid="bordered-table">
+            <thead>
+                <tr>
+                    <th scope="col">Module</th>
+                    <th scope="col">Duration</th>
+                    <th scope="col">Difficulty</th>
+                    <th scope="col">Prerequisites</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>HTML Fundamentals</td>
+                    <td>2 weeks</td>
+                    <td>Beginner</td>
+                    <td>None</td>
+                </tr>
+                <tr>
+                    <td>CSS Styling</td>
+                    <td>3 weeks</td>
+                    <td>Beginner</td>
+                    <td>HTML Fundamentals</td>
+                </tr>
+                <tr>
+                    <td>JavaScript Basics</td>
+                    <td>4 weeks</td>
+                    <td>Intermediate</td>
+                    <td>HTML, CSS</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Compact Table Variant -->
+    <div class="fixture-section">
+        <h2 class="fixture-title">Compact Table</h2>
+        <p class="fixture-description">Table with reduced spacing for dense data display.</p>
+
+        <table class="table-component table-compact" data-testid="compact-table">
+            <thead>
+                <tr>
+                    <th scope="col">ID</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">Size</th>
+                    <th scope="col">Modified</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>001</td>
+                    <td>lesson-1.md</td>
+                    <td>Markdown</td>
+                    <td>2.3 KB</td>
+                    <td>2024-01-15</td>
+                </tr>
+                <tr>
+                    <td>002</td>
+                    <td>quiz-1.json</td>
+                    <td>JSON</td>
+                    <td>1.8 KB</td>
+                    <td>2024-01-14</td>
+                </tr>
+                <tr>
+                    <td>003</td>
+                    <td>exercise-1.js</td>
+                    <td>JavaScript</td>
+                    <td>4.2 KB</td>
+                    <td>2024-01-13</td>
+                </tr>
+                <tr>
+                    <td>004</td>
+                    <td>style.css</td>
+                    <td>CSS</td>
+                    <td>3.1 KB</td>
+                    <td>2024-01-12</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Complex Table with Multiple Headers -->
+    <div class="fixture-section">
+        <h2 class="fixture-title">Complex Table with Multiple Headers</h2>
+        <p class="fixture-description">Table with row and column headers for accessibility testing.</p>
+
+        <table class="table-component" data-testid="complex-table" aria-label="Learning path completion statistics">
+            <thead>
+                <tr>
+                    <th scope="col">Learning Path</th>
+                    <th scope="colgroup" colspan="3">Q1 2024</th>
+                    <th scope="colgroup" colspan="3">Q2 2024</th>
+                </tr>
+                <tr>
+                    <th scope="col"></th>
+                    <th scope="col">Started</th>
+                    <th scope="col">Completed</th>
+                    <th scope="col">Rate</th>
+                    <th scope="col">Started</th>
+                    <th scope="col">Completed</th>
+                    <th scope="col">Rate</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <th scope="row">Frontend Development</th>
+                    <td>125</td>
+                    <td>98</td>
+                    <td>78%</td>
+                    <td>142</td>
+                    <td>115</td>
+                    <td>81%</td>
+                </tr>
+                <tr>
+                    <th scope="row">Backend Development</th>
+                    <td>87</td>
+                    <td>65</td>
+                    <td>75%</td>
+                    <td>95</td>
+                    <td>78</td>
+                    <td>82%</td>
+                </tr>
+                <tr>
+                    <th scope="row">DevOps Fundamentals</th>
+                    <td>65</td>
+                    <td>45</td>
+                    <td>69%</td>
+                    <td>73</td>
+                    <td>58</td>
+                    <td>79%</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Responsive Table Example -->
+    <div class="fixture-section">
+        <h2 class="fixture-title">Responsive Table</h2>
+        <p class="fixture-description">Table with many columns to test responsive behavior and horizontal scrolling.</p>
+
+        <div class="table-responsive">
+            <table class="table-component" data-testid="responsive-table">
+                <thead>
+                    <tr>
+                        <th scope="col">Student ID</th>
+                        <th scope="col">First Name</th>
+                        <th scope="col">Last Name</th>
+                        <th scope="col">Email Address</th>
+                        <th scope="col">Course Enrolled</th>
+                        <th scope="col">Start Date</th>
+                        <th scope="col">Expected Completion</th>
+                        <th scope="col">Current Progress</th>
+                        <th scope="col">Grade</th>
+                        <th scope="col">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>STU001</td>
+                        <td>Alexandra</td>
+                        <td>Thompson</td>
+                        <td>alexandra.thompson@email.com</td>
+                        <td>Full-Stack Web Development</td>
+                        <td>2024-01-15</td>
+                        <td>2024-06-15</td>
+                        <td>72%</td>
+                        <td>B+</td>
+                        <td>Active</td>
+                    </tr>
+                    <tr>
+                        <td>STU002</td>
+                        <td>Benjamin</td>
+                        <td>Rodriguez</td>
+                        <td>benjamin.rodriguez@email.com</td>
+                        <td>Data Science Fundamentals</td>
+                        <td>2024-02-01</td>
+                        <td>2024-07-01</td>
+                        <td>56%</td>
+                        <td>B</td>
+                        <td>Active</td>
+                    </tr>
+                    <tr>
+                        <td>STU003</td>
+                        <td>Christina</td>
+                        <td>Park</td>
+                        <td>christina.park@email.com</td>
+                        <td>Mobile App Development</td>
+                        <td>2024-01-22</td>
+                        <td>2024-06-22</td>
+                        <td>89%</td>
+                        <td>A-</td>
+                        <td>Active</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Empty State Table -->
+    <div class="fixture-section">
+        <h2 class="fixture-title">Empty State Table</h2>
+        <p class="fixture-description">Table structure with no data for testing empty states.</p>
+
+        <table class="table-component" data-testid="empty-table">
+            <thead>
+                <tr>
+                    <th scope="col">Assignment</th>
+                    <th scope="col">Due Date</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Grade</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="4" class="table-empty-state">
+                        No assignments found. Check back later for new assignments.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Table with Action Buttons -->
+    <div class="fixture-section">
+        <h2 class="fixture-title">Interactive Table</h2>
+        <p class="fixture-description">Table with interactive elements like buttons for testing focus states and accessibility.</p>
+
+        <table class="table-component" data-testid="interactive-table">
+            <thead>
+                <tr>
+                    <th scope="col">Course</th>
+                    <th scope="col">Instructor</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Introduction to React</td>
+                    <td>Dr. Emily Chen</td>
+                    <td>Enrolled</td>
+                    <td>
+                        <button type="button" class="btn-secondary" aria-label="View Introduction to React course details">View</button>
+                        <button type="button" class="btn-primary" aria-label="Continue Introduction to React course">Continue</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Advanced CSS Techniques</td>
+                    <td>Prof. Michael Turner</td>
+                    <td>Completed</td>
+                    <td>
+                        <button type="button" class="btn-secondary" aria-label="View Advanced CSS Techniques course details">View</button>
+                        <button type="button" class="btn-outline" aria-label="Download Advanced CSS Techniques certificate">Certificate</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Node.js Backend Development</td>
+                    <td>Ms. Sarah Kim</td>
+                    <td>Available</td>
+                    <td>
+                        <button type="button" class="btn-secondary" aria-label="View Node.js Backend Development course details">View</button>
+                        <button type="button" class="btn-primary" aria-label="Enroll in Node.js Backend Development course">Enroll</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Large Data Table for Performance Testing -->
+    <div class="fixture-section">
+        <h2 class="fixture-title">Large Dataset Table</h2>
+        <p class="fixture-description">Table with many rows for performance and scroll testing (populated via JavaScript).</p>
+
+        <table class="table-component" data-testid="large-table" id="large-performance-table">
+            <thead>
+                <tr>
+                    <th scope="col">Entry ID</th>
+                    <th scope="col">Timestamp</th>
+                    <th scope="col">User</th>
+                    <th scope="col">Action</th>
+                    <th scope="col">Resource</th>
+                    <th scope="col">Status</th>
+                </tr>
+            </thead>
+            <tbody id="large-table-body">
+                <!-- Rows will be populated by JavaScript for performance testing -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // Populate large table for performance testing
+        function populateLargeTable() {
+            const tbody = document.getElementById('large-table-body');
+            const actions = ['Login', 'View', 'Edit', 'Delete', 'Download', 'Upload'];
+            const resources = ['Document', 'Image', 'Video', 'Assignment', 'Quiz', 'Forum'];
+            const statuses = ['Success', 'Failed', 'Pending', 'Cancelled'];
+            const users = ['Alice Johnson', 'Bob Smith', 'Carol Davis', 'David Wilson', 'Emma Brown'];
+
+            for (let i = 1; i <= 100; i++) {
+                const row = document.createElement('tr');
+                const action = actions[Math.floor(Math.random() * actions.length)];
+                const resource = resources[Math.floor(Math.random() * resources.length)];
+                const status = statuses[Math.floor(Math.random() * statuses.length)];
+                const user = users[Math.floor(Math.random() * users.length)];
+                const timestamp = new Date(2024, 0, Math.floor(Math.random() * 31) + 1,
+                                          Math.floor(Math.random() * 24),
+                                          Math.floor(Math.random() * 60)).toLocaleString();
+
+                row.innerHTML = `
+                    <td>ENTRY${i.toString().padStart(3, '0')}</td>
+                    <td>${timestamp}</td>
+                    <td>${user}</td>
+                    <td>${action}</td>
+                    <td>${resource}</td>
+                    <td>${status}</td>
+                `;
+                tbody.appendChild(row);
+            }
+        }
+
+        // Theme toggle for testing dark mode
+        function toggleTheme() {
+            document.body.classList.toggle('dark');
+        }
+
+        // Add theme toggle button
+        const themeButton = document.createElement('button');
+        themeButton.textContent = 'Toggle Dark Mode';
+        themeButton.onclick = toggleTheme;
+        themeButton.style.position = 'fixed';
+        themeButton.style.top = '20px';
+        themeButton.style.right = '20px';
+        themeButton.style.padding = '10px 15px';
+        themeButton.style.backgroundColor = 'var(--color-primary, #007bff)';
+        themeButton.style.color = 'white';
+        themeButton.style.border = 'none';
+        themeButton.style.borderRadius = '4px';
+        themeButton.style.cursor = 'pointer';
+        document.body.appendChild(themeButton);
+
+        // Populate large table when page loads
+        document.addEventListener('DOMContentLoaded', populateLargeTable);
+    </script>
+</body>
+</html>

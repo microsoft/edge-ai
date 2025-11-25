@@ -2,7 +2,7 @@
 title: ROS2 Connector & Simulator
 description: ROS2 Jazzy connector with dynamic topic discovery, Cyclone DDS config, custom interface build, optional simulator, and MQTT bridge
 author: Edge AI Team
-ms.date: 09/24/2025
+ms.date: 2025-09-24
 ms.topic: reference
 keywords:
     - ros2

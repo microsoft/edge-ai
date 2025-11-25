@@ -2,7 +2,7 @@
 title: Build-CICD Documentation Templates
 description: Comprehensive templates and guidance for creating consistent build and CI/CD documentation in the Edge AI Accelerator project.
 author: Edge AI Team
-ms.date: 09/22/2025
+ms.date: 2025-09-22
 ms.topic: reference
 keywords:
   - documentation templates

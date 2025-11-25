@@ -1,7 +1,7 @@
 # Edge AI Accelerator
 
 [![Build Status](https://dev.azure.com/ai-at-the-edge-flagship-accelerator/edge-ai/_apis/build/status%2FIaC%20for%20the%20Edge?branchName=main)](https://dev.azure.com/ai-at-the-edge-flagship-accelerator/edge-ai/_build/latest?definitionId=12&branchName=main)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE.md)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Open in Dev Containers](https://img.shields.io/static/v1?label=Dev%20Containers&message=Open&color=blue&logo=visualstudiocode)](https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://dev.azure.com/ai-at-the-edge-flagship-accelerator/_git/edge-ai)
 
 Production-ready Infrastructure as Code that empowers organizations to achieve more with edge AI solutions. Built by friendly geeks, for every team that needs edge solutions to achieve real production results.
@@ -39,7 +39,7 @@ graph TD
         Advanced[Expert Level<br/>Building custom<br/>solutions]
     end
 
-    subgraph learning [PraxisWorx Learning Path]
+    subgraph learning [Learning Platform]
         Foundation[Foundation Katas<br/>AI-Assisted Engineering<br/>15-45 min each]
         Skills[Core Skills<br/>Task Planning<br/>ADR Creation<br/>Prompt Engineering]
         Application[Applied Practice<br/>Edge Deployment Labs<br/>2-50+ hours]
@@ -151,7 +151,7 @@ code .
 # Everything gets installed automatically 🎉
 ```
 
-**Alternative:** [Manual setup instructions](docs/getting-started/development-environment.md) (for the brave)
+**Alternative:** [Manual setup instructions](docs/contributing/development-environment.md) (for the brave)
 
 > **Note on Telemetry:** If you wish to opt-out of sending telemetry data to Microsoft when deploying Azure resources with Terraform, you can set the environment variable `ARM_DISABLE_TERRAFORM_PARTNER_ID=true` before running any `terraform` commands.
 
@@ -163,30 +163,83 @@ code .
 - **Multiple IaC frameworks** - Terraform & Bicep
 - **Comprehensive testing** - because empowering reliable edge infrastructure deployments is our mission
 
-## 🎓 PraxisWorx Learning Platform
+## 🔗 Want to Use Edge-AI Tools in Your Own Repository?
+
+Share our AI instructions, chatmodes, and prompts across your projects with a simple dev container setup:
+
+**Step 1:** Clone both repositories into the same workspace
+
+```bash
+git clone https://github.com/Microsoft/edge-ai.git
+git clone https://github.com/<your-organization>/<your-project>.git  # Replace with your own repository URL
+```
+
+**Step 2:** Add mount to your project's `devcontainer.json`
+
+```json
+{
+  "mounts": [
+    "source=${localWorkspaceFolder}/../edge-ai,target=/workspaces/edge-ai,type=bind,consistency=cached"
+  ]
+}
+```
+
+**Step 3:** Update your project's `.vscode/settings.json`
+
+```json
+{
+  "chat.modeFilesLocations": {
+    ".github/chatmodes": true,
+    "../edge-ai/.github/chatmodes": true
+  },
+  "chat.instructionsFilesLocations": {
+    ".github/instructions": true,
+    "../edge-ai/.github/instructions": true
+  },
+  "chat.promptFilesLocations": {
+    ".github/prompts": true,
+    "../edge-ai/.github/prompts": true
+  }
+}
+```
+
+**Result:** Rebuild your dev container and gain instant access to:
+
+- ✅ **Task researcher** and **task planner** modes
+- ✅ **AI-assisted engineering** workflows
+- ✅ **Coding standards** and conventions
+- ✅ **Always up-to-date** - no file copying needed
+
+*💡 Perfect for teams wanting to adopt AI-assisted development patterns without duplicating files across repositories.*
+
+## 🎓 Learning Platform
 
 **Empower your team to achieve proficiency in AI-assisted, hyper-velocity engineering** through hands-on training labs and focused practice exercises (Katas).
 
-PraxisWorx (*where AI empowers every engineer to achieve more*) provides challenge-based learning for edge-to-cloud AI systems:
+### Learning Platform Philosophy
 
-- **🥋 [Katas](praxisworx/katas/)** - Focused 15-45 minute practice exercises
-- **🧪 [Training Labs](praxisworx/training-labs/)** - Comprehensive 2-8 hour hands-on experiences *(Coming Soon)*
-- **🤖 [AI Coaching](praxisworx/)** - Built-in coaching prompts for discovery-based learning
+This Learning Platform combines AI assistance with practical engineering challenges, empowering every engineer to achieve more and ensuring that learning translates directly into real-world engineering capabilities and better contributions to Edge-AI.
+
+The Learning Platform provides challenge-based learning for edge-to-cloud AI systems:
+
+- **🥋 [Katas](learning/katas/)** - Focused 15-45 minute practice exercises
+- **🧪 [Training Labs](learning/training-labs/)** - Comprehensive 2-8 hour hands-on experiences *(Coming Soon)*
+- **🤖 [AI Coaching](learning/)** - Built-in coaching prompts for discovery-based learning
 
 ### 🚀 Start Your AI-Assisted Learning Path
 
-**One-click training mode** - launch documentation with automatic navigation to PraxisWorx learning platform:
+**One-click training mode** - launch documentation with automatic navigation to Learning Platform:
 
 ```bash
-npm run docs:training
+npm run docs
 ```
 
 This command automatically:
 
 - ✅ Builds the documentation
 - ✅ Starts the local server
-- ✅ Opens your browser directly to the PraxisWorx homepage
-- ✅ Provides immediate access to all learning paths and resources
+- ✅ Opens your browser directly to the documentation site
+- ✅ Navigate to the Learning section to access all learning paths and resources
 
 ## 🤝 Contributing
 
@@ -195,6 +248,10 @@ We ❤️ contributions! Whether you're fixing typos or adding new components:
 1. Read our [Contributing Guide](docs/contributing/)
 2. Check out [open issues](https://github.com/Microsoft/edge-ai/issues)
 3. Join the [discussion](https://github.com/Microsoft/edge-ai/discussions)
+
+## Responsible AI
+
+Microsoft encourages customers to review its Responsible AI Standard when developing AI-enabled systems to ensure ethical, safe, and inclusive AI practices. Learn more at [Microsoft's Responsible AI][responsible-ai].
 
 ## 📄 Legal
 
@@ -213,3 +270,5 @@ This project is licensed under the [MIT License](./LICENSE).
 *🤖 Crafted with precision by ✨Copilot following brilliant human instruction,
 then carefully refined by our team of discerning human reviewers.*
 <!-- markdownlint-enable MD036 -->
+
+[responsible-ai]: https://www.microsoft.com/ai/responsible-ai

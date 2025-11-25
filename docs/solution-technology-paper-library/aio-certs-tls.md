@@ -2,7 +2,7 @@
 title: Certificates and TLS in Azure IoT Operations (AIO)
 description: Comprehensive technical guide to TLS security and certificate management in Azure IoT Operations covering PKI fundamentals, certificate chains, Root CA and Intermediate CA configurations, mutual TLS (mTLS), MQTT broker security, X.509 client authentication, trust bundles, certificate renewal strategies, and Azure Key Vault integration
 author: Katrien De Graeve
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: solution-article
 estimated_reading_time: 13
 keywords:
@@ -248,4 +248,4 @@ This can be achieved by following these steps:
 
 ---
 
-*This documentation is part of the [Edge AI Platform](../index.md) project.*
+*This documentation is part of the [Edge AI Platform](../README.md) project.*

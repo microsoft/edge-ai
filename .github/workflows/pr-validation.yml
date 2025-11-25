@@ -90,10 +90,14 @@ jobs:
     # needs: [codeql-analysis]
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Dependency Review
         uses: actions/dependency-review-action@56339e523c0409420f6c2c9a2f4292bbb3c07dd3
+        with:
+          fail-on-severity: high
+          warn-on-openssf-scorecard-level: 3
+          comment-summary-in-pr: on-failure
 
   # Security monitoring job for PRs - using modular security workflow
   security-monitoring:

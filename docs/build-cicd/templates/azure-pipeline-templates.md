@@ -2,7 +2,7 @@
 title: Azure pipeline templates
 description: Design and implementation patterns for reusable Azure DevOps pipeline templates in the Edge AI Accelerator project
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: reference
 keywords:
   - azure devops

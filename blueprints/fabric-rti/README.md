@@ -2,7 +2,7 @@
 title: Fabric RTI Minimal Blueprint
 description: Essential Microsoft Fabric Real-Time Intelligence (RTI) components on top of existing Azure IoT Operations infrastructure with CustomEndpoint for AIO integration
 author: Edge AI Team
-ms.date: 07/29/2025
+ms.date: 2025-07-29
 ms.topic: reference
 estimated_reading_time: 9
 keywords:

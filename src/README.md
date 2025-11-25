@@ -2,7 +2,7 @@
 title: Source Code Structure
 description: Infrastructure as Code components organized by deployment location and purpose for enterprise deployments of Arc-enabled Azure IoT Operations solutions
 author: Edge AI Team
-ms.date: 06/07/2025
+ms.date: 2025-06-07
 ms.topic: reference
 keywords:
   - source code

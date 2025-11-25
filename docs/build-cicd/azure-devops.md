@@ -2,7 +2,7 @@
 title: Azure DevOps pipelines
 description: Documentation for Azure DevOps CI/CD pipelines used in the Edge AI Accelerator project for infrastructure testing and deployment automation.
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: how-to-guide
 keywords:
   - azure devops

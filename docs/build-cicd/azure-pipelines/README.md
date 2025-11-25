@@ -2,7 +2,7 @@
 title: Azure Pipelines Configuration
 description: Configuration guide for Azure DevOps pipelines and CI/CD setup for the Edge AI Accelerator repository
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: hub-page
 estimated_reading_time: 7
 keywords:
@@ -100,16 +100,16 @@ This repository implements a modular, templatized approach to pipeline definitio
 
 The following templates are available in the `.azdo` directory:
 
-| Template                                     | Purpose                                                                                                                                                              | Documentation                                                                   |
-|----------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------|
-| `aio-version-checker-template.yml`           | Checks Azure IoT Operations component versions against latest available releases                                                                                     | [Template Documentation](./templates/aio-version-checker-template.md)           |
-| `cluster-test-terraform-template.yml`        | Runs Terraform init, validate, plan and tests on component folders                                                                                                   | [Template Documentation](./templates/cluster-test-terraform-template.md)        |
-| `docs-check-terraform-template.yml`          | Validates documentation quality including Terraform docs and URL checks                                                                                              | [Template Documentation](./templates/docs-check-terraform-template.md)          |
-| `matrix-folder-check-template.yml`           | Checks for changes in source directories and creates a dynamic matrix of folders for downstream jobs                                                                 | [Template Documentation](./templates/matrix-folder-check-template.md)           |
-| `megalinter-template.yml`                    | Provides linting capabilities across multiple languages                                                                                                              | [Template Documentation](./templates/megalinter-template.md)                    |
-| `resource-provider-pwsh-tests-template.yml`  | Runs tests to ensure resource provider registration scripts function as expected                                                                                     | [Template Documentation](./templates/resource-provider-pwsh-tests-template.md)  |
-| `variable-compliance-terraform-template.yml` | Ensures consistent Terraform variable definitions across modules                                                                                                     | [Template Documentation](./templates/variable-compliance-terraform-template.md) |
-| `wiki-update-template.yml`                   | Updates Azure DevOps wiki with comprehensive documentation coverage from all content areas including docs/, blueprints/, copilot/, praxisworx/, and .github/ folders | [Template Documentation](./templates/wiki-update-template.md)                   |
+| Template                                     | Purpose                                                                                                                                                            | Documentation                                                                   |
+|----------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------|
+| `aio-version-checker-template.yml`           | Checks Azure IoT Operations component versions against latest available releases                                                                                   | [Template Documentation](./templates/aio-version-checker-template.md)           |
+| `cluster-test-terraform-template.yml`        | Runs Terraform init, validate, plan and tests on component folders                                                                                                 | [Template Documentation](./templates/cluster-test-terraform-template.md)        |
+| `docs-check-terraform-template.yml`          | Validates documentation quality including Terraform docs and URL checks                                                                                            | [Template Documentation](./templates/docs-check-terraform-template.md)          |
+| `matrix-folder-check-template.yml`           | Checks for changes in source directories and creates a dynamic matrix of folders for downstream jobs                                                               | [Template Documentation](./templates/matrix-folder-check-template.md)           |
+| `megalinter-template.yml`                    | Provides linting capabilities across multiple languages                                                                                                            | [Template Documentation](./templates/megalinter-template.md)                    |
+| `resource-provider-pwsh-tests-template.yml`  | Runs tests to ensure resource provider registration scripts function as expected                                                                                   | [Template Documentation](./templates/resource-provider-pwsh-tests-template.md)  |
+| `variable-compliance-terraform-template.yml` | Ensures consistent Terraform variable definitions across modules                                                                                                   | [Template Documentation](./templates/variable-compliance-terraform-template.md) |
+| `wiki-update-template.yml`                   | Updates Azure DevOps wiki with comprehensive documentation coverage from all content areas including docs/, blueprints/, copilot/, learning/, and .github/ folders | [Template Documentation](./templates/wiki-update-template.md)                   |
 
 > **Note:** All template documentation follows a standardized format that includes overview,
 > features, parameters, usage examples, implementation details, and troubleshooting sections.

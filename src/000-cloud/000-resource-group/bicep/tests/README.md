@@ -2,7 +2,7 @@
 title: Testing Bicep
 description: Tests for the Bicep implementation of the resource group component, including testing the useExistingResourceGroup functionality
 author: Edge AI Team
-ms.date: 06/07/2025
+ms.date: 2025-06-07
 ms.topic: reference
 keywords:
   - testing

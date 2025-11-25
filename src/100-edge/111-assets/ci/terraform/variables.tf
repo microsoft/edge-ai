@@ -6,7 +6,7 @@
 
 variable "environment" {
   type        = string
-  description = "Environment for all resources in this module: dev, test, or prod"
+  description = "Environment for all resources in this module: dev, test, or prod."
 }
 
 variable "resource_prefix" {
@@ -76,5 +76,82 @@ variable "assets" {
     software_revision              = optional(string)
   }))
   description = "List of assets to create. Otherwise, an empty list."
+  default     = []
+}
+
+variable "should_create_default_namespaced_asset" {
+  type        = bool
+  description = "Whether to create a default namespaced asset and device. Otherwise, false."
+  default     = false
+}
+
+variable "namespaced_devices" {
+  type = list(object({
+    name    = string
+    enabled = optional(bool, true)
+    endpoints = object({
+      outbound = optional(object({
+        assigned = object({})
+      }), { assigned = {} })
+      inbound = map(object({
+        endpoint_type           = string
+        address                 = string
+        version                 = optional(string, null)
+        additionalConfiguration = optional(string)
+        authentication = object({
+          method = string
+          usernamePasswordCredentials = optional(object({
+            usernameSecretName = string
+            passwordSecretName = string
+          }))
+          x509Credentials = optional(object({
+            certificateSecretName = string
+          }))
+        })
+        trustSettings = optional(object({
+          trustList = string
+        }))
+      }))
+    })
+  }))
+  description = "List of namespaced devices to create. Otherwise, an empty list."
+  default     = []
+}
+
+variable "namespaced_assets" {
+  type = list(object({
+    name         = string
+    display_name = optional(string)
+    device_ref = object({
+      device_name   = string
+      endpoint_name = string
+    })
+    description       = optional(string)
+    documentation_uri = optional(string)
+    enabled           = optional(bool, true)
+    hardware_revision = optional(string)
+    manufacturer      = optional(string)
+    manufacturer_uri  = optional(string)
+    model             = optional(string)
+    product_code      = optional(string)
+    serial_number     = optional(string)
+    software_revision = optional(string)
+    attributes        = optional(map(string), {})
+    datasets = optional(list(object({
+      name = string
+      data_points = list(object({
+        name                     = string
+        data_source              = string
+        data_point_configuration = string
+      }))
+      destinations = optional(list(object({
+        target        = string
+        configuration = map(string)
+      })), [])
+    })), [])
+    default_datasets_configuration = optional(string)
+    default_events_configuration   = optional(string)
+  }))
+  description = "List of namespaced assets to create. Otherwise, an empty list."
   default     = []
 }

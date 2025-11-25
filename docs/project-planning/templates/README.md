@@ -2,7 +2,7 @@
 title: Project Planning Templates
 description: Comprehensive templates for creating new documentation that integrates seamlessly with the Edge AI Project Planning framework including scenario and capability templates
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: hub-page
 estimated_reading_time: 5
 keywords:
@@ -26,7 +26,7 @@ These templates provide a complete framework for documenting edge AI implementat
 
 ### Scenario Templates
 
-- **[Scenario Description Template][scenario-description-template]:** Main scenario documentation with comprehensive analysis
+- **[Scenario Documentation Template][scenario-documentation-template]:** Complete scenario README template with comprehensive structure, implementation phases, and business planning
 - **[Scenario README Template][scenario-readme-template]:** Navigation and implementation guide for scenario folders
 - **[Prerequisites Template][prerequisites-template]:** Technical and organizational requirements documentation
 - **[Capability Mapping Template][capability-mapping-template]:** Detailed capability analysis and integration patterns
@@ -38,19 +38,21 @@ These templates provide a complete framework for documenting edge AI implementat
 
 ## Template Structure & Purpose
 
-### Scenario Description Template
+### Scenario Documentation Template
 
-**Purpose:** Comprehensive scenario analysis and implementation roadmap
+**Purpose:** Complete scenario README template with comprehensive structure and implementation planning
 
 **Key Sections:**
 
-- Abstract description and business context
-- Capability evaluation framework with scoring
-- Implementation roadmap with phases
-- Business value and ROI analysis
-- Prerequisites and success metrics
+- YAML frontmatter with scenario metadata
+- Scenario overview with technical description
+- Critical capabilities mapping with implementation phases
+- 4-phase implementation roadmap (PoC, PoV, Production, Scale)
+- Business planning and ROI analysis with risk assessment
+- Implementation success checklist and advancement criteria
+- Related scenarios and cross-platform synergies
 
-**Target Audience:** Business stakeholders, technical architects, project managers
+**Target Audience:** Technical architects, project managers, business stakeholders, implementers
 
 ### Scenario README Template
 
@@ -95,9 +97,10 @@ These templates provide a complete framework for documenting edge AI implementat
 
 ### Creating a New Scenario
 
-1. **Start with Business Context**
-   - Use the **Scenario Description Template** to document business challenges and transformation opportunities
-   - Focus on industry context and strategic value proposition
+1. **Start with the Scenario Documentation Template**
+   - Use the **Scenario Documentation Template** as your complete README.md structure
+   - Replace all placeholder content like `[SCENARIO_NAME]` with your specific scenario details
+   - Focus on technical implementation approach and business transformation
 
 2. **Analyze Technical Requirements**
    - Use the **Prerequisites Template** to document all technical and organizational requirements
@@ -109,16 +112,15 @@ These templates provide a complete framework for documenting edge AI implementat
 
 4. **Establish Folder Structure**
    - Create a dedicated folder: `/docs/project-planning/scenarios/your-scenario-name/`
-   - Place the main scenario description in the parent scenarios folder
-   - Place supporting documents in the scenario-specific folder
+   - Place the main scenario README.md (from documentation template) in the scenario folder
+   - Place supporting documents in the same scenario-specific folder
 
 ### Recommended File Organization
 
 ```text
 /docs/project-planning/scenarios/
-├── your-scenario-name.md                    # Main scenario description
 └── your-scenario-name/                      # Scenario-specific folder
-    ├── README.md                            # Navigation and implementation guide
+    ├── README.md                            # Main scenario documentation (from documentation template)
     ├── prerequisites.md                     # Requirements and readiness assessment
     ├── capability-mapping.md                # Detailed capability analysis
     └── [additional-resources]/              # Supporting documentation
@@ -222,5 +224,5 @@ then carefully refined by our team of discerning human reviewers.*
 [capability-mapping-template]: ./scenario-capability-mapping-template.md
 [prerequisites-template]: ./scenario-prerequisites-template.md
 [project-planning-documentation]: ./README.md
-[scenario-description-template]: ./scenario-description-template.md
+[scenario-documentation-template]: ./scenario-documentation-template.md
 [scenario-readme-template]: ./scenario-readme-template.md

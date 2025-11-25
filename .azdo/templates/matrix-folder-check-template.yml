@@ -153,6 +153,10 @@ jobs:
               $params["IncludeAllApplications"] = $true
           }
 
+          # Add BaseBranch parameter using the comparison target branch
+          $baseBranch = "origin/$env:COMPARISONTARGETBRANCH"
+          $params["BaseBranch"] = $baseBranch
+
           # Log the parameters
           $paramSummary = if ($params.Count -gt 0) {
               ($params.Keys | ForEach-Object { "-$_" }) -join ' '
@@ -161,6 +165,7 @@ jobs:
               "(none)"
           }
           Write-Host "Debug: Final parameters = [$paramSummary]"
+          Write-Host "Debug: Using BaseBranch = $baseBranch"
           Write-Host "Running Detect-Folder-Changes.ps1 with parameters: $paramSummary"
 
           # Run the PowerShell script and capture output

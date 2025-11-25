@@ -1,0 +1,216 @@
+/* Professional Micro-Animations for Enhanced User Experience */
+
+/* Frontmatter entrance animations */
+@keyframes slideInFromTop {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(0, 120, 212, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(0, 120, 212, 0.6);
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Apply entrance animation to frontmatter display */
+.frontmatter-display {
+  animation: slideInFromTop 0.6s ease-out;
+}
+
+/* Staggered animations for child elements */
+.frontmatter-display .frontmatter-title {
+  animation: fadeInScale 0.8s ease-out 0.1s both;
+}
+
+.frontmatter-display .frontmatter-description {
+  animation: fadeInScale 0.8s ease-out 0.2s both;
+}
+
+.frontmatter-display .frontmatter-header-meta {
+  animation: fadeInScale 0.8s ease-out 0.3s both;
+}
+
+.frontmatter-display .frontmatter-metadata {
+  animation: fadeInScale 0.8s ease-out 0.4s both;
+}
+
+/* Keyword tag animations */
+.frontmatter-display .keyword-tag {
+  animation: bounceIn 0.5s ease-out;
+  animation-delay: calc(var(--animation-delay, 0) * 0.1s);
+}
+
+.frontmatter-display .keyword-tag:nth-child(1) { --animation-delay: 1; }
+.frontmatter-display .keyword-tag:nth-child(2) { --animation-delay: 2; }
+.frontmatter-display .keyword-tag:nth-child(3) { --animation-delay: 3; }
+.frontmatter-display .keyword-tag:nth-child(4) { --animation-delay: 4; }
+.frontmatter-display .keyword-tag:nth-child(5) { --animation-delay: 5; }
+
+/* Enhanced hover animations */
+.frontmatter-display .keyword-tag:hover {
+  animation: none; /* Stop entrance animation on hover */
+  /* ACCESSIBILITY FIX: Only animate non-critical properties */
+  /* Color and transform changes are handled by metadata.css with !important for accessibility */
+  /* This file should NOT override background, color, transform, or box-shadow on hover */
+  transition: transform var(--transition-medium), box-shadow var(--transition-medium);
+  /* Removed transform and box-shadow properties to let metadata.css handle them with !important */
+}
+
+/* Professional loading shimmer effect */
+.frontmatter-display.loading {
+  background: linear-gradient(
+    90deg,
+    #f0f0f0 25%,
+    #e0e0e0 50%,
+    #f0f0f0 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+/* Reading time animation */
+.frontmatter-display .header-meta-reading-time {
+  position: relative;
+  overflow: hidden;
+}
+
+.frontmatter-display .header-meta-reading-time:hover {
+  animation: pulseGlow 1s ease-in-out;
+}
+
+/* Author name hover effect */
+.frontmatter-display .header-meta-author:hover {
+  transform: translateX(2px);
+  transition: transform var(--transition-fast);
+}
+
+/* Metadata item reveal animation */
+.frontmatter-display .metadata-item {
+  opacity: 0;
+  animation: fadeInScale 0.6s ease-out both;
+  animation-delay: calc(0.5s + var(--item-index, 0) * 0.1s);
+}
+
+.frontmatter-display .metadata-item:nth-child(1) { --item-index: 0; }
+.frontmatter-display .metadata-item:nth-child(2) { --item-index: 1; }
+.frontmatter-display .metadata-item:nth-child(3) { --item-index: 2; }
+.frontmatter-display .metadata-item:nth-child(4) { --item-index: 3; }
+.frontmatter-display .metadata-item:nth-child(5) { --item-index: 4; }
+
+/* Hover animations for metadata items */
+.frontmatter-display .metadata-item:hover .metadata-label {
+  color: var(--theme-color);
+  transition: color var(--transition-fast);
+}
+
+.frontmatter-display .metadata-item:hover .metadata-value {
+  transform: translateX(4px);
+  transition: transform var(--transition-fast);
+}
+
+/* Focus animations for accessibility */
+.frontmatter-display .keyword-tag:focus {
+  /* ACCESSIBILITY: Focus effects are handled in metadata.css for consistent contrast */
+  animation: pulseGlow 0.8s ease-in-out infinite;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .frontmatter-display,
+  .frontmatter-display * {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .frontmatter-display .keyword-tag:hover {
+    transform: none;
+    /* ACCESSIBILITY FIX: Maintain high contrast even with reduced motion */
+    /* Color changes remain instant for accessibility compliance */
+  }
+
+  .frontmatter-display .metadata-item:hover .metadata-value {
+    transform: none;
+  }
+
+  /* ACCESSIBILITY: Ensure focus indicators remain visible with reduced motion */
+  .frontmatter-display .keyword-tag:focus,
+  .frontmatter-display .keyword-tag:focus-visible {
+    animation: none !important;
+    transition: none !important;
+    /* High contrast focus state preserved from metadata.css */
+  }
+}
+
+/* Performance optimizations */
+.frontmatter-display .keyword-tag,
+.frontmatter-display .metadata-item,
+.frontmatter-display .header-meta-author,
+.frontmatter-display .header-meta-reading-time {
+  will-change: transform;
+}
+
+/* Complete animation cleanup */
+.frontmatter-display.animations-complete * {
+  will-change: auto;
+}
+
+/* Dark mode animation adjustments */
+body.dark .frontmatter-display.loading {
+  background: linear-gradient(
+    90deg,
+    #1e1e1e 25%,
+    #2d2d2d 50%,
+    #1e1e1e 75%
+  );
+  background-size: 200% 100%;
+}
+
+body.dark .frontmatter-display .keyword-tag:focus {
+  outline-color: var(--theme-color-light);
+}

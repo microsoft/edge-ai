@@ -2,7 +2,7 @@
 title: GitHub Copilot Core Guidance
 description: Comprehensive guidance files for development standards, deployment practices, and AI-assisted engineering workflows
 author: Edge AI Team
-ms.date: 06/18/2025
+ms.date: 2025-06-18
 ms.topic: reference
 estimated_reading_time: 4
 keywords:
@@ -83,6 +83,23 @@ C# development guidance and coding standards for .NET applications.
 - **Purpose**: Development standards for C# application development
 - **Scope**: Code structure, naming conventions, architectural patterns, best practices
 - **Coverage**: C# syntax, project organization, dependency management, conventions
+
+#### [JavaScript Development Standards](javascript/)
+
+JavaScript development guidance and coding standards for frontend and backend applications.
+
+- **Purpose**: Development standards for JavaScript/Node.js application development
+- **Scope**: ES6+ syntax, module organization, modern testing frameworks, architectural patterns, best practices
+- **Coverage**: JavaScript syntax, project structure, Vitest and Happy DOM testing conventions, frontend and backend patterns
+- **Testing Standards**: Comprehensive testing guidance in [javascript-tests.md](javascript/javascript-tests.md) covering Vitest, Happy DOM, mocking, and test organization
+
+#### [CSS Development Standards](css/)
+
+CSS development guidance and styling standards for frontend applications.
+
+- **Purpose**: Development standards for CSS, styling, and frontend appearance
+- **Scope**: Modern CSS features, responsive design, component styling, accessibility, performance
+- **Coverage**: CSS syntax, organization patterns, responsive design principles, accessibility standards
 
 #### [Bash Development Standards](bash/)
 

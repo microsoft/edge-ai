@@ -2,7 +2,7 @@
 title: Cloud Insights Platform
 description: Comprehensive operational intelligence ecosystem that aggregates four critical platform capabilities to deliver transformational observability, security monitoring, cost optimization, and incident response automation across enterprise-scale hybrid cloud and edge environments through advanced analytics and autonomous remediation frameworks
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: concept
 estimated_reading_time: 15
 keywords:

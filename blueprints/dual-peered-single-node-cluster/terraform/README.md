@@ -13,7 +13,7 @@ Each cluster operates independently but can communicate through the peered virtu
 | terraform | >= 1.9.8, < 2.0 |
 | azapi | >= 2.3.0 |
 | azuread | >= 3.0.2 |
-| azurerm | >= 4.8.0 |
+| azurerm | >= 4.51.0 |
 | local | >= 2.0.0 |
 | tls | >= 4.0.0 |
 
@@ -21,7 +21,7 @@ Each cluster operates independently but can communicate through the peered virtu
 
 | Name | Version |
 |------|---------|
-| azurerm | >= 4.8.0 |
+| azurerm | >= 4.51.0 |
 
 ## Resources
 
@@ -77,8 +77,6 @@ Each cluster operates independently but can communicate through the peered virtu
 | resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
 | aio\_features | AIO Instance features with mode ('Stable', 'Preview', 'Disabled') and settings ('Enabled', 'Disabled'). | ```map(object({ mode = optional(string) settings = optional(map(string)) }))``` | `null` | no |
 | aio\_namespace | Azure IoT Operations namespace | `string` | `"azure-iot-operations"` | no |
-| asset\_endpoint\_profiles | List of asset endpoint profiles to create. Otherwise, an empty list. | ```list(object({ name = string target_address = string endpoint_profile_type = optional(string) method = optional(string) should_enable_opc_asset_discovery = optional(bool) opc_additional_config_string = optional(string) }))``` | `[]` | no |
-| assets | List of assets to create. Otherwise, an empty list. | ```list(object({ asset_endpoint_profile_ref = string datasets = optional(list(object({ data_points = list(object({ data_point_configuration = optional(string) data_source = string name = string observability_mode = optional(string) })) name = string })), []) default_datasets_configuration = optional(string) description = optional(string) display_name = optional(string) documentation_uri = optional(string) enabled = optional(bool) hardware_revision = optional(string) manufacturer = optional(string) manufacturer_uri = optional(string) model = optional(string) name = string product_code = optional(string) serial_number = optional(string) software_revision = optional(string) }))``` | `[]` | no |
 | cluster\_a\_dns\_prefix | DNS prefix for the AKS cluster for Cluster A. This is used to create a unique DNS name for the cluster. If not provided, a default value will be generated. | `string` | `null` | no |
 | cluster\_a\_enable\_auto\_scaling | Should enable auto-scaler for the default node pool for Cluster A. | `bool` | `false` | no |
 | cluster\_a\_max\_count | The maximum number of nodes which should exist in the default node pool for Cluster A. Valid values are between 0 and 1000. | `number` | `null` | no |
@@ -107,6 +105,8 @@ Each cluster operates independently but can communicate through the peered virtu
 | enterprise\_client\_ca\_configmap\_name | The name of the Kubernetes configmap containing the client CA certificate | `string` | `"client-ca"` | no |
 | external\_certificates | External certificates to use instead of generating them with Terraform. When null, certificates will be generated using the terraform-certificate-generation module. | ```object({ server_root_ca_cert = string server_root_ca_key = string server_intermediate_ca_cert = string server_intermediate_ca_key = string server_leaf_cert = string server_leaf_key = string client_root_ca_cert = string client_root_ca_key = string client_intermediate_ca_cert = string client_intermediate_ca_key = string client_leaf_cert = string client_leaf_key = string })``` | `null` | no |
 | instance | Instance identifier for naming resources: 001, 002, etc | `string` | `"001"` | no |
+| namespaced\_assets | List of namespaced assets to create. Otherwise, an empty list. | ```list(object({ name = string display_name = optional(string) device_ref = object({ device_name = string endpoint_name = string }) description = optional(string) documentation_uri = optional(string) enabled = optional(bool, true) hardware_revision = optional(string) manufacturer = optional(string) manufacturer_uri = optional(string) model = optional(string) product_code = optional(string) serial_number = optional(string) software_revision = optional(string) attributes = optional(map(string), {}) datasets = optional(list(object({ name = string data_points = list(object({ name = string data_source = string data_point_configuration = optional(string) })) destinations = optional(list(object({ target = string configuration = object({ topic = optional(string) retain = optional(string) qos = optional(string) }) })), []) })), []) default_datasets_configuration = optional(string) default_events_configuration = optional(string) }))``` | `[]` | no |
+| namespaced\_devices | List of namespaced devices to create. Otherwise, an empty list. | ```list(object({ name = string enabled = optional(bool, true) endpoints = object({ outbound = optional(object({ assigned = object({}) }), { assigned = {} }) inbound = map(object({ endpoint_type = string address = string version = optional(string, null) additionalConfiguration = optional(string) authentication = object({ method = string usernamePasswordCredentials = optional(object({ usernameSecretName = string passwordSecretName = string })) x509Credentials = optional(object({ certificateSecretName = string })) }) trustSettings = optional(object({ trustList = string })) })) }) }))``` | `[]` | no |
 | nat\_gateway\_idle\_timeout\_minutes | Idle timeout in minutes for NAT gateway connections | `number` | `4` | no |
 | nat\_gateway\_public\_ip\_count | Number of public IP addresses to associate with the NAT gateway (example: 2) | `number` | `1` | no |
 | nat\_gateway\_zones | Availability zones for NAT gateway resources when zone-redundancy is required (example: ['1','2']) | `list(string)` | `[]` | no |

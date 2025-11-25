@@ -19,7 +19,7 @@ This blueprint will:
 | terraform | >= 1.9.8, < 2.0 |
 | azapi | >= 2.3.0 |
 | azuread | >= 3.0.2 |
-| azurerm | >= 4.8.0 |
+| azurerm | >= 4.51.0 |
 
 ## Modules
 
@@ -52,7 +52,7 @@ This blueprint will:
 | arc\_onboarding\_identity | The identity used for Arc onboarding. |
 | azure\_arc\_proxy\_command | The AZ CLI command to Arc Connect Proxy to the cluster. |
 | key\_vault | The Key Vault resource. |
-| public\_ssh | The SSH command to access the VM. |
 | resource\_group | The Azure Resource Group containing all resources. |
+| vm\_connection\_instructions | Connection instructions for VMs with Azure AD authentication and optional fallback methods. |
 <!-- markdown-table-prettify-ignore-end -->
 <!-- END_TF_DOCS -->
