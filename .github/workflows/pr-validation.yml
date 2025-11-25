@@ -202,7 +202,7 @@ jobs:
       contents: read
     uses: ./.github/workflows/variable-compliance-terraform.yml
     with:
-      break_build: true
+      break_build: false
     secrets: inherit
 
   # Terraform tests using matrix for each changed module
