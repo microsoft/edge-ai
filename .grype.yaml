@@ -1,0 +1,7 @@
+ignore:
+  # atty crate - LOW severity
+  # Justification: Crate is unmaintained but functional with no known exploits.
+  # The atty crate is used transitively and does not pose an active security risk.
+  # References: GHSA-g98v-hv3f-hcfr, RUSTSEC-2021-0145
+  - vulnerability: GHSA-g98v-hv3f-hcfr
+  - vulnerability: RUSTSEC-2021-0145
