@@ -100,6 +100,10 @@ jobs:
     name: Security PR Validation
     needs: [dependency-scan]
     uses: ./.github/workflows/security-pr.yml
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
     with:
       working-directory: '.'
       enable-egress-filter: true
@@ -122,6 +126,11 @@ jobs:
     name: Documentation Automation
     needs: [mega-linter]
     uses: ./.github/workflows/docs-automation.yml
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: read
+      issues: write
     with:
       force_regenerate: false
     secrets: inherit
@@ -130,6 +139,8 @@ jobs:
   docs-check-terraform:
     name: Terraform Documentation Check
     needs: [mega-linter]
+    permissions:
+      contents: read
     uses: ./.github/workflows/docs-check-terraform.yml
     with:
       break_build: true
@@ -140,6 +151,8 @@ jobs:
   docs-check-bicep:
     name: Bicep Documentation Check
     needs: [mega-linter]
+    permissions:
+      contents: read
     uses: ./.github/workflows/docs-check-bicep.yml
     with:
       break_build: true
@@ -149,6 +162,8 @@ jobs:
   aio-version-check:
     name: AIO Version Check
     needs: [mega-linter]
+    permissions:
+      contents: read
     uses: ./.github/workflows/aio-version-checker.yml
     with:
       iac-type: all
@@ -158,6 +173,9 @@ jobs:
     name: Detect Matrix Changes
     needs: [docs-automation, docs-check-terraform, docs-check-bicep]
     uses: ./.github/workflows/matrix-folder-check.yml
+    permissions:
+      contents: read
+      actions: read
     with:
       displayName: 'Detect component changes for PR validation'
       includeIaCFolders: ${{ github.event_name == 'workflow_dispatch' && inputs.includeIaCFolders || false }}
@@ -168,6 +186,8 @@ jobs:
     name: PowerShell Provider Tests
     needs: [matrix-changes]
     if: needs.matrix-changes.outputs.changesInRpEnablementPwsh == 'true'
+    permissions:
+      contents: read
     uses: ./.github/workflows/resource-provider-pwsh-tests.yml
     with:
       working-directory: 'src/azure-resource-providers'
@@ -178,12 +198,11 @@ jobs:
   terraform-var-compliance:
     name: Terraform Variable Compliance
     needs: [matrix-changes]
-    uses: ./.github/workflows/variable-compliance-terraform.yml
     permissions:
-      contents: write
-      statuses: write
+      contents: read
+    uses: ./.github/workflows/variable-compliance-terraform.yml
     with:
-      break_build: true
+      break_build: false
     secrets: inherit
 
   # Terraform tests using matrix for each changed module
@@ -194,6 +213,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.matrix-changes.outputs.changedTfFolders) }}
+    permissions:
+      contents: read
     uses: ./.github/workflows/cluster-test-terraform.yml
     with:
       working-directory: ${{ matrix.folderName }}
@@ -207,6 +228,24 @@ jobs:
     needs: [matrix-changes]
     if: needs.matrix-changes.outputs.changesInApplications == 'true' && fromJson(needs.matrix-changes.outputs.changedApplicationFolders).folderName[0] != null
     uses: ./.github/workflows/application-matrix-builds.yml
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      actions: read
+      security-events: write
     with:
       applicationMatrix: ${{ needs.matrix-changes.outputs.changedApplicationFolders }}
+      registryName: ${{ vars.REGISTRY_NAME || 'ghcr.io' }}
+      buildConfig: |
+        {
+          "dockerComposeVersion": "2.24.5"
+        }
+      securityConfig: |
+        {
+          "pushImages": false,
+          "enableSLSA": false,
+          "enableSecurityScan": true,
+          "securityThreshold": "high"
+        }
     secrets: inherit

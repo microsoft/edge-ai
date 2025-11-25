@@ -1,5 +1,4 @@
 <!-- markdownlint-disable MD041 -->
-<!-- Generated on: 2025-10-06 03:33:14 UTC -->
 
 - [AI on Edge Flagship Accelerator](docs/index.md)
 

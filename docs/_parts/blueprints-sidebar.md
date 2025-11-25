@@ -1,6 +1,5 @@
 <!-- markdownlint-disable MD041 -->
 <!-- blueprints Section Sidebar -->
-<!-- Generated on: 2025-10-05 03:20:10 UTC -->
 
 - [Blueprints Overview](blueprints/README.md)
 

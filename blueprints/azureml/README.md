@@ -1,6 +1,7 @@
 ---
 title: Azure Machine Learning Blueprint
 description: Comprehensive Azure Machine Learning deployment with optional cloud foundation, managed compute, AKS/Arc integration, and secure connectivity controls
+author: Edge AI Team
 ms.date: 09/24/2025
 ms.topic: reference
 estimated_reading_time: 12

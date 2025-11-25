@@ -1,6 +1,5 @@
 <!-- markdownlint-disable MD041 -->
 <!-- infrastructure Section Sidebar -->
-<!-- Generated on: 2025-10-05 03:20:10 UTC -->
 
 - [Infrastructure Overview](src/README.md)
 
