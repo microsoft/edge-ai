@@ -1,6 +1,7 @@
 <!-- markdownlint-disable MD041 -->
 <!-- markdownlint-disable MD051 -->
 <!-- infrastructure Section Sidebar -->
+
 - [Infrastructure Overview](/src/README)
 
 - [Cloud](/src/000-cloud/README)
@@ -14,6 +15,8 @@
   - [Managed Redis](/src/000-cloud/036-managed-redis/README)
   - [Messaging](/src/000-cloud/040-messaging/README)
   - [Vm Host](/src/000-cloud/051-vm-host/README)
+  - [Azure Local Host](/src/000-cloud/072-azure-local-host/README)
+  - [Vm Host](/src/000-cloud/073-vm-host/README)
   - [Azureml](/src/000-cloud/080-azureml/README)
 
 - [Edge](/src/100-edge/README)
@@ -32,6 +35,8 @@
   - [Ros2 Connector](/src/500-application/506-ros2-connector/README)
   - [Ai Inference](/src/500-application/507-ai-inference/README)
   - [Media Connector](/src/500-application/508-media-connector/README)
+  - [Sse Connector](/src/500-application/509-sse-connector/README)
+  - [Onvif Connector](/src/500-application/510-onvif-connector/README)
 
 - [Ci Cd](/src/501-ci-cd/README)
 
@@ -39,7 +44,5 @@
   - [Mqtt Tools](/src/900-tools-utilities/900-mqtt-tools/README)
   - [Video Tools](/src/900-tools-utilities/901-video-tools/README)
   - [Aio Sidekick](/src/900-tools-utilities/902-aio-sidekick/README)
-
-- Blueprints
 
 - [Azure Resource Providers](/src/azure-resource-providers/README)

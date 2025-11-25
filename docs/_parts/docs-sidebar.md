@@ -1,6 +1,7 @@
 <!-- markdownlint-disable MD041 -->
 <!-- markdownlint-disable MD051 -->
 <!-- docs Section Sidebar -->
+
 - [AI on Edge Flagship Accelerator](/docs/README)
 - [Edge AI Accelerator Roadmap](/docs/roadmap)
 
@@ -138,6 +139,7 @@
 - [Solution ADR Library](/docs/solution-adr-library/README)
   - [ADR Title](/docs/solution-adr-library/adr-template-solutions)
   - [AI Edge Inference with Dual Backend Architecture](/docs/solution-adr-library/ai-edge-inference-dual-backend-architecture)
+  - [Architecture Decision Record: Akri Connector Component Organization](/docs/solution-adr-library/akri-connector-component-organization)
   - [Scale deployment of Azure ML models to edge Arc-enabled K8s clusters in a PoC](/docs/solution-adr-library/aml-on-arc-enabled-k8s)
   - [Asset Connectivity Monitoring](/docs/solution-adr-library/asset-connectivity-monitoring)
   - [Asset and Metadata Creation](/docs/solution-adr-library/asset-creation-and-metadata-publishing)
@@ -152,8 +154,10 @@
   - [Model Inferencing on Disconnected Windows Environments](/docs/solution-adr-library/model-inference-on-disconnected-windows-environments)
   - [Choosing QoS Level for the MQTT Bridge routes](/docs/solution-adr-library/mqtt-qos)
   - [Observability solution options in fully disconnected Kubernetes clusters](/docs/solution-adr-library/observability-disconnected-environments)
+  - [ONVIF Connector for IP Camera Integration](/docs/solution-adr-library/onvif-connector-camera-integration)
   - [Architecture Decision Record: Policy as Code with OPA Gatekeeper](/docs/solution-adr-library/policy-as-code-gatekeeper)
   - [Architecture Decision Record: Policy as Code with Kyverno](/docs/solution-adr-library/policy-as-code-kyverno)
+  - [SSE Connector for Real-Time Event Streaming](/docs/solution-adr-library/sse-connector-real-time-event-streaming)
   - [Assets Metadata and UNS MQTT Topic Structure](/docs/solution-adr-library/uns-asset-metadata-topic-structure)
   - [Vector DBs Comparison for offline RAG Search Running on In-car Embedded System](/docs/solution-adr-library/vdb-on-edge-in-car-embedded-system)
   - [Workload and Configuration Management](/docs/solution-adr-library/workload-configuration-management)

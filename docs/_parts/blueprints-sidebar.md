@@ -1,9 +1,11 @@
 <!-- markdownlint-disable MD041 -->
 <!-- markdownlint-disable MD051 -->
 <!-- blueprints Section Sidebar -->
+
 - [Blueprints Overview](/blueprints/README)
 
 - [Blueprint Components](/blueprints/README?id=blueprints)
+  - [Azure Local](/blueprints/azure-local/README)
   - [Azureml](/blueprints/azureml/README)
   - [Dual Peered Single Node Cluster](/blueprints/dual-peered-single-node-cluster/README)
   - [Fabric](/blueprints/fabric/README)
@@ -26,6 +28,7 @@
   - [Only Output Cncf Cluster Script](/blueprints/only-output-cncf-cluster-script/bicep/README)
 
 - [Terraform Blueprints](/blueprints/README?id=terraform-architecture)
+  - [Azure Local](/blueprints/azure-local/terraform/README)
   - [Azureml](/blueprints/azureml/terraform/README)
   - [Dual Peered Single Node Cluster](/blueprints/dual-peered-single-node-cluster/terraform/README)
   - [Fabric](/blueprints/fabric/terraform/README)
