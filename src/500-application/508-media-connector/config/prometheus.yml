@@ -1,3 +1,4 @@
+---
 # Prometheus Configuration for Media Connector Monitoring
 
 global:
@@ -5,8 +6,8 @@ global:
   evaluation_interval: 15s
 
 rule_files:
-  # - "first_rules.yml"
-  # - "second_rules.yml"
+# - "first_rules.yml"
+# - "second_rules.yml"
 
 scrape_configs:
   # Prometheus itself

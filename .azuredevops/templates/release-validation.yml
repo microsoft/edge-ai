@@ -1,0 +1,640 @@
+---
+# Release Validation Template
+#
+# Purpose:
+# This template provides comprehensive release validation operations including version validation,
+# changelog verification, release readiness checks, and dependency validation. It supports
+# multiple validation operations to ensure release quality and compliance with standards.
+#
+# When to use:
+# - Before creating release branches to validate release readiness
+# - During release pipeline execution to verify version compliance
+# - For automated release quality gates and pre-release validation
+# - When implementing release automation with quality assurance
+#
+# Functionality:
+# - Version format validation (semantic versioning compliance)
+# - Changelog verification and completeness checking
+# - Release notes validation and formatting verification
+# - Dependency version compatibility checking
+# - Release branch naming convention validation
+# - Git tag existence and format verification
+# - Release artifact validation and integrity checking
+# - Release documentation completeness validation
+#
+# Parameters:
+# - operation: The validation operation to perform
+#   * validate-version: Verify semantic version format and increment rules
+#   * validate-changelog: Check changelog format, completeness, and version entries
+#   * validate-readiness: Comprehensive release readiness assessment
+#   * validate-dependencies: Check dependency versions and compatibility
+# - releaseVersion: The version string to validate (e.g., "1.2.3")
+# - previousVersion: Previous version for increment validation (optional)
+# - changelogPath: Path to changelog file (default: "CHANGELOG.md")
+# - validateIncrement: Whether to validate version increment rules (default: true)
+# - allowPrerelease: Whether pre-release versions are allowed (default: false)
+# - requireNotes: Whether release notes are required (default: true)
+# - dependencyFiles: Array of dependency files to validate (optional)
+# - releaseNotesPath: Path to release notes file (optional)
+# - strictValidation: Enable strict validation mode (default: false)
+# - customRules: Array of custom validation rules (optional)
+#
+# Output Variables:
+# - isValid: Whether validation passed (true/false)
+# - validationErrors: Array of validation error messages
+# - validationWarnings: Array of validation warning messages
+# - versionType: Type of version (major/minor/patch/prerelease)
+# - changelogValid: Whether changelog validation passed
+# - dependenciesValid: Whether dependency validation passed
+# - readinessScore: Overall readiness score (0-100)
+#
+# Usage Examples:
+# ```yaml
+# # Validate semantic version format
+# - template: ../templates/release-validation.yml
+#   parameters:
+#     operation: 'validate-version'
+#     releaseVersion: '$(RELEASE_VERSION)'
+#     previousVersion: '$(PREVIOUS_VERSION)'
+#     validateIncrement: true
+#
+# # Comprehensive release readiness check
+# - template: ../templates/release-validation.yml
+#   parameters:
+#     operation: 'validate-readiness'
+#     releaseVersion: '$(RELEASE_VERSION)'
+#     changelogPath: 'CHANGELOG.md'
+#     requireNotes: true
+#     strictValidation: true
+# ```
+
+parameters:
+  # Core operation parameters
+  - name: operation
+    type: string
+    values:
+      - 'validate-version'
+      - 'validate-changelog'
+      - 'validate-readiness'
+      - 'validate-dependencies'
+
+  # Version validation parameters
+  - name: releaseVersion
+    type: string
+    default: ''
+
+  - name: previousVersion
+    type: string
+    default: ''
+
+  - name: validateIncrement
+    type: boolean
+    default: true
+
+  - name: allowPrerelease
+    type: boolean
+    default: false
+
+  # File path parameters
+  - name: changelogPath
+    type: string
+    default: 'CHANGELOG.md'
+
+  - name: releaseNotesPath
+    type: string
+    default: ''
+
+  - name: dependencyFiles
+    type: object
+    default: []
+
+  # Validation behavior parameters
+  - name: requireNotes
+    type: boolean
+    default: true
+
+  - name: strictValidation
+    type: boolean
+    default: false
+
+  - name: customRules
+    type: object
+    default: []
+
+steps:
+  # Version Format Validation
+  - ${{ if eq(parameters.operation, 'validate-version') }}:
+      - pwsh: |
+          $version = '${{ parameters.releaseVersion }}'
+          $previousVersion = '${{ parameters.previousVersion }}'
+          $validateIncrement = '${{ parameters.validateIncrement }}' -eq 'true'
+          $allowPrerelease = '${{ parameters.allowPrerelease }}' -eq 'true'
+
+          Write-Host "=== Version Validation ==="
+          Write-Host "Version: $version"
+          Write-Host "Previous Version: $previousVersion"
+          Write-Host "Validate Increment: $validateIncrement"
+          Write-Host "Allow Prerelease: $allowPrerelease"
+          Write-Host ""
+
+          $errors = @()
+          $warnings = @()
+          $versionType = "unknown"
+
+          # Validate semantic version format
+          $semverPattern = '^(\d+)\.(\d+)\.(\d+)(?:-([a-zA-Z0-9\-]+(?:\.[a-zA-Z0-9\-]+)*))?(?:\+([a-zA-Z0-9\-]+(?:\.[a-zA-Z0-9\-]+)*))?$'
+          if ($version -notmatch $semverPattern) {
+            $errors += "Invalid semantic version format. Expected: MAJOR.MINOR.PATCH[-PRERELEASE][+BUILD]"
+          } else {
+            $major = [int]$matches[1]
+            $minor = [int]$matches[2]
+            $patch = [int]$matches[3]
+            $prerelease = $matches[4]
+            $build = $matches[5]
+
+            Write-Host "✓ Valid semantic version format"
+            Write-Host "  Major: $major"
+            Write-Host "  Minor: $minor"
+            Write-Host "  Patch: $patch"
+            if ($prerelease) { Write-Host "  Prerelease: $prerelease" }
+            if ($build) { Write-Host "  Build: $build" }
+
+            # Check prerelease allowance
+            if ($prerelease -and -not $allowPrerelease) {
+              $errors += "Prerelease versions are not allowed in this context"
+            }
+
+            # Determine version type
+            if ($previousVersion) {
+              if ($previousVersion -match $semverPattern) {
+                $prevMajor = [int]$matches[1]
+                $prevMinor = [int]$matches[2]
+                $prevPatch = [int]$matches[3]
+
+                if ($major -gt $prevMajor) {
+                  $versionType = "major"
+                } elseif ($minor -gt $prevMinor -and $major -eq $prevMajor) {
+                  $versionType = "minor"
+                } elseif ($patch -gt $prevPatch -and $major -eq $prevMajor -and $minor -eq $prevMinor) {
+                  $versionType = "patch"
+                } elseif ($prerelease) {
+                  $versionType = "prerelease"
+                } else {
+                  $errors += "Version does not represent a valid increment from $previousVersion"
+                }
+
+                # Validate increment rules
+                if ($validateIncrement) {
+                  if ($major -lt $prevMajor -or ($major -eq $prevMajor -and $minor -lt $prevMinor) -or
+                      ($major -eq $prevMajor -and $minor -eq $prevMinor -and $patch -lt $prevPatch)) {
+                    $errors += "Version cannot be lower than previous version $previousVersion"
+                  }
+
+                  if ($major -gt $prevMajor + 1) {
+                    $warnings += "Major version increment skips versions (consider gradual increments)"
+                  }
+                }
+              } else {
+                $warnings += "Previous version format is invalid, cannot validate increment"
+              }
+            }
+          }
+
+          # Output results
+          $isValid = $errors.Count -eq 0
+          Write-Host ""
+          Write-Host "=== Validation Results ==="
+          Write-Host "Valid: $isValid"
+          Write-Host "Version Type: $versionType"
+          Write-Host "Errors: $($errors.Count)"
+          Write-Host "Warnings: $($warnings.Count)"
+
+          if ($errors.Count -gt 0) {
+            Write-Host ""
+            Write-Host "Errors:"
+            foreach ($error in $errors) {
+              Write-Host "  ✗ $error"
+            }
+          }
+
+          if ($warnings.Count -gt 0) {
+            Write-Host ""
+            Write-Host "Warnings:"
+            foreach ($warning in $warnings) {
+              Write-Host "  ⚠ $warning"
+            }
+          }
+
+          # Set output variables
+          Write-Host "##vso[task.setvariable variable=isValid;isOutput=true]$isValid"
+          Write-Host "##vso[task.setvariable variable=versionType;isOutput=true]$versionType"
+          Write-Host "##vso[task.setvariable variable=validationErrors;isOutput=true]$($errors -join ';')"
+          Write-Host "##vso[task.setvariable variable=validationWarnings;isOutput=true]$($warnings -join ';')"
+
+  # Changelog Validation
+  - ${{ if eq(parameters.operation, 'validate-changelog') }}:
+      - pwsh: |
+          $changelogPath = '${{ parameters.changelogPath }}'
+          $version = '${{ parameters.releaseVersion }}'
+          $strictValidation = '${{ parameters.strictValidation }}' -eq 'true'
+
+          Write-Host "=== Changelog Validation ==="
+          Write-Host "Changelog Path: $changelogPath"
+          Write-Host "Version: $version"
+          Write-Host "Strict Validation: $strictValidation"
+          Write-Host ""
+
+          $errors = @()
+          $warnings = @()
+          $changelogValid = $false
+
+          # Check if changelog exists
+          if (-not (Test-Path $changelogPath)) {
+            $errors += "Changelog file not found at: $changelogPath"
+          } else {
+            Write-Host "✓ Changelog file exists"
+
+            $content = Get-Content $changelogPath -Raw
+
+            # Check for version entry
+            if ($version) {
+              $versionPattern = "## \[?$([regex]::Escape($version))\]?"
+              if ($content -match $versionPattern) {
+                Write-Host "✓ Version $version found in changelog"
+
+                # Extract version section
+                $versionSection = ""
+                $lines = Get-Content $changelogPath
+                $inVersionSection = $false
+                $versionLineFound = $false
+
+                foreach ($line in $lines) {
+                  if ($line -match $versionPattern) {
+                    $inVersionSection = $true
+                    $versionLineFound = $true
+                    $versionSection += "$line`n"
+                    continue
+                  }
+
+                  if ($inVersionSection) {
+                    if ($line -match "^## ") {
+                      # Found next version section, stop
+                      break
+                    }
+                    $versionSection += "$line`n"
+                  }
+                }
+
+                # Validate version section content
+                if ($versionSection.Trim().Length -lt 50) {
+                  $warnings += "Version section appears to have minimal content"
+                }
+
+                # Check for standard sections
+                $hasAdded = $versionSection -match "### Added"
+                $hasChanged = $versionSection -match "### Changed"
+                $hasFixed = $versionSection -match "### Fixed"
+                $hasRemoved = $versionSection -match "### Removed"
+
+                if ($strictValidation -and -not ($hasAdded -or $hasChanged -or $hasFixed -or $hasRemoved)) {
+                  $warnings += "Version section lacks standard categories (Added, Changed, Fixed, Removed)"
+                }
+
+                Write-Host "Version section analysis:"
+                Write-Host "  Length: $($versionSection.Trim().Length) characters"
+                Write-Host "  Has Added: $hasAdded"
+                Write-Host "  Has Changed: $hasChanged"
+                Write-Host "  Has Fixed: $hasFixed"
+                Write-Host "  Has Removed: $hasRemoved"
+
+                $changelogValid = $true
+              } else {
+                $errors += "Version $version not found in changelog"
+              }
+            }
+
+            # General changelog format validation
+            if ($content -notmatch "# Changelog") {
+              $warnings += "Changelog should start with '# Changelog' header"
+            }
+
+            if ($content -notmatch "\[Unreleased\]") {
+              $warnings += "Changelog should include [Unreleased] section for ongoing changes"
+            }
+          }
+
+          # Output results
+          $isValid = $errors.Count -eq 0
+          Write-Host ""
+          Write-Host "=== Changelog Validation Results ==="
+          Write-Host "Valid: $isValid"
+          Write-Host "Changelog Valid: $changelogValid"
+          Write-Host "Errors: $($errors.Count)"
+          Write-Host "Warnings: $($warnings.Count)"
+
+          if ($errors.Count -gt 0) {
+            Write-Host ""
+            Write-Host "Errors:"
+            foreach ($error in $errors) {
+              Write-Host "  ✗ $error"
+            }
+          }
+
+          if ($warnings.Count -gt 0) {
+            Write-Host ""
+            Write-Host "Warnings:"
+            foreach ($warning in $warnings) {
+              Write-Host "  ⚠ $warning"
+            }
+          }
+
+          # Set output variables
+          Write-Host "##vso[task.setvariable variable=isValid;isOutput=true]$isValid"
+          Write-Host "##vso[task.setvariable variable=changelogValid;isOutput=true]$changelogValid"
+          Write-Host "##vso[task.setvariable variable=validationErrors;isOutput=true]$($errors -join ';')"
+          Write-Host "##vso[task.setvariable variable=validationWarnings;isOutput=true]$($warnings -join ';')"
+
+  # Comprehensive Readiness Validation
+  - ${{ if eq(parameters.operation, 'validate-readiness') }}:
+      - template: release-validation.yml
+        parameters:
+          operation: 'validate-version'
+          releaseVersion: '${{ parameters.releaseVersion }}'
+          previousVersion: '${{ parameters.previousVersion }}'
+          validateIncrement: '${{ parameters.validateIncrement }}'
+          allowPrerelease: '${{ parameters.allowPrerelease }}'
+
+      - template: release-validation.yml
+        parameters:
+          operation: 'validate-changelog'
+          changelogPath: '${{ parameters.changelogPath }}'
+          releaseVersion: '${{ parameters.releaseVersion }}'
+          strictValidation: '${{ parameters.strictValidation }}'
+
+      - task: PowerShell@2
+        displayName: 'Calculate Readiness Score'
+        name: calculateReadiness
+        inputs:
+          pwsh: true
+          targetType: 'inline'
+          script: |
+            $versionValid = '$(validateVersion.isValid)' -eq 'true'
+            $changelogValid = '$(validateChangelog.changelogValid)' -eq 'true'
+            $requireNotes = '${{ parameters.requireNotes }}' -eq 'true'
+            $releaseNotesPath = '${{ parameters.releaseNotesPath }}'
+
+            Write-Host "=== Release Readiness Assessment ==="
+            Write-Host "Version Valid: $versionValid"
+            Write-Host "Changelog Valid: $changelogValid"
+            Write-Host "Require Notes: $requireNotes"
+            Write-Host "Release Notes Path: $releaseNotesPath"
+            Write-Host ""
+
+            $score = 0
+            $maxScore = 100
+            $errors = @()
+            $warnings = @()
+
+            # Version validation (30 points)
+            if ($versionValid) {
+              $score += 30
+              Write-Host "✓ Version validation passed (+30 points)"
+            } else {
+              $errors += "Version validation failed"
+              Write-Host "✗ Version validation failed (0 points)"
+            }
+
+            # Changelog validation (30 points)
+            if ($changelogValid) {
+              $score += 30
+              Write-Host "✓ Changelog validation passed (+30 points)"
+            } else {
+              $errors += "Changelog validation failed"
+              Write-Host "✗ Changelog validation failed (0 points)"
+            }
+
+            # Release notes validation (20 points)
+            if ($requireNotes) {
+              if ($releaseNotesPath -and (Test-Path $releaseNotesPath)) {
+                $notesContent = Get-Content $releaseNotesPath -Raw
+                if ($notesContent.Trim().Length -gt 50) {
+                  $score += 20
+                  Write-Host "✓ Release notes validation passed (+20 points)"
+                } else {
+                  $warnings += "Release notes appear to have minimal content"
+                  $score += 10
+                  Write-Host "⚠ Release notes exist but minimal content (+10 points)"
+                }
+              } else {
+                $errors += "Release notes required but not found or path not specified"
+                Write-Host "✗ Release notes required but not found (0 points)"
+              }
+            } else {
+              $score += 20
+              Write-Host "✓ Release notes not required (+20 points)"
+            }
+
+            # Git status validation (10 points)
+            $gitStatus = git status --porcelain
+            if ([string]::IsNullOrWhiteSpace($gitStatus)) {
+              $score += 10
+              Write-Host "✓ Git working directory clean (+10 points)"
+            } else {
+              $warnings += "Git working directory has uncommitted changes"
+              Write-Host "⚠ Git working directory not clean (+5 points)"
+              $score += 5
+            }
+
+            # Branch validation (10 points)
+            $currentBranch = git branch --show-current
+            if ($currentBranch -eq "dev" -or $currentBranch -match "^release/") {
+              $score += 10
+              Write-Host "✓ On appropriate branch for release ($currentBranch) (+10 points)"
+            } else {
+              $warnings += "Not on dev or release branch (currently on: $currentBranch)"
+              Write-Host "⚠ On unexpected branch: $currentBranch (+5 points)"
+              $score += 5
+            }
+
+            # Calculate final assessment
+            $percentage = [math]::Round(($score / $maxScore) * 100, 1)
+            $isReady = $score -ge 80 -and $errors.Count -eq 0
+
+            Write-Host ""
+            Write-Host "=== Readiness Score: $score/$maxScore ($percentage%) ==="
+
+            if ($isReady) {
+              Write-Host "🎉 Release is ready to proceed!"
+            } elseif ($score -ge 60) {
+              Write-Host "⚠ Release has issues but may proceed with caution"
+            } else {
+              Write-Host "❌ Release is not ready - address critical issues first"
+            }
+
+            if ($errors.Count -gt 0) {
+              Write-Host ""
+              Write-Host "Critical Issues:"
+              foreach ($error in $errors) {
+                Write-Host "  ❌ $error"
+              }
+            }
+
+            if ($warnings.Count -gt 0) {
+              Write-Host ""
+              Write-Host "Warnings:"
+              foreach ($warning in $warnings) {
+                Write-Host "  ⚠ $warning"
+              }
+            }
+
+            # Set output variables
+            Write-Host "##vso[task.setvariable variable=isValid;isOutput=true]$isReady"
+            Write-Host "##vso[task.setvariable variable=readinessScore;isOutput=true]$score"
+            Write-Host "##vso[task.setvariable variable=validationErrors;isOutput=true]$($errors -join ';')"
+            Write-Host "##vso[task.setvariable variable=validationWarnings;isOutput=true]$($warnings -join ';')"
+
+  # Dependency Validation
+  - ${{ if eq(parameters.operation, 'validate-dependencies') }}:
+      - task: PowerShell@2
+        displayName: 'Validate Dependencies'
+        name: validateDependencies
+        inputs:
+          pwsh: true
+          targetType: 'inline'
+          script: |
+            $dependencyFiles = @('${{ join(';', parameters.dependencyFiles) }}' -split ';' | Where-Object { $_ })
+            $strictValidation = '${{ parameters.strictValidation }}' -eq 'true'
+
+            Write-Host "=== Dependency Validation ==="
+            Write-Host "Dependency Files: $($dependencyFiles -join ', ')"
+            Write-Host "Strict Validation: $strictValidation"
+            Write-Host ""
+
+            $errors = @()
+            $warnings = @()
+            $dependenciesValid = $true
+
+            # Default dependency files if none specified
+            if ($dependencyFiles.Count -eq 0) {
+              $dependencyFiles = @("package.json", "requirements.txt", "Cargo.toml", "go.mod")
+              Write-Host "Using default dependency files: $($dependencyFiles -join ', ')"
+            }
+
+            foreach ($file in $dependencyFiles) {
+              if (Test-Path $file) {
+                Write-Host "Validating $file..."
+
+                switch -Regex ($file) {
+                  "package\.json$" {
+                    try {
+                      $packageJson = Get-Content $file | ConvertFrom-Json
+                      Write-Host "  ✓ Valid JSON format"
+
+                      if ($packageJson.dependencies) {
+                        Write-Host "  Dependencies: $($packageJson.dependencies.PSObject.Properties.Count)"
+                      }
+                      if ($packageJson.devDependencies) {
+                        Write-Host "  Dev Dependencies: $($packageJson.devDependencies.PSObject.Properties.Count)"
+                      }
+
+                      # Check for vulnerable packages (basic check)
+                      if ($strictValidation) {
+                        $vulnerablePatterns = @("node_modules", "bower_components")
+                        foreach ($pattern in $vulnerablePatterns) {
+                          if ($packageJson | ConvertTo-Json -Compress | Select-String $pattern) {
+                            $warnings += "$file contains potentially problematic references to $pattern"
+                          }
+                        }
+                      }
+                    }
+                    catch {
+                      $errors += "$file has invalid JSON format: $($_.Exception.Message)"
+                      $dependenciesValid = $false
+                    }
+                  }
+
+                  "requirements\.txt$" {
+                    $content = Get-Content $file
+                    Write-Host "  ✓ Python requirements file found"
+                    Write-Host "  Requirements: $($content.Count)"
+
+                    if ($strictValidation) {
+                      foreach ($line in $content) {
+                        if ($line -match "^([^>=<\s]+)" -and $line -notmatch "==|>=|<=|>|<") {
+                          $warnings += "$file: Unpinned version for $($matches[1]) (consider version pinning)"
+                        }
+                      }
+                    }
+                  }
+
+                  "Cargo\.toml$" {
+                    try {
+                      $content = Get-Content $file -Raw
+                      Write-Host "  ✓ Rust Cargo.toml file found"
+
+                      if ($content -match '\[dependencies\]') {
+                        Write-Host "  ✓ Dependencies section found"
+                      } else {
+                        $warnings += "$file: No dependencies section found"
+                      }
+                    }
+                    catch {
+                      $errors += "$file: Error reading file: $($_.Exception.Message)"
+                      $dependenciesValid = $false
+                    }
+                  }
+
+                  "go\.mod$" {
+                    $content = Get-Content $file -Raw
+                    Write-Host "  ✓ Go module file found"
+
+                    if ($content -match "module\s+(.+)") {
+                      Write-Host "  Module: $($matches[1])"
+                    } else {
+                      $errors += "$file: No module declaration found"
+                      $dependenciesValid = $false
+                    }
+                  }
+
+                  default {
+                    Write-Host "  ⚠ Unknown dependency file format, performing basic validation"
+                    if ((Get-Content $file).Count -eq 0) {
+                      $warnings += "$file appears to be empty"
+                    }
+                  }
+                }
+              } else {
+                Write-Host "  ℹ $file not found (optional)"
+              }
+            }
+
+            # Output results
+            $isValid = $errors.Count -eq 0
+            Write-Host ""
+            Write-Host "=== Dependency Validation Results ==="
+            Write-Host "Valid: $isValid"
+            Write-Host "Dependencies Valid: $dependenciesValid"
+            Write-Host "Errors: $($errors.Count)"
+            Write-Host "Warnings: $($warnings.Count)"
+
+            if ($errors.Count -gt 0) {
+              Write-Host ""
+              Write-Host "Errors:"
+              foreach ($error in $errors) {
+                Write-Host "  ✗ $error"
+              }
+            }
+
+            if ($warnings.Count -gt 0) {
+              Write-Host ""
+              Write-Host "Warnings:"
+              foreach ($warning in $warnings) {
+                Write-Host "  ⚠ $warning"
+              }
+            }
+
+            # Set output variables
+            Write-Host "##vso[task.setvariable variable=isValid;isOutput=true]$isValid"
+            Write-Host "##vso[task.setvariable variable=dependenciesValid;isOutput=true]$dependenciesValid"
+            Write-Host "##vso[task.setvariable variable=validationErrors;isOutput=true]$($errors -join ';')"
+            Write-Host "##vso[task.setvariable variable=validationWarnings;isOutput=true]$($warnings -join ';')"

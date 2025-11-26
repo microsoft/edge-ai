@@ -1546,6 +1546,10 @@ extneded
 Clis
 clis
 interceptable
+issecret
+LASTEXITCODE
+showvariable
+Hashtable
 
 # Camera & Video Equipment Vendors
 Hikvision

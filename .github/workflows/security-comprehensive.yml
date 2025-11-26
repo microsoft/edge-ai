@@ -1,4 +1,3 @@
----
 # Comprehensive Security Monitoring Workflow
 # Enhanced security monitoring workflow matching Azure DevOps scheduled stage approach.
 # Includes dependency staleness, OSSF Scorecard, AIO version checks,
@@ -8,10 +7,10 @@
 # This workflow performs comprehensive security analysis and monitoring.
 # Mirrors the Azure DevOps Scheduled stage approach with full security coverage.
 # Includes dependency staleness, OSSF scorecard, and AIO version checks.
-
+---
 name: Security Comprehensive Monitoring
 
-on:
+'on':
   workflow_call:
     inputs:
       max-age-days:

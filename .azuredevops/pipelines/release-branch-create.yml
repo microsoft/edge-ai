@@ -1,0 +1,524 @@
+# Release Branch Creation Pipeline
+#
+# Purpose:
+# This pipeline automates the creation of release branches from the dev branch, ensuring
+# clean and validated releases. It implements critical validation checks to prevent conflicts
+# and ensures that release branches are created only when all prerequisites are met.
+# The pipeline calculates semantic versions using GitVersion, validates that no conflicting
+# pull requests or branches exist, and then creates synchronized branches in both Azure DevOps
+# and GitHub repositories.
+#
+# When to use:
+# - When you need to create a new release branch from the dev branch
+# - When preparing for a production release with a specific version number
+# - When you need to ensure no active release PRs exist before creating a new release
+# - When you want to validate that the target release version doesn't already exist as a branch
+#
+# Functionality:
+# - Calculates semantic version using GitVersion based on repository history
+# - Implements Gap 1: Validates that no open pull requests exist with release/* branches from dev
+# - Implements Gap 3: Validates that release/x.y.z branch does not already exist in either repository
+# - Authenticates with GitHub using github-auth.yml template
+# - Validates branch existence using github-branch-operations.yml template (check-exists operation)
+# - Creates release/x.y.z branch in Azure DevOps repository from dev branch using git commands
+# - Pushes release/x.y.z branch to GitHub repository via git push (syncs from Azure DevOps)
+# - Creates pull request in GitHub using pr-creation.yml template (create-pr operation)
+# - Supports manual version override via releaseVersion parameter
+# - Ensures dual-branch architecture consistency between AzDO and GitHub
+#
+# Prerequisites:
+# - Variable group 'ai-on-edge-secrets' with GitHub App credentials:
+#   - github-edge-ai-app-client-id: GitHub App client ID for authentication
+#   - github-edge-ai-app-private-key: GitHub App private key (PEM format)
+#   - github-edge-ai-repo-url: GitHub repository URL with __token__ placeholder
+# - GitHub App must have permissions: contents:write, pull_requests:read, metadata:read
+# - Azure DevOps service connection with repository write access
+# - GitVersion.yml configuration file in repository root for version calculation
+# - Managed agent pool: ai-on-edge-managed-pool with PowerShell 7.x (pwsh)
+#
+# Template Dependencies:
+# - ../templates/github-auth.yml: GitHub App authentication
+# - ../templates/github-branch-operations.yml: GitHub branch validation via API
+# - ../templates/pr-creation.yml: GitHub pull request creation
+#
+# Parameters:
+# - releaseVersion: Optional string parameter to override GitVersion-calculated version
+#   - Format: Must match semantic version pattern (e.g., "1.2.3", "2.0.0")
+#   - Default: Empty string (uses GitVersion calculation)
+#   - Use case: Manual version specification when GitVersion calculation is not suitable
+#
+# Output Variables:
+# - RELEASE_VERSION: The calculated or provided release version (e.g., "1.2.3")
+# - RELEASE_BRANCH_NAME: Full branch name including prefix (e.g., "release/1.2.3")
+# - VALIDATION_STATUS: Status of prerequisite validation checks (passed/failed)
+#
+# Usage Examples:
+# ```yaml
+# # Trigger manually with GitVersion calculation:
+# # 1. Go to Azure DevOps Pipelines -> release-branch-create
+# # 2. Click "Run pipeline"
+# # 3. Leave releaseVersion empty for automatic version calculation
+# # 4. Pipeline will calculate version from git history and create branches
+#
+# # Trigger manually with version override:
+# # 1. Go to Azure DevOps Pipelines -> release-branch-create
+# # 2. Click "Run pipeline"
+# # 3. Enter releaseVersion: "2.1.0"
+# # 4. Pipeline will use "2.1.0" instead of GitVersion calculation
+# # 5. Creates release/2.1.0 in both AzDO and GitHub
+# ```
+#
+# Notes:
+# - This pipeline uses trigger: none and pr: none (manual execution only)
+# - The pipeline enforces one release at a time by detecting existing release PRs (Gap 1)
+# - Version collision prevention ensures no duplicate release/x.y.z branches exist (Gap 3)
+# - GitHub authentication handled by github-auth.yml template (outputs installationToken)
+# - Branch validation uses github-branch-operations.yml template with GitHub REST API
+# - Branch synchronization uses git push to sync Azure DevOps branch to GitHub
+# - PR creation uses pr-creation.yml template with full metadata support (labels, reviewers)
+# - Both AzDO and GitHub branches must be created successfully for complete release
+# - If validation fails, the pipeline exits early without creating any branches
+# - The dev branch must be up-to-date and synchronized between AzDO and GitHub
+# - Installation token from prCheck step is reused across subsequent template calls
+---
+trigger: none
+
+pr: none
+
+parameters:
+  - name: releaseVersion
+    displayName: 'Release Version (leave blank for auto-calculation, e.g., 1.0.0)'
+    type: string
+    default: " "
+
+pool:
+  name: ai-on-edge-managed-pool
+
+variables:
+  - name: sourceBranch
+    value: 'refs/heads/dev'
+  - name: githubRepo
+    value: 'microsoft/edge-ai'
+  # Variable group disabled - using managed identity direct access instead
+  # - name: keyVaultName
+  #   value: 'ai-on-edge-secrets'
+
+stages:
+  - stage: ValidateAndCreate
+    displayName: 'Validate and Create Release Branch'
+    jobs:
+      - job: CalculateVersion
+        displayName: 'Calculate Release Version'
+        steps:
+          - checkout: self
+            fetchDepth: 0
+            fetchTags: true
+            persistCredentials: true
+
+          - task: gitversion/setup@3
+            name: installGitVersion
+            displayName: 'Install GitVersion'
+            inputs:
+              versionSpec: '5.x'
+
+          - task: gitversion/execute@3
+            name: executeGitVersion
+            displayName: 'Calculate semantic version'
+            inputs:
+              useConfigFile: true
+              configFilePath: ./GitVersion.yml
+
+          - script: |
+              PARAM_VERSION="${{ parameters.releaseVersion }}"
+              # Trim whitespace and check if empty
+              PARAM_VERSION=$(echo "$PARAM_VERSION" | xargs)
+
+              if [[ -n "$PARAM_VERSION" ]]; then
+                RELEASE_VERSION="$PARAM_VERSION"
+                echo "Using provided version: $RELEASE_VERSION"
+              else
+                RELEASE_VERSION="$(GitVersion_MajorMinorPatch)"
+                echo "Using GitVersion calculated version: $RELEASE_VERSION"
+              fi
+
+              echo "##vso[task.setvariable variable=RELEASE_VERSION;isOutput=true]$RELEASE_VERSION"
+              echo "Release version set to: $RELEASE_VERSION"
+            displayName: 'Set release version'
+            name: setVersion
+
+      - job: ValidatePrerequisites
+        displayName: 'Validate Prerequisites'
+        dependsOn: CalculateVersion
+        variables:
+          RELEASE_VERSION: $[ dependencies.CalculateVersion.outputs['setVersion.RELEASE_VERSION'] ]
+        steps:
+          - checkout: self
+            fetchDepth: 0
+            fetchTags: true
+            persistCredentials: true
+
+          # Fetch secrets from Key Vault using managed identity via private endpoint
+          - task: AzureCLI@2
+            displayName: 'Fetch Key Vault secrets via managed identity (private endpoint)'
+            name: fetchSecrets
+            inputs:
+              azureSubscription: 'azdo-ai-for-edge-iac-for-edge'
+              scriptType: 'pscore'
+              scriptLocation: 'inlineScript'
+              addSpnToEnvironment: true
+              inlineScript: |
+                $ErrorActionPreference = 'Stop'
+
+                try {
+                    Write-Host "Fetching secrets from Key Vault via managed identity..."
+
+                    $clientId = az keyvault secret show --vault-name "kv-ai-on-edge-azdo" --name "github-edge-ai-app-client-id" --query value -o tsv
+                    if ($LASTEXITCODE -ne 0) { throw "Failed to fetch github-edge-ai-app-client-id" }
+
+                    $privateKey = az keyvault secret show --vault-name "kv-ai-on-edge-azdo" --name "github-edge-ai-app-private-key" --query value -o tsv
+                    if ($LASTEXITCODE -ne 0) { throw "Failed to fetch github-edge-ai-app-private-key" }
+
+                    $repoUrl = az keyvault secret show --vault-name "kv-ai-on-edge-azdo" --name "github-edge-ai-repo-url" --query value -o tsv
+                    if ($LASTEXITCODE -ne 0) { throw "Failed to fetch github-edge-ai-repo-url" }
+
+                    Write-Host "##vso[task.setvariable variable=github-edge-ai-app-client-id;issecret=true]$clientId"
+                    Write-Host "##vso[task.setvariable variable=github-edge-ai-app-private-key;issecret=true]$privateKey"
+                    Write-Host "##vso[task.setvariable variable=github-edge-ai-repo-url;issecret=true]$repoUrl"
+
+                    Write-Host "✓ Secrets fetched and exported successfully"
+                } catch {
+                    Write-Host "##[error]Failed to fetch secrets from Key Vault: $($_.Exception.Message)"
+                    throw
+                }
+
+          # GitHub App Authentication
+          - template: ../templates/github-auth.yml
+            parameters:
+              githubRepository: '$(githubRepo)'
+              outputVariableName: 'installationToken'
+              displayName: 'GitHub App Authentication for Release Operations'
+
+          - task: PowerShell@2
+            displayName: 'Gap 1: Check for active release PRs'
+            name: prCheck
+            inputs:
+              pwsh: true
+              targetType: 'inline'
+              script: |
+                Write-Host "Gap 1: Checking for existing release PRs..."
+
+                $ErrorActionPreference = 'Stop'
+
+                $installationToken = "$(githubAuth.installationToken)"
+                $headers = @{
+                    'Accept' = 'application/vnd.github+json'
+                    'Authorization' = "Bearer $installationToken"
+                    'X-GitHub-Api-Version' = '2022-11-28'
+                }
+
+                $pullsUrl = "https://api.github.com/repos/$(githubRepo)/pulls?state=open&base=main"
+                $pullRequests = Invoke-RestMethod -Uri $pullsUrl -Headers $headers -Method Get
+                $releasePRs = $pullRequests | Where-Object { $_.head.ref -like 'release/*' }
+
+                if ($releasePRs) {
+                    Write-Host "##[section]Gap 1 Violation: Active Release PR Detected"
+                    Write-Error "✗ Active release PR(s) found:"
+                    foreach ($pr in $releasePRs) {
+                        Write-Error "  - PR #$($pr.number): $($pr.head.ref) -> $($pr.base.ref) - $($pr.html_url)"
+                    }
+                    $prNumbers = ($releasePRs | ForEach-Object { $_.number }) -join ', #'
+                    Write-Error "✗ Action Required: Merge or close PR #$prNumbers before creating new release"
+                    exit 1
+                }
+
+                Write-Host "✓ Gap 1 passed"
+
+                $varName = "GITHUB_INSTALLATION_TOKEN"
+                Write-Host "##vso[task.setvariable variable=$varName;isSecret=true;isOutput=true]$installationToken"
+
+          - task: PowerShell@2
+            displayName: 'Gap 2: Validate GitHub to AzDO sync'
+            name: syncCheck
+            inputs:
+              pwsh: true
+              targetType: 'inline'
+              script: |
+                Write-Host "Gap 2: Validating GitHub/AzDO sync and main->dev merge..."
+
+                $ErrorActionPreference = 'Stop'
+                $installationToken = "$(prCheck.GITHUB_INSTALLATION_TOKEN)"
+                $headers = @{
+                    'Accept' = 'application/vnd.github+json'
+                    'Authorization' = "Bearer $installationToken"
+                    'X-GitHub-Api-Version' = '2022-11-28'
+                }
+
+                # Part A: GitHub to AzDO main sync
+                $githubBranchUrl = "https://api.github.com/repos/$(githubRepo)/branches/main"
+                $githubBranch = Invoke-RestMethod -Uri $githubBranchUrl -Headers $headers -Method Get
+                $githubMainSha = $githubBranch.commit.sha
+
+                git fetch origin main 2>&1 | Out-Null
+                $azdoMainSha = git rev-parse origin/main
+                if ($LASTEXITCODE -ne 0) {
+                    Write-Error "✗ Failed to get AzDO main SHA"
+                    exit 1
+                }
+
+                if ($githubMainSha -ne $azdoMainSha) {
+                    Write-Host "##[section]Gap 2 Violation: GitHub/AzDO main not synchronized"
+                    Write-Error "✗ GitHub main: $githubMainSha"
+                    Write-Error "✗ AzDO main:   $azdoMainSha"
+                    Write-Error "✗ Action: Wait for sync or trigger: az pipelines run --name 'GitHub to AzDO Sync'"
+                    exit 1
+                }
+
+                Write-Host "✓ GitHub/AzDO main synchronized"
+
+                # Part B: Main merged into dev
+                git fetch origin dev 2>&1 | Out-Null
+                if ($LASTEXITCODE -ne 0) {
+                    Write-Host "⚠ Dev branch does not exist yet (first-time setup)"
+                    Write-Host "✓ Gap 2 passed (dev will be created)"
+                    exit 0
+                }
+
+                git merge-base --is-ancestor origin/main origin/dev 2>&1 | Out-Null
+                if ($LASTEXITCODE -ne 0) {
+                    Write-Host "##[section]Gap 2 Violation: Main not merged into dev"
+                    Write-Error "✗ Action: Merge main into dev before creating release"
+                    exit 1
+                }
+
+                $devSha = git rev-parse origin/dev
+                if ($azdoMainSha -ne $devSha) {
+                    $unreleasedCount = git rev-list --count origin/main..origin/dev
+                    Write-Host "ℹ Dev has $unreleasedCount unreleased commit(s)"
+                }
+
+                Write-Host "✓ Gap 2 passed"
+
+          - task: PowerShell@2
+            displayName: 'Set branch name variable'
+            name: azdoBranchCheck
+            inputs:
+              pwsh: true
+              targetType: 'inline'
+              script: |
+                $branchName = "release/$(RELEASE_VERSION)"
+                Write-Host "Branch name: $branchName"
+                Write-Host "##vso[task.setvariable variable=BRANCH_NAME;isOutput=true]$branchName"
+
+          - task: PowerShell@2
+            displayName: 'Validate dev as source branch'
+            inputs:
+              pwsh: true
+              targetType: 'inline'
+              script: |
+                Write-Host "Validating dev branch as release source..."
+
+                $ErrorActionPreference = 'Stop'
+
+                $devSha = git rev-parse origin/dev 2>$null
+                if ($LASTEXITCODE -ne 0) {
+                    Write-Error "✗ Dev branch does not exist"
+                    exit 1
+                }
+
+                $lastRelease = git describe --tags --abbrev=0 --match "[0-9]*.[0-9]*.[0-9]*" 2>$null
+                if ($LASTEXITCODE -eq 0 -and $lastRelease) {
+                    $commitsSince = git rev-list --count "$lastRelease..origin/dev" 2>$null
+                    if ($LASTEXITCODE -eq 0) {
+                        if ([int]$commitsSince -eq 0) {
+                            Write-Host "⚠ Warning: No new commits since last release ($lastRelease)"
+                        } else {
+                            Write-Host "✓ Dev has $commitsSince commit(s) since $lastRelease"
+                        }
+                    }
+                } else {
+                    Write-Host "✓ First release (no previous tags)"
+                }
+
+                Write-Host "✓ Dev branch validated"
+                exit 0
+
+      - job: CreateBranch
+        displayName: 'Create Release Branch'
+        dependsOn:
+          - CalculateVersion
+          - ValidatePrerequisites
+        variables:
+          RELEASE_VERSION: $[ dependencies.CalculateVersion.outputs['setVersion.RELEASE_VERSION'] ]
+          BRANCH_NAME: $[ dependencies.ValidatePrerequisites.outputs['azdoBranchCheck.BRANCH_NAME'] ]
+          GITHUB_INSTALLATION_TOKEN: $[ dependencies.ValidatePrerequisites.outputs[
+            'prCheck.GITHUB_INSTALLATION_TOKEN'] ]
+        steps:
+          - checkout: self
+            fetchDepth: 0
+            persistCredentials: true
+
+          - task: PowerShell@2
+            displayName: 'Create branch in Azure DevOps'
+            inputs:
+              pwsh: true
+              targetType: 'inline'
+              script: |
+                Write-Host "Creating release branch $(BRANCH_NAME)..."
+
+                $ErrorActionPreference = 'Stop'
+
+                git config user.name "Azure DevOps Pipeline"
+                if ($LASTEXITCODE -ne 0) { exit 1 }
+
+                git config user.email "azdo-pipeline@microsoft.com"
+                if ($LASTEXITCODE -ne 0) { exit 1 }
+
+                git fetch origin dev
+                if ($LASTEXITCODE -ne 0) {
+                    Write-Error "✗ Failed to fetch dev branch"
+                    exit 1
+                }
+
+                # Check if branch already exists on remote
+                $remoteBranch = git ls-remote --heads origin "refs/heads/$(BRANCH_NAME)" 2>$null
+
+                if ($remoteBranch) {
+                    Write-Host "ℹ️ Branch exists on remote, updating to latest dev"
+                    # Checkout or create local branch
+                    git checkout -B "$(BRANCH_NAME)" origin/dev
+                    if ($LASTEXITCODE -ne 0) {
+                        Write-Error "✗ Failed to checkout/update branch"
+                        exit 1
+                    }
+                    # Force push to update remote with latest dev
+                    git push --force origin "$(BRANCH_NAME)"
+                    if ($LASTEXITCODE -ne 0) {
+                        Write-Error "✗ Failed to force push branch"
+                        exit 1
+                    }
+                    Write-Host "✓ Branch updated with latest dev"
+                } else {
+                    Write-Host "ℹ️ Creating new branch from dev"
+                    git checkout -b "$(BRANCH_NAME)" origin/dev
+                    if ($LASTEXITCODE -ne 0) {
+                        Write-Error "✗ Failed to create branch"
+                        exit 1
+                    }
+                    git push origin "$(BRANCH_NAME)"
+                    if ($LASTEXITCODE -ne 0) {
+                        Write-Error "✗ Failed to push branch"
+                        exit 1
+                    }
+                    Write-Host "✓ Branch created from dev"
+                }
+
+                Write-Host "✓ Branch created in Azure DevOps"
+
+          - task: PowerShell@2
+            displayName: 'Push branch to GitHub'
+            inputs:
+              pwsh: true
+              targetType: 'inline'
+              script: |
+                Write-Host "📤 Pushing branch to GitHub..."
+
+                $ErrorActionPreference = 'Stop'
+
+                # Construct GitHub repository URL with installation token
+                $token = "$(GITHUB_INSTALLATION_TOKEN)"
+                $githubUrl = "https://x-access-token:$token@github.com/$(githubRepo).git"
+
+                # Configure GitHub as a remote
+                git remote add github $githubUrl 2>$null
+                if ($LASTEXITCODE -ne 0) {
+                    Write-Host "ℹ️ GitHub remote may already exist, attempting to set URL..."
+                    git remote set-url github $githubUrl
+                    if ($LASTEXITCODE -ne 0) {
+                        Write-Error "✗ Failed to configure GitHub remote"
+                        exit 1
+                    }
+                }
+
+                # Push branch to GitHub (force to ensure it's up to date)
+                git push --force github "$(BRANCH_NAME)"
+                if ($LASTEXITCODE -ne 0) {
+                    Write-Error "✗ Failed to push branch to GitHub"
+                    exit 1
+                }
+
+                Write-Host "✓ Branch pushed to GitHub successfully"
+
+                # Verify branch exists in GitHub
+                Write-Host "🔍 Verifying GitHub branch..."
+                $headers = @{
+                    'Authorization' = "Bearer $token"
+                    'Accept' = 'application/vnd.github+json'
+                }
+                $verifyUri = "https://api.github.com/repos/$(githubRepo)/branches/$(BRANCH_NAME)"
+                try {
+                    $branch = Invoke-RestMethod -Uri $verifyUri -Headers $headers -Method GET
+                    Write-Host "✓ GitHub branch verified: $($branch.commit.sha)"
+
+                    # Check if there are commits between main and release branch
+                    $compareUri = "https://api.github.com/repos/$(githubRepo)/compare/main...$(BRANCH_NAME)"
+                    $comparison = Invoke-RestMethod -Uri $compareUri -Headers $headers -Method GET
+                    if ($comparison.ahead_by -eq 0) {
+                        Write-Error "✗ No commits between main and $(BRANCH_NAME)"
+                        exit 1
+                    }
+                    Write-Host "✓ Found $($comparison.ahead_by) commit(s) for PR"
+                } catch {
+                    Write-Error "✗ GitHub branch verification failed: $($_.Exception.Message)"
+                    exit 1
+                }
+
+          # Create Pull Request using template
+          - template: ../templates/pr-creation.yml
+            parameters:
+              operation: 'create-pr'
+              head: '$(BRANCH_NAME)'
+              base: 'main'
+              title: 'Release $(RELEASE_VERSION)'
+              body: |
+                # Release $(RELEASE_VERSION)
+
+                Source: dev branch
+                Target: main branch
+
+                ## What's Changed
+                This release was created from the dev branch and includes all merged features and fixes since the last release.
+
+                ## Pre-merge Checklist
+                - [ ] All CI/CD checks pass
+                - [ ] Release notes reviewed
+                - [ ] Documentation updated
+                - [ ] Breaking changes documented (if any)
+
+                ## Validation
+                - ✓ Gap 1: No conflicting release PRs exist
+                - ✓ Gap 3: Version collision check passed
+                - ✓ Branch created in both AzDO and GitHub
+
+                ## GitHub Actions Status
+                Monitor workflow status: https://github.com/$(githubRepo)/actions
+              repository: '$(githubRepo)'
+              installationToken: '$(GITHUB_INSTALLATION_TOKEN)'
+              labels: 'release'
+              outputVariablePrefix: 'prCreate'
+
+          - script: |
+              echo "=== Release Branch Creation Summary ==="
+              echo "✓ Release version: $(RELEASE_VERSION)"
+              echo "✓ Branch name: $(BRANCH_NAME)"
+              echo "✓ Source branch: dev"
+              echo "✓ Branch created in Azure DevOps"
+              echo "✓ Branch pushed to GitHub"
+              echo "✓ Pull Request created and ready for review"
+              echo "✓ Pull Request URL: $(prCreate.url)"
+              echo ""
+              echo "Next steps:"
+              echo "1. GitHub Actions will automatically run tests on the release branch"
+              echo "2. Monitor workflow status at: https://github.com/$(githubRepo)/actions"
+              echo "3. Review and merge the release PR when checks pass"
+              echo "4. GitHub Release will be created automatically after merge"
+            displayName: 'Summary'
