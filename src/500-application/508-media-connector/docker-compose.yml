@@ -1,3 +1,4 @@
+---
 services:
   mqtt-broker:
     image: eclipse-mosquitto:2.0

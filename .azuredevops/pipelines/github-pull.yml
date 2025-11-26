@@ -1,0 +1,188 @@
+---
+# GitHub to Azure DevOps Pull Pipeline
+#
+# Purpose:
+# This pipeline synchronizes code from GitHub to Azure DevOps repository by force-updating
+# the AzDO main branch to match GitHub main. After updating main, it automatically syncs
+# main to dev by merging main into dev.
+#
+# When to use:
+# - Manually triggered to sync GitHub main to Azure DevOps
+# - After merging PRs in GitHub that should be reflected in Azure DevOps
+# - To integrate external contributions from GitHub into internal workflows
+#
+# Functionality:
+# - Authenticates with GitHub using GitHub App installation tokens
+# - Fetches main branch from GitHub repository
+# - Force updates AzDO main to match GitHub main (no PR creation)
+# - Automatically syncs main to dev via main-to-dev-sync-template.yml
+#
+# Prerequisites:
+# - Variable group 'ai-on-edge-secrets' with GitHub App credentials:
+#   - github-edge-ai-app-client-id: GitHub App client ID
+#   - github-edge-ai-app-private-key: GitHub App private key (PEM format)
+#   - github-edge-ai-repo-url: GitHub repository URL with __token__ placeholder
+# - Managed agent pool: ai-on-edge-managed-pool
+# - Branch protection policies must allow force-with-lease from pipelines
+#
+# Parameters:
+# - sourceBranch: GitHub branch to sync (default: 'main')
+# - executeMainToDevSync: Execute main-to-dev sync after pull (default: true)
+#
+# Output Variables:
+# - githubAuth.installationToken: GitHub installation token (from github-auth.yml)
+# - ForceUpdate.UPDATED: Whether main was updated (true/false)
+#
+# Template Dependencies:
+# - ../templates/github-auth.yml: GitHub App authentication
+# - ../templates/git-sync-operations.yml: Git operations
+# - ../templates/main-to-dev-sync-template.yml: Main-to-dev sync
+#
+# Notes:
+# - Manual trigger only (no automatic scheduling)
+# - Force updates main branch directly (no PR workflow)
+# - Stage 2 only runs when executeMainToDevSync is true
+# - Skips update if GitHub and AzDO are already in sync
+
+trigger: none
+
+pr: none
+
+parameters:
+  - name: sourceBranch
+    type: string
+    default: 'main'
+    values:
+      - 'main'
+  - name: executeMainToDevSync
+    type: boolean
+    default: true
+    displayName: 'Execute main-to-dev sync after pull'
+
+variables:
+  - group: 'ai-on-edge-secrets'
+  - name: GitUserEmail
+    value: 'azure-pipelines@microsoft.com'
+  - name: GitUserName
+    value: 'Azure Pipelines'
+
+pool:
+  name: ai-on-edge-managed-pool
+  vmImage: ubuntu-latest
+
+stages:
+  - stage: GitHubToAzDO
+    displayName: 'GitHub to AzDO Main'
+    jobs:
+      - job: ForceUpdateMain
+        displayName: 'Force Update AzDO Main from GitHub'
+        steps:
+          - checkout: self
+            displayName: 'Checkout repository'
+            fetchDepth: 0
+            persistCredentials: true
+
+          # GitHub App Authentication
+          - template: ../templates/github-auth.yml
+            parameters:
+              githubRepository: 'microsoft/edge-ai'
+              outputVariableName: 'installationToken'
+              displayName: 'Create GitHub access token'
+
+          # Configure Git
+          - template: ../templates/git-sync-operations.yml
+            parameters:
+              operation: 'configure-git'
+              gitUserEmail: '$(GitUserEmail)'
+              gitUserName: '$(GitUserName)'
+
+          # Add GitHub remote and fetch
+          - task: PowerShell@2
+            displayName: 'Fetch from GitHub'
+            name: FetchGitHub
+            inputs:
+              pwsh: true
+              targetType: 'inline'
+              script: |
+                $githubUrl = "$(github-edge-ai-repo-url)" -replace '__token__', '$(githubAuth.installationToken)'
+                git remote add github $githubUrl 2>$null || git remote set-url github $githubUrl
+                git fetch github ${{ parameters.sourceBranch }}
+                Write-Host "✓ Fetched ${{ parameters.sourceBranch }} from GitHub"
+
+          # Compare and force update
+          - task: PowerShell@2
+            displayName: 'Force Update AzDO Main'
+            name: ForceUpdate
+            inputs:
+              pwsh: true
+              targetType: 'inline'
+              script: |
+                $sourceBranch = "${{ parameters.sourceBranch }}"
+                $githubSHA = git rev-parse "github/$sourceBranch"
+                $azdoSHA = git rev-parse "origin/$sourceBranch"
+
+                Write-Host "GitHub SHA:  $githubSHA"
+                Write-Host "AzDO SHA:    $azdoSHA"
+
+                if ($githubSHA -eq $azdoSHA) {
+                  Write-Host ""
+                  Write-Host "✓ Already in sync - no update needed"
+                  Write-Host "##vso[task.setvariable variable=UPDATED;isOutput=true]false"
+                  exit 0
+                }
+
+                Write-Host ""
+                Write-Host "Updating AzDO $sourceBranch to match GitHub..."
+
+                # Checkout from origin explicitly to avoid ambiguity with github remote
+                git checkout -B $sourceBranch "origin/$sourceBranch"
+                if ($LASTEXITCODE -ne 0) {
+                  Write-Host "##vso[task.logissue type=error]Failed to checkout $sourceBranch"
+                  exit 1
+                }
+
+                git reset --hard "github/$sourceBranch"
+                if ($LASTEXITCODE -ne 0) {
+                  Write-Host "##vso[task.logissue type=error]Failed to reset to GitHub state"
+                  exit 1
+                }
+
+                git push origin $sourceBranch --force-with-lease
+                if ($LASTEXITCODE -ne 0) {
+                  Write-Host "##vso[task.logissue type=error]Failed to push to AzDO"
+                  exit 1
+                }
+
+                Write-Host ""
+                Write-Host "✓ AzDO $sourceBranch updated to match GitHub"
+                Write-Host "##vso[task.setvariable variable=UPDATED;isOutput=true]true"
+
+          # Output summary
+          - task: PowerShell@2
+            displayName: 'Output Summary'
+            condition: always()
+            inputs:
+              pwsh: true
+              targetType: 'inline'
+              script: |
+                Write-Host ""
+                Write-Host "=========================================="
+                Write-Host "GitHub to AzDO Sync Summary"
+                Write-Host "=========================================="
+                Write-Host "Source Branch: ${{ parameters.sourceBranch }}"
+                Write-Host "Updated:       $(ForceUpdate.UPDATED)"
+                Write-Host "=========================================="
+
+  - stage: SyncMainToDev
+    displayName: 'Sync Main to Dev'
+    dependsOn: GitHubToAzDO
+    condition: |
+      and(
+        succeeded(),
+        eq(${{ parameters.executeMainToDevSync }}, true)
+      )
+    jobs:
+      - template: ../templates/main-to-dev-sync-template.yml
+        parameters:
+          gitUserEmail: '$(GitUserEmail)'
+          gitUserName: '$(GitUserName)'

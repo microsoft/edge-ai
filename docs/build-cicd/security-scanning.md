@@ -42,7 +42,6 @@ The Edge AI Accelerator implements comprehensive security scanning and supply ch
 - **Azure DevOps**: Enterprise security validation with full template parity
 - **Security Gate**: Centralized security gate enforcement
 - **Local Development**: Pre-commit security validation and SHA pinning
-- **Runtime**: StepSecurity Harden-Runner and egress filtering
 
 ## Supply Chain Security
 
@@ -264,23 +263,6 @@ Automated dependency updates for:
 
 Enterprise-grade dependency scanning integrated with Azure DevOps Security Center for comprehensive vulnerability assessment and automated remediation.
 
-### Runtime Security Hardening
-
-#### StepSecurity Harden-Runner
-
-**GitHub Actions Integration**:
-
-```yaml
-- name: Harden Runner
-  uses: step-security/harden-runner@17d0e2bd7d51742c71671bd19fa12bdc9d40a3d6 # v2.8.1
-  with:
-    egress-policy: audit
-    disable-sudo: true
-    disable-file-monitoring: false
-```
-
-**Azure DevOps Template**: `.azdo/templates/harden-runner-template.yml`
-
 #### OSSF Scorecard Integration
 
 Automated supply chain security analysis using OpenSSF Scorecard for comprehensive security posture assessment.
@@ -427,11 +409,6 @@ jobs:
   security-monitoring:
     runs-on: ubuntu-latest
     steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@17d0e2bd7d51742c71671bd19fa12bdc9d40a3d6 # v2.8.1
-        with:
-          egress-policy: audit
-
       - name: Security Monitoring
         uses: step-security/secure-repo@f0aa4c52c23e5cdcc8d5088bd60badb2a08c24c4 # v1.0.0
 
@@ -493,13 +470,11 @@ jobs:
 
 **Main Pipeline**: `azure-pipelines.yml`
 
-All security templates integrated for full parity:
+Security templates integrated:
 
 ```yaml
-- template: .azdo/templates/harden-runner-template.yml
 - template: .azdo/templates/security-monitoring-template.yml
 - template: .azdo/templates/security-scorecard-template.yml
-- template: .azdo/templates/egress-monitoring-template.yml
 - template: .azdo/templates/security-staleness-check.yml
 ```
 

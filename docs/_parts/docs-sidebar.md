@@ -178,10 +178,13 @@
 
 - [Build CI/CD](/docs/build-cicd/README)
   - [Azure DevOps pipelines](/docs/build-cicd/azure-devops)
+  - [Branch Strategy](/docs/build-cicd/branch-strategy)
   - [Build scripts guide](/docs/build-cicd/build-scripts)
   - [CI/CD best practices](/docs/build-cicd/ci-cd-best-practices)
   - [Configuration reference](/docs/build-cicd/configuration-reference)
   - [GitHub Actions workflows](/docs/build-cicd/github-actions)
+  - [Release Draft Workflow](/docs/build-cicd/release-draft-workflow)
+  - [Release Workflow - Dual-Branch Architecture](/docs/build-cicd/release-workflow)
   - [Security Analysis with Work Item Management](/docs/build-cicd/security-analysis-workflow)
   - [Security Scanning & Supply Chain Hardening](/docs/build-cicd/security-scanning)
   - [Troubleshooting builds](/docs/build-cicd/troubleshooting-builds)
