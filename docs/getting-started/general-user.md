@@ -425,10 +425,10 @@ _This guide is part of the AI on Edge Flagship Accelerator project. For the late
 [terraform-docs-install]: https://terraform-docs.io/user-guide/installation/
 [kubectl-install]: https://kubernetes.io/docs/tasks/tools/install-kubectl/
 [docker-install]: https://docs.docker.com/get-docker/
-[blueprint-full-single]: blueprints/full-single-node-cluster/
-[blueprint-full-multi]: blueprints/full-multi-node-cluster/
-[blueprint-minimum]: blueprints/minimum-single-node-cluster/
-[blueprint-cloud-only]: blueprints/only-cloud-single-node-cluster/
+[blueprint-full-single]: /blueprints/full-single-node-cluster/
+[blueprint-full-multi]: /blueprints/full-multi-node-cluster/
+[blueprint-minimum]: /blueprints/minimum-single-node-cluster/
+[blueprint-cloud-only]: /blueprints/only-cloud-single-node-cluster/
 [iot-ops-quickstart]: https://learn.microsoft.com/azure/iot-operations/get-started-end-to-end-sample/quickstart-deploy
 [iot-ops-docs]: https://learn.microsoft.com/azure/iot-operations/
 [project-repo]: {{REPO_URL}}
