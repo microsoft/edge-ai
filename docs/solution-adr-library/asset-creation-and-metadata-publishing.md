@@ -2,7 +2,7 @@
 title: Asset and Metadata Creation
 description: Architecture Decision Record for asset creation and metadata management in Azure IoT Operations. Addresses automated asset provisioning using OPC UA endpoints, metadata storage via Azure Resource Tags, and publishing asset hierarchy information to MQTT broker for Unified Namespace (UNS) integration with consistent topic structure across enterprise environments.
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: architecture-decision-record
 estimated_reading_time: 7
 keywords:

@@ -12,12 +12,13 @@ performance tracking, and diagnostic insights.
 | Name | Version |
 |------|---------|
 | terraform | >= 1.9.8, < 2.0 |
+| azurerm | >= 4.51.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| azurerm | n/a |
+| azurerm | >= 4.51.0 |
 
 ## Resources
 
@@ -38,6 +39,8 @@ performance tracking, and diagnostic insights.
 | resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
 | retention\_in\_days | The retention period in days for Application Insights data. | `number` | n/a | yes |
 | tags | Tags to apply to all resources | `map(string)` | n/a | yes |
+| internet\_ingestion\_enabled | Should the Application Insights support ingestion over the Public Internet. | `bool` | `true` | no |
+| internet\_query\_enabled | Should the Application Insights support querying over the Public Internet. | `bool` | `true` | no |
 
 ## Outputs
 

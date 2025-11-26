@@ -28,8 +28,9 @@ Provisions the ARM based data flow endpoint and data flow for Event Grid, requir
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| aio\_dataflow\_profile | n/a | ```object({ id = string })``` | n/a | yes |
-| aio\_instance | n/a | ```object({ id = string })``` | n/a | yes |
+| adr\_namespace | Azure Device Registry namespace to use with Azure IoT Operations. Otherwise, not configured. | ```object({ id = string, name = string })``` | n/a | yes |
+| aio\_dataflow\_profile | The AIO dataflow profile | ```object({ id = string })``` | n/a | yes |
+| aio\_instance | The Azure IoT Operations instance | ```object({ id = string })``` | n/a | yes |
 | aio\_uami\_client\_id | Client ID of the User Assigned Managed Identity for the Azure IoT Operations instance | `string` | n/a | yes |
 | aio\_uami\_tenant\_id | Tenant ID of the User Assigned Managed Identity for the Azure IoT Operations instance | `string` | n/a | yes |
 | asset\_name | The name of the Azure IoT Operations Device Registry Asset resource to send its data from edge to cloud. | `string` | n/a | yes |

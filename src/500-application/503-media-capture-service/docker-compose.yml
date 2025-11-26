@@ -2,7 +2,7 @@
 services:
   # Init container to setup required files
   setup-resources:
-    image: alpine:latest
+    image: alpine:latest@sha256:85f2b723e106c34644cd5851d7e81ee87da98ac54672b29947c052a45d31dc2f
     container_name: setup-resources
     volumes:
       # Mount only the media directory for local development
@@ -17,7 +17,7 @@ services:
 
   # Local Mosquitto MQTT Broker
   mosquitto-broker:
-    image: eclipse-mosquitto:latest
+    image: eclipse-mosquitto@sha256:7b77b81b6d25b1fc6cc5ed1eb8ae48c247d4fd6f9aef1f7ee88b4a8e0b7f2b3e@sha256:7b77b81b6d25b1fc6cc5ed1eb8ae48c247d4fd6f9aef1f7ee88b4a8e0b7f2b3e
     container_name: mosquitto-broker
     ports:
       - "1883:1883"    # MQTT non-TLS port
@@ -34,10 +34,10 @@ services:
 
   media-capture-service:
     # Build locally from Dockerfile
+    image: ${REGISTRY:-local}/${APPLICATION:-media-capture-service}/media-capture-service:${BUILD_ID:-latest}
     build:
-      context: ./services/media-capture-service
-      dockerfile: Dockerfile
-    image: media-capture-service:latest
+      context: .
+      dockerfile: services/media-capture-service/Dockerfile
     platform: linux/amd64  # Force AMD64 platform for compatibility
 
     container_name: media-capture-service

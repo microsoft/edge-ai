@@ -2,7 +2,7 @@
 title: Troubleshooting builds
 description: Quick troubleshooting guide for build failures, pipeline issues, and CI/CD problems in the Edge AI Accelerator project.
 author: Edge AI Team
-ms.date: 06/13/2025
+ms.date: 2025-06-13
 ms.topic: hub-page
 keywords:
   - troubleshooting
@@ -41,6 +41,7 @@ Quick solutions for common build and CI/CD issues in the Edge AI Accelerator pro
 - Install missing tools: Use `./scripts/install-terraform-docs.sh` for Terraform docs
 - Clear caches: Remove `~/.terraform.d/plugin-cache`, `~/.cache/pip`, `~/.npm`
 - Reinstall dependencies: Run `terraform init -upgrade`, `pip install --force-reinstall -r requirements.txt`
+- Azure Linux containers: Import `/etc/pki/rpm-gpg/MICROSOFT-RPM-GPG-KEY` before running `tdnf` to avoid `Header V4 RSA/SHA256 Signature ... NOKEY`
 - Check tool versions: `terraform --version`, `bicep --version`, `az --version`
 
 ### Configuration issues

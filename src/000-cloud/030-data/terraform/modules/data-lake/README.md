@@ -38,6 +38,7 @@ role assignments for provided principal IDs.
 | data\_lake\_filesystem\_name | Name of the Data Lake Gen2 filesystem to create | `string` | n/a | yes |
 | file\_share\_name | Name of the file share to create | `string` | n/a | yes |
 | file\_share\_quota\_gb | Maximum size of the file share in GB | `number` | n/a | yes |
+| is\_hns\_enabled | Whether to enable Hierarchical Namespace (HNS) for Azure Data Lake Storage Gen2. Note: Azure ML workspaces do not support HNS-enabled storage accounts. | `bool` | n/a | yes |
 | should\_create\_data\_lake\_file\_share | Whether to create a file share | `bool` | n/a | yes |
 | storage\_account | n/a | ```object({ id = string })``` | n/a | yes |
 

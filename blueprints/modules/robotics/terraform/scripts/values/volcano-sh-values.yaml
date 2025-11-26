@@ -1,0 +1,26 @@
+---
+custom:
+  scheduler_log_level: 4
+  # Refer to https://learn.microsoft.com/azure/machine-learning/how-to-troubleshoot-kubernetes-extension?view=azureml-api-2#volcano-scheduler-integration-supporting-cluster-autoscaler
+  scheduler_config_override: |
+    actions: "enqueue, allocate, backfill"
+    tiers:
+    - plugins:
+      - name: sla
+        arguments:
+          sla-waiting-time: 1m
+    - plugins:
+      - name: conformance
+    - plugins:
+        - name: drf
+          enablePreemptable: false
+        - name: predicates
+        - name: proportion
+        - name: nodeorder
+        - name: binpack
+          arguments:
+            binpack.weight: 10
+            binpack.memory: 1
+            binpack.cpu: 1
+            binpack.resources: nvidia.com/gpu
+            binpack.resources.nvidia.com/gpu: 100

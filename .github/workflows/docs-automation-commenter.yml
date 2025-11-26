@@ -1,0 +1,71 @@
+---
+name: Docs Automation Commenter
+
+on:
+  workflow_run:
+    workflows: ["Docs Automation"]
+    types:
+      - completed
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  post-results:
+    name: Post Documentation Validation Results
+    runs-on: ubuntu-latest
+    if: >
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.conclusion != 'cancelled'
+
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        continue-on-error: true
+        with:
+          name: docs-validation-results-${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
+
+      - name: Check if artifact exists
+        id: artifact-check
+        run: |
+          if [ -f "pr-context.json" ]; then
+            echo "artifact_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "artifact_exists=false" >> $GITHUB_OUTPUT
+            echo "⚠️ No artifact found - workflow may not have been triggered by a PR"
+          fi
+
+      - name: Post PR comment
+        if: steps.artifact-check.outputs.artifact_exists == 'true'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v7.0.1
+        with:
+          script: |
+            const fs = require('fs');
+
+            // Read PR context
+            let prContext;
+            try {
+              const prContextRaw = fs.readFileSync('pr-context.json', 'utf8');
+              prContext = JSON.parse(prContextRaw);
+            } catch (error) {
+              console.error('Failed to read pr-context.json:', error);
+              return;
+            }
+
+            // Post comment to PR
+            try {
+              await github.rest.issues.createComment({
+                owner: prContext.repo_owner,
+                repo: prContext.repo_name,
+                issue_number: prContext.pr_number,
+                body: prContext.comment_body
+              });
+              console.log(`✅ Posted comment to PR #${prContext.pr_number}`);
+            } catch (error) {
+              console.error('Failed to post comment:', error);
+              throw error;
+            }

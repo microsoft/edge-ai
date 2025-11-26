@@ -46,6 +46,18 @@ variable "retention_in_days" {
   description = "The retention period in days for Application Insights data."
 }
 
+variable "internet_ingestion_enabled" {
+  type        = bool
+  description = "Should the Application Insights support ingestion over the Public Internet."
+  default     = true
+}
+
+variable "internet_query_enabled" {
+  type        = bool
+  description = "Should the Application Insights support querying over the Public Internet."
+  default     = true
+}
+
 variable "tags" {
   type        = map(string)
   description = "Tags to apply to all resources"

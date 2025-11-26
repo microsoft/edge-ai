@@ -98,6 +98,7 @@ module cloudData '../../../src/000-cloud/030-data/bicep/main.bicep' = {
   dependsOn: [cloudResourceGroup]
   params: {
     common: common
+    shouldCreateAdrNamespace: true
     // Minimize resource usage
     storageAccountSettings: {
       tier: 'Standard'
@@ -160,6 +161,7 @@ module edgeIotOps '../../../src/100-edge/110-iot-ops/bicep/main.bicep' = {
     // Azure IoT Operations Instance Parameters
     aioIdentityName: cloudSecurityIdentity.outputs.aioIdentityName
     schemaRegistryName: cloudData.outputs.schemaRegistryName
+    adrNamespaceName: cloudData.outputs.adrNamespaceName
     shouldDeployAio: shouldDeployAio
     shouldCreateAnonymousBrokerListener: shouldCreateAnonymousBrokerListener
 

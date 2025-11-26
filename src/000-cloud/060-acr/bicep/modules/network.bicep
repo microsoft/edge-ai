@@ -45,7 +45,7 @@ resource snetAcr 'Microsoft.Network/virtualNetworks/subnets@2024-05-01' = if (sh
   parent: vnet
   name: 'subnet-${labelPrefixAcr}'
   properties: {
-    addressPrefix: '10.0.2.0/24'
+    addressPrefix: '10.0.3.0/24'
     networkSecurityGroup: {
       id: nsg.id
     }

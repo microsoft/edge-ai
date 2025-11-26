@@ -1,0 +1,19 @@
+{
+  "metadata": {
+    "version": "1.0.0",
+    "kataId": "test-content",
+    "kataTitle": "<b>Bold Title</b>",
+    "category": "ai-assisted-engineering",
+    "source": "ui",
+    "fileType": "kata-progress",
+    "lastUpdated": "2025-11-09T01:40:52.701Z"
+  },
+  "progress": {
+    "currentStep": "task-1",
+    "completedTasks": 0,
+    "totalTasks": 1,
+    "completionPercentage": 0,
+    "checkboxStates": {}
+  },
+  "timestamp": "2025-11-09T01:40:52.701Z"
+}

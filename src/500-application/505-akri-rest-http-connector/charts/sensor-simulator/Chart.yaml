@@ -1,0 +1,14 @@
+---
+apiVersion: v2
+name: sensor-simulator
+description: Helm chart for deploying the field-based sensor simulator service
+type: application
+version: 1.0.0
+appVersion: "2.0.0"
+keywords:
+  - sensor
+  - simulator
+  - rest
+  - akri
+maintainers:
+  - name: Edge AI Team

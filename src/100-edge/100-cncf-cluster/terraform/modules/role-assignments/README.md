@@ -9,13 +9,13 @@ Assigns Azure RBAC roles for Key Vault access
 | Name | Version |
 |------|---------|
 | terraform | >= 1.9.8, < 2.0 |
-| azurerm | >= 4.8.0 |
+| azurerm | >= 4.51.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| azurerm | >= 4.8.0 |
+| azurerm | >= 4.51.0 |
 
 ## Resources
 
@@ -30,8 +30,8 @@ Assigns Azure RBAC roles for Key Vault access
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | arc\_onboarding\_principal\_ids | The Principal IDs for the identity or service principal that will be used for onboarding the cluster to Arc | `list(string)` | n/a | yes |
-| key\_vault | The Key Vault object containing id, name, and vault\_uri properties. | ```object({ id = string name = string vault_uri = string })``` | n/a | yes |
-| resource\_group | n/a | ```object({ id = string })``` | n/a | yes |
+| key\_vault | The Key Vault object containing id, name, and vault\_uri properties | ```object({ id = string name = string vault_uri = string })``` | n/a | yes |
+| resource\_group | Resource group object containing name and id where resources will be deployed | ```object({ id = string })``` | n/a | yes |
 | should\_upload\_to\_key\_vault | Whether to upload the scripts to Key Vault as secrets. | `bool` | n/a | yes |
 <!-- markdown-table-prettify-ignore-end -->
 <!-- END_TF_DOCS -->

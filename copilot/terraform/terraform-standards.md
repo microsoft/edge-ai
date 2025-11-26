@@ -2,36 +2,8 @@
 
 You are an expert in Terraform Infrastructure as Code (IaC) with deep knowledge of Azure resources.
 
-This file contains detailed coding conventions and file organization standards for Terraform.
-
-You MUST ALWAYS meticulously follow these Terraform standards and conventions without deviation.
-
-<!-- <table-of-contents> -->
-
-## Table of Contents
-
-- [Terraform Coding Standards](#terraform-coding-standards)
-  - [Table of Contents](#table-of-contents)
-  - [Terraform Coding Conventions](#terraform-coding-conventions)
-    - [Terraform General Conventions](#terraform-general-conventions)
-      - [File and Naming Standards](#file-and-naming-standards)
-      - [Documentation and Comments](#documentation-and-comments)
-      - [Variables and Parameters](#variables-and-parameters)
-      - [Variable Description Standards](#variable-description-standards)
-      - [Module Structure](#module-structure)
-      - [Deferred Data Resources](#deferred-data-resources)
-      - [Resource Naming](#resource-naming)
-      - [Outputs](#outputs)
-      - [Component-Specific Conventions](#component-specific-conventions)
-      - [Enforcing Conventions](#enforcing-conventions)
-    - [Reference and Validation](#reference-and-validation)
-    - [Deferred Data Resource Patterns](#deferred-data-resource-patterns)
-    - [File Organization Standards](#file-organization-standards)
-      - [Main File Organization](#main-file-organization)
-      - [Variables Organization](#variables-organization)
-      - [Outputs Organization](#outputs-organization)
-
-<!-- </table-of-contents> -->
+* This file contains detailed coding conventions and file organization standards for Terraform.
+* You MUST ALWAYS meticulously follow these Terraform standards and conventions without deviation.
 
 ## Terraform Coding Conventions
 
@@ -41,117 +13,163 @@ You MUST ALWAYS meticulously follow these Terraform standards and conventions wi
 
 #### File and Naming Standards
 
-- You MUST use `kebab-case` for file/folder names, `snake_case` for resources/variables
-- You MUST format code via `terraform fmt`
-- You MUST NEVER use deprecated properties
+* You MUST use `kebab-case` for file/folder names, `snake_case` for resources/variables
+* You MUST format code via `terraform fmt`
+* You MUST NEVER use deprecated properties
 
 #### Documentation and Comments
 
-- You MUST use `//` for single-line or `/* */` for multi-line comments; NEVER use `#`
-- You MUST include a markdown comment at the TOP of EVERY `main.tf` file
-- You MUST provide descriptive `description` for all variables/outputs, ending with a period
-- You MUST add meaningful and factual comments for non-obvious code
-- You MUST NOT add redundant comments
+* You MUST use `//` for single-line or `/* */` for multi-line comments; NEVER use `#`
+* You MUST include a markdown comment at the TOP of EVERY `main.tf` file
+* You MUST provide descriptive `description` for all variables/outputs, ending with a period
+* You MUST add meaningful and factual comments for non-obvious code
+* You MUST NOT add redundant comments
 
 #### Variables and Parameters
 
-- You MUST specify `type` for all variables
-- You MUST start boolean variables with `should_` or `is_`
-- You MUST NOT add defaults to required variables
-- You MUST include fallback values in descriptions (e.g., "Otherwise, 'id-{resource_prefix}-{environment}-{instance}'.")
-- You MUST sort variables alphabetically within functional groupings
-- You MUST use `try()`, `coalesce()` instead of ternary operators where possible
-- You MUST provide variables for common settings
-- You MUST use proper resource references for dependencies
-- You MUST NOT use ternary operators unless unavoidable
+* You MUST specify `type` for all variables
+* You MUST start boolean variables with `should_` or `is_`
+* You MUST NOT add defaults to required variables
+* You MUST include fallback values in descriptions (e.g., "Otherwise, 'id-{resource_prefix}-{environment}-{instance}'.")
+* You MUST sort variables alphabetically within functional groupings
+* You MUST use `try()`, `coalesce()` instead of ternary operators where possible
+* You MUST provide variables for common settings
+* You MUST use proper resource references for dependencies
+* You MUST NOT use ternary operators unless unavoidable
 
 #### Variable Description Standards
 
-- You MUST NOT end variable descriptions with periods
-- You MUST use standardized descriptions for common variables:
-  - Environment: `Environment for all resources in this module: dev, test, or prod`
-  - Location: `Location for all resources in this module`
-  - Resource Prefix: `Prefix for all resources in this module`
-  - Instance: `Instance identifier for naming resources: 001, 002, etc`
-- You MUST use consistent Azure service terminology:
-  - Use "User Assigned Managed Identity" (not variations like "User-Assigned" or "UAI")
-  - Use "location" (not "region")
-  - Use "resource group object containing name and id" for resource group variables
-- You MUST include examples for constrained variables
-- You MUST specify object properties for complex types
-- You MUST add security warnings for development-only features
+* You MUST NOT end variable descriptions with periods
+* You MUST use standardized descriptions for common variables:
+  * Environment: `Environment for all resources in this module: dev, test, or prod`
+  * Location: `Location for all resources in this module`
+  * Resource Prefix: `Prefix for all resources in this module`
+  * Instance: `Instance identifier for naming resources: 001, 002, etc`
+* You MUST use consistent Azure service terminology:
+  * Use "User Assigned Managed Identity" (not variations like "User-Assigned" or "UAI")
+  * Use "location" (not "region")
+  * Use "resource group object containing name and id" for resource group variables
+* You MUST include examples for constrained variables
+* You MUST specify object properties for complex types
+* You MUST add security warnings for development-only features
 
 #### Module Structure
 
-- You MUST NOT create provider blocks in component/internal modules
-- You MUST NOT modify provider blocks except in `blueprints/`, `ci/`, or `tests/`
-- You MUST NOT violate module relationship rules when referencing modules
+* You MUST NOT create provider blocks in component/internal modules
+* You MUST NOT modify provider blocks except in `blueprints/`, `ci/`, or `tests/`
+* You MUST NOT violate module relationship rules when referencing modules
 
 #### Deferred Data Resources
 
-- You MUST use `terraform_data` resources to defer data source computations when build systems lack permissions for `terraform plan`
-- You MUST name deferred resources with `defer` prefix (e.g., `terraform_data.defer`, `terraform_data.defer_azuread_user`)
-- You MUST include explanatory comment for deferred data resources explaining build system compatibility requirement
-- You SHOULD use conditional counts on `terraform_data` deferred resources when the deferral is conditional
-- You MUST reference deferred outputs using `.output` syntax (e.g., `terraform_data.defer.output.resource_group_name`)
-- You MUST use `alltrue()`, `try()`, and `coalesce()` functions for complex conditional logic in deferred patterns
-- You MUST use `try()`, and when needed `coalesce()` functions for references to `data` deferred resources
+* You MUST use `terraform_data` resources to defer data source computations when build systems lack permissions for `terraform plan`
+* You MUST name deferred resources with `defer` prefix (e.g., `terraform_data.defer`, `terraform_data.defer_azuread_user`)
+* You MUST include explanatory comment for deferred data resources explaining build system compatibility requirement
+* You SHOULD use conditional counts on `terraform_data` deferred resources when the deferral is conditional
+* You MUST reference deferred outputs using `.output` syntax (e.g., `terraform_data.defer.output.resource_group_name`)
+* You MUST use `alltrue()`, `try()`, and `coalesce()` functions for complex conditional logic in deferred patterns
+* You MUST use `try()`, and when needed `coalesce()` functions for references to `data` deferred resources
+
+#### Resource Dependencies and References
+
+* Terraform builds a directed acyclic graph of `resource`'s to deploy and their dependencies based on dependencies being provided as attributes to the `resource`
+  * This includes individual `resource`'s in `module`'s, the DAG will be built from the `resource` perspective and not the `module` perspective
+  * To deploy a whole `module` first before another `resource` or `module` then add a `depends_on`
+* Only ever add or update `depends_on` for terraform `resource`, `module`, and `data`, when required dependencies can not be determined, this includes (not limited to):
+  * A dependency `resource` must be deployed before another dependant `resource` can be deployed but this dependant `resource` does not use the dependency `resource` for any attributes
+  * Role assignments must be deployed before a `resource` can be deployed
+  * Entire `module` must be deployed before a `resource` can be deployed (including role assignments)
+* Never use conditionals for `depends_on`, `depends_on` will consider non-existent `resource`, `module`, `data` as meeting the dependency requirement
+  * Only ever do, e.g., `depends_on = [module.dependency_module]`
+  * Never do, e.g., `depends_on = length(module.dependency_module) > 0 ? [module.dependency_module]: []`
+  * Never do , e.g., `depends_on = var.should_deploy_dependency ? [module.dependency_module] : []`
 
 #### Resource Naming
 
-- You MUST follow [Azure naming conventions](https://learn.microsoft.com/azure/cloud-adoption-framework/ready/azure-best-practices/resource-naming)
-- You MUST use these patterns:
-  - Hyphens allowed: `{resource_abbreviation}-${var.resource_prefix}-{optional_extra}-${var.environment}-${var.instance}`
-  - Hyphens not allowed: `{resource_abbreviation}${var.resource_prefix}{optional_extra}${var.environment}${var.instance}`
-  - Name length restriction: `'{resource_abbreviation}{optional_extra}${random_string.resource}'`
-- **Map-based resources**: When using `for_each` with map variables, use `name = each.key` directly UNLESS variable documentation specifies otherwise
+* You MUST follow [Azure naming conventions](https://learn.microsoft.com/azure/cloud-adoption-framework/ready/azure-best-practices/resource-naming)
+* You MUST use these patterns:
+  * Hyphens allowed: `{resource_abbreviation}-${var.resource_prefix}-{optional_extra}-${var.environment}-${var.instance}`
+  * Hyphens not allowed: `{resource_abbreviation}${var.resource_prefix}{optional_extra}${var.environment}${var.instance}`
+  * Name length restriction: `'{resource_abbreviation}{optional_extra}${random_string.resource}'`
+* **Map-based resources**: When using `for_each` with map variables, use `name = each.key` directly UNLESS variable documentation specifies otherwise
 
 #### Outputs
 
-- You MUST output resources as objects with necessary fields
-- You MUST set `sensitive = true` for secrets
-- You MUST provide meaningful and useful descriptions
-- You MUST use functions like `try()` or `coalesce()`
-- You MUST NOT use ternary operators if alternatives exist
+* You MUST output resources as objects with necessary fields
+* You MUST set `sensitive = true` for secrets
+* You MUST provide meaningful and useful descriptions
+* You MUST use functions like `try()` or `coalesce()`
+* You MUST NOT use ternary operators if alternatives exist
 
 #### Component-Specific Conventions
 
 For Components ONLY:
 
-- You MUST provide defaults for optional variables
-- You MUST provide `validation` for variables where conditions are known
-- You MUST place resources in `main.tf`
-- You MUST NEVER reference another component directly
-- You MUST receive existing resources as objects with only necessary fields
+* You MUST provide defaults for optional variables
+* You MUST provide `validation` for variables where conditions are known
+* You MUST place resources in `main.tf`
+* You MUST NEVER reference another component directly
+* You MUST pass `data` sources and `resource` objects directly to component modules without manually creating object structures; Terraform's type system will automatically extract only the fields that match the variable's object type definition
 
 For Internal modules ONLY:
 
-- You MUST NEVER provide defaults or validation for variables
-- You MUST place resources in `{component_name}/terraform/modules/{module_name}/main.tf`
-- You MUST NEVER use a component or another component's internal modules
+* You MUST NEVER provide defaults or validation for variables
+* You MUST place resources in `{component_name}/terraform/modules/{module_name}/main.tf`
+* You MUST NEVER use a component or another component's internal modules
+
+#### Passing Data and Resource Objects
+
+When passing `data` sources or `resource` objects to component modules, pass them directly rather than manually creating object structures:
+
+```terraform
+// ✅ Correct - Pass data/resource objects directly
+module "example_component" {
+  source = "./path/to/component"
+
+  resource_group             = data.azurerm_resource_group.example
+  machine_learning_workspace = data.azurerm_machine_learning_workspace.example
+  connected_cluster          = azurerm_kubernetes_cluster.example
+}
+
+// ❌ Avoid - Manually creating object structures
+module "example_component" {
+  source = "./path/to/component"
+
+  resource_group = {
+    id   = data.azurerm_resource_group.example.id
+    name = data.azurerm_resource_group.example.name
+  }
+  machine_learning_workspace = {
+    id       = data.azurerm_machine_learning_workspace.example.id
+    name     = data.azurerm_machine_learning_workspace.example.name
+    location = data.azurerm_machine_learning_workspace.example.location
+  }
+}
+```
+
+Terraform's type system automatically extracts only the fields that match the variable's object type definition, making manual object construction unnecessary and error-prone.
 
 #### Enforcing Conventions
 
 You MUST ALWAYS ensure Terraform conventions are followed:
 
-- CONTINUOUSLY evaluate if your changes adhere to these conventions
-- Correct any deviations from these conventions
-- Suggest convention updates if user changes conflict with conventions
+* CONTINUOUSLY evaluate if your changes adhere to these conventions
+* Correct any deviations from these conventions
+* Suggest convention updates if user changes conflict with conventions
 <!-- </terraform-general-conventions> -->
 
 ### Reference and Validation
 
 <!-- <reference-validation> -->
 
-- You MUST search the codebase for existing Terraform resources before editing
-- If no reference exists:
+* You MUST search the codebase for existing Terraform resources before editing
+* If no reference exists:
 
-  1. Use HashiCorp Registry documentation
+  1. Use HashiCorp Registry documentation and the terraform tool
   2. Check for deprecated fields and use latest properties
   3. Verify provider version requirements
   4. Review common usage examples
 
-- For `azapi` resources (use ONLY if no `azurerm` resource exists):
+* For `azapi` resources (use ONLY if no `azurerm` resource exists):
   1. Use Azure ARM template reference
   2. Extract resource type for `azapi` with latest API version
   3. Identify required properties for the `body` parameter
@@ -231,7 +249,7 @@ data "azuread_user" "current" {
 ```
 <!-- </deferred-patterns> -->
 
-- After edits, you MUST:
+* After edits, you MUST:
   1. Run `terraform fmt` and `terraform validate`
   2. Verify VS Code's Terraform diagnostics
   3. Fix all validation issues before committing

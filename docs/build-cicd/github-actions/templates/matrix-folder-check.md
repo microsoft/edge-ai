@@ -2,7 +2,7 @@
 title: Matrix Folder Check Workflow
 description: GitHub Actions reusable workflow for detecting directory changes and creating dynamic outputs for conditional execution
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: concept
 estimated_reading_time: 7
 keywords:
@@ -26,42 +26,49 @@ A reusable workflow that detects changes in repository directory structure and c
 
 ## Overview
 
-This workflow is designed to efficiently identify changes in specific directories and file types, providing outputs that help optimize CI/CD pipelines by only running necessary jobs. It's particularly useful for large repositories with multiple components, allowing targeted testing of only modified components rather than the entire codebase.
+This reusable workflow efficiently identifies changes in specific directories and file types, providing outputs that help optimize CI/CD pipelines by only running necessary jobs. It's particularly useful for large repositories with multiple components, allowing targeted testing of only modified components rather than the entire codebase.
+
+The workflow has been consolidated into a single, comprehensive solution that combines all detection capabilities, including application support, into one reusable workflow file.
 
 ## Features
 
-- **Change Detection**: Identifies changes in shell scripts, PowerShell scripts, Terraform files, and Bicep files
-- **Matrix Generation**: Creates a JSON matrix of changed folders for parallel testing
-- **Comprehensive Mode**: Optional parameter to include all folders regardless of changes
+- **Change Detection**: Identifies changes in shell scripts, PowerShell scripts, Terraform files, Bicep files, and application folders
+- **Matrix Generation**: Creates JSON matrices of changed folders for parallel testing
+- **Application Support**: Detects application changes in src/500-application with docker-compose files
+- **Comprehensive Mode**: Optional parameters to include all folders regardless of changes
+- **Cross-Platform**: Uses PowerShell script for consistent cross-platform execution
 - **Reusable Design**: Can be called from other workflows with customizable parameters
-- **Efficient Processing**: Uses a specialized script to quickly identify relevant changes
+- **Efficient Processing**: Uses a specialized PowerShell script to quickly identify relevant changes
 
 ## Parameters
 
-| Parameter           | Type    | Required | Default                              | Description                                          |
-|---------------------|---------|----------|--------------------------------------|------------------------------------------------------|
-| `displayName`       | string  | No       | 'Check for changes in src directory' | Custom display name for the job                      |
-| `includeAllFolders` | boolean | No       | `false`                              | When true, returns all folders regardless of changes |
+| Parameter             | Type    | Required | Default                              | Description                                                                               |
+|-----------------------|---------|----------|--------------------------------------|-------------------------------------------------------------------------------------------|
+| `displayName`         | string  | No       | 'Check for changes in src directory' | Custom display name for the job                                                           |
+| `includeIaCFolders`   | boolean | No       | `false`                              | When true, returns all Infrastructure as Code folders regardless of changes               |
+| `includeApplications` | boolean | No       | `false`                              | When true, returns all application folders from src/500-application regardless of changes |
 
 ## Outputs
 
-| Output Variable              | Description                                                                      | Example                                                     |
-|------------------------------|----------------------------------------------------------------------------------|-------------------------------------------------------------|
-| `changesInRpEnablementShell` | Boolean flag indicating if shell scripts in subscription setup have changed      | `needs.check-changes.outputs.changesInRpEnablementShell`    |
-| `changesInRpEnablementPwsh`  | Boolean flag indicating if PowerShell scripts in subscription setup have changed | `needs.check-changes.outputs.changesInRpEnablementPwsh`     |
-| `changesInTfInstall`         | Boolean flag indicating if any Terraform files have changed                      | `needs.check-changes.outputs.changesInTfInstall`            |
-| `changedTfFolders`           | JSON object with all identified Terraform folder names for matrix strategy       | `fromJson(needs.check-changes.outputs.changedTfFolders)`    |
-| `changesInBicepInstall`      | Boolean flag indicating if any Bicep files have changed                          | `needs.check-changes.outputs.changesInBicepInstall`         |
-| `changedBicepFolders`        | JSON object with all identified Bicep folder names for matrix strategy           | `fromJson(needs.check-changes.outputs.changedBicepFolders)` |
+| Output Variable              | Description                                                                      | Example                                                           |
+|------------------------------|----------------------------------------------------------------------------------|-------------------------------------------------------------------|
+| `changesInRpEnablementShell` | Boolean flag indicating if shell scripts in subscription setup have changed      | `needs.check-changes.outputs.changesInRpEnablementShell`          |
+| `changesInRpEnablementPwsh`  | Boolean flag indicating if PowerShell scripts in subscription setup have changed | `needs.check-changes.outputs.changesInRpEnablementPwsh`           |
+| `changesInTfInstall`         | Boolean flag indicating if any Terraform files have changed                      | `needs.check-changes.outputs.changesInTfInstall`                  |
+| `changedTfFolders`           | JSON object with all identified Terraform folder names for matrix strategy       | `fromJson(needs.check-changes.outputs.changedTfFolders)`          |
+| `changesInBicepInstall`      | Boolean flag indicating if any Bicep files have changed                          | `needs.check-changes.outputs.changesInBicepInstall`               |
+| `changedBicepFolders`        | JSON object with all identified Bicep folder names for matrix strategy           | `fromJson(needs.check-changes.outputs.changedBicepFolders)`       |
+| `changesInApplications`      | Boolean flag indicating if any Application folders have changed                  | `needs.check-changes.outputs.changesInApplications`               |
+| `changedApplicationFolders`  | JSON object with Application folder details for matrix strategy                  | `fromJson(needs.check-changes.outputs.changedApplicationFolders)` |
 
 ## Dependencies
 
 This template may depend on the following:
 
-- **Required Scripts**: Uses `./scripts/build/detect-folder-changes.sh` for change detection
+- **Required Scripts**: Uses `./scripts/build/Detect-Folder-Changes.ps1` PowerShell script for change detection
 - **Required Tools**:
-- `jq` for JSON processing
-- Git with fetch-depth: 0 for full history access
+  - PowerShell Core (pwsh) for cross-platform execution
+  - Git with fetch-depth: 0 for full history access
 
 ## Usage
 
@@ -76,29 +83,52 @@ jobs:
 ### Advanced Usage
 
 ```yaml
+# Include all Infrastructure as Code folders
 jobs:
-  check-all-folders:
+  check-all-iac-folders:
     uses: ./.github/workflows/matrix-folder-check.yml
     with:
-      includeAllFolders: true
-      displayName: "Check all folders"
+      includeIaCFolders: true
+      displayName: "Check all IaC folders"
+
+# Include all application folders
+  check-all-applications:
+    uses: ./.github/workflows/matrix-folder-check.yml
+    with:
+      includeApplications: true
+      displayName: "Check all applications"
+
+# Include both IaC and applications
+  check-all-components:
+    uses: ./.github/workflows/matrix-folder-check.yml
+    with:
+      includeIaCFolders: true
+      includeApplications: true
+      displayName: "Check all components"
 ```
 
 ## Implementation Details
 
-The workflow executes a single job that:
+The workflow executes two jobs for optimal output handling:
 
-1. Checks out the repository with full history
-2. Makes the detection script executable
-3. Runs the script with appropriate parameters
-4. Parses the JSON output for change detection
-5. Sets output values for downstream jobs
+1. **Detection Job**:
+   - Checks out the repository with full history
+   - Installs PowerShell Core for cross-platform execution
+   - Runs the PowerShell detection script with appropriate parameters
+   - Parses the JSON output for change detection
+   - Sets raw output values from the detection script
+
+2. **Output Mapping Job**:
+   - Maps detection outputs to maintain backward compatibility
+   - Formats matrix data for GitHub Actions consumption
+   - Provides consistent output naming across different workflow versions
 
 ### Key Components
 
-- **detect-folder-changes.sh**: The core script that analyzes repository changes
-- **JSON Processing**: Uses `jq` to extract and format the necessary information
-- **Matrix Formation**: Formats detected folders into a matrix-compatible JSON structure
+- **Detect-Folder-Changes.ps1**: The core PowerShell script that analyzes repository changes
+- **JSON Processing**: Uses PowerShell's built-in JSON handling for data extraction and formatting
+- **Matrix Formation**: Formats detected folders and applications into matrix-compatible JSON structures
+- **Cross-Platform Execution**: Leverages PowerShell Core for consistent behavior across operating systems
 
 ## Examples
 
@@ -125,10 +155,10 @@ jobs:
         run: echo "Testing ${{ matrix.folderName }}"
 ```
 
-### Example 2: Bicep Template Validation
+### Example 2: Application Builds
 
 ```yaml
-name: Bicep Validation
+name: Application CI
 
 on:
   pull_request:
@@ -137,15 +167,26 @@ on:
 jobs:
   check-changes:
     uses: ./.github/workflows/matrix-folder-check.yml
+    with:
+      includeApplications: true
 
-  bicep-tests:
+  application-builds:
     needs: check-changes
-    if: ${{ needs.check-changes.outputs.changesInBicepInstall == 'true' }}
+    if: ${{ needs.check-changes.outputs.changesInApplications == 'true' }}
     strategy:
-      matrix: ${{ fromJson(needs.check-changes.outputs.changedBicepFolders) }}
+      matrix: ${{ fromJson(needs.check-changes.outputs.changedApplicationFolders) }}
     steps:
-      - name: Validate Bicep Templates
-        run: az bicep build --file "${{ matrix.folderName }}/main.bicep"
+      - name: Build Application
+        run: |
+          echo "Building application: ${{ matrix.applicationName }}"
+          echo "Application path: ${{ matrix.applicationPath }}"
+          echo "Services: ${{ matrix.services }}"
+          echo "Has docker-compose: ${{ matrix.hasDockerCompose }}"
+
+          # Build using docker-compose if available
+          if [ "${{ matrix.hasDockerCompose }}" == "true" ]; then
+            docker-compose -f "${{ matrix.applicationPath }}/docker-compose.yml" build
+          fi
 ```
 
 ### Example 3: Complete Test Suite Run
@@ -161,7 +202,7 @@ jobs:
   check-all-folders:
     uses: ./.github/workflows/matrix-folder-check.yml
     with:
-      includeAllFolders: true
+      includeIaCFolders: true
       displayName: "Check all infrastructure folders"
 
   run-complete-tests:

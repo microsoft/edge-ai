@@ -13,7 +13,7 @@ install extensions for cluster connect and custom locations.
 | terraform | >= 1.9.8, < 2.0 |
 | azapi | >= 2.3.0 |
 | azuread | >= 3.0.2 |
-| azurerm | >= 4.8.0 |
+| azurerm | >= 4.51.0 |
 
 ## Providers
 
@@ -21,7 +21,7 @@ install extensions for cluster connect and custom locations.
 |------|---------|
 | azapi | >= 2.3.0 |
 | azuread | >= 3.0.2 |
-| azurerm | >= 4.8.0 |
+| azurerm | >= 4.51.0 |
 | terraform | n/a |
 
 ## Resources
@@ -52,15 +52,16 @@ install extensions for cluster connect and custom locations.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | environment | Environment for all resources in this module: dev, test, or prod | `string` | n/a | yes |
-| resource\_group | n/a | ```object({ name = string id = optional(string) })``` | n/a | yes |
+| resource\_group | Resource group object containing name and id where resources will be deployed | ```object({ name = string id = optional(string) })``` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
 | should\_get\_custom\_locations\_oid | Whether to get Custom Locations Object ID using Terraform's azuread provider. (Otherwise, provided by 'custom\_locations\_oid' or `az connectedk8s enable-features` for custom-locations on cluster setup if not provided.) | `bool` | n/a | yes |
-| arc\_onboarding\_identity | The Principal ID for the identity that will be used for onboarding the cluster to Arc | ```object({ principal_id = string })``` | `null` | no |
+| arc\_onboarding\_identity | The User Assigned Managed Identity that will be used for onboarding the cluster to Arc | ```object({ id = string name = string principal_id = string client_id = string tenant_id = string })``` | `null` | no |
 | arc\_onboarding\_principal\_ids | The Principal IDs for the identity or service principal that will be used for onboarding the cluster to Arc | `list(string)` | `null` | no |
 | arc\_onboarding\_sp | n/a | ```object({ client_id = string object_id = string client_secret = string })``` | `null` | no |
 | cluster\_admin\_oid | The Object ID that will be given cluster-admin permissions with the new cluster. (Otherwise, current logged in user Object ID if 'should\_add\_current\_user\_cluster\_admin=true') | `string` | `null` | no |
 | cluster\_admin\_upn | The User Principal Name that will be given cluster-admin permissions with the new cluster. (Otherwise, current logged in user UPN if 'should\_add\_current\_user\_cluster\_admin=true') | `string` | `null` | no |
 | cluster\_node\_machine | n/a | ```list(object({ id = string location = string }))``` | `null` | no |
+| cluster\_node\_machine\_count | Number of cluster node machines referenced by cluster\_node\_machine when deploying scripts | `number` | `null` | no |
 | cluster\_server\_host\_machine\_username | Username used for the host machines that will be given kube-config settings on setup. (Otherwise, 'resource\_prefix' if it exists as a user) | `string` | `null` | no |
 | cluster\_server\_ip | The IP Address for the cluster server that the cluster nodes will use to connect. | `string` | `null` | no |
 | cluster\_server\_machine | n/a | ```object({ id = string location = string })``` | `null` | no |
@@ -68,7 +69,7 @@ install extensions for cluster connect and custom locations.
 | custom\_locations\_oid | The object id of the Custom Locations Entra ID application for your tenant. If none is provided, the script will attempt to retrieve this requiring 'Application.Read.All' or 'Directory.Read.All' permissions. ```sh az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv``` | `string` | `null` | no |
 | http\_proxy | HTTP proxy URL | `string` | `null` | no |
 | instance | Instance identifier for naming resources: 001, 002, etc | `string` | `"001"` | no |
-| key\_vault | The Key Vault object containing id, name, and vault\_uri properties. | ```object({ id = string name = string vault_uri = string })``` | `null` | no |
+| key\_vault | The Key Vault object containing id, name, and vault\_uri properties | ```object({ id = string name = string vault_uri = string })``` | `null` | no |
 | key\_vault\_script\_secret\_prefix | Optional prefix for the Key Vault script secret name when should\_use\_script\_from\_secrets\_for\_deploy is true. | `string` | `""` | no |
 | private\_key\_pem | Private key for onboarding | `string` | `null` | no |
 | script\_output\_filepath | The location of where to write out the script file. (Otherwise, '{path.root}/out') | `string` | `null` | no |

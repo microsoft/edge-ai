@@ -17,6 +17,7 @@
 # - condition: Condition for running this job
 # - enableAzureReporter: When true, posts results as comments on Azure DevOps PRs
 # - pullRequestId: ID of the pull request (required for PR comments)
+# - pullRequestIdOverride: Manual override for PR ID (for manual triggers when System.PullRequest.PullRequestId is not valid)
 # - sourceRepoUri: URI of the source repository (required for PR comments)
 # - agentPool: Agent pool configuration with name and vmImage properties
 #
@@ -32,6 +33,14 @@
 #   parameters:
 #     enableAzureReporter: true
 #     pullRequestId: $(System.PullRequest.PullRequestId)
+#     sourceRepoUri: $(System.PullRequest.SourceRepositoryURI)
+#
+# # With manual PR ID override (for manual triggers):
+# - template: .azdo/templates/megalinter-template.yml
+#   parameters:
+#     enableAzureReporter: true
+#     pullRequestId: $(System.PullRequest.PullRequestId)
+#     pullRequestIdOverride: "12345"
 #     sourceRepoUri: $(System.PullRequest.SourceRepositoryURI)
 # ```
 #
@@ -59,6 +68,10 @@ parameters:
   - name: pullRequestId
     type: string
     default: ''
+  # Manual override for pull request ID (for manual triggers)
+  - name: pullRequestIdOverride
+    type: string
+    default: ''
   # URI of the source repository
   - name: sourceRepoUri
     type: string
@@ -69,6 +82,10 @@ parameters:
     default:
       name: 'ai-on-edge-managed-pool'
       vmImage: 'ubuntu-latest'
+  # MegaLinter container image reference
+  - name: megaLinterImage
+    type: string
+    default: 'ghcr.io/oxsecurity/megalinter:v8'
 
 jobs:
   - job: MegaLinter
@@ -76,41 +93,143 @@ jobs:
     displayName: ${{ parameters.displayName }}
     condition: ${{ parameters.condition }}
     pool: ${{ parameters.agentPool }}
+    variables:
+      MegaLinterGitleaksArgs: ''
 
     steps:
       # Checkout repo
       - checkout: self
+        displayName: 'Checkout repository'
         clean: true
+        fetchDepth: 0
+        fetchTags: false
+        persistCredentials: true
+
+      # For PR builds, checkout the source branch HEAD instead of merge ref
+      - task: Bash@3
+        displayName: 'Checkout PR source branch HEAD'
+        condition: eq(variables['Build.Reason'], 'PullRequest')
+        inputs:
+          targetType: 'inline'
+          script: |
+            BRANCH_NAME=$(echo "$(System.PullRequest.SourceBranch)" | sed 's|^refs/heads/||')
+            echo "Switching to PR source branch HEAD: $BRANCH_NAME"
+            git checkout "$BRANCH_NAME"
+            git log -1 --oneline
+
+      # Docker cleanup before MegaLinter
+      - script: |
+          echo "=== Docker System Cleanup (Before MegaLinter) ==="
+          echo "Disk usage BEFORE cleanup:"
+          docker system df
+          echo ""
+          echo "Removing unused Docker resources to prevent disk exhaustion..."
+          docker system prune -af --volumes
+          echo ""
+          echo "Disk usage AFTER cleanup:"
+          docker system df
+          echo "=== Cleanup Complete ==="
+        displayName: 'Docker Cleanup - Before MegaLinter'
+        condition: succeededOrFailed()
+
+      - pwsh: |
+          $ErrorActionPreference = 'Stop'
+          Set-StrictMode -Version 3.0
+
+          $buildReason = '$(Build.Reason)'
+          $buildSourceBranch = '$(Build.SourceBranch)'
+          $value = ''
+
+          if ($buildReason -eq 'PullRequest') {
+            $value = '--log-opts="origin/$(System.PullRequest.TargetBranch)..HEAD"'
+          } elseif ($buildSourceBranch -eq 'refs/heads/main') {
+            $commitCount = 0
+            try {
+              $commitCount = [int](& git rev-list --count HEAD 2>$null)
+            } catch {
+              $commitCount = 0
+            }
+
+            if ($commitCount -gt 1) {
+              $value = '--log-opts="HEAD~1..HEAD"'
+            } else {
+              $value = '--log-opts="HEAD"'
+            }
+          }
+
+          Write-Host "Setting MegaLinterGitleaksArgs to '$value'"
+          Write-Host "##vso[task.setvariable variable=MegaLinterGitleaksArgs]$value"
+        displayName: 'Configure MegaLinter Git diff arguments'
+
+      # Determine the correct PR ID to use, validating it's a number
+      - pwsh: |
+          $prIdFromSystem = '${{ parameters.pullRequestId }}'
+          $prIdOverride = '${{ parameters.pullRequestIdOverride }}'
+
+          Write-Host "System PR ID: '$prIdFromSystem'"
+          Write-Host "Override PR ID: '$prIdOverride'"
+
+          # Treat example text or empty as not provided
+          if (-not [string]::IsNullOrEmpty($prIdOverride) -and $prIdOverride -notmatch '^e\.g\.,|^example|^\s*$') {
+              $finalPrId = $prIdOverride
+              Write-Host "Using override PR ID: $finalPrId"
+          } else {
+              $finalPrId = $prIdFromSystem
+              Write-Host "Using system PR ID: $finalPrId"
+              if ($prIdOverride -match '^e\.g\.,|^example') {
+                  Write-Host "Note: Override contains example text - treating as empty"
+              }
+          }
+
+          # Validate that it's a number (not the literal string)
+          if ($finalPrId -match '^\d+$') {
+              Write-Host "Valid numeric PR ID: $finalPrId"
+              Write-Host "##vso[task.setvariable variable=VALIDATED_PR_ID]$finalPrId"
+              Write-Host "##vso[task.setvariable variable=ENABLE_PR_REPORTER]true"
+          } else {
+              Write-Host "Invalid or non-numeric PR ID: '$finalPrId' - this likely indicates a manual trigger or non-PR build"
+              Write-Host "##vso[task.setvariable variable=VALIDATED_PR_ID]"
+              Write-Host "##vso[task.setvariable variable=ENABLE_PR_REPORTER]false"
+          }
+        displayName: 'Validate Pull Request ID'
+        condition: ${{ eq(parameters.enableAzureReporter, true) }}
 
       - script: |
 
-          # Pull MegaLinter from Docker registry
-          echo "Pulling MegaLinter from Docker registry..."
-          docker pull oxsecurity/megalinter:v8
+          # Pull MegaLinter from GitHub registry
+          echo "Pulling MegaLinter from GitHub registry..."
+          docker pull ${{ parameters.megaLinterImage }}
 
         displayName: MegaLinter Pull
         condition: not(canceled())
 
       # Run MegaLinter with different configurations based on Azure Reporter setting
       - ${{ if eq(parameters.enableAzureReporter, true) }}:
+          # Run with PR reporting enabled only if we have a valid PR ID
           - script: |
+              GITLEAKS_ENV=""
+              if [ -n "$(MegaLinterGitleaksArgs)" ]; then
+                GITLEAKS_ENV="-e REPOSITORY_GITLEAKS_ARGUMENTS=\"$(MegaLinterGitleaksArgs)\""
+              fi
 
-              docker run -v $(System.DefaultWorkingDirectory):/tmp/lint \
-                --env-file <(env | grep -e SYSTEM_ -e BUILD_ -e TF_ -e AGENT_) \
+              eval docker run -v $(System.DefaultWorkingDirectory):/tmp/lint \
+                --env-file '<(env | grep -e SYSTEM_ -e BUILD_ -e TF_ -e AGENT_)' \
                 -e SYSTEM_ACCESSTOKEN=$(System.AccessToken) \
                 -e GIT_AUTHORIZATION_BEARER=$(System.AccessToken) \
+                ${GITLEAKS_ENV} \
                 -e SYSTEM_COLLECTIONURI='$(System.CollectionUri)' \
-                -e SYSTEM_PULLREQUEST_PULLREQUESTID='${{ parameters.pullRequestId }}' \
+                -e SYSTEM_PULLREQUEST_PULLREQUESTID='$(VALIDATED_PR_ID)' \
                 -e SYSTEM_PULLREQUEST_SOURCEREPOSITORYURI='${{ parameters.sourceRepoUri }}' \
                 -e SYSTEM_TEAMPROJECT='$(System.TeamProject)' \
                 -e BUILD_BUILDID='$(Build.BuildId)' \
                 -e BUILD_REPOSITORY_ID='$(Build.Repository.ID)' \
                 -e AZURE_COMMENT_REPORTER='true' \
-                oxsecurity/megalinter:v8
+                ${{ parameters.megaLinterImage }}
 
-            displayName: Run MegaLinter
+            displayName: Run MegaLinter with PR Reporting
+            condition: and(succeeded(), eq(variables['ENABLE_PR_REPORTER'], 'true'))
 
-      - ${{ if eq(parameters.enableAzureReporter, false) }}:
+          # Run without PR reporting if we don't have a valid PR ID
           - script: |
 
               docker run -v $(System.DefaultWorkingDirectory):/tmp/lint \
@@ -118,7 +237,25 @@ jobs:
                 -e SYSTEM_ACCESSTOKEN=$(System.AccessToken) \
                 -e GIT_AUTHORIZATION_BEARER=$(System.AccessToken) \
                 -e AZURE_COMMENT_REPORTER='false' \
-                oxsecurity/megalinter:v8
+                ${{ parameters.megaLinterImage }}
+
+            displayName: Run MegaLinter without PR Reporting
+            condition: and(succeeded(), eq(variables['ENABLE_PR_REPORTER'], 'false'))
+
+      - ${{ if eq(parameters.enableAzureReporter, false) }}:
+          - script: |
+              GITLEAKS_ENV=""
+              if [ -n "$(MegaLinterGitleaksArgs)" ]; then
+                GITLEAKS_ENV="-e REPOSITORY_GITLEAKS_ARGUMENTS=\"$(MegaLinterGitleaksArgs)\""
+              fi
+
+              eval docker run -v $(System.DefaultWorkingDirectory):/tmp/lint \
+                --env-file '<(env | grep -e SYSTEM_ -e BUILD_ -e TF_ -e AGENT_)' \
+                -e SYSTEM_ACCESSTOKEN=$(System.AccessToken) \
+                -e GIT_AUTHORIZATION_BEARER=$(System.AccessToken) \
+                ${GITLEAKS_ENV} \
+                -e AZURE_COMMENT_REPORTER='false' \
+                ${{ parameters.megaLinterImage }}
 
             displayName: Run MegaLinter
 
@@ -129,3 +266,77 @@ jobs:
         inputs:
           targetPath: "$(System.DefaultWorkingDirectory)/megalinter-reports/"
           artifactName: MegaLinterReport
+
+      # Emit actual error details from ERROR-*.log files as individual Azure DevOps errors
+      - script: |
+          set -euo pipefail
+          LOG_DIR="$(System.DefaultWorkingDirectory)/megalinter-reports/linters_logs"
+          if [ ! -d "$LOG_DIR" ]; then
+            echo "No linters_logs directory found at $LOG_DIR"
+            exit 0
+          fi
+
+          shopt -s nullglob
+          error_files=("$LOG_DIR"/ERROR-*.log)
+
+          for f in "${error_files[@]}"; do
+            rel_path="${f#$(System.DefaultWorkingDirectory)/}"
+            after_marker=0
+            capture_error_details=0
+
+            while IFS= read -r line || [ -n "$line" ]; do
+              # Look for the ERROR marker to start processing
+              if [ $after_marker -eq 0 ]; then
+                if [[ "$line" == "❌ [ERROR]"* ]]; then
+                  after_marker=1
+                fi
+                continue
+              fi
+
+              # Skip empty lines
+              [ -z "$line" ] && continue
+
+              # Check if this line indicates an error (ends with " X")
+              if [[ "$line" == *" X" ]]; then
+                capture_error_details=1
+                continue
+              fi
+
+              # Check if we've hit the next numbered progress line (stop capturing)
+              if [[ "$line" =~ ^[[:space:]]*[0-9]+/[0-9]+ ]]; then
+                capture_error_details=0
+                continue
+              fi
+
+              # Check if we've hit the summary line at the end (stop capturing)
+              if [[ "$line" =~ ^.*:\ Files\ checked ]]; then
+                capture_error_details=0
+                continue
+              fi
+
+              # If we're capturing error details, emit them as Azure DevOps errors
+              if [ $capture_error_details -eq 1 ]; then
+                esc="${line//'%'/'%25'}"
+                esc="${esc//']'/'%5D'}"
+                esc="${esc//';'/'%3B'}"
+                echo "##vso[task.logissue type=error;sourcepath=$rel_path;]$esc"
+              fi
+            done < "$f"
+          done
+        displayName: Emit MegaLinter error details
+        condition: succeededOrFailed()
+
+      # Docker cleanup after MegaLinter
+      - script: |
+          echo "=== Docker System Cleanup (After MegaLinter) ==="
+          echo "Disk usage BEFORE cleanup:"
+          docker system df
+          echo ""
+          echo "Freeing MegaLinter artifacts (~12 GB)..."
+          docker system prune -af --volumes
+          echo ""
+          echo "Disk usage AFTER cleanup:"
+          docker system df
+          echo "=== Cleanup Complete ==="
+        displayName: 'Docker Cleanup - After MegaLinter'
+        condition: succeededOrFailed()

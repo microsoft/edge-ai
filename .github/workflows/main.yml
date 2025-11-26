@@ -1,13 +1,15 @@
 # Main Branch CI/CD Workflow
 #
 # Purpose:
-# This workflow runs the continuous integration and deployment pipeline for the main branch,
+# This workflow runs the continuous integration and deployment pipeline for the
+# main branch,
 # ensuring code quality and deploying documentation to GitHub Pages.
 #
 # Functionality:
 # - Runs MegaLinter for static code analysis across multiple languages
 # - Validates documentation standards and updates docs if needed
-# - Deploys documentation to GitHub Pages when docs have changed
+# - When code is pushed to the main branch (triggers deployment to
+#   GitHub Pages)
 # - Checks Azure IoT Operations component versions against latest published releases
 # - Performs matrix-based validation of Terraform configurations
 #
@@ -24,6 +26,14 @@
 # up-to-date for users of the repository.
 ---
 name: Main Branch CI/CD
+
+permissions:
+  contents: read
+  actions: read
+  checks: write
+  pull-requests: write
+  statuses: write
+  security-events: write
 
 on: # yamllint disable-line rule:truthy
   push:
@@ -49,25 +59,26 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493
         with:
           fetch-depth: 0
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@294a9d92911152fe08befb9ec03e240add280cb3
         with:
           languages: ${{ matrix.language }}
           build-mode: none
-          # If you wish to specify custom queries, you can do so here or in a config file.
+          # If you wish to specify custom queries, you can do so here or in a
+          # config file.
           # By default, queries listed here will override any specified in a config file.
           # For more details, see: https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/configuring-code-scanning#using-queries-in-ql-packs
           # queries: security-extended,security-and-quality
 
       - name: Autobuild
-        uses: github/codeql-action/autobuild@v3
+        uses: github/codeql-action/autobuild@294a9d92911152fe08befb9ec03e240add280cb3
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@294a9d92911152fe08befb9ec03e240add280cb3
         with:
           category: "/language:${{matrix.language}}"
 
@@ -77,12 +88,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493
 
       # GitHub doesn't have a direct equivalent to Azure's ComponentGovernanceComponentDetection
       # Using a basic dependency check with built-in security scanning
       - name: Dependency Review
-        uses: actions/dependency-review-action@v3
+        uses: actions/dependency-review-action@56339e523c0409420f6c2c9a2f4292bbb3c07dd3
         with:
           head-ref: refs/heads/main
           base-ref: refs/heads/main
@@ -105,6 +116,8 @@ jobs:
   docs-check-terraform-main:
     name: Terraform Documentation Check
     needs: [mega-linter-main]
+    permissions:
+      contents: read
     uses: ./.github/workflows/docs-check-terraform.yml
     with:
       break_build: false
@@ -114,15 +127,27 @@ jobs:
   docs-check-bicep-main:
     name: Bicep Documentation Check
     needs: [mega-linter-main]
+    permissions:
+      contents: read
     uses: ./.github/workflows/docs-check-bicep.yml
     with:
       break_build: false
     secrets: inherit
 
+  # Security monitoring job for main branch
+  security-monitoring:
+    name: Security Monitoring
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+    uses: ./.github/workflows/security-comprehensive.yml
+    secrets: inherit
+
   # Pages deployment for main branch (replaces wiki update)
   deploy-pages-main:
     name: Deploy Documentation (Main)
-    needs: [docs-check-terraform-main, docs-check-bicep-main]
+    needs: [docs-check-terraform-main, docs-check-bicep-main, security-monitoring]
     permissions:
       pages: write
       contents: read

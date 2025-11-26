@@ -1,0 +1,10 @@
+# Development-only component with no buildable artifacts
+# All services use pre-built images from public container registries
+# Production deployment uses blueprints with Akri connector templates from MCR
+# 
+# This component provides:
+# - Local Docker Compose development environment for testing media connector workflows
+# - Mock RTSP cameras, MQTT broker, and monitoring tools
+# - Integration examples (alert handlers, AI pipelines) that are buildable separately
+#
+# For production media connector deployment, see blueprints/full-single-node-cluster

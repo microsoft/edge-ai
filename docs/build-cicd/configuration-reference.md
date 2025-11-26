@@ -2,7 +2,7 @@
 title: Configuration reference
 description: Reference guide for build and CI/CD configuration files used in the Edge AI Accelerator project
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: reference
 keywords:
   - configuration
@@ -40,10 +40,15 @@ Complete reference for all configuration files used in the Edge AI Accelerator p
 **Key templates**:
 
 - [`matrix-folder-check-template.yml`][matrix-template] - Dynamic component detection
+- [`application-build-template.yaml`][application-build-template] - Multi-language application build orchestration
 - [`cluster-test-terraform-template.yml`][terraform-test] - Terraform validation
 - [`docs-check-bicep-template.yml`][bicep-docs] - Bicep documentation validation
+- [`docs-validation-template.yml`][docs-validation-template] - Comprehensive documentation validation
 - [`checkov-template.yml`][checkov-template] - Security scanning
 - [`megalinter-template.yml`][megalinter-template] - Code quality validation
+- [`aio-version-checker-template.yml`][aio-version-template] - Azure IoT Operations version validation
+- [`resource-provider-pwsh-tests-template.yml`][resource-provider-template] - Azure resource provider tests
+- [`wiki-update-template.yml`][wiki-update-template] - Documentation synchronization
 
 ### GitHub Actions workflows
 
@@ -75,6 +80,8 @@ Complete reference for all configuration files used in the Edge AI Accelerator p
 - Documentation (Markdown)
 - PowerShell
 - Security scanning (GitLeaks, Grype, SecretLint)
+- Container image vulnerability scanning (Grype)
+- Language-specific dependency audits (.NET, Rust, Node.js, Python)
 
 ### Language-specific linting
 
@@ -87,10 +94,13 @@ Complete reference for all configuration files used in the Edge AI Accelerator p
 
 ### Security scanning
 
-| File                             | Purpose                                    | Documentation                             |
-|----------------------------------|--------------------------------------------|-------------------------------------------|
-| [`.checkov.yml`][checkov-config] | Checkov security scanning configuration    | [Security Scanning Guide][security-guide] |
-| Security templates               | Azure DevOps security validation templates | [Template Documentation][template-docs]   |
+| File                                                  | Purpose                                               | Documentation                             |
+|-------------------------------------------------------|-------------------------------------------------------|-------------------------------------------|
+| [`.checkov.yml`][checkov-config]                      | Checkov security scanning configuration               | [Security Scanning Guide][security-guide] |
+| [`Invoke-ContainerSecurityScan.ps1`][container-scan]  | Container image vulnerability scanning with Grype     | [Security Scanning Guide][security-guide] |
+| [`Invoke-SecurityGate.ps1`][security-gate]            | Centralized security gate enforcement                 | [Security Scanning Guide][security-guide] |
+| [`Invoke-SecurityReportCompression.ps1`][report-comp] | Security report compression and artifact optimization | [Security Scanning Guide][security-guide] |
+| Security templates                                    | Azure DevOps security validation templates            | [Template Documentation][template-docs]   |
 
 ### Compliance validation
 
@@ -170,10 +180,15 @@ Configuration files are automatically used by:
 [azure-pipelines]: /azure-pipelines.yml
 [azdo-templates]: /.azdo/templates/
 [matrix-template]: /.azdo/templates/matrix-folder-check-template.yml
+[application-build-template]: /.azdo/templates/application-build-template.yaml
 [terraform-test]: /.azdo/templates/cluster-test-terraform-template.yml
 [bicep-docs]: /.azdo/templates/docs-check-bicep-template.yml
+[docs-validation-template]: /.azdo/templates/docs-validation-template.yml
 [checkov-template]: /.azdo/templates/checkov-template.yml
 [megalinter-template]: /.azdo/templates/megalinter-template.yml
+[aio-version-template]: /.azdo/templates/aio-version-checker-template.yml
+[resource-provider-template]: /.azdo/templates/resource-provider-pwsh-tests-template.yml
+[wiki-update-template]: /.azdo/templates/wiki-update-template.yml
 [github-workflows]: /.github/workflows/
 [github-actions]: /.github/actions/
 [gh-terraform]: /.github/workflows/cluster-test-terraform.yml
@@ -184,11 +199,14 @@ Configuration files are automatically used by:
 [ps-settings]: /PSScriptAnalyzerSettings.psd1
 [cspell-config]: /.cspell.json
 [checkov-config]: /.checkov.yml
+[container-scan]: /scripts/security/Invoke-ContainerSecurityScan.ps1
+[security-gate]: /scripts/security/Invoke-SecurityGate.ps1
+[report-comp]: /scripts/security/Invoke-SecurityReportCompression.ps1
 [bicep-config]: /bicepconfig.json
 [tf-docs-config]: /.terraform-docs.yml
 [package-json]: /package.json
 [requirements]: /requirements.txt
-[cargo-config]: /Cargo.toml
+[cargo-config]: /src/500-application/**/**/**/Cargo.toml
 [docsify-config]: /docsify-url-config.js
 [gitversion-config]: /GitVersion.yml
 [build-scripts]: build-scripts.md

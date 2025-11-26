@@ -2,27 +2,39 @@
 	"scripts": {
 		"mdlint": "markdownlint --config .markdownlint.json --ignore .copilot-tracking --ignore .github --ignore node_modules --ignore venv \"**/*.md\"; markdown-table-formatter --check \"{.github,**}/**/*.md\"",
 		"mdlint-fix": "markdownlint --config .markdownlint.json --ignore .copilot-tracking --ignore .github --ignore node_modules --ignore venv --fix \"**/*.md\"; markdown-table-formatter \"{.github,**}/**/*.md\"",
-		"link-check": "mega-linter-runner --env \"'ENABLE_LINTERS=MARKDOWN_MARKDOWN_LINK_CHECK'\" ",
-		"cspell": "mega-linter-runner  --env 'ENABLE_LINTERS=SPELL_CSPELL'",
+		"link-check": "pwsh -File ./scripts/linting/Docs-Link-Check.ps1",
+		"cspell": "mega-linter-runner  --env \"'ENABLE_LINTERS=SPELL_CSPELL'\"",
+		"docker-lint": "./scripts/docker-lint.sh",
 		"yaml": "mega-linter-runner  --env 'ENABLE_LINTERS=YAML_YAMLLINT'",
 		"terrascan": "mega-linter-runner  --env \"'ENABLE_LINTERS=TERRAFORM_TERRASCAN,TERRAFORM_TERRASCAN_CONFIG_FILE:.terrascan.toml'\" ",
 		"lint": "mega-linter-runner",
 		"lint-fix": "mega-linter-runner --fix",
 		"tf-docs": "./scripts/update-all-terraform-docs.sh",
 		"bicep-docs": "./scripts/update-all-bicep-docs.sh",
-		"tflint-fix": "mega-linter-runner --env \"'ENABLE_LINTERS=TERRAFORM_TERRAFORM_FMT,TERRAFORM_TFLINT'\" --fix",
-		"tf-validate": "bash -c 'set -e; trap \"echo; echo Interrupted.; exit 130\" INT; source ./scripts/az-sub-init.sh && find blueprints src -name \"terraform\" -type d 2>/dev/null | while read dir; do if compgen -G \"$dir/*.tf\" > /dev/null; then echo \"Processing $dir...\"; pushd \"$dir\"; terraform init -upgrade; terraform validate; terraform fmt -recursive; popd; else echo \"Skipping $dir (no .tf files found)\"; fi; done'",
+		"tflint-fix-all": "./scripts/tf-walker-parallel.sh \"terraform fmt -recursive && tflint --disable-rule=terraform_required_providers --fix --recursive\" \"tflint-fix-fast-$(date +%Y%m%d-%H%M%S)\" false",
+		"tflint-fix": "source ./scripts/az-sub-init.sh; f() { cd \"$1\"; terraform fmt -recursive; tflint --disable-rule=terraform_required_providers --fix --recursive; }; f",
+		"tf-init-upgrade": "./scripts/tf-walker-parallel.sh \"terraform init -upgrade\" \"tf-init-upgrade-$(date +%Y%m%d-%H%M%S)\" true",
+		"tf-validate-all": "./scripts/tf-walker-parallel.sh \"terraform init && terraform validate\" \"tf-validate-$(date +%Y%m%d-%H%M%S)\" true",
+		"tf-validate": "source ./scripts/az-sub-init.sh; f() { cd \"$1\"; terraform init; terraform validate; }; f",
+		"tf-test": "source ./scripts/az-sub-init.sh; f() { cd \"$1\"; terraform init; terraform test; }; f",
+		"tf-test-all": "./scripts/tf-walker-parallel.sh \"terraform init && terraform test\" \"test-$(date +%Y%m%d-%H%M%S)\" true",
+		"tf-plan-test": "source ./scripts/az-sub-init.sh; f() { cd \"$1\"; terraform init; terraform plan -var 'environment=dev' -var \"resource_prefix=a$(openssl rand -hex 4)\" -var 'location=eastus2'; }; f",
+		"tf-plan-ci": "SCRIPT_PATH=\"$PWD/scripts/tf-plan-smart.sh\"; ./scripts/tf-walker-parallel.sh \"terraform init && bash \\\"$SCRIPT_PATH\\\"\" \"tf-plan-ci-$(date +%Y%m%d-%H%M%S)\" true 4 ci",
+		"tf-plan-blueprints": "SCRIPT_PATH=\"$PWD/scripts/tf-plan-smart.sh\"; ./scripts/tf-walker-parallel.sh \"terraform init && bash \\\"$SCRIPT_PATH\\\"\" \"tf-plan-blueprints-$(date +%Y%m%d-%H%M%S)\" true 4 blueprints",
+		"tf-plan-all": "SCRIPT_PATH=\"$PWD/scripts/tf-plan-smart.sh\"; ./scripts/tf-walker-parallel.sh \"terraform init && bash \\\"$SCRIPT_PATH\\\"\" \"tf-plan-all-$(date +%Y%m%d-%H%M%S)\" true 4",
 		"lint-devcontainer": "mega-linter-runner --env \"'BICEP_BICEP_LINTER_ARGUMENTS=--outdir ./megalinter-reports'\"",
 		"lint-fix-devcontainer": "mega-linter-runner --env \"'BICEP_BICEP_LINTER_ARGUMENTS=--outdir ./megalinter-reports'\" --fix",
 		"format-tables": "markdown-table-formatter \"{.github,node_modules,**}/*.md\"",
-		"format-tables-check": "markdown-table-formatter --check \"{.github,node)modules,**}/*.md\"",
-		"checkov-changes": "pwsh -Command \"& $PWD/scripts/Detect-Folder-Changes.ps1 | & $PWD/scripts/Run-Checkov.ps1 -OutputFolder './checkov-results' -OutputFile 'code-analysis.xml'\"",
-		"checkov-all": "pwsh -Command \"& $PWD/scripts/Detect-Folder-Changes.ps1 -IncludeAllFolders | & $PWD/scripts/Run-Checkov.ps1 -OutputFolder './checkov-results' -OutputFile 'code-analysis.xml'\"",
-		"link-lang-check": "python ./scripts/link-lang-check.py",
-		"link-lang-fix": "python ./scripts/link-lang-check.py -f",
-		"generate-sidebar": "pwsh -File ./scripts/Generate-DocsSidebar.ps1 -DocsPath ./docs -SrcPath ./src -SidebarFile _sidebar.md -Verbose",
-		"docs": "pwsh -File ./scripts/Serve-Docs.ps1 -Open",
-		"docs:training": "pwsh -File ./scripts/Serve-Docs.ps1 -Open -StartPage praxisworx/README",
+		"format-tables-check": "markdown-table-formatter --check \"{.github,node_modules,**}/*.md\"",
+		"checkov-changes": "pwsh -Command \"& $PWD/scripts/build/Detect-Folder-Changes.ps1 -OutputJson | & $PWD/scripts/Run-Checkov.ps1 -OutputFolder './checkov-results' -OutputFile 'code-analysis.xml'\"",
+		"checkov-all": "pwsh -Command \"& $PWD/scripts/build/Detect-Folder-Changes.ps1 -IncludeAllIaC -OutputJson | & $PWD/scripts/Run-Checkov.ps1 -OutputFolder './checkov-results' -OutputFile 'code-analysis.xml'\"",
+		"link-lang-check": "pwsh -File ./scripts/linting/Link-Lang-Check.ps1",
+		"link-lang-fix": "pwsh -File ./scripts/linting/Link-Lang-Check.ps1 -Fix",
+		"generate-sidebar": "pwsh -File ./scripts/Generate-DocsSidebar.ps1 -DocsPath ./docs -SrcPath ./src -SidebarFile _sidebar.md -AllSections -Verbose",
+		"progress-server": "cd docs/_server && node app.js",
+		"docs": "pwsh -File ./scripts/Serve-Docs.ps1",
+		"test:frontend": "cd docs/assets/js && npm test",
+		"test:server": "cd docs/_server && npm test",
 		"unicode:outputonly": "pwsh -File ./scripts/Fix-VisuallySimilarUnicode.ps1 -OutputOnly",
 		"unicode:outputonly:verbose": "pwsh -File ./scripts/Fix-VisuallySimilarUnicode.ps1 -OutputOnly -Verbose",
 		"unicode:fix": "pwsh -File ./scripts/Fix-VisuallySimilarUnicode.ps1",
@@ -31,11 +43,14 @@
 	"dependencies": {
 		"markdown-table-formatter": "1.6.1",
 		"markdownlint": "0.38.0",
-		"markdownlint-cli": "^0.45.0",
-		"mega-linter-runner": "^8.1.0"
+		"markdownlint-cli": "0.46.0",
+		"mega-linter-runner": "^8.1.0",
+		"js-yaml": "^4.1.1",
+		"glob": "^11.1.0"
 	},
 	"devDependencies": {
-		"docsify-cli": "4.4.4"
+		"docsify-cli": "4.4.4",
+		"markdown-link-check": "3.14.2"
 	},
 	"resolutions": {
 		"marked": "^4.0.10",
@@ -43,6 +58,9 @@
 	},
 	"overrides": {
 		"marked": "^4.0.10",
-		"got": "^11.8.5"
+		"got": "^11.8.5",
+		"glob": "^11.1.0",
+		"js-yaml": "^4.1.1",
+		"xmlbuilder2": "^4.0.0"
 	}
 }

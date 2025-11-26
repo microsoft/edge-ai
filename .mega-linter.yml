@@ -32,6 +32,9 @@ ENABLE_LINTERS:
   - MARKDOWN_MARKDOWNLINT
   - MARKDOWN_MARKDOWN_TABLE_FORMATTER
 
+  # JavaScript
+  - JAVASCRIPT_ES
+
   # PowerShell
   - POWERSHELL_POWERSHELL
   - POWERSHELL_POWERSHELL_FORMATTER
@@ -115,7 +118,7 @@ TERRAFORM_TFLINT_UNSECURED_ENV_VARIABLES:
   - GITHUB_TOKEN
 
 # YAML Lint configuration
-YAML_YAMLLINT_FILTER_REGEX_EXCLUDE: '(\.github/ISSUE_TEMPLATE|charts/.*/templates/.*\.yaml)'
+YAML_YAMLLINT_FILTER_REGEX_EXCLUDE: '(\.github/ISSUE_TEMPLATE|charts/templates|charts/.*/templates/.*)'
 
 # Spell checker configuration
 SPELL_CSPELL_CONFIG_FILE: .cspell.json
@@ -123,6 +126,11 @@ SPELL_CSPELL_FILE_EXTENSIONS: [".md"]
 
 # PowerShell configuration
 POWERSHELL_POWERSHELL_CONFIG_FILE: PSScriptAnalyzerSettings.psd1
+
+# Dockerfile Hadolint configuration
+DOCKERFILE_HADOLINT_FILTER_REGEX_INCLUDE: "(src/500-application/.*/services/.*/Dockerfile)"
+DOCKERFILE_HADOLINT_ARGUMENTS: "--ignore SC1091 --failure-threshold warning"
+DOCKERFILE_HADOLINT_FILE_NAME: Dockerfile
 
 # Terrascan configuration (currently disabled)
 # TERRAFORM_TERRASCAN_CONFIG_FILE: .terrascan.toml

@@ -1,0 +1,135 @@
+/* Professional Sidebar Branding Component */
+
+/* Enhanced branding area with professional styling */
+.sidebar-branding-container {
+  padding: 16px 20px 12px;
+  margin-bottom: 12px;
+  background: var(--sidebar-gradient);
+  border-bottom: 1px solid var(--sidebar-border-color);
+  position: relative;
+  z-index: 3;
+}
+
+/* Project tagline or subtitle */
+.sidebar-tagline {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  margin: 4px 0 0 48px;
+  font-weight: var(--font-weight-normal);
+  opacity: 0.8;
+  line-height: 1.4;
+}
+
+/* Professional status indicator */
+.sidebar-status-indicator {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: #10b981;
+  border-radius: 50%;
+  margin-left: 8px;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+  animation: pulse-indicator 2s infinite;
+}
+
+@keyframes pulse-indicator {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
+}
+
+/* Version or build info */
+.sidebar-version-info {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin: 8px 0 0 48px;
+  font-weight: var(--font-weight-normal);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.6;
+}
+
+/* Quick stats or metrics */
+.sidebar-quick-stats {
+  display: flex;
+  gap: 12px;
+  margin: 12px 20px 0;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.sidebar-stat-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: rgba(0, 120, 212, 0.05);
+  border-radius: var(--border-radius);
+  border: 1px solid rgba(0, 120, 212, 0.1);
+}
+
+.sidebar-stat-icon {
+  font-size: 10px;
+  opacity: 0.7;
+}
+
+.sidebar-stat-value {
+  font-weight: var(--font-weight-medium);
+  color: var(--theme-color);
+}
+
+/* Dark mode branding adjustments */
+body.dark .sidebar-branding-container {
+  background: var(--sidebar-gradient);
+  border-bottom-color: var(--sidebar-border-color);
+}
+
+body.dark .sidebar .app-name-text {
+  color: var(--theme-color-light);
+  font-weight: 600;
+}
+
+body.dark .sidebar-tagline {
+  color: var(--text-secondary);
+}
+
+body.dark .sidebar-version-info {
+  color: var(--text-muted);
+}
+
+body.dark .sidebar-stat-item {
+  background: rgba(0, 120, 212, 0.08);
+  border-color: rgba(0, 120, 212, 0.15);
+}
+
+body.dark .sidebar-stat-value {
+  color: var(--theme-color-light);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .sidebar-quick-stats {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .sidebar-stat-item {
+    font-size: 11px;
+    padding: 3px 6px;
+  }
+}
+
+/* Professional hover effects */
+.sidebar-branding-container:hover .sidebar-status-indicator {
+  animation-duration: 1s;
+}
+
+.sidebar-branding-container:hover .sidebar .app-name-text {
+  transform: translateX(1px);
+  transition: transform var(--transition-fast);
+}

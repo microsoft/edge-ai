@@ -27,6 +27,10 @@ resource "azurerm_log_analytics_workspace" "monitor" {
   retention_in_days = var.log_retention_in_days
   daily_quota_gb    = var.daily_quota_in_gb
 
+  // Keep ingestion public to avoid Application Insights billing feature lookup issues when enabling private endpoints
+  internet_ingestion_enabled = true
+  internet_query_enabled     = !var.should_enable_private_endpoints
+
   identity {
     type = "SystemAssigned"
   }
@@ -58,6 +62,10 @@ module "application_insights" {
 
   application_type  = var.app_insights_application_type
   retention_in_days = var.app_insights_retention_in_days
+
+  // Keep ingestion public to avoid Application Insights billing feature lookup issues when enabling private endpoints
+  internet_ingestion_enabled = true
+  internet_query_enabled     = !var.should_enable_private_endpoints
 
   tags = var.tags
 }
@@ -209,4 +217,168 @@ resource "azurerm_monitor_data_collection_endpoint" "data_collection_endpoint" {
   resource_group_name = var.azmon_resource_group.name
 
   kind = "Linux"
+
+  public_network_access_enabled = !var.should_enable_private_endpoints
 }
+
+/*
+ * Private Link Configuration
+ */
+
+resource "azurerm_monitor_private_link_scope" "monitor_private_link_scope" {
+  count = var.should_enable_private_endpoints ? 1 : 0
+
+  name                = "ampls-${var.resource_prefix}-${var.environment}-${var.instance}"
+  resource_group_name = var.azmon_resource_group.name
+
+  ingestion_access_mode = "PrivateOnly"
+  query_access_mode     = "PrivateOnly"
+}
+
+resource "azurerm_monitor_private_link_scoped_service" "log_analytics" {
+  count = var.should_enable_private_endpoints ? 1 : 0
+
+  name                = "ampls-law-${var.resource_prefix}-${var.environment}-${var.instance}"
+  resource_group_name = var.azmon_resource_group.name
+  scope_name          = azurerm_monitor_private_link_scope.monitor_private_link_scope[0].name
+  linked_resource_id  = azurerm_log_analytics_workspace.monitor.id
+}
+
+resource "azurerm_monitor_private_link_scoped_service" "application_insights" {
+  count = var.should_enable_private_endpoints ? 1 : 0
+
+  name                = "ampls-appi-${var.resource_prefix}-${var.environment}-${var.instance}"
+  resource_group_name = var.azmon_resource_group.name
+  scope_name          = azurerm_monitor_private_link_scope.monitor_private_link_scope[0].name
+  linked_resource_id  = module.application_insights.application_insights.id
+}
+
+resource "azurerm_monitor_private_link_scoped_service" "data_collection_endpoint" {
+  count = var.should_enable_private_endpoints ? 1 : 0
+
+  name                = "ampls-dce-${var.resource_prefix}-${var.environment}-${var.instance}"
+  resource_group_name = var.azmon_resource_group.name
+  scope_name          = azurerm_monitor_private_link_scope.monitor_private_link_scope[0].name
+  linked_resource_id  = azurerm_monitor_data_collection_endpoint.data_collection_endpoint.id
+}
+
+resource "azurerm_private_endpoint" "monitor_private_endpoint" {
+  count = var.should_enable_private_endpoints ? 1 : 0
+
+  name                = "pe-monitor-${var.resource_prefix}-${var.environment}-${var.instance}"
+  location            = var.location
+  resource_group_name = var.azmon_resource_group.name
+  subnet_id           = var.private_endpoint_subnet_id
+
+  private_service_connection {
+    name                           = "monitor-private-connection"
+    private_connection_resource_id = azurerm_monitor_private_link_scope.monitor_private_link_scope[0].id
+    is_manual_connection           = false
+    subresource_names              = ["azuremonitor"]
+  }
+
+  private_dns_zone_group {
+    name = "monitor-dns-zone-group"
+    private_dns_zone_ids = [
+      azurerm_private_dns_zone.monitor_azure_com[0].id,
+      azurerm_private_dns_zone.oms_opinsights_azure_com[0].id,
+      azurerm_private_dns_zone.ods_opinsights_azure_com[0].id,
+      azurerm_private_dns_zone.agentsvc_azure_automation_net[0].id,
+      azurerm_private_dns_zone.blob_core_windows_net[0].id,
+    ]
+  }
+
+  depends_on = [
+    azurerm_monitor_private_link_scoped_service.log_analytics,
+    azurerm_monitor_private_link_scoped_service.application_insights,
+    azurerm_monitor_private_link_scoped_service.data_collection_endpoint,
+  ]
+}
+
+// Private DNS zones for Azure Monitor private link
+resource "azurerm_private_dns_zone" "monitor_azure_com" {
+  count = var.should_enable_private_endpoints ? 1 : 0
+
+  name                = "privatelink.monitor.azure.com"
+  resource_group_name = var.azmon_resource_group.name
+}
+
+resource "azurerm_private_dns_zone" "oms_opinsights_azure_com" {
+  count = var.should_enable_private_endpoints ? 1 : 0
+
+  name                = "privatelink.oms.opinsights.azure.com"
+  resource_group_name = var.azmon_resource_group.name
+}
+
+resource "azurerm_private_dns_zone" "ods_opinsights_azure_com" {
+  count = var.should_enable_private_endpoints ? 1 : 0
+
+  name                = "privatelink.ods.opinsights.azure.com"
+  resource_group_name = var.azmon_resource_group.name
+}
+
+resource "azurerm_private_dns_zone" "agentsvc_azure_automation_net" {
+  count = var.should_enable_private_endpoints ? 1 : 0
+
+  name                = "privatelink.agentsvc.azure-automation.net"
+  resource_group_name = var.azmon_resource_group.name
+}
+
+resource "azurerm_private_dns_zone" "blob_core_windows_net" {
+  count = var.should_enable_private_endpoints ? 1 : 0
+
+  name                = "privatelink.blob.core.windows.net"
+  resource_group_name = var.azmon_resource_group.name
+}
+
+// Virtual network links for private DNS zones
+resource "azurerm_private_dns_zone_virtual_network_link" "monitor_azure_com" {
+  count = var.should_enable_private_endpoints ? 1 : 0
+
+  name                  = "vnet-link-monitor-${var.resource_prefix}-${var.environment}-${var.instance}"
+  resource_group_name   = var.azmon_resource_group.name
+  private_dns_zone_name = azurerm_private_dns_zone.monitor_azure_com[0].name
+  virtual_network_id    = var.virtual_network_id
+  registration_enabled  = false
+}
+
+resource "azurerm_private_dns_zone_virtual_network_link" "oms_opinsights_azure_com" {
+  count = var.should_enable_private_endpoints ? 1 : 0
+
+  name                  = "vnet-link-oms-${var.resource_prefix}-${var.environment}-${var.instance}"
+  resource_group_name   = var.azmon_resource_group.name
+  private_dns_zone_name = azurerm_private_dns_zone.oms_opinsights_azure_com[0].name
+  virtual_network_id    = var.virtual_network_id
+  registration_enabled  = false
+}
+
+resource "azurerm_private_dns_zone_virtual_network_link" "ods_opinsights_azure_com" {
+  count = var.should_enable_private_endpoints ? 1 : 0
+
+  name                  = "vnet-link-ods-${var.resource_prefix}-${var.environment}-${var.instance}"
+  resource_group_name   = var.azmon_resource_group.name
+  private_dns_zone_name = azurerm_private_dns_zone.ods_opinsights_azure_com[0].name
+  virtual_network_id    = var.virtual_network_id
+  registration_enabled  = false
+}
+
+resource "azurerm_private_dns_zone_virtual_network_link" "agentsvc_azure_automation_net" {
+  count = var.should_enable_private_endpoints ? 1 : 0
+
+  name                  = "vnet-link-agentsvc-${var.resource_prefix}-${var.environment}-${var.instance}"
+  resource_group_name   = var.azmon_resource_group.name
+  private_dns_zone_name = azurerm_private_dns_zone.agentsvc_azure_automation_net[0].name
+  virtual_network_id    = var.virtual_network_id
+  registration_enabled  = false
+}
+
+resource "azurerm_private_dns_zone_virtual_network_link" "blob_core_windows_net" {
+  count = var.should_enable_private_endpoints ? 1 : 0
+
+  name                  = "vnet-link-blob-${var.resource_prefix}-${var.environment}-${var.instance}"
+  resource_group_name   = var.azmon_resource_group.name
+  private_dns_zone_name = azurerm_private_dns_zone.blob_core_windows_net[0].name
+  virtual_network_id    = var.virtual_network_id
+  registration_enabled  = false
+}
+

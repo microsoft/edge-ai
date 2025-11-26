@@ -29,15 +29,15 @@ The Media Capture Service is a Rust-based Kubernetes workload designed for video
 
 ### Technical Prerequisites
 
-- [Azure IoT Operations cluster](https://learn.microsoft.com/en-us/azure/iot-operations/overview-iot-operations) deployed and configured
-- [Azure Container Registry (ACR)](https://learn.microsoft.com/en-us/azure/container-registry/) accessible and configured
-- [Azure Container Storage enabled by Azure Arc (ACSA)](https://learn.microsoft.com/en-us/azure/azure-arc/container-storage/install-edge-volumes?tabs=single) deployed
-- [Azure Storage Account](https://learn.microsoft.com/en-us/azure/storage/common/storage-account-overview) with media container created
+- [Azure IoT Operations cluster](https://learn.microsoft.com/azure/iot-operations/overview-iot-operations) deployed and configured
+- [Azure Container Registry (ACR)](https://learn.microsoft.com/azure/container-registry/) accessible and configured
+- [Azure Container Storage enabled by Azure Arc (ACSA)](https://learn.microsoft.com/azure/azure-arc/container-storage/install-edge-volumes?tabs=single) deployed
+- [Azure Storage Account](https://learn.microsoft.com/azure/storage/common/storage-account-overview) with media container created
 - MQTT broker (aio-broker) operational in azure-iot-operations namespace
 - RTSP camera streams available for testing
 - [Kubernetes CLI (kubectl)](https://kubernetes.io/docs/tasks/tools/) and [kustomize](https://kubectl.docs.kubernetes.io/installation/kustomize/) installed
 - [Docker](https://docs.docker.com/get-docker/) for image building
-- [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli) for Azure operations
+- [Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli) for Azure operations
 
 ### Optional Development Prerequisites
 

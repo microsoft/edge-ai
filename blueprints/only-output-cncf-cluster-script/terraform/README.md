@@ -11,13 +11,13 @@ them to Key Vault as secrets for secure storage and retrieval.
 | Name | Version |
 |------|---------|
 | terraform | >= 1.9.8, < 2.0 |
-| azurerm | >= 4.8.0 |
+| azurerm | >= 4.51.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| azurerm | >= 4.8.0 |
+| azurerm | >= 4.51.0 |
 
 ## Resources
 
@@ -38,7 +38,7 @@ them to Key Vault as secrets for secure storage and retrieval.
 |------|-------------|------|---------|:--------:|
 | environment | Environment for all resources in this module: dev, test, or prod | `string` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
-| aio\_resource\_group\_name | The name of the Resource Group that will be used to connect the new cluster to Azure Arc. (Otherwise, 'rg-{var.resource\_prefix}-{var.environment}-{var.instance}' Does not need to exist for output script)" | `string` | `null` | no |
+| aio\_resource\_group\_name | The name of the Resource Group that will be used to connect the new cluster to Azure Arc. Otherwise, 'rg-{var.resource\_prefix}-{var.environment}-{var.instance}'. Does not need to exist for output script. | `string` | `null` | no |
 | arc\_onboarding\_identity\_name | The Principal ID for the identity that will be used for onboarding the cluster to Arc. | `string` | `null` | no |
 | arc\_onboarding\_sp | n/a | ```object({ client_id = string object_id = string client_secret = string })``` | `null` | no |
 | cluster\_admin\_oid | The Object ID that will be given cluster-admin permissions with the new cluster. (Otherwise, current logged in user Object ID if 'should\_add\_current\_user\_cluster\_admin=true') | `string` | `null` | no |

@@ -53,7 +53,10 @@ output "mock_custom_locations_oid" {
 output "mock_identity" {
   value = {
     principal_id = "00000000-0000-0000-0000-000000000004"
+    client_id    = "00000000-0000-0000-0000-000000000005"
+    tenant_id    = "00000000-0000-0000-0000-000000000006"
     id           = local.identity_id
+    name         = local.identity_name
   }
 }
 

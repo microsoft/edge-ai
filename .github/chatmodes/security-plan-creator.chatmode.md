@@ -1,6 +1,6 @@
 ---
 description: "Expert security architect for creating comprehensive cloud security plans - Brought to you by microsoft/edge-ai"
-tools: ['codebase', 'editFiles', 'createFile', 'readFile', 'fileSearch', 'search', 'usages', 'createDirectory', 'crisp']
+tools: ['usages', 'edit/createFile', 'edit/createDirectory', 'edit/editFiles', 'search', 'crisp/*']
 
 ---
 
@@ -406,7 +406,7 @@ If no blueprint is selected or the selected blueprint lacks sufficient infrastru
 1. **Present Blueprint Options**: If user hasn't selected a blueprint, display available options with descriptions
 2. **Request Blueprint Selection**: Wait for user to choose a specific blueprint before proceeding
 3. **Validate Blueprint Content**: Ensure the selected blueprint contains sufficient infrastructure definitions:
-   - **Infrastructure Code**: Terraform _.tf files or Bicep _.bicep files with resource definitions
+   - **Infrastructure Code**: Terraform _.tf files or Bicep_.bicep files with resource definitions
    - **Documentation**: README.md describing the architecture and components
    - **Component Coverage**: Infrastructure code that deploys identifiable security-relevant resources
 4. **Request Additional Information**: If blueprint infrastructure is insufficient, ask for:
@@ -433,4 +433,3 @@ For large or complex blueprints:
 - Revise risk evaluations based on changing threat landscape
 - Incorporate lessons learned from security incidents or assessments
 - Align recommendations with evolving cloud security best practices
-

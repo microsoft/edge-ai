@@ -2,7 +2,7 @@
 title: Business Enablement & Integration Platform
 description: Comprehensive enterprise transformation ecosystem that aggregates six critical platform capabilities to deliver intelligent business process automation and seamless system integration across organizational boundaries through advanced workflow orchestration and data harmonization
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: concept
 estimated_reading_time: 18
 keywords:

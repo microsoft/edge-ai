@@ -1,0 +1,64 @@
+version: "3.9"
+
+services:
+  mqtt-otel-trace-exporter:
+    build:
+      context: ./services/mqtt-otel-trace-exporter
+      dockerfile: Dockerfile
+    image: mqtt-otel-trace-exporter:dev
+    env_file:
+      - ./.env
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mqtt-broker
+      - otel-collector
+
+  otel-collector:
+    image: otel/opentelemetry-collector:0.107.0
+    command:
+      - "--config=/etc/otelcol/config.yaml"
+    volumes:
+      - ./resources/otel-collector-config.yaml:/etc/otelcol/config.yaml:ro
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+      - "8888:8888"
+
+  mqtt-broker:
+    image: eclipse-mosquitto:2.0
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./resources/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./resources/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    depends_on:
+      - otel-collector
+
+  grafana:
+    image: grafana/grafana:11.1.3
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_AUTH_ANONYMOUS_ENABLED=false
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    volumes:
+      - grafana-data:/var/lib/grafana
+
+volumes:
+  prometheus-data:
+  grafana-data:

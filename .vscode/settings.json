@@ -81,8 +81,7 @@
     "shellcheck.run": "onSave",
 
     "yaml.schemas": {
-        "https://raw.githubusercontent.com/microsoft/azure-pipelines-vscode/master/service-schema.json": "*-pipelines.yml",
-        "https://squidfunk.github.io/mkdocs-material/schema.json": "mkdocs.yml",
+        "https://raw.githubusercontent.com/microsoft/azure-pipelines-vscode/master/service-schema.json": "*-pipelines.yml"
     },
     "yaml.customTags": [
         "!ENV scalar",
@@ -105,6 +104,10 @@
     "github.copilot.chat.advanced.multiReplaceString.enabled": true,
     "github.copilot.chat.customInstructionsInSystemMessage": true,
     "chat.todoListTool.enabled": true,
+    "chat.modeFilesLocations": {
+        ".github/chatmodes": true,
+        "/Users/vscode/repos/chatmodes": true
+    },
     "chat.instructionsFilesLocations": {
         ".github/instructions": true,
         "/Users/vscode/repos/instructions": true,

@@ -11,13 +11,13 @@ Creates a new Azure Monitor Workspace, Log Analytics Workspace and Azure Managed
 |------|---------|
 | terraform | >= 1.9.8, < 2.0 |
 | azapi | >= 2.3.0 |
-| azurerm | >= 4.8.0 |
+| azurerm | >= 4.51.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| azurerm | >= 4.8.0 |
+| azurerm | >= 4.51.0 |
 | terraform | n/a |
 
 ## Resources
@@ -30,7 +30,22 @@ Creates a new Azure Monitor Workspace, Log Analytics Workspace and Azure Managed
 | [azurerm_monitor_data_collection_endpoint.data_collection_endpoint](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_data_collection_endpoint) | resource |
 | [azurerm_monitor_data_collection_rule.logs_data_collection_rule](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_data_collection_rule) | resource |
 | [azurerm_monitor_data_collection_rule.metrics_data_collection_rule](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_data_collection_rule) | resource |
+| [azurerm_monitor_private_link_scope.monitor_private_link_scope](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_private_link_scope) | resource |
+| [azurerm_monitor_private_link_scoped_service.application_insights](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_private_link_scoped_service) | resource |
+| [azurerm_monitor_private_link_scoped_service.data_collection_endpoint](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_private_link_scoped_service) | resource |
+| [azurerm_monitor_private_link_scoped_service.log_analytics](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_private_link_scoped_service) | resource |
 | [azurerm_monitor_workspace.monitor](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_workspace) | resource |
+| [azurerm_private_dns_zone.agentsvc_azure_automation_net](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_dns_zone) | resource |
+| [azurerm_private_dns_zone.blob_core_windows_net](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_dns_zone) | resource |
+| [azurerm_private_dns_zone.monitor_azure_com](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_dns_zone) | resource |
+| [azurerm_private_dns_zone.ods_opinsights_azure_com](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_dns_zone) | resource |
+| [azurerm_private_dns_zone.oms_opinsights_azure_com](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_dns_zone) | resource |
+| [azurerm_private_dns_zone_virtual_network_link.agentsvc_azure_automation_net](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_dns_zone_virtual_network_link) | resource |
+| [azurerm_private_dns_zone_virtual_network_link.blob_core_windows_net](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_dns_zone_virtual_network_link) | resource |
+| [azurerm_private_dns_zone_virtual_network_link.monitor_azure_com](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_dns_zone_virtual_network_link) | resource |
+| [azurerm_private_dns_zone_virtual_network_link.ods_opinsights_azure_com](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_dns_zone_virtual_network_link) | resource |
+| [azurerm_private_dns_zone_virtual_network_link.oms_opinsights_azure_com](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_dns_zone_virtual_network_link) | resource |
+| [azurerm_private_endpoint.monitor_private_endpoint](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_endpoint) | resource |
 | [azurerm_role_assignment.grafana_admin](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) | resource |
 | [azurerm_role_assignment.grafana_logs_reader](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) | resource |
 | [azurerm_role_assignment.grafana_metrics_reader](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) | resource |
@@ -48,7 +63,7 @@ Creates a new Azure Monitor Workspace, Log Analytics Workspace and Azure Managed
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| azmon\_resource\_group | n/a | ```object({ name = string id = string location = string })``` | n/a | yes |
+| azmon\_resource\_group | The resource group object containing name and id for observability resources. | ```object({ name = string id = string location = string })``` | n/a | yes |
 | environment | Environment for all resources in this module: dev, test, or prod | `string` | n/a | yes |
 | location | Azure region where all resources will be deployed | `string` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
@@ -61,7 +76,10 @@ Creates a new Azure Monitor Workspace, Log Analytics Workspace and Azure Managed
 | log\_retention\_in\_days | Duration to retain logs in log analytics | `number` | `30` | no |
 | logs\_data\_collection\_rule\_namespaces | List of cluster namespaces to be exposed in the log analytics workspace | `list(string)` | ```[ "kube-system", "gatekeeper-system", "azure-arc", "azure-iot-operations" ]``` | no |
 | logs\_data\_collection\_rule\_streams | List of streams to be enabled in the log analytics workspace | `list(string)` | ```[ "Microsoft-ContainerLog", "Microsoft-ContainerLogV2", "Microsoft-KubeEvents", "Microsoft-KubePodInventory", "Microsoft-KubeNodeInventory", "Microsoft-KubePVInventory", "Microsoft-KubeServices", "Microsoft-KubeMonAgentEvents", "Microsoft-InsightsMetrics", "Microsoft-ContainerInventory", "Microsoft-ContainerNodeInventory", "Microsoft-Perf" ]``` | no |
+| private\_endpoint\_subnet\_id | The ID of the subnet where private endpoints will be created. Required if should\_enable\_private\_endpoints is true. | `string` | `null` | no |
+| should\_enable\_private\_endpoints | Whether to enable private endpoints for Azure Monitor and Application Insights. | `bool` | `false` | no |
 | tags | Tags to apply to all resources | `map(string)` | `{}` | no |
+| virtual\_network\_id | The ID of the virtual network for private DNS zone linking. Required if should\_enable\_private\_endpoints is true. | `string` | `null` | no |
 
 ## Outputs
 
@@ -70,8 +88,13 @@ Creates a new Azure Monitor Workspace, Log Analytics Workspace and Azure Managed
 | application\_insights | The Application Insights resource object with connection details for monitoring applications. |
 | azure\_managed\_grafana | n/a |
 | azure\_monitor\_workspace | n/a |
+| blob\_private\_dns\_zone | The blob private DNS zone object for sharing with storage account component. |
+| data\_collection\_endpoint | n/a |
 | log\_analytics\_workspace | n/a |
 | logs\_data\_collection\_rule | n/a |
 | metrics\_data\_collection\_rule | n/a |
+| monitor\_private\_endpoint | The private endpoint for Azure Monitor services. |
+| monitor\_private\_link\_scope | The Azure Monitor Private Link Scope for private endpoint connections. |
+| private\_dns\_zones | The private DNS zones for Azure Monitor private link. |
 <!-- markdown-table-prettify-ignore-end -->
 <!-- END_TF_DOCS -->

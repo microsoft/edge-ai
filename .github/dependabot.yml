@@ -1,0 +1,25 @@
+---
+# Dependabot configuration for automated dependency updates
+# and OSSF Scorecard compliance
+# This configuration enables automated dependency monitoring for GitHub Actions,
+# Docker, npm, and Python
+# Security-critical dependencies are managed via SHA pinning in the
+# security scanning workflow
+version: 2
+updates:
+  # GitHub Actions dependency updates
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "US/Pacific"
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "security"
+      - "github-actions"

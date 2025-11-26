@@ -11,7 +11,7 @@ Event Hub and Event Grid endpoints for edge-to-cloud data transmission.
 |------|---------|
 | terraform | >= 1.9.8, < 2.0 |
 | azapi | >= 2.3.0 |
-| azurerm | >= 4.8.0 |
+| azurerm | >= 4.51.0 |
 
 ## Modules
 
@@ -26,12 +26,13 @@ Event Hub and Event Grid endpoints for edge-to-cloud data transmission.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | aio\_custom\_locations | n/a | ```object({ name = string id = string })``` | n/a | yes |
-| aio\_dataflow\_profile | n/a | ```object({ id = string })``` | n/a | yes |
-| aio\_identity | n/a | ```object({ id = string principal_id = string tenant_id = string client_id = string })``` | n/a | yes |
-| aio\_instance | n/a | ```object({ id = string })``` | n/a | yes |
+| aio\_dataflow\_profile | The AIO dataflow profile | ```object({ id = string })``` | n/a | yes |
+| aio\_identity | Azure IoT Operations managed identity for workspace access | ```object({ id = string principal_id = string tenant_id = string client_id = string })``` | n/a | yes |
+| aio\_instance | The Azure IoT Operations instance | ```object({ id = string })``` | n/a | yes |
 | environment | Environment for all resources in this module: dev, test, or prod | `string` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
-| asset\_name | The name of the Azure IoT Operations Device Registry Asset resource to send its data from edge to cloud. | `string` | `"oven"` | no |
+| adr\_namespace | Azure Device Registry namespace to use with Azure IoT Operations. Otherwise, not configured. | ```object({ id = string, name = string })``` | `null` | no |
+| asset\_name | The name of the Azure IoT Operations Device Registry Asset resource to send its data from edge to cloud. | `string` | `"namespace-oven"` | no |
 | eventgrid | Values for the existing Event Grid | ```object({ topic_name = string endpoint = string })``` | `null` | no |
 | eventhub | Values for the existing Event Hub namespace and Event Hub. | ```object({ namespace_name = string eventhub_name = string })``` | `null` | no |
 | fabric\_eventstream\_endpoint | Fabric RTI connection details from EventStream. If provided, creates a Fabric RTI dataflow endpoint. | ```object({ bootstrap_server = string topic_name = string endpoint_type = string })``` | `null` | no |

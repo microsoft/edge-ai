@@ -7,13 +7,13 @@
 | Name | Version |
 |------|---------|
 | terraform | >= 1.9.8, < 2.0.0 |
-| azurerm | >= 4.23.0 |
+| azurerm | >= 4.51.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| azurerm | >= 4.23.0 |
+| azurerm | >= 4.51.0 |
 
 ## Resources
 
@@ -25,12 +25,12 @@
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| location | The Azure region in which to create the Fabric capacity. | `string` | n/a | yes |
+| admin\_members | List of user principal names (UPNs) or Azure AD object IDs for Fabric capacity administrators. For users, provide UPN (<user@domain.com>) or Object ID. For service principals, provide Application ID or Object ID. At least one administrator is required. | `list(string)` | n/a | yes |
+| location | Azure region where all resources will be deployed | `string` | n/a | yes |
 | name | The name of the Fabric capacity. | `string` | n/a | yes |
-| resource\_group\_name | The name of the resource group in which to create the Fabric capacity. | `string` | n/a | yes |
-| admin\_members | List of AAD object IDs for Fabric capacity administrators. | `list(string)` | `[]` | no |
-| sku | The SKU name for the Fabric capacity. | `string` | `"F2"` | no |
-| tags | Tags to apply to the Fabric capacity. | `map(string)` | `{}` | no |
+| resource\_group\_name | Name of the resource group | `string` | n/a | yes |
+| sku | SKU name for the resource | `string` | `"F2"` | no |
+| tags | Tags to apply to all resources | `map(string)` | `{}` | no |
 
 ## Outputs
 

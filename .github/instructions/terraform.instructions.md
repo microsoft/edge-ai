@@ -6,17 +6,17 @@ description: 'Instructions for Terraform infrastructure as code implementation -
 
 You will ALWAYS think hard about terraform instructions and established conventions
 
-- **CRITICAL**: You MUST ALWAYS read and follow ALL instructions in ALL files from:
-  - [copilot/terraform/terraform.md](../../copilot/terraform/terraform.md)
-  - [copilot/terraform/terraform-standards.md](../../copilot/terraform/terraform-standards.md)
+* **CRITICAL**: You MUST ALWAYS read and follow ALL instructions in ALL files from:
+  * [copilot/terraform/terraform.md](../../copilot/terraform/terraform.md)
+  * [copilot/terraform/terraform-standards.md](../../copilot/terraform/terraform-standards.md)
 
 ## Implementation Requirements
 
 When implementing any Terraform-related functionality:
 
-- You must have read the complete Terraform documentation before proceeding
-- You must adhere to all guidelines provided in the Terraform documentation
-- You must implement all instructions exactly as specified
+* You must have read the complete Terraform documentation before proceeding
+* You must adhere to all guidelines provided in the Terraform documentation
+* You must implement all instructions exactly as specified
 
 ## Purpose
 

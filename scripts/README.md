@@ -1,43 +1,89 @@
-# Scripts Directory
+---
+title: Scripts Directory
+description: Comprehensive documentation for utility scripts, automation tools, and deployment helpers in the edge-ai repository
+author: microsoft/edge-ai
+ms.date: 2025-10-16
+ms.topic: reference
+keywords:
+  - scripts
+  - automation
+  - utilities
+  - deployment
+  - terraform
+  - bicep
+  - azure
+estimated_reading_time: 25 minutes
+---
+
+## Scripts Directory
 
 This directory contains utility scripts used by both developers and the
 Azure DevOps build system for managing and validating the project's IaC.
 
-## Table of Contents
+## Learning Catalog Generation
 
-- [Scripts Directory](#scripts-directory)
-  - [Table of Contents](#table-of-contents)
-  - [Terraform Documentation and Validation Scripts](#terraform-documentation-and-validation-scripts)
-    - [update-all-terraform-docs.sh](#update-all-terraform-docssh)
-    - [tf-docs-check.sh](#tf-docs-checksh)
-    - [tf-vars-compliance-check.py](#tf-vars-compliance-checkpy)
-    - [tf-provider-version-check.sh](#tf-provider-version-checksh)
-    - [install-terraform-docs.sh](#install-terraform-docssh)
-  - [Bicep Documentation and Validation Scripts](#bicep-documentation-and-validation-scripts)
-    - [generate-bicep-docs.py](#generate-bicep-docspy)
-    - [update-all-bicep-docs.sh](#update-all-bicep-docssh)
-    - [bicep-docs-check.sh](#bicep-docs-checksh)
-  - [Security Scanning Scripts](#security-scanning-scripts)
-    - [Detect-Folder-Changes.ps1](#detect-folder-changesps1)
-    - [Run-Checkov.ps1](#run-checkovps1)
-  - [Azure IoT Operations Scripts](#azure-iot-operations-scripts)
-    - [aio-version-checker.py](#aio-version-checkerpy)
-  - [Blueprint Deployment Preparation Scripts](#blueprint-deployment-preparation-scripts)
-    - [location-check.sh](#location-checksh)
-  - [Documentation and Link Validation Scripts](#documentation-and-link-validation-scripts)
-    - [link-lang-check.py](#link-lang-checkpy)
-    - [Build-Wiki.ps1](#build-wikips1)
-    - [wiki-build.sh (deprecated)](#wiki-buildsh-deprecated)
-  - [GitHub Integration Scripts](#github-integration-scripts)
-    - [github/create-pr.sh](#githubcreate-prsh)
-    - [github/access-tokens-url.sh](#githubaccess-tokens-urlsh)
-  - [Community Analysis Scripts](#community-analysis-scripts)
-    - [community/get-azure-devops-prs.ps1](#communityget-azure-devops-prsps1)
-    - [community/modules/AzDO](#communitymodulesazdo)
-  - [Test Framework Scripts](#test-framework-scripts)
-    - [Invoke-Pester.ps1](#invoke-pesterps1)
-  - [Error Handling](#error-handling)
-  - [Build System Integration](#build-system-integration)
+### Generate-LearningCatalog.ps1
+
+Generates unified learning catalog markdown files from YAML frontmatter across katas, training labs, and learning paths.
+
+- **Usage**: `npm run generate:catalog` or `npm run catalog:generate`
+- **Location**: `scripts/learning/Generate-LearningCatalog.ps1`
+- **Dependencies**: PowerShell 7+ with PowerShell-Yaml module
+- **What It Generates**:
+  1. **Main Catalog** (`learning/catalog.md`) - Complete catalog of ~48 learning items
+  2. **Paths Directory Index** (`learning/paths/README.md`) - 5 signature learning paths
+  3. **Kata Category Indexes** (`learning/katas/{category}/README.md`) - 11 category files
+- **When to Use**:
+  - After adding new katas, training labs, or learning paths
+  - After updating YAML frontmatter in existing learning content
+  - When learning content metadata changes (title, description, difficulty, etc.)
+- **Features**:
+  - Parses YAML frontmatter with multi-category tag support
+  - Generates consistent `.catalog-item` structure for plugin hydration
+  - Adds auto-generated headers to prevent manual editing
+  - Supports katas appearing in multiple categories via tags field
+  - Validates exactly 5 signature paths exist
+- **Build Integration**:
+  - Available via npm scripts: `npm run generate:catalog`, `npm run catalog:generate`
+  - Validates catalog integrity: `npm run validate:catalog`
+- **Plugin Integration**:
+  - Generated files work seamlessly with catalog hydration plugin
+  - Supports selection checkboxes for "My Learning" path building
+  - Enables real-time progress tracking via API integration
+  - Integrates with skill assessment recommendations
+- **Best Practice**:
+  - Always run after modifying learning content YAML frontmatter
+  - Commit generated files to git (required for GitHub Pages)
+  - Do not manually edit AUTO-GENERATED sections in output files
+  - Run `npm run mdlint-fix` after generation to fix any formatting issues
+
+**Example Workflow**:
+
+```powershell
+# 1. Add or update kata YAML frontmatter
+vim learning/katas/my-category/01-new-kata.md
+
+# 2. Regenerate catalog files
+npm run generate:catalog
+
+# 3. Validate catalog integrity
+npm run validate:catalog
+
+# 4. Fix markdown formatting
+npm run mdlint-fix
+
+# 5. Commit changes
+git add learning/
+git commit -m "feat(learning): add new kata to catalog"
+```
+
+**Troubleshooting**:
+
+- **PowerShell-Yaml Module Missing**: Install with `Install-Module -Name PowerShell-Yaml -Scope CurrentUser`
+- **Invalid YAML Frontmatter**: Check for syntax errors in kata/path frontmatter
+- **Wrong Path Count**: Verify only 5 signature paths exist in `learning/paths/`
+- **Missing Tags**: Ensure katas have `tags` array in frontmatter for category grouping
+- **Plugin Not Working**: Verify generated files use `.catalog-item` CSS class structure
 
 ## Terraform Documentation and Validation Scripts
 
@@ -166,21 +212,21 @@ The script works by:
 
 ## Security Scanning Scripts
 
-### Detect-Folder-Changes.ps1
+### build/Detect-Folder-Changes.ps1
 
 PowerShell script that detects changes in repository folders and files, providing structured JSON output for security scanning.
 
 - **Usage**:
-  - Basic usage: `.\Detect-Folder-Changes.ps1`
-  - Include all folders (not just changed): `.\Detect-Folder-Changes.ps1 -IncludeAllFolders`
-  - Compare against a different branch: `.\Detect-Folder-Changes.ps1 -BaseBranch origin/develop`
-  - Write output to file: `.\Detect-Folder-Changes.ps1 -OutputFile "folder-changes.json"`
+  - Basic usage: `.\build\Detect-Folder-Changes.ps1`
+  - Include all folders (not just changed): `.\build\Detect-Folder-Changes.ps1 -IncludeIaCFolders`
+  - Compare against a different branch: `.\build\Detect-Folder-Changes.ps1 -BaseBranch origin/develop`
+  - Write output to file: `.\build\Detect-Folder-Changes.ps1 -OutputFile "folder-changes.json"`
 - **Returns**: JSON structure identifying which components have been modified
 - **Build Integration**: Typically piped into Run-Checkov.ps1 for security scanning
 - **When to Use**: Before running security scans to focus the scan on changed components
 - **Best Practice**:
   - Use with pipeline integration to only scan changed files in PRs
-  - Use with -IncludeAllFolders for periodic full scans
+  - Use with -IncludeIaCFolders for periodic full scans
 
 The script detects:
 
@@ -190,10 +236,10 @@ The script detects:
 
 ### Run-Checkov.ps1
 
-PowerShell script that runs Checkov security scanner on folders identified by Detect-Folder-Changes.ps1 and aggregates results.
+PowerShell script that runs Checkov security scanner on folders identified by build/Detect-Folder-Changes.ps1 and aggregates results.
 
 - **Usage**:
-  - Via pipeline: `.\Detect-Folder-Changes.ps1 | .\Run-Checkov.ps1`
+  - Via pipeline: `.\build\Detect-Folder-Changes.ps1 | .\Run-Checkov.ps1`
   - With explicit JSON: `.\Run-Checkov.ps1 -InputJson $jsonData`
   - With custom output: `.\Run-Checkov.ps1 -OutputFolder "./security-reports" -OutputFile "security-results.xml"`
   - Using existing data: `.\Run-Checkov.ps1 -UseExistingData -OutputFolder "./checkov-results"`
@@ -213,6 +259,33 @@ The script performs these actions:
 2. Runs Checkov security scanner on identified folders
 3. Aggregates results into a single JUnit XML file
 4. Deduplicates redundant findings in the final report
+
+### security/ - Supply Chain Hardening Scripts
+
+Comprehensive SHA pinning, vulnerability scanning, and security gate enforcement scripts:
+
+| Script                                 | Purpose                                           | Documentation                                                                                                |
+|----------------------------------------|---------------------------------------------------|--------------------------------------------------------------------------------------------------------------|
+| `Update-ActionSHAPinning.ps1`          | Pin GitHub Actions to SHA hashes                  | [SHA Pinning](../docs/build-cicd/security-scanning.md#github-actions-sha-pinning)                            |
+| `Update-DockerSHAPinning.ps1`          | Pin Docker images to SHA digests                  | [SHA Pinning](../docs/build-cicd/security-scanning.md#docker-image-sha-pinning)                              |
+| `Update-ShellScriptSHAPinning.ps1`     | Track shell script dependencies                   | [Shell Dependencies](../docs/build-cicd/security-scanning.md#shell-script-dependency-tracking)               |
+| `Test-SHAStaleness.ps1`                | Monitor pinned dependencies for updates           | [Staleness Monitoring](../docs/build-cicd/security-scanning.md#sha-staleness-monitoring)                     |
+| `Invoke-ContainerSecurityScan.ps1`     | Container image vulnerability scanning with Grype | [Container Scanning](../docs/build-cicd/security-scanning.md#grype---container-image-vulnerability-scanning) |
+| `Invoke-SecurityGate.ps1`              | Centralized security gate enforcement             | [Security Gate](../docs/build-cicd/security-scanning.md#security-gate-enforcement)                           |
+| `Invoke-SecurityReportCompression.ps1` | Compress security scan results                    | [Report Management](../docs/build-cicd/security-scanning.md#report-compression)                              |
+
+### build/ - Application Build Modules
+
+Core application build orchestration modules and supporting scripts:
+
+| Script                                            | Purpose                                         | Documentation                                                |
+|---------------------------------------------------|-------------------------------------------------|--------------------------------------------------------------|
+| `application-builder.ps1`                         | Main build orchestrator for multi-language apps | [Build Scripts](../docs/build-cicd/build-scripts.md)         |
+| `modules/ApplicationBuilder.Build.psm1`           | Core build orchestration module                 | [Build Scripts](../docs/build-cicd/build-scripts.md)         |
+| `modules/ApplicationBuilder.DependencyAudit.psm1` | Multi-language dependency audit module          | [Build Scripts](../docs/build-cicd/build-scripts.md)         |
+| `modules/ApplicationBuilder.Output.psm1`          | Build output formatting module                  | [Build Scripts](../docs/build-cicd/build-scripts.md)         |
+| `modules/ApplicationBuilder.Security.psm1`        | Security scanning integration module            | [Security Scanning](../docs/build-cicd/security-scanning.md) |
+| `modules/ApplicationBuilder.SLSA.psm1`            | SLSA provenance generation module               | [Build Scripts](../docs/build-cicd/build-scripts.md)         |
 
 ## Azure IoT Operations Scripts
 
@@ -252,32 +325,33 @@ Uses a chosen blueprint to crawl all referenced modules, create a list of deploy
 
 ## Documentation and Link Validation Scripts
 
-### link-lang-check.py
+### Link-Lang-Check.ps1
 
-Finds and optionally fixes URLs with language path segments ('en-us').
+PowerShell script that finds and optionally fixes URLs with language path segments ('en-us').
 
 - **Usage**:
-  - Find links with language defaults only: `python3 link-lang-check.py` (outputs JSON)
-  - Find links with verbose output: `python3 link-lang-check.py -v`
-  - Fix links and remove 'en-us': `python3 link-lang-check.py -f`
-  - Fix links with verbose output: `python3 link-lang-check.py -f -v`
+  - Find links with language defaults only: `pwsh ./linting/Link-Lang-Check.ps1` (outputs JSON)
+  - Find links with verbose output: `pwsh ./linting/Link-Lang-Check.ps1 -Verbose`
+  - Fix links and remove 'en-us': `pwsh ./linting/Link-Lang-Check.ps1 -Fix`
+  - Fix links with verbose output: `pwsh ./linting/Link-Lang-Check.ps1 -Fix -Verbose`
 - **Returns**: JSON array of detected links with file paths and line numbers (in search mode)
 - **Build Integration**:
-  - Used by the [docs-check-terraform-template.yml](../.azdo/docs-check-terraform-template.yml) in the DocsCheckTerraform job
-  - Used by the [docs-check-bicep-template.yml](../.azdo/docs-check-bicep-template.yml) in the DocsCheckBicep job
+  - Used by the [docs-check-terraform-template.yml](../.azdo/templates/docs-check-terraform-template.yml) in the DocsCheckTerraform job
+  - Used by the [docs-check-bicep-template.yml](../.azdo/templates/docs-check-bicep-template.yml) in the DocsCheckBicep job
 - **When to Use**: Run before submitting PRs to ensure links don't contain language-specific paths which can cause internationalization issues
+- **Features**: Enhanced CI/CD logging support for Azure DevOps and GitHub Actions
 
 ### Build-Wiki.ps1
 
 PowerShell script that generates Azure DevOps Wiki content from markdown files in the repository.
-Parses the navigation structure from docs/_sidebar.md and includes comprehensive content coverage
+Parses the navigation structure from docs/_parts/_sidebar.md and includes comprehensive content coverage
 from all documentation folders throughout the repository.
 
 - **Usage**: `./Build-Wiki.ps1`
 - **Features**:
-  - Parses docs/_sidebar.md to extract complete 4-level navigation hierarchy
+  - Parses docs/_parts/_sidebar.md to extract complete 4-level navigation hierarchy
   - Creates wiki structure with proper directory hierarchy and .order files at every level
-  - Includes standalone content from all documentation folders (.github/prompts, .github/chatmodes, .github/instructions, copilot/, praxisworx/)
+  - Includes standalone content from all documentation folders (.github/prompts, .github/chatmodes, .github/instructions, copilot/, learning/)
   - Updates relative links to work correctly in the new wiki structure
   - Handles URL token replacement for Azure DevOps integration
   - Integrates blueprint documentation seamlessly
@@ -287,7 +361,7 @@ from all documentation folders throughout the repository.
   - Blueprint documentation from blueprints/*/README.md
   - GitHub resources including prompts, chatmodes, and instructions
   - AI Assistant guides from copilot/ folder
-  - Learning platform materials from praxisworx/ folder
+  - Learning platform materials from learning/ folder
 - **Build Integration**: Used by the [wiki-update-template.yml](../.azdo/wiki-update-template.yml) job to rebuild the Azure DevOps wiki
 - **When to Use**: Generally only used by the build system after merges to main
 - **Notes**: Creates a .wiki directory and organizes documentation to match the sidebar navigation exactly, with additional sections for comprehensive content coverage
@@ -398,3 +472,8 @@ The following Azure DevOps pipeline templates depend on these scripts:
 | [cluster-test-terraform-template.yml](../docs/build-cicd/pipelines/azure-devops/templates/cluster-test-terraform-template.md)               | tf-provider-version-check.sh                                    |
 | [resource-provider-pwsh-tests-template.yml](../docs/build-cicd/pipelines/azure-devops/templates/resource-provider-pwsh-tests-template.md)   | Invoke-Pester.ps1                                               |
 | [wiki-update-template.yml](../docs/build-cicd/pipelines/azure-devops/templates/wiki-update-template.md)                                     | Build-Wiki.ps1                                                  |
+
+<!-- markdownlint-disable MD036 -->
+*🤖 Crafted with precision by ✨Copilot following brilliant human instruction,
+then carefully refined by our team of discerning human reviewers.*
+<!-- markdownlint-enable MD036 -->

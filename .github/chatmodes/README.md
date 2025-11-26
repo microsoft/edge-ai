@@ -2,7 +2,7 @@
 title: GitHub Copilot Chat Modes
 description: Specialized AI assistance modes for enhanced development workflows and coaching
 author: Edge AI Team
-ms.date: 06/18/2025
+ms.date: 2025-01-11
 ms.topic: reference
 estimated_reading_time: 3
 keywords:
@@ -22,7 +22,7 @@ Chat modes are advanced AI assistant configurations that enable specialized coac
 
 ## Available Chat Modes
 
-### [PraxisWorx Kata Coach](praxisworx-kata-coach.chatmode.md)
+### [Learning Kata Coach](learning-kata-coach.chatmode.md)
 
 Interactive AI coaching for focused practice exercises with progress tracking and resumption capabilities.
 
@@ -31,7 +31,7 @@ Interactive AI coaching for focused practice exercises with progress tracking an
 - **Best For**: Skill-building exercises, practice scenarios, iterative learning
 - **Philosophy**: Teach a person to fish - discovery over direct answers
 
-### [PraxisWorx Lab Coach](praxisworx-lab-coach.chatmode.md)
+### [Learning Lab Coach](learning-lab-coach.chatmode.md)
 
 Complex training lab coaching for multi-component systems and comprehensive scenarios.
 
@@ -89,8 +89,8 @@ Expert security architect for creating comprehensive cloud security plans with t
 
 ### Selecting the Right Mode
 
-1. **Learning and Skill Building**: Use PraxisWorx Kata Coach for focused practice
-2. **Complex System Work**: Use PraxisWorx Lab Coach for multi-component scenarios
+1. **Learning and Skill Building**: Use Learning Kata Coach for focused practice
+2. **Complex System Work**: Use Learning Lab Coach for multi-component scenarios
 3. **Research and Analysis**: Use Task Researcher for comprehensive project investigation
 4. **Project Planning**: Use Task Planner for strategic planning after research is complete
 5. **Architecture Documentation**: Use ADR Creation for collaborative decision records

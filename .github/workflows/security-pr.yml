@@ -1,0 +1,83 @@
+# Security PR Validation Workflow - Ultra-fast security checks for pull requests
+# This workflow provides immediate security feedback during PR validation.
+# Designed for fast developer feedback without blocking the PR process.
+
+name: Security PR Validation
+
+on:
+  workflow_call:
+    inputs:
+      working-directory:
+        description: 'Working directory for security validation'
+        required: false
+        type: string
+        default: '.'
+      enable-egress-filter:
+        description: 'Enable network egress filtering'
+        required: false
+        type: boolean
+        default: true
+      enable-endpoint-monitoring:
+        description: 'Enable endpoint monitoring for security events'
+        required: false
+        type: boolean
+        default: true
+      continue-on-error:
+        description: 'Continue pipeline on hardening errors'
+        required: false
+        type: boolean
+        default: false
+
+    outputs:
+      security-status:
+        description: 'Security validation status'
+        value: ${{ jobs.security-hardening.outputs.security-status }}
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+  security-hardening:
+    name: Security Hardening
+    runs-on: ubuntu-latest
+    outputs:
+      security-status: ${{ steps.hardening.outputs.status }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493
+
+      - name: Setup PowerShell Core
+        run: |
+          # Download and install PowerShell Core
+          wget -q "https://packages.microsoft.com/keys/microsoft.asc" -O- | sudo apt-key add -
+          wget -q "https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb" -O packages-microsoft-prod.deb
+          sudo dpkg -i packages-microsoft-prod.deb
+          sudo apt-get update
+          sudo apt-get install -y powershell
+
+      - name: Initialize Security Hardening
+        id: hardening
+        shell: pwsh
+        working-directory: ${{ inputs.working-directory }}
+        continue-on-error: ${{ inputs.continue-on-error }}
+        run: |
+          Write-Host "Initializing security hardening for PR validation..."
+
+          & ./scripts/security/Initialize-HardenRunner.ps1 `
+            -EnableEgressFilter:$${{ inputs.enable-egress-filter }} `
+            -EnableEndpointMonitoring:$${{ inputs.enable-endpoint-monitoring }} `
+            -Verbose
+
+          Write-Host "Security hardening initialization completed"
+          "status=success" >> $env:GITHUB_OUTPUT
+
+      - name: Upload Security Artifacts
+        uses: actions/upload-artifact@2848b2cda0e5190984587ec6bb1f36730ca78d50
+        if: always()
+        with:
+          name: security-pr-results
+          path: |
+            security-hardening-*.log
+          retention-days: 7

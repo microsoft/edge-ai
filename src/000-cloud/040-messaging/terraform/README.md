@@ -11,7 +11,7 @@ Azure IoT Operations Dataflow to send and receive data from edge to cloud.
 |------|---------|
 | terraform | >= 1.9.8, < 2.0 |
 | azapi | >= 2.3.0 |
-| azurerm | >= 4.8.0 |
+| azurerm | >= 4.51.0 |
 
 ## Modules
 
@@ -26,9 +26,9 @@ Azure IoT Operations Dataflow to send and receive data from edge to cloud.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| aio\_identity | n/a | ```object({ id = string principal_id = string tenant_id = string client_id = string })``` | n/a | yes |
+| aio\_identity | Azure IoT Operations managed identity for workspace access | ```object({ id = string principal_id = string tenant_id = string client_id = string })``` | n/a | yes |
 | environment | Environment for all resources in this module: dev, test, or prod | `string` | n/a | yes |
-| resource\_group | n/a | ```object({ name = string id = string location = string })``` | n/a | yes |
+| resource\_group | Resource group object containing name and id where resources will be deployed | ```object({ name = string id = string location = string })``` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
 | app\_service\_plan\_os\_type | The operating system type for the App Service Plan. | `string` | `"Linux"` | no |
 | app\_service\_plan\_sku\_name | The SKU name for the App Service Plan. | `string` | `"B1"` | no |

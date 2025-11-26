@@ -3,6 +3,16 @@ output "storage_account" {
   value       = module.storage_account.storage_account
 }
 
+output "storage_account_private_endpoints" {
+  description = "The private endpoints for Storage Account."
+  value       = module.storage_account.private_endpoints
+}
+
+output "storage_account_private_dns_zones" {
+  description = "The private DNS zones for Storage Account."
+  value       = module.storage_account.private_dns_zones
+}
+
 output "data_lake_blob_container_name" {
   description = "The name for the Data Lake Blob Container."
   value       = try(module.data_lake[0].blob_container_name, null)
@@ -21,4 +31,9 @@ output "data_lake_filesystem_name" {
 output "schema_registry" {
   description = "The new ADR Schema Registry resource."
   value       = try(module.schema_registry[0].schema_registry, null)
+}
+
+output "adr_namespace" {
+  description = "The Azure Device Registry namespace resource."
+  value       = try(module.adr_namespace[0].adr_namespace, null)
 }

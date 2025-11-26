@@ -15,16 +15,20 @@
 # - MQ_TOPIC: The MQTT topic to subscribe to
 # =============================================================================
 
+# =============================================================================
 # STAGE 1: Builder - Compiles the Rust application
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/cbl-mariner/base/rust:1.72 AS builder
+# =============================================================================
+FROM mcr.microsoft.com/azurelinux/base/rust:1.86.0-6-azl3.0.20250910@sha256:c02d008ae63540df5dd366d92247736a5a20948c8543f33b15f6b7ba7cd412f0 AS builder
 
 WORKDIR /usr/src/app
 
-COPY ./Cargo.toml ./Cargo.toml
-COPY ./.cargo/config.toml ./.cargo/config.toml
+COPY ./services/subscriber/Cargo.toml ./Cargo.toml
+COPY ./services/subscriber/Cargo.lock ./Cargo.lock
+COPY ./services/subscriber/.cargo/config.toml ./.cargo/config.toml
 
 # Install build dependencies for Rust compilation
-RUN tdnf update -y && \
+RUN rpm --import /etc/pki/rpm-gpg/MICROSOFT-RPM-GPG-KEY && \
+    tdnf update -y && \
     tdnf install -y pkgconfig openssl-devel
 
 # Set shell options for better error handling with pipes
@@ -38,14 +42,21 @@ RUN rustup update stable && \
 ARG USE_REPLACE_WITH=false
 
 # Build the Rust application in release mode
-COPY ./src ./src
+COPY ./services/subscriber/src ./src
 RUN cargo build --release
 
+# =============================================================================
 # STAGE 2: Runtime - Creates the minimal production image
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/cbl-mariner/base/core:2.0
+# =============================================================================
+FROM mcr.microsoft.com/azurelinux/base/core:3.0.20250910@sha256:919cfecd0ffe136adff3bea7030f3e6abc6633a4069a6de44b2070bb86c40c81
+# Upgrade all packages to latest versions to fix vulnerabilities
+RUN rpm --import /etc/pki/rpm-gpg/MICROSOFT-RPM-GPG-KEY && \
+    tdnf upgrade -y && \
+    tdnf clean all
 
 # Install runtime dependencies and create non-root user
-RUN tdnf update -y && \
+RUN rpm --import /etc/pki/rpm-gpg/MICROSOFT-RPM-GPG-KEY && \
+    tdnf update -y && \
     tdnf install -y ca-certificates util-linux wget systemd shadow-utils && \
     tdnf clean all && \
     groupadd -r appuser && useradd -r -g appuser appuser

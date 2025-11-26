@@ -212,7 +212,7 @@ function Test-UrlConfiguration {
 function Test-SidebarNavigation {
     param([string]$BaseUrl)
 
-    $sidebarUrl = "$BaseUrl/docs/_sidebar.md"
+    $sidebarUrl = "$BaseUrl/docs/_parts/_sidebar.md"
 
     try {
         $response = Invoke-WebRequestWithTimeout -Uri $sidebarUrl

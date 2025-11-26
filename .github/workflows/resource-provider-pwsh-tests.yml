@@ -1,3 +1,4 @@
+---
 # Resource Provider PowerShell Tests Workflow
 #
 # Purpose:
@@ -31,7 +32,7 @@
 #
 # # Usage in main workflow with custom path:
 # pwsh-provider-tests-main:
-#   name: PowerShell Provider Tests (Main)
+#   name: PowerShell Resource Provider Tests (Main)
 #   uses: ./.github/workflows/resource-provider-pwsh-tests.yml
 #   with:
 #     working-directory: 'custom/path/to/scripts'
@@ -39,10 +40,10 @@
 #
 # This workflow relies on the presence of Invoke-Pester.ps1 in the scripts directory
 # to execute the tests. The tests are expected to be in the standard Pester format.
----
+
 name: Resource Provider PowerShell Tests
 
-on: # yamllint disable-line rule:truthy
+on:  # yamllint disable-line rule:truthy
   workflow_call:
     inputs:
       working-directory:
@@ -56,6 +57,8 @@ on: # yamllint disable-line rule:truthy
         type: string
         default: 'PWSH-TEST-RESULTS.xml'
 
+permissions:
+  contents: read
 jobs:
   # Job to run PowerShell script tests for the resource providers
   resource-provider-pwsh-test:
@@ -64,7 +67,7 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493
 
       # Run Pester tests for the resource provider scripts
       - name: Run Pester Tests
@@ -80,15 +83,15 @@ jobs:
       # Publish the Pester test results
       - name: Publish Test Results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@2848b2cda0e5190984587ec6bb1f36730ca78d50
         with:
           name: pester-test-results
           path: ${{ inputs.test-results-output }}
 
-      # Publish test results to the GitHub interface
-      # - name: Publish to GitHub interface
-      #   if: always()
-      #   uses: EnricoMi/publish-unit-test-result-action@v2
-      #   with:
-      #     nunit_files: ${{ inputs.test-results-output }}
-      #     check_name: "PowerShell Resource Provider Test Results"
+          # Publish test results to the GitHub interface
+          # - name: Publish to GitHub interface
+          #   if: always()
+          #   uses: EnricoMi/publish-unit-test-result-action@v2
+          #   with:
+          #     nunit_files: ${{ inputs.test-results-output }}
+          #     check_name: "PowerShell Resource Provider Test Results"

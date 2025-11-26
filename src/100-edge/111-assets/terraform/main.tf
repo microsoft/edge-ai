@@ -1,12 +1,13 @@
 /**
  * # Kubernetes Assets
  *
- * Deploys Kubernetes asset definitions to a connected cluster. This component
- * facilitates the management of custom Kubernetes resources and manifests.
+ * Deploys Kubernetes asset definitions to a connected cluster using the namespaced
+ * Device Registry model. This component facilitates the management of devices and
+ * assets within ADR namespaces.
  */
 
 locals {
-  /* Default configurations for asset endpoint profile and asset */
+  /* Default configurations for legacy asset endpoint profile and asset */
   default_asset_endpoint_profile = {
     endpoint_profile_type = "Microsoft.OpcUa"
     method                = "Anonymous"
@@ -56,7 +57,86 @@ locals {
     ]
   }
 
-  /* Processed collections with enhanced logic */
+  /* Default configurations for namespaced device and asset */
+  default_namespaced_device = {
+    name    = "namespaced-opc-ua-connector"
+    enabled = true
+    endpoints = {
+      enabled = true
+      outbound = {
+        assigned = {}
+      }
+      inbound = {
+        "namespaced-opc-ua-connector-0" = {
+          endpoint_type           = "Microsoft.OpcUa"
+          address                 = "opc.tcp://opcplc-000000:50000"
+          version                 = null
+          additionalConfiguration = null
+          authentication = {
+            method = "Anonymous"
+          }
+          trustSettings = null
+        }
+      }
+    }
+  }
+
+  default_namespaced_asset = {
+    name         = "namespace-oven"
+    display_name = "oven namespaced"
+    device_ref = {
+      device_name   = local.default_namespaced_device.name
+      endpoint_name = "namespaced-opc-ua-connector-0"
+    }
+    description       = "Multi-function large oven for baked goods."
+    documentation_uri = "http://docs.contoso.com/ovens"
+    enabled           = true
+    hardware_revision = "2.3"
+    manufacturer      = "Contoso"
+    manufacturer_uri  = "http://www.contoso.com/ovens"
+    model             = "Oven-003"
+    product_code      = "12345C"
+    serial_number     = "12345"
+    software_revision = "14.1"
+    attributes        = {}
+    datasets = [
+      {
+        name = "Oven namespaced telemetry"
+        data_points = [
+          {
+            name                     = "Temp"
+            data_source              = "ns=3;s=FastUInt10"
+            data_point_configuration = "{\"publishingInterval\":1000,\"samplingInterval\":500,\"queueSize\":1}"
+          },
+          {
+            name                     = "FillWeight"
+            data_source              = "ns=3;s=FastUInt4"
+            data_point_configuration = "{\"publishingInterval\":1000,\"samplingInterval\":500,\"queueSize\":1}"
+          },
+          {
+            name                     = "EnergyUse"
+            data_source              = "ns=3;s=FastUInt5"
+            data_point_configuration = "{\"publishingInterval\":1000,\"samplingInterval\":500,\"queueSize\":1}"
+          }
+        ]
+        destinations = [
+          {
+            target = "Mqtt"
+            configuration = {
+              topic  = "azure-iot-operations/data/namespace-oven"
+              retain = "Never"
+              qos    = "Qos1"
+            }
+          }
+        ]
+      }
+    ]
+    default_datasets_configuration = "{\"publishingInterval\":1000,\"samplingInterval\":500,\"queueSize\":1}"
+    default_events_configuration   = "{\"publishingInterval\":1000,\"samplingInterval\":500,\"queueSize\":1}"
+  }
+
+  /* Processed collections for legacy assets with enhanced logic */
+
   processed_asset_endpoint_profiles = {
     for profile in concat(
       var.should_create_default_asset ? [local.default_asset_endpoint_profile] : [],
@@ -111,6 +191,84 @@ locals {
     }
   }
 
+  /* Processed collections for namespaced assets with enhanced logic */
+  processed_namespaced_devices = {
+    for device in concat(
+      var.should_create_default_namespaced_asset ? [local.default_namespaced_device] : [],
+      var.namespaced_devices
+      ) : device.name => {
+      name    = device.name
+      enabled = coalesce(device.enabled, true)
+      endpoints = {
+        for endpoint_block, value in {
+          inbound = {
+            for endpoint_name, endpoint in device.endpoints.inbound : endpoint_name => {
+              for property_name, property_value in {
+                endpointType            = endpoint.endpoint_type
+                address                 = endpoint.address
+                version                 = endpoint.version
+                authentication          = endpoint.authentication
+                trustSettings           = endpoint.trustSettings
+                additionalConfiguration = endpoint.additionalConfiguration
+              } : property_name => property_value if property_value != null
+            }
+          }
+          outbound = try(device.endpoints.outbound, null)
+        } : endpoint_block => value if value != null && (endpoint_block != "outbound" || length(value) > 0)
+      }
+    }
+  }
+
+  processed_namespaced_assets = {
+    for asset in concat(
+      var.should_create_default_namespaced_asset ? [local.default_namespaced_asset] : [],
+      var.namespaced_assets
+      ) : asset.name => {
+      name              = asset.name
+      display_name      = coalesce(asset.display_name, asset.name)
+      device_ref        = asset.device_ref
+      description       = try(asset.description, null)
+      documentation_uri = try(asset.documentation_uri, null)
+      enabled           = coalesce(asset.enabled, true)
+      hardware_revision = try(asset.hardware_revision, null)
+      manufacturer      = try(asset.manufacturer, null)
+      manufacturer_uri  = try(asset.manufacturer_uri, null)
+      model             = try(asset.model, null)
+      product_code      = try(asset.product_code, null)
+      serial_number     = try(asset.serial_number, null)
+      software_revision = try(asset.software_revision, null)
+      attributes        = try(asset.attributes, {})
+      datasets = [
+        for dataset in try(asset.datasets, []) : {
+          name                  = dataset.name
+          dataset_configuration = try(dataset.dataset_configuration, null)
+          data_source           = try(dataset.data_source, null)
+          type_ref              = try(dataset.type_ref, null)
+          data_points = [
+            for data_point in dataset.data_points : {
+              name                      = data_point.name
+              data_source               = data_point.data_source
+              data_point_configuration  = data_point.data_point_configuration
+              rest_sampling_interval_ms = try(data_point.rest_sampling_interval_ms, null)
+              rest_mqtt_topic           = try(data_point.rest_mqtt_topic, null)
+              rest_include_state_store  = try(data_point.rest_include_state_store, null)
+              rest_state_store_key      = try(data_point.rest_state_store_key, null)
+            }
+          ]
+          destinations = try(dataset.destinations, [])
+        }
+      ]
+      default_datasets_configuration = coalesce(
+        try(asset.default_datasets_configuration, null),
+        "{\"publishingInterval\":1000,\"samplingInterval\":500,\"queueSize\":1}"
+      )
+      default_events_configuration = coalesce(
+        try(asset.default_events_configuration, null),
+        "{\"publishingInterval\":1000,\"samplingInterval\":500,\"queueSize\":1}"
+      )
+    }
+  }
+
   /* Check if any asset endpoint profile has asset discovery enabled */
   should_enable_opc_asset_discovery = anytrue([
     for profile in concat(
@@ -121,12 +279,106 @@ locals {
 }
 
 /*
- * Asset Endpoint Profiles
+ * Namespaced Devices (replaces Asset Endpoint Profiles)
+ */
+resource "azapi_resource" "namespaced_device" {
+  for_each = local.processed_namespaced_devices
+
+  type                      = "Microsoft.DeviceRegistry/namespaces/devices@2025-10-01"
+  name                      = each.value.name
+  parent_id                 = var.adr_namespace.id
+  schema_validation_enabled = false # Disable schema validation until azapi provider schema support is available
+
+  body = {
+    location = var.location
+    extendedLocation = {
+      type = "CustomLocation"
+      name = var.custom_location_id
+    }
+    properties = {
+      enabled   = each.value.enabled
+      endpoints = each.value.endpoints
+    }
+  }
+}
+
+/*
+ * Namespaced Asset Instances
+ */
+resource "azapi_resource" "namespaced_asset" {
+  for_each = local.processed_namespaced_assets
+
+  type                      = "Microsoft.DeviceRegistry/namespaces/assets@2025-10-01"
+  name                      = each.value.name
+  parent_id                 = var.adr_namespace.id
+  schema_validation_enabled = false # Disable schema validation until azapi provider schema support is available
+
+  body = {
+    location = var.location
+    extendedLocation = {
+      type = "CustomLocation"
+      name = var.custom_location_id
+    }
+    properties = merge(
+      {
+        attributes                   = each.value.attributes
+        defaultDatasetsConfiguration = each.value.default_datasets_configuration
+        defaultEventsConfiguration   = each.value.default_events_configuration
+        deviceRef = {
+          deviceName   = each.value.device_ref.device_name
+          endpointName = each.value.device_ref.endpoint_name
+        }
+        displayName = each.value.display_name
+        enabled     = each.value.enabled
+        datasets = [
+          for dataset in each.value.datasets : merge(
+            {
+              name         = dataset.name
+              destinations = try(dataset.destinations, [])
+            },
+            length(dataset.data_points) > 0 ? {
+              dataPoints = [
+                for data_point in dataset.data_points : merge(
+                  {
+                    name                   = data_point.name
+                    dataSource             = data_point.data_source
+                    dataPointConfiguration = data_point.data_point_configuration
+                  },
+                  data_point.rest_sampling_interval_ms != null ? { samplingIntervalMs = data_point.rest_sampling_interval_ms } : {},
+                  data_point.rest_mqtt_topic != null ? { mqttTopic = data_point.rest_mqtt_topic } : {},
+                  data_point.rest_include_state_store != null ? { includeStateStore = data_point.rest_include_state_store } : {},
+                  data_point.rest_state_store_key != null ? { stateStoreKey = data_point.rest_state_store_key } : {}
+                )
+              ]
+            } : {},
+            dataset.dataset_configuration != null ? { datasetConfiguration = dataset.dataset_configuration } : {},
+            dataset.data_source != null ? { dataSource = dataset.data_source } : {},
+            dataset.type_ref != null ? { typeRef = dataset.type_ref } : {}
+          )
+        ]
+      },
+      each.value.description != null ? { description = each.value.description } : {},
+      each.value.documentation_uri != null ? { documentationUri = each.value.documentation_uri } : {},
+      each.value.hardware_revision != null ? { hardwareRevision = each.value.hardware_revision } : {},
+      each.value.manufacturer != null ? { manufacturer = each.value.manufacturer } : {},
+      each.value.manufacturer_uri != null ? { manufacturerUri = each.value.manufacturer_uri } : {},
+      each.value.model != null ? { model = each.value.model } : {},
+      each.value.product_code != null ? { productCode = each.value.product_code } : {},
+      each.value.serial_number != null ? { serialNumber = each.value.serial_number } : {},
+      each.value.software_revision != null ? { softwareRevision = each.value.software_revision } : {}
+    )
+  }
+
+  depends_on = [azapi_resource.namespaced_device]
+}
+
+/*
+ * Legacy Asset Endpoint Profiles
  */
 resource "azapi_resource" "asset_endpoint_profile" {
   for_each = local.processed_asset_endpoint_profiles
 
-  type      = "Microsoft.DeviceRegistry/assetEndpointProfiles@2024-11-01"
+  type      = "Microsoft.DeviceRegistry/assetEndpointProfiles@2025-10-01"
   name      = each.value.name
   parent_id = var.resource_group.id
   body = {
@@ -135,24 +387,30 @@ resource "azapi_resource" "asset_endpoint_profile" {
       type = "CustomLocation"
       name = var.custom_location_id
     }
-    properties = {
-      additionalConfiguration = each.value.opc_additional_config_string
-      authentication = {
-        method = each.value.method
-      }
-      endpointProfileType = each.value.endpoint_profile_type
-      targetAddress       = each.value.target_address
-    }
+    properties = merge(
+      {
+        authentication = {
+          method = each.value.method
+        }
+        endpointProfileType = each.value.endpoint_profile_type
+        targetAddress       = each.value.target_address
+      },
+      each.value.opc_additional_config_string != null ? {
+        additionalConfiguration = each.value.opc_additional_config_string
+      } : {}
+    )
   }
+
+  schema_validation_enabled = false # Disable schema validation until azapi provider schema support is available
 }
 
 /*
- * Asset Instances
+ * Legacy Asset Instances
  */
 resource "azapi_resource" "asset" {
   for_each = local.processed_assets
 
-  type      = "Microsoft.DeviceRegistry/assets@2024-11-01"
+  type      = "Microsoft.DeviceRegistry/assets@2025-10-01"
   name      = each.value.name
   parent_id = var.resource_group.id
 

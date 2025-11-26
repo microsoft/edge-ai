@@ -4,7 +4,7 @@ description: Comprehensive technology guide for hybrid edge-to-cloud data proces
 author:
   - Madhav Annamraju
   - Suneet Nangia
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: solution-article
 estimated_reading_time: 18
 keywords:
@@ -483,7 +483,7 @@ Table Output:
 Purpose: Ensures data is in its most refined form, ready for consumption by end-users and analytical tools.
 
 It is a curated data layer, holds aggregated, and business-ready data optimized for reporting, business intelligence (BI), and machine learning (ML) applications. It follows the same pattern as that in Silver layer above; except that in this layer we copy records from Silver layer table to Gold layer table(s) using the table policy and function mechanism.
-Also, the records processed in this layer are targetted for the domain specific materialized views e.g. assessing thermodynamics of the shop floor.
+Also, the records processed in this layer are targeted for the domain specific materialized views e.g. assessing thermodynamics of the shop floor.
 
 ### Structured Streaming with Spark
 
@@ -585,4 +585,4 @@ These benefits make the Active-Standby model a robust solution for maintaining h
 
 ---
 
-*This documentation is part of the [Edge AI Platform](../index.md) project.*
+*This documentation is part of the [Edge AI Platform](../README.md) project.*

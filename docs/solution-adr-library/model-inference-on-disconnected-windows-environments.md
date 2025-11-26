@@ -2,7 +2,7 @@
 title: Model Inferencing on Disconnected Windows Environments
 description: Architecture Decision Record evaluating inference engines for Small Language Model (SLM) inference on disconnected Windows environments. Compares ONNX Runtime GenAI, LlamaCPP, Hugging Face Optimum, and NVIDIA Triton for offline RAG capabilities, with performance benchmarks showing ONNX Runtime GenAI as the optimal solution for token throughput and latency optimization.
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: architecture-decision-record
 estimated_reading_time: 14
 keywords:
@@ -109,7 +109,7 @@ We selected **ONNX Runtime GenAI** as the best inference engine for running SLM 
 
 **Cons:**
 
-- Does not optimize model inferencing like usage of KV-cache, input/ouput binding, pre/post processing/
+- Does not optimize model inferencing like usage of KV-cache, input/output binding, pre/post processing/
 - Lower token throughput than ONNX Runtime GenAI.
 
 ### Option 4: NVIDIA Triton Inference Server

@@ -23,6 +23,16 @@ variable "container_soft_delete_retention_days" {
   type        = number
 }
 
+variable "is_hns_enabled" {
+  description = "Whether to enable Hierarchical Namespace (HNS) for Azure Data Lake Storage Gen2. Note: Azure ML workspaces do not support HNS-enabled storage accounts."
+  type        = bool
+}
+
+variable "should_enable_public_network_access" {
+  description = "Whether to enable public network access for the storage account"
+  type        = bool
+}
+
 /*
  * Private Endpoint
  */
@@ -35,4 +45,14 @@ variable "should_enable_private_endpoint" {
 variable "private_endpoint_subnet_id" {
   description = "ID of the subnet to deploy the private endpoint"
   type        = string
+}
+
+variable "virtual_network_id" {
+  description = "The ID of the virtual network to link to the private DNS zones"
+  type        = string
+}
+
+variable "should_create_blob_dns_zone" {
+  description = "Whether to create the blob private DNS zone. Set to false if using a shared DNS zone from observability component."
+  type        = bool
 }

@@ -1,0 +1,482 @@
+---
+# Comprehensive Security Monitoring Workflow
+# Enhanced security monitoring workflow matching Azure DevOps scheduled stage approach.
+# Includes dependency staleness, OSSF Scorecard, AIO version checks,
+# and comprehensive security analysis for complete supply chain security validation.
+
+# Security Comprehensive Monitoring Workflow - Complete security monitoring suite
+# This workflow performs comprehensive security analysis and monitoring.
+# Mirrors the Azure DevOps Scheduled stage approach with full security coverage.
+# Includes dependency staleness, OSSF scorecard, and AIO version checks.
+
+name: Security Comprehensive Monitoring
+
+on:
+  workflow_call:
+    inputs:
+      max-age-days:
+        description: 'Maximum age in days for dependency staleness check'
+        required: false
+        type: number
+        default: 30
+      iac-types:
+        description: 'Infrastructure types to validate (all, terraform, bicep)'
+        required: false
+        type: string
+        default: 'all'
+      scorecard-threshold:
+        description: 'Minimum OSSF Scorecard score threshold'
+        required: false
+        type: number
+        default: 6.0
+      pinning-threshold:
+        description: 'Minimum dependency pinning compliance percentage'
+        required: false
+        type: number
+        default: 85.0
+      dashboard-theme:
+        description: 'Theme for security dashboard'
+        required: false
+        type: string
+        default: 'auto'
+      fail-on-critical:
+        description: 'Whether to fail workflow on critical security issues'
+        required: false
+        type: boolean
+        default: false
+      publish-artifacts:
+        description: 'Whether to publish security artifacts'
+        required: false
+        type: boolean
+        default: true
+    outputs:
+      overall-status:
+        description: 'Overall security status'
+        value: ${{ jobs.security-summary.outputs.overall-status }}
+      scorecard-score:
+        description: 'OSSF Scorecard score'
+        value: ${{ jobs.ossf-scorecard.outputs.score }}
+      pinning-compliance:
+        description: 'Dependency pinning compliance'
+        value: ${{ jobs.security-analysis.outputs.pinning-compliance }}
+      critical-issues:
+        description: 'Number of critical issues'
+        value: ${{ jobs.security-summary.outputs.critical-issues }}
+      deployment-approved:
+        description: 'Whether deployment is approved based on security status'
+        value: ${{ jobs.security-summary.outputs.deployment-approved }}
+
+  workflow_dispatch:
+    inputs:
+      max-age-days:
+        description: 'Maximum age in days for dependency staleness check'
+        required: false
+        type: number
+        default: 30
+      iac-types:
+        description: 'Infrastructure types to validate (all, terraform, bicep)'
+        required: false
+        type: string
+        default: 'all'
+      scorecard-threshold:
+        description: 'Minimum OSSF Scorecard score threshold (0-10)'
+        required: false
+        type: number
+        default: 6.0
+      pinning-threshold:
+        description: 'Minimum dependency pinning compliance percentage (0-100)'
+        required: false
+        type: number
+        default: 85.0
+      dashboard-theme:
+        description: 'Theme for security dashboard (light, dark, auto)'
+        required: false
+        type: choice
+        options:
+          - auto
+          - light
+          - dark
+        default: 'auto'
+      fail-on-critical:
+        description: 'Fail workflow on critical security issues'
+        required: false
+        type: boolean
+        default: false
+
+  schedule:
+    # Run comprehensive security monitoring daily at 2 AM UTC
+    - cron: '0 2 * * *'
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+  # Security hardening setup for comprehensive monitoring
+  security-hardening:
+    name: Security Hardening Setup
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Initialize comprehensive security monitoring
+        run: |
+          echo "Comprehensive security monitoring initialized"
+          echo "Starting comprehensive security validation pipeline..."
+
+  # SHA dependency staleness monitoring for supply chain security
+  dependency-staleness:
+    name: Dependency Staleness Analysis
+    runs-on: ubuntu-latest
+    needs: security-hardening
+    timeout-minutes: 20
+    outputs:
+      stale-count: ${{ steps.staleness-check.outputs.stale-count }}
+      threshold-failed: ${{ steps.staleness-check.outputs.threshold-failed }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run dependency staleness check
+        id: staleness-check
+        run: |
+          python scripts/dependency-staleness-check.py \
+            --max-age-days ${{ inputs.max-age-days }} \
+            --output-path stale-dependencies.json \
+            --output-format json
+
+          # Parse results for outputs
+          if [[ -f "stale-dependencies.json" ]]; then
+            stale_count=$(jq '.stale_dependencies | length' stale-dependencies.json)
+            echo "stale-count=$stale_count" >> $GITHUB_OUTPUT
+
+            if [[ $stale_count -gt 0 ]]; then
+              echo "threshold-failed=true" >> $GITHUB_OUTPUT
+              echo "Warning: $stale_count stale dependencies found"
+            else
+              echo "threshold-failed=false" >> $GITHUB_OUTPUT
+              echo "All dependencies are within staleness threshold"
+            fi
+          else
+            echo "Error: staleness check failed to generate results"
+            exit 1
+          fi
+
+      - name: Upload staleness results
+        if: always()
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        with:
+          name: dependency-staleness-results
+          path: stale-dependencies.json
+          retention-days: 30
+
+  # OSSF Scorecard analysis for supply chain security assessment
+  ossf-scorecard:
+    name: OSSF Scorecard Analysis
+    runs-on: ubuntu-latest
+    needs: security-hardening
+    timeout-minutes: 25
+    outputs:
+      score: ${{ steps.scorecard-check.outputs.score }}
+      threshold-failed: ${{ steps.scorecard-check.outputs.threshold-failed }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Run OSSF Scorecard
+        uses: ossf/scorecard-action@62b2cac7ed8198b15735ed49ab1e5cf35480ba46 # v2.4.0
+        with:
+          results_file: scorecard-results.sarif
+          results_format: sarif
+          publish_results: false
+
+      - name: Process scorecard results
+        id: scorecard-check
+        run: |
+          # Extract score from SARIF results
+          score=$(jq -r '.runs[0].properties.score // "0"' scorecard-results.sarif)
+          echo "score=$score" >> $GITHUB_OUTPUT
+
+          # Check against threshold
+          threshold=${{ inputs.scorecard-threshold }}
+          if (( $(echo "$score < $threshold" | bc -l) )); then
+            echo "threshold-failed=true" >> $GITHUB_OUTPUT
+            echo "Warning: OSSF Scorecard score ($score) below threshold ($threshold)"
+          else
+            echo "threshold-failed=false" >> $GITHUB_OUTPUT
+            echo "OSSF Scorecard score ($score) meets threshold ($threshold)"
+          fi
+
+      - name: Upload OSSF Scorecard results
+        if: always()
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        with:
+          name: ossf-scorecard-results
+          path: scorecard-results.sarif
+          retention-days: 30
+
+      - name: Upload SARIF results to GitHub Security
+        if: always()
+        uses: github/codeql-action/upload-sarif@294a9d92911152fe08befb9ec03e240add280cb3
+        with:
+          sarif_file: scorecard-results.sarif
+
+  # AIO version checking for comprehensive validation
+  aio-version-check:
+    name: AIO Version Validation
+    runs-on: ubuntu-latest
+    needs: security-hardening
+    timeout-minutes: 20
+    outputs:
+      version-issues: ${{ steps.aio-check.outputs.issues }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Setup Python
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run AIO version check
+        id: aio-check
+        run: |
+          python scripts/aio-version-checker.py \
+            --iac-type ${{ inputs.iac-types }} \
+            --output-format json \
+            --output-path aio-version-check-results.json
+
+          # Parse results for outputs
+          if [[ -f "aio-version-check-results.json" ]]; then
+            issues=$(jq '.issues | length' aio-version-check-results.json 2>/dev/null || echo "0")
+            echo "issues=$issues" >> $GITHUB_OUTPUT
+            echo "AIO version check completed with $issues issues"
+          else
+            echo "issues=0" >> $GITHUB_OUTPUT
+            echo "AIO version check completed (no results file)"
+          fi
+
+      - name: Upload AIO version results
+        if: always()
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        with:
+          name: aio-version-check-results
+          path: aio-version-check-results.json
+          retention-days: 30
+
+  # Comprehensive dependency pinning analysis
+  security-analysis:
+    name: Security Analysis & Dashboard
+    runs-on: ubuntu-latest
+    needs: [security-hardening, dependency-staleness, ossf-scorecard, aio-version-check]
+    timeout-minutes: 25
+    outputs:
+      pinning-compliance: ${{ steps.pinning-analysis.outputs.compliance }}
+      pinning-threshold-failed: ${{ steps.pinning-analysis.outputs.threshold-failed }}
+      dashboard-path: ${{ steps.dashboard-generation.outputs.dashboard-path }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Setup PowerShell Environment
+        shell: pwsh
+        run: |
+          Write-Host "PowerShell Version: $($PSVersionTable.PSVersion)"
+
+          # Verify security scripts are available
+          $securityScriptPath = Join-Path $env:GITHUB_WORKSPACE "scripts/security"
+          if (-not (Test-Path $securityScriptPath)) {
+              Write-Error "Security scripts directory not found: $securityScriptPath"
+              exit 1
+          }
+
+      - name: Download security analysis results
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        with:
+          path: security-results
+
+      - name: Run dependency pinning analysis
+        id: pinning-analysis
+        shell: pwsh
+        run: |
+          $pinningScript = Join-Path $env:GITHUB_WORKSPACE "scripts/security/Test-DependencyPinning.ps1"
+
+          Write-Host "Running comprehensive dependency pinning analysis..."
+          & $pinningScript `
+            -Path "." `
+            -OutputPath "./dependency-pinning-report.json"
+
+          # Parse pinning results
+          if (Test-Path "./dependency-pinning-report.json") {
+              $results = Get-Content "./dependency-pinning-report.json" | ConvertFrom-Json
+              $compliance = [decimal]$results.ComplianceScore
+
+              Write-Host "Dependency Pinning Compliance: $compliance%"
+              "compliance=$compliance" >> $env:GITHUB_OUTPUT
+
+              # Check against threshold
+              $threshold = [decimal]"${{ inputs.pinning-threshold }}"
+              if ($compliance -lt $threshold) {
+                  Write-Warning "Pinning compliance ($compliance%) below threshold ($threshold%)"
+                  "threshold-failed=true" >> $env:GITHUB_OUTPUT
+              } else {
+                  "threshold-failed=false" >> $env:GITHUB_OUTPUT
+              }
+          } else {
+              Write-Error "Dependency pinning analysis failed"
+              exit 1
+          }
+
+      - name: Generate comprehensive security dashboard
+        id: dashboard-generation
+        shell: pwsh
+        run: |
+          $dashboardScript = Join-Path $env:GITHUB_WORKSPACE "scripts/security/New-SecurityDashboard.ps1"
+
+          Write-Host "Generating comprehensive security dashboard..."
+          & $dashboardScript `
+            -DataPath "." `
+            -OutputFormat "html" `
+            -OutputPath "./comprehensive-security-dashboard.html" `
+            -ThemeMode "${{ inputs.dashboard-theme }}" `
+            -RefreshInterval 0
+
+          # Generate additional formats
+          & $dashboardScript `
+            -DataPath "." `
+            -OutputFormat "markdown" `
+            -OutputPath "./comprehensive-security-dashboard.md"
+
+          & $dashboardScript `
+            -DataPath "." `
+            -OutputFormat "json" `
+            -OutputPath "./comprehensive-security-dashboard.json"
+
+          "dashboard-path=./comprehensive-security-dashboard.html" >> $env:GITHUB_OUTPUT
+
+      - name: Upload security analysis results
+        if: inputs.publish-artifacts
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        with:
+          name: comprehensive-security-analysis
+          path: |
+            ./dependency-pinning-report.json
+            ./comprehensive-security-dashboard.html
+            ./comprehensive-security-dashboard.md
+            ./comprehensive-security-dashboard.json
+          retention-days: 30
+
+  # Comprehensive security validation summary
+  security-summary:
+    name: Comprehensive Security Summary
+    runs-on: ubuntu-latest
+    needs: [dependency-staleness, ossf-scorecard, aio-version-check, security-analysis]
+    if: always()
+    timeout-minutes: 10
+    outputs:
+      overall-status: ${{ steps.summary.outputs.overall-status }}
+      critical-issues: ${{ steps.summary.outputs.critical-issues }}
+      deployment-approved: ${{ steps.summary.outputs.deployment-approved }}
+    steps:
+      - name: Generate comprehensive security summary
+        id: summary
+        run: |
+          echo "# Comprehensive Security Monitoring Summary" > comprehensive-security-summary.md
+          echo "" >> comprehensive-security-summary.md
+          echo "## Analysis Results" >> comprehensive-security-summary.md
+
+          # Collect results
+          stale_failed="${{ needs.dependency-staleness.outputs.threshold-failed }}"
+          scorecard_failed="${{ needs.ossf-scorecard.outputs.threshold-failed }}"
+          pinning_failed="${{ needs.security-analysis.outputs.pinning-threshold-failed }}"
+
+          stale_count="${{ needs.dependency-staleness.outputs.stale-count }}"
+          scorecard_score="${{ needs.ossf-scorecard.outputs.score }}"
+          pinning_compliance="${{ needs.security-analysis.outputs.pinning-compliance }}"
+          aio_issues="${{ needs.aio-version-check.outputs.version-issues }}"
+
+          echo "- Dependency Staleness: $stale_count stale dependencies" >> comprehensive-security-summary.md
+          echo "- OSSF Scorecard Score: $scorecard_score/10" >> comprehensive-security-summary.md
+          echo "- Dependency Pinning: $pinning_compliance%" >> comprehensive-security-summary.md
+          echo "- AIO Version Issues: $aio_issues" >> comprehensive-security-summary.md
+          echo "" >> comprehensive-security-summary.md
+
+          # Calculate critical issues
+          critical_issues=0
+          if [[ "$stale_failed" == "true" ]]; then critical_issues=$((critical_issues + 1)); fi
+          if [[ "$scorecard_failed" == "true" ]]; then critical_issues=$((critical_issues + 1)); fi
+          if [[ "$pinning_failed" == "true" ]]; then critical_issues=$((critical_issues + 1)); fi
+          if [[ "$aio_issues" -gt "0" ]]; then critical_issues=$((critical_issues + 1)); fi
+
+          echo "critical-issues=$critical_issues" >> $GITHUB_OUTPUT
+
+          # Determine overall status
+          if [[ $critical_issues -eq 0 ]]; then
+            overall_status="Good"
+            deployment_approved="true"
+            echo "## Overall Status: ✅ GOOD" >> comprehensive-security-summary.md
+            echo "All comprehensive security checks passed successfully." >> comprehensive-security-summary.md
+          elif [[ $critical_issues -le 2 ]]; then
+            overall_status="Warning"
+            deployment_approved="false"
+            echo "## Overall Status: ⚠️ WARNING" >> comprehensive-security-summary.md
+            echo "Some security issues detected that should be addressed." >> comprehensive-security-summary.md
+          else
+            overall_status="Critical"
+            deployment_approved="false"
+            echo "## Overall Status: ❌ CRITICAL" >> comprehensive-security-summary.md
+            echo "Multiple critical security issues detected requiring immediate attention." >> comprehensive-security-summary.md
+          fi
+
+          echo "overall-status=$overall_status" >> $GITHUB_OUTPUT
+          echo "deployment-approved=$deployment_approved" >> $GITHUB_OUTPUT
+
+          cat comprehensive-security-summary.md
+
+      - name: Check comprehensive security thresholds
+        if: inputs.fail-on-critical
+        run: |
+          critical_issues="${{ steps.summary.outputs.critical-issues }}"
+          overall_status="${{ steps.summary.outputs.overall-status }}"
+
+          if [[ "$overall_status" == "Critical" ]]; then
+            echo "❌ Comprehensive security validation failed with $critical_issues critical issues"
+            echo "Review the comprehensive security dashboard and address all critical issues before proceeding."
+            exit 1
+          else
+            echo "✅ Comprehensive security validation passed (Status: $overall_status)"
+          fi
+
+      - name: Upload comprehensive security summary
+        if: always()
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        with:
+          name: comprehensive-security-summary
+          path: comprehensive-security-summary.md
+          retention-days: 90

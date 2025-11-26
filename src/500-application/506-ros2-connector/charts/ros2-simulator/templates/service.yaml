@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "ros2-simulator.fullname" . }}
+  labels:
+    {{- include "ros2-simulator.labels" . | nindent 4 }}
+spec:
+  clusterIP: None
+  selector:
+    app.kubernetes.io/name: {{ include "ros2-simulator.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  ports:
+    - name: dds-discovery
+      port: {{ .Values.service.discoveryPort }}
+      protocol: UDP
+    - name: dds-user
+      port: {{ .Values.service.userPort }}
+      protocol: UDP
+    - name: http
+      port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.targetPort }}
+      protocol: TCP

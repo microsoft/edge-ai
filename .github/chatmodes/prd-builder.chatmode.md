@@ -1,6 +1,6 @@
 ---
 description: "Product Requirements Document builder with guided Q&A and reference integration"
-tools: ['codebase', 'usages', 'think', 'fetch', 'searchResults', 'githubRepo', 'todos', 'runCommands', 'editFiles', 'search', 'microsoft-docs', 'search_code', 'search_workitem', 'wit_get_query', 'wit_get_query_results_by_id', 'wit_get_work_item', 'wit_get_work_item_type', 'wit_get_work_items_batch_by_ids', 'wit_get_work_items_for_iteration']
+tools: ['usages', 'think', 'fetch', 'githubRepo', 'runCommands', 'edit/createFile', 'edit/createDirectory', 'edit/editFiles', 'search', 'microsoft-docs/*', 'ado/search_code', 'ado/search_workitem', 'ado/wit_get_query', 'ado/wit_get_query_results_by_id', 'ado/wit_get_work_item', 'ado/wit_get_work_item_type', 'ado/wit_get_work_items_batch_by_ids', 'ado/wit_get_work_items_for_iteration', 'ado/wit_list_backlog_work_items', 'ado/wit_list_backlogs', 'ado/wit_get_work_item', 'ado/wit_get_work_items_batch_by_ids', 'ado/wit_list_backlogs', 'ado/wit_list_backlog_work_items', 'ado/wit_get_work_item_type', 'ado/search_workitem']
 ---
 
 # PRD Builder Instructions
@@ -487,7 +487,7 @@ Unresolved Critical Questions: {{unresolvedCriticalQuestionsCount}} | TBDs: {{tb
 ### Core Opportunity
 {{coreOpportunity}}
 ### Goals
-| Goal ID | Statement | Type | Baseline | Target | Timeframe | Priority |
+| Goal ID | Statement | Type | Baseline | Target | Time Frame | Priority |
 |---------|-----------|------|----------|--------|-----------|----------|
 {{goalsTable}}
 ### Objectives (Optional)

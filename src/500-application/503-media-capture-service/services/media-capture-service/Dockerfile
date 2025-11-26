@@ -1,12 +1,16 @@
 ARG BUILDPLATFORM=linux/amd64
 
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/cbl-mariner/base/core:2.0 AS build
+# =============================================================================
+# Build Stage
+# =============================================================================
+FROM mcr.microsoft.com/azurelinux/base/core:3.0.20250910@sha256:919cfecd0ffe136adff3bea7030f3e6abc6633a4069a6de44b2070bb86c40c81 AS build
 
 # Ensure robust shell behavior and pipefail
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Install build dependencies and multimedia/computer-vision headers
-RUN tdnf -y update \
+RUN rpm --import /etc/pki/rpm-gpg/MICROSOFT-RPM-GPG-KEY \
+    && tdnf -y update \
     && tdnf -y install \
         ca-certificates curl git tar xz gzip which findutils \
     pkgconfig cmake make gcc gcc-c++ clang clang-devel \
@@ -101,11 +105,13 @@ RUN set -eux; \
     echo "/usr/local/lib64" >> /etc/ld.so.conf.d/local-opencv.conf || true; \
     if command -v ldconfig >/dev/null 2>&1; then ldconfig; fi; \
     rm -rf /tmp/opencv opencv.tar.gz
+
 WORKDIR /app
 
 # Copy dependency files first for better Docker layer caching
-COPY ./Cargo.toml ./Cargo.toml
-COPY ./.cargo ./.cargo
+COPY ./services/media-capture-service/Cargo.toml ./Cargo.toml
+COPY ./services/media-capture-service/Cargo.lock ./Cargo.lock
+COPY ./services/media-capture-service/.cargo ./.cargo
 
 # Create a dummy multi_trigger_binary.rs to build dependencies only
 RUN mkdir -p src && echo "fn main() {}" > src/multi_trigger_binary.rs
@@ -114,12 +120,19 @@ RUN mkdir -p src && echo "fn main() {}" > src/multi_trigger_binary.rs
 RUN cargo build --release && rm -rf src
 
 # Now copy the actual source code
-COPY ./src ./src
+COPY ./services/media-capture-service/src ./src
 
 # Build the final application (only application code recompiles)
 RUN cargo build --release
 
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/cbl-mariner/base/core:2.0 AS runtime
+# =============================================================================
+# Runtime Stage
+# =============================================================================
+FROM mcr.microsoft.com/azurelinux/base/core:3.0.20250910@sha256:919cfecd0ffe136adff3bea7030f3e6abc6633a4069a6de44b2070bb86c40c81
+# Upgrade all packages to latest versions to fix vulnerabilities
+RUN rpm --import /etc/pki/rpm-gpg/MICROSOFT-RPM-GPG-KEY && \
+    tdnf upgrade -y && \
+    tdnf clean all
 
 # Ensure robust shell behavior and pipefail
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -128,6 +141,7 @@ ENV LD_LIBRARY_PATH=/usr/local/lib:/usr/local/lib64
 
 # Install only the required runtime libraries
 RUN set -eux; \
+    rpm --import /etc/pki/rpm-gpg/MICROSOFT-RPM-GPG-KEY; \
     tdnf -y update \
     && tdnf -y install \
         ca-certificates \
@@ -144,7 +158,7 @@ COPY --from=build /usr/local/lib /usr/local/lib
 COPY --from=build /usr/local/lib64 /usr/local/lib64
 COPY --from=build /usr/local/bin/ffmpeg /usr/local/bin/ffmpeg
 COPY --from=build /usr/local/bin/ffprobe /usr/local/bin/ffprobe
-COPY ./run.sh /
+COPY ./services/media-capture-service/run.sh /
 RUN chmod +x /run.sh
 
 CMD ["/run.sh"]

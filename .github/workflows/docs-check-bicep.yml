@@ -1,8 +1,11 @@
+---
+# yamllint disable rule:line-length
 # Bicep Documentation Compliance Check Workflow
-#
 # Purpose:
 # This workflow validates documentation standards across the codebase to ensure
 # all Bicep modules are properly documented and documentation stays in sync with code.
+permissions:
+  contents: read
 #
 # Functionality:
 # - Verifies Bicep module documentation is current using custom documentation generator
@@ -34,10 +37,9 @@
 #
 # This workflow helps maintain accurate and consistent documentation across the codebase,
 # improving usability and reducing onboarding time for new contributors.
----
 name: Bicep Docs Check
 
-on: # yamllint disable-line rule:truthy
+on:  # yamllint disable-line rule:truthy
   workflow_dispatch:  # Allow manual triggering and being called from ci-cd.yml
     inputs:
       break_build:
@@ -63,26 +65,15 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493
         with:
           fetch-depth: 0  # Full git history for comparison
 
-      - name: Setup Python 3.11
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-
-      - name: Install Python Dependencies
+      - name: Setup PowerShell
         run: |
-          # Install dependencies from requirements.txt if it exists
-          if [ -f ./requirements.txt ]; then
-            python -m pip install --upgrade pip
-            pip install -r ./requirements.txt
-          else
-            # Fallback to installing just what's needed
-            pip install requests jinja2
-          fi
-        shell: bash
+          echo "PowerShell Version: $($PSVersionTable.PSVersion)"
+          echo "PowerShell Edition: $($PSVersionTable.PSEdition)"
+        shell: pwsh
 
       - name: Setup Azure CLI with Bicep
         run: |
@@ -123,42 +114,26 @@ jobs:
       - name: Check for language path segments in links
         id: link-lang-check
         run: |
-          # Run the link-lang-check.py script to find en-us URLs
-          echo "Checking for language path segments (en-us) in links..."
-          links_json=$(python3 $(pwd)/scripts/link-lang-check.py)
+          Write-Host "Checking for language path segments (en-us) in links..."
 
-          # Check if we got valid JSON results
-          if echo "$links_json" | jq empty 2>/dev/null; then
-            # Count the number of links found
-            link_count=$(echo "$links_json" | jq '. | length')
+          # Run the PowerShell script and capture JSON output
+          $jsonOutput = & "${{ github.workspace }}/scripts/linting/Link-Lang-Check.ps1"
+          $links = $jsonOutput | ConvertFrom-Json
 
-            if [ "$link_count" -gt 0 ]; then
-              echo "Found $link_count URLs with language path segments (en-us)."
+          if ($links.Count -gt 0) {
+            Write-Host "Found $($links.Count) URLs with language path segments (en-us)."
 
-              # Loop through each link and create a build warning/error
-              echo "$links_json" | jq -c '.[]' | while read -r link; do
-                file=$(echo "$link" | jq -r '.file')
-                line=$(echo "$link" | jq -r '.line_number')
-                url=$(echo "$link" | jq -r '.original_url')
+            foreach ($link in $links) {
+              $issueType = if ("${{ env.BREAK_BUILD }}" -eq "true") { "error" } else { "warning" }
+              $message = "URL contains language path segment (en-us): $($link.original_url)"
+              Write-Host "::$issueType file=$($link.file),line=$($link.line_number)::$message"
+            }
 
-                # Create a warning for each link
-                echo "::warning file=$file,line=$line::URL contains language path segment (en-us): $url"
-
-                if [[ "${{ env.BREAK_BUILD }}" == "true" ]]; then
-                  echo "::error file=$file,line=$line::URL contains language path segment (en-us): $url"
-                  exit_with_error=true
-                fi
-              done
-
-              if [[ "$exit_with_error" == "true" ]]; then
-                exit 1
-              fi
-            else
-              echo "No URLs with language path segments (en-us) found."
-            fi
-          else
-            echo "Error parsing output from link-lang-check.py script"
-            echo "$links_json"
-            echo "::warning::Error parsing output from link-lang-check.py script"
-          fi
-        shell: bash
+            if ("${{ env.BREAK_BUILD }}" -eq "true") {
+              Write-Host "::error::Build failed due to language path segments in URLs"
+              exit 1
+            }
+          } else {
+            Write-Host "No URLs with language path segments (en-us) found."
+          }
+        shell: pwsh

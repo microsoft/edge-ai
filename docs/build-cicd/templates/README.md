@@ -2,7 +2,7 @@
 title: Build-CICD Documentation Templates
 description: Comprehensive templates and guidance for creating consistent build and CI/CD documentation in the Edge AI Accelerator project.
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-09-22
 ms.topic: reference
 keywords:
   - documentation templates
@@ -28,33 +28,16 @@ This directory contains templates and guidance for creating consistent, high-qua
 - **Purpose**: Standardize documentation for build scripts, processes, and configurations
 - **Usage**: Copy template and customize for specific build documentation needs
 
-### Pipeline Documentation Templates
-
-Located in `pipeline-docs/` directory:
-
-- Templates for Azure DevOps pipeline documentation
-- Standardized structure for pipeline explanations and configurations
-- Integration guidance for pipeline-specific documentation
-
-### Workflow Documentation Templates
-
-Located in `workflow-docs/` directory:
-
-- Templates for GitHub Actions workflow documentation
-- Consistent structure for workflow explanations and usage
-- Best practices for workflow documentation
-
 ### Script Documentation Templates
 
-- **`script-templates.md`** - Templates for build script documentation
-- **Purpose**: Standardize documentation for automation scripts
-- **Usage**: Follow templates for consistent script documentation
+*Note: Script documentation templates are planned for future implementation. See Azure DevOps work item for tracking.*
 
-### Existing Template Files
+### Available Template Files
 
 - **`azure-pipeline-templates.md`** - Azure DevOps pipeline template guidance
 - **`github-workflow-templates.md`** - GitHub Actions workflow template guidance
-- **`script-templates.md`** - Build script template guidance
+- **`build-docs.md.template`** - Template for general build process documentation
+- **`using-template-with-copilot.md`** - Guidance for using templates with GitHub Copilot
 
 ## Usage Guidelines
 
@@ -63,14 +46,14 @@ Located in `workflow-docs/` directory:
 1. **Choose the Right Template**: Select the template that matches your documentation type
 2. **Copy the Template**: Create a new file based on the template
 3. **Customize Content**: Replace template placeholders with your specific content
-4. **Follow Standards**: Ensure all documentation includes required MkDocs metadata
+4. **Follow Standards**: Ensure all documentation includes required Docsify frontmatter
 5. **Add Copilot Footer**: Include the standardized Copilot footer
 
 ### Template Structure Standards
 
 All templates follow these standards:
 
-- **MkDocs Metadata**: YAML frontmatter with title, description, tags, and category
+- **Docsify Frontmatter**: YAML frontmatter with title, description, tags, and category
 - **Consistent Headers**: Standardized section headers for easy navigation
 - **Example Content**: Placeholder content showing expected information
 - **Copilot Footer**: Standardized footer for all build-cicd documentation
@@ -85,11 +68,7 @@ These templates integrate with:
 
 ## Examples
 
-The `examples/` directory contains:
-
-- **Real-world Usage Examples**: Actual documentation created using these templates
-- **Integration Samples**: Examples of how templates work together
-- **Best Practice Demonstrations**: Showcase of effective template usage
+*Note: Examples directory and demonstration files are planned for future implementation. See Azure DevOps work item for tracking.*
 
 ## Template Maintenance
 
@@ -112,7 +91,7 @@ The `examples/` directory contains:
 
 All templates must:
 
-- ✅ Include proper MkDocs metadata headers
+- ✅ Include proper Docsify metadata headers
 - ✅ Follow markdown linting requirements
 - ✅ Include standardized Copilot footer
 - ✅ Provide clear usage instructions
@@ -122,9 +101,9 @@ All templates must:
 ## Getting Help
 
 - **Template Questions**: Review existing template files for patterns
-- **Integration Help**: Check examples directory for real-world usage
 - **Standards Questions**: Reference project documentation standards
 - **Best Practices**: Follow patterns established in existing build-cicd documentation
+- **Missing Templates**: See Azure DevOps work item tracking implementation of additional templates
 
 ---
 

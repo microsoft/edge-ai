@@ -11,14 +11,14 @@ if you are not using Azure CLI provided by the ubuntu-k3s module.
 |------|---------|
 | terraform | >= 1.9.8, < 2.0 |
 | azapi | >= 2.3.0 |
-| azurerm | >= 4.8.0 |
+| azurerm | >= 4.51.0 |
 | helm | >= 2.17.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| azurerm | >= 4.8.0 |
+| azurerm | >= 4.51.0 |
 | helm | >= 2.17.0 |
 | http | n/a |
 
@@ -39,6 +39,6 @@ if you are not using Azure CLI provided by the ubuntu-k3s module.
 | http\_proxy | HTTP proxy URL | `string` | n/a | yes |
 | location | Azure region where all resources will be deployed | `string` | n/a | yes |
 | private\_key\_pem | Private key for onboarding | `string` | n/a | yes |
-| resource\_group | n/a | ```object({ name = string id = optional(string) })``` | n/a | yes |
+| resource\_group | Resource group object containing name and id where resources will be deployed | ```object({ name = string id = optional(string) })``` | n/a | yes |
 <!-- markdown-table-prettify-ignore-end -->
 <!-- END_TF_DOCS -->

@@ -6,7 +6,9 @@
 #
 # Checks performed:
 # 1. Verifies Terraform module documentation is current using terraform-docs
-# 2. Ensures links in documentation don't contain language-specific paths (e.g., 'en-us')
+#
+# Note: Language path segment checking (en-us) is now performed by docs-validation-template.yml
+# for all documentation across the repository.
 #
 # Usage:
 # Include this template in your Azure DevOps pipeline to automate documentation compliance checks.
@@ -53,12 +55,26 @@ jobs:
       - checkout: self
         clean: true
 
-      # Add Python setup task
-      - task: UsePythonVersion@0
+      # For PR builds, checkout the source branch HEAD instead of merge ref
+      - task: Bash@3
+        displayName: 'Checkout PR source branch HEAD'
+        condition: eq(variables['Build.Reason'], 'PullRequest')
         inputs:
-          versionSpec: '3.11'
-          addToPath: true
-        displayName: "Setup Python 3.11"
+          targetType: 'inline'
+          script: |
+            BRANCH_NAME=$(echo "$(System.PullRequest.SourceBranch)" | sed 's|^refs/heads/||')
+            echo "Switching to PR source branch HEAD: $BRANCH_NAME"
+            git checkout "$BRANCH_NAME"
+            git log -1 --oneline
+
+      # Set up PowerShell
+      - task: PowerShell@2
+        displayName: "Verify PowerShell Installation"
+        inputs:
+          targetType: 'inline'
+          script: |
+            Write-Host "PowerShell Version: $($PSVersionTable.PSVersion)"
+            Write-Host "PowerShell Edition: $($PSVersionTable.PSEdition)"
 
       # Install terraform-docs using the shared script with new parameter format
       - bash: |
@@ -90,48 +106,5 @@ jobs:
           fi
 
         displayName: Check for changes in terraform docs
-        workingDirectory: $(System.DefaultWorkingDirectory)
-        condition: and( not(failed()), not(canceled()) )
-
-      # Check for en-us links in docs
-      - bash: |
-
-          # Run the link-lang-check.py script to find en-us URLs
-          echo "Checking for language path segments (en-us) in links..."
-          links_json=$(python3 $(System.DefaultWorkingDirectory)/scripts/link-lang-check.py)
-
-          # Check if we got valid JSON results
-          if echo "$links_json" | jq empty 2>/dev/null; then
-            # Count the number of links found
-            link_count=$(echo "$links_json" | jq '. | length')
-
-            if [ "$link_count" -gt 0 ]; then
-              echo "Found $link_count URLs with language path segments (en-us)."
-
-              # Loop through each link and create a build warning
-              echo "$links_json" | jq -c '.[]' | while read -r link; do
-                file=$(echo "$link" | jq -r '.file')
-                line=$(echo "$link" | jq -r '.line_number')
-                url=$(echo "$link" | jq -r '.original_url')
-
-                # Create a warning for each link
-                if [[ "${{ parameters.breakBuild }}" == "true" ]]; then
-                  issue_type="error"
-                else
-                  issue_type="warning"
-                fi
-
-                echo "##vso[task.logissue type=$issue_type;sourcepath=$file;linenumber=$line;]URL contains language path segment (en-us): $url"
-              done
-
-            else
-              echo "No URLs with language path segments (en-us) found."
-            fi
-          else
-            echo "Error parsing output from link-lang-check.py script"
-            echo "$links_json"
-          fi
-
-        displayName: Check for language path segments in links
         workingDirectory: $(System.DefaultWorkingDirectory)
         condition: and( not(failed()), not(canceled()) )

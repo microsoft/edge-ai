@@ -19,8 +19,16 @@ resource "azurerm_subnet_network_security_group_association" "snet_nsg_acr" {
 resource "azurerm_subnet" "snet_acr" {
   count = var.should_create_acr_private_endpoint ? 1 : 0
 
-  resource_group_name  = var.resource_group.name
-  virtual_network_name = var.virtual_network.name
-  name                 = "subnet-${local.label_prefix_acr}"
-  address_prefixes     = var.subnet_address_prefixes_acr
+  resource_group_name             = var.resource_group.name
+  virtual_network_name            = var.virtual_network.name
+  name                            = "subnet-${local.label_prefix_acr}"
+  address_prefixes                = var.subnet_address_prefixes_acr
+  default_outbound_access_enabled = var.default_outbound_access_enabled
+}
+
+resource "azurerm_subnet_nat_gateway_association" "snet_acr" {
+  count = alltrue([var.should_create_acr_private_endpoint, var.should_enable_nat_gateway]) ? 1 : 0
+
+  nat_gateway_id = var.nat_gateway_id
+  subnet_id      = azurerm_subnet.snet_acr[0].id
 }

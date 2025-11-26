@@ -10,13 +10,14 @@ Deploys a complete end-to-end environment for Azure IoT Operations on a multi-no
 
 |Name|Description|Type|Default|Required|
 | :--- | :--- | :--- | :--- | :--- |
-|common|The common component configuration.|`[_2.Common](#user-defined-types)`|n/a|yes|
+|common|The common component configuration.|`[_1.Common](#user-defined-types)`|n/a|yes|
 |resourceGroupName|The name for the resource group. If not provided, a default name will be generated.|`string`|[format('rg-{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]|no|
 |useExistingResourceGroup|Whether to use an existing resource group instead of creating a new one.|`bool`|`false`|no|
 |telemetry_opt_out|Whether to opt-out of telemetry. Set to true to disable telemetry.|`bool`|`false`|no|
 |adminPassword|Password used for the host VM.|`securestring`|n/a|yes|
 |hostMachineCount|The number of host VMs to create for the cluster. (The first host VM will be the cluster server)|`int`|3|no|
 |customLocationsOid|The object id of the Custom Locations Entra ID application for your tenant.<br>Can be retrieved using:<br><br>  <pre><code class="language-sh">  az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv<br>  </code></pre><br>|`string`|n/a|yes|
+|serverToken|The token that will be given to the server for the cluster or used by agent nodes. (Required for multi-node clusters where hostMachineCount > 1)|`securestring`|n/a|no|
 |shouldCreateAcrPrivateEndpoint|Whether to create a private endpoint for the Azure Container Registry.|`bool`|`false`|no|
 |shouldCreateAks|Whether to create an Azure Kubernetes Service cluster.|`bool`|`false`|no|
 |shouldCreateAnonymousBrokerListener|Whether to enable an insecure anonymous AIO MQ Broker Listener. (Should only be used for dev or test environments)|`bool`|`false`|no|
@@ -71,16 +72,9 @@ Creates the required resources needed for an edge IaC deployment.
 | :--- | :--- | :--- | :--- | :--- |
 |common|The common component configuration.|`[_1.Common](#user-defined-types)`|n/a|yes|
 |resourceGroupName|The name for the resource group. If not provided, a default name will be generated.|`string`|[format('rg-{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]|no|
-|useExistingResourceGroup|Whether to use an existing resource group instead of creating a new one.|`bool`|False|no|
-|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|False|no|
+|useExistingResourceGroup|Whether to use an existing resource group instead of creating a new one.|`bool`|`false`|no|
+|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|`false`|no|
 |tags|Additional tags to add to the resources.|`object`|{}|no|
-
-#### Resources for cloudResourceGroup
-
-|Name|Type|API Version|
-| :--- | :--- | :--- |
-|newResourceGroup|`Microsoft.Resources/resourceGroups`|2022-09-01|
-|existingResourceGroup|`Microsoft.Resources/resourceGroups`|2022-09-01|
 
 #### Outputs for cloudResourceGroup
 
@@ -99,13 +93,13 @@ Provisions cloud resources required for Azure IoT Operations including Schema Re
 |Name|Description|Type|Default|Required|
 | :--- | :--- | :--- | :--- | :--- |
 |common|The common component configuration.|`[_1.Common](#user-defined-types)`|n/a|yes|
-|shouldCreateArcOnboardingUami|Whether to create a User Assigned Managed Identity for onboarding a cluster to Azure Arc.|`bool`|True|no|
-|shouldCreateKeyVault|Whether or not to create a new Key Vault for the Secret Sync Extension.|`bool`|True|no|
+|shouldCreateArcOnboardingUami|Whether to create a User Assigned Managed Identity for onboarding a cluster to Azure Arc.|`bool`|`true`|no|
+|shouldCreateKeyVault|Whether or not to create a new Key Vault for the Secret Sync Extension.|`bool`|`true`|no|
 |keyVaultName|The name of the Key Vault.|`string`|[format('kv-{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]|no|
 |keyVaultResourceGroupName|The name for the Resource Group for the Key Vault.|`string`|[resourceGroup().name]|no|
-|shouldAssignAdminUserRole|Whether or not to create a role assignment for an admin user.|`bool`|True|no|
+|shouldAssignAdminUserRole|Whether or not to create a role assignment for an admin user.|`bool`|`true`|no|
 |adminUserObjectId|The Object ID for an admin user that will be granted the "Key Vault Secrets Officer" role.|`string`|[deployer().objectId]|no|
-|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|False|no|
+|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|`false`|no|
 
 #### Resources for cloudSecurityIdentity
 
@@ -148,7 +142,7 @@ Deploys Azure observability resources including Azure Monitor Workspace, Log Ana
 |grafanaAdminPrincipalId|The principalId (objectId) of the user or service principal to assign the Grafana Admin role.|`string`|n/a|no|
 |logsDataCollectionRuleNamespaces|List of cluster namespaces to be exposed in the log analytics workspace|`array`|['kube-system', 'gatekeeper-system', 'azure-arc', 'azure-iot-operations']|no|
 |logsDataCollectionRuleStreams|List of streams to be enabled in the log analytics workspace|`array`|['Microsoft-ContainerLog', 'Microsoft-ContainerLogV2', 'Microsoft-KubeEvents', 'Microsoft-KubePodInventory', 'Microsoft-KubeNodeInventory', 'Microsoft-KubePVInventory', 'Microsoft-KubeServices', 'Microsoft-KubeMonAgentEvents', 'Microsoft-InsightsMetrics', 'Microsoft-ContainerInventory', 'Microsoft-ContainerNodeInventory', 'Microsoft-Perf']|no|
-|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|False|no|
+|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|`false`|no|
 
 #### Resources for cloudObservability
 
@@ -185,16 +179,20 @@ Creates storage resources including Azure Storage Account and Schema Registry fo
 |Name|Description|Type|Default|Required|
 | :--- | :--- | :--- | :--- | :--- |
 |common|The common component configuration.|`[_2.Common](#user-defined-types)`|n/a|yes|
-|shouldCreateStorageAccount|Whether to create the Storage Account.|`bool`|True|no|
+|shouldCreateStorageAccount|Whether to create the Storage Account.|`bool`|`true`|no|
 |storageAccountResourceGroupName|The name for the Resource Group for the Storage Account.|`string`|[if(parameters('shouldCreateStorageAccount'), resourceGroup().name, fail('storageAccountResourceGroupName required when shouldCreateStorageAccount is false'))]|no|
 |storageAccountName|The name for the Storage Account used by the Schema Registry.|`string`|[if(parameters('shouldCreateStorageAccount'), format('st{0}', uniqueString(resourceGroup().id)), fail('storageAccountName required when shouldCreateStorageAccount is false'))]|no|
 |storageAccountSettings|The settings for the new Storage Account.|`[_1.StorageAccountSettings](#user-defined-types)`|[variables('_1.storageAccountSettingsDefaults')]|no|
-|shouldCreateSchemaRegistry|Whether to create the ADR Schema Registry.|`bool`|True|no|
-|shouldCreateSchemaContainer|Whether to create the Blob Container for schemas.|`bool`|True|no|
+|shouldCreateSchemaRegistry|Whether to create the ADR Schema Registry.|`bool`|`true`|no|
+|shouldCreateSchemaContainer|Whether to create the Blob Container for schemas.|`bool`|`true`|no|
 |schemaContainerName|The name for the Blob Container for schemas.|`string`|schemas|no|
 |schemaRegistryName|The name for the ADR Schema Registry.|`string`|[format('sr-{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]|no|
 |schemaRegistryNamespace|The ADLS Gen2 namespace for the ADR Schema Registry.|`string`|[format('srns-{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]|no|
-|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|False|no|
+|shouldCreateAdrNamespace|Whether to create the ADR Namespace.|`bool`|`true`|no|
+|adrNamespaceName|The name for the ADR Namespace.|`string`|[format('adrns-{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]|no|
+|adrNamespaceMessagingEndpoints|Dictionary of messaging endpoints for the ADR namespace.|`[_1.AdrNamespaceMessagingEndpoints](#user-defined-types)`|n/a|no|
+|adrNamespaceEnableIdentity|Whether to enable system-assigned managed identity for the ADR namespace.|`bool`|`true`|no|
+|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|`false`|no|
 
 #### Resources for cloudData
 
@@ -203,6 +201,7 @@ Creates storage resources including Azure Storage Account and Schema Registry fo
 |storageAccount|`Microsoft.Resources/deployments`|2022-09-01|
 |schemaRegistry|`Microsoft.Resources/deployments`|2022-09-01|
 |schemaRegistryRoleAssignment|`Microsoft.Resources/deployments`|2022-09-01|
+|adrNamespace|`Microsoft.Resources/deployments`|2022-09-01|
 
 #### Outputs for cloudData
 
@@ -213,6 +212,9 @@ Creates storage resources including Azure Storage Account and Schema Registry fo
 |storageAccountName|`string`|The Storage Account Name.|
 |storageAccountId|`string`|The Storage Account ID.|
 |schemaContainerName|`string`|The Schema Container Name.|
+|adrNamespaceName|`string`|The ADR Namespace Name.|
+|adrNamespaceId|`string`|The ADR Namespace ID.|
+|adrNamespace|`object`|The complete ADR namespace resource information.|
 
 ### cloudMessaging
 
@@ -225,11 +227,11 @@ Deploys Azure cloud messaging resources including Event Hubs, Service Bus, and E
 |common|The common component configuration.|`[_2.Common](#user-defined-types)`|n/a|yes|
 |tags|Additional tags to add to the resources.|`object`|{}|no|
 |aioIdentityName|The User-Assigned Managed Identity for Azure IoT Operations.|`string`|n/a|yes|
-|shouldCreateEventHub|Whether to create Event Hubs resources.|`bool`|True|no|
+|shouldCreateEventHub|Whether to create Event Hubs resources.|`bool`|`true`|no|
 |eventHubConfig|The configuration for the Event Hubs Namespace.|`[_1.EventHubConfig](#user-defined-types)`|n/a|no|
-|shouldCreateEventGrid|Whether to create Event Grid resources.|`bool`|True|no|
+|shouldCreateEventGrid|Whether to create Event Grid resources.|`bool`|`true`|no|
 |eventGridConfig|The configuration for the Event Grid Domain.|`[_1.EventGridConfig](#user-defined-types)`|n/a|no|
-|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|False|no|
+|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|`false`|no|
 
 #### Resources for cloudMessaging
 
@@ -260,13 +262,12 @@ Creates virtual network, subnet, and network security group resources for Azure 
 | :--- | :--- | :--- | :--- | :--- |
 |common|The common component configuration.|`[_2.Common](#user-defined-types)`|n/a|yes|
 |networkingConfig|Networking configuration settings.|`[_1.NetworkingConfig](#user-defined-types)`|[variables('_1.networkingConfigDefaults')]|no|
-|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|False|no|
+|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|`false`|no|
 
 #### Resources for cloudNetworking
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|networkSecurityGroup|`Microsoft.Network/networkSecurityGroups`|2024-05-01|
 |virtualNetwork|`Microsoft.Network/virtualNetworks`|2024-05-01|
 
 #### Outputs for cloudNetworking
@@ -294,7 +295,7 @@ Provisions virtual machines and networking infrastructure for hosting Azure IoT 
 |vmUsername|Username used for the host VM that will be given kube-config settings on setup. (Otherwise, resource_prefix if it exists as a user)|`string`|n/a|no|
 |vmCount|The number of host VMs to create if a multi-node cluster is needed.|`int`|1|no|
 |vmSkuSize|Size of the VM.|`string`|Standard_D8s_v3|no|
-|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|False|no|
+|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|`false`|no|
 |subnetId|The subnet ID to connect the VMs to.|`string`|n/a|yes|
 
 #### Resources for cloudVmHost
@@ -325,9 +326,9 @@ Deploys Azure Container Registry (ACR) resources.
 |common|The common component configuration.|`[_2.Common](#user-defined-types)`|n/a|yes|
 |virtualNetworkName|Virtual network name for subnet creation.|`string`|n/a|yes|
 |networkSecurityGroupName|Network security group name to apply to the subnets.|`string`|n/a|yes|
-|shouldCreateAcrPrivateEndpoint|Whether to create a private endpoint for the Azure Container Registry.|`bool`|False|no|
+|shouldCreateAcrPrivateEndpoint|Whether to create a private endpoint for the Azure Container Registry.|`bool`|`false`|no|
 |containerRegistryConfig|The settings for the Azure Container Registry.|`[_1.ContainerRegistry](#user-defined-types)`|[variables('_1.containerRegistryDefaults')]|no|
-|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|False|no|
+|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|`false`|no|
 
 #### Resources for cloudAcr
 
@@ -353,10 +354,10 @@ Deploys optionally Azure Kubernetes Service (AKS) resources.
 |common|The common component configuration.|`[_2.Common](#user-defined-types)`|n/a|yes|
 |virtualNetworkName|Virtual network name for subnet creation.|`string`|n/a|yes|
 |networkSecurityGroupName|Network security group name to apply to the subnets.|`string`|n/a|yes|
-|shouldCreateAks|Whether to create an Azure Kubernetes Service cluster.|`bool`|False|no|
+|shouldCreateAks|Whether to create an Azure Kubernetes Service cluster.|`bool`|`false`|no|
 |kubernetesClusterConfig|The settings for the Azure Kubernetes Service cluster.|`[_1.KubernetesCluster](#user-defined-types)`|[variables('_1.kubernetesClusterDefaults')]|no|
 |containerRegistryName|Name of the Azure Container Registry to create.|`string`|n/a|yes|
-|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|False|no|
+|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|`false`|no|
 
 #### Resources for cloudKubernetes
 
@@ -387,7 +388,7 @@ The scripts handle primary and secondary node(s) setup, cluster administration, 
 |arcOnboardingSpPrincipalId|Service Principal Object Id used when assigning roles for Arc onboarding.|`string`|n/a|no|
 |arcOnboardingIdentityName|The resource name for the identity used for Arc onboarding.|`string`|n/a|no|
 |customLocationsOid|The object id of the Custom Locations Entra ID application for your tenant.<br>Can be retrieved using:<br><br>  <pre><code class="language-sh">  az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv<br>  </code></pre><br>|`string`|n/a|yes|
-|shouldAddCurrentUserClusterAdmin|Whether to add the current user as a cluster admin.|`bool`|True|no|
+|shouldAddCurrentUserClusterAdmin|Whether to add the current user as a cluster admin.|`bool`|`true`|no|
 |shouldEnableArcAutoUpgrade|Whether to enable auto-upgrade for Azure Arc agents.|`bool`|[not(equals(parameters('common').environment, 'prod'))]|no|
 |clusterAdminOid|The Object ID that will be given cluster-admin permissions.|`string`|n/a|no|
 |clusterAdminUpn|The User Principal Name that will be given cluster-admin permissions.|`string`|n/a|no|
@@ -396,23 +397,22 @@ The scripts handle primary and secondary node(s) setup, cluster administration, 
 |clusterServerHostMachineUsername|Username used for the host machines that will be given kube-config settings on setup. (Otherwise, resource_prefix if it exists as a user)|`string`|[parameters('common').resourcePrefix]|no|
 |clusterServerIp|The IP address for the server for the cluster. (Needed for mult-node cluster)|`string`|n/a|no|
 |serverToken|The token that will be given to the server for the cluster or used by agent nodes.|`securestring`|n/a|no|
-|shouldAssignRoles|Whether to assign roles for Arc Onboarding.|`bool`|True|no|
-|shouldDeployScriptToVm|Whether to deploy the scripts to the VM.|`bool`|True|no|
-|shouldSkipInstallingAzCli|Should skip downloading and installing Azure CLI on the server.|`bool`|False|no|
-|shouldSkipAzCliLogin|Should skip login process with Azure CLI on the server.|`bool`|False|no|
+|shouldAssignRoles|Whether to assign roles for Arc Onboarding.|`bool`|`true`|no|
+|shouldDeployScriptToVm|Whether to deploy the scripts to the VM.|`bool`|`true`|no|
+|shouldSkipInstallingAzCli|Should skip downloading and installing Azure CLI on the server.|`bool`|`false`|no|
+|shouldSkipAzCliLogin|Should skip login process with Azure CLI on the server.|`bool`|`false`|no|
 |deployUserTokenSecretName|The name for the deploy user token secret in Key Vault.|`string`|deploy-user-token|no|
 |deployKeyVaultName|The name of the Key Vault that will have scripts and secrets for deployment.|`string`|n/a|yes|
 |deployKeyVaultResourceGroupName|The resource group name where the Key Vault is located. Defaults to the current resource group.|`string`|[resourceGroup().name]|no|
 |k3sTokenSecretName|The name for the K3s token secret in Key Vault.|`string`|k3s-server-token|no|
 |nodeScriptSecretName|The name for the node script secret in Key Vault.|`string`|cluster-node-ubuntu-k3s|no|
 |serverScriptSecretName|The name for the server script secret in Key Vault.|`string`|cluster-server-ubuntu-k3s|no|
-|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|False|no|
+|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|`false`|no|
 
 #### Resources for edgeCncfCluster
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|arcOnboardingIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2024-11-30|
 |ubuntuK3s|`Microsoft.Resources/deployments`|2022-09-01|
 |roleAssignment|`Microsoft.Resources/deployments`|2022-09-01|
 |keyVaultRoleAssignments|`Microsoft.Resources/deployments`|2022-09-01|
@@ -443,7 +443,7 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 |containerStorageConfig|The settings for the Azure Container Store for Azure Arc Extension.|`[_1.ContainerStorageExtension](#user-defined-types)`|[variables('_1.containerStorageExtensionDefaults')]|no|
 |aioPlatformConfig|The settings for the Azure IoT Operations Platform Extension.|`[_1.AioPlatformExtension](#user-defined-types)`|[variables('_1.aioPlatformExtensionDefaults')]|no|
 |secretStoreConfig|The settings for the Secret Store Extension.|`[_1.SecretStoreExtension](#user-defined-types)`|[variables('_1.secretStoreExtensionDefaults')]|no|
-|shouldInitAio|Whether to deploy the Azure IoT Operations initial connected cluster resources, Secret Sync, ACSA, OSM, AIO Platform.|`bool`|True|no|
+|shouldInitAio|Whether to deploy the Azure IoT Operations initial connected cluster resources, Secret Sync, ACSA, OSM, AIO Platform.|`bool`|`true`|no|
 |aioIdentityName|The name of the User Assigned Managed Identity for Azure IoT Operations.|`string`|n/a|yes|
 |aioExtensionConfig|The settings for the Azure IoT Operations Extension.|`[_1.AioExtension](#user-defined-types)`|[variables('_1.aioExtensionDefaults')]|no|
 |aioFeatures|AIO Instance features.|`[_1.AioFeatures](#user-defined-types)`|n/a|no|
@@ -452,34 +452,33 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 |aioMqBrokerConfig|The settings for the Azure IoT Operations MQ Broker.|`[_1.AioMqBroker](#user-defined-types)`|[variables('_1.aioMqBrokerDefaults')]|no|
 |brokerListenerAnonymousConfig|Configuration for the insecure anonymous AIO MQ Broker Listener.|`[_1.AioMqBrokerAnonymous](#user-defined-types)`|[variables('_1.aioMqBrokerAnonymousDefaults')]|no|
 |schemaRegistryName|The resource name for the ADR Schema Registry for Azure IoT Operations.|`string`|n/a|yes|
-|shouldDeployAio|Whether to deploy an Azure IoT Operations Instance and all of its required components into the connected cluster.|`bool`|True|no|
-|shouldDeployResourceSyncRules|Whether or not to deploy the Custom Locations Resource Sync Rules for the Azure IoT Operations resources.|`bool`|True|no|
-|shouldCreateAnonymousBrokerListener|Whether to enable an insecure anonymous AIO MQ Broker Listener. (Should only be used for dev or test environments)|`bool`|False|no|
-|shouldEnableOtelCollector|Whether or not to enable the Open Telemetry Collector for Azure IoT Operations.|`bool`|True|no|
-|shouldEnableOpcUaSimulator|Whether or not to enable the OPC UA Simulator for Azure IoT Operations.|`bool`|True|no|
+|adrNamespaceName|The resource name for the ADR Namespace for Azure IoT Operations.|`string`|n/a|no|
+|shouldDeployAio|Whether to deploy an Azure IoT Operations Instance and all of its required components into the connected cluster.|`bool`|`true`|no|
+|shouldDeployResourceSyncRules|Whether or not to deploy the Custom Locations Resource Sync Rules for the Azure IoT Operations resources.|`bool`|`true`|no|
+|shouldCreateAnonymousBrokerListener|Whether to enable an insecure anonymous AIO MQ Broker Listener. (Should only be used for dev or test environments)|`bool`|`false`|no|
+|shouldEnableOtelCollector|Whether or not to enable the Open Telemetry Collector for Azure IoT Operations.|`bool`|`true`|no|
+|shouldEnableOpcUaSimulator|Whether or not to enable the OPC UA Simulator for Azure IoT Operations.|`bool`|`true`|no|
 |shouldEnableOpcUaSimulatorAsset|Whether or not to create the OPC UA Simulator ADR Asset for Azure IoT Operations.|`bool`|[parameters('shouldEnableOpcUaSimulator')]|no|
 |customLocationName|The name for the Custom Locations resource.|`string`|[format('{0}-cl', parameters('arcConnectedClusterName'))]|no|
 |trustIssuerSettings|The trust issuer settings for Customer Managed Azure IoT Operations Settings.|`[_1.TrustIssuerConfig](#user-defined-types)`|{'trustSource': 'SelfSigned'}|no|
 |sseKeyVaultName|The name of the Key Vault for Secret Sync. (Required when providing sseIdentityName)|`string`|n/a|yes|
 |sseIdentityName|The name of the User Assigned Managed Identity for Secret Sync.|`string`|n/a|yes|
 |sseKeyVaultResourceGroupName|The name of the Resource Group for the Key Vault for Secret Sync. (Required when providing sseIdentityName)|`string`|[resourceGroup().name]|no|
-|shouldAssignSseKeyVaultRoles|Whether to assign roles for Key Vault to the provided Secret Sync Identity.|`bool`|True|no|
+|shouldAssignSseKeyVaultRoles|Whether to assign roles for Key Vault to the provided Secret Sync Identity.|`bool`|`true`|no|
 |shouldAssignDeployIdentityRoles|Whether to assign roles to the deploy identity.|`bool`|[not(empty(parameters('deployIdentityName')))]|no|
 |deployIdentityName|The resource name for a managed identity that will be given deployment admin permissions.|`string`|n/a|no|
-|shouldDeployAioDeploymentScripts|Whether to deploy DeploymentScripts for Azure IoT Operations.|`bool`|False|no|
+|shouldDeployAioDeploymentScripts|Whether to deploy DeploymentScripts for Azure IoT Operations.|`bool`|`false`|no|
 |deployKeyVaultName|The name of the Key Vault that will have scripts and secrets for deployment.|`string`|[parameters('sseKeyVaultName')]|no|
 |deployKeyVaultResourceGroupName|The resource group name where the Key Vault is located. Defaults to the current resource group.|`string`|[parameters('sseKeyVaultResourceGroupName')]|no|
 |deployUserTokenSecretName|The name for the deploy user token secret in Key Vault.|`string`|deploy-user-token|no|
 |deploymentScriptsSecretNamePrefix|The prefix used with constructing the secret name that will have the deployment script.|`string`|[format('{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]|no|
-|shouldAddDeployScriptsToKeyVault|Whether to add the deploy scripts for DeploymentScripts to Key Vault as secrets. (Required for DeploymentScripts)|`bool`|False|no|
-|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|False|no|
+|shouldAddDeployScriptsToKeyVault|Whether to add the deploy scripts for DeploymentScripts to Key Vault as secrets. (Required for DeploymentScripts)|`bool`|`false`|no|
+|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|`false`|no|
 
 #### Resources for edgeIotOps
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|deployIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2023-01-31|
-|sseIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2023-01-31|
 |deployArcK8sRoleAssignments|`Microsoft.Resources/deployments`|2022-09-01|
 |deployKeyVaultRoleAssignments|`Microsoft.Resources/deployments`|2022-09-01|
 |sseKeyVaultRoleAssignments|`Microsoft.Resources/deployments`|2022-09-01|
@@ -487,7 +486,6 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 |postInitScriptsSecrets|`Microsoft.Resources/deployments`|2022-09-01|
 |postInitScripts|`Microsoft.Resources/deployments`|2022-09-01|
 |iotOpsInstance|`Microsoft.Resources/deployments`|2022-09-01|
-|iotOpsInstancePost|`Microsoft.Resources/deployments`|2022-09-01|
 |postInstanceScriptsSecrets|`Microsoft.Resources/deployments`|2022-09-01|
 |postInstanceScripts|`Microsoft.Resources/deployments`|2022-09-01|
 |opcUaSimulator|`Microsoft.Resources/deployments`|2022-09-01|
@@ -527,7 +525,7 @@ Deploys observability resources including cluster extensions for metrics and log
 |azureManagedGrafanaName|The name of the Azure Managed Grafana instance.|`string`|n/a|yes|
 |metricsDataCollectionRuleName|The name of the metrics data collection rule.|`string`|n/a|yes|
 |logsDataCollectionRuleName|The name of the logs data collection rule.|`string`|n/a|yes|
-|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|False|no|
+|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|`false`|no|
 
 #### Resources for edgeObservability
 
@@ -557,218 +555,21 @@ Deploys Dataflow endpoints and dataflows for Azure IoT Operations messaging inte
 |aioInstanceName|The name of the Azure IoT Operations Instance.|`string`|n/a|yes|
 |aioDataflowProfileName|The name of the Azure IoT Operations Dataflow Profile.|`string`|default|no|
 |assetName|The name of the Azure IoT Operations Device Registry Asset resource to send its data from edge to cloud.|`string`|oven|no|
+|adrNamespaceName|The name of the Azure IoT Operations Device Registry namespace to use when referencing the asset.|`string`|n/a|no|
 |eventHub|Values for the existing Event Hub namespace and Event Hub. If not provided, Event Hub dataflow will not be created.|`[_1.EventHub](#user-defined-types)`|n/a|no|
 |eventGrid|Values for the existing Event Grid. If not provided, Event Grid dataflow will not be created.|`[_1.EventGrid](#user-defined-types)`|n/a|no|
-|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|False|no|
+|telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|`false`|no|
 
 #### Resources for edgeMessaging
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|aioIdentity|`Microsoft.ManagedIdentity/userAssignedIdentities`|2023-01-31|
-|aioCustomLocation|`Microsoft.ExtendedLocation/customLocations`|2021-08-31-preview|
 |eventHubDataflow|`Microsoft.Resources/deployments`|2022-09-01|
 |eventGridDataflow|`Microsoft.Resources/deployments`|2022-09-01|
 
 ## User Defined Types
 
-### `_1.AioCaConfig`
-
-Configuration for Azure IoT Operations Certificate Authority.
-
-|Property|Type|Description|
-| :--- | :--- | :--- |
-|rootCaCertPem|`securestring`|The PEM-formatted root CA certificate.|
-|caCertChainPem|`securestring`|The PEM-formatted CA certificate chain.|
-|caKeyPem|`securestring`|The PEM-formatted CA private key.|
-
-### `_1.AioDataFlowInstance`
-
-The settings for Azure IoT Operations Data Flow Instances.
-
-|Property|Type|Description|
-| :--- | :--- | :--- |
-|count|`int`|The number of data flow instances.|
-
-### `_1.AioExtension`
-
-The settings for the Azure IoT Operations Extension.
-
-|Property|Type|Description|
-| :--- | :--- | :--- |
-|release|`[_1.Release](#user-defined-types)`|The common settings for the extension.|
-|settings|`object`||
-
-### `_1.AioFeatures`
-
-AIO Instance features.
-
-### `_1.AioMqBroker`
-
-The settings for the Azure IoT Operations MQ Broker.
-
-|Property|Type|Description|
-| :--- | :--- | :--- |
-|brokerListenerServiceName|`string`|The service name for the broker listener.|
-|brokerListenerPort|`int`|The port for the broker listener.|
-|serviceAccountAudience|`string`|The audience for the service account.|
-|frontendReplicas|`int`|The number of frontend replicas for the broker.|
-|frontendWorkers|`int`|The number of frontend workers for the broker.|
-|backendRedundancyFactor|`int`|The redundancy factor for the backend of the broker.|
-|backendWorkers|`int`|The number of backend workers for the broker.|
-|backendPartitions|`int`|The number of partitions for the backend of the broker.|
-|memoryProfile|`string`|The memory profile for the broker (Low, Medium, High).|
-|serviceType|`string`|The service type for the broker (ClusterIP, LoadBalancer, NodePort).|
-
-### `_1.AioMqBrokerAnonymous`
-
-Configuration for the insecure anonymous AIO MQ Broker Listener.
-
-|Property|Type|Description|
-| :--- | :--- | :--- |
-|serviceName|`string`|The service name for the anonymous broker listener.|
-|port|`int`|The port for the anonymous broker listener.|
-|nodePort|`int`|The node port for the anonymous broker listener.|
-
-### `_1.AioPlatformExtension`
-
-The settings for the Azure IoT Operations Platform Extension.
-
-|Property|Type|Description|
-| :--- | :--- | :--- |
-|release|`[_1.Release](#user-defined-types)`|The common settings for the extension.|
-|settings|`object`||
-
-### `_1.ContainerStorageExtension`
-
-The settings for the Azure Container Store for Azure Arc Extension.
-
-|Property|Type|Description|
-| :--- | :--- | :--- |
-|release|`[_1.Release](#user-defined-types)`|The common settings for the extension.|
-|settings|`object`||
-
-### `_1.CustomerManagedByoIssuerConfig`
-
-The configuration for Customer Managed Bring Your Own Issuer for Azure IoT Operations certificates.
-
-|Property|Type|Description|
-| :--- | :--- | :--- |
-|trustSource|`string`||
-|trustSettings|`[_1.TrustSettingsConfig](#user-defined-types)`|The trust settings for Azure IoT Operations.|
-
-### `_1.CustomerManagedGenerateIssuerConfig`
-
-The configuration for the Customer Managed Generated trust source of Azure IoT Operations certificates.
-
-|Property|Type|Description|
-| :--- | :--- | :--- |
-|trustSource|`string`||
-|aioCa|`[_1.AioCaConfig](#user-defined-types)`|The CA certificate, chain, and key for Azure IoT Operations.|
-
-### `_1.IncludeFileConfig`
-
-Additional file configuration for deployment scripts.
-
-|Property|Type|Description|
-| :--- | :--- | :--- |
-|name|`string`|The name of the file to create.|
-|content|`securestring`|The content of the file to create.|
-
-### `_1.InstanceFeature`
-
-Individual feature object within the AIO instance.
-
-|Property|Type|Description|
-| :--- | :--- | :--- |
-|mode|`[_1.InstanceFeatureMode](#user-defined-types)`||
-|settings|`object`||
-
-### `_1.InstanceFeatureMode`
-
-The mode of the AIO instance feature. Either "Stable", "Preview" or "Disabled".
-
-### `_1.InstanceFeatureSettingValue`
-
-The setting value of the AIO instance feature. Either "Enabled" or "Disabled".
-
-### `_1.Release`
-
-The common settings for Azure Arc Extensions.
-
-|Property|Type|Description|
-| :--- | :--- | :--- |
-|version|`string`|The version of the extension.|
-|train|`string`|The release train that has the version to deploy (ex., "preview", "stable").|
-
-### `_1.ScriptConfig`
-
-Script configuration for deployment scripts.
-
-|Property|Type|Description|
-| :--- | :--- | :--- |
-|content|`securestring`|The script content to be executed.|
-|env|`array`|Environment variables for the script.|
-
-### `_1.ScriptEnvironmentVariable`
-
-Environment variable configuration for scripts.
-
-|Property|Type|Description|
-| :--- | :--- | :--- |
-|name|`string`|The name of the environment variable.|
-|value|`string`|The value of the environment variable.|
-|secureValue|`securestring`|The secure value of the environment variable.|
-
-### `_1.ScriptFilesConfig`
-
-The script and additional configuration files for deployment scripts.
-
-|Property|Type|Description|
-| :--- | :--- | :--- |
-|scripts|`array`|The script configuration for deployment scripts.|
-|includeFiles|`array`|The additional file configuration for deployment scripts.s|
-
-### `_1.SecretStoreExtension`
-
-The settings for the Secret Store Extension.
-
-|Property|Type|Description|
-| :--- | :--- | :--- |
-|release|`[_1.Release](#user-defined-types)`|The common settings for the extension.|
-
-### `_1.SelfSignedIssuerConfig`
-
-The configuration for Self-Signed Issuer for Azure IoT Operations certificates.
-
-|Property|Type|Description|
-| :--- | :--- | :--- |
-|trustSource|`string`||
-
-### `_1.TrustConfigSource`
-
-The config source of trust for how to use or generate Azure IoT Operations certificates.
-
-### `_1.TrustIssuerConfig`
-
-The configuration for the trust source of Azure IoT Operations certificates.
-
-### `_1.TrustSettingsConfig`
-
-The configuration for the trust settings of Azure IoT Operations certificates.
-
-|Property|Type|Description|
-| :--- | :--- | :--- |
-|issuerName|`string`||
-|issuerKind|`string`||
-|configMapName|`string`||
-|configMapKey|`string`||
-
-### `_1.TrustSource`
-
-The source of trust for Azure IoT Operations certificates.
-
-### `_2.Common`
+### `_1.Common`
 
 Common settings for the components.
 

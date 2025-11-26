@@ -33,14 +33,15 @@ via Kafka-compatible interface with managed identity authentication.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| aio\_dataflow\_profile | The AIO dataflow profile. | ```object({ id = string })``` | n/a | yes |
-| aio\_identity | Azure IoT Operations managed identity for workspace access. | ```object({ id = string principal_id = string tenant_id = string client_id = string })``` | n/a | yes |
-| aio\_instance | The Azure IoT Operations instance. | ```object({ id = string })``` | n/a | yes |
+| adr\_namespace | Azure Device Registry namespace to use with Azure IoT Operations. Otherwise, not configured. | ```object({ id = string, name = string })``` | n/a | yes |
+| aio\_dataflow\_profile | The AIO dataflow profile | ```object({ id = string })``` | n/a | yes |
+| aio\_identity | Azure IoT Operations managed identity for workspace access | ```object({ id = string principal_id = string tenant_id = string client_id = string })``` | n/a | yes |
+| aio\_instance | The Azure IoT Operations instance | ```object({ id = string })``` | n/a | yes |
 | asset\_name | The name of the Azure IoT Operations Device Registry Asset resource to send its data from edge to cloud. | `string` | n/a | yes |
 | custom\_location\_id | The resource ID of the Custom Location | `string` | n/a | yes |
 | environment | Environment for all resources in this module: dev, test, or prod | `string` | n/a | yes |
-| fabric\_eventstream\_endpoint | Fabric RTI connection details from EventStream. | ```object({ bootstrap_server = string topic_name = string endpoint_type = string })``` | n/a | yes |
-| fabric\_workspace | Fabric workspace for RTI resources. | ```object({ id = string display_name = string })``` | n/a | yes |
+| fabric\_eventstream\_endpoint | Fabric RTI connection details from EventStream. If provided, creates a Fabric RTI dataflow endpoint. | ```object({ bootstrap_server = string topic_name = string endpoint_type = string })``` | n/a | yes |
+| fabric\_workspace | Fabric workspace for RTI resources. Required when fabric\_eventstream\_endpoint is provided. | ```object({ id = string display_name = string })``` | n/a | yes |
 | instance | Instance identifier for naming resources: 001, 002, etc | `string` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
 

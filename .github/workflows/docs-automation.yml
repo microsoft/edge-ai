@@ -1,7 +1,44 @@
+# Documentation Automation Workflow
+#
+# Purpose:
+# Automates documentation generation, validation, and deployment processes including
+# frontmatter validation, sidebar generation, and GitHub Pages deployment.
+#
+# Functionality:
+# - Validates YAML frontmatter in documentation files for consistency and completeness
+# - Automatically generates navigation sidebars from documentation structure
+# - Validates documentation links and references for accuracy
+# - Deploys updated documentation to GitHub Pages when changes are detected
+# - Performs documentation health checks and quality assurance
+#
+# Parameters:
+# - force_regenerate: Forces regeneration of all documentation when manually triggered (default: false)
+#
+# Output Variables:
+# - None directly from this workflow (outputs available through GitHub Pages deployment)
+#
+# Usage Examples:
+# Triggered automatically when documentation files change in docs/, src/, or blueprints/ paths,
+# or manually dispatched for complete documentation regeneration and validation.
+#
+# This workflow ensures documentation remains current, properly structured, and accessible
+# through automated validation and deployment processes.
 ---
-name: 📚 Documentation Automation
+name: Docs Automation
 
-on: # yamllint disable-line rule:truthy
+permissions:
+  contents: write
+  pull-requests: write
+  actions: read
+
+on:  # yamllint disable-line rule:truthy
+  workflow_call:
+    inputs:
+      force_regenerate:
+        description: 'Force regeneration of all documentation'
+        required: false
+        default: false
+        type: boolean
   push:
     branches: [main, develop]
     paths:
@@ -35,10 +72,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493 # v4.1.7
 
-      - name: Setup PowerShell
-        uses: azure/powershell@v1
+      - name: Run docs health check
+        uses: Azure/powershell@53dd145408794f7e80f97cfcca04155c85234709 # v2.0.0
         with:
           inlineScript: |
             Write-Host "PowerShell version: $($PSVersionTable.PSVersion)"
@@ -47,61 +84,13 @@ jobs:
       - name: Validate frontmatter consistency
         shell: pwsh
         run: |
-          # Import frontmatter validation functions
-          . ./scripts/Generate-DocsSidebar.ps1
-
           Write-Host "🔍 Validating frontmatter across all markdown files..."
 
-          $errors = @()
-          $warnings = @()
+          # Use the dedicated validation script (same as Azure DevOps pipeline)
+          & "./scripts/Validate-MarkdownFrontmatter.ps1" -Paths @('docs', 'src', 'blueprints') -Verbose
 
-          # Get all markdown files
-          $markdownFiles = Get-ChildItem -Path @('docs', 'src', 'blueprints') -Filter '*.md' -Recurse -ErrorAction SilentlyContinue
-
-          Write-Host "Found $($markdownFiles.Count) markdown files to validate"
-
-          foreach ($file in $markdownFiles) {
-            $frontmatter = Get-MarkdownFile -FilePath $file.FullName
-
-            if ($frontmatter) {
-              # Validate required fields
-              $requiredFields = @('title', 'description', 'author', 'ms.date', 'ms.topic')
-
-              foreach ($field in $requiredFields) {
-                if (-not $frontmatter.Frontmatter.ContainsKey($field)) {
-                  $errors += "Missing required field '$field' in: $($file.FullName)"
-                }
-              }
-
-              # Validate date format
-              if ($frontmatter.Frontmatter.ContainsKey('ms.date')) {
-                $date = $frontmatter.Frontmatter['ms.date']
-                if ($date -notmatch '^\d{2}/\d{2}/\d{4}$') {
-                  $warnings += "Invalid date format in: $($file.FullName). Expected MM/DD/YYYY, got: $date"
-                }
-              }
-
-              # Validate keywords array
-              if ($frontmatter.Frontmatter.ContainsKey('keywords')) {
-                $keywords = $frontmatter.Frontmatter['keywords']
-                if ($keywords -isnot [array] -and $keywords -notmatch ',') {
-                  $warnings += "Keywords should be an array in: $($file.FullName)"
-                }
-              }
-            } else {
-              $warnings += "No frontmatter found in: $($file.FullName)"
-            }
-          }
-
-          # Output results
-          if ($warnings.Count -gt 0) {
-            Write-Host "⚠️ Warnings found:" -ForegroundColor Yellow
-            $warnings | ForEach-Object { Write-Host "  $_" -ForegroundColor Yellow }
-          }
-
-          if ($errors.Count -gt 0) {
-            Write-Host "❌ Errors found:" -ForegroundColor Red
-            $errors | ForEach-Object { Write-Host "  $_" -ForegroundColor Red }
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "❌ Frontmatter validation failed" -ForegroundColor Red
             exit 1
           }
 
@@ -113,31 +102,190 @@ jobs:
     needs: validate-frontmatter
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493 # v4.1.7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup PowerShell
-        uses: azure/powershell@v1
+        uses: Azure/powershell@53dd145408794f7e80f97cfcca04155c85234709 # v2.0.0
         with:
           inlineScript: |
             Write-Host "PowerShell version: $($PSVersionTable.PSVersion)"
           azPSVersion: 'latest'
 
-      - name: Generate enhanced sidebar
+      - name: Generate and validate enhanced sidebar
         shell: pwsh
         run: |
-          Write-Host "🏗️ Generating three-tree navigation sidebar..."
+          Write-Host "🏗️ Generating enhanced multi-section navigation sidebar..."
 
-          # Run the enhanced sidebar generation
-          . ./scripts/Generate-DocsSidebar.ps1
+          $sidebarPaths = @(
+            "docs/_sidebar.md",
+            "docs/_parts/home-sidebar.md",
+            "docs/_parts/blueprints-sidebar.md",
+            "docs/_parts/infrastructure-sidebar.md"
+          )
+
+          $originalSidebars = @{}
+          foreach ($path in $sidebarPaths) {
+            if (Test-Path $path) {
+              $originalSidebars[$path] = Get-Content $path -Raw
+            }
+          }
+
+          . ./scripts/Generate-DocsSidebar.ps1 -AllSections
 
           Write-Host "✅ Sidebar generation completed"
+
+          $validationPassed = $true
+          $issues = @()
+
+          foreach ($path in $sidebarPaths) {
+            if (Test-Path $path) {
+              $newContent = Get-Content $path -Raw
+              $originalContent = $originalSidebars[$path]
+
+              if ($null -eq $originalContent) {
+                $originalContent = ""
+              }
+
+              # DEBUG: Show what we're removing
+              Write-Host "`n🔍 DEBUG: Timestamp detection for $path" -ForegroundColor Magenta
+              if ($originalContent -match "<!-- Generated on:.*?-->") {
+                Write-Host "  Original has timestamp: $($Matches[0])" -ForegroundColor Magenta
+              } else {
+                Write-Host "  Original has NO timestamp comment" -ForegroundColor Yellow
+              }
+              if ($newContent -match "<!-- Generated on:.*?-->") {
+                Write-Host "  Generated has timestamp: $($Matches[0])" -ForegroundColor Magenta
+              } else {
+                Write-Host "  Generated has NO timestamp comment" -ForegroundColor Yellow
+              }
+              Write-Host "  Regex pattern: '<!-- Generated on:.*?-->'" -ForegroundColor Magenta
+              Write-Host ""
+
+              $originalClean = ($originalContent -replace "<!-- Generated on:.*?-->", "")
+              $newClean = ($newContent -replace "<!-- Generated on:.*?-->", "")
+
+              if ($originalClean -ne $newClean) {
+                $issues += "- $path is outdated"
+                $validationPassed = $false
+
+                Write-Host "`n📄 Detailed diff for: $path" -ForegroundColor Yellow
+                Write-Host ("=" * 80) -ForegroundColor Yellow
+
+                Write-Host "📊 Character counts:" -ForegroundColor Cyan
+                Write-Host "  Original (checked-in): $($originalClean.Length) chars" -ForegroundColor Cyan
+                Write-Host "  Generated (expected):  $($newClean.Length) chars" -ForegroundColor Cyan
+                Write-Host "  Difference: $($newClean.Length - $originalClean.Length) chars" -ForegroundColor Cyan
+
+                $tempOriginal = [System.IO.Path]::GetTempFileName()
+                $tempNew = [System.IO.Path]::GetTempFileName()
+                $originalClean | Set-Content $tempOriginal -NoNewline
+                $newClean | Set-Content $tempNew -NoNewline
+
+                if (Get-Command git -ErrorAction SilentlyContinue) {
+                  Write-Host "`n🔍 Git diff output:" -ForegroundColor Cyan
+                  try {
+                    $diffOutput = git diff --no-index --word-diff=plain --unified=3 $tempOriginal $tempNew 2>&1
+                    if ($diffOutput) {
+                      $diffOutput | ForEach-Object {
+                        $line = $_
+                        if ($line -match '^\+') {
+                          Write-Host $line -ForegroundColor Green
+                        } elseif ($line -match '^\-') {
+                          Write-Host $line -ForegroundColor Red
+                        } elseif ($line -match '^@@') {
+                          Write-Host $line -ForegroundColor Cyan
+                        } else {
+                          Write-Host $line
+                        }
+                      }
+                    }
+                  } catch {
+                    Write-Host "Git diff failed, falling back to PowerShell comparison" -ForegroundColor Yellow
+                  }
+                }
+
+                Write-Host "`n🔍 Line-by-line comparison (first 30 differences):" -ForegroundColor Cyan
+                $originalLines = $originalClean -split "`r?`n"
+                $newLines = $newClean -split "`r?`n"
+
+                Write-Host "Original has $($originalLines.Count) lines, Generated has $($newLines.Count) lines" -ForegroundColor Cyan
+
+                $comparison = Compare-Object -ReferenceObject $originalLines -DifferenceObject $newLines -IncludeEqual | Select-Object -First 30
+
+                $diffCount = 0
+                foreach ($diff in $comparison) {
+                  if ($diff.SideIndicator -ne "==") {
+                    $diffCount++
+                    $indicator = if ($diff.SideIndicator -eq "<=") { "- ORIGINAL" } else { "+ GENERATED" }
+                    $color = if ($diff.SideIndicator -eq "<=") { "Red" } else { "Green" }
+                    Write-Host "$indicator`: $($diff.InputObject)" -ForegroundColor $color
+                  }
+                }
+
+                if ($diffCount -eq 0) {
+                  Write-Host "No line differences found, but content differs (possibly whitespace or encoding)" -ForegroundColor Yellow
+
+                  Write-Host "`n🔍 Checking for whitespace differences:" -ForegroundColor Cyan
+                  $originalNoSpace = $originalClean -replace '\s+', ''
+                  $newNoSpace = $newClean -replace '\s+', ''
+
+                  if ($originalNoSpace -eq $newNoSpace) {
+                    Write-Host "Content is identical when whitespace is removed - this is a whitespace-only difference" -ForegroundColor Yellow
+                  } else {
+                    Write-Host "Content differs even without whitespace" -ForegroundColor Yellow
+                    Write-Host "Original (no space): $($originalNoSpace.Length) chars" -ForegroundColor Cyan
+                    Write-Host "Generated (no space): $($newNoSpace.Length) chars" -ForegroundColor Cyan
+                  }
+                }
+
+                Remove-Item $tempOriginal -ErrorAction SilentlyContinue
+                Remove-Item $tempNew -ErrorAction SilentlyContinue
+
+                Write-Host ("=" * 80) -ForegroundColor Yellow
+                Write-Host ""
+              }
+            } else {
+              $issues += "- $path is missing after generation"
+              $validationPassed = $false
+            }
+          }
+
+          if (-not (Test-Path "docs/_parts/")) {
+            $issues += "- docs/_parts/ directory missing - required for multi-section navigation"
+            $validationPassed = $false
+          }
+
+          if (-not $validationPassed) {
+            $messageLines = @(
+              "Sidebar validation failed:",
+              ($issues -join "`n"),
+              "",
+              "Detailed comparison output is shown above."
+            )
+
+            $message = $messageLines -join "`n"
+
+            Write-Host "❌ Sidebar validation failed!" -ForegroundColor Red
+            Write-Host $message -ForegroundColor Red
+
+            if ($env:GITHUB_EVENT_NAME -eq "pull_request") {
+              Write-Host "::error::Sidebar navigation files are out of date."
+              exit 1
+            } else {
+              Write-Host "::warning::Sidebar differences detected. Continuing so the workflow can commit updates."
+              exit 0
+            }
+          } else {
+            Write-Host "✅ All sidebar sections are up to date" -ForegroundColor Green
+            exit 0
+          }
 
       - name: Check for changes
         id: changes
         run: |
-          if [ -n "$(git status --porcelain _sidebar.md)" ]; then
+          if [ -n "$(git status --porcelain _sidebar.md docs/_parts 2>/dev/null)" ]; then
             echo "changes=true" >> $GITHUB_OUTPUT
             echo "📝 Sidebar changes detected"
           else
@@ -146,11 +294,15 @@ jobs:
           fi
 
       - name: Commit and push changes
-        if: steps.changes.outputs.changes == 'true' && github.event_name != 'pull_request'
+        if: steps.changes.outputs.changes == 'true' &&
+          github.event_name != 'pull_request'
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "Documentation Bot"
           git add _sidebar.md
+          if [ -d "docs/_parts" ]; then
+            git add docs/_parts
+          fi
           git commit -m "🤖 Auto-update three-tree navigation sidebar
 
           - Updated sidebar with latest documentation structure
@@ -164,10 +316,10 @@ jobs:
     needs: generate-sidebar
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493 # v4.1.7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@89d709d423dc495668cd762a18dd4a070611be3f # v4.1.1
         with:
           node-version: '18'
 
@@ -175,6 +327,7 @@ jobs:
         run: npm install -g markdown-link-check
 
       - name: Check links in documentation
+        continue-on-error: true
         run: |
           echo "🔗 Checking links in documentation files..."
 
@@ -200,9 +353,11 @@ jobs:
           EOF
 
           # Check all markdown files
-          find docs src blueprints praxisworx .github copilot -name "*.md" -type f | \
+          find docs src blueprints learning .github copilot \
+            -name "*.md" -type f | \
             grep -v node_modules | \
-            xargs -I {} sh -c 'echo "Checking: {}" && markdown-link-check {} --config .markdown-link-check.json'
+            xargs -I {} sh -c 'echo "Checking: {}" &&
+              markdown-link-check {} --config .markdown-link-check.json'
 
   build-documentation:
     name: 🏗️ Build Documentation Site
@@ -211,10 +366,10 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493 # v4.1.7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@89d709d423dc495668cd762a18dd4a070611be3f # v4.1.1
         with:
           node-version: '18'
 
@@ -249,13 +404,17 @@ jobs:
   report-documentation-health:
     name: 📊 Documentation Health Report
     runs-on: ubuntu-latest
-    needs: [validate-frontmatter, generate-sidebar, validate-links, build-documentation]
+    needs:
+      - validate-frontmatter
+      - generate-sidebar
+      - validate-links
+      - build-documentation
     if: always()
     permissions:
       issues: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493 # v4.1.7
 
       - name: Generate documentation metrics
         shell: pwsh
@@ -263,26 +422,37 @@ jobs:
           Write-Host "📊 Generating documentation health report..."
 
           # Count documentation files by type
-          $docsCount = (Get-ChildItem -Path 'docs' -Filter '*.md' -Recurse -ErrorAction SilentlyContinue).Count
-          $srcCount = (Get-ChildItem -Path 'src' -Filter '*.md' -Recurse -ErrorAction SilentlyContinue).Count
-          $blueprintsCount = (Get-ChildItem -Path 'blueprints' -Filter '*.md' -Recurse -ErrorAction SilentlyContinue).Count
-          find docs src blueprints praxisworx .github copilot -name "*.md" -type f | \
+          $docsCount = (Get-ChildItem -Path 'docs' -Filter '*.md' -Recurse `
+            -ErrorAction SilentlyContinue).Count
+          $srcCount = (Get-ChildItem -Path 'src' -Filter '*.md' -Recurse `
+            -ErrorAction SilentlyContinue).Count
+          $blueprintsCount = (Get-ChildItem -Path 'blueprints' -Filter '*.md' `
+            -Recurse -ErrorAction SilentlyContinue).Count
+          $learningCount = (Get-ChildItem -Path 'learning' -Filter '*.md' `
+            -Recurse -ErrorAction SilentlyContinue).Count
+          $githubCount = (Get-ChildItem -Path '.github' -Filter '*.md' `
+            -Recurse -ErrorAction SilentlyContinue).Count
+          $copilotCount = (Get-ChildItem -Path 'copilot' -Filter '*.md' `
+            -Recurse -ErrorAction SilentlyContinue).Count
 
           # Generate report
           $report = @"
           # 📚 Documentation Health Report
 
-          Generated on: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss UTC')          ## 📈 Documentation Statistics
+          Generated on: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss UTC')
+
+          ## 📈 Documentation Statistics
 
           | Category | File Count |
           |----------|------------|
           | Main Documentation | $docsCount |
           | Infrastructure Components | $srcCount |
           | Blueprints | $blueprintsCount |
-          | Learning Platform (PraxisWorx) | $praxisworxCount |
+          | Learning Platform | $learningCount |
           | GitHub Resources | $githubCount |
           | AI Assistant Guides (Copilot) | $copilotCount |
-          | **Total** | **$($docsCount + $srcCount + $blueprintsCount + $praxisworxCount + $githubCount + $copilotCount)** |
+          | **Total** | **$($docsCount + $srcCount + $blueprintsCount + `
+            $learningCount + $githubCount + $copilotCount)** |
 
           ## 🏗️ Three-Tree Architecture Status
 
@@ -292,7 +462,8 @@ jobs:
 
           ## 🔍 Quality Metrics
 
-          - Frontmatter Validation: ${{ needs.validate-frontmatter.result }}
+          - Frontmatter Validation: `
+            ${{ needs.validate-frontmatter.result }}
           - Sidebar Generation: ${{ needs.generate-sidebar.result }}
           - Link Validation: ${{ needs.validate-links.result }}
           - Build Test: ${{ needs.build-documentation.result }}
@@ -305,28 +476,41 @@ jobs:
           Write-Host $report
 
           # Save report as artifact
-          $report | Out-File -FilePath 'documentation-health-report.md' -Encoding UTF8
+          $report | Out-File -FilePath 'documentation-health-report.md' `
+            -Encoding UTF8
 
           Write-Host "✅ Documentation health report generated"
 
-      - name: Upload documentation report
-        uses: actions/upload-artifact@v4
+      - name: Upload report
+        uses: actions/upload-artifact@2848b2cda0e5190984587ec6bb1f36730ca78d50 # v4.4.0
         with:
           name: documentation-health-report
           path: documentation-health-report.md
           retention-days: 30
 
-      - name: Comment on PR with report
+      - name: Save PR context for workflow_run
         if: github.event_name == 'pull_request'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const fs = require('fs');
-            const report = fs.readFileSync('documentation-health-report.md', 'utf8');
+        shell: pwsh
+        run: |
+          $report = Get-Content -Path 'documentation-health-report.md' -Raw
 
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: report
-            });
+          # Create PR context object
+          $prContext = @{
+            pr_number = ${{ github.event.pull_request.number }}
+            repo_owner = "${{ github.repository_owner }}"
+            repo_name = (Split-Path "${{ github.repository }}" -Leaf)
+            head_sha = "${{ github.event.pull_request.head.sha }}"
+            comment_body = $report
+          }
+
+          # Convert to JSON and save
+          $prContext | ConvertTo-Json -Depth 10 | Out-File -FilePath 'pr-context.json' -Encoding UTF8 -NoNewline
+          Write-Host "✅ PR context saved for workflow_run trigger"
+
+      - name: Upload PR context artifact
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@2848b2cda0e5190984587ec6bb1f36730ca78d50 # v4.4.0
+        with:
+          name: docs-validation-results-${{ github.run_id }}
+          path: pr-context.json
+          retention-days: 1

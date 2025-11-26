@@ -1,9 +1,9 @@
 ---
 services:
   inference-pipeline:
+    image: ${REGISTRY:-local}/${APPLICATION:-basic-inference}/inference-pipeline:${BUILD_ID:-latest}
     build:
       context: ./services/pipeline
-    image: inference-pipeline:local
     environment:
       INFERENCE_URL: "http://inference-service:8883"
       AIO_MQTT_USE_TLS: "false"
@@ -17,7 +17,7 @@ services:
 
 
   mosquitto-broker:
-    image: eclipse-mosquitto
+    image: eclipse-mosquitto@sha256:7b77b81b6d25b1fc6cc5ed1eb8ae48c247d4fd6f9aef1f7ee88b4a8e0b7f2b3e@sha256:7b77b81b6d25b1fc6cc5ed1eb8ae48c247d4fd6f9aef1f7ee88b4a8e0b7f2b3e
     ports:
       - "1883:1883"
       - "9001:9001"

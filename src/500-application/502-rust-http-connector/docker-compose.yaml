@@ -2,7 +2,7 @@
 services:
 
   mosquitto-broker:
-    image: eclipse-mosquitto
+    image: eclipse-mosquitto@sha256:7b77b81b6d25b1fc6cc5ed1eb8ae48c247d4fd6f9aef1f7ee88b4a8e0b7f2b3e@sha256:7b77b81b6d25b1fc6cc5ed1eb8ae48c247d4fd6f9aef1f7ee88b4a8e0b7f2b3e
     ports:
       - "1883:1883"
       - "9001:9001"
@@ -12,9 +12,10 @@ services:
       - rust-http-connector
 
   broker:
+    image: ${REGISTRY:-local}/${APPLICATION:-rust-http-connector}/broker:${BUILD_ID:-latest}
     build:
-      context: ./services/broker
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./services/broker/Dockerfile
       args:
         - USE_REPLACE_WITH=false  # Don't redirect crates.io for local development
     environment:
@@ -62,9 +63,10 @@ services:
       - rust-http-connector
 
   subscriber:
+    image: ${REGISTRY:-local}/${APPLICATION:-rust-http-connector}/subscriber:${BUILD_ID:-latest}
     build:
-      context: ./services/subscriber
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./services/subscriber/Dockerfile
       args:
         - USE_REPLACE_WITH=false  # Don't redirect crates.io for local development
     environment:
@@ -85,6 +87,7 @@ services:
 
   # Device Simulator for temperature and humidity
   device-simulator:
+    image: ${REGISTRY:-local}/${APPLICATION:-rust-http-connector}/device-simulator:${BUILD_ID:-latest}
     build:
       context: ./services/sensor-simulator
       dockerfile: Dockerfile

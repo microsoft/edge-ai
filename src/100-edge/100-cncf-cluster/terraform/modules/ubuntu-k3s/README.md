@@ -12,13 +12,13 @@ along with installing extensions for cluster connect and custom locations.
 |------|---------|
 | terraform | >= 1.9.8, < 2.0 |
 | azapi | >= 2.3.0 |
-| azurerm | >= 4.8.0 |
+| azurerm | >= 4.51.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| azurerm | >= 4.8.0 |
+| azurerm | >= 4.51.0 |
 | local | n/a |
 | random | n/a |
 
@@ -40,10 +40,10 @@ along with installing extensions for cluster connect and custom locations.
 | arc\_onboarding\_sp | n/a | ```object({ client_id = string object_id = string client_secret = string })``` | n/a | yes |
 | arc\_resource\_name | The name of the new Azure Arc resource. | `string` | n/a | yes |
 | arc\_tenant\_id | The ID of the Tenant for the new Azure Arc resource. | `string` | n/a | yes |
-| cluster\_admin\_oid | The Object ID that will be given cluster-admin permissions with the new cluster. | `string` | n/a | yes |
-| cluster\_admin\_upn | The User Principal Name that will be given cluster-admin permissions with the new cluster. | `string` | n/a | yes |
+| cluster\_admin\_oid | The Object ID that will be given cluster-admin permissions with the new cluster. (Otherwise, current logged in user Object ID if 'should\_add\_current\_user\_cluster\_admin=true') | `string` | n/a | yes |
+| cluster\_admin\_upn | The User Principal Name that will be given cluster-admin permissions with the new cluster. (Otherwise, current logged in user UPN if 'should\_add\_current\_user\_cluster\_admin=true') | `string` | n/a | yes |
 | cluster\_server\_host\_machine\_username | Username used for the host machines that will be given kube-config settings on setup. (Otherwise, 'resource\_prefix' if it exists as a user) | `string` | n/a | yes |
-| cluster\_server\_ip | The IP address for the server for the cluster. (Needed for mult-node cluster) | `string` | n/a | yes |
+| cluster\_server\_ip | The IP Address for the cluster server that the cluster nodes will use to connect. | `string` | n/a | yes |
 | cluster\_server\_token | The token that will be given to the server for the cluster or used by the agent nodes to connect them to the cluster. (ex. <https://docs.k3s.io/cli/token>) | `string` | n/a | yes |
 | custom\_locations\_oid | The object id of the Custom Locations Entra ID application for your tenant. If none is provided, the script will attempt to retrieve this requiring 'Application.Read.All' or 'Directory.Read.All' permissions. ```sh az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv``` | `string` | n/a | yes |
 | environment | Environment for all resources in this module: dev, test, or prod | `string` | n/a | yes |
@@ -55,8 +55,8 @@ along with installing extensions for cluster connect and custom locations.
 | should\_skip\_az\_cli\_login | Should skip login process with Azure CLI on the server. (Skipping assumes 'az login' has been completed prior to script execution) | `bool` | n/a | yes |
 | should\_skip\_installing\_az\_cli | Should skip downloading and installing Azure CLI on the server. (Skipping assumes the server will already have the Azure CLI) | `bool` | n/a | yes |
 | should\_upload\_to\_key\_vault | Whether to upload the scripts to Key Vault as secrets. | `bool` | n/a | yes |
-| should\_use\_script\_from\_secrets\_for\_deploy | Whether to use the deploy-script-secrets.sh script to fetch and execute deployment scripts from Key Vault. | `bool` | n/a | yes |
-| key\_vault | The Key Vault object containing id, name, and vault\_uri properties. | ```object({ id = string name = string vault_uri = string })``` | `null` | no |
+| should\_use\_script\_from\_secrets\_for\_deploy | Whether to use the deploy-script-secrets.sh script to fetch and execute deployment scripts from Key Vault | `bool` | n/a | yes |
+| key\_vault | The Key Vault object containing id, name, and vault\_uri properties | ```object({ id = string name = string vault_uri = string })``` | `null` | no |
 
 ## Outputs
 

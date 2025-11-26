@@ -1,4 +1,3 @@
-
 //! # OpenTelemetry Integration Module
 //!
 //! This module provides functionality for setting up OpenTelemetry tracing
@@ -10,19 +9,18 @@
 //! 3. Providing a function to inject the current span context into messages
 
 use opentelemetry::propagation::Injector;
+use opentelemetry::{global, trace::TracerProvider};
+use opentelemetry_otlp::SpanExporter;
 use tracing::Span;
 use tracing_opentelemetry::OpenTelemetrySpanExt;
 use tracing_subscriber::EnvFilter;
-use opentelemetry::{global, trace::TracerProvider};
-use opentelemetry_otlp::SpanExporter;
 
+use opentelemetry_sdk::propagation::TraceContextPropagator;
 use opentelemetry_sdk::trace::SdkTracerProvider;
 use opentelemetry_sdk::Resource;
-use tracing_subscriber::prelude::*;
-use opentelemetry_sdk::propagation::TraceContextPropagator;
-use tracing::{info, warn};
 use std::env;
-
+use tracing::{info, warn};
+use tracing_subscriber::prelude::*;
 
 /// Initialize the OpenTelemetry tracer provider with optional OTLP exporter
 ///
@@ -42,7 +40,10 @@ fn init_traces() -> SdkTracerProvider {
     // Check if the OTEL_EXPORTER_OTLP_ENDPOINT environment variable is set
     if let Ok(endpoint) = env::var("OTEL_EXPORTER_OTLP_ENDPOINT") {
         // OTEL_EXPORTER_OTLP_ENDPOINT is set, create an exporter
-        info!("OTEL_EXPORTER_OTLP_ENDPOINT is set to {}, enabling OpenTelemetry exporter", endpoint);
+        info!(
+            "OTEL_EXPORTER_OTLP_ENDPOINT is set to {}, enabling OpenTelemetry exporter",
+            endpoint
+        );
 
         // Try to create the OTLP exporter
         if let Ok(exporter) = SpanExporter::builder().with_tonic().build() {
@@ -109,13 +110,10 @@ pub fn setup_otel_tracing(tracer_name: &str) {
         info!("OpenTelemetry tracing initialized with OTLP exporter");
     } else {
         // Only use the fmt layer
-        tracing_subscriber::registry()
-            .with(fmt_layer)
-            .init();
+        tracing_subscriber::registry().with(fmt_layer).init();
         info!("OpenTelemetry tracing initialized without OTLP exporter");
     }
 }
-
 
 /// Custom injector that stores trace context in a vector of key-value pairs
 ///

@@ -1,0 +1,23 @@
+# Base ROS2 Application Dependencies
+# Common dependencies shared between ros2-connector and ros2-simulator
+
+# Web framework for health checks
+flask==3.0.3
+werkzeug==3.0.6
+
+# Data processing and utilities
+numpy>=1.26.0
+opencv-python==4.10.0.84
+Pillow==10.4.0
+
+# System monitoring
+psutil==6.0.0
+
+# Configuration management
+python-dotenv==1.0.1
+pyyaml==6.0.2
+
+# Testing (development)
+pytest==8.3.3
+pytest-asyncio==0.24.0
+pytest-cov==5.0.0

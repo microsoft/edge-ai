@@ -78,6 +78,11 @@ def find_terraform_files(base_paths: List[Path]) -> Set[Path]:
     tf_dirs = set()
     for base_path in base_paths:
         for root, dirs, files in os.walk(base_path):
+            # Exclude blueprints/modules - shared module library, not deployable blueprint
+            # Handle both forward and backward slashes for cross-platform compatibility
+            if "blueprints/modules" in str(root) or "blueprints\\modules" in str(root):
+                continue
+
             dirs[:] = [d for d in dirs if d not in ["tests", ".terraform"]]
             if any(f.endswith(".tf") for f in files):
                 tf_dirs.add(root)

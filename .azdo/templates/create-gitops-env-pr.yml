@@ -1,0 +1,239 @@
+# GitOps Environment Pull Request Template
+#
+# Purpose:
+# This template automates the process of updating container image tags in a GitOps repository
+# and creating a pull request with the changes. It integrates with Azure Container Registry (ACR)
+# to pull the latest image tags and update deployment manifests accordingly.
+#
+# Functionality:
+# - Checks out both the source repository and target GitOps repository
+# - Authenticates with Azure Container Registry to retrieve latest image tags
+# - Updates deployment files with new image versions using automated scripts
+# - Creates a feature branch with the updated configurations
+# - Opens a pull request against the target branch for review and deployment
+# - Handles cases where no changes are detected to avoid unnecessary PRs
+#
+# Parameters:
+# - jobId: Unique identifier for the job instance
+# - displayName: Custom display name for the job (optional, defaults to generated name)
+# - envName: Target environment name for image tag updates
+# - repoName: Name of the GitOps repository containing deployment manifests
+# - projectName: Azure DevOps project name containing the GitOps repository
+# - targetBranch: Target branch for the pull request in the GitOps repository
+# - acrName: Azure Container Registry name containing the container images
+# - acrResourceGroup: Azure resource group containing the ACR instance
+# - azureServiceConnection: Azure service connection for ACR authentication
+# - agentPool: Agent pool configuration for the build environment
+#
+# Usage Examples:
+# ```yaml
+# # Basic usage for updating development environment:
+# - template: .azdo/templates/create-gitops-env-pr.yml
+#   parameters:
+#     jobId: 'update-dev-env'
+#     envName: 'development'
+#     projectName: 'MyProject'
+#     acrName: 'myacr'
+#     acrResourceGroup: 'my-acr-rg'
+#     azureServiceConnection: 'my-azure-connection'
+#
+# # Production environment with custom branch:
+# - template: .azdo/templates/create-gitops-env-pr.yml
+#   parameters:
+#     jobId: 'update-prod-env'
+#     envName: 'production'
+#     repoName: 'production-gitops'
+#     targetBranch: 'release'
+#     projectName: 'MyProject'
+#     acrName: 'prodacr'
+#     acrResourceGroup: 'prod-acr-rg'
+#     azureServiceConnection: 'prod-azure-connection'
+# ```
+#
+# This template is typically used as part of a CI/CD pipeline to automatically
+# propagate new container image versions to deployment environments.
+---
+parameters:
+  # Unique identifier for the job instance
+  - name: jobId
+    type: string
+    default: 'update-env'
+    displayName: 'Job identifier for this template instance'
+  # Custom display name for the job (optional)
+  - name: displayName
+    type: string
+    default: ''
+    displayName: 'Custom display name for the job (leave empty for auto-generated name)'
+  # Target environment name for image tag updates
+  - name: envName
+    type: string
+    default: 'devtest'
+    displayName: 'Environment name to update (e.g., dev, test, staging, prod)'
+  # Name of the GitOps repository containing deployment manifests
+  - name: repoName
+    type: string
+    default: 'gitops'
+    displayName: 'GitOps repository name containing deployment configurations'
+  # Azure DevOps project name containing the GitOps repository
+  - name: projectName
+    type: string
+    default: ''
+    displayName: 'Azure DevOps project name (required for GitOps repository access)'
+  # Target branch for the pull request in the GitOps repository
+  - name: targetBranch
+    type: string
+    default: 'main'
+    displayName: 'Target branch for pull request in GitOps repository'
+  # Azure Container Registry name containing the container images
+  - name: acrName
+    type: string
+    default: ''
+    displayName: 'Azure Container Registry name (required for image tag retrieval)'
+  # Azure resource group containing the ACR instance
+  - name: acrResourceGroup
+    type: string
+    default: ''
+    displayName: 'Resource group containing the Azure Container Registry'
+  # Azure service connection for ACR authentication
+  - name: azureServiceConnection
+    type: string
+    default: ''
+    displayName: 'Azure service connection name for ACR authentication (required)'
+  # Agent pool configuration for the build environment
+  - name: agentPool
+    type: object
+    default:
+      vmImage: 'ubuntu-latest'
+    displayName: 'Agent pool configuration for the build environment'
+
+jobs:
+  - job: ${{ parameters.jobId }}
+    displayName: ${{ coalesce(parameters.displayName, format('Update {0} image tags and open PR', parameters.envName)) }}
+    pool: ${{ parameters.agentPool }}
+
+    steps:
+      - checkout: self
+        persistCredentials: true
+        clean: true
+        fetchDepth: 0
+
+      # For PR builds, checkout the source branch HEAD instead of merge ref
+      - task: Bash@3
+        displayName: 'Checkout PR source branch HEAD'
+        condition: eq(variables['Build.Reason'], 'PullRequest')
+        inputs:
+          targetType: 'inline'
+          script: |
+            BRANCH_NAME=$(echo "$(System.PullRequest.SourceBranch)" | sed 's|^refs/heads/||')
+            echo "Switching to PR source branch HEAD: $BRANCH_NAME"
+            git checkout "$BRANCH_NAME"
+            git log -1 --oneline
+
+      - checkout: git://${{ parameters.projectName }}/${{ parameters.repoName }}
+        persistCredentials: true
+        clean: true
+        fetchDepth: 0
+
+      - task: AzureCLI@2
+        displayName: 'Updating versions in deployment files'
+        env:
+          SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+        inputs:
+          azureSubscription: ${{ parameters.azureServiceConnection }}
+          scriptType: bash
+          scriptLocation: inlineScript
+          inlineScript: |
+            set -euo pipefail
+            az account show -o table || exit 1
+            set -euo pipefail
+
+            echo "Switching to gitops repo..."
+            pushd $(Build.SourcesDirectory)/${{ parameters.repoName }} || exit 1
+
+            echo "Configuring git user..."
+            git config user.email "build@local"
+            git config user.name "ADO Build $(Build.BuildId)"
+
+            BRANCH_NAME="release/${{ parameters.envName }}-$(Build.BuildId)"
+            echo "Creating branch: ${BRANCH_NAME}"
+            git checkout -b "${BRANCH_NAME}"
+
+            echo "Running version update script against environment: ${{ parameters.envName }} in repo ${{ parameters.repoName }}..."
+            UPDATE_VERSIONS_PATH=$(Build.SourcesDirectory)/$(Build.Repository.Name)/scripts/update-versions-in-gitops.sh
+            bash $UPDATE_VERSIONS_PATH "${{ parameters.envName }}" "${{ parameters.acrName }}" "${{ parameters.acrResourceGroup }}" "$(Build.SourcesDirectory)/${{ parameters.repoName }}" || exit 1
+
+            echo "Checking for changes..."
+
+            if git status --porcelain | grep -qE "^ M|^A |^ D|^R |^\?\?"; then
+              echo "Changes detected, committing..."
+              git add .
+              git commit -m "chore(${{ parameters.envName }}): update image tags from ACR (build $(Build.BuildId))"
+            else
+              echo "No changes to commit. Skipping PR creation."
+              echo "no_changes=true" >> $(Pipeline.Workspace)/pr_vars
+            fi
+
+            popd > /dev/null || exit 1
+          workingDirectory: $(System.DefaultWorkingDirectory)
+
+      - bash: |
+          set -euo pipefail
+          if [ -f "$(Pipeline.Workspace)/pr_vars" ]; then
+            source "$(Pipeline.Workspace)/pr_vars"
+          fi
+          if [ "${no_changes:-false}" = "true" ]; then
+            echo "No changes, ending job."
+            exit 0
+          fi
+
+          echo "Switching to gitops repo..."
+          pushd $(Build.SourcesDirectory)/${{ parameters.repoName }} || exit 1
+
+          BRANCH_NAME="release/${{ parameters.envName }}-$(Build.BuildId)"
+
+          echo "Pushing branch ${BRANCH_NAME}..."
+          git -c http.extraheader="AUTHORIZATION: bearer $(System.AccessToken)" push origin "HEAD:refs/heads/${BRANCH_NAME}"
+
+          echo "Creating PR from ${BRANCH_NAME} to ${{ parameters.targetBranch }}..."
+          ORG_URL="$(System.CollectionUri)"
+          PROJECT="$(System.TeamProject)"
+          REPO_ID="$(Build.Repository.ID)"
+          API_VERSION="7.1-preview.1"
+          API_URL="${ORG_URL}${PROJECT}/_apis/git/repositories/${{ parameters.repoName }}/pullrequests?api-version=${API_VERSION}"
+
+          TITLE="Update ${{ parameters.envName }} image tags from ACR (build $(Build.BuildId))"
+          DESCRIPTION="Automated update of image tags for environment '${{ parameters.envName }}' using ACR repo tags. BuildId: $(Build.BuildId)."
+
+          if ! command -v jq >/dev/null 2>&1; then
+            echo "Installing jq..."
+            sudo apt-get update -y
+            sudo apt-get install -y jq
+          fi
+
+          DATA=$(jq -n \
+            --arg src "refs/heads/${BRANCH_NAME}" \
+            --arg tgt "refs/heads/${{ parameters.targetBranch }}" \
+            --arg title "$TITLE" \
+            --arg desc "$DESCRIPTION" \
+            '{sourceRefName:$src, targetRefName:$tgt, title:$title, description:$desc, reviewers: []}')
+
+          echo "$DATA" | jq .
+
+          HTTP_STATUS=$(curl -sS -o pr_response.json -w "%{http_code}" -X POST \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer $(System.AccessToken)" \
+            --data "$DATA" "$API_URL")
+
+          echo "PR creation HTTP status: $HTTP_STATUS"
+          if [ "$HTTP_STATUS" -lt 200 ] || [ "$HTTP_STATUS" -ge 300 ]; then
+            echo "PR creation failed. Response:" >&2
+            cat pr_response.json >&2
+            exit 1
+          fi
+
+          echo "PR created successfully. Response summary:"
+          jq '{pullRequestId, status, title, sourceRefName, targetRefName, createdBy: {displayName}}' pr_response.json
+        displayName: Push branch and create PR
+        env:
+          SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+        workingDirectory: $(System.DefaultWorkingDirectory)

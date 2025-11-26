@@ -38,6 +38,19 @@ parameters:
     displayName: 'Run Security and Update Scanning'
     type: boolean
     default: false
+  # Control matrix generation behavior
+  - name: IncludeAllApplications
+    displayName: 'Include All Applications (Ignore Changes)'
+    type: boolean
+    default: false
+  - name: IncludeAllIaC
+    displayName: 'Include All IaC Folders in Matrix Detection'
+    type: boolean
+    default: false
+  - name: PullRequestIdOverride
+    displayName: 'Pull Request ID Override (for manual triggers, leave empty for auto-detection)'
+    type: string
+    default: 'e.g., 12345 (enter PR number or leave empty)'
 
 schedules:
   - cron: "0 5 * * *"
@@ -54,12 +67,17 @@ variables:
   isMain: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
   isPreRelease: $[eq(variables['Build.SourceBranch'], 'refs/heads/pre-release')]
   isScheduled: $[eq(variables['Build.Reason'], 'Schedule')]
+  # Use parameter override if provided, otherwise use system variable
+  pullRequestIdOverride: ${{ parameters.PullRequestIdOverride }}
+  includeAllApplications: ${{ parameters.IncludeAllApplications }}
+  includeAllIaC: ${{ parameters.IncludeAllIaC }}
+  # Pool configuration variables - using your managed DevOps pool
+  poolName: 'ai-on-edge-managed-pool'
+  vmImage: 'ubuntu-24.04'
 
-# Define the default pool for the entire pipeline using centralized variables.
-# This is a Managed DevOps Pool with Ubuntu 2022 and Windows 2022 agents
+# Define the default pool for the entire pipeline using your managed DevOps pool
 pool:
   name: $(poolName)
-  vmImage: $(vmImage)
 
 stages:
   # Daily scheduled build to run security and update scanning
@@ -67,9 +85,35 @@ stages:
     displayName: Security and Updates Scanning
     condition: or(eq(variables.isScheduled, true), eq(${{ parameters.RunSecurityUpdateScanning }}, true))
     jobs:
-      # Run Checkov security scanning directly with the PowerShell script approach
-      - template: .azdo/templates/checkov-template.yml
+      # SHA dependency staleness monitoring
+      - template: .azdo/templates/sha-staleness-template.yml
         parameters:
+          dependsOn: []
+          displayName: "SHA Staleness Check"
+          condition: succeeded()
+          maxAgeDays: 30
+          outputPath: '$(Agent.TempDirectory)/stale-dependencies.json'
+          agentPool:
+            name: $(poolName)
+            vmImage: $(vmImage)
+
+      # OSSF Scorecard analysis for supply chain security
+      - template: .azdo/templates/ossf-scorecard-template.yml
+        parameters:
+          dependsOn: []
+          displayName: "OSSF Scorecard Analysis"
+          condition: succeeded()
+          agentPool:
+            name: $(poolName)
+            vmImage: $(vmImage)
+
+      # Network egress monitoring for build security
+      - template: .azdo/templates/egress-monitoring-template.yml
+        parameters:
+          dependsOn: []
+          displayName: "Network Egress Monitoring"
+          condition: succeeded()
+          allowedEndpoints: 'github.com,registry-1.docker.io,*.azurecr.io,packages.microsoft.com,*.azure.com'
           agentPool:
             name: $(poolName)
             vmImage: $(vmImage)
@@ -93,7 +137,8 @@ stages:
           dependsOn: []
           displayName: "Check all folders in src directory"
           condition: succeeded()
-          includeAllFolders: true  # Check all folders for scheduled builds
+          includeAllIaC: true  # Check all IaC folders for scheduled builds
+          includeAllApplications: true  # Check all application folders for scheduled builds
           agentPool:
             name: $(poolName)
             vmImage: $(vmImage)
@@ -116,9 +161,19 @@ stages:
     # Run the main build process only if the build is not scheduled and is the main branch
     condition: and(eq(variables.isMain, true), eq(variables.isScheduled, false))
     jobs:
+      - template: .azdo/templates/harden-runner-template.yml
+        parameters:
+          dependsOn: []
+          displayName: "Security Hardening Setup"
+          condition: succeeded()
+          agentPool:
+            name: $(poolName)
+            vmImage: $(vmImage)
+
       # Use the megaLinter-template.yml to run MegaLinter
       - template: .azdo/templates/megalinter-template.yml
         parameters:
+          dependsOn: SecurityHardening
           displayName: "Run MegaLinter"
           condition: succeeded()
           # for main do not report results as there's no PR to report to
@@ -147,9 +202,19 @@ stages:
     # Run the pre-release build process only if the build is not scheduled and is the pre-release branch
     condition: and(eq(variables.isPreRelease, true), eq(variables.isScheduled, false))
     jobs:
+      - template: .azdo/templates/harden-runner-template.yml
+        parameters:
+          dependsOn: []
+          displayName: "PreRelease Security Hardening"
+          condition: succeeded()
+          agentPool:
+            name: $(poolName)
+            vmImage: $(vmImage)
+
       # Use the megaLinter-template.yml to run MegaLinter
       - template: .azdo/templates/megalinter-template.yml
         parameters:
+          dependsOn: SecurityHardening
           displayName: "Run MegaLinter"
           condition: succeeded()
           # for main do not report results as there's no PR to report to
@@ -163,6 +228,15 @@ stages:
     # Run the PR build process only if the build is not scheduled, not the main branch and not the pre-release branch
     condition: and(eq(variables.isMain, false), eq(variables.isPreRelease, false), eq(variables.isScheduled, false))
     jobs:
+      - template: .azdo/templates/harden-runner-template.yml
+        parameters:
+          dependsOn: []
+          displayName: "PR Security Hardening"
+          condition: succeeded()
+          agentPool:
+            name: $(poolName)
+            vmImage: $(vmImage)
+
       # Use the MegaLinter template for PR builds with Azure reporter enabled
       - template: .azdo/templates/megalinter-template.yml
         parameters:
@@ -173,7 +247,21 @@ stages:
           # to the PR and set the pull request ID and source repo URIs
           enableAzureReporter: true
           pullRequestId: $(System.PullRequest.PullRequestId)
+          pullRequestIdOverride: $(pullRequestIdOverride)
           sourceRepoUri: $(System.PullRequest.SourceRepositoryURI)
+          agentPool:
+            name: $(poolName)
+            vmImage: $(vmImage)
+      # Use the matrix-folder-check-template.yml to check for changes in src directory
+      # This job runs early to provide change detection outputs for conditional execution
+      - template: .azdo/templates/matrix-folder-check-template.yml
+        parameters:
+          jobName: ComponentChangesFolderCheck  # Add unique job name for this instance
+          dependsOn: MegaLinter
+          displayName: "Check for changes in src directory"
+          condition: succeeded()
+          includeAllIaC: ${{ parameters.IncludeAllIaC }}
+          includeAllApplications: ${{ parameters.IncludeAllApplications }}
           agentPool:
             name: $(poolName)
             vmImage: $(vmImage)
@@ -183,41 +271,30 @@ stages:
       # breakBuild: true (fail build on validation issues)
       - template: .azdo/templates/docs-validation-template.yml
         parameters:
-          dependsOn: MegaLinter
+          dependsOn: ComponentChangesFolderCheck
           displayName: "Enhanced Documentation Validation"
           condition: succeeded()
-          breakBuild: false  # Only show warnings by default
+          breakBuild: true  # Fail build on documentation issues
           agentPool:
             name: $(poolName)
             vmImage: $(vmImage)
       # Use the docs check template for PR builds
       - template: .azdo/templates/docs-check-terraform-template.yml
         parameters:
-          dependsOn: MegaLinter
+          dependsOn: ComponentChangesFolderCheck
           displayName: "Terraform Documentation Quality Check"
-          condition: succeeded()
-          breakBuild: false  # Only show warnings by default
+          condition: eq(dependencies.ComponentChangesFolderCheck.outputs['matrixBuildFolderCheckTask.changesInTfInstall'], 'true')
+          breakBuild: true  # Fail build on documentation issues
           agentPool:
             name: $(poolName)
             vmImage: $(vmImage)
       # Use the docs check template for Bicep files
       - template: .azdo/templates/docs-check-bicep-template.yml
         parameters:
-          dependsOn: MegaLinter
+          dependsOn: ComponentChangesFolderCheck
           displayName: "Bicep Documentation Quality Check"
-          condition: succeeded()
-          breakBuild: false  # Only show warnings by default
-          agentPool:
-            name: $(poolName)
-            vmImage: $(vmImage)
-      # Use the matrix-folder-check-template.yml to check for changes in src directory
-      - template: .azdo/templates/matrix-folder-check-template.yml
-        parameters:
-          jobName: ComponentChangesFolderCheck  # Add unique job name for this instance
-          dependsOn: [DocsCheckTerraform, DocsCheckBicep]
-          displayName: "Check for changes in src directory"
-          condition: succeeded()
-          includeAllFolders: false  # Only check folders with changes for PR builds
+          condition: eq(dependencies.ComponentChangesFolderCheck.outputs['matrixBuildFolderCheckTask.changesInBicepInstall'], 'true')
+          breakBuild: true  # Fail build on documentation issues
           agentPool:
             name: $(poolName)
             vmImage: $(vmImage)
@@ -237,7 +314,7 @@ stages:
         parameters:
           dependsOn: ComponentChangesFolderCheck  # Updated to reference the unique job name
           displayName: "Check Terraform Variable Consistency"
-          condition: succeeded()
+          condition: eq(dependencies.ComponentChangesFolderCheck.outputs['matrixBuildFolderCheckTask.changesInTfInstall'], 'true')
           breakBuild: false  # Only show warnings by default
           agentPool:
             name: $(poolName)
@@ -247,7 +324,7 @@ stages:
         parameters:
           dependsOn: ComponentChangesFolderCheck  # Updated to reference the unique job name
           displayName: "Check Bicep Variable Consistency"
-          condition: succeeded()
+          condition: eq(dependencies.ComponentChangesFolderCheck.outputs['matrixBuildFolderCheckTask.changesInBicepInstall'], 'true')
           breakBuild: false  # Only show warnings by default
           agentPool:
             name: $(poolName)
@@ -260,6 +337,17 @@ stages:
           condition: eq(dependencies.ComponentChangesFolderCheck.outputs['matrixBuildFolderCheckTask.changesInTfInstall'], 'true')
           matrixVariable: dependencies.ComponentChangesFolderCheck.outputs['matrixBuildFolderCheckTask.changedTfFolders']
           azureServiceConnection: azdo-ai-for-edge-iac-for-edge
+          breakBuild: true
+          agentPool:
+            name: $(poolName)
+            vmImage: $(vmImage)
+      # Use the application-build-template.yaml template for Application builds
+      - template: .azdo/templates/application-build-template.yaml
+        parameters:
+          dependsOn: ComponentChangesFolderCheck
+          displayName: "Application Matrix Build"
+          condition: or(eq(dependencies.ComponentChangesFolderCheck.outputs['matrixBuildFolderCheckTask.changesInApplications'], 'true'), eq(variables.includeAllApplications, 'True'))
+          matrixVariable: dependencies.ComponentChangesFolderCheck.outputs['matrixBuildFolderCheckTask.changedApplicationFolders']
           breakBuild: true
           agentPool:
             name: $(poolName)

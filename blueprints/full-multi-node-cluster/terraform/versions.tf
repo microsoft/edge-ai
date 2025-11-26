@@ -2,7 +2,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = ">= 4.8.0"
+      version = ">= 4.51.0"
     }
     azuread = {
       source  = "hashicorp/azuread"
@@ -28,9 +28,4 @@ provider "azurerm" {
       prevent_deletion_if_contains_resources = false
     }
   }
-}
-
-provider "fabric" {
-  # Enable preview features required for pre-release
-  preview = true
 }
