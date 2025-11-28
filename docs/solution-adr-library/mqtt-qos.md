@@ -2,7 +2,7 @@
 title: Choosing QoS Level for the MQTT Bridge routes
 description: Architecture Decision Record defining optimal MQTT Quality of Service (QoS) levels for MQTT Bridge routes between Local UNS and Enterprise UNS. Evaluates QoS 0, 1, and 2 for different data types including metadata and assets data, with considerations for Azure IoT Operations MQTT broker scaling and performance optimization.
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: architecture-decision-record
 estimated_reading_time: 9
 keywords:

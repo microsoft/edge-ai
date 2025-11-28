@@ -23,7 +23,7 @@ keywords:
 
 This guide is for contributors who want to add new features, components, or improve existing functionality in the AI on Edge Flagship Accelerator. It provides comprehensive guidance on the development environment, processes, and standards.
 
-> **🚀 Boost Your Development Velocity:** Master AI-assisted engineering with our [PraxisWorx Training Platform](/praxisworx/). Start with the [AI-Assisted Engineering Track](/praxisworx/training-labs/01-ai-assisted-engineering/) to learn advanced GitHub Copilot techniques and hyper-velocity development practices.
+> **🚀 Boost Your Development Velocity:** Build proficiency in AI-assisted engineering with our [Learning Platform](/learning/). Start with the [AI-Assisted Engineering Track](/learning/training-labs/01-ai-assisted-engineering/) to learn advanced GitHub Copilot techniques and hyper-velocity development practices.
 
 ## Repository Structure and Organization
 

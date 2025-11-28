@@ -1,0 +1,139 @@
+# YOLOv8n Configuration for Industrial Object Detection
+# Nano version for edge devices with limited resources
+---
+model:
+  name: "yolov8n"
+  version: "8.0.0"
+  model_type: "object_detection"
+  description: "YOLOv8 Nano object detection model for industrial safety monitoring"
+  path: "models/yolov8n.onnx"
+  size_mb: 6.2
+  backends: ["onnx", "candle"]
+  performance:
+    avg_inference_ms: 45.0
+    memory_usage_mb: 30.0
+    accuracy: 0.37
+    target_hardware: "cpu"
+
+input:
+  shape: [1, 3, 640, 640]
+  dtype: "float32"
+  format: "NCHW"
+  value_range: [0.0, 1.0]
+  color_space: "RGB"
+  input_type: "image"
+
+output:
+  tensors:
+    - name: "output0"
+      shape: [1, 84, 8400]
+      dtype: "float32"
+      semantic: "detections"
+  postprocess_type: "yolov8"
+  confidence: 0.5
+  nms_threshold: 0.4
+  max_detections: 100
+  class_labels:
+    - "person"
+    - "bicycle"
+    - "car"
+    - "motorcycle"
+    - "airplane"
+    - "bus"
+    - "train"
+    - "truck"
+    - "boat"
+    - "traffic light"
+    - "fire hydrant"
+    - "stop sign"
+    - "parking meter"
+    - "bench"
+    - "bird"
+    - "cat"
+    - "dog"
+    - "horse"
+    - "sheep"
+    - "cow"
+    - "elephant"
+    - "bear"
+    - "zebra"
+    - "giraffe"
+    - "backpack"
+    - "umbrella"
+    - "handbag"
+    - "tie"
+    - "suitcase"
+    - "frisbee"
+    - "skis"
+    - "snowboard"
+    - "sports ball"
+    - "kite"
+    - "baseball bat"
+    - "baseball glove"
+    - "skateboard"
+    - "surfboard"
+    - "tennis racket"
+    - "bottle"
+    - "wine glass"
+    - "cup"
+    - "fork"
+    - "knife"
+    - "spoon"
+    - "bowl"
+    - "banana"
+    - "apple"
+    - "sandwich"
+    - "orange"
+    - "broccoli"
+    - "carrot"
+    - "hot dog"
+    - "pizza"
+    - "donut"
+    - "cake"
+    - "chair"
+    - "couch"
+    - "potted plant"
+    - "bed"
+    - "dining table"
+    - "toilet"
+    - "tv"
+    - "laptop"
+    - "mouse"
+    - "remote"
+    - "keyboard"
+    - "cell phone"
+    - "microwave"
+    - "oven"
+    - "toaster"
+    - "sink"
+    - "refrigerator"
+    - "book"
+    - "clock"
+    - "vase"
+    - "scissors"
+    - "teddy bear"
+    - "hair drier"
+    - "toothbrush"
+
+preprocessing:
+  resize_strategy: "letterbox"
+  target_size: [640, 640]
+  normalization:
+    mean: [0.0, 0.0, 0.0]
+    std: [1.0, 1.0, 1.0]
+    scale_to_unit: true
+  steps: []
+
+postprocessing:
+  postprocess_type: "yolov8"
+  parameters:
+    anchors: []
+    strides: [8, 16, 32]
+  output_format: "detection"
+
+# Optional model-specific parameters
+parameters:
+  iou_threshold: 0.4
+  conf_threshold: 0.5
+  max_det: 300
+  agnostic_nms: false

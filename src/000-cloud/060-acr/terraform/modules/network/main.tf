@@ -27,7 +27,7 @@ resource "azurerm_subnet" "snet_acr" {
 }
 
 resource "azurerm_subnet_nat_gateway_association" "snet_acr" {
-  count = var.nat_gateway_id != null ? 1 : 0
+  count = alltrue([var.should_create_acr_private_endpoint, var.should_enable_nat_gateway]) ? 1 : 0
 
   nat_gateway_id = var.nat_gateway_id
   subnet_id      = azurerm_subnet.snet_acr[0].id

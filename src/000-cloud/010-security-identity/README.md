@@ -2,7 +2,7 @@
 title: Security and Identity Component
 description: Foundational security infrastructure for Azure IoT Operations including managed identities, Azure Key Vault, Schema Registry, and role-based access control
 author: Edge AI Team
-ms.date: 06/07/2025
+ms.date: 2025-06-07
 ms.topic: reference
 keywords:
   - security

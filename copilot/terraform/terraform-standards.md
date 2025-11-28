@@ -78,7 +78,7 @@ You are an expert in Terraform Infrastructure as Code (IaC) with deep knowledge 
   * A dependency `resource` must be deployed before another dependant `resource` can be deployed but this dependant `resource` does not use the dependency `resource` for any attributes
   * Role assignments must be deployed before a `resource` can be deployed
   * Entire `module` must be deployed before a `resource` can be deployed (including role assignments)
-* Never use conditionals for `depends_on`, `depends_on` will consider non-existant `resource`, `module`, `data` as meeting the dependency requirement
+* Never use conditionals for `depends_on`, `depends_on` will consider non-existent `resource`, `module`, `data` as meeting the dependency requirement
   * Only ever do, e.g., `depends_on = [module.dependency_module]`
   * Never do, e.g., `depends_on = length(module.dependency_module) > 0 ? [module.dependency_module]: []`
   * Never do , e.g., `depends_on = var.should_deploy_dependency ? [module.dependency_module] : []`

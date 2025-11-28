@@ -2,7 +2,7 @@
 title: Developer Experience & Platform Services
 description: Comprehensive developer enablement ecosystem that aggregates seven critical platform capabilities to deliver transformational development velocity and operational excellence across enterprise-scale edge computing and industrial IoT initiatives through intelligent automation, standardized tooling, and collaborative development infrastructure
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: concept
 estimated_reading_time: 25
 keywords:

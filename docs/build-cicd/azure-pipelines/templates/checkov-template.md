@@ -2,7 +2,7 @@
 title: Checkov Security Scanner Template
 description: Azure DevOps pipeline template that integrates Checkov security scanning for Infrastructure as Code files
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: concept
 estimated_reading_time: 7
 keywords:

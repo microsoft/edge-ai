@@ -2,7 +2,7 @@
 title: AI-Assisted Engineering
 description: Guide for using AI-powered tools like GitHub Copilot when working with the AI on Edge Flagship Accelerator
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-07-18
 ms.topic: how-to
 estimated_reading_time: 5
 keywords:
@@ -50,49 +50,58 @@ Comprehensive guidance files referenced by the main copilot instructions:
 - **`getting-started.md`** - Getting started guidance for new contributors
 - **`python-script.md`** - Python scripting standards and conventions
 - **`csharp-tests.md`** - C# testing standards and practices
-- **`terraform/`** - Terraform development guidance and standards
-- **`bicep/`** - Bicep development guidance and standards
-- **`csharp/`** - C# development guidance and standards
-- **`bash/`** - Bash scripting standards and guidelines
+- **`bash/bash.md`** - Bash development guidance and standards
+- **`bicep/bicep.md`** - Bicep development guidance and standards
+- **`bicep/bicep-standards.md`** - Bicep coding standards and best practices
+- **`csharp/csharp.md`** - C# development guidance and standards
+- **`csharp/csharp-standards.md`** - C# coding standards and best practices
+- **`terraform/terraform.md`** - Terraform development guidance and standards
+- **`terraform/terraform-standards.md`** - Terraform coding standards and best practices
 
 ### Context Instructions (`/.github/instructions/`)
 
 Instruction files designed to be attached to Copilot context using **Add Context > Instructions**:
 
-- **`bash.instructions.md`** - Bash scripting standards and best practices
-- **`bicep.instructions.md`** - Bicep-specific instructions for Copilot
-- **`csharp.instructions.md`** - C# development instructions
-- **`shell.instructions.md`** - Shell scripting guidelines and conventions
-- **`task-implementation.instructions.md`** - Task implementation instructions and workflow
-- **`terraform.instructions.md`** - Terraform development instructions
-- **`commit-message.instructions.md`** - Commit message formatting guidance
-- **`task-plan.instructions.md`** - Task planning instructions
+| File Name                               | Context/Language     | Description                                                                             |
+|-----------------------------------------|----------------------|-----------------------------------------------------------------------------------------|
+| `bash.instructions.md`                  | Bash/Shell Scripting | Comprehensive guidance for bash script development and shell command execution          |
+| `bicep.instructions.md`                 | Azure Bicep          | Infrastructure as Code implementation guidance for Azure Bicep development              |
+| `commit-message.instructions.md`        | Git/Version Control  | Standardized commit message formatting using Conventional Commit patterns               |
+| `csharp.instructions.md`                | C#/.NET              | Development standards and practices for C# code implementation                          |
+| `learning-coach-schema.instructions.md` | Learning             | Instructions for AI coaches managing learner progress tracking in the Learning platform |
+| `python-script.instructions.md`         | Python               | Python scripting standards and conventions for automation and tooling                   |
+| `shell.instructions.md`                 | Shell Environments   | General shell environment and command-line interface guidance                           |
+| `task-implementation.instructions.md`   | Task Management      | Systematic process for implementing comprehensive task plans and tracking progress      |
+| `terraform.instructions.md`             | Terraform            | Infrastructure as Code implementation guidance for HashiCorp Terraform development      |
 
 ### Reusable Prompts (`/.github/prompts/`)
 
 Prompt files for specific tasks that can be invoked using `/prompt-name` in Copilot chat:
 
-- **`adr-create.prompt.md`** - Architecture Decision Record creation
-- **`csharp-tests.prompt.md`** - C# test development prompts
-- **`deploy.prompt.md`** - Deployment-related prompts
-- **`edge-ai-project-planning.prompt.md`** - Project planning guidance
-- **`getting-started.prompt.md`** - Getting started prompts
-- **`iotops-version-upgrade.prompt.md`** - IoT Operations version upgrade guidance
-- **`prompt-new.prompt.md`** - New prompt creation assistant
-- **`prompt-refactor.prompt.md`** - Prompt refactoring and improvement
-- **`pull-request.prompt.md`** - Pull request creation assistance
-- **`python-script.prompt.md`** - Python scripting prompts
-- **`terraform-from-blueprint.prompt.md`** - Terraform blueprint conversion
+| Prompt Name                          | Invocation                  | Description                                    | Use Case                                             |
+|--------------------------------------|-----------------------------|------------------------------------------------|------------------------------------------------------|
+| `adr-create.prompt.md`               | `/adr-create`               | Architecture Decision Record creation guidance | Documenting architectural decisions                  |
+| `csharp-tests.prompt.md`             | `/csharp-tests`             | C# test development guidance                   | Creating unit and integration tests                  |
+| `deploy.prompt.md`                   | `/deploy`                   | Deployment workflows and best practices        | Infrastructure deployment assistance                 |
+| `getting-started.prompt.md`          | `/getting-started`          | Project onboarding and initial setup guidance  | New contributor onboarding                           |
+| `iotops-version-upgrade.prompt.md`   | `/iotops-version-upgrade`   | Azure IoT Operations version upgrade process   | Updating IoT Ops components to latest versions       |
+| `prompt-new.prompt.md`               | `/prompt-new`               | Creating new prompt files systematically       | Developing new AI prompts                            |
+| `prompt-refactor.prompt.md`          | `/prompt-refactor`          | Optimizing and improving existing prompts      | Enhancing prompt effectiveness                       |
+| `pull-request.prompt.md`             | `/pull-request`             | PR description and review assistance           | Creating comprehensive pull requests                 |
+| `python-script.prompt.md`            | `/python-script`            | Python scripting standards and patterns        | Python automation and scripting                      |
+| `terraform-from-blueprint.prompt.md` | `/terraform-from-blueprint` | Converting blueprints to Terraform             | Translating blueprint designs to infrastructure code |
 
 ### Enhanced Chat modes (`/.github/chatmodes/`)
 
 Advanced chatmode files with comprehensive tool access for specialized coaching and workflow assistance:
 
-- **`adr-creation.chatmode.md`** - Guided architecture decision record creation workflow
-- **`praxisworx-kata-coach.chatmode.md`** - Interactive kata coaching with enhanced tool access
-- **`praxisworx-lab-coach.chatmode.md`** - Complex training lab coaching for multi-component systems
-- **`task-planner.chatmode.md`** - Comprehensive task planning with research capabilities
+- **`adr-creation.chatmode.md`** - Interactive architectural decision record creation with comprehensive research and analysis capabilities
+- **`edge-ai-project-planner.chatmode.md`** - Edge AI project planning and solution architecture guidance
+- **`learning-kata-coach.chatmode.md`** - Interactive kata coaching with enhanced tool access
+- **`learning-lab-coach.chatmode.md`** - Complex training lab coaching for multi-component systems
 - **`prompt-builder.chatmode.md`** - Expert prompt engineering and validation system
+- **`security-plan-creator.chatmode.md`** - Security planning and assessment guidance for project implementations
+- **`task-planner.chatmode.md`** - Comprehensive task planning with research capabilities
 
 ## Using Repository AI Resources
 
@@ -114,11 +123,15 @@ Advanced chatmode files with comprehensive tool access for specialized coaching 
 Chat modes provide specialized AI coaching with enhanced tool access, changing the system prompt in addition to the instructions:
 
 1. **Reference Chat Modes**: Use the chat mode drop-down in Copilot Chat to select a custom chat mode
-2. **PraxisWorx Coaching**:
-   - **Kata Coach**: `#file:/.github/chatmodes/praxisworx-kata-coach.chatmode.md` for focused practice exercises
-   - **Lab Coach**: `#file:/.github/chatmodes/praxisworx-lab-coach.chatmode.md` for complex training labs
-3. **Enhanced Capabilities**: Chat modes have comprehensive tool access for research, file editing, and system interaction
-4. **Coaching Methodology**: Follows OpenHack-style discovery-based learning with systematic guidance
+
+1. **Learning Coaching**:
+
+- **Kata Coach**: `#file:/.github/chatmodes/learning-kata-coach.chatmode.md` for focused practice exercises
+- **Lab Coach**: `#file:/.github/chatmodes/learning-lab-coach.chatmode.md` for complex training labs
+
+1. **Enhanced Capabilities**: Chat modes have comprehensive tool access for research, file editing, and system interaction
+
+1. **Coaching Methodology**: Follows OpenHack-style discovery-based learning with systematic guidance
 
 #### Task Planning and Implementation
 
@@ -133,9 +146,9 @@ Chat modes provide specialized AI coaching with enhanced tool access, changing t
   - Follows standardized workflows for consistent implementation practices
   - When you select a file in the `.copilot-tracking/plans/` directory, Copilot will automatically apply the task implementation instructions context
 
-### PraxisWorx AI Coaching Integration
+### Learning AI Coaching Integration
 
-Explore advanced AI-assisted enginering practices through our **[PraxisWorx Training Platform](/praxisworx/)**:
+Explore advanced AI-assisted engineering practices through our **[Learning Platform](/learning/)**:
 
 #### Interactive Learning Support
 
@@ -146,12 +159,12 @@ Explore advanced AI-assisted enginering practices through our **[PraxisWorx Trai
 
 #### Getting Started with AI Coaching
 
-1. **Launch Training Mode**: Run `npm run docs:training` to access the learning platform
-2. **Select Coaching Mode**: Choose "PraxisWorx Kata Coach" in GitHub Copilot Chat
-3. **Start Learning**: Say "I'm working on PraxisWorx learning and want interactive coaching"
+1. **Launch Training Mode**: Run `npm run docs` to access the learning platform
+2. **Select Coaching Mode**: Choose "Learning Kata Coach" in GitHub Copilot Chat
+3. **Start Learning**: Say "I'm working on learning and want interactive coaching"
 4. **Get Personalized Path**: Take the skill assessment for customized kata recommendations
 
-All PraxisWorx coaching modes are pre-configured and ready to use immediately in this repository. All advanced chatmode prompts can be easily copied into your own project for immediate AI-assisted engineering acceleration.
+All Learning coaching modes are pre-configured and ready to use immediately in this repository. All advanced chatmode prompts can be easily copied into your own project for immediate AI-assisted engineering acceleration.
 
 ## Essential Project Prompts
 
@@ -160,6 +173,12 @@ All PraxisWorx coaching modes are pre-configured and ready to use immediately in
 - Generates comprehensive PR descriptions following project standards
 - Ensures proper documentation updates and review checklist completion
 - Options: `includeMarkdown=true`, `branch=feat/branch-name`
+
+### Task Planning (`/task-planner`)
+
+- **`/task-planner`**: Creates structured development plans with phases and tasks
+- Files stored in `./.copilot-tracking/` (excluded from git)
+- Works with the `task-implementation.instructions.md` for enhanced guidance
 
 ### Deployment Assistance (`/deploy`)
 

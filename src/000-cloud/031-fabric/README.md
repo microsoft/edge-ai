@@ -2,7 +2,7 @@
 title: Microsoft Fabric Component
 description: Microsoft Fabric resources including capacity, workspace, eventhouse, and lakehouse for real-time analytics and data lake scenarios for Edge AI workloads
 author: Edge AI Team
-ms.date: 07/29/2025
+ms.date: 2025-11-04
 ms.topic: reference
 estimated_reading_time: 6
 keywords:
@@ -57,6 +57,12 @@ The component supports flexible configuration options:
 - **Resource Selection**: Choose which Fabric resources to create (workspace, eventhouse, lakehouse)
 - **Database Configuration**: Configure multiple KQL databases with custom retention policies
 - **Access Control**: Set capacity administrators and workspace permissions
+
+## Prerequisites
+
+Before deploying this component, ensure you have:
+
+- **Microsoft Fabric Access**: Users must have an active Fabric trial or license.
 
 ## Dependencies
 

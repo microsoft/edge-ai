@@ -11,7 +11,7 @@ Follow all instructions from #file:../instructions/ado-create-pull-request.instr
 
 * ${input:adoProject:edge-ai}: Azure DevOps project identifier.
 * ${input:repository}: (Optional) Repository name or ID for the pull request. Discover with ado tools if needed.
-* ${input:baseBranch:origin/main}: Git comparison base and target branch for the PR.
+* ${input:baseBranch:origin/dev}: Git comparison base and target branch for the PR.
 * ${input:sourceBranch}: Source branch for the pull request (defaults to current branch).
 * ${input:isDraft:false}: Whether to create the PR as a draft.
 * ${input:includeMarkdown:true}: Include markdown file diffs in pr-reference.xml (passed as --no-md-diff if false to pr-ref-gen.sh).
@@ -20,6 +20,7 @@ Follow all instructions from #file:../instructions/ado-create-pull-request.instr
 * ${input:areaPath}: (Optional) Area Path filter for work item searches.
 * ${input:iterationPath}: (Optional) Iteration Path filter for work item searches.
 * ${input:workItemStates:New,Active,Resolved}: (Optional) Comma-separated states to include in work item searches.
+* ${input:noGates:false}: Skip all confirmation gates and create PR immediately with discovered work items and minimum 2 optional reviewers.
 
 ## Instructions
 

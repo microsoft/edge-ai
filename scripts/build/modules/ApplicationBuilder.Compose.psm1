@@ -218,10 +218,10 @@ function Invoke-Compose {
         $outputBuffer.Add($text) | Out-Null
 
         if ($text.EndsWith("`n") -or $text.EndsWith("`r")) {
-            [Console]::Error.Write($text)
+            [Console]::Error.Write("{0}", $text)
         }
         else {
-            [Console]::Error.WriteLine($text)
+            [Console]::Error.WriteLine("{0}", $text)
         }
     }
     $exitCode = $LASTEXITCODE

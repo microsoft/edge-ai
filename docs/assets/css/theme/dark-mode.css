@@ -1,0 +1,7 @@
+/* RUTHLESS NYT EDITOR MODE - MINIMAL DARK */
+
+/* Docsify Vue theme handles 99% of dark mode */
+/* We override NOTHING except theme color */
+body.dark {
+  --theme-color: #60a5fa;
+}

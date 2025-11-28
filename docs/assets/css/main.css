@@ -1,24 +1,109 @@
-/* Main CSS Entry Point - Imports All Modules */
+/* === OPTIMIZED CSS LOADING ORDER === */
+/* Performance-optimized import sequence for professional UI system */
 
-/* Core Theme */
+/* CRITICAL PATH - Essential Foundation */
 @import './theme/variables.css';
-@import './theme/base.css';
+@import './theme/dark-mode.css';
+@import './theme/font-performance.css';
 
-/* Layout Components */
-@import './layout/sidebar.css';
+/* LAYOUT FOUNDATION - Core Structure */
+@import './layout/containers.css';
+@import './layout/responsive.css';
 @import './layout/content.css';
+
+/* SIDEBAR SYSTEM - Enhanced Professional Components */
+@import './layout/sidebar.css';
+@import './components/sidebar-branding.css';
+@import './features/sidebar-search.css';
+@import './features/sidebar-navigation.css';
+
+/* LAYOUT COMPLETION - Additional Structure */
+@import './layout/index-page.css';
 @import './layout/header.css';
+@import './layout/toc-container.css';
 
-/* UI Components */
-@import './components/buttons.css';
-@import './components/forms.css';
-@import './components/metadata.css';
-@import './components/footer.css';
-
-/* Plugin Integrations */
-@import './plugins/toc.css';
-
-/* Features */
+/* CORE FEATURES - Essential Functionality */
 @import './features/breadcrumbs.css';
-@import './features/responsive.css';
-@import './features/interactive-progress.css';
+@import './features/accessibility.css';
+
+/* CONTENT ENHANCEMENTS - Professional Styling */
+/* COMPONENT SYSTEM - Enhanced UI Elements */
+@import './components/dark-mode-toggle.css';
+@import './components/code-blocks.css';
+@import './components/metadata.css';
+@import './components/tables.css';
+@import './features/micro-animations.css';
+@import './custom.css';
+
+/* INTERACTIVE COMPONENTS - Advanced Features */
+@import './components/progress-dashboard.css';
+@import './components/notifications.css';
+@import './components/interactive-progress.css';
+@import './components/evaluation-forms.css';
+@import './components/mermaid-diagram.css';
+@import './components/assessment-path-generator.css';
+@import './components/search-result-count.css';
+@import './components/single-action-interface.css';
+@import './components/progressive-disclosure.css';
+
+/* PLUGIN INTEGRATIONS - Third-party Extensions */
+@import './plugins/page-toc.css';
+@import './plugins/search.css';
+
+/* ADVANCED FEATURES - Performance-Optimized Loading */
+/* Remove unused sidebar-collapse-system.css import - functionality moved to sidebar-search.css and sidebar-navigation.css */
+
+/* === NUCLEAR OPTION - COMPLETE DOCSIFY OVERRIDE === */
+/* This MUST be loaded last to ensure complete theme control */
+@import './overrides/docsify-aggressive-overrides.css';
+
+/* === FINAL THEME ENFORCEMENT === */
+/* Minimal overrides - let sidebar.css handle styling */
+
+/* NAVBAR ACTIVE STATES */
+.app-nav a.active,
+.app-nav li a.active,
+.app-nav > ul > li.active > a {
+  color: var(--theme-color) !important;
+  background: rgba(0, 120, 212, 0.1) !important;
+  border-radius: var(--border-radius) !important;
+  font-weight: var(--font-weight-medium) !important;
+  position: relative;
+}
+
+.app-nav a.active::after,
+.app-nav li a.active::after,
+.app-nav > ul > li.active > a::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24px;
+  height: 2px;
+  background: var(--theme-color);
+  border-radius: 1px;
+}
+
+/* === CODE BLOCK WORD WRAP === */
+/* Force word wrap for all code blocks to prevent horizontal scrolling */
+.markdown-section pre,
+.markdown-section pre code,
+.markdown-section code.lang-text,
+.markdown-section pre[data-lang],
+.markdown-section pre code[class*="lang-"],
+.markdown-section pre code[class*="language-"] {
+  white-space: pre-wrap !important;
+  word-wrap: break-word !important;
+  word-break: break-word !important;
+  overflow-wrap: break-word !important;
+  max-width: 100% !important;
+  overflow-x: visible !important;
+}
+
+/* Inline code can wrap at word boundaries */
+.markdown-section code:not(pre code) {
+  white-space: normal !important;
+  word-break: break-word !important;
+  overflow-wrap: break-word !important;
+}

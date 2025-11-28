@@ -1,0 +1,331 @@
+/* Docsify Sidebar Chevrons - Navigation Enhancement */
+
+/*
+ * Note: Many !important declarations are necessary due to Docsify's CSS loading order.
+ * Docsify's CSS loads after our custom CSS, requiring !important to override defaults.
+ */
+
+/* Performance-optimized collapsible sections with containment */
+.sidebar-nav li.has-children {
+  position: relative;
+  contain: layout style; /* Isolate collapsible sections */
+}
+
+.sidebar-nav li.has-children > a,
+.sidebar-nav li.has-children > p {
+  position: relative;
+  padding-right: 40px !important; /* Enhanced: Make room for enhanced chevron with background */
+}
+
+/* Ensure ALL links with chevrons have proper padding for text wrapping */
+html .sidebar .sidebar-nav a:has(.chevron),
+html .sidebar .sidebar-nav li a:has(.chevron),
+html .sidebar .sidebar-nav ul li a:has(.chevron),
+html body .sidebar .sidebar-nav a:has(.chevron),
+html body .sidebar .sidebar-nav li a:has(.chevron),
+html body .sidebar .sidebar-nav ul li a:has(.chevron) {
+  padding-right: 48px !important; /* Make room for absolutely positioned chevron */
+  position: relative !important;
+  white-space: normal !important; /* Allow text to wrap */
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+}
+
+/* HIGHEST PRIORITY CHEVRON OVERRIDE - Ultra specific selectors */
+html .sidebar .sidebar-nav .chevron,
+html .sidebar .sidebar-nav li .chevron,
+html .sidebar .sidebar-nav ul li .chevron,
+html .sidebar .sidebar-nav ul li a .chevron,
+html body .sidebar .sidebar-nav .chevron,
+html body .sidebar .sidebar-nav li .chevron,
+html body .sidebar .sidebar-nav ul li .chevron,
+html body .sidebar .sidebar-nav ul li a .chevron {
+  position: absolute !important;
+  right: var(--spacing-md-minus) !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  color: var(--theme-color) !important;
+  font-size: 20px !important; /* FORCED: Even larger to ensure both chars render equally */
+  font-weight: 800 !important; /* FORCED: Extra bold to ensure consistency */
+  font-family: system-ui, -apple-system, "Segoe UI", Arial, sans-serif !important; /* FORCED: System font for consistent Unicode */
+  line-height: 1 !important;
+  transition: transform 0.25s ease, opacity 0.15s ease !important;
+  -webkit-user-select: none !important;
+  user-select: none !important;
+  cursor: pointer !important;
+  width: 32px !important; /* FORCED: Larger container */
+  height: 32px !important; /* FORCED: Larger container */
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  opacity: 0.8 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+  will-change: transform, opacity !important;
+  contain: layout style !important;
+}
+
+/* ULTRA HIGH SPECIFICITY CHEVRON STATES - Override everything */
+html body .sidebar .sidebar-nav .chevron.collapsed,
+html body .sidebar .sidebar-nav li .chevron.collapsed,
+html body .sidebar .sidebar-nav ul li .chevron.collapsed,
+html body .sidebar .sidebar-nav ul li a .chevron.collapsed {
+  transform: translateY(-50%) !important; /* No rotation - JS sets ▶ */
+  font-size: 20px !important; /* FORCED: Consistent size */
+  font-weight: 800 !important; /* FORCED: Consistent weight */
+}
+
+html body .sidebar .sidebar-nav .chevron.expanded,
+html body .sidebar .sidebar-nav li .chevron.expanded,
+html body .sidebar .sidebar-nav ul li .chevron.expanded,
+html body .sidebar .sidebar-nav ul li a .chevron.expanded {
+  transform: translateY(-50%) !important; /* No rotation - JS sets ▼ */
+  font-size: 20px !important; /* FORCED: Consistent size */
+  font-weight: 800 !important; /* FORCED: Consistent weight */
+}
+
+/* OVERRIDE ALL ACCESSIBILITY CSS CONFLICTS */
+html body .sidebar .sidebar-nav ul li a[aria-expanded="true"] .chevron,
+html body .sidebar .sidebar-nav ul li a[aria-expanded="false"] .chevron {
+  transform: translateY(-50%) !important; /* Override rotation from accessibility.css */
+  font-size: 20px !important; /* Override responsive.css font-size */
+  font-weight: 800 !important; /* FORCED: Consistent weight */
+}
+
+/* ULTRA HIGH SPECIFICITY HOVER STATES */
+html body .sidebar .sidebar-nav li.has-children:hover .chevron {
+  opacity: 1 !important;
+  color: var(--theme-color-dark) !important;
+  background: transparent !important;
+  transform: translateY(-50%) scale(1.1) !important;
+  font-size: 20px !important; /* FORCED: Maintain size on hover */
+  font-weight: 800 !important; /* FORCED: Maintain weight on hover */
+}
+
+html body .sidebar .sidebar-nav li.has-children:hover .chevron.collapsed {
+  transform: translateY(-50%) scale(1.1) !important; /* No rotation - JS controls ▶ */
+  font-size: 20px !important; /* FORCED: Maintain size */
+  font-weight: 800 !important; /* FORCED: Maintain weight */
+}
+
+html body .sidebar .sidebar-nav li.has-children:hover .chevron.expanded {
+  transform: translateY(-50%) scale(1.1) !important; /* No rotation - JS controls ▼ */
+  font-size: 20px !important; /* FORCED: Maintain size */
+  font-weight: 800 !important; /* FORCED: Maintain weight */
+}
+
+/* Active state for chevrons - minimal transform change */
+.sidebar-nav .chevron:active {
+  transform: translateY(-50%) scale(0.98) !important;
+  transition: transform 0.1s ease !important;
+}
+
+/* Smooth collapse animation setup */
+.sidebar-nav li.has-children > ul {
+  overflow: hidden;
+  transform-origin: top;
+  transition:
+    transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    opacity 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    max-height 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  will-change: transform, opacity, max-height;
+  contain: layout style;
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Expanded state - smooth reveal */
+.sidebar-nav li.expanded > ul {
+  opacity: 1;
+  transform: scaleY(1) translateZ(0);
+  max-height: 1000px;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+/* Collapsed state - smooth hide */
+.sidebar-nav li.collapsed > ul {
+  opacity: 0;
+  transform: scaleY(0) translateZ(0);
+  max-height: 0;
+  visibility: hidden;
+  pointer-events: none;
+  padding-top: 0;
+  padding-bottom: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+/* Performance-optimized progressive indentation using CSS custom properties */
+:root {
+  --indent-base: 8px;
+  --indent-level-1: 28px;
+  --indent-level-2: 48px;
+  --indent-level-3: 68px;
+  --indent-level-4: 88px;
+}
+
+/* Reset everything with maximum specificity */
+.sidebar-nav ul,
+.sidebar-nav li {
+  padding: 0 !important;
+  margin: 0 !important;
+  list-style: none !important;
+}
+
+/* Remove ALL background styling that could cause blue highlights */
+.sidebar-nav a,
+.sidebar-nav li a,
+.sidebar-nav ul li a,
+.sidebar-nav ul ul li a {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  transform: none !important;
+}
+
+/* Base link styling for all levels - using CSS custom properties */
+.sidebar-nav a {
+  display: block !important;
+  padding: var(--spacing-sm-plus) var(--indent-base) !important;
+  margin: var(--spacing-xxs) 0 !important;
+  text-decoration: none !important;
+  color: var(--text-primary, #2c3e50) !important;
+  transition: opacity 0.15s ease !important; /* Only opacity transitions */
+}
+
+/* Override any theme color styling on sidebar links */
+.sidebar-nav a,
+.sidebar-nav li a,
+.sidebar-nav ul li a,
+.sidebar-nav ul ul li a {
+  color: var(--text-primary, #2c3e50) !important;
+}
+
+/* CRITICAL: Override Docsify's text truncation - allow wrapping for long titles */
+html body .sidebar .sidebar-nav a,
+html body .sidebar .sidebar-nav li a,
+html body .sidebar .sidebar-nav ul li a,
+html body .sidebar .sidebar-nav ul ul li a {
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+}
+
+/* Progressive indentation using CSS custom properties - no layout calculations */
+.sidebar-nav > ul > li > a {
+  padding-left: var(--indent-base) !important;
+  font-weight: 600 !important;
+}
+
+.sidebar-nav > ul > li ul li a {
+  padding-left: var(--indent-level-1) !important;
+  font-weight: 500 !important;
+}
+
+.sidebar-nav > ul > li ul li ul li a {
+  padding-left: var(--indent-level-2) !important;
+  font-weight: normal !important;
+}
+
+.sidebar-nav > ul > li ul li ul li ul li a {
+  padding-left: var(--indent-level-3) !important;
+  font-weight: normal !important;
+}
+
+/* Simplified fallback approach using CSS custom properties */
+.sidebar-nav ul a { padding-left: var(--indent-base) !important; }
+.sidebar-nav ul ul a { padding-left: var(--indent-level-1) !important; }
+.sidebar-nav ul ul ul a { padding-left: var(--indent-level-2) !important; }
+.sidebar-nav ul ul ul ul a { padding-left: var(--indent-level-3) !important; }
+.sidebar-nav ul ul ul ul ul a { padding-left: var(--indent-level-4) !important; }
+
+/* Active item styling - clean background highlight */
+.sidebar-nav .active a,
+.sidebar-nav li.active > a,
+.sidebar-nav .current a,
+.sidebar .active,
+.sidebar .current,
+.sidebar ul li.active a,
+.sidebar-nav li.active a {
+  color: var(--theme-color, #0078d4) !important;
+  background: rgba(0, 120, 212, 0.08) !important;
+  font-weight: 500 !important;
+  border-radius: var(--spacing-sm) !important;
+  margin: var(--spacing-xxs) 0 !important;
+}
+
+/* Dark mode support */
+body.dark .sidebar-nav .chevron {
+  color: var(--theme-color-light) !important; /* Lighter blue for dark mode */
+  opacity: 0.7 !important; /* Fixed: Consistent with light mode */
+  background: transparent !important; /* Fixed: Removed background */
+}
+
+body.dark .sidebar-nav li.has-children:hover .chevron {
+  color: var(--theme-color) !important; /* Standard blue on hover in dark mode */
+  opacity: 1 !important;
+  background: transparent !important; /* Fixed: Removed background */
+}
+
+/* Dark mode text colors for sidebar links */
+body.dark .sidebar-nav a,
+body.dark .sidebar-nav li a,
+body.dark .sidebar-nav ul li a,
+body.dark .sidebar-nav ul ul li a {
+  color: var(--text-primary, #e2e8f0) !important;
+}
+
+/* ULTRA HIGH SPECIFICITY MOBILE OVERRIDE - Beat responsive.css */
+@media (max-width: 768px) {
+  html body .sidebar .sidebar-nav .chevron,
+  html body .sidebar .sidebar-nav li .chevron,
+  html body .sidebar .sidebar-nav ul li .chevron,
+  html body .sidebar .sidebar-nav ul li a .chevron {
+    font-size: 20px !important; /* FORCED: Override responsive.css var(--font-size-sm) */
+    font-weight: 800 !important; /* FORCED: Maintain weight on mobile */
+    opacity: 0.8 !important;
+    width: 32px !important;
+    height: 32px !important;
+  }
+}
+
+/* Navigation State Management - Active Link Highlighting */
+
+/* FIX: Only highlight the exact active link, not nested children */
+.sidebar-nav li.active > a {
+  background: var(--sidebar-nav-active-bg) !important;
+  border-right-color: var(--theme-color) !important;
+  font-weight: bold !important;
+}
+
+/* FIX: Remove highlighting from nested children when parent is active */
+.sidebar-nav li.active ul li a {
+  background: transparent !important;
+  border-right: var(--spacing-xs-plus) solid transparent !important;
+  font-weight: normal !important;
+}
+
+/* FIX: Only the direct active child should be highlighted */
+.sidebar-nav li.active ul li.active > a {
+  background: var(--color-theme-alpha-05) !important;
+  border-right-color: var(--theme-color) !important;
+  font-weight: 600 !important;
+}
+
+/* Make bold elements in sidebar actually render as bold */
+.sidebar-nav strong {
+  font-weight: bold !important;
+  color: var(--theme-color);
+}
+
+/* Hide auto-generated headers in sidebar */
+.sidebar .sidebar-nav .auto-header {
+  display: none !important;
+}

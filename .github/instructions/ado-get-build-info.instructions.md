@@ -1,11 +1,12 @@
 ---
-description: "Required instructions for anything related to Azure Devops or ado build information including status, logs, or details from provided pullrequest (PR), build Id, or branch name."
+description: "Required instructions for anything related to Azure Devops or ado build information including status, logs, or details from provided pull request (PR), build Id, or branch name."
 applyTo: '**/.copilot-tracking/pr/*-build-*.md'
 ---
 
 # Azure DevOps Build Info Instructions
 
 Required Azure DevOps (azdo or ado) tooling usage for Required Protocol:
+
 * Set `project` parameter to current project
 * If not already provided and needed, get [PR number] by using `mcp_ado_repo_list_pull_request_by_project` tool and setting `created_by_me` to `true` and `status` to `Active`
 * [branch name] is `refs/pull/[PR number]/merge` (if provided or identified from below protocol)
@@ -22,11 +23,13 @@ Required Azure DevOps (azdo or ado) tooling usage for Required Protocol:
 ## Required Summarization Rules
 
 When summarizing the user's conversation context:
+
 * Must always keep exact inputs and their exact values provided by prompt in summary
 * Must retain derived values and identified values (such as [PR number], [branch name], [build ID], etc) in summary
 * Must provide full paths to all files being edited or read in (this instruction file, the prompt that kicked off the process, the tracking file if used)
 
 After summarizing the user's conversation context:
+
 * Must read in and follow all of these instructions
 * Must regain entire context, read-in files, figure out exactly where left off
 * Must then resume protocol and continue to collect information and write out relevant information as requested
@@ -36,6 +39,7 @@ After summarizing the user's conversation context:
 Keep the user up-to-date while processing ado build information.
 
 Follow these guidelines whenever interacting with the user through conversation:
+
 * Utilize markdown styling whenever interacting with the user.
 * Provide double newlines for each paragraph or new section.
 * Use bolding for title words and italics for emphasis.
@@ -54,16 +58,19 @@ Follow the required protocol in order
 * If tracking file provided (as attachment or referenced by user), read in the file and continue updating it
 
 User will indicate if they want information saved into tracking file:
+
 * e.g., "Output the stack traces from the build logs for pr [PR number]"
 * e.g., "Save the relevant information for the most recent build"
 
 User may ask to just get the build information, DO NOT save to tracking file:
-* e.g., "get the build status for pullrequest [PR number]"
+
+* e.g., "get the build status for pull request [PR number]"
 * e.g., "Tell me what's wrong with my most recent build in azdo"
 
 ### 2. Correctly identify requested ado build information to retrieve
 
 User will indicate what type of information to retrieve:
+
 * e.g., "build status", "status", "state of the build", "build summary", "error", "information", "build issue", etc.
   * Must get build status using `mcp_ado_build_get_status` tool
 * e.g., "build logs", "logs", "stack trace", "detailed", etc.
@@ -72,10 +79,12 @@ User will indicate what type of information to retrieve:
 ### 3. Correctly find requested ado build
 
 User may indicate where to find build information:
-* e.g., "pullrequest [PR number]", "PR [PR number]", "pr [PR number]", etc.
+
+* e.g., "pull request [PR number]", "PR [PR number]", "pr [PR number]", etc.
 * e.g., "build [build ID]"
 
 User may use generic terms:
+
 * e.g., "my pull request", "My branch", "Current branch", "This branch"
   * Must derive [PR number] to get [branch name] from current git branch
 * e.g., "latest build", "failing build, "current build"

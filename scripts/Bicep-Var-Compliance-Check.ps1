@@ -74,7 +74,19 @@ function Find-BicepFile {
             Write-Verbose "Scanning for .bicep files in: $directory"
             # Get all .bicep files recursively
             $files = Get-ChildItem -Path $directory -Filter "*.bicep" -Recurse -File
-            $bicepFiles += $files.FullName
+
+            # Exclude blueprints/modules - shared module library, not deployable blueprint
+            # Use regex to handle both Windows (\) and Unix (/) path separators
+            if ($directory -match 'blueprints') {
+                $filteredFiles = $files | Where-Object {
+                    $relativePath = $_.FullName.Replace($PWD.Path, "").TrimStart("\\", "/")
+                    -not ($relativePath -match '^blueprints[/\\\\]modules[/\\\\]')
+                }
+                $bicepFiles += $filteredFiles.FullName
+            }
+            else {
+                $bicepFiles += $files.FullName
+            }
         }
         else {
             Write-Warning "Directory not found: $directory"

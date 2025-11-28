@@ -1,13 +1,13 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/ubuntu
 {
-	"name": "iac-edge-devcontainer",
+	"name": "edge-ai-devcontainer",
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
 	"image": "mcr.microsoft.com/devcontainers/python:3.11-bookworm",
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	"features": {
 		"ghcr.io/devcontainers/features/common-utils:2": {},
-		"ghcr.io/devcontainers/features/docker-in-docker:2": {},
+		"ghcr.io/devcontainers/features/docker-outside-of-docker:1": {},
 		"ghcr.io/devcontainers/features/git:1": {},
 		"ghcr.io/devcontainers/features/azure-cli:1": {
 			"extensions": "connectedk8s,k8s-extension,azure-iot-ops,amg,eventgrid"
@@ -76,7 +76,6 @@
 				"ms-dotnettools.vscode-dotnet-runtime",
 				"ms-python.autopep8",
 				"ms-azuretools.vscode-azurefunctions",
-				"msazurermtools.azurerm-vscode-tools",
 				"ms-azuretools.vscode-azureresourcegroups",
 				"ms-python.black-formatter",
 				"ms-dotnettools.csharp",
@@ -102,6 +101,7 @@
 	},
 
 	"onCreateCommand": {
+		"uv": "pip install uv",
 		"pip": "pip install -r requirements.txt",
 		"npm": "npm install -g npm && npm ci",
 		"apt": "sudo apt update && sudo apt install -y shellcheck",
