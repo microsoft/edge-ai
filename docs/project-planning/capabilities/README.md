@@ -2,7 +2,7 @@
 title: "Platform Capability Groups Documentation"
 description: "Comprehensive documentation for Edge AI Platform capability groups, foundational infrastructure, and services for enterprise edge computing and industrial automation."
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: hub-page
 keywords:
   - platform-capabilities

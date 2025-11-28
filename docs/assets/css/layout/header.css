@@ -1,33 +1,240 @@
-/* Header and Navigation Styling */
+/* Modern Container-Based Header System */
 
-/* Progress bar styling */
-.progress-bar {
+.app-nav {
   position: fixed;
   top: 0;
+  left: var(--sidebar-width);  /* Start after sidebar to avoid search overlap */
+  right: 0;                    /* Extend to full right edge */
+  height: var(--navbar-height);
+  z-index: var(--z-app-nav);
+  margin: 0;  /* Ensure flush with top */
+
+  /* Blended background styling for seamless integration */
+  background: var(--bg-primary);
+  border-bottom: none;  /* Remove border for more blended look */
+  box-shadow: none;     /* Remove shadow for cleaner integration */
+
+  /* Flexbox layout */
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0 var(--spacing-md);
+  box-sizing: border-box;
+
+  /* Subtle backdrop filtering for depth without separation */
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+/* Navigation List */
+.app-nav ul {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  flex-wrap: nowrap;
+  gap: var(--spacing-xs);
+  width: 100%;
+}
+
+.app-nav li {
+  position: relative;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.app-nav a {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: var(--text-primary);
+  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-sm);
+  padding: var(--spacing-sm);
+  border-radius: var(--border-radius);
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.app-nav a:hover {
+  background: var(--bg-secondary);
+  color: var(--theme-color);
+}
+
+/* Active section highlighting - when current page is in this section */
+.app-nav a.active,
+.app-nav li.active > a {
+  background: rgba(0, 120, 212, 0.1);
+  color: var(--theme-color);
+  font-weight: var(--font-weight-semibold);
+  border-bottom: 2px solid var(--theme-color);
+  position: relative; /* Ensure positioning context for ::after */
+}
+
+/* Enhanced active underline indicator */
+.app-nav a.active::after,
+.app-nav li a.active::after,
+.app-nav > ul > li.active > a::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24px;
+  height: 2px;
+  background: var(--theme-color);
+  border-radius: 1px;
+  z-index: 10; /* Ensure it's above other elements */
+  display: block; /* Force visibility */
+}
+
+/* Emoji and Icon Handling */
+.app-nav img.emoji,
+.app-nav a img,
+.app-nav a img.emoji {
+  height: 1em;
+  width: auto;
+  margin-right: var(--spacing-xs);
+  vertical-align: middle;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+/* Dropdown Menus */
+.app-nav li ul {
+  display: none;
+  position: absolute;
+  top: 100%;
   left: 0;
-  width: 0%;
-  height: 3px;
-  background: linear-gradient(90deg, var(--theme-color), var(--theme-color-secondary));
-  z-index: 10000;
-  transition: width 0.2s ease;
+  background: var(--bg-overlay);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-lg);
+  min-width: 200px;
+  z-index: calc(var(--z-app-nav) + 1);
+  margin-top: 0px; /* Remove gap completely for easier hover transition */
+
+  /* Smooth transitions for dropdown appearance */
+  opacity: 0;
+  transform: translateY(-8px);
+  transition:
+    opacity var(--transition-fast),
+    transform var(--transition-fast),
+    visibility var(--transition-fast);
+  visibility: hidden;
 }
 
-/* Updated timestamp styling */
-.docsify-updated {
-  color: #6c757d;
-  font-size: 0.85em;
-  margin-top: 20px;
-  padding-top: 20px;
-  border-top: 1px solid #e6e6e6;
-  text-align: right;
+/* CSS-only hover fallback (backward compatibility) */
+.app-nav li:hover ul {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
+  visibility: visible;
 }
 
-.docsify-updated:before {
-  content: "🕒 ";
+/* JavaScript-controlled dropdown visibility */
+.app-nav li ul.dropdown-visible {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
+  visibility: visible;
 }
 
-/* Dark mode updated timestamp */
-body.dark .docsify-updated {
-  color: var(--theme-text-muted, #a0aec0);
-  border-color: var(--theme-border-color, #4a5568);
+/* Enhanced styling for JavaScript-managed dropdowns */
+.app-nav li ul.js-dropdown-managed {
+  /* Override CSS hover when JavaScript is managing the dropdown */
+  transition-duration: var(--transition-medium);
+}
+
+/* Create invisible hover bridge between navbar item and dropdown */
+.app-nav li:hover::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  height: 8px; /* Invisible bridge area */
+  background: transparent;
+  z-index: calc(var(--z-app-nav) + 2);
+  pointer-events: auto;
+}
+
+/* Dropdown items styling */
+.app-nav li ul li {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.app-nav li ul li a {
+  display: block;
+  padding: var(--spacing-sm) var(--spacing-md);
+  color: var(--text-primary);
+  text-decoration: none;
+  border-radius: 0;
+  transition: background-color var(--transition-fast);
+  white-space: nowrap;
+  font-size: var(--font-size-sm);
+  line-height: 1.4;
+}
+
+.app-nav li ul li a:hover {
+  background: var(--bg-secondary);
+  color: var(--theme-color);
+}
+
+.app-nav li ul li:first-child a {
+  border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
+}
+
+.app-nav li ul li:last-child a {
+  border-radius: 0 0 var(--border-radius-lg) var(--border-radius-lg);
+}
+
+/* Dark Mode Support */
+body.dark .app-nav {
+  background: var(--bg-primary);
+  border-bottom-color: var(--border-color);
+}
+
+body.dark .app-nav a {
+  color: var(--text-primary);
+}
+
+body.dark .app-nav a:hover {
+  background: var(--bg-secondary);
+  color: var(--theme-color-light);
+}
+
+body.dark .app-nav li ul {
+  background: var(--bg-overlay);
+  border-color: var(--border-color);
+}
+
+/* Dark mode dropdown items */
+body.dark .app-nav li ul li a {
+  color: var(--text-primary);
+}
+
+body.dark .app-nav li ul li a:hover {
+  background: var(--bg-secondary);
+  color: var(--theme-color-light);
+}
+
+/* Dark mode active section highlighting */
+body.dark .app-nav a.active,
+body.dark .app-nav li.active > a {
+  background: rgba(0, 120, 212, 0.15);
+  color: var(--theme-color-light);
+  border-bottom-color: var(--theme-color-light);
+}
+
+/* Dark mode active underline indicator */
+body.dark .app-nav a.active::after,
+body.dark .app-nav li a.active::after,
+body.dark .app-nav > ul > li.active > a::after {
+  background: var(--theme-color-light);
 }

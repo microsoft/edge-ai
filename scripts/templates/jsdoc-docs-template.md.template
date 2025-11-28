@@ -1,0 +1,40 @@
+<!-- BEGIN_JSDOC_DOCS -->
+<!-- markdown-table-prettify-ignore-start -->
+<!-- markdownlint-disable MD033 -->
+
+# {{ name | default("JavaScript Documentation") }}
+
+{{ description | default("Generated API documentation") }}
+
+## Modules
+
+{% if modules %}
+{% for module in modules %}
+### {{ module.name }}
+
+{{ module.description }}
+
+{% if module.classes %}
+#### Classes
+
+{% for class in module.classes %}
+- **{{ class.name }}** - {{ class.description }}
+{% endfor %}
+{% endif %}
+
+{% if module.functions %}
+#### Functions
+
+{% for function in module.functions %}
+- **{{ function.name }}** - {{ function.description }}
+{% endfor %}
+{% endif %}
+{% endfor %}
+{% endif %}
+
+## API Reference
+
+For detailed API documentation including parameter types, return values, and examples, view the generated JSDoc documentation at `./docs/api/index.html`.
+
+<!-- markdown-table-prettify-ignore-end -->
+<!-- END_JSDOC_DOCS -->

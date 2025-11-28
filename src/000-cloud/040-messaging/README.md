@@ -2,7 +2,7 @@
 title: Cloud Messaging Component
 description: Real-time messaging infrastructure for the Edge AI Accelerator using Azure Event Grid and Event Hubs to enable scalable, event-driven communication between edge devices and cloud services
 author: Edge AI Team
-ms.date: 06/07/2025
+ms.date: 2025-06-07
 ms.topic: reference
 keywords:
   - messaging

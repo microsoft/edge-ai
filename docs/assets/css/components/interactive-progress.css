@@ -1,0 +1,1341 @@
+/* Interactive Progress Component Styles - Clean Cascade Approach */
+
+/* Learning Progress Banner - Same styles as Kata Progress Bar Container */
+#learning-progress-banner {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.95));
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  color: var(--text-primary);
+  padding: 18px var(--spacing-xl);
+  height: 85px;
+  z-index: 1000;
+  border-top: 2px solid rgba(0, 120, 212, 0.2);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08), 0 -1px 4px rgba(0, 0, 0, 0.04);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: slideInUp var(--transition-medium) ease-in-out;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Skill Assessment Progress Banner - Clean, focused design for better UX */
+#learning-progress-banner[data-content-type="skill-assessment"] {
+  border-top: 3px solid #0078d4 !important;
+  background: #ffffff;
+  color: #1a1a1a;
+  height: 60px !important; /* Reduced height for less intrusion */
+  padding: var(--spacing-md) var(--spacing-xl) !important;
+  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Hide overwhelming elements during assessment */
+#learning-progress-banner[data-content-type="skill-assessment"] .skill-level-indicator,
+#learning-progress-banner[data-content-type="skill-assessment"] .assessment-metrics,
+#learning-progress-banner[data-content-type="skill-assessment"] .question-context .question-category {
+  display: none !important; /* Remove anxiety-inducing elements */
+}
+
+/* Simplify button layout - only show essential actions */
+#learning-progress-banner[data-content-type="skill-assessment"] .kata-progress-btn-reset,
+#learning-progress-banner[data-content-type="skill-assessment"] .kata-progress-btn-dashboard {
+  display: none !important; /* Hide non-essential buttons during assessment */
+}
+
+/* Make progress information prominent */
+#learning-progress-banner[data-content-type="skill-assessment"] .current-question-display {
+  font-size: 1.1em !important;
+  font-weight: 600 !important;
+  color: #0078d4 !important;
+  margin-right: var(--spacing-lg) !important;
+}
+
+/* Ensure progress bar is visible and prominent */
+#learning-progress-banner[data-content-type="skill-assessment"] .kata-progress-bar-track {
+  height: 8px !important;
+  background: rgba(0, 120, 212, 0.15) !important;
+  border: none !important;
+  min-width: 250px !important;
+}
+
+#learning-progress-banner[data-content-type="skill-assessment"] .kata-progress-bar-fill {
+  height: 8px !important;
+  background: #0078d4 !important;
+  border: none !important;
+  border-radius: 4px !important;
+  box-shadow: none !important;
+}
+
+/* Dark mode support for clean assessment banner */
+body.dark #learning-progress-banner[data-content-type="skill-assessment"] {
+  background: #1a1a1a;
+  color: #e2e8f0;
+  border-top-color: #40a9ff !important;
+  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.3);
+}
+
+body.dark #learning-progress-banner[data-content-type="skill-assessment"] .current-question-display {
+  color: #40a9ff !important;
+}
+
+/* Kata Progress Bar Container - Sleek Bottom Banner */
+.kata-progress-bar-container {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100vw;
+  background: linear-gradient(to top, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.95));
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  color: var(--text-primary);
+  padding: 18px var(--spacing-xl);
+  height: 85px;
+  z-index: 1000;
+  border-top: 2px solid rgba(0, 120, 212, 0.2);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08), 0 -1px 4px rgba(0, 0, 0, 0.04);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: slideInUp var(--transition-medium) ease-in-out;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+@keyframes slideInUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Main content wrapper - centered and constrained */
+.kata-progress-content,
+#learning-progress-banner .kata-progress-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 85%;
+  max-width: 1200px;
+  margin: 0 auto;
+  height: 100%;
+  gap: 24px;
+  flex-wrap: nowrap;
+}
+
+/* Left side - label, progress bar, and percentage - SINGLE LINE */
+.kata-progress-left,
+#learning-progress-banner .kata-progress-left {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-grow: 1;
+  gap: 20px;
+  min-width: 0;
+  flex-wrap: nowrap;
+}
+
+/* Progress label with kata name */
+.kata-progress-label,
+#learning-progress-banner .kata-progress-label {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-tight);
+  color: var(--text-primary);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 0;
+  min-width: 200px;
+  max-width: 300px;
+}
+
+/* Progress bar track */
+.kata-progress-bar-track,
+#learning-progress-banner .kata-progress-bar-track {
+  flex: 1;
+  height: 14px;
+  background: linear-gradient(to bottom, rgba(0, 120, 212, 0.08), rgba(0, 120, 212, 0.12));
+  border-radius: 7px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.12);
+  margin: 0;
+  border: 1px solid rgba(0, 120, 212, 0.15);
+  min-width: 200px;
+}
+
+/* Progress bar fill - MUST BE VISIBLE - Microsoft Blue Theme */
+.kata-progress-bar-fill,
+#learning-progress-banner .kata-progress-bar-fill {
+  background: linear-gradient(90deg, #0078d4 0%, #106ebe 50%, #005a9e 100%);
+  height: 100%;
+  width: 0%;
+  min-width: 12px;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 6px;
+  position: relative;
+  box-shadow: 0 2px 8px rgba(0, 120, 212, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  display: block;
+  border: none;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Enhanced skill assessment progress bar styling */
+#learning-progress-banner[data-content-type="skill-assessment"] .kata-progress-bar-fill {
+  background: linear-gradient(90deg, #0078d4 0%, #005a9e 100%) !important;
+  border-color: #0078d4 !important;
+  box-shadow: 0 2px 8px rgba(0, 120, 212, 0.3);
+}
+
+#learning-progress-banner[data-content-type="skill-assessment"] .kata-progress-bar-track {
+  background: rgba(0, 120, 212, 0.1) !important;
+  border-color: rgba(0, 120, 212, 0.2) !important;
+}
+
+/* Dark mode progress bar for skill assessment */
+body.dark #learning-progress-banner[data-content-type="skill-assessment"] .kata-progress-bar-fill {
+  background: linear-gradient(90deg, #40a9ff 0%, #0078d4 100%) !important;
+  border-color: #40a9ff !important;
+}
+
+body.dark #learning-progress-banner[data-content-type="skill-assessment"] .kata-progress-bar-track {
+  background: rgba(64, 169, 255, 0.15) !important;
+  border-color: rgba(64, 169, 255, 0.25) !important;
+}
+
+/* Assessment Metrics Styling - Hidden during assessment to reduce anxiety */
+.assessment-metrics-container {
+  margin-top: var(--spacing-sm);
+  padding: var(--spacing-xs) 0;
+}
+
+.assessment-metrics {
+  display: flex;
+  gap: var(--spacing-md);
+  font-size: 0.85em;
+  color: var(--theme-color-dark);
+}
+
+.assessment-metrics .accuracy-percentage,
+.assessment-metrics .time-spent-indicator {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: rgba(0, 120, 212, 0.1);
+  border-radius: var(--border-radius-sm);
+  border: 1px solid rgba(0, 120, 212, 0.2);
+  font-weight: 500;
+}
+
+/* Question Context Styling - Simplified for better focus */
+.question-context {
+  margin-top: var(--spacing-xs);
+  font-size: 0.9em;
+  color: #0078d4;
+  display: flex;
+  gap: var(--spacing-lg);
+  align-items: center;
+}
+
+.question-context .current-question-display {
+  font-weight: 600;
+  color: #0078d4;
+}
+
+.question-context .question-category {
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+/* Catalog Progress Badge - Inline progress display matching kata progress bar theme */
+.catalog-progress-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 10px;
+  min-width: 148px;
+  background: rgba(0, 120, 212, 0.05);
+  border: 1px solid rgba(0, 120, 212, 0.2);
+  border-radius: 12px;
+  font-size: 0.85em;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.catalog-progress-badge.not-started {
+  background: linear-gradient(135deg, rgba(148, 163, 184, 0.12), rgba(148, 163, 184, 0.18));
+  border-color: rgba(148, 163, 184, 0.4);
+  justify-content: center;
+}
+
+.catalog-progress-track {
+  display: inline-block;
+  width: 100px;
+  height: 8px;
+  background: linear-gradient(to bottom, rgba(0, 120, 212, 0.08), rgba(0, 120, 212, 0.12));
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0, 120, 212, 0.15);
+  flex-shrink: 0;
+}
+
+.catalog-progress-fill {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #0078d4 0%, #106ebe 50%, #005a9e 100%);
+  border-radius: 3px;
+  min-width: 6px;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 3px rgba(0, 120, 212, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 0 4px rgba(0, 120, 212, 0.4);
+}
+
+.catalog-progress-text {
+  font-size: 0.9em;
+  font-weight: 600;
+  color: #0078d4;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.catalog-progress-badge.not-started .catalog-progress-text {
+  color: #475569;
+  opacity: 1;
+  text-align: center;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+/* Dark mode for catalog progress badge */
+body.dark .catalog-progress-badge {
+  background: rgba(64, 169, 255, 0.1);
+  border-color: rgba(64, 169, 255, 0.25);
+}
+
+body.dark .catalog-progress-track {
+  background: rgba(64, 169, 255, 0.15);
+  border-color: rgba(64, 169, 255, 0.25);
+}
+
+body.dark .catalog-progress-fill {
+  background: linear-gradient(90deg, #40a9ff 0%, #0078d4 100%);
+}
+
+body.dark .catalog-progress-text {
+  color: #40a9ff;
+}
+
+body.dark .catalog-progress-badge.not-started {
+  background: rgba(100, 116, 139, 0.2);
+  border-color: rgba(100, 116, 139, 0.35);
+}
+
+body.dark .catalog-progress-badge.not-started .catalog-progress-text {
+  color: #94a3b8;
+  opacity: 0.85;
+}
+
+/* Dark mode for assessment elements */
+body.dark .assessment-metrics {
+  color: var(--theme-color-light);
+}
+
+body.dark .assessment-metrics .accuracy-percentage,
+body.dark .assessment-metrics .time-spent-indicator {
+  background: rgba(64, 169, 255, 0.15);
+  border-color: rgba(64, 169, 255, 0.25);
+  color: #e2e8f0;
+}
+
+body.dark .question-context .current-question-display {
+  color: #40a9ff;
+}
+
+/* Progress percentage display - MOVED INSIDE LEFT CONTAINER */
+.kata-progress-percentage,
+#learning-progress-banner .kata-progress-percentage {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-secondary);
+  margin: 0;
+  min-width: 140px;
+  text-align: right;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* Progress text elements for learning paths */
+.kata-progress-description,
+#learning-progress-banner .kata-progress-description,
+.kata-progress-text,
+#learning-progress-banner .kata-progress-text {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-secondary);
+  margin: 0;
+  white-space: nowrap;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Status text for learning paths */
+.kata-status-text,
+#learning-progress-banner .kata-status-text,
+.status-text,
+#learning-progress-banner .status-text {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-normal);
+  color: var(--text-muted);
+  margin: 0;
+  white-space: nowrap;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.kata-progress-bar-fill.updating {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.kata-progress-bar-fill.complete {
+  background: linear-gradient(90deg, var(--color-success) 0%, var(--color-success-light) 100%);
+}
+
+/* Action buttons container */
+.kata-progress-actions,
+#learning-progress-banner .kata-progress-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+/* Status message positioned absolutely on far right - doesn't affect layout */
+.kata-progress-status,
+.status-message {
+  position: fixed !important;
+  right: 24px;
+  bottom: 95px;
+  z-index: 1001;
+  display: none;
+  padding: 10px 16px !important;
+  margin: 0 !important;
+  border-radius: 8px !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.1);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  animation: slideInRight 0.3s ease-out;
+  max-width: 350px;
+  pointer-events: none;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Status message variants are styled inline by showStatus() */
+
+/* Button base styling - pill style like keyword tags */
+.kata-progress-btn,
+#learning-progress-banner .kata-progress-btn {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--border-radius-lg);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  text-decoration: none;
+  transition: all var(--transition-fast) ease;
+  box-shadow: var(--shadow-sm);
+  white-space: nowrap;
+}
+
+/* General button hover */
+.kata-progress-btn:hover,
+#learning-progress-banner .kata-progress-btn:hover {
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: var(--shadow-md);
+}
+
+/* Save button specific hover - green */
+.kata-progress-btn-save:hover,
+#learning-progress-banner .kata-progress-btn-save:hover {
+  background: var(--color-success);
+  color: white;
+  border-color: var(--color-success);
+}
+
+/* Clear button specific hover - red warning */
+.kata-progress-btn-clear:hover,
+#learning-progress-banner .kata-progress-btn-clear:hover {
+  background: var(--color-danger);
+  color: white;
+  border-color: var(--color-danger);
+}
+
+/* Reset button specific hover - darker orange with better balance */
+.kata-progress-btn-reset:hover,
+#learning-progress-banner .kata-progress-btn-reset:hover {
+  background: var(--color-warning);
+  color: white;
+  border-color: var(--color-warning);
+}
+
+/* Dashboard button specific hover - theme blue like frontmatter headers */
+.kata-progress-btn-dashboard:hover {
+  background: var(--theme-color);
+  color: white;
+  border-color: var(--theme-color);
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: var(--shadow-md);
+}
+
+/* Disabled button states */
+.kata-progress-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: var(--shadow-sm);
+}
+
+.kata-progress-btn:disabled:hover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+  transform: none;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Skill assessment save button - disabled state with context */
+#learning-progress-banner[data-content-type="skill-assessment"] .kata-progress-btn-save:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  border-color: rgba(0, 0, 0, 0.1);
+  pointer-events: none;
+}
+
+/* Ensure disabled save button has no hover effects in skill assessments */
+#learning-progress-banner[data-content-type="skill-assessment"] .kata-progress-btn-save:disabled:hover {
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  border-color: rgba(0, 0, 0, 0.1);
+  transform: none;
+  box-shadow: none;
+}
+
+/* Dark mode disabled save button for skill assessments */
+body.dark #learning-progress-banner[data-content-type="skill-assessment"] .kata-progress-btn-save:disabled {
+  background: var(--bg-tertiary);
+  color: var(--text-tertiary);
+  border-color: rgba(255, 255, 255, 0.1);
+  opacity: 0.35;
+}
+
+body.dark #learning-progress-banner[data-content-type="skill-assessment"] .kata-progress-btn-save:disabled:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-tertiary);
+  border-color: rgba(255, 255, 255, 0.1);
+  transform: none;
+  box-shadow: none;
+}
+
+/* Minimized state */
+.kata-progress-bar-container.minimized {
+  height: 40px;
+  padding: 8px 32px;
+}
+
+.kata-progress-bar-container.minimized .kata-progress-left {
+  display: none;
+}
+
+.kata-progress-bar-container.minimized .kata-progress-actions {
+  justify-content: center;
+  width: 100%;
+}
+
+.kata-progress-bar-container.minimized .kata-progress-btn {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+/* Button focus states */
+.kata-progress-btn:focus {
+  outline: 2px solid var(--theme-color);
+  outline-offset: 2px;
+}
+
+/* Content spacing adjustment for fixed banner */
+.content-with-progress-bar {
+  margin-bottom: 90px;
+}
+
+.pagination-with-progress-bar {
+  margin: 1em 0em 6em;
+}
+
+/* Dark mode support */
+[data-theme="dark"] .kata-progress-bar-container {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border-top-color: var(--theme-color);
+  box-shadow: var(--shadow-lg);
+}
+
+[data-theme="dark"] .kata-progress-bar-track {
+  background: var(--color-gray-700);
+}
+
+[data-theme="dark"] .kata-progress-bar-fill {
+  background: linear-gradient(90deg, var(--theme-color-light) 0%, var(--theme-color) 100%);
+  box-shadow: var(--shadow-md);
+}
+
+[data-theme="dark"] .kata-progress-bar-fill.complete {
+  background: linear-gradient(90deg, var(--color-success) 0%, var(--color-success-light) 100%);
+}
+
+/* Section-level Select All Controls */
+.section-controls {
+  margin: 0.5rem 0 1rem 0;
+  padding: 0.5rem;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), rgba(16, 185, 129, 0.02));
+  border-left: 3px solid var(--theme-color, #10b981);
+  border-radius: 0 4px 4px 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.section-select-all-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.25rem;
+  color: var(--theme-color, #10b981);
+  background-color: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  white-space: nowrap;
+}
+
+.section-select-all-btn:hover {
+  background-color: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+}
+
+.section-select-all-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(16, 185, 129, 0.2);
+}
+
+.section-select-all-btn:focus {
+  outline: 2px solid var(--theme-color, #10b981);
+  outline-offset: 2px;
+}
+
+.section-select-all-btn .btn-icon {
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.section-select-all-btn .btn-text {
+  font-weight: 500;
+}
+
+.section-select-all-btn .btn-count {
+  font-size: 0.75rem;
+  opacity: 0.8;
+  font-weight: 400;
+}
+
+/* State-specific styling */
+.section-select-all-btn.all-selected {
+  color: #059669;
+  background-color: rgba(5, 150, 105, 0.1);
+  border-color: rgba(5, 150, 105, 0.2);
+}
+
+.section-select-all-btn.all-selected:hover {
+  background-color: rgba(5, 150, 105, 0.15);
+  border-color: rgba(5, 150, 105, 0.3);
+}
+
+.section-select-all-btn.partially-selected {
+  color: #d97706;
+  background-color: rgba(217, 119, 6, 0.1);
+  border-color: rgba(217, 119, 6, 0.2);
+}
+
+.section-select-all-btn.partially-selected:hover {
+  background-color: rgba(217, 119, 6, 0.15);
+  border-color: rgba(217, 119, 6, 0.3);
+}
+
+/* Enhanced Visual Feedback for Bulk Operations */
+
+/* Loading State Enhancement */
+.section-select-all-btn.loading {
+  animation: pulse 1.5s infinite;
+  pointer-events: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.section-select-all-btn.loading::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 0.8; }
+}
+
+@keyframes shimmer {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+/* Success and Error States */
+.section-select-all-btn.success {
+  background: var(--color-success, #28a745) !important;
+  border-color: var(--color-success, #28a745) !important;
+  color: white !important;
+  animation: successPulse 0.6s ease;
+}
+
+.section-select-all-btn.error {
+  background: var(--color-error, #dc3545) !important;
+  border-color: var(--color-error, #dc3545) !important;
+  color: white !important;
+  animation: errorShake 0.6s ease;
+}
+
+@keyframes successPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); box-shadow: 0 0 15px rgba(40, 167, 69, 0.5); }
+  100% { transform: scale(1); }
+}
+
+@keyframes errorShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+/* Progress Indicator for Bulk Operations */
+.bulk-operation-progress {
+  height: 3px;
+  background: rgba(16, 185, 129, 0.1);
+  border-radius: 1.5px;
+  overflow: hidden;
+  animation: fadeIn 0.3s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.bulk-operation-progress .progress-fill {
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    var(--theme-color, #10b981),
+    rgba(16, 185, 129, 0.8)
+  );
+  width: 0%;
+  transition: width 0.3s ease;
+  border-radius: 1.5px;
+  position: relative;
+}
+
+.bulk-operation-progress .progress-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 20px;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.6),
+    transparent
+  );
+  animation: progressShimmer 1s infinite;
+}
+
+@keyframes progressShimmer {
+  0% { transform: translateX(-20px); }
+  100% { transform: translateX(20px); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Ripple Effect for Individual Items */
+.ripple-effect {
+  animation: ripple 0.6s ease-out;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(1);
+    background: rgba(16, 185, 129, 0.1);
+  }
+  50% {
+    transform: scale(1.02);
+    background: rgba(16, 185, 129, 0.2);
+  }
+  100% {
+    transform: scale(1);
+    background: transparent;
+  }
+}
+
+/* Dark theme support */
+@media (prefers-color-scheme: dark) {
+  .section-controls {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(16, 185, 129, 0.03));
+    border-left-color: #34d399;
+  }
+
+  .section-select-all-btn {
+    color: #34d399;
+    background-color: rgba(52, 211, 153, 0.1);
+    border-color: rgba(52, 211, 153, 0.2);
+  }
+
+  .section-select-all-btn:hover {
+    background-color: rgba(52, 211, 153, 0.15);
+    border-color: rgba(52, 211, 153, 0.3);
+  }
+
+  .section-select-all-btn.all-selected {
+    color: #6ee7b7;
+    background-color: rgba(110, 231, 183, 0.1);
+    border-color: rgba(110, 231, 183, 0.2);
+  }
+
+  .section-select-all-btn.partially-selected {
+    color: #fbbf24;
+    background-color: rgba(251, 191, 36, 0.1);
+    border-color: rgba(251, 191, 36, 0.2);
+  }
+}
+
+[data-theme="dark"] .section-controls {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(16, 185, 129, 0.03));
+  border-left-color: #34d399;
+}
+
+[data-theme="dark"] .section-select-all-btn {
+  color: #34d399;
+  background-color: rgba(52, 211, 153, 0.1);
+  border-color: rgba(52, 211, 153, 0.2);
+}
+
+[data-theme="dark"] .section-select-all-btn:hover {
+  background-color: rgba(52, 211, 153, 0.15);
+  border-color: rgba(52, 211, 153, 0.3);
+}
+
+[data-theme="dark"] .section-select-all-btn.all-selected {
+  color: #6ee7b7;
+  background-color: rgba(110, 231, 183, 0.1);
+  border-color: rgba(110, 231, 183, 0.2);
+}
+
+[data-theme="dark"] .section-select-all-btn.partially-selected {
+  color: #fbbf24;
+  background-color: rgba(251, 191, 36, 0.1);
+  border-color: rgba(251, 191, 36, 0.2);
+}
+
+/* Desktop-only styles - no responsive breakpoints needed */
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  .section-select-all-btn {
+    transition: none;
+  }
+
+  .section-select-all-btn:hover {
+    transform: none;
+  }
+}
+
+/* Print styles */
+@media print {
+  .section-controls {
+    display: none;
+  }
+}
+
+/* =====================
+   Assessment Integration Styles
+   ===================== */
+
+/* Assessment Trigger */
+.assessment-trigger-container {
+  margin: var(--spacing-lg) 0;
+  padding: var(--spacing-lg);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-xl);
+  box-shadow: var(--shadow-md);
+  transition: all var(--transition-medium) ease;
+}
+
+.assessment-trigger-container:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+.assessment-intro {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.assessment-intro-icon {
+  font-size: 2.5rem;
+  line-height: 1;
+  filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.assessment-intro-content {
+  flex: 1;
+}
+
+.assessment-intro-title {
+  margin: 0 0 var(--spacing-sm) 0;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.assessment-intro-description {
+  margin: 0 0 var(--spacing-md) 0;
+  color: var(--text-secondary);
+  line-height: var(--line-height-normal);
+}
+
+.assessment-trigger-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  background: linear-gradient(135deg, var(--theme-color) 0%, var(--theme-color-dark) 100%);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: all var(--transition-medium) ease;
+  box-shadow: var(--shadow-md);
+}
+
+.assessment-trigger-btn:hover {
+  background: linear-gradient(135deg, var(--theme-color-dark) 0%, var(--theme-color) 100%);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-1px);
+}
+
+.assessment-trigger-btn:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-md);
+}
+
+.assessment-trigger-icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+/* Assessment Feedback */
+.assessment-feedback-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  max-width: 400px;
+}
+
+.assessment-feedback {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-xl);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-lg);
+  transform: translateX(100%);
+  opacity: 0;
+  transition: all var(--transition-slow) ease;
+}
+
+.assessment-feedback.active {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.assessment-feedback.completed {
+  background: var(--bg-success-light);
+  border-color: var(--color-success);
+}
+
+.assessment-feedback.completed::before {
+  content: '✓';
+  position: absolute;
+  top: var(--spacing-md);
+  right: var(--spacing-md);
+  font-size: var(--font-size-xl);
+  color: var(--color-success);
+  font-weight: var(--font-weight-bold);
+}
+
+.assessment-feedback-icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  display: inline-block;
+  animation: pulse 2s infinite;
+}
+
+.assessment-feedback h4 {
+  margin: 0 0 var(--spacing-sm) 0;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.assessment-feedback p {
+  margin: 0 0 var(--spacing-md) 0;
+  color: var(--text-secondary);
+  line-height: var(--line-height-normal);
+}
+
+.assessment-progress-indicator {
+  width: 100%;
+  height: 4px;
+  background: var(--color-gray-200);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.assessment-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--theme-color), var(--theme-color-dark));
+  width: 0%;
+  animation: assessmentProgress 3s ease-in-out forwards;
+}
+
+@keyframes assessmentProgress {
+  0% { width: 0%; }
+  100% { width: 100%; }
+}
+
+/* Assessment Selection Highlights */
+.assessment-selected {
+  position: relative;
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%) !important;
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
+  animation: assessmentGlow 0.6s ease-out;
+}
+
+@keyframes assessmentGlow {
+  0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(59, 130, 246, 0.2); }
+  100% { box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2); }
+}
+
+.assessment-selection-reason {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: rgba(59, 130, 246, 0.9);
+  color: white;
+  padding: 0.5rem;
+  font-size: 0.75rem;
+  border-radius: 4px;
+  margin-top: 4px;
+  z-index: 100;
+  animation: fadeInUp 0.3s ease-out;
+}
+
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Assessment Completion Notification */
+.assessment-notification-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1100;
+  pointer-events: none;
+}
+
+.assessment-completion-notification {
+  background: white;
+  border: 1px solid #22c55e;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  max-width: 400px;
+  pointer-events: auto;
+  transform: translateX(100%);
+  opacity: 0;
+  transition: all 0.5s ease;
+  animation: slideInRight 0.5s ease-out forwards;
+}
+
+@keyframes slideInRight {
+  0% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.assessment-completion-notification.hiding {
+  animation: slideOutRight 0.3s ease-out forwards;
+}
+
+@keyframes slideOutRight {
+  0% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+.notification-content {
+  display: flex;
+  align-items: flex-start;
+  padding: 1.5rem;
+  gap: 1rem;
+  position: relative;
+}
+
+.notification-icon {
+  font-size: 2rem;
+  line-height: 1;
+  flex-shrink: 0;
+  animation: bounce 1s ease-out;
+}
+
+@keyframes bounce {
+  0%, 20%, 53%, 80%, 100% {
+    transform: translate3d(0, 0, 0);
+  }
+  40%, 43% {
+    transform: translate3d(0, -10px, 0);
+  }
+  70% {
+    transform: translate3d(0, -5px, 0);
+  }
+  90% {
+    transform: translate3d(0, -2px, 0);
+  }
+}
+
+.notification-text {
+  flex: 1;
+}
+
+.notification-text h4 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.notification-text p {
+  margin: 0 0 0.5rem 0;
+  color: #64748b;
+  line-height: 1.5;
+  font-size: 0.875rem;
+}
+
+.notification-text p:last-child {
+  margin-bottom: 0;
+}
+
+.notification-close {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #94a3b8;
+  cursor: pointer;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.notification-close:hover {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+/* Assessment Modal Styles (if needed for additional styling) */
+.assessment-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1200;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.assessment-modal.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.assessment-container {
+  background: white;
+  border-radius: 16px;
+  max-width: 800px;
+  width: 90%;
+  max-height: 90%;
+  overflow: hidden;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+  transform: scale(0.9);
+  transition: transform 0.3s ease;
+}
+
+.assessment-modal.visible .assessment-container {
+  transform: scale(1);
+}
+
+/* Dark theme support for assessment styles */
+[data-theme="dark"] .assessment-trigger-container {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  border-color: #475569;
+  color: #e2e8f0;
+}
+
+[data-theme="dark"] .assessment-intro-title {
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .assessment-intro-description {
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .assessment-feedback {
+  background: #1e293b;
+  border-color: #475569;
+}
+
+[data-theme="dark"] .assessment-feedback h4 {
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .assessment-feedback p {
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .assessment-completion-notification {
+  background: #1e293b;
+  border-color: #22c55e;
+}
+
+[data-theme="dark"] .notification-text h4 {
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .notification-text p {
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .notification-close {
+  color: #64748b;
+}
+
+[data-theme="dark"] .notification-close:hover {
+  background: #334155;
+  color: #94a3b8;
+}
+
+/* Desktop-only - no responsive adjustments needed */

@@ -2,7 +2,7 @@
 title: Microsoft Fabric RTI Component
 description: Real-Time Intelligence EventStream with Go template-based DAG architecture supporting CustomEndpoint sources, all EventStream operators, and Eventhouse destinations for AIO data flow integration
 author: Edge AI Team
-ms.date: 07/27/2025
+ms.date: 2025-07-27
 ms.topic: reference
 keywords:
   - microsoft fabric

@@ -2,7 +2,7 @@
 title: Coding Conventions
 description: Comprehensive coding standards and conventions for the AI on Edge Flagship Accelerator project, covering Terraform, Bicep, PowerShell, Python, and documentation standards
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: reference
 estimated_reading_time: 14
 keywords:
@@ -24,56 +24,6 @@ the overall contribution process, please refer to our [Contributing Guide](contr
 This document uses terminology as defined in [RFC 2119](https://www.rfc-editor.org/rfc/rfc2119) where the keywords "
 MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" are to
 be interpreted as described in the RFC.
-
-## Table of Contents
-
-- [Table of Contents](#table-of-contents)
-- [Folder Structure and Naming Conventions](#folder-structure-and-naming-conventions)
-  - [Root-Level Organization](#root-level-organization)
-  - [Source Components (`/src`)](#source-components-src)
-  - [Blueprints (`/blueprints`)](#blueprints-blueprints)
-  - [Documentation (`/docs`)](#documentation-docs)
-  - [Scripts (`/scripts`)](#scripts-scripts)
-  - [DevOps Configuration (`/docs/build-cicd`)](#devops-configuration-docsbuild-cicd)
-  - [GitHub Workflows (`/.github`)](#github-workflows-github)
-- [Linting and Code Quality](#linting-and-code-quality)
-- [Infrastructure as Code](#infrastructure-as-code)
-  - [Terraform Conventions](#terraform-conventions)
-    - [Module Organization (Terraform)](#module-organization-terraform)
-    - [Variable Definitions (Terraform)](#variable-definitions-terraform)
-    - [Terraform Style Guide](#terraform-style-guide)
-  - [Bicep Conventions](#bicep-conventions)
-    - [Module Organization (Bicep)](#module-organization-bicep)
-    - [Variable Definitions (Bicep)](#variable-definitions-bicep)
-- [Git Workflow](#git-workflow)
-  - [Conventional Commits](#conventional-commits)
-    - [Commit Structure](#commit-structure)
-    - [Types](#types)
-    - [Examples](#examples)
-  - [Pull Request Conventions](#pull-request-conventions)
-  - [Work Item Association and Customer Context](#work-item-association-and-customer-context)
-    - [Work Item Linkage](#work-item-linkage)
-    - [Customer Context](#customer-context)
-    - [Reviewer Assignment](#reviewer-assignment)
-- [Documentation](#documentation)
-  - [Automated Documentation Checks](#automated-documentation-checks)
-  - [Wiki Auto-Publishing](#wiki-auto-publishing)
-- [Security and Compliance Standards](#security-and-compliance-standards)
-  - [Security Best Practices](#security-best-practices)
-  - [Compliance Requirements](#compliance-requirements)
-- [Testing Standards](#testing-standards)
-  - [Component Testing](#component-testing)
-  - [Blueprint Testing](#blueprint-testing)
-- [AI-Assisted Development Standards](#ai-assisted-development-standards)
-  - [GitHub Copilot Integration](#github-copilot-integration)
-  - [Best Practices for AI Tools](#best-practices-for-ai-tools)
-- [Performance and Optimization](#performance-and-optimization)
-  - [Resource Optimization](#resource-optimization)
-  - [Development Efficiency](#development-efficiency)
-- [Review and Quality Assurance](#review-and-quality-assurance)
-  - [Code Review Standards](#code-review-standards)
-  - [Continuous Improvement](#continuous-improvement)
-- [Additional Resources](#additional-resources)
 
 ## Folder Structure and Naming Conventions
 

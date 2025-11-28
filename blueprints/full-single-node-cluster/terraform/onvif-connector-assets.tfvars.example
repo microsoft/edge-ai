@@ -1,0 +1,409 @@
+/*
+ * ONVIF Connector Assets Configuration Example
+ *
+ * This file demonstrates how to configure ONVIF (Open Network Video Interface Forum) connector
+ * devices and assets for the Akri ONVIF connector integration with Azure IoT Operations.
+ *
+ * The ONVIF connector enables standardized IP camera integration with support for:
+ * - Device discovery and capability introspection (Profile S/T)
+ * - PTZ (Pan-Tilt-Zoom) control via MQTT commands
+ * - Event monitoring (motion detection, tampering alerts)
+ * - Media stream URI retrieval (H.264, JPEG, H.265)
+ *
+ * Usage:
+ *   terraform apply -var-file="onvif-connector-assets.tfvars"
+ *
+ * Or copy this file to terraform.tfvars to automatically load these values.
+ */
+
+/*
+ * Enable ONVIF Connector Template
+ *
+ * REQUIRED: Must be set to true to deploy the Akri ONVIF Connector template.
+ * Without this, the connector template will not be available and assets cannot be created.
+ */
+should_enable_akri_onvif_connector = true
+
+/*
+ * ONVIF Connector Devices
+ *
+ * Defines ONVIF-compliant IP cameras that will be discovered and managed by the Akri connector.
+ * Each device represents an ONVIF camera with its authentication and endpoint configuration.
+ *
+ * ONVIF cameras expose standardized SOAP/XML services for device information, media profiles,
+ * PTZ control, events, and imaging settings.
+ */
+namespaced_devices = [
+  // Warehouse PTZ Camera - ONVIF Profile S/T
+  {
+    name    = "warehouse-camera-01"
+    enabled = true
+    endpoints = {
+      outbound = { assigned = {} }
+      inbound = {
+        "warehouse-camera-endpoint" = {
+          endpoint_type = "Microsoft.ONVIF"
+          address       = "http://192.168.1.100/onvif/device_service"
+          version       = "21.06"
+          authentication = {
+            method = "UsernamePassword"  // Options: Anonymous, UsernamePassword, X509Certificate
+            username_password_ref = {
+              secret_name = "warehouse-camera-credentials"
+              username_ref = "username"
+              password_ref = "password"
+            }
+          }
+          trustSettings = {
+            acceptUntrustedServerCertificates = false  // Set to true for self-signed certs (dev only)
+          }
+        }
+      }
+    }
+  },
+
+  // Perimeter Security Camera - ONVIF Profile S
+  {
+    name    = "perimeter-camera-02"
+    enabled = true
+    endpoints = {
+      outbound = { assigned = {} }
+      inbound = {
+        "perimeter-camera-endpoint" = {
+          endpoint_type = "Microsoft.ONVIF"
+          address       = "http://192.168.1.101/onvif/device_service"
+          version       = "21.06"
+          authentication = {
+            method = "UsernamePassword"
+            username_password_ref = {
+              secret_name = "perimeter-camera-credentials"
+              username_ref = "username"
+              password_ref = "password"
+            }
+          }
+          trustSettings = null
+        }
+      }
+    }
+  },
+
+  // Fixed Camera - ONVIF Profile S (No PTZ)
+  {
+    name    = "assembly-line-camera-03"
+    enabled = true
+    endpoints = {
+      outbound = { assigned = {} }
+      inbound = {
+        "assembly-camera-endpoint" = {
+          endpoint_type = "Microsoft.ONVIF"
+          address       = "http://192.168.1.102/onvif/device_service"
+          version       = "21.06"
+          authentication = {
+            method = "Anonymous"  // For development/testing only
+          }
+          trustSettings = null
+        }
+      }
+    }
+  }
+]
+
+/*
+ * ONVIF Connector Assets
+ *
+ * Defines the actual assets that reference the devices above and configure:
+ * - PTZ commands for camera control (via MQTT topics)
+ * - Event subscriptions (motion detection, tampering alerts)
+ * - Media profile configurations
+ *
+ * ONVIF assets support both commands (PTZ control) and events (camera notifications).
+ */
+namespaced_assets = [
+  // Warehouse Camera Asset - Full PTZ Control + Events
+  {
+    name         = "warehouse-ptz-control"
+    display_name = "Warehouse PTZ Camera System"
+    enabled      = true
+    device_ref = {
+      device_name   = "warehouse-camera-01"
+      endpoint_name = "warehouse-camera-endpoint"
+    }
+    description       = "ONVIF PTZ camera for warehouse monitoring with motion detection"
+    documentation_uri = "https://github.com/microsoft/edge-ai/tree/main/src/500-application/510-onvif-connector"
+    manufacturer      = "Axis Communications"
+    manufacturer_uri  = "https://www.axis.com"
+    model             = "AXIS P5655-E PTZ"
+    product_code      = "P5655-E"
+    serial_number     = "ACCC123456789"
+    software_revision = "10.12.75"
+    attributes = {
+      deviceType        = "onvif-ptz-camera"
+      location          = "warehouse-entrance"
+      zone              = "security-zone-1"
+      supports_ptz      = "true"
+      supports_h265     = "true"
+      profile_s         = "true"
+      profile_t         = "true"
+      max_resolution    = "1920x1080"
+    }
+
+    // PTZ Commands - Control camera movement via MQTT
+    commands = [
+      {
+        name        = "pan_right"
+        display_name = "Pan Camera Right"
+        description  = "Pan camera to the right"
+        topic        = "cameras/company/cloud/region/environment/warehouse-01/ptz/pan"
+        payload      = jsonencode({
+          direction = "right"
+          speed     = 0.5
+        })
+      },
+      {
+        name        = "pan_left"
+        display_name = "Pan Camera Left"
+        description  = "Pan camera to the left"
+        topic        = "cameras/company/cloud/region/environment/warehouse-01/ptz/pan"
+        payload      = jsonencode({
+          direction = "left"
+          speed     = 0.5
+        })
+      },
+      {
+        name        = "tilt_up"
+        display_name = "Tilt Camera Up"
+        description  = "Tilt camera upward"
+        topic        = "cameras/company/cloud/region/environment/warehouse-01/ptz/tilt"
+        payload      = jsonencode({
+          direction = "up"
+          speed     = 0.5
+        })
+      },
+      {
+        name        = "tilt_down"
+        display_name = "Tilt Camera Down"
+        description  = "Tilt camera downward"
+        topic        = "cameras/company/cloud/region/environment/warehouse-01/ptz/tilt"
+        payload      = jsonencode({
+          direction = "down"
+          speed     = 0.5
+        })
+      },
+      {
+        name        = "zoom_in"
+        display_name = "Zoom In"
+        description  = "Zoom camera in"
+        topic        = "cameras/company/cloud/region/environment/warehouse-01/ptz/zoom"
+        payload      = jsonencode({
+          direction = "in"
+          speed     = 0.3
+        })
+      },
+      {
+        name        = "zoom_out"
+        display_name = "Zoom Out"
+        description  = "Zoom camera out"
+        topic        = "cameras/company/cloud/region/environment/warehouse-01/ptz/zoom"
+        payload      = jsonencode({
+          direction = "out"
+          speed     = 0.3
+        })
+      },
+      {
+        name        = "goto_home"
+        display_name = "Return to Home Position"
+        description  = "Move camera to preset home position"
+        topic        = "cameras/company/cloud/region/environment/warehouse-01/ptz/home"
+        payload      = jsonencode({})
+      }
+    ]
+
+    // ONVIF Events - Camera notifications (motion, tampering)
+    events = [
+      {
+        name           = "MOTION_DETECTED"
+        event_notifier = "motion"
+        destinations = [
+          {
+            target = "Mqtt"
+            configuration = {
+              topic  = "cameras/company/cloud/region/environment/warehouse-01/events/motion"
+              retain = "Never"
+              qos    = "Qos1"
+            }
+          }
+        ]
+      },
+      {
+        name           = "TAMPERING_ALERT"
+        event_notifier = "tampering"
+        destinations = [
+          {
+            target = "Mqtt"
+            configuration = {
+              topic  = "cameras/company/cloud/region/environment/warehouse-01/events/tampering"
+              retain = "Never"
+              qos    = "Qos1"
+            }
+          }
+        ]
+      }
+    ]
+
+    // No datasets for ONVIF connectors - use events and commands
+    datasets = []
+
+    default_events_configuration = "{\"publishingInterval\":5000,\"samplingInterval\":5000,\"queueSize\":10}"
+  },
+
+  // Perimeter Camera Asset - Events Only (Fixed Camera)
+  {
+    name         = "perimeter-monitoring"
+    display_name = "Perimeter Security Camera"
+    enabled      = true
+    device_ref = {
+      device_name   = "perimeter-camera-02"
+      endpoint_name = "perimeter-camera-endpoint"
+    }
+    description  = "Fixed ONVIF camera for perimeter security monitoring"
+    manufacturer = "Hikvision"
+    model        = "DS-2CD2143G2-I"
+    serial_number = "HKDS987654321"
+    attributes = {
+      deviceType     = "onvif-fixed-camera"
+      location       = "building-perimeter-north"
+      zone           = "security-zone-2"
+      supports_ptz   = "false"
+      supports_h265  = "true"
+      profile_s      = "true"
+      max_resolution = "2688x1520"
+    }
+
+    // No PTZ commands for fixed cameras
+    commands = []
+
+    events = [
+      {
+        name           = "MOTION_DETECTED"
+        event_notifier = "motion"
+        destinations = [
+          {
+            target = "Mqtt"
+            configuration = {
+              topic  = "cameras/company/cloud/region/environment/perimeter-02/events/motion"
+              retain = "Never"
+              qos    = "Qos1"
+            }
+          }
+        ]
+      },
+      {
+        name           = "TAMPERING_ALERT"
+        event_notifier = "tampering"
+        destinations = [
+          {
+            target = "Mqtt"
+            configuration = {
+              topic  = "cameras/company/cloud/region/environment/perimeter-02/events/tampering"
+              retain = "Never"
+              qos    = "Qos1"
+            }
+          }
+        ]
+      }
+    ]
+
+    datasets = []
+
+    default_events_configuration = "{\"publishingInterval\":5000,\"samplingInterval\":5000,\"queueSize\":10}"
+  },
+
+  // Assembly Line Camera Asset - Motion Detection Only
+  {
+    name         = "assembly-line-monitoring"
+    display_name = "Assembly Line Camera"
+    enabled      = true
+    device_ref = {
+      device_name   = "assembly-line-camera-03"
+      endpoint_name = "assembly-camera-endpoint"
+    }
+    description  = "ONVIF camera for assembly line process monitoring"
+    manufacturer = "Dahua"
+    model        = "IPC-HFW5831E-Z5E"
+    serial_number = "DH5831123456"
+    attributes = {
+      deviceType     = "onvif-fixed-camera"
+      location       = "assembly-line-3"
+      zone           = "production-area"
+      supports_ptz   = "false"
+      profile_s      = "true"
+      max_resolution = "3840x2160"
+    }
+
+    commands = []
+
+    events = [
+      {
+        name           = "MOTION_DETECTED"
+        event_notifier = "motion"
+        destinations = [
+          {
+            target = "Mqtt"
+            configuration = {
+              topic  = "cameras/company/cloud/region/environment/assembly-03/events/motion"
+              retain = "Never"
+              qos    = "Qos1"
+            }
+          }
+        ]
+      }
+    ]
+
+    datasets = []
+
+    default_events_configuration = "{\"publishingInterval\":5000,\"samplingInterval\":5000,\"queueSize\":5}"
+  }
+]
+
+/*
+ * Configuration Notes:
+ *
+ * 1. ONVIF Version: Most modern cameras support ONVIF Core 21.06
+ *    Verify your camera's ONVIF version with manufacturer documentation
+ *
+ * 2. Authentication:
+ *    - Anonymous: For development/testing only (not recommended for production)
+ *    - UsernamePassword: HTTP Digest Auth (most common)
+ *    - X509Certificate: Client certificate auth (most secure)
+ *
+ * 3. PTZ Commands:
+ *    - Only include PTZ commands for cameras with PTZ capabilities
+ *    - Speed values range from 0.0 (slowest) to 1.0 (fastest)
+ *    - Direction values: pan (left/right), tilt (up/down), zoom (in/out)
+ *
+ * 4. Event Types:
+ *    - motion: Motion detection events from camera analytics
+ *    - tampering: Camera tampering/obstruction alerts
+ *    - Custom events may vary by camera manufacturer
+ *
+ * 5. Event Polling:
+ *    - ONVIF uses PullMessages pattern (polling)
+ *    - publishingInterval: Event poll frequency in milliseconds (default: 5000 = 5 seconds)
+ *    - Lower values increase responsiveness but add network overhead
+ *
+ * 6. Media Profiles:
+ *    - Profiles are discovered automatically via GetProfiles
+ *    - Profile S: H.264 video, JPEG snapshots, basic PTZ
+ *    - Profile T: H.265 video, 4K support, advanced features
+ *    - Stream URIs retrieved via GetStreamUri for video analytics
+ *
+ * 7. Security:
+ *    - Store credentials in Kubernetes secrets (not in this file)
+ *    - Use TLS/HTTPS for production deployments
+ *    - Set acceptUntrustedServerCertificates=false except for development
+ *    - Implement network segmentation for camera VLANs
+ *
+ * 8. Testing:
+ *    - Use local Docker Compose environment first (src/500-application/510-onvif-connector)
+ *    - Verify ONVIF compliance with ONVIF Device Test Tool
+ *    - Test PTZ commands with mosquitto_pub before production deployment
+ */

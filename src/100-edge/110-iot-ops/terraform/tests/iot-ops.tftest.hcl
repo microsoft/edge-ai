@@ -19,6 +19,7 @@ run "create_default_cluster" {
     secret_sync_identity  = run.setup_tests.sse_user_assigned_identity
     aio_identity          = run.setup_tests.aio_user_assigned_identity
     adr_schema_registry   = run.setup_tests.adr_schema_registry
+    adr_namespace         = run.setup_tests.adr_namespace
     arc_connected_cluster = run.setup_tests.arc_connected_cluster
   }
 
@@ -38,12 +39,6 @@ run "create_default_cluster" {
     condition     = module.iot_ops_instance != null
     error_message = "iot_ops_instance module should be created"
   }
-
-  # Check that iot_ops_instance_post is being created
-  assert {
-    condition     = module.iot_ops_instance_post != null
-    error_message = "iot_ops_instance_post module should be created"
-  }
 }
 
 # Test CustomerManagedGenerateIssuer configuration with provided CA
@@ -55,6 +50,7 @@ run "create_custom_generated_issuer_with_ca" {
     secret_sync_identity    = run.setup_tests.sse_user_assigned_identity
     aio_identity            = run.setup_tests.aio_user_assigned_identity
     adr_schema_registry     = run.setup_tests.adr_schema_registry
+    adr_namespace           = run.setup_tests.adr_namespace
     arc_connected_cluster   = run.setup_tests.arc_connected_cluster
     trust_config_source     = "CustomerManagedGenerateIssuer"
     enable_opc_ua_simulator = false
@@ -97,6 +93,7 @@ run "create_custom_generated_issuer_without_ca" {
     secret_sync_identity    = run.setup_tests.sse_user_assigned_identity
     aio_identity            = run.setup_tests.aio_user_assigned_identity
     adr_schema_registry     = run.setup_tests.adr_schema_registry
+    adr_namespace           = run.setup_tests.adr_namespace
     arc_connected_cluster   = run.setup_tests.arc_connected_cluster
     trust_config_source     = "CustomerManagedGenerateIssuer"
     enable_opc_ua_simulator = false
@@ -128,6 +125,7 @@ run "create_customer_managed_byo_issuer" {
     secret_sync_identity  = run.setup_tests.sse_user_assigned_identity
     aio_identity          = run.setup_tests.aio_user_assigned_identity
     adr_schema_registry   = run.setup_tests.adr_schema_registry
+    adr_namespace         = run.setup_tests.adr_namespace
     arc_connected_cluster = run.setup_tests.arc_connected_cluster
     trust_config_source   = "CustomerManagedByoIssuer"
     aio_platform_config = {
@@ -162,6 +160,7 @@ run "create_with_opc_ua_simulator" {
     secret_sync_identity    = run.setup_tests.sse_user_assigned_identity
     aio_identity            = run.setup_tests.aio_user_assigned_identity
     adr_schema_registry     = run.setup_tests.adr_schema_registry
+    adr_namespace           = run.setup_tests.adr_namespace
     arc_connected_cluster   = run.setup_tests.arc_connected_cluster
     enable_opc_ua_simulator = true
   }
@@ -182,6 +181,7 @@ run "create_with_features_configured" {
     secret_sync_identity  = run.setup_tests.sse_user_assigned_identity
     aio_identity          = run.setup_tests.aio_user_assigned_identity
     adr_schema_registry   = run.setup_tests.adr_schema_registry
+    adr_namespace         = run.setup_tests.adr_namespace
     arc_connected_cluster = run.setup_tests.arc_connected_cluster
     aio_features = {
       connectors = {
@@ -236,6 +236,7 @@ run "create_with_otel_collector" {
     secret_sync_identity         = run.setup_tests.sse_user_assigned_identity
     aio_identity                 = run.setup_tests.aio_user_assigned_identity
     adr_schema_registry          = run.setup_tests.adr_schema_registry
+    adr_namespace                = run.setup_tests.adr_namespace
     arc_connected_cluster        = run.setup_tests.arc_connected_cluster
     should_enable_otel_collector = true
   }
@@ -261,6 +262,7 @@ run "create_with_anonymous_broker_listener" {
     secret_sync_identity                    = run.setup_tests.sse_user_assigned_identity
     aio_identity                            = run.setup_tests.aio_user_assigned_identity
     adr_schema_registry                     = run.setup_tests.adr_schema_registry
+    adr_namespace                           = run.setup_tests.adr_namespace
     arc_connected_cluster                   = run.setup_tests.arc_connected_cluster
     should_create_anonymous_broker_listener = true
     broker_listener_anonymous_config = {
@@ -279,5 +281,415 @@ run "create_with_anonymous_broker_listener" {
   assert {
     condition     = var.broker_listener_anonymous_config.nodePort == 1883
     error_message = "broker_listener_anonymous_config nodePort should be set to 1883"
+  }
+}
+
+# Test ADR namespace configuration with provided namespace
+run "create_with_adr_namespace" {
+  command = plan
+  variables {
+    resource_group        = run.setup_tests.aio_resource_group
+    secret_sync_key_vault = run.setup_tests.sse_key_vault
+    secret_sync_identity  = run.setup_tests.sse_user_assigned_identity
+    aio_identity          = run.setup_tests.aio_user_assigned_identity
+    adr_schema_registry   = run.setup_tests.adr_schema_registry
+    adr_namespace         = run.setup_tests.adr_namespace
+    arc_connected_cluster = run.setup_tests.arc_connected_cluster
+  }
+
+  # Verify that ADR namespace is properly configured
+  assert {
+    condition     = var.adr_namespace.id != null && var.adr_namespace.id != ""
+    error_message = "ADR namespace ID should be provided when adr_namespace is configured"
+  }
+}
+
+# Test ADR namespace configuration without namespace (should work)
+run "create_without_adr_namespace" {
+  command = plan
+  variables {
+    resource_group        = run.setup_tests.aio_resource_group
+    secret_sync_key_vault = run.setup_tests.sse_key_vault
+    secret_sync_identity  = run.setup_tests.sse_user_assigned_identity
+    aio_identity          = run.setup_tests.aio_user_assigned_identity
+    adr_schema_registry   = run.setup_tests.adr_schema_registry
+    arc_connected_cluster = run.setup_tests.arc_connected_cluster
+    adr_namespace         = null
+  }
+
+  # Verify that deployment works without ADR namespace
+  assert {
+    condition     = var.adr_namespace == null
+    error_message = "ADR namespace should be null when not provided"
+  }
+}
+
+# Test valid MQTT broker persistence configuration
+run "create_with_valid_persistence_config" {
+  command = plan
+  variables {
+    resource_group        = run.setup_tests.aio_resource_group
+    secret_sync_key_vault = run.setup_tests.sse_key_vault
+    secret_sync_identity  = run.setup_tests.sse_user_assigned_identity
+    aio_identity          = run.setup_tests.aio_user_assigned_identity
+    adr_schema_registry   = run.setup_tests.adr_schema_registry
+    adr_namespace         = run.setup_tests.adr_namespace
+    arc_connected_cluster = run.setup_tests.arc_connected_cluster
+    mqtt_broker_persistence_config = {
+      enabled            = true
+      max_size           = "10G"
+      encryption_enabled = true
+
+      # Dynamic Settings
+      dynamic_settings = {
+        user_property_key   = "aio-persistence"
+        user_property_value = "true"
+      }
+
+      # Retention Policy - All mode
+      retain_policy = {
+        mode = "All"
+      }
+
+      # State Store Policy - Custom mode with valid settings
+      state_store_policy = {
+        mode = "Custom"
+        custom_settings = {
+          state_store_resources = [
+            {
+              key_type = "Pattern"
+              keys     = ["sensor/*", "device/+/temperature"]
+            },
+            {
+              key_type = "String"
+              keys     = ["config", "status"]
+            }
+          ]
+          dynamic_enabled = true
+        }
+      }
+
+      # Subscriber Queue Policy - Custom mode
+      subscriber_queue_policy = {
+        mode = "Custom"
+        custom_settings = {
+          subscriber_client_ids = ["factory-client-*", "sensor-gateway-01"]
+          topics                = ["sensor/#", "alerts/+"]
+          dynamic_enabled       = true
+        }
+      }
+
+      # Persistent Volume Claim Specification
+      persistent_volume_claim_spec = {
+        storage_class_name = "fast-ssd"
+        access_modes       = ["ReadWriteOncePod"]
+        volume_mode        = "Filesystem"
+        resources = {
+          requests = {
+            storage = "10G"
+          }
+          limits = {
+            storage = "15G"
+          }
+        }
+      }
+    }
+  }
+
+  # Verify that persistence configuration is correctly passed
+  assert {
+    condition     = var.mqtt_broker_persistence_config.enabled == true
+    error_message = "MQTT broker persistence should be enabled"
+  }
+
+  assert {
+    condition     = var.mqtt_broker_persistence_config.max_size == "10G"
+    error_message = "MQTT broker persistence max_size should be 10G"
+  }
+
+  assert {
+    condition     = var.mqtt_broker_persistence_config.retain_policy.mode == "All"
+    error_message = "Retain policy mode should be All"
+  }
+
+  assert {
+    condition     = var.mqtt_broker_persistence_config.state_store_policy.mode == "Custom"
+    error_message = "State store policy mode should be Custom"
+  }
+
+  assert {
+    condition     = length(var.mqtt_broker_persistence_config.state_store_policy.custom_settings.state_store_resources) == 2
+    error_message = "Should have 2 state store resources configured"
+  }
+
+  assert {
+    condition     = var.mqtt_broker_persistence_config.subscriber_queue_policy.mode == "Custom"
+    error_message = "Subscriber queue policy mode should be Custom"
+  }
+
+  assert {
+    condition     = contains(var.mqtt_broker_persistence_config.persistent_volume_claim_spec.access_modes, "ReadWriteOncePod")
+    error_message = "Access mode should include ReadWriteOncePod"
+  }
+}
+
+# Test MQTT broker persistence configuration with edge case values
+run "create_with_edge_case_persistence_config" {
+  command = plan
+  variables {
+    resource_group        = run.setup_tests.aio_resource_group
+    secret_sync_key_vault = run.setup_tests.sse_key_vault
+    secret_sync_identity  = run.setup_tests.sse_user_assigned_identity
+    aio_identity          = run.setup_tests.aio_user_assigned_identity
+    adr_schema_registry   = run.setup_tests.adr_schema_registry
+    adr_namespace         = run.setup_tests.adr_namespace
+    arc_connected_cluster = run.setup_tests.arc_connected_cluster
+    mqtt_broker_persistence_config = {
+      enabled            = false  # Disabled persistence
+      max_size           = "100M" # Minimum viable size
+      encryption_enabled = false
+
+      # None mode for all policies
+      retain_policy = {
+        mode = "None"
+      }
+
+      state_store_policy = {
+        mode = "None"
+      }
+
+      subscriber_queue_policy = {
+        mode = "None"
+      }
+
+      # Minimal PVC specification
+      persistent_volume_claim_spec = {
+        access_modes = ["ReadWriteOnce"] # Different access mode
+        resources = {
+          requests = {
+            storage = "100M"
+          }
+        }
+      }
+    }
+  }
+
+  # Verify edge case configuration is accepted
+  assert {
+    condition     = var.mqtt_broker_persistence_config.enabled == false
+    error_message = "MQTT broker persistence should be disabled in this test"
+  }
+
+  assert {
+    condition     = var.mqtt_broker_persistence_config.retain_policy.mode == "None"
+    error_message = "Retain policy mode should be None"
+  }
+
+  assert {
+    condition     = var.mqtt_broker_persistence_config.state_store_policy.mode == "None"
+    error_message = "State store policy mode should be None"
+  }
+
+  assert {
+    condition     = var.mqtt_broker_persistence_config.subscriber_queue_policy.mode == "None"
+    error_message = "Subscriber queue policy mode should be None"
+  }
+}
+
+# Test MQTT broker persistence configuration with minimal required fields only
+run "create_with_minimal_persistence_config" {
+  command = plan
+  variables {
+    resource_group        = run.setup_tests.aio_resource_group
+    secret_sync_key_vault = run.setup_tests.sse_key_vault
+    secret_sync_identity  = run.setup_tests.sse_user_assigned_identity
+    aio_identity          = run.setup_tests.aio_user_assigned_identity
+    adr_schema_registry   = run.setup_tests.adr_schema_registry
+    adr_namespace         = run.setup_tests.adr_namespace
+    arc_connected_cluster = run.setup_tests.arc_connected_cluster
+    mqtt_broker_persistence_config = {
+      enabled  = true
+      max_size = "1G" # Only required fields specified
+    }
+  }
+
+  # Verify minimal configuration is accepted
+  assert {
+    condition     = var.mqtt_broker_persistence_config.enabled == true
+    error_message = "MQTT broker persistence should be enabled"
+  }
+
+  assert {
+    condition     = var.mqtt_broker_persistence_config.max_size == "1G"
+    error_message = "Max size should be 1G"
+  }
+
+  # Optional fields should be null when not specified
+  assert {
+    condition     = var.mqtt_broker_persistence_config.retain_policy == null
+    error_message = "Retain policy should be null when not specified"
+  }
+}
+
+# Test Akri REST connector enabled
+run "create_with_akri_rest_connector" {
+  command = plan
+  variables {
+    resource_group                    = run.setup_tests.aio_resource_group
+    secret_sync_key_vault             = run.setup_tests.sse_key_vault
+    secret_sync_identity              = run.setup_tests.sse_user_assigned_identity
+    aio_identity                      = run.setup_tests.aio_user_assigned_identity
+    adr_schema_registry               = run.setup_tests.adr_schema_registry
+    adr_namespace                     = run.setup_tests.adr_namespace
+    arc_connected_cluster             = run.setup_tests.arc_connected_cluster
+    should_enable_akri_rest_connector = true
+  }
+
+  # Verify that REST connector is enabled
+  assert {
+    condition     = var.should_enable_akri_rest_connector == true
+    error_message = "should_enable_akri_rest_connector should be true"
+  }
+
+  # Verify akri_connectors module would be created
+  assert {
+    condition     = length(module.akri_connectors) > 0
+    error_message = "akri_connectors module should be created when REST connector is enabled"
+  }
+}
+
+# Test REST connector deployment with detailed validation
+run "validate_rest_connector_deployment" {
+  command = plan
+  variables {
+    resource_group                    = run.setup_tests.aio_resource_group
+    secret_sync_key_vault             = run.setup_tests.sse_key_vault
+    secret_sync_identity              = run.setup_tests.sse_user_assigned_identity
+    aio_identity                      = run.setup_tests.aio_user_assigned_identity
+    adr_schema_registry               = run.setup_tests.adr_schema_registry
+    adr_namespace                     = run.setup_tests.adr_namespace
+    arc_connected_cluster             = run.setup_tests.arc_connected_cluster
+    should_enable_akri_rest_connector = true
+  }
+
+  # Verify akri_connectors module is instantiated
+  assert {
+    condition     = length(module.akri_connectors) == 1
+    error_message = "akri_connectors module should be created with exactly one instance"
+  }
+
+  # Verify the module receives correct inputs
+  assert {
+    condition     = var.should_enable_akri_rest_connector == true
+    error_message = "REST connector should be enabled"
+  }
+}
+
+# Test custom Akri connector deployment
+run "validate_custom_connector_deployment" {
+  command = plan
+  variables {
+    resource_group        = run.setup_tests.aio_resource_group
+    secret_sync_key_vault = run.setup_tests.sse_key_vault
+    secret_sync_identity  = run.setup_tests.sse_user_assigned_identity
+    aio_identity          = run.setup_tests.aio_user_assigned_identity
+    adr_schema_registry   = run.setup_tests.adr_schema_registry
+    adr_namespace         = run.setup_tests.adr_namespace
+    arc_connected_cluster = run.setup_tests.arc_connected_cluster
+    custom_akri_connectors = [
+      {
+        name                    = "modbus-telemetry-connector"
+        type                    = "custom"
+        custom_endpoint_type    = "Contoso.Modbus"
+        custom_image_name       = "my_acr.azurecr.io/modbus-telemetry-connector"
+        custom_endpoint_version = "2.0"
+        registry                = "my_acr.azurecr.io"
+        image_tag               = "v1.2.3"
+        replicas                = 2
+        log_level               = "debug"
+      }
+    ]
+  }
+
+  # Verify akri_connectors module is instantiated for custom connector
+  assert {
+    condition     = length(module.akri_connectors) == 1
+    error_message = "akri_connectors module should be created when custom connectors are provided"
+  }
+
+  # Verify custom connector configuration is provided
+  assert {
+    condition     = length(var.custom_akri_connectors) == 1
+    error_message = "Should have exactly one custom connector configured"
+  }
+
+  # Verify custom connector has required fields
+  assert {
+    condition     = var.custom_akri_connectors[0].type == "custom"
+    error_message = "Custom connector type should be 'custom'"
+  }
+
+  assert {
+    condition     = var.custom_akri_connectors[0].custom_endpoint_type == "Contoso.Modbus"
+    error_message = "Custom connector should have the specified endpoint type"
+  }
+
+  assert {
+    condition     = var.custom_akri_connectors[0].custom_image_name == "my_acr.azurecr.io/modbus-telemetry-connector"
+    error_message = "Custom connector should have the specified image name"
+  }
+
+  # Verify optional configuration is applied
+  assert {
+    condition     = var.custom_akri_connectors[0].replicas == 2
+    error_message = "Custom connector replicas should be set to 2"
+  }
+
+  assert {
+    condition     = var.custom_akri_connectors[0].log_level == "debug"
+    error_message = "Custom connector log level should be set to debug"
+  }
+}
+
+# Test multiple connectors (built-in and custom) deployment
+run "validate_multiple_connectors_deployment" {
+  command = plan
+  variables {
+    resource_group                     = run.setup_tests.aio_resource_group
+    secret_sync_key_vault              = run.setup_tests.sse_key_vault
+    secret_sync_identity               = run.setup_tests.sse_user_assigned_identity
+    aio_identity                       = run.setup_tests.aio_user_assigned_identity
+    adr_schema_registry                = run.setup_tests.adr_schema_registry
+    adr_namespace                      = run.setup_tests.adr_namespace
+    arc_connected_cluster              = run.setup_tests.arc_connected_cluster
+    should_enable_akri_rest_connector  = true
+    should_enable_akri_onvif_connector = true
+    custom_akri_connectors = [
+      {
+        name                 = "custom-sse-connector"
+        type                 = "custom"
+        custom_endpoint_type = "Acme.ServerSentEvents"
+        custom_image_name    = "my_acr.azurecr.io/sse-connector"
+        replicas             = 1
+      }
+    ]
+  }
+
+  # Verify akri_connectors module is instantiated when multiple connectors are enabled
+  assert {
+    condition     = length(module.akri_connectors) == 1
+    error_message = "akri_connectors module should be created when any connector is enabled"
+  }
+
+  # Verify multiple built-in connectors are enabled
+  assert {
+    condition     = var.should_enable_akri_rest_connector == true && var.should_enable_akri_onvif_connector == true
+    error_message = "Both REST and ONVIF connectors should be enabled"
+  }
+
+  # Verify custom connector is also configured
+  assert {
+    condition     = length(var.custom_akri_connectors) == 1
+    error_message = "Should have one custom connector in addition to built-in connectors"
   }
 }

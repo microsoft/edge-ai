@@ -29,9 +29,15 @@ variable "fabric_workspace_name" {
 }
 
 variable "fabric_capacity_name" {
-  description = "The name of the Microsoft Fabric capacity. Otherwise, 'cap-{resource_prefix}-{environment}-{instance}'."
+  description = "The name of the Microsoft Fabric capacity. Otherwise, 'cap{resource_prefix_no_hyphens}{environment}{instance}'."
   type        = string
   default     = null
+}
+
+variable "fabric_capacity_admins" {
+  description = "List of AAD object IDs for Fabric capacity administrators. Required when creating a capacity."
+  type        = list(string)
+  default     = []
 }
 
 variable "should_create_fabric_capacity" {

@@ -2,7 +2,7 @@
 title: Partial Single Node Cluster Blueprint
 description: Deployment of a single-node, Arc-enabled Kubernetes cluster without Azure IoT Operations providing a foundational edge computing environment for later extension
 author: Edge AI Team
-ms.date: 06/07/2025
+ms.date: 2025-06-07
 ms.topic: reference
 keywords:
   - kubernetes

@@ -1,0 +1,18 @@
+{{- if .Values.service.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "mqtt-otel-trace-exporter.fullname" . }}
+  labels:
+    {{- include "mqtt-otel-trace-exporter.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  selector:
+    app.kubernetes.io/name: {{ include "mqtt-otel-trace-exporter.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  ports:
+    - name: http
+      port: {{ default (int (default 8080 .Values.config.health.port)) .Values.service.port }}
+      targetPort: {{ default (int (default 8080 .Values.config.health.port)) .Values.service.targetPort }}
+      protocol: TCP
+{{- end }}

@@ -2,7 +2,7 @@
 title: Documentation Development Guide
 description: Comprehensive guide for developing and maintaining documentation for the Edge AI project, including writing conventions, URL management, local development, and publishing workflows
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: concept
 estimated_reading_time: 15
 keywords:
@@ -172,13 +172,13 @@ Follow the linting rules defined in `.mega-linter.yml`:
 
 ```txt
 docs/
-├── index.md                    # Main documentation index
+├── README.md                   # Main documentation index
 ├── getting-started/            # User onboarding guides
 │   ├── general-user.md
 │   ├── blueprint-developer.md
 │   └── feature-developer.md
 ├── contributing/               # Developer documentation
-│   ├── index.md
+│   ├── README.md
 │   ├── documentation-development.md
 │   ├── url-replacement.md
 │   └── ...
@@ -191,14 +191,54 @@ docs/
 - Be descriptive: `azure-iot-operations-setup.md` not `aio-setup.md`
 - Group related files in directories
 
+### Sidebar Navigation System
+
+The documentation uses a dynamic section-specific sidebar navigation system that automatically displays relevant navigation based on the current URL path.
+
+#### Sidebar Files
+
+| File                                    | Purpose                | Content                                          |
+|-----------------------------------------|------------------------|--------------------------------------------------|
+| `docs/_parts/home-sidebar.md`           | Home section           | Default sidebar for home page                    |
+| `docs/_parts/docs-sidebar.md`           | Documentation section  | Getting Started, Contributing, ADR Library, etc. |
+| `docs/_parts/learning-sidebar.md`       | Learning section       | Katas, Training Labs, Shared Resources           |
+| `docs/_parts/blueprints-sidebar.md`     | Blueprints section     | Various cluster configurations                   |
+| `docs/_parts/infrastructure-sidebar.md` | Infrastructure section | Source code navigation                           |
+| `docs/_parts/copilot-sidebar.md`        | GitHub Copilot section | AI prompts and guides                            |
+
+#### Dynamic Loading
+
+The system automatically detects the current section based on URL patterns and navbar clicks:
+
+- `/docs/getting-started/` → loads `docs/_parts/docs-sidebar.md`
+- `/learning/katas/` → loads `docs/_parts/learning-sidebar.md`
+- `/blueprints/full-single-node-cluster/` → loads `docs/_parts/blueprints-sidebar.md`
+- `/src/000-cloud/` → loads `docs/_parts/infrastructure-sidebar.md`
+- `/copilot/` → loads `docs/_parts/copilot-sidebar.md`
+
+#### Adding New Sections
+
+To add a new navigation section:
+
+1. **Create sidebar file**: `docs/_parts/newsection-sidebar.md`
+2. **Update integration**: Add section mapping to `navbar-sidebar-integration.js`
+3. **Add navbar**: Update `docs/_navbar.md` with new section
+4. **Test functionality**: Verify sidebar switches correctly when clicking navbar
+
+#### Maintenance
+
+- **Section-specific sidebars**: Update only the relevant sidebar file in `docs/_parts/` when adding content
+- **Testing**: Dynamic sidebars are tested by navigating between navbar sections
+- **Architecture**: All sidebar functionality uses the established `docs/_parts/` structure
+
 ### Link Guidelines
 
 #### Internal Links
 
 ```markdown
 <!-- ✅ Relative links for internal content -->
-[Getting Started](./getting-started/index.md)
-[Contributing](../contributing/index.md)
+[Getting Started](./getting-started/README.md)
+[Contributing](../contributing/README.md)
 
 <!-- ✅ Use tokens for dynamic base URLs -->
 [Documentation Home]({{DOCS_BASE_URL}}/docs/)
@@ -352,7 +392,7 @@ lsof -i :8080
 ### Getting Help
 
 - 🐛 [Report Documentation Issues]({{NEW_ISSUE_URL}})
-- 💡 [Contributing Guidelines](../contributing/index.md)
+- 💡 [Contributing Guidelines](../contributing/README.md)
 
 ## Scripts Reference
 
@@ -378,7 +418,7 @@ lsof -i :8080
 
 - `scripts/url-config.json` - Environment-specific URL mapping
 - `docsify-url-config.js` - Runtime URL configuration for docs server
-- `docs/_sidebar.md` - Auto-generated navigation sidebar
+- `docs/_parts/*.md` - Section-specific navigation sidebars (dynamically loaded by navbar integration)
 
 ## Azure DevOps Wiki Build Process
 
@@ -389,15 +429,15 @@ The project uses `scripts/Build-Wiki.ps1` to build Azure DevOps Wiki documentati
 **Key Features:**
 
 - **Comprehensive Content Coverage**: Includes all documentation from multiple areas:
-  - Main documentation from `docs/` directory following sidebar navigation
+  - Main documentation from `docs/` directory following section-specific sidebar navigation
   - Blueprint documentation from `blueprints/*/README.md` files
   - GitHub resources from `.github/prompts/`, `.github/chatmodes/`, `.github/instructions/`
   - AI Assistant guides from `copilot/` folder
-  - Learning platform materials from `praxisworx/` folder
-- **Navigation Preservation**: Parses `docs/_sidebar.md` to recreate hierarchical folder structure
+  - Learning platform materials from `learning/` folder
+- **Section-Specific Navigation**: Parses section-specific `docs/_parts/*.md` files to recreate hierarchical folder structure organized by documentation section (Documentation, Learning, Blueprints, Infrastructure, GitHub Copilot)
 - **Azure DevOps Integration**: Generates `.order` files for proper wiki navigation across all sections
 - **URL Token Replacement**: Automatically replaces URL tokens with Azure DevOps-specific URLs
-- **Standalone Content Organization**: Creates dedicated wiki sections for new content areas beyond sidebar navigation
+- **Dynamic Content Organization**: Creates dedicated wiki sections following the new navbar-based content organization
 
 ### Build Process
 
@@ -408,11 +448,11 @@ pwsh scripts/Build-Wiki.ps1
 
 This creates a `.wiki` folder with comprehensive documentation coverage including:
 
-- **Complete documentation** from docs/ folder following sidebar navigation
+- **Complete documentation** from docs/ folder following section-specific sidebar navigation
 - **Blueprint documentation** organized by framework (terraform/bicep)
 - **GitHub resources section** with prompts, chatmodes, and instructions
 - **Copilot guides section** with AI assistant conventions and instructions
-- **PraxisWorx section** with training materials and learning resources
+- **Learning section** with training materials and learning resources
 - **Azure DevOps URLs** replacing all variable tokens
 - **Proper .order files** for wiki navigation at every level
 
@@ -439,8 +479,8 @@ The generated wiki organizes content as follows:
 ├── copilot-guides/                  # AI Assistant guides
 │   ├── .order                      # Copilot navigation
 │   └── *.md                        # Copilot conventions and instructions
-├── praxisworx/                      # Learning platform
-│   ├── .order                      # PraxisWorx navigation
+├── learning/                      # Learning platform
+│   ├── .order                      # Learning navigation
 │   └── *.md                        # Training materials and resources
 └── github-resources/                # GitHub resources
     ├── .order                      # GitHub resources navigation

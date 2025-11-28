@@ -2,7 +2,7 @@
 title: Testing and Validation
 description: Comprehensive guide to testing infrastructure components and validating changes, covering testing strategies, validation procedures, and quality assurance practices
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: how-to
 estimated_reading_time: 7
 keywords:
@@ -19,17 +19,6 @@ keywords:
 ---
 
 This guide covers testing strategies, validation procedures, and quality assurance practices for the AI on Edge Flagship Accelerator. Following these practices ensures reliable, secure, and maintainable infrastructure components.
-
-## Table of Contents
-
-- [Testing Philosophy](#testing-philosophy)
-- [Infrastructure Testing](#infrastructure-testing)
-- [Validation Tools](#validation-tools)
-- [Pre-Commit Validation](#pre-commit-validation)
-- [Component Testing](#component-testing)
-- [Blueprint Testing](#blueprint-testing)
-- [Continuous Integration](#continuous-integration)
-- [Troubleshooting](#troubleshooting)
 
 ## Testing Philosophy
 
@@ -153,7 +142,7 @@ checkov -d src/000-cloud/010-security-identity
 checkov -d . --output json --output-file checkov-report.json
 ```
 
-#### Common Security Checks
+#### Common Checks
 
 Checkov validates:
 

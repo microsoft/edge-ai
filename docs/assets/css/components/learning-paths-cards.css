@@ -1,0 +1,393 @@
+/* Learning Paths Dashboard Cards - Enhanced Visual Appeal */
+
+.learning-paths-dashboard {
+  margin: 1rem 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  padding: 1rem;
+  background: linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 100%);
+  border-radius: 12px;
+  border: 1px solid #e3e8f7;
+}
+
+.path-category {
+  margin-bottom: 1.5rem;
+}
+
+/* Removed old .path-category h3 style - replaced by .learning-path-section-header */
+
+.category-description {
+  color: #4a5568;
+  font-size: 0.9rem;
+  font-style: italic;
+  margin: 0 0 0.75rem 0;
+  padding-left: 2rem;
+  opacity: 0.8;
+}
+
+/* Learning cards container - wrapper for grouped path cards */
+.learning-cards-container {
+  display: block;
+  width: 100%;
+}
+
+/* Section headers for grouped paths */
+.learning-path-section-header {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  border-left: 4px solid;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.learning-path-section-header:first-child {
+  margin-top: 0;
+}
+
+.learning-path-section-header:hover {
+  transform: translateX(4px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Foundation Builder - Green theme */
+.learning-path-section-header[data-level="foundation-builder"] {
+  background: linear-gradient(135deg, #f1f8f4 0%, #e8f5e9 100%);
+  color: #2e7d32;
+  border-color: #4caf50;
+}
+
+/* Skill Developer - Blue theme */
+.learning-path-section-header[data-level="skill-developer"] {
+  background: linear-gradient(135deg, #e3f2fd 0%, #f0f7ff 100%);
+  color: #1565c0;
+  border-color: #2196f3;
+}
+
+/* Expert Practitioner - Purple theme */
+.learning-path-section-header[data-level="expert-practitioner"] {
+  background: linear-gradient(135deg, #faf4fc 0%, #f3e5f5 100%);
+  color: #6a1b9a;
+  border-color: #9c27b0;
+}
+
+/* AI Foundation - Orange theme */
+.learning-path-section-header[data-level="ai-foundation"] {
+  background: linear-gradient(135deg, #fff8f0 0%, #fff3e0 100%);
+  color: #e65100;
+  border-color: #ff9800;
+}
+
+/* Grid layout for path cards within each section */
+.path-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+/* Themed cards by section */
+.path-cards[data-level="foundation-builder"] .path-card {
+  border-color: rgba(76, 175, 80, 0.3);
+}
+
+.path-cards[data-level="foundation-builder"] .path-card::before {
+  background: linear-gradient(90deg, #4caf50 0%, #81c784 100%);
+}
+
+.path-cards[data-level="foundation-builder"] .path-card:hover {
+  border-color: #4caf50;
+}
+
+.path-cards[data-level="foundation-builder"] .path-card.selected {
+  border-color: #4caf50;
+  background: linear-gradient(145deg, #f1f8f4 0%, #e8f5e9 100%);
+  box-shadow: 0 8px 25px -5px rgba(76, 175, 80, 0.2), 0 4px 6px -1px rgba(76, 175, 80, 0.1);
+}
+
+.path-cards[data-level="skill-developer"] .path-card {
+  border-color: rgba(33, 150, 243, 0.3);
+}
+
+.path-cards[data-level="skill-developer"] .path-card::before {
+  background: linear-gradient(90deg, #2196f3 0%, #64b5f6 100%);
+}
+
+.path-cards[data-level="skill-developer"] .path-card:hover {
+  border-color: #2196f3;
+}
+
+.path-cards[data-level="skill-developer"] .path-card.selected {
+  border-color: #2196f3;
+  background: linear-gradient(145deg, #f0f7ff 0%, #e3f2fd 100%);
+  box-shadow: 0 8px 25px -5px rgba(33, 150, 243, 0.2), 0 4px 6px -1px rgba(33, 150, 243, 0.1);
+}
+
+.path-cards[data-level="expert-practitioner"] .path-card {
+  border-color: rgba(156, 39, 176, 0.3);
+}
+
+.path-cards[data-level="expert-practitioner"] .path-card::before {
+  background: linear-gradient(90deg, #9c27b0 0%, #ba68c8 100%);
+}
+
+.path-cards[data-level="expert-practitioner"] .path-card:hover {
+  border-color: #9c27b0;
+}
+
+.path-cards[data-level="expert-practitioner"] .path-card.selected {
+  border-color: #9c27b0;
+  background: linear-gradient(145deg, #faf4fc 0%, #f3e5f5 100%);
+  box-shadow: 0 8px 25px -5px rgba(156, 39, 176, 0.2), 0 4px 6px -1px rgba(156, 39, 176, 0.1);
+}
+
+.path-cards[data-level="ai-foundation"] .path-card {
+  border-color: rgba(255, 152, 0, 0.3);
+}
+
+.path-cards[data-level="ai-foundation"] .path-card::before {
+  background: linear-gradient(90deg, #ff9800 0%, #ffb74d 100%);
+}
+
+.path-cards[data-level="ai-foundation"] .path-card:hover {
+  border-color: #ff9800;
+}
+
+.path-cards[data-level="ai-foundation"] .path-card.selected {
+  border-color: #ff9800;
+  background: linear-gradient(145deg, #fff8f0 0%, #fff3e0 100%);
+  box-shadow: 0 8px 25px -5px rgba(255, 152, 0, 0.2), 0 4px 6px -1px rgba(255, 152, 0, 0.1);
+}
+
+.path-card {
+  background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.25rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  position: relative;
+  overflow: hidden;
+}
+
+.path-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.path-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  border-color: #667eea;
+}
+
+.path-card:hover::before {
+  transform: scaleX(1);
+}
+
+.path-selector {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.path-checkbox {
+  margin-top: 0.25rem;
+  transform: scale(1.2);
+  accent-color: #667eea;
+}
+
+.path-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  cursor: pointer;
+  flex: 1;
+}
+
+.path-card.selected {
+  border-color: #667eea;
+  background: linear-gradient(145deg, #f8f9ff 0%, #f0f4ff 100%);
+  box-shadow: 0 8px 25px -5px rgba(102, 126, 234, 0.2), 0 4px 6px -1px rgba(102, 126, 234, 0.1);
+}
+
+.path-card.selected::before {
+  transform: scaleX(1);
+}
+
+.path-meta {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.path-duration,
+.path-steps {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.path-title {
+  margin: 0 0 0.25rem 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: #1a202c;
+}
+
+.path-description {
+  color: #475569;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin: 0 0 0.75rem 0;
+  font-weight: 400;
+}
+
+.path-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+  /* Removed gradient to show emoji in full color */
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.path-info {
+  flex: 1;
+}
+
+.path-roles {
+  font-size: 0.8rem;
+  color: #64748b;
+  font-weight: 500;
+  margin: 0;
+  line-height: 1.2;
+  padding: 0.25rem 0.5rem;
+  background: #f1f5f9;
+  border-radius: 6px;
+  display: inline-block;
+}
+
+/* Progress section styling */
+.progress-section {
+  margin-top: 0.75rem;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background-color: #e2e8f0;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  font-size: 0.8rem;
+  color: #64748b;
+  text-align: center;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .path-cards {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .path-card {
+    padding: 1rem;
+  }
+
+  .path-category h3 {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .path-selector {
+    gap: 0.5rem;
+  }
+
+  .path-icon {
+    font-size: 1.5rem;
+  }
+}
+
+@media (min-width: 1200px) {
+  .path-cards {
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .learning-paths-dashboard {
+    background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+    border-color: #4a5568;
+  }
+
+  .path-card {
+    background: linear-gradient(145deg, #2d3748 0%, #1a202c 100%);
+    border-color: #4a5568;
+    color: #e2e8f0;
+  }
+
+  .path-card.selected {
+    background: linear-gradient(145deg, #2d3748 0%, #4a5568 100%);
+    border-color: #4299e1;
+  }
+
+  .path-card:hover {
+    border-color: #4299e1;
+  }
+
+  .path-title {
+    color: #e2e8f0;
+  }
+
+  .path-description {
+    color: #cbd5e0;
+  }
+
+  .path-roles {
+    background: #4a5568;
+    color: #a0aec0;
+  }
+
+  .path-meta {
+    color: #a0aec0;
+  }
+
+  .progress-text {
+    color: #a0aec0;
+  }
+
+  .progress-bar {
+    background-color: #4a5568;
+  }
+
+  .path-category h3 {
+    color: #e2e8f0;
+    border-bottom-color: #4299e1;
+  }
+}

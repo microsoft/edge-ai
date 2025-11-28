@@ -12,12 +12,13 @@ performance tracking, and diagnostic insights.
 | Name | Version |
 |------|---------|
 | terraform | >= 1.9.8, < 2.0 |
+| azurerm | >= 4.51.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| azurerm | n/a |
+| azurerm | >= 4.51.0 |
 
 ## Resources
 

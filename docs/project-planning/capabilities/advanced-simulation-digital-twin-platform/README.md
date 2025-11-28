@@ -2,7 +2,7 @@
 title: Advanced Simulation & Digital Twin Platform
 description: Comprehensive cognitive computing ecosystem that aggregates seven critical platform capabilities to deliver intelligent simulation and predictive analytics across industrial and enterprise environments through advanced modeling and real-time synchronization architectures
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: concept
 estimated_reading_time: 20
 keywords:

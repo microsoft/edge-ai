@@ -18,6 +18,43 @@ These instructions define the Markdown style guide enforced by markdownlint in t
 * Prefer descriptive headings and concise paragraphs; avoid trailing or leading extra spaces.
 * Keep lines reasonably short for readability; wrap where sensible without breaking URLs or code.
 
+## YAML frontmatter
+
+* README.md files SHOULD include YAML frontmatter at the very top of the file, before any content or headings.
+* The frontmatter block must be delimited by triple dashes (`---`) on separate lines at the beginning and end.
+* When creating or significantly updating a README.md file, include or update frontmatter with appropriate metadata.
+* Common frontmatter fields for README files include:
+  * `title`: Brief, descriptive title for the document (required for docs with frontmatter)
+  * `description`: One-sentence summary of the content (recommended, 80-250 characters)
+  * `author`: Author or team name (optional, e.g., "Edge AI Team")
+  * `ms.date`: Last significant update date in YYYY-MM-DD ISO 8601 format (optional)
+  * `ms.topic`: Document type such as `reference`, `hub-page`, `tutorial`, `concept` (optional)
+  * `keywords`: List of relevant search terms (optional, use YAML list format)
+  * `estimated_reading_time`: Reading time in minutes (optional)
+* When a frontmatter `title:` field is present, the first markdown heading in the file should match or complement it; the frontmatter title takes precedence for rendering systems that use it.
+* Non-README markdown files typically do not require frontmatter unless they are part of a documentation site that uses it.
+
+<!-- <example-readme-frontmatter> -->
+```markdown
+---
+title: Component Name
+description: Brief description of what this component does and its purpose in the system
+author: Edge AI Team
+ms.date: 2025-11-04
+ms.topic: reference
+keywords:
+  - component
+  - infrastructure
+  - azure
+estimated_reading_time: 5
+---
+
+## Component Name
+
+The main content starts here...
+```
+<!-- </example-readme-frontmatter> -->
+
 ## Headings
 
 * Start documents with a single level-1 heading that acts as the title when appropriate.
@@ -27,7 +64,7 @@ These instructions define the Markdown style guide enforced by markdownlint in t
 * Surround each heading with a blank line above and below (except at file start/end).
 * Do not end headings with punctuation such as `. , ; : !` or their full-width variants.
 * Avoid duplicate headings under the same parent section; make them unique.
-* Begin the file with a top-level heading as the first line (unless a YAML front matter `title:` is present which serves as the title). Do not include preamble text before the title.
+* Begin the file with a top-level heading as the first line (unless YAML frontmatter with a `title:` field is present at the start of the file, which serves as the document title). Do not include preamble text before the title or frontmatter block.
 * Use exactly one space after the `#` characters in headings; do not omit or use multiple spaces.
 * If you close ATX headings with trailing `#` characters, use a single space between the text and both the opening and closing hashes; do not use multiple spaces on either side.
 * Use only one top-level heading per document; subsequent sections must use lower levels.

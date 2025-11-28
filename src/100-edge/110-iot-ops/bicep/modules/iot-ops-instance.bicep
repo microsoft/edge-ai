@@ -33,6 +33,16 @@ param aioPlatformExtensionId string
 param aioFeatures types.AioFeatures?
 
 /*
+  Secret Sync Parameters
+*/
+
+@description('The name of the User Assigned Managed Identity for Secret Sync.')
+param sseIdentityName string
+
+@description('The name of the Key Vault for Secret Sync.')
+param sseKeyVaultName string
+
+/*
   Security and Trust Parameters
 */
 
@@ -52,6 +62,9 @@ param trustIssuerSettings types.TrustSettingsConfig?
 
 @description('The resource name for the ADR Schema Registry for Azure IoT Operations.')
 param schemaRegistryName string
+
+@description('The resource ID for the ADR Namespace for Azure IoT Operations.')
+param adrNamespaceId string?
 
 @description('Whether or not to enable the Open Telemetry Collector for Azure IoT Operations.')
 param shouldEnableOtelCollector bool
@@ -114,15 +127,11 @@ var aioMqBrokerAddress = 'mqtts://${aioMqBrokerConfig.brokerListenerServiceName}
   Resources
 */
 
-resource aioIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' existing = {
-  name: aioIdentityName
-}
-
-resource schemaRegistry 'Microsoft.DeviceRegistry/schemaRegistries@2024-09-01-preview' existing = {
+resource schemaRegistry 'Microsoft.DeviceRegistry/schemaRegistries@2025-10-01' existing = {
   name: schemaRegistryName
 }
 
-resource arcConnectedCluster 'Microsoft.Kubernetes/connectedClusters@2021-03-01' existing = {
+resource arcConnectedCluster 'Microsoft.Kubernetes/connectedClusters@2024-12-01-preview' existing = {
   name: arcConnectedClusterName
 }
 
@@ -224,7 +233,49 @@ resource adrSyncRule 'Microsoft.ExtendedLocation/customLocations/resourceSyncRul
   ]
 }
 
-resource aioInstance 'Microsoft.IoTOperations/instances@2025-04-01' = {
+resource sseIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' existing = {
+  name: sseIdentityName
+
+  resource sseFedCred 'federatedIdentityCredentials' = {
+    name: 'aio-sse-ficred'
+    properties: {
+      audiences: ['api://AzureADTokenExchange']
+      issuer: arcConnectedCluster.properties.oidcIssuerProfile.issuerUrl
+      subject: 'system:serviceaccount:${aioExtensionConfig.settings.namespace}:aio-ssc-sa'
+    }
+  }
+}
+
+resource aioIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' existing = {
+  name: aioIdentityName
+
+  resource aioFedCred 'federatedIdentityCredentials' = {
+    name: 'aio-instance-ficred'
+    properties: {
+      audiences: ['api://AzureADTokenExchange']
+      issuer: arcConnectedCluster.properties.oidcIssuerProfile.issuerUrl
+      subject: 'system:serviceaccount:${aioExtensionConfig.settings.namespace}:aio-dataflow'
+    }
+  }
+}
+
+resource defaultSecretSyncSecretProviderClass 'Microsoft.SecretSyncController/azureKeyVaultSecretProviderClasses@2024-08-21-preview' = {
+  name: 'spc-ops-${take(uniqueString('${arcConnectedClusterName}-${resourceGroup().name}-${aioInstanceName}'), 7)}'
+  location: common.location
+
+  extendedLocation: {
+    name: customLocation.id
+    type: 'CustomLocation'
+  }
+
+  properties: {
+    clientId: sseIdentity.properties.clientId
+    keyvaultName: sseKeyVaultName!
+    tenantId: sseIdentity.properties.tenantId
+  }
+}
+
+resource aioInstance 'Microsoft.IoTOperations/instances@2025-10-01' = {
   name: aioInstanceName
   location: common.location
   extendedLocation: {
@@ -243,7 +294,17 @@ resource aioInstance 'Microsoft.IoTOperations/instances@2025-04-01' = {
       schemaRegistryRef: {
         resourceId: schemaRegistry.id
       }
+      defaultSecretProviderClassRef: {
+        resourceId: defaultSecretSyncSecretProviderClass.id
+      }
     },
+    adrNamespaceId == null
+      ? {}
+      : {
+          adrNamespaceRef: {
+            resourceId: adrNamespaceId
+          }
+        },
     aioFeatures == null
       ? {}
       : {
@@ -252,33 +313,45 @@ resource aioInstance 'Microsoft.IoTOperations/instances@2025-04-01' = {
   )
 }
 
-resource broker 'Microsoft.IoTOperations/instances/brokers@2025-04-01' = {
+resource broker 'Microsoft.IoTOperations/instances/brokers@2025-10-01' = {
   parent: aioInstance
   name: 'default'
   extendedLocation: {
     name: customLocation.id
     type: 'CustomLocation'
   }
-  properties: {
-    memoryProfile: aioMqBrokerConfig.memoryProfile
-    generateResourceLimits: {
-      cpu: 'Disabled'
-    }
-    cardinality: {
-      backendChain: {
-        partitions: aioMqBrokerConfig.backendPartitions
-        workers: aioMqBrokerConfig.backendWorkers
-        redundancyFactor: aioMqBrokerConfig.backendRedundancyFactor
+  properties: union(
+    {
+      memoryProfile: aioMqBrokerConfig.memoryProfile
+      generateResourceLimits: {
+        cpu: 'Disabled'
       }
-      frontend: {
-        replicas: aioMqBrokerConfig.frontendReplicas
-        workers: aioMqBrokerConfig.frontendWorkers
+      cardinality: {
+        backendChain: {
+          partitions: aioMqBrokerConfig.backendPartitions
+          workers: aioMqBrokerConfig.backendWorkers
+          redundancyFactor: aioMqBrokerConfig.backendRedundancyFactor
+        }
+        frontend: {
+          replicas: aioMqBrokerConfig.frontendReplicas
+          workers: aioMqBrokerConfig.frontendWorkers
+        }
       }
-    }
-  }
+      diagnostics: {
+        logs: {
+          level: aioMqBrokerConfig.logsLevel
+        }
+      }
+    },
+    aioMqBrokerConfig.?persistence != null
+      ? {
+          persistence: aioMqBrokerConfig.persistence!
+        }
+      : {}
+  )
 }
 
-resource brokerAuthn 'Microsoft.IoTOperations/instances/brokers/authentications@2025-04-01' = {
+resource brokerAuthn 'Microsoft.IoTOperations/instances/brokers/authentications@2025-10-01' = {
   parent: broker
   name: 'default'
   extendedLocation: {
@@ -297,7 +370,7 @@ resource brokerAuthn 'Microsoft.IoTOperations/instances/brokers/authentications@
   }
 }
 
-resource brokerListener 'Microsoft.IoTOperations/instances/brokers/listeners@2025-04-01' = {
+resource brokerListener 'Microsoft.IoTOperations/instances/brokers/listeners@2025-10-01' = {
   parent: broker
   name: 'default'
   extendedLocation: {
@@ -326,7 +399,7 @@ resource brokerListener 'Microsoft.IoTOperations/instances/brokers/listeners@202
   }
 }
 
-resource brokerListenerAnonymous 'Microsoft.IoTOperations/instances/brokers/listeners@2025-04-01' = if (shouldCreateAnonymousBrokerListener) {
+resource brokerListenerAnonymous 'Microsoft.IoTOperations/instances/brokers/listeners@2025-10-01' = if (shouldCreateAnonymousBrokerListener) {
   parent: broker
   name: 'default-anon'
   extendedLocation: {
@@ -348,7 +421,7 @@ resource brokerListenerAnonymous 'Microsoft.IoTOperations/instances/brokers/list
   ]
 }
 
-resource dataFlowProfile 'Microsoft.IoTOperations/instances/dataflowProfiles@2025-04-01' = {
+resource dataFlowProfile 'Microsoft.IoTOperations/instances/dataflowProfiles@2025-10-01' = {
   parent: aioInstance
   name: 'default'
   extendedLocation: {
@@ -360,7 +433,7 @@ resource dataFlowProfile 'Microsoft.IoTOperations/instances/dataflowProfiles@202
   }
 }
 
-resource dataFlowEndpoint 'Microsoft.IoTOperations/instances/dataflowEndpoints@2025-04-01' = {
+resource dataFlowEndpoint 'Microsoft.IoTOperations/instances/dataflowEndpoints@2025-10-01' = {
   parent: aioInstance
   name: 'default'
   extendedLocation: {

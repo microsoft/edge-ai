@@ -2,7 +2,7 @@
 title: Documentation Validation Template
 description: Azure DevOps pipeline template for comprehensive documentation quality validation and consistency checks
 author: Edge AI Team
-ms.date: 06/17/2025
+ms.date: 2025-06-17
 ms.topic: concept
 estimated_reading_time: 8
 keywords:
@@ -39,8 +39,8 @@ high standards.
 - **Sidebar Validation**: Ensures three-tree navigation sidebar is current with latest documentation structure
 - **Frontmatter Consistency**: Validates required fields and format across all content types
 - **Link Validation**: Checks all documentation links for accessibility and correctness
-- **Multi-Folder Support**: Validates content across docs, src, blueprints, praxisworx, and .github folders
-- **Learning Content Validation**: Specialized validation for PraxisWorx learning platform content
+- **Multi-Folder Support**: Validates content across docs, src, blueprints, learning, and .github folders
+- **Learning Content Validation**: Specialized validation for learning platform content
 - **GitHub Resources Validation**: Validates prompts, chatmodes, and issue templates
 - **Configurable Severity**: Can produce warnings or fail builds based on requirements
 - **Azure DevOps Integration**: Uses proper logging commands for build system integration
@@ -74,7 +74,7 @@ This template depends on the following:
   - `./scripts/Validate-MarkdownFrontmatter.ps1`: For dedicated frontmatter validation
 - **Required Project Structure**:
   - Three-tree documentation architecture (docs, src, blueprints folders)
-  - PraxisWorx learning platform content (praxisworx folder)
+  - Learning platform content (learning folder)
   - GitHub resources (.github folder with prompts, chatmodes, templates)
 
 ## Usage
@@ -119,7 +119,7 @@ The template executes three main validation processes:
 
 3. **Link Validation**:
    - Uses markdown-link-check to validate all documentation links
-   - Covers all tracked folders (docs, src, blueprints, praxisworx, .github)
+   - Covers all tracked folders (docs, src, blueprints, learning, .github)
    - Configurable timeout and retry settings
    - Ignores localhost and fragment-only links
 
