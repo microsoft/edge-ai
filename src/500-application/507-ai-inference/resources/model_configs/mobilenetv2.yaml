@@ -1,0 +1,57 @@
+# MobileNetV2 Configuration for Industrial Classification
+# Based on universal computer vision runtime approach
+---
+model:
+  name: "mobilenetv2"
+  version: "1.4.0"
+  model_type: "image_classification"
+  description: "MobileNetV2 ImageNet classification model for general purpose image recognition"
+  path: "models/mobilenetv2.onnx"
+  size_mb: 9.2
+  backends: ["onnx", "candle"]
+  performance:
+    avg_inference_ms: 25.0
+    memory_usage_mb: 15.0
+    accuracy: 0.72
+    target_hardware: "cpu"
+
+input:
+  shape: [1, 3, 224, 224]
+  dtype: "float32"
+  format: "NCHW"
+  value_range: [-1.0, 1.0]
+  color_space: "RGB"
+  input_type: "image"
+
+output:
+  tensors:
+    - name: "output"
+      shape: [1, 1000]
+      dtype: "float32"
+      semantic: "classification"
+  postprocess_type: "classification"
+  confidence_threshold: 0.1
+  max_detections: 5
+  class_labels: null  # Would be loaded from ImageNet labels file
+
+preprocessing:
+  resize_strategy: "crop"
+  target_size: [224, 224]
+  normalization:
+    mean: [0.485, 0.456, 0.406]  # ImageNet normalization
+    std: [0.229, 0.224, 0.225]
+    scale_to_unit: true
+  steps:
+    - step_type: "center_crop"
+      parameters:
+        size: [224, 224]
+
+postprocessing:
+  postprocess_type: "classification"
+  parameters:
+    top_k: 5
+  output_format: "classification"
+
+parameters:
+  temperature: 1.0
+  label_smoothing: 0.0

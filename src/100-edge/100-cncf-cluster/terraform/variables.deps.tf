@@ -44,9 +44,13 @@ variable "arc_onboarding_principal_ids" {
 
 variable "arc_onboarding_identity" {
   type = object({
+    id           = string
+    name         = string
     principal_id = string
+    client_id    = string
+    tenant_id    = string
   })
-  description = "The Principal ID for the identity that will be used for onboarding the cluster to Arc"
+  description = "The User Assigned Managed Identity that will be used for onboarding the cluster to Arc"
   default     = null
 
   validation {

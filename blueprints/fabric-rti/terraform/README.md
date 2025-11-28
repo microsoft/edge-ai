@@ -12,7 +12,7 @@ already deployed resources.
 |------|---------|
 | terraform | >= 1.9.8, < 2.0 |
 | azapi | >= 2.0.1 |
-| azurerm | >= 4.8.0 |
+| azurerm | >= 4.51.0 |
 | fabric | 1.3.0 |
 
 ## Providers
@@ -20,7 +20,7 @@ already deployed resources.
 | Name | Version |
 |------|---------|
 | azapi | >= 2.0.1 |
-| azurerm | >= 4.8.0 |
+| azurerm | >= 4.51.0 |
 | fabric | 1.3.0 |
 | terraform | n/a |
 

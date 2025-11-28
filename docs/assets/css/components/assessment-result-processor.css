@@ -1,0 +1,476 @@
+/**
+ * Assessment Result Processor Styles
+ * Visual components for assessment-driven learning path population
+ *
+ * @description Styles for notifications, indicators, and visual feedback
+ * when assessment results automatically populate the learning dashboard
+ *
+ * @version 1.0.0
+ * @since 2025-09-03
+ */
+
+/* ===========================================
+   Assessment Population Notifications
+   =========================================== */
+
+.learning-path-notifications {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  max-width: 400px;
+  pointer-events: none;
+}
+
+.assessment-population-notification {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  pointer-events: auto;
+  animation: slideInFromRight 0.5s ease-out;
+  position: relative;
+  overflow: hidden;
+}
+
+.assessment-population-notification::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  animation: shimmer 2s ease-in-out infinite;
+}
+
+@keyframes slideInFromRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes shimmer {
+  0% { left: -100%; }
+  50% { left: 100%; }
+  100% { left: 100%; }
+}
+
+.notification-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.notification-icon {
+  font-size: 24px;
+  margin-right: 12px;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+.notification-header h4 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.notification-content {
+  line-height: 1.5;
+}
+
+.notification-content p {
+  margin: 8px 0;
+  font-size: 14px;
+}
+
+.notification-content .warning {
+  color: #ffeb3b;
+  font-weight: 500;
+}
+
+.focus-areas, .estimated-time {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin: 8px 0;
+  font-size: 13px;
+}
+
+.notification-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s ease;
+}
+
+.notification-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* ===========================================
+   Assessment Population Indicators
+   =========================================== */
+
+.assessment-populated-indicator {
+  background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+  color: white;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+  animation: fadeInScale 0.3s ease-out;
+  position: relative;
+  overflow: hidden;
+}
+
+.assessment-populated-indicator::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  animation: shimmerGreen 3s ease-in-out infinite;
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes shimmerGreen {
+  0% { left: -100%; }
+  50% { left: 100%; }
+  100% { left: 100%; }
+}
+
+.indicator-icon {
+  font-size: 12px;
+  animation: bounce 2s ease-in-out infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+
+.indicator-text {
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.indicator-reason {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  margin-top: 4px;
+  line-height: 1.3;
+  border-left: 2px solid rgba(255, 255, 255, 0.3);
+  font-style: italic;
+}
+
+/* Assessment Populated Learning Items */
+.learning-path-item.assessment-populated {
+  position: relative;
+  border-left: 3px solid #4caf50;
+  background: linear-gradient(90deg, rgba(76, 175, 80, 0.05) 0%, transparent 100%);
+  animation: highlightPulse 2s ease-in-out;
+}
+
+@keyframes highlightPulse {
+  0%, 100% { box-shadow: none; }
+  50% { box-shadow: 0 0 20px rgba(76, 175, 80, 0.3); }
+}
+
+.learning-path-item.assessment-populated::before {
+  content: '🎯';
+  position: absolute;
+  top: 8px;
+  left: -12px;
+  background: #4caf50;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+  animation: rotate 2s ease-in-out;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ===========================================
+   Processing States
+   =========================================== */
+
+.assessment-processing {
+  position: relative;
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.assessment-processing::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent 25%, rgba(102, 126, 234, 0.1) 50%, transparent 75%);
+  animation: processing 1.5s ease-in-out infinite;
+}
+
+@keyframes processing {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* ===========================================
+   Skill Level Indicators
+   =========================================== */
+
+.skill-level-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.skill-level-indicator.beginner {
+  background: linear-gradient(135deg, #ff9800 0%, #ff5722 100%);
+  color: white;
+}
+
+.skill-level-indicator.intermediate {
+  background: linear-gradient(135deg, #2196f3 0%, #3f51b5 100%);
+  color: white;
+}
+
+.skill-level-indicator.advanced {
+  background: linear-gradient(135deg, #9c27b0 0%, #673ab7 100%);
+  color: white;
+}
+
+/* ===========================================
+   Assessment Summary Panel
+   =========================================== */
+
+.assessment-summary-panel {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px 0;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.assessment-summary-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.assessment-summary-header h3 {
+  margin: 0;
+  color: #333;
+  font-size: 18px;
+}
+
+.assessment-summary-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.summary-stat {
+  background: white;
+  padding: 12px 16px;
+  border-radius: 8px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.summary-stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #667eea;
+  margin-bottom: 4px;
+}
+
+.summary-stat-label {
+  font-size: 12px;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ===========================================
+   Responsive Design
+   =========================================== */
+
+@media (max-width: 768px) {
+  .learning-path-notifications {
+    top: 10px;
+    right: 10px;
+    left: 10px;
+    max-width: none;
+  }
+
+  .assessment-population-notification {
+    padding: 16px;
+  }
+
+  .notification-header h4 {
+    font-size: 14px;
+  }
+
+  .notification-content p {
+    font-size: 13px;
+  }
+
+  .assessment-populated-indicator {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .indicator-reason {
+    margin-top: 6px;
+    margin-left: 0;
+  }
+
+  .assessment-summary-content {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .assessment-population-notification {
+    padding: 12px;
+    border-radius: 8px;
+  }
+
+  .notification-icon {
+    font-size: 20px;
+  }
+
+  .notification-header h4 {
+    font-size: 13px;
+  }
+
+  .assessment-populated-indicator {
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+}
+
+/* ===========================================
+   Dark Mode Support
+   =========================================== */
+
+@media (prefers-color-scheme: dark) {
+  .assessment-summary-panel {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .assessment-summary-header h3 {
+    color: white;
+  }
+
+  .summary-stat {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+  }
+
+  .summary-stat-label {
+    color: #bdc3c7;
+  }
+
+  .learning-path-item.assessment-populated {
+    background: linear-gradient(90deg, rgba(76, 175, 80, 0.1) 0%, transparent 100%);
+  }
+}
+
+/* ===========================================
+   Accessibility Enhancements
+   =========================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .assessment-population-notification,
+  .assessment-populated-indicator,
+  .learning-path-item.assessment-populated::before,
+  .indicator-icon {
+    animation: none;
+  }
+
+  .assessment-population-notification::before,
+  .assessment-populated-indicator::before {
+    display: none;
+  }
+}
+
+/* Focus styles for keyboard navigation */
+.notification-close:focus {
+  outline: 2px solid white;
+  outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .assessment-populated-indicator {
+    border: 2px solid currentColor;
+  }
+
+  .learning-path-item.assessment-populated {
+    border-left-width: 5px;
+  }
+}

@@ -77,3 +77,13 @@ variable "key_vault" {
  * Authentication Variables
  */
 
+variable "arc_onboarding_identity" {
+  type = object({
+    id           = string
+    client_id    = string
+    principal_id = string
+  })
+  description = "User Assigned Managed Identity object for Arc onboarding with Key Vault access"
+  default     = null
+}
+

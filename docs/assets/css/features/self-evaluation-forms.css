@@ -1,0 +1,984 @@
+/* Self-Evaluation Forms Styles */
+
+.self-evaluation-form {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--theme-white);
+  border-radius: 12px;
+  box-shadow: 0 10px 40px var(--checkbox-shadow-medium);
+  max-width: 600px;
+  max-height: 80vh;
+  width: 90%;
+  z-index: 2000;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.self-evaluation-form::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--overlay-bg-dark);
+  z-index: -1;
+}
+
+.evaluation-header {
+  background: linear-gradient(135deg, var(--color-indigo-400) 0%, var(--color-purple-500) 100%);
+  color: white;
+  padding: 20px 24px;
+  text-align: center;
+}
+
+.evaluation-header h2 {
+  margin: 0 0 8px 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.evaluation-header p {
+  margin: 0;
+  opacity: 0.9;
+  font-size: 0.9rem;
+}
+
+.evaluation-form-content {
+  padding: 0;
+  max-height: calc(80vh - 120px);
+  overflow-y: auto;
+}
+
+.evaluation-section {
+  padding: 24px;
+  border-bottom: 1px solid var(--color-gray-300);
+}
+
+.evaluation-section:last-of-type {
+  border-bottom: none;
+}
+
+.evaluation-section h3 {
+  margin: 0 0 20px 0;
+  color: var(--color-gray-800);
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.evaluation-question {
+  margin-bottom: 24px;
+}
+
+.evaluation-question:last-child {
+  margin-bottom: 0;
+}
+
+.question-label {
+  display: block;
+  margin-bottom: 12px;
+  font-weight: 500;
+  color: var(--color-gray-800);
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+/* Rating Input Styles */
+.rating-input {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rating-option {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.rating-option:hover {
+  background-color: var(--theme-gray-100);
+}
+
+.rating-option input[type="radio"] {
+  margin-right: 12px;
+  transform: scale(1.2);
+}
+
+.rating-label {
+  font-size: 0.9rem;
+  color: var(--color-gray-700);
+}
+
+.rating-option input[type="radio"]:checked + .rating-label {
+  color: var(--color-indigo-400);
+  font-weight: 500;
+}
+
+/* Multiselect Input Styles */
+.multiselect-input {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.multiselect-option {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--color-gray-300);
+  transition: all 0.2s ease;
+}
+
+.multiselect-option:hover {
+  border-color: var(--color-indigo-400);
+  background-color: var(--surface-slate-50);
+}
+
+.multiselect-option input[type="checkbox"] {
+  margin-right: 12px;
+  transform: scale(1.2);
+}
+
+.option-label {
+  font-size: 0.9rem;
+  color: var(--color-gray-700);
+}
+
+.multiselect-option input[type="checkbox"]:checked + .option-label {
+  color: var(--color-indigo-400);
+  font-weight: 500;
+}
+
+/* Text Input Styles */
+.text-input {
+  width: 100%;
+}
+
+.text-input textarea {
+  width: 100%;
+  min-height: 100px;
+  padding: 12px;
+  border: 1px solid var(--color-gray-300);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  resize: vertical;
+  transition: border-color 0.2s ease;
+}
+
+.text-input textarea:focus {
+  outline: none;
+  border-color: var(--color-indigo-400);
+  box-shadow: 0 0 0 3px var(--color-indigo-alpha-10);
+}
+
+.text-input textarea::placeholder {
+  color: var(--text-muted);
+}
+
+/* Action Buttons */
+.evaluation-actions {
+  padding: 20px 24px;
+  background: var(--color-gray-100);
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  border-top: 1px solid var(--color-gray-300);
+}
+
+.evaluation-actions button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-save-draft {
+  background: var(--eval-btn-secondary);
+  color: white;
+}
+
+.btn-save-draft:hover {
+  background: var(--eval-btn-secondary-hover);
+}
+
+.btn-complete {
+  background: var(--eval-btn-success);
+  color: white;
+}
+
+.btn-complete:hover {
+  background: var(--eval-btn-success-hover);
+}
+
+.btn-cancel {
+  background: var(--eval-btn-danger);
+  color: white;
+}
+
+.btn-cancel:hover {
+  background: var(--eval-progress-complete);
+}
+
+/* Message Styles */
+.evaluation-message {
+  padding: 12px 24px;
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.evaluation-message.success {
+  background: var(--status-published-bg);
+  color: var(--status-published-text);
+  border-bottom: 1px solid var(--status-published-border);
+}
+
+.evaluation-message.error {
+  background: var(--status-review-bg);
+  color: var(--status-review-text);
+  border-bottom: 1px solid var(--status-review-border);
+}
+
+.evaluation-message.info {
+  background: var(--status-draft-bg);
+  color: var(--status-published-text);
+  border-bottom: 1px solid var(--status-draft-border);
+}
+
+
+
+/* Skill Assessment Specific Styles */
+.skill-assessment-form .evaluation-header {
+  background: linear-gradient(135deg, var(--eval-primary) 0%, var(--eval-secondary) 100%);
+}
+
+.skill-assessment-form .evaluation-section {
+  padding: 20px 24px;
+  text-align: left;
+}
+
+.skill-assessment-form .evaluation-section h3 {
+  color: var(--eval-primary);
+  font-size: 1.1rem;
+  margin-bottom: 16px;
+}
+
+.skill-assessment-form .rating-input {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  margin-top: 12px;
+}
+
+/* Fix for UL/LI structure created by JS */
+.skill-assessment-form {
+  text-align: left;
+}
+
+.skill-assessment-form ul {
+  list-style: none;
+  padding: 0;
+  margin: 16px 0;
+  text-align: left;
+}
+
+.skill-assessment-form li {
+  text-align: left;
+  margin: 0;
+  padding: 0;
+}
+
+.skill-assessment-form h4 {
+  text-align: left;
+  margin: 20px 0 12px 0;
+}
+
+.skill-assessment-form .rating-option {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  text-align: left;
+  padding: 12px 8px;
+  border: 1px solid var(--color-gray-300);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.skill-assessment-form .rating-option:hover {
+  border-color: var(--eval-primary);
+  background-color: var(--surface-slate-50);
+}
+
+.skill-assessment-form .rating-option input[type="radio"] {
+  margin: 0 8px 0 0;
+}
+
+.skill-assessment-form .rating-label {
+  font-size: 0.8rem;
+  line-height: 1.2;
+  color: var(--color-gray-600);
+  font-weight: 500;
+}
+
+.skill-assessment-form .rating-option input[type="radio"]:checked + .rating-label {
+  color: var(--eval-primary);
+  font-weight: 600;
+}
+
+.skill-assessment-form .rating-option input[type="radio"]:checked {
+  accent-color: var(--eval-primary);
+}
+
+.skill-assessment-form .btn-complete {
+  background: linear-gradient(135deg, var(--eval-primary) 0%, var(--eval-secondary) 100%);
+  color: white;
+  padding: 12px 24px;
+  font-weight: 600;
+}
+
+.skill-assessment-form .btn-complete:hover {
+  background: linear-gradient(135deg, var(--eval-gradient-start) 0%, var(--eval-gradient-end) 100%);
+}
+
+/* Skill Assessment in Content Area (Docsify) */
+.content.skill-assessment-form .rating-input {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 20px 0;
+  list-style: none;
+  padding: 0;
+}
+
+/* Target the actual UL containers that hold rating options */
+.content.skill-assessment-form ul.task-list {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: wrap !important;
+  gap: 12px !important;
+  margin: 20px 0 !important;
+  list-style: none !important;
+  padding: 0 !important;
+}
+
+/* Default vertical layout for regular content */
+.content ul.task-list {
+  display: flex !important;
+  flex-direction: column !important;
+  flex-wrap: nowrap !important;
+  gap: 8px !important;
+}
+
+.content.skill-assessment-form .rating-option {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  padding: 16px 20px;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin: 8px 0;
+  list-style: none !important;
+  pointer-events: auto;
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  width: 100%;
+  box-sizing: border-box;
+  gap: 0px;
+}
+
+/* Selected state styling for the entire option */
+.content.skill-assessment-form .rating-option.selected {
+  border-color: #0078d4 !important;
+  background-color: #f0f8ff !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(0, 120, 212, 0.25) !important;
+}
+
+.content.skill-assessment-form .rating-option.selected .rating-label {
+  color: #0078d4 !important;
+  font-weight: 600 !important;
+}
+
+.content.skill-assessment-form .rating-option:hover {
+  border-color: #0078d4;
+  background-color: #f8fafe;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 120, 212, 0.15);
+}
+
+.content.skill-assessment-form .rating-option input[type="radio"] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border: 2px solid #ccc;
+  border-radius: 50%;
+  margin: 0 !important;
+  cursor: pointer;
+  position: static !important;
+  background: white;
+  flex-shrink: 0;
+  pointer-events: auto;
+  z-index: 2;
+  transition: all 0.2s ease;
+  display: block;
+  top: auto;
+  left: auto;
+  transform: none;
+}
+
+.content.skill-assessment-form .rating-option input[type="radio"]:checked {
+  border-color: #0078d4;
+  background: white;
+}
+
+.content.skill-assessment-form .rating-option input[type="radio"]:checked::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 10px;
+  height: 10px;
+  background: #0078d4;
+  border-radius: 50%;
+}
+
+.content.skill-assessment-form .rating-label {
+  font-size: 16px;
+  color: #333;
+  cursor: pointer;
+  flex: 1;
+  margin: 0 !important;
+  padding: 0 !important;
+  pointer-events: auto;
+  z-index: 2;
+  position: static !important;
+  line-height: 1.5;
+  font-weight: 500;
+  text-align: left;
+  top: auto;
+  left: auto;
+  transform: none;
+  display: block;
+}
+
+.content.skill-assessment-form .rating-option:hover .rating-label {
+  color: #0078d4;
+}
+
+.content.skill-assessment-form .rating-option input[type="radio"]:checked + .rating-label {
+  color: #0078d4;
+  font-weight: 600;
+}
+
+/* Force row layout with highest specificity */
+body .content.skill-assessment-form li.rating-option {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+}
+
+/* Force row layout with maximum specificity to override any conflicting styles */
+html body .content.skill-assessment-form li.rating-option,
+html body .content.skill-assessment-form .rating-option,
+.content .rating-option,
+li.rating-option {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 16px !important;
+}
+
+/* ULTIMATE SPECIFICITY - Override everything for left padding */
+html body section.content.skill-assessment-form li.rating-option,
+html body .content.skill-assessment-form li.rating-option,
+body .content.skill-assessment-form li.rating-option,
+.content.skill-assessment-form li.rating-option,
+html body section.content li.rating-option,
+html body .content li.rating-option,
+body .content li.rating-option,
+.content li.rating-option,
+li.rating-option {
+  padding-left: 30px !important;
+  padding-right: 20px !important;
+  padding-top: 16px !important;
+  padding-bottom: 16px !important;
+}
+
+/* Maximum specificity for individual rating options - PERMANENT FIX */
+html body section.content li.rating-option,
+html body .content li.rating-option,
+body .content li.rating-option,
+.content li.rating-option,
+li.rating-option {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 12px !important;
+  width: auto !important;
+  min-width: 150px !important;
+  margin: 4px !important;
+  padding: 16px 20px 16px 30px !important; /* Fixed left padding to 30px */
+  border: 1px solid #e0e0e0 !important;
+  border-radius: 8px !important;
+  background: white !important;
+  list-style: none !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+/* Hover effect for rating options */
+html body section.content li.rating-option:hover,
+html body .content li.rating-option:hover,
+body .content li.rating-option:hover,
+.content li.rating-option:hover,
+li.rating-option:hover {
+  border-color: #0078d4 !important;
+  background-color: #f8fafe !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 2px 8px rgba(0, 120, 212, 0.15) !important;
+}
+
+/* Additional override for list items specifically */
+.content li.rating-option {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 16px !important;
+}
+
+/* Fix spacing for radio inputs and labels */
+.content.skill-assessment-form .rating-option input[type="radio"] {
+  margin: 0 16px 0 0 !important;
+  flex-shrink: 0 !important;
+}
+
+.content.skill-assessment-form .rating-label {
+  margin: 0 !important;
+  padding: 0 !important;
+  flex: 1 !important;
+}
+
+/* Maximum specificity for radio input positioning - PERMANENT FIX */
+html body .content li.rating-option input[type="radio"],
+body .content li.rating-option input[type="radio"],
+.content li.rating-option input[type="radio"],
+li.rating-option input[type="radio"],
+input[type="radio"] {
+  position: static !important;
+  margin: 0 8px 0 0 !important;
+  padding: 0 !important;
+  width: 20px !important;
+  height: 20px !important;
+  top: auto !important;
+  left: auto !important;
+  transform: none !important;
+  flex-shrink: 0 !important;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+  border: 2px solid #ccc !important;
+  border-radius: 50% !important;
+  background: white !important;
+  transition: all 0.2s ease !important;
+}
+
+/* Radio button checked state */
+html body .content li.rating-option input[type="radio"]:checked,
+body .content li.rating-option input[type="radio"]:checked,
+.content li.rating-option input[type="radio"]:checked,
+li.rating-option input[type="radio"]:checked {
+  border-color: #0078d4 !important;
+  background: white !important;
+}
+
+/* Radio button checked indicator */
+html body .content li.rating-option input[type="radio"]:checked::after,
+body .content li.rating-option input[type="radio"]:checked::after,
+.content li.rating-option input[type="radio"]:checked::after,
+li.rating-option input[type="radio"]:checked::after {
+  content: '' !important;
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  width: 8px !important;
+  height: 8px !important;
+  background: #0078d4 !important;
+  border-radius: 50% !important;
+}
+
+/* Maximum specificity for radio labels - PERMANENT FIX */
+html body .content li.rating-option .rating-label,
+body .content li.rating-option .rating-label,
+.content li.rating-option .rating-label,
+li.rating-option .rating-label,
+.rating-label {
+  position: static !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  top: auto !important;
+  left: auto !important;
+  transform: none !important;
+  flex: 1 !important;
+  text-align: left !important;
+  font-size: 16px !important;
+  color: #333 !important;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  line-height: 1.5 !important;
+  font-weight: 500 !important;
+}
+
+/* Make sure all radio inputs and labels follow the row layout */
+input[type="radio"] + .rating-label,
+.rating-option input[type="radio"],
+.rating-option .rating-label {
+  display: inline-block !important;
+}
+
+/* Override any conflicting list item styles that might be causing column layout */
+li.rating-option,
+ul li.rating-option,
+.content ul li.rating-option {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  list-style: none !important;
+  gap: 16px !important;
+}
+
+/* Maximum specificity override for stubborn flex-direction */
+html body .content li.rating-option,
+html body li.rating-option,
+body li.rating-option,
+.rating-option {
+  flex-direction: row !important;
+  align-items: flex-start !important;
+}
+
+/* Target the UL containers specifically for column layout */
+html body .content.skill-assessment-form ul.task-list,
+body .content.skill-assessment-form ul.task-list,
+.content.skill-assessment-form ul.task-list,
+.skill-assessment-form ul.task-list {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+  list-style: none !important;
+  margin: 20px 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+}
+
+/* Default task-list layout - vertical stacking for katas */
+html body section.content ul.task-list,
+html body .content ul.task-list,
+body .content ul.task-list,
+.content ul.task-list,
+ul.task-list {
+  display: flex !important;
+  flex-direction: column !important;
+  flex-wrap: nowrap !important;
+  gap: 8px !important;
+  list-style: none !important;
+  margin: 20px 0 !important;
+  width: 100% !important;
+  padding: 0 !important;
+}
+
+/* Force flex on all task-list containers in skill assessment */
+html body section.content.skill-assessment-form ul.task-list,
+html body .content.skill-assessment-form ul.task-list,
+body .content.skill-assessment-form ul.task-list,
+.content.skill-assessment-form ul.task-list,
+.skill-assessment-form ul.task-list {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: wrap !important;
+  gap: 12px !important;
+  list-style: none !important;
+  margin: 20px 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+}
+
+/* Override any conflicting styles */
+.content.skill-assessment-form li.rating-option {
+  list-style: none !important;
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  flex-shrink: 0 !important;
+}
+
+.content.skill-assessment-form .rating-option input[type="radio"]:focus {
+  outline: 2px solid #0078d4;
+  outline-offset: 2px;
+}
+
+.content.skill-assessment-form ul {
+  list-style: none;
+  padding: 0;
+  margin: 20px 0;
+  text-align: left;
+}
+
+.content.skill-assessment-form li {
+  list-style: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  text-align: left;
+}
+
+.content.skill-assessment-form h4 {
+  color: #0078d4;
+  font-size: 1.2rem;
+  margin: 40px 0 20px 0;
+  font-weight: 600;
+  border-bottom: 2px solid #e0e0e0;
+  padding-bottom: 8px;
+}
+
+/* Progress indicator for skill assessment */
+.skill-assessment-progress {
+  background: var(--color-gray-100);
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--color-gray-300);
+}
+
+.progress-bar {
+  height: 8px;
+  background: var(--color-gray-300);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--eval-primary) 0%, var(--eval-secondary) 100%);
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  font-size: 0.85rem;
+  color: var(--color-gray-600);
+  text-align: center;
+}
+
+/* Results display styles */
+.skill-assessment-results {
+  background: var(--surface-slate-50);
+  border: 1px solid var(--surface-blue-50);
+  border-radius: 8px;
+  padding: 20px;
+  margin-top: 20px;
+}
+
+.results-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.overall-score {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--eval-primary);
+  margin: 0;
+}
+
+.overall-level {
+  font-size: 1.1rem;
+  color: var(--color-gray-600);
+  margin: 8px 0 0 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.results-categories {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.category-score {
+  background: var(--theme-white);
+  border: 1px solid var(--surface-blue-50);
+  border-radius: 6px;
+  padding: 16px;
+  text-align: center;
+}
+
+.category-name {
+  font-size: 0.9rem;
+  color: var(--eval-primary);
+  font-weight: 600;
+  margin: 0 0 8px 0;
+}
+
+.category-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-gray-800);
+  margin: 0;
+}
+
+.recommendations-section {
+  border-top: 1px solid var(--surface-blue-50);
+  padding-top: 20px;
+}
+
+.recommendations-title {
+  font-size: 1.1rem;
+  color: var(--eval-primary);
+  font-weight: 600;
+  margin: 0 0 16px 0;
+}
+
+.recommendations-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.recommendations-list li {
+  background: var(--theme-white);
+  border: 1px solid var(--surface-blue-50);
+  border-radius: 6px;
+  padding: 12px 16px;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+  color: var(--color-gray-800);
+}
+
+.recommendations-list li:last-child {
+  margin-bottom: 0;
+}
+
+/* Animation for form appearance */
+@keyframes evaluationFormSlideIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -60%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
+.self-evaluation-form {
+  animation: evaluationFormSlideIn 0.3s ease-out;
+}
+
+/* Scroll styling for form content */
+.evaluation-form-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.evaluation-form-content::-webkit-scrollbar-track {
+  background: var(--theme-gray-50);
+}
+
+.evaluation-form-content::-webkit-scrollbar-thumb {
+  background: var(--eval-progress-bar);
+  border-radius: 3px;
+}
+
+.evaluation-form-content::-webkit-scrollbar-thumb:hover {
+  background: var(--eval-progress-bar-hover);
+}
+
+/* Fix radio button blue dot overlay and positioning issues */
+.content.skill-assessment-form .rating-option input[type="radio"]:checked::after {
+  content: none !important;
+  display: none !important;
+}
+
+/* Visually hide radio buttons while keeping them interactive */
+.content.skill-assessment-form .rating-option input[type="radio"] {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border-width: 0 !important;
+  opacity: 0 !important;
+  pointer-events: auto !important;
+}
+
+/* Update rating option styling to account for hidden radio buttons */
+.content.skill-assessment-form .rating-option {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 16px 20px 16px 60px !important; /* top right bottom left - 60px left padding for text spacing */
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin: 8px 4px !important; /* Added horizontal margin for consistent spacing */
+  list-style: none !important;
+  pointer-events: auto;
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  width: calc(20% - 8px) !important; /* Make all boxes uniform width - 20% for 5 options */
+  min-width: 120px !important; /* Minimum width for readability */
+  min-height: 60px !important; /* Uniform height for all boxes */
+  box-sizing: border-box;
+  gap: 0px;
+  text-align: center !important; /* Center the text within each box */
+}
+
+/* Selected state styling for the entire option */
+.content.skill-assessment-form .rating-option.selected {
+  border-color: #0078d4 !important;
+  background-color: #f0f8ff !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(0, 120, 212, 0.25) !important;
+}
+
+.content.skill-assessment-form .rating-option.selected .rating-label {
+  color: #0078d4 !important;
+  font-weight: 600 !important;
+}
+
+

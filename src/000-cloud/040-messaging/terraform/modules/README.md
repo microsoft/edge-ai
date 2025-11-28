@@ -2,7 +2,7 @@
 title: Messaging Terraform Modules
 description: Reusable Terraform modules for creating Azure messaging infrastructure including Event Grid and Event Hubs for real-time data processing and communication
 author: Edge AI Team
-ms.date: 06/07/2025
+ms.date: 2025-06-07
 ms.topic: reference
 keywords:
   - terraform modules

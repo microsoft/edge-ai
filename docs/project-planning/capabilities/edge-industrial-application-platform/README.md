@@ -2,7 +2,7 @@
 title: Edge Industrial Application Platform
 description: Comprehensive industrial automation ecosystem that orchestrates six specialized platform capabilities to deliver intelligent, autonomous industrial operations across manufacturing, processing, and production environments through Azure Arc-enabled edge computing infrastructure
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: concept
 estimated_reading_time: 22
 keywords:

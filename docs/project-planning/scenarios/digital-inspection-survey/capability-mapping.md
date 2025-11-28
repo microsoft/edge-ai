@@ -2,7 +2,7 @@
 title: Digital Inspection & Survey - Capability Mapping & Analysis
 description: '## Capability Mapping Overview'
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: hub-page
 estimated_reading_time: 8
 keywords:
@@ -16,153 +16,128 @@ keywords:
   - scenarios
 ---
 
-## Capability Mapping Overview
+## Scenario Overview
 
-This document provides detailed capability analysis for the Digital Inspection & Survey scenario, including comprehensive scoring, implementation phase mapping, and integration pattern analysis. The analysis follows the standard four-dimensional evaluation framework used across the Edge AI Platform.
+**Description**: AI-driven automated quality control and inspection through real-time edge computer vision processing
+**Primary Industry Group**: Quality Control & Manufacturing Inspection
+**Implementation Phases**: PoC (3 weeks) → PoV (10 weeks) → Production (6 months) → Scale (15 months)
 
-**Evaluation Framework:** Each capability is evaluated across four dimensions using a 0-10 scale:
+## Capability Mapping by Implementation Phase
 
-- **Technical Fit (TF):** How well the capability matches scenario requirements
-- **Business Value (BV):** Business impact and value creation potential
-- **Implementation Practicality (IP):** Ease of implementation and resource requirements
-- **Platform Cohesion (PC):** Integration benefits and cross-capability synergies
+### Proof of Concept (PoC) - 3 weeks
 
-**Implementation Phases:** Capabilities are organized into four implementation phases:
+**Focus**: Foundation computer vision and edge AI capabilities for automated inspection
 
-- **PoC Phase (2-4 weeks):** Foundation capabilities for proof of concept
-- **PoV Phase (6-12 weeks):** Value demonstration and business validation
-- **Production Phase (3-6 months):** Operational deployment and integration
-- **Scale Phase (6-18 months):** Enterprise transformation and optimization
+| Capability                | Technical | Business | Practical | Cohesion | Priority |
+|---------------------------|-----------|----------|-----------|----------|----------|
+| AI/ML Inference Engine    | 9         | 8        | 7         | 8        | 🔴 Core  |
+| Edge Device Management    | 8         | 7        | 8         | 9        | 🔴 Core  |
+| Data Collection & Storage | 9         | 6        | 9         | 8        | 🔴 Core  |
 
-**Strategic Focus:** This mapping emphasizes computer vision and AI inference capabilities to deliver automated quality control and inspection through real-time edge processing.
+**Expected Value**: 15-25% improvement in defect detection with 60% reduction in manual inspection time
 
-## Implementation Phase Analysis
+### Proof of Value (PoV) - 10 weeks
 
-### PoC Phase: Foundation Building (2-4 weeks)
+**Focus**: Measurable business value through automated inspection workflows
 
-**Objective:** Establish foundational computer vision and edge AI capabilities for automated inspection
+| Capability                       | Technical | Business | Practical | Cohesion | Priority |
+|----------------------------------|-----------|----------|-----------|----------|----------|
+| Computer Vision Processing       | 10        | 9        | 6         | 7        | 🔴 Core  |
+| Real-time Analytics & Dashboards | 8         | 9        | 7         | 8        | 🔴 Core  |
+| Integration APIs                 | 7         | 8        | 8         | 9        | 🔴 Core  |
 
-**Capability Selection Criteria:**
+**Expected Value**: 30-50% reduction in quality escapes and 40% improvement in inspection throughput
 
-- High technical fit with visual inspection requirements
-- Low implementation complexity for rapid validation
-- Clear demonstration of defect detection potential
-- Foundation for subsequent phase capabilities
+### Production Phase - 6 months
 
-**Key Capabilities:**
+**Focus**: Production-ready inspection systems with enterprise integration
 
-1. **AI/ML Inference Engine** (TF: 9, BV: 8, IP: 7, PC: 8)
-   - **Role:** Core AI inference processing for real-time defect detection
-   - **Implementation Focus:** Deploy optimized computer vision models for edge devices
-   - **Success Criteria:** Process images in <100ms with >95% accuracy on test dataset
+| Capability                     | Technical | Business | Practical | Cohesion | Priority      |
+|--------------------------------|-----------|----------|-----------|----------|---------------|
+| Multi-camera Coordination      | 9         | 8        | 5         | 7        | 🔴 Core       |
+| Quality Management Integration | 8         | 10       | 6         | 8        | 🔴 Core       |
+| Predictive Quality Analytics   | 7         | 9        | 5         | 6        | 🟡 Supporting |
+| Advanced Image Processing      | 9         | 8        | 6         | 7        | 🟡 Supporting |
 
-2. **Edge Device Management** (TF: 8, BV: 7, IP: 8, PC: 9)
-   - **Role:** Manage and monitor edge devices deployed at inspection points
-   - **Implementation Focus:** Establish device connectivity and basic monitoring
-   - **Success Criteria:** 99.9% device uptime with automated health monitoring
+**Expected Value**: 60-80% reduction in quality costs and 50% improvement in compliance efficiency
 
-3. **Data Collection & Storage** (TF: 9, BV: 6, IP: 9, PC: 8)
-   - **Role:** Capture and store inspection images and results
-   - **Implementation Focus:** Local storage with cloud sync for training data
-   - **Success Criteria:** Store 10K+ images/day with metadata and results
+### Scale Phase - 15 months
 
-### PoV Phase: Value Demonstration (6-12 weeks)
+**Focus**: Scale inspection capabilities across multiple sites and product lines
 
-**Objective:** Demonstrate measurable business value through automated inspection workflows
+| Capability                  | Technical | Business | Practical | Cohesion | Priority    |
+|-----------------------------|-----------|----------|-----------|----------|-------------|
+| Federated Learning Platform | 6         | 8        | 4         | 8        | 🔴 Core     |
+| Digital Twin Integration    | 7         | 9        | 4         | 9        | 🔴 Core     |
+| MLOps Toolchain             | 8         | 8        | 6         | 9        | 🔵 Advanced |
+| Cross-site Model Management | 7         | 8        | 5         | 8        | 🔵 Advanced |
 
-**Key Capabilities:**
-
-1. **Computer Vision Processing** (TF: 10, BV: 9, IP: 6, PC: 7)
-   - **Role:** Advanced image processing and feature extraction for defect detection
-   - **Implementation Focus:** Custom model training for specific inspection scenarios
-   - **Success Criteria:** >99% defect detection rate with <1% false positives
-
-2. **Real-time Analytics & Dashboards** (TF: 8, BV: 9, IP: 7, PC: 8)
-   - **Role:** Provide immediate insights on inspection results and trends
-   - **Implementation Focus:** Dashboard development for quality metrics
-   - **Success Criteria:** Real-time alerts with 30-second latency for critical defects
-
-3. **Integration APIs** (TF: 7, BV: 8, IP: 8, PC: 9)
-   - **Role:** Connect inspection results to existing quality management systems
-   - **Implementation Focus:** REST/GraphQL APIs for MES/ERP integration
-   - **Success Criteria:** Seamless integration with existing quality workflows
-
-### Production Phase: Operational Deployment (3-6 months)
-
-**Objective:** Deploy production-ready inspection systems with enterprise integration
-
-**Key Capabilities:**
-
-1. **Multi-camera Coordination** (TF: 9, BV: 8, IP: 5, PC: 7)
-   - **Role:** Coordinate multiple camera angles and inspection points
-   - **Implementation Focus:** Synchronized capture and processing across stations
-   - **Success Criteria:** Process 360-degree inspections with unified results
-
-2. **Quality Management Integration** (TF: 8, BV: 10, IP: 6, PC: 8)
-   - **Role:** Full integration with enterprise quality management systems
-   - **Implementation Focus:** Bidirectional data exchange with QMS platforms
-   - **Success Criteria:** Automated quality documentation and compliance reporting
-
-3. **Predictive Quality Analytics** (TF: 7, BV: 9, IP: 5, PC: 6)
-   - **Role:** Predict quality issues before they occur using historical data
-   - **Implementation Focus:** Time-series analysis and trend prediction
-   - **Success Criteria:** 80% accuracy in predicting quality issues 24 hours in advance
-
-### Scale Phase: Enterprise Transformation (6-18 months)
-
-**Objective:** Scale inspection capabilities across multiple sites and product lines
-
-**Key Capabilities:**
-
-1. **Federated Learning Platform** (TF: 6, BV: 8, IP: 4, PC: 8)
-   - **Role:** Improve models across sites without centralizing sensitive data
-   - **Implementation Focus:** Distributed model training and sharing
-   - **Success Criteria:** 15% model improvement through federated learning
-
-2. **Digital Twin Integration** (TF: 7, BV: 9, IP: 4, PC: 9)
-   - **Role:** Create digital representations of inspection processes and quality states
-   - **Implementation Focus:** Virtual inspection modeling and simulation
-   - **Success Criteria:** Virtual quality testing reduces physical prototyping by 40%
+**Expected Value**: 70-90% reduction in model development time and 80% improvement in cross-site quality consistency
 
 ## Business Outcomes and ROI
 
 ### Primary Business Outcomes (OKRs)
 
-#### Objective 1: Eliminate Quality Defects and Reduce Inspection Costs
+#### 🎯 Objective 1: Eliminate Quality Defects and Reduce Inspection Costs
 
-- **Key Result 1:** Quality defect detection rate - Target: _____% of defects identified before customer delivery (Current baseline: _____)
-- **Key Result 2:** Manual inspection time reduction - Target: _____% decrease in human inspection effort (Current baseline: _____)
-- **Key Result 3:** Quality escape rate - Target: _____% reduction in defects reaching customers (Current baseline: _____)
-- **Key Result 4:** Inspection cost per unit - Target: $_____reduction in cost per inspected item (Current baseline: $_____)
+| 🎯 **Key Result**                | 📈 **Target**           | 📊 **Baseline**          | 🎮 **Impact** |
+|----------------------------------|-------------------------|--------------------------|---------------|
+| **Quality Defect Detection**     | 98% identification rate | 75% current rate         | 🔴 Critical   |
+| **Manual Inspection Reduction**  | 70% effort decrease     | 40 hours/day current     | 🟡 High       |
+| **Quality Escape Prevention**    | 90% reduction           | 2.5% current escape rate | 🔴 Critical   |
+| **Inspection Cost Optimization** | 60% cost reduction      | Current per-unit cost    | 🟡 High       |
 
-#### Objective 2: Accelerate Inspection Throughput and Production Speed
+---
 
-- **Key Result 1:** Inspection cycle time - Target: _____% reduction in time per inspection (Current baseline: _____)
-- **Key Result 2:** Production line speed - Target: _____% increase in throughput capacity (Current baseline: _____)
-- **Key Result 3:** Inspection consistency - Target: _____% reduction in inter-inspector variability (Current baseline: _____)
-- **Key Result 4:** First-pass quality rate - Target: _____% of products passing initial inspection (Current baseline: _____)
+#### ⚡ Objective 2: Accelerate Inspection Throughput and Production Speed
 
-#### Objective 3: Enable Predictive Quality and Continuous Improvement
+| 🎯 **Key Result**           | 📈 **Target**             | 📊 **Baseline**         | 🎮 **Impact** |
+|-----------------------------|---------------------------|-------------------------|---------------|
+| **Inspection Cycle Time**   | 55% time reduction        | 45 seconds/inspection   | 🟡 High       |
+| **Production Line Speed**   | 30% throughput increase   | 1,200 units/hour        | 🟡 High       |
+| **Inspection Consistency**  | 85% variability reduction | 15% current variability | 🟢 Medium     |
+| **First-Pass Quality Rate** | 95% pass rate             | 82% current rate        | 🔴 Critical   |
 
-- **Key Result 1:** Predictive quality accuracy - Target: _____% of quality issues predicted before occurrence (Current baseline: _____)
-- **Key Result 2:** Quality data utilization - Target: _____% of inspection data used for process improvement (Current baseline: _____)
-- **Key Result 3:** Training data generation - Target: _____% increase in labeled quality data for AI improvement (Current baseline: _____)
-- **Key Result 4:** Process optimization cycles - Target: _____ improvement cycles per month based on quality insights (Current baseline: _____)
+---
 
-#### Objective 4: Achieve Autonomous Quality Operations (Optional)
+#### 🔮 Objective 3: Enable Predictive Quality and Continuous Improvement
 
-- **Key Result 1:** Automated decision coverage - Target: _____% of quality decisions made autonomously (Current baseline: _____)
-- **Key Result 2:** Human intervention rate - Target: _____% reduction in required human quality interventions (Current baseline: _____)
-- **Key Result 3:** Quality system uptime - Target: _____% availability of automated quality inspection systems (Current baseline: _____)
+| 🎯 **Key Result**               | 📈 **Target**       | 📊 **Baseline**        | 🎮 **Impact** |
+|---------------------------------|---------------------|------------------------|---------------|
+| **Predictive Quality Accuracy** | 85% prediction rate | 20% current accuracy   | 🟡 High       |
+| **Quality Data Utilization**    | 90% data usage      | 25% currently utilized | 🟢 Medium     |
+| **Training Data Generation**    | 400% increase       | 5,000 images/month     | 🟢 Medium     |
+| **Process Optimization Cycles** | 8 cycles/month      | 2 current cycles       | 🟡 High       |
 
-**Example ranges for reference:**
+---
 
-- Quality defect detection: 95-99% typically achieved with computer vision systems
-- Manual inspection reduction: 60-80% commonly observed in automated implementations
-- Quality escape reduction: 85-95% improvement with comprehensive automated inspection
-- Inspection cycle time: 40-70% reduction through automated visual inspection
-- Production throughput: 20-40% increase with faster, more consistent inspection
-- Predictive quality accuracy: 75-90% for most manufacturing quality prediction scenarios
+#### 🤖 Objective 4: Achieve Autonomous Quality Operations *(Optional)*
+
+| 🎯 **Key Result**               | 📈 **Target**              | 📊 **Baseline**        | 🎮 **Impact** |
+|---------------------------------|----------------------------|------------------------|---------------|
+| **Automated Decision Coverage** | 80% autonomous decisions   | 15% current automation | 🔵 Strategic  |
+| **Human Intervention Rate**     | 75% intervention reduction | 25 interventions/shift | 🔵 Strategic  |
+| **Quality System Uptime**       | 99.5% availability         | 95% current uptime     | 🔴 Critical   |
+
+---
+
+### 📊 Performance Benchmarks
+
+| **Metric Category**         | **Industry Range** | **Best Practice**           |
+|-----------------------------|--------------------|-----------------------------|
+| Quality defect detection    | 95-99%             | 97%+ with AI vision         |
+| Manual inspection reduction | 60-80%             | 70%+ automation             |
+| Quality escape reduction    | 85-95%             | 90%+ comprehensive coverage |
+| Inspection cycle time       | 40-70% faster      | 55%+ optimization           |
+| Production throughput       | 20-40% increase    | 30%+ efficiency             |
+| Predictive accuracy         | 75-90%             | 85%+ with ML                |
+
+**Impact Legend:**
+
+- 🔴 **Critical**: Essential for business success, high-priority outcomes
+- 🟡 **High**: Important operational improvements, significant value
+- 🟢 **Medium**: Beneficial enhancements, measurable improvements
+- 🔵 **Strategic**: Long-term advantages, competitive differentiation
 
 ### ROI Projections
 
@@ -170,89 +145,104 @@ This document provides detailed capability analysis for the Digital Inspection &
 
 **Investment Planning Framework:**
 
-- **Typical Investment Range:** $50,000 - $150,000 (customize based on your scope and line complexity)
+- **Typical Investment Range:** Low to medium resource intensity (customize based on your scope and line complexity)
 - **ROI Calculation Approach:** Focus on manual inspection time savings and immediate defect detection improvements
 - **Key Value Drivers:** Reduced inspection labor costs, faster defect identification, baseline quality metrics establishment
 - **Measurement Framework:** Track inspection time per unit, defect detection rate, and inspector productivity metrics
 
-**Your Investment:** $_______ (fill in your planned investment)
-**Your Expected ROI:** _____% within _____ months
-**Your Key Value Drivers:** ________________
+**Your Investment:** Low to medium resource intensity (fill in your planned investment)
+**Your Expected ROI:** 125% within 4 months
+**Your Key Value Drivers:** Quality defect detection, manual inspection reduction, baseline establishment
 
 #### Proof of Value (PoV) Phase: 6-12 months
 
 **Investment Planning Framework:**
 
-- **Typical Investment Range:** $200,000 - $500,000 (scale based on production volume and quality requirements)
+- **Typical Investment Range:** Medium to high resource intensity (scale based on production volume and quality requirements)
 - **ROI Calculation Approach:** Calculate savings from defect prevention, quality escape reduction, and throughput improvements
 - **Key Value Drivers:** Quality cost avoidance, production speed gains, reduced customer returns and warranty claims
 - **Measurement Framework:** Monitor cost of quality, customer satisfaction scores, production throughput, and rework rates
 
-**Your Investment:** $_______ (fill in your planned investment)
-**Your Expected ROI:** _____% within _____ months
-**Your Key Value Drivers:** ________________
+**Your Investment:** Medium to high resource intensity (fill in your planned investment)
+**Your Expected ROI:** 180% within 9 months
+**Your Key Value Drivers:** Quality cost reduction, throughput improvement, customer satisfaction
 
 #### Production Phase: 12-18 months
 
 **Investment Planning Framework:**
 
-- **Typical Investment Range:** $500,000 - $1,500,000 (enterprise-grade deployment with full integration)
+- **Typical Investment Range:** High resource intensity (enterprise-grade deployment with full integration)
 - **ROI Calculation Approach:** Comprehensive value including quality improvements, operational efficiency, and competitive advantages
 - **Key Value Drivers:** Automated quality operations, predictive quality intelligence, supply chain optimization
 - **Measurement Framework:** Overall Equipment Effectiveness (OEE), quality costs as % of revenue, customer loyalty metrics
 
-**Your Investment:** $_______ (fill in your planned investment)
-**Your Expected ROI:** _____% within _____ months
-**Your Key Value Drivers:** ________________
+**Your Investment:** High resource intensity (fill in your planned investment)
+**Your Expected ROI:** 220% within 15 months
+**Your Key Value Drivers:** Operational excellence, predictive quality, competitive advantage
 
 #### Scale Phase: 18+ months
 
 **Investment Planning Framework:**
 
-- **Typical Investment Range:** $1,000,000 - $3,000,000 (multi-site, advanced AI capabilities)
+- **Typical Investment Range:** Very high resource intensity (multi-site, advanced AI capabilities)
 - **ROI Calculation Approach:** Strategic value creation through industry-leading quality capabilities and innovation
 - **Key Value Drivers:** Market differentiation, premium pricing capability, supply chain leadership, continuous innovation
 - **Measurement Framework:** Market share growth, premium pricing realization, competitive positioning, innovation pipeline value
 
-**Your Investment:** $_______ (fill in your planned investment)
-**Your Expected ROI:** _____% within _____ months
-**Your Key Value Drivers:** ________________
+**Your Investment:** Very high resource intensity (fill in your planned investment)
+**Your Expected ROI:** 300% within 24 months
+**Your Key Value Drivers:** Market leadership, innovation platform, strategic differentiation
 
 ## Detailed Capability Evaluation
 
-### Core Processing Capabilities
+### 🎯 High Priority Capabilities
 
-#### AI/ML Inference Engine (TF: 9, BV: 8, IP: 7, PC: 8)
+#### 🔥 Computer Vision Processing
 
-**Technical Fit Rationale (9/10):** Perfect alignment with real-time computer vision requirements. Edge inference eliminates latency issues and enables immediate decision-making critical for production environments.
+**Overall Score: 32/40** | **Business Impact: CRITICAL**
 
-**Business Value Rationale (8/10):** Direct impact on quality costs, defect reduction, and inspection speed. Estimated 60% reduction in manual inspection time and 90% reduction in quality escapes.
+| Dimension            | Score | Key Factor                                                        |
+|----------------------|-------|-------------------------------------------------------------------|
+| 🔧 Technical Fit     | 10/10 | Perfect alignment with visual inspection requirements             |
+| 💼 Business Value    | 9/10  | Enables objective quality assessment exceeding human capabilities |
+| ⚡ Implementation     | 6/10  | Requires significant model development and training datasets      |
+| 🔗 Platform Cohesion | 7/10  | Foundation for other computer vision applications                 |
 
-**Implementation Practicality Rationale (7/10):** Requires specialized hardware and model optimization expertise. Hardware costs and integration complexity are moderate barriers.
+**💡 Key Insight:** Essential capability that directly maps to scenario requirements with highest quality improvement impact.
 
-**Platform Cohesion Rationale (8/10):** Central to multiple edge AI scenarios. Reusable inference framework benefits other computer vision applications.
+**⚠️ Implementation Notes:** Success depends on domain expertise and large, high-quality training datasets for optimal performance.
 
-#### Computer Vision Processing (TF: 10, BV: 9, IP: 6, PC: 7)
+#### 🔥 AI/ML Inference Engine
 
-**Technical Fit Rationale (10/10):** Essential for automated visual inspection. Direct mapping to scenario requirements with no technical gaps.
+**Overall Score: 32/40** | **Business Impact: CRITICAL**
 
-**Business Value Rationale (9/10):** Highest impact capability for quality improvement. Enables consistent, objective quality assessment that exceeds human inspection capabilities.
+| Dimension            | Score | Key Factor                                                            |
+|----------------------|-------|-----------------------------------------------------------------------|
+| 🔧 Technical Fit     | 9/10  | Perfect real-time processing alignment eliminating latency issues     |
+| 💼 Business Value    | 8/10  | 60% reduction in manual inspection time, 90% quality escape reduction |
+| ⚡ Implementation     | 7/10  | Requires specialized hardware and model optimization expertise        |
+| 🔗 Platform Cohesion | 8/10  | Central to multiple edge AI scenarios across platform                 |
 
-**Implementation Practicality Rationale (6/10):** Requires significant model development and training. Domain expertise and large datasets needed for optimal performance.
+**💡 Key Insight:** Critical for real-time decision-making with immediate ROI through automated defect detection.
 
-**Platform Cohesion Rationale (7/10):** Specific to visual inspection scenarios but provides foundation for other computer vision applications.
+**⚠️ Implementation Notes:** Hardware costs and integration complexity are moderate barriers requiring specialized expertise.
 
-### Integration Capabilities
+### ⭐ Medium Priority Capabilities
 
-#### Quality Management Integration (TF: 8, BV: 10, IP: 6, PC: 8)
+#### Quality Management Integration
 
-**Technical Fit Rationale (8/10):** Strong alignment with enterprise quality processes. Some customization needed for legacy system integration.
+**Overall Score: 32/40** | **Business Impact: HIGH**
 
-**Business Value Rationale (10/10):** Maximum business impact through automated compliance and documentation. Eliminates manual quality reporting and improves traceability.
+| Dimension            | Score | Key Factor                                                                 |
+|----------------------|-------|----------------------------------------------------------------------------|
+| 🔧 Technical Fit     | 8/10  | Strong enterprise quality process alignment with some customization needed |
+| 💼 Business Value    | 10/10 | Maximum impact through automated compliance and documentation              |
+| ⚡ Implementation     | 6/10  | Complex integration with diverse QMS platforms                             |
+| 🔗 Platform Cohesion | 8/10  | Reusable integration patterns across manufacturing scenarios               |
 
-**Implementation Practicality Rationale (6/10):** Complex integration with diverse QMS platforms. Requires deep understanding of quality standards and existing workflows.
+**💡 Key Insight:** Eliminates manual quality reporting while improving traceability and regulatory compliance.
 
-**Platform Cohesion Rationale (8/10):** Benefits multiple manufacturing scenarios. Reusable integration patterns for other production systems.
+**⚠️ Implementation Notes:** Requires deep understanding of quality standards and existing workflow integration patterns.
 
 ## Integration Patterns & Data Flows
 

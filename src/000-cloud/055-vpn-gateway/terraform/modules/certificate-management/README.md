@@ -11,14 +11,14 @@ and Key Vault storage for secure certificate management.
 | Name | Version |
 |------|---------|
 | terraform | >= 1.9.8, < 2.0 |
-| azurerm | >= 4.8.0 |
+| azurerm | >= 4.51.0 |
 | tls | >= 4.0.6 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| azurerm | >= 4.8.0 |
+| azurerm | >= 4.51.0 |
 | tls | >= 4.0.6 |
 
 ## Resources

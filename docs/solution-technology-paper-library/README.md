@@ -2,7 +2,7 @@
 title: Solution Technology Papers
 description: Collection of technology overview documents for edge computing solutions and standards
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: hub-page
 estimated_reading_time: 2
 keywords:

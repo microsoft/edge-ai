@@ -2,7 +2,7 @@
 
 ## Overview
 
-This guide explains how to enable and optimize the interactive progress tracking system for PraxisWorx katas in the local docsify environment.
+This guide explains how to enable and optimize the interactive progress tracking system for Learning katas in the local docsify environment.
 
 ## Quick Start
 
@@ -93,11 +93,11 @@ Balance task detail with progress tracking utility:
 
 ### Plugin Configuration
 
-Modify settings in `interactive-progress.js` by updating the `PLUGIN_CONFIG` object:
+Modify settings in `simple-progress-bar-bottom.js` by updating the configuration object:
 
 ```javascript
-const PLUGIN_CONFIG = {
-  name: 'interactive-progress',
+const config = {
+  name: 'simple-progress-bar',
   version: '1.0.0',
   storagePrefix: 'kata-progress-',
   debugMode: false // Set to true for development debugging
@@ -244,7 +244,7 @@ const storage = new window.KataProgressAPI.KataProgressStorage();
 **Solutions**:
 
 1. Check browser console for JavaScript errors
-2. Verify `interactive-progress.js` is loaded in `index.html`
+2. Verify `simple-progress-bar-bottom.js` is loaded in `index.html`
 3. Ensure checkbox syntax follows `- [ ] Task description` format
 
 #### Progress Not Persisting
@@ -284,8 +284,8 @@ const storage = new window.KataProgressAPI.KataProgressStorage();
 Enable debug logging for development:
 
 ```javascript
-// In interactive-progress.js
-const PLUGIN_CONFIG = {
+// In simple-progress-bar-bottom.js
+const config = {
   debugMode: true // Enable detailed console logging
 };
 ```

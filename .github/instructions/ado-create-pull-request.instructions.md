@@ -10,6 +10,7 @@ Follow all instructions from #file:./ado-wit-planning.instructions.md for planni
 ## Scope
 
 Apply this procedure when creating a new Azure DevOps pull request with:
+
 * Automated PR description generation from branch changes
 * Discovery and linking of related User Stories and Bugs
 * Identification of potential reviewers from git history
@@ -38,12 +39,12 @@ Apply this procedure when creating a new Azure DevOps pull request with:
    3. Get current user: `git config user.email`
    4. Get file contributors: `git log --all --pretty=format:'%H %an <%ae>' -- <file-pattern> | head -20`
 * Azure DevOps MCP tools:
-   * `mcp_ado_search_workitem` for work item discovery
-   * `mcp_ado_wit_get_work_item` or `mcp_ado_wit_get_work_items_batch_by_ids` for hydration
-   * `mcp_ado_repo_create_pull_request` for PR creation
-   * `mcp_ado_wit_link_work_item_to_pull_request` for linking work items
-   * `mcp_ado_core_get_identity_ids` for resolving reviewer emails to Azure DevOps identity IDs
-   * `mcp_ado_repo_update_pull_request_reviewers` for adding/removing reviewers programmatically
+  * `mcp_ado_search_workitem` for work item discovery
+  * `mcp_ado_wit_get_work_item` or `mcp_ado_wit_get_work_items_batch_by_ids` for hydration
+  * `mcp_ado_repo_create_pull_request` for PR creation
+  * `mcp_ado_wit_link_work_item_to_pull_request` for linking work items
+  * `mcp_ado_core_get_identity_ids` for resolving reviewer emails to Azure DevOps identity IDs
+  * `mcp_ado_repo_update_pull_request_reviewers` for adding/removing reviewers programmatically
 * Workspace utilities: `list_dir`, `read_file`, `grep_search`
 * Persist all tool output into planning files per #file:./ado-wit-planning.instructions.md
 
@@ -66,6 +67,7 @@ All PR creation tracking artifacts MUST reside in `.copilot-tracking/pr/new/{{no
 ```
 
 **Branch Name Normalization Rules**:
+
 * Convert to lowercase characters
 * Replace `/` with `-`
 * Strip special characters except hyphens
@@ -286,6 +288,7 @@ This workflow follows a progressive confirmation model where user reviews and ap
 ### No-Gates Mode
 
 When `${input:noGates}` is true:
+
 * Skip Phase 5 (all confirmation gates) entirely
 * After completing Phase 4, proceed directly to Phase 6
 * Use all discovered work items (no user selection)
@@ -363,17 +366,20 @@ Execute without presenting to user yet:
 ```
 
 **Type and Scope**:
+
 * Determine from commits in `pr-reference.xml`
 * Use branch name as primary source for type/scope
 * Common types: feat, fix, docs, chore, refactor, test, ci
 * Scope should reference component or area affected
 
 **Title Construction Rules**:
+
 * Format: `{type}({scope}): {concise description}`
 * If branch name is not descriptive, rely on commit messages
 * Keep concise but descriptive
 
 **Never Include**:
+
 * Changes related to linting errors or auto-generated documentation
 * Speculative benefits ("improves security") unless explicit in commits
 * Follow-up tasks for documentation or tests (unless in commit messages)
@@ -480,6 +486,7 @@ Execute without presenting to user yet:
 ### Phase 5 – User Review & Confirmation (Progressive Gates)
 
 **Skip this entire phase if `${input:noGates}` is true. Proceed directly to Phase 6 with:**
+
 * All discovered work items from Phase 3
 * If Phase 3a created a work item, use that created work item
 * Top 2 reviewers by contribution score from Phase 4 (minimum 2 optional reviewers)
@@ -500,6 +507,7 @@ Execute without presenting to user yet:
    * Code quality concerns (styling violations, linting issues)
 
 **File Count Handling**:
+
 * If ≤ 50 files: Present full list inline with change descriptions
 * If > 50 files: Provide summary statistics and link to `pr-analysis.md`, instruct user to review and confirm when ready
 
@@ -586,11 +594,15 @@ Please review the full analysis and let me know when to continue or if you need 
 ## 📝 Pull Request Title & Description
 
 **Title**:
-```
+
+```markdown
+
 [Generated title from pr.md]
+
 ```
 
 **Description**:
+
 ```markdown
 [Complete PR description from pr.md]
 ```
@@ -599,10 +611,12 @@ Please review the full analysis and let me know when to continue or if you need 
 [Details of security and compliance check]
 
 Please review the PR content. You can:
+
 * Continue ("Approved" or "Continue")
 * Modify title ("Change title to: [new title]")
 * Modify description ("Update description: [changes]")
 * Request regeneration ("Regenerate description")
+
 ```
 <!-- </example-gate2> -->
 
@@ -762,6 +776,7 @@ When user requests modifications at any gate:
    * Rebuild summary after modifications
 
 **Iteration Protocol**:
+
 * Track modification count per gate in `planning-log.md`
 * After 3+ iterations on same gate, suggest alternative approach or pause
 * Always confirm changes before proceeding
@@ -783,7 +798,7 @@ When user requests modifications at any gate:
 
 2. **Prepare Source and Target Branch References**:
    * Source: `refs/heads/${input:sourceBranch}` (or current branch)
-   * Target: Extract branch name from `${input:baseBranch}` (e.g., `origin/main` → `refs/heads/main`)
+   * Target: Extract branch name from `${input:baseBranch}` (e.g., `origin/dev` → `refs/heads/dev`)
 
 3. **Create Pull Request**:
    * Tool: `mcp_ado_repo_create_pull_request`
@@ -834,7 +849,7 @@ When user requests modifications at any gate:
 mcp_ado_repo_create_pull_request({
   repositoryId: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
   sourceRefName: "refs/heads/feat/acr-dual-access",
-  targetRefName: "refs/heads/main",
+  targetRefName: "refs/heads/dev",
   title: "feat(acr): add dual public/private access support",
   description: "## Summary\n\nAdds support for dual access patterns...",
   isDraft: false
@@ -881,6 +896,7 @@ mcp_ado_repo_update_pull_request_reviewers({
 ### Phase 7 – Deliver Final Recap
 
 Provide conversational summary covering:
+
 * PR creation status and URL
 * Work items linked (count and IDs)
 * Reviewers status (added or manual action required)
@@ -946,6 +962,7 @@ All artifacts saved to: `.copilot-tracking/pr/new/[normalized-branch]/`
 ## Repository-Specific Conventions
 
 When working in this repository:
+
 * Follow PR description format specified in Phase 2 (pr-file-format block)
 * Use conventional commit types in PR titles
 * Include component scope when applicable

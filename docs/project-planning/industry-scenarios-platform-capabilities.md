@@ -3,7 +3,7 @@ title: Industry Scenarios and Platform Capabilities Overview
 description: This document provides a comprehensive overview of industry scenarios
   and their corresponding platform capabilities that...
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: hub-page
 keywords:
   - industry-scenarios

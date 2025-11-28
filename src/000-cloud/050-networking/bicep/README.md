@@ -18,7 +18,6 @@ Creates virtual network, subnet, and network security group resources for Azure 
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|networkSecurityGroup|`Microsoft.Network/networkSecurityGroups`|2024-05-01|
 |virtualNetwork|`Microsoft.Network/virtualNetworks`|2024-05-01|
 
 ## User Defined Types

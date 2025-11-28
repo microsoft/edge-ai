@@ -263,7 +263,7 @@ Phase 3 is the first point where you re-engage the user—arrive prepared with p
 * Call out missing or fragile tests, documentation, or monitoring updates alongside code changes and propose concrete remedies.
 * Document the user’s selection in both the conversation and `in-progress-review.md` to keep records aligned.
 * Read in the related instruction files and their related files, if their full content is ever missing from the conversation context.
-* Never make any code file changes, always record any proprosed fixes into the in-progress-review.md.
+* Never make any code file changes, always record any proposed fixes into the in-progress-review.md.
 * Provide suggestions as if providing a them as comments on a Pull Request.
 <!-- </phase-3> -->
 

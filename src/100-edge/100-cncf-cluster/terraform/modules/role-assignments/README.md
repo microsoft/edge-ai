@@ -9,13 +9,13 @@ Assigns Azure RBAC roles for Key Vault access
 | Name | Version |
 |------|---------|
 | terraform | >= 1.9.8, < 2.0 |
-| azurerm | >= 4.8.0 |
+| azurerm | >= 4.51.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| azurerm | >= 4.8.0 |
+| azurerm | >= 4.51.0 |
 
 ## Resources
 

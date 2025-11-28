@@ -1,0 +1,36 @@
+{
+  "source": {
+    "include": [
+      "../../../"
+    ],
+    "includePattern": "\\.(js|mjs)$",
+    "exclude": [
+      "node_modules/",
+      "tests/",
+      "*.test.js",
+      "*.spec.js",
+      "*.min.js",
+      "docs/api/"
+    ]
+  },
+  "opts": {
+    "destination": "./docs/api/",
+    "recurse": true,
+    "readme": "./README.md"
+  },
+  "plugins": [
+    "plugins/markdown"
+  ],
+  "templates": {
+    "cleverLinks": false,
+    "monospaceLinks": false
+  },
+  "tags": {
+    "allowUnknownTags": true,
+    "dictionaries": ["jsdoc", "closure"]
+  },
+  "metadata": {
+    "title": "Edge AI JavaScript Documentation",
+    "version": "2.0.0"
+  }
+}

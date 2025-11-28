@@ -1,0 +1,84 @@
+/* TOC Container System */
+
+.toc-container {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: var(--toc-width);
+  height: 100vh;
+  z-index: var(--z-toc-nav);
+  padding-top: var(--navbar-height);
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding-inline: 0; /* Remove horizontal padding completely */
+}
+
+/* TOC Navigation within container */
+.toc-nav {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--bg-secondary);
+  border: none;  /* Remove border for cleaner look */
+  border-radius: 0;  /* Remove border radius */
+  padding: 0; /* Remove all padding from TOC container */
+  margin-top: var(--spacing-sm);
+
+  /* Hide scrollbar but keep functionality */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+/* Hide scrollbar for WebKit browsers */
+.toc-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.toc-nav::-webkit-scrollbar {
+  width: 4px;
+}
+
+.toc-nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.toc-nav::-webkit-scrollbar-thumb {
+  background: var(--theme-color);
+  border-radius: var(--border-radius);
+}
+
+/* TOC Content Styling - Note: Main TOC styling is in plugins/page-toc.css */
+/* These rules are kept for potential fallback scenarios only */
+
+/* Responsive TOC behavior */
+@container (max-width: 1200px) {
+  .toc-container {
+    display: none;
+  }
+}
+
+/* Dark mode support for TOC */
+body.dark .toc-container {
+  background: transparent;
+}
+
+body.dark .toc-nav {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+body.dark .page_toc a {
+  color: var(--text-secondary);
+}
+
+body.dark .page_toc a:hover,
+body.dark .page_toc a.active {
+  color: var(--theme-color-light);
+  border-left-color: var(--theme-color-light);
+}
+
+body.dark .page_toc a.active {
+  background: var(--bg-primary);
+}

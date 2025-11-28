@@ -2,7 +2,7 @@
 title: Troubleshooting Guide
 description: Common issues and solutions for development and deployment of the AI on Edge Flagship Accelerator, including environment setup, infrastructure deployment, and git workflow problems
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: troubleshooting
 estimated_reading_time: 8
 keywords:
@@ -18,16 +18,6 @@ keywords:
 ---
 
 This guide covers common issues encountered during development, testing, and deployment of the AI on Edge Flagship Accelerator. Use this as a reference for quick resolution of frequent problems.
-
-## Table of Contents
-
-- [Development Environment Issues](#development-environment-issues)
-- [Infrastructure Deployment Issues](#infrastructure-deployment-issues)
-- [Git and Version Control Issues](#git-and-version-control-issues)
-- [Linting and Code Quality Issues](#linting-and-code-quality-issues)
-- [Security Scanning Issues](#security-scanning-issues)
-- [Testing and Validation Issues](#testing-and-validation-issues)
-- [Getting Help](#getting-help)
 
 ## Development Environment Issues
 

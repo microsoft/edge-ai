@@ -2,7 +2,7 @@
 title: Security and Identity Terraform Modules
 description: Reusable Terraform modules for creating Azure IoT Operations cloud requirements including managed identities, Azure Key Vault, and role assignments
 author: Edge AI Team
-ms.date: 06/07/2025
+ms.date: 2025-06-07
 ms.topic: reference
 keywords:
   - terraform modules

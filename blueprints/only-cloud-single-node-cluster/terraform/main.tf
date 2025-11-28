@@ -125,6 +125,7 @@ module "cloud_acr" {
 
   should_create_acr_private_endpoint = var.should_enable_private_endpoints
   default_outbound_access_enabled    = local.default_outbound_access_enabled
+  should_enable_nat_gateway          = var.should_enable_managed_outbound_access
 }
 
 module "cloud_kubernetes" {
@@ -147,6 +148,7 @@ module "cloud_kubernetes" {
   acr = module.cloud_acr.acr
 
   default_outbound_access_enabled = local.default_outbound_access_enabled
+  should_enable_nat_gateway       = var.should_enable_managed_outbound_access
 
   node_count                      = var.node_count
   node_vm_size                    = var.node_vm_size

@@ -2,7 +2,7 @@
 title: Only Cloud Single Node Cluster Blueprint
 description: Deployment of cloud components required for Azure IoT Operations with single-node VM host, preparing cloud infrastructure without edge component installation
 author: Edge AI Team
-ms.date: 06/07/2025
+ms.date: 2025-06-07
 ms.topic: reference
 keywords:
   - azure iot operations

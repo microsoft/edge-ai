@@ -1,308 +1,328 @@
 ---
 title: "Packaging Line Performance Optimization"
-description: "Real-time packaging line optimization through continuous performance monitoring, predictive analytics, and automated parameter adjustment for improved efficiency and reduced waste."
+description: "AI-driven optimization of packaging line performance to maximize throughput, reduce changeover times, and minimize packaging defects through real-time line monitoring and predictive performance management."
 author: "Edge AI Team"
-ms.date: 06/06/2025
+ms.date: 2025-07-19
 ms.topic: conceptual
-estimated_reading_time: 7
+estimated_reading_time: 8
 keywords:
   - packaging-optimization
-  - performance-monitoring
-  - waste-reduction
-  - automation
-  - line-efficiency
-  - predictive-analytics
+  - line-performance
+  - throughput-optimization
+  - changeover-efficiency
+  - defect-reduction
 ---
-## Scenario Overview
 
-**Business Context:** Packaging operations face increasing pressure to optimize throughput, reduce waste, and improve efficiency while maintaining quality standards. Traditional packaging line management relies on manual adjustments and reactive troubleshooting, leading to suboptimal performance and significant waste generation.
+## 🎯 Packaging Line Performance Optimization
 
-**Solution Approach:** This scenario leverages edge AI capabilities to deliver real-time packaging line optimization through continuous performance monitoring, predictive analytics, and automated parameter adjustment. The solution provides intelligent optimization recommendations while maintaining packaging quality and safety standards.
+## 📊 Scenario Overview
 
-**Strategic Value:** Organizations implementing this scenario typically achieve 20-30% improvements in packaging line efficiency, 25-40% reductions in packaging waste, and 15-25% improvements in overall equipment effectiveness through intelligent optimization and predictive maintenance.
+Packaging Line Performance Optimization delivers AI-driven optimization of packaging line performance to maximize throughput, reduce changeover times, and minimize packaging defects through real-time line monitoring and predictive performance management. This approach transforms packaging line management from reactive troubleshooting to predictive optimization that maximizes line efficiency while ensuring packaging quality and minimizing downtime.
 
-**Implementation Scope:** This scenario demonstrates comprehensive packaging line optimization through 4 implementation phases, leveraging 11 platform capabilities to deliver real-time optimization, predictive maintenance, and automated quality control across 6-18 months.
+The scenario combines real-time line monitoring, advanced analytics, and automated optimization to achieve measurable improvements in packaging line throughput and efficiency. This results in improved overall equipment effectiveness (OEE), reduced changeover times, and lower packaging defect rates, along with comprehensive performance traceability and optimization history.
 
-## Implementation Approach
+**Use cases include high-volume packaging operations, complex changeover management, and quality-critical packaging processes** - particularly where line efficiency, packaging consistency, and operational excellence are critical business requirements.
 
-This scenario follows a structured, phase-based implementation approach designed to minimize production disruption while maximizing efficiency gains:
+## 🗓️ Development Planning Framework
 
-### Phase-Based Implementation
+This planning guide outlines the Packaging Line Performance Optimization scenario and identifies the capabilities required at each implementation phase. Each phase defines the scope of capabilities needed to achieve specific business outcomes.
 
-- **PoC Phase (2-4 weeks):** Foundation capabilities including data collection, basic monitoring, and initial optimization algorithms for single packaging line validation
-- **PoV Phase (6-12 weeks):** Value demonstration through advanced optimization, predictive analytics, and integration with existing packaging control systems
-- **Production Phase (3-6 months):** Enterprise-grade deployment with comprehensive safety systems, quality integration, and production-ready optimization capabilities
-- **Scale Phase (6-18 months):** Enterprise transformation through multi-line optimization, automated control, and facility-wide performance management
+**Component status definitions**:
 
-### Key Implementation Principles
+- **✅ Ready to Deploy**: Components available for immediate deployment with minimal configuration
+- **🔵 Development Required**: Framework and APIs provided, custom logic development needed
+- **🟣 Planned Components**: Scheduled for future accelerator releases - plan accordingly
+- **🟪 External Integration**: Requires third-party solutions or custom development
 
-- **Safety First:** All optimization maintains packaging line safety standards and emergency procedures
-- **Quality Assurance:** Optimization algorithms prioritize quality maintenance while improving efficiency
-- **Minimal Disruption:** Incremental implementation minimizes production downtime and operational risk
-- **Continuous Learning:** Machine learning models continuously improve optimization based on operational feedback
+## ⚙️ Critical Capabilities & Development Planning
 
-## Resource Organization
+<!-- markdownlint-disable MD033 -->
+| Capability Group                                                                             | Critical Capabilities                                                                                                                                                                                                | Implementation Requirements                                                                                                                                                    | Accelerator Support                                               |
+|----------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------|
+| **[Protocol Translation & Device Management][protocol-translation-device-management]**       | - [OPC UA Data Ingestion][opc-ua-data-ingestion]<br>- [Device Twin Management][device-twin-management]<br>- [Broad Industrial Protocol Support][broad-industrial-protocol-support]                                   | - Packaging line equipment integration<br>- Digital twins for packaging lines and optimization systems<br>- Protocol support for diverse packaging and line monitoring devices | ✅ Ready to Deploy<br>🔵 Development Required<br>🟣 Planned        |
+| **[Edge Cluster Platform][edge-cluster-platform]**                                           | - [Edge Compute Orchestration][edge-compute-orchestration]<br>- [Edge Application CI/CD][edge-application-cicd]                                                                                                      | - Packaging line optimization application deployment environment<br>- CI/CD pipeline for line optimization models                                                              | ✅ Ready to Deploy<br>✅ Ready to Deploy                            |
+| **[Edge Industrial Application Platform][edge-industrial-application-platform]**             | - [Edge Data Stream Processing][edge-data-stream-processing]<br>- [Edge Inferencing Application Framework][edge-inferencing-application-framework]<br>- [Edge Dashboard Visualization][edge-dashboard-visualization] | - Real-time packaging line data processing<br>- Line optimization and performance prediction model deployment<br>- Packaging line dashboards and optimization recommendations  | ✅ Ready to Deploy<br>🔵 Development Required<br>✅ Ready to Deploy |
+| **[Cloud Data Platform][cloud-data-platform]**                                               | - [Cloud Data Platform Services][cloud-data-platform-services]<br>- [Data Governance & Lineage][data-governance-lineage]                                                                                             | - Packaging line data storage and analytics<br>- Line performance traceability and optimization governance                                                                     | ✅ Ready to Deploy<br>🔵 Development Required                      |
+| **[Cloud AI Platform][cloud-ai-platform]**                                                   | - [Cloud AI/ML Model Training][cloud-ai-ml-model-training]<br>- [MLOps Toolchain][mlops-toolchain]                                                                                                                   | - Line optimization and performance prediction model training<br>- Packaging line optimization model lifecycle management                                                      | 🟣 Planned<br>🟣 Planned                                          |
+| **[Cloud Insights Platform][cloud-insights-platform]**                                       | - [Automated Incident Response & Remediation][automated-incident-response-remediation]<br>- [Cloud Observability Foundation][cloud-observability-foundation]                                                         | - Automated line alerts and optimization<br>- Packaging line performance monitoring and analytics                                                                              | 🔵 Development Required<br>🔵 Development Required                |
+| **[Advanced Simulation & Digital Twin Platform][advanced-simulation-digital-twin-platform]** | - [Process Simulation Engine][process-simulation-engine]<br>- [Packaging Line Digital Twin Platform][packaging-line-digital-twin-platform]                                                                           | - Advanced packaging line simulation<br>- Predictive line performance modeling platforms                                                                                       | 🟪 External Dependencies<br>🟪 External Dependencies              |
+<!-- markdownlint-enable MD033 -->
 
-This scenario's documentation and resources are organized to support different stakeholder needs and implementation phases:
+---
 
-### Core Documentation
+## 🛣️ Packaging Line Performance Optimization Implementation Roadmap
 
-- **[Packaging Line Performance Optimization Prerequisites][packaging-line-performance-optimization-prerequisites]:** Comprehensive technical and organizational requirements for successful implementation
-- **[Capability Mapping][capability-mapping]:** Detailed capability analysis with scoring, implementation phases, and integration patterns
+This roadmap outlines the typical progression for implementing Packaging Line Performance Optimization scenarios. Each phase defines the capabilities required and the business outcomes typically achieved.
 
-### Implementation Resources
+### Scenario Implementation Phases
 
-**Platform Components:**
+| Phase             | Duration  | Scenario Scope                                                 | Business Value Achievement                     | Accelerator Support                               |
+|-------------------|-----------|----------------------------------------------------------------|------------------------------------------------|---------------------------------------------------|
+| 🧪 **PoC**        | 3 weeks   | Basic line monitoring and performance tracking                 | 10-15% improvement in line visibility          | ✅ Ready to Start - [Use Edge-AI][getting-started] |
+| 🚀 **PoV**        | 10 weeks  | AI-enhanced line optimization and automated recommendations    | 15-25% improvement in line throughput          | 🔵 Development Required                           |
+| 🏭 **Production** | 6 months  | Enterprise line platform with MES/packaging system integration | 20-30% improvement in overall line performance | 🟣 Planned Components                             |
+| 📈 **Scale**      | 15 months | Advanced line intelligence with multi-line optimization        | 25-35% improvement in packaging excellence     | 🟪 External Integration Required                  |
 
-- **Real-Time Data Collection:** High-speed sensor integration with packaging line monitoring and control systems
-- **Optimization Engine:** Advanced algorithms for packaging line parameter optimization and performance improvement
-- **Predictive Analytics:** Machine learning models for equipment maintenance prediction and quality forecasting
-- **Control System Integration:** Seamless integration with existing packaging PLCs, SCADA, and MES systems
+---
 
-**Technical Architecture:**
+### 🧪 PoC Phase (3 weeks) - Basic Line Monitoring
 
-- **Edge Layer:** Real-time data collection, local optimization processing, and immediate feedback control
-- **Cloud Layer:** Advanced analytics, machine learning model training, and enterprise performance management
-- **Integration Layer:** Bi-directional connectivity with packaging control systems and enterprise planning systems
-- **Safety Layer:** Comprehensive safety system integration with emergency override capabilities
+**Scenario Goal**: Establish packaging line data collection and real-time performance monitoring to validate technical feasibility and demonstrate immediate line improvements.
 
-## Prerequisites & Dependencies
+**Technical Scope**: Implement real-time line tracking on packaging systems with throughput monitoring and basic performance reporting.
 
-### Technical Prerequisites
+| Capability Area     | Capability                                                   | Accelerator Support | Implementation Requirements                                                                               | Priority |
+|---------------------|--------------------------------------------------------------|---------------------|-----------------------------------------------------------------------------------------------------------|----------|
+| **Data Ingestion**  | [OPC UA Data Ingestion][opc-ua-data-ingestion]               | ✅ Ready to Deploy   | Connect to packaging line equipment and performance monitoring systems with real-time data collection     | High     |
+| **Data Processing** | [Edge Data Stream Processing][edge-data-stream-processing]   | ✅ Ready to Deploy   | Implement line performance calculation logic with configurable KPIs and baseline establishment algorithms | High     |
+| **Visualization**   | [Edge Dashboard Visualization][edge-dashboard-visualization] | ✅ Ready to Deploy   | Deploy packaging line dashboards with real-time throughput tracking and bottleneck identification         | Medium   |
+| **Edge Platform**   | [Edge Compute Orchestration][edge-compute-orchestration]     | ✅ Ready to Deploy   | Establish edge computing environment for line performance monitoring applications                         | Medium   |
 
-**Infrastructure Requirements:**
+**Implementation Sequence**:
 
-- High-performance edge computing platform capable of real-time optimization processing
-- High-speed sensor infrastructure for packaging line monitoring and data collection
-- Network connectivity supporting real-time control feedback and cloud analytics
-- Integration capability with existing packaging control systems (PLCs, SCADA, MES)
+1. **Week 1**: **[OPC UA Data Ingestion][opc-ua-data-ingestion]** - Configure packaging line data collection with performance parameter identification and validation against existing systems
+2. **Week 2**: **[Edge Data Stream Processing][edge-data-stream-processing]** - Implement line performance calculation pipeline with throughput tracking and automated reporting integration
+3. **Week 3**: **[Edge Dashboard Visualization][edge-dashboard-visualization]** - Deploy line performance dashboard + **[Edge Compute Orchestration][edge-compute-orchestration]** - Optimize edge processing performance
 
-**Packaging Line Requirements:**
+**Typical Team Requirements**: 3-4 engineers (1 packaging engineer, 1 data engineer, 1-2 integration developers)
 
-- Modern packaging equipment with digital control interfaces and parameter adjustment capability
-- Sensor infrastructure for monitoring key performance indicators (speed, quality, efficiency)
-- Safety systems compatible with automated optimization and emergency override procedures
-- Quality control systems capable of integration with optimization feedback loops
+---
 
-### Organizational Prerequisites
+### 🚀 PoV Phase (10 weeks) - AI-Enhanced Line Optimization
 
-**Stakeholder Engagement:**
+**Scenario Goal**: Implement predictive line optimization and automated recommendations to demonstrate business value and stakeholder buy-in for enterprise deployment.
 
-- Production management commitment to AI-driven packaging optimization
-- Operations team readiness for technology adoption and workflow integration
-- Maintenance team engagement for predictive maintenance and optimization-driven scheduling
-- Quality assurance team involvement for optimization-quality integration
+**Technical Scope**: Deploy machine learning models for line performance prediction, automated optimization systems, and advanced line analytics across multiple packaging lines.
 
-**Process Readiness:**
+| Capability Area       | Capability                                                                       | Accelerator Support     | Implementation Requirements                                                                   | Priority |
+|-----------------------|----------------------------------------------------------------------------------|-------------------------|-----------------------------------------------------------------------------------------------|----------|
+| **AI Platform**       | [Edge Inferencing Application Framework][edge-inferencing-application-framework] | 🔵 Development Required | Develop line optimization models with custom analytics logic for packaging line optimization  | High     |
+| **Device Management** | [Device Twin Management][device-twin-management]                                 | 🔵 Development Required | Create digital twins for packaging lines with automated performance optimization capabilities | High     |
+| **Data Platform**     | [Cloud Data Platform Services][cloud-data-platform-services]                     | ✅ Ready to Deploy       | Implement line data lake with historical analysis and trend identification for optimization   | Medium   |
+| **ML Operations**     | [MLOps Toolchain][mlops-toolchain]                                               | 🟣 Planned              | Establish model training pipeline for continuous line optimization model improvement          | Medium   |
 
-- Established packaging performance baselines and key performance indicators
-- Documented packaging procedures and quality standards
-- Change management capability for optimization-driven process improvements
-- Safety protocols compatible with automated optimization systems
+**Implementation Sequence**:
 
-## Getting Started Guide
+1. **Weeks 1-3**: **[Edge Inferencing Application Framework][edge-inferencing-application-framework]** - Develop and validate line optimization models with packaging line optimization algorithms
+2. **Weeks 4-6**: **[Device Twin Management][device-twin-management]** - Implement digital twins for packaging lines with automated optimization capabilities and validation
+3. **Weeks 7-8**: **[Cloud Data Platform Services][cloud-data-platform-services]** - Deploy line data platform with historical analysis and predictive optimization foundation
+4. **Weeks 9-10**: **[MLOps Toolchain][mlops-toolchain]** - Establish model lifecycle management with continuous improvement workflows and validation processes
 
-### Phase 1: Assessment & Planning (1-2 weeks)
+**Typical Team Requirements**: 6-8 engineers (2 ML specialists, 2 packaging engineers, 2 data engineers, 1-2 integration developers)
 
-1. **Packaging Line Assessment:**
-   - Conduct comprehensive review of current packaging line performance and capabilities
-   - Identify optimization opportunities and key performance bottlenecks
-   - Document existing control systems and integration requirements
-   - Establish baseline performance metrics and improvement targets
+**MVP Requirements**: Demonstrate 15% improvement in line throughput with 25% reduction in changeover times and measurable defect reduction
 
-2. **Technical Readiness:**
-   - Validate prerequisite infrastructure and sensor deployment requirements
-   - Review safety and compliance requirements with operations and safety teams
-   - Plan edge device deployment locations and control system integration points
-   - Establish data governance policies for packaging performance data
-
-3. **Stakeholder Alignment:**
-   - Confirm business objectives and success criteria with production leadership
-   - Establish cross-functional project team with operations, maintenance, and quality stakeholders
-   - Define implementation timeline and resource allocation requirements
-   - Plan change management and training approach for optimization adoption
-
-### Phase 2: PoC Implementation (2-4 weeks)
-
-1. **Foundation Deployment:**
-   - Deploy edge devices and sensors at pilot packaging line
-   - Implement basic data collection and monitoring capabilities
-   - Establish connectivity with selected packaging control systems
-   - Configure initial optimization algorithms and performance dashboards
-
-2. **Validation & Testing:**
-   - Validate data accuracy and real-time processing performance
-   - Test optimization algorithm performance and safety integration
-   - Confirm integration with existing packaging control systems
-   - Gather feedback from production and maintenance teams
-
-3. **Success Measurement:**
-   - Measure baseline vs. optimized packaging line performance
-   - Document efficiency improvements and waste reduction achievements
-   - Assess stakeholder satisfaction and system usability
-   - Plan PoV phase expansion and advanced capability deployment
-
-### Phase 3: Value Demonstration (6-12 weeks)
-
-Continue with PoV implementation focusing on advanced optimization algorithms, predictive maintenance integration, and measurable business value delivery.
-
-## Key Resources & Documentation
-
-### Platform Documentation
-
-- **[Edge AI Platform Overview][edge-ai-platform-overview]:** Complete platform capabilities and architecture
-- **[Getting Started Guide][getting-started-guide]:** Platform setup and initial configuration
-- **[Security Framework][security-framework]:** Comprehensive security and compliance guidance
-
-### Related Scenarios
-
-- **[Operational Performance Monitoring][operational-performance-monitoring]:** Broader operational analytics and performance management
-- **[Quality Process Optimization][quality-process-optimization]:** Quality-focused optimization and automation
-- **[Yield Process Optimization][yield-process-optimization]:** Production yield optimization and improvement
-
-### Technical Implementation
-
-- **[IoT Operations Module][iot-operations-module]:** Industrial connectivity and device management
-- **[Analytics Components][analytics-components]:** Data processing and optimization analytics capabilities
-- **[Security Implementation][security-implementation]:** Security and identity management
-
-### Support Resources
-
-- **[Contribution Guidelines][contribution-guidelines]:** Contributing to scenario development and improvement
-- **[Project Planning Templates][project-planning-templates]:** Additional planning and documentation templates
-- **[Community Support][community-support]:** Getting help and connecting with the community
-
-## Implementation Capability Mapping
-
-```mermaid
-%%{init: {
-  'theme': 'default',
-  'themeVariables': { 'fontSize': '14px', 'fontFamily': 'trebuchet ms', 'lineHeight': '1.4' },
-  'flowchart': { 'htmlLabels': true, 'curve': 'basis' },
-  'width': '1600px',
-  'height': '1200px'
-}}%%
-graph RL
-    classDef main fill:#4285F4,stroke:#0D47A1,color:white,stroke-width:3px
-    classDef capabilityGroup fill:#1976D2,stroke:#0D47A1,color:white,stroke-width:2px
-    classDef categoryPoC fill:#9C27B0,stroke:#6A1B9A,color:white,stroke-width:2px
-    classDef categoryPoV fill:#FF5722,stroke:#D84315,color:white,stroke-width:2px
-    classDef categoryProd fill:#607D8B,stroke:#455A64,color:white,stroke-width:2px
-    classDef categoryScale fill:#795548,stroke:#5D4037,color:white,stroke-width:2px
-
-    %% Capability status classes
-    classDef available fill:#00C853,stroke:#009624,color:white,stroke-width:1px
-    classDef inDevelopment fill:#FFD600,stroke:#FFAB00,color:black,stroke-width:1px
-    classDef planned fill:#FF6D00,stroke:#FF3D00,color:white,stroke-width:1px
-    classDef external fill:#8D6E63,stroke:#5D4037,color:white,stroke-width:1px
-
-    %% Main Scenario
-    MainScenario[Packaging Line Performance Optimization<br/>AI-Driven Efficiency & Waste Reduction]
-
-    %% PoC Phase Capabilities (2-4 weeks)
-    HighSpeedData[High-Speed Data Collection<br/>Score: 9/7/8/8]
-    BasicOptimization[Basic Optimization Engine<br/>Score: 8/8/7/7]
-    RealTimeMonitoring[Real-Time Line Monitoring<br/>Score: 9/8/9/8]
-
-    %% PoV Phase Capabilities (6-12 weeks)
-    AdvancedOptimization[Advanced Optimization Algorithms<br/>Score: 9/9/6/8]
-    PredictiveMaintenance[Predictive Maintenance<br/>Score: 8/9/7/8]
-    ControlSystemInteg[Control System Integration<br/>Score: 8/8/7/9]
-    QualityIntegration[Quality System Integration<br/>Score: 8/8/8/8]
-
-    %% Production Phase Capabilities (3-6 months)
-    SafetySystemInteg[Safety System Integration<br/>Score: 10/7/6/9]
-    EnterpriseIntegration[Enterprise System Integration<br/>Score: 7/8/6/9]
-    ComplianceReporting[Compliance & Reporting<br/>Score: 8/7/7/8]
-
-    %% Scale Phase Capabilities (6-18 months)
-    MultiLineOptimization[Multi-Line Optimization<br/>Score: 9/9/5/9]
-    AutonomousControl[Autonomous Line Control<br/>Score: 9/9/4/8]
-    FacilityWideAnalytics[Facility-Wide Analytics<br/>Score: 8/9/5/9]
-
-    %% Phase-specific Capability Groups
-    EdgeOptimizationPoC[PoC: Edge Optimization Platform<br/>2-4 weeks]
-    BasicMonitoringPoC[PoC: Basic Line Monitoring<br/>2-4 weeks]
-
-    AdvancedOptimizationPoV[PoV: Advanced Optimization Engine<br/>6-12 weeks]
-    PredictiveAnalyticsPoV[PoV: Predictive Analytics Platform<br/>6-12 weeks]
-    SystemIntegrationPoV[PoV: System Integration Framework<br/>6-12 weeks]
-
-    EnterpriseOptimizationProd[Production: Enterprise Optimization<br/>3-6 months]
-    SafetyComplianceProd[Production: Safety & Compliance<br/>3-6 months]
-    ProductionIntegrationProd[Production: Production Integration<br/>3-6 months]
-
-    AutonomousOptimizationScale[Scale: Autonomous Optimization<br/>6-18 months]
-    FacilityAnalyticsScale[Scale: Facility Analytics Platform<br/>6-18 months]
-    CrossLineIntegrationScale[Scale: Cross-Line Integration<br/>6-18 months]
-
-    %% Individual Capabilities to Phase-specific Groups
-    HighSpeedData --> EdgeOptimizationPoC
-    BasicOptimization --> EdgeOptimizationPoC
-    RealTimeMonitoring --> BasicMonitoringPoC
-
-    AdvancedOptimization --> AdvancedOptimizationPoV
-    PredictiveMaintenance --> PredictiveAnalyticsPoV
-    ControlSystemInteg --> SystemIntegrationPoV
-    QualityIntegration --> SystemIntegrationPoV
-
-    SafetySystemInteg --> SafetyComplianceProd
-    EnterpriseIntegration --> ProductionIntegrationProd
-    ComplianceReporting --> SafetyComplianceProd
-
-    MultiLineOptimization --> CrossLineIntegrationScale
-    AutonomousControl --> AutonomousOptimizationScale
-    FacilityWideAnalytics --> FacilityAnalyticsScale
-
-    %% Phase-specific Groups to Main Scenario
-    EdgeOptimizationPoC --> MainScenario
-    BasicMonitoringPoC --> MainScenario
-
-    AdvancedOptimizationPoV --> MainScenario
-    PredictiveAnalyticsPoV --> MainScenario
-    SystemIntegrationPoV --> MainScenario
-
-    EnterpriseOptimizationProd --> MainScenario
-    SafetyComplianceProd --> MainScenario
-    ProductionIntegrationProd --> MainScenario
-
-    AutonomousOptimizationScale --> MainScenario
-    FacilityAnalyticsScale --> MainScenario
-    CrossLineIntegrationScale --> MainScenario
-
-    %% Apply styles
-    MainScenario:::main
-
-    EdgeOptimizationPoC:::categoryPoC
-    BasicMonitoringPoC:::categoryPoC
-
-    AdvancedOptimizationPoV:::categoryPoV
-    PredictiveAnalyticsPoV:::categoryPoV
-    SystemIntegrationPoV:::categoryPoV
-
-    EnterpriseOptimizationProd:::categoryProd
-    SafetyComplianceProd:::categoryProd
-    ProductionIntegrationProd:::categoryProd
-
-    AutonomousOptimizationScale:::categoryScale
-    FacilityAnalyticsScale:::categoryScale
-    CrossLineIntegrationScale:::categoryScale
-
-    %% Apply capability status styles
-    HighSpeedData:::available
-    BasicOptimization:::available
-    RealTimeMonitoring:::available
-    AdvancedOptimization:::inDevelopment
-    PredictiveMaintenance:::available
-    ControlSystemInteg:::available
-    QualityIntegration:::inDevelopment
-    SafetySystemInteg:::available
-    EnterpriseIntegration:::available
-    ComplianceReporting:::inDevelopment
-    MultiLineOptimization:::planned
-    AutonomousControl:::planned
-    FacilityWideAnalytics:::planned
-```
+---
+
+### 🏭 Production Phase (6 months) - Enterprise Line Platform
+
+**Scenario Goal**: Deploy enterprise-scale line management system with MES/packaging system integration and comprehensive line governance across the organization.
+
+**Technical Scope**: Implement organization-wide line intelligence with automated optimization, enterprise system integration, and cross-line performance correlation.
+
+| Capability Area   | Capability                                                                           | Accelerator Support     | Implementation Requirements                                                                           | Priority |
+|-------------------|--------------------------------------------------------------------------------------|-------------------------|-------------------------------------------------------------------------------------------------------|----------|
+| **Governance**    | [Data Governance & Lineage][data-governance-lineage]                                 | 🔵 Development Required | Implement line data governance with performance optimization audit trails and compliance capabilities | High     |
+| **Automation**    | [Automated Incident Response & Remediation][automated-incident-response-remediation] | 🔵 Development Required | Deploy automated line optimization with performance adjustment and escalation workflows               | Medium   |
+| **Observability** | [Cloud Observability Foundation][cloud-observability-foundation]                     | 🔵 Development Required | Establish enterprise line monitoring with comprehensive analytics and reporting                       | High     |
+| **Integration**   | [Broad Industrial Protocol Support][broad-industrial-protocol-support]               | 🟣 Planned              | Support diverse packaging equipment with standardized integration patterns and data models            | Medium   |
+
+**Implementation Sequence**:
+
+1. **Months 1-2**: **[Data Governance & Lineage][data-governance-lineage]** - Implement line data governance + **[Cloud Observability Foundation][cloud-observability-foundation]** - Deploy enterprise monitoring
+2. **Months 3-4**: **[Automated Incident Response & Remediation][automated-incident-response-remediation]** - Deploy automated line optimization with performance adjustment workflows
+3. **Months 5-6**: **[Broad Industrial Protocol Support][broad-industrial-protocol-support]** - Expand equipment integration with standardized line data models and reporting
+
+**Typical Team Requirements**: 8-12 engineers (3 ML specialists, 3 packaging engineers, 2 data engineers, 2-3 integration developers, 1-2 governance specialists)
+
+---
+
+### 📈 Scale Phase (15 months) - Advanced Line Intelligence
+
+**Scenario Goal**: Achieve advanced line intelligence with multi-line optimization, predictive line simulation, and continuous improvement automation across the extended enterprise.
+
+**Technical Scope**: Deploy advanced line intelligence with cross-facility optimization, predictive packaging simulation, and autonomous line optimization across the extended enterprise.
+
+| Capability Area        | Capability                                                                   | Accelerator Support      | Implementation Requirements                                                                      | Priority |
+|------------------------|------------------------------------------------------------------------------|--------------------------|--------------------------------------------------------------------------------------------------|----------|
+| **AI Training**        | [Cloud AI/ML Model Training][cloud-ai-ml-model-training]                     | 🟣 Planned               | Establish advanced line model training with multi-site data federation and continuous learning   | High     |
+| **Digital Twin**       | [Packaging Line Digital Twin Platform][packaging-line-digital-twin-platform] | 🟪 External Dependencies | Implement advanced packaging line simulation with predictive optimization and scenario planning  | Medium   |
+| **Process Simulation** | [Process Simulation Engine][process-simulation-engine]                       | 🟪 External Dependencies | Deploy line simulation capabilities with performance prediction and optimization recommendations | High     |
+| **Edge CI/CD**         | [Edge Application CI/CD][edge-application-cicd]                              | ✅ Ready to Deploy        | Automate deployment of line optimization applications across multiple packaging facilities       | Medium   |
+
+**Implementation Sequence**:
+
+1. **Months 1-6**: **[Cloud AI/ML Model Training][cloud-ai-ml-model-training]** - Establish advanced model training + **[Process Simulation Engine][process-simulation-engine]** - Deploy simulation platform
+2. **Months 7-12**: **[Packaging Line Digital Twin Platform][packaging-line-digital-twin-platform]** - Implement advanced line simulation with predictive optimization capabilities
+3. **Months 13-15**: **[Edge Application CI/CD][edge-application-cicd]** - Deploy automated CI/CD with enterprise-wide line optimization intelligence
+
+**Typical Team Requirements**: 12-15 engineers (4 ML specialists, 4 packaging engineers, 3 data engineers, 2-3 integration developers, 2 simulation specialists, 1-2 governance specialists)
+
+---
+
+## 💼 Business Planning & ROI Analysis
+
+This section provides investment and return projections based on industry benchmarks and implementation data.
+
+### Investment & Return Projections
+
+| Phase          | Investment Level | Expected ROI                                   | Timeline to Value | Key Metrics                                                     |
+|----------------|------------------|------------------------------------------------|-------------------|-----------------------------------------------------------------|
+| **PoC**        | Low              | 10-15% improvement in line visibility          | 3-6 weeks         | Line performance tracking, 25% faster issue identification      |
+| **PoV**        | Medium           | 15-25% improvement in line throughput          | 10-16 weeks       | 30% optimization automation, measurable changeover improvements |
+| **Production** | High             | 20-30% improvement in overall line performance | 6-12 months       | 60% line automation, MES/packaging system integration           |
+| **Scale**      | Enterprise       | 25-35% improvement in packaging excellence     | 12-18 months      | 85% automated line optimization, cross-facility correlation     |
+
+### Risk Assessment & Mitigation
+
+| Risk Category                      | Probability | Impact | Mitigation Strategy                                                                             |
+|------------------------------------|-------------|--------|-------------------------------------------------------------------------------------------------|
+| **🔧 Technical Integration**       | Medium      | High   | Phased integration with existing packaging systems and comprehensive testing protocols          |
+| **👥 Skills & Training**           | High        | Medium | Packaging engineer training programs and partnerships with line optimization technology vendors |
+| **💻 Legacy System Compatibility** | Medium      | High   | API-first integration patterns and gradual migration strategies                                 |
+| **📊 Data Quality & Governance**   | Medium      | Medium | Comprehensive data validation frameworks and automated quality checks                           |
+| **🏭 Production Disruption**       | Low         | High   | Parallel deployment strategies and comprehensive rollback procedures                            |
+
+### Expected Business Outcomes
+
+| Outcome Category           | Improvement Range              | Business Impact                                           | Measurement Timeline |
+|----------------------------|--------------------------------|-----------------------------------------------------------|----------------------|
+| **Line Throughput**        | 15-35% improvement             | Increased packaging capacity and reduced production costs | 6-18 months          |
+| **Changeover Times**       | 30-50% reduction               | Faster line changeovers and increased flexibility         | 3-12 months          |
+| **Defect Rates**           | 20-30% reduction               | Improved packaging quality and reduced waste              | 3-9 months           |
+| **OEE Improvement**        | 15-30% increase                | Enhanced equipment effectiveness and throughput           | 6-12 months          |
+| **Line Availability**      | 10-20% improvement             | Reduced downtime and increased productivity               | 6-18 months          |
+| **Operating Costs**        | 20-35% reduction               | Optimized resource utilization and efficiency             | 12-24 months         |
+| **Line Consistency**       | 25-40% variation reduction     | Improved packaging predictability and reliability         | 9-18 months          |
+| **Continuous Improvement** | 50-80% automation              | Automated line optimization and improvement cycles        | 12-24 months         |
+| **Cross-Line Performance** | 20-40% correlation improvement | Enhanced multi-line coordination and optimization         | 18-24 months         |
+
+---
+
+## ✅ Implementation Success Checklist
+
+This checklist provides a structured approach to preparation and validation for Packaging Line Performance Optimization implementation.
+
+### Pre-Implementation Assessment
+
+- [ ] **Packaging Line Mapping**: Current line performance processes documented and improvement opportunities identified
+- [ ] **System Compatibility**: Existing packaging systems integration capabilities assessed and validated
+- [ ] **Data Infrastructure**: Line data collection and storage systems evaluated for integration readiness
+- [ ] **Baseline Metrics**: Current line performance levels, KPIs, and efficiency measured and documented
+- [ ] **Team Readiness**: Packaging engineering skills assessed and line optimization training needs identified
+
+### Phase Advancement Criteria
+
+<!-- markdownlint-disable MD033 -->
+| Phase Transition             | Success Criteria                                                                                       | Target Metrics                                                                      | Validation Method                                                     |
+|------------------------------|--------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------|-----------------------------------------------------------------------|
+| **🧪 PoC → 🚀 PoV**          | Real-time line monitoring operational with measurable line improvements                                | • 10-15% improvement in line visibility<br>• 25% faster issue identification        | • Line metrics comparison<br>• Packaging validation testing           |
+| **🚀 PoV → 🏭 Production**   | Predictive line analytics demonstrating business value and stakeholder approval                        | • 15-25% improvement in line throughput<br>• 30% changeover time reduction          | • Business case validation<br>• Stakeholder acceptance testing        |
+| **🏭 Production → 📈 Scale** | Enterprise line platform operational with MES/packaging system integration and governance capabilities | • 20-30% improvement in overall line performance<br>• Enterprise system integration | • Integration testing validation<br>• Enterprise readiness assessment |
+<!-- markdownlint-enable MD033 -->
+
+This **phase-based approach** provides clear visibility into:
+
+- **⏱️ Timeline**: Each phase has specific duration and focus areas
+- **🎯 Priority**: Left-to-right flow shows implementation order within each phase
+- **📈 Value**: Progressive value delivery from 10% to 35% line improvement
+- **🔄 Dependencies**: Each phase builds upon previous achievements
+
+The visual progression makes it easy to understand **what gets built when** and **how capabilities connect** to deliver incremental business value.
+
+> **Important**: Before implementing this scenario, review the prerequisites documentation for hardware, software, permissions, and system requirements.
+
+## 🚀 Advanced Capability Extensions
+
+These capabilities extend beyond the core Packaging Line Performance Optimization scenario to enable advanced manufacturing intelligence applications.
+
+| Capability                                                             | Technical Complexity | Business Value | Implementation Effort | Integration Points                                           |
+|------------------------------------------------------------------------|----------------------|----------------|-----------------------|--------------------------------------------------------------|
+| **[Cross-Facility Line Integration][cross-facility-line-integration]** | Very High            | High           | 12-18 months          | Line platform, multi-site systems, coordination optimization |
+| **[Predictive Line Analytics][predictive-line-analytics]**             | Very High            | High           | 9-15 months           | AI platform, line data, performance optimization             |
+| **[Autonomous Line Optimization][autonomous-line-optimization]**       | Very High            | High           | 12-24 months          | AI platform, line control, performance governance            |
+| **[Real-Time Line Correlation][real-time-line-correlation]**           | High                 | Medium         | 6-12 months           | Data platform, multiple packaging systems, analytics engine  |
+
+**Note**: Core capabilities like [Edge Data Stream Processing][edge-data-stream-processing], [Edge Inferencing Application Framework][edge-inferencing-application-framework], [Device Twin Management][device-twin-management], and [Line Performance Analytics][line-performance-analytics] are integrated into the main scenario phases as essential components.
+
+## 🔗 Related Scenarios & Synergies
+
+Maximize platform investment by leveraging shared capabilities across multiple use cases:
+
+| Related Scenario                                                             | Shared Capabilities                                        | Potential Synergies                               | Implementation Benefits                     |
+|------------------------------------------------------------------------------|------------------------------------------------------------|---------------------------------------------------|---------------------------------------------|
+| **[Operational Performance Monitoring][operational-performance-monitoring]** | Edge processing, AI inference, performance optimization    | Combined line-operational optimization workflows  | 40% shared infrastructure costs             |
+| **[Quality Process Optimization][quality-process-optimization]**             | Data platform, monitoring systems, optimization algorithms | Integrated line performance and quality analytics | 35% operational efficiency gains            |
+| **[Yield Process Optimization][yield-process-optimization]**                 | Process optimization, AI analytics, efficiency monitoring  | Line-yield optimization correlation               | 45% improved decision-making speed          |
+| **[Predictive Maintenance][predictive-maintenance]**                         | IoT sensors, predictive analytics, device management       | Line performance-driven maintenance optimization  | 30% overall resource efficiency improvement |
+
+### 🔄 Cross-Scenario Implementation Strategy
+
+Strategic multi-scenario deployment maximizes platform investment by building shared capabilities that compound value across implementations:
+
+| Implementation Phase                                 | Primary Scenario                                                             | Add-On Scenarios                | Shared Platform Benefits                                      | Expected ROI Improvement |
+|------------------------------------------------------|------------------------------------------------------------------------------|---------------------------------|---------------------------------------------------------------|--------------------------|
+| **🏗️ Phase 1 - Foundation** (6 months)              | **Packaging Line Performance Optimization** (this scenario)                  | None                            | Establish line data platform and edge analytics               | Baseline ROI: 45-65%     |
+| **⚡ Phase 2 - Quality Integration** (3 months)       | Line + [Quality Process Optimization][quality-process-optimization]          | Combined line-quality workflows | 40% shared infrastructure, unified optimization platform      | +25-35% additional ROI   |
+| **🔮 Phase 3 - Performance Intelligence** (4 months) | Add [Operational Performance Monitoring][operational-performance-monitoring] | Line-operational optimization   | 35% shared edge platform, combined analytics engines          | +20-30% additional ROI   |
+| **🎯 Phase 4 - Predictive Excellence** (3 months)    | Add [Predictive Maintenance][predictive-maintenance]                         | Holistic line optimization      | 45% shared platform, integrated line-maintenance optimization | +25-35% additional ROI   |
+
+**Platform Benefits**: Multi-scenario deployment achieves 135-165% cumulative ROI with 40-60% faster implementation for additional scenarios due to shared platform components.
+
+## 🚀 Next Steps & Related Resources
+
+- 📋 Review the [prerequisites][prerequisites] for implementation requirements
+- 🎯 Explore the [capability group mapping][capabilities-overview] for detailed capability assessment
+- See the [Blueprints README][blueprints-readme] for deployment options
+- Review the [Getting Started Guide][getting-started] for step-by-step deployment instructions
+
+<!-- Reference Links -->
+
+<!-- Capability Group Links -->
+[protocol-translation-device-management]: /docs/project-planning/capabilities/protocol-translation-device-management/README.md
+[edge-cluster-platform]: /docs/project-planning/capabilities/edge-cluster-platform/README.md
+[edge-industrial-application-platform]: /docs/project-planning/capabilities/edge-industrial-application-platform/README.md
+[cloud-data-platform]: /docs/project-planning/capabilities/cloud-data-platform/README.md
+[cloud-ai-platform]: /docs/project-planning/capabilities/cloud-ai-platform/README.md
+[cloud-insights-platform]: /docs/project-planning/capabilities/cloud-insights-platform/README.md
+[advanced-simulation-digital-twin-platform]: /docs/project-planning/capabilities/advanced-simulation-digital-twin-platform/README.md
+
+<!-- Individual Capability Links -->
+[opc-ua-data-ingestion]: /docs/project-planning/capabilities/protocol-translation-device-management/opc-ua-data-ingestion.md
+[device-twin-management]: /docs/project-planning/capabilities/protocol-translation-device-management/device-twin-management.md
+[broad-industrial-protocol-support]: /docs/project-planning/capabilities/protocol-translation-device-management/broad-industrial-protocol-support.md
+[edge-compute-orchestration]: /docs/project-planning/capabilities/edge-cluster-platform/edge-compute-orchestration.md
+[edge-application-cicd]: /docs/project-planning/capabilities/edge-cluster-platform/edge-application-cicd.md
+[edge-data-stream-processing]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-data-stream-processing.md
+[edge-inferencing-application-framework]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-inferencing-application-framework.md
+[edge-dashboard-visualization]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-dashboard-visualization.md
+[cloud-data-platform-services]: /docs/project-planning/capabilities/cloud-data-platform/cloud-data-platform-services.md
+[data-governance-lineage]: /docs/project-planning/capabilities/cloud-data-platform/data-governance-lineage.md
+[cloud-ai-ml-model-training]: /docs/project-planning/capabilities/cloud-ai-platform/cloud-ai-ml-model-training.md
+[mlops-toolchain]: /docs/project-planning/capabilities/cloud-ai-platform/mlops-toolchain.md
+[automated-incident-response-remediation]: /docs/project-planning/capabilities/cloud-insights-platform/automated-incident-response-remediation.md
+[cloud-observability-foundation]: /docs/project-planning/capabilities/cloud-insights-platform/cloud-observability-foundation.md
+
+<!-- Advanced Capability Links -->
+[cross-facility-line-integration]: /docs/project-planning/capabilities/advanced-simulation-digital-twin-platform/cross-facility-line-integration.md
+[predictive-line-analytics]: /docs/project-planning/capabilities/cloud-ai-platform/predictive-line-analytics.md
+[autonomous-line-optimization]: /docs/project-planning/capabilities/cloud-insights-platform/autonomous-line-optimization.md
+[real-time-line-correlation]: /docs/project-planning/capabilities/cloud-data-platform/real-time-line-correlation.md
+[packaging-line-digital-twin-platform]: /docs/project-planning/capabilities/advanced-simulation-digital-twin-platform/packaging-line-digital-twin-platform.md
+[process-simulation-engine]: /docs/project-planning/capabilities/advanced-simulation-digital-twin-platform/process-simulation-engine.md
+[line-performance-analytics]: /docs/project-planning/capabilities/cloud-data-platform/line-performance-analytics.md
+
+<!-- Documentation Links -->
+[getting-started]: /docs/getting-started/README.md
+[blueprints-readme]: /blueprints/README.md
+[prerequisites]: /docs/project-planning/scenarios/packaging-line-performance-optimization/prerequisites.md
+[capabilities-overview]: /docs/project-planning/capabilities/README.md
+
+<!-- Related Scenario Links -->
+[operational-performance-monitoring]: /docs/project-planning/scenarios/operational-performance-monitoring/README.md
+[quality-process-optimization]: /docs/project-planning/scenarios/quality-process-optimization-automation/README.md
+[yield-process-optimization]: /docs/project-planning/scenarios/yield-process-optimization/README.md
+[predictive-maintenance]: /docs/project-planning/scenarios/predictive-maintenance/README.md
 
 ---
 
@@ -310,19 +330,3 @@ graph RL
 *🤖 Crafted with precision by ✨Copilot following brilliant human instruction,
 then carefully refined by our team of discerning human reviewers.*
 <!-- markdownlint-enable MD036 -->
-
-<!-- Reference Links -->
-[analytics-components]: /src/500-application/README.md
-[capability-mapping]: ./packaging-line-performance-optimization-capability-mapping.md
-[community-support]: /SUPPORT.md
-[contribution-guidelines]: /CONTRIBUTING.md
-[edge-ai-platform-overview]: /docs/README.md
-[getting-started-guide]: /docs/getting-started/README.md
-[iot-operations-module]: /src/100-edge/110-iot-ops/terraform/README.md
-[operational-performance-monitoring]: ../operational-performance-monitoring/README.md
-[packaging-line-performance-optimization-prerequisites]: ./prerequisites.md
-[project-planning-templates]: /docs/project-planning/templates/README.md
-[quality-process-optimization]: ../quality-process-optimization-automation/README.md
-[security-framework]: /docs/solution-security-plan-library/README.md
-[security-implementation]: /src/000-cloud/010-security-identity/terraform/README.md
-[yield-process-optimization]: ../yield-process-optimization/README.md

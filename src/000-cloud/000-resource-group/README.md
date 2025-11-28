@@ -2,7 +2,7 @@
 title: New Environment Onboard Requirements
 description: Component for onboarding a new environment and includes IaC for creating resources that are needed for an edge deployment including Azure Resource Group, User Assigned Managed Identity, and Service Principal
 author: Edge AI Team
-ms.date: 06/07/2025
+ms.date: 2025-06-07
 ms.topic: reference
 keywords:
   - azure resource group
