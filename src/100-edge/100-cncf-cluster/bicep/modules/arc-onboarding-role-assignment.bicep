@@ -1,8 +1,6 @@
 metadata name = 'Arc Onboarding Role Assignment Module'
 metadata description = 'Assigns the required Kubernetes Cluster - Azure Arc Onboarding role to a managed identity or service principal.'
 
-import * as core from '../types.core.bicep'
-
 /*
   Identity Parameters
 */

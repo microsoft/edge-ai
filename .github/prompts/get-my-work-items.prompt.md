@@ -120,7 +120,7 @@ You must first `list_dir` on `.copilot-tracking/workitems` and identify if there
 
 ### 1. Build Search Criteria
 
-Parse `${input:types}` and `${input:fallbackTypes}` into two ordered, case-insensitive sets (trim whitespace). Parse `${input:states}` similarly (unless blank). Build `searchText` ALWAYS including `a:@Me`. If `${input:iterationPath}` present, append ` IterationPath:"${input:iterationPath}"` exactly (space-prefixed) to `searchText`. (If state filters provided, use `state` parameter; do NOT redundantly embed state text inside `searchText`).
+Parse `${input:types}` and `${input:fallbackTypes}` into two ordered, case-insensitive sets (trim whitespace). Parse `${input:states}` similarly (unless blank). Build `searchText` ALWAYS including `a:@Me`. If `${input:iterationPath}` present, append `IterationPath:"${input:iterationPath}"` exactly (space-prefixed) to `searchText`. (If state filters provided, use `state` parameter; do NOT redundantly embed state text inside `searchText`).
 
 ### 2. First Search Pass (Prioritized Types)
 
@@ -170,6 +170,7 @@ After all search pages (and fallback if used) complete AND there is at least one
 ALL fields returned by `mcp_ado_wit_get_work_item` that are part of the requested hydration field list (See Outputs JSON Structure) MUST be written immediately into the single JSON artifact `.copilot-tracking/workitems/{YYYYMMDD}-assigned-to-me.raw.json` during that same hydration cycle.
 
 Mandatory rules:
+
 - No temporary, staging, or intermediate files may be created; the ONLY persistence target is the dated `*.raw.json` file.
 - If the server omits a requested field, do not fabricate it; absence is acceptable. If it returns the field with `null` or empty value, persist as-is.
 - Never remove previously stored fields when adding new ones; merges are additive/overwriting per field key.

@@ -9,7 +9,7 @@ variable "fabric_workspace_name" {
 }
 
 variable "fabric_lakehouse_name" {
-  description = "The name of the Microsoft Fabric lakehouse. Otherwise, 'lh-{resource_prefix}-{environment}-{instance}'."
+  description = "The name of the Microsoft Fabric lakehouse. Otherwise, 'lh_{resource_prefix}_{environment}_{instance}'."
   type        = string
   default     = null
 }
@@ -21,7 +21,7 @@ variable "fabric_eventhouse_name" {
 }
 
 variable "fabric_capacity_name" {
-  description = "The name of the Microsoft Fabric capacity. Otherwise, 'cap-{resource_prefix}-{environment}-{instance}'."
+  description = "The name of the Microsoft Fabric capacity. Otherwise, 'cap{resource_prefix_no_hyphens}{environment}{instance}'."
   type        = string
   default     = null
 }
@@ -46,9 +46,18 @@ variable "eventhouse_description" {
 }
 
 variable "fabric_capacity_admins" {
-  description = "List of AAD object IDs for Fabric capacity administrators."
+  description = <<-EOT
+    List of user principal names (UPNs) or Azure AD object IDs for Fabric capacity administrators.
+    For users, provide UPN (<user@domain.com>) or Object ID.
+    For service principals, provide Application ID or Object ID.
+    At least one administrator is required when creating a capacity.
+  EOT
   type        = list(string)
   default     = []
+  validation {
+    condition     = !var.should_create_fabric_capacity || length(var.fabric_capacity_admins) > 0
+    error_message = "At least one administrator must be specified for Fabric capacity when creating a capacity."
+  }
 }
 
 variable "fabric_capacity_sku" {

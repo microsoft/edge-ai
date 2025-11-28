@@ -11,7 +11,7 @@ Use this guidance whenever coordinating Git merge, rebase, or `rebase --onto` se
 ### 1. Prepare the workspace
 
 * Confirm the working tree is clean with `git status --short`. Stash local changes before proceeding.
-* Fetch latest remote refs (`git fetch origin main`, `git fetch origin [branch]`, `git fetch --all --prune`) when the branch might lag the target.
+* Fetch latest remote refs (`git fetch origin dev`, `git fetch origin [branch]`, `git fetch --all --prune`) when the branch might lag the target.
 * Record the active branch and inputs: `${input:operation}`, `${input:branch}`, and optional `${input:onto}` / `${input:upstream}`.
 
 ### 2. Select the operation path

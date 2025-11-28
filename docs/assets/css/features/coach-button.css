@@ -1,0 +1,261 @@
+/**
+ * Coach Button Floating UI Component
+ *
+ * Provides a non-intrusive floating action button for accessing the learning coach
+ * with VS Code integration. Follows Docsify theme integration principles.
+ */
+
+/* Main floating button container */
+.coach-button {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #007acc 0%, #005a9f 100%);
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 122, 204, 0.3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Button icon */
+.coach-button::before {
+  content: "🎓";
+  font-size: 24px;
+  line-height: 1;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+}
+
+/* Hover and focus states */
+.coach-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 122, 204, 0.4);
+  background: linear-gradient(135deg, #0088ff 0%, #0066cc 100%);
+}
+
+.coach-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 122, 204, 0.3), 0 6px 16px rgba(0, 122, 204, 0.4);
+}
+
+.coach-button:active {
+  transform: translateY(0);
+  transition-duration: 0.1s;
+}
+
+/* Loading state */
+.coach-button.loading {
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.coach-button.loading::before {
+  content: "⏳";
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Error state */
+.coach-button.error {
+  background: linear-gradient(135deg, #d73a49 0%, #b31d28 100%);
+  animation: shake 0.5s ease-in-out;
+}
+
+.coach-button.error::before {
+  content: "⚠️";
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+/* Success state */
+.coach-button.success {
+  background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+}
+
+.coach-button.success::before {
+  content: "✅";
+}
+
+/* Tooltip */
+.coach-button::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  margin-right: 12px;
+  font-family: inherit;
+}
+
+.coach-button::after {
+  content: "";
+}
+
+.coach-button[data-tooltip]:hover::after {
+  content: attr(data-tooltip);
+  opacity: 1;
+}
+
+/* Tooltip arrow */
+.coach-button[data-tooltip]:hover::before {
+  content: "";
+  position: absolute;
+  right: calc(100% + 6px);
+  top: 50%;
+  transform: translateY(-50%);
+  border: 6px solid transparent;
+  border-left-color: rgba(0, 0, 0, 0.8);
+  z-index: -1;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .coach-button {
+    bottom: 16px;
+    right: 16px;
+    width: 48px;
+    height: 48px;
+  }
+
+  .coach-button::before {
+    font-size: 20px;
+  }
+
+  .coach-button::after {
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .coach-button {
+    bottom: 12px;
+    right: 12px;
+    width: 44px;
+    height: 44px;
+  }
+
+  .coach-button::before {
+    font-size: 18px;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .coach-button {
+    background: #000;
+    border: 2px solid #fff;
+    box-shadow: none;
+  }
+
+  .coach-button:hover {
+    background: #333;
+    transform: none;
+    box-shadow: none;
+  }
+
+  .coach-button::after {
+    background: #000;
+    border: 1px solid #fff;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .coach-button {
+    transition: none;
+  }
+
+  .coach-button:hover {
+    transform: none;
+  }
+
+  .coach-button.loading::before {
+    animation: none;
+  }
+
+  .coach-button.error {
+    animation: none;
+  }
+}
+
+/* Dark theme support (follows Docsify theme) */
+@media (prefers-color-scheme: dark) {
+  .coach-button {
+    background: linear-gradient(135deg, #264f78 0%, #1a3a5c 100%);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  }
+
+  .coach-button:hover {
+    background: linear-gradient(135deg, #3c6e9a 0%, #264f78 100%);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+  }
+
+  .coach-button::after {
+    background: rgba(255, 255, 255, 0.9);
+    color: black;
+  }
+}
+
+/* Print styles - hide button when printing */
+@media print {
+  .coach-button {
+    display: none !important;
+  }
+}
+
+/* Focus visible for better keyboard navigation */
+.coach-button:focus-visible {
+  outline: 3px solid #007acc;
+  outline-offset: 2px;
+}
+
+/* Animation for button appearance */
+.coach-button {
+  animation: slideInFromBottom 0.3s ease-out;
+}
+
+@keyframes slideInFromBottom {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Hide button on very small screens to avoid obstruction */
+@media (max-height: 500px) and (max-width: 400px) {
+  .coach-button {
+    display: none;
+  }
+}

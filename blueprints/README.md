@@ -2,7 +2,7 @@
 title: Blueprints
 description: Infrastructure as Code composition mechanism providing ready-to-deploy end-to-end solutions for edge computing environments with Azure IoT Operations
 author: Edge AI Team
-ms.date: 06/07/2025
+ms.date: 2025-06-07
 ms.topic: reference
 keywords:
   - blueprints
@@ -36,6 +36,17 @@ to build complex multi-stage solutions that meet your specific requirements.
 | [Azure Fabric Environment](./fabric/terraform/README.md)                       | Provisions Azure Fabric environment  *Terraform only currently*                                                                                    |
 | [Dual Peered Single Node Cluster](./dual-peered-single-node-cluster/README.md) | Deploys a two single-node clusters with peered networks for proving secured communication via multiple instances of AIO MQ                         |
 | *More coming soon...*                                                          |                                                                                                                                                    |
+
+## Bicep Architecture
+
+Each Bicep blueprint in this repository follows a consistent structure:
+
+- **Main Configuration**: Root module that orchestrates component deployment using Azure's declarative syntax
+- **Parameters**: Defined with type safety and validation rules, with descriptions and default values
+- **Outputs**: Critical resource information returned after deployment
+- **Type Definitions**: Shared type definitions in `types.core.bicep` or component-specific types for parameter consistency
+- **Reusable Modules**: Leverages components from `/src` to ensure consistency and maintainability
+- **Deployment Scope**: Supports both subscription-level and resource group-level deployments
 
 ## Terraform Architecture
 
@@ -84,6 +95,109 @@ When using an existing resource group:
 - Verify you have appropriate permissions to deploy resources within it
 - Be aware that name conflicts may occur with existing resources
 - The existing resource group's location will be used for resources that are location-sensitive
+
+## Required Permissions and Custom Roles
+
+Deploying blueprints requires specific Azure permissions to provision and manage the various resources across multiple Azure services. This section outlines the minimum required permissions.
+
+### Custom Role Requirements
+
+For environments requiring least-privilege access, create a custom role with the following permission categories:
+
+#### Core Infrastructure Permissions
+
+**Resource Groups and Authorization**:
+
+- `Microsoft.Authorization/roleAssignments/read` - Read role assignments
+- `Microsoft.Authorization/roleAssignments/write` - Create and update role assignments
+
+**Identity Management**:
+
+- `Microsoft.ManagedIdentity/userAssignedIdentities/read` - Read user-assigned managed identities
+- `Microsoft.ManagedIdentity/userAssignedIdentities/write` - Create and update user-assigned managed identities
+- `Microsoft.ManagedIdentity/userAssignedIdentities/assign/action` - Assign identities to resources
+- `Microsoft.ManagedIdentity/userAssignedIdentities/federatedIdentityCredentials/read` - Read federated identity credentials
+- `Microsoft.ManagedIdentity/userAssignedIdentities/federatedIdentityCredentials/write` - Create and update federated identity credentials
+
+**Security and Secrets**:
+
+- `Microsoft.KeyVault/vaults/read` - Read Key Vaults
+- `Microsoft.KeyVault/vaults/write` - Create and update Key Vaults
+- `Microsoft.KeyVault/locations/deletedVaults/purge/action` - Purge soft-deleted Key Vaults during cleanup
+- `Microsoft.SecretSyncController/azureKeyVaultSecretProviderClasses/read` - Read secret provider classes
+- `Microsoft.SecretSyncController/azureKeyVaultSecretProviderClasses/write` - Create and update secret provider classes
+
+**Storage**:
+
+- `Microsoft.Storage/storageAccounts/read` - Read storage accounts
+- `Microsoft.Storage/storageAccounts/write` - Create and update storage accounts
+- `Microsoft.Storage/storageAccounts/blobServices/containers/read` - Read blob containers
+- `Microsoft.Storage/storageAccounts/blobServices/containers/write` - Create and update blob containers
+
+#### Messaging and Eventing Permissions
+
+**Event Grid**:
+
+- `Microsoft.EventGrid/namespaces/read` - Read Event Grid namespaces
+- `Microsoft.EventGrid/namespaces/write` - Create and update Event Grid namespaces for MQTT broker functionality
+- `Microsoft.EventGrid/namespaces/topicSpaces/read` - Read topic spaces
+- `Microsoft.EventGrid/namespaces/topicSpaces/write` - Create and update topic spaces for message routing
+
+**Event Hubs**:
+
+- `Microsoft.EventHub/namespaces/read` - Read Event Hub namespaces
+- `Microsoft.EventHub/namespaces/write` - Create and update Event Hub namespaces
+- `Microsoft.EventHub/namespaces/eventhubs/read` - Read Event Hubs
+- `Microsoft.EventHub/namespaces/eventhubs/write` - Create and update individual Event Hubs
+- `Microsoft.EventHub/namespaces/eventhubs/consumergroups/read` - Read consumer groups
+- `Microsoft.EventHub/namespaces/eventhubs/consumergroups/write` - Create and update consumer groups
+- `Microsoft.EventHub/namespaces/eventhubs/authorizationRules/read` - Read authorization rules
+- `Microsoft.EventHub/namespaces/eventhubs/authorizationRules/write` - Create and update access policies and connection strings
+
+#### IoT Operations Permissions
+
+**Azure IoT Operations Core**:
+
+- `Microsoft.IoTOperations/instances/*` - Deploy and manage IoT Operations instances
+- `Microsoft.IoTOperations/instances/brokers/*` - Configure MQTT brokers
+- `Microsoft.IoTOperations/instances/brokers/listeners/*` - Set up broker listeners
+- `Microsoft.IoTOperations/instances/brokers/authentications/*` - Configure authentication methods
+- `Microsoft.IoTOperations/instances/dataflowEndpoints/*` - Define data flow endpoints
+- `Microsoft.IoTOperations/instances/dataflowProfiles/*` - Create data flow profiles and dataflows
+
+**Device Registry**:
+
+- `Microsoft.DeviceRegistry/schemaRegistries/*` - Manage schema registries for message validation
+- `Microsoft.DeviceRegistry/assets/*` - Register and manage edge assets
+- `Microsoft.DeviceRegistry/assetEndpointProfiles/*` - Configure asset endpoint profiles
+
+**Arc-Enabled Kubernetes**:
+
+- `Microsoft.Kubernetes/connectedClusters/read` - Read Arc-enabled cluster information
+- `Microsoft.KubernetesConfiguration/extensions/*` - Deploy and manage cluster extensions
+- `Microsoft.ExtendedLocation/customLocations/resourceSyncRules/*` - Configure resource synchronization
+
+#### Observability Permissions
+
+**Monitoring and Logging**:
+
+- `Microsoft.OperationalInsights/workspaces/*` - Create Log Analytics workspaces
+- `Microsoft.Monitor/accounts/*` - Manage Azure Monitor accounts for Prometheus metrics
+- `Microsoft.Insights/dataCollectionRules/*` - Define data collection rules
+- `Microsoft.Insights/dataCollectionEndpoints/*` - Configure data collection endpoints
+- `Microsoft.Insights/dataCollectionRuleAssociations/*` - Associate rules with resources
+- `Microsoft.Insights/components/*` - Create Application Insights resources
+
+**Grafana and Dashboards**:
+
+- `Microsoft.Dashboard/grafana/*` - Provision managed Grafana instances for visualization
+- `Microsoft.AlertsManagement/prometheusRuleGroups/*` - Configure Prometheus alerting rules
+- `Microsoft.OperationsManagement/solutions/*` - Deploy monitoring solutions
+
+**Private Monitoring**:
+
+- `Microsoft.Insights/privateLinkScopes/*` - Create private link scopes for secure monitoring
+- `Microsoft.Insights/privateLinkScopes/scopedResources/*` - Associate resources with private link scopes
 
 ## Detailed Deployment Workflow
 
@@ -230,7 +344,7 @@ Bicep provides an alternative Infrastructure as Code (IaC) approach that's nativ
    @secure()
    param adminPassword = 'YourSecurePassword123!' // Replace with a secure password
 
-   // When customeLocationsOid is required:
+   // When customLocationsOid is required:
    param customLocationsOid = readEnvironmentVariable('CUSTOM_LOCATIONS_OID') // Read from environment variable
 
    // Any additional parameters with defaults, example:
@@ -262,10 +376,6 @@ Bicep provides an alternative Infrastructure as Code (IaC) approach that's nativ
    ```sh
    # Deploy using the Azure CLI at the subscription level, keep deployment_name less than 8 characters:
    az deployment sub create --name {deployment_name} --location {location} --parameters ./main.bicepparam
-
-   # Deploy using the Azure CLI at the resource group level, keep deployment_name less than 8 characters:
-   RG_NAME="rg-{resource_prefix}-{environment}-{instance}"
-   az deployment group create -g $RG_NAME --name {deployment_name} --parameters ./main.bicepparam
    ```
 
    > **Note**: When deploying with a `customLocationsOid`, ensure the CUSTOM_LOCATIONS_OID environment variable is set in your current shell session before running the deployment command.

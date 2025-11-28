@@ -27,3 +27,8 @@ variable "should_enable_public_network_access" {
   type        = bool
   description = "Whether to enable public network access for the Key Vault"
 }
+
+variable "should_add_key_vault_role_assignment" {
+  type        = bool
+  description = "Whether to add role assignment to the Key Vault"
+}

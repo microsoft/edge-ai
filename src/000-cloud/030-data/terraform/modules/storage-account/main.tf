@@ -63,6 +63,14 @@ resource "azurerm_private_endpoint" "storage_blob_pe" {
     is_manual_connection           = false
     subresource_names              = ["blob"]
   }
+
+  dynamic "private_dns_zone_group" {
+    for_each = var.blob_dns_zone != null ? [1] : []
+    content {
+      name                 = "blob-dns-zone-group"
+      private_dns_zone_ids = [var.blob_dns_zone.id]
+    }
+  }
 }
 
 resource "azurerm_private_endpoint" "storage_file_pe" {
@@ -96,7 +104,7 @@ resource "azurerm_private_endpoint" "storage_dfs_pe" {
 }
 
 resource "azurerm_private_dns_zone" "blob_dns_zone" {
-  count = var.should_enable_private_endpoint ? 1 : 0
+  count = alltrue([var.should_enable_private_endpoint, var.should_create_blob_dns_zone]) ? 1 : 0
 
   name                = "privatelink.blob.core.windows.net"
   resource_group_name = var.resource_group.name
@@ -117,7 +125,7 @@ resource "azurerm_private_dns_zone" "dfs_dns_zone" {
 }
 
 resource "azurerm_private_dns_zone_virtual_network_link" "blob_vnet_link" {
-  count = var.should_enable_private_endpoint ? 1 : 0
+  count = alltrue([var.should_enable_private_endpoint, var.should_create_blob_dns_zone]) ? 1 : 0
 
   name                  = "vnet-pzl-blob-${var.resource_prefix}-${var.environment}-${var.instance}"
   resource_group_name   = var.resource_group.name
@@ -147,10 +155,10 @@ resource "azurerm_private_dns_zone_virtual_network_link" "dfs_vnet_link" {
 }
 
 resource "azurerm_private_dns_a_record" "blob_a_record" {
-  count = var.should_enable_private_endpoint ? 1 : 0
+  count = alltrue([var.should_enable_private_endpoint, var.should_create_blob_dns_zone]) ? 1 : 0
 
   name                = azurerm_storage_account.storage_account.name
-  zone_name           = azurerm_private_dns_zone.blob_dns_zone[0].name
+  zone_name           = try(azurerm_private_dns_zone.blob_dns_zone[0].name, var.blob_dns_zone.name, null)
   resource_group_name = var.resource_group.name
   ttl                 = 300
   records             = [azurerm_private_endpoint.storage_blob_pe[0].private_service_connection[0].private_ip_address]

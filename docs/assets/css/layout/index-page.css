@@ -1,0 +1,437 @@
+/**
+ * Index Page Specific Styles
+ * Styles that are specific   box-shadow: 0 1px 2px var(--color-theme-alpha-05);
+  overflow-x: auto;
+  overflow-y: visible;the main index.html page
+ * Version: 2.0.0
+ */
+
+/* Root Variables - Theme Colors */
+:root {
+  /* Primary brand colors */
+  --theme-color: var(--color-blue-600);
+  --theme-color-secondary: var(--color-blue-700);
+
+  /* Sidebar */
+  --sidebar-width: var(--spacing-layout-xxs);
+  --sidebar-nav-strong-border-right-color: var(--theme-color);
+
+  /* Header */
+  --cover-background-color: linear-gradient(to left bottom, hsl(240, 100%, 70%) 0%, hsl(240, 100%, 70%) 100%);
+}
+
+/* Logo in sidebar */
+.sidebar.capability-item.experimental {
+  border-left-color: var(--color-purple-500);
+  background: var(--color-purple-50);
+}p-name img {
+  max-width: var(--spacing-2xl);
+  height: auto;
+  margin-right: var(--spacing-xs-plus);
+  vertical-align: middle;
+}
+
+/* Note: Search styling moved to plugins/search.css for better organization */
+
+/* Content area enhancements - remove conflicting padding-top */
+
+/* Apply var(--layout-content-max-width) max-width only to specific elements that need it (excluding paragraphs) */
+.markdown-section > blockquote,
+.markdown-section > .alert,
+.markdown-section > .callout {
+  max-width: auto;
+  margin-left: auto;
+  margin-right: var(--spacing-layout-xxs);
+}
+
+/* Lists should not be constrained by the var(--layout-content-max-width) rule */
+.markdown-section > ul,
+.markdown-section > ol {
+  max-width: none;
+  margin-left: 0;
+  margin-right: 0;
+  padding-left: 1.5rem;
+}
+
+.markdown-section > .custom-block,
+.markdown-section > .table-wrapper,
+.markdown-section > pre,
+.markdown-section > .mermaid-diagram {
+  max-width: 100%;
+}
+
+/* Navigation improvements */
+.sidebar-nav {
+  padding-top: var(--spacing-lg-small);
+}
+
+.sidebar-nav > ul > li > a {
+  font-weight: 600;
+  color: var(--theme-color);
+  border-right: var(--spacing-xs-plus) solid transparent;
+  transition: all 0.3s ease;
+}
+
+.sidebar-nav > ul > li > a:hover {
+  border-right-color: var(--theme-color);
+  background: var(--color-theme-alpha-05);
+}
+
+/* Disable any automatic heading generation in sidebar */
+.sidebar .sidebar-nav .auto-header {
+  display: none !important;
+}
+
+/* Footer improvements */
+footer {
+  margin-top: 50px;
+  padding: 30px 0;
+  border-top: 1px solid var(--color-gray-200);
+  color: var(--color-gray-500);
+  font-size: 14px;
+}
+
+/* Tables - now handled by centralized component in components/tables.css */
+
+/* Code block improvements */
+.markdown-section pre {
+  border-radius: var(--spacing-xs);
+  box-shadow: 0 2px 8px var(--color-alpha-black-10);
+  margin: var(--spacing-lg) 0;
+}
+
+.markdown-section code {
+  background: var(--color-gray-100);
+  padding: 2px 6px;
+  border-radius: var(--spacing-xs);
+  font-size: 0.9em;
+}
+
+/* Alert/callout styling */
+.markdown-section blockquote {
+  border-left: 4px solid var(--theme-color);
+  background: var(--color-theme-alpha-05);
+  padding: 15px 20px;
+  margin: var(--spacing-lg) 0;
+  border-radius: 0 8px 8px 0;
+}
+
+/* Links styling */
+.markdown-section a {
+  color: var(--theme-color);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.markdown-section a:hover {
+  border-bottom-color: var(--theme-color);
+}
+
+/* Loading state improvements */
+#app {
+  font-size: var(--spacing-md);
+  color: var(--color-slate-700);
+  padding: 60px 0;
+  text-align: center;
+}
+
+/* Reset text alignment for content to prevent lists from being centered */
+#app .content,
+#app .markdown-section {
+  text-align: left;
+}
+
+/* Ensure lists have proper left alignment and padding */
+#app .markdown-section ul,
+#app .markdown-section ol {
+  text-align: left;
+  padding-left: 1.5rem;
+  margin-left: 0;
+}
+
+#app:empty::before {
+  content: "Loading documentation...";
+  color: var(--color-gray-500);
+  font-style: italic;
+}
+
+/* Print styles */
+@media print {
+  .sidebar,
+  .sidebar-toggle,
+  .search,
+  .app-nav {
+    display: none !important;
+  }
+
+  .content {
+    margin-left: 0 !important;
+  }
+
+  .markdown-section {
+    max-width: none !important;
+    padding: 0 !important;
+  }
+}
+
+/* Capability Cards - Replacing ineffective Mermaid charts */
+.capability-phase-container {
+  background: var(--surface-white);
+  border: 1px solid var(--gray-extended-200);
+  border-radius: var(--spacing-xs);
+  margin: var(--spacing-xl) 0;
+  overflow: hidden;
+  box-shadow: 0 1px 3px var(--color-black-alpha-10);
+}
+
+.capability-phase-header {
+  background: linear-gradient(90deg, var(--theme-color), var(--theme-color-secondary));
+  color: white;
+  padding: var(--spacing-md) 20px;
+  font-size: 18px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.capability-phase-content {
+  padding: var(--spacing-lg);
+}
+
+.capability-group {
+  margin-bottom: 24px;
+}
+
+.capability-group-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-gray-700);
+  margin-bottom: 12px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid var(--color-gray-200);
+}
+
+.capability-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-small-medium) 16px;
+  margin: var(--spacing-small) 0;
+  background: var(--gray-extended-50);
+  border-radius: var(--border-radius-small);
+  border-left: 4px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.capability-item:hover {
+  background: var(--gray-extended-100);
+  transform: translateX(2px);
+}
+
+.capability-item.available {
+  border-left-color: var(--color-green-600);
+  background: var(--color-green-50);
+}
+
+.capability-item.in-development {
+  border-left-color: var(--color-blue-600);
+  background: var(--surface-blue-50);
+}
+
+.capability-item.planned {
+  border-left-color: var(--color-indigo-500);
+  background: var(--color-indigo-100);
+}
+
+.capability-item.external {
+  border-left-color: var(--color-purple-500);
+  background: var(--color-purple-50);
+}
+
+.capability-name {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  flex: 1;
+}
+
+.capability-status-icon {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.capability-status-icon.available {
+  background: var(--color-green-600);
+}
+
+.capability-status-icon.in-development {
+  background: var(--color-blue-600);
+}
+
+.capability-status-icon.planned {
+  background: var(--color-indigo-500);
+}
+
+.capability-status-icon.external {
+  background: var(--color-purple-500);
+}
+
+.capability-title {
+  font-weight: 600;
+  color: var(--color-gray-800);
+  font-size: 14px;
+}
+
+.capability-details {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  flex-shrink: 0;
+}
+
+.capability-score {
+  font-size: var(--spacing-md);
+  font-weight: 600;
+  color: var(--gray-extended-500);
+  background: var(--surface-white);
+  padding: var(--spacing-tiny) 8px;
+  border-radius: var(--spacing-xs);
+  border: 1px solid var(--gray-extended-200);
+}
+
+.capability-priority {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: var(--spacing-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.capability-priority.high {
+  background: var(--color-amber-100);
+  color: var(--color-amber-800);
+}
+
+.capability-priority.medium {
+  background: var(--surface-blue-50);
+  color: var(--color-blue-800);
+}
+
+.capability-priority.low {
+  background: var(--color-purple-100);
+  color: var(--color-purple-600);
+}
+
+/* Phase summary info */
+.phase-summary {
+  background: var(--surface-slate-50);
+  padding: var(--spacing-md);
+  border-radius: var(--border-radius-small);
+  margin-bottom: 20px;
+  border-left: 4px solid var(--theme-color);
+}
+
+.phase-summary-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-md);
+  margin-top: 12px;
+}
+
+.phase-summary-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.phase-summary-label {
+  font-size: var(--spacing-md);
+  font-weight: 600;
+  color: var(--color-gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.phase-summary-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-gray-800);
+  margin-top: 2px;
+}
+
+/* Responsive design for capability cards */
+@media (max-width: 768px) {
+  .capability-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-xs);
+  }
+
+  .capability-details {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .phase-summary-grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-sm);
+  }
+}
+
+/* Capability Status Legend Styles - Updated to match diagram colors */
+.status-legend-available {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background-color: var(--surface-green-50);
+  border: 2px solid var(--color-green-600);
+  border-radius: 3px;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+.status-legend-development {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background-color: var(--surface-blue-50);
+  border: 2px solid var(--color-blue-600);
+  border-radius: 3px;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+.status-legend-planned {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background-color: var(--color-indigo-100);
+  border: 2px solid var(--color-indigo-500);
+  border-radius: 3px;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+.status-legend-external {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background-color: var(--surface-purple-50);
+  border: 2px solid var(--color-purple-500);
+  border-radius: 3px;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+/* Responsive tables - now handled by centralized component in components/tables.css */
+
+
+
+
+
+
+

@@ -27,7 +27,7 @@ resource "azurerm_key_vault" "new" {
  */
 
 resource "azurerm_role_assignment" "user_key_vault_secrets_officer" {
-  count = var.key_vault_admin_principal_id != null ? 1 : 0
+  count = var.should_add_key_vault_role_assignment ? 1 : 0
 
   scope                = azurerm_key_vault.new.id
   role_definition_name = "Key Vault Secrets Officer"

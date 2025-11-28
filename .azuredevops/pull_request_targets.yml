@@ -1,0 +1,7 @@
+# Default pull request target branches
+# When creating a PR, Azure DevOps will suggest these branches as targets
+# Developers work on feature branches and PR to dev branch
+pull_request_targets:
+  - dev           # Primary development branch
+# main intentionally omitted - never suggested as PR target
+# main is read-only mirror of GitHub, synced automatically

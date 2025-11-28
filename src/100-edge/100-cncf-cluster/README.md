@@ -2,7 +2,7 @@
 title: Device Setup
 description: Component for CNCF cluster setup through scripting for AIO by installing a K3s cluster, onboarding to Azure Arc, configuring AIO pre-requisites and other optional features
 author: Edge AI Team
-ms.date: 06/07/2025
+ms.date: 2025-06-07
 ms.topic: tutorial
 keywords:
   - device setup

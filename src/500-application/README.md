@@ -2,7 +2,7 @@
 title: Edge Applications
 description: Directory containing application projects that can be built and deployed to an edge or cloud based system with Docker containers and Azure Container Registry
 author: Edge AI Team
-ms.date: 06/07/2025
+ms.date: 2025-06-07
 ms.topic: reference
 keywords:
   - application
@@ -18,7 +18,7 @@ estimated_reading_time: 7
 
 ## Edge Applications
 
-This directory contains application projects that can be built and deployed to edge or cloud systems. Applications are organized using a numbered folder structure (`5xx-application-name`) with each service containerized via Docker and deployed to Azure Container Registry (ACR). The `500-basic-inference` project serves as a reference implementation.
+This directory contains application projects that can be built and deployed to edge or cloud systems. Applications are organized using a numbered folder structure (`5xx-application-name`) with each service containerized via Docker and deployed to Azure Container Registry (ACR). The `500-basic-inference` project serves as a basic reference implementation, while `507-ai-inference` provides a production-ready dual-backend solution.
 
 ## Adding a New Application
 
@@ -53,17 +53,37 @@ Your application should include the following structure:
 ├── yaml/                      # Kubernetes manifests and other YAML files
 └── services/                  # Service implementations
     ├── service1/
-    │   ├── Dockerfile
-    │   └── src/               # Source code
-    └── service2/
-        └── ...
+│   ├── Dockerfile
+│   └── src/               # Source code
+└── service2/
+    └── ...
 ```
+
+## Available Applications
+
+The following applications are currently available in this directory:
+
+- **[500-basic-inference](./500-basic-inference/README.md)** - Reference implementation for basic ML inference workloads
+- **[501-rust-telemetry](./501-rust-telemetry/README.md)** - Rust-based telemetry collection service
+- **[502-rust-http-connector](./502-rust-http-connector/README.md)** - HTTP connector service built in Rust
+- **[503-media-capture-service](./503-media-capture-service/README.md)** - Media capture and processing service
+- **[504-mqtt-otel-trace-exporter](./504-mqtt-otel-trace-exporter/README.md)** - MQTT OpenTelemetry trace exporter for observability
+- **[505-akri-rest-http-connector](./505-akri-rest-http-connector/README.md)** - Akri REST HTTP connector for Azure IoT Operations
+- **[506-ros2-connector](./506-ros2-connector/README.md)** - ROS2 connector integration for robotics workloads
+- **[507-ai-inference](./507-ai-inference/README.md)** - Production-ready AI inference service with dual backend support (ONNX Runtime and Candle)
+- **[508-media-connector](./508-media-connector/README.md)** - Akri media connector for camera integration with Azure IoT Operations
+- **[509-sse-connector](./509-sse-connector/README.md)** - Server-Sent Events (SSE) connector for real-time event streaming with Azure IoT Operations
+- **[510-onvif-connector](./510-onvif-connector/README.md)** - ONVIF connector for IP camera integration with Azure IoT Operations
 
 ## Service Implementation
 
 ### Docker and Containerization
 
-Each application must contain at least one `Dockerfile` within its respective service directory under `services/`. Use multi-stage builds to keep images small and secure by separating build and runtime environments.
+1. **Dockerfile**: Each application must contain at least one `Dockerfile` for building service images.
+   - For a single-service application, place the `Dockerfile` at the root of your application directory.
+   - For multi-service applications, place each `Dockerfile` within its respective service directory under `services/`.
+   - **Use multi-stage builds where possible** to keep images small and secure. This approach separates the build
+     environment from the runtime environment.
 
 Example multi-stage Dockerfile:
 
@@ -141,7 +161,7 @@ services:
   your-service:
     build: ./services/your-service
     env_file:
-      - .env  # Primary configuration file
+      - .env # Primary configuration file
     environment:
       # Only override critical local development settings
       - ENVIRONMENT=development
@@ -376,33 +396,33 @@ While the sample applications in this repository are reference implementations a
 
 1. **Enable SLSA in CI/CD Workflows:**
 
-    ```yaml
-    # Example GitHub Actions workflow with SLSA attestation
-    jobs:
-    build:
-        runs-on: ubuntu-latest
-        outputs:
-        hashes: ${{ steps.hash.outputs.hashes }}
-        steps:
-        - uses: actions/checkout@v4
-        - name: Build container
-            run: docker build -t myapp:${{ github.sha }} .
-        - name: Generate artifact hashes
-            id: hash
-            run: |
-            # Generate SHA256 hash of container image
-            HASH=$(docker images --digests myapp:${{ github.sha }} --format '{{.Digest}}')
-            echo "hashes={\"myapp:${{ github.sha }}\":\"sha256:$HASH\"}" >> "$GITHUB_OUTPUT"
+   ```yaml
+   # Example GitHub Actions workflow with SLSA attestation
+   jobs:
+   build:
+       runs-on: ubuntu-latest
+       outputs:
+       hashes: ${{ steps.hash.outputs.hashes }}
+       steps:
+       - uses: actions/checkout@v4
+       - name: Build container
+           run: docker build -t myapp:${{ github.sha }} .
+       - name: Generate artifact hashes
+           id: hash
+           run: |
+           # Generate SHA256 hash of container image
+           HASH=$(docker images --digests myapp:${{ github.sha }} --format '{{.Digest}}')
+           echo "hashes={\"myapp:${{ github.sha }}\":\"sha256:$HASH\"}" >> "$GITHUB_OUTPUT"
 
-    slsa-attestation:
-        needs: build
-        permissions:
-        id-token: write
-        contents: read
-        uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v2.0.0
-        with:
-        base64-subjects: "${{ needs.build.outputs.hashes }}"
-    ```
+   slsa-attestation:
+       needs: build
+       permissions:
+       id-token: write
+       contents: read
+       uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v2.0.0
+       with:
+       base64-subjects: "${{ needs.build.outputs.hashes }}"
+   ```
 
 2. **Configure Container Registry Integration:**
 
@@ -525,6 +545,8 @@ This SHA256 pinning requirement complements the SLSA attestation practices docum
 ---
 
 <!-- markdownlint-disable MD036 -->
-*🤖 Crafted with precision by ✨Copilot following brilliant human instruction,
-then carefully refined by our team of discerning human reviewers.*
+
+_🤖 Crafted with precision by ✨Copilot following brilliant human instruction,
+then carefully refined by our team of discerning human reviewers._
+
 <!-- markdownlint-enable MD036 -->

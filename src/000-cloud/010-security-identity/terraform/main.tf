@@ -7,11 +7,23 @@
  */
 
 locals {
-  key_vault_admin_principal_id = try(coalesce(var.key_vault_admin_principal_id, data.azurerm_client_config.current[0].object_id), null)
+  key_vault_admin_principal_id         = try(coalesce(var.key_vault_admin_principal_id, msgraph_resource_action.current_user[0].output.oid), null)
+  should_add_key_vault_role_assignment = anytrue([var.key_vault_admin_principal_id != null, var.should_use_current_user_key_vault_admin])
 }
 
-data "azurerm_client_config" "current" {
+/*
+ * Current User Data (Microsoft Graph)
+ */
+
+resource "msgraph_resource_action" "current_user" {
   count = var.should_use_current_user_key_vault_admin ? 1 : 0
+
+  method       = "GET"
+  resource_url = "me"
+
+  response_export_values = {
+    oid = "id"
+  }
 }
 
 module "key_vault" {
@@ -19,17 +31,18 @@ module "key_vault" {
 
   source = "./modules/key-vault"
 
-  location                            = var.location
-  resource_group                      = var.aio_resource_group
-  resource_prefix                     = var.resource_prefix
-  environment                         = var.environment
-  instance                            = var.instance
-  key_vault_name                      = var.key_vault_name
-  key_vault_admin_principal_id        = local.key_vault_admin_principal_id
-  should_create_private_endpoint      = var.should_create_key_vault_private_endpoint
-  private_endpoint_subnet_id          = var.key_vault_private_endpoint_subnet_id
-  virtual_network_id                  = var.key_vault_virtual_network_id
-  should_enable_public_network_access = var.should_enable_public_network_access
+  location                             = var.location
+  resource_group                       = var.aio_resource_group
+  resource_prefix                      = var.resource_prefix
+  environment                          = var.environment
+  instance                             = var.instance
+  key_vault_name                       = var.key_vault_name
+  key_vault_admin_principal_id         = local.key_vault_admin_principal_id
+  should_create_private_endpoint       = var.should_create_key_vault_private_endpoint
+  private_endpoint_subnet_id           = var.key_vault_private_endpoint_subnet_id
+  virtual_network_id                   = var.key_vault_virtual_network_id
+  should_enable_public_network_access  = var.should_enable_public_network_access
+  should_add_key_vault_role_assignment = local.should_add_key_vault_role_assignment
 }
 
 module "identity" {

@@ -10,13 +10,13 @@ Supports private clusters with optional private endpoints and DNS zone managemen
 | Name | Version |
 |------|---------|
 | terraform | >= 1.9.8, < 2.0 |
-| azurerm | >= 4.8.0 |
+| azurerm | >= 4.51.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| azurerm | >= 4.8.0 |
+| azurerm | >= 4.51.0 |
 
 ## Resources
 
@@ -33,6 +33,9 @@ Supports private clusters with optional private endpoints and DNS zone managemen
 | [azurerm_role_assignment.acr_pull](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) | resource |
 | [azurerm_role_assignment.cluster_admin](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) | resource |
 | [azurerm_role_assignment.dns_zone_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) | resource |
+| [azurerm_role_assignment.network_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) | resource |
+| [azurerm_role_assignment.network_contributor_kubelet_aks](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) | resource |
+| [azurerm_role_assignment.network_contributor_kubelet_pod](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) | resource |
 
 ## Inputs
 

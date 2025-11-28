@@ -2,7 +2,7 @@
 title: Full Multi-node Cluster Blueprint
 description: Complete end-to-end deployment of Azure IoT Operations on a multi-node, Arc-enabled Kubernetes cluster providing production-grade high availability edge computing environment
 author: Edge AI Team
-ms.date: 06/07/2025
+ms.date: 2025-06-07
 ms.topic: reference
 keywords:
   - azure iot operations

@@ -2,7 +2,7 @@
 title: Azure IoT Operations Dataflows
 description: Azure IoT Operations Dataflows and supported infrastructure creation sample that enables bidirectional data flow from AIO MQTT Broker to Cloud and local storage
 author: Edge AI Team
-ms.date: 06/07/2025
+ms.date: 2025-06-07
 ms.topic: tutorial
 keywords:
   - azure iot operations

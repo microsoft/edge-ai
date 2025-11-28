@@ -2,7 +2,7 @@
 title: CI/CD. Multi-Environment Promotional Flow with GitOps
 description: Architecture Decision Record documenting a comprehensive CI/CD implementation using GitOps methodology for multi-environment promotional flows. Outlines GitHub Actions-based workflows for continuous integration, automated deployment, and cross-environment promotion using separate repositories for source code, configuration, and GitOps manifests with pull-based reconciliation.
 author: Eugene Fedorenko
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: architecture-decision-record
 estimated_reading_time: 12
 keywords:

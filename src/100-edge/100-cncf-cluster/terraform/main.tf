@@ -130,7 +130,7 @@ module "cluster_server_script_deployment" {
   source = "./modules/vm-script-deployment"
   count  = var.should_deploy_script_to_vm && !var.should_deploy_arc_machines && !var.should_deploy_arc_agents ? 1 : 0
 
-  depends_on = [module.ubuntu_k3s]
+  depends_on = [module.ubuntu_k3s, module.role_assignments]
 
   extension_name = "linux-cluster-server-setup"
   machine_id     = try(var.cluster_server_machine.id, null)
@@ -142,13 +142,14 @@ module "cluster_server_script_deployment" {
   node_type                                 = "server"
   secret_name_prefix                        = var.key_vault_script_secret_prefix
   key_vault                                 = var.key_vault
+  arc_onboarding_identity                   = var.arc_onboarding_identity
 }
 
 module "cluster_node_script_deployment" {
   source = "./modules/vm-script-deployment"
   count  = var.should_deploy_script_to_vm && !var.should_deploy_arc_machines && !var.should_deploy_arc_agents ? local.cluster_node_deployment_count : 0
 
-  depends_on = [module.cluster_server_script_deployment, module.ubuntu_k3s]
+  depends_on = [module.cluster_server_script_deployment, module.ubuntu_k3s, module.role_assignments]
 
   extension_name = "linux-cluster-node-setup"
   machine_id     = try(var.cluster_node_machine[count.index].id, null)
@@ -160,6 +161,7 @@ module "cluster_node_script_deployment" {
   node_type                                 = "node"
   secret_name_prefix                        = var.key_vault_script_secret_prefix
   key_vault                                 = var.key_vault
+  arc_onboarding_identity                   = var.arc_onboarding_identity
 }
 
 /*
@@ -183,6 +185,7 @@ module "cluster_server_arc_script_deployment" {
   node_type                                 = "server"
   secret_name_prefix                        = var.key_vault_script_secret_prefix
   key_vault                                 = var.key_vault
+  arc_onboarding_identity                   = var.arc_onboarding_identity
 }
 
 module "cluster_node_arc_script_deployment" {
@@ -202,4 +205,5 @@ module "cluster_node_arc_script_deployment" {
   node_type                                 = "node"
   secret_name_prefix                        = var.key_vault_script_secret_prefix
   key_vault                                 = var.key_vault
+  arc_onboarding_identity                   = var.arc_onboarding_identity
 }

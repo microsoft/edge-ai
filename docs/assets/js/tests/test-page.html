@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learning Paths - Visual Design System</title>
+    <link rel="stylesheet" href="../css/theme/variables.css">
+    <link rel="stylesheet" href="../css/components/assessment-first-layout.css">
+    <link rel="stylesheet" href="../css/components/learning-paths-dashboard.css">
+    <link rel="stylesheet" href="../css/components/kata-completion-notifications.css">
+    <style>
+        /* Base styles using CSS variables for test consistency */
+        body {
+            font-family: var(--font-family-base);
+            color: var(--text-primary);
+            background-color: var(--background-color);
+        }
+        h1 {
+            font-size: 30px !important; /* 1.875rem = 30px */
+            margin: 0;
+        }
+        h2 {
+            font-size: 24px !important; /* 1.5rem = 24px */
+            margin: 0;
+        }
+        h3 {
+            font-size: 20px !important; /* 1.25rem = 20px */
+            margin: 0;
+        }        .container {
+            padding: var(--spacing-xl);
+            max-width: var(--max-width);
+            margin: 0 auto;
+        }
+
+        .card {
+            background: var(--card-background);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .btn {
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: var(--border-radius);
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: var(--text-inverse);
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+        }
+
+        .test-link {
+            color: var(--primary-color);
+        }
+
+        .grid {
+            display: grid;
+            gap: var(--spacing-lg);
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        }
+
+        /* Assessment and learning paths sections */
+        .assessment-section {
+            margin-bottom: var(--spacing-xxl-2x); /* 64px - 4rem */
+        }
+
+        .learning-paths-section {
+            margin-bottom: var(--spacing-xxl-2x); /* 64px - 4rem */
+        }
+
+        .success { color: var(--success-color); }
+        .warning { color: var(--warning-color); }
+        .error { color: var(--error-color); }
+    </style>
+</head>
+<body>
+    <!-- Test containers for visual design consistency -->
+    <div class="container">
+        <!-- Typography test elements -->
+        <h1>Heading Level 1</h1>
+        <h2>Heading Level 2</h2>
+        <h3>Heading Level 3</h3>
+
+        <!-- Card components test -->
+        <div class="card">
+            <h3>Test Card</h3>
+            <p>This is a test card component.</p>
+            <button class="btn btn-primary">Primary Button</button>
+        </div>
+
+        <!-- Grid layout test -->
+        <div class="grid">
+            <div class="card">Grid Item 1</div>
+            <div class="card">Grid Item 2</div>
+            <div class="card">Grid Item 3</div>
+        </div>
+    </div>
+
+    <!-- Assessment First Layout test elements -->
+    <div class="assessment-first-layout">
+        <div class="assessment-first-container">
+            <div class="assessment-section">
+                <h2>Assessment Section</h2>
+                <p>Take your skill assessment to find personalized learning paths.</p>
+            </div>
+
+            <div class="learning-paths-section">
+                <h2>Learning Paths</h2>
+                <p>Explore our comprehensive learning paths.</p>
+            </div>
+        </div>
+
+        <!-- Focus hierarchy test elements -->
+        <div class="primary-focus">Primary Focus Element</div>
+        <div class="secondary-focus">Secondary Focus Element</div>
+        <div class="tertiary-focus">Tertiary Focus Element</div>
+    </div>
+
+    <!-- Dashboard Components test elements -->
+    <div class="dashboard-container">
+        <div class="dashboard-card">
+            <h3>Dashboard Card</h3>
+            <button class="dashboard-button-primary">Primary Dashboard Button</button>
+            <button class="dashboard-button-secondary">Secondary Dashboard Button</button>
+            <a href="#" class="dashboard-link">Dashboard Link</a>
+        </div>
+    </div>
+
+    <!-- Notification System test elements -->
+    <div class="notification-success">Success Notification</div>
+    <div class="notification-warning">Warning Notification</div>
+    <div class="notification-error">Error Notification</div>
+
+    <!-- Interactive states test -->
+    <div class="interactive-elements">
+        <button class="btn btn-primary">Primary Button</button>
+        <button class="btn btn-secondary">Secondary Button</button>
+        <a href="#" class="test-link">Test Link</a>
+    </div>
+
+    <!-- Semantic color test elements -->
+    <div class="success">Success Text</div>
+    <div class="warning">Warning Text</div>
+    <div class="error">Error Text</div>
+</body>
+</html>

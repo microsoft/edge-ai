@@ -1,0 +1,27 @@
+/* Search Result Count Component */
+
+.search-result-count {
+  padding: 8px 16px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+  font-size: 14px;
+  color: #6c757d;
+}
+
+/* Search Results Panel Visibility */
+.search-results-hidden {
+  display: none !important;
+}
+
+.search-results-visible {
+  display: block !important;
+}
+
+/* Search Result Items Visibility */
+.search-result-hidden {
+  display: none !important;
+}
+
+.search-result-visible {
+  display: block !important;
+}

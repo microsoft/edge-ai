@@ -9,13 +9,13 @@ This module creates an Azure ML compute cluster for ML training workloads
 | Name | Version |
 |------|---------|
 | terraform | >= 1.9.8, < 2.0 |
-| azurerm | >= 4.8.0 |
+| azurerm | >= 4.51.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| azurerm | >= 4.8.0 |
+| azurerm | >= 4.51.0 |
 
 ## Resources
 

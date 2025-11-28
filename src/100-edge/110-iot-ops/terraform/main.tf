@@ -12,7 +12,7 @@ locals {
     issuer_name = "issuer-custom-root-ca-cert"
     issuer_kind = "ClusterIssuer"
     // This needs to be set as ClusterIssuer when using CustomerManagedGenerateIssuer, since current implementation does not support Issuer kind. Validate if adapt in future.
-    configmap_name = "bundle-custom-ca-cert"
+    configmap_name = "${var.operations_config.namespace}-aio-ca-trust-bundle"
     configmap_key  = "ca.crt"
   })
 
@@ -64,11 +64,17 @@ module "iot_ops_init" {
 
   depends_on = [module.role_assignments]
 
-  arc_connected_cluster_id = var.arc_connected_cluster.id
-  aio_platform_config      = var.aio_platform_config
-  platform                 = var.platform
-  edge_storage_accelerator = var.edge_storage_accelerator
-  secret_sync_controller   = var.secret_sync_controller
+  arc_connected_cluster_id     = var.arc_connected_cluster.id
+  aio_platform_config          = var.aio_platform_config
+  platform                     = var.platform
+  edge_storage_accelerator     = var.edge_storage_accelerator
+  secret_sync_controller       = var.secret_sync_controller
+  resource_group               = var.resource_group
+  connected_cluster_name       = var.arc_connected_cluster.name
+  secret_sync_identity         = var.secret_sync_identity
+  enable_instance_secret_sync  = var.enable_instance_secret_sync
+  aio_namespace                = var.operations_config.namespace
+  aio_user_managed_identity_id = var.aio_identity.id
 }
 
 module "customer_managed_trust_issuer" {
@@ -114,13 +120,18 @@ module "iot_ops_instance" {
   source     = "./modules/iot-ops-instance"
   depends_on = [module.apply_scripts_post_init]
 
-  resource_group_id                       = var.resource_group.id
+  resource_group                          = var.resource_group
+  key_vault                               = var.secret_sync_key_vault
+  enable_instance_secret_sync             = var.enable_instance_secret_sync
+  secret_sync_identity                    = var.secret_sync_identity
+  mqtt_broker_persistence_config          = var.mqtt_broker_persistence_config
   arc_connected_cluster_id                = var.arc_connected_cluster.id
   connected_cluster_location              = var.arc_connected_cluster.location
   connected_cluster_name                  = var.arc_connected_cluster.name
   trust_source                            = local.trust_source
   operations_config                       = var.operations_config
   schema_registry_id                      = var.adr_schema_registry.id
+  adr_namespace_id                        = try(var.adr_namespace.id, null)
   mqtt_broker_config                      = var.mqtt_broker_config
   dataflow_instance_count                 = var.dataflow_instance_count
   should_deploy_resource_sync_rules       = var.should_deploy_resource_sync_rules
@@ -134,21 +145,6 @@ module "iot_ops_instance" {
   broker_listener_anonymous_config        = var.broker_listener_anonymous_config
 }
 
-module "iot_ops_instance_post" {
-  source     = "./modules/iot-ops-instance-post"
-  depends_on = [module.iot_ops_instance]
-
-  resource_group               = var.resource_group
-  connected_cluster_location   = var.arc_connected_cluster.location
-  connected_cluster_name       = var.arc_connected_cluster.name
-  key_vault                    = var.secret_sync_key_vault
-  enable_instance_secret_sync  = var.enable_instance_secret_sync
-  custom_location_id           = module.iot_ops_instance.custom_locations.id
-  aio_namespace                = var.operations_config.namespace
-  sse_user_managed_identity    = var.secret_sync_identity
-  aio_user_managed_identity_id = var.aio_identity.id
-}
-
 /*
  * OPC UA Simulator
  */
@@ -158,8 +154,58 @@ module "opc_ua_simulator" {
 
   source = "./modules/opc-ua-simulator"
 
-  depends_on = [module.iot_ops_instance_post]
+  depends_on = [module.iot_ops_instance]
 
   resource_group         = var.resource_group
   connected_cluster_name = var.arc_connected_cluster.name
+}
+
+/*
+ * Akri Connectors
+ */
+
+module "akri_connectors" {
+  count = anytrue([
+    var.should_enable_akri_rest_connector,
+    var.should_enable_akri_media_connector,
+    var.should_enable_akri_onvif_connector,
+    var.should_enable_akri_sse_connector,
+    length(var.custom_akri_connectors) > 0
+  ]) ? 1 : 0
+
+  source = "./modules/akri-connectors"
+
+  depends_on = [module.iot_ops_instance]
+
+  # Required inputs
+  aio_instance_id    = module.iot_ops_instance.aio_instance.id
+  custom_location_id = module.iot_ops_instance.custom_locations.id
+
+  # Build connector templates list from enabled types
+  connector_templates = concat(
+    var.should_enable_akri_rest_connector ? [{
+      name = "rest-http-connector"
+      type = "rest"
+    }] : [],
+    var.should_enable_akri_media_connector ? [{
+      name = "media-connector"
+      type = "media"
+    }] : [],
+    var.should_enable_akri_onvif_connector ? [{
+      name = "onvif-connector"
+      type = "onvif"
+    }] : [],
+    var.should_enable_akri_sse_connector ? [{
+      name = "sse-connector"
+      type = "sse"
+    }] : [],
+    var.custom_akri_connectors
+  )
+
+  # Shared MQTT configuration
+  mqtt_shared_config = {
+    host         = "aio-broker:18883"
+    audience     = "aio-internal"
+    ca_configmap = "azure-iot-operations-aio-ca-trust-bundle"
+  }
 }

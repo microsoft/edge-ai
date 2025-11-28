@@ -81,7 +81,8 @@ module "private_resolver" {
   instance                        = var.instance
   default_outbound_access_enabled = var.default_outbound_access_enabled
   resolver_subnet_address_prefix  = var.resolver_subnet_address_prefix
-  nat_gateway_id                  = try(module.nat_gateway[0].nat_gateway.id, null)
+  should_enable_nat_gateway       = var.should_enable_nat_gateway
+  nat_gateway_id                  = module.nat_gateway[0].nat_gateway.id
 }
 
 resource "azurerm_virtual_network_dns_servers" "main" {

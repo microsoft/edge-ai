@@ -2,7 +2,7 @@
 title: Minimum Single Node Cluster Blueprint
 description: Minimal deployment of Azure IoT Operations on a single-node, Arc-enabled Kubernetes cluster using minimum required resources while maintaining functionality
 author: Edge AI Team
-ms.date: 06/07/2025
+ms.date: 2025-06-07
 ms.topic: reference
 keywords:
   - azure iot operations
