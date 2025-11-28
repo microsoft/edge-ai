@@ -2,7 +2,7 @@
 title: Physical Infrastructure
 description: Comprehensive bare-metal-to-cloud ecosystem that orchestrates enterprise-grade server infrastructure management across hybrid Azure Arc environments, spanning from high-performance server-class hardware to resource-constrained edge devices
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: concept
 estimated_reading_time: 20
 keywords:

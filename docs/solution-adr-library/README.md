@@ -2,7 +2,7 @@
 title: Solution ADR Library
 description: Real, anonymized architectural decision records from ISE customer projects for edge computing solutions
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: hub-page
 estimated_reading_time: 5
 keywords:

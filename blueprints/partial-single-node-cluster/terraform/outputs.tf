@@ -25,9 +25,9 @@ output "arc_onboarding_identity" {
  * VM Host Outputs
  */
 
-output "public_ssh" {
-  description = "The SSH command to access the VM."
-  value       = module.cloud_vm_host.public_ssh
+output "vm_connection_instructions" {
+  description = "Connection instructions for VMs with Azure AD authentication and optional fallback methods."
+  value       = module.cloud_vm_host.vm_connection_instructions
 }
 
 /*

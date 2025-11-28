@@ -1,74 +1,234 @@
-/* Main Content Area Styling */
+/* Modern Content Layout with CSS Custom Properties */
 
-/* Force content positioning with proper scroll container */
-.content,
-section.content,
-.app-main {
-  position: fixed !important;
-  left: 320px !important; /* Just past sidebar */
-  right: 240px !important; /* Space for TOC */
-  top: 60px !important; /* Space for navbar */
-  bottom: 0 !important;
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
-  padding: 20px !important;
-  margin: 0 !important;
-  width: auto !important;
-  max-width: none !important;
-  box-sizing: border-box !important;
-
-  /* Hide scrollbar while keeping scroll functionality */
-  scrollbar-width: none !important; /* Firefox */
-  -ms-overflow-style: none !important; /* Internet Explorer 10+ */
+/* Main content container - Docsify Vue compatible */
+.content {
+  margin-top: 0; /* Remove top margin so breadcrumbs move to top */
+  margin-left: var(--spacing-lg); /* Add left margin to push away from sidebar */
+  min-height: 100vh;
+  position: relative; /* Ensure positioning context without fighting Docsify */
+  transition: margin var(--transition-medium);
+  padding-top: calc(var(--navbar-height, 65px) + 40px); /* Increased to 40px for better frontmatter visibility */
 }
 
-/* Hide scrollbar for webkit browsers (Chrome, Safari, Edge) */
-.content::-webkit-scrollbar,
-section.content::-webkit-scrollbar,
-.app-main::-webkit-scrollbar {
-  display: none !important;
-  width: 0 !important;
-  height: 0 !important;
+/* Main scrollable area */
+body {
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  min-height: 100vh;
+  /* Hide main scrollbar but preserve functionality */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
 }
 
-/* Make markdown section fill the space and position TOC relative to it */
+/* Hide scrollbar for WebKit browsers */
+body::-webkit-scrollbar {
+  display: none;
+}
+
+html {
+  /* Ensure smooth scrolling behavior */
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Content Section with enhanced typography and proper spacing */
 .markdown-section {
-  max-width: none !important;
-  width: 100% !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  box-sizing: border-box !important;
-  position: relative !important; /* This allows TOC to position relative to content */
+  /* Override Docsify's centering behavior */
+  margin: 0 !important; /* Override Docsify's "margin: 0 auto" centering */
+
+  /* Enhanced typography for better readability */
+  line-height: 1.7;
+  box-sizing: border-box;
+  min-width: 0;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  position: relative;
+  z-index: var(--z-content);
+
+  /* Add padding to prevent underflow into TOC and provide breathing room from sidebar */
+  padding-left: calc(var(--content-margin-inline) + var(--spacing-md)); /* Increased left padding */
+  padding-right: var(--content-margin-inline);
+
+  /* Constrain max-width to prevent TOC overlap */
+  max-width: calc(100vw - var(--sidebar-width) - var(--toc-width) - (var(--content-margin-inline) * 4));
 }
 
-/* Dark mode content styling */
-body.dark .content {
-  background: var(--theme-content-bg, #1c2022);
+/* Typography Scaling */
+.markdown-section h1,
+.markdown-section h2,
+.markdown-section h3,
+.markdown-section h4,
+.markdown-section h5,
+.markdown-section h6 {
+  margin-top: 2em;
+  margin-bottom: 1em;
+  line-height: 1.3;
+  font-weight: var(--font-weight-semibold);
 }
 
-body.dark .markdown-section {
-  color: var(--theme-text-primary, #e2e8f0);
+.markdown-section h1 {
+  font-size: calc(var(--font-size-base) * 2.2);
+  color: var(--text-primary);
+  margin-top: 0;
 }
 
-body.dark .markdown-section h1,
-body.dark .markdown-section h2,
-body.dark .markdown-section h3,
-body.dark .markdown-section h4,
-body.dark .markdown-section h5,
-body.dark .markdown-section h6 {
-  color: var(--theme-heading-color, #63b3ed);
+.markdown-section h2 {
+  font-size: calc(var(--font-size-base) * 1.6);
+  color: var(--text-primary);
 }
 
-body.dark .markdown-section code {
-  background: var(--theme-code-bg, #2d3748);
-  color: var(--theme-code-text, #fbb6ce);
+.markdown-section h3 {
+  font-size: calc(var(--font-size-base) * 1.3);
+  color: var(--text-primary);
 }
 
-body.dark .markdown-section pre {
-  background: var(--theme-code-bg, #2d3748);
+.markdown-section p {
+  margin-bottom: 1.5em;
+  color: var(--text-secondary);
+  line-height: var(--line-height-base);
 }
 
-body.dark .markdown-section blockquote {
-  background: var(--theme-blockquote-bg, #2d3748);
-  border-left: 4px solid var(--theme-heading-color, #63b3ed);
+/* Code Blocks */
+.markdown-section pre {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-lg);
+  margin: var(--spacing-xl) 0;
+  overflow-x: auto;
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+}
+
+.markdown-section code {
+  background: var(--bg-secondary);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius);
+  font-size: calc(var(--font-size-sm) * 0.9);
+}
+
+.markdown-section pre code {
+  background: transparent;
+  padding: 0;
+}
+
+/* Tables - now handled by centralized component in components/tables.css */
+
+/* Lists */
+.markdown-section ul,
+.markdown-section ol {
+  margin: var(--spacing-lg) 0;
+  padding-left: var(--spacing-xl);
+}
+
+.markdown-section li {
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* Links - Enhanced with theme consistency and accessibility */
+.markdown-section a {
+  color: var(--theme-color);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: all 0.2s ease;
+  position: relative;
+  border-radius: var(--spacing-xs);
+  padding: var(--spacing-xxs) var(--spacing-xs);
+  margin: -var(--spacing-xxs) -var(--spacing-xs);
+}
+
+.markdown-section a:hover {
+  color: var(--theme-color-dark);
+  background-color: var(--color-gray-100, rgba(0, 120, 212, 0.08));
+  border-bottom-color: var(--theme-color);
+}
+
+.markdown-section a:focus {
+  outline: 2px solid var(--theme-color);
+  outline-offset: 2px;
+  background-color: var(--color-gray-100, rgba(0, 120, 212, 0.08));
+}
+
+/* Dark mode link styling */
+body.dark .markdown-section a:hover {
+  background-color: var(--color-gray-600, rgba(255, 255, 255, 0.1));
+}
+
+body.dark .markdown-section a:focus {
+  background-color: var(--color-gray-600, rgba(255, 255, 255, 0.1));
+}
+
+/* Header links should maintain header styling */
+.markdown-section h1 a,
+.markdown-section h2 a,
+.markdown-section h3 a,
+.markdown-section h4 a,
+.markdown-section h5 a,
+.markdown-section h6 a {
+  color: inherit; /* Use the header's text color */
+  border-bottom: none; /* Remove underline effect */
+  transition: opacity var(--transition-fast);
+}
+
+.markdown-section h1 a:hover,
+.markdown-section h2 a:hover,
+.markdown-section h3 a:hover,
+.markdown-section h4 a:hover,
+.markdown-section h5 a:hover,
+.markdown-section h6 a:hover {
+  opacity: 0.8; /* Subtle hover effect */
+  border-bottom: none; /* Keep no underline on hover */
+}
+
+/* Blockquotes */
+.markdown-section blockquote {
+  margin: var(--spacing-xl) 0;
+  padding: var(--spacing-lg) var(--spacing-xl);
+  border-left: 4px solid var(--theme-color);
+  background: var(--bg-secondary);
+  border-radius: 0 var(--border-radius) var(--border-radius) 0;
+}
+
+.markdown-section blockquote p {
+  margin-bottom: 0;
+  font-style: italic;
+  line-height: 1.6;
+}
+
+/* Images */
+.markdown-section img {
+  max-width: 100%;
+  height: auto;
+  margin: var(--spacing-xl) 0;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+  display: block;
+}
+
+/* Performance Optimizations */
+.markdown-section {
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+/* Print Layout */
+@media print {
+  .content {
+    margin-left: 0;
+    margin-right: 0;
+    margin-top: 0;
+  }
+
+  .sidebar,
+  .toc-container,
+  .app-nav {
+    display: none;
+  }
 }

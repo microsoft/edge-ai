@@ -10,7 +10,7 @@
 
 param(
     [Parameter(Mandatory = $false)]
-    [string[]]$Paths = @('docs', 'src', 'blueprints', 'praxisworx', '.github'),
+    [string[]]$Paths = @('docs', 'src', 'blueprints', 'learning', '.github'),
 
     [Parameter(Mandatory = $false)]
     [string[]]$Files = @(),
@@ -114,7 +114,8 @@ function Get-MarkdownFrontmatter {
 
                         if ($arrayValues.Count -gt 0) {
                             $frontmatter[$key] = $arrayValues
-                        } else {
+                        }
+                        else {
                             $frontmatter[$key] = $value
                         }
                     }
@@ -131,9 +132,9 @@ function Get-MarkdownFrontmatter {
         }
 
         return @{
-            Frontmatter = $frontmatter
+            Frontmatter         = $frontmatter
             FrontmatterEndIndex = $endIndex + 1
-            Content = ($lines[($endIndex + 1)..($lines.Count - 1)] -join "`n")
+            Content             = ($lines[($endIndex + 1)..($lines.Count - 1)] -join "`n")
         }
     }
     catch {
@@ -189,12 +190,13 @@ function Test-FrontmatterValidation {
         if ($gitChangedFiles.Count -gt 0) {
             $Files = $gitChangedFiles
             Write-Host "Found $($Files.Count) changed markdown files to validate" -ForegroundColor Cyan
-        } else {
+        }
+        else {
             Write-Host "No changed markdown files found - validation complete" -ForegroundColor Green
             return @{
-                Errors = @()
-                Warnings = @()
-                HasIssues = $false
+                Errors            = @()
+                Warnings          = @()
+                HasIssues         = $false
                 TotalFilesChecked = 0
             }
         }
@@ -206,7 +208,8 @@ function Test-FrontmatterValidation {
         foreach ($file in $Files) {
             if (-not [string]::IsNullOrEmpty($file)) {
                 $sanitizedFiles += $file.Trim()
-            } else {
+            }
+            else {
                 Write-Verbose "Filtering out empty file path from Files array"
             }
         }
@@ -219,7 +222,8 @@ function Test-FrontmatterValidation {
         foreach ($path in $Paths) {
             if (-not [string]::IsNullOrEmpty($path)) {
                 $sanitizedPaths += $path.Trim()
-            } else {
+            }
+            else {
                 Write-Verbose "Filtering out empty path from Paths array"
             }
         }
@@ -228,9 +232,9 @@ function Test-FrontmatterValidation {
     if ($Files.Count -eq 0 -and $Paths.Count -eq 0) {
         $warnings += "No valid files or paths provided for validation"
         return @{
-            Errors = @()
-            Warnings = $warnings
-            HasIssues = $true
+            Errors            = @()
+            Warnings          = $warnings
+            HasIssues         = $true
             TotalFilesChecked = 0
         }
     }
@@ -248,27 +252,32 @@ function Test-FrontmatterValidation {
                         $markdownFiles += $fileItem
                         Write-Verbose "Added specific file: $file"
                     }
-                } else {
+                }
+                else {
                     Write-Verbose "Skipping non-markdown file: $file"
                 }
-            } else {
+            }
+            else {
                 Write-Warning "File not found or invalid: $file"
             }
-        }    } else {
+        }
+    }
+    else {
         Write-Host "Searching for markdown files in specified paths..." -ForegroundColor Cyan
         foreach ($path in $Paths) {
             if (Test-Path $path) {
                 # Use more specific filtering to avoid null entries
                 $files = Get-ChildItem -Path $path -Filter '*.md' -Recurse -File -ErrorAction SilentlyContinue |
-                         Where-Object {
-                             $null -ne $_ -and
-                             -not [string]::IsNullOrEmpty($_.FullName) -and
-                             $_.PSIsContainer -eq $false
-                         }
+                Where-Object {
+                    $null -ne $_ -and
+                    -not [string]::IsNullOrEmpty($_.FullName) -and
+                    $_.PSIsContainer -eq $false
+                }
                 if ($files) {
                     $markdownFiles += $files
                     Write-Verbose "Found $($files.Count) markdown files in $path"
-                } else {
+                }
+                else {
                     Write-Verbose "No markdown files found in $path"
                 }
             }
@@ -292,15 +301,15 @@ function Test-FrontmatterValidation {
 
             if ($frontmatter) {
                 # Determine content type and required fields
-                $isPraxisWorx = $file.DirectoryName -like "*praxisworx*"
+                $isLearning = $file.DirectoryName -like "*learning*"
                 $isGitHub = $file.DirectoryName -like "*.github*"
                 $isChatMode = $file.Name -like "*.chatmode.md"
                 $isPrompt = $file.Name -like "*.prompt.md"
                 $isInstruction = $file.Name -like "*.instructions.md"
                 $isMainDoc = ($file.DirectoryName -like "*docs*" -or
-                            $file.DirectoryName -like "*src*" -or
-                            $file.DirectoryName -like "*blueprints*") -and
-                            -not $isGitHub -and -not $isPraxisWorx
+                    $file.DirectoryName -like "*src*" -or
+                    $file.DirectoryName -like "*blueprints*") -and
+                -not $isGitHub -and -not $isLearning
 
                 # Validate required fields for main documentation
                 if ($isMainDoc) {
@@ -312,11 +321,11 @@ function Test-FrontmatterValidation {
                         }
                     }
 
-                    # Validate date format
+                    # Validate date format (ISO 8601: YYYY-MM-DD)
                     if ($frontmatter.Frontmatter.ContainsKey('ms.date')) {
                         $date = $frontmatter.Frontmatter['ms.date']
-                        if ($date -notmatch '^\d{2}/\d{2}/\d{4}$') {
-                            $warnings += "Invalid date format in: $($file.FullName). Expected MM/DD/YYYY, got: $date"
+                        if ($date -notmatch '^\d{4}-\d{2}-\d{2}$') {
+                            $warnings += "Invalid date format in: $($file.FullName). Expected YYYY-MM-DD (ISO 8601), got: $date"
                         }
                     }
 
@@ -329,12 +338,12 @@ function Test-FrontmatterValidation {
                         }
                     }
                 }
-                # Validate PraxisWorx content (more relaxed requirements)
-                elseif ($isPraxisWorx) {
+                # Validate Learning Platform content (more relaxed requirements)
+                elseif ($isLearning) {
                     $suggestedFields = @('title', 'description')
                     foreach ($field in $suggestedFields) {
                         if (-not $frontmatter.Frontmatter.ContainsKey($field)) {
-                            $warnings += "Suggested field '$field' missing in PraxisWorx content: $($file.FullName)"
+                            $warnings += "Suggested field '$field' missing in Learning Platform content: $($file.FullName)"
                         }
                     }
                 }                # GitHub resources have different requirements
@@ -381,13 +390,13 @@ function Test-FrontmatterValidation {
                 }
             }
             else {
-                # Only warn for main docs, not for GitHub files, prompts, chatmodes, or PraxisWorx content
-                $isPraxisWorxLocal = $file.DirectoryName -like "*praxisworx*"
+                # Only warn for main docs, not for GitHub files, prompts, chatmodes, or Learning Platform content
+                $isLearningLocal = $file.DirectoryName -like "*learning*"
                 $isGitHubLocal = $file.DirectoryName -like "*.github*"
                 $isMainDocLocal = ($file.DirectoryName -like "*docs*" -or
-                                 $file.DirectoryName -like "*src*" -or
-                                 $file.DirectoryName -like "*blueprints*") -and
-                                 -not $isGitHubLocal -and -not $isPraxisWorxLocal
+                    $file.DirectoryName -like "*src*" -or
+                    $file.DirectoryName -like "*blueprints*") -and
+                -not $isGitHubLocal -and -not $isLearningLocal
 
                 if ($isMainDocLocal) {
                     $warnings += "No frontmatter found in: $($file.FullName)"
@@ -422,9 +431,9 @@ function Test-FrontmatterValidation {
     }
 
     return @{
-        Errors = $errors
-        Warnings = $warnings
-        HasIssues = $hasIssues
+        Errors            = $errors
+        Warnings          = $warnings
+        HasIssues         = $hasIssues
         TotalFilesChecked = $markdownFiles.Count
     }
 }
@@ -490,9 +499,11 @@ function Get-ChangedMarkdownFileGroup {
 if ($MyInvocation.InvocationName -ne '.') {
     if ($ChangedFilesOnly) {
         $result = Test-FrontmatterValidation -ChangedFilesOnly -BaseBranch $BaseBranch -WarningsAsErrors:$WarningsAsErrors
-    } elseif ($Files.Count -gt 0) {
+    }
+    elseif ($Files.Count -gt 0) {
         $result = Test-FrontmatterValidation -Files $Files -WarningsAsErrors:$WarningsAsErrors
-    } else {
+    }
+    else {
         $result = Test-FrontmatterValidation -Paths $Paths -WarningsAsErrors:$WarningsAsErrors
     }
 

@@ -295,20 +295,26 @@ You WILL guide users to leverage existing components for faster implementation:
    - Validate component compatibility with user requirements
 
 ## Accelerating Components
+
 ### Recommended Components from /src
+
 1. **[Component Category]** (`/src/path/to/component/`)
    - **Purpose**: [How this component accelerates implementation]
    - **Integration**: [How to integrate with your scenario]
    - **Prerequisites**: [What's needed to use this component]
 
 ## Template Guidance (when applicable)
+
 ### For Custom Scenarios
+
 If your requirements don't perfectly match existing scenarios:
+
 - **Use Scenario Description Template**: [Link to template with specific guidance]
 - **Apply Capability Mapping**: [Specific mapping recommendations]
 - **Leverage Prerequisites Template**: [Assessment approach]
 
 ### For Documentation
+
 - **Implementation Documentation**: [Recommended templates and structure]
 - **Community Contribution**: [How to contribute back custom scenarios]
 

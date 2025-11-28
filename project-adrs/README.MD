@@ -11,7 +11,7 @@ ADRs should be drafted for the following reasons:
 - Proposal of a new feature or capability for the tool
 - Updates to automation of this tool, including notification setting, workflows and build process
 - Deprecation of an existing feature of the tool
-- Changes to the project stucture
+- Changes to the project structure
 
 ADRs do not need to be drafted fo issue or bugs, unless addressing the issue or bug meets the above criteria.
 

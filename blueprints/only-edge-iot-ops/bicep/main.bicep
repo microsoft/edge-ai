@@ -95,6 +95,9 @@ param arcConnectedClusterName string = 'arck-${common.resourcePrefix}-${common.e
 @description('The resource name for the Azure Data Registry Schema Registry for Azure IoT Operations.')
 param schemaRegistryName string = 'sr-${common.resourcePrefix}-${common.environment}-${common.instance}'
 
+@description('The resource name for the ADR Namespace for Azure IoT Operations. Optional parameter for referencing an existing ADR namespace.')
+param adrNamespaceName string?
+
 @description('Whether to deploy Azure IoT Operations. (For debugging)')
 param shouldDeployAio bool = true
 
@@ -149,6 +152,7 @@ module edgeIotOps '../../../src/100-edge/110-iot-ops/bicep/main.bicep' = {
     aioInstanceName: aioInstanceName
     arcConnectedClusterName: arcConnectedClusterName
     schemaRegistryName: schemaRegistryName
+    adrNamespaceName: adrNamespaceName
     shouldCreateAnonymousBrokerListener: shouldCreateAnonymousBrokerListener
     shouldDeployAio: shouldDeployAio
     shouldDeployResourceSyncRules: shouldDeployResourceSyncRules

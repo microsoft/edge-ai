@@ -2,7 +2,7 @@
 title: CNCF Cluster Script Output Blueprint
 description: Infrastructure as Code configurations for generating K3s Kubernetes cluster installation scripts with Azure Arc connectivity without actual deployment
 author: Edge AI Team
-ms.date: 06/07/2025
+ms.date: 2025-06-07
 ms.topic: reference
 keywords:
   - cncf cluster

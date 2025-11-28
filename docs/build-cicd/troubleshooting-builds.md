@@ -2,7 +2,7 @@
 title: Troubleshooting builds
 description: Quick troubleshooting guide for build failures, pipeline issues, and CI/CD problems in the Edge AI Accelerator project.
 author: Edge AI Team
-ms.date: 06/13/2025
+ms.date: 2025-06-13
 ms.topic: hub-page
 keywords:
   - troubleshooting

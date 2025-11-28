@@ -14,6 +14,12 @@ variable "should_assign_workspace_managed_identity_roles" {
   default     = true
 }
 
+variable "should_assign_ml_workload_identity_roles" {
+  type        = bool
+  description = "Whether to assign dependent resource roles and federation for the ML workload managed identity"
+  default     = false
+}
+
 variable "should_enable_public_network_access" {
   type        = bool
   description = "Whether to enable public network access to the workspace."
@@ -48,40 +54,9 @@ variable "private_endpoint_subnet_id" {
   default     = null
 }
 
-variable "virtual_network_id" {
-  type        = string
-  description = "The ID of the virtual network to link to the private DNS zone"
-  default     = null
-}
-
 /*
  * Network Configuration - Optional
  */
-
-variable "network_security_group" {
-  type = object({
-    id = string
-  })
-  description = "Network security group from 050-networking component."
-  default     = null
-}
-
-variable "virtual_network" {
-  type = object({
-    name = string
-  })
-  description = "Virtual network from 050-networking component."
-  default     = null
-}
-
-variable "nat_gateway" {
-  type = object({
-    id   = string
-    name = string
-  })
-  description = "NAT gateway object from the networking component for managed outbound access."
-  default     = null
-}
 
 variable "should_create_compute_cluster_snet" {
   type        = bool
@@ -102,6 +77,18 @@ variable "subnet_address_prefixes_azureml" {
 variable "default_outbound_access_enabled" {
   type        = bool
   description = "Whether to enable default outbound internet access for Azure ML subnets"
+  default     = false
+}
+
+variable "should_enable_nat_gateway" {
+  type        = bool
+  description = "Whether to associate the Azure ML subnet with a NAT gateway for managed outbound egress"
+  default     = false
+}
+
+variable "should_associate_network_security_group" {
+  type        = bool
+  description = "Whether to associate the Azure ML subnet with a network security group"
   default     = false
 }
 
@@ -249,7 +236,7 @@ variable "should_install_prom_op" {
 variable "should_install_volcano" {
   type        = bool
   description = "Whether to install Volcano scheduler for job scheduling in Azure ML extension."
-  default     = true
+  default     = false
 }
 
 variable "aks_cluster_purpose" {

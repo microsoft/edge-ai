@@ -1,0 +1,688 @@
+/* Single Action Interface Components - Comprehensive Button, Form & Control Styling */
+
+/* ============================================================================
+   PRIMARY BUTTON STYLES - Main action buttons for key user interactions
+   ============================================================================ */
+
+.btn,
+button:not(.docsify-copy-code-button):not(.search):not(.app-nav-link):not(.sidebar-toggle):not(.dark-mode-toggle),
+.button,
+.action-button {
+  /* Base button foundation */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+
+  /* Typography */
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-tight);
+  text-decoration: none;
+  white-space: nowrap;
+
+  /* Dimensions and spacing */
+  min-height: 2.5rem; /* 40px - minimum touch target */
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--border-radius-md);
+  border: 2px solid transparent;
+
+  /* Visual appearance */
+  background: var(--primary-color);
+  color: white;
+  box-shadow: var(--shadow-sm);
+
+  /* Interaction states */
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  -webkit-user-select: none;
+  user-select: none;
+
+  /* Accessibility */
+  outline: none;
+  position: relative;
+}
+
+/* Primary button hover state */
+.btn:hover,
+button:not(.docsify-copy-code-button):not(.search):not(.app-nav-link):not(.sidebar-toggle):not(.dark-mode-toggle):hover,
+.button:hover,
+.action-button:hover {
+  background: var(--theme-color-dark);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+/* Primary button focus state - accessibility */
+.btn:focus-visible,
+button:not(.docsify-copy-code-button):not(.search):not(.app-nav-link):not(.sidebar-toggle):not(.dark-mode-toggle):focus-visible,
+.button:focus-visible,
+.action-button:focus-visible {
+  outline: 2px solid var(--focus-color);
+  outline-offset: 2px;
+  box-shadow: var(--shadow-md), 0 0 0 4px var(--color-theme-alpha-20);
+}
+
+/* Primary button active state */
+.btn:active,
+button:not(.docsify-copy-code-button):not(.search):not(.app-nav-link):not(.sidebar-toggle):not(.dark-mode-toggle):active,
+.button:active,
+.action-button:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Primary button disabled state */
+.btn:disabled,
+button:not(.docsify-copy-code-button):not(.search):not(.app-nav-link):not(.sidebar-toggle):not(.dark-mode-toggle):disabled,
+.button:disabled,
+.action-button:disabled {
+  background: var(--color-gray-300);
+  color: var(--color-gray-500);
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+/* ============================================================================
+   SECONDARY BUTTON VARIANTS - Alternative actions and secondary interactions
+   ============================================================================ */
+
+.btn-secondary,
+.button-secondary {
+  background: var(--bg-primary);
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.btn-secondary:hover,
+.button-secondary:hover {
+  background: var(--primary-color);
+  color: white;
+  transform: translateY(-1px);
+}
+
+/* Outline button variant */
+.btn-outline,
+.button-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.btn-outline:hover,
+.button-outline:hover {
+  background: var(--primary-color);
+  color: white;
+}
+
+/* Ghost button variant */
+.btn-ghost,
+.button-ghost {
+  background: transparent;
+  color: var(--primary-color);
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.btn-ghost:hover,
+.button-ghost:hover {
+  background: var(--color-theme-alpha-10);
+  box-shadow: none;
+  transform: none;
+}
+
+/* ============================================================================
+   SEMANTIC BUTTON VARIANTS - Success, warning, error, and info states
+   ============================================================================ */
+
+/* Success buttons */
+.btn-success,
+.button-success {
+  background: var(--success-color);
+  color: white;
+}
+
+.btn-success:hover,
+.button-success:hover {
+  background: var(--color-success-hover);
+}
+
+/* Error/Danger buttons */
+.btn-error,
+.btn-danger,
+.button-error,
+.button-danger {
+  background: var(--error-color);
+  color: white;
+}
+
+.btn-error:hover,
+.btn-danger:hover,
+.button-error:hover,
+.button-danger:hover {
+  background: #b82429; /* Darker error color on hover */
+}
+
+/* Warning buttons */
+.btn-warning,
+.button-warning {
+  background: var(--warning-color);
+  color: white;
+}
+
+.btn-warning:hover,
+.button-warning:hover {
+  background: #e07600; /* Darker warning color on hover */
+}
+
+/* Info buttons */
+.btn-info,
+.button-info {
+  background: var(--color-info);
+  color: white;
+}
+
+.btn-info:hover,
+.button-info:hover {
+  background: #d66c00; /* Darker info color on hover */
+}
+
+/* ============================================================================
+   BUTTON SIZES - Small, medium, large variants for different contexts
+   ============================================================================ */
+
+/* Small buttons */
+.btn-sm,
+.button-sm {
+  min-height: 2rem; /* 32px */
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--font-size-sm);
+}
+
+/* Large buttons */
+.btn-lg,
+.button-lg {
+  min-height: 3rem; /* 48px */
+  padding: var(--spacing-md) var(--spacing-lg);
+  font-size: var(--font-size-lg);
+}
+
+/* ============================================================================
+   SPECIFIC BUTTON TYPES - Tag buttons, copy buttons, and specialized controls
+   ============================================================================ */
+
+/* Tag buttons - small pill-shaped buttons for categories */
+.tag-button {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: 1rem; /* Pill shape */
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.tag-button:hover {
+  background: var(--theme-color-dark);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+  color: white;
+}
+
+/* Copy code button styling - specific to Docsify code blocks */
+.docsify-copy-code-button {
+  background: var(--primary-color) !important;
+  color: white !important;
+  border: none !important;
+  border-radius: var(--border-radius-md) !important;
+  font-size: var(--font-size-xs) !important;
+  font-weight: var(--font-weight-medium) !important;
+  padding: var(--spacing-xs) var(--spacing-sm) !important;
+  transition: all var(--transition-fast) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+.docsify-copy-code-button:hover {
+  background: var(--theme-color-dark) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: var(--shadow-md) !important;
+  color: white !important;
+}
+
+/* Edit on GitHub button - fixed positioning floating action button */
+.edit-on-github {
+  position: fixed;
+  bottom: var(--spacing-lg);
+  right: var(--spacing-lg);
+  background: var(--primary-color);
+  color: white;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: 1.5rem; /* More rounded for floating effect */
+  text-decoration: none;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  box-shadow: var(--shadow-lg);
+  transition: all var(--transition-medium);
+  z-index: var(--z-github-corner);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.edit-on-github:hover {
+  background: var(--theme-color-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  color: white;
+}
+
+/* ============================================================================
+   FORM INPUT CONTROLS - Text inputs, selects, textareas
+   ============================================================================ */
+
+/* Base input styling */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="url"],
+input[type="search"],
+select,
+textarea {
+  width: 100%;
+  min-height: 2.5rem; /* 40px - matching button height */
+  padding: var(--spacing-sm) var(--spacing-md);
+
+  /* Typography */
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
+
+  /* Visual appearance */
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: 2px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+
+  /* Interaction */
+  transition: all var(--transition-fast);
+  outline: none;
+}
+
+/* Input focus state */
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="number"]:focus,
+input[type="url"]:focus,
+input[type="search"]:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--color-theme-alpha-20);
+}
+
+/* Input disabled state */
+input[type="text"]:disabled,
+input[type="email"]:disabled,
+input[type="password"]:disabled,
+input[type="number"]:disabled,
+input[type="url"]:disabled,
+input[type="search"]:disabled,
+select:disabled,
+textarea:disabled {
+  background: var(--color-gray-100);
+  color: var(--color-gray-500);
+  cursor: not-allowed;
+}
+
+/* Textarea specific styling */
+textarea {
+  min-height: 6rem; /* 96px - adequate height for text entry */
+  resize: vertical;
+}
+
+/* ============================================================================
+   CHECKBOX AND RADIO CONTROLS - Enhanced interactive checkboxes and radios
+   ============================================================================ */
+
+/* Custom checkbox styling */
+input[type="checkbox"] {
+  appearance: none;
+  width: 1.25rem; /* 20px */
+  height: 1.25rem;
+  border: 2px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  background: var(--bg-primary);
+  cursor: pointer;
+  position: relative;
+  transition: all var(--transition-fast);
+  margin: 0;
+}
+
+input[type="checkbox"]:checked {
+  background: var(--success-color);
+  border-color: var(--success-color);
+}
+
+input[type="checkbox"]:checked::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+}
+
+/* Higher specificity for catalog checkboxes with data-item-id */
+input[type="checkbox"][data-item-id]:checked {
+  background: var(--success-color) !important;
+  border-color: var(--success-color) !important;
+}
+
+input[type="checkbox"][data-item-id]:checked::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+}
+
+input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--focus-color);
+  outline-offset: 2px;
+}
+
+input[type="checkbox"]:disabled {
+  background: var(--color-gray-100);
+  border-color: var(--color-gray-300);
+  cursor: not-allowed;
+}
+
+input[type="checkbox"]:disabled:checked {
+  background: var(--success-color);
+  border-color: var(--success-color);
+  cursor: not-allowed;
+}
+
+input[type="checkbox"]:disabled:checked::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+}
+
+/* Higher specificity for disabled catalog checkboxes */
+input[type="checkbox"][data-item-id]:disabled:checked {
+  background: var(--success-color) !important;
+  border-color: var(--success-color) !important;
+  cursor: not-allowed;
+}
+
+input[type="checkbox"][data-item-id]:disabled:checked::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+}
+
+/* Custom radio button styling */
+input[type="radio"] {
+  appearance: none;
+  width: 1.25rem; /* 20px */
+  height: 1.25rem;
+  border: 2px solid var(--border-color);
+  border-radius: 50%;
+  background: var(--bg-primary);
+  cursor: pointer;
+  position: relative;
+  transition: all var(--transition-fast);
+  margin: 0;
+}
+
+input[type="radio"]:checked {
+  border-color: var(--primary-color);
+}
+
+input[type="radio"]:checked::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 0.5rem; /* 8px */
+  height: 0.5rem;
+  background: var(--primary-color);
+  border-radius: 50%;
+}
+
+input[type="radio"]:focus-visible {
+  outline: 2px solid var(--focus-color);
+  outline-offset: 2px;
+}
+
+/* ============================================================================
+   INTERACTIVE PROGRESS CONTROLS - Progress tracking and completion elements
+   ============================================================================ */
+
+/* Progress checkboxes - enhanced styling for learning paths */
+.progress-checkbox {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+  margin: var(--spacing-xs) 0;
+}
+
+.progress-checkbox input[type="checkbox"] {
+  margin-right: var(--spacing-sm);
+}
+
+.progress-checkbox input[type="checkbox"]:checked {
+  background: var(--success-color);
+  border-color: var(--success-color);
+  box-shadow: 0 0 0 3px var(--color-success-alpha-30);
+}
+
+.progress-checkbox input[type="checkbox"]:checked + .checkbox-label {
+  color: var(--success-color);
+  font-weight: var(--font-weight-medium);
+}
+
+/* Checkbox labels */
+.checkbox-label {
+  font-size: var(--font-size-base);
+  color: var(--text-primary);
+  transition: color var(--transition-fast);
+}
+
+/* ============================================================================
+   SEARCH INTERFACE CONTROLS - Search inputs and related elements
+   ============================================================================ */
+
+/* Search box styling - enhanced from existing */
+.search .input-wrap input,
+.search-input {
+  border: 2px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--font-size-base);
+  transition: all var(--transition-fast);
+  background: var(--bg-primary);
+}
+
+.search .input-wrap input:focus,
+.search-input:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--color-theme-alpha-20);
+  outline: none;
+}
+
+/* ============================================================================
+   LINK-STYLE BUTTONS - Buttons that look like links but maintain button behavior
+   ============================================================================ */
+
+.btn-link,
+.button-link {
+  background: transparent;
+  color: var(--primary-color);
+  border: none;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  text-decoration: underline;
+  font-weight: var(--font-weight-normal);
+  box-shadow: none;
+  min-height: initial;
+}
+
+.btn-link:hover,
+.button-link:hover {
+  background: transparent;
+  color: var(--theme-color-dark);
+  text-decoration: none;
+  transform: none;
+  box-shadow: none;
+}
+
+/* ============================================================================
+   DARK MODE ADAPTATIONS - Ensure all components work properly in dark mode
+   ============================================================================ */
+
+body.dark {
+  /* Input controls in dark mode */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="url"],
+  input[type="search"],
+  select,
+  textarea {
+    background: var(--color-gray-800);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+  }
+
+  /* Search inputs in dark mode */
+  .search .input-wrap input,
+  .search-input {
+    background: var(--color-gray-800);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+  }
+
+  /* Checkbox and radio controls in dark mode */
+  input[type="checkbox"],
+  input[type="radio"] {
+    background: var(--color-gray-800);
+    border-color: var(--border-color);
+  }
+
+  /* Disabled states in dark mode */
+  input[type="checkbox"]:disabled,
+  input[type="radio"]:disabled {
+    background: var(--color-gray-700);
+    border-color: var(--color-gray-600);
+  }
+}
+
+/* ============================================================================
+   RESPONSIVE CONSIDERATIONS - Ensure components work well on all screen sizes
+   ============================================================================ */
+
+@media (max-width: 768px) {
+  /* Stack buttons vertically on mobile when in button groups */
+  .btn-group {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn-group .btn,
+  .btn-group .button {
+    margin-bottom: var(--spacing-xs);
+  }
+
+  /* Adjust floating action button position on mobile */
+  .edit-on-github {
+    bottom: var(--spacing-md);
+    right: var(--spacing-md);
+    padding: var(--spacing-sm);
+  }
+
+  /* Ensure touch targets remain adequate */
+  .btn,
+  .button,
+  input[type="checkbox"],
+  input[type="radio"] {
+    min-height: 2.75rem; /* 44px - iOS minimum touch target */
+  }
+}
+
+/* ============================================================================
+   UTILITY CLASSES - Helper classes for common button patterns
+   ============================================================================ */
+
+/* Full width buttons */
+.btn-block,
+.button-block {
+  width: 100%;
+  display: flex;
+}
+
+/* Button groups */
+.btn-group {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+/* Loading state */
+.btn-loading,
+.button-loading {
+  position: relative;
+  color: transparent;
+  pointer-events: none;
+}
+
+.btn-loading::after,
+.button-loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid transparent;
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}

@@ -2,7 +2,7 @@
 title: Scale deployment of Azure ML models to edge Arc-enabled K8s clusters in a PoC
 description: Architecture Decision Record documenting the selection of Azure ML Arc Extension for deploying machine learning models to edge Arc-enabled Kubernetes clusters. Compares Azure ML Arc Extension against GitOps-based deployment approaches, evaluating factors like scale deployment capabilities, integration with MLOps processes, system requirements, and operational considerations for manufacturing edge environments.
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: architecture-decision-record
 estimated_reading_time: 10
 keywords:

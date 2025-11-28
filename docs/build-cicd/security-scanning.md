@@ -2,7 +2,7 @@
 title: Security Scanning & Supply Chain Hardening
 description: Comprehensive security scanning, supply chain hardening, and vulnerability assessment for the Edge AI Accelerator CI/CD pipelines.
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: concept
 keywords:
   - security scanning

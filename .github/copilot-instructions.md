@@ -263,7 +263,7 @@ Use these as templates when creating new components or understanding expected pa
 ### Terraform Validation and Testing Steps
 
 Final steps for ONLY terraform changes:
-* Iterate with `npm run tf-validate` and `npm run tflint-fix-fast` and fix all issues, continue to iterate until all issues are fixed
+* Iterate with `npm run tf-validate` and `npm run tflint-fix-all` and fix all issues, continue to iterate until all issues are fixed
 * NEVER add any tests unless specifically asked to add tests from the user
   * All tests must ONLY EVER be for `command = plan` tests
 

@@ -4,15 +4,14 @@
  * This module handles script deployment to Linux virtual machines, with the option
  * to either deploy a script directly, or deploy the deploy-script-secrets.sh script
  * which will fetch the real script from Key Vault and execute it.
- *
- * Note: Windows support will be added in a future update.
  */
 
 locals {
   deploy_script_secrets = file("${path.module}/../../../scripts/deploy-script-secrets.sh")
 
   script_env_vars = {
-    KEY_VAULT_NAME     = try(coalesce(var.key_vault.name), "")
+    CLIENT_ID          = try(var.arc_onboarding_identity.client_id, "")
+    KEY_VAULT_NAME     = try(var.key_vault.name, "")
     KUBERNETES_DISTRO  = var.kubernetes_distro
     NODE_TYPE          = var.node_type
     SECRET_NAME_PREFIX = var.secret_name_prefix

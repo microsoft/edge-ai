@@ -1,0 +1,14 @@
+# Ignore all node_modules directories
+**/node_modules/**
+
+# Ignore .venv directories
+**/.venv/**
+
+# Ignore packages directories
+packages/**
+**/packages/**
+
+# Ignore package manager lock files and generated content
+**/package-lock.json
+**/yarn.lock
+**/pnpm-lock.yaml

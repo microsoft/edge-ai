@@ -1,4 +1,13 @@
 /*
+ * Azure ML Blueprint Variables
+ *
+ * This blueprint wraps the robotics module with AzureML-specific defaults.
+ * All variables are passed through to the underlying robotics module.
+ *
+ * See blueprints/modules/robotics/terraform/README.md for complete module documentation.
+ */
+
+/*
  *  Core Variables - Required
  */
 
@@ -248,6 +257,125 @@ variable "should_create_storage" {
   type        = bool
   description = "Whether to create cloud data component (storage account) when not already deployed"
   default     = false
+}
+
+/*
+ * PostgreSQL Configuration
+ */
+
+variable "should_deploy_postgresql" {
+  type        = bool
+  description = "Whether to deploy PostgreSQL Flexible Server component"
+  default     = false
+}
+
+variable "postgresql_admin_password" {
+  type        = string
+  description = "Administrator password for PostgreSQL server. (Otherwise, generated when postgresql_should_generate_admin_password is true)."
+  sensitive   = true
+  default     = null
+}
+
+variable "postgresql_should_generate_admin_password" {
+  type        = bool
+  description = "Whether to auto-generate PostgreSQL admin password."
+  default     = true
+}
+
+variable "postgresql_should_store_credentials_in_key_vault" {
+  type        = bool
+  description = "Whether to store PostgreSQL admin credentials in Key Vault."
+  default     = true
+}
+
+variable "postgresql_admin_username" {
+  type        = string
+  description = "Administrator username for PostgreSQL server"
+  default     = "pgadmin"
+}
+
+variable "postgresql_databases" {
+  type = map(object({
+    collation = string
+    charset   = string
+  }))
+  description = "Map of databases to create with collation and charset"
+  default     = null
+}
+
+variable "postgresql_delegated_subnet_id" {
+  type        = string
+  description = "Subnet ID with delegation to Microsoft.DBforPostgreSQL/flexibleServers"
+  default     = null
+}
+
+variable "postgresql_should_enable_geo_redundant_backup" {
+  type        = bool
+  description = "Whether to enable geo-redundant backups for PostgreSQL"
+  default     = false
+}
+
+variable "postgresql_should_enable_extensions" {
+  type        = bool
+  description = "Whether to enable PostgreSQL extensions via azure.extensions"
+  default     = true
+}
+
+variable "postgresql_should_enable_timescaledb" {
+  type        = bool
+  description = "Whether to enable TimescaleDB extension for PostgreSQL"
+  default     = true
+}
+
+variable "postgresql_sku_name" {
+  type        = string
+  description = "SKU name for PostgreSQL server"
+  default     = "GP_Standard_D2s_v3"
+}
+
+variable "postgresql_storage_mb" {
+  type        = number
+  description = "Storage size in megabytes for PostgreSQL"
+  default     = 32768
+}
+
+variable "postgresql_version" {
+  type        = string
+  description = "PostgreSQL server version"
+  default     = "16"
+}
+
+/*
+ * Azure Managed Redis Configuration - Optional
+ */
+
+variable "should_deploy_redis" {
+  type        = bool
+  description = "Whether to deploy Azure Managed Redis component"
+  default     = false
+}
+
+variable "redis_sku_name" {
+  type        = string
+  description = "SKU name for Azure Managed Redis cache"
+  default     = "Balanced_B10"
+}
+
+variable "redis_should_enable_high_availability" {
+  type        = bool
+  description = "Whether to enable high availability for Redis cache"
+  default     = true
+}
+
+variable "redis_clustering_policy" {
+  type        = string
+  description = "Clustering policy for Redis cache (OSSCluster or EnterpriseCluster)"
+  default     = "OSSCluster"
+
+  validation {
+    condition     = contains(["OSSCluster", "EnterpriseCluster"], var.redis_clustering_policy)
+    error_message = "Clustering policy must be either OSSCluster or EnterpriseCluster."
+  }
 }
 
 /*
@@ -607,6 +735,92 @@ variable "acr_public_network_access_enabled" {
 }
 
 /*
+ * VM Host Configuration - Optional
+ */
+
+variable "should_create_vm_host" {
+  type        = bool
+  description = "Whether to create a VM host for GPU workloads, edge testing, or jump box access"
+  default     = false
+}
+
+variable "vm_host_count" {
+  type        = number
+  description = "Number of VM hosts to create for multi-node scenarios"
+  default     = 1
+  validation {
+    condition     = var.vm_host_count >= 1
+    error_message = "VM host count must be at least 1."
+  }
+}
+
+variable "vm_sku_size" {
+  type        = string
+  description = "VM SKU size for the host. Examples: Standard_D8s_v3 (general purpose), Standard_NV36ads_A10_v5 (GPU workload)"
+  default     = "Standard_D8s_v3"
+}
+
+variable "vm_priority" {
+  type        = string
+  description = "VM priority: Regular (production, guaranteed capacity) or Spot (cost-optimized, up to 90% savings, can be evicted). Recommended: Spot for dev/test GPU workloads"
+  default     = "Regular"
+  validation {
+    condition     = contains(["Regular", "Spot"], var.vm_priority)
+    error_message = "VM priority must be either 'Regular' or 'Spot'."
+  }
+}
+
+variable "vm_eviction_policy" {
+  type        = string
+  description = "Eviction policy for Spot VMs: Deallocate (recommended - VM stopped, can restart later) or Delete (VM and disks removed). Only applies when vm_priority is Spot"
+  default     = "Deallocate"
+  validation {
+    condition     = contains(["Deallocate", "Delete"], var.vm_eviction_policy)
+    error_message = "Eviction policy must be either 'Deallocate' or 'Delete'."
+  }
+}
+
+variable "vm_max_bid_price" {
+  type        = number
+  description = "Maximum hourly price in USD for Spot VM. Set to -1 (recommended) to pay current spot price without price-based eviction. Custom values support up to 5 decimal places. Only applies when vm_priority is Spot"
+  default     = -1
+  validation {
+    condition     = var.vm_max_bid_price == -1 || var.vm_max_bid_price > 0
+    error_message = "Max bid price must be -1 or a positive number."
+  }
+}
+
+variable "should_assign_current_user_vm_admin" {
+  type        = bool
+  description = "Whether to assign the current Azure AD user the Virtual Machine Administrator Login role (sudo access). Requires Microsoft Graph provider permissions"
+  default     = true
+}
+
+variable "vm_admin_principals" {
+  type        = map(string)
+  description = "Map of Azure AD principals for Virtual Machine Administrator Login role (sudo access). Keys are descriptive identifiers (e.g., `user@company.com`), values are principal object IDs."
+  default     = {}
+}
+
+variable "vm_user_principals" {
+  type        = map(string)
+  description = "Map of Azure AD principals for Virtual Machine User Login role (standard access). Keys are descriptive identifiers (e.g., `user@company.com`), values are principal object IDs."
+  default     = {}
+}
+
+variable "should_create_vm_ssh_key" {
+  type        = bool
+  description = "Generate SSH key pair for VM fallback access. Defaults to true to ensure emergency access when Azure AD authentication is unavailable"
+  default     = true
+}
+
+variable "should_use_vm_password_auth" {
+  type        = bool
+  description = "Use password authentication for VM access. When enabled, a random secure password will be generated and stored in Terraform state"
+  default     = false
+}
+
+/*
  *  AKS Integration Configuration - Optional
  */
 
@@ -685,7 +899,7 @@ variable "should_install_prom_op" {
 variable "should_install_volcano" {
   type        = bool
   description = "Whether to install Volcano scheduler for job scheduling in Azure ML extension"
-  default     = true
+  default     = false
 }
 
 variable "aks_cluster_purpose" {
@@ -797,17 +1011,6 @@ variable "should_install_charts" {
   default     = false
 }
 
-variable "charts_scripts_folder_path" {
-  type        = string
-  description = "Path to the folder containing chart installation scripts. (Otherwise, '{path.module}/../scripts')"
-  default     = null
-}
-
-variable "charts_install_script_name" {
-  type        = string
-  description = "Name of the chart installation script."
-  default     = "install-chart-releases.sh"
-}
 
 
 

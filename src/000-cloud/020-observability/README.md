@@ -2,7 +2,7 @@
 title: Cloud Observability Component
 description: Centralized monitoring and observability infrastructure for the Edge AI Accelerator using Azure Managed Grafana, Azure Monitor, and Log Analytics for comprehensive edge-to-cloud visibility
 author: Edge AI Team
-ms.date: 06/07/2025
+ms.date: 2025-06-07
 ms.topic: reference
 keywords:
   - observability

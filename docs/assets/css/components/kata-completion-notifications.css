@@ -1,0 +1,131 @@
+/* Kata Completion Notification Styles */
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Kata Completion Notifications */
+.kata-notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  color: white;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+  z-index: 1000;
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+  min-width: 300px;
+  max-width: 400px;
+}
+
+.kata-notification.show {
+  transform: translateX(0);
+}
+
+.kata-notification.hide {
+  transform: translateX(100%);
+}
+
+.notification-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.notification-title {
+  font-weight: 600;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.notification-close {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.notification-close:hover {
+  opacity: 1;
+}
+
+.notification-body {
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+/* Success variant */
+.kata-notification.success {
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 8px;
+}
+
+/* Info variant */
+.kata-notification.info {
+  background: linear-gradient(135deg, #007bff 0%, #6610f2 100%);
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 8px;
+}
+
+/* Warning variant */
+.kata-notification.warning {
+  background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+  color: #212529;
+  box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 8px;
+}
+
+/* Error variant */
+.kata-notification.error {
+  background: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%);
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 8px;
+}
+
+/* Test-specific notification classes for TDD compliance */
+.notification-success {
+  background-color: rgb(16, 124, 16);
+  color: rgb(255, 255, 255);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 8px;
+}
+
+.notification-warning {
+  background-color: rgb(255, 140, 0);
+  color: rgb(255, 255, 255);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 8px;
+}
+
+.notification-error {
+  background-color: rgb(209, 52, 56);
+  color: rgb(255, 255, 255);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 8px;
+}

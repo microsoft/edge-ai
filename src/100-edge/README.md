@@ -62,7 +62,7 @@ flowchart TD
     Assets -.-> Messaging
     Messaging -.-> Observability
 
-    %% Clean styling matching docs/index.md
+    %% Clean styling matching docs/README.md
     style K3s fill:#e1f5fe,stroke:#01579b,stroke-width:3px
     style IoTOps fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
     style Assets fill:#fff3e0,stroke:#e65100,stroke-width:2px

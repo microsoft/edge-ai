@@ -451,7 +451,11 @@ function Get-FilePathData {
         # Extract blueprint paths all at once
         $blueprintMatches = $blueprintPaths | ForEach-Object {
             if ($_ -match '^blueprints/([^/]+)') {
-                "blueprints/$($Matches[1])"
+                $extracted = "blueprints/$($Matches[1])"
+                # Exclude blueprints/modules - shared module library, not a deployable blueprint
+                if ($extracted -ne "blueprints/modules") {
+                    $extracted
+                }
             }
         }
         $results += $blueprintMatches

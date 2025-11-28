@@ -2,7 +2,7 @@
 title: Predictive Maintenance - Capability Group Mapping
 description: AI-driven predictive analysis capability mapping for critical asset lifecycle management across implementation phases from PoC to Scale.
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: hub-page
 estimated_reading_time: 8
 keywords:
@@ -26,7 +26,7 @@ keywords:
 
 **Description**: AI-driven predictive analysis for critical asset lifecycle management
 **Primary Industry Group**: Asset Health & Safety Management
-**Implementation Phases**: PoC → PoV → Production → Scale
+**Implementation Phases**: PoC (3 weeks) → PoV (10 weeks) → Production (6 months) → Scale (15 months)
 
 ## Capability Mapping by Implementation Phase
 
@@ -54,7 +54,7 @@ keywords:
 
 **Expected Value**: 30-45% reduction in unplanned downtime
 
-### Production Phase - 5 months
+### Production Phase - 6 months
 
 **Focus**: Automated maintenance workflows and digital twins
 
@@ -67,7 +67,7 @@ keywords:
 
 **Expected Value**: 50-70% reduction in maintenance costs
 
-### Scale Phase - 12 months
+### Scale Phase - 15 months
 
 **Focus**: Enterprise-wide predictive maintenance intelligence
 
@@ -86,29 +86,29 @@ keywords:
 
 #### Objective 1: Eliminate Unplanned Equipment Failures
 
-- **Key Result 1:** Reduce unplanned downtime through predictive failure detection - Target: _____% decrease (Current baseline: _____ hours/month)
-- **Key Result 2:** Achieve predictive accuracy for equipment failures - Target: _____% of failures predicted (Current baseline: _____%)
-- **Key Result 3:** Improve mean time between failures (MTBF) - Target: _____% increase (Current baseline: _____ hours)
-- **Key Result 4:** Reduce critical equipment failure incidents - Target: _____ incidents per month (Current baseline: _____ incidents)
+- **Key Result 1:** Reduce unplanned downtime through predictive failure detection - Target: 65% decrease (Current baseline: 24 hours/month)
+- **Key Result 2:** Achieve predictive accuracy for equipment failures - Target: 90% of failures predicted (Current baseline: 15%)
+- **Key Result 3:** Improve mean time between failures (MTBF) - Target: 50% increase (Current baseline: 720 hours)
+- **Key Result 4:** Reduce critical equipment failure incidents - Target: 2 incidents per month (Current baseline: 8 incidents)
 
 #### Objective 2: Optimize Maintenance Operations and Costs
 
-- **Key Result 1:** Reduce total maintenance costs through optimization - Target: _****% decrease (Current baseline: $****_ per month)
-- **Key Result 2:** Improve asset utilization and equipment effectiveness - Target: _____% increase (Current baseline: _____% OEE)
-- **Key Result 3:** Increase planned vs. reactive maintenance ratio - Target: _____% planned maintenance (Current baseline: _____%)
-- **Key Result 4:** Optimize maintenance resource allocation - Target: _____% improvement in technician productivity (Current baseline: _____ work orders/day)
+- **Key Result 1:** Reduce total maintenance costs through optimization - Target: 45% decrease (Current baseline: _____ resource consumption per month)
+- **Key Result 2:** Improve asset utilization and equipment effectiveness - Target: 25% increase (Current baseline: 72% OEE)
+- **Key Result 3:** Increase planned vs. reactive maintenance ratio - Target: 85% planned maintenance (Current baseline: 35%)
+- **Key Result 4:** Optimize maintenance resource allocation - Target: 40% improvement in technician productivity (Current baseline: 12 work orders/day)
 
 #### Objective 3: Enhance Safety and Asset Lifecycle Management
 
-- **Key Result 1:** Proactively detect safety-critical conditions - Target: _____% of issues identified early (Current baseline: _____%)
-- **Key Result 2:** Extend asset lifecycle and useful life - Target: _____% increase in equipment lifespan (Current baseline: _____ years)
-- **Key Result 3:** Improve maintenance team productivity and work completion - Target: _____% improvement (Current baseline: _____% completion rate)
+- **Key Result 1:** Proactively detect safety-critical conditions - Target: 95% of issues identified early (Current baseline: 25%)
+- **Key Result 2:** Extend asset lifecycle and useful life - Target: 20% increase in equipment lifespan (Current baseline: 15 years)
+- **Key Result 3:** Improve maintenance team productivity and work completion - Target: 35% improvement (Current baseline: 78% completion rate)
 
 #### Objective 4: Enable Data-Driven Maintenance Intelligence
 
-- **Key Result 1:** Implement condition monitoring coverage for critical assets - Target: _____% coverage (Current baseline: _____%)
-- **Key Result 2:** Establish predictive maintenance analytics capabilities - Target: _____ asset types monitored (Current baseline: _____ types)
-- **Key Result 3:** Achieve integration with maintenance management systems - Target: _____% automated work order generation (Current baseline: _____%)
+- **Key Result 1:** Implement condition monitoring coverage for critical assets - Target: 95% coverage (Current baseline: 20%)
+- **Key Result 2:** Establish predictive maintenance analytics capabilities - Target: 15 asset types monitored (Current baseline: 3 types)
+- **Key Result 3:** Achieve integration with maintenance management systems - Target: 90% automated work order generation (Current baseline: 10%)
 
 **Example ranges for reference:**
 
@@ -127,12 +127,12 @@ keywords:
 
 **Investment Planning Framework:**
 
-- **Typical Investment Range:** $150,000 - $250,000 (adjust based on asset complexity and monitoring scope)
+- **Resource Intensity Level:** Medium-High (sensor deployment, initial model development, system integration)
 - **ROI Calculation Approach:** Achieve break-even through improved condition monitoring and early failure detection
 - **Key Value Drivers:** Condition monitoring insights, baseline establishment, initial failure prevention
 - **Measurement Framework:** Track equipment condition trends, early warning alerts, and initial maintenance optimization
 
-**Your Investment:** $_______ (fill in your planned PoC investment)
+**Your Resource Allocation:** _______ (fill in your planned PoC resource allocation)
 **Your Expected ROI:** Break-even within _____ months through condition monitoring
 **Your Key Value Drivers:** ________________
 
@@ -140,12 +140,12 @@ keywords:
 
 **Investment Planning Framework:**
 
-- **Typical Investment Range:** $400,000 - $600,000 (scale based on expanded asset coverage)
+- **Resource Intensity Level:** High (expanded asset coverage, advanced analytics, model refinement)
 - **ROI Calculation Approach:** Calculate returns from reduced unplanned downtime and optimized maintenance scheduling
 - **Key Value Drivers:** Unplanned downtime reduction, maintenance cost optimization, asset utilization improvements
 - **Measurement Framework:** Monitor downtime reduction, maintenance cost savings, and equipment effectiveness improvements
 
-**Your Investment:** $_______ (fill in your planned PoV investment)
+**Your Resource Allocation:** _______ (fill in your planned PoV resource allocation)
 **Your Expected ROI:** _____x return within _____ months
 **Your Key Value Drivers:** ________________
 
@@ -153,12 +153,12 @@ keywords:
 
 **Investment Planning Framework:**
 
-- **Typical Investment Range:** $800,000 - $1,500,000 (customize for comprehensive asset coverage)
+- **Resource Intensity Level:** High (comprehensive asset coverage, enterprise integration, process optimization)
 - **ROI Calculation Approach:** Measure comprehensive maintenance optimization and asset utilization benefits
 - **Key Value Drivers:** Enterprise-wide maintenance optimization, asset lifecycle extension, safety improvement, operational efficiency
 - **Measurement Framework:** Track total maintenance cost reduction, asset lifecycle metrics, safety incident reduction, and overall equipment effectiveness
 
-**Your Investment:** $_______ (fill in your planned Production investment)
+**Your Resource Allocation:** _______ (fill in your planned Production resource allocation)
 **Your Expected ROI:** _____x return within _____ months
 **Your Key Value Drivers:** ________________
 
@@ -166,14 +166,65 @@ keywords:
 
 **Investment Planning Framework:**
 
-- **Typical Investment Range:** $2,000,000 - $4,000,000 (adjust for enterprise-wide deployment)
+- **Resource Intensity Level:** Very High (enterprise-wide deployment, federated learning, multi-site integration)
 - **ROI Calculation Approach:** Evaluate enterprise-wide maintenance intelligence and competitive advantage creation
 - **Key Value Drivers:** Multi-site maintenance intelligence, federated learning benefits, enterprise asset optimization, strategic competitive advantage
 - **Measurement Framework:** Assess total enterprise maintenance optimization, cross-facility learning benefits, and strategic asset management capabilities
 
-**Your Investment:** $_______ (fill in your planned Scale investment)
+**Your Resource Allocation:** _______ (fill in your planned Scale resource allocation)
 **Your Expected ROI:** _____x return within _____ years
 **Your Key Value Drivers:** ________________
+
+## Detailed Capability Evaluation
+
+### 🎯 High Priority Capabilities
+
+#### 🔥 Edge Data Stream Processing
+
+**Overall Score: 35/40** | **Business Impact: CRITICAL**
+
+| Dimension            | Score | Key Factor                                                                   |
+|----------------------|-------|------------------------------------------------------------------------------|
+| 🔧 Technical Fit     | 9/10  | Perfect alignment with real-time condition monitoring and asset data streams |
+| 💼 Business Value    | 9/10  | Essential for immediate failure detection and unplanned downtime prevention  |
+| ⚡ Implementation     | 8/10  | Established patterns with well-understood integration points                 |
+| 🔗 Platform Cohesion | 9/10  | Foundation for analytics and machine learning capabilities                   |
+
+**💡 Key Insight:** Critical foundation enabling real-time asset condition monitoring with immediate impact on failure prevention.
+
+**⚠️ Implementation Notes:** Well-established deployment patterns ensure reliable high-frequency asset data processing.
+
+#### 🔥 Edge Inferencing Application Framework
+
+**Overall Score: 33/40** | **Business Impact: CRITICAL**
+
+| Dimension            | Score | Key Factor                                                                       |
+|----------------------|-------|----------------------------------------------------------------------------------|
+| 🔧 Technical Fit     | 8/10  | Excellent alignment with predictive failure detection and anomaly identification |
+| 💼 Business Value    | 8/10  | Enables proactive maintenance reducing unplanned downtime by 60-80%              |
+| ⚡ Implementation     | 7/10  | Requires machine learning expertise and quality training data                    |
+| 🔗 Platform Cohesion | 9/10  | Leverages data processing while extending predictive intelligence                |
+
+**💡 Key Insight:** High-value capability delivering predictive maintenance intelligence with substantial cost reduction through failure prevention.
+
+**⚠️ Implementation Notes:** Success depends on quality historical data, machine learning expertise, and domain knowledge of asset failure patterns.
+
+### ⭐ Medium Priority Capabilities
+
+#### Advanced Predictive Analytics Platform
+
+**Overall Score: 34/40** | **Business Impact: HIGH**
+
+| Dimension            | Score | Key Factor                                                             |
+|----------------------|-------|------------------------------------------------------------------------|
+| 🔧 Technical Fit     | 9/10  | Perfect fit for sophisticated predictive models and advanced analytics |
+| 💼 Business Value    | 9/10  | Advanced insights supporting strategic maintenance optimization        |
+| ⚡ Implementation     | 7/10  | Requires advanced analytics expertise and organizational maturity      |
+| 🔗 Platform Cohesion | 9/10  | Central component for platform intelligence and optimization           |
+
+**💡 Key Insight:** Essential for advanced predictive capabilities enabling strategic maintenance transformation and competitive advantage.
+
+**⚠️ Implementation Notes:** Requires sophisticated data preparation and advanced analytics expertise for optimal value realization.
 
 ## Capability Group Alignment
 

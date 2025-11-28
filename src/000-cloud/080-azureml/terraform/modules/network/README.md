@@ -9,13 +9,13 @@ Deploys virtual network resources for Azure ML compute clusters
 | Name | Version |
 |------|---------|
 | terraform | >= 1.9.8, < 2.0 |
-| azurerm | >= 4.8.0 |
+| azurerm | >= 4.51.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| azurerm | >= 4.8.0 |
+| azurerm | >= 4.51.0 |
 
 ## Resources
 
@@ -36,6 +36,8 @@ Deploys virtual network resources for Azure ML compute clusters
 | network\_security\_group | Network security group to apply to the subnets. | ```object({ id = string })``` | n/a | yes |
 | resource\_group | Resource group object containing name and id where resources will be deployed. | ```object({ name = string })``` | n/a | yes |
 | resource\_prefix | Prefix for all resources in this module. | `string` | n/a | yes |
+| should\_associate\_network\_security\_group | Whether to associate the Azure ML subnet with a network security group. | `bool` | n/a | yes |
+| should\_enable\_nat\_gateway | Whether to associate the Azure ML subnet with a NAT gateway for managed egress | `bool` | n/a | yes |
 | subnet\_address\_prefixes\_azureml | Address prefixes for the Azure ML compute cluster subnet. | `list(string)` | n/a | yes |
 | virtual\_network | Virtual network where subnets will be created. | ```object({ name = string })``` | n/a | yes |
 

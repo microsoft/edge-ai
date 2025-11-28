@@ -98,7 +98,7 @@ keywords:
 - **Description**: Use only custom Rust pods for all logic
 - **Technical Details**: All transformation, routing, and integration in Rust
 - **Pros**: Maximum control/performance
-- **Cons**: Higher dev/maint cost, less leverage of platform features
+- **Cons**: Higher dev/maintenance cost, less leverage of platform features
 - **Risks**: Harder migration, more custom code
 - **Dependencies**: Rust, MQTT, Kubernetes
 - **Cost Analysis**: Higher dev/ops, less future-proof

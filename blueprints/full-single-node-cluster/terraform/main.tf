@@ -124,6 +124,70 @@ module "cloud_data" {
   virtual_network_id                  = var.should_enable_private_endpoints ? module.cloud_networking.virtual_network.id : null
   should_enable_public_network_access = var.should_enable_storage_public_network_access
   storage_account_is_hns_enabled      = var.storage_account_is_hns_enabled && !var.should_deploy_azureml
+
+  should_create_blob_dns_zone = !var.should_enable_private_endpoints
+  blob_dns_zone               = var.should_enable_private_endpoints ? module.cloud_observability.blob_private_dns_zone : null
+}
+
+module "cloud_postgresql" {
+  count  = var.should_deploy_postgresql ? 1 : 0
+  source = "../../../src/000-cloud/035-postgresql/terraform"
+
+  depends_on = [module.cloud_networking, module.cloud_security_identity]
+
+  environment     = var.environment
+  resource_prefix = var.resource_prefix
+  location        = var.location
+  instance        = var.instance
+
+  resource_group  = module.cloud_resource_group.resource_group
+  virtual_network = module.cloud_networking.virtual_network
+  key_vault       = module.cloud_security_identity.key_vault
+
+  delegated_subnet_id = var.postgresql_delegated_subnet_id
+
+  admin_username                        = var.postgresql_admin_username
+  admin_password                        = var.postgresql_admin_password
+  should_generate_admin_password        = var.postgresql_should_generate_admin_password
+  should_store_credentials_in_key_vault = var.postgresql_should_store_credentials_in_key_vault
+
+  postgres_version                   = var.postgresql_version
+  sku_name                           = var.postgresql_sku_name
+  storage_mb                         = var.postgresql_storage_mb
+  should_enable_extensions           = var.postgresql_should_enable_extensions
+  should_enable_timescaledb          = var.postgresql_should_enable_timescaledb
+  should_enable_geo_redundant_backup = var.postgresql_should_enable_geo_redundant_backup
+  databases                          = var.postgresql_databases
+}
+
+module "cloud_managed_redis" {
+  count  = var.should_deploy_redis ? 1 : 0
+  source = "../../../src/000-cloud/036-managed-redis/terraform"
+
+  depends_on = [module.cloud_networking, module.cloud_security_identity]
+
+  environment     = var.environment
+  resource_prefix = var.resource_prefix
+  location        = var.location
+  instance        = var.instance
+
+  resource_group = module.cloud_resource_group.resource_group
+
+  // Private endpoint configuration
+  should_enable_private_endpoint = var.should_enable_private_endpoints
+  private_endpoint_subnet = var.should_enable_private_endpoints ? {
+    id = module.cloud_networking.subnet_id
+  } : null
+  virtual_network = var.should_enable_private_endpoints ? module.cloud_networking.virtual_network : null
+
+  // Entra ID authentication (default)
+  access_keys_authentication_enabled = false
+  managed_identity                   = module.cloud_security_identity.aio_identity
+
+  // Redis configuration
+  sku_name                        = var.redis_sku_name
+  should_enable_high_availability = var.redis_should_enable_high_availability
+  clustering_policy               = var.redis_clustering_policy
 }
 
 module "cloud_messaging" {
@@ -169,6 +233,7 @@ module "cloud_acr" {
 
   should_create_acr_private_endpoint = var.should_enable_private_endpoints
   default_outbound_access_enabled    = local.default_outbound_access_enabled
+  should_enable_nat_gateway          = var.should_enable_managed_outbound_access
   sku                                = var.acr_sku
   allow_trusted_services             = var.acr_allow_trusted_services
   allowed_public_ip_ranges           = var.acr_allowed_public_ip_ranges
@@ -202,6 +267,7 @@ module "cloud_kubernetes" {
   aks_identity                 = module.cloud_security_identity.aks_identity
 
   default_outbound_access_enabled = local.default_outbound_access_enabled
+  should_enable_nat_gateway       = var.should_enable_managed_outbound_access
 
   node_count                      = var.node_count
   node_vm_size                    = var.node_vm_size
@@ -214,7 +280,6 @@ module "cloud_kubernetes" {
   should_enable_private_cluster_public_fqdn = var.aks_should_enable_private_cluster_public_fqdn
   should_enable_private_endpoint            = var.should_enable_private_endpoints
   private_endpoint_subnet_id                = module.cloud_networking.subnet_id
-  virtual_network_id                        = module.cloud_networking.virtual_network.id
 }
 
 module "cloud_azureml" {
@@ -237,16 +302,19 @@ module "cloud_azureml" {
   nat_gateway            = try(module.cloud_networking.nat_gateway, null)
   kubernetes             = try(module.cloud_kubernetes[0].aks, null)
 
-  default_outbound_access_enabled     = local.default_outbound_access_enabled
-  should_enable_public_network_access = var.azureml_should_enable_public_network_access
-  should_create_compute_cluster       = var.azureml_should_create_compute_cluster
-  ml_workload_identity                = try(module.cloud_security_identity.ml_workload_identity, null)
-  ml_workload_subjects                = var.azureml_ml_workload_subjects
+  default_outbound_access_enabled         = local.default_outbound_access_enabled
+  should_associate_network_security_group = true
+  should_enable_nat_gateway               = var.should_enable_managed_outbound_access
+  should_enable_public_network_access     = var.azureml_should_enable_public_network_access
+  should_create_compute_cluster           = var.azureml_should_create_compute_cluster
+  ml_workload_identity                    = try(module.cloud_security_identity.ml_workload_identity, null)
+  ml_workload_subjects                    = var.azureml_ml_workload_subjects
+
+  should_assign_ml_workload_identity_roles = var.azureml_should_create_ml_workload_identity
 
   // Private endpoint configuration
   should_enable_private_endpoint               = var.azureml_should_enable_private_endpoint
   private_endpoint_subnet_id                   = var.azureml_should_enable_private_endpoint ? module.cloud_networking.subnet_id : null
-  virtual_network_id                           = var.azureml_should_enable_private_endpoint ? module.cloud_networking.virtual_network.id : null
   should_deploy_registry                       = var.azureml_should_deploy_registry
   registry_should_enable_public_network_access = var.azureml_registry_should_enable_public_network_access
 
@@ -284,6 +352,7 @@ module "edge_iot_ops" {
   depends_on = [module.edge_cncf_cluster]
 
   adr_schema_registry   = module.cloud_data.schema_registry
+  adr_namespace         = module.cloud_data.adr_namespace
   resource_group        = module.cloud_resource_group.resource_group
   aio_identity          = module.cloud_security_identity.aio_identity
   arc_connected_cluster = module.edge_cncf_cluster.arc_connected_cluster
@@ -293,8 +362,13 @@ module "edge_iot_ops" {
   should_deploy_resource_sync_rules       = var.should_deploy_resource_sync_rules
   should_create_anonymous_broker_listener = var.should_create_anonymous_broker_listener
 
-  aio_features            = var.aio_features
-  enable_opc_ua_simulator = var.should_enable_opc_ua_simulator
+  aio_features                       = var.aio_features
+  enable_opc_ua_simulator            = var.should_enable_opc_ua_simulator
+  should_enable_akri_rest_connector  = var.should_enable_akri_rest_connector
+  should_enable_akri_media_connector = var.should_enable_akri_media_connector
+  should_enable_akri_onvif_connector = var.should_enable_akri_onvif_connector
+  should_enable_akri_sse_connector   = var.should_enable_akri_sse_connector
+  custom_akri_connectors             = var.custom_akri_connectors
 }
 
 module "edge_assets" {
@@ -305,10 +379,11 @@ module "edge_assets" {
   location           = var.location
   resource_group     = module.cloud_resource_group.resource_group
   custom_location_id = module.edge_iot_ops.custom_locations.id
+  adr_namespace      = module.cloud_data.adr_namespace
 
-  should_create_default_asset = var.should_enable_opc_ua_simulator
-  asset_endpoint_profiles     = var.asset_endpoint_profiles
-  assets                      = var.assets
+  should_create_default_namespaced_asset = var.should_enable_opc_ua_simulator
+  namespaced_devices                     = var.namespaced_devices
+  namespaced_assets                      = var.namespaced_assets
 }
 
 module "edge_observability" {
@@ -340,6 +415,7 @@ module "edge_messaging" {
   aio_identity         = module.cloud_security_identity.aio_identity
   eventgrid            = module.cloud_messaging.eventgrid
   eventhub             = module.cloud_messaging.eventhubs[0]
+  adr_namespace        = module.cloud_data.adr_namespace
 }
 
 module "edge_azureml" {

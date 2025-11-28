@@ -196,7 +196,7 @@ Update issue status and fields:
 
 ```bash
 # Claim work
-bd update edge-ai-5 --status in_progress --assignee yourname
+bd update edge-ai-5 --status in_progress --assignee <your-username>
 
 # Change priority
 bd update edge-ai-7 --priority 0

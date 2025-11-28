@@ -11,11 +11,11 @@ Below you will find more detailed guidance on how to work through the ISE Securi
 Over the course of their engagements, dev crews should be actively reviewing Defender. The purpose of these reviews is to ensure that the work in the security plan is properly executed and what actually makes it to production is correctly configured following security best practices.
 At a minimum, we recommend reviewing your Defender score and recommendations at least three times over the course of the engagement (initial kickoff, work in progress review, final review).
 
-The secure score and recommendations for your subscription can be found by checking [Microsoft Defender for Cloud in the Azure Portal](https://portal.azure.com/#view/Microsoft_Azure_Security/SecureScoreDashboard).  
+The secure score and recommendations for your subscription can be found by checking [Microsoft Defender for Cloud in the Azure Portal](https://portal.azure.com/#view/Microsoft_Azure_Security/SecureScoreDashboard).
 
 ### Initial review
 
-The initial review is the first time the team is reviewing the Defender findings and recommendations. Doing this review as early as possible is an opportunity for the dev crew to understand the security findings that are already present in the environment they are developing in. Having a baseline helps to communicate with the customer all the impact a team makes during an engagement.  
+The initial review is the first time the team is reviewing the Defender findings and recommendations. Doing this review as early as possible is an opportunity for the dev crew to understand the security findings that are already present in the environment they are developing in. Having a baseline helps to communicate with the customer all the impact a team makes during an engagement.
 
 All reviews should be done in the environment that is or most closely reflects the ultimate production environment but are still meaningful if they must be done in a development environment.
 
@@ -34,7 +34,7 @@ In ISE we don't defer security fundamentals.  There are no engagement types wher
 **FAQ:**
 
 Q: I don't have access to "Production" or the customer is deploying the code what should I do?
-A: Reviewing the secure score and the recomendations in the environment where the code is developed is always an option. The focus of this work is to make sure that the code that we deliver does not introduce security risk and that the customer understands their security posture.  
+A: Reviewing the secure score and the recommendations in the environment where the code is developed is always an option. The focus of this work is to make sure that the code that we deliver does not introduce security risk and that the customer understands their security posture.
 
 Q: My customer does not use Defender or does not want to pay for Defender.
 A: Defender recommendations are free.   Dev crews can review defender findings independently of their customer sharing the outcomes of their work in situations where it would not help the customer to learn from our "code with" practices.
@@ -95,7 +95,7 @@ Some crews may want a member of the Security TD to work alongside the crew for s
 ### Suggestions
 
 - A champion can assist with the creation of a Security Plan (see the security plan section)
-- A champion can review the engagement's Security Plan  
+- A champion can review the engagement's Security Plan
 - A champion can take on implementation of specific security related stories in the engagement
 - A champion can participate in the conversations with the customer about security
 - A champion can help the crew to complete the other ISE Security Checklist items

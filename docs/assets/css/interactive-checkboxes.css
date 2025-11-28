@@ -1,0 +1,552 @@
+/**
+ * Interactive Checkbox Styles
+ * CSS for interactive kata checkboxes with animations and progress display
+ * Version: 1.0.0
+ */
+
+/* ========================================
+   Interactive Checkbox Base Styles
+   ======================================== */
+
+/* Remove bullets from direct checkbox list items only (not nested lists) */
+.markdown-section li:has(> input[type="checkbox"]) {
+  list-style-type: none;
+  margin-left: 0;
+  padding-left: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5em;
+}
+
+/* Restore bullets and margins for nested lists inside checkbox items */
+.markdown-section li:has(> input[type="checkbox"]) ul,
+.markdown-section li:has(> input[type="checkbox"]) ol {
+  margin-left: 1.5em;
+  padding-left: 0.5em;
+}
+
+.markdown-section li:has(> input[type="checkbox"]) ul li,
+.markdown-section li:has(> input[type="checkbox"]) ol li {
+  list-style-type: disc;
+}
+
+.markdown-section li:has(> input[type="checkbox"]) ol li {
+  list-style-type: decimal;
+}
+
+/* Add consistent indentation for paragraph checkboxes to match list items */
+.markdown-section p:has(input[type="checkbox"]) {
+  margin-left: 0;
+  padding-left: 0;
+}
+
+/* Ensure proper spacing for checkbox items */
+.markdown-section li:has(input[type="checkbox"]) input[type="checkbox"],
+.markdown-section p:has(input[type="checkbox"]) input[type="checkbox"] {
+  flex-shrink: 0;
+  margin-top: 0.2em;
+}
+
+/* Ensure label text wraps properly and stays aligned */
+.markdown-section li:has(> input[type="checkbox"]) > *:not(input):not(ul):not(ol) {
+  flex: 1;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.interactive-checkbox {
+  cursor: pointer;
+  transform: scale(1);
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.interactive-checkbox:hover {
+  transform: scale(1.1);
+  box-shadow: 0 var(--spacing-xs) var(--spacing-sm) var(--checkbox-shadow-medium);
+}
+
+.interactive-checkbox:focus {
+  outline: var(--spacing-xs) solid var(--theme-color);
+  outline-offset: var(--spacing-xs);
+}
+
+/* ========================================
+   Checkbox Animation States
+   ======================================== */
+
+.checkbox-complete-animation {
+  animation: checkboxComplete 0.6s ease-in-out;
+}
+
+@keyframes checkboxComplete {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.3) rotate(5deg); }
+  100% { transform: scale(1); }
+}
+
+/* ========================================
+   Task List Item Styles
+   ======================================== */
+
+li.completed-task {
+  opacity: 0.8;
+  transition: opacity 0.3s ease-in-out;
+}
+
+/* Apply strikethrough only to text/inline content, not nested lists */
+li.completed-task > :not(ul):not(ol) {
+  text-decoration: line-through;
+  color: var(--text-secondary);
+}
+
+li.completed-task .interactive-checkbox {
+  transform: scale(1);
+}
+
+li.completed-task .interactive-checkbox:hover {
+  transform: scale(1.05);
+}
+
+/* ========================================
+   Kata Progress Container
+   ======================================== */
+
+.kata-progress-container {
+  background: var(--bg-secondary);
+  border: var(--spacing-xxs) solid var(--border-color);
+  border-radius: var(--spacing-md-minus);
+  padding: var(--spacing-lg-minus);
+  margin: var(--spacing-lg-small) 0;
+  box-shadow: 0 var(--spacing-xs) var(--spacing-sm) var(--checkbox-shadow-light);
+  transition: all 0.3s ease-in-out;
+}
+
+.kata-progress-container.kata-completed {
+  background: var(--checkbox-success-gradient);
+  border-color: var(--checkbox-success-primary);
+  box-shadow: 0 var(--spacing-sm) var(--spacing-md) var(--checkbox-success-shadow);
+}
+
+/* ========================================
+   Progress Bar Styles
+   ======================================== */
+
+.kata-progress-bar {
+  width: 100%;
+  height: var(--spacing-md);
+  background-color: var(--color-gray-200);
+  border-radius: var(--spacing-sm-plus);
+  overflow: hidden;
+  margin-bottom: var(--spacing-md);
+  position: relative;
+}
+
+.kata-progress-fill {
+  height: 100%;
+  background: var(--checkbox-primary-gradient);
+  border-radius: var(--spacing-sm-plus);
+  transition: width 0.5s ease-in-out;
+  position: relative;
+  min-width: 0;
+}
+
+.kata-completed .kata-progress-fill {
+  background: linear-gradient(90deg, var(--checkbox-success-primary) 0%, var(--checkbox-success-alt2) 100%);
+  animation: progressPulse 1s ease-in-out;
+}
+
+@keyframes progressPulse {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(1.2); }
+}
+
+/* ========================================
+   Progress Text Styles
+   ======================================== */
+
+.kata-progress-text {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: var(--spacing-md-plus);
+  color: var(--text-primary);
+}
+
+.progress-percentage {
+  font-weight: bold;
+  font-size: var(--spacing-lg-minus);
+  color: var(--theme-color);
+}
+
+.kata-completed .progress-percentage {
+  color: var(--checkbox-success-primary);
+  animation: textBounce 0.5s ease-in-out;
+}
+
+.progress-tasks {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+@keyframes textBounce {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+/* ========================================
+   Completion Celebration Animation
+   ======================================== */
+
+.celebration-animation {
+  animation: celebrate 2s ease-in-out;
+}
+
+@keyframes celebrate {
+  0% { transform: scale(1); }
+  10% { transform: scale(1.05) rotate(1deg); }
+  20% { transform: scale(1) rotate(-1deg); }
+  30% { transform: scale(1.03) rotate(1deg); }
+  40% { transform: scale(1) rotate(-1deg); }
+  50% { transform: scale(1.02) rotate(0deg); }
+  60% { transform: scale(1); }
+  100% { transform: scale(1); }
+}
+
+/* ========================================
+   Dark Mode Support
+   ======================================== */
+
+[data-theme="dark"] .kata-progress-container {
+  background: var(--color-gray-100);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .kata-progress-container.kata-completed {
+  background: var(--checkbox-success-gradient-dark);
+  border-color: var(--checkbox-success-alt);
+}
+
+[data-theme="dark"] .kata-progress-bar {
+  background-color: var(--color-gray-200);
+}
+
+[data-theme="dark"] .progress-percentage {
+  color: var(--theme-color-light);
+}
+
+[data-theme="dark"] .kata-completed .progress-percentage {
+  color: var(--checkbox-success-alt);
+}
+
+[data-theme="dark"] .progress-tasks {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] li.completed-task > * {
+  color: var(--text-muted);
+}
+
+[data-theme="dark"] .interactive-checkbox:hover {
+  box-shadow: 0 var(--spacing-xs) var(--spacing-sm) var(--checkbox-shadow-white);
+}
+
+/* ========================================
+   Responsive Design
+   ======================================== */
+
+@media (max-width: 768px) {
+  .kata-progress-container {
+    padding: var(--spacing-md);
+    margin: var(--spacing-lg-minus) 0;
+  }
+
+  .kata-progress-text {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+  }
+
+  .progress-percentage {
+    font-size: var(--spacing-md-plus);
+  }
+
+  .progress-tasks {
+    font-size: var(--spacing-md);
+  }
+}
+
+@media (max-width: 480px) {
+  .kata-progress-container {
+    padding: var(--spacing-md-small);
+    margin: var(--spacing-md) 0;
+  }
+
+  .kata-progress-bar {
+    height: var(--spacing-md-small);
+    margin-bottom: var(--spacing-md-small);
+  }
+
+  .kata-progress-text {
+    font-size: 13px;
+  }
+}
+
+/* ========================================
+   Print Styles
+   ======================================== */
+
+@media print {
+  .kata-progress-container {
+    background: transparent !important;
+    border: var(--spacing-xxs) solid var(--checkbox-bg-dark) !important;
+    box-shadow: none !important;
+  }
+
+  .kata-progress-bar {
+    background: var(--checkbox-bg-alt) !important;
+  }
+
+  .kata-progress-fill {
+    background: var(--checkbox-bg-dark) !important;
+  }
+
+  .interactive-checkbox {
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .celebration-animation {
+    animation: none !important;
+  }
+}
+
+/* ========================================
+   Accessibility Enhancements
+   ======================================== */
+
+.interactive-checkbox:focus-visible {
+  outline: var(--spacing-xs) solid var(--theme-color);
+  outline-offset: var(--spacing-xs);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .interactive-checkbox,
+  .kata-progress-fill,
+  .kata-progress-container,
+  .checkbox-complete-animation,
+  .celebration-animation {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .kata-progress-container {
+    border: var(--spacing-xs) solid;
+  }
+
+  .kata-progress-fill {
+    background: var(--checkbox-bg-dark);
+  }
+
+  [data-theme="dark"] .kata-progress-fill {
+    background: var(--checkbox-bg-light);
+  }
+}
+
+/* ========================================
+   Kata Progress Badge Styles
+   ======================================== */
+
+.kata-progress-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  margin-left: 8px;
+  border-radius: 12px;
+  font-size: 0.85em;
+  font-weight: 600;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  transition: all 0.2s ease-in-out;
+}
+
+/* Color coding based on completion percentage */
+.kata-progress-badge.started {
+  background-color: var(--theme-color, #ea6045);
+  color: white;
+}
+
+.kata-progress-badge.progress {
+  background-color: #f5a623;
+  color: white;
+}
+
+.kata-progress-badge.near-complete {
+  background-color: #7ed321;
+  color: white;
+}
+
+.kata-progress-badge.complete {
+  background-color: #4a90e2;
+  color: white;
+}
+
+.kata-progress-badge.not-started {
+  background-color: #94a3b8;
+  color: white;
+  opacity: 0.8;
+}
+
+/* Dark mode support for badges */
+[data-theme="dark"] .kata-progress-badge.started {
+  background-color: #d84a2b;
+}
+
+[data-theme="dark"] .kata-progress-badge.progress {
+  background-color: #d88c0f;
+}
+
+[data-theme="dark"] .kata-progress-badge.near-complete {
+  background-color: #5fb50a;
+}
+
+[data-theme="dark"] .kata-progress-badge.complete {
+  background-color: #2a7acc;
+}
+
+[data-theme="dark"] .kata-progress-badge.not-started {
+  background-color: #64748b;
+  color: #e2e8f0;
+  opacity: 0.85;
+}
+
+/* Responsive design for badges */
+@media (max-width: 768px) {
+  .kata-progress-badge {
+    font-size: 0.75em;
+    padding: 1px 6px;
+    margin-left: 6px;
+  }
+}
+
+/* Reduced motion for badges */
+@media (prefers-reduced-motion: reduce) {
+  .kata-progress-badge {
+    transition: none !important;
+  }
+}
+
+/* ========================================
+   Learning Path Metadata Styling
+   ======================================== */
+
+/* Learning Path Intro Section */
+.learning-path-intro {
+  padding: var(--spacing-lg);
+  margin: var(--spacing-lg) 0;
+  background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--surface-primary) 100%);
+  border-left: 4px solid var(--theme-color);
+  border-radius: var(--spacing-sm);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Metadata line (Level, Duration, Topics) */
+.learning-path-metadata {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
+  padding-bottom: var(--spacing-md);
+  border-bottom: 1px solid var(--border-color);
+  font-size: var(--spacing-md-plus);
+}
+
+.learning-path-metadata .metadata-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.learning-path-metadata .metadata-label {
+  font-weight: 700;
+  color: var(--theme-color);
+}
+
+.learning-path-metadata .metadata-value {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.learning-path-metadata .metadata-separator {
+  color: var(--text-secondary);
+  font-weight: 300;
+}
+
+/* Description paragraph */
+.learning-path-description {
+  font-size: 1.1em;
+  line-height: 1.6;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-md);
+  padding-bottom: var(--spacing-md);
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* Perfect for section */
+.learning-path-audience {
+  margin-bottom: var(--spacing-sm);
+  font-size: 1em;
+  line-height: 1.5;
+}
+
+.learning-path-audience strong {
+  color: var(--theme-color);
+  font-weight: 700;
+}
+
+/* Recommended for section */
+.learning-path-roles {
+  font-size: 1em;
+  line-height: 1.5;
+}
+
+.learning-path-roles strong {
+  color: var(--theme-color);
+  font-weight: 700;
+}
+
+/* Dark mode support */
+[data-theme="dark"] .learning-path-intro {
+  background: linear-gradient(135deg, var(--color-gray-100) 0%, var(--surface-primary) 100%);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .learning-path-metadata .metadata-label,
+[data-theme="dark"] .learning-path-audience strong,
+[data-theme="dark"] .learning-path-roles strong {
+  color: var(--theme-color-light);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .learning-path-intro {
+    padding: var(--spacing-md);
+  }
+
+  .learning-path-metadata {
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
+
+  .learning-path-metadata .metadata-separator {
+    display: none;
+  }
+
+  .learning-path-description {
+    font-size: 1em;
+  }
+}
+

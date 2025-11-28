@@ -1,0 +1,10 @@
+/* Medium-zoom z-index overrides */
+
+/* Ensure zoom overlay appears above all UI elements */
+.medium-zoom-overlay {
+  z-index: 10002 !important;
+}
+
+.medium-zoom-image--opened {
+  z-index: 10003 !important;
+}

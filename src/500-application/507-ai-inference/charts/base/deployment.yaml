@@ -1,0 +1,184 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ai-edge-inference
+  labels:
+    app: ai-edge-inference
+    component: ai-inference
+    part-of: edge-ai-inference
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ai-edge-inference
+  template:
+    metadata:
+      labels:
+        app: ai-edge-inference
+        component: ai-inference
+        part-of: edge-ai-inference
+    spec:
+      initContainers:
+        - name: models-init
+          image: busybox:1.35
+          command: ['sh', '-c']
+          args:
+            - |
+              echo "Initializing models directory..."
+              mkdir -p /models/test-images
+              echo "Creating placeholder files..."
+              echo "Models directory initialized" > /models/README.txt
+              echo "Test images directory for AI inference" > /models/test-images/README.txt
+              ls -la /models/
+              echo "Models directory initialization complete."
+          volumeMounts:
+            - name: models-volume
+              mountPath: /models
+      containers:
+        - name: ai-edge-inference
+          image: acrmodules01.azurecr.io/ai-edge-inference:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+              name: metrics
+              protocol: TCP
+            - containerPort: 8081
+              name: health
+              protocol: TCP
+          env:
+            - name: RUST_LOG
+              value: "debug"
+        - name: AIO_BROKER_HOSTNAME
+          value: "aio-broker.azure-iot-operations"
+        - name: AIO_BROKER_TCP_PORT
+          value: "18883"
+        - name: AIO_TLS_CA_FILE
+          value: "/var/run/certs/ca.crt"
+        - name: AIO_SAT_FILE
+          value: "/var/run/secrets/tokens/mq-sat"
+        - name: AIO_MQTT_CLIENT_ID
+          value: "ai-edge-inference-edge-device-01"
+        - name: MQTT_INPUT_TOPICS
+          value: "edge-ai/+/+/camera/snapshots"
+        - name: MQTT_QOS_LEVEL
+          value: "1"
+        - name: TOPIC_PREFIX
+          value: "edge-ai/business_unit/facility/gateway_id/"
+        - name: MODEL_DIRECTORY
+          value: "/models"
+        - name: METRICS_PORT
+          value: "8080"
+        - name: HEALTH_PORT
+          value: "8081"
+        - name: DEVICE_NAME
+          value: "edge-device-01"
+        - name: SITE
+          value: "pilot-site"
+        - name: FACILITY
+          value: "test-facility"
+        - name: REGION
+          value: "us-south"
+        - name: BUSINESS_UNIT
+          value: "upstream"
+        - name: ENABLE_GPU
+          value: "false"
+        - name: ENABLE_CUDA
+          value: "false"
+        - name: ENABLE_TENSORRT
+          value: "false"
+        - name: INFERENCE_BACKEND
+          value: "onnx"
+        - name: ONNX_PROVIDERS
+          value: "cpu"
+        - name: LD_LIBRARY_PATH
+          value: "/opt/onnxruntime/lib"
+        - name: ORT_LIB_LOCATION
+          value: "/opt/onnxruntime/lib"
+        - name: ONNXRUNTIME_SO_PATH
+          value: "/opt/onnxruntime/lib/libonnxruntime.so"
+        - name: DEFAULT_MODELS
+          value: "tiny-yolov2"
+        - name: SKIP_MODEL_VALIDATION
+          value: "true"
+        - name: INFERENCE_MODE
+          value: "cpu_only"
+        - name: FORCE_CPU_BACKEND
+          value: "true"
+        - name: DISABLE_GPU_BACKENDS
+          value: "true"
+        - name: DEBUG_BACKEND_SELECTION
+          value: "true"
+        - name: FALLBACK_MODE
+          value: "true"
+        - name: ORT_DISABLE_ALL_OPTIMIZATIONS
+          value: "1"
+        - name: ORT_FORCE_CPU_PROVIDER
+          value: "1"
+        - name: DEMO_MODE
+          value: "false"
+        - name: BYPASS_AI_ENGINE
+          value: "false"
+        - name: MOCK_INFERENCE_RESULTS
+          value: "false"
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "2Gi"
+              cpu: "1000m"
+          volumeMounts:
+            - name: mq-sat
+              mountPath: /var/run/secrets/tokens
+              readOnly: true
+            - name: trust-bundle
+              mountPath: /var/run/certs
+              readOnly: true
+            - name: models-volume
+              mountPath: /models
+            - name: logs-volume
+              mountPath: /logs
+          # Temporarily disabled health checks for debugging
+          # livenessProbe:
+          #   httpGet:
+          #     path: /healthz
+          #     port: health
+          #   initialDelaySeconds: 30
+          #   periodSeconds: 30
+          #   timeoutSeconds: 10
+          #   failureThreshold: 3
+          # readinessProbe:
+          #   httpGet:
+          #     path: /readyz
+          #     port: health
+          #   initialDelaySeconds: 15
+          #   periodSeconds: 10
+          #   timeoutSeconds: 5
+          #   failureThreshold: 3
+          # startupProbe:
+          #   httpGet:
+          #     path: /startup
+          #     port: health
+          #   initialDelaySeconds: 10
+          #   periodSeconds: 5
+          #   timeoutSeconds: 5
+          #   failureThreshold: 12
+      volumes:
+        - name: mq-sat
+          projected:
+            sources:
+              - serviceAccountToken:
+                  path: mq-sat
+                  audience: aio-internal
+                  expirationSeconds: 3600
+        - name: trust-bundle
+          configMap:
+            name: azure-iot-operations-aio-ca-trust-bundle
+        - name: models-volume
+          persistentVolumeClaim:
+            claimName: ai-models-pvc
+        - name: logs-volume
+          emptyDir: {}
+      restartPolicy: Always
+      serviceAccountName: ai-edge-inference-sa

@@ -1,3 +1,29 @@
+<!--
+GITHUB PAGES COMPATIBILITY NOTES:
+This index.html file is automatically modified during GitHub Pages deployment to ensure static hosting compatibility.
+Complex JavaScript features (ES6 modules, server-side integrations) are stripped using PowerShell processing
+during the deployment workflow to provide a reliable documentation experience on GitHub Pages.
+
+POWERSHELL STRIPPING PROCESS:
+- Removes ES6 modules (<script type="module">) and server-dependent JavaScript features
+- Strips learning progress tracking, kata systems, and advanced interactive components
+- Preserves essential Docsify functionality (navigation, search, basic plugins) and all CSS styling
+- Uses robust PowerShell regex processing with UTF8 encoding for international character support
+- Provides detailed validation and file size reduction metrics during deployment
+
+LOCAL TESTING:
+Run '.\scripts\Strip-GHPagesJS.ps1' to test the stripping process locally on Windows/Linux
+This helps developers validate GitHub Pages compatibility before pushing changes.
+
+DEPLOYMENT FEATURES:
+- Available on GitHub Pages: markdown navigation, search, CSS, basic Docsify plugins
+- Removed for compatibility: progress tracking, advanced plugins, mermaid diagrams, interactive features
+
+MAINTENANCE:
+Update PowerShell regex patterns in .github/workflows/pages-deploy.yml and scripts/Strip-GHPagesJS.ps1
+when adding new complex JavaScript features to ensure proper stripping for GitHub Pages compatibility.
+For full interactive functionality, use the main hosted version with complete feature set.
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,2069 +31,415 @@
   <title>Edge AI Platform Documentation</title>
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
   <meta name="description" content="Comprehensive documentation for the Edge AI platform, featuring Azure IoT Operations, Arc-enabled Kubernetes, and infrastructure as code solutions.">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- Favicon -->
+  <!-- ======================================== -->
+  <!-- FAVICON -->
+  <!-- ======================================== -->
   <link rel="icon" href="assets/logo.png" type="image/png">
 
-  <!-- Docsify theme -->
-  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify@4/lib/themes/vue.css">
-
-  <!-- Table of Contents plugin -->
-  <link rel="stylesheet" href="https://unpkg.com/docsify-plugin-toc@1.3.1/dist/light.css">
-  <!-- Sidebar collapse plugin -->
-  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify-sidebar-collapse/dist/sidebar.min.css" />
-
-  <!-- Interactive Progress Bar Styles -->
-  <link rel="stylesheet" href="docs/assets/css/features/interactive-progress.css" />
-
-  <!-- Custom styles -->
-  <style>
-    :root {
-      /* Primary brand colors */
-      --theme-color: #0078d4;
-      --theme-color-secondary: #106ebe;
-
-      /* Sidebar */
-      --sidebar-width: 300px;
-      --sidebar-nav-strong-border-right-color: var(--theme-color);
-
-      /* Header */
-      --cover-background-color: linear-gradient(to left bottom, hsl(240, 100%, 70%) 0%, hsl(240, 100%, 70%) 100%);
-    }
-
-    /* Logo in sidebar */
-    .sidebar .app-name img {
-      max-width: 40px;
-      height: auto;
-      margin-right: 10px;
-      vertical-align: middle;
-    }
-
-    /* Sidebar title styling */
-    .sidebar .app-name {
-      font-size: 1.2em;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      padding: 0 15px;
-    }
-
-    /* Content area adjustments */
-    .content {
-      padding-top: 10px;
-    }
-
-    /* Search box styling */
-    .search .input-wrap input {
-      border: 1px solid #e6e6e6;
-      border-radius: 4px;
-    }
-
-    /* Code block improvements */
-    pre[data-lang] {
-      border-radius: 6px;
-    }
-
-    /* Table styling */
-    table {
-      border-collapse: collapse;
-      width: 100%;
-      margin: 20px 0;
-    }
-
-    table th,
-    table td {
-      border: 1px solid #ddd;
-      padding: 8px 12px;
-      text-align: left;
-    }
-
-    table th {
-      background-color: #f5f5f5;
-      font-weight: 600;
-    }
-
-    /* Responsive improvements */
-    @media (max-width: 768px) {
-      .sidebar {
-        transform: translateX(-300px);
-      }
-
-      .sidebar.open {
-        transform: translateX(0);
-      }
-
-      /* Ensure sidebar is visible on desktop */
-      body.close .sidebar {
-        transform: translateX(0);
-      }
-    }
-
-    /* Ensure sidebar is visible by default on desktop */
-    @media (min-width: 769px) {
-      .sidebar {
-        transform: translateX(0) !important;
-      }
-    }    /* Table of Contents styling - Fixed position overlay */
-    .page_toc,
-    .toc-container,
-    .docsify-toc {
-      position: fixed !important;
-      right: 20px !important;
-      top: 140px !important; /* Adjusted for navbar height (60px) + spacing */
-      left: auto !important;
-      transform: none !important;
-      background: rgba(255, 255, 255, 0.95) !important;
-      border: 1px solid #e6e6e6 !important;
-      border-radius: 8px !important;
-      padding: 15px !important;
-      max-width: 200px !important;
-      width: 200px !important;
-      max-height: calc(100vh - 220px) !important; /* Adjusted for navbar space */
-      overflow-y: auto !important;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
-      z-index: 1000 !important;
-      backdrop-filter: blur(8px) !important;
-
-      /* Hide scrollbar in TOC but keep scrolling */
-      scrollbar-width: none !important; /* Firefox */
-      -ms-overflow-style: none !important; /* Internet Explorer 10+ */
-    }
-
-    /* Hide scrollbar for webkit browsers in TOC - Enhanced */
-    .page_toc::-webkit-scrollbar,
-    .toc-container::-webkit-scrollbar,
-    .docsify-toc::-webkit-scrollbar,
-    .page_toc *::-webkit-scrollbar,
-    .toc-container *::-webkit-scrollbar,
-    .docsify-toc *::-webkit-scrollbar {
-      display: none !important;
-      width: 0 !important;
-      height: 0 !important;
-      background: transparent !important;
-      -webkit-appearance: none !important;
-    }
-
-    /* Force no scrollbar on all child elements */
-    .page_toc,
-    .toc-container,
-    .docsify-toc,
-    .page_toc *,
-    .toc-container *,
-    .docsify-toc * {
-      scrollbar-width: none !important; /* Firefox */
-      -ms-overflow-style: none !important; /* Internet Explorer 10+ */
-      scrollbar-color: transparent transparent !important; /* Firefox - make transparent */
-    }
-
-    .page_toc .toc-title,
-    .toc-container .toc-title,
-    .docsify-toc .toc-title {
-      font-weight: 600 !important;
-      color: var(--theme-color) !important;
-      margin-bottom: 10px !important;
-      font-size: 0.9em !important;
-    }
-
-    .page_toc ul,
-    .toc-container ul,
-    .docsify-toc ul {
-      list-style: none !important;
-      padding: 0 !important;
-      margin: 0 !important;
-    }
-
-    .page_toc li,
-    .toc-container li,
-    .docsify-toc li {
-      margin: 5px 0 !important;
-    }
-
-    .page_toc a,
-    .toc-container a,
-    .docsify-toc a {
-      color: #666 !important;
-      text-decoration: none !important;
-      font-size: 0.8em !important;
-      line-height: 1.4 !important;
-      display: block !important;
-      padding: 2px 0 !important;
-      transition: color 0.2s ease !important;
-    }
-
-    .page_toc a:hover,
-    .toc-container a:hover,
-    .docsify-toc a:hover {
-      color: var(--theme-color) !important;
-    }
-
-    .page_toc a.active,
-    .toc-container a.active,
-    .docsify-toc a.active {
-      color: var(--theme-color) !important;
-      font-weight: 500 !important;
-      background: none !important;
-      border: none !important;
-      border-left: none !important;
-      border-right: none !important;
-      box-shadow: none !important;
-      outline: none !important;
-    }
-
-    /* Override any plugin-specific active state styling */
-    .page_toc a.active::before,
-    .page_toc a.active::after,
-    .toc-container a.active::before,
-    .toc-container a.active::after,
-    .docsify-toc a.active::before,
-    .docsify-toc a.active::after {
-      display: none !important;
-      content: none !important;
-      background: none !important;
-      border: none !important;
-    }
-
-    /* Remove any scroll indicators or progress bars from plugin */
-    .page_toc .toc-progress,
-    .page_toc .scroll-indicator,
-    .page_toc .progress-bar,
-    .toc-container .toc-progress,
-    .toc-container .scroll-indicator,
-    .toc-container .progress-bar,
-    .docsify-toc .toc-progress,
-    .docsify-toc .scroll-indicator,
-    .docsify-toc .progress-bar {
-      display: none !important;
-    }
-
-    /* Hide TOC on smaller screens */
-    @media (max-width: 1200px) {
-      .page_toc,
-      .toc-container,
-      .docsify-toc {
-        display: none !important;
-      }
-    }
-
-    /* Sidebar - only for page navigation */
-    .sidebar {
-      z-index: 999 !important;
-    }
-
-    /* Ensure sidebar navigation is clean and focused on pages only */
-    .sidebar-nav > ul > li > a {
-      font-weight: 600;
-      color: var(--theme-color);
-    }
-
-    /* Make bold elements in sidebar actually render as bold */
-    .sidebar-nav strong {
-      font-weight: bold !important;
-      color: var(--theme-color);
-    }
-
-    .sidebar-nav ul ul {
-      padding-left: 20px;
-    }
-
-    /* Disable any automatic heading generation in sidebar */
-    .sidebar .sidebar-nav .auto-header {
-      display: none !important;
-    }
-
-    /* High priority rules to hide app-sub-sidebar elements */
-    .sidebar .sidebar-nav .app-sub-sidebar,
-    .sidebar .app-sub-sidebar,
-    .sidebar-nav .app-sub-sidebar,
-    .app-sub-sidebar,
-    [class*="app-sub-sidebar"],
-    div.app-sub-sidebar,
-    ul.app-sub-sidebar,
-    li.app-sub-sidebar,
-    .sidebar .sidebar-nav ul.app-sub-sidebar,
-    .sidebar .sidebar-nav li.app-sub-sidebar,
-    .sidebar .sidebar-nav div.app-sub-sidebar {
-      display: none !important;
-      visibility: hidden !important;
-      opacity: 0 !important;
-      height: 0 !important;
-      overflow: hidden !important;
-      position: absolute !important;
-      left: -9999px !important;
-    }
-
-    /* CONTENT LAYOUT - Force proper positioning and scrolling */
-    body {
-      margin: 0 !important;
-      padding: 0 !important;
-      overflow: hidden !important; /* Prevent body scroll */
-    }    /* Force content positioning with proper scroll container */
-    .content,
-    section.content,
-    .app-main {
-      position: fixed !important;
-      left: 320px !important; /* Just past sidebar */
-      right: 240px !important; /* Space for TOC */
-      top: 60px !important; /* Space for navbar */
-      bottom: 0 !important;
-      overflow-y: auto !important;
-      overflow-x: hidden !important;
-      padding: 20px !important;
-      margin: 0 !important;
-      width: auto !important;
-      max-width: none !important;
-      box-sizing: border-box !important;
-
-      /* Hide scrollbar while keeping scroll functionality */
-      scrollbar-width: none !important; /* Firefox */
-      -ms-overflow-style: none !important; /* Internet Explorer 10+ */
-    }
-
-    /* Hide scrollbar for webkit browsers (Chrome, Safari, Edge) */
-    .content::-webkit-scrollbar,
-    section.content::-webkit-scrollbar,
-    .app-main::-webkit-scrollbar {
-      display: none !important;
-      width: 0 !important;
-      height: 0 !important;
-    }
-
-    /* Make markdown section fill the space and position TOC relative to it */
-    .markdown-section {
-      max-width: none !important;
-      width: 100% !important;
-      padding: 0 !important;
-      margin: 0 !important;
-      box-sizing: border-box !important;
-      position: relative !important; /* This allows TOC to position relative to content */
-    }    /* Responsive - hide TOC space on smaller screens */
-    @media (max-width: 1200px) {
-      .content,
-      section.content,
-      .app-main {
-        right: 20px !important; /* Remove TOC space but maintain navbar clearance */
-        top: 60px !important; /* Ensure navbar space on tablets */
-      }
-
-      .page_toc,
-      .toc-container,
-      .docsify-toc {
-        display: none !important;
-      }
-    }/* Mobile responsive layout */
-    @media (max-width: 768px) {
-      .content,
-      section.content,
-      .app-main {
-        left: 0 !important;
-        right: 0 !important;
-        top: 60px !important; /* Maintain navbar space on mobile */
-        position: relative !important;
-      }
-    }
-
-    /* Mermaid diagram styling */
-    .mermaid {
-      text-align: center;
-      margin: 20px 0;
-      overflow-x: auto;
-    }
-
-    .mermaid svg {
-      max-width: 100%;
-      height: auto;
-      display: block;
-      margin: 0 auto;
-    }
-
-    /* Enhanced Page Metadata styling */
-    .page-metadata {
-      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-      border: 1px solid #dee2e6;
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 30px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    }
-
-    .metadata-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 15px;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-
-    .page-title {
-      color: var(--theme-color);
-      font-size: 1.8em;
-      font-weight: 600;
-      margin: 0;
-      line-height: 1.2;
-    }
-
-    .status-badge {
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 0.75em;
-      font-weight: 500;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .status-draft { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
-    .status-published { background: #d1edff; color: #0c5460; border: 1px solid #b8daff; }
-    .status-review { background: #f8d7da; color: #721c24; border: 1px solid #f1aeb5; }
-    .status-archived { background: #e2e3e5; color: #383d41; border: 1px solid #ced4da; }
-
-    .metadata-info {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .metadata-byline {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-      flex-wrap: wrap;
-      font-size: 0.9em;
-      color: #6c757d;
-    }
-
-    .metadata-byline span {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    .metadata-byline .reading-time {
-      color: var(--theme-color);
-      font-weight: 500;
-    }
-
-    .metadata-tags {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .tag-button {
-      background: var(--theme-color);
-      color: white;
-      border: none;
-      padding: 4px 10px;
-      border-radius: 16px;
-      font-size: 0.75em;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      text-decoration: none;
-    }
-
-    .tag-button:hover {
-      background: var(--theme-color-secondary);
-      transform: translateY(-1px);
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    }
-
-    .metadata-details {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      flex-wrap: wrap;
-      font-size: 0.85em;
-      color: #6c757d;
-    }
-
-    .metadata-description {
-      font-style: italic;
-      color: #495057;
-      padding: 10px 0;
-      border-top: 1px solid #dee2e6;
-      margin-top: 10px;
-      line-height: 1.5;
-    }
-
-    /* Enhanced Metadata Layout Styling */
-    .metadata-header-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
-      flex-wrap: wrap;
-      gap: 15px;
-    }
-
-    .metadata-author {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 0.95em;
-      color: #495057;
-    }
-
-    .author-label {
-      color: #6c757d;
-      font-weight: normal;
-    }
-
-    .author-name {
-      font-weight: 600;
-      color: #495057;
-    }
-
-    .metadata-reading-time {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      background: #f8f9fa;
-      padding: 6px 14px;
-      border-radius: 20px;
-      font-size: 0.9em;
-      color: #6c757d;
-      font-weight: 500;
-      border: 1px solid #e9ecef;
-      transition: all 0.2s ease;
-    }
-
-    .metadata-reading-time:hover {
-      background: #e9ecef;
-      transform: translateY(-1px);
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-
-    .reading-time-icon {
-      font-size: 0.9em;
-      opacity: 0.8;
-    }
-
-    .reading-time-value {
-      font-weight: 600;
-      color: var(--theme-color);
-    }
-
-    .reading-time-unit {
-      color: #6c757d;
-      font-size: 0.85em;
-    }
-
-    .metadata-date-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 0.9em;
-      color: #6c757d;
-      margin-bottom: 16px;
-      flex-wrap: wrap;
-    }
-
-    .date-icon, .updated-icon {
-      font-size: 0.9em;
-      opacity: 0.7;
-    }
-
-    .date-label, .updated-label {
-      font-weight: normal;
-      color: #6c757d;
-    }
-
-    .date-value, .updated-value {
-      font-weight: 500;
-      color: #495057;
-    }
-
-    /* Responsive improvements for new layout */
-    @media (max-width: 768px) {
-      .metadata-header-row {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-      }
-
-      .metadata-reading-time {
-        align-self: flex-end;
-        margin-top: 5px;
-      }
-
-      .metadata-date-row {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 4px;
-      }
-    }
-
-    /* Legacy metadata-byline styling */
-    .metadata-byline {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-      flex-wrap: wrap;
-      font-size: 0.9em;
-      color: #6c757d;
-    }
-
-    .metadata-byline span {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    .metadata-byline .reading-time {
-      color: var(--theme-color);
-      font-weight: 500;
-    }
-
-    /* Dark mode variables */
-    :root {
-      --docsify-dark-mode-btn-position: 15px;
-      --docsify-dark-mode-btn-size: 40px;
-    }
-
-    /* Progress bar styling */
-    .progress-bar {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 0%;
-      height: 3px;
-      background: linear-gradient(90deg, var(--theme-color), var(--theme-color-secondary));
-      z-index: 10000;
-      transition: width 0.2s ease;
-    }
-
-    /* Enhanced copy code button styling */
-    .docsify-copy-code-button {
-      background: var(--theme-color) !important;
-      color: white !important;
-      border-radius: 6px !important;
-      font-size: 0.75em !important;
-      padding: 4px 8px !important;
-      transition: all 0.2s ease !important;
-    }
-
-    .docsify-copy-code-button:hover {
-      background: var(--theme-color-secondary) !important;
-      transform: translateY(-1px) !important;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
-    }
-
-    /* Edit on GitHub button styling */
-    .edit-on-github {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: var(--theme-color);
-      color: white;
-      padding: 10px 15px;
-      border-radius: 25px;
-      text-decoration: none;
-      font-size: 0.9em;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-      transition: all 0.3s ease;
-      z-index: 1000;
-    }
-
-    .edit-on-github:hover {
-      background: var(--theme-color-secondary);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-      color: white;
-    }
-
-    /* Footer styling */
-    .docsify-footer {
-      padding: 30px 0;
-      border-top: 1px solid #e6e6e6;
-      background: #f8f9fa;
-      text-align: center;
-      margin-top: 50px;
-    }
-
-    .docsify-footer p {
-      margin: 5px 0;
-      color: #6c757d;
-      font-size: 0.9em;
-    }
-
-    .docsify-footer a {
-      color: var(--theme-color);
-      text-decoration: none;
-    }
-
-    .docsify-footer a:hover {
-      text-decoration: underline;
-    }
-
-    /* Breadcrumb styling */
-    .docsify-breadcrumb {
-      padding: 10px 0;
-      margin-bottom: 20px;
-      border-bottom: 1px solid #e6e6e6;
-      font-size: 0.9em;
-    }
-
-    .docsify-breadcrumb ul {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-
-    .docsify-breadcrumb li {
-      display: flex;
-      align-items: center;
-    }
-
-    .docsify-breadcrumb li:not(:last-child):after {
-      content: "›";
-      margin: 0 8px;
-      color: #999;
-    }
-
-    .docsify-breadcrumb a {
-      color: var(--theme-color);
-      text-decoration: none;
-      padding: 4px 0;
-    }
-
-    .docsify-breadcrumb a:hover {
-      text-decoration: underline;
-    }
-
-    /* Sidebar collapse button styling */
-    .sidebar-toggle {
-      background: var(--theme-color) !important;
-      border-radius: 0 6px 6px 0 !important;
-    }
-
-    .sidebar-toggle:hover {
-      background: var(--theme-color-secondary) !important;
-    }
-
-    /* Updated timestamp styling */
-    .docsify-updated {
-      color: #6c757d;
-      font-size: 0.85em;
-      margin-top: 20px;
-      padding-top: 20px;
-      border-top: 1px solid #e6e6e6;
-      text-align: right;
-    }
-
-    .docsify-updated:before {
-      content: "🕒 ";
-    }
-
-    /* Dark mode compatibility */
-    body.dark {
-      background: #1c2022;
-      color: #b4b4b4;
-    }
-
-    body.dark .sidebar {
-      background: #2d3748;
-      border-right: 1px solid #4a5568;
-    }
-
-    body.dark .sidebar ul li a {
-      color: #cbd5e0;
-    }
-
-    body.dark .sidebar ul li a:hover {
-      color: #63b3ed;
-    }
-
-    body.dark .content {
-      background: #1c2022;
-    }
-
-    body.dark .markdown-section {
-      color: #e2e8f0;
-    }
-
-    body.dark .markdown-section h1,
-    body.dark .markdown-section h2,
-    body.dark .markdown-section h3,
-    body.dark .markdown-section h4,
-    body.dark .markdown-section h5,
-    body.dark .markdown-section h6 {
-      color: #63b3ed;
-    }
-
-    body.dark .markdown-section code {
-      background: #2d3748;
-      color: #fbb6ce;
-    }
-
-    body.dark .markdown-section pre {
-      background: #2d3748;
-    }
-
-    body.dark .markdown-section blockquote {
-      background: #2d3748;
-      border-left: 4px solid #63b3ed;
-    }
-
-    body.dark .page-metadata {
-      background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
-      border-color: #4a5568;
-      color: #e2e8f0;
-    }
-
-    body.dark .page-title {
-      color: #63b3ed;
-    }
-
-    body.dark .metadata-description {
-      color: #cbd5e0;
-      border-color: #4a5568;
-    }
-
-    body.dark .docsify-footer {
-      background: #2d3748;
-      border-color: #4a5568;
-    }
-
-    body.dark .docsify-breadcrumb {
-      border-color: #4a5568;
-    }
-
-    body.dark .docsify-updated {
-      color: #a0aec0;
-      border-color: #4a5568;
-    }
-
-    body.dark table th {
-      background: #2d3748;
-      color: #e2e8f0;
-    }
-
-    body.dark table td {
-      border-color: #4a5568;
-      color: #cbd5e0;
-    }
-
-    body.dark .search .input-wrap input {
-      background: #2d3748;
-      border-color: #4a5568;
-      color: #e2e8f0;
-    }
-
-    body.dark .docsify-toc {
-      background: rgba(45, 55, 72, 0.95) !important;
-      border-color: #4a5568 !important;
-      color: #e2e8f0 !important;
-    }
-
-    body.dark .docsify-toc a {
-      color: #a0aec0 !important;
-    }
-
-    body.dark .docsify-toc a:hover {
-      color: #63b3ed !important;
-    }
-  </style>
-
-  <!-- Critical CSS for immediate rendering -->
-  <link rel="stylesheet" href="docs/assets/css/critical.css">
-    <!-- Main CSS - all modular styles -->
+  <!-- ======================================== -->
+  <!-- FONT PRELOADING FOR PERFORMANCE -->
+  <!-- ======================================== -->
+  <!-- Preload critical fonts -->
+  <link rel="preload" href="https://fonts.gstatic.com/s/sourcesanspro/v23/6xK3dSBYKcSV-LCoeQqfX1RYOo3qOK7l.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+  <!-- ======================================== -->
+  <!-- EXTERNAL CSS DEPENDENCIES -->
+  <!-- ======================================== -->
+  <!-- Docsify core theme -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsify@4/lib/themes/vue.css">
+
+  <!-- Material Design Icons for UI components with font-display optimization -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@6.9.96/css/materialdesignicons.min.css" crossorigin="anonymous">
+
+  <!-- ======================================== -->
+  <!-- THEME & FOUNDATION STYLES -->
+  <!-- ======================================== -->
+  <!-- CSS variables and theme foundation -->
+  <link rel="stylesheet" href="docs/assets/css/theme/variables.css">
+
+  <!-- Main application styles -->
   <link rel="stylesheet" href="docs/assets/css/main.css">
+
+  <!-- Interactive checkboxes styles -->
+  <link rel="stylesheet" href="docs/assets/css/interactive-checkboxes.css">
+
+  <!-- Learning path header styles -->
+  <link rel="stylesheet" href="docs/assets/css/components/learning-path-headers.css">
+
+  <!-- Learning paths dashboard cards -->
+  <link rel="stylesheet" href="docs/assets/css/components/learning-paths-cards.css">
+
+  <!-- Interactive progress styles -->
+  <link rel="stylesheet" href="docs/assets/css/components/interactive-progress.css">
+
+  <!-- Self-evaluation forms and skill assessment styles -->
+  <link rel="stylesheet" href="docs/assets/css/features/self-evaluation-forms.css">
+
+  <!-- Assessment completion modal styles -->
+  <link rel="stylesheet" href="docs/assets/css/features/assessment-completion-modal.css">
+
 </head>
+
 <body>
   <div id="app">Loading documentation...</div>
 
+  <!-- ======================================== -->
+  <!-- DOCSIFY CONFIGURATION -->
+  <!-- ======================================== -->
   <script>
     window.$docsify = {
-      name: '<img src="docs/assets/logo.png" alt="Logo" style="width:40px;height:40px;margin-right:10px;vertical-align:middle;">Edge AI Platform',
-      repo: 'https://github.com/Microsoft/edge-ai',
-      loadSidebar: 'docs/_sidebar.md',  // Use custom _sidebar.md file from docs directory
-      loadNavbar: 'docs/_navbar.md',  // Load navbar from docs directory (with alias redirection)
-      auto2top: true,      homepage: 'docs/index.md',  // Explicitly set the homepage
+      name: 'Edge AI Platform',
+      repo: '',
+      loadSidebar: true,
+      loadNavbar: true,
+      subMaxLevel: 4, // Keep for right-side TOC functionality
+      auto2top: false, // Handled by our scroll manager
+      maxLevel: 4,
+      homepage: 'docs/README.md',
+      notFoundPage: 'docs/_404.md',
+      relativePath: true,
+      basePath: '/',
+      alias: {
+        // Sidebar routing - specific paths first, then wildcards
+        '/src/_sidebar.md': '/docs/_parts/infrastructure-sidebar.md',
+        '/learning/_sidebar.md': '/docs/_parts/learning-sidebar.md',
+        '/blueprints/_sidebar.md': '/docs/_parts/blueprints-sidebar.md',
+        '/docs/_sidebar.md': '/docs/_parts/docs-sidebar.md',
+        '/copilot/_sidebar.md': '/docs/_parts/copilot-sidebar.md',
+        '/.github/_sidebar.md': '/docs/_parts/copilot-sidebar.md',
 
-      // Cover page
-      coverpage: false,
+        // Sidebar routing - wildcard patterns for nested paths
+        '/src/.*/_sidebar.md': '/docs/_parts/infrastructure-sidebar.md',
+        '/learning/.*/_sidebar.md': '/docs/_parts/learning-sidebar.md',
+        '/blueprints/.*/_sidebar.md': '/docs/_parts/blueprints-sidebar.md',
+        '/docs/.*/_sidebar.md': '/docs/_parts/docs-sidebar.md',
+        '/tests/.*/_sidebar.md': '/docs/_parts/infrastructure-sidebar.md',
+        '/scripts/.*/_sidebar.md': '/docs/_parts/infrastructure-sidebar.md',
+        '/copilot/.*/_sidebar.md': '/docs/_parts/copilot-sidebar.md',
+        '/.github/.*/_sidebar.md': '/docs/_parts/copilot-sidebar.md',
 
-      // Search plugin configuration - restored and optimized for multi-section architecture
-      search: {
-        maxAge: 3600000, // 1 hour cache for faster content update visibility
-        paths: 'auto', // Automatic path discovery
-        placeholder: 'Type to search',
-        noData: 'No results found',
-        depth: 2, // Index h1 and h2 headings
-        namespace: 'edge-ai-docs', // Unique namespace to avoid conflicts
-        pathNamespaces: ['/docs', '/src', '/blueprints', '/praxisworx', '/.github', '/copilot'], // Multi-section support
-        hideOtherSidebarContent: false // Keep sidebar content visible during search
+        // Default fallback sidebar
+        '/_sidebar.md': '/docs/_parts/home-sidebar.md',
+
+        // Navigation and content aliases
+        '/learning/_navbar.md': '/docs/_parts/_navbar.md',
+        '/blueprints/_navbar.md': '/docs/_parts/_navbar.md',
+        '/src/_navbar.md': '/docs/_parts/_navbar.md',
+        '/docs/_navbar.md': '/docs/_parts/_navbar.md',
+        '/copilot/_navbar.md': '/docs/_parts/_navbar.md',
+        '/.github/_navbar.md': '/docs/_parts/_navbar.md',
+
+        // Navbar routing - wildcard patterns for nested paths
+        '/learning/.*/_navbar.md': '/docs/_parts/_navbar.md',
+        '/blueprints/.*/_navbar.md': '/docs/_parts/_navbar.md',
+        '/src/.*/_navbar.md': '/docs/_parts/_navbar.md',
+        '/docs/.*/_navbar.md': '/docs/_parts/_navbar.md',
+        '/tests/.*/_navbar.md': '/docs/_parts/_navbar.md',
+        '/scripts/.*/_navbar.md': '/docs/_parts/_navbar.md',
+        '/copilot/.*/_navbar.md': '/docs/_parts/_navbar.md',
+        '/.github/.*/_navbar.md': '/docs/_parts/_navbar.md',
+
+        '/_navbar.md': '/docs/_parts/_navbar.md',
+        '/_404.md': '/docs/_parts/_404.md',
+        '/_sidebar.md': '/docs/_parts/_sidebar.md',
+        '/_footer.md': '/docs/_parts/_footer.md',
+
+        // README redirects
+        '/README.md': '/docs/README.md',
+        '/README': '/docs/README.md',
+        '/docs/index.md': '/docs/README.md',
+        '/docs/index': '/docs/README.md',
+
+        // Documentation section index redirects
+        '/docs/getting-started/index.md': '/docs/getting-started/README.md',
+        '/docs/getting-started/index': '/docs/getting-started/README.md',
+        '/docs/contributing/index.md': '/docs/contributing/README.md',
+        '/docs/contributing/index': '/docs/contributing/README.md',
+        '/docs/observability/index.md': '/docs/observability/README.md',
+        '/docs/observability/index': '/docs/observability/README.md',
+        '/docs/build-cicd/index.md': '/docs/build-cicd/README.md',
+        '/docs/build-cicd/index': '/docs/build-cicd/README.md',
+        '/docs/project-planning/index.md': '/docs/project-planning/README.md',
+        '/docs/project-planning/index': '/docs/project-planning/README.md',
+        '/docs/solution-adr-library/index.md': '/docs/solution-adr-library/README.md',
+        '/docs/solution-adr-library/index': '/docs/solution-adr-library/README.md',
+        '/docs/solution-security-plan-library/index.md': '/docs/solution-security-plan-library/README.md',
+        '/docs/solution-security-plan-library/index': '/docs/solution-security-plan-library/README.md',
+        '/docs/solution-technology-paper-library/index.md': '/docs/solution-technology-paper-library/README.md',
+        '/docs/solution-technology-paper-library/index': '/docs/solution-technology-paper-library/README.md'
       },
-
-      // Pagination
+      search: {
+        maxAge: 86400000, // 24 hours - reduce reindex frequency
+        paths: [
+          '/docs/',
+          '/learning/'
+        ],
+        placeholder: 'Search documentation...',
+        noData: 'No Results!',
+        depth: 3, // Reduced from 6 to limit index size
+        hideOtherSidebarContent: false,
+        namespace: 'edge-ai-docs-v2', // New namespace to clear old problematic index
+        // Additional options to reduce index size
+        startWithKeywords: true,
+        ignoreAccents: true
+      },
+      toc: {
+        tocMaxLevel: 4,
+        target: 'h1, h2, h3, h4',
+        ignoreHeaders: ['<!-- {docsify-ignore} -->', '<!-- {docsify-ignore-all} -->']
+      },
+      breadcrumb: {
+        showHome: true,
+        homeText: '🏠 Home',
+        separator: ' › ',
+        casing: 'capitalize'
+      },
       pagination: {
         previousText: '← Previous',
         nextText: 'Next →',
         crossChapter: true,
         crossChapterText: true
       },
-
-      // Copy code plugin
-      copyCode: {
-        buttonText: 'Copy',
-        errorText: 'Error',
-        successText: 'Copied!'
-      },
-
-      // Zoom image plugin
-      zoom: {
-        selector: '.markdown-section img',
-        delay: 1000,
-        margin: 40,
-        background: 'rgba(0,0,0,0.8)'
-      },
-
-      // External link target
-      externalLinkTarget: '_blank',
-
-      // Corner external link
-      cornerExternalLinkTarget: '_blank',
-
-      // Tabs
-      tabs: {
-        persist: true,
-        sync: true,
-        theme: 'classic',
-        tabComments: true,
-        tabHeadings: true
-      },
-
-      // Flexible alerts
-      'flexible-alerts': {
-        style: 'flat',
-        note: {
-          label: 'Note'
-        },
-        tip: {
-          label: 'Tip'
-        },
-        warning: {
-          label: 'Warning'
-        },
-        danger: {
-          label: 'Danger'
+      mermaid: {
+        theme: 'default',
+        themeCSS: '.label { font-family: Source Sans Pro,Helvetica Neue,Arial,sans-serif; }',
+        startOnLoad: true,
+        flowchart: {
+          useMaxWidth: true
         }
       },
-
-      // Table of Contents - only for right side navigation
-      toc: {
-        tocMaxLevel: 5,
-        target: 'h2, h3, h4, h5, h6',
-        ignoreHeaders: ['<!-- {docsify-ignore} -->', '<!-- {docsify-ignore-all} -->'],
-        disableSidebarToc: true, // Disable TOC in sidebar, only show on right
-        forceRightToc: true,     // Force TOC to only appear on right side
-        sidebarToc: false        // Explicitly disable sidebar TOC
+      scrollToTop: {
+        auto: false,
+        text: 'Top',
+        right: 15,
+        bottom: 15,
+        offset: 500
       },
-
-      // Mermaid configuration
-      mermaidConfig: {
-        theme: 'default'
-      },
-
-      // Sidebar collapse configuration
-      sidebarDisplayLevel: 0, // Everything starts collapsed
-      subMaxLevel: 3,         // Allow up to 3 levels in sidebar
-      auto2top: true,         // Auto scroll to top when navigating      // Homepage
-      homepage: 'docs/index.md',      // Alias configuration - Critical for multi-folder content structure
-      // Docsify by default looks for navigation files relative to the current page's path
-      // These aliases redirect all requests to centralized navigation files, ensuring
-      // consistent navigation across all content folders (docs/, blueprints/, praxisworx/, etc.)
-      //
-      // BACKUP - Original configuration (before section-specific sidebar routing):
-      // alias: {
-      //   '/.*/_media/(.*)': 'docs/_media/$1',
-      //   '/src-docs/(.*)': 'src/$1',
-      //   '/src.*/_sidebar.md': 'docs/_sidebar.md',
-      //   '/.*/_sidebar.md': 'docs/_sidebar.md',
-      //   '/.*/_navbar.md': 'docs/_navbar.md'
-      // },      // NEW - Section-specific sidebar routing configuration (2025-06-18):
-      // Performance Note: Patterns are ordered from most specific to least specific
-      // for optimal matching efficiency. Most commonly accessed sections are prioritized.
-      alias: {
-        // Media files - redirect any _media requests to the main docs/_media folder
-        // High priority: needed for all image/asset loading across sections
-        '/.*/_media/(.*)': 'docs/_media/$1',
-
-        // Source documentation - map src-docs paths to actual src folder
-        // High priority: common documentation pattern
-        '/src-docs/(.*)': 'src/$1',
-
-        // Section-specific sidebar routing - ORDERED BY EXPECTED USAGE FREQUENCY
-        // Note: These MUST come before generic patterns to ensure proper section detection
-
-        // Documentation section - loads docs-specific sidebar (HIGHEST TRAFFIC)
-        '/docs.*/_sidebar.md': 'docs/_parts/docs-sidebar.md',
-
-        // Infrastructure section (src folder) - loads infrastructure-specific sidebar
-        '/src.*/_sidebar.md': 'docs/_parts/infrastructure-sidebar.md',
-
-        // Blueprints section - loads blueprints-specific sidebar
-        '/blueprints.*/_sidebar.md': 'docs/_parts/blueprints-sidebar.md',
-
-        // PraxisWorx section - loads praxisworx-specific sidebar
-        '/praxisworx.*/_sidebar.md': 'docs/_parts/praxisworx-sidebar.md',
-
-        // Copilot Resources section - loads copilot-specific sidebar
-        // Two patterns for comprehensive coverage of GitHub Copilot resources
-        '/copilot.*/_sidebar.md': 'docs/_parts/copilot-sidebar.md',
-        '/.github.*/_sidebar.md': 'docs/_parts/copilot-sidebar.md',
-
-        // Home section - loads home-specific sidebar for root-level content
-        // Complex pattern for root-level markdown files - optimized regex grouping
-        '/(?:README|INDEX|CONTRIBUTING|SECURITY|SUPPORT|CODE_OF_CONDUCT|LICENSE).*/_sidebar.md': 'docs/_parts/home-sidebar.md',
-
-        // Fallback sidebar navigation - handle all other paths with default sidebar
-        // IMPORTANT: This MUST be last among sidebar patterns for proper precedence
-        '/.*/_sidebar.md': 'docs/_sidebar.md',
-
-        // Navbar navigation - ensure all directories use the same navbar
-        // Without this, subpages would try to load their own _navbar.md and fail with 404s
-        '/.*/_navbar.md': 'docs/_navbar.md'
-      },
-
-      // 404 fallback
-      notFoundPage: 'docs/_404.md',
-
-      // Custom plugins
+      // Prevent querySelector errors from hash-based navigation
       plugins: [
-        // Sidebar visibility fix
-        function(hook, vm) {
-          hook.ready(function() {
-            // Ensure sidebar is visible on desktop
-            if (window.innerWidth > 768) {
-              const sidebar = document.querySelector('.sidebar');
-              if (sidebar) {
-                sidebar.style.transform = 'translateX(0)';
-                sidebar.style.display = 'block';
-              }
-            }
-          });
-        },
-        // Enhanced Frontmatter plugin
-        function(hook, vm) {
-          let currentMetadata = {};
-
+        // Task list renderer - process raw markdown BEFORE Docsify parsing
+        function (hook, vm) {
           hook.beforeEach(function(content) {
-            // Check for YAML frontmatter
-            const frontmatterRegex = /^---\s*\n([\s\S]*?)\n---\s*\n/;
-            const match = content.match(frontmatterRegex);
+            // Convert unchecked: - [ ] → - <input type="checkbox">
+            content = content.replace(
+              /^(\s*)-\s+\[\s*\]\s+(.+)$/gm,
+              '$1- <input type="checkbox"> $2'
+            );
 
-            if (match) {
-              const yamlContent = match[1];
-              const cleanContent = content.replace(frontmatterRegex, '');
-
-              try {
-                // Enhanced YAML parser for basic key-value pairs and arrays
-                const metadata = {};
-                const lines = yamlContent.split('\n');
-                let currentKey = null;
-                let currentArray = [];
-                let inArray = false;
-
-                lines.forEach(line => {
-                  const trimmedLine = line.trim();
-
-                  // Skip empty lines
-                  if (!trimmedLine) {
-                    return;
-                  }
-
-                  // Handle array items starting with -
-                  if (trimmedLine.startsWith('- ')) {
-                    if (inArray && currentKey) {
-                      let arrayItem = trimmedLine.substring(2).trim();
-                      // Remove quotes if present
-                      arrayItem = arrayItem.replace(/^['"]|['"]$/g, '');
-                      currentArray.push(arrayItem);
-                    }
-                    return;
-                  }
-
-                  // Finish current array if we hit a new key while in array mode
-                  if (inArray && currentKey && trimmedLine.includes(':')) {
-                    metadata[currentKey] = [...currentArray]; // Create a copy
-                    currentArray = [];
-                    inArray = false;
-                    currentKey = null;
-                  }
-
-                  // Process key-value pairs
-                  const colonIndex = trimmedLine.indexOf(':');
-                  if (colonIndex > 0) {
-                    const key = trimmedLine.substring(0, colonIndex).trim();
-                    let value = trimmedLine.substring(colonIndex + 1).trim();
-
-                    // Remove surrounding quotes
-                    value = value.replace(/^['"]|['"]$/g, '');
-
-                    // Check if this starts an array (empty value after colon)
-                    if (value === '' || value === '[]') {
-                      currentKey = key;
-                      currentArray = [];
-                      inArray = true;
-                      return;
-                    }
-
-                    // Handle inline arrays with commas
-                    if (value.includes(',')) {
-                      value = value.split(',').map(item => item.trim().replace(/^['"]|['"]$/g, ''));
-                    }
-
-                    // Store the key-value pair
-                    metadata[key] = value;
-                  }
-                });
-
-                // Handle final array if file ends with array
-                if (inArray && currentKey && currentArray.length > 0) {
-                  metadata[currentKey] = [...currentArray]; // Create a copy
-                }
-
-                currentMetadata = metadata;
-
-                // Generate enhanced metadata display
-                let metadataHtml = '<div class="page-metadata">';
-
-                // Title and status bar
-                if (metadata.title || metadata.status) {
-                  metadataHtml += '<div class="metadata-header">';
-                  if (metadata.title) {
-                    metadataHtml += `<h1 class="page-title">${metadata.title}</h1>`;
-                  }
-                  if (metadata.status) {
-                    const statusClass = metadata.status.toLowerCase().replace(/\s+/g, '-');
-                    metadataHtml += `<span class="status-badge status-${statusClass}">${metadata.status}</span>`;
-                  }
-                  metadataHtml += '</div>';
-                }
-
-                // Key information row
-                metadataHtml += '<div class="metadata-info">';
-
-                // Improved metadata layout with better visual hierarchy
-                if (metadata.author || metadata.date || metadata.updated || metadata.estimated_reading_time) {
-                  // First row: Author and reading time (most important info)
-                  if (metadata.author || metadata.estimated_reading_time) {
-                    metadataHtml += '<div class="metadata-header-row">';
-
-                    if (metadata.author) {
-                      metadataHtml += '<div class="metadata-author">';
-                      metadataHtml += `<span class="author-label">By</span> `;
-                      metadataHtml += `<span class="author-name">${metadata.author}</span>`;
-                      metadataHtml += '</div>';
-                    }
-
-                    // Add reading time support with prominent display
-                    if (metadata.estimated_reading_time) {
-                      let readingTime = metadata.estimated_reading_time;
-                      // Handle both "X minutes" format and integer format
-                      if (typeof readingTime === 'string') {
-                        // Extract number from "X minutes" format
-                        const match = readingTime.match(/(\d+)/);
-                        readingTime = match ? parseInt(match[1], 10) : readingTime;
-                      }
-
-                      if (typeof readingTime === 'number' || !isNaN(parseInt(readingTime, 10))) {
-                        const timeValue = typeof readingTime === 'number' ? readingTime : parseInt(readingTime, 10);
-                        metadataHtml += '<div class="metadata-reading-time">';
-                        metadataHtml += `<span class="reading-time-icon">⏱️</span>`;
-                        metadataHtml += `<span class="reading-time-value">${timeValue}</span> `;
-                        metadataHtml += `<span class="reading-time-unit">min read</span>`;
-                        metadataHtml += '</div>';
-                      }
-                    }
-
-                    metadataHtml += '</div>';
-                  }
-
-                  // Second row: Publication/update dates
-                  if (metadata.date || metadata['ms.date'] || metadata.updated) {
-                    metadataHtml += '<div class="metadata-date-row">';
-
-                    if (metadata.date || metadata['ms.date']) {
-                      const displayDate = metadata.date || metadata['ms.date'];
-                      // Format date nicely if it's in YYYY-MM-DD format
-                      let formattedDate = displayDate;
-                      if (displayDate && displayDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
-                        const dateObj = new Date(displayDate);
-                        formattedDate = dateObj.toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        });
-                      }
-                      metadataHtml += `<span class="date-icon">📅</span>`;
-                      metadataHtml += `<span class="date-label">Published</span> `;
-                      metadataHtml += `<span class="date-value">${formattedDate}</span>`;
-                    }
-
-                    if (metadata.updated && metadata.updated !== (metadata.date || metadata['ms.date'])) {
-                      if (metadata.date || metadata['ms.date']) {
-                        metadataHtml += ' • ';
-                      }
-                      metadataHtml += `<span class="updated-icon">🔄</span>`;
-                      metadataHtml += `<span class="updated-label">Updated</span> `;
-                      metadataHtml += `<span class="updated-value">${metadata.updated}</span>`;
-                    }
-
-                    metadataHtml += '</div>';
-                  }
-                }
-
-                // Tags and keywords (clickable)
-                if (metadata.tags || metadata.keywords) {
-                  const tags = Array.isArray(metadata.tags) ? metadata.tags :
-                              (metadata.tags ? metadata.tags.split(',').map(t => t.trim()) : []);
-                  const keywords = Array.isArray(metadata.keywords) ? metadata.keywords :
-                                  (metadata.keywords ? metadata.keywords.split(',').map(k => k.trim()) : []);
-
-                  const allTags = [...tags, ...keywords].filter(Boolean);
-
-                  if (allTags.length > 0) {
-                    metadataHtml += '<div class="metadata-tags">';
-                    metadataHtml += '🏷️ ';
-                    allTags.forEach(tag => {
-                      metadataHtml += `<button class="tag-button" onclick="doSearch('${tag}')">${tag}</button>`;
-                    });
-                    metadataHtml += '</div>';
-                  }
-                }
-
-                // Category and version
-                if (metadata.category || metadata.version) {
-                  metadataHtml += '<div class="metadata-details">';
-
-                  if (metadata.category) {
-                    metadataHtml += `<span class="category">📂 ${metadata.category}</span>`;
-                  }
-
-                  if (metadata.version) {
-                    metadataHtml += `<span class="version">🏷️ v${metadata.version}</span>`;
-                  }
-
-                  metadataHtml += '</div>';
-                }
-
-                // Description
-                if (metadata.description) {
-                  metadataHtml += `<div class="metadata-description">📝 ${metadata.description}</div>`;
-                }
-
-                metadataHtml += '</div></div>\n\n';
-
-                return metadataHtml + cleanContent;
-              } catch (error) {
-                console.warn('Failed to parse frontmatter:', error);
-                return cleanContent;
-              }
-            }
+            // Convert checked: - [x] → - <input type="checkbox" checked>
+            content = content.replace(
+              /^(\s*)-\s+\[x\]\s+(.+)$/gim,
+              '$1- <input type="checkbox" checked> $2'
+            );
 
             return content;
           });
-
-          // Set page title from metadata
-          hook.doneEach(function() {
-            if (currentMetadata.title) {
-              document.title = `${currentMetadata.title} - Edge AI Platform Documentation`;
-            }
-          });
         },
+        function (hook, vm) {
+          hook.init(function () {
+            // Wrap document.querySelector to handle invalid selectors gracefully
+            const originalQuerySelector = document.querySelector.bind(document);
+            const originalQuerySelectorAll = document.querySelectorAll.bind(document);
 
-        // Sidebar navigation cleanup plugin
-        function(hook, vm) {
-          hook.doneEach(function() {
-            // Remove any auto-generated heading links from sidebar
-            const sidebar = document.querySelector('.sidebar-nav');
-            if (sidebar) {
-              // Remove any anchor links that point to headings on the current page
-              const currentPath = vm.route.path;
-
-              // Remove all heading anchor links
-              const anchorLinks = sidebar.querySelectorAll('a[href*="#"]');
-              anchorLinks.forEach(link => {
-                const href = link.getAttribute('href');
-                // Remove if it's a heading anchor (contains # but not ending with .md)
-                if (href && href.includes('#') && !href.endsWith('.md') && href !== '#/') {
-                  const listItem = link.closest('li');
-                  // Don't hide if it's a folder or file navigation element
-                  if (listItem && !listItem.classList.contains('folder') && !listItem.classList.contains('file')) {
-                    listItem.style.display = 'none';
+            // Override document.querySelector (not prototype)
+            document.querySelector = function (selector) {
+              try {
+                // Validate selector before attempting query
+                if (typeof selector === 'string') {
+                  // Check for invalid characters in selector
+                  if (selector.includes('#/') || selector.match(/^#[^a-zA-Z_-]/)) {
+                    console.debug('[Docsify] Skipping invalid selector:', selector);
+                    return null;
                   }
                 }
-              });
+                return originalQuerySelector(selector);
+              } catch (e) {
+                console.debug('[Docsify] Invalid selector caught:', selector, e.message);
+                return null;
+              }
+            };
 
-              // Don't hide nested ul elements that are part of folder/file navigation
-              const nestedLists = sidebar.querySelectorAll('ul ul');
-              nestedLists.forEach(list => {
-                const parentLi = list.closest('li');
-                // Only hide if parent is not a folder or file
-                if (!parentLi || (!parentLi.classList.contains('folder') && !parentLi.classList.contains('file'))) {
-                  list.style.display = 'none';
-                }
-              });
-            }
-          });
-
-          // Also run on initial load
-          hook.ready(function() {
-            setTimeout(() => {
-              const sidebar = document.querySelector('.sidebar-nav');
-              if (sidebar) {
-                const nestedLists = sidebar.querySelectorAll('ul ul');
-                nestedLists.forEach(list => {
-                  const parentLi = list.closest('li');
-                  // Only hide if parent is not a folder or file navigation element
-                  if (!parentLi || (!parentLi.classList.contains('folder') && !parentLi.classList.contains('file'))) {
-                    list.style.display = 'none';
+            // Override document.querySelectorAll for consistency
+            document.querySelectorAll = function (selector) {
+              try {
+                if (typeof selector === 'string') {
+                  if (selector.includes('#/') || selector.match(/^#[^a-zA-Z_-]/)) {
+                    console.debug('[Docsify] Skipping invalid selector:', selector);
+                    return document.createDocumentFragment().querySelectorAll('*'); // Empty NodeList
                   }
-                });
-              }
-            }, 500);
-          });        },
-
-        // Edit link plugin with context-aware linking
-        function(hook, vm) {
-          hook.beforeEach(function(content) {
-            // Detect hosting context
-            const isLocalHost = window.location.hostname === 'localhost' ||
-                               window.location.hostname === '127.0.0.1' ||
-                               window.location.hostname.startsWith('localhost:');
-            const isAzureDevOpsWiki = window.location.hostname.includes('dev.azure.com') ||
-                                      window.location.pathname.includes('_wiki');
-
-            let url, linkText;
-            if (isLocalHost) {
-              // Local development - point to GitHub as primary repository
-              url = 'https://github.com/Microsoft/edge-ai/edit/main/docs/' + vm.route.file;
-              linkText = '📝 Edit on GitHub';
-            } else if (isAzureDevOpsWiki) {
-              // Azure DevOps Wiki context
-              url = 'https://dev.azure.com/ai-at-the-edge-flagship-accelerator/edge-ai/_git/edge-ai?path=/docs/' + vm.route.file;
-              linkText = '📝 Edit in Azure DevOps';            } else {
-              // GitHub Pages or other contexts (default to GitHub)
-              url = 'https://github.com/Microsoft/edge-ai/edit/main/docs/' + vm.route.file;
-              linkText = '📝 Edit on GitHub';
-            }
-
-            const editHtml = `<a href="${url}" target="_blank" class="edit-link">${linkText}</a>`;
-            return content + '\n\n---\n\n' + editHtml;
-          });
-
-          hook.doneEach(function() {
-            const editLinks = document.querySelectorAll('.edit-link');
-            editLinks.forEach(link => {
-              link.className = 'edit-button';
-              // Keep the original text from the markdown
-            });
-          });
-        },
-
-        // Dynamic issue reporting link plugin
-        function(hook) {
-          hook.doneEach(function() {
-            const issueLink = document.getElementById('report-issues-link');
-            if (issueLink) {
-              // Detect hosting context
-              const isLocalHost = window.location.hostname === 'localhost' ||
-                                 window.location.hostname === '127.0.0.1' ||
-                                 window.location.hostname.startsWith('localhost:');
-              const isAzureDevOpsWiki = window.location.hostname.includes('dev.azure.com') ||
-                                        window.location.pathname.includes('_wiki');
-              const isGitHubPages = window.location.hostname.includes('github.io');
-
-              let url, linkText, target = '_blank';
-
-              if (isLocalHost) {
-                // Local development - show instructions
-                linkText = 'Report bugs or issues (see CONTRIBUTING.md for details)';
-                url = './CONTRIBUTING.md#reporting-issues';
-                target = '_self';
-              } else if (isAzureDevOpsWiki) {
-                // Azure DevOps context - link to work items
-                url = 'https://dev.azure.com/ai-at-the-edge-flagship-accelerator/edge-ai/_workitems/create/Bug';
-                linkText = 'Report bugs or issues (Azure DevOps)';
-              } else if (isGitHubPages) {
-                // GitHub Pages - link to GitHub Issues
-                url = 'https://github.com/Microsoft/edge-ai/issues/new/choose';
-                linkText = 'Report bugs or issues (GitHub)';
-              } else {
-                // Default to GitHub Issues
-                url = 'https://github.com/Microsoft/edge-ai/issues/new/choose';
-                linkText = 'Report bugs or issues';
-              }
-
-              // Create the link element
-              const link = document.createElement('a');
-              link.href = url;
-              link.target = target;
-              link.textContent = linkText;
-              link.style.color = 'var(--theme-color, #0078d4)';
-              link.style.textDecoration = 'none';
-
-              // Replace the span with the link
-              issueLink.parentNode.replaceChild(link, issueLink);
-            }
-          });
-        },
-
-        // Progress bar plugin
-        function(hook) {
-          let progressBar;
-
-          hook.mounted(function() {
-            progressBar = document.createElement('div');
-            progressBar.className = 'progress-bar';
-            document.body.appendChild(progressBar);
-          });
-
-          hook.doneEach(function() {
-            function updateProgressBar() {
-              const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
-              const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-              const scrolled = (winScroll / height) * 100;
-              if (progressBar) {
-                progressBar.style.width = scrolled + '%';
-              }
-            }
-
-            window.addEventListener('scroll', updateProgressBar);
-            updateProgressBar();
-          });
-        },
-
-        // Breadcrumb plugin
-        function(hook, vm) {
-          hook.doneEach(function() {
-            const content = document.querySelector('.content');
-            if (content && !content.querySelector('.docsify-breadcrumb')) {
-              const breadcrumb = document.createElement('div');
-              breadcrumb.className = 'docsify-breadcrumb';
-
-              const pathSegments = vm.route.path.split('/').filter(Boolean);
-              if (pathSegments.length > 0) {
-                let breadcrumbHTML = '<ul>';
-                breadcrumbHTML += '<li><a href="#/">🏠 Home</a></li>';
-
-                let currentPath = '';
-                pathSegments.forEach((segment, index) => {
-                  currentPath += '/' + segment;
-                  const isLast = index === pathSegments.length - 1;
-                  const displayName = segment.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-
-                  if (isLast && !segment.endsWith('.md')) {
-                    breadcrumbHTML += `<li>${displayName}</li>`;
-                  } else {
-                    breadcrumbHTML += `<li><a href="#${currentPath}">${displayName}</a></li>`;
-                  }
-                });
-
-                breadcrumbHTML += '</ul>';
-                breadcrumb.innerHTML = breadcrumbHTML;
-
-                const article = content.querySelector('article') || content.querySelector('.markdown-section');
-                if (article) {
-                  article.insertBefore(breadcrumb, article.firstChild);
                 }
+                return originalQuerySelectorAll(selector);
+              } catch (e) {
+                console.debug('[Docsify] Invalid selector caught:', selector, e.message);
+                return document.createDocumentFragment().querySelectorAll('*'); // Empty NodeList
               }
-            }
+            };
           });
         },
-        // Accordion behavior plugin - auto-collapse all sections except active one
-        function(hook, vm) {
-          let isFirstLoad = true;
-          let lastRoute = '';
+        // Auto-scroll to top on route changes (loads before Docsify initializes)
+        function (hook, vm) {
+          let previousRoute = '';
 
           hook.doneEach(function() {
             const currentRoute = vm.route.path;
-
-            // Skip on first load to let the collapse plugin initialize properly
-            if (isFirstLoad) {
-              isFirstLoad = false;
-              lastRoute = currentRoute;
-              return;
-            }
-
-            // Only apply accordion behavior if the route actually changed
-            if (currentRoute !== lastRoute) {
-              // Wait for any animations to complete
-              setTimeout(() => {
-                applyAccordionBehavior();
-              }, 200);
-              lastRoute = currentRoute;
-            }
-          });
-
-          function applyAccordionBehavior() {
-            const sidebar = document.querySelector('.sidebar-nav');
-            if (!sidebar) return;
-
             const currentHash = window.location.hash;
-            if (!currentHash) return;
 
-            // Find the active link in the sidebar
-            const activeLink = sidebar.querySelector(`a[href="${currentHash}"]`);
-            if (!activeLink) return;
+            // Only scroll to top on actual route changes, not anchor navigation
+            const isRouteChange = previousRoute && previousRoute !== currentRoute;
+            const isAnchorOnly = currentHash && currentHash.includes('#') &&
+                                 !currentHash.startsWith('#/');
 
-            // First, collapse all top-level sections
-            const topLevelFolders = sidebar.querySelectorAll('.sidebar-nav > ul > li.folder.open');
-            topLevelFolders.forEach(folder => {
-              const arrow = folder.querySelector('.folder-arrow');
-              if (arrow) {
-                arrow.click();
-              }
-            });
-
-            // Wait a bit for collapse animations, then expand the active path
-            setTimeout(() => {
-              expandActiveSection(activeLink, sidebar);
-            }, 100);
-          }
-
-          function expandActiveSection(activeLink, sidebar) {
-            // Traverse up the DOM to find parent sections that need to be expanded
-            let current = activeLink.parentElement;
-            const sectionsToExpand = [];
-
-            while (current && current !== sidebar) {
-              if (current.tagName === 'LI' && current.classList.contains('folder')) {
-                sectionsToExpand.push(current);
-              }
-              current = current.parentElement;
+            if (isRouteChange && !isAnchorOnly) {
+              requestAnimationFrame(function() {
+                window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+                document.documentElement.scrollTop = 0;
+                document.body.scrollTop = 0;
+              });
             }
 
-            // Expand each parent section in reverse order (outermost first)
-            sectionsToExpand.reverse().forEach(section => {
-              const arrow = section.querySelector('.folder-arrow');
-              if (arrow && !section.classList.contains('open')) {
-                arrow.click();
-              }
-            });          }
+            previousRoute = currentRoute;
+          });
+        },
+        // Clear stale TOC entries before new page renders
+        function (hook, vm) {
+          hook.beforeEach(function(content) {
+            // Clear TOC container to prevent phantom entries
+            const tocContainer = document.querySelector('.page_toc');
+            if (tocContainer) {
+              tocContainer.innerHTML = '';
+            }
+            return content;
+          });
+        },
+        // Handle TOC anchor link clicks for smooth scrolling
+        function (hook, vm) {
+          hook.doneEach(function() {
+            // Small delay to ensure TOC is fully rendered
+            setTimeout(function() {
+              const tocLinks = document.querySelectorAll('.page_toc a[href^="#"]');
+
+              tocLinks.forEach(function(link) {
+                // Remove any existing listeners to avoid duplicates
+                const newLink = link.cloneNode(true);
+                link.parentNode.replaceChild(newLink, link);
+
+                newLink.addEventListener('click', function(e) {
+                  e.preventDefault();
+                  const href = this.getAttribute('href');
+
+                  // Extract anchor ID from href
+                  let anchorId = '';
+                  if (href.includes('?id=')) {
+                    // Format: #/path?id=anchor-id
+                    anchorId = href.split('?id=')[1];
+                  } else if (href.startsWith('#')) {
+                    // Format: #anchor-id
+                    anchorId = href.substring(1);
+                  }
+
+                  if (anchorId) {
+                    // Find target element by ID
+                    const target = document.getElementById(anchorId);
+
+                    if (target) {
+                      // Update URL to include anchor
+                      const currentPath = vm.route.path;
+                      const newHash = '#' + currentPath + '?id=' + anchorId;
+                      window.history.pushState(null, null, newHash);
+
+                      // Scroll to target (use 'center' to match TOC manager's priority zone)
+                      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                      // Force TOC chevron update after scroll completes
+                      setTimeout(function() {
+                        if (window.tocManager && typeof window.tocManager.forceUpdate === 'function') {
+                          window.tocManager.forceUpdate();
+                        }
+                      }, 500);
+                    }
+                  }
+                });
+              });
+            }, 100);
+          });
         }
-      ], // End of plugins array
-
-    }; // End of window.$docsify configuration
-
-    // Search function for clickable tags
-    function doSearch(term) {
-      // Use Docsify's search functionality
-      const searchInput = document.querySelector('.search input[type="search"]');
-      if (searchInput) {
-        searchInput.value = term;
-        searchInput.dispatchEvent(new Event('input', { bubbles: true }));
-        searchInput.focus();
-
-        // Scroll to search results
-        setTimeout(() => {
-          const searchResults = document.querySelector('.results-panel');
-          if (searchResults) {
-            searchResults.scrollIntoView({ behavior: 'smooth' });
-          }
-        }, 100);
-      }
-    }
+      ]
+    };
   </script>
 
-  <!-- Docsify core -->
-  <script src="//cdn.jsdelivr.net/npm/docsify@4"></script>
-  <!-- Docsify plugins -->
-  <script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/search.min.js"></script>
-  <script src="//cdn.jsdelivr.net/npm/docsify-pagination/dist/docsify-pagination.min.js"></script>
-  <script src="//cdn.jsdelivr.net/npm/docsify-copy-code@2"></script>
-  <script src="//cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script>
-  <script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/zoom-image.min.js"></script>
-  <script src="//cdn.jsdelivr.net/npm/docsify-tabs@1"></script>
-  <script src="//cdn.jsdelivr.net/npm/docsify-plugin-flexible-alerts"></script>
+  <!-- ======================================== -->
+  <!-- DOCSIFY CORE & ESSENTIAL PLUGINS -->
+  <!-- ======================================== -->
+  <!-- Docsify framework core -->
+  <script src="https://cdn.jsdelivr.net/npm/docsify@4"></script>
+
+  <!-- Essential Docsify plugins -->
+  <script src="https://cdn.jsdelivr.net/npm/docsify/lib/plugins/search.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docsify-copy-code@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docsify-pagination@2/dist/docsify-pagination.min.js"></script>
+
+  <!-- ======================================== -->
+  <!-- SEARCH ENHANCEMENTS -->
+  <!-- ======================================== -->
+  <!-- Search integration and enhancements (load after search plugin) -->
+  <script src="docs/assets/js/docsify/search-integration.js"></script>
+
+  <!-- ======================================== -->
+  <!-- EXTERNAL LIBRARY DEPENDENCIES -->
+  <!-- ======================================== -->
+  <!-- Diagram rendering -->
+  <script src="https://unpkg.com/mermaid@latest/dist/mermaid.min.js"></script>
+  <!-- Custom mermaid integration with advanced features and error handling -->
+  <script src="docs/assets/js/docsify/mermaid-integration.js"></script>
 
   <!-- Table of Contents plugin -->
   <script src="https://unpkg.com/docsify-plugin-toc@1.3.1/dist/docsify-plugin-toc.min.js"></script>
 
-  <!-- Sidebar collapse functionality -->
-  <script src="//cdn.jsdelivr.net/npm/docsify-sidebar-collapse/dist/docsify-sidebar-collapse.min.js"></script>
+  <!-- YAML parser for frontmatter processing -->
+  <script src="https://unpkg.com/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
+
+  <!-- Scroll to top functionality -->
+  <script src="https://cdn.jsdelivr.net/npm/docsify-scroll-to-top@1.0.1/dist/docsify-scroll-to-top.min.js"></script>
+
+  <!-- ======================================== -->
+  <!-- KATA TRACKER SYSTEM - ES6 MODULES -->
+  <!-- ======================================== -->
+  <!-- Main application entry point - loads all ES6 modules -->
+  <script type="module" src="docs/assets/js/main.js"></script>
+
+  <!-- ======================================== -->
+  <!-- DOCSIFY PLUGINS & ENHANCEMENTS -->
+  <!-- ======================================== -->
+  <!-- Content processing plugins -->
+  <script src="docs/assets/js/plugins/custom-breadcrumb-plugin.js"></script>
+  <script src="docs/assets/js/plugins/prevent-sidebar-toc.js"></script>
+  <!-- TOC highlighting and auto-scroll manager -->
+  <script src="docs/assets/js/features/toc-chevron-manager.js"></script>
+  <script src="docs/assets/js/plugins/learning-progress-tracker-plugin.js"></script>
+  <script type="module" src="docs/assets/js/features/assessment-completion-modal.js"></script>
+  <script type="module" src="docs/assets/js/features/assessment-path-generator.js"></script>
+  <script src="docs/assets/js/plugins/skill-assessment-plugin.js"></script>
+  <script type="module" src="docs/assets/js/features/skill-assessment-form.js"></script>
+  <script src="docs/assets/js/plugins/learning-path-card-plugin.js"></script>
+  <script type="module" src="docs/assets/js/plugins/learning-path-dashboard.js"></script>
+  <!-- Auto-insert dashboard container based on frontmatter -->
+  <script src="docs/assets/js/features/learning-dashboard-auto-insert.js"></script>
+  <script src="docs/assets/js/plugins/interactive-progress-docsify-integration.js"></script>
+  <!-- Catalog hydration plugin for My Learning selections -->
+  <script src="docs/assets/js/plugins/catalog-hydration.js"></script>
+  <!-- Frontmatter plugin MUST load last to process content after all other plugins -->
+  <script src="docs/assets/js/plugins/docsify-frontmatter-plugin.js"></script>
+
+  <!-- ======================================== -->
+  <!-- UI FOUNDATION & THEMING -->
+  <!-- ======================================== -->
+  <!-- Core UI theme system -->
+  <script src="docs/assets/js/docsify/dark-mode.js"></script>
+
+  <!-- Navigation enhancement features (Docsify-specific) -->
+  <script src="docs/assets/js/docsify/navbar-highlighting.js"></script>
 
-  <!-- Dark mode toggle implementation -->
-  <script>
-    (function() {
-      const darkModeBtn = document.createElement('div');
-      darkModeBtn.innerHTML = '🌙';
-      darkModeBtn.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        width: 40px;
-        height: 40px;
-        background: var(--theme-color);
-        color: white;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        font-size: 18px;
-        z-index: 1001;
-        transition: all 0.3s ease;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-      `;
-
-      document.body.appendChild(darkModeBtn);
-
-      // Load saved theme
-      const savedTheme = localStorage.getItem('docsify-dark-mode') || 'light';
-      if (savedTheme === 'dark') {
-        document.body.classList.add('dark');
-        darkModeBtn.innerHTML = '☀️';
-      }
-
-      darkModeBtn.addEventListener('click', function() {
-        document.body.classList.toggle('dark');
-        const isDark = document.body.classList.contains('dark');
-        darkModeBtn.innerHTML = isDark ? '☀️' : '🌙';
-        localStorage.setItem('docsify-dark-mode', isDark ? 'dark' : 'light');
-      });    })();
-  </script>
-
-  <!-- Fix TOC navigation and scroll tracking for custom layout -->
-  <script>
-    (function() {
-      let tocLinks = [];
-      let contentContainer = null;
-      let headings = [];
-      let isScrolling = false;
-
-      // Function to get the correct content container
-      function getContentContainer() {
-        // Try multiple selectors to find the scrollable content container
-        return document.querySelector('.content') ||
-               document.querySelector('section.content') ||
-               document.querySelector('.app-main') ||
-               document.querySelector('main');
-      }
-
-      // Function to update TOC based on scroll position
-      function updateTOCActiveState() {
-        if (isScrolling || !contentContainer || headings.length === 0) return;
-
-        const scrollTop = contentContainer.scrollTop;
-        let activeIndex = -1;
-
-        // Find the heading closest to the top of the viewport
-        // Use a simpler approach: find the heading with the smallest positive offset
-        let closestDistance = Infinity;
-
-        for (let i = 0; i < headings.length; i++) {
-          const heading = headings[i];
-
-          // Get the heading's offset from the top of the content
-          const headingOffset = heading.offsetTop;
-
-          // Calculate distance from current scroll position
-          const distance = Math.abs(headingOffset - scrollTop);
-
-          // If this heading is visible (within reasonable range) and closer than previous
-          if (headingOffset <= scrollTop + 150 && distance < closestDistance) {
-            closestDistance = distance;
-            activeIndex = i;
-          }
-        }
-
-        // Fallback: if no heading found above scroll position, use the first one that's below
-        if (activeIndex === -1) {
-          for (let i = 0; i < headings.length; i++) {
-            const heading = headings[i];
-            if (heading.offsetTop >= scrollTop) {
-              activeIndex = i;
-              break;
-            }
-          }
-        }        // Update active states in TOC - target the plugin's div structure
-        tocLinks.forEach((link, index) => {
-          // Remove active class from the parent div (plugin structure)
-          const parentDiv = link.closest('div[class^="lv"]');
-          if (parentDiv) {
-            parentDiv.classList.remove('active');
-          }
-          // Also remove from the link itself (fallback)
-          link.classList.remove('active');
-
-          if (index === activeIndex) {
-            // Add active class to the parent div (plugin structure)
-            if (parentDiv) {
-              parentDiv.classList.add('active');
-            }
-            // Also add to the link itself (fallback)
-            link.classList.add('active');
-
-            // Auto-scroll the TOC to keep active item visible
-            const tocContainer = link.closest('.page_toc, .toc-container, .docsify-toc, aside.toc-nav');
-            if (tocContainer) {
-              // Calculate if the active link is outside the visible area
-              const containerHeight = tocContainer.clientHeight;
-              const containerScrollTop = tocContainer.scrollTop;
-
-              // Get the link's position relative to the TOC container
-              const linkOffsetTop = link.offsetTop;
-              const linkHeight = link.offsetHeight;
-
-              // Check if link is above the visible area
-              if (linkOffsetTop < containerScrollTop) {
-                // Scroll up to show the link at the top
-                tocContainer.scrollTop = linkOffsetTop - 10;
-              }
-              // Check if link is below the visible area
-              else if (linkOffsetTop + linkHeight > containerScrollTop + containerHeight) {
-                // Scroll down to show the link at the bottom
-                tocContainer.scrollTop = linkOffsetTop + linkHeight - containerHeight + 10;
-              }
-            }
-          }
-        });
-      }
-
-      // Function to handle TOC clicks
-      function handleTOCClick(e) {
-        e.preventDefault();
-        e.stopPropagation();
-
-        // Mark this as a TOC navigation
-        lastNavigationWasTOC = true;
-
-        const href = this.getAttribute('href');
-        if (!href) return;
-
-        let targetId = '';
-
-        // Handle Docsify URLs with query parameters (e.g., #/page?id=heading)
-        if (href.includes('?id=')) {
-          const urlParts = href.split('?id=');
-          if (urlParts.length > 1) {
-            targetId = urlParts[1];
-          }
-        }
-        // Handle simple anchor links (e.g., #heading)
-        else if (href.startsWith('#')) {
-          targetId = href.substring(1);
-        }
-
-        if (!targetId) {
-          return;
-        }
-
-        // Try to find the target element
-        let targetElement = document.getElementById(targetId);
-
-        // If not found, try with URL encoding/decoding
-        if (!targetElement) {
-          try {
-            const decodedId = decodeURIComponent(targetId);
-            targetElement = document.getElementById(decodedId);
-          } catch (e) {
-            // Ignore decoding errors
-          }
-        }
-
-        // If still not found, try common Docsify ID transformations
-        if (!targetElement) {
-          // Docsify converts titles to lowercase and replaces spaces with hyphens
-          const transformedId = targetId.toLowerCase().replace(/\s+/g, '-');
-          targetElement = document.getElementById(transformedId);
-        }
-
-        if (!targetElement || !contentContainer) {
-          return;
-        }
-
-        // Set scrolling flag to prevent interference
-        isScrolling = true;
-
-        // Get the target element's position relative to the content container
-        const containerRect = contentContainer.getBoundingClientRect();
-        const targetRect = targetElement.getBoundingClientRect();
-
-        // Calculate scroll position (element position relative to container + current scroll - offset)
-        const targetScrollTop = targetRect.top - containerRect.top + contentContainer.scrollTop - 50;
-
-        // Scroll to the target
-        contentContainer.scrollTo({
-          top: Math.max(0, targetScrollTop),
-          behavior: 'smooth'
-        });
-
-        // Update URL hash - preserve the original href format
-        if (window.history && window.history.replaceState) {
-          window.history.replaceState(null, null, href);
-        }
-
-        // Clear scrolling flag after animation
-        setTimeout(() => {
-          isScrolling = false;
-          updateTOCActiveState();
-        }, 1000);
-      }
-
-      // Function to initialize TOC navigation
-      function initTOCNavigation() {
-        // Get content container
-        contentContainer = getContentContainer();
-        if (!contentContainer) {
-          return;
-        }        // Get TOC links - target the actual plugin structure
-        tocLinks = Array.from(document.querySelectorAll('.page_toc div[class^="lv"] a'));
-        if (tocLinks.length === 0) {
-          // Fallback to our original selectors
-          tocLinks = Array.from(document.querySelectorAll('.page_toc a, .toc-container a, .docsify-toc a'));
-        }
-        if (tocLinks.length === 0) {
-          return;
-        }
-
-        // Get all headings in content
-        headings = Array.from(document.querySelectorAll('.content h1, .content h2, .content h3, .content h4, .content h5, .content h6'));
-        if (headings.length === 0) {
-          return;
-        }
-
-        // Attach click handlers to TOC links
-        tocLinks.forEach(link => {
-          link.removeEventListener('click', handleTOCClick);
-          link.addEventListener('click', handleTOCClick);
-        });
-
-        // Add scroll listener with improved throttling and multiple targets
-        const throttledScrollHandler = (() => {
-          let timeout;
-          return () => {
-            if (timeout) clearTimeout(timeout);
-            timeout = setTimeout(updateTOCActiveState, 150);
-          };
-        })();
-
-        // Listen to both content container and window scroll
-        contentContainer.removeEventListener('scroll', throttledScrollHandler);
-        contentContainer.addEventListener('scroll', throttledScrollHandler, { passive: true });
-
-        // Also listen to window scroll as fallback
-        window.removeEventListener('scroll', throttledScrollHandler);
-        window.addEventListener('scroll', throttledScrollHandler, { passive: true });        // Initial update after elements are settled
-        setTimeout(updateTOCActiveState, 200);
-      } // End of initTOCNavigation function
-
-      // Function to handle initial URL hash with ID parameter (only on first load)
-      function handleInitialHash() {
-        // Only handle initial hash if this is the first load of this route
-        // and the URL contains an ID parameter
-        const currentUrl = window.location.href;
-
-        if (currentUrl.includes('?id=') && !isScrolling) {
-          const urlParts = currentUrl.split('?id=');
-          if (urlParts.length > 1) {
-            const targetId = urlParts[1];
-
-            // Wait a bit for DOM to be fully ready, then scroll
-            setTimeout(() => {
-              const targetElement = document.getElementById(targetId);
-              if (targetElement && contentContainer) {
-                // Set flag to indicate this is a programmatic scroll
-                isScrolling = true;
-
-                const containerRect = contentContainer.getBoundingClientRect();
-                const targetRect = targetElement.getBoundingClientRect();
-                const targetScrollTop = targetRect.top - containerRect.top + contentContainer.scrollTop - 50;
-
-                contentContainer.scrollTo({
-                  top: Math.max(0, targetScrollTop),
-                  behavior: 'smooth'
-                });
-
-                // Clear flag and update TOC after scroll
-                setTimeout(() => {
-                  isScrolling = false;
-                  updateTOCActiveState();
-                }, 1000);
-              }
-            }, 500);
-          }
-        }
-      }
-
-      // Initialize when content is ready
-      function setupTOC() {
-        // Wait for both TOC and content to be rendered
-        setTimeout(() => {
-          initTOCNavigation();
-        }, 300);
-      }
-
-      // Track navigation source
-      let lastNavigationWasTOC = false;
-      let currentRoute = '';
-      let previousRoute = '';
-      let sidebarClickDetected = false;
-      let sidebarListenerAttached = false;
-
-      // Function to detect sidebar navigation clicks (only attach once)
-      function setupSidebarClickDetection() {
-        if (sidebarListenerAttached) return;
-
-        const sidebar = document.querySelector('.sidebar-nav');
-        if (sidebar) {
-          sidebar.addEventListener('click', function(e) {
-            const link = e.target.closest('a');
-            if (link && link.href) {
-              // Check if it's a page navigation link (not a TOC anchor link)
-              const href = link.href;
-              const isPageNavigation = !href.includes('?id=') && (href.includes('#/') || !href.includes('#'));
-
-              if (isPageNavigation) {
-                sidebarClickDetected = true;
-                lastNavigationWasTOC = false;
-              }
-            }
-          });
-          sidebarListenerAttached = true;
-        }
-      }
-
-      // Function to force scroll to top
-      function forceScrollToTop() {
-        const container = getContentContainer();
-        if (container) {
-          container.scrollTo(0, 0);
-          container.scrollTop = 0;
-        }
-      }
-
-      // Add to Docsify plugins
-      window.$docsify.plugins = (window.$docsify.plugins || []).concat([
-        function(hook, vm) {
-          hook.beforeEach(function(content) {
-            // Capture the previous route before the change
-            previousRoute = currentRoute;
-            currentRoute = vm.route.path;
-
-            return content;
-          });
-
-          hook.doneEach(function() {
-            const isNewPage = previousRoute !== currentRoute && previousRoute !== '';
-
-            // If this is a new page navigation or sidebar click, scroll to top
-            if ((isNewPage && !lastNavigationWasTOC) || sidebarClickDetected) {
-              // Single scroll attempt with a small delay to ensure content is rendered
-              setTimeout(forceScrollToTop, 100);
-            }
-
-            // Reset flags after handling
-            lastNavigationWasTOC = false;
-            sidebarClickDetected = false;
-
-            // Set up TOC functionality
-            setupTOC();
-          });
-
-          hook.ready(function() {
-            currentRoute = vm.route.path;
-            previousRoute = currentRoute; // Initialize both to same value
-            setupTOC();
-            setupSidebarClickDetection();
-            // Handle initial hash only on the very first load
-            setTimeout(handleInitialHash, 800);
-          });
-        } // End of plugin function
-      ]); // End of plugin array
-
-      // Backup initialization
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', setupTOC);
-      } else {
-        setupTOC();
-      }
-    })();
-  </script>
-
-  <!-- Mermaid diagrams -->
-  <script src="//cdn.jsdelivr.net/npm/mermaid@11.2.1/dist/mermaid.min.js"></script>
-  <script>
-    // Custom mermaid integration for docsify
-    (function() {
-      let mermaidChart = 0;
-
-      const mermaidPlugin = function(hook, vm) {
-        hook.ready(function() {
-          mermaid.initialize({
-            startOnLoad: false,
-            theme: 'default',
-            securityLevel: 'loose',
-            flowchart: {
-              useMaxWidth: true,
-              htmlLabels: true,
-              curve: 'basis'
-            },
-            themeVariables: {
-              fontSize: '13px'
-            }
-          });
-        });
-
-        hook.doneEach(function() {
-          // Find all code blocks with mermaid language
-          const mermaidElements = document.querySelectorAll('pre[data-lang="mermaid"]');
-
-          mermaidElements.forEach(function(element) {
-            const code = element.querySelector('code');
-            if (code) {
-              const mermaidCode = code.textContent;
-              const chartId = 'mermaid-chart-' + mermaidChart++;
-
-              // Create new div for mermaid
-              const mermaidDiv = document.createElement('div');
-              mermaidDiv.className = 'mermaid';
-              mermaidDiv.id = chartId;
-              mermaidDiv.textContent = mermaidCode;
-
-              // Replace the pre element with mermaid div
-              element.parentNode.replaceChild(mermaidDiv, element);
-
-              // Render the mermaid diagram
-              mermaid.render(chartId + '-svg', mermaidCode).then(function(result) {
-                mermaidDiv.innerHTML = result.svg;
-              }).catch(function(error) {
-                console.error('Mermaid rendering error:', error);
-                mermaidDiv.innerHTML = '<p>Error rendering diagram</p>';
-              });
-            }
-          });
-        });
-      };
-
-      // Add the plugin to docsify
-      window.$docsify = window.$docsify || {};
-      window.$docsify.plugins = (window.$docsify.plugins || []).concat(mermaidPlugin);
-    })();
-  </script>
-
-  <!-- Syntax highlighting -->
-  <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-bash.min.js"></script>
-  <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-powershell.min.js"></script>
-  <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-yaml.min.js"></script>
-  <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-json.min.js"></script>
-  <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-terraform.min.js"></script>
-  <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-bicep.min.js"></script>
-  <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-csharp.min.js"></script>
-  <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-python.min.js"></script>
-
-  <!-- URL replacement configuration (injected by serve-docs.sh) -->
-  <script src="docsify-url-config.js"></script>
-
-  <!-- Interactive Progress Tracking Plugin -->
-  <script src="interactive-progress.js"></script>
 </body>
 </html>

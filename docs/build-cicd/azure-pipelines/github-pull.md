@@ -3,7 +3,7 @@ title: GitHub Pull Pipeline
 description: Azure DevOps pipeline configuration for GitHub pull request validation
   and testing workflows
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: concept
 estimated_reading_time: 7
 keywords:

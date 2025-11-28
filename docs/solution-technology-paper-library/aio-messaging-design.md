@@ -2,7 +2,7 @@
 title: Azure IoT Operations (AIO) Messaging
 description: Comprehensive technical guide to Azure IoT Operations messaging architecture covering MQTT broker, CloudEvents implementation, OPC UA connectors, schema registry, data transformation patterns, and integration with Azure Event Hub and Microsoft Fabric for industrial edge messaging solutions
 author: Suneet Nangia
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: solution-article
 estimated_reading_time: 18
 keywords:
@@ -395,4 +395,4 @@ _AI and automation capabilities described in this scenario should be implemented
 
 ---
 
-_This documentation is part of the [Edge AI Platform](../index.md) project._
+_This documentation is part of the [Edge AI Platform](../README.md) project._

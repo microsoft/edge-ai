@@ -6,6 +6,10 @@
  * via Kafka-compatible interface with managed identity authentication.
  */
 
+locals {
+  asset_ref = var.adr_namespace != null ? "${var.adr_namespace.name}/${var.asset_name}" : var.asset_name
+}
+
 // Role assignment for AIO managed identity to Fabric workspace
 resource "fabric_workspace_role_assignment" "fabric_workspace_contributor" {
   workspace_id = var.fabric_workspace.id
@@ -17,7 +21,7 @@ resource "fabric_workspace_role_assignment" "fabric_workspace_contributor" {
 }
 
 resource "azapi_resource" "fabric_rti_endpoint" {
-  type      = "Microsoft.IoTOperations/instances/dataflowEndpoints@2024-11-01"
+  type      = "Microsoft.IoTOperations/instances/dataflowEndpoints@2025-10-01"
   name      = "dfe-fabric-rti-${var.resource_prefix}-${var.environment}-${var.instance}"
   parent_id = var.aio_instance.id
 
@@ -45,10 +49,12 @@ resource "azapi_resource" "fabric_rti_endpoint" {
       }
     }
   }
+
+  schema_validation_enabled = false # Disable schema validation for azapi_resource for 2025-10-01 until azapi provider supports it
 }
 
 resource "azapi_resource" "fabric_rti_dataflow" {
-  type      = "Microsoft.IoTOperations/instances/dataflowProfiles/dataflows@2024-11-01"
+  type      = "Microsoft.IoTOperations/instances/dataflowProfiles/dataflows@2025-10-01"
   name      = "df-fabric-rti-${var.resource_prefix}-${var.environment}-${var.instance}"
   parent_id = var.aio_dataflow_profile.id
 
@@ -66,7 +72,7 @@ resource "azapi_resource" "fabric_rti_dataflow" {
           operationType = "Source"
           sourceSettings = {
             endpointRef = "default"
-            assetRef    = var.asset_name
+            assetRef    = local.asset_ref
             dataSources = [
               "azure-iot-operations/data/${var.asset_name}"
             ]
@@ -95,4 +101,6 @@ resource "azapi_resource" "fabric_rti_dataflow" {
       ]
     }
   }
+
+  schema_validation_enabled = false # Disable schema validation for azapi_resource for 2025-10-01 until azapi provider supports it
 }

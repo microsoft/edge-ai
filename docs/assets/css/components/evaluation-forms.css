@@ -1,0 +1,298 @@
+/* Self-Evaluation Forms Component Styles */
+
+/* Main evaluation form container */
+.evaluation-form {
+  background: var(--form-bg);
+  border: 1px solid var(--form-border);
+  border-radius: 12px;
+  padding: 24px;
+  margin: 20px 0;
+  box-shadow: 0 2px 8px var(--form-shadow);
+}
+
+.evaluation-form h2 {
+  margin: 0 0 20px 0;
+  color: var(--form-text-primary);
+  font-size: 22px;
+  font-weight: 600;
+  border-bottom: 2px solid var(--form-border);
+  padding-bottom: 12px;
+}
+
+/* Form sections */
+.evaluation-section {
+  margin-bottom: 28px;
+}
+
+.evaluation-section:last-child {
+  margin-bottom: 0;
+}
+
+.evaluation-section h3 {
+  margin: 0 0 16px 0;
+  color: var(--form-text-secondary);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* Question groups */
+.evaluation-question-group {
+  margin-bottom: 20px;
+  padding: 16px;
+  background: var(--form-bg-light);
+  border-radius: 8px;
+  border: 1px solid var(--form-border);
+}
+
+.evaluation-question {
+  margin-bottom: 16px;
+}
+
+.evaluation-question:last-child {
+  margin-bottom: 0;
+}
+
+.evaluation-question-text {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--form-text-primary);
+  margin-bottom: 12px;
+  line-height: 1.4;
+}
+
+/* Answer options */
+.evaluation-answers {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.evaluation-answer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.evaluation-answer:hover {
+  background: var(--form-border);
+}
+
+.evaluation-answer input[type="radio"] {
+  margin: 0;
+  cursor: pointer;
+}
+
+.evaluation-answer label {
+  flex: 1;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--form-text-secondary);
+  margin: 0;
+}
+
+.evaluation-answer.selected {
+  background: var(--form-info-bg);
+  border: 1px solid var(--form-info-border);
+}
+
+/* Rating scale */
+.evaluation-rating {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  margin: 12px 0;
+}
+
+.evaluation-rating-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 60px;
+}
+
+.evaluation-rating-option:hover {
+  background: var(--form-bg-light);
+}
+
+.evaluation-rating-option.selected {
+  background: var(--form-primary);
+  color: var(--form-bg);
+}
+
+.evaluation-rating-number {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.evaluation-rating-label {
+  font-size: 10px;
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* Text areas */
+.evaluation-textarea {
+  width: 100%;
+  min-height: 100px;
+  padding: 12px;
+  border: 1px solid var(--form-border-alt);
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+  transition: border-color 0.2s ease;
+}
+
+.evaluation-textarea:focus {
+  outline: none;
+  border-color: var(--form-primary);
+  box-shadow: 0 0 0 2px var(--form-focus-shadow);
+}
+
+/* Progress indicator */
+.evaluation-progress {
+  margin: 24px 0;
+  padding: 16px;
+  background: var(--form-bg-light);
+  border-radius: 8px;
+  border: 1px solid var(--form-border);
+}
+
+.evaluation-progress-bar {
+  background: var(--form-border);
+  border-radius: 4px;
+  height: 8px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.evaluation-progress-fill {
+  background: linear-gradient(90deg, var(--form-success), var(--form-success-alt));
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.evaluation-progress-text {
+  font-size: 14px;
+  color: var(--form-text-muted);
+  text-align: center;
+  font-weight: 500;
+}
+
+/* Form actions */
+.evaluation-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 28px;
+  justify-content: flex-end;
+  padding-top: 20px;
+  border-top: 1px solid var(--form-border);
+}
+
+.evaluation-btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.evaluation-btn-primary {
+  background: var(--form-primary);
+  color: var(--form-bg);
+}
+
+.evaluation-btn-primary:hover {
+  background: var(--form-primary-dark);
+}
+
+.evaluation-btn-primary:disabled {
+  background: var(--form-text-muted);
+  cursor: not-allowed;
+}
+
+.evaluation-btn-secondary {
+  background: var(--form-text-muted);
+  color: var(--form-bg);
+}
+
+.evaluation-btn-secondary:hover {
+  background: var(--form-muted-dark);
+}
+
+.evaluation-btn-outline {
+  background: transparent;
+  color: var(--form-text-muted);
+  border: 1px solid var(--form-text-muted);
+}
+
+.evaluation-btn-outline:hover {
+  background: var(--form-text-muted);
+  color: var(--form-bg);
+}
+
+/* Success/completion state */
+.evaluation-form.completed {
+  border-color: var(--form-success);
+  background: var(--form-gradient-light);
+}
+
+.evaluation-completion {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--form-success);
+}
+
+.evaluation-completion-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.evaluation-completion-text {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.evaluation-completion-subtitle {
+  font-size: 14px;
+  color: var(--form-text-muted);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .evaluation-form {
+    padding: 16px;
+    margin: 16px 0;
+  }
+
+  .evaluation-rating {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .evaluation-rating-option {
+    min-width: 50px;
+    padding: 6px;
+  }
+
+  .evaluation-actions {
+    flex-direction: column;
+  }
+
+  .evaluation-btn {
+    width: 100%;
+  }
+}

@@ -2,7 +2,7 @@
 title: GitHub Pages Docsify Deployment Workflow
 description: GitHub Actions reusable workflow for building and deploying Docsify documentation to GitHub Pages
 author: Edge AI Team
-ms.date: 06/12/2025
+ms.date: 2025-06-12
 ms.topic: concept
 estimated_reading_time: 10
 keywords:

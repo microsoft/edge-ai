@@ -113,6 +113,7 @@ Update the task list with the following:
 9. Do NOT create ANY `.summary.json` or other JSON artifacts.
 
 Important: If the user wants to use a different work item for a top recommendation then you must:
+
   1. Remove the top recommendation.
   2. Add the user's top recommendation.
   3. Do light research for the new top recommendation from the user.

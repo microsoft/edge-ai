@@ -6,12 +6,12 @@
 
 .DESCRIPTION
     This PowerShell script builds an Azure DevOps Wiki structure from the repository's
-    markdown documentation. It parses the navigation structure from docs/_sidebar.md
+    markdown documentation. It parses the navigation structure from docs/_parts/_sidebar.md
     and recreates the exact hierarchical folder structure in the wiki output, complete with
     .order files for proper navigation that matches the documentation sidebar.
 
 .FUNCTIONALITY
-    - Parses docs/_sidebar.md to extract complete 4-level navigation hierarchy
+    - Parses docs/_parts/_sidebar.md to extract complete 4-level navigation hierarchy
     - Creates wiki structure with proper directory hierarchy and .order files at every level
     - Copies and processes markdown files with comprehensive URL token replacement
     - Updates relative links to work correctly in the new wiki structure
@@ -37,7 +37,7 @@
 .EXAMPLE
     ./Build-Wiki.ps1
 
-    Builds the complete wiki structure with navigation that exactly matches docs/_sidebar.md
+    Builds the complete wiki structure with navigation that exactly matches docs/_parts/_sidebar.md
 
 .NOTES
     This script is designed to be called directly from Azure DevOps pipelines using pwsh.
@@ -61,7 +61,7 @@ param()
 
 # Configuration
 $WikiRepoFolder = ".wiki"
-$SidebarFile = "docs/_sidebar.md"
+$SidebarFile = "docs/_parts/_sidebar.md"
 
 # Ensure clean wiki directory
 Write-Host "Setting up wiki directory..."
@@ -104,7 +104,7 @@ class WikiNavItem {
 function ConvertFrom-SidebarNavigation {
     <#
     .SYNOPSIS
-        Converts the docs/_sidebar.md file to extract navigation structure for Azure DevOps Wiki
+        Converts the docs/_parts/_sidebar.md file to extract navigation structure for Azure DevOps Wiki
     .DESCRIPTION
         Handles all sidebar patterns including:
         - Section headers without links (create folders)
@@ -726,7 +726,7 @@ function Build-StandaloneContent {
         - .github/chatmodes/ (Chat mode configurations)
         - .github/instructions/ (Instruction files)
         - copilot/ (AI assistant guides and conventions)
-        - praxisworx/ (Training and learning content)
+        - learning/ (Training and learning content)
     .PARAMETER WikiDir
         The target wiki directory where content should be copied
     #>
@@ -742,10 +742,10 @@ function Build-StandaloneContent {
             DisplayName = "Copilot Guides"
             Description = "AI assistant instructions and development conventions"
         }
-        "praxisworx" = @{
-            SourcePath = "praxisworx"
-            WikiSection = "praxisworx"
-            DisplayName = "PraxisWorx"
+        "learning" = @{
+            SourcePath = "learning"
+            WikiSection = "learning"
+            DisplayName = "Learning Platform"
             Description = "Training materials and learning resources"
         }
         "github-prompts" = @{
@@ -792,7 +792,7 @@ function Build-StandaloneContent {
         }
     }
 
-    # Create master .order file for standalone sections
+    # Create main .order file for standalone sections
     New-StandaloneSectionsOrder -WikiDir $WikiDir -ContentConfig $standaloneContent
 }
 
@@ -919,7 +919,7 @@ function Update-StandaloneRelativeLink {
     # Define path mappings for standalone content
     $pathMappings = @{
         "copilot/" = "copilot-guides/"
-        "praxisworx/" = "praxisworx/"
+        "learning/" = "learning/"
         ".github/prompts/" = "github-resources/"
         ".github/chatmodes/" = "github-resources/"
         ".github/instructions/" = "github-resources/"

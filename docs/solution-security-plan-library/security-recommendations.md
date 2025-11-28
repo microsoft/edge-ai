@@ -2,7 +2,7 @@
 title: AI on Edge Security Recommendations
 description: Comprehensive security recommendations guide for AI on Edge projects featuring 91 detailed security controls across Azure Storage, Linux Virtual Machines, Azure Key Vault, Event Grid, Event Hubs, and Azure Monitor, covering network security, identity management, data protection, privileged access, threat detection, and compliance best practices
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: security-guidance
 estimated_reading_time: 20
 keywords:
