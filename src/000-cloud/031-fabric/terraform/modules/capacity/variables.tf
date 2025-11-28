@@ -1,6 +1,10 @@
 variable "name" {
   description = "The name of the Fabric capacity."
   type        = string
+  validation {
+    condition     = length(var.name) >= 3 && length(var.name) <= 63 && can(regex("^[a-z][a-z0-9]*$", var.name))
+    error_message = "Fabric capacity name must be between 3 and 63 characters, contain only lowercase letters and numbers, and must start with a lowercase letter."
+  }
 }
 
 variable "location" {
@@ -14,9 +18,13 @@ variable "resource_group_name" {
 }
 
 variable "admin_members" {
-  description = "List of AAD object IDs for Fabric capacity administrators."
+  description = <<-EOT
+    List of user principal names (UPNs) or Azure AD object IDs for Fabric capacity administrators.
+    For users, provide UPN (<user@domain.com>) or Object ID.
+    For service principals, provide Application ID or Object ID.
+    At least one administrator is required.
+  EOT
   type        = list(string)
-  default     = []
 }
 
 variable "sku" {

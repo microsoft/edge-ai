@@ -1,18 +1,13 @@
 <!-- markdownlint-disable MD041 -->
+<!-- markdownlint-disable MD051 -->
 <!-- home Section Sidebar -->
-<!-- Generated on: 2025-10-05 03:20:10 UTC -->
 
-- [🏠 Welcome](docs/index.md)
-
-- 🚀 Quick Start
-  - [Getting Started](docs/getting-started/index.md)
+- [🚀 Quick Start](/docs/getting-started/README)
 
 - 📚 Explore Documentation
-  - [Documentation Hub](docs/index)
-  - [Learning (PraxisWorx)](praxisworx/README)
-  - [Blueprints](blueprints/README)
-  - [Infrastructure Code](src/README)
+  - [Learning](/learning/README)
+  - [Blueprints](/blueprints/README)
+  - [Infrastructure Code](/src/README)
 
-- 🛠️ Developer Resources
-  - [Copilot Guides](copilot/README)
-  - [Contributing Guide](docs/contributing/index.md)
+- [🛠️ Developer Resources](/copilot/README)
+  - [Contributing Guide](/docs/contributing/README)

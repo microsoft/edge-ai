@@ -1,399 +1,326 @@
 ---
 title: "Yield Process Optimization"
-description: "Advanced IIoT process optimization for manufacturing yield improvement through real-time analytics, predictive modeling, automated process control, and continuous optimization algorithms."
+description: "AI-driven yield optimization and process efficiency improvement to maximize production output, reduce waste, and optimize resource utilization through real-time process analytics and predictive yield management."
 author: "Edge AI Team"
-ms.date: 06/06/2025
+ms.date: 2025-07-19
 ms.topic: conceptual
 estimated_reading_time: 8
 keywords:
   - yield-optimization
-  - process-control
-  - real-time-analytics
-  - predictive-modeling
-  - automated-control
-  - manufacturing-efficiency
+  - process-efficiency
+  - waste-reduction
+  - resource-utilization
+  - predictive-analytics
 ---
 
-## Scenario Overview
+## 📊 Scenario Overview
 
-Yield Process Optimization enables advanced IIoT process optimization for manufacturing yield improvement through real-time analytics, predictive modeling, automated process control, and continuous optimization algorithms. This solution transforms traditional reactive process management into proactive, predictive process optimization that maximizes yield while maintaining quality and operational efficiency.
+Yield Process Optimization delivers AI-driven yield optimization and process efficiency improvement to maximize production output, reduce waste, and optimize resource utilization through real-time process analytics and predictive yield management. This approach transforms yield management from reactive monitoring to predictive optimization that maximizes output while minimizing waste and resource consumption.
 
-## Capability Evaluation Framework
+The scenario combines real-time process monitoring, predictive analytics, and automated optimization to achieve measurable improvements in yield metrics and process efficiency. This results in improved overall equipment effectiveness (OEE), reduced process waste, and optimized resource utilization, along with comprehensive yield traceability and process optimization history.
 
-This scenario has been evaluated across four key dimensions:
+**Use cases include production yield optimization, waste reduction initiatives, and resource utilization improvements** - particularly where maximizing production output, minimizing waste generation, and optimizing resource consumption are critical business requirements.
 
-- **Technical Fit** (0-10): Direct requirement match, performance alignment, integration complexity
-- **Business Value** (0-10): Impact magnitude, value realization timeline, ROI potential
-- **Implementation Practicality** (0-10): Complexity assessment, resource requirements, risk level
-- **Platform Cohesion** (0-10): Cross-capability benefits, data flow optimization, shared infrastructure
+## 🗓️ Development Planning Framework
 
-## Critical Capabilities & Implementation Details
+This planning guide outlines the Yield Process Optimization scenario and identifies the capabilities required at each implementation phase. Each phase defines the scope of capabilities needed to achieve specific business outcomes.
+
+**Component status definitions**:
+
+- **✅ Ready to Deploy**: Components available for immediate deployment with minimal configuration
+- **🔵 Development Required**: Framework and APIs provided, custom logic development needed
+- **🟣 Planned Components**: Scheduled for future accelerator releases - plan accordingly
+- **🟪 External Integration**: Requires third-party solutions or custom development
+
+## ⚙️ Critical Capabilities & Development Planning
 
 <!-- markdownlint-disable MD033 -->
-| Capability Group                                                                             | Critical Capabilities                                                                                                                                                                                                | Implementation Details for Yield Process Optimization                                                                                                                                   | Status                                                                           |
-|----------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------|
-| **[Protocol Translation & Device Management][protocol-translation-device-management]**       | - [OPC UA Data Ingestion][opc-ua-data-ingestion]<br>- [Device Twin Management][device-twin-management]<br>- [Broad Industrial Protocol Support][broad-industrial-protocol-support]                                   | - Connect to process control systems and instrumentation<br>- Create digital twins of process equipment and control loops<br>- Support protocols for diverse process automation systems | [Available][available]<br>[Available][available]<br>In Development               |
-| **[Edge Cluster Platform][edge-cluster-platform]**                                           | - [Edge Compute Orchestration][edge-compute-orchestration]<br>- [Edge Application CI/CD][edge-application-cicd]                                                                                                      | - Deploy local processing for process optimization systems<br>- Manage containerized process analytics applications                                                                     | [Available][available-2]<br>[Available][available-2]                             |
-| **[Edge Industrial Application Platform][edge-industrial-application-platform]**             | - [Edge Data Stream Processing][edge-data-stream-processing]<br>- [Edge Inferencing Application Framework][edge-inferencing-application-framework]<br>- [Edge Dashboard Visualization][edge-dashboard-visualization] | - Process high-frequency process data streams in real-time<br>- Run yield prediction and process optimization models<br>- Display process performance and yield optimization metrics    | [Available][available-4]<br>[Available][available-5]<br>[Available][available-4] |
-| **[Cloud Data Platform][cloud-data-platform]**                                               | - [Cloud Data Platform Services][cloud-data-platform-services]<br>- [Data Governance & Lineage][data-governance-lineage]<br>- [Machine Learning Feature Store][machine-learning-feature-store]                       | - Store process data and yield optimization results<br>- Maintain process data traceability and lineage<br>- Manage features for yield optimization models                              | [Available][available-7]<br>In Development<br>In Development                     |
-| **[Cloud AI Platform][cloud-ai-platform]**                                                   | - [Cloud AI/ML Model Training][cloud-ai-ml-model-training]<br>- [MLOps Toolchain][mlops-toolchain]                                                                                                                   | - Train advanced yield optimization and process control models<br>- Manage model lifecycle for process optimization<br>                                                                 | Planned<br>Planned                                                               |
-| **[Cloud Insights Platform][cloud-insights-platform]**                                       | - [Automated Incident Response & Remediation][automated-incident-response-remediation]<br>- [Cloud Observability Foundation][cloud-observability-foundation]                                                         | - Automate responses to process deviations and yield losses<br>- Apply advanced analytics to process optimization data                                                                  | In Development<br>In Development                                                 |
-| **[Advanced Simulation & Digital Twin Platform][advanced-simulation-digital-twin-platform]** | - [3D Digital Twin][3d-digital-twin]<br>- [Augmented Reality Visualization][augmented-reality-visualization]                                                                                                         | - 3D models of process equipment and optimization systems<br>- AR-assisted process optimization and troubleshooting                                                                     | External<br>External                                                             |
+| Capability Group                                                                             | Critical Capabilities                                                                                                                                                                                                | Implementation Requirements                                                                                                                | Accelerator Support                                               |
+|----------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------|
+| **[Protocol Translation & Device Management][protocol-translation-device-management]**       | - [OPC UA Data Ingestion][opc-ua-data-ingestion]<br>- [Device Twin Management][device-twin-management]<br>- [Broad Industrial Protocol Support][broad-industrial-protocol-support]                                   | - Process control system integration<br>- Digital twins for yield optimization processes<br>- Yield measurement equipment protocol support | ✅ Ready to Deploy<br>🔵 Development Required<br>🟣 Planned        |
+| **[Edge Cluster Platform][edge-cluster-platform]**                                           | - [Edge Compute Orchestration][edge-compute-orchestration]<br>- [Edge Application CI/CD][edge-application-cicd]                                                                                                      | - Yield optimization application deployment environment<br>- CI/CD pipeline for yield models                                               | ✅ Ready to Deploy<br>✅ Ready to Deploy                            |
+| **[Edge Industrial Application Platform][edge-industrial-application-platform]**             | - [Edge Data Stream Processing][edge-data-stream-processing]<br>- [Edge Inferencing Application Framework][edge-inferencing-application-framework]<br>- [Edge Dashboard Visualization][edge-dashboard-visualization] | - Real-time yield data processing<br>- Yield prediction model deployment<br>- Yield metrics dashboards and optimization recommendations    | ✅ Ready to Deploy<br>🔵 Development Required<br>✅ Ready to Deploy |
+| **[Cloud Data Platform][cloud-data-platform]**                                               | - [Cloud Data Platform Services][cloud-data-platform-services]<br>- [Data Governance & Lineage][data-governance-lineage]                                                                                             | - Yield data storage and analytics<br>- Process optimization traceability and governance                                                   | ✅ Ready to Deploy<br>🔵 Development Required                      |
+| **[Cloud AI Platform][cloud-ai-platform]**                                                   | - [Cloud AI/ML Model Training][cloud-ai-ml-model-training]<br>- [MLOps Toolchain][mlops-toolchain]                                                                                                                   | - Yield prediction model training<br>- Yield optimization model lifecycle management                                                       | 🟣 Planned<br>🟣 Planned                                          |
+| **[Cloud Insights Platform][cloud-insights-platform]**                                       | - [Automated Incident Response & Remediation][automated-incident-response-remediation]<br>- [Cloud Observability Foundation][cloud-observability-foundation]                                                         | - Automated yield alerts and process optimization<br>- Yield process monitoring and analytics                                              | 🔵 Development Required<br>🔵 Development Required                |
+| **[Advanced Simulation & Digital Twin Platform][advanced-simulation-digital-twin-platform]** | - [Process Simulation Engine][process-simulation-engine]<br>- [Yield Digital Twin Platform][yield-digital-twin-platform]                                                                                             | - Advanced yield process simulation<br>- Predictive yield modeling platforms                                                               | 🟪 External Dependencies<br>🟪 External Dependencies              |
 <!-- markdownlint-enable MD033 -->
 
-## Maturity-Based Implementation Roadmap
+---
 
-### Proof of Concept (PoC) Phase - 3 weeks
+## 🛣️ Yield Process Optimization Implementation Roadmap
 
-**Focus**: Real-time process data collection and basic yield monitoring
+This roadmap outlines the typical progression for implementing Yield Process Optimization scenarios. Each phase defines the capabilities required and the business outcomes typically achieved.
 
-**Core Capabilities**:
+### Scenario Implementation Phases
 
-- **[Edge Data Stream Processing][edge-data-stream-processing]** (Technical: 10, Business: 8, Practical: 9, Cohesion: 9)
-  - High-frequency process data stream processing
-  - Real-time yield calculation and trending
-  - Process parameter correlation analysis
+| Phase             | Duration  | Scenario Scope                                             | Business Value Achievement                               | Accelerator Support                               |
+|-------------------|-----------|------------------------------------------------------------|----------------------------------------------------------|---------------------------------------------------|
+| 🧪 **PoC**        | 3 weeks   | Basic yield monitoring and waste identification            | 5-10% improvement in overall yield                       | ✅ Ready to Start - [Use Edge-AI][getting-started] |
+| 🚀 **PoV**        | 10 weeks  | AI-powered yield prediction and process optimization       | 10-15% yield improvement with 20-30% waste reduction     | 🔵 Development Required                           |
+| 🏭 **Production** | 6 months  | Enterprise yield platform with MES/ERP integration         | 15-20% yield improvement with comprehensive optimization | 🟣 Planned Components                             |
+| 📈 **Scale**      | 15 months | Advanced yield intelligence with supply chain optimization | 20-25% yield improvement with cross-process correlation  | 🟪 External Integration Required                  |
 
-- **[Edge Dashboard Visualization][edge-dashboard-visualization]** (Technical: 8, Business: 9, Practical: 9, Cohesion: 7)
-  - Process yield dashboards and control charts
-  - Real-time process performance visualization
-  - Yield trend analysis and alerting
+---
 
-- **[OPC UA Data Ingestion][opc-ua-data-ingestion]** (Technical: 9, Business: 8, Practical: 9, Cohesion: 8)
-  - Integration with process control systems
-  - High-speed process data acquisition
-  - Process equipment synchronization
+### 🧪 PoC Phase (3 weeks) - Basic Yield Monitoring
 
-- **[Edge Compute Orchestration][edge-compute-orchestration]** (Technical: 8, Business: 7, Practical: 9, Cohesion: 8)
-  - Deployment of process optimization applications
-  - Container orchestration for process services
-  - Edge infrastructure management for process systems
+**Scenario Goal**: Establish yield parameter data collection and real-time yield monitoring to validate technical feasibility and demonstrate immediate yield improvements.
 
-**Suggested Expected Value**: 15-25% improvement in yield visibility and process understanding
+**Technical Scope**: Implement real-time yield tracking on a single production line with waste identification and basic yield reporting.
 
-### Proof of Value (PoV) Phase - 10 weeks
+| Capability Area     | Capability                                                   | Accelerator Support | Implementation Requirements                                                                        | Priority |
+|---------------------|--------------------------------------------------------------|---------------------|----------------------------------------------------------------------------------------------------|----------|
+| **Data Ingestion**  | [OPC UA Data Ingestion][opc-ua-data-ingestion]               | ✅ Ready to Deploy   | Connect to process control systems and yield measurement equipment with real-time data collection  | High     |
+| **Data Processing** | [Edge Data Stream Processing][edge-data-stream-processing]   | ✅ Ready to Deploy   | Implement yield calculation logic with configurable thresholds and waste identification algorithms | High     |
+| **Visualization**   | [Edge Dashboard Visualization][edge-dashboard-visualization] | ✅ Ready to Deploy   | Deploy yield metrics dashboard with real-time yield tracking and waste monitoring                  | Medium   |
+| **Edge Platform**   | [Edge Compute Orchestration][edge-compute-orchestration]     | ✅ Ready to Deploy   | Establish edge computing environment for yield processing applications                             | Medium   |
 
-**Focus**: AI-powered yield prediction and process optimization
+**Implementation Sequence**:
 
-**Additional Capabilities**:
+1. **Week 1**: **[OPC UA Data Ingestion][opc-ua-data-ingestion]** - Configure process data collection with yield parameter identification and validation against existing production systems
+2. **Week 2**: **[Edge Data Stream Processing][edge-data-stream-processing]** - Implement yield calculation pipeline with waste identification and automated reporting integration
+3. **Week 3**: **[Edge Dashboard Visualization][edge-dashboard-visualization]** - Deploy yield dashboard + **[Edge Compute Orchestration][edge-compute-orchestration]** - Optimize edge processing performance
 
-- **[Edge Inferencing Application Framework][edge-inferencing-application-framework]** (Technical: 9, Business: 9, Practical: 7, Cohesion: 9)
-  - Real-time yield prediction models
-  - Process parameter optimization algorithms
-  - Automated process adjustment recommendations
+**Typical Team Requirements**: 3-4 engineers (1 process engineer, 1 data engineer, 1-2 integration developers)
 
-- **[Device Twin Management][device-twin-management]** (Technical: 8, Business: 8, Practical: 8, Cohesion: 8)
-  - Digital representation of process equipment
-  - Virtual state tracking of process control systems
-  - Process parameter optimization modeling
+---
 
-- **[Cloud Data Platform Services][cloud-data-platform-services]** (Technical: 8, Business: 8, Practical: 8, Cohesion: 9)
-  - Centralized process data repository
-  - Historical yield analytics and trending
-  - Cross-facility process comparison
+### 🚀 PoV Phase (10 weeks) - AI-Powered Yield Optimization
 
-- **[Broad Industrial Protocol Support][broad-industrial-protocol-support]** (Technical: 8, Business: 7, Practical: 7, Cohesion: 8)
-  - Integration with diverse process control systems
-  - Support for legacy process automation equipment
-  - Multi-vendor process system integration
+**Scenario Goal**: Implement predictive yield analytics and automated process optimization to demonstrate business value and stakeholder buy-in for enterprise deployment.
 
-**Suggested Expected Value**: 25-40% yield improvement and 30-50% reduction in process variations
+**Technical Scope**: Deploy machine learning models for yield prediction, automated process parameter optimization, and resource utilization improvements across multiple production lines.
 
-### Production Phase - 6 months
+| Capability Area       | Capability                                                                       | Accelerator Support     | Implementation Requirements                                                                     | Priority |
+|-----------------------|----------------------------------------------------------------------------------|-------------------------|-------------------------------------------------------------------------------------------------|----------|
+| **AI Platform**       | [Edge Inferencing Application Framework][edge-inferencing-application-framework] | 🔵 Development Required | Develop yield prediction models with custom optimization logic for process parameter adjustment | High     |
+| **Device Management** | [Device Twin Management][device-twin-management]                                 | 🔵 Development Required | Create digital twins for yield processes with automated parameter optimization capabilities     | High     |
+| **Data Platform**     | [Cloud Data Platform Services][cloud-data-platform-services]                     | ✅ Ready to Deploy       | Implement yield data lake with historical analysis and trend identification for optimization    | Medium   |
+| **ML Operations**     | [MLOps Toolchain][mlops-toolchain]                                               | 🟣 Planned              | Establish model training pipeline for continuous yield optimization model improvement           | Medium   |
 
-**Focus**: Enterprise process optimization and automated control
-
-**Additional Capabilities**:
+**Implementation Sequence**:
 
-- **[Data Governance & Lineage][data-governance-lineage]** (Technical: 8, Business: 7, Practical: 7, Cohesion: 8)
-  - Process data traceability across production
-  - Regulatory compliance for process control
-  - Complete process optimization audit trail
+1. **Weeks 1-3**: **[Edge Inferencing Application Framework][edge-inferencing-application-framework]** - Develop and validate yield prediction models with process optimization algorithms
+2. **Weeks 4-6**: **[Device Twin Management][device-twin-management]** - Implement digital twins for yield processes with automated optimization capabilities and validation
+3. **Weeks 7-8**: **[Cloud Data Platform Services][cloud-data-platform-services]** - Deploy yield data platform with historical analysis and predictive optimization foundation
+4. **Weeks 9-10**: **[MLOps Toolchain][mlops-toolchain]** - Establish model lifecycle management with continuous improvement workflows and validation processes
 
-- **[Automated Incident Response & Remediation][automated-incident-response-remediation]** (Technical: 7, Business: 9, Practical: 7, Cohesion: 8)
-  - Automated process incident workflows
-  - Process parameter adjustment automation
-  - Integration with manufacturing execution systems
-
-- **[Cloud AI/ML Model Training][cloud-ai-ml-model-training]** (Technical: 8, Business: 9, Practical: 7, Cohesion: 8)
-  - Advanced yield optimization models
-  - Continuous model training on process data
-  - Process control algorithm development
-
-- **[Edge Application CI/CD][edge-application-cicd]** (Technical: 8, Business: 7, Practical: 8, Cohesion: 8)
-  - Automated deployment of process optimization applications
-  - Continuous integration for process analytics
-  - Version control for process optimization algorithms
-
-**Suggested Expected Value**: 40-60% yield improvement and 50-70% reduction in process optimization cycle time
-
-### Scale Phase - 15 months
-
-**Focus**: Advanced process intelligence and enterprise-wide optimization
-
-**Additional Capabilities**:
-
-- **[MLOps Toolchain][mlops-toolchain]** (Technical: 8, Business: 8, Practical: 7, Cohesion: 9)
-  - Automated process model lifecycle management
-  - Continuous process model improvement
-  - Enterprise process model governance
-
-- **[Machine Learning Feature Store][machine-learning-feature-store]** (Technical: 8, Business: 8, Practical: 7, Cohesion: 9)
-  - Centralized management of process features
-  - Feature reuse across process optimization models
-  - Accelerated process model development
-
-- **[3D Digital Twin][3d-digital-twin]** (Technical: 9, Business: 8, Practical: 6, Cohesion: 8)
-  - Complete 3D modeling of process systems
-  - Virtual process optimization and simulation
-  - Digital process what-if analysis
-
-- **[Augmented Reality Visualization][augmented-reality-visualization]** (Technical: 9, Business: 8, Practical: 6, Cohesion: 8)
-  - AR-assisted process optimization workflows
-  - Visual guidance for process parameter adjustment
-  - Real-time overlay of optimization recommendations
-
-**Suggested Expected Value**: 60-80% yield improvement and 70-90% optimization in process efficiency
-
-## Implementation Phase Legend
-
-| Phase          | Duration  | Focus                                                          | Value Achievement                      |
-|----------------|-----------|----------------------------------------------------------------|----------------------------------------|
-| **PoC**        | 3 weeks   | Real-time process data collection and basic yield monitoring   | 15-25% improvement in yield visibility |
-| **PoV**        | 10 weeks  | AI-powered yield prediction and process optimization           | 25-40% yield improvement               |
-| **Production** | 6 months  | Enterprise process optimization and automated control          | 40-60% yield improvement               |
-| **Scale**      | 15 months | Advanced process intelligence and enterprise-wide optimization | 60-80% yield improvement               |
-
-## Enhanced Key Capabilities Mapping with Implementation Phases
-
-```mermaid
-%%{init: {
-  'theme': 'default',
-  'themeVariables': { 'fontSize': '14px', 'fontFamily': 'trebuchet ms', 'lineHeight': '1.4' },
-  'flowchart': { 'htmlLabels': true, 'curve': 'basis' },
-  'width': '1600px',
-  'height': '1200px'
-}}%%
-graph RL
-    classDef main fill:#4285F4,stroke:#0D47A1,color:white,stroke-width:3px
-    classDef capabilityGroup fill:#1976D2,stroke:#0D47A1,color:white,stroke-width:2px
-    classDef categoryPoC fill:#9C27B0,stroke:#6A1B9A,color:white,stroke-width:2px
-    classDef categoryPoV fill:#FF5722,stroke:#D84315,color:white,stroke-width:2px
-    classDef categoryProd fill:#607D8B,stroke:#455A64,color:white,stroke-width:2px
-    classDef categoryScale fill:#795548,stroke:#5D4037,color:white,stroke-width:2px
-
-    %% Capability status classes
-    classDef available fill:#00C853,stroke:#009624,color:white,stroke-width:1px
-    classDef inDevelopment fill:#FFD600,stroke:#FFAB00,color:black,stroke-width:1px
-    classDef planned fill:#FF6D00,stroke:#FF3D00,color:white,stroke-width:1px
-    classDef external fill:#8D6E63,stroke:#5D4037,color:white,stroke-width:1px
-
-    %% Main Scenario
-    MainScenario[Yield Process Optimization<br/>AI-Driven Manufacturing Excellence]
-
-    %% PoC Phase Capabilities (3 weeks)
-    EdgeStreamYield[Edge Data Stream Processing<br/>Score: 10/8/9/9]
-    EdgeDashYield[Edge Dashboard Visualization<br/>Score: 8/9/9/7]
-    OPCYieldData[OPC UA Data Ingestion<br/>Score: 9/8/9/8]
-    EdgeComputeYield[Edge Compute Orchestration<br/>Score: 8/7/9/8]
-
-    %% PoV Phase Capabilities (10 weeks)
-    EdgeInferenceYield[Edge Inferencing Framework<br/>Score: 9/9/7/9]
-    DeviceTwinYield[Device Twin Management<br/>Score: 8/8/8/8]
-    CloudDataYield[Cloud Data Platform<br/>Score: 8/8/8/9]
-    IndustrialProtocolYield[Broad Industrial Protocol Support<br/>Score: 8/7/7/8]
-
-    %% Production Phase Capabilities (6 months)
-    DataGovernanceYield[Data Governance & Lineage<br/>Score: 8/7/7/8]
-    AutoIncidentYield[Automated Incident Response<br/>Score: 7/9/7/8]
-    CloudMLYield[Cloud AI/ML Model Training<br/>Score: 8/9/7/8]
-    EdgeCICDYield[Edge Application CI/CD<br/>Score: 8/7/8/8]
-
-    %% Scale Phase Capabilities (15 months)
-    MLOpsYield[MLOps Toolchain<br/>Score: 8/8/7/9]
-    FeatureStoreYield[ML Feature Store<br/>Score: 8/8/7/9]
-    DigitalTwinYield[3D Digital Twin<br/>Score: 9/8/6/8]
-    ARVisualizationYield[Augmented Reality Visualization<br/>Score: 9/8/6/8]
-
-    %% Phase-specific Capability Groups
-    EdgeIndustrialAppYieldPoC[PoC: Edge Industrial Application Platform<br/>3 weeks]
-    ProtocolTranslationYieldPoC[PoC: Protocol Translation & Device Management<br/>3 weeks]
-    EdgeClusterYieldPoC[PoC: Edge Cluster Platform<br/>3 weeks]
-
-    EdgeIndustrialAppYieldPoV[PoV: Edge Industrial Application Platform<br/>10 weeks]
-    ProtocolTranslationYieldPoV[PoV: Protocol Translation & Device Management<br/>10 weeks]
-    CloudDataPlatformYieldPoV[PoV: Cloud Data Platform<br/>10 weeks]
-
-    CloudDataPlatformYieldProd[Production: Cloud Data Platform<br/>6 months]
-    CloudInsightsPlatformYieldProd[Production: Cloud Insights Platform<br/>6 months]
-    CloudAIPlatformYieldProd[Production: Cloud AI Platform<br/>6 months]
-    EdgeClusterYieldProd[Production: Edge Cluster Platform<br/>6 months]
-
-    CloudAIPlatformYieldScale[Scale: Cloud AI Platform<br/>15 months]
-    CloudDataPlatformYieldScale[Scale: Cloud Data Platform<br/>15 months]
-    AdvancedSimulationYieldScale[Scale: Advanced Simulation & Digital Twin<br/>15 months]
-
-    %% Individual Capabilities to Phase-specific Groups
-    EdgeStreamYield --> EdgeIndustrialAppYieldPoC
-    EdgeDashYield --> EdgeIndustrialAppYieldPoC
-    OPCYieldData --> ProtocolTranslationYieldPoC
-    EdgeComputeYield --> EdgeClusterYieldPoC
-
-    EdgeInferenceYield --> EdgeIndustrialAppYieldPoV
-    DeviceTwinYield --> ProtocolTranslationYieldPoV
-    CloudDataYield --> CloudDataPlatformYieldPoV
-    IndustrialProtocolYield --> ProtocolTranslationYieldPoV
-
-    DataGovernanceYield --> CloudDataPlatformYieldProd
-    AutoIncidentYield --> CloudInsightsPlatformYieldProd
-    CloudMLYield --> CloudAIPlatformYieldProd
-    EdgeCICDYield --> EdgeClusterYieldProd
-
-    MLOpsYield --> CloudAIPlatformYieldScale
-    FeatureStoreYield --> CloudDataPlatformYieldScale
-    DigitalTwinYield --> AdvancedSimulationYieldScale
-    ARVisualizationYield --> AdvancedSimulationYieldScale
-
-    %% Phase-specific Groups to Main Scenario
-    EdgeIndustrialAppYieldPoC --> MainScenario
-    ProtocolTranslationYieldPoC --> MainScenario
-    EdgeClusterYieldPoC --> MainScenario
-
-    EdgeIndustrialAppYieldPoV --> MainScenario
-    ProtocolTranslationYieldPoV --> MainScenario
-    CloudDataPlatformYieldPoV --> MainScenario
-
-    CloudDataPlatformYieldProd --> MainScenario
-    CloudInsightsPlatformYieldProd --> MainScenario
-    CloudAIPlatformYieldProd --> MainScenario
-    EdgeClusterYieldProd --> MainScenario
-
-    CloudAIPlatformYieldScale --> MainScenario
-    CloudDataPlatformYieldScale --> MainScenario
-    AdvancedSimulationYieldScale --> MainScenario
-
-    %% Apply styles
-    MainScenario:::main
-
-    EdgeIndustrialAppYieldPoC:::categoryPoC
-    ProtocolTranslationYieldPoC:::categoryPoC
-    EdgeClusterYieldPoC:::categoryPoC
-
-    EdgeIndustrialAppYieldPoV:::categoryPoV
-    ProtocolTranslationYieldPoV:::categoryPoV
-    CloudDataPlatformYieldPoV:::categoryPoV
-
-    CloudDataPlatformYieldProd:::categoryProd
-    CloudInsightsPlatformYieldProd:::categoryProd
-    CloudAIPlatformYieldProd:::categoryProd
-    EdgeClusterYieldProd:::categoryProd
-
-    CloudAIPlatformYieldScale:::categoryScale
-    CloudDataPlatformYieldScale:::categoryScale
-    AdvancedSimulationYieldScale:::categoryScale
-
-    %% Apply capability status styles
-    EdgeStreamYield:::available
-    EdgeDashYield:::available
-    OPCYieldData:::available
-    EdgeComputeYield:::available
-    EdgeInferenceYield:::available
-    DeviceTwinYield:::available
-    CloudDataYield:::available
-    EdgeCICDYield:::available
-
-    DataGovernanceYield:::inDevelopment
-    AutoIncidentYield:::inDevelopment
-    IndustrialProtocolYield:::inDevelopment
-    FeatureStoreYield:::inDevelopment
-
-    CloudMLYield:::planned
-    MLOpsYield:::planned
-
-    DigitalTwinYield:::external
-    ARVisualizationYield:::external
-
-    linkStyle default stroke-width:2px,fill:none,stroke:#999
-```
-
-## Capability Status Legend
+**Typical Team Requirements**: 6-8 engineers (2 ML specialists, 2 process engineers, 2 data engineers, 1-2 integration developers)
+
+**MVP Requirements**: Demonstrate 10% improvement in overall yield with 20% waste reduction and measurable resource utilization optimization
+
+---
+
+### 🏭 Production Phase (6 months) - Enterprise Yield Platform
+
+**Scenario Goal**: Deploy enterprise-scale yield management system with MES/ERP integration and comprehensive yield governance across the manufacturing organization.
+
+**Technical Scope**: Implement organization-wide yield intelligence with automated process optimization, enterprise system integration, and cross-process yield correlation.
+
+| Capability Area   | Capability                                                                           | Accelerator Support     | Implementation Requirements                                                                        | Priority |
+|-------------------|--------------------------------------------------------------------------------------|-------------------------|----------------------------------------------------------------------------------------------------|----------|
+| **Governance**    | [Data Governance & Lineage][data-governance-lineage]                                 | 🔵 Development Required | Implement yield data governance with process optimization audit trails and compliance capabilities | High     |
+| **Automation**    | [Automated Incident Response & Remediation][automated-incident-response-remediation] | 🔵 Development Required | Deploy automated yield optimization with process adjustment and escalation workflows               | Medium   |
+| **Observability** | [Cloud Observability Foundation][cloud-observability-foundation]                     | 🔵 Development Required | Establish enterprise yield monitoring with comprehensive analytics and reporting                   | High     |
+| **Integration**   | [Broad Industrial Protocol Support][broad-industrial-protocol-support]               | 🟣 Planned              | Support diverse process equipment with standardized integration patterns and data models           | Medium   |
+
+**Implementation Sequence**:
+
+1. **Months 1-2**: **[Data Governance & Lineage][data-governance-lineage]** - Implement yield data governance + **[Cloud Observability Foundation][cloud-observability-foundation]** - Deploy enterprise monitoring
+2. **Months 3-4**: **[Automated Incident Response & Remediation][automated-incident-response-remediation]** - Deploy automated yield optimization with process adjustment workflows
+3. **Months 5-6**: **[Broad Industrial Protocol Support][broad-industrial-protocol-support]** - Expand equipment integration with standardized yield data models and reporting
+
+**Typical Team Requirements**: 8-12 engineers (3 ML specialists, 3 process engineers, 2 data engineers, 2-3 integration developers, 1-2 governance specialists)
+
+---
+
+### 📈 Scale Phase (15 months) - Advanced Yield Intelligence
+
+**Scenario Goal**: Achieve advanced yield intelligence with supply chain optimization, predictive yield simulation, and continuous yield improvement automation across the extended enterprise.
+
+**Technical Scope**: Deploy advanced yield intelligence with supply chain yield optimization, predictive process simulation, and autonomous yield optimization across the extended enterprise.
+
+| Capability Area        | Capability                                                 | Accelerator Support      | Implementation Requirements                                                                     | Priority |
+|------------------------|------------------------------------------------------------|--------------------------|-------------------------------------------------------------------------------------------------|----------|
+| **AI Training**        | [Cloud AI/ML Model Training][cloud-ai-ml-model-training]   | 🟣 Planned               | Establish advanced yield model training with multi-site data federation and continuous learning | High     |
+| **Digital Twin**       | [Yield Digital Twin Platform][yield-digital-twin-platform] | 🟪 External Dependencies | Implement advanced yield process simulation with predictive optimization and scenario planning  | Medium   |
+| **Process Simulation** | [Process Simulation Engine][process-simulation-engine]     | 🟪 External Dependencies | Deploy process simulation capabilities with yield prediction and optimization recommendations   | High     |
+| **Edge CI/CD**         | [Edge Application CI/CD][edge-application-cicd]            | ✅ Ready to Deploy        | Automate deployment of yield optimization applications across multiple production sites         | Medium   |
+
+**Implementation Sequence**:
+
+1. **Months 1-6**: **[Cloud AI/ML Model Training][cloud-ai-ml-model-training]** - Establish advanced model training + **[Process Simulation Engine][process-simulation-engine]** - Deploy simulation platform
+2. **Months 7-12**: **[Yield Digital Twin Platform][yield-digital-twin-platform]** - Implement advanced yield simulation with predictive optimization capabilities
+3. **Months 13-15**: **[Edge Application CI/CD][edge-application-cicd]** - Deploy automated CI/CD with enterprise-wide yield optimization intelligence
+
+**Typical Team Requirements**: 12-15 engineers (4 ML specialists, 4 process engineers, 3 data engineers, 2-3 integration developers, 2 simulation specialists, 1-2 governance specialists)
+
+---
+
+## 💼 Business Planning & ROI Analysis
+
+This section provides investment and return projections based on industry benchmarks and implementation data.
+
+### Investment & Return Projections
+
+| Phase          | Investment Level | Expected ROI                                            | Timeline to Value | Key Metrics                                                 |
+|----------------|------------------|---------------------------------------------------------|-------------------|-------------------------------------------------------------|
+| **PoC**        | Low              | 5-10% improvement in overall yield                      | 3-6 weeks         | Yield tracking, 20% faster waste identification             |
+| **PoV**        | Medium           | 10-15% yield improvement with 20-30% waste reduction    | 10-16 weeks       | 30% yield automation, measurable resource optimization      |
+| **Production** | High             | 15-20% yield improvement with enterprise optimization   | 6-12 months       | 60% yield automation, MES/ERP integration                   |
+| **Scale**      | Enterprise       | 20-25% yield improvement with supply chain optimization | 12-18 months      | 85% automated yield optimization, cross-process correlation |
+
+### Risk Assessment & Mitigation
+
+| Risk Category                      | Probability | Impact | Mitigation Strategy                                                                            |
+|------------------------------------|-------------|--------|------------------------------------------------------------------------------------------------|
+| **🔧 Technical Integration**       | Medium      | High   | Phased integration with existing process control systems and comprehensive testing protocols   |
+| **👥 Skills & Training**           | High        | Medium | Process engineer training programs and partnerships with yield optimization technology vendors |
+| **💻 Legacy System Compatibility** | Medium      | High   | API-first integration patterns and gradual migration strategies                                |
+| **📊 Data Quality & Governance**   | Medium      | Medium | Comprehensive data validation frameworks and automated quality checks                          |
+| **🏭 Operational Disruption**      | Low         | High   | Parallel deployment strategies and comprehensive rollback procedures                           |
+
+### Expected Business Outcomes
+
+| Outcome Category            | Improvement Range          | Business Impact                                    | Measurement Timeline |
+|-----------------------------|----------------------------|----------------------------------------------------|----------------------|
+| **Overall Yield**           | 10-25% improvement         | Increased production output and revenue            | 6-18 months          |
+| **Process Waste**           | 20-40% reduction           | Reduced material costs and environmental impact    | 3-12 months          |
+| **Resource Utilization**    | 15-30% improvement         | Optimized resource consumption and costs           | 6-18 months          |
+| **OEE Improvement**         | 10-20% increase            | Enhanced equipment effectiveness and throughput    | 6-12 months          |
+| **Process Optimization**    | 25-50% faster              | Rapid yield issue identification and resolution    | 3-9 months           |
+| **Energy Efficiency**       | 10-20% improvement         | Reduced energy consumption and costs               | 12-24 months         |
+| **Production Consistency**  | 30-50% variation reduction | Improved product quality and predictability        | 9-18 months          |
+| **Maintenance Costs**       | 15-25% reduction           | Optimized equipment utilization and lifecycle      | 12-24 months         |
+| **Supply Chain Efficiency** | 15-30% improvement         | Enhanced supplier yield and reduced incoming waste | 18-24 months         |
+
+---
+
+## ✅ Implementation Success Checklist
+
+This checklist provides a structured approach to preparation and validation for Yield Process Optimization implementation.
+
+### Pre-Implementation Assessment
+
+- [ ] **Process Mapping**: Current yield measurement processes documented and optimization opportunities identified
+- [ ] **Equipment Compatibility**: Existing process control equipment integration capabilities assessed and validated
+- [ ] **Data Infrastructure**: Yield data collection and storage systems evaluated for integration readiness
+- [ ] **Baseline Metrics**: Current yield rates, waste levels, and resource utilization measured and documented
+- [ ] **Team Readiness**: Process engineering skills assessed and yield optimization training needs identified
+
+### Phase Advancement Criteria
 
 <!-- markdownlint-disable MD033 -->
-| Status                                                  | Description                                                                            |
-|---------------------------------------------------------|----------------------------------------------------------------------------------------|
-| <span style="color:#00C853">■</span> **Available**      | These capabilities are mostly implemented and ready to use in the edge-ai platform     |
-| <span style="color:#FFD600">■</span> **In Development** | These capabilities are partially implemented or currently in active development        |
-| <span style="color:#FF6D00">■</span> **Planned**        | These capabilities are on our roadmap but implementation has not yet started           |
-| <span style="color:#8D6E63">■</span> **External**       | These capabilities require integration with external systems or third-party components |
+| Phase Transition             | Success Criteria                                                                           | Target Metrics                                                            | Validation Method                                                     |
+|------------------------------|--------------------------------------------------------------------------------------------|---------------------------------------------------------------------------|-----------------------------------------------------------------------|
+| **🧪 PoC → 🚀 PoV**          | Real-time yield monitoring operational with measurable yield improvement                   | • 5-10% improvement in overall yield<br>• 20% faster waste identification | • Yield metrics comparison<br>• Process validation testing            |
+| **🚀 PoV → 🏭 Production**   | Predictive yield optimization demonstrating business value and stakeholder approval        | • 10-15% yield improvement<br>• 20-30% waste reduction                    | • Business case validation<br>• Stakeholder acceptance testing        |
+| **🏭 Production → 📈 Scale** | Enterprise yield platform operational with MES/ERP integration and governance capabilities | • 15-20% yield improvement<br>• Enterprise system integration             | • Integration testing validation<br>• Enterprise readiness assessment |
 <!-- markdownlint-enable MD033 -->
 
-> **Important**: Before implementing this scenario, review the [Prerequisites][prerequisites] document for hardware, software, permissions, and system requirements.
+This **phase-based approach** provides clear visibility into:
 
-## Expected Outcomes
+- **⏱️ Timeline**: Each phase has specific duration and focus areas
+- **🎯 Priority**: Left-to-right flow shows implementation order within each phase
+- **📈 Value**: Progressive value delivery from 5% to 25% yield improvement
+- **🔄 Dependencies**: Each phase builds upon previous achievements
 
-- Improvement in manufacturing yield by 40-80%
-- Reduction in process variations by 50-70%
-- Decrease in process optimization cycle time by 60-80%
-- Faster process issue detection and resolution by 70-85%
-- Enhanced process data traceability and compliance by 50-80%
-- Reduced material waste through yield optimization by 30-60%
-- More consistent process performance across facilities by 40-70%
-- Improved production efficiency through process optimization by 25-50%
-- Enhanced product quality through yield management by 15-35%
+The visual progression makes it easy to understand **what gets built when** and **how capabilities connect** to deliver incremental business value.
 
-## Advanced Capability Extensions
+> **Important**: Before implementing this scenario, review the prerequisites documentation for hardware, software, permissions, and system requirements.
 
-- **[MLOps Toolchain][mlops-toolchain]** (Technical: 8, Business: 8, Practical: 7, Cohesion: 9)
-  - Automated process model lifecycle management framework
-  - Continuous process model improvement capabilities
-  - Enterprise process model governance and versioning
+## 🚀 Advanced Capability Extensions
 
-- **[Data Governance & Lineage][data-governance-lineage]** (Technical: 8, Business: 7, Practical: 7, Cohesion: 8)
-  - Complete traceability of process data across manufacturing
-  - Regulatory compliance for process control systems
-  - Audit trail for process optimization activities
+These capabilities extend beyond the core Yield Process Optimization scenario to enable advanced manufacturing intelligence applications.
 
-## Next Steps & Related Resources
+| Capability                                                             | Technical Complexity | Business Value | Implementation Effort | Integration Points                                       |
+|------------------------------------------------------------------------|----------------------|----------------|-----------------------|----------------------------------------------------------|
+| **[Supply Chain Yield Integration][supply-chain-yield-integration]**   | Very High            | High           | 12-18 months          | Yield platform, supplier systems, logistics optimization |
+| **[Predictive Yield Analytics][predictive-yield-analytics]**           | Very High            | High           | 9-15 months           | AI platform, yield data, process optimization            |
+| **[Autonomous Yield Optimization][autonomous-yield-optimization]**     | Very High            | High           | 12-24 months          | AI platform, process control, yield governance           |
+| **[Cross-Process Yield Correlation][cross-process-yield-correlation]** | High                 | Medium         | 6-12 months           | Data platform, multiple process lines, analytics engine  |
 
-- Review the [Prerequisites][prerequisites] for implementation requirements
-- Explore the [Capability Group Mapping][capability-group-mapping] for detailed capability assessment
+**Note**: Core capabilities like [Edge Data Stream Processing][edge-data-stream-processing], [Edge Inferencing Application Framework][edge-inferencing-application-framework], [Device Twin Management][device-twin-management], and [Yield Data Analytics][yield-data-analytics] are integrated into the main scenario phases as essential components.
+
+## 🔗 Related Scenarios & Synergies
+
+Maximize platform investment by leveraging shared capabilities across multiple use cases:
+
+| Related Scenario                                                             | Shared Capabilities                                       | Potential Synergies                           | Implementation Benefits                     |
+|------------------------------------------------------------------------------|-----------------------------------------------------------|-----------------------------------------------|---------------------------------------------|
+| **[Quality Process Optimization][quality-process-optimization]**             | Edge processing, AI inference, process optimization       | Combined yield-quality optimization workflows | 45% shared infrastructure costs             |
+| **[Predictive Maintenance][predictive-maintenance]**                         | IoT sensors, predictive analytics, device management      | Yield-driven maintenance optimization         | 35% operational efficiency gains            |
+| **[Operational Performance Monitoring][operational-performance-monitoring]** | Data platform, observability, process monitoring          | Integrated yield and performance analytics    | 40% improved decision-making speed          |
+| **[Energy Optimization][energy-optimization]**                               | Process optimization, AI analytics, efficiency monitoring | Yield-energy optimization correlation         | 30% overall resource efficiency improvement |
+
+### 🔄 Cross-Scenario Implementation Strategy
+
+Strategic multi-scenario deployment maximizes platform investment by building shared capabilities that compound value across implementations:
+
+| Implementation Phase                                | Primary Scenario                                                             | Add-On Scenarios                  | Shared Platform Benefits                                       | Expected ROI Improvement |
+|-----------------------------------------------------|------------------------------------------------------------------------------|-----------------------------------|----------------------------------------------------------------|--------------------------|
+| **🏗️ Phase 1 - Foundation** (6 months)             | **Yield Process Optimization** (this scenario)                               | None                              | Establish yield data platform and edge analytics               | Baseline ROI: 40-60%     |
+| **⚡ Phase 2 - Quality Integration** (3 months)      | Yield + [Quality Process Optimization][quality-process-optimization]         | Combined yield-quality workflows  | 45% shared infrastructure, unified optimization platform       | +30-40% additional ROI   |
+| **🔮 Phase 3 - Predictive Intelligence** (4 months) | Add [Predictive Maintenance][predictive-maintenance]                         | Yield-driven maintenance          | 35% shared edge platform, combined analytics engines           | +25-35% additional ROI   |
+| **🎯 Phase 4 - Operational Excellence** (3 months)  | Add [Operational Performance Monitoring][operational-performance-monitoring] | Holistic performance optimization | 40% shared platform, integrated yield-performance optimization | +20-30% additional ROI   |
+
+**Platform Benefits**: Multi-scenario deployment achieves 120-165% cumulative ROI with 45-65% faster implementation for additional scenarios due to shared platform components.
+
+## 🚀 Next Steps & Related Resources
+
+- 📋 Review the [prerequisites][prerequisites] for implementation requirements
+- 🎯 Explore the [capability group mapping][capabilities-overview] for detailed capability assessment
 - See the [Blueprints README][blueprints-readme] for deployment options
-- Review [Implementation Guide][implementation-guide] for step-by-step deployment instructions
+- Review the [Getting Started Guide][getting-started] for step-by-step deployment instructions
 
 <!-- Reference Links -->
-[available]: /src/100-edge/110-iot-ops
-[available-2]: /src/100-edge/100-cncf-cluster
-[available-4]: /src/100-edge/120-observability
-[available-5]: /src/100-edge/130-ml-ops
-[available-7]: /src/000-cloud/030-data
-[prerequisites]: ./prerequisites.md
-[capability-group-mapping]: ./yield-process-optimization-capability-mapping.md
+
+<!-- Capability Group Links -->
+[protocol-translation-device-management]: /docs/project-planning/capabilities/protocol-translation-device-management/README.md
+[edge-cluster-platform]: /docs/project-planning/capabilities/edge-cluster-platform/README.md
+[edge-industrial-application-platform]: /docs/project-planning/capabilities/edge-industrial-application-platform/README.md
+[cloud-data-platform]: /docs/project-planning/capabilities/cloud-data-platform/README.md
+[cloud-ai-platform]: /docs/project-planning/capabilities/cloud-ai-platform/README.md
+[cloud-insights-platform]: /docs/project-planning/capabilities/cloud-insights-platform/README.md
+[advanced-simulation-digital-twin-platform]: /docs/project-planning/capabilities/advanced-simulation-digital-twin-platform/README.md
+
+<!-- Individual Capability Links -->
+[opc-ua-data-ingestion]: /docs/project-planning/capabilities/protocol-translation-device-management/opc-ua-data-ingestion.md
+[device-twin-management]: /docs/project-planning/capabilities/protocol-translation-device-management/device-twin-management.md
+[broad-industrial-protocol-support]: /docs/project-planning/capabilities/protocol-translation-device-management/broad-industrial-protocol-support.md
+[edge-compute-orchestration]: /docs/project-planning/capabilities/edge-cluster-platform/edge-compute-orchestration.md
+[edge-application-cicd]: /docs/project-planning/capabilities/edge-cluster-platform/edge-application-cicd.md
+[edge-data-stream-processing]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-data-stream-processing.md
+[edge-inferencing-application-framework]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-inferencing-application-framework.md
+[edge-dashboard-visualization]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-dashboard-visualization.md
+[cloud-data-platform-services]: /docs/project-planning/capabilities/cloud-data-platform/cloud-data-platform-services.md
+[data-governance-lineage]: /docs/project-planning/capabilities/cloud-data-platform/data-governance-lineage.md
+[cloud-ai-ml-model-training]: /docs/project-planning/capabilities/cloud-ai-platform/cloud-ai-ml-model-training.md
+[mlops-toolchain]: /docs/project-planning/capabilities/cloud-ai-platform/mlops-toolchain.md
+[automated-incident-response-remediation]: /docs/project-planning/capabilities/cloud-insights-platform/automated-incident-response-remediation.md
+[cloud-observability-foundation]: /docs/project-planning/capabilities/cloud-insights-platform/cloud-observability-foundation.md
+
+<!-- Advanced Capability Links -->
+[supply-chain-yield-integration]: /docs/project-planning/capabilities/advanced-simulation-digital-twin-platform/supply-chain-yield-integration.md
+[predictive-yield-analytics]: /docs/project-planning/capabilities/cloud-ai-platform/predictive-yield-analytics.md
+[autonomous-yield-optimization]: /docs/project-planning/capabilities/cloud-insights-platform/autonomous-yield-optimization.md
+[cross-process-yield-correlation]: /docs/project-planning/capabilities/cloud-data-platform/cross-process-yield-correlation.md
+[yield-digital-twin-platform]: /docs/project-planning/capabilities/advanced-simulation-digital-twin-platform/yield-digital-twin-platform.md
+[process-simulation-engine]: /docs/project-planning/capabilities/advanced-simulation-digital-twin-platform/process-simulation-engine.md
+[yield-data-analytics]: /docs/project-planning/capabilities/cloud-data-platform/yield-data-analytics.md
+
+<!-- Documentation Links -->
+[getting-started]: /docs/getting-started/README.md
 [blueprints-readme]: /blueprints/README.md
-[implementation-guide]: /docs/implementation-guides/yield-process-optimization-implementation.md
-[protocol-translation-device-management]: /docs/capabilities/protocol-translation-device-management/README.md
-[opc-ua-data-ingestion]: /docs/capabilities/protocol-translation-device-management/opc-ua-data-ingestion.md
-[device-twin-management]: /docs/capabilities/protocol-translation-device-management/device-twin-management.md
-[broad-industrial-protocol-support]: /docs/capabilities/protocol-translation-device-management/broad-industrial-protocol-support.md
-[edge-cluster-platform]: /docs/capabilities/edge-cluster-platform/README.md
-[edge-compute-orchestration]: /docs/capabilities/edge-cluster-platform/edge-compute-orchestration-platform.md
-[edge-application-cicd]: /docs/capabilities/edge-cluster-platform/edge-application-cicd.md
-[edge-industrial-application-platform]: /docs/capabilities/edge-industrial-application-platform/README.md
-[edge-data-stream-processing]: /docs/capabilities/edge-industrial-application-platform/edge-data-stream-processing.md
-[edge-inferencing-application-framework]: /docs/capabilities/edge-industrial-application-platform/edge-inferencing-application-framework.md
-[edge-dashboard-visualization]: /docs/capabilities/edge-industrial-application-platform/edge-dashboard-visualization.md
-[cloud-data-platform]: /docs/capabilities/cloud-data-platform/README.md
-[cloud-data-platform-services]: /docs/capabilities/cloud-data-platform/cloud-data-platform-services.md
-[data-governance-lineage]: /docs/capabilities/cloud-data-platform/data-governance-lineage.md
-[machine-learning-feature-store]: /docs/capabilities/cloud-data-platform/machine-learning-feature-store.md
-[cloud-ai-platform]: /docs/capabilities/cloud-ai-platform/README.md
-[cloud-ai-ml-model-training]: /docs/capabilities/cloud-ai-platform/cloud-ai-ml-model-training-management.md
-[mlops-toolchain]: /docs/capabilities/cloud-ai-platform/mlops-toolchain.md
-[cloud-insights-platform]: /docs/capabilities/cloud-insights-platform/README.md
-[automated-incident-response-remediation]: /docs/capabilities/cloud-insights-platform/automated-incident-response-remediation.md
-[cloud-observability-foundation]: /docs/capabilities/cloud-insights-platform/cloud-observability-foundation.md
-[advanced-simulation-digital-twin-platform]: /docs/capabilities/advanced-simulation-digital-twin-platform/README.md
-[3d-digital-twin]: /docs/capabilities/advanced-simulation-digital-twin-platform/3d-digital-twin.md
-[augmented-reality-visualization]: /docs/capabilities/advanced-simulation-digital-twin-platform/augmented-reality-visualization.md
+[prerequisites]: /docs/project-planning/scenarios/yield-process-optimization/prerequisites.md
+[capabilities-overview]: /docs/project-planning/capabilities/README.md
+
+<!-- Related Scenario Links -->
+[quality-process-optimization]: /docs/project-planning/scenarios/quality-process-optimization-automation/README.md
+[predictive-maintenance]: /docs/project-planning/scenarios/predictive-maintenance/README.md
+[operational-performance-monitoring]: /docs/project-planning/scenarios/operational-performance-monitoring/README.md
+[energy-optimization]: /docs/project-planning/scenarios/energy-optimization/README.md
 
 ---
 

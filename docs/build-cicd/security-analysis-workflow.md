@@ -2,7 +2,7 @@
 title: Security Analysis with Work Item Management
 description: Automated security analysis workflow that leverages Checkov security scanning and creates structured work item planning files for Azure DevOps integration to systematically track and resolve security vulnerabilities in Kubernetes clusters and Arc components
 author: Edge AI Team
-ms.date: 09/30/2025
+ms.date: 2025-09-30
 ms.topic: how-to
 keywords:
   - security analysis

@@ -1,0 +1,29 @@
+[package]
+name = "mqtt-otel-trace-exporter"
+version = "0.1.0"
+edition = "2021"
+
+[features]
+default = []
+experimental_trace_batch_span_processor_with_async_runtime = [
+	"opentelemetry_sdk/experimental_trace_batch_span_processor_with_async_runtime",
+]
+
+[dependencies]
+anyhow = "1.0"
+azure_iot_operations_mqtt = { version = "0.9.0", registry = "aio-sdks" }
+futures = "0.3.17"
+serde = { version = "1.0.130", features = ["derive"] }
+serde_json = "1.0.73"
+tracing = { version = "0.1", features = ["std", "attributes"] }
+tracing-opentelemetry = "0.30"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt", "registry", "std"] }
+opentelemetry = { version = "0.29" }
+opentelemetry_sdk = { version = "0.29", features = ["rt-tokio"] }
+opentelemetry-otlp = { version = "0.29", features = ["grpc-tonic"] }
+tokio = { version = "1.14.0", features = ["macros", "signal", "rt-multi-thread", "net", "io-util", "sync"] }
+uuid = { version = "1.4", features = ["v4"] }
+sha2 = "0.10"
+
+[workspace]
+resolver = "2"

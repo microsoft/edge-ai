@@ -2,7 +2,7 @@
 title: 'Architecture Decision Record: Policy as Code with OPA Gatekeeper'
 description: Architecture Decision Record evaluating Kubernetes policy-as-code solutions for implementing pod isolation controls and security policy enforcement. Compares OPA Gatekeeper's declarative YAML-based approach against custom Golang admission webhooks, focusing on preventing unauthorized cluster state modifications and implementing strict admission controls for Azure Arc agent pods in PSNet environments.
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: architecture-decision-record
 estimated_reading_time: 8
 keywords:

@@ -2,7 +2,7 @@
 title: 'Architecture Decision Record: Policy as Code with Kyverno'
 description: Architecture Decision Record evaluating Kubernetes policy-as-code solutions, comparing Kyverno against OPA Gatekeeper for policy management and governance. Documents the selection of Kyverno based on YAML-based policy definitions, advanced features including image verification and resource generation, simplified management, and alignment with existing Infrastructure as Code strategies.
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: architecture-decision-record
 estimated_reading_time: 7
 keywords:

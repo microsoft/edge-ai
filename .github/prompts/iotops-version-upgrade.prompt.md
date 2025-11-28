@@ -1,7 +1,7 @@
 ---
-mode: 'agent'
 description: 'Guides through the process of updating Azure IoT Operations components to the latest version - Brought to you by microsoft/edge-ai'
-model: 'Claude Sonnet 4'
+model: 'GPT-5-Codex (Preview)'
+tools: ['runCommands', 'runTasks', 'edit/createFile', 'edit/createDirectory', 'edit/editFiles', 'search', 'Bicep (EXPERIMENTAL)/*', 'terraform/*', 'microsoft-docs/*', 'todos', 'runSubagent2', 'problems', 'changes', 'fetch', 'githubRepo']
 ---
 
 # Azure IoT Operations Version Upgrade Prompt
@@ -12,7 +12,7 @@ Update Azure IoT Operations components in this repository to a specified version
 
 Work in a directory named `.copilot-tracking/iotops/{current_date}/`, where `{current_date}` is the current date in `YYYY-MM-DD` format (e.g., `2025-06-24`).
 
-Before anything else, use the `todos` tool to plan the work by enumerating all the major 16 sections in phases 1, 2 and 3 in this prompt as tasks.
+Use runSubagent2 tool for complex steps in this prompt like executing scripts, fetch, search, edit and saving files. Researching and documenting plans.
 
 ### Components Analyzed by This Prompt
 
@@ -169,8 +169,6 @@ curl -L -o ".copilot-tracking/iotops/{current_date}/specifications/deviceregistr
 - Treat instance-level changes (e.g., `defaultSecretProviderClassRef`) as potential breaking changes; ensure Breaking Changes analysis captures them for user validation.
 - When multiple apiVersions are available in the same channel, select the latest dated version.
 
-Update the status of `todos` list as you complete this section, don't add new todos before Phase 3.
-
 ## 3. Create the Plan
 
 Create or update a plan file named `iotops-update-plan.md` in the `.copilot-tracking/iotops/{current_date}/` directory.
@@ -185,8 +183,6 @@ Include `<!-- markdownlint-disable-file -->` at the top; `.copilot-tracking/**` 
 4. Reference these instruction files when determining appropriate change approaches
 
 Outline all necessary code changes in the plan file. Prefix each item requiring a code change with a markdown checkbox `[ ]`.
-
-Update the status of `todos` list as you complete this section, don't add new todos before Phase 3.
 
 ## 4. Core IoT Operations Component Analysis (110-iot-ops) - EXECUTE IMMEDIATELY
 
@@ -246,9 +242,7 @@ Check the following files within the `src/100-edge/110-iot-ops/` component:
 
 **Error Handling**: If a file doesn't exist, document this in the plan. If apiVersion format is unrecognizable, document the current value and recommend manual review.
 
-Before moving to the next step:
-- Update the plan file.
-- Update the status of `todos` list as you complete this section, don't add new todos before Phase 3.
+Before moving to the next step: update the plan file.
 
 ## 5. Assets Component Analysis (111-assets) - EXECUTE IMMEDIATELY
 
@@ -263,9 +257,7 @@ When scanning, capture for each matching resource:
 - The `apiVersion`/`api_version` currently used
 - The file path and line reference
 
-Before moving to the next step:
-- Update the plan file.
-- Update the status of `todos` list as you complete this section, don't add new todos before Phase 3.
+Before moving to the next step: update the plan file.
 
 ## 6. Messaging Component Analysis (130-messaging) - EXECUTE IMMEDIATELY
 
@@ -280,9 +272,7 @@ When scanning, capture for each matching resource:
 - The `apiVersion`/`api_version` currently used
 - The file path and line reference
 
-Before moving to the next step:
-- Update the plan file.
-- Update the status of `todos` list as you complete this section, don't add new todos before Phase 3.
+Before moving to the next step: update the plan file.
 
 ## 7. Analysis Complete Checkpoint
 
@@ -300,9 +290,7 @@ Before moving to the next step:
 
 Only proceed to Phase 2 when all analysis is complete.
 
-Before moving to the next step:
-- Update the plan file.
-- Update the status of `todos` list as you complete this section, don't add new todos before Phase 3.
+Before moving to the next step: update the plan file.
 
 ---
 
@@ -392,9 +380,7 @@ Possible matches: enable_diagnostics, diagnostics_enabled, diag_enabled
 - Include both old and new values for renames and updates
 - Specify the reasoning for complex mappings (e.g., "based on usage in azapi_resource.instance body")
 
-Before moving to the next step:
-- Update the plan file.
-- Update the status of `todos` list as you complete this section, don't add new todos before Phase 3.
+Before moving to the next step: update the plan file.
 
 ## 9. Plan Dependency Updates
 
@@ -427,9 +413,7 @@ Analyze how new parameters from the downloaded JSONs map to existing dependencie
 ```markdown
 - [ ] In `src/100-edge/110-iot-ops/terraform/modules/iot-ops-instance/main.tf`, update the `azapi_resource.instance` to source the `schemaRegistryId` property from `var.adr_schema_registry.id` instead of using a hardcoded value.
 ```
-Before moving to the next step:
-- Update the plan file.
-- Update the status of `todos` list as you complete this section, don't add new todos before Phase 3.
+Before moving to the next step: update the plan file.
 
 ## 10. Plan Blueprint and CI Updates
 
@@ -456,9 +440,7 @@ Update any blueprints and CI configurations that use the `110-iot-ops` component
 - [ ] Remove explicit `log_level = "info"` parameter from `src/100-edge/110-iot-ops/ci/terraform/main.tf` to use new default value of `"debug"`.
 ```
 
-Before moving to the next step:
-- Update the plan file.
-- Update the status of `todos` list as you complete this section, don't add new todos before Phase 3.
+Before moving to the next step: update the plan file.
 
 ## 11. Analyze for Breaking Changes and Impact Assessment
 
@@ -492,9 +474,7 @@ Identify potentially breaking changes that require special attention and user va
 - [ ] IMPACT REVIEW: Default value change for `logLevel` from "info" to "debug" - may increase log volume in production.
 ```
 
-Before moving to the next step:
-- Update the plan file.
-- Update the status of `todos` list as you complete this section, don't add new todos before Phase 3.
+Before moving to the next step: update the plan file.
 
 ## 12. Analyze Release Notes for Additional Changes
 
@@ -531,9 +511,7 @@ Beyond JSON configuration files, examine the release notes for changes that may 
 - [ ] INVESTIGATE: New "REST/HTTP Connector" - check if new connector templates or configurations are needed.
 ```
 
-Before moving to the next step:
-- Update the plan file.
-- Update the status of `todos` list as you complete this section, don't add new todos before Phase 3.
+Before moving to the next step: update the plan file.
 
 ## 13. Plan Additional Validation Areas
 
@@ -558,9 +536,7 @@ Plan validation steps to ensure comprehensive coverage of changes beyond the JSO
 - [ ] VALIDATE: Verify CI tests cover new parameters and resource types.
 ```
 
-Before moving to the next step:
-- Update the plan file.
-- Update the status of `todos` list as you complete this section, don't add new todos before Phase 3.
+Before moving to the next step: update the plan file.
 
 ## 14. User Validation for Breaking Changes
 
@@ -598,9 +574,7 @@ Please confirm you understand these impacts before proceeding.
 - User must confirm they have validated their environment can handle the changes
 - User must approve proceeding with implementation
 
-Before moving to the next step:
-- Update the plan file.
-- Update the status of `todos` list as you complete this section, don't add new todos before Phase 3.
+Before moving to the next step: update the plan file.
 
 ## 15. Finalize Plan and Await Approval
 
@@ -616,7 +590,7 @@ Please review the plan. Let me know if you want to make any changes or additions
 
 After saving the plan, stop and wait for the user to tell you to proceed with the implementation.
 
-**END OF PHASE 2**: Do not proceed to Phase 3 until the user has reviewed the plan and given explicit approval to begin implementation, ensure `todos` list tracking is updated.
+**END OF PHASE 2**: Do not proceed to Phase 3 until the user has reviewed the plan and given explicit approval to begin implementation.
 
 ---
 

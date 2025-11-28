@@ -12,7 +12,7 @@ for a single-node cluster deployment, including observability, messaging, and da
 | terraform | >= 1.9.8, < 2.0 |
 | azapi | >= 2.3.0 |
 | azuread | >= 3.0.2 |
-| azurerm | >= 4.8.0 |
+| azurerm | >= 4.51.0 |
 
 ## Modules
 
@@ -22,9 +22,11 @@ for a single-node cluster deployment, including observability, messaging, and da
 | cloud\_azureml | ../../../src/000-cloud/080-azureml/terraform | n/a |
 | cloud\_data | ../../../src/000-cloud/030-data/terraform | n/a |
 | cloud\_kubernetes | ../../../src/000-cloud/070-kubernetes/terraform | n/a |
+| cloud\_managed\_redis | ../../../src/000-cloud/036-managed-redis/terraform | n/a |
 | cloud\_messaging | ../../../src/000-cloud/040-messaging/terraform | n/a |
 | cloud\_networking | ../../../src/000-cloud/050-networking/terraform | n/a |
 | cloud\_observability | ../../../src/000-cloud/020-observability/terraform | n/a |
+| cloud\_postgresql | ../../../src/000-cloud/035-postgresql/terraform | n/a |
 | cloud\_resource\_group | ../../../src/000-cloud/000-resource-group/terraform | n/a |
 | cloud\_security\_identity | ../../../src/000-cloud/010-security-identity/terraform | n/a |
 | cloud\_vm\_host | ../../../src/000-cloud/051-vm-host/terraform | n/a |
@@ -51,8 +53,6 @@ for a single-node cluster deployment, including observability, messaging, and da
 | aio\_features | AIO instance features with mode ('Stable', 'Preview', 'Disabled') and settings ('Enabled', 'Disabled') | ```map(object({ mode = optional(string) settings = optional(map(string)) }))``` | `null` | no |
 | aks\_should\_enable\_private\_cluster | Whether to enable private cluster mode for AKS | `bool` | `true` | no |
 | aks\_should\_enable\_private\_cluster\_public\_fqdn | Whether to create a private cluster public FQDN for AKS | `bool` | `false` | no |
-| asset\_endpoint\_profiles | List of asset endpoint profiles to create; otherwise, an empty list | ```list(object({ name = string target_address = string endpoint_profile_type = optional(string) method = optional(string) should_enable_opc_asset_discovery = optional(bool) opc_additional_config_string = optional(string) }))``` | `[]` | no |
-| assets | List of assets to create; otherwise, an empty list | ```list(object({ asset_endpoint_profile_ref = string datasets = optional(list(object({ data_points = list(object({ data_point_configuration = optional(string) data_source = string name = string observability_mode = optional(string) })) name = string })), []) default_datasets_configuration = optional(string) description = optional(string) display_name = optional(string) documentation_uri = optional(string) enabled = optional(bool) hardware_revision = optional(string) manufacturer = optional(string) manufacturer_uri = optional(string) model = optional(string) name = string product_code = optional(string) serial_number = optional(string) software_revision = optional(string) }))``` | `[]` | no |
 | azureml\_ml\_workload\_subjects | Custom Kubernetes service account subjects for AzureML workload federation. Example: ['system:serviceaccount:azureml:azureml-workload', 'system:serviceaccount:osmo:osmo-workload'] | `list(string)` | `null` | no |
 | azureml\_registry\_should\_enable\_public\_network\_access | Whether to enable public network access to the Azure Machine Learning registry when deployed | `bool` | `true` | no |
 | azureml\_should\_create\_compute\_cluster | Whether to create a compute cluster for Azure Machine Learning training workloads | `bool` | `true` | no |
@@ -62,15 +62,33 @@ for a single-node cluster deployment, including observability, messaging, and da
 | azureml\_should\_enable\_public\_network\_access | Whether to enable public network access to the Azure Machine Learning workspace | `bool` | `true` | no |
 | certificate\_subject | Certificate subject information for auto-generated certificates | ```object({ common_name = optional(string, "Full Single Node VPN Gateway Root Certificate") organization = optional(string, "Edge AI Accelerator") organizational_unit = optional(string, "IT") country = optional(string, "US") province = optional(string, "WA") locality = optional(string, "Redmond") })``` | `{}` | no |
 | certificate\_validity\_days | Validity period in days for auto-generated certificates | `number` | `365` | no |
+| custom\_akri\_connectors | List of custom Akri connector templates with user-defined endpoint types and container images. Supports built-in types (rest, media, onvif, sse) or custom types with custom\_endpoint\_type and custom\_image\_name. Built-in connectors default to mcr.microsoft.com/azureiotoperations/akri-connectors/connector\_type:0.5.1. | ```list(object({ name = string type = string // "rest", "media", "onvif", "sse", "custom" // Custom Connector Fields (required when type = "custom") custom_endpoint_type = optional(string) // e.g., "Contoso.Modbus", "Acme.CustomProtocol" custom_image_name = optional(string) // e.g., "my_acr.azurecr.io/custom-connector" custom_endpoint_version = optional(string, "1.0") // Runtime Configuration (defaults applied based on connector type) registry = optional(string) // Defaults: mcr.microsoft.com for built-in types image_tag = optional(string) // Defaults: 0.5.1 for built-in types, latest for custom replicas = optional(number, 1) image_pull_policy = optional(string) // Default: IfNotPresent // Diagnostics log_level = optional(string) // Default: info (lowercase: trace, debug, info, warning, error, critical) // MQTT Override (uses shared config if not provided) mqtt_config = optional(object({ host = string audience = string ca_configmap = string keep_alive_seconds = optional(number, 60) max_inflight_messages = optional(number, 100) session_expiry_seconds = optional(number, 600) })) // Optional Advanced Fields aio_min_version = optional(string) aio_max_version = optional(string) allocation = optional(object({ policy = string // "Bucketized" bucket_size = number // 1-100 })) additional_configuration = optional(map(string)) secrets = optional(list(object({ secret_alias = string secret_key = string secret_ref = string }))) trust_settings = optional(object({ trust_list_secret_ref = string })) }))``` | `[]` | no |
 | custom\_locations\_oid | The object id of the Custom Locations Entra ID application for your tenant If none is provided, the script attempts to retrieve this value which requires 'Application.Read.All' or 'Directory.Read.All' permissions ```sh az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv``` | `string` | `null` | no |
 | existing\_certificate\_name | Name of the existing certificate in Key Vault when vpn\_gateway\_should\_generate\_ca is false | `string` | `null` | no |
 | instance | Instance identifier for naming resources: 001, 002, etc | `string` | `"001"` | no |
+| namespaced\_assets | List of namespaced assets to create; otherwise, an empty list | ```list(object({ name = string display_name = optional(string) device_ref = object({ device_name = string endpoint_name = string }) description = optional(string) documentation_uri = optional(string) enabled = optional(bool, true) hardware_revision = optional(string) manufacturer = optional(string) manufacturer_uri = optional(string) model = optional(string) product_code = optional(string) serial_number = optional(string) software_revision = optional(string) attributes = optional(map(string), {}) datasets = optional(list(object({ name = string data_points = list(object({ name = string data_source = string data_point_configuration = optional(string) })) dataset_configuration = optional(string) data_source = optional(string) type_ref = optional(string) destinations = optional(list(object({ target = string configuration = object({ topic = optional(string) retain = optional(string) qos = optional(string) }) })), []) })), []) default_datasets_configuration = optional(string) default_events_configuration = optional(string) }))``` | `[]` | no |
+| namespaced\_devices | List of namespaced devices to create; otherwise, an empty list | ```list(object({ name = string enabled = optional(bool, true) endpoints = object({ outbound = optional(object({ assigned = object({}) }), { assigned = {} }) inbound = map(object({ endpoint_type = string address = string version = optional(string, null) additionalConfiguration = optional(string) authentication = object({ method = string usernamePasswordCredentials = optional(object({ usernameSecretName = string passwordSecretName = string })) x509Credentials = optional(object({ certificateSecretName = string })) }) trustSettings = optional(object({ trustList = string })) })) }) }))``` | `[]` | no |
 | nat\_gateway\_idle\_timeout\_minutes | Idle timeout in minutes for NAT gateway connections | `number` | `4` | no |
 | nat\_gateway\_public\_ip\_count | Number of public IP addresses to associate with the NAT gateway (example: 2) | `number` | `1` | no |
 | nat\_gateway\_zones | Availability zones for NAT gateway resources when zone redundancy is required (example: ['1','2']) | `list(string)` | `[]` | no |
 | node\_count | Number of nodes for the agent pool in the AKS cluster | `number` | `1` | no |
 | node\_pools | Additional node pools for the AKS cluster; map key is used as the node pool name | ```map(object({ node_count = number vm_size = string subnet_address_prefixes = list(string) pod_subnet_address_prefixes = list(string) node_taints = optional(list(string), []) enable_auto_scaling = optional(bool, false) min_count = optional(number, null) max_count = optional(number, null) }))``` | `{}` | no |
 | node\_vm\_size | VM size for the agent pool in the AKS cluster | `string` | `"Standard_D8ds_v5"` | no |
+| postgresql\_admin\_password | Administrator password for PostgreSQL server. (Otherwise, generated when postgresql\_should\_generate\_admin\_password is true). | `string` | `null` | no |
+| postgresql\_admin\_username | Administrator username for PostgreSQL server | `string` | `"pgadmin"` | no |
+| postgresql\_databases | Map of databases to create with collation and charset | ```map(object({ collation = string charset = string }))``` | `null` | no |
+| postgresql\_delegated\_subnet\_id | Subnet ID with delegation to Microsoft.DBforPostgreSQL/flexibleServers | `string` | `null` | no |
+| postgresql\_should\_enable\_extensions | Whether to enable PostgreSQL extensions via azure.extensions | `bool` | `true` | no |
+| postgresql\_should\_enable\_geo\_redundant\_backup | Whether to enable geo-redundant backups for PostgreSQL | `bool` | `false` | no |
+| postgresql\_should\_enable\_timescaledb | Whether to enable TimescaleDB extension for PostgreSQL | `bool` | `true` | no |
+| postgresql\_should\_generate\_admin\_password | Whether to auto-generate PostgreSQL admin password. | `bool` | `true` | no |
+| postgresql\_should\_store\_credentials\_in\_key\_vault | Whether to store PostgreSQL admin credentials in Key Vault. | `bool` | `true` | no |
+| postgresql\_sku\_name | SKU name for PostgreSQL server | `string` | `"GP_Standard_D2s_v3"` | no |
+| postgresql\_storage\_mb | Storage size in megabytes for PostgreSQL | `number` | `32768` | no |
+| postgresql\_version | PostgreSQL server version | `string` | `"16"` | no |
+| redis\_clustering\_policy | Clustering policy for Redis cache (OSSCluster or EnterpriseCluster) | `string` | `"OSSCluster"` | no |
+| redis\_should\_enable\_high\_availability | Whether to enable high availability for Redis cache | `bool` | `true` | no |
+| redis\_sku\_name | SKU name for Azure Managed Redis cache | `string` | `"Balanced_B10"` | no |
 | resolver\_subnet\_address\_prefix | Address prefix for the private resolver subnet; must be /28 or larger and not overlap with other subnets | `string` | `"10.0.9.0/28"` | no |
 | resource\_group\_name | Name of the resource group to create or use. Otherwise, 'rg-{resource\_prefix}-{environment}-{instance}' | `string` | `null` | no |
 | should\_add\_current\_user\_cluster\_admin | Whether to give the current signed-in user cluster-admin permissions on the new cluster | `bool` | `true` | no |
@@ -80,7 +98,13 @@ for a single-node cluster deployment, including observability, messaging, and da
 | should\_create\_azure\_functions | Whether to create the Azure Functions resources including the App Service plan | `bool` | `false` | no |
 | should\_deploy\_azureml | Whether to deploy the Azure Machine Learning workspace and optional compute cluster | `bool` | `false` | no |
 | should\_deploy\_edge\_azureml | Whether to deploy the Azure Machine Learning edge extension when Azure ML is enabled | `bool` | `false` | no |
+| should\_deploy\_postgresql | Whether to deploy PostgreSQL Flexible Server component | `bool` | `false` | no |
+| should\_deploy\_redis | Whether to deploy Azure Managed Redis component | `bool` | `false` | no |
 | should\_deploy\_resource\_sync\_rules | Whether to deploy resource sync rules | `bool` | `true` | no |
+| should\_enable\_akri\_media\_connector | Whether to deploy the Akri Media Connector template to the IoT Operations instance. | `bool` | `false` | no |
+| should\_enable\_akri\_onvif\_connector | Whether to deploy the Akri ONVIF Connector template to the IoT Operations instance. | `bool` | `false` | no |
+| should\_enable\_akri\_rest\_connector | Whether to deploy the Akri REST HTTP Connector template to the IoT Operations instance. | `bool` | `false` | no |
+| should\_enable\_akri\_sse\_connector | Whether to deploy the Akri SSE Connector template to the IoT Operations instance. | `bool` | `false` | no |
 | should\_enable\_key\_vault\_public\_network\_access | Whether to enable public network access for the Key Vault | `bool` | `true` | no |
 | should\_enable\_managed\_outbound\_access | Whether to enable managed outbound egress via NAT gateway instead of platform default internet access | `bool` | `true` | no |
 | should\_enable\_oidc\_issuer | Whether to enable the OIDC issuer URL for the cluster | `bool` | `true` | no |
@@ -118,10 +142,15 @@ for a single-node cluster deployment, including observability, messaging, and da
 | data\_storage | Data storage resources. |
 | deployment\_summary | Summary of the deployment configuration. |
 | kubernetes | Azure Kubernetes Service resources. |
+| managed\_redis | Azure Managed Redis cache object. |
+| managed\_redis\_connection\_info | Azure Managed Redis connection information. |
 | messaging | Cloud messaging resources. |
 | nat\_gateway | NAT gateway resource when managed outbound access is enabled. |
 | nat\_gateway\_public\_ips | Public IP resources associated with the NAT gateway keyed by name. |
 | observability | Monitoring and observability resources. |
+| postgresql\_connection\_info | PostgreSQL connection information. |
+| postgresql\_databases | Map of PostgreSQL databases. |
+| postgresql\_server | PostgreSQL Flexible Server object. |
 | private\_resolver\_dns\_ip | Private Resolver DNS IP address for VPN client configuration. |
 | security\_identity | Security and identity resources. |
 | vm\_host | Virtual machine host resources. |

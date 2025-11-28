@@ -50,6 +50,22 @@ param schemaRegistryName string = 'sr-${common.resourcePrefix}-${common.environm
 @description('The ADLS Gen2 namespace for the ADR Schema Registry.')
 param schemaRegistryNamespace string = 'srns-${common.resourcePrefix}-${common.environment}-${common.instance}'
 
+/*
+  ADR Namespace Parameters
+*/
+
+@description('Whether to create the ADR Namespace.')
+param shouldCreateAdrNamespace bool = true
+
+@description('The name for the ADR Namespace.')
+param adrNamespaceName string = 'adrns-${common.resourcePrefix}-${common.environment}-${common.instance}'
+
+@description('Dictionary of messaging endpoints for the ADR namespace.')
+param adrNamespaceMessagingEndpoints types.AdrNamespaceMessagingEndpoints?
+
+@description('Whether to enable system-assigned managed identity for the ADR namespace.')
+param adrNamespaceEnableIdentity bool = true
+
 @description('Whether to opt out of telemetry data collection.')
 param telemetry_opt_out bool = false
 
@@ -103,7 +119,17 @@ module schemaRegistryRoleAssignment 'modules/schema-registry-role-assignment.bic
   params: {
     storageAccountName: storageAccountName
     schemaBlobContainerName: schemaContainerName
-    schemaRegistryPrincipalId: schemaRegistry.outputs.schemaRegistryPrincipalId
+    schemaRegistryPrincipalId: schemaRegistry!.outputs.schemaRegistryPrincipalId
+  }
+}
+
+module adrNamespace 'modules/adr-namespace.bicep' = if (shouldCreateAdrNamespace) {
+  name: '${deployment().name}-adrNamespace'
+  params: {
+    common: common
+    adrNamespaceName: adrNamespaceName
+    messagingEndpoints: adrNamespaceMessagingEndpoints
+    enableSystemAssignedIdentity: adrNamespaceEnableIdentity
   }
 }
 
@@ -112,20 +138,33 @@ module schemaRegistryRoleAssignment 'modules/schema-registry-role-assignment.bic
 */
 
 @description('The ADR Schema Registry Name.')
-output schemaRegistryName string = shouldCreateSchemaRegistry ? schemaRegistry.outputs.schemaRegistryName : ''
+output schemaRegistryName string = shouldCreateSchemaRegistry ? schemaRegistry!.outputs.schemaRegistryName : ''
 
 @description('The ADR Schema Registry ID.')
-output schemaRegistryId string = shouldCreateSchemaRegistry ? schemaRegistry.outputs.schemaRegistryId : ''
+output schemaRegistryId string = shouldCreateSchemaRegistry ? schemaRegistry!.outputs.schemaRegistryId : ''
 
 @description('The Storage Account Name.')
 output storageAccountName string = shouldCreateSchemaRegistry
-  ? storageAccount.outputs.storageAccountName
+  ? storageAccount!.outputs.storageAccountName
   : storageAccountName
 
 @description('The Storage Account ID.')
-output storageAccountId string = shouldCreateStorageAccount ? storageAccount.outputs.storageAccountId : ''
+output storageAccountId string = shouldCreateStorageAccount ? storageAccount!.outputs.storageAccountId : ''
 
 @description('The Schema Container Name.')
 output schemaContainerName string = shouldCreateStorageAccount
-  ? storageAccount.outputs.schemaContainerName
+  ? storageAccount!.outputs.schemaContainerName
   : schemaContainerName
+
+/*
+  ADR Namespace Outputs
+*/
+
+@description('The ADR Namespace Name.')
+output adrNamespaceName string = shouldCreateAdrNamespace ? adrNamespace!.outputs.adrNamespaceName : ''
+
+@description('The ADR Namespace ID.')
+output adrNamespaceId string = shouldCreateAdrNamespace ? adrNamespace!.outputs.adrNamespaceId : ''
+
+@description('The complete ADR namespace resource information.')
+output adrNamespace object = shouldCreateAdrNamespace ? adrNamespace!.outputs.adrNamespace : {}

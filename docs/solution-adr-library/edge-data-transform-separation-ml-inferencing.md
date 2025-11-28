@@ -2,7 +2,7 @@
 title: Separation of Concerns in Edge Data Transforms
 description: Architecture Decision Record addressing separation of concerns in edge data transformation pipelines for ML inferencing. Evaluates distribution of data preprocessing functionality between scoring gateway and Azure Machine Learning endpoints, comparing full preprocessing in gateway vs scoring endpoint vs windowing approaches for OPC UA data and real-time factory workloads.
 author: Martin Weber
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: architecture-decision-record
 estimated_reading_time: 10
 keywords:

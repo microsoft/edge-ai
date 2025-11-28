@@ -24,6 +24,7 @@ ARC_SP_SECRET="${ARC_SP_SECRET}"                 # Service Principal Client Secr
 ARC_TENANT_ID="${ARC_TENANT_ID}"                 # Tenant where the new cluster will be connected to Azure Arc
 AZ_CLI_VER="${AZ_CLI_VER}"                       # The Azure CLI version to install (ex. '2.51.0')
 AZ_CONNECTEDK8S_VER="${AZ_CONNECTEDK8S_VER}"     # The Azure CLI extension connectedk8s version to install (ex. '1.10.0')
+CLIENT_ID="${CLIENT_ID}"                         # Client ID for the managed identity used with Azure CLI `az login --identity`
 CUSTOM_LOCATIONS_OID="${CUSTOM_LOCATIONS_OID}"   # Custom Locations Object ID needed if permissions are not allowed
 DEVICE_USERNAME="${DEVICE_USERNAME}"             # Username for this device that will also need access to the k3s cluster
 SKIP_INSTALL_AZ_CLI="${SKIP_INSTALL_AZ_CLI}"     # Skips downloading and installing Azure CLI (Ubuntu, Debian) from https://aka.ms/InstallAzureCLIDeb
@@ -35,6 +36,7 @@ SKIP_DEPLOY_SAT="${SKIP_DEPLOY_SAT}"             # Skips adding a 'cluster-admin
 
 ## Examples
 ##  ENVIRONMENT=dev ARC_RESOURCE_GROUP_NAME=rg-sample-eastu2-001 ARC_RESOURCE_NAME=arc-sample ./k3s-device-setup.sh
+##  CLIENT_ID=00000000-0000-0000-0000-000000000000 ENVIRONMENT=dev ARC_RESOURCE_GROUP_NAME=rg-sample-eastu2-001 ARC_RESOURCE_NAME=arc-sample ./k3s-device-setup.sh
 ###
 
 usage() {
@@ -120,7 +122,14 @@ if [[ ! $SKIP_AZ_LOGIN ]]; then
   if [[ $ARC_SP_CLIENT_ID && $ARC_SP_SECRET && $ARC_TENANT_ID ]]; then
     az login --service-principal -u "$ARC_SP_CLIENT_ID" -p "$ARC_SP_SECRET" --tenant "$ARC_TENANT_ID"
   else
-    az login --identity
+    if [[ $CLIENT_ID ]]; then
+      log "Logging into Azure CLI using managed identity client ID $CLIENT_ID"
+      if ! az login --identity --client-id "$CLIENT_ID"; then
+        err "Azure CLI login failed for managed identity client ID $CLIENT_ID"
+      fi
+    else
+      az login --identity
+    fi
   fi
 fi
 

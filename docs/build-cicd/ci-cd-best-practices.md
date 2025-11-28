@@ -2,7 +2,7 @@
 title: CI/CD best practices
 description: Essential best practices for CI/CD workflows, security integration, and deployment strategies in the Edge AI Accelerator project
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: concept
 keywords:
   - ci-cd best practices

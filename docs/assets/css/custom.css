@@ -1,0 +1,403 @@
+/* Microsoft Azure Theme Custom Styles */
+
+/* CSS Custom Properties for theming */
+:root {
+    --theme-color: var(--theme-color);
+    --sidebar-width: var(--spacing-layout-md);
+    --content-margin-inline: var(--spacing-xl);
+}
+
+/* Enhanced content padding */
+.markdown-section {
+    margin: 0 var(--content-margin-inline, var(--spacing-xl));
+}
+
+/* Responsive design improvements */
+@media (max-width: 768px) {
+    .markdown-section {
+        margin: 0 calc(var(--content-margin-inline, var(--spacing-xl)) / 2);
+    }
+
+    .sidebar {
+        width: var(--spacing-layout-sm);
+    }
+}
+
+/* Make headers more clickable */
+.markdown-section h1,
+.markdown-section h2,
+.markdown-section h3,
+.markdown-section h4,
+.markdown-section h5,
+.markdown-section h6 {
+    position: relative;
+}
+
+.markdown-section h1:hover,
+.markdown-section h2:hover,
+.markdown-section h3:hover,
+.markdown-section h4:hover,
+.markdown-section h5:hover,
+.markdown-section h6:hover {
+    color: var(--theme-color) !important;
+    transition: color 0.2s ease;
+}
+
+/* Enhanced anchor link visibility */
+.markdown-section a[href^="#"] {
+    color: var(--theme-color);
+    text-decoration: none;
+    border-bottom: var(--spacing-xxs) dotted transparent;
+    transition: all 0.2s ease;
+}
+
+.markdown-section a[href^="#"]:hover {
+    border-bottom-color: var(--theme-color);
+    text-decoration: none;
+}
+
+/* Breadcrumb positioning fixes */
+.breadcrumb,
+.docsify-breadcrumb {
+    margin-top: 0;
+    padding-top: var(--spacing-md-small);
+    position: relative;
+    z-index: 5; /* Ensure breadcrumbs appear above other content */
+    background: var(--bg-primary);
+    padding-bottom: var(--spacing-md-small);
+    margin-bottom: var(--spacing-lg-small);
+}
+
+/* Ensure proper spacing for any top-level navigation elements */
+.app-nav + .content,
+.content:first-child {
+    margin-top: 0; /* Reset any conflicting margins */
+}
+
+/* Content area improvements */
+.content {
+    padding-top: calc(var(--navbar-height, 65px) + var(--spacing-lg-small)); /* Add top padding to account for fixed navbar */
+}
+
+/* Main content wrapper adjustments */
+.main {
+    padding-top: var(--navbar-height, 65px); /* Ensure main area doesn't overlap with navbar */
+}
+
+/* Ensure markdown section has proper spacing from top */
+.markdown-section {
+    margin: 0 var(--content-margin-inline, var(--spacing-xl));
+    padding-top: var(--spacing-lg-small); /* Additional padding for better visual spacing */
+}
+
+/* Code block improvements */
+.markdown-section pre {
+    background-color: var(--color-gray-100);
+    border: var(--spacing-xxs) solid var(--color-gray-200);
+    border-radius: var(--spacing-sm-plus);
+    padding: var(--spacing-lg-minus);
+    overflow: auto;
+}
+
+/* Table improvements - Moved to index-page.css for better organization */
+/* See /docs/assets/css/layout/index-page.css for table styling */
+
+/* Blockquote improvements */
+.markdown-section blockquote {
+    border-left: var(--spacing-sm) solid var(--theme-color);
+    background-color: var(--bg-secondary);
+    margin: var(--spacing-lg-small) 0;
+    padding: var(--spacing-lg-minus) var(--spacing-lg-small);
+    color: var(--color-gray-600);
+}
+
+/* Alert/Notice boxes */
+.markdown-section .tip,
+.markdown-section .warning,
+.markdown-section .danger {
+    padding: var(--spacing-lg-minus);
+    margin: var(--spacing-lg-small) 0;
+    border-radius: var(--spacing-sm);
+    border-left: var(--spacing-sm) solid;
+}
+
+.markdown-section .tip {
+    background-color: var(--bg-success);
+    border-left-color: var(--color-success);
+    color: var(--color-success-text);
+}
+
+.markdown-section .warning {
+    background-color: var(--bg-warning);
+    border-left-color: var(--color-warning);
+    color: var(--color-warning-text);
+}
+
+.markdown-section .danger {
+    background-color: var(--bg-danger);
+    border-left-color: var(--color-danger);
+    color: var(--color-danger-text);
+}
+
+/* Learning Path Progress Summary Card */
+.progress-summary-card {
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    border: 1px solid #e1e4e8;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: box-shadow 0.2s ease;
+}
+
+.progress-summary-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.progress-summary-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #0078d4;
+}
+
+.progress-percentage {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #0078d4;
+    line-height: 1;
+    min-width: 5rem;
+}
+
+.progress-label {
+    font-size: 1.1rem;
+    color: #424242;
+    font-weight: 500;
+}
+
+.progress-summary-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem;
+    background: white;
+    border-radius: 8px;
+    border: 2px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.stat-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.stat-item.stat-selected {
+    border-color: #0078d4;
+}
+
+.stat-item.stat-completed {
+    border-color: #107c10;
+    background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-item.stat-completed::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+    animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+    0%, 100% {
+        transform: translate(-50%, -50%);
+    }
+    50% {
+        transform: translate(0%, 0%);
+    }
+}
+
+.stat-item.stat-completed:hover {
+    transform: translateY(-2px) scale(1.05);
+}
+
+.stat-item.stat-inprogress {
+    border-color: #f7630c;
+}
+
+.stat-item.stat-notstarted {
+    border-color: #605e5c;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 0.5rem;
+    position: relative;
+    z-index: 1;
+}
+
+.stat-item.stat-selected .stat-number {
+    color: #0078d4;
+}
+
+.stat-item.stat-completed .stat-number {
+    color: #107c10;
+}
+
+.stat-item.stat-inprogress .stat-number {
+    color: #f7630c;
+}
+
+.stat-item.stat-notstarted .stat-number {
+    color: #605e5c;
+}
+
+.stat-label {
+    font-size: 0.875rem;
+    color: #605e5c;
+    text-align: center;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    position: relative;
+    z-index: 1;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .progress-summary-card {
+        padding: 1rem;
+    }
+
+    .progress-percentage {
+        font-size: 2rem;
+    }
+
+    .progress-summary-stats {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+
+    .stat-item {
+        padding: 0.75rem;
+    }
+
+    .stat-number {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .progress-summary-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .progress-percentage {
+        font-size: 1.75rem;
+    }
+}
+
+/* Learning Path Dashboard - Clickable Step Links */
+.step-item {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 0.5rem;
+}
+
+.step-item label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    cursor: pointer;
+}
+
+.step-item .step-checkbox {
+    flex-shrink: 0;
+    cursor: pointer;
+    margin: 0;
+    margin-top: 0.25rem; /* Align with first line of text */
+}
+
+.step-item .step-link {
+    color: #0078d4;
+    text-decoration: none;
+    transition: color 0.2s ease, text-decoration 0.2s ease;
+    flex: 1;
+    display: inline-block;
+}
+
+.step-item .step-link:hover {
+    color: #106ebe;
+    text-decoration: underline;
+}
+
+.step-item .step-link:focus {
+    outline: 2px solid #0078d4;
+    outline-offset: 2px;
+    border-radius: 2px;
+}
+
+.step-item .step-link:active {
+    color: #005a9e;
+}
+
+.step-item .step-title {
+    color: inherit; /* Inherit from parent link */
+    line-height: 1.5;
+}
+
+/* Ensure sufficient touch target on mobile */
+@media (max-width: 768px) {
+    .step-item .step-link {
+        padding: 0.25rem 0;
+        min-height: 44px; /* iOS minimum touch target */
+        display: flex;
+        align-items: center;
+    }
+}
+
+/* Catalog Recommendation Visual Indicators */
+.recommended-item {
+    border-left: 3px solid #ffd700;
+    background-color: #fffef0;
+    padding-left: 8px;
+    margin-bottom: 0.5rem;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.recommended-item:hover {
+    background-color: #fffae6;
+    border-left-color: #ffcc00;
+}
+
+/* Ensure star icon has proper spacing */
+.recommendation-star {
+    margin-left: 0.25rem;
+    font-size: 1em;
+}
+
+/* Accessibility: High contrast mode support */
+@media (prefers-contrast: high) {
+    .recommended-item {
+        border-left-width: 4px;
+        background-color: transparent;
+        border-left-color: #000;
+    }
+}

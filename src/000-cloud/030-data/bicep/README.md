@@ -20,6 +20,10 @@ Creates storage resources including Azure Storage Account and Schema Registry fo
 |schemaContainerName|The name for the Blob Container for schemas.|`string`|schemas|no|
 |schemaRegistryName|The name for the ADR Schema Registry.|`string`|[format('sr-{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]|no|
 |schemaRegistryNamespace|The ADLS Gen2 namespace for the ADR Schema Registry.|`string`|[format('srns-{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]|no|
+|shouldCreateAdrNamespace|Whether to create the ADR Namespace.|`bool`|`true`|no|
+|adrNamespaceName|The name for the ADR Namespace.|`string`|[format('adrns-{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]|no|
+|adrNamespaceMessagingEndpoints|Dictionary of messaging endpoints for the ADR namespace.|`[_1.AdrNamespaceMessagingEndpoints](#user-defined-types)`|n/a|no|
+|adrNamespaceEnableIdentity|Whether to enable system-assigned managed identity for the ADR namespace.|`bool`|`true`|no|
 |telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|`false`|no|
 
 ## Resources
@@ -29,6 +33,7 @@ Creates storage resources including Azure Storage Account and Schema Registry fo
 |storageAccount|`Microsoft.Resources/deployments`|2022-09-01|
 |schemaRegistry|`Microsoft.Resources/deployments`|2022-09-01|
 |schemaRegistryRoleAssignment|`Microsoft.Resources/deployments`|2022-09-01|
+|adrNamespace|`Microsoft.Resources/deployments`|2022-09-01|
 
 ## Modules
 
@@ -37,6 +42,7 @@ Creates storage resources including Azure Storage Account and Schema Registry fo
 |storageAccount|Creates an Azure Storage Account and blob container for storing schemas.|
 |schemaRegistry|Creates an Azure Device Registry (ADR) Schema Registry for storing and managing device schemas.|
 |schemaRegistryRoleAssignment|Creates role assignments for the Schema Registry to access the storage account.|
+|adrNamespace|Creates an Azure Device Registry (ADR) Namespace for organizing assets and devices in Azure IoT Operations.|
 
 ## Module Details
 
@@ -123,7 +129,60 @@ Creates role assignments for the Schema Registry to access the storage account.
 | :--- | :--- | :--- |
 |roleAssignmentId|`string`|The resource ID of the role assignment.|
 
+### adrNamespace
+
+Creates an Azure Device Registry (ADR) Namespace for organizing assets and devices in Azure IoT Operations.
+
+#### Parameters for adrNamespace
+
+|Name|Description|Type|Default|Required|
+| :--- | :--- | :--- | :--- | :--- |
+|common|The common component configuration.|`[_2.Common](#user-defined-types)`|n/a|yes|
+|adrNamespaceName|The name of the ADR namespace. Lowercase alphanumeric with optional internal hyphens, 3-64 characters.|`string`|n/a|no|
+|messagingEndpoints|Dictionary of messaging endpoints for the namespace.|`[_1.AdrNamespaceMessagingEndpoints](#user-defined-types)`|n/a|no|
+|enableSystemAssignedIdentity|Whether to enable system-assigned managed identity for the namespace.|`bool`|`true`|no|
+
+#### Resources for adrNamespace
+
+|Name|Type|API Version|
+| :--- | :--- | :--- |
+|adrNamespace|`Microsoft.DeviceRegistry/namespaces`|2025-10-01|
+
+#### Outputs for adrNamespace
+
+|Name|Type|Description|
+| :--- | :--- | :--- |
+|adrNamespaceName|`string`|The name of the ADR namespace.|
+|adrNamespaceId|`string`|The resource ID of the ADR namespace.|
+|adrNamespacePrincipalId|`string`|The principal ID of the ADR namespace managed identity.|
+|adrNamespaceTenantId|`string`|The tenant ID of the ADR namespace managed identity.|
+|adrNamespace|`object`|The complete ADR namespace resource information.|
+
 ## User Defined Types
+
+### `_1.AdrNamespaceMessagingEndpoint`
+
+ADR Namespace messaging endpoint configuration.
+
+|Property|Type|Description|
+| :--- | :--- | :--- |
+|endpointType|`string`|The type of the messaging endpoint.|
+|address|`string`|The address of the messaging endpoint.|
+|resourceId|`string`|The resource ID of the messaging endpoint (optional).|
+
+### `_1.AdrNamespaceMessagingEndpoints`
+
+Dictionary of messaging endpoints for the ADR namespace.
+
+### `_1.AdrNamespaceSettings`
+
+ADR Namespace settings.
+
+|Property|Type|Description|
+| :--- | :--- | :--- |
+|name|`string`|The name of the ADR namespace.|
+|messagingEndpoints|`[_1.AdrNamespaceMessagingEndpoints](#user-defined-types)`|Dictionary of messaging endpoints for the namespace.|
+|enableSystemAssignedIdentity|`bool`|Whether to enable system-assigned managed identity for the namespace.|
 
 ### `_1.SchemaRegistrySettings`
 
@@ -164,6 +223,9 @@ Common settings for the components.
 |storageAccountName|`string`|The Storage Account Name.|
 |storageAccountId|`string`|The Storage Account ID.|
 |schemaContainerName|`string`|The Schema Container Name.|
+|adrNamespaceName|`string`|The ADR Namespace Name.|
+|adrNamespaceId|`string`|The ADR Namespace ID.|
+|adrNamespace|`object`|The complete ADR namespace resource information.|
 
 <!-- markdown-table-prettify-ignore-end -->
 <!-- END_BICEP_DOCS -->

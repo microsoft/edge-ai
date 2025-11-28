@@ -2,7 +2,7 @@
 title: Accessibility Statement
 description: '**Last Updated:** June 2, 2025'
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: reference
 keywords:
   - accessibility statement

@@ -27,7 +27,6 @@ Uses existing AIO instance and dataflow profile outputs from the IoT Operations 
 | [azapi_resource.enterprise_mqtt_broker_listener](https://registry.terraform.io/providers/azure/azapi/latest/docs/resources/resource) | resource |
 | [azapi_resource.enterprise_mqtt_endpoint_cert_auth](https://registry.terraform.io/providers/azure/azapi/latest/docs/resources/resource) | resource |
 | [azapi_resource.site_enterprise_route_cert_auth](https://registry.terraform.io/providers/azure/azapi/latest/docs/resources/resource) | resource |
-| [azapi_resource.site_mqtt_endpoint](https://registry.terraform.io/providers/azure/azapi/latest/docs/resources/resource) | resource |
 | [azapi_resource.enterprise_aio_broker](https://registry.terraform.io/providers/azure/azapi/latest/docs/data-sources/resource) | data source |
 
 ## Inputs
@@ -54,6 +53,5 @@ Uses existing AIO instance and dataflow profile outputs from the IoT Operations 
 | enterprise\_mqtt\_broker\_listener | The enterprise MQTT broker listener resource. |
 | enterprise\_mqtt\_endpoint\_cert\_auth | The enterprise MQTT endpoint with certificate authentication. |
 | site\_enterprise\_route\_cert\_auth | The enterprise site route with certificate authentication dataflow. |
-| site\_mqtt\_endpoint | The site MQTT endpoint resource. |
 <!-- markdown-table-prettify-ignore-end -->
 <!-- END_TF_DOCS -->

@@ -1,0 +1,16 @@
+apiVersion: v2
+name: mqtt-otel-trace-exporter
+description: MQTT to OpenTelemetry trace exporter for Azure IoT Operations workloads
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+keywords:
+  - mqtt
+  - opentelemetry
+  - azure-iot-operations
+home: https://github.com/microsoft/edge-ai
+sources:
+  - https://github.com/microsoft/edge-ai
+maintainers:
+  - name: Edge AI Team
+    email: edgeai@microsoft.com

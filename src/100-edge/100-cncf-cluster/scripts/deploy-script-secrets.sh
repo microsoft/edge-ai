@@ -9,12 +9,13 @@ NODE_TYPE="${NODE_TYPE}"                 # The type of this node (ex. 'server', 
 
 ## Optional Environment Variables:
 
+CLIENT_ID="${CLIENT_ID:-}"                     # Client ID of the User Assigned Managed Identity to use for authentication
 SECRET_NAME_PREFIX="${SECRET_NAME_PREFIX}"   # Optional prefix for constructing the secret name
-SKIP_AZ_LOGIN="${SKIP_AZ_LOGIN}"             # Skips calling 'az login' and instead expects this to have been done previously
 SKIP_INSTALL_AZ_CLI="${SKIP_INSTALL_AZ_CLI}" # Skips downloading and installing Azure CLI (Ubuntu, Debian) from https://aka.ms/InstallAzureCLIDeb
 SKIP_AZ_LOGIN="${SKIP_AZ_LOGIN}"             # Skips calling 'az login' and instead expects this to have been done previously
 
 ## Examples
+##  KEY_VAULT_NAME=kv-example KUBERNETES_DISTRO=k3s NODE_TYPE=server CLIENT_ID=12345678-abcd-1234-abcd-123456789012 ./deploy-script-secrets.sh
 ##  KEY_VAULT_NAME=kv-example KUBERNETES_DISTRO=k3s NODE_TYPE=server SKIP_AZ_LOGIN=true ./deploy-script-secrets.sh
 ###
 
@@ -109,10 +110,16 @@ fi
 
 # Log in to Azure if not skipped
 if [ -z "$SKIP_AZ_LOGIN" ]; then
-  if ! az login --identity; then
-    err "Failed to login with managed identity"
+  if [ -n "$CLIENT_ID" ]; then
+    log "Logging in with User Assigned Managed Identity (client ID: $CLIENT_ID)"
+    if ! az login --identity --client-id "$CLIENT_ID"; then
+      err "Failed to login with User Assigned Managed Identity (client ID: $CLIENT_ID)"
+    fi
   else
-    log "Already logged in to Azure"
+    log "Logging in with default managed identity"
+    if ! az login --identity; then
+      err "Failed to login with managed identity. If the VM has multiple identities, provide CLIENT_ID to specify which one to use"
+    fi
   fi
 fi
 
@@ -146,6 +153,6 @@ chmod +x "$SCRIPT_PATH"
 
 # Execute the downloaded script
 log "Executing the downloaded script..."
-sudo bash "$SCRIPT_PATH"
+sudo CLIENT_ID="$CLIENT_ID" bash "$SCRIPT_PATH"
 
 log "Script execution completed successfully"

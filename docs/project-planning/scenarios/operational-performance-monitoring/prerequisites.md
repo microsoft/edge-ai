@@ -1,10 +1,10 @@
 ---
 title: Prerequisites for Operational Performance Monitoring Scenario
-description: Complete hardware, software, permissions, and configuration requirements needed to successfully implement the Operational Performance Monitoring scenario using the Edge AI Accelerator.
+description: Comprehensive framework for all prerequisites needed to successfully implement the Operational Performance Monitoring scenario using the Edge AI Accelerator platform.
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-07-20
 ms.topic: hub-page
-estimated_reading_time: 8
+estimated_reading_time: 12
 keywords:
   - operational-performance-monitoring
   - prerequisites
@@ -22,215 +22,301 @@ keywords:
   - scenarios
 ---
 
-## Prerequisites Overview
+## 🔍 Prerequisites for Operational Performance Monitoring Scenario
 
-This document outlines all prerequisites needed to successfully implement the Operational Performance Monitoring scenario using the Edge AI Accelerator. These requirements ensure you have the necessary hardware, software, permissions, and configurations in place before deployment.
+### 📋 Executive Prerequisites Summary
 
-## Platform Capabilities Required
+This document provides a comprehensive framework for all prerequisites needed to successfully implement the **Operational Performance Monitoring** scenario using the Edge AI Accelerator platform. Our systematic approach ensures thorough validation, optimal resource utilization, and seamless deployment across development, staging, and production environments.
 
-This scenario requires the following platform capabilities from the [Edge AI Platform capability groups][edge-ai-platform-capability-groups]:
+#### 🎯 Scenario-Specific Context
 
-### Core Monitoring Capabilities (Mandatory)
+**Operational Performance Monitoring** provides real-time visibility into manufacturing performance metrics including OEE (Overall Equipment Effectiveness), downtime analysis, production rates, and energy consumption. This scenario requires comprehensive data collection from diverse equipment, real-time analytics, and integration with enterprise systems for holistic performance optimization.
 
-- **[Cloud Observability Foundation][cloud-observability-foundation]** - Essential for centralized monitoring and alerting
-- **[Edge Data Stream Processing][edge-data-stream-processing]** - For real-time operational data processing
-- **[OPC UA Data Ingestion][opc-ua-data-ingestion]** - For collecting equipment performance data
+---
 
-### Edge Platform Capabilities (Mandatory)
+## 🏗️ Phase-Based Prerequisites Framework
 
-- **[Edge Compute Orchestration Platform][edge-compute-orchestration-platform]** - For managing edge workloads
-- **[Device Twin Management][device-twin-management]** - For equipment representation and state management
-- **[Edge Dashboard Visualization][edge-dashboard-visualization]** - For local operational dashboards
+### 🚀 Phase 1: Foundation Prerequisites
 
-### Cloud Data Platform Capabilities (Mandatory)
+#### 🔐 Azure Platform Foundation
 
-- **[Cloud Data Platform Services][cloud-data-platform-services]** - For storing and analyzing operational metrics
-- **[Specialized Time Series Data Services][specialized-time-series-data-services]** - For time-series operational data storage
+| **Requirement**         | **Specification**                                 | **Validation Method**                                           | **Business Impact**                |
+|-------------------------|---------------------------------------------------|-----------------------------------------------------------------|------------------------------------|
+| **Azure Subscription**  | Active subscription with Contributor/Owner access | `az account show --query "state"`                               | Foundation for all cloud resources |
+| **Resource Providers**  | 12 providers registered (see detailed list below) | `az provider list --query "[?registrationState=='Registered']"` | Enables platform capabilities      |
+| **Identity Management** | Managed identities with Key Vault access          | `az identity list`                                              | Secure service authentication      |
+| **Resource Groups**     | Dedicated groups for cloud/edge components        | `az group list`                                                 | Organized resource management      |
 
-### Integration Capabilities (Recommended)
+#### 💻 Development Environment
 
-- **[Broad Industrial Protocol Support][broad-industrial-protocol-support]** - For connecting diverse equipment types
-- **[Cloud Messaging Event Infrastructure][cloud-messaging-event-infrastructure]** - For event-driven monitoring workflows
+| **Requirement**    | **Specification**          | **Validation Method**      | **Business Impact**               |
+|--------------------|----------------------------|----------------------------|-----------------------------------|
+| **Azure CLI**      | Latest version (≥2.64.0)   | `az --version`             | Azure resource management         |
+| **Terraform**      | Version ≥1.9.8             | `terraform version`        | Infrastructure as Code deployment |
+| **Kubernetes CLI** | Latest stable kubectl      | `kubectl version --client` | Edge cluster management           |
+| **Git**            | Version control system     | `git --version`            | Source code management            |
+| **IDE**            | VS Code with DevContainers | Code editor availability   | Development productivity          |
 
-## Azure Requirements
+### 📊 Phase 2: Edge Infrastructure Prerequisites
 
-### Subscription and Permissions
+#### 🖥️ Edge Compute Requirements
 
-- [Azure subscription][azure-subscription] with Contributor or Owner access
-- Permissions to register the following [resource providers][resource-providers]:
-  - Microsoft.ExtendedLocation
-  - Microsoft.Kubernetes
-  - Microsoft.KubernetesConfiguration
-  - Microsoft.IoTOperations
-  - Microsoft.DeviceRegistry
-  - Microsoft.SecretSyncController
-  - Microsoft.AlertsManagement
-  - Microsoft.Monitor
-  - Microsoft.Dashboard
-  - Microsoft.Insights
-  - Microsoft.OperationalInsights
-  - Microsoft.OperationsManagement
+| **Component** | **Minimum Specification** | **Recommended Specification** | **Validation Method** |
+|---------------|---------------------------|-------------------------------|-----------------------|
+| **CPU**       | 4 cores, 2.4GHz           | 8+ cores, 3.0GHz+             | Hardware inventory    |
+| **Memory**    | 8GB RAM                   | 16GB+ RAM                     | Memory stress test    |
+| **Storage**   | 100GB SSD                 | 200GB+ NVMe SSD               | Disk performance test |
+| **Network**   | 1Gbps Ethernet            | 10Gbps or redundant 1Gbps     | Bandwidth test        |
+| **OS**        | Ubuntu 22.04 LTS          | Ubuntu 22.04 LTS (latest)     | Version check         |
 
-For detailed provider registration instructions, see the [provider registration script][provider-registration-script].
+#### 🌐 Network Connectivity
 
-### Identity and Access Requirements
+| **Requirement**           | **Specification**       | **Validation Method**  | **Business Impact**       |
+|---------------------------|-------------------------|------------------------|---------------------------|
+| **Internet Connectivity** | Minimum 2Mbps sustained | Bandwidth test         | Cloud communication       |
+| **Firewall Rules**        | Outbound HTTPS (443)    | Port connectivity test | Azure service access      |
+| **Industrial Protocols**  | OPC UA, Modbus, MQTT    | Protocol scanner       | Equipment data collection |
+| **DNS Resolution**        | Public DNS or Azure DNS | nslookup test          | Service discovery         |
 
-- Azure account with permissions to create:
-  - [Resource Groups][resource-groups]
-  - [User-assigned Managed Identities][user-assigned-managed-identities]
-  - [Azure Key Vault][azure-key-vault] with access policies
-  - [Role assignments][role-assignments] to resources
-- Identity options for [Azure Arc onboarding][azure-arc-onboarding]:
-  - User-assigned Managed Identity (recommended)
-  - Service Principal with appropriate roles
+### 🏭 Phase 3: Operational Data Platform Prerequisites
 
-For identity requirements implementation, see [security-identity module][security-identity-module].
+#### 📡 Equipment Integration Requirements
 
-### Resource Group Requirements
+| **Component**           | **Specification**                                 | **Integration Method**          | **Data Volume**           |
+|-------------------------|---------------------------------------------------|---------------------------------|---------------------------|
+| **OEE Systems**         | Real-time availability, performance, quality data | OPC UA/REST APIs                | 1-100 points/sec per line |
+| **Production Counters** | Piece count, cycle time, throughput metrics       | Digital I/O or PLC integration  | 10-1000 events/min        |
+| **Downtime Tracking**   | Reason codes, duration, operator input            | HMI integration or manual entry | Event-based               |
+| **Energy Monitoring**   | Power consumption, efficiency metrics             | Modbus or proprietary protocols | 1-10 points/sec per meter |
 
-- Ability to create new resource groups or use existing ones
-- If using existing resource groups, Contributor permissions to those groups
+#### 📈 Performance Analytics Infrastructure
 
-## Hardware Requirements
+| **Requirement**          | **Specification**                         | **Validation Method**         | **Business Impact**            |
+|--------------------------|-------------------------------------------|-------------------------------|--------------------------------|
+| **Time Series Database** | High-frequency data storage               | Write/read performance test   | Historical analysis capability |
+| **Real-time Dashboards** | <5 second data refresh                    | Dashboard responsiveness test | Operational visibility         |
+| **Alert Engine**         | Configurable thresholds and notifications | Alert response test           | Proactive issue detection      |
+| **Report Generation**    | Automated OEE and performance reports     | Report accuracy validation    | Management insight             |
 
-### Edge Compute Requirements
+### 🔗 Phase 4: Enterprise Integration Prerequisites
 
-- VM-based deployment: [Azure VM Size Standard_D8s_v3][azure-vm-size-standard_d8s_v3] (recommended)
-- Physical deployment: Hardware meeting these minimum requirements:
-  - CPU: 4 cores (minimum), 8+ cores (recommended)
-  - RAM: 8GB (minimum), 16GB+ (recommended)
-  - Disk: 100GB SSD storage (minimum)
-  - Network: 1Gbps Ethernet adapter
-- For enterprise-wide monitoring, consider multiple edge devices distributed across facilities
+#### 🏢 Enterprise System Connectivity
 
-For VM configuration details, see the [VM-Host module][vm-host-module] and [CNCF Cluster module][cncf-cluster-module].
+| **System**      | **Integration Method** | **Authentication**     | **Data Exchange**        |
+|-----------------|------------------------|------------------------|--------------------------|
+| **ERP Systems** | REST API/SOAP/Database | Service accounts/OAuth | Production planning sync |
+| **MES Systems** | Real-time interfaces   | Certificate-based      | Work order integration   |
+| **CMMS**        | API endpoints          | API keys/tokens        | Maintenance correlation  |
+| **Historian**   | OPC UA/PI connector    | Network-based auth     | Historical context data  |
 
-### Performance Monitoring Equipment
+---
 
-- Operational equipment with monitoring interfaces:
-  - OEE monitoring systems
-  - Production rate sensors
-  - Downtime tracking systems
-  - Energy consumption meters
-  - Quality inspection stations
-- [OPC UA][opc-ua] compatibility or other supported industrial protocols
-- Physical connectivity between equipment and edge devices
+## 💼 Resource Analysis and Value Framework
 
-For OPC UA integration, see the [IoT Operations module][iot-operations-module].
+### 📈 Platform Resource Requirements
 
-### Networking Requirements
+| **Category**                 | **Development Phase** | **Production Phase**  | **Annual Resources**     |
+|------------------------------|-----------------------|-----------------------|--------------------------|
+| **Azure Infrastructure**     | Medium intensity      | Medium-High intensity | Ongoing cloud resources  |
+| **Edge Hardware**            | Low-Medium per site   | Medium per site       | Low maintenance per site |
+| **Software Licenses**        | Low intensity         | Medium intensity      | Medium ongoing           |
+| **Implementation Services**  | Medium intensity      | High intensity        | Low-Medium ongoing       |
+| **Total Resource Intensity** | **Medium**            | **Medium-High**       | **Medium**               |
 
-- Outbound internet connectivity from edge device to Azure
-  - Minimum 2Mbps bandwidth for basic telemetry
-  - Higher bandwidth recommended for multi-equipment monitoring
-  - Firewall rules allowing outbound connections on ports 443 (HTTPS)
-- For OPC UA:
-  - TCP port 4840 (OPC UA Discovery)
-  - TCP port range 49152-65535 for OPC UA server endpoints
-- Local network considerations:
-  - Stable connectivity across all monitored equipment
-  - Factory network isolation/segmentation (recommended)
-  - Redundant connectivity for critical systems
+### 📈 Business Value Realization
 
-## Software Requirements
+| **Value Driver**        | **Measurable Outcome**                  | **Time Frame** | **Success Metric**                                        |
+|-------------------------|-----------------------------------------|----------------|-----------------------------------------------------------|
+| **OEE Improvement**     | 5-15% increase in overall effectiveness | 3-6 months     | Production tracking, OEE metrics, efficiency scores       |
+| **Downtime Reduction**  | 10-25% reduction in unplanned downtime  | 6-12 months    | Uptime tracking, availability metrics, incident frequency |
+| **Energy Optimization** | 5-15% reduction in energy consumption   | 3-9 months     | Energy usage monitoring, efficiency tracking              |
+| **Quality Improvement** | 20-40% reduction in defect rates        | 6-18 months    | Quality metrics, defect tracking, rework frequency        |
 
-### Development Environment
+---
 
-- [Azure CLI][azure-cli] (latest version)
-- [Terraform][terraform] ≥ 1.9.8
-- [Kubernetes CLI (kubectl)][kubernetes-cli-kubectl]
-- [Git][git]
-- [Visual Studio Code][visual-studio-code] (recommended)
-  - [DevContainers extension][devcontainers-extension] if using the provided dev container
+## 🎯 Cross-Scenario Optimization
 
-For development environment setup, see the [Getting Started Guide][getting-started-guide].
+### 🔄 Shared Platform Components
 
-### Operating System Requirements
+When implementing multiple scenarios, optimize shared infrastructure:
 
-- For VMs: Ubuntu 22.04 LTS
-- For development: Any OS supporting the development tools listed above
+| **Shared Component**       | **Scenarios Benefiting**                | **Resource Efficiency**             | **Complexity Reduction** |
+|----------------------------|-----------------------------------------|-------------------------------------|--------------------------|
+| **Data Collection Layer**  | All manufacturing scenarios             | 30-50% integration efficiency       | Single data pipeline     |
+| **Observability Stack**    | All scenarios                           | 25-40% monitoring efficiency        | Unified dashboards       |
+| **Edge Platform**          | Predictive Maintenance, Quality Process | 40-60% infrastructure efficiency    | Single management plane  |
+| **Enterprise Integration** | Quality, Predictive, Operational        | 35-55% integration effort reduction | Common API patterns      |
 
-## Cloud Resource Requirements
+### 📊 Platform Resource Optimization
 
-### Required Azure Services
+| **Implementation Scale** | **Scenarios Supported** | **Resource Intensity**    | **Recommended For**       |
+|--------------------------|-------------------------|---------------------------|---------------------------|
+| **Minimal**              | 1-2 scenarios           | High (Single line scale)  | Single production line    |
+| **Standard**             | 3-4 scenarios           | Medium (Plant scale)      | Plant-wide implementation |
+| **Enterprise**           | 5+ scenarios            | Lower (Multi-plant scale) | Multi-plant deployment    |
 
-- [Azure Key Vault][azure-key-vault] (for secrets management) - deployed via [security-identity module][security-identity-module-1]
-- [Azure Storage Account][azure-storage-account] (for data persistence) - deployed via [data module][data-module]
-- [Event Grid][event-grid] or [Event Hub Namespace][event-hub-namespace] (for messaging) - deployed via [messaging module][messaging-module]
-- [Log Analytics Workspace][log-analytics-workspace] (for monitoring) - deployed via [observability module][observability-module]
-- [Azure Monitor][azure-monitor] (for metrics and dashboards) - deployed via [observability module][observability-module]
+---
 
-### Observability Infrastructure
+## ✅ Comprehensive Validation Framework
 
-- [Observability module][observability-module-2] components for:
-  - Centralized logging and monitoring
-  - Custom operational dashboards
-  - Alert configuration
-  - KPI visualization
+### 🔍 Pre-Deployment Validation Checklist
 
-### Data Platform Requirements
+#### Azure Platform Readiness
 
-- [Time-series data storage][time-series-data-storage] for operational metrics - deployed via [data module][data-module]
-- Data integration with existing production systems
-- [Dashboard services][dashboard-services] for visualization across multiple stakeholders - deployed via [observability module][observability-module]
+- [ ] **Subscription Status**: Active with sufficient quotas for monitoring workloads
+- [ ] **Resource Providers**: All 12 providers registered successfully
+- [ ] **Identity Configuration**: Managed identities created and configured
+- [ ] **Network Access**: Outbound connectivity verified from edge locations
+- [ ] **Resource Groups**: Created with appropriate naming and access controls
 
-## Integration Requirements
+#### Edge Infrastructure Readiness
 
-### Enterprise System Integration
+- [ ] **Hardware Verification**: Specifications meet multi-equipment monitoring needs
+- [ ] **OS Installation**: Ubuntu 22.04 LTS installed and hardened
+- [ ] **Network Configuration**: Factory network access configured
+- [ ] **Security Hardening**: Industrial network security measures implemented
+- [ ] **Storage Preparation**: High-performance storage for time-series data
 
-- Access to ERP, MES, or other enterprise systems
-- Integration method (API, database, file-based)
-- Authentication credentials for systems
-- Data mapping for operational metrics
+#### Development Environment Readiness
 
-### Production Equipment Integration
+- [ ] **Tool Installation**: All required development tools installed
+- [ ] **Authentication**: Azure CLI authenticated with monitoring permissions
+- [ ] **Repository Access**: Git access to Edge AI repository
+- [ ] **IDE Configuration**: Development environment with required extensions
+- [ ] **Container Runtime**: Docker/containerd available for edge workloads
 
-- [OPC UA][opc-ua] server/client configuration
-- Equipment tag mapping documentation
-- [Device twin][device-twin] configuration for equipment representation
+#### Equipment Integration Readiness
 
-For device integration details, see the [IoT Operations module][iot-operations-module].
+- [ ] **Protocol Support**: Equipment protocols identified and supported
+- [ ] **Tag Mapping**: Production metrics mapped to data collection points
+- [ ] **Network Access**: Equipment accessible from edge infrastructure
+- [ ] **Test Data**: Sample data available for validation
+- [ ] **Integration Testing**: Basic connectivity with key equipment verified
 
-## Blueprint Selection
+### 🧪 Post-Deployment Validation
 
-For Operational Performance Monitoring, we recommend using one of these blueprints:
+#### Functional Validation
 
-1. **[Full Single-Node Cluster][full-single-node-cluster]** - For single-site operations
-   - All components on single VM/device
-   - Complete monitoring and messaging infrastructure
+- [ ] **Data Collection**: Real-time metrics flowing from all equipment
+- [ ] **Dashboard Population**: Operational dashboards displaying current data
+- [ ] **Alert Configuration**: Performance alerts configured and tested
+- [ ] **Report Generation**: Automated reports generating correctly
+- [ ] **API Integration**: Enterprise system integration functional
 
-2. **[Full Multi-Node Cluster][full-multi-node-cluster]** - For enterprise-wide implementations
-   - Distributed components across multiple nodes
-   - Fault tolerance and higher performance
-   - Appropriate for mission-critical operational monitoring
+#### Performance Validation
 
-3. **[Only-Cloud Single-Node Cluster][only-cloud-single-node-cluster]** - For cloud-centric monitoring
-   - Focus on cloud analytics with minimal edge components
-   - Suitable when most processing happens in the cloud
+- [ ] **Data Latency**: Real-time data within acceptable latency thresholds
+- [ ] **System Performance**: Edge infrastructure performing within limits
+- [ ] **Dashboard Responsiveness**: UI responsive under normal load
+- [ ] **Backup Systems**: Data backup and recovery procedures validated
+- [ ] **Scalability Testing**: System handles expected data volumes
 
-For blueprint details, see the [Blueprints README][blueprints-readme].
+---
 
-## Deployment Validation Checklist
+## 🏗️ Platform Capability Integration Matrix
 
-Before proceeding with deployment, verify that:
+### 🎯 Mandatory Platform Capabilities
 
-- [ ] Azure subscription has been provisioned with required permissions
-- [ ] Resource providers are registered
-- [ ] Edge hardware meets minimum specifications
-- [ ] Operational equipment is accessible via supported protocols
-- [ ] Network connectivity requirements are met (both cloud and local)
-- [ ] Development environment is properly configured
-- [ ] Integration endpoints for enterprise systems are accessible
-- [ ] Key operational metrics and KPIs have been identified
+| **Capability Group**     | **Required Capabilities**             | **Business Function**        | **Technical Implementation**         |
+|--------------------------|---------------------------------------|------------------------------|--------------------------------------|
+| **Cloud Insights**       | Cloud Observability Foundation        | Centralized monitoring       | Monitoring + alerting infrastructure |
+| **Edge Platform**        | Edge Data Stream Processing           | Real-time data processing    | Stream analytics at edge             |
+| **Protocol Translation** | OPC UA Data Ingestion                 | Equipment connectivity       | OPC UA protocol gateway              |
+| **Edge Cluster**         | Edge Compute Orchestration Platform   | Workload management          | Kubernetes orchestration             |
+| **Protocol Translation** | Device Twin Management                | Equipment state management   | Digital equipment representation     |
+| **Edge Application**     | Edge Dashboard Visualization          | Local operational dashboards | Edge-based visualization             |
+| **Cloud Data**           | Cloud Data Platform Services          | Data storage and analytics   | Scalable data platform               |
+| **Cloud Data**           | Specialized Time Series Data Services | Time-series storage          | High-frequency data management       |
 
-## Common Troubleshooting
+### 🔧 Recommended Platform Capabilities
 
-- **Azure resource provider registration failures**: Verify your account has sufficient permissions
-- **Edge device connectivity issues**: Check network configuration and firewall settings
-- **Equipment connectivity issues**: Verify protocol configuration and network access
-- **Enterprise system integration issues**: Check credentials and API accessibility
-- **Dashboard rendering problems**: Verify data sources are correctly configured
-- **Terraform deployment errors**: Ensure Azure CLI is logged in with correct subscription selected
+| **Capability Group**     | **Optional Capabilities**              | **Business Function**          | **Value Enhancement**         |
+|--------------------------|----------------------------------------|--------------------------------|-------------------------------|
+| **Protocol Translation** | Broad Industrial Protocol Support      | Multi-protocol connectivity    | 20-35% integration efficiency |
+| **Cloud Communications** | Cloud Messaging Event Infrastructure   | Event-driven workflows         | 15-30% automation improvement |
+| **Business Integration** | Enterprise Application Integration Hub | ERP/MES integration            | 25-40% process optimization   |
+| **Advanced Analytics**   | Specialized Analytics Workbench        | Advanced performance analytics | 30-50% insight quality        |
+
+---
+
+## 🔗 Implementation Blueprints
+
+### 🏗️ Recommended Blueprint Selection
+
+| **Blueprint**                                                        | **Use Case**              | **Resource Requirements**                  | **Implementation Complexity** |
+|----------------------------------------------------------------------|---------------------------|--------------------------------------------|-------------------------------|
+| **[Full Single-Node Cluster][full-single-node-cluster]**             | Single production line    | 1 edge device, moderate cloud resources    | ⭐⭐⭐                           |
+| **[Full Multi-Node Cluster][full-multi-node-cluster]**               | Plant-wide implementation | 3+ edge devices, extensive cloud resources | ⭐⭐⭐⭐⭐                         |
+| **[Only Cloud Single-Node Cluster][only-cloud-single-node-cluster]** | Cloud-centric monitoring  | Minimal edge, extensive cloud              | ⭐⭐⭐                           |
+| **[Minimum Single-Node Cluster][minimum-single-node-cluster]**       | Development/POC           | 1 edge device, minimal cloud resources     | ⭐⭐                            |
+
+---
+
+## 🚨 Risk Assessment and Mitigation
+
+### 🔍 Prerequisites Risk Matrix
+
+| **Risk Category**          | **Probability** | **Impact** | **Mitigation Strategy**                       | **Contingency Plan**        |
+|----------------------------|-----------------|------------|-----------------------------------------------|-----------------------------|
+| **Equipment Connectivity** | Medium          | High       | Multi-protocol support, redundant connections | Manual data entry protocols |
+| **Network Reliability**    | Low             | High       | Redundant connections, local buffering        | Offline operation mode      |
+| **Data Quality Issues**    | High            | Medium     | Data validation, quality monitoring           | Data cleansing pipelines    |
+| **System Performance**     | Medium          | Medium     | Performance monitoring, auto-scaling          | Manual resource scaling     |
+| **Integration Failures**   | Medium          | High       | Comprehensive testing, fallback APIs          | Manual reporting processes  |
+
+### 🛡️ Mitigation Implementation
+
+| **Risk**                    | **Prevention Measure**              | **Detection Method**     | **Response Protocol**      |
+|-----------------------------|-------------------------------------|--------------------------|----------------------------|
+| **Data Loss**               | Automated backups + local buffering | Backup validation checks | Data recovery procedures   |
+| **Performance Degradation** | Resource monitoring + alerts        | Performance thresholds   | Automatic resource scaling |
+| **Security Breach**         | Network segmentation + monitoring   | Security event detection | Incident response protocol |
+| **Equipment Failure**       | Redundant data paths                | Health monitoring        | Alternative data sources   |
+
+---
+
+## 📖 Reference Documentation
+
+### 🔗 Platform Documentation Links
+
+- **[Edge AI Platform Capabilities][edge-ai-platform-capability-groups]**: Complete capability overview
+- **[Getting Started Guide][getting-started-guide]**: Step-by-step implementation
+- **[Blueprints Documentation][blueprints-readme]**: Architecture patterns and templates
+- **[Security Identity Module][security-identity-module]**: Identity and access management
+- **[IoT Operations Module][iot-operations-module]**: Edge platform configuration
+
+### 🔗 Cross-Scenario Reference Links
+
+- **[Digital Inspection Survey Prerequisites][digital-inspection-prereqs]**: Visual AI prerequisites
+- **[Predictive Maintenance Prerequisites][predictive-maintenance-prereqs]**: Predictive analytics prerequisites
+- **[Quality Process Prerequisites][quality-process-prereqs]**: Quality management prerequisites
+
+### 🔗 Azure Service Documentation
+
+- **[Azure Monitor][azure-monitor]**: Monitoring platform overview
+- **[Azure IoT Operations][azure-iot-operations]**: Edge platform documentation
+- **[Time Series Insights][time-series-insights]**: Time-series data platform
+- **[Azure Dashboards][azure-dashboards]**: Visualization platform
+
+---
+
+<!-- Reference Links -->
+[edge-ai-platform-capability-groups]: /docs/project-planning/capabilities/
+[getting-started-guide]: /docs/getting-started/README.md
+[blueprints-readme]: /blueprints/README.md
+[security-identity-module]: /src/000-cloud/010-security-identity/terraform/README.md
+[iot-operations-module]: /src/100-edge/110-iot-ops/terraform/README.md
+[full-single-node-cluster]: /blueprints/full-single-node-cluster
+[full-multi-node-cluster]: /blueprints/full-multi-node-cluster
+[only-cloud-single-node-cluster]: /blueprints/only-cloud-single-node-cluster
+[minimum-single-node-cluster]: /blueprints/minimum-single-node-cluster
+[digital-inspection-prereqs]: /docs/project-planning/scenarios/digital-inspection-survey/prerequisites.md
+[predictive-maintenance-prereqs]: /docs/project-planning/scenarios/predictive-maintenance/prerequisites.md
+[quality-process-prereqs]: /docs/project-planning/scenarios/quality-process-optimization-automation/prerequisites.md
+[azure-monitor]: https://learn.microsoft.com/azure/azure-monitor/
+[azure-iot-operations]: https://learn.microsoft.com/azure/iot-operations/
+[time-series-insights]: https://learn.microsoft.com/azure/time-series-insights/
+[azure-dashboards]: https://learn.microsoft.com/azure/azure-portal/azure-portal-dashboards
 
 ---
 
@@ -238,54 +324,3 @@ Before proceeding with deployment, verify that:
 *🤖 Crafted with precision by ✨Copilot following brilliant human instruction,
 then carefully refined by our team of discerning human reviewers.*
 <!-- markdownlint-enable MD036 -->
-
-<!-- Reference Links -->
-[azure-arc-onboarding]: https://learn.microsoft.com/azure/azure-arc/kubernetes/connect-cluster
-[azure-cli]: https://docs.microsoft.com/cli/azure/install-azure-cli
-[azure-key-vault]: https://learn.microsoft.com/azure/key-vault/general/overview
-[azure-monitor]: https://learn.microsoft.com/azure/azure-monitor/overview
-[azure-storage-account]: https://learn.microsoft.com/azure/storage/common/storage-account-overview
-[azure-subscription]: https://learn.microsoft.com/azure/cost-management-billing/manage/create-subscription
-[azure-vm-size-standard_d8s_v3]: https://learn.microsoft.com/azure/virtual-machines/dv3-dsv3-series#dsv3-series
-[blueprints-readme]: /blueprints/README.md
-[broad-industrial-protocol-support]: /docs/project-planning/capabilities/protocol-translation-device-management/broad-industrial-protocol-support.md
-[cloud-data-platform-services]: /docs/project-planning/capabilities/cloud-data-platform/cloud-data-platform-services.md
-[cloud-messaging-event-infrastructure]: /docs/project-planning/capabilities/cloud-communications-platform/cloud-messaging-event-infrastructure.md
-[cloud-observability-foundation]: /docs/project-planning/capabilities/cloud-insights-platform/cloud-observability-foundation.md
-[cncf-cluster-module]: /src/100-edge/100-cncf-cluster/terraform/README.md
-[dashboard-services]: https://learn.microsoft.com/azure/azure-portal/azure-portal-dashboards
-[data-module]: /src/000-cloud/030-data/terraform
-[devcontainers-extension]: https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers
-[device-twin]: https://learn.microsoft.com/azure/iot-operations/manage-devices/device-twin-concepts
-[device-twin-management]: /docs/project-planning/capabilities/protocol-translation-device-management/device-twin-management.md
-[edge-ai-platform-capability-groups]: /docs/project-planning/capabilities/
-[edge-compute-orchestration-platform]: /docs/project-planning/capabilities/edge-cluster-platform/edge-compute-orchestration-platform.md
-[edge-dashboard-visualization]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-dashboard-visualization.md
-[edge-data-stream-processing]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-data-stream-processing.md
-[event-grid]: https://learn.microsoft.com/azure/event-grid/overview
-[event-hub-namespace]: https://learn.microsoft.com/azure/event-hubs/event-hubs-about
-[full-multi-node-cluster]: /blueprints/full-multi-node-cluster
-[full-single-node-cluster]: /blueprints/full-single-node-cluster
-[getting-started-guide]: /docs/getting-started-simple.md
-[git]: https://git-scm.com/downloads
-[iot-operations-module]: /src/100-edge/110-iot-ops/terraform/README.md
-[kubernetes-cli-kubectl]: https://kubernetes.io/docs/tasks/tools/
-[log-analytics-workspace]: https://learn.microsoft.com/azure/azure-monitor/logs/log-analytics-workspace-overview
-[messaging-module]: /src/000-cloud/040-messaging/terraform
-[observability-module]: /src/000-cloud/020-observability/terraform
-[observability-module-2]: /src/000-cloud/020-observability/terraform/README.md
-[only-cloud-single-node-cluster]: /blueprints/only-cloud-single-node-cluster
-[opc-ua]: https://learn.microsoft.com/azure/industrial-iot/overview-what-is-opc-ua
-[opc-ua-data-ingestion]: /docs/project-planning/capabilities/protocol-translation-device-management/opc-ua-data-ingestion.md
-[provider-registration-script]: /src/azure-resource-providers/register-azure-providers.sh
-[resource-groups]: https://learn.microsoft.com/azure/azure-resource-manager/management/manage-resource-groups-portal
-[resource-providers]: https://learn.microsoft.com/azure/azure-resource-manager/management/resource-providers-and-types
-[role-assignments]: https://learn.microsoft.com/azure/role-based-access-control/overview
-[security-identity-module]: /src/000-cloud/010-security-identity/terraform/README.md
-[security-identity-module-1]: /src/000-cloud/010-security-identity/terraform/modules/key-vault
-[specialized-time-series-data-services]: /docs/project-planning/capabilities/cloud-data-platform/specialized-time-series-data-services.md
-[terraform]: https://www.terraform.io/downloads.html
-[time-series-data-storage]: https://learn.microsoft.com/azure/time-series-insights/overview-what-is-tsi
-[user-assigned-managed-identities]: https://learn.microsoft.com/azure/active-directory/managed-identities-azure-resources/overview
-[visual-studio-code]: https://code.visualstudio.com/
-[vm-host-module]: /src/000-cloud/050-vm-host/terraform/README.md

@@ -2,7 +2,7 @@
 title: Service Health Dashboard Documentation
 description: Comprehensive overview of the Service Health Dashboard providing monitoring and diagnostics for Azure Edge, AIO services, MQTT brokers, and Kubernetes clusters
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: reference
 estimated_reading_time: 3
 keywords:

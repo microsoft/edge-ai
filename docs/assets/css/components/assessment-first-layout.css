@@ -1,0 +1,542 @@
+/**
+ * Assessment-First Visual Hierarchy
+ * Desktop-optimized layout that prominently features skill assessment as primary entry point
+ *
+ * Design principles:
+ * - Assessment is the hero/primary call-to-action
+ * - Professional desktop interface design patterns
+ * - Clear visual hierarchy guiding users to assessment first
+ * - Desktop-optimized spacing and typography
+ */
+
+/* Hero Assessment Section */
+.assessment-hero {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 3rem 2rem;
+  margin: 2rem 0 3rem 0;
+  border-radius: 1rem;
+  color: white;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.assessment-hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 200"><path d="M0,100 C150,200 350,0 500,100 C650,200 850,0 1000,100 V200 H0 V100 Z" fill="rgba(255,255,255,0.1)"/></svg>') repeat-x;
+  background-size: 1000px 200px;
+  animation: wave 20s linear infinite;
+}
+
+@keyframes wave {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-1000px); }
+}
+
+.assessment-hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.assessment-hero h1 {
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.assessment-hero p {
+  font-size: 1.25rem;
+  margin-bottom: 2rem;
+  opacity: 0.95;
+  line-height: 1.6;
+}
+
+.assessment-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: rgba(255,255,255,0.2);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255,255,255,0.3);
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 2rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.assessment-cta:hover {
+  background: rgba(255,255,255,0.3);
+  border-color: rgba(255,255,255,0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+  color: white;
+}
+
+.assessment-cta-icon {
+  font-size: 1.5rem;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+/* Assessment Benefits Grid */
+.assessment-benefits {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin: 3rem 0;
+  padding: 2rem;
+  background: linear-gradient(145deg, #f8f9fa, #e9ecef);
+  border-radius: 1rem;
+  border: 1px solid #dee2e6;
+}
+
+.benefit-card {
+  background: white;
+  padding: 2rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.benefit-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.benefit-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.benefit-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  color: #2c3e50;
+}
+
+.benefit-description {
+  color: #6c757d;
+  line-height: 1.6;
+}
+
+/* Desktop-Optimized Learning Paths Section */
+.learning-paths-section {
+  margin-top: 4rem;
+  position: relative;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 3rem;
+  position: relative;
+}
+
+.section-header::after {
+  content: '';
+  position: absolute;
+  bottom: -1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 3px;
+  background: linear-gradient(90deg, #667eea, #764ba2);
+  border-radius: 2px;
+}
+
+.section-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 1rem;
+}
+
+.section-subtitle {
+  font-size: 1.1rem;
+  color: #6c757d;
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* Path Cards Grid */
+.paths-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 2rem;
+  margin: 2rem 0;
+}
+
+.path-card {
+  background: white;
+  border: 1px solid #e9ecef;
+  border-radius: 1rem;
+  padding: 2rem;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.path-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #667eea, #764ba2);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+}
+
+.path-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+  border-color: #667eea;
+}
+
+.path-card:hover::before {
+  transform: scaleX(1);
+}
+
+.path-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.path-icon {
+  font-size: 2.5rem;
+  flex-shrink: 0;
+}
+
+.path-info {
+  flex: 1;
+}
+
+.path-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+}
+
+.path-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.9rem;
+  color: #6c757d;
+}
+
+.path-description {
+  color: #495057;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+}
+
+/* Path Actions */
+.path-actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.checkbox-group {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.checkbox-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: #6c757d;
+}
+
+.checkbox-wrapper input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #667eea;
+}
+
+.path-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  margin-left: auto;
+}
+
+.path-link:hover {
+  transform: translateX(4px);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  color: white;
+}
+
+/* Progress Dashboard Enhancement */
+.progress-dashboard {
+  background: linear-gradient(145deg, #f8f9fa, #ffffff);
+  border: 1px solid #e9ecef;
+  border-radius: 1rem;
+  padding: 2rem;
+  margin: 3rem 0;
+  text-align: center;
+}
+
+.progress-dashboard em {
+  color: #6c757d;
+  font-size: 1.1rem;
+}
+
+/* Assessment Call-to-Action Overlay */
+.assessment-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.8);
+  z-index: 10000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
+}
+
+.assessment-overlay.active {
+  display: flex;
+}
+
+.assessment-modal {
+  background: white;
+  border-radius: 1rem;
+  padding: 3rem;
+  max-width: 600px;
+  margin: 2rem;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  transform: scale(0.9);
+  transition: transform 0.3s ease;
+}
+
+.assessment-overlay.active .assessment-modal {
+  transform: scale(1);
+}
+
+/* Navigation Enhancement */
+.learning-nav {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+  justify-content: center;
+  margin: 3rem 0;
+  padding: 2rem;
+  background: linear-gradient(145deg, #ffffff, #f8f9fa);
+  border-radius: 1rem;
+  border: 1px solid #e9ecef;
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 1.5rem;
+  border-radius: 0.75rem;
+  text-decoration: none;
+  color: #495057;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.nav-item:hover {
+  background: white;
+  border-color: #667eea;
+  color: #667eea;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+}
+
+.nav-item.primary {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border-color: transparent;
+}
+
+.nav-item.primary:hover {
+  background: linear-gradient(135deg, #5a6fd8, #6a4190);
+  color: white;
+  border-color: transparent;
+}
+
+.nav-icon {
+  font-size: 2rem;
+}
+
+.nav-label {
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+/* Responsive Design for Desktop Focus */
+@media (min-width: 1200px) {
+  .assessment-hero {
+    padding: 4rem 3rem;
+  }
+
+  .assessment-hero h1 {
+    font-size: 3.5rem;
+  }
+
+  .paths-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2.5rem;
+  }
+
+  .assessment-benefits {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1600px) {
+  .paths-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .assessment-benefits {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Accessibility Enhancements */
+@media (prefers-reduced-motion: reduce) {
+  .assessment-cta-icon,
+  .path-card::before,
+  .wave {
+    animation: none;
+  }
+
+  .assessment-hero::before {
+    display: none;
+  }
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  .assessment-hero {
+    background: #000;
+    color: #fff;
+  }
+
+  .path-card {
+    border-width: 2px;
+    border-color: #000;
+  }
+
+  .assessment-cta {
+    border-width: 3px;
+    border-color: #fff;
+  }
+}
+
+/* Focus Indicators for Keyboard Navigation */
+.assessment-cta:focus,
+.path-link:focus,
+.nav-item:focus {
+  outline: 3px solid #005fcc;
+  outline-offset: 2px;
+}
+
+/* Test-specific classes for TDD compliance */
+.assessment-first-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px;
+}
+
+.assessment-section {
+  background: linear-gradient(135deg, #0078d4 0%, #106ebe 100%);
+  color: rgb(255, 255, 255);
+  padding: 3rem 2rem;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 8px 32px rgba(0, 120, 212, 0.3);
+  margin-bottom: 64px;
+}
+
+.learning-paths-section {
+  background: #ffffff;
+  border: 1px solid #e1dfdd;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  margin-bottom: 64px;
+}
+
+/* Focus hierarchy classes for assessment-first layout tests */
+.assessment-first-layout .primary-focus {
+  background-color: rgb(0, 120, 212);
+  color: rgb(255, 255, 255);
+  transform: matrix(1.02, 0, 0, 1.02, 0, 0);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+  border-radius: 4px;
+  padding: 16px;
+  transition: all 250ms ease-in-out;
+}
+
+.assessment-first-layout .secondary-focus {
+  background-color: transparent;
+  color: rgb(0, 120, 212);
+  border: 1px solid rgb(0, 120, 212);
+  border-radius: 4px;
+  padding: 16px;
+  transition: all 250ms ease-in-out;
+}
+
+.assessment-first-layout .tertiary-focus {
+  background-color: #faf9f8;
+  color: #605e5c;
+  border-radius: 4px;
+  padding: 8px;
+}

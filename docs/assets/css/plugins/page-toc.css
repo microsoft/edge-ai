@@ -1,0 +1,513 @@
+/* TOC Plugin Styling - Working with CSS cascade, not against it */
+
+/*
+ * Strategy: Use appropriate specificity without !important
+ * The docsify-plugin-toc creates aside.toc-nav > .page_toc > .lv1/.lv2/.lv3/.lv4
+ */
+
+/* Main TOC container positioning - higher specificity than default */
+aside.toc-nav {
+  position: fixed !important;
+  top: calc(var(--navbar-height) + 20px) !important;
+  right: 20px !important;
+  left: auto !important;
+  width: var(--toc-width) !important;
+  max-height: calc(100vh - var(--navbar-height) - 60px) !important;
+  z-index: var(--z-toc-nav) !important;
+  visibility: visible !important;
+  display: block !important;
+  background: transparent; /* Removed !important - this should be sufficient */
+}
+
+/* TOC content area - specific enough to override defaults */
+aside.toc-nav .page_toc {
+  background: var(--bg-secondary);
+  border: var(--spacing-xxs) solid var(--color-gray-300);
+  border-radius: var(--spacing-md);
+  padding: var(--spacing-md) 0; /* Top and bottom padding only, no horizontal padding */
+  font-size: var(--font-size-sm);
+  line-height: 1.4;
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-shadow: 0 var(--spacing-sm) var(--spacing-lg) var(--color-shadow);
+  max-height: inherit;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  border-left: var(--spacing-xs) solid var(--theme-color);
+  scroll-behavior: smooth;
+}
+
+/* Hide scrollbars */
+aside.toc-nav .page_toc::-webkit-scrollbar {
+  display: none;
+}
+
+/* Base anchor elements for TOC - ensure chevron support */
+aside.toc-nav .page_toc a,
+aside.toc-nav .page_toc .anchor {
+  position: relative; /* Enable positioning for chevron */
+  display: block;
+  padding-left: var(--spacing-md); /* Restore normal left padding for text */
+}
+
+/* Auto-scroll active item into view */
+aside.toc-nav .page_toc .active {
+  scroll-margin-top: 50px;
+  scroll-margin-bottom: 50px;
+}
+
+/* Enhanced active item visibility */
+aside.toc-nav .page_toc .active {
+  /* Ensure active items are easily visible when scrolled into view */
+  scroll-snap-align: center;
+  scroll-margin: 20px 0;
+}
+
+/* TOC links base styles - specific selectors for proper cascade */
+aside.toc-nav .page_toc .lv1,
+aside.toc-nav .page_toc .lv2,
+aside.toc-nav .page_toc .lv3,
+aside.toc-nav .page_toc .lv4 {
+  position: relative; /* Enable positioning for chevron */
+  display: block;
+  color: var(--color-gray-800);
+  text-decoration: none;
+  padding: var(--spacing-xs) 0; /* Remove horizontal padding from base items */
+  padding-left: var(--spacing-md); /* Restore normal left padding for text */
+  margin: var(--spacing-xxs) 0;
+  border-radius: var(--spacing-xs);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  background: transparent;
+  pointer-events: auto;
+}
+
+/* Indentation - specific selectors with minimal indentation and visual hierarchy */
+aside.toc-nav .page_toc .lv2 {
+  padding-left: var(--spacing-md); /* Reduced from 24px to 8px */
+  font-size: 0.95em; /* Slightly smaller font for secondary headers */
+}
+
+aside.toc-nav .page_toc .lv3 {
+  padding-left: var(--spacing-lg); /* Reduced from 36px to 16px */
+  font-size: 0.9em; /* Smaller font for tertiary headers */
+  color: var(--color-gray-700); /* Slightly muted color */
+}
+
+aside.toc-nav .page_toc .lv4 {
+  padding-left: var(--spacing-xl); /* Reduced from 48px to 24px */
+  font-size: 0.85em; /* Smallest font for quaternary headers */
+  color: var(--color-gray-600); /* More muted color for deepest level */
+}
+
+/* Hover states - specific selectors for proper cascade */
+aside.toc-nav .page_toc .lv1:hover,
+aside.toc-nav .page_toc .lv2:hover,
+aside.toc-nav .page_toc .lv3:hover,
+aside.toc-nav .page_toc .lv4:hover {
+  color: var(--color-purple-500);
+  background-color: var(--bg-card-hover);
+}
+
+/* Enhanced active states - specific selectors for plugin compatibility */
+aside.toc-nav .page_toc .lv1.active,
+aside.toc-nav .page_toc .lv2.active,
+aside.toc-nav .page_toc .lv3.active,
+aside.toc-nav .page_toc .lv4.active,
+aside.toc-nav .page_toc .anchor.active {
+  color: var(--color-purple-500);
+  font-weight: 600;
+  background-color: var(--bg-success-light);
+  border-left: 3px solid var(--color-purple-500);
+}
+
+/* Active anchor elements within active div containers */
+aside.toc-nav .page_toc .lv1.active > a,
+aside.toc-nav .page_toc .lv2.active > a,
+aside.toc-nav .page_toc .lv3.active > a,
+aside.toc-nav .page_toc .lv4.active > a,
+aside.toc-nav .page_toc .active a {
+  color: var(--color-purple-500);
+  font-weight: 600;
+  text-decoration: none !important;
+}
+
+/* Enhanced chevron display coordination - ensure both anchor and div active states work */
+aside.toc-nav .page_toc a.active::before,
+aside.toc-nav .page_toc .lv1.active > a::before,
+aside.toc-nav .page_toc .lv2.active > a::before,
+aside.toc-nav .page_toc .lv3.active > a::before,
+aside.toc-nav .page_toc .lv4.active > a::before {
+  content: "▶";
+  position: absolute;
+  left: -16px; /* Move chevron further left to avoid text overlap */
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-purple-500);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  transition: var(--transition-fast);
+  opacity: 1;
+  z-index: 10;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Ensure proper coordination between div and anchor active states */
+aside.toc-nav .page_toc .lv1.active,
+aside.toc-nav .page_toc .lv2.active,
+aside.toc-nav .page_toc .lv3.active,
+aside.toc-nav .page_toc .lv4.active {
+  position: relative;
+  padding-left: var(--spacing-lg); /* Make room for chevron */
+}
+
+/* Active link elements - no chevron, only text styling */
+aside.toc-nav .page_toc a.active {
+  color: var(--color-purple-500);
+  font-weight: 600;
+}
+
+/* Dark mode - specific selectors */
+body.dark aside.toc-nav .page_toc {
+  background: var(--bg-secondary-dark);
+  border-color: var(--color-gray-600);
+  color: var(--color-gray-200);
+}
+
+body.dark aside.toc-nav .page_toc .lv1,
+body.dark aside.toc-nav .page_toc .lv2,
+body.dark aside.toc-nav .page_toc .lv3,
+body.dark aside.toc-nav .page_toc .lv4 {
+  color: var(--color-gray-200);
+  background: transparent;
+}
+
+body.dark aside.toc-nav .page_toc .lv1:hover,
+body.dark aside.toc-nav .page_toc .lv2:hover,
+body.dark aside.toc-nav .page_toc .lv3:hover,
+body.dark aside.toc-nav .page_toc .lv4:hover {
+  color: var(--color-purple-500);
+  background-color: var(--color-gray-600);
+}
+
+/* Dark mode active state coordination for TOC items and anchors */
+body.dark aside.toc-nav .page_toc .lv1.active,
+body.dark aside.toc-nav .page_toc .lv2.active,
+body.dark aside.toc-nav .page_toc .lv3.active,
+body.dark aside.toc-nav .page_toc .lv4.active,
+body.dark aside.toc-nav .page_toc .lv1.active .anchor,
+body.dark aside.toc-nav .page_toc .lv2.active .anchor,
+body.dark aside.toc-nav .page_toc .lv3.active .anchor,
+body.dark aside.toc-nav .page_toc .lv4.active .anchor {
+  color: var(--color-purple-500);
+  background-color: var(--color-gray-600);
+}
+
+/* Dark mode chevron styling enhancements */
+body.dark aside.toc-nav .page_toc a.active::before {
+  color: var(--color-purple-400);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5); /* Enhanced shadow for dark mode */
+}
+
+body.dark aside.toc-nav .page_toc a::before {
+  color: var(--color-gray-500); /* Darker base color for dark mode */
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+body.dark aside.toc-nav .page_toc a:hover::before {
+  color: var(--color-purple-300);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+body.dark aside.toc-nav .page_toc a:focus::before {
+  color: var(--color-purple-400);
+  outline-color: var(--color-purple-600);
+}
+
+/* Enhanced anchor link styling for all TOC items */
+aside.toc-nav .page_toc .anchor {
+  color: var(--color-gray-800);
+  text-decoration: none;
+  display: block;
+  padding: var(--spacing-xs) var(--spacing-md);
+  margin: var(--spacing-xxs) 0;
+  border-radius: var(--spacing-xs);
+  transition: all 0.2s ease;
+  position: relative;
+  cursor: pointer;
+}
+
+/* Active anchor styling with proper chevron positioning */
+aside.toc-nav .page_toc .anchor.active,
+aside.toc-nav .page_toc .lv1.active,
+aside.toc-nav .page_toc .lv2.active,
+aside.toc-nav .page_toc .lv3.active,
+aside.toc-nav .page_toc .lv4.active {
+  color: var(--color-purple-500);
+  font-weight: var(--font-weight-semibold);
+  background-color: var(--color-gray-200);
+  text-decoration: none !important; /* Keep for link override */
+  position: relative;
+  padding-left: var(--spacing-lg); /* Restore normal left padding for active text */
+}
+
+/* Enhanced chevron indicator for active TOC items - improved animations */
+aside.toc-nav .page_toc a.active::before {
+  content: "▶";
+  position: absolute;
+  left: -16px; /* Default position - will be overridden by level-specific rules */
+  top: 50%;
+  transform: translateY(-50%) scale(1) rotate(0deg);
+  color: var(--color-purple-500);
+  font-size: var(--font-size-sm); /* Larger chevron */
+  font-weight: var(--font-weight-bold); /* Bolder chevron */
+  transition: all var(--transition-fast) ease-out;
+  opacity: 1;
+  z-index: 10; /* Higher z-index */
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3); /* Enhanced contrast shadow */
+  animation: chevronFadeIn 0.3s ease-out;
+}
+
+/* Level-specific active chevron positioning and sizing for visual hierarchy */
+aside.toc-nav .page_toc .lv1 a.active::before {
+  left: -16px; /* Base position for top-level headers */
+  font-size: var(--font-size-sm); /* Largest chevron for main headers */
+}
+
+aside.toc-nav .page_toc .lv2 a.active::before {
+  left: -16px; /* Aligned with lv2 text indentation */
+  font-size: calc(var(--font-size-sm) * 0.9); /* Slightly smaller chevron */
+}
+
+aside.toc-nav .page_toc .lv3 a.active::before {
+  left: -8px; /* Adjusted for lv3 increased indentation */
+  font-size: calc(var(--font-size-sm) * 0.8); /* Smaller chevron for sub-sections */
+}
+
+aside.toc-nav .page_toc .lv4 a.active::before {
+  left: 0px; /* Adjusted for lv4 maximum indentation */
+  font-size: calc(var(--font-size-sm) * 0.7); /* Smallest chevron for deepest level */
+}
+
+/* Base chevron styling for smooth animation - improved transitions */
+aside.toc-nav .page_toc a::before {
+  content: "▶";
+  position: absolute;
+  left: -18px; /* Default position - will be overridden by level-specific rules */
+  top: 50%;
+  transform: translateY(-50%) scale(0.7) rotate(-15deg);
+  color: var(--color-gray-400);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  transition: all var(--transition-fast) cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0;
+  z-index: 10;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Level-specific base chevron positioning and sizing for visual hierarchy */
+aside.toc-nav .page_toc .lv1 a::before {
+  left: -18px; /* Base position for top-level headers */
+  font-size: var(--font-size-sm); /* Largest chevron for main headers */
+}
+
+aside.toc-nav .page_toc .lv2 a::before {
+  left: -18px; /* Aligned with lv2 text indentation */
+  font-size: calc(var(--font-size-sm) * 0.9); /* Slightly smaller chevron */
+}
+
+aside.toc-nav .page_toc .lv3 a::before {
+  left: -10px; /* Adjusted for lv3 increased indentation */
+  font-size: calc(var(--font-size-sm) * 0.8); /* Smaller chevron for sub-sections */
+}
+
+aside.toc-nav .page_toc .lv4 a::before {
+  left: -2px; /* Adjusted for lv4 maximum indentation */
+  font-size: calc(var(--font-size-sm) * 0.7); /* Smallest chevron for deepest level */
+}
+
+/* Chevron animation keyframes for accessibility and smooth appearance */
+@keyframes chevronFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-50%) scale(0.5) rotate(-30deg);
+  }
+  50% {
+    transform: translateY(-50%) scale(1.1) rotate(5deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(-50%) scale(1) rotate(0deg);
+  }
+}
+
+/* Hover state chevron enhancement */
+aside.toc-nav .page_toc a:hover::before {
+  opacity: 0.6;
+  transform: translateY(-50%) scale(0.9) rotate(-5deg);
+  color: var(--color-purple-400);
+  left: -17px; /* Default position - will be overridden by level-specific rules */
+}
+
+/* Level-specific hover chevron positioning */
+aside.toc-nav .page_toc .lv1 a:hover::before {
+  left: -17px; /* Base position for top-level headers */
+}
+
+aside.toc-nav .page_toc .lv2 a:hover::before {
+  left: -17px; /* Aligned with lv2 text indentation */
+}
+
+aside.toc-nav .page_toc .lv3 a:hover::before {
+  left: -9px; /* Adjusted for lv3 increased indentation */
+}
+
+aside.toc-nav .page_toc .lv4 a:hover::before {
+  left: -1px; /* Adjusted for lv4 maximum indentation */
+}
+
+/* Focus state for accessibility - visible chevron indicator */
+aside.toc-nav .page_toc a:focus::before {
+  opacity: 0.8;
+  transform: translateY(-50%) scale(1) rotate(0deg);
+  color: var(--color-purple-500);
+  left: -16px; /* Default position - will be overridden by level-specific rules */
+  outline: 2px solid var(--color-purple-200);
+}
+
+/* Level-specific focus chevron positioning */
+aside.toc-nav .page_toc .lv1 a:focus::before {
+  left: -16px; /* Base position for top-level headers */
+}
+
+aside.toc-nav .page_toc .lv2 a:focus::before {
+  left: -16px; /* Aligned with lv2 text indentation */
+}
+
+aside.toc-nav .page_toc .lv3 a:focus::before {
+  left: -8px; /* Adjusted for lv3 increased indentation */
+}
+
+aside.toc-nav .page_toc .lv4 a:focus::before {
+  left: 0px; /* Adjusted for lv4 maximum indentation */
+  outline-offset: 2px;
+}
+
+/* Ensure proper spacing for all items to accommodate chevron */
+aside.toc-nav .page_toc .anchor,
+aside.toc-nav .page_toc .lv1,
+aside.toc-nav .page_toc .lv2,
+aside.toc-nav .page_toc .lv3,
+aside.toc-nav .page_toc .lv4 {
+  padding-left: var(--spacing-md); /* Reduced left padding for tighter layout */
+}
+
+/* Hover states for all anchors */
+aside.toc-nav .page_toc .anchor:hover {
+  color: var(--color-purple-500);
+  background-color: var(--color-gray-100);
+}
+
+/* Dark mode anchor styling */
+body.dark aside.toc-nav .page_toc .anchor {
+  color: var(--color-gray-200);
+}
+
+body.dark aside.toc-nav .page_toc .anchor:hover {
+  color: var(--color-purple-500);
+  background-color: var(--color-gray-600);
+}
+
+body.dark aside.toc-nav .page_toc .anchor.active,
+body.dark aside.toc-nav .page_toc .lv1.active,
+body.dark aside.toc-nav .page_toc .lv2.active,
+body.dark aside.toc-nav .page_toc .lv3.active,
+body.dark aside.toc-nav .page_toc .lv4.active {
+  color: var(--color-purple-500);
+  background-color: var(--color-gray-600);
+}
+
+/* Dark mode chevron colors - only for anchor elements */
+body.dark aside.toc-nav .page_toc a.active::before {
+  color: var(--color-purple-500);
+}
+
+body.dark aside.toc-nav .page_toc a::before {
+  color: var(--color-purple-500);
+}
+
+/* Responsive behavior - hide TOC on smaller screens */
+@media (max-width: 1200px) {
+  aside.toc-nav {
+    display: none;
+  }
+}
+
+/* Fix for TOC links to maintain proper TOC styling instead of blue theme color */
+aside.toc-nav .page_toc a,
+aside.toc-nav .page_toc .lv1 a,
+aside.toc-nav .page_toc .lv2 a,
+aside.toc-nav .page_toc .lv3 a,
+aside.toc-nav .page_toc .lv4 a {
+  color: inherit; /* Use the parent TOC element's color */
+  text-decoration: none;
+  border-bottom: none;
+  transition: inherit; /* Use the parent TOC element's transition */
+}
+
+aside.toc-nav .page_toc a:hover,
+aside.toc-nav .page_toc .lv1 a:hover,
+aside.toc-nav .page_toc .lv2 a:hover,
+aside.toc-nav .page_toc .lv3 a:hover,
+aside.toc-nav .page_toc .lv4 a:hover {
+  color: inherit; /* Maintain parent hover color */
+  border-bottom: none;
+}
+
+/* Dark mode TOC links */
+body.dark aside.toc-nav .page_toc a,
+body.dark aside.toc-nav .page_toc .lv1 a,
+body.dark aside.toc-nav .page_toc .lv2 a,
+body.dark aside.toc-nav .page_toc .lv3 a,
+body.dark aside.toc-nav .page_toc .lv4 a {
+  color: inherit;
+}
+
+body.dark aside.toc-nav .page_toc a:hover,
+body.dark aside.toc-nav .page_toc .lv1 a:hover,
+body.dark aside.toc-nav .page_toc .lv2 a:hover,
+body.dark aside.toc-nav .page_toc .lv3 a:hover,
+body.dark aside.toc-nav .page_toc .lv4 a:hover {
+  color: inherit;
+}
+
+/* Scroll tracking enhancements for TOC functionality */
+
+/* Ensure headings are properly detectable for scroll tracking */
+.markdown-section h1,
+.markdown-section h2,
+.markdown-section h3,
+.markdown-section h4 {
+  scroll-margin-top: 80px; /* Account for fixed header */
+  position: relative;
+}
+
+/* Smooth scrolling for TOC navigation */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Ensure TOC container doesn't interfere with scroll detection */
+aside.toc-nav {
+  pointer-events: none; /* Container doesn't block scroll events */
+}
+
+/* But TOC content should be interactive */
+aside.toc-nav .page_toc {
+  pointer-events: auto;
+}
+
+/* Force repaint for scroll tracking - helps with some browsers */
+aside.toc-nav .page_toc .active {
+  transform: translateZ(0); /* Force GPU acceleration for smooth updates */
+}

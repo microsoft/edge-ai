@@ -2,7 +2,7 @@
 title: GitOps operator for an Azure Arc enabled cluster
 description: Architecture Decision Record comparing GitOps operators (Flux vs Argo CD) for Azure Arc-enabled Kubernetes clusters. Evaluates Azure Arc GitOps extension integration with Flux v2, deployment observability through Azure Resource Graph, fleet management capabilities, and Microsoft support considerations for edge and cloud cluster deployments.
 author: Eugene Fedorenko
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: architecture-decision-record
 estimated_reading_time: 6
 keywords:

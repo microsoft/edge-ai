@@ -18,7 +18,7 @@ keywords:
 
 This guide is for developers who want to create custom deployment blueprints by combining existing components. Blueprints define complete deployment scenarios for specific use cases.
 
-> **🎯 Master Blueprint Development:** Accelerate your learning with our [PraxisWorx Training Platform](/praxisworx/). Explore the [Edge-to-Cloud Systems Track](/praxisworx/training-labs/02-edge-to-cloud-systems/) for comprehensive training on AI-assisted composition of multi-component system architectures and blueprint creation.
+> **🎯 Become an Expert Blueprint Developer:** Accelerate your learning with our [Learning Platform](/learning/). Explore the [Edge-to-Cloud Systems Track](/learning/training-labs/02-edge-to-cloud-systems/) for comprehensive training on AI-assisted composition of multi-component system architectures and blueprint creation.
 
 ## Understanding Blueprint Architecture
 

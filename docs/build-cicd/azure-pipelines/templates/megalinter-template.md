@@ -2,7 +2,7 @@
 title: MegaLinter Integration Template
 description: Azure DevOps pipeline template for comprehensive code quality checking and linting across multiple languages
 author: Edge AI Team
-ms.date: 06/06/2025
+ms.date: 2025-06-06
 ms.topic: concept
 estimated_reading_time: 7
 keywords:

@@ -16,13 +16,6 @@ Creates the required resources needed for an edge IaC deployment.
 |telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|`false`|no|
 |tags|Additional tags to add to the resources.|`object`|{}|no|
 
-## Resources
-
-|Name|Type|API Version|
-| :--- | :--- | :--- |
-|newResourceGroup|`Microsoft.Resources/resourceGroups`|2022-09-01|
-|existingResourceGroup|`Microsoft.Resources/resourceGroups`|2022-09-01|
-
 ## User Defined Types
 
 ### `_1.Common`

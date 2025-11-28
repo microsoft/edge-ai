@@ -2,7 +2,7 @@
 title: Only Edge IoT Ops Blueprint
 description: Deployment of Azure IoT Operations components on existing Arc-enabled Kubernetes cluster without cloud infrastructure setup, ideal for existing edge environments
 author: Edge AI Team
-ms.date: 06/07/2025
+ms.date: 2025-06-07
 ms.topic: reference
 keywords:
   - azure iot operations

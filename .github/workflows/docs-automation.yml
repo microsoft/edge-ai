@@ -32,6 +32,13 @@ permissions:
   actions: read
 
 on:  # yamllint disable-line rule:truthy
+  workflow_call:
+    inputs:
+      force_regenerate:
+        description: 'Force regeneration of all documentation'
+        required: false
+        default: false
+        type: boolean
   push:
     branches: [main, develop]
     paths:
@@ -68,7 +75,7 @@ jobs:
         uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493 # v4.1.7
 
       - name: Run docs health check
-        uses: azure/powershell@f711c0fc926921f126e18d152ae1d2a35b9876fd # v2
+        uses: Azure/powershell@53dd145408794f7e80f97cfcca04155c85234709 # v2.0.0
         with:
           inlineScript: |
             Write-Host "PowerShell version: $($PSVersionTable.PSVersion)"
@@ -77,75 +84,17 @@ jobs:
       - name: Validate frontmatter consistency
         shell: pwsh
         run: |
-          # Import frontmatter validation functions
-          . ./scripts/Generate-DocsSidebar.ps1
-
           Write-Host "🔍 Validating frontmatter across all markdown files..."
 
-          $errors = @()
-          $warnings = @()
+          # Use the dedicated validation script (same as Azure DevOps pipeline)
+          & "./scripts/Validate-MarkdownFrontmatter.ps1" -Paths @('docs', 'src', 'blueprints') -Verbose
 
-          # Get all markdown files
-          $markdownFiles = Get-ChildItem -Path @('docs', 'src', 'blueprints') `
-            -Filter '*.md' -Recurse -ErrorAction SilentlyContinue
-
-          Write-Host "Found $($markdownFiles.Count) markdown files to validate"
-
-          foreach ($file in $markdownFiles) {
-            $frontmatter = Get-MarkdownFile -FilePath $file.FullName
-
-            if ($frontmatter) {
-              # Validate required fields
-              $requiredFields = @('title', 'description', 'author', `
-                'ms.date', 'ms.topic')
-
-              foreach ($field in $requiredFields) {
-                if (-not $frontmatter.Frontmatter.ContainsKey($field)) {
-                  $errors += "Missing required field '$field' in: " + `
-                    "$($file.FullName)"
-                }
-              }
-
-              # Validate date format
-              if ($frontmatter.Frontmatter.ContainsKey('ms.date')) {
-                $date = $frontmatter.Frontmatter['ms.date']
-                if ($date -notmatch '^\d{2}/\d{2}/\d{4}$') {
-                  $warnings += "Invalid date format in: $($file.FullName). " + `
-                    "Expected MM/DD/YYYY, got: $date"
-                }
-              }
-
-              # Validate keywords array
-              if ($frontmatter.Frontmatter.ContainsKey('keywords')) {
-                $keywords = $frontmatter.Frontmatter['keywords']
-                if ($keywords -isnot [array] -and $keywords -notmatch ',') {
-                  $warnings += "Keywords should be an array in: " + `
-                    "$($file.FullName)"
-                }
-              }
-            } else {
-              $warnings += "No frontmatter found in: $($file.FullName)"
-            }
-          }
-
-          # Output results
-          if ($warnings.Count -gt 0) {
-            Write-Host "⚠️ Warnings found:" -ForegroundColor Yellow
-            $warnings | ForEach-Object {
-              Write-Host "  $_" -ForegroundColor Yellow
-            }
-          }
-
-          if ($errors.Count -gt 0) {
-            Write-Host "❌ Errors found:" -ForegroundColor Red
-            $errors | ForEach-Object {
-              Write-Host "  $_" -ForegroundColor Red
-            }
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "❌ Frontmatter validation failed" -ForegroundColor Red
             exit 1
           }
 
-          Write-Host "✅ Frontmatter validation completed successfully" `
-            -ForegroundColor Green
+          Write-Host "✅ Frontmatter validation completed successfully" -ForegroundColor Green
 
   generate-sidebar:
     name: 🏗️ Generate Three-Tree Sidebar
@@ -158,7 +107,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup PowerShell
-        uses: azure/powershell@f711c0fc926921f126e18d152ae1d2a35b9876fd # v2
+        uses: Azure/powershell@53dd145408794f7e80f97cfcca04155c85234709 # v2.0.0
         with:
           inlineScript: |
             Write-Host "PowerShell version: $($PSVersionTable.PSVersion)"
@@ -171,8 +120,7 @@ jobs:
 
           $sidebarPaths = @(
             "docs/_sidebar.md",
-            "docs/_parts/docs-sidebar.md",
-            "docs/_parts/praxisworx-sidebar.md",
+            "docs/_parts/home-sidebar.md",
             "docs/_parts/blueprints-sidebar.md",
             "docs/_parts/infrastructure-sidebar.md"
           )
@@ -184,7 +132,7 @@ jobs:
             }
           }
 
-          . ./scripts/Generate-DocsSidebar.ps1
+          . ./scripts/Generate-DocsSidebar.ps1 -AllSections
 
           Write-Host "✅ Sidebar generation completed"
 
@@ -200,8 +148,23 @@ jobs:
                 $originalContent = ""
               }
 
-              $originalClean = ($originalContent -replace "Generated on.*?\n", "")
-              $newClean = ($newContent -replace "Generated on.*?\n", "")
+              # DEBUG: Show what we're removing
+              Write-Host "`n🔍 DEBUG: Timestamp detection for $path" -ForegroundColor Magenta
+              if ($originalContent -match "<!-- Generated on:.*?-->") {
+                Write-Host "  Original has timestamp: $($Matches[0])" -ForegroundColor Magenta
+              } else {
+                Write-Host "  Original has NO timestamp comment" -ForegroundColor Yellow
+              }
+              if ($newContent -match "<!-- Generated on:.*?-->") {
+                Write-Host "  Generated has timestamp: $($Matches[0])" -ForegroundColor Magenta
+              } else {
+                Write-Host "  Generated has NO timestamp comment" -ForegroundColor Yellow
+              }
+              Write-Host "  Regex pattern: '<!-- Generated on:.*?-->'" -ForegroundColor Magenta
+              Write-Host ""
+
+              $originalClean = ($originalContent -replace "<!-- Generated on:.*?-->", "")
+              $newClean = ($newContent -replace "<!-- Generated on:.*?-->", "")
 
               if ($originalClean -ne $newClean) {
                 $issues += "- $path is outdated"
@@ -312,9 +275,11 @@ jobs:
               exit 1
             } else {
               Write-Host "::warning::Sidebar differences detected. Continuing so the workflow can commit updates."
+              exit 0
             }
           } else {
             Write-Host "✅ All sidebar sections are up to date" -ForegroundColor Green
+            exit 0
           }
 
       - name: Check for changes
@@ -388,7 +353,7 @@ jobs:
           EOF
 
           # Check all markdown files
-          find docs src blueprints praxisworx .github copilot \
+          find docs src blueprints learning .github copilot \
             -name "*.md" -type f | \
             grep -v node_modules | \
             xargs -I {} sh -c 'echo "Checking: {}" &&
@@ -463,7 +428,7 @@ jobs:
             -ErrorAction SilentlyContinue).Count
           $blueprintsCount = (Get-ChildItem -Path 'blueprints' -Filter '*.md' `
             -Recurse -ErrorAction SilentlyContinue).Count
-          $praxisworxCount = (Get-ChildItem -Path 'praxisworx' -Filter '*.md' `
+          $learningCount = (Get-ChildItem -Path 'learning' -Filter '*.md' `
             -Recurse -ErrorAction SilentlyContinue).Count
           $githubCount = (Get-ChildItem -Path '.github' -Filter '*.md' `
             -Recurse -ErrorAction SilentlyContinue).Count
@@ -483,11 +448,11 @@ jobs:
           | Main Documentation | $docsCount |
           | Infrastructure Components | $srcCount |
           | Blueprints | $blueprintsCount |
-          | Learning Platform (PraxisWorx) | $praxisworxCount |
+          | Learning Platform | $learningCount |
           | GitHub Resources | $githubCount |
           | AI Assistant Guides (Copilot) | $copilotCount |
           | **Total** | **$($docsCount + $srcCount + $blueprintsCount + `
-            $praxisworxCount + $githubCount + $copilotCount)** |
+            $learningCount + $githubCount + $copilotCount)** |
 
           ## 🏗️ Three-Tree Architecture Status
 
@@ -523,18 +488,29 @@ jobs:
           path: documentation-health-report.md
           retention-days: 30
 
-      - name: Comment on PR with report
+      - name: Save PR context for workflow_run
         if: github.event_name == 'pull_request'
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v7.0.1
-        with:
-          script: |
-            const fs = require('fs');
-            const report = fs.readFileSync(
-              'documentation-health-report.md', 'utf8');
+        shell: pwsh
+        run: |
+          $report = Get-Content -Path 'documentation-health-report.md' -Raw
 
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: report
-            });
+          # Create PR context object
+          $prContext = @{
+            pr_number = ${{ github.event.pull_request.number }}
+            repo_owner = "${{ github.repository_owner }}"
+            repo_name = (Split-Path "${{ github.repository }}" -Leaf)
+            head_sha = "${{ github.event.pull_request.head.sha }}"
+            comment_body = $report
+          }
+
+          # Convert to JSON and save
+          $prContext | ConvertTo-Json -Depth 10 | Out-File -FilePath 'pr-context.json' -Encoding UTF8 -NoNewline
+          Write-Host "✅ PR context saved for workflow_run trigger"
+
+      - name: Upload PR context artifact
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@2848b2cda0e5190984587ec6bb1f36730ca78d50 # v4.4.0
+        with:
+          name: docs-validation-results-${{ github.run_id }}
+          path: pr-context.json
+          retention-days: 1

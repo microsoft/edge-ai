@@ -1,5 +1,4 @@
 import * as core from '../../bicep/types.core.bicep'
-import * as types from '../../bicep/types.bicep'
 
 @description('The common component configuration.')
 param common core.Common
@@ -19,6 +18,9 @@ param sseUserAssignedIdentityName string
 @description('The name of the Key Vault for Secret Sync. (Required when providing sseUserManagedIdentityName)')
 param sseKeyVaultName string
 
+@description('The resource name for the ADR Namespace for Azure IoT Operations.')
+param adrNamespaceName string?
+
 module ci '../../bicep/main.bicep' = {
   name: '${deployment().name}-ci'
   params: {
@@ -28,5 +30,6 @@ module ci '../../bicep/main.bicep' = {
     aioIdentityName: aioUserAssignedIdentityName
     sseIdentityName: sseUserAssignedIdentityName
     sseKeyVaultName: sseKeyVaultName
+    adrNamespaceName: adrNamespaceName
   }
 }
