@@ -104,7 +104,7 @@ resource "azapi_resource" "custom_location" {
       hostResourceId      = var.arc_connected_cluster_id
       namespace           = var.operations_config.namespace
       displayName         = local.custom_location_name
-      clusterExtensionIds = [var.platform_cluster_extension_id, var.secret_store_cluster_extension_id, azurerm_arc_kubernetes_cluster_extension.iot_operations.id]
+      clusterExtensionIds = [var.secret_store_cluster_extension_id, azurerm_arc_kubernetes_cluster_extension.iot_operations.id]
     }
   }
   response_export_values = ["name", "id"]

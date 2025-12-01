@@ -22,7 +22,7 @@ param arcConnectedClusterName string
 param containerStorageConfig types.ContainerStorageExtension = types.containerStorageExtensionDefaults
 
 @description('The settings for the Azure IoT Operations Platform Extension.')
-param aioPlatformConfig types.AioPlatformExtension = types.aioPlatformExtensionDefaults
+param aioCertManagerConfig types.AioCertManagerExtension = types.aioCertManagerExtensionDefaults
 
 @description('The settings for the Secret Store Extension.')
 #disable-next-line secure-secrets-in-params
@@ -221,10 +221,11 @@ module iotOpsInit 'modules/iot-ops-init.bicep' = if (shouldInitAio) {
     deployKeyVaultRoleAssignments
   ]
   params: {
-    aioPlatformConfig: aioPlatformConfig
+    aioCertManagerConfig: aioCertManagerConfig
     arcConnectedClusterName: arcConnectedClusterName
     containerStorageConfig: containerStorageConfig
     secretStoreConfig: secretStoreConfig
+    trustIssuerSettings: trustIssuerSettings
   }
 }
 
@@ -289,7 +290,6 @@ module iotOpsInstance 'modules/iot-ops-instance.bicep' = if (shouldDeployAio && 
     aioInstanceName: aioInstanceName
     aioFeatures: aioFeatures
     aioMqBrokerConfig: aioMqBrokerConfig
-    aioPlatformExtensionId: (iotOpsInit.?outputs.?aioPlatformExtensionId) ?? ''
     arcConnectedClusterName: arcConnectedClusterName
     brokerListenerAnonymousConfig: brokerListenerAnonymousConfig
     common: common
