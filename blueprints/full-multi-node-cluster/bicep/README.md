@@ -441,7 +441,7 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 |common|The common component configuration.|`[_2.Common](#user-defined-types)`|n/a|yes|
 |arcConnectedClusterName|The resource name for the Arc connected cluster.|`string`|n/a|yes|
 |containerStorageConfig|The settings for the Azure Container Store for Azure Arc Extension.|`[_1.ContainerStorageExtension](#user-defined-types)`|[variables('_1.containerStorageExtensionDefaults')]|no|
-|aioPlatformConfig|The settings for the Azure IoT Operations Platform Extension.|`[_1.AioPlatformExtension](#user-defined-types)`|[variables('_1.aioPlatformExtensionDefaults')]|no|
+|aioCertManagerConfig|The settings for the Azure IoT Operations Platform Extension.|`[_1.AioCertManagerExtension](#user-defined-types)`|[variables('_1.aioCertManagerExtensionDefaults')]|no|
 |secretStoreConfig|The settings for the Secret Store Extension.|`[_1.SecretStoreExtension](#user-defined-types)`|[variables('_1.secretStoreExtensionDefaults')]|no|
 |shouldInitAio|Whether to deploy the Azure IoT Operations initial connected cluster resources, Secret Sync, ACSA, OSM, AIO Platform.|`bool`|`true`|no|
 |aioIdentityName|The name of the User Assigned Managed Identity for Azure IoT Operations.|`string`|n/a|yes|
