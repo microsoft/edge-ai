@@ -188,7 +188,7 @@ jobs:
         if: inputs.keyvault-name != ''
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@afa38526df51b6d16447109ab1e21fada7d93d63
+        uses: hashicorp/setup-terraform@712b43959e9be7e82c34d18450fa5ec3237af3f1
         with:
           terraform_version: ${{ inputs.terraform-version }}
           cli_config_credentials_token: ${{ secrets.TERRAFORM_API_TOKEN }}
