@@ -143,7 +143,7 @@ jobs:
         uses: actions/configure-pages@d5606572c479bee637007364c6b4800ac4fc8573
 
       - name: Setup Node.js
-        uses: actions/setup-node@89d709d423dc495668cd762a18dd4a070611be3f
+        uses: actions/setup-node@b9b25d45f70a5d94d88496aa4896bf9ed8f49b67
         with:
           node-version: '18'
           cache: 'npm'
