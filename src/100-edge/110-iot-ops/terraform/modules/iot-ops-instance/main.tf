@@ -182,6 +182,29 @@ resource "azapi_resource" "instance" {
   schema_validation_enabled = false # Disable schema validation for azapi_resource for 2025-10-01 until azapi provider supports it
 }
 
+resource "azapi_resource" "registry_endpoint" {
+  type      = "Microsoft.IoTOperations/instances/registryEndpoints@2025-10-01"
+  name      = "default"
+  parent_id = azapi_resource.instance.id
+
+  body = {
+    extendedLocation = {
+      type = "CustomLocation"
+      name = azapi_resource.custom_location.id
+    }
+    properties = {
+      host = "mcr.microsoft.com"
+      authentication = {
+        method            = "Anonymous"
+        anonymousSettings = {}
+      }
+    }
+  }
+
+  response_export_values    = ["name", "id"]
+  schema_validation_enabled = false
+}
+
 resource "azapi_resource" "broker" {
   type      = "Microsoft.IoTOperations/instances/brokers@2025-10-01"
   name      = "default"

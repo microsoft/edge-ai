@@ -51,16 +51,16 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|deployArcK8sRoleAssignments|`Microsoft.Resources/deployments`|2022-09-01|
-|deployKeyVaultRoleAssignments|`Microsoft.Resources/deployments`|2022-09-01|
-|sseKeyVaultRoleAssignments|`Microsoft.Resources/deployments`|2022-09-01|
-|iotOpsInit|`Microsoft.Resources/deployments`|2022-09-01|
-|postInitScriptsSecrets|`Microsoft.Resources/deployments`|2022-09-01|
-|postInitScripts|`Microsoft.Resources/deployments`|2022-09-01|
-|iotOpsInstance|`Microsoft.Resources/deployments`|2022-09-01|
-|postInstanceScriptsSecrets|`Microsoft.Resources/deployments`|2022-09-01|
-|postInstanceScripts|`Microsoft.Resources/deployments`|2022-09-01|
-|opcUaSimulator|`Microsoft.Resources/deployments`|2022-09-01|
+|deployArcK8sRoleAssignments|`Microsoft.Resources/deployments`|2025-04-01|
+|deployKeyVaultRoleAssignments|`Microsoft.Resources/deployments`|2025-04-01|
+|sseKeyVaultRoleAssignments|`Microsoft.Resources/deployments`|2025-04-01|
+|iotOpsInit|`Microsoft.Resources/deployments`|2025-04-01|
+|postInitScriptsSecrets|`Microsoft.Resources/deployments`|2025-04-01|
+|postInitScripts|`Microsoft.Resources/deployments`|2025-04-01|
+|iotOpsInstance|`Microsoft.Resources/deployments`|2025-04-01|
+|postInstanceScriptsSecrets|`Microsoft.Resources/deployments`|2025-04-01|
+|postInstanceScripts|`Microsoft.Resources/deployments`|2025-04-01|
+|opcUaSimulator|`Microsoft.Resources/deployments`|2025-04-01|
 
 ## Modules
 
@@ -208,7 +208,7 @@ Creates secrets in Key Vault for deployment script setup and initialization for 
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|scriptSecrets|`Microsoft.Resources/deployments`|2022-09-01|
+|scriptSecrets|`Microsoft.Resources/deployments`|2025-04-01|
 
 #### Outputs for postInitScriptsSecrets
 
@@ -295,6 +295,7 @@ Deploys Azure IoT Operations instance, broker, authentication, listeners, and da
 |adrSyncRule|`Microsoft.ExtendedLocation/customLocations/resourceSyncRules`|2021-08-31-preview|
 |defaultSecretSyncSecretProviderClass|`Microsoft.SecretSyncController/azureKeyVaultSecretProviderClasses`|2024-08-21-preview|
 |aioInstance|`Microsoft.IoTOperations/instances`|2025-10-01|
+|registryEndpoint|`Microsoft.IoTOperations/instances/registryEndpoints`|2025-10-01|
 |broker|`Microsoft.IoTOperations/instances/brokers`|2025-10-01|
 |brokerAuthn|`Microsoft.IoTOperations/instances/brokers/authentications`|2025-10-01|
 |brokerListener|`Microsoft.IoTOperations/instances/brokers/listeners`|2025-10-01|
@@ -350,7 +351,7 @@ Creates secrets in Key Vault for deployment script setup and initialization for 
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|scriptSecrets|`Microsoft.Resources/deployments`|2022-09-01|
+|scriptSecrets|`Microsoft.Resources/deployments`|2025-04-01|
 
 #### Outputs for postInstanceScriptsSecrets
 

@@ -99,9 +99,9 @@ variables:
     value: 'refs/heads/dev'
   - name: githubRepo
     value: 'microsoft/edge-ai'
-  # Variable group disabled - using managed identity direct access instead
-  # - name: keyVaultName
-  #   value: 'ai-on-edge-secrets'
+    # Variable group disabled - using managed identity direct access instead
+    # - name: keyVaultName
+    #   value: 'ai-on-edge-secrets'
 
 stages:
   - stage: ValidateAndCreate

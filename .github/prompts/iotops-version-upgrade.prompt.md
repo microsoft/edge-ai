@@ -1,7 +1,7 @@
 ---
 description: 'Guides through the process of updating Azure IoT Operations components to the latest version - Brought to you by microsoft/edge-ai'
 model: 'GPT-5-Codex (Preview)'
-tools: ['runCommands', 'runTasks', 'edit/createFile', 'edit/createDirectory', 'edit/editFiles', 'search', 'Bicep (EXPERIMENTAL)/*', 'terraform/*', 'microsoft-docs/*', 'todos', 'runSubagent2', 'problems', 'changes', 'fetch', 'githubRepo']
+tools: ['execute/getTerminalOutput', 'execute/runTask', 'execute/getTaskOutput', 'execute/createAndRunTask', 'execute/runInTerminal', 'read/terminalSelection', 'read/terminalLastCommand', 'read/readFile', 'agent', 'edit/createDirectory', 'edit/createFile', 'edit/editFiles', 'search', 'web', 'azure-mcp/search', 'bicep-(experimental)/*', 'terraform/*', 'microsoft-docs/*', 'todo']
 ---
 
 # Azure IoT Operations Version Upgrade Prompt
@@ -12,7 +12,7 @@ Update Azure IoT Operations components in this repository to a specified version
 
 Work in a directory named `.copilot-tracking/iotops/{current_date}/`, where `{current_date}` is the current date in `YYYY-MM-DD` format (e.g., `2025-06-24`).
 
-Use runSubagent2 tool for complex steps in this prompt like executing scripts, fetch, search, edit and saving files. Researching and documenting plans.
+Use runSubagent tool for complex steps in this prompt like executing scripts, fetch, search, edit and saving files. Researching and documenting plans.
 
 ### Components Analyzed by This Prompt
 
@@ -44,8 +44,21 @@ These steps must be completed immediately to gather all necessary information be
 - **Sequential Execution**: Complete steps 1-6 in order before proceeding to Phase 2
 - **Component Coverage**: Analyze ALL three components (110-iot-ops, 111-assets, 130-messaging)
 - **API Validation**: Cross-validate with REST specifications to catch breaking changes
+- **Structural Comparison**: Detect ALL differences between JSON and codebase (new, removed, changed)
 - **Complete Analysis**: Do not skip to planning until all immediate analysis is complete
 - **No Implementation**: Only gather information - do not make any code changes
+
+### Structural Change Detection Philosophy:
+
+**Core Principle**: Treat JSON files as the authoritative source of truth. Any difference between JSON structure and current codebase is a potential change that needs analysis.
+
+**Detection Approach**:
+1. **Inventory Phase**: List all resources, variables, parameters from JSON AND from current code
+2. **Set Difference**: Calculate what's new (in JSON, not in code), what's removed (in code, not in JSON), and what's changed (in both but different)
+3. **Impact Analysis**: For each difference, determine if it's a version update, a structural change, or a breaking change
+4. **Comprehensive Planning**: Document ALL differences, even if impact is uncertain - better to analyze and dismiss than to miss a critical change
+
+This approach ensures no structural changes are missed, regardless of what specifically changed between versions.
 
 ## 1. Fetch Target Version Configuration
 
@@ -192,12 +205,25 @@ Outline all necessary code changes in the plan file. Prefix each item requiring 
 3. Ensure your planned changes comply with the coding standards specified in these files
 4. Reference these instruction files when determining appropriate change approaches
 
-**EXECUTE IMMEDIATELY**: Analyze the downloaded JSON files and the existing 110-iot-ops codebase to identify necessary `apiVersion` updates.
+**EXECUTE IMMEDIATELY**: Analyze the downloaded JSON files and the existing 110-iot-ops codebase to identify necessary `apiVersion` updates and structural changes.
 
-**JSON Analysis Process**:
+**JSON Structural Analysis Process**:
 1. **Parse JSON structure**: Examine `resources` arrays in both JSON files
 2. **Extract apiVersions**: Find `apiVersion` properties in each resource object
 3. **Record resource types**: Note the `type` field for each resource (e.g., `Microsoft.IoTOperations/instance`)
+4. **Detect new/removed resources**: Compare resource types in JSON against current codebase:
+   - List all unique resource `type` values in both enablement and instance JSON
+   - Check which resources exist in JSON but not in current Bicep/Terraform modules (NEW resources)
+   - Check which resources exist in current modules but not in JSON (REMOVED resources)
+5. **Detect extension type changes**: In enablement JSON resources, check if `extensionType` property values differ from current code
+6. **Analyze variables structure**: Compare `variables` section in JSON (e.g., `VERSIONS`, `TRAINS`) with current code variable definitions:
+   - Check for new variable keys added to JSON
+   - Check for variable keys removed from JSON
+   - Note changes in variable structure or naming (e.g., `platform` → `certManager`)
+7. **Analyze parameters structure**: Compare `parameters` section in JSON with current code parameters:
+   - Check for new parameters in JSON not present in code
+   - Check for parameters in code not present in JSON
+   - Note parameter property changes (type, allowed values, defaults)
 
 **Codebase Analysis Process**:
 1. **Read each file**: Use `read_file` to examine the files listed below
@@ -209,13 +235,47 @@ Outline all necessary code changes in the plan file. Prefix each item requiring 
 - **Update requirement**: Plan updates only when JSON version date is later than codebase version date
 - **Missing versions**: If apiVersion is missing in codebase but present in JSON, plan to add it
 
-**Extension Categories to Analyze**:
+<!-- <important-structural-change-types> -->
+**Types of Structural Changes to Detect**:
+
+Version upgrades may include any combination of these structural changes:
+
+1. **New Resources**: JSON defines resource types not present in current code
+   - Example: `Microsoft.IoTOperations/instances/registryEndpoints` added
+   - Impact: Requires new module implementation or resource blocks
+
+2. **Removed Resources**: Code defines resource types not present in JSON
+   - Example: A resource that was part of older versions is no longer deployed
+   - Impact: May require deprecation handling or removal
+
+3. **Extension Type Changes**: `extensionType` property values change for extensions
+   - Example pattern: `microsoft.iotoperations.<old-type>` → `microsoft.<new-type>`
+   - Impact: Architectural change requiring significant refactoring
+
+4. **Resource Renaming**: Resource symbolic names or identifiers change
+   - Example pattern: Extension name changed from one identifier to another
+   - Impact: References, outputs, and dependencies need updates
+
+5. **Variable Structure Changes**: VERSIONS/TRAINS or other variables add/remove keys
+   - Example pattern: Variable key replaced with different name for same functionality
+   - Impact: Variable references and mappings need updates
+
+6. **Parameter Changes**: Parameters added, removed, or restructured
+   - Example: New parameter with nested structure or changed type
+   - Impact: Input validation and parameter passing needs updates
+
+**Detection Strategy**: Always compare JSON structure against current codebase using set difference analysis (JSON ∖ Code = New, Code ∖ JSON = Removed)
+<!-- </important-structural-change-types> -->
+
+**Extension Categories to Analyze** (specific names and structure vary by version):
 - **Enablement Extensions** (from enablement JSON `VERSIONS`/`TRAINS`):
-  - `platform` (Azure IoT Operations Platform)
-  - `secretStore`/`secretSyncController` (Secret Sync Controller)
-  - `containerStorage`/`edgeStorageAccelerator` (Container Storage)
+  - Platform/Certificate Management extensions (names and structure vary by version)
+  - Secret Store/Sync Controller extensions
+  - Container Storage/Edge Storage Accelerator extensions
 - **Instance Extensions** (from instance JSON `VERSIONS`/`TRAINS`):
-  - `iotOperations`/`aio` (Azure IoT Operations instance)
+  - IoT Operations core instance extensions
+
+**Important**: Do not assume specific variable names like `platform`, `certManager`, etc. Always extract actual keys from the downloaded JSON files.
 
 Check the following files within the `src/100-edge/110-iot-ops/` component:
 
@@ -237,6 +297,11 @@ Check the following files within the `src/100-edge/110-iot-ops/` component:
 - [ ] Update `apiVersion` for `Microsoft.IoTOperations/instance` in `src/100-edge/110-iot-ops/bicep/modules/iot-ops-instance.bicep` from `2024-11-01-preview` to `2025-06-24-preview`
 - [ ] Update `aioPlatformExtensionDefaults.release.version` from "0.7.21" to "0.7.25" in `/workspaces/edge-ai/src/100-edge/110-iot-ops/bicep/types.bicep`
 - [ ] Update `operations_config.train` from "integration" to "stable" in `/workspaces/edge-ai/src/100-edge/110-iot-ops/terraform/variables.instance.tf`
+- [ ] STRUCTURAL CHANGE: Add new resource type `<ResourceType>` to <module-name> module (found in JSON but not in current codebase)
+- [ ] STRUCTURAL CHANGE: Remove resource type `<ResourceType>` from <module-name> module (exists in code but not in JSON)
+- [ ] STRUCTURAL CHANGE: Update extension resource name from `<old-name>` to `<new-name>` and change `extensionType` from `<old-type>` to `<new-type>` in <module-name> module
+- [ ] STRUCTURAL CHANGE: Add new variable key `<variable-key>` to VERSIONS and TRAINS variables in <module-name> (found in JSON but not in code)
+- [ ] STRUCTURAL CHANGE: Remove variable key `<variable-key>` from VERSIONS and TRAINS variables in <module-name> (exists in code but not in JSON)
 ```
 <!-- </example-plan-entry-format> -->
 
@@ -289,6 +354,51 @@ Before moving to the next step: update the plan file.
 - ❌ **Don't mix analysis with planning**: Complete all discovery before creating implementation plans
 
 Only proceed to Phase 2 when all analysis is complete.
+
+Before moving to the next step: update the plan file.
+
+## 6.5. Cross-Version Structural Comparison - EXECUTE IMMEDIATELY
+
+**EXECUTE IMMEDIATELY**: Perform a comprehensive structural comparison between the downloaded JSON files and the existing codebase to identify all additions, removals, and changes.
+
+**Comparison Workflow**:
+1. **Extract JSON structure inventory**:
+   - List all resource types from enablement JSON: `jq '.resources | to_entries[] | {name: .key, type: .value.type, extensionType: .value.properties.extensionType // null}' enablement.json`
+   - List all resource types from instance JSON: `jq '.resources | to_entries[] | {name: .key, type: .value.type}' instance.json`
+   - List all variables from enablement JSON: `jq '.variables | keys' enablement.json`
+   - List all variables from instance JSON: `jq '.variables | keys' instance.json`
+   - List all parameters from enablement JSON: `jq '.parameters | keys' enablement.json`
+   - List all parameters from instance JSON: `jq '.parameters | keys' instance.json`
+
+2. **Extract codebase structure inventory**: Use `grep_search` and `read_file` to identify:
+   - All resource types declared in Bicep: `resource <name> '<type>@<apiVersion>'`
+   - All resource types declared in Terraform: `type = "<type>"` in `azapi_resource` blocks
+   - All variables defined in Bicep and Terraform variable files
+   - All parameters defined in Bicep and Terraform
+
+3. **Perform set difference analysis**:
+   - **Resources in JSON but NOT in code** = New resources that need implementation
+   - **Resources in code but NOT in JSON** = Deprecated resources that may need removal
+   - **Variables in JSON but NOT in code** = New configuration variables
+   - **Variables in code but NOT in JSON** = Deprecated configuration variables
+   - **Parameters in JSON but NOT in code** = New input parameters
+   - **Parameters in code but NOT in JSON** = Deprecated input parameters
+
+4. **Detect property-level changes**:
+   - For resources present in both: compare `extensionType`, `name`, and key properties
+   - For variables present in both: compare structure and nested keys
+   - For parameters present in both: compare types, constraints, and defaults
+
+**Plan Entry Requirements** (add entries for all differences found):
+```markdown
+- [ ] NEW RESOURCE: Implement `<resource-type>` in `<module-path>` (found in JSON, not in codebase)
+- [ ] REMOVED RESOURCE: Evaluate removal of `<resource-type>` from `<module-path>` (exists in codebase, not in JSON)
+- [ ] RESOURCE PROPERTY CHANGE: Update `<property-name>` for `<resource-type>` in `<module-path>` from "<old-value>" to "<new-value>"
+- [ ] NEW VARIABLE: Add variable `<variable-name>` to `<module-path>` with structure from JSON
+- [ ] REMOVED VARIABLE: Evaluate removal of variable `<variable-name>` from `<module-path>`
+- [ ] NEW PARAMETER: Add parameter `<parameter-name>` to `<module-path>` based on JSON schema
+- [ ] REMOVED PARAMETER: Evaluate removal of parameter `<parameter-name>` from `<module-path>`
+```
 
 Before moving to the next step: update the plan file.
 
@@ -451,13 +561,26 @@ Identify potentially breaking changes that require special attention and user va
 2. **Detect property requirement changes**: Look for parameters that changed from optional to required
 3. **Check for removed properties**: Identify deprecated or removed parameters that may break existing configurations
 4. **Assess default value changes**: Flag changes in default values that could alter behavior
-5. **Validate API specification changes**: Use `fetch_webpage` to get the target API version specification for detailed property requirements
+5. **Flag structural resource changes**: From step 4 analysis, identify:
+   - New resource types added (may require new modules or significant code additions)
+   - Removed resource types (may require deprecation handling or migration logic)
+   - Changed extension types (architectural changes requiring refactoring)
+   - Modified resource names or identifiers (may break references and dependencies)
+6. **Flag variable/parameter structure changes**: From step 4 analysis, identify:
+   - Removed variable keys (may break existing configurations)
+   - Renamed variable keys (requires mapping logic)
+   - Changed parameter types or allowed values (may break validation)
+7. **Validate API specification changes**: Use `fetch_webpage` to get the target API version specification for detailed property requirements
 
 <!-- <example-breaking-change-detection> -->
 **Critical change patterns to flag**:
-- New required parameters without defaults (e.g., `defaultSecretProviderClassRef`)
+- New required parameters without defaults
 - Authentication method changes or new certificate requirements
-- Resource type changes or deprecated resource types
+- **NEW/REMOVED RESOURCES**: Resource types added to or removed from JSON templates
+- **EXTENSION TYPE CHANGES**: Changes to `extensionType` values (architectural refactoring)
+- **RESOURCE RENAMING**: Changes to resource names or symbolic identifiers
+- **VARIABLE STRUCTURE CHANGES**: Keys added to or removed from VERSIONS/TRAINS variables
+- **PARAMETER STRUCTURE CHANGES**: Parameters added, removed, or with changed types/constraints
 - Configuration schema structural changes
 - Namespace enforcement or new mandatory relationships
 <!-- </example-breaking-change-detection> -->
@@ -471,7 +594,11 @@ Identify potentially breaking changes that require special attention and user va
 ```markdown
 - [ ] BREAKING CHANGE: New required parameter `defaultSecretProviderClassRef` in Instance resource - requires user attention for secret provider configuration.
 - [ ] BREAKING CHANGE: Parameter `enableDiagnostics` changed from optional to required - existing deployments may fail without this value.
-- [ ] IMPACT REVIEW: Default value change for `logLevel` from "info" to "debug" - may increase log volume in production.
+- [ ] BREAKING CHANGE: New resource type `<ResourceType>` - requires new module implementation and may be mandatory for functionality.
+- [ ] BREAKING CHANGE: Resource type `<ResourceType>` with `extensionType: <old-type>` removed - replaced by `<new-type>`, requires architectural refactoring.
+- [ ] BREAKING CHANGE: Variable key `<old-key>` removed from VERSIONS/TRAINS - replaced by `<new-key>`, requires variable mapping updates.
+- [ ] IMPACT REVIEW: Default value change for `<parameter>` from "<old-value>" to "<new-value>" - may impact existing deployments.
+- [ ] IMPACT REVIEW: Extension resource name changed from `<old-name>` to `<new-name>` - may affect references and outputs.
 ```
 
 Before moving to the next step: update the plan file.
@@ -488,18 +615,25 @@ Beyond JSON configuration files, examine the release notes for changes that may 
 5. **Check connector updates**: Look for new connector types, configuration changes, or deprecated features
 6. **Use `microsoft_docs_search`** tool to search for relevant updated documentation related to these changes, especially breaking changes
 
-**Analysis Targets**:
+**Analysis Targets** (search for mentions of these change categories):
 - **New Azure Resource Types**: Resource types mentioned in release notes but not in JSON ARM templates
+- **Removed/Deprecated Resource Types**: Resource types marked as deprecated or removed
 - **Authentication Changes**: New authentication methods or certificate requirements
 - **Configuration Schema Changes**: New configuration formats or deprecated settings
+- **Extension Architecture Changes**: Changes to Arc extension types or deployment models
 - **Connector Templates**: New connector types or template structures
 - **Namespace Changes**: ADR namespace enforcement or new namespace-related resources
 - **API Endpoint Changes**: New REST endpoints or changed authentication for existing APIs
+- **Dependency Changes**: New dependencies or removed dependencies between components
+- **Migration Guidance**: Explicit migration steps or breaking change documentation
 
 <!-- <example-release-analysis> -->
-**Example findings to document**:
-- "MQTT Broker Data Persistence" feature may require new Kubernetes storage configurations
-- "Namespace enforcement" may require updating asset creation workflows
+**Example findings to document** (generalized patterns):
+- Mentions of "new resource type" or "introducing [ResourceType]" may require new modules
+- Mentions of "deprecated" or "removed" may require cleanup or migration logic
+- Mentions of "renamed" or "replaced with" indicate structural refactoring needed
+- Mentions of "breaking change" or "migration required" need user validation
+- Mentions of architectural changes (e.g., "platform consolidation", "unified cert management") indicate major refactoring
 - "WebAssembly Support" may require new module deployment patterns
 - "Azure Device Registry Integration" may require new authentication configurations
 <!-- </example-release-analysis> -->
@@ -520,6 +654,7 @@ Plan validation steps to ensure comprehensive coverage of changes beyond the JSO
 **Post-Implementation Validation Plan**:
 1. **Test Configuration**: Ensure CI/test configurations account for new features or requirements
 2. **Blueprint Compatibility**: Verify all blueprints work with the updated component versions
+3. **Structural Consistency**: Verify all structural changes are consistently applied across Bicep and Terraform
 
 **Validation Areas to Plan**:
 
@@ -528,6 +663,10 @@ Plan validation steps to ensure comprehensive coverage of changes beyond the JSO
 - **Dependency Compatibility**: Updated components work with existing dependencies
 - **Blueprint Integration**: All blueprints deploy successfully with updated components
 - **Test Coverage**: CI tests validate new parameters and resource types
+- **Resource Parity**: Both Bicep and Terraform implement the same resources from JSON
+- **Variable Consistency**: Variable structures match between JSON, Bicep, and Terraform
+- **Extension Configuration**: All extension types and settings are correctly configured
+- **Output Completeness**: Module outputs include all new resources and properties
 <!-- </important-validation-areas> -->
 
 **Plan Entry Format**:

@@ -1,3 +1,4 @@
+---
 receivers:
   otlp:
     protocols:
@@ -27,9 +28,9 @@ exporters:
     endpoint: grafana-otel:4317
     tls:
       insecure: true
-  # Azure Monitor exporter - commented out, uncomment and add connection string if needed
-  # azuremonitor:
-  #   connection_string: <INSERT-CONNECTION_STRING>
+    # Azure Monitor exporter - commented out, uncomment and add connection string if needed
+    # azuremonitor:
+    #   connection_string: <INSERT-CONNECTION_STRING>
 extensions:
   health_check:
     endpoint: 0.0.0.0:13133

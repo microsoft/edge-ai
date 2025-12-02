@@ -24,7 +24,7 @@ Provisions virtual machines and networking infrastructure for hosting Azure IoT 
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|virtualMachine|`Microsoft.Resources/deployments`|2022-09-01|
+|virtualMachine|`Microsoft.Resources/deployments`|2025-04-01|
 
 ## Modules
 

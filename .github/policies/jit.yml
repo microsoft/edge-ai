@@ -10,11 +10,11 @@ resource: repository
 
 # primitive configuration
 configuration:
-    jitAccess:
-        enabled: true
-        maxHours: 2
-        approvers:
-            role:
-            users:
-        requestors:
-            role: Write
+  jitAccess:
+    enabled: true
+    maxHours: 2
+    approvers:
+      role:
+      users:
+    requestors:
+      role: Write
