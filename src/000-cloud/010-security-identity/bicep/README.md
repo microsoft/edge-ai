@@ -23,8 +23,8 @@ Provisions cloud resources required for Azure IoT Operations including Schema Re
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|identity|`Microsoft.Resources/deployments`|2022-09-01|
-|keyVault|`Microsoft.Resources/deployments`|2022-09-01|
+|identity|`Microsoft.Resources/deployments`|2025-04-01|
+|keyVault|`Microsoft.Resources/deployments`|2025-04-01|
 
 ## Modules
 

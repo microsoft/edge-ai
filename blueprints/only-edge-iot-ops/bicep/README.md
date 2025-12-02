@@ -37,7 +37,7 @@ Deploys Azure IoT Operations on an existing Arc-enabled Kubernetes cluster witho
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|edgeIotOps|`Microsoft.Resources/deployments`|2022-09-01|
+|edgeIotOps|`Microsoft.Resources/deployments`|2025-04-01|
 
 ## Modules
 
@@ -96,16 +96,16 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|deployArcK8sRoleAssignments|`Microsoft.Resources/deployments`|2022-09-01|
-|deployKeyVaultRoleAssignments|`Microsoft.Resources/deployments`|2022-09-01|
-|sseKeyVaultRoleAssignments|`Microsoft.Resources/deployments`|2022-09-01|
-|iotOpsInit|`Microsoft.Resources/deployments`|2022-09-01|
-|postInitScriptsSecrets|`Microsoft.Resources/deployments`|2022-09-01|
-|postInitScripts|`Microsoft.Resources/deployments`|2022-09-01|
-|iotOpsInstance|`Microsoft.Resources/deployments`|2022-09-01|
-|postInstanceScriptsSecrets|`Microsoft.Resources/deployments`|2022-09-01|
-|postInstanceScripts|`Microsoft.Resources/deployments`|2022-09-01|
-|opcUaSimulator|`Microsoft.Resources/deployments`|2022-09-01|
+|deployArcK8sRoleAssignments|`Microsoft.Resources/deployments`|2025-04-01|
+|deployKeyVaultRoleAssignments|`Microsoft.Resources/deployments`|2025-04-01|
+|sseKeyVaultRoleAssignments|`Microsoft.Resources/deployments`|2025-04-01|
+|iotOpsInit|`Microsoft.Resources/deployments`|2025-04-01|
+|postInitScriptsSecrets|`Microsoft.Resources/deployments`|2025-04-01|
+|postInitScripts|`Microsoft.Resources/deployments`|2025-04-01|
+|iotOpsInstance|`Microsoft.Resources/deployments`|2025-04-01|
+|postInstanceScriptsSecrets|`Microsoft.Resources/deployments`|2025-04-01|
+|postInstanceScripts|`Microsoft.Resources/deployments`|2025-04-01|
+|opcUaSimulator|`Microsoft.Resources/deployments`|2025-04-01|
 
 #### Outputs for edgeIotOps
 

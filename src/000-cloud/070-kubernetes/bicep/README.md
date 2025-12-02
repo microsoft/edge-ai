@@ -22,8 +22,8 @@ Deploys optionally Azure Kubernetes Service (AKS) resources.
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|network|`Microsoft.Resources/deployments`|2022-09-01|
-|aksCluster|`Microsoft.Resources/deployments`|2022-09-01|
+|network|`Microsoft.Resources/deployments`|2025-04-01|
+|aksCluster|`Microsoft.Resources/deployments`|2025-04-01|
 
 ## Modules
 

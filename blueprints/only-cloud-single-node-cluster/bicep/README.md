@@ -22,15 +22,15 @@ Deploys a complete end-to-end cloud environment as preparation for Azure IoT Ope
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|cloudResourceGroup|`Microsoft.Resources/deployments`|2022-09-01|
-|cloudSecurityIdentity|`Microsoft.Resources/deployments`|2022-09-01|
-|cloudObservability|`Microsoft.Resources/deployments`|2022-09-01|
-|cloudData|`Microsoft.Resources/deployments`|2022-09-01|
-|cloudMessaging|`Microsoft.Resources/deployments`|2022-09-01|
-|cloudNetworking|`Microsoft.Resources/deployments`|2022-09-01|
-|cloudVmHost|`Microsoft.Resources/deployments`|2022-09-01|
-|cloudAcr|`Microsoft.Resources/deployments`|2022-09-01|
-|cloudKubernetes|`Microsoft.Resources/deployments`|2022-09-01|
+|cloudResourceGroup|`Microsoft.Resources/deployments`|2025-04-01|
+|cloudSecurityIdentity|`Microsoft.Resources/deployments`|2025-04-01|
+|cloudObservability|`Microsoft.Resources/deployments`|2025-04-01|
+|cloudData|`Microsoft.Resources/deployments`|2025-04-01|
+|cloudMessaging|`Microsoft.Resources/deployments`|2025-04-01|
+|cloudNetworking|`Microsoft.Resources/deployments`|2025-04-01|
+|cloudVmHost|`Microsoft.Resources/deployments`|2025-04-01|
+|cloudAcr|`Microsoft.Resources/deployments`|2025-04-01|
+|cloudKubernetes|`Microsoft.Resources/deployments`|2025-04-01|
 
 ## Modules
 
@@ -91,8 +91,8 @@ Provisions cloud resources required for Azure IoT Operations including Schema Re
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|identity|`Microsoft.Resources/deployments`|2022-09-01|
-|keyVault|`Microsoft.Resources/deployments`|2022-09-01|
+|identity|`Microsoft.Resources/deployments`|2025-04-01|
+|keyVault|`Microsoft.Resources/deployments`|2025-04-01|
 
 #### Outputs for cloudSecurityIdentity
 
@@ -184,10 +184,10 @@ Creates storage resources including Azure Storage Account and Schema Registry fo
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|storageAccount|`Microsoft.Resources/deployments`|2022-09-01|
-|schemaRegistry|`Microsoft.Resources/deployments`|2022-09-01|
-|schemaRegistryRoleAssignment|`Microsoft.Resources/deployments`|2022-09-01|
-|adrNamespace|`Microsoft.Resources/deployments`|2022-09-01|
+|storageAccount|`Microsoft.Resources/deployments`|2025-04-01|
+|schemaRegistry|`Microsoft.Resources/deployments`|2025-04-01|
+|schemaRegistryRoleAssignment|`Microsoft.Resources/deployments`|2025-04-01|
+|adrNamespace|`Microsoft.Resources/deployments`|2025-04-01|
 
 #### Outputs for cloudData
 
@@ -223,8 +223,8 @@ Deploys Azure cloud messaging resources including Event Hubs, Service Bus, and E
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|eventHub|`Microsoft.Resources/deployments`|2022-09-01|
-|eventGrid|`Microsoft.Resources/deployments`|2022-09-01|
+|eventHub|`Microsoft.Resources/deployments`|2025-04-01|
+|eventGrid|`Microsoft.Resources/deployments`|2025-04-01|
 
 #### Outputs for cloudMessaging
 
@@ -288,7 +288,7 @@ Provisions virtual machines and networking infrastructure for hosting Azure IoT 
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|virtualMachine|`Microsoft.Resources/deployments`|2022-09-01|
+|virtualMachine|`Microsoft.Resources/deployments`|2025-04-01|
 
 #### Outputs for cloudVmHost
 
@@ -320,8 +320,8 @@ Deploys Azure Container Registry (ACR) resources.
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|network|`Microsoft.Resources/deployments`|2022-09-01|
-|containerRegistry|`Microsoft.Resources/deployments`|2022-09-01|
+|network|`Microsoft.Resources/deployments`|2025-04-01|
+|containerRegistry|`Microsoft.Resources/deployments`|2025-04-01|
 
 #### Outputs for cloudAcr
 
@@ -349,8 +349,8 @@ Deploys optionally Azure Kubernetes Service (AKS) resources.
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|network|`Microsoft.Resources/deployments`|2022-09-01|
-|aksCluster|`Microsoft.Resources/deployments`|2022-09-01|
+|network|`Microsoft.Resources/deployments`|2025-04-01|
+|aksCluster|`Microsoft.Resources/deployments`|2025-04-01|
 
 #### Outputs for cloudKubernetes
 
