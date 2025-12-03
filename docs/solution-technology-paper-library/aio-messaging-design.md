@@ -93,7 +93,7 @@ The messaging path in AIO consists of three primary stages i.e. Data Source, Dat
 
 The initial step in the process involves acquiring data from edge devices, which typically include sensors and machines deployed on the factory (shop floor). To ensure reliable data acquisition, various communication protocols are utilized, with OPC UA (Open Platform Communications Unified Architecture) being among the most prevalent.
 OPC UA is a machine-to-machine communication protocol and information model designed for industrial automation scenarios. AIO offers an OPC UA connector as a Microsoft-supported component.
-Additionally, custom connectors can be developed using the [Akri framework](https://github.com/Azure/azure-iot-operations-preview/tree/main/preview/akri-connectors) by partners or customers.
+Additionally, custom connectors can be developed using the [Akri framework](https://docs.akri.sh/) by partners or customers.
 
 **Schematization:**
 

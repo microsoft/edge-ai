@@ -1321,7 +1321,7 @@ chmod +x scripts/release-health-check.sh
 
 **External Support**:
 
-- Review [Contributing Guidelines](../contributing/contributing.md)
+- Review [Contributing Guidelines](../contributing/README.md)
 - Open discussion on GitHub Discussions
 - Submit issue for bugs or feature requests
 - Consult GitHub Actions documentation
@@ -1339,7 +1339,7 @@ chmod +x scripts/release-health-check.sh
 
 - [Azure DevOps Guide](./azure-devops.md) - Pipeline configuration and usage
 - [GitHub Actions Guide](./github-actions.md) - Workflow configuration and usage
-- [Contributing Guidelines](../contributing/contributing.md) - Code contribution standards
+- [Contributing Guidelines](../contributing/README.md) - Code contribution standards
 - [Build & CI/CD Overview](./README.md) - Complete build documentation
 
 ---

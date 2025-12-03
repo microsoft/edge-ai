@@ -278,49 +278,49 @@ Strategic multi-scenario deployment maximizes platform investment by building sh
 <!-- Reference Links -->
 
 <!-- Capability Group Links -->
-[protocol-translation-device-management]: /docs/project-planning/capabilities/protocol-translation-device-management/README.md
-[edge-cluster-platform]: /docs/project-planning/capabilities/edge-cluster-platform/README.md
-[edge-industrial-application-platform]: /docs/project-planning/capabilities/edge-industrial-application-platform/README.md
-[cloud-data-platform]: /docs/project-planning/capabilities/cloud-data-platform/README.md
-[cloud-ai-platform]: /docs/project-planning/capabilities/cloud-ai-platform/README.md
-[cloud-insights-platform]: /docs/project-planning/capabilities/cloud-insights-platform/README.md
-[advanced-simulation-digital-twin-platform]: /docs/project-planning/capabilities/advanced-simulation-digital-twin-platform/README.md
+[protocol-translation-device-management]: /docs/project-planning/capabilities/protocol-translation-device-management
+[edge-cluster-platform]: /docs/project-planning/capabilities/edge-cluster-platform
+[edge-industrial-application-platform]: /docs/project-planning/capabilities/edge-industrial-application-platform
+[cloud-data-platform]: /docs/project-planning/capabilities/cloud-data-platform
+[cloud-ai-platform]: /docs/project-planning/capabilities/cloud-ai-platform
+[cloud-insights-platform]: /docs/project-planning/capabilities/cloud-insights-platform
+[advanced-simulation-digital-twin-platform]: /docs/project-planning/capabilities/advanced-simulation-digital-twin-platform
 
 <!-- Individual Capability Links -->
-[opc-ua-data-ingestion]: /docs/project-planning/capabilities/protocol-translation-device-management/opc-ua-data-ingestion.md
-[device-twin-management]: /docs/project-planning/capabilities/protocol-translation-device-management/device-twin-management.md
-[broad-industrial-protocol-support]: /docs/project-planning/capabilities/protocol-translation-device-management/broad-industrial-protocol-support.md
-[edge-compute-orchestration]: /docs/project-planning/capabilities/edge-cluster-platform/edge-compute-orchestration.md
-[edge-application-cicd]: /docs/project-planning/capabilities/edge-cluster-platform/edge-application-cicd.md
-[edge-camera-control]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-camera-control.md
-[edge-data-stream-processing]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-data-stream-processing.md
-[edge-inferencing-application-framework]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-inferencing-application-framework.md
-[edge-dashboard-visualization]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-dashboard-visualization.md
-[cloud-data-platform-services]: /docs/project-planning/capabilities/cloud-data-platform/cloud-data-platform-services.md
-[data-governance-lineage]: /docs/project-planning/capabilities/cloud-data-platform/data-governance-lineage.md
-[cloud-ai-ml-model-training]: /docs/project-planning/capabilities/cloud-ai-platform/cloud-ai-ml-model-training.md
-[mlops-toolchain]: /docs/project-planning/capabilities/cloud-ai-platform/mlops-toolchain.md
-[computer-vision-platform]: /docs/project-planning/capabilities/cloud-ai-platform/computer-vision-platform.md
-[cloud-container-platform-infrastructure]: /docs/project-planning/capabilities/cloud-data-platform/cloud-container-platform-infrastructure.md
-[federated-learning-framework]: /docs/project-planning/capabilities/cloud-ai-platform/federated-learning-framework.md
-[automated-incident-response-remediation]: /docs/project-planning/capabilities/cloud-insights-platform/automated-incident-response-remediation.md
-[cloud-observability-foundation]: /docs/project-planning/capabilities/cloud-insights-platform/cloud-observability-foundation.md
-[immersive-visualization-collaboration]: /docs/project-planning/capabilities/advanced-simulation-digital-twin-platform/immersive-visualization-collaboration.md
-[ai-enhanced-digital-twin-engine]: /docs/project-planning/capabilities/advanced-simulation-digital-twin-platform/ai-enhanced-digital-twin-engine.md
-[physics-based-simulation-engine]: /docs/project-planning/capabilities/advanced-simulation-digital-twin-platform/physics-based-simulation-engine.md
-[synthetic-data-generation-engine]: /docs/project-planning/capabilities/advanced-simulation-digital-twin-platform/synthetic-data-generation-engine.md
+[opc-ua-data-ingestion]: /docs/project-planning/capabilities/protocol-translation-device-management/opc-ua-data-ingestion
+[device-twin-management]: /docs/project-planning/capabilities/protocol-translation-device-management/device-twin-management
+[broad-industrial-protocol-support]: /docs/project-planning/capabilities/protocol-translation-device-management/broad-industrial-protocol-support
+[edge-compute-orchestration]: /docs/project-planning/capabilities/edge-cluster-platform/edge-compute-orchestration
+[edge-application-cicd]: /docs/project-planning/capabilities/edge-cluster-platform/edge-application-cicd
+[edge-camera-control]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-camera-control
+[edge-data-stream-processing]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-data-stream-processing
+[edge-inferencing-application-framework]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-inferencing-application-framework
+[edge-dashboard-visualization]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-dashboard-visualization
+[cloud-data-platform-services]: /docs/project-planning/capabilities/cloud-data-platform/cloud-data-platform-services
+[data-governance-lineage]: /docs/project-planning/capabilities/cloud-data-platform/data-governance-lineage
+[cloud-ai-ml-model-training]: /docs/project-planning/capabilities/cloud-ai-platform/cloud-ai-ml-model-training
+[mlops-toolchain]: /docs/project-planning/capabilities/cloud-ai-platform/mlops-toolchain
+[computer-vision-platform]: /docs/project-planning/capabilities/cloud-ai-platform/computer-vision-platform
+[cloud-container-platform-infrastructure]: /docs/project-planning/capabilities/cloud-data-platform/cloud-container-platform-infrastructure
+[federated-learning-framework]: /docs/project-planning/capabilities/cloud-ai-platform/federated-learning-framework
+[automated-incident-response-remediation]: /docs/project-planning/capabilities/cloud-insights-platform/automated-incident-response-remediation
+[cloud-observability-foundation]: /docs/project-planning/capabilities/cloud-insights-platform/cloud-observability-foundation
+[immersive-visualization-collaboration]: /docs/project-planning/capabilities/advanced-simulation-digital-twin-platform/immersive-visualization-collaboration
+[ai-enhanced-digital-twin-engine]: /docs/project-planning/capabilities/advanced-simulation-digital-twin-platform/ai-enhanced-digital-twin-engine
+[physics-based-simulation-engine]: /docs/project-planning/capabilities/advanced-simulation-digital-twin-platform/physics-based-simulation-engine
+[synthetic-data-generation-engine]: /docs/project-planning/capabilities/advanced-simulation-digital-twin-platform/synthetic-data-generation-engine
 
 <!-- Documentation Links -->
-[getting-started]: /docs/getting-started/README.md
-[blueprints-readme]: /blueprints/README.md
-[prerequisites]: /docs/project-planning/scenarios/digital-inspection-survey/prerequisites.md
-[capabilities-overview]: /docs/project-planning/capabilities/README.md
+[getting-started]: /docs/getting-started
+[blueprints-readme]: /blueprints
+[prerequisites]: /docs/project-planning/scenarios/digital-inspection-survey/prerequisites
+[capabilities-overview]: /docs/project-planning/capabilities
 
 <!-- Related Scenario Links -->
-[quality-process-optimization-automation]: /docs/project-planning/scenarios/quality-process-optimization-automation/README.md
-[predictive-maintenance]: /docs/project-planning/scenarios/predictive-maintenance/README.md
-[operational-performance-monitoring]: /docs/project-planning/scenarios/operational-performance-monitoring/README.md
-[packaging-line-performance-optimization]: /docs/project-planning/scenarios/packaging-line-performance-optimization/README.md
+[quality-process-optimization-automation]: /docs/project-planning/scenarios/quality-process-optimization-automation
+[predictive-maintenance]: /docs/project-planning/scenarios/predictive-maintenance
+[operational-performance-monitoring]: /docs/project-planning/scenarios/operational-performance-monitoring
+[packaging-line-performance-optimization]: /docs/project-planning/scenarios/packaging-line-performance-optimization
 
 ---
 

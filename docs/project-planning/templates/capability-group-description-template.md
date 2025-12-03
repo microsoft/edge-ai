@@ -340,5 +340,5 @@ then carefully refined by our team of discerning human reviewers.*
 <!-- markdownlint-enable MD036 -->
 
 <!-- Reference Links -->
-[ai-planning-assistant]: ./ai-planning-guide.md
-[scenarios-folder]: ./scenarios/
+[ai-planning-assistant]: /docs/project-planning/ai-planning-guide
+[scenarios-folder]: /docs/project-planning/scenarios/README

@@ -204,9 +204,9 @@ No, releases must come from `dev`. Merge your feature first.
 ## References
 
 * [Release Workflow Documentation](release-workflow.md)
+* [Main-to-Dev Sync Pipeline](../../.azuredevops/docs/main-to-dev-sync.md)
 * [GitHub Workflows](../../.github/workflows/)
 * [Azure Pipelines](../../azure-pipelines.yml)
-* [ADR 006: Release Automation](../../project-adrs/Accepted/006-adr-release-automation.md)
 * [Contributing Guidelines](../../CONTRIBUTING.md)
 
 ---

@@ -72,7 +72,7 @@ keywords:
 | Capability                                                   | Technical | Business | Practical | Cohesion | Priority |
 |--------------------------------------------------------------|-----------|----------|-----------|----------|----------|
 | [MLOps Toolchain][mlops-toolchain]                           | 8         | 8        | 7         | 9        | Core     |
-| [Advanced Analytics Platform][advanced-analytics-platform]   | 8         | 9        | 7         | 8        | Core     |
+| [Cloud Data Platform Services][cloud-data-platform-services] | 8         | 9        | 7         | 8        | Core     |
 | [Policy & Governance Framework][policy-governance-framework] | 7         | 7        | 8         | 8        | Advanced |
 
 **Expected Value**: 40-60% reduction in manual quality interventions
@@ -383,16 +383,15 @@ To implement this scenario, return to the main [Quality Process Optimization Aut
 ---
 
 <!-- Reference Links -->
-[edge-data-stream-processing]: /docs/capabilities/edge-industrial-application-platform/edge-data-stream-processing.md
-[edge-dashboard-visualization]: /docs/capabilities/edge-industrial-application-platform/edge-dashboard-visualization.md
-[opc-ua-data-ingestion]: /docs/capabilities/protocol-translation-device-management/opc-ua-data-ingestion.md
-[edge-inferencing-application-framework]: /docs/capabilities/edge-industrial-application-platform/edge-inferencing-application-framework.md
-[cloud-data-platform-services]: /docs/capabilities/cloud-data-platform/cloud-data-platform-services.md
-[automated-incident-response-remediation]: /docs/capabilities/cloud-insights-platform/automated-incident-response-remediation.md
-[digital-twin-platform]: /docs/capabilities/advanced-simulation-digital-twin-platform/digital-twin-platform.md
-[opc-ua-closed-loop-control]: /docs/capabilities/protocol-translation-device-management/opc-ua-closed-loop-control.md
-[enterprise-application-integration-hub]: /docs/capabilities/business-enablement-integration-platform/enterprise-application-integration-hub.md
-[mlops-toolchain]: /docs/capabilities/cloud-ai-platform/mlops-toolchain.md
-[advanced-analytics-platform]: /docs/capabilities/cloud-insights-platform/advanced-analytics-platform.md
-[policy-governance-framework]: /docs/capabilities/business-enablement-integration-platform/policy-governance-framework.md
-[quality-process-optimization-readme]: ./README.md
+[edge-data-stream-processing]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-data-stream-processing
+[edge-dashboard-visualization]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-dashboard-visualization
+[opc-ua-data-ingestion]: /docs/project-planning/capabilities/protocol-translation-device-management/opc-ua-data-ingestion
+[edge-inferencing-application-framework]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-inferencing-application-framework
+[cloud-data-platform-services]: /docs/project-planning/capabilities/cloud-data-platform/cloud-data-platform-services
+[automated-incident-response-remediation]: /docs/project-planning/capabilities/cloud-insights-platform/automated-incident-response-remediation
+[digital-twin-platform]: /docs/project-planning/capabilities/advanced-simulation-digital-twin-platform/digital-twin-platform
+[opc-ua-closed-loop-control]: /docs/project-planning/capabilities/protocol-translation-device-management/opc-ua-closed-loop-control
+[enterprise-application-integration-hub]: /docs/project-planning/capabilities/business-enablement-integration-platform/enterprise-application-integration-hub
+[mlops-toolchain]: /docs/project-planning/capabilities/cloud-ai-platform/mlops-toolchain
+[policy-governance-framework]: /docs/project-planning/capabilities/business-enablement-integration-platform/policy-governance-framework
+[quality-process-optimization-readme]: /docs/project-planning/scenarios/quality-process-optimization-automation/README

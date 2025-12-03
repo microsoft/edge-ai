@@ -32,10 +32,10 @@ This project encourages the contribution of high-quality Technology Papers that 
 
 * Review the existing Technology Papers in the library to see if an existing one can be extended or improved before contributing a new document.
 * All Technology Papers must be formatted as Markdown documents and use the `.md` file extension
-* All Technology Papers must follow the formatting of the [Security Plan template](./Security%20Plan%20Template.md)
+* All Technology Papers must follow the formatting of the [Security Plan template](../../project-security-plans/templates/security-plan-template.md)
 * All Technology Papers must use short, concise, English file names
 * Technology Papers may include optional language translations, please copy the Technology Paper and add an intermediate, language extension using appropriate ISO 639 language codes (e.g. `Impact of Clock Sync for Edge Systems.en.md` and `Impact of Clock Sync for Edge Systems.zh.md` for English and Chinese)
 * Assign a workitem to yourself before beginning any effort, and set the item's status field accordingly.
-* If a work item for your contribution does not exist, [please file an issue](https://dev.azure.com/ai-at-the-edge-flagship-accelerator/IaC%20for%20the%20Edge/_workitems/create/Issue) first to engage the project's PO, TPM, or Tech Lead for guidance.
+* If a work item for your contribution does not exist, please create one using your project's work item tracking system to engage the project's PO, TPM, or Tech Lead for guidance.
 * Commits (or at least one in a commit chain) should reference a User Story or Task item from the backlog for traceability.
 * All Technology Papers must be reviewed by two reviewers defined by auto-injected build reviewer groups.

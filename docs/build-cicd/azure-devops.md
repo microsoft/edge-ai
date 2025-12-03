@@ -175,13 +175,11 @@ The pipeline requires a managed agent pool with:
 - [GitHub Actions Workflows][github-actions-guide] - GitHub Actions CI/CD documentation
 - [Build Scripts Guide][build-scripts-guide] - Automated build and validation scripts
 - [Security Scanning Guide][security-scanning-guide] - Security validation processes
-- [Deployment Processes][deployment-processes-guide] - Comprehensive deployment documentation
 
 <!-- Reference Links -->
 [github-actions-guide]: ./github-actions.md
 [build-scripts-guide]: ./build-scripts.md
 [security-scanning-guide]: ./security-scanning.md
-[deployment-processes-guide]: ./deployment-processes.md
 
 ---
 

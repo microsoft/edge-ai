@@ -436,10 +436,9 @@ See [Common Troubleshooting](../pipelines/README.md#common-troubleshooting) for 
 
 ## Related Documentation
 
-* **[Branch Strategy Overview](../branch-strategy.md)**: Dual-branch architecture and workflows
-* **[Release Workflow](../release-workflow.md)**: Complete release process documentation
+* **[Branch Strategy Overview](../../docs/build-cicd/branch-strategy.md)**: Dual-branch architecture and workflows
+* **[Release Workflow](../../docs/build-cicd/release-workflow.md)**: Complete release process documentation
 * **[GitHub Pull Pipeline](./github-pull.yml.md)**: GitHub→AzDO main sync pipeline
-* **[ADR-006: Release Automation](../../project-adrs/Accepted/006-adr-release-automation.md)**: Architecture decisions
 
 ---
 

@@ -165,17 +165,17 @@ then carefully refined by our team of discerning human reviewers.*
 
 <!-- Reference Links -->
 [ai-planning-guide]: ./ai-planning-guide.md
-[blueprints-readme]: blueprints/README.md
-[capabilities-folder]: ./capabilities/
-[comprehensive-mapping]: ./comprehensive-scenario-capability-mapping.md
-[comprehensive-scenario-mapping]: ./comprehensive-scenario-capability-mapping.md
-[detailed-scenario-documentation]: ./scenarios/
-[digital-inspection-and-survey]: ./scenarios/digital-inspection-survey.md
-[edge-ai-project-planning]: ./README.md
-[operational-performance-monitoring]: ./scenarios/operational-performance-monitoring.md
-[packaging-line-performance-optimization]: ./scenarios/packaging-line-performance-optimization.md
-[platform-capabilities-documentation]: ./capabilities/
-[predictive-maintenance]: ./scenarios/predictive-maintenance.md
-[quality-process-optimization-and-automation]: ./scenarios/quality-process-optimization-automation.md
-[scenarios-folder]: ./scenarios/
-[yield-process-optimization]: ./scenarios/yield-process-optimization.md
+[blueprints-readme]: /blueprints/README
+[capabilities-folder]: /docs/project-planning/capabilities/README
+[comprehensive-mapping]: /docs/project-planning/comprehensive-scenario-capability-mapping
+[comprehensive-scenario-mapping]: /docs/project-planning/comprehensive-scenario-capability-mapping
+[detailed-scenario-documentation]: /docs/project-planning/scenarios/README
+[digital-inspection-and-survey]: /docs/project-planning/scenarios/digital-inspection-survey/README
+[edge-ai-project-planning]: /docs/project-planning/README
+[operational-performance-monitoring]: /docs/project-planning/scenarios/operational-performance-monitoring/README
+[packaging-line-performance-optimization]: /docs/project-planning/scenarios/packaging-line-performance-optimization/README
+[platform-capabilities-documentation]: /docs/project-planning/capabilities/README
+[predictive-maintenance]: /docs/project-planning/scenarios/predictive-maintenance/README
+[quality-process-optimization-and-automation]: /docs/project-planning/scenarios/quality-process-optimization-automation/README
+[scenarios-folder]: /docs/project-planning/scenarios/README
+[yield-process-optimization]: /docs/project-planning/scenarios/yield-process-optimization/README

@@ -247,12 +247,11 @@ These capabilities extend beyond the core Quality Process Optimization Automatio
 
 Maximize platform investment by leveraging shared capabilities across multiple use cases:
 
-| Related Scenario                                                             | Shared Capabilities                                          | Potential Synergies                          | Implementation Benefits                         |
-|------------------------------------------------------------------------------|--------------------------------------------------------------|----------------------------------------------|-------------------------------------------------|
-| **[Predictive Maintenance][predictive-maintenance]**                         | Edge Data Processing, AI Platform, Cloud Analytics           | Quality-driven maintenance optimization      | 30% shared infrastructure costs                 |
-| **[Operational Performance Monitoring][operational-performance-monitoring]** | Edge Platform, Dashboard Visualization, Cloud Insights       | Unified quality and performance intelligence | 40% operational efficiency gains                |
-| **[Energy Optimization Management][energy-optimization-management]**         | IoT Integration, Analytics Platform, Optimization Algorithms | Energy-efficient quality strategies          | 25% improved sustainability metrics             |
-| **[Yield Process Optimization][yield-process-optimization]**                 | Data Processing, Analytics Platform, Digital Twin            | Comprehensive quality-yield optimization     | 35% overall equipment effectiveness improvement |
+| Related Scenario                                                             | Shared Capabilities                                    | Potential Synergies                          | Implementation Benefits                         |
+|------------------------------------------------------------------------------|--------------------------------------------------------|----------------------------------------------|-------------------------------------------------|
+| **[Predictive Maintenance][predictive-maintenance]**                         | Edge Data Processing, AI Platform, Cloud Analytics     | Quality-driven maintenance optimization      | 30% shared infrastructure costs                 |
+| **[Operational Performance Monitoring][operational-performance-monitoring]** | Edge Platform, Dashboard Visualization, Cloud Insights | Unified quality and performance intelligence | 40% operational efficiency gains                |
+| **[Yield Process Optimization][yield-process-optimization]**                 | Data Processing, Analytics Platform, Digital Twin      | Comprehensive quality-yield optimization     | 35% overall equipment effectiveness improvement |
 
 ### 🔄 Cross-Scenario Implementation Strategy
 
@@ -263,7 +262,6 @@ Strategic multi-scenario deployment maximizes platform investment by building sh
 | **🏗️ Phase 1 - Foundation** (6 months)              | **Quality Process Optimization Automation** (this scenario)                                | None                                             | Establish comprehensive quality intelligence platform                   | Baseline ROI: 50-70%     |
 | **⚡ Phase 2 - Maintenance Integration** (3 months)   | Quality Process Optimization Automation + [Predictive Maintenance][predictive-maintenance] | Quality-driven maintenance workflows             | 35% shared infrastructure, unified quality and maintenance intelligence | +25-35% additional ROI   |
 | **🔮 Phase 3 - Performance Intelligence** (4 months) | Add [Operational Performance Monitoring][operational-performance-monitoring]               | Comprehensive operational and quality monitoring | 40% shared edge platform, combined operational and quality analytics    | +20-30% additional ROI   |
-| **🎯 Phase 4 - Energy Excellence** (3 months)        | Add [Energy Optimization Management][energy-optimization-management]                       | Energy-efficient quality strategies              | 50% shared platform, holistic sustainability optimization               | +15-25% additional ROI   |
 
 **Platform Benefits**: Multi-scenario deployment achieves 110-160% cumulative ROI with 40-60% faster implementation for additional scenarios due to shared platform components.
 
@@ -277,45 +275,44 @@ Strategic multi-scenario deployment maximizes platform investment by building sh
 <!-- Reference Links -->
 
 <!-- Capability Group Links -->
-[protocol-translation-device-management]: /docs/project-planning/capabilities/protocol-translation-device-management/README.md
-[edge-cluster-platform]: /docs/project-planning/capabilities/edge-cluster-platform/README.md
-[edge-industrial-application-platform]: /docs/project-planning/capabilities/edge-industrial-application-platform/README.md
-[cloud-data-platform]: /docs/project-planning/capabilities/cloud-data-platform/README.md
-[cloud-ai-platform]: /docs/project-planning/capabilities/cloud-ai-platform/README.md
-[cloud-insights-platform]: /docs/project-planning/capabilities/cloud-insights-platform/README.md
-[advanced-simulation-digital-twin-platform]: /docs/project-planning/capabilities/advanced-simulation-digital-twin-platform/README.md
+[protocol-translation-device-management]: /docs/project-planning/capabilities/protocol-translation-device-management/README
+[edge-cluster-platform]: /docs/project-planning/capabilities/edge-cluster-platform/README
+[edge-industrial-application-platform]: /docs/project-planning/capabilities/edge-industrial-application-platform/README
+[cloud-data-platform]: /docs/project-planning/capabilities/cloud-data-platform/README
+[cloud-ai-platform]: /docs/project-planning/capabilities/cloud-ai-platform/README
+[cloud-insights-platform]: /docs/project-planning/capabilities/cloud-insights-platform/README
+[advanced-simulation-digital-twin-platform]: /docs/project-planning/capabilities/advanced-simulation-digital-twin-platform/README
 
 <!-- Individual Capability Links -->
-[opc-ua-data-ingestion]: /docs/project-planning/capabilities/protocol-translation-device-management/opc-ua-data-ingestion.md
-[device-twin-management]: /docs/project-planning/capabilities/protocol-translation-device-management/device-twin-management.md
-[broad-industrial-protocol-support]: /docs/project-planning/capabilities/protocol-translation-device-management/broad-industrial-protocol-support.md
-[edge-compute-orchestration]: /docs/project-planning/capabilities/edge-cluster-platform/edge-compute-orchestration.md
-[edge-application-cicd]: /docs/project-planning/capabilities/edge-cluster-platform/edge-application-cicd.md
-[edge-camera-control]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-camera-control.md
-[edge-data-stream-processing]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-data-stream-processing.md
-[edge-inferencing-application-framework]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-inferencing-application-framework.md
-[edge-dashboard-visualization]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-dashboard-visualization.md
-[cloud-data-platform-services]: /docs/project-planning/capabilities/cloud-data-platform/cloud-data-platform-services.md
-[data-governance-lineage]: /docs/project-planning/capabilities/cloud-data-platform/data-governance-lineage.md
-[cloud-ai-ml-model-training]: /docs/project-planning/capabilities/cloud-ai-platform/cloud-ai-ml-model-training.md
-[mlops-toolchain]: /docs/project-planning/capabilities/cloud-ai-platform/mlops-toolchain.md
-[computer-vision-platform]: /docs/project-planning/capabilities/cloud-ai-platform/computer-vision-platform.md
-[automated-incident-response-remediation]: /docs/project-planning/capabilities/cloud-insights-platform/automated-incident-response-remediation.md
-[cloud-observability-foundation]: /docs/project-planning/capabilities/cloud-insights-platform/cloud-observability-foundation.md
-[quality-digital-twin-platform]: /docs/project-planning/capabilities/advanced-simulation-digital-twin-platform/quality-digital-twin-platform.md
-[process-simulation-engine]: /docs/project-planning/capabilities/advanced-simulation-digital-twin-platform/process-simulation-engine.md
+[opc-ua-data-ingestion]: /docs/project-planning/capabilities/protocol-translation-device-management/opc-ua-data-ingestion
+[device-twin-management]: /docs/project-planning/capabilities/protocol-translation-device-management/device-twin-management
+[broad-industrial-protocol-support]: /docs/project-planning/capabilities/protocol-translation-device-management/broad-industrial-protocol-support
+[edge-compute-orchestration]: /docs/project-planning/capabilities/edge-cluster-platform/edge-compute-orchestration-platform
+[edge-application-cicd]: /docs/project-planning/capabilities/edge-cluster-platform/edge-application-cicd
+[edge-camera-control]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-camera-control
+[edge-data-stream-processing]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-data-stream-processing
+[edge-inferencing-application-framework]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-inferencing-application-framework
+[edge-dashboard-visualization]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-dashboard-visualization
+[cloud-data-platform-services]: /docs/project-planning/capabilities/cloud-data-platform/cloud-data-platform-services
+[data-governance-lineage]: /docs/project-planning/capabilities/cloud-data-platform/data-governance-lineage
+[cloud-ai-ml-model-training]: /docs/project-planning/capabilities/cloud-ai-platform/cloud-ai-ml-model-training-management
+[mlops-toolchain]: /docs/project-planning/capabilities/cloud-ai-platform/mlops-toolchain
+[computer-vision-platform]: /docs/project-planning/capabilities/cloud-ai-platform/computer-vision-platform
+[automated-incident-response-remediation]: /docs/project-planning/capabilities/cloud-insights-platform/automated-incident-response-remediation
+[cloud-observability-foundation]: /docs/project-planning/capabilities/cloud-insights-platform/cloud-observability-foundation
+[quality-digital-twin-platform]: /docs/project-planning/capabilities/advanced-simulation-digital-twin-platform/quality-digital-twin-platform
+[process-simulation-engine]: /docs/project-planning/capabilities/advanced-simulation-digital-twin-platform/physics-based-simulation-engine
 
 <!-- Documentation Links -->
-[getting-started]: /docs/getting-started/README.md
-[blueprints-readme]: /blueprints/README.md
-[prerequisites]: /docs/project-planning/scenarios/quality-process-optimization-automation/prerequisites.md
-[capabilities-overview]: /docs/project-planning/capabilities/README.md
+[getting-started]: /docs/getting-started/README
+[blueprints-readme]: /blueprints/README
+[prerequisites]: /docs/project-planning/scenarios/quality-process-optimization-automation/prerequisites
+[capabilities-overview]: /docs/project-planning/capabilities/README
 
 <!-- Related Scenario Links -->
-[predictive-maintenance]: /docs/project-planning/scenarios/predictive-maintenance/README.md
-[operational-performance-monitoring]: /docs/project-planning/scenarios/operational-performance-monitoring/README.md
-[energy-optimization-management]: /docs/project-planning/scenarios/energy-optimization-management/README.md
-[yield-process-optimization]: /docs/project-planning/scenarios/yield-process-optimization/README.md
+[predictive-maintenance]: /docs/project-planning/scenarios/predictive-maintenance/README
+[operational-performance-monitoring]: /docs/project-planning/scenarios/operational-performance-monitoring/README
+[yield-process-optimization]: /docs/project-planning/scenarios/yield-process-optimization/README
 
 ---
 

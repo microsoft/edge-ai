@@ -277,50 +277,50 @@ Strategic multi-scenario deployment maximizes platform investment by building sh
 <!-- Reference Links -->
 
 <!-- Capability Group Links -->
-[protocol-translation-device-management]: /docs/project-planning/capabilities/protocol-translation-device-management/README.md
-[edge-cluster-platform]: /docs/project-planning/capabilities/edge-cluster-platform/README.md
-[edge-industrial-application-platform]: /docs/project-planning/capabilities/edge-industrial-application-platform/README.md
-[cloud-data-platform]: /docs/project-planning/capabilities/cloud-data-platform/README.md
-[cloud-ai-platform]: /docs/project-planning/capabilities/cloud-ai-platform/README.md
-[cloud-insights-platform]: /docs/project-planning/capabilities/cloud-insights-platform/README.md
-[advanced-simulation-digital-twin-platform]: /docs/project-planning/capabilities/advanced-simulation-digital-twin-platform/README.md
+[protocol-translation-device-management]: /docs/project-planning/capabilities/protocol-translation-device-management/README
+[edge-cluster-platform]: /docs/project-planning/capabilities/edge-cluster-platform/README
+[edge-industrial-application-platform]: /docs/project-planning/capabilities/edge-industrial-application-platform/README
+[cloud-data-platform]: /docs/project-planning/capabilities/cloud-data-platform/README
+[cloud-ai-platform]: /docs/project-planning/capabilities/cloud-ai-platform/README
+[cloud-insights-platform]: /docs/project-planning/capabilities/cloud-insights-platform/README
+[advanced-simulation-digital-twin-platform]: /docs/project-planning/capabilities/advanced-simulation-digital-twin-platform/README
 
 <!-- Individual Capability Links -->
-[opc-ua-data-ingestion]: /docs/project-planning/capabilities/protocol-translation-device-management/opc-ua-data-ingestion.md
-[device-twin-management]: /docs/project-planning/capabilities/protocol-translation-device-management/device-twin-management.md
-[broad-industrial-protocol-support]: /docs/project-planning/capabilities/protocol-translation-device-management/broad-industrial-protocol-support.md
-[edge-compute-orchestration]: /docs/project-planning/capabilities/edge-cluster-platform/edge-compute-orchestration.md
-[edge-application-cicd]: /docs/project-planning/capabilities/edge-cluster-platform/edge-application-cicd.md
-[edge-data-stream-processing]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-data-stream-processing.md
-[edge-inferencing-application-framework]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-inferencing-application-framework.md
-[edge-dashboard-visualization]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-dashboard-visualization.md
-[cloud-data-platform-services]: /docs/project-planning/capabilities/cloud-data-platform/cloud-data-platform-services.md
-[data-governance-lineage]: /docs/project-planning/capabilities/cloud-data-platform/data-governance-lineage.md
-[cloud-ai-ml-model-training]: /docs/project-planning/capabilities/cloud-ai-platform/cloud-ai-ml-model-training.md
-[mlops-toolchain]: /docs/project-planning/capabilities/cloud-ai-platform/mlops-toolchain.md
-[automated-incident-response-remediation]: /docs/project-planning/capabilities/cloud-insights-platform/automated-incident-response-remediation.md
-[cloud-observability-foundation]: /docs/project-planning/capabilities/cloud-insights-platform/cloud-observability-foundation.md
+[opc-ua-data-ingestion]: /docs/project-planning/capabilities/protocol-translation-device-management/opc-ua-data-ingestion
+[device-twin-management]: /docs/project-planning/capabilities/protocol-translation-device-management/device-twin-management
+[broad-industrial-protocol-support]: /docs/project-planning/capabilities/protocol-translation-device-management/broad-industrial-protocol-support
+[edge-compute-orchestration]: /docs/project-planning/capabilities/edge-cluster-platform/edge-compute-orchestration
+[edge-application-cicd]: /docs/project-planning/capabilities/edge-cluster-platform/edge-application-cicd
+[edge-data-stream-processing]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-data-stream-processing
+[edge-inferencing-application-framework]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-inferencing-application-framework
+[edge-dashboard-visualization]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-dashboard-visualization
+[cloud-data-platform-services]: /docs/project-planning/capabilities/cloud-data-platform/cloud-data-platform-services
+[data-governance-lineage]: /docs/project-planning/capabilities/cloud-data-platform/data-governance-lineage
+[cloud-ai-ml-model-training]: /docs/project-planning/capabilities/cloud-ai-platform/cloud-ai-ml-model-training
+[mlops-toolchain]: /docs/project-planning/capabilities/cloud-ai-platform/mlops-toolchain
+[automated-incident-response-remediation]: /docs/project-planning/capabilities/cloud-insights-platform/automated-incident-response-remediation
+[cloud-observability-foundation]: /docs/project-planning/capabilities/cloud-insights-platform/cloud-observability-foundation
 
 <!-- Advanced Capability Links -->
-[supply-chain-yield-integration]: /docs/project-planning/capabilities/advanced-simulation-digital-twin-platform/supply-chain-yield-integration.md
-[predictive-yield-analytics]: /docs/project-planning/capabilities/cloud-ai-platform/predictive-yield-analytics.md
-[autonomous-yield-optimization]: /docs/project-planning/capabilities/cloud-insights-platform/autonomous-yield-optimization.md
-[cross-process-yield-correlation]: /docs/project-planning/capabilities/cloud-data-platform/cross-process-yield-correlation.md
-[yield-digital-twin-platform]: /docs/project-planning/capabilities/advanced-simulation-digital-twin-platform/yield-digital-twin-platform.md
-[process-simulation-engine]: /docs/project-planning/capabilities/advanced-simulation-digital-twin-platform/process-simulation-engine.md
-[yield-data-analytics]: /docs/project-planning/capabilities/cloud-data-platform/yield-data-analytics.md
+[supply-chain-yield-integration]: /docs/project-planning/capabilities/advanced-simulation-digital-twin-platform/supply-chain-yield-integration
+[predictive-yield-analytics]: /docs/project-planning/capabilities/cloud-ai-platform/predictive-yield-analytics
+[autonomous-yield-optimization]: /docs/project-planning/capabilities/cloud-insights-platform/autonomous-yield-optimization
+[cross-process-yield-correlation]: /docs/project-planning/capabilities/cloud-data-platform/cross-process-yield-correlation
+[yield-digital-twin-platform]: /docs/project-planning/capabilities/advanced-simulation-digital-twin-platform/yield-digital-twin-platform
+[process-simulation-engine]: /docs/project-planning/capabilities/advanced-simulation-digital-twin-platform/process-simulation-engine
+[yield-data-analytics]: /docs/project-planning/capabilities/cloud-data-platform/yield-data-analytics
 
 <!-- Documentation Links -->
-[getting-started]: /docs/getting-started/README.md
-[blueprints-readme]: /blueprints/README.md
-[prerequisites]: /docs/project-planning/scenarios/yield-process-optimization/prerequisites.md
-[capabilities-overview]: /docs/project-planning/capabilities/README.md
+[getting-started]: /docs/getting-started/README
+[blueprints-readme]: /blueprints/README
+[prerequisites]: /docs/project-planning/scenarios/yield-process-optimization/prerequisites
+[capabilities-overview]: /docs/project-planning/capabilities/README
 
 <!-- Related Scenario Links -->
-[quality-process-optimization]: /docs/project-planning/scenarios/quality-process-optimization-automation/README.md
-[predictive-maintenance]: /docs/project-planning/scenarios/predictive-maintenance/README.md
-[operational-performance-monitoring]: /docs/project-planning/scenarios/operational-performance-monitoring/README.md
-[energy-optimization]: /docs/project-planning/scenarios/energy-optimization/README.md
+[quality-process-optimization]: /docs/project-planning/scenarios/quality-process-optimization-automation/README
+[predictive-maintenance]: /docs/project-planning/scenarios/predictive-maintenance/README
+[operational-performance-monitoring]: /docs/project-planning/scenarios/operational-performance-monitoring/README
+[energy-optimization]: /docs/project-planning/scenarios/energy-optimization/README
 
 ---
 
