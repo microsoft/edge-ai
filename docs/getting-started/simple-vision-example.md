@@ -20,7 +20,7 @@ This guide shows you how to set up real-time object detection from an RTSP camer
 
 ## Architecture Overview
 
-![Simple Vision AI Architecture](./assets/simple-vision-architecture.drawio)
+**Architecture Diagram**: [Simple Vision AI Architecture](./assets/simple-vision-architecture.drawio)
 
 The architecture consists of four main components:
 
@@ -48,6 +48,29 @@ This guide provides **two deployment approaches**:
 
 Choose the approach that fits your needs. Both accomplish the same result.
 
+```mermaid
+graph TD
+    Start[Start: Simple Vision AI Setup] --> Choice{Choose Deployment Method}
+
+    Choice -->|Quick Start| K1[Step 1: Verify Prerequisites]
+    K1 --> K2[Step 2: Enable Media Connector]
+    K2 --> K3[Step 3: Configure Camera<br/>Device + Asset YAML]
+    K3 --> K4[Step 4: Deploy AI Inference]
+    K4 --> K5[Step 5: Verify & Test]
+    K5 --> Done1[✓ Detection Running]
+
+    Choice -->|Production| T1[Clone Repository]
+    T1 --> T2[Configure terraform.tfvars]
+    T2 --> T3[Create Camera Secrets]
+    T3 --> T4[terraform init/plan/apply]
+    T4 --> T5[Deploy AI Inference]
+    T5 --> T6[Verify & Test]
+    T6 --> Done2[✓ Production Ready]
+
+    style Done1 fill:#90EE90
+    style Done2 fill:#90EE90
+```
+
 ---
 
 ## Quick Start: Deploy with kubectl
@@ -58,10 +81,12 @@ Use this approach for rapid learning and experimentation.
 
 ## What You'll Build
 
-```plaintext
-RTSP Camera → Media Connector → MQTT Snapshots → AI Inference (YOLOv3) → Detection Results
-     ↓              ↓                  ↓                    ↓                    ↓
-  Live Video    Extracts Frames    Publishes Images    Detects Objects    MQTT Results
+```mermaid
+graph LR
+    A[RTSP Camera<br/>Live Video] -->|RTSP Stream| B[Media Connector<br/>Extracts Frames]
+    B -->|base64 JPEG<br/>every 2 seconds| C[MQTT Snapshots<br/>Publishes Images]
+    C -->|Subscribe| D[AI Inference YOLOv3<br/>Detects Objects]
+    D -->|JSON Results| E[Detection Results<br/>MQTT Results]
 ```
 
 **End Result**: Your camera will detect objects (people, cars, etc.) in real-time and publish detection results to MQTT topics.
