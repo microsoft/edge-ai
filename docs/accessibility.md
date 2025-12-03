@@ -138,7 +138,7 @@ We are committed to continuously improving accessibility through:
 Learn more about Microsoft's commitment to accessibility:
 
 - [Microsoft Accessibility](https://www.microsoft.com/accessibility)
-- [Accessibility in Azure](https://docs.microsoft.com/azure/accessibility)
+- [Azure Accessibility Conformance Reports](https://learn.microsoft.com/compliance/regulatory/offering-wcag-2-1)
 
 ### Accessibility Guides
 

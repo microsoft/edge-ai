@@ -293,12 +293,12 @@ then carefully refined by our team of discerning human reviewers.*
 <!-- markdownlint-enable MD036 -->
 
 <!-- Reference Links -->
-[ai-planning-assistant]: ./ai-planning-guide.md
+[ai-planning-assistant]: /docs/project-planning/ai-planning-guide
 [apache-kafka]: https://kafka.apache.org/
 [azure-data-factory]: https://docs.microsoft.com/azure/data-factory/
 [isa-95]: https://www.isa.org/standards-and-publications/isa-standards/isa-standards-committees/isa95
 [opc-ua]: https://opcfoundation.org/
-[scenarios-folder]: ./scenarios/
+[scenarios-folder]: /docs/project-planning/scenarios/README
 [service-names-like-azure-service-bus]: https://docs.microsoft.com/azure/service-bus/
 [standards-like-opentelemetry]: https://opentelemetry.io/
 [technology-names-like-kubernetes]: https://kubernetes.io/

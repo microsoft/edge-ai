@@ -223,10 +223,10 @@ then carefully refined by our team of discerning human reviewers.*
 <!-- markdownlint-enable MD036 -->
 
 <!-- Reference Links -->
-[contributing-guidelines]: ../contributing/
-[digital-inspection-survey]: ./digital-inspection-survey
-[operational-performance-monitoring]: ./operational-performance-monitoring
-[packaging-line-performance-optimization]: ./packaging-line-performance-optimization
-[predictive-maintenance]: ./predictive-maintenance
-[quality-process-optimization-automation]: ./quality-process-optimization-automation
-[yield-process-optimization]: ./yield-process-optimization
+[contributing-guidelines]: /docs/contributing/README
+[digital-inspection-survey]: /docs/project-planning/scenarios/digital-inspection-survey/README
+[operational-performance-monitoring]: /docs/project-planning/scenarios/operational-performance-monitoring/README
+[packaging-line-performance-optimization]: /docs/project-planning/scenarios/packaging-line-performance-optimization/README
+[predictive-maintenance]: /docs/project-planning/scenarios/predictive-maintenance/README
+[quality-process-optimization-automation]: /docs/project-planning/scenarios/quality-process-optimization-automation/README
+[yield-process-optimization]: /docs/project-planning/scenarios/yield-process-optimization/README

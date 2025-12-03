@@ -218,7 +218,7 @@ then carefully refined by our team of discerning human reviewers.*
 
 <!-- Reference Links -->
 [project-planning-readme]: ./README.md
-[project-planning-katas]: /learning/katas/project-planning/README.md
-[kata-01-basic]: /learning/katas/project-planning/01-basic-prompt-usage.md
-[kata-02-comprehensive]: /learning/katas/project-planning/02-comprehensive-two-scenario.md
-[kata-03-advanced]: /learning/katas/project-planning/03-advanced-strategic-planning.md
+[project-planning-katas]: /learning/katas/project-planning/README
+[kata-01-basic]: /learning/katas/project-planning/100-basic-prompt-usage
+[kata-02-comprehensive]: /learning/katas/project-planning/300-comprehensive-two-scenario
+[kata-03-advanced]: /learning/katas/project-planning/400-advanced-strategic-planning

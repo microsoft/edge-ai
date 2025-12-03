@@ -3,11 +3,10 @@
     Repository-aware wrapper for markdown-link-check.
 
 .DESCRIPTION
-    Runs markdown-link-check with the repo-specific configuration that normalizes
-    Docsify hash-route navigation (e.g. #/docs/...) into real file paths so the
-    validator succeeds while the published docs continue to use hash routing.
-    This preserves Docsify behaviour at runtime and keeps GitHub/Azure DevOps
-    browsing workable, with link validation handling the trade-off.
+    Runs markdown-link-check with the repo-specific configuration for validating
+    markdown links across documentation files. Uses replacement patterns in the
+    configuration file to handle root-relative paths and ensure links resolve
+    correctly for both Docsify navigation and GitHub file browsing.
 
 .PARAMETER Path
     One or more files or directories to scan. Directories are searched
@@ -20,19 +19,22 @@
     Suppress non-error output from markdown-link-check.
 
 .EXAMPLE
-    # Validate Docsify navigation files with hash-route normalization
+    # Validate default Docsify navigation files
     ./Docs-Link-Check.ps1
 
 .EXAMPLE
     # Validate custom documentation folder with verbose output
     ./Docs-Link-Check.ps1 -Path docs/getting-started -Quiet:$false
+
+.EXAMPLE
+    # Validate specific markdown file
+    ./Docs-Link-Check.ps1 -Path README.md
     #>
 
 [CmdletBinding()]
 param(
     [string[]]$Path = @(
         "docs/_sidebar.md",
-        "docs/_navbar.md",
         "docs/_parts/docs-sidebar.md"
     ),
 
@@ -85,86 +87,6 @@ function Get-MarkdownTarget {
 
     return ($targets | Sort-Object -Unique)
 }
-<#
-.SYNOPSIS
-    Builds a normalized relative prefix between two paths.
-
-.DESCRIPTION
-    Computes the relative path from a source directory to a destination and
-    enforces forward-slash separators with a trailing slash when required to
-    produce consistent link prefixes.
-
-.PARAMETER FromPath
-    The directory from which the relative path should be calculated.
-
-.PARAMETER ToPath
-    The target path that should be expressed relative to the source.
-
-.OUTPUTS
-    System.String
-#>
-function Get-RelativePrefix {
-    param(
-        [string]$FromPath,
-        [string]$ToPath
-    )
-
-    $relative = [System.IO.Path]::GetRelativePath($FromPath, $ToPath)
-    if ([string]::IsNullOrWhiteSpace($relative) -or $relative -eq '.') {
-        return ''
-    }
-
-    $normalized = $relative -replace '\\', '/'
-    if (-not $normalized.EndsWith('/')) {
-        $normalized += '/'
-    }
-
-    return $normalized
-}
-<#
-.SYNOPSIS
-    Converts Docsify hash-route anchors into file-based links.
-
-.DESCRIPTION
-    Replaces Docsify hash-route anchors (e.g. #/docs/...) with paths that
-    resolve on disk, enabling markdown-link-check to validate content without
-    altering the original files.
-
-.PARAMETER Content
-    Markdown content potentially containing Docsify hash-route anchors.
-
-.PARAMETER DocsPrefix
-    Relative prefix inserted when rewriting #/docs/ links.
-
-.PARAMETER RootPrefix
-    Relative prefix inserted when rewriting root-level hash routes.
-
-.OUTPUTS
-    System.String
-#>
-function Convert-DocsifyLink {
-    param(
-        [string]$Content,
-        [string]$DocsPrefix,
-        [string]$RootPrefix
-    )
-
-    $updatedContent = $Content
-
-    $docsMatches = [System.Text.RegularExpressions.Regex]::Matches($updatedContent, '#/docs/([^\s)"]+)')
-    foreach ($match in $docsMatches) {
-        $replacement = '{0}{1}' -f $DocsPrefix, $match.Groups[1].Value
-        $updatedContent = $updatedContent.Replace($match.Value, $replacement)
-    }
-
-    $rootMatches = [System.Text.RegularExpressions.Regex]::Matches($updatedContent, '#/([^\s)"]+)')
-    foreach ($match in $rootMatches) {
-        $replacement = '{0}{1}' -f $RootPrefix, $match.Groups[1].Value
-        $updatedContent = $updatedContent.Replace($match.Value, $replacement)
-    }
-
-    return $updatedContent
-}
 
 $scriptRootParent = Split-Path -Path $PSScriptRoot -Parent
 $repoRootPath = Split-Path -Path $scriptRootParent -Parent
@@ -201,45 +123,22 @@ try {
         $relative = [System.IO.Path]::GetRelativePath($repoRoot.Path, $absolute)
         Write-Output "Checking $relative"
 
-        $fileDirectory = Split-Path -Path $absolute.Path -Parent
-        $docsPrefix = Get-RelativePrefix -FromPath $fileDirectory -ToPath (Join-Path -Path $repoRoot.Path -ChildPath 'docs')
-        $rootPrefix = Get-RelativePrefix -FromPath $fileDirectory -ToPath $repoRoot.Path
-        $originalContent = Get-Content -LiteralPath $absolute.Path -Raw
-        $sanitizedContent = Convert-DocsifyLink -Content $originalContent -DocsPrefix $docsPrefix -RootPrefix $rootPrefix
+        $commandArgs = $baseArguments + @($relative)
+        & $cli @commandArgs
+        $exitCode = $LASTEXITCODE
 
-        $tempPath = $null
-        $pathForCli = $relative
-
-        if ($sanitizedContent -ne $originalContent) {
-            $tempFileName = '.mcl-{0}-{1}' -f ([System.Guid]::NewGuid().ToString('N')), [System.IO.Path]::GetFileName($absolute.Path)
-            $tempPath = Join-Path -Path $fileDirectory -ChildPath $tempFileName
-            [System.IO.File]::WriteAllText($tempPath, $sanitizedContent, [System.Text.Encoding]::UTF8)
-            $pathForCli = [System.IO.Path]::GetRelativePath($repoRoot.Path, $tempPath)
-        }
-
-        try {
-            $commandArgs = $baseArguments + @($pathForCli)
-            & $cli @commandArgs
-            $exitCode = $LASTEXITCODE
-
-            if ($exitCode -ne 0) {
-                $failedFiles += $relative
-            }
-        }
-        finally {
-            if ($tempPath) {
-                Remove-Item -LiteralPath $tempPath -Force -ErrorAction SilentlyContinue
-            }
+        if ($exitCode -ne 0) {
+            $failedFiles += $relative
         }
     }
+
+    if ($failedFiles.Count -gt 0) {
+        Write-Error ("markdown-link-check reported failures for: {0}" -f ($failedFiles -join ', '))
+        exit 1
+    }
+
+    Write-Output 'markdown-link-check completed successfully.'
 }
 finally {
     Pop-Location
 }
-
-if ($failedFiles.Count -gt 0) {
-    Write-Error ("markdown-link-check reported failures for: {0}" -f ($failedFiles -join ', '))
-    exit 1
-}
-
-Write-Output 'markdown-link-check completed successfully.'

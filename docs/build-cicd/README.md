@@ -126,12 +126,9 @@ The project includes comprehensive build scripts for validation and automation:
 
 - [GitHub Workflow Templates][github-workflow-templates] - Reusable GitHub Actions workflows
 - [Azure Pipeline Templates][azure-pipeline-templates] - Azure DevOps pipeline templates
-- [Build Script Templates][script-templates] - Common build automation patterns
 
 ### Reference documentation
 
-- [Workflow Reference][workflow-reference] - Complete GitHub Actions and Azure DevOps reference
-- [Script Reference][script-reference] - Build script command and parameter reference
 - [Configuration Reference][configuration-reference] - CI/CD configuration options
 
 ## Troubleshooting
@@ -175,7 +172,7 @@ The project includes comprehensive build scripts for validation and automation:
 
 ## Related documentation
 
-- [Contributing Guidelines](../contributing/contributing.md) - Code contribution standards and processes
+- [Contributing Guidelines](../contributing/README.md) - Code contribution standards and processes
 - [Getting Started Guides](../getting-started/) - Initial setup and development environment
 - [Development Environment](../contributing/development-environment.md) - Dev Container setup and tools
 - [Coding Conventions](../contributing/coding-conventions.md) - Infrastructure code standards
@@ -189,9 +186,6 @@ The project includes comprehensive build scripts for validation and automation:
 [ci-cd-best-practices]: ./ci-cd-best-practices.md
 [github-workflow-templates]: ./templates/github-workflow-templates.md
 [azure-pipeline-templates]: ./templates/azure-pipeline-templates.md
-[script-templates]: ./templates/script-templates.md
-[workflow-reference]: ./reference/workflow-reference.md
-[script-reference]: ./reference/script-reference.md
 [configuration-reference]: ./configuration-reference.md
 
 ---
