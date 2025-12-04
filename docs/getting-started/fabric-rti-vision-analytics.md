@@ -17,8 +17,6 @@ keywords:
   - yolov3
 ---
 
-# Analyzing Vision AI Detection Data with Microsoft Fabric Real-Time Intelligence
-
 This guide shows you how to send object detection results from your edge AI vision system to Microsoft Fabric Real-Time Intelligence (RTI) for analytics, dashboards, and advanced querying with KQL.
 
 ## Prerequisites
@@ -143,15 +141,15 @@ Use this approach for quick proof-of-concept and learning.
 Once Eventhouse is created:
 
 1. Click **+ KQL Database** in the Eventhouse
-2. Configure database:
+1. Configure database:
    * **Name**: `detections`
    * **Description**: `Vision AI detection events`
-3. Click **Create**
+1. Click **Create**
 
 Create the detection events table:
 
 1. In the KQL database, click **Query**
-2. Run this KQL command to create the table:
+1. Run this KQL command to create the table:
 
 ```kusto
 .create table DetectionEvents (
@@ -167,7 +165,7 @@ Create the detection events table:
 )
 ```
 
-3. Create a JSON mapping for ingestion:
+1. Create a JSON mapping for ingestion:
 
 ```kusto
 .create table DetectionEvents ingestion json mapping 'DetectionEventsMapping'
@@ -198,13 +196,13 @@ Configure the EventStream source:
 Configure the EventStream destination:
 
 1. Click **Add destination** → **Eventhouse**
-2. Configure destination:
+1. Configure destination:
    * **Eventhouse**: `vision-detection-events`
    * **KQL Database**: `detections`
    * **Table**: `DetectionEvents`
    * **Input data format**: `JSON`
    * **Mapping**: `DetectionEventsMapping`
-3. Click **Add**
+1. Click **Add**
 
 ### Step 5: Create AIO DataFlow with Custom Endpoint
 
@@ -368,6 +366,14 @@ DetectionEvents
 
 Use this approach for production-ready, repeatable deployments.
 
+> **💡 Note**: This blueprint uses the Fabric RTI Terraform module (`src/100-edge/130-messaging/terraform/modules/fabric-rti/`) which creates:
+>
+> * **Kafka-based DataFlowEndpoint** to Fabric EventStream (managed identity authentication)
+> * **Asset-based DataFlow** routing MQTT topics to Fabric RTI
+> * **Automatic role assignment** (Fabric workspace Contributor for AIO identity)
+>
+> For YAML-based deployments or custom configurations, see the [ADR Integration Patterns](../solution-adr-library/edge-inference-vs-azure-video-indexer.md#technical-integration-patterns).
+
 ### Why Use Terraform for Fabric RTI?
 
 * **Infrastructure as Code**: Version control your analytics infrastructure
@@ -527,7 +533,7 @@ This approach allows you to add analytics capabilities to existing edge AI deplo
 
 ### Terraform Troubleshooting
 
-**Issue: Fabric capacity not found**
+#### Issue: Fabric capacity not found
 
 ```bash
 # List available Fabric capacities
@@ -536,7 +542,7 @@ az fabric capacity list --subscription <subscription-id>
 # Update terraform.tfvars with correct capacity name
 ```
 
-**Issue: DataFlow not connecting to EventStream**
+#### Issue: DataFlow not connecting to EventStream
 
 ```bash
 # Check EventStream endpoint configuration
@@ -549,7 +555,7 @@ kubectl describe dataflowendpoint fabric-eventstream-endpoint -n azure-iot-opera
 kubectl get secret fabric-eventstream-connection -n azure-iot-operations
 ```
 
-**Issue: No data appearing in Eventhouse**
+#### Issue: No data appearing in Eventhouse
 
 ```bash
 # Check DataFlow logs for errors
@@ -638,16 +644,14 @@ DetectionEvents
 Configure data retention policies in Eventhouse:
 
 ```kusto
-.alter table DetectionEvents policy retention 
+.alter table DetectionEvents policy retention
 ```
 
 ```json
 '{"SoftDeletePeriod":"90.00:00:00","Recoverability":"Enabled"}'
 ```
 
-This keeps 90 days of detection data with soft-delete recovery.
-
-### Batch Optimization
+This keeps 90 days of detection data with soft-delete recovery.### Batch Optimization
 
 For high-volume scenarios, optimize DataFlow batching:
 

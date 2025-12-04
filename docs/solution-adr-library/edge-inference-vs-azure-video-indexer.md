@@ -169,16 +169,31 @@ We developed **four architectural approaches** for real-time object detection on
 
 ### Processing Pipeline
 
-**Our Solutions**:
+**Our Solutions** (with Existing DataFlow Infrastructure):
 
 ```mermaid
 graph LR
     A[RTSP Camera] -->|Stream| B[Media Connector/AI Service]
     B -->|Frames| C[Inference Engine]
     C -->|Detections| D[MQTT Broker]
-    D -->|Results| E[Fabric RTI / Event Grid]
-    D -->|Results| F[Local Storage]
+    D -->|vision/results/#| E[AIO DataFlow]
+    E -->|Event Grid Endpoint| F[Event Grid MQTT]
+    E -->|Fabric RTI Endpoint| G[Fabric EventStream]
+    G -->|Ingest| H[Eventhouse KQL DB]
+    D -->|Archive| I[ACSA Local Storage]
+
+    style E fill:#0078d4,stroke:#004578,color:#fff
+    style F fill:#7fba00,stroke:#5a8700,color:#fff
+    style G fill:#ffb900,stroke:#d39300,color:#000
+    style H fill:#ffb900,stroke:#d39300,color:#000
 ```
+
+**Infrastructure Components**:
+
+* **AIO DataFlow**: `starter-kit/mqtt-cloud/mqtt-to-event-grid-df.yaml` (Event Grid) or `130-messaging/modules/fabric-rti/` (Fabric RTI)
+* **Event Grid Endpoint**: `starter-kit/endpoints/eventgrid-df-endpoint.yaml` (SystemAssignedManagedIdentity)
+* **Fabric RTI Endpoint**: Terraform module with Kafka protocol (`bootstrap_server:9093`)
+* **ACSA Local Storage**: `starter-kit/mqtt-file-system/mqtt-to-file-system-df.yaml` (edge archival)
 
 **Azure VI Cloud**:
 
@@ -639,44 +654,138 @@ See [MLOps Tooling for Vision Inference](../solution-technology-paper-library/ml
 
 ### Our Solutions → Azure Services
 
-**MQTT to Event Grid**:
+**MQTT to Event Grid** (Using Existing Template):
 
-```yaml
-# AIO DataFlow configuration
-apiVersion: connectivity.iotoperations.azure.com/v1beta1
-kind: DataFlow
-metadata:
-  name: detections-to-event-grid
-spec:
-  source:
-    mqttSource:
-      topic: vision/results/#
-  transformation:
-    map:
-      - $source: .detections
-        $destination: .data.detections
-  destination:
-    eventGridDestination:
-      endpoint: https://eventgrid.azure.com/...
+The repo provides production-ready templates in `src/starter-kit/dataflows-acsa-egmqtt-bidirectional/yaml/`:
+
+```bash
+# Instantiate existing template for vision analytics
+export UNIQUE_POSTFIX="vision"
+export DATA_SOURCE="vision/results/#"
+export ENDPOINT_NAME="vision-event-grid"
+export DATA_DESTINATION="vision/detections"
+
+envsubst < src/starter-kit/dataflows-acsa-egmqtt-bidirectional/yaml/mqtt-cloud/mqtt-to-event-grid-df.yaml | \
+  kubectl apply -f -
 ```
 
-**MQTT to Fabric RTI**:
+<details>
+<summary>Template Structure (Click to expand)</summary>
 
 ```yaml
-# EventStream source
-apiVersion: connectivity.iotoperations.azure.com/v1beta1
-kind: DataFlow
+# Template: src/starter-kit/dataflows-acsa-egmqtt-bidirectional/yaml/mqtt-cloud/mqtt-to-event-grid-df.yaml
+apiVersion: connectivity.iotoperations.azure.com/v1
+kind: Dataflow
 metadata:
-  name: detections-to-fabric
+  name: mqtt-to-event-grid-df-${UNIQUE_POSTFIX}
+  namespace: azure-iot-operations
 spec:
-  source:
-    mqttSource:
-      topic: vision/results/#
-  destination:
-    fabricDestination:
-      endpoint: https://fabric.microsoft.com/...
-      eventstream: vision-detections
+  profileRef: df-profile
+  mode: enabled
+  operations:
+    - operationType: source
+      name: mqtt-source
+      sourceSettings:
+        endpointRef: default
+        dataSources: ["${DATA_SOURCE}"]  # Set to "vision/results/#"
+        serializationFormat: Json
+    - operationType: destination
+      name: event-grid-destination
+      destinationSettings:
+        endpointRef: ${ENDPOINT_NAME}
+        dataDestination: ${DATA_DESTINATION}
 ```
+
+**Event Grid Endpoint Configuration** (`endpoints/eventgrid-df-endpoint.yaml`):
+
+```yaml
+apiVersion: connectivity.iotoperations.azure.com/v1
+kind: DataflowEndpoint
+metadata:
+  name: ${ENDPOINT_NAME}  # "vision-event-grid"
+  namespace: azure-iot-operations
+spec:
+  endpointType: Mqtt
+  mqttSettings:
+    host: "${EVENT_GRID_NAMESPACE}.${LOCATION}-1.ts.eventgrid.azure.net:8883"
+    authentication:
+      method: SystemAssignedManagedIdentity
+      systemAssignedManagedIdentitySettings: {}
+    tls:
+      mode: Enabled
+```
+
+</details>
+
+**MQTT to Fabric RTI** (Using Existing Terraform Module):
+
+The repo provides a complete Terraform implementation in `src/100-edge/130-messaging/terraform/modules/fabric-rti/`:
+
+```hcl
+# Use existing Fabric RTI DataFlow module
+module "vision_fabric_dataflow" {
+  source = "../../src/100-edge/130-messaging/terraform/modules/fabric-rti"
+
+  # Fabric connection (from 032-fabric-rti component)
+  fabric_eventstream_endpoint = {
+    bootstrap_server = "<eventhouse>.kusto.fabric.microsoft.com:9093"
+    topic_name       = "vision-detections"
+  }
+  fabric_workspace = var.fabric_workspace
+
+  # Asset configuration (vision camera)
+  asset_name = "vision-camera-01"
+  adr_namespace = var.adr_namespace
+
+  # AIO dependencies
+  aio_instance         = var.aio_instance
+  aio_identity         = var.aio_identity
+  aio_dataflow_profile = var.aio_dataflow_profile
+  custom_location_id   = var.custom_location_id
+
+  # Standard variables
+  resource_prefix = var.resource_prefix
+  environment     = var.environment
+  instance        = var.instance
+}
+```
+
+**Key Features**:
+
+* ✅ **Kafka endpoint** to Fabric EventStream (managed identity authentication)
+* ✅ **Asset-based routing** (filters by camera/device)
+* ✅ **Automatic role assignment** (Fabric workspace Contributor for AIO identity)
+* ✅ **Passthrough transformation** (JSON serialization)
+
+**Alternative: Blueprint Deployment**:
+
+For complete Fabric RTI provisioning (EventStream + Eventhouse + DataFlow), use the existing blueprint:
+
+```bash
+cd blueprints/fabric-rti/terraform
+terraform init
+terraform apply \
+  -var="fabric_workspace_name=vision-analytics" \
+  -var="should_create_fabric_eventhouse=true"
+```
+
+See `blueprints/fabric-rti/terraform/README.md` for full configuration options.
+
+### Infrastructure Reusability Summary
+
+| Integration Pattern | ADR Example | Existing Implementation | Status |
+|---------------------|-------------|------------------------|--------|
+| MQTT → Event Grid | Conceptual YAML | ✅ `starter-kit/mqtt-cloud/mqtt-to-event-grid-df.yaml` | **READY** - Parameterized template |
+| Event Grid Endpoint | Not shown | ✅ `starter-kit/endpoints/eventgrid-df-endpoint.yaml` | **READY** - Managed identity auth |
+| MQTT → Fabric RTI | Conceptual YAML | ✅ `130-messaging/modules/fabric-rti/` (Terraform) | **READY** - Kafka endpoint with auto role assignment |
+| Fabric Provisioning | Not shown | ✅ `000-cloud/031-fabric/`, `032-fabric-rti/` | **READY** - Eventhouse + EventStream |
+| Complete Blueprint | Not shown | ✅ `blueprints/fabric-rti/terraform/` | **READY** - End-to-end orchestration |
+
+**Deployment Options**:
+
+1. **YAML Templates** (Kubernetes-native): Use `starter-kit` templates with `envsubst` for parameter substitution
+2. **Terraform Modules** (IaC): Use component modules (`130-messaging/modules/fabric-rti/`) for granular control
+3. **Blueprints** (Complete Solutions): Use `blueprints/fabric-rti/` for end-to-end Fabric RTI deployment
 
 ### Azure VI Arc → Cloud Sync
 
