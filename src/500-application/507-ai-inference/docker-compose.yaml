@@ -5,7 +5,7 @@ services:
   ai-edge-inference:
     build:
       context: ./services
-      dockerfile: ai-edge-inference/Dockerfile.unified
+      dockerfile: ai-edge-inference/Dockerfile
       args:
         BACKEND: ${AI_BACKEND:-onnx}  # Default to ONNX, override with AI_BACKEND env var
     image: ${REGISTRY:-local}/${APPLICATION:-ai-inference}/ai-edge-inference:${BUILD_ID:-onnx-local}

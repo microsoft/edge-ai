@@ -95,16 +95,18 @@ This service supports dual inference backends through conditional compilation:
 
 ### Compilation Features
 
-```toml
-# Build with Candle only (default, minimal size)
-cargo build --release
+```bash
+# Build with ONNX Runtime (default)
+cargo build --release --features onnx-runtime
 
-# Build with ONNX Runtime support
-cargo build --release --features onnx
+# Build with Candle backend
+cargo build --release --features candle --no-default-features
 
-# Build with both backends
-cargo build --release --features candle,onnx
+# Build with ONNX Runtime explicitly
+cargo build --release --features onnx --no-default-features
 ```
+
+**Note**: The Dockerfile uses `--no-default-features` with explicit backend selection via the `BACKEND` build argument.
 
 ## Microservices Architecture
 
@@ -129,19 +131,26 @@ This service implements a clean separation of concerns with advanced ML backend 
 
 ## Container Deployment
 
-The service is containerized using a multi-stage Docker build:
+The service is containerized using a multi-stage Docker build with backend selection:
 
-```dockerfile
-# Runtime size: ~24.8MB (optimized)
-FROM scratch
-COPY --from=build /ai-edge-mqtt-publisher /
-ENTRYPOINT ["/ai-edge-mqtt-publisher"]
+```bash
+# Build ONNX Runtime backend (default)
+docker build --build-arg BACKEND=onnx -t ai-edge-inference:onnx .
+
+# Build Candle backend (smaller image, pure Rust)
+docker build --build-arg BACKEND=candle -t ai-edge-inference:candle .
 ```
+
+### Image Characteristics
+
+- **ONNX Runtime**: ~200-300MB image with full model support and GPU acceleration
+- **Candle**: ~50-100MB image, pure Rust, fastest startup for resource-constrained environments
 
 ### Available Tags
 
-- `<your-acr>.azurecr.io/ai-edge-inference:latest` - Latest stable build
-- Built with conditional compilation for minimal footprint
+- `<your-acr>.azurecr.io/ai-edge-inference:onnx` - ONNX Runtime backend
+- `<your-acr>.azurecr.io/ai-edge-inference:candle` - Candle backend
+- Built with conditional compilation via `BACKEND` build argument
 
 ## Message Flow
 
@@ -401,13 +410,19 @@ edge-ai/business_unit/facility/gateway_id/device_id/ai/status
 ### Container Build and Deployment
 
 ```bash
-# Build the container image
+# Build the container image with specific backend
 cd /path/to/ai-edge-inference
-docker build -t <your-acr>.azurecr.io/ai-edge-inference:latest .
+
+# ONNX Runtime backend (larger image, full model support)
+docker build --build-arg BACKEND=onnx -t <your-acr>.azurecr.io/ai-edge-inference:onnx .
+
+# Candle backend (smaller image, pure Rust)
+docker build --build-arg BACKEND=candle -t <your-acr>.azurecr.io/ai-edge-inference:candle .
 
 # Push to Azure Container Registry
 az acr login --name <your-acr>
-docker push <your-acr>.azurecr.io/ai-edge-inference:latest
+docker push <your-acr>.azurecr.io/ai-edge-inference:onnx
+docker push <your-acr>.azurecr.io/ai-edge-inference:candle
 
 # Verify image availability
 az acr repository show-tags --name <your-acr> --repository ai-edge-inference
