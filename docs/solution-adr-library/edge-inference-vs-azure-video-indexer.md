@@ -266,7 +266,17 @@ graph LR
 | Maintenance (annual) | Ongoing | $5,000/year |
 | **Subtotal Software** | | **$25,000-65,000** |
 
-**Total 3-Year TCO (Our Option 1)**: ~$32,300-$72,300 (~$2,150-$4,820/camera/year)
+**Total 3-Year TCO (Our Option 1, baseline)**: ~$32,300-$72,300 (~$2,150-$4,820/camera/year)
+
+**ACSA Storage Optimization Impact** (see [ACSA Storage Architecture](../getting-started/acsa-storage-architecture-for-vision.md)):
+
+With selective cloud sync (event-driven uploads only), ACSA reduces cloud egress and storage costs:
+
+* **Baseline cloud costs** (full sync): $66/month egress + $28/month storage = $94/month
+* **ACSA selective sync** (90% reduction): $6.60/month egress + $6/month storage = $12.60/month
+* **3-Year savings**: $81.40/month × 36 months = **$2,930**
+
+**Total 3-Year TCO (Our Option 1, ACSA-optimized)**: ~$29,370-$69,370 (~$1,960-$4,625/camera/year)
 
 ### Azure Video Indexer Cloud - Pricing
 
@@ -309,17 +319,21 @@ graph LR
 
 | Solution | Total Cost | Per Camera/Year | Notes |
 |----------|-----------|-----------------|-------|
-| **Our Option 1** | $32K-$72K | $2,150-$4,820 | One-time dev, low OpEx |
+| **Our Option 1 (baseline)** | $32K-$72K | $2,150-$4,820 | One-time dev, low OpEx |
+| **Our Option 1 (ACSA-optimized)** | $29K-$69K | $1,960-$4,625 | **+ selective sync savings** |
 | **Our Option 2** | $52K-$102K | $3,467-$6,800 | Higher dev cost (gRPC) |
 | **Azure VI Arc** | ~$49K | ~$3,280 | Managed service, limited AI features |
 | **Azure VI Cloud** | ~$314K | ~$20,920 | Rich AI features, high OpEx |
 
+**ACSA Optimization Impact**: Selective cloud sync (event-driven uploads) reduces egress and storage costs by ~$2,930 over 3 years. This optimization applies to all our edge AI solutions and hybrid scenarios. See [ACSA Storage Architecture](../getting-started/acsa-storage-architecture-for-vision.md) for detailed configuration.
+
 **Cost Efficiency Ranking** (lowest to highest):
 
-1. Our Option 1 (if dev team available)
-2. Azure VI Arc (managed, mid-range)
-3. Our Option 2 (low latency, higher dev)
-4. Azure VI Cloud (premium features, highest cost)
+1. Our Option 1 with ACSA optimization (if dev team available)
+2. Our Option 1 baseline (if dev team available)
+3. Azure VI Arc (managed, mid-range)
+4. Our Option 2 (low latency, higher dev)
+5. Azure VI Cloud (premium features, highest cost)
 
 ## Trade-offs & Decision Matrix
 
@@ -408,9 +422,10 @@ graph LR
 
 **Cost Example** (5 cameras, 3 years):
 
-* Edge AI (Our Option 1): $32K-$72K
+* Edge AI (Our Option 1, ACSA-optimized): $29K-$69K
 * VI Cloud (100 hours/year flagged events): ~$10K/year = $30K/3 years
-* **Total**: $62K-$102K (vs $314K for full VI Cloud)
+* **Total**: $59K-$99K (vs $314K for full VI Cloud)
+* **ACSA selective sync benefit**: Uploads only anomalies + 30s context windows, avoiding $2,930 in baseline egress costs
 
 ### Scenario 2: Azure VI Arc (Live) + Azure VI Cloud (Deep Analysis)
 
@@ -462,9 +477,10 @@ graph LR
 
 **Cost Example** (5 cameras, 3 years):
 
-* Edge AI (Our Option 1): $32K-$72K
+* Edge AI (Our Option 1, ACSA-optimized): $29K-$69K
 * Fabric RTI (Eventhouse): ~$500/month = $18K/3 years
-* **Total**: $50K-$90K
+* **Total**: $47K-$87K
+* **ACSA benefit**: Edge-local KQL queries via ACSA cache reduce Fabric RTI bandwidth by 80% for dashboard queries
 
 ## Recommendations by Use Case
 
