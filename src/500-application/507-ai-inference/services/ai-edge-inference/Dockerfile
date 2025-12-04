@@ -1,8 +1,13 @@
+# Multi-stage build for ai-edge-inference with configurable backend support
+# Build with: docker build --build-arg BACKEND=onnx|candle .
+# Cross-compilation support stage
+FROM --platform=$BUILDPLATFORM tonistiigi/xx:master AS xx
+
 # Build stage - using SHA-pinned Azure Linux image
 # SHA mapping maintained in scripts/security/Update-DockerSHAPinning.ps1
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/cbl-mariner/base/core:2.0@sha256:3ea2978438516bea837ebcf2140d487c1305317c2acea100393b775365b0d7f5 AS build
 
-# Install build dependencies including Rust and ONNX Runtime dependencies
+# Install build dependencies including Rust and cross-compilation tools
 RUN tdnf install -y \
     openssl-devel-1.1.1k-36.cm2 \
     gcc-11.2.0-8.cm2 \
@@ -21,6 +26,7 @@ RUN tdnf install -y \
 # Set shell options for better error handling with pipes
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
+# Install Rust manually (needed for Rust 1.86+ for Azure IoT Operations crates)
 RUN wget -q https://sh.rustup.rs -O /tmp/rustup.sh && \
     bash /tmp/rustup.sh -y --profile minimal --default-toolchain 1.86.0 --component rustc,cargo,rust-std,rustfmt && \
     rm /tmp/rustup.sh
@@ -28,13 +34,40 @@ RUN wget -q https://sh.rustup.rs -O /tmp/rustup.sh && \
 # Add Rust binaries to PATH for subsequent RUN commands
 ENV PATH="/root/.cargo/bin:${PATH}"
 
+COPY --from=xx / /
+ARG TARGETPLATFORM
+ARG BACKEND=onnx
+
+# Create minimal installation root for Azure Linux runtime
+RUN mkdir -p /installroot/usr/local/bin /build/bin /installroot/bin \
+    /installroot/opt/onnxruntime /installroot/etc /installroot/lib64 \
+    /installroot/usr/lib64 /installroot/tmp
+
+# Copy essential libraries for runtime
+RUN cp -a /lib64/ld-linux-x86-64.so.* /installroot/lib64/ && \
+    cp -a /usr/lib64/libssl.so.* /installroot/usr/lib64/ && \
+    cp -a /usr/lib64/libcrypto.so.* /installroot/usr/lib64/ && \
+    cp -a /lib64/libc.so.* /installroot/lib64/ && \
+    cp -a /lib64/libdl.so.* /installroot/lib64/ && \
+    cp -a /lib64/libpthread.so.* /installroot/lib64/ && \
+    cp -a /lib64/libm.so.* /installroot/lib64/ && \
+    cp -a /lib64/librt.so.* /installroot/lib64/ && \
+    cp -a /usr/lib64/libz.so.* /installroot/usr/lib64/
+
+# Conditionally install ONNX Runtime dependencies (only for ONNX backend)
+WORKDIR /tmp
+RUN if [ "$BACKEND" = "onnx" ]; then \
+        mkdir -p /opt/onnxruntime && \
+        # Use amd64 as default, can be enhanced for multi-arch later
+        wget -q "https://github.com/microsoft/onnxruntime/releases/download/v1.17.0/onnxruntime-linux-x64-1.17.0.tgz" && \
+        tar -xzf "onnxruntime-linux-x64-1.17.0.tgz" && \
+        cp -r onnxruntime-linux-x64-1.17.0/* /opt/onnxruntime/ && \
+        rm -rf onnxruntime-linux-x64-1.17.0.tgz onnxruntime-linux-x64-1.17.0 && \
+        mkdir -p /installroot/opt/onnxruntime && \
+        cp -r /opt/onnxruntime/* /installroot/opt/onnxruntime/; \
+    fi
+
 WORKDIR /app
-
-# Copy the entire services directory
-COPY . .
-
-# Build the application from ai-edge-inference directory
-WORKDIR /app/ai-edge-inference
 
 # Define a build argument to control whether to use replace-with (default to false for local builds)
 ARG USE_REPLACE_WITH=false
@@ -54,60 +87,56 @@ RUN mkdir -p .cargo && \
       echo '# For local development: not using replace-with to avoid authentication issues' >> .cargo/config.toml; \
     fi
 
-# Download and install ONNX Runtime in build stage
-# hadolint ignore=DL4001
-RUN mkdir -p /opt/onnxruntime
-WORKDIR /tmp
-# Using wget for large binary downloads (curl used for rustup script installation)
-RUN wget -q https://github.com/microsoft/onnxruntime/releases/download/v1.17.0/onnxruntime-linux-x64-1.17.0.tgz && \
-    tar -xzf onnxruntime-linux-x64-1.17.0.tgz && \
-    cp -r onnxruntime-linux-x64-1.17.0/* /opt/onnxruntime/ && \
-    rm -rf onnxruntime-linux-x64-1.17.0.tgz onnxruntime-linux-x64-1.17.0
+# Copy the ai-edge-inference-crate dependency to the correct relative path
+COPY ./ai-edge-inference-crate ../ai-edge-inference-crate
 
-# Let ort crate handle ONNX Runtime automatically
-# Force rebuild by adding timestamp: 2025-09-25 02:26
-WORKDIR /app
-RUN cargo build --release
+# Copy source code and configuration
+COPY ./ai-edge-inference/src ./src
+COPY ./ai-edge-inference/Cargo.toml ./Cargo.toml
+COPY ./ai-edge-inference/.cargo ./.cargo
 
+# Build the application with backend-specific features
+RUN if [ "$BACKEND" = "candle" ]; then \
+        cargo build --release --features candle --no-default-features; \
+    elif [ "$BACKEND" = "onnx" ]; then \
+        cargo build --release --features onnx-runtime --no-default-features; \
+    else \
+        echo "Invalid BACKEND: $BACKEND. Use 'onnx' or 'candle'" && exit 1; \
+    fi
+
+# Create a build info file for runtime verification
+RUN echo "backend=${BACKEND}" > /app/build-info.txt && \
+    echo "built_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> /app/build-info.txt
+
+# Conditional runtime stage based on backend
 # Runtime stage - using SHA-pinned Azure Linux image
 # SHA mapping maintained in scripts/security/Update-DockerSHAPinning.ps1
-FROM mcr.microsoft.com/cbl-mariner/base/core:2.0@sha256:3ea2978438516bea837ebcf2140d487c1305317c2acea100393b775365b0d7f5
+FROM mcr.microsoft.com/cbl-mariner/base/core:2.0@sha256:3ea2978438516bea837ebcf2140d487c1305317c2acea100393b775365b0d7f5 AS runtime
+ARG BACKEND=onnx
 
-# Install runtime dependencies and ONNX Runtime
+# Install runtime dependencies and create non-root user
 RUN tdnf install -y \
-    wget-1.21.2-4.cm2 \
     ca-certificates-2.0.0-22.cm2 \
-    openssl-1.1.1k-36.cm2 \
     shadow-utils-4.9-14.cm2 \
+    wget-1.21.2-4.cm2 \
     tar-1.34-3.cm2 \
     && tdnf clean all && \
     groupadd -r appuser && useradd -r -g appuser appuser
 
-# Download and install ONNX Runtime
-RUN mkdir -p /opt/onnxruntime && \
-    wget -q https://github.com/microsoft/onnxruntime/releases/download/v1.17.0/onnxruntime-linux-x64-1.17.0.tgz && \
-    tar -xzf onnxruntime-linux-x64-1.17.0.tgz -C /opt/onnxruntime --strip-components=1 && \
-    rm onnxruntime-linux-x64-1.17.0.tgz
+# Conditionally copy ONNX Runtime (only for ONNX backend)
+RUN if [ "$BACKEND" = "onnx" ]; then \
+        mkdir -p /opt/onnxruntime; \
+    fi
 
-# Set library path for ONNX Runtime and debug info
-ENV LD_LIBRARY_PATH="/opt/onnxruntime/lib"
-ENV ORT_LIB_LOCATION="/opt/onnxruntime/lib"
+# Copy ONNX Runtime from build stage if needed
+COPY --from=build /opt/onnxruntime /opt/onnxruntime
 
-# Copy ONNX Runtime libraries from build stage to runtime
-COPY --from=build /opt/onnxruntime/lib/ /opt/onnxruntime/lib/
-
-# Debug: List what's actually in the ONNX Runtime directory
-RUN ls -la /opt/onnxruntime/ || echo "ONNX Runtime directory not found" && \
-    ls -la /opt/onnxruntime/lib/ || echo "ONNX Runtime lib directory not found" && \
-    echo "LD_LIBRARY_PATH: $LD_LIBRARY_PATH" && \
-    echo "Testing library loading:" && \
-    ldd --help > /dev/null 2>&1 && ldd /opt/onnxruntime/lib/libonnxruntime.so || echo "ldd failed"
-
-# Copy application binary
-COPY --from=build /app/ai-edge-inference/target/release/ai-edge-mqtt-publisher /usr/local/bin/ai-edge-mqtt-publisher
+# Copy application binary and build info
+COPY --from=build /app/target/release/ai-edge-mqtt-publisher /usr/local/bin/ai-edge-mqtt-publisher
+COPY --from=build /app/build-info.txt /app/build-info.txt
 
 # Set proper ownership and permissions
-RUN chown appuser:appuser /usr/local/bin/ai-edge-mqtt-publisher && \
+RUN chown -R appuser:appuser /usr/local/bin/ai-edge-mqtt-publisher /app && \
     chmod +x /usr/local/bin/ai-edge-mqtt-publisher
 
 # Set environment variables
@@ -115,6 +144,10 @@ ENV RUST_LOG=info
 ENV MODEL_DIRECTORY=/models
 ENV METRICS_PORT=8080
 ENV HEALTH_PORT=8081
+
+# Set ONNX Runtime environment variables (will be ignored for Candle)
+ENV LD_LIBRARY_PATH="/opt/onnxruntime/lib"
+ENV ORT_LIB_LOCATION="/opt/onnxruntime/lib"
 
 # Use the non-root user for better security
 USER appuser
@@ -125,3 +158,9 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
 
 # Default entrypoint
 ENTRYPOINT ["/usr/local/bin/ai-edge-mqtt-publisher"]
+
+# Labels for build metadata
+ARG BACKEND
+LABEL ai.edge.inference.backend="${BACKEND}"
+LABEL ai.edge.inference.version="0.2.0"
+LABEL maintainer="Edge AI Team"

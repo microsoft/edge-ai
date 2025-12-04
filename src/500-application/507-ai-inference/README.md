@@ -84,10 +84,10 @@ This component implements a scalable AI inference service designed for industria
 
    ```bash
    cd src/500-application/507-ai-inference
-   
+
    # Default: ONNX Runtime backend
    docker-compose up --build
-   
+
    # Or specify backend explicitly
    AI_BACKEND=onnx docker-compose up --build   # ONNX Runtime (default)
    AI_BACKEND=candle docker-compose up --build # Candle (pure Rust)
@@ -203,15 +203,21 @@ docker-compose restart ai-edge-inference
 ### Building Services
 
 ```bash
-# Build with specific backend
-docker build --build-arg BACKEND=onnx -t ai-edge-inference:onnx ./services
-docker build --build-arg BACKEND=candle -t ai-edge-inference:candle ./services
+# Build with specific backend using docker
+cd services/ai-edge-inference
+docker build --build-arg BACKEND=onnx -t ai-edge-inference:onnx .
+docker build --build-arg BACKEND=candle -t ai-edge-inference:candle .
 
-# Or use docker-compose
+# Or use docker-compose from project root
 AI_BACKEND=onnx docker-compose build
 AI_BACKEND=candle docker-compose build
 
-# Build shared crate directly
+# Build services directly with cargo
+cd services/ai-edge-inference
+cargo build --release --features onnx-runtime --no-default-features  # ONNX
+cargo build --release --features candle --no-default-features        # Candle
+
+# Build shared crate
 cd services/ai-edge-inference-crate
 cargo build --release
 ```
