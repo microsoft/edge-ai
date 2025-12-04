@@ -148,7 +148,15 @@ jobs:
             Write-Host "Pushing to GitHub..."
             $githubUrl = "$(github-edge-ai-repo-url)" -replace '__token__', '$(githubAuth.installationToken)'
             git remote add github $githubUrl 2>$null || git remote set-url github $githubUrl
-            git push github HEAD:${{ parameters.githubTargetBranch }} --force-with-lease
+
+            # Fetch from GitHub to update all remote-tracking refs for --force-with-lease
+            Write-Host "Fetching current state from GitHub..."
+            git fetch github
+            if ($LASTEXITCODE -ne 0) {
+              Write-Host "##vso[task.logissue type=warning]Failed to fetch from GitHub, continuing..."
+            }
+
+            git push github HEAD:${{ parameters.githubTargetBranch }} --force-with-lease=${{ parameters.githubTargetBranch }}
             if ($LASTEXITCODE -ne 0) {
               Write-Host "##vso[task.logissue type=error]Failed to push to GitHub"
               exit 1
