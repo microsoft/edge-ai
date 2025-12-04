@@ -1,6 +1,7 @@
 
 # Abbreviations & Acronyms
 # Academic & Technical Terms
+# Azure Video Indexer terms
 # Business & Enterprise
 # Camera & Video Equipment Vendors
 # Camera Brands
@@ -57,6 +58,7 @@ Hikvision
 Holo
 Hudi
 Huggingface
+IPTC
 JENNI
 JMES
 JMESPath
@@ -101,6 +103,7 @@ Silverlight
 Simbolic
 Substep
 TOCTOU
+TTML
 Tapo
 Tekton
 Terragrunt
