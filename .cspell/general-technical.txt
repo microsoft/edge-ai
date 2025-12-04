@@ -1005,6 +1005,8 @@ mdlint
 mdutils
 memberwise
 memcpy
+memmap
+memmap2
 memprofile
 mergetool
 messaage
@@ -1260,6 +1262,7 @@ privatelink
 profisee
 proliant
 proseware
+prost
 prosys
 protobuf
 proxy
