@@ -1566,3 +1566,27 @@ Dahua
 connectorinstance
 connectortemplate
 tptz
+
+# YOLO Class Names
+aeroplane
+pottedplant
+diningtable
+tvmonitor
+
+# Camera Brands
+Tapo
+
+# Fabric & KQL
+dataflowendpoint
+timechart
+columnchart
+piechart
+
+# Streaming Services
+wowzaec
+streamlock
+
+# Placeholder Values
+yourpassword
+yourkey
+entitypath
