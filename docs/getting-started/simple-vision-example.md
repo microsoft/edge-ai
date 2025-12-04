@@ -287,7 +287,9 @@ spec:
 kubectl apply -f models-pvc.yaml
 ```
 
-### 4.2 Download YOLOv3-Tiny Model (Inside Cluster)
+### 4.2 Download ONNX Models (Inside Cluster)
+
+#### Option A: YOLOv3-Tiny (Default - Fastest)
 
 Create a Kubernetes Job to download the model directly into the cluster:
 
@@ -325,6 +327,96 @@ spec:
         persistentVolumeClaim:
           claimName: ai-models-pvc
 ```
+
+#### Option B: EfficientDet-D0 (Better Accuracy)
+
+For improved small object detection (recommended for manufacturing quality control):
+
+```yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: efficientdet-model-downloader
+  namespace: azure-iot-operations
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: downloader
+        image: curlimages/curl:latest
+        command: ["/bin/sh"]
+        args:
+          - -c
+          - |
+            set -e
+            echo "Downloading EfficientDet-D0 model..."
+            mkdir -p /models
+            # Note: Replace with actual ONNX export from TensorFlow Model Zoo
+            # See: https://github.com/tensorflow/models/tree/master/research/object_detection
+            curl -L -o /models/efficientdet-d0.onnx \
+              "[YOUR_MODEL_URL_HERE]"
+            echo "Model downloaded successfully!"
+            ls -lh /models/
+        volumeMounts:
+        - name: models
+          mountPath: /models
+      volumes:
+      - name: models
+        persistentVolumeClaim:
+          claimName: ai-models-pvc
+```
+
+#### Option C: MobileNetV2 (Classification Only)
+
+For simple image classification tasks (people counting, crowd density):
+
+```yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: mobilenet-model-downloader
+  namespace: azure-iot-operations
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: downloader
+        image: curlimages/curl:latest
+        command: ["/bin/sh"]
+        args:
+          - -c
+          - |
+            set -e
+            echo "Downloading MobileNetV2 model..."
+            mkdir -p /models
+            curl -L -o /models/mobilenetv2.onnx \
+              "https://github.com/onnx/models/raw/main/validated/vision/classification/mobilenet/model/mobilenetv2-12.onnx"
+            echo "Model downloaded successfully!"
+            ls -lh /models/
+        volumeMounts:
+        - name: models
+          mountPath: /models
+      volumes:
+      - name: models
+        persistentVolumeClaim:
+          claimName: ai-models-pvc
+```
+
+**Model Comparison**:
+
+| Model | Task | Latency | Accuracy | Best For |
+|-------|------|---------|----------|----------|
+| YOLOv3-Tiny | Object Detection | 15-25ms | 33.1% mAP | Real-time people/vehicle detection |
+| EfficientDet-D0 | Object Detection | 30-50ms | 34.6% mAP | Small defect detection, quality control |
+| MobileNetV2 | Classification | 5-10ms | 72.0% top-1 | Crowd density, scene classification |
+
+Choose based on your use case:
+
+- **Security/Surveillance**: YOLOv3-Tiny (fastest)
+- **Manufacturing QC**: EfficientDet-D0 (better small object detection)
+- **Retail Analytics**: MobileNetV2 (privacy-preserving, no bounding boxes)
 
 ```bash
 kubectl apply -f model-downloader.yaml

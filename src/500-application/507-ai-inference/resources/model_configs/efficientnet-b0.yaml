@@ -1,0 +1,73 @@
+# EfficientNet-B0 configuration for industrial visual inspection
+# Optimized for equipment classification and anomaly detection
+# Based on universal computer vision runtime approach
+
+model:
+  name: "efficientnet-b0-equipment"
+  version: "1.0.0"
+  description: "EfficientNet-B0 for equipment visual inspection and anomaly detection (77.1% top-1, 10-20ms)"
+  path: "models/efficientnet-b0.onnx"
+  type: "vision"
+  backends: ["onnx", "candle"]
+
+inference:
+  input_type: "image"
+  preprocessing:
+    resize: [224, 224]  # EfficientNet-B0 standard input
+    normalize: true
+    mean: [0.485, 0.456, 0.406]  # ImageNet normalization
+    std: [0.229, 0.224, 0.225]
+    color_mode: "RGB"
+  postprocessing:
+    type: "classification"
+    config:
+      semantic: "classification"
+      num_classes: 6
+      softmax: true
+      top_k: 3
+  postprocess_type: "classification"
+  output_format: "classification"
+
+performance:
+  batch_size: 1
+  target_latency_ms: 20
+  expected_latency_ms: 15  # Jetson AGX Orin with TensorRT
+  gpu_required: false  # Can run on CPU at 25-35ms
+  tensorrt_optimized: true
+
+use_cases:
+  - "Predictive maintenance visual inspection"
+  - "Equipment health classification"
+  - "Surface condition assessment"
+  - "Contamination detection"
+  - "Product quality verification"
+
+class_labels:
+  # Equipment visual health states
+  - "normal"
+  - "minor_wear"
+  - "surface_damage"
+  - "contamination"
+  - "corrosion"
+  - "critical_failure"
+
+metrics:
+  top1_accuracy: 77.1
+  top5_accuracy: 93.3
+  model_size_mb: 20
+  params_millions: 5.3
+
+optimization:
+  quantization: "int8"  # Post-training quantization available
+  pruning: "structured"  # 30% weight reduction with <1% accuracy loss
+  tensorrt: true  # 2-3x speedup on NVIDIA GPUs
+  onnx_runtime_optimizations: true
+
+deployment:
+  edge_compatible: true
+  min_memory_mb: 256
+  recommended_hardware:
+    - "NVIDIA Jetson AGX Orin"
+    - "NVIDIA Jetson Orin Nano"
+    - "Intel NUC with Intel iGPU"
+    - "AMD Ryzen AI PC"

@@ -1,0 +1,59 @@
+# EfficientDet-D0 configuration for industrial defect detection
+# Optimized for small object detection in manufacturing quality control
+# Based on universal computer vision runtime approach
+
+model:
+  name: "efficientdet-d0-defect"
+  version: "1.0.0"
+  description: "EfficientDet-D0 for small defect detection in manufacturing (34.6% mAP, 30-50ms)"
+  path: "models/efficientdet-d0.onnx"
+  type: "vision"
+  backends: ["onnx"]
+
+inference:
+  input_type: "image"
+  preprocessing:
+    resize: [512, 512]  # EfficientDet-D0 standard input
+    normalize: true
+    mean: [0.485, 0.456, 0.406]  # ImageNet normalization
+    std: [0.229, 0.224, 0.225]
+    color_mode: "RGB"
+  postprocessing:
+    type: "object_detection"
+    config:
+      semantic: "detection"
+      detection_format: "efficientdet"
+      nms_threshold: 0.5
+      score_threshold: 0.3
+      max_detections: 100
+  postprocess_type: "detection"
+  output_format: "detection"
+
+performance:
+  batch_size: 1
+  target_latency_ms: 50
+  expected_latency_ms: 40  # Jetson AGX Orin
+  gpu_required: true
+  tensorrt_optimized: true
+
+use_cases:
+  - "Manufacturing quality control"
+  - "Small defect detection"
+  - "Surface inspection"
+  - "Component verification"
+
+class_labels:
+  # Customize based on your defect types
+  - "scratch"
+  - "dent"
+  - "crack"
+  - "discoloration"
+  - "missing_component"
+  - "misalignment"
+  - "contamination"
+
+metrics:
+  map_50: 34.6
+  map_50_95: 23.2
+  model_size_mb: 15
+  params_millions: 3.9
