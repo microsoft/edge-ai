@@ -46,12 +46,12 @@ cd src/900-tools-utilities/903-multi-asset-deploy
 
 ### Parameters
 
-| Parameter            | Required | Description                                      | Example                                            |
-|----------------------|----------|--------------------------------------------------|----------------------------------------------------|
-| `csv_file`           | Yes      | Path to multi-asset CSV file                     | `samples/multi-assets-example.csv`                 |
-| `resource_group`     | Yes      | Azure resource group name                        | `my-resource-group`                                |
-| `custom_location_id` | Yes      | Full Azure resource ID for custom location       | `/subscriptions/.../customLocations/my-location`   |
-| `adr_namespace`      | No       | ADR namespace name (default: `default-namespace`)| `my-adr-namespace`                                 |
+| Parameter            | Required | Description                                       | Example                                          |
+|----------------------|----------|---------------------------------------------------|--------------------------------------------------|
+| `csv_file`           | Yes      | Path to multi-asset CSV file                      | `samples/multi-assets-example.csv`               |
+| `resource_group`     | Yes      | Azure resource group name                         | `my-resource-group`                              |
+| `custom_location_id` | Yes      | Full Azure resource ID for custom location        | `/subscriptions/.../customLocations/my-location` |
+| `adr_namespace`      | No       | ADR namespace name (default: `default-namespace`) | `my-adr-namespace`                               |
 
 ## CSV File Format
 
