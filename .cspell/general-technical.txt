@@ -4,6 +4,9 @@ abap
 abfs
 acrolinx
 Dockerfiles
+fluxcd
+gitrepositories
+Multicluster
 nant
 upsell
 activex

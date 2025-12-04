@@ -1,0 +1,26 @@
+---
+apiVersion: scheduler.kalypso.io/v1alpha1
+kind: Workload
+metadata:
+  name: basic-inference
+  labels:
+    type: application
+    component: inference
+spec:
+  deploymentTargets:
+    - name: dev
+      labels:
+        purpose: dev-test
+      environment: dev
+      manifests:
+        repo: https://github.com/${GITHUB_ORG}/${PROJECT_NAME}-gitops
+        branch: dev
+        path: ./${PROJECT_NAME}
+    - name: qa
+      labels:
+        purpose: qa-test
+      environment: qa
+      manifests:
+        repo: https://github.com/${GITHUB_ORG}/${PROJECT_NAME}-gitops
+        branch: qa
+        path: ./${PROJECT_NAME}
