@@ -497,117 +497,16 @@ With selective cloud sync (event-driven uploads only), ACSA reduces cloud egress
 * **Total**: $47K-$87K
 * **ACSA benefit**: Edge-local KQL queries via ACSA cache reduce Fabric RTI bandwidth by 80% for dashboard queries
 
-## ONNX Model Comparison for Edge Vision
-
-### Object Detection Models
-
-Our edge AI solutions support multiple ONNX object detection models optimized for different use cases:
-
-| Model | Size | Latency (Jetson) | mAP | Use Case | ONNX Available |
-|-------|------|------------------|-----|----------|----------------|
-| **YOLOv3-Tiny** | 33 MB | 15-25ms | 33.1% | Real-time basic detection | ✅ ONNX Model Zoo |
-| **YOLOv8n** | 6 MB | 10-20ms | 37.3% | Lightweight real-time | ✅ Ultralytics export |
-| **EfficientDet-D0** | 15 MB | 30-50ms | 34.6% | Small object detection | ✅ TF Object Detection |
-| **EfficientDet-D1** | 25 MB | 50-100ms | 40.5% | Balanced accuracy/speed | ✅ TF Object Detection |
-| **MobileNet-SSD** | 23 MB | 8-15ms | 22.1% | Ultra-fast detection | ✅ TF Object Detection |
-| **Faster R-CNN** | 109 MB | 150-300ms | 42.0% | High accuracy offline | ✅ torchvision |
-| **Mask R-CNN** | 178 MB | 200-400ms | 37.1% | Instance segmentation | ✅ torchvision |
-
-### Image Classification Models
-
-| Model | Size | Latency (Jetson) | Top-1 Acc | Use Case | ONNX Available |
-|-------|------|------------------|-----------|----------|----------------|
-| **MobileNetV2** | 14 MB | 5-10ms | 72.0% | Lightweight classification | ✅ ONNX Model Zoo |
-| **ResNet18** | 45 MB | 8-15ms | 69.8% | General classification | ✅ ONNX Model Zoo |
-| **ResNet50** | 98 MB | 15-30ms | 76.1% | Higher accuracy | ✅ ONNX Model Zoo |
-| **EfficientNet-B0** | 20 MB | 10-20ms | 77.1% | Best accuracy/size | ✅ TensorFlow export |
-| **ViT-Small** | 87 MB | 40-80ms | 79.9% | Transformer-based | ✅ Hugging Face |
-
-### Semantic Segmentation Models
-
-| Model | Size | Latency (Jetson) | mIoU | Use Case | ONNX Available |
-|-------|------|------------------|------|----------|----------------|
-| **DeepLabV3+ (MobileNet)** | 19 MB | 50-120ms | 72.4% | People counting zones | ✅ torchvision |
-| **U-Net (ResNet34)** | 94 MB | 80-150ms | 68.5% | Medical/defect segmentation | ✅ Custom export |
-| **SegFormer-B0** | 15 MB | 30-60ms | 76.2% | Efficient segmentation | ✅ Hugging Face |
-
-### Specialized Vision Models
-
-| Model | Size | Task | Use Case | ONNX Available |
-|-------|------|------|----------|----------------|
-| **CRAFT** | 45 MB | Text detection | Serial number reading | ✅ Custom export |
-| **TrOCR** | 334 MB | Text recognition | OCR for quality marks | ✅ Hugging Face |
-| **ResNet50 (thermal)** | 98 MB | Thermal anomaly | Predictive maintenance | ✅ Custom fine-tune |
-
-### Model Selection Guidelines
-
-**For Manufacturing QC (Scenario 1)**:
-
-* **Primary**: EfficientDet-D0/D1 (superior small defect detection vs YOLOv3-Tiny)
-* **Alternative**: Mask R-CNN (pixel-perfect defect boundaries, offline audit)
-* **Text verification**: CRAFT + TrOCR (part ID/serial number validation)
-
-**For Retail Analytics (Scenario 2)**:
-
-* **Primary**: DeepLabV3+ MobileNet (semantic segmentation for occupancy zones)
-* **Alternative**: YOLOv8n (fast people counting with bounding boxes)
-* **Privacy-preserving**: MobileNetV2 (crowd density classification, no PII)
-
-**For Predictive Maintenance (Scenario 3)**:
-
-* **Primary**: ResNet50 thermal variant (thermal anomaly detection)
-* **Multi-modal**: Custom fusion model (thermal + visual + vibration)
-* **Backup**: EfficientNet-B0 (visual equipment classification)
-
-**For Smart Building (Scenario 4)**:
-
-* **Primary**: DeepLabV3+ (zone occupancy, people flow analysis)
-* **Alternative**: ViT-Small (complex scene understanding, if latency allows)
-* **Anomaly detection**: ResNet18 (faster than ResNet50, sufficient accuracy)
-
-### Performance vs Accuracy Trade-offs
-
-**Latency Requirements**:
-
-* **< 50ms**: YOLOv8n, MobileNet-SSD, MobileNetV2
-* **< 100ms**: YOLOv3-Tiny, EfficientDet-D0, ResNet18
-* **< 200ms**: EfficientDet-D1, DeepLabV3+ MobileNet, Faster R-CNN
-* **< 500ms**: Mask R-CNN, ViT-Small, TrOCR
-
-**Accuracy Requirements**:
-
-* **Basic (< 35% mAP)**: YOLOv3-Tiny, MobileNet-SSD (sufficient for people counting)
-* **Good (35-40% mAP)**: YOLOv8n, EfficientDet-D0/D1 (quality control, safety)
-* **High (> 40% mAP)**: Faster R-CNN, Mask R-CNN (compliance, forensics)
-
-**Model Optimization Techniques**:
-
-* **Quantization**: INT8 reduces model size by 4x, speeds up inference 2-4x (ONNX Runtime supports)
-* **Pruning**: Remove 30-50% weights with < 1% accuracy loss (requires retraining)
-* **Knowledge Distillation**: Train small model to mimic large model (YOLOv8n from YOLOv8l)
-* **TensorRT Optimization**: Convert ONNX → TensorRT for 2-5x speedup on NVIDIA GPUs
-
-### Model Update and MLOps
-
-All models can be deployed via:
-
-* **Azure ML Arc Extension**: Managed deployment with autoscaling and model registry
-* **GitOps/Flux**: Version-controlled model deployment via container images
-* **Custom pipelines**: MQTT-triggered model updates for edge autonomy
-
-See [MLOps Tooling for Vision Inference](../solution-technology-paper-library/mlops-tooling-requirements.md) for detailed workflows.
-
 ## Recommendations by Use Case
 
 ### Manufacturing Quality Control
 
 **Requirement**: Detect defects on production line, < 200ms latency, 24/7 operation
 
-**Recommendation**: **Our Option 2 (Buffered Stream)** with **EfficientDet-D0**
+**Recommendation**: **Our Option 2 (Buffered Stream)** or **Option 3 (In-Process)**
 
-* **Rationale**: Sub-200ms latency critical for stopping line, EfficientDet superior for small defects vs YOLOv3-Tiny
-* **Model**: EfficientDet-D0 (50-100ms, 40.5% mAP) or Mask R-CNN for pixel-level defect boundaries
-* **Trade-off**: Custom model training required for domain-specific defect types
+* **Rationale**: Sub-200ms latency critical for stopping line
+* **Trade-off**: Custom model training required for defect detection
 * **Alternative**: Azure VI Arc (if 500ms acceptable and custom detection via natural language)
 
 ### Retail Customer Analytics
