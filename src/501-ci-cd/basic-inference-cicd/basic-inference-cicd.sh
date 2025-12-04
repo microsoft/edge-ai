@@ -24,8 +24,9 @@ DEFAULT_PROJECT_NAME="${PROJECT_NAME:-basic-inference-pipeline}"
 ENVIRONMENTS=("dev" "qa")
 
 parse_arguments() {
-    # Initialize cleanup flag
+    # Initialize flags
     CLEANUP_MODE=false
+    CONFIGURE_FLUX=true
 
     while [[ $# -gt 0 ]]; do
         case $1 in
@@ -44,6 +45,10 @@ parse_arguments() {
             -r|--rg)
                 RESOURCE_GROUP="$2"
                 shift 2
+                ;;
+            --skip-flux|--no-flux)
+                CONFIGURE_FLUX=false
+                shift
                 ;;
             --cleanup|--delete)
                 CLEANUP_MODE=true
@@ -98,6 +103,7 @@ parse_arguments() {
     print_info "  Resource Group: ${RESOURCE_GROUP}"
     if [[ "$CLEANUP_MODE" == "false" ]]; then
         print_info "  Application Source: ${APPLICATION_SOURCE_PATH}"
+        print_info "  Configure Flux: ${CONFIGURE_FLUX}"
     fi
 }
 
@@ -136,6 +142,7 @@ OPTIONS:
     -p, --project PROJECT_NAME  Project name (default: basic-inference-pipeline)
     -c, --cluster CLUSTER_NAME  Azure Arc-enabled Kubernetes cluster name (required)
     -r, --rg RESOURCE_GROUP     Azure resource group containing the Arc cluster (required)
+    --skip-flux, --no-flux      Skip Flux configuration on the cluster (default: configure Flux)
     --cleanup, --delete         Delete all created resources (repositories and Flux configurations)
     -h, --help                  Show this help message
 
@@ -225,29 +232,33 @@ validate_prerequisites() {
         fi
     done
 
-    # Check kubectl cluster context (required for both setup and cleanup)
-    print_info "Checking kubectl cluster context..."
-    if kubectl cluster-info &> /dev/null; then
-        local current_context
-        current_context=$(kubectl config current-context 2>/dev/null || echo "none")
-        print_success "kubectl is configured with context: $current_context"
+    # Check kubectl cluster context (required when configuring Flux or during cleanup)
+    if [[ "$CONFIGURE_FLUX" == "true" || "$CLEANUP_MODE" == "true" ]]; then
+        print_info "Checking kubectl cluster context..."
+        if kubectl cluster-info &> /dev/null; then
+            local current_context
+            current_context=$(kubectl config current-context 2>/dev/null || echo "none")
+            print_success "kubectl is configured with context: $current_context"
 
-        # Verify we can access the cluster
-        if kubectl get namespaces &> /dev/null; then
-            print_success "kubectl can successfully access the cluster"
+            # Verify we can access the cluster
+            if kubectl get namespaces &> /dev/null; then
+                print_success "kubectl can successfully access the cluster"
+            else
+                print_error "kubectl cannot access the cluster. Please check your cluster connection."
+                print_info "Ensure kubectl is configured to access your Azure Arc cluster:"
+                print_info "  kubectl config get-contexts"
+                print_info "  kubectl config use-context <your-cluster-context>"
+                exit 1
+            fi
         else
-            print_error "kubectl cannot access the cluster. Please check your cluster connection."
-            print_info "Ensure kubectl is configured to access your Azure Arc cluster:"
+            print_error "kubectl is not configured or cannot connect to cluster."
+            print_info "Please configure kubectl to access your Azure Arc cluster:"
             print_info "  kubectl config get-contexts"
             print_info "  kubectl config use-context <your-cluster-context>"
             exit 1
         fi
     else
-        print_error "kubectl is not configured or cannot connect to cluster."
-        print_info "Please configure kubectl to access your Azure Arc cluster:"
-        print_info "  kubectl config get-contexts"
-        print_info "  kubectl config use-context <your-cluster-context>"
-        exit 1
+        print_info "Skipping kubectl validation (Flux configuration disabled)"
     fi
 
     # Check Azure login status
@@ -259,17 +270,21 @@ validate_prerequisites() {
     fi
     print_success "Azure CLI is logged in"
 
-    # Validate Azure Arc cluster connectivity (if cluster and resource group are provided)
-    if [[ -n "$CLUSTER_NAME" && -n "$RESOURCE_GROUP" ]]; then
-        print_info "Validating Azure Arc cluster connectivity..."
-        if az connectedk8s show --name "$CLUSTER_NAME" --resource-group "$RESOURCE_GROUP" &> /dev/null; then
-            print_success "Azure Arc cluster '${CLUSTER_NAME}' found and connected"
-        else
-            print_error "Azure Arc cluster '${CLUSTER_NAME}' not found in resource group '${RESOURCE_GROUP}'"
-            print_info "Ensure your cluster is connected to Azure Arc with:"
-            print_info "  az connectedk8s connect --name ${CLUSTER_NAME} --resource-group ${RESOURCE_GROUP}"
-            exit 1
+    # Validate Azure Arc cluster connectivity (required when configuring Flux or during cleanup)
+    if [[ "$CONFIGURE_FLUX" == "true" || "$CLEANUP_MODE" == "true" ]]; then
+        if [[ -n "$CLUSTER_NAME" && -n "$RESOURCE_GROUP" ]]; then
+            print_info "Validating Azure Arc cluster connectivity..."
+            if az connectedk8s show --name "$CLUSTER_NAME" --resource-group "$RESOURCE_GROUP" &> /dev/null; then
+                print_success "Azure Arc cluster '${CLUSTER_NAME}' found and connected"
+            else
+                print_error "Azure Arc cluster '${CLUSTER_NAME}' not found in resource group '${RESOURCE_GROUP}'"
+                print_info "Ensure your cluster is connected to Azure Arc with:"
+                print_info "  az connectedk8s connect --name ${CLUSTER_NAME} --resource-group ${RESOURCE_GROUP}"
+                exit 1
+            fi
         fi
+    else
+        print_info "Skipping Azure Arc cluster validation (Flux configuration disabled)"
     fi
 
 }
@@ -496,15 +511,6 @@ confirm_cleanup() {
         print_info "    - $env-${PROJECT_NAME}"
     done
 
-    echo
-    read -r -p "Are you sure you want to delete all these resources? (type 'DELETE' to confirm): " confirmation
-
-    if [[ "$confirmation" != "DELETE" ]]; then
-        print_info "Cleanup cancelled"
-        exit 0
-    fi
-
-    print_success "Cleanup confirmed. Proceeding with resource deletion..."
 }
 
 perform_cleanup() {
@@ -574,6 +580,13 @@ prepare_application_repositories() {
 }
 
 prepare_flux_configurations() {
+    if [[ "$CONFIGURE_FLUX" == "false" ]]; then
+        print_header "Skipping Flux Configuration"
+        print_info "Flux configuration disabled via --skip-flux flag"
+        print_info "To configure Flux later, run the script again without --skip-flux"
+        return 0
+    fi
+
     print_header "Configuring Flux for Each Environment"
 
     for env in "${ENVIRONMENTS[@]}"; do

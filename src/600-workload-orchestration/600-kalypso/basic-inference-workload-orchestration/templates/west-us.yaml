@@ -1,0 +1,11 @@
+---
+apiVersion: scheduler.kalypso.io/v1alpha1
+kind: ClusterType
+metadata:
+  name: west-us
+  labels:
+    region: westus
+spec:
+  reconciler: arc-flux
+  namespaceService: default
+  configType: configmap

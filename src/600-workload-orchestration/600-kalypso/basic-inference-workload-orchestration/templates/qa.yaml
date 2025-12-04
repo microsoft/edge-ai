@@ -1,0 +1,10 @@
+---
+apiVersion: scheduler.kalypso.io/v1alpha1
+kind: Environment
+metadata:
+  name: qa
+spec:
+  controlPlane:
+    repo: https://github.com/${GITHUB_ORG}/kalypso-control-plane
+    branch: qa
+    path: .
