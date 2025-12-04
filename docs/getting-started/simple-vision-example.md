@@ -1095,6 +1095,18 @@ rm -rf .terraform terraform.tfstate*
 
 ---
 
+## What's Next?
+
+Now that you have object detection running, you can:
+
+1. **[Analyze Detection Data with Fabric RTI](./fabric-rti-vision-analytics.md)** - Send detection results to Microsoft Fabric for real-time analytics, dashboards, and KQL queries
+2. **Add More Cameras** - Use the Terraform approach to scale to multiple cameras
+3. **Custom Models** - Replace YOLOv3 with your own ONNX models for specialized detection
+4. **Edge Processing** - Deploy additional AI models for different use cases (pose estimation, semantic segmentation)
+5. **Production Deployment** - Use the Terraform blueprint for repeatable, infrastructure-as-code deployments
+
+---
+
 ## What You've Learned
 
 ### Quick Start (kubectl) Path
@@ -1142,6 +1154,15 @@ rm -rf .terraform terraform.tfstate*
   - Integrating with CI/CD pipelines
 
 ## Next Steps
+
+### Analyze Detection Data with Fabric RTI
+
+**[Fabric Real-Time Intelligence Guide](./fabric-rti-vision-analytics.md)** - Learn how to:
+
+- Send detection results to Microsoft Fabric for real-time analytics
+- Create KQL queries and dashboards
+- Analyze detection patterns across multiple cameras
+- Set up alerts for anomalous detection behavior
 
 ### Try Different Models
 
