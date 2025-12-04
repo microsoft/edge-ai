@@ -329,7 +329,7 @@ output vmUsername string = cloudVmHost.outputs.adminUsername
 output vmNames array = cloudVmHost.outputs.vmNames
 
 @description('The AKS cluster name.')
-output aksName string = cloudKubernetes.outputs.aksName
+output aksName string? = cloudKubernetes.outputs.?aksName
 
 @description('The Azure Container Registry name.')
 output acrName string = cloudAcr.outputs.acrName

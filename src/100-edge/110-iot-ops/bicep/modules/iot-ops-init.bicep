@@ -51,9 +51,12 @@ resource arcConnectedCluster 'Microsoft.Kubernetes/connectedClusters@2021-03-01'
   name: arcConnectedClusterName
 }
 
-resource aioCertManager 'Microsoft.KubernetesConfiguration/extensions@2023-05-01' = if (trustIssuerSettings.trustSource == 'CustomerManagedByoIssuer') {
+resource aioCertManager 'Microsoft.KubernetesConfiguration/extensions@2023-05-01' = if (trustIssuerSettings.trustSource != 'CustomerManagedByoIssuer') {
   scope: arcConnectedCluster
-  name: 'azure-iot-operations-cert-manager'
+  name: 'cert-manager'
+  identity: {
+    type: 'SystemAssigned'
+  }
   properties: {
     extensionType: 'microsoft.certmanagement'
     version: aioCertManagerConfig.release.version
