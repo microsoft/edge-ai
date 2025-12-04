@@ -92,11 +92,6 @@ var shouldEnableOtelCollector = false
 // param shouldEnableOpcUaSimulator bool = true
 var shouldEnableOpcUaSimulator = false
 
-// Currently disable setting shouldDeployAioDeploymentScripts, remove when DeploymentScripts supports AZ CLI 2.71+ (post May 4)
-// @description('Whether or not to enable the OPC UA Simulator Asset for Azure IoT Operations.')
-// param shouldEnableOpcUaSimulatorAsset bool = false
-var shouldEnableOpcUaSimulatorAsset = false
-
 /*
   Resources
 */
@@ -246,7 +241,6 @@ module edgeIotOps '../../../src/100-edge/110-iot-ops/bicep/main.bicep' = {
     shouldCreateAnonymousBrokerListener: shouldCreateAnonymousBrokerListener
     shouldEnableOtelCollector: shouldEnableOtelCollector
     shouldEnableOpcUaSimulator: shouldEnableOpcUaSimulator
-    shouldEnableOpcUaSimulatorAsset: shouldEnableOpcUaSimulatorAsset
 
     // Trust Configuration Parameters
     trustIssuerSettings: trustIssuerSettings
@@ -258,6 +252,16 @@ module edgeIotOps '../../../src/100-edge/110-iot-ops/bicep/main.bicep' = {
     // Deployment Identity and Script Parameters
     deployIdentityName: cloudSecurityIdentity.outputs.deployIdentityName
     shouldDeployAioDeploymentScripts: shouldDeployAioDeploymentScripts
+  }
+}
+module edgeAssets '../../../src/100-edge/111-assets/bicep/main.bicep' = {
+  name: '${deployment().name}-ea1'
+  scope: resourceGroup(resourceGroupName)
+  params: {
+    common: common
+    customLocationId: edgeIotOps.outputs.customLocationId
+    adrNamespaceName: cloudData.outputs.adrNamespaceName
+    shouldCreateDefaultNamespacedAsset: true
   }
 }
 

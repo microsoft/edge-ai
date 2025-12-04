@@ -30,7 +30,6 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 |shouldCreateAnonymousBrokerListener|Whether to enable an insecure anonymous AIO MQ Broker Listener. (Should only be used for dev or test environments)|`bool`|`false`|no|
 |shouldEnableOtelCollector|Whether or not to enable the Open Telemetry Collector for Azure IoT Operations.|`bool`|`true`|no|
 |shouldEnableOpcUaSimulator|Whether or not to enable the OPC UA Simulator for Azure IoT Operations.|`bool`|`true`|no|
-|shouldEnableOpcUaSimulatorAsset|Whether or not to create the OPC UA Simulator ADR Asset for Azure IoT Operations.|`bool`|[parameters('shouldEnableOpcUaSimulator')]|no|
 |customLocationName|The name for the Custom Locations resource.|`string`|[format('{0}-cl', parameters('arcConnectedClusterName'))]|no|
 |trustIssuerSettings|The trust issuer settings for Customer Managed Azure IoT Operations Settings.|`[_1.TrustIssuerConfig](#user-defined-types)`|{'trustSource': 'SelfSigned'}|no|
 |sseKeyVaultName|The name of the Key Vault for Secret Sync. (Required when providing sseIdentityName)|`string`|n/a|yes|
@@ -60,7 +59,6 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 |iotOpsInstance|`Microsoft.Resources/deployments`|2025-04-01|
 |postInstanceScriptsSecrets|`Microsoft.Resources/deployments`|2025-04-01|
 |postInstanceScripts|`Microsoft.Resources/deployments`|2025-04-01|
-|opcUaSimulator|`Microsoft.Resources/deployments`|2025-04-01|
 
 ## Modules
 
@@ -75,7 +73,6 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 |iotOpsInstance|Deploys Azure IoT Operations instance, broker, authentication, listeners, and data flow components on an Azure Arc-enabled Kubernetes cluster.|
 |postInstanceScriptsSecrets|Creates secrets in Key Vault for deployment script setup and initialization for Azure IoT Operations.|
 |postInstanceScripts|Runs deployment scripts for IoT Operations using an Azure deploymentScript resource, including tool installation and script execution.|
-|opcUaSimulator|Deploy and configure the OPC UA Simulator|
 
 ## Module Details
 
@@ -396,32 +393,6 @@ Runs deployment scripts for IoT Operations using an Azure deploymentScript resou
 | :--- | :--- | :--- |
 |deploymentScriptName|`string`|The name of the deployment script resource.|
 |deploymentScriptId|`string`|The ID of the deployment script resource.|
-
-### opcUaSimulator
-
-Deploy and configure the OPC UA Simulator
-
-#### Parameters for opcUaSimulator
-
-|Name|Description|Type|Default|Required|
-| :--- | :--- | :--- | :--- | :--- |
-|common|The common component configuration.|`[_1.Common](#user-defined-types)`|n/a|yes|
-|customLocationId|The ID of the custom location.|`string`|n/a|yes|
-|adrNamespaceId|The ID of the ADR namespace.|`string`|n/a|yes|
-
-#### Resources for opcUaSimulator
-
-|Name|Type|API Version|
-| :--- | :--- | :--- |
-|device|`Microsoft.DeviceRegistry/namespaces/devices`|2025-10-01|
-|asset|`Microsoft.DeviceRegistry/namespaces/assets`|2025-10-01|
-
-#### Outputs for opcUaSimulator
-
-|Name|Type|Description|
-| :--- | :--- | :--- |
-|deviceId|`string`|The ID of the device.|
-|assetId|`string`|The ID of the asset.|
 
 ## User Defined Types
 

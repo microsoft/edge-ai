@@ -167,7 +167,6 @@ module edgeIotOps '../../../src/100-edge/110-iot-ops/bicep/main.bicep' = {
 
     // Minimize resource usage
     shouldEnableOpcUaSimulator: false
-    shouldEnableOpcUaSimulatorAsset: false
     shouldEnableOtelCollector: false
 
     // Trust Configuration Parameters - use self-signed for simplicity
@@ -179,6 +178,16 @@ module edgeIotOps '../../../src/100-edge/110-iot-ops/bicep/main.bicep' = {
 
     // Deployment Identity and Script Parameters - disable deployment scripts to minimize resources
     shouldDeployAioDeploymentScripts: false
+  }
+}
+module edgeAssets '../../../src/100-edge/111-assets/bicep/main.bicep' = {
+  name: '${deployment().name}-ea1'
+  scope: resourceGroup(resourceGroupName)
+  params: {
+    common: common
+    customLocationId: edgeIotOps.outputs.customLocationId
+    adrNamespaceName: cloudData.outputs.adrNamespaceName
+    shouldCreateDefaultNamespacedAsset: true
   }
 }
 

@@ -77,9 +77,6 @@ param shouldEnableOtelCollector bool = true
 @description('Whether or not to enable the OPC UA Simulator for Azure IoT Operations.')
 param shouldEnableOpcUaSimulator bool = true
 
-@description('Whether or not to create the OPC UA Simulator ADR Asset for Azure IoT Operations.')
-param shouldEnableOpcUaSimulatorAsset bool = shouldEnableOpcUaSimulator
-
 /*
   Custom Location Parameters
 */
@@ -342,22 +339,6 @@ module postInstanceScripts 'modules/apply-scripts.bicep' = if (shouldDeployAioDe
     includeFileSecretNames: [
       postInstanceScriptsSecrets.?outputs.?includeFilesSecretName
     ]
-  }
-}
-
-/*
-  OPC UA Simulator Modules
-*/
-
-module opcUaSimulator 'modules/opc-ua-simulator-asset.bicep' = if (shouldEnableOpcUaSimulatorAsset && shouldDeployAio) {
-  name: '${deployment().name}-opc7'
-  dependsOn: [
-    postInstanceScripts
-  ]
-  params: {
-    common: common
-    customLocationId: (iotOpsInstance.?outputs.?customLocationId) ?? ''
-    adrNamespaceId: adrNamespace.id
   }
 }
 

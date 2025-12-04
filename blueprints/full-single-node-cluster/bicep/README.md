@@ -456,7 +456,6 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 |shouldCreateAnonymousBrokerListener|Whether to enable an insecure anonymous AIO MQ Broker Listener. (Should only be used for dev or test environments)|`bool`|`false`|no|
 |shouldEnableOtelCollector|Whether or not to enable the Open Telemetry Collector for Azure IoT Operations.|`bool`|`true`|no|
 |shouldEnableOpcUaSimulator|Whether or not to enable the OPC UA Simulator for Azure IoT Operations.|`bool`|`true`|no|
-|shouldEnableOpcUaSimulatorAsset|Whether or not to create the OPC UA Simulator ADR Asset for Azure IoT Operations.|`bool`|[parameters('shouldEnableOpcUaSimulator')]|no|
 |customLocationName|The name for the Custom Locations resource.|`string`|[format('{0}-cl', parameters('arcConnectedClusterName'))]|no|
 |trustIssuerSettings|The trust issuer settings for Customer Managed Azure IoT Operations Settings.|`[_1.TrustIssuerConfig](#user-defined-types)`|{'trustSource': 'SelfSigned'}|no|
 |sseKeyVaultName|The name of the Key Vault for Secret Sync. (Required when providing sseIdentityName)|`string`|n/a|yes|
@@ -486,7 +485,6 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 |iotOpsInstance|`Microsoft.Resources/deployments`|2025-04-01|
 |postInstanceScriptsSecrets|`Microsoft.Resources/deployments`|2025-04-01|
 |postInstanceScripts|`Microsoft.Resources/deployments`|2025-04-01|
-|opcUaSimulator|`Microsoft.Resources/deployments`|2025-04-01|
 
 #### Outputs for edgeIotOps
 

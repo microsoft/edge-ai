@@ -40,6 +40,7 @@ Deploys a complete end-to-end environment for Azure IoT Operations on a multi-no
 |edgeCncfCluster|`Microsoft.Resources/deployments`|2025-04-01|
 |edgeIotOps|`Microsoft.Resources/deployments`|2025-04-01|
 |edgeObservability|`Microsoft.Resources/deployments`|2025-04-01|
+|edgeAssets|`Microsoft.Resources/deployments`|2025-04-01|
 |edgeMessaging|`Microsoft.Resources/deployments`|2025-04-01|
 
 ## Modules
@@ -58,6 +59,7 @@ Deploys a complete end-to-end environment for Azure IoT Operations on a multi-no
 |edgeCncfCluster|This module provisions and deploys automation scripts to a VM host that create and configure a K3s Kubernetes cluster with Arc connectivity.<br>The scripts handle primary and secondary node(s) setup, cluster administration, workload identity enablement, and installation of required Azure Arc extensions.|
 |edgeIotOps|Deploys Azure IoT Operations extensions, instances, and configurations on Azure Arc-enabled Kubernetes clusters.|
 |edgeObservability|Deploys observability resources including cluster extensions for metrics and logs collection, and rule groups for monitoring.|
+|edgeAssets|Deploys Kubernetes asset definitions to a connected cluster using the namespaced Device Registry model. This component facilitates the management of devices and assets within ADR namespaces.|
 |edgeMessaging|Deploys Dataflow endpoints and dataflows for Azure IoT Operations messaging integration, specifically for Event Hub and Event Grid.|
 
 ## Module Details
@@ -458,7 +460,6 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 |shouldCreateAnonymousBrokerListener|Whether to enable an insecure anonymous AIO MQ Broker Listener. (Should only be used for dev or test environments)|`bool`|`false`|no|
 |shouldEnableOtelCollector|Whether or not to enable the Open Telemetry Collector for Azure IoT Operations.|`bool`|`true`|no|
 |shouldEnableOpcUaSimulator|Whether or not to enable the OPC UA Simulator for Azure IoT Operations.|`bool`|`true`|no|
-|shouldEnableOpcUaSimulatorAsset|Whether or not to create the OPC UA Simulator ADR Asset for Azure IoT Operations.|`bool`|[parameters('shouldEnableOpcUaSimulator')]|no|
 |customLocationName|The name for the Custom Locations resource.|`string`|[format('{0}-cl', parameters('arcConnectedClusterName'))]|no|
 |trustIssuerSettings|The trust issuer settings for Customer Managed Azure IoT Operations Settings.|`[_1.TrustIssuerConfig](#user-defined-types)`|{'trustSource': 'SelfSigned'}|no|
 |sseKeyVaultName|The name of the Key Vault for Secret Sync. (Required when providing sseIdentityName)|`string`|n/a|yes|
@@ -488,7 +489,6 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 |iotOpsInstance|`Microsoft.Resources/deployments`|2025-04-01|
 |postInstanceScriptsSecrets|`Microsoft.Resources/deployments`|2025-04-01|
 |postInstanceScripts|`Microsoft.Resources/deployments`|2025-04-01|
-|opcUaSimulator|`Microsoft.Resources/deployments`|2025-04-01|
 
 #### Outputs for edgeIotOps
 
@@ -540,6 +540,45 @@ Deploys observability resources including cluster extensions for metrics and log
 | :--- | :--- | :--- |
 |clusterExtensions|`object`|The container extensions for observability.|
 |ruleAssociations|`object`|The data collection rule associations for observability.|
+
+### edgeAssets
+
+Deploys Kubernetes asset definitions to a connected cluster using the namespaced Device Registry model. This component facilitates the management of devices and assets within ADR namespaces.
+
+#### Parameters for edgeAssets
+
+|Name|Description|Type|Default|Required|
+| :--- | :--- | :--- | :--- | :--- |
+|common|The common component configuration.|`[_2.Common](#user-defined-types)`|n/a|yes|
+|customLocationId|The ID (resource ID) of the custom location to retrieve.|`string`|n/a|yes|
+|adrNamespaceName|Azure Device Registry namespace name to use with Azure IoT Operations.|`string`|n/a|yes|
+|namespacedDevices|List of namespaced devices to create.|`array`|[]|no|
+|assetEndpointProfiles|List of asset endpoint profiles to create.|`array`|[]|no|
+|legacyAssets|List of legacy assets to create.|`array`|[]|no|
+|namespacedAssets|List of namespaced assets to create.|`array`|[]|no|
+|shouldCreateDefaultAsset|Whether to create a default legacy asset and endpoint profile.|`bool`|`false`|no|
+|shouldCreateDefaultNamespacedAsset|Whether to create a default namespaced asset and device.|`bool`|`false`|no|
+|k8sBridgePrincipalId|The principal ID of the K8 Bridge for Azure IoT Operations. Required for OPC asset discovery.|`string`|n/a|no|
+
+#### Resources for edgeAssets
+
+|Name|Type|API Version|
+| :--- | :--- | :--- |
+|namespacedDevice|`Microsoft.DeviceRegistry/namespaces/devices`|2025-10-01|
+|namespacedAsset|`Microsoft.DeviceRegistry/namespaces/assets`|2025-10-01|
+|assetEndpointProfile|`Microsoft.DeviceRegistry/assetEndpointProfiles`|2025-10-01|
+|legacyAsset|`Microsoft.DeviceRegistry/assets`|2025-10-01|
+|k8BridgeRoleAssignment|`Microsoft.Resources/deployments`|2025-04-01|
+
+#### Outputs for edgeAssets
+
+|Name|Type|Description|
+| :--- | :--- | :--- |
+|assetEndpointProfiles|`array`|Array of legacy asset endpoint profiles created by this component.|
+|legacyAssets|`array`|Array of legacy assets created by this component.|
+|namespacedDevices|`array`|Array of namespaced devices created by this component.|
+|namespacedAssets|`array`|Array of namespaced assets created by this component.|
+|shouldEnableOpcAssetDiscovery|`bool`|Whether OPC simulation asset discovery is enabled for any endpoint profile.|
 
 ### edgeMessaging
 
