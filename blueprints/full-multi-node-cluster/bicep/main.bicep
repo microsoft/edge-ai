@@ -3,6 +3,7 @@ metadata description = 'Deploys a complete end-to-end environment for Azure IoT 
 
 import * as core from './types.core.bicep'
 import * as types from '../../../src/100-edge/110-iot-ops/bicep/types.bicep'
+import * as assettypes from '../../../src/100-edge/111-assets/bicep/types.bicep'
 
 targetScope = 'subscription'
 
@@ -97,6 +98,40 @@ var shouldEnableOtelCollector = false
 // @description('Whether or not to enable the OPC UA Simulator and deploy ADR Asset for Azure IoT Operations.')
 // param shouldEnableOpcUaSimulator bool = true
 var shouldEnableOpcUaSimulator = false
+
+/*
+  Device Configuration Parameters
+*/
+
+@description('List of namespaced devices to create.')
+param namespacedDevices assettypes.NamespacedDevice[] = []
+
+/*
+  Legacy Asset Configuration Parameters
+*/
+
+@description('List of asset endpoint profiles to create.')
+param assetEndpointProfiles assettypes.AssetEndpointProfile[] = []
+
+@description('List of legacy assets to create.')
+param legacyAssets assettypes.LegacyAsset[] = []
+
+/*
+  Namespaced Asset Configuration Parameters
+*/
+
+@description('List of namespaced assets to create.')
+param namespacedAssets assettypes.NamespacedAsset[] = []
+
+/*
+  Feature Flag Parameters
+*/
+
+@description('Whether to create a default legacy asset and endpoint profile.')
+param shouldCreateDefaultAsset bool = false
+
+@description('Whether to create a default namespaced asset and device.')
+param shouldCreateDefaultNamespacedAsset bool = true
 
 /*
   Akri Connectors Parameters
@@ -297,6 +332,22 @@ module edgeIotOps '../../../src/100-edge/110-iot-ops/bicep/main.bicep' = {
   }
 }
 
+module edgeAssets '../../../src/100-edge/111-assets/bicep/main.bicep' = {
+  name: '${deployment().name}-ea6'
+  scope: resourceGroup(resourceGroupName)
+  params: {
+    common: common
+    customLocationId: edgeIotOps.outputs.customLocationId
+    adrNamespaceName: cloudData.outputs.adrNamespaceName
+    namespacedDevices: namespacedDevices
+    namespacedAssets: namespacedAssets
+    assetEndpointProfiles: assetEndpointProfiles
+    legacyAssets: legacyAssets
+    shouldCreateDefaultAsset: shouldCreateDefaultAsset
+    shouldCreateDefaultNamespacedAsset: shouldCreateDefaultNamespacedAsset
+  }
+}
+
 module edgeObservability '../../../src/100-edge/120-observability/bicep/main.bicep' = {
   name: '${deployment().name}-edgeObservability'
   scope: resourceGroup(resourceGroupName)
@@ -308,17 +359,6 @@ module edgeObservability '../../../src/100-edge/120-observability/bicep/main.bic
     azureManagedGrafanaName: cloudObservability.outputs.grafanaName
     metricsDataCollectionRuleName: cloudObservability.outputs.metricsDataCollectionRuleName
     logsDataCollectionRuleName: cloudObservability.outputs.logsDataCollectionRuleName
-  }
-}
-
-module edgeAssets '../../../src/100-edge/111-assets/bicep/main.bicep' = {
-  name: '${deployment().name}-ea6'
-  scope: resourceGroup(resourceGroupName)
-  params: {
-    common: common
-    customLocationId: edgeIotOps.outputs.customLocationId
-    adrNamespaceName: cloudData.outputs.adrNamespaceName
-    shouldCreateDefaultNamespacedAsset: true
   }
 }
 

@@ -3,7 +3,7 @@ metadata description = 'Deploys Azure IoT Operations on an existing Arc-enabled 
 
 import * as core from './types.core.bicep'
 import * as types from '../../../src/100-edge/110-iot-ops/bicep/types.bicep'
-
+import * as assettypes from '../../../src/100-edge/111-assets/bicep/types.bicep'
 /*
   Common Parameters
 */
@@ -72,6 +72,7 @@ var shouldDeployAioDeploymentScripts = false
 
 @description('Whether to assign roles to the deploy identity.')
 param shouldAssignDeployIdentityRoles bool = true
+
 /*
   Azure IoT Operations Init Parameters
 */
@@ -116,6 +117,40 @@ var shouldEnableOtelCollector = false
 // @description('Whether or not to enable the OPC UA Simulator and deploy ADR Asset for Azure IoT Operations.')
 // param shouldEnableOpcUaSimulator bool = true
 var shouldEnableOpcUaSimulator = false
+
+/*
+  Device Configuration Parameters
+*/
+
+@description('List of namespaced devices to create.')
+param namespacedDevices assettypes.NamespacedDevice[] = []
+
+/*
+  Legacy Asset Configuration Parameters
+*/
+
+@description('List of asset endpoint profiles to create.')
+param assetEndpointProfiles assettypes.AssetEndpointProfile[] = []
+
+@description('List of legacy assets to create.')
+param legacyAssets assettypes.LegacyAsset[] = []
+
+/*
+  Namespaced Asset Configuration Parameters
+*/
+
+@description('List of namespaced assets to create.')
+param namespacedAssets assettypes.NamespacedAsset[] = []
+
+/*
+  Feature Flag Parameters
+*/
+
+@description('Whether to create a default legacy asset and endpoint profile.')
+param shouldCreateDefaultAsset bool = false
+
+@description('Whether to create a default namespaced asset and device.')
+param shouldCreateDefaultNamespacedAsset bool = true
 
 /*
   Resources
@@ -186,7 +221,12 @@ module edgeAssets '../../../src/100-edge/111-assets/bicep/main.bicep' = {
     common: common
     customLocationId: edgeIotOps.outputs.customLocationId
     adrNamespaceName: adrNamespaceName!
-    shouldCreateDefaultNamespacedAsset: true
+    shouldCreateDefaultNamespacedAsset: shouldCreateDefaultNamespacedAsset
+    shouldCreateDefaultAsset: shouldCreateDefaultAsset
+    namespacedDevices: namespacedDevices
+    assetEndpointProfiles: assetEndpointProfiles
+    legacyAssets: legacyAssets
+    namespacedAssets: namespacedAssets
   }
 }
 

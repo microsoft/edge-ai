@@ -2,6 +2,7 @@ metadata name = 'Minimum Single Node Cluster Blueprint'
 metadata description = 'Deploys the minimal set of resources required for Azure IoT Operations on a single-node, Arc-enabled Kubernetes cluster.'
 
 import * as core from './types.core.bicep'
+import * as assettypes from '../../../src/100-edge/111-assets/bicep/types.bicep'
 
 targetScope = 'subscription'
 
@@ -52,6 +53,40 @@ param shouldInitAio bool = true
 
 @description('Whether to deploy an Azure IoT Operations Instance and all of its required components into the connected cluster.')
 param shouldDeployAio bool = true
+
+/*
+  Device Configuration Parameters
+*/
+
+@description('List of namespaced devices to create.')
+param namespacedDevices assettypes.NamespacedDevice[] = []
+
+/*
+  Legacy Asset Configuration Parameters
+*/
+
+@description('List of asset endpoint profiles to create.')
+param assetEndpointProfiles assettypes.AssetEndpointProfile[] = []
+
+@description('List of legacy assets to create.')
+param legacyAssets assettypes.LegacyAsset[] = []
+
+/*
+  Namespaced Asset Configuration Parameters
+*/
+
+@description('List of namespaced assets to create.')
+param namespacedAssets assettypes.NamespacedAsset[] = []
+
+/*
+  Feature Flag Parameters
+*/
+
+@description('Whether to create a default legacy asset and endpoint profile.')
+param shouldCreateDefaultAsset bool = false
+
+@description('Whether to create a default namespaced asset and device.')
+param shouldCreateDefaultNamespacedAsset bool = true
 
 /*
   Resources
@@ -187,7 +222,12 @@ module edgeAssets '../../../src/100-edge/111-assets/bicep/main.bicep' = {
     common: common
     customLocationId: edgeIotOps.outputs.customLocationId
     adrNamespaceName: cloudData.outputs.adrNamespaceName
-    shouldCreateDefaultNamespacedAsset: true
+    shouldCreateDefaultNamespacedAsset: shouldCreateDefaultNamespacedAsset
+    shouldCreateDefaultAsset: shouldCreateDefaultAsset
+    namespacedDevices: namespacedDevices
+    assetEndpointProfiles: assetEndpointProfiles
+    legacyAssets: legacyAssets
+    namespacedAssets: namespacedAssets
   }
 }
 
