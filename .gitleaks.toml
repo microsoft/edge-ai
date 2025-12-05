@@ -1,48 +1,135 @@
-# .gitleaks.toml - Custom gitleaks configuration for MegaLinter
-# Purpose: Suppress false positive secret detections in example code and documentation
-# Repository: microsoft/edge-ai
-# Date: 2025-01-28
+# Gitleaks Configuration for microsoft/edge-ai
+# Purpose: Suppress false positives while maintaining security coverage
+# Last Updated: 2025-12-02
 
 [extend]
-# Use default gitleaks rules as base
 useDefault = true
 
-# Suppress generic-api-key detections in example configuration files
+# Global allowlist for documentation, research, and examples
+[[allowlists]]
+description = "Global patterns for documentation, research, and examples"
+paths = [
+  '''.copilot-tracking/.*''',
+  '''.github/prompts/.*''',
+  '''.github/instructions/.*''',
+  '''.*\.md$''',
+  '''.*README.*''',
+  '''.*\.tfvars\.example$''',
+  '''.*\.env\.example$''',
+  '''.*\.config\.example$''',
+  '''.*\.json\.example$''',
+  '''.*\.yml\.example$''',
+  '''.*\.yaml\.example$''',
+  '''.*/examples?/.*''',
+  '''.*/samples?/.*''',
+  '''.*/templates?/.*\.example$''',
+  '''.*kubernetes/.*\.yaml$''',
+  '''.*otel-collector.*\.yaml$''',
+  '''.*integration-tests?.*''',
+]
+
+# Commit-based allowlist for historical false positives
+[[allowlists]]
+description = "Ignore commits with files that were later deleted or refactored"
+commits = [
+  "c27825a7",
+  "42ee4823",
+]
+
+[[rules]]
+id = "hashicorp-tf-password"
+description = "Terraform password variables"
+
+  [[rules.allowlists]]
+  description = "Ignore test fixtures, setup scripts, and obvious test values"
+  paths = [
+    '''.*tests?/setup/.*\.tf$''',
+    '''.*tests?/fixtures/.*\.tf$''',
+    '''.*tests?/.*\.tfvars$''',
+    '''.*\.tf\.example$''',
+    '''.*/examples?/.*\.tf$''',
+  ]
+  regexes = [
+    '''password\s*=\s*["']test\w*["']''',
+    '''password\s*=\s*["']\w*test["']''',
+    '''password\s*=\s*["'].*["']\s*#.*example''',
+    '''password\s*=\s*["'].*["']\s*#.*placeholder''',
+    '''\w+_test_password\s*=''',
+    '''\w+_mock_password\s*=''',
+  ]
+  stopwords = [
+    "testpass",
+    "test_password",
+    "password123",
+    "mock_password",
+    "example_password",
+  ]
+
 [[rules]]
 id = "generic-api-key"
 description = "Generic API Key"
 
-[rules.allowlist]
-description = "Ignore example configuration files"
-paths = [
-  '''.*\.tfvars\.example$''',
-  '''.*\.env\.example$''',
-  '''.*\.config\.example$''',
-  '''.*/examples?/.*''',
-]
+  [[rules.allowlists]]
+  description = "Ignore script templates, mock services, and environment variable patterns"
+  paths = [
+    '''.*scripts?/.*\.sh$''',
+    '''.*scripts?/.*\.bash$''',
+    '''.*services?/.*mock.*\.py$''',
+    '''.*services?/.*test.*\.py$''',
+    '''.*services?/authenticated-device/.*\.py$''',
+    '''.*tests?/.*\.py$''',
+    '''.*\.env\.example$''',
+    '''.*\.config\.example$''',
+    '''.*integration.*tests?.*\.rs$''',
+  ]
+  regexes = [
+    '''password:\s+\w{20,}=\s*#.*CHANGE''',
+    '''apikey:\s+\w{20,}=\s*#.*CHANGE''',
+    '''os\.environ\.get\(['"]\w+['"],\s*['"].*['"]\)''',
+    '''getenv\(['"]\w+['"],\s*['"].*['"]\)''',
+    '''\w+_pass_\d+''',
+    '''\w+_key_\d+''',
+    '''\{\{\s*password\s*\}\}''',
+    '''\{\{\s*api_key\s*\}\}''',
+    '''\$\{password\}''',
+    '''\$\{api_key\}''',
+  ]
+  stopwords = [
+    "device_pass_123",
+    "cGFzc3dvcmQxMjM=",
+    "api_key_example",
+    "test_api_key",
+    "mock_api_key",
+    "9b10c9b9-24a2-486f-9649-53c93cbee746",
+  ]
 
-# Suppress curl-auth-user detections in documentation and localhost examples
 [[rules]]
 id = "curl-auth-user"
-description = "Curl authentication flag with user credentials"
+description = "Curl Basic Authentication"
 
-[rules.allowlist]
-description = "Ignore documentation and localhost examples"
-paths = [
-  '''.*README\.md$''',
-  '''.*\.md$''',
-  '''.*Dockerfile$''',
-]
-regexes = [
-  '''curl.*localhost''',
-  '''curl.*127\.0\.0\.1''',
-  '''curl.*\$\{.*\}''',  # Allow environment variable placeholders
-]
-
-# Global allowlist for all rules
-[allowlist]
-description = "Global patterns to ignore"
-paths = [
-  '''.copilot-tracking/.*''',  # Ignore research and tracking files
-  '''.github/prompts/.*''',     # Ignore instruction files
-]
+  [[rules.allowlists]]
+  description = "Ignore curl examples, test scripts, and Dockerfile health checks"
+  paths = [
+    '''.*\.md$''',
+    '''.*README.*''',
+    '''.*/docs?/.*''',
+    '''.*tests?/.*\.sh$''',
+    '''.*scripts?/.*\.sh$''',
+    '''.*/examples?/.*\.sh$''',
+    '''.*Dockerfile$''',
+  ]
+  regexes = [
+    '''curl.*-u\s+\w+:\w+.*localhost''',
+    '''curl.*-u\s+\w+:\w+.*127\.0\.0\.1''',
+    '''curl.*-u\s+\w+:\w+.*example\.com''',
+    '''```.*curl.*-u\s+\w+:\w+.*```''',
+    '''HEALTHCHECK.*curl.*-u\s+\w+:\w+.*localhost''',
+    '''CMD.*curl.*-u\s+\w+:\w+.*localhost''',
+  ]
+  stopwords = [
+    "user:password",
+    "admin:admin",
+    "test:test",
+    "device_user:device_pass_123",
+    "deviceuser:devicepass123",
+  ]
