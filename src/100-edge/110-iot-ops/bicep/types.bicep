@@ -1,5 +1,5 @@
 /*
- * IMPORTANT: The variable names in this file ('aioPlatformExtensionDefaults',
+ * IMPORTANT: The variable names in this file ('aioCertManagerExtensionDefaults',
  * 'secretStoreExtensionDefaults', 'containerStorageExtensionDefaults',
  * 'aioExtensionDefaults') are explicitly referenced
  * by the aio-version-checker.py script. If you rename these variables or change their structure,

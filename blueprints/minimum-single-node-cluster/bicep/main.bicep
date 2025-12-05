@@ -204,5 +204,5 @@ output vmUsername string = cloudVmHost.outputs.adminUsername
 @description('An array containing the names of all virtual machines that were deployed as part of this blueprint.')
 output vmNames array = cloudVmHost.outputs.vmNames
 
-@description('The ID of the Azure IoT Operations Platform Extension.')
-output aioPlatformExtensionId string = edgeIotOps.outputs.aioPlatformExtensionId
+@description('The ID of the Azure IoT Operations Cert-Manager Extension.')
+output aioCertManagerExtensionId string = edgeIotOps.outputs.aioCertManagerExtensionId

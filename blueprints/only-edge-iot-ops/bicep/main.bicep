@@ -194,11 +194,11 @@ module edgeAssets '../../../src/100-edge/111-assets/bicep/main.bicep' = {
   Outputs
 */
 
-@description('The ID of the Azure IoT Operations Platform Extension.')
-output aioPlatformExtensionId string = edgeIotOps.outputs.aioPlatformExtensionId
+@description('The ID of the Azure IoT Operations Cert-Manager Extension.')
+output aioCertManagerExtensionId string = edgeIotOps.outputs.aioCertManagerExtensionId
 
-@description('The name of the Azure IoT Operations Platform Extension.')
-output aioPlatformExtensionName string = edgeIotOps.outputs.aioPlatformExtensionName
+@description('The name of the Azure IoT Operations Cert-Manager Extension.')
+output aioCertManagerExtensionName string = edgeIotOps.outputs.aioCertManagerExtensionName
 
 @description('The ID of the Secret Store Extension.')
 output secretStoreExtensionId string = edgeIotOps.outputs.secretStoreExtensionId
