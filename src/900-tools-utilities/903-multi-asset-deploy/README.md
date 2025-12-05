@@ -194,6 +194,11 @@ steps:
 ### GitHub Actions
 
 ```yaml
+- name: Azure Login
+  uses: azure/login@v1
+  with:
+    creds: ${{ secrets.AZURE_CREDENTIALS }}
+
 - name: Deploy Multi-Asset IoT Resources
   run: |
     ./src/900-tools-utilities/903-multi-asset-deploy/deploy-multi-assets.sh \
@@ -201,8 +206,6 @@ steps:
       ${{ vars.RESOURCE_GROUP }} \
       ${{ vars.CUSTOM_LOCATION_ID }} \
       ${{ vars.ADR_NAMESPACE }}
-  env:
-    AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
 ```
 
 ## Component Integration
