@@ -78,6 +78,19 @@ param shouldEnableOtelCollector bool = true
 param shouldEnableOpcUaSimulator bool = true
 
 /*
+  Akri Connectors Parameters
+*/
+
+@description('List of Akri connector templates to deploy.')
+param akriConnectorTemplates types.AkriConnectorTemplate[] = []
+
+@description('Shared MQTT connection configuration for all Akri connectors.')
+param akriMqttSharedConfig types.AkriMqttConfig?
+
+@description('Whether to deploy Akri connector templates.')
+param shouldDeployAkriConnectors bool = false
+
+/*
   Custom Location Parameters
 */
 
@@ -303,6 +316,24 @@ module iotOpsInstance 'modules/iot-ops-instance.bicep' = if (shouldDeployAio && 
 }
 
 /*
+  Akri Connectors Module
+*/
+
+module akriConnectors 'modules/akri-connectors.bicep' = if (shouldDeployAkriConnectors && shouldDeployAio && length(akriConnectorTemplates) > 0) {
+  name: '${deployment().name}-akri4'
+  params: {
+    aioInstanceId: iotOpsInstance.?outputs.?aioInstanceId ?? ''
+    customLocationId: iotOpsInstance.?outputs.?customLocationId ?? ''
+    connectorTemplates: akriConnectorTemplates
+    mqttSharedConfig: akriMqttSharedConfig ?? {
+      host: aioMqBrokerConfig.brokerListenerServiceName
+      audience: aioMqBrokerConfig.serviceAccountAudience
+      caConfigmap: 'aio-ca-trust-bundle-test-only'
+    }
+  }
+}
+
+/*
   Post Instance Script Modules
 */
 
@@ -395,3 +426,13 @@ output dataFlowEndpointId string = shouldDeployAio && shouldDeployResourceSyncRu
 output dataFlowEndpointName string = shouldDeployAio && shouldDeployResourceSyncRules
   ? (iotOpsInstance.?outputs.?dataFlowEndpointName ?? '')
   : ''
+
+@description('Map of deployed Akri connector templates by name with id and type.')
+output akriConnectorTemplates array = shouldDeployAkriConnectors
+  ? (akriConnectors.?outputs.?connectorTemplates ?? [])
+  : []
+
+@description('List of Akri connector types that were deployed.')
+output akriConnectorTypesDeployed array = shouldDeployAkriConnectors
+  ? (akriConnectors.?outputs.?connectorTypesDeployed ?? [])
+  : []
