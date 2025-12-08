@@ -43,7 +43,7 @@ npm install
 npm run docs
 ```
 
-This will start a local development server at `http://localhost:3000` with automatic URL replacement and hot reload for all documentation changes.
+This will start a local development server at `http://localhost:8080` with automatic URL replacement and hot reload for all documentation changes.
 
 ### 2. Writing Documentation
 
@@ -85,24 +85,24 @@ The Edge AI project uses a variable-based URL replacement system that automatica
 
 ### Available URL Tokens
 
-| Token                  | Description          | Local            | GitHub           | Azure DevOps               |
-|------------------------|----------------------|------------------|------------------|----------------------------|
-| `{{REPO_URL}}`         | Repository home page | GitHub URL       | GitHub URL       | Azure DevOps URL           |
-| `{{CLONE_URL}}`        | Git clone URL        | GitHub clone     | GitHub clone     | Azure DevOps clone         |
-| `{{ISSUES_URL}}`       | Issues/bug tracker   | GitHub issues    | GitHub issues    | Azure DevOps work items    |
-| `{{NEW_ISSUE_URL}}`    | Create new issue     | GitHub new issue | GitHub new issue | Azure DevOps new work item |
-| `{{DOCS_BASE_URL}}`    | Documentation base   | `localhost:3000` | GitHub Pages     | Azure DevOps Wiki          |
-| `{{CONTRIBUTING_URL}}` | Contributing guide   | Local path       | GitHub path      | Azure DevOps path          |
-| `{{PR_URL}}`           | Pull request base    | GitHub PRs       | GitHub PRs       | Azure DevOps PRs           |
-| `{{WIKI_URL}}`         | Wiki base            | Local docs       | GitHub wiki      | Azure DevOps wiki          |
+| Token                  | Description          | Local                   | GitHub           | Azure DevOps               |
+|------------------------|----------------------|-------------------------|------------------|----------------------------|
+| `{{REPO_URL}}`         | Repository home page | GitHub URL              | GitHub URL       | Azure DevOps URL           |
+| `{{CLONE_URL}}`        | Git clone URL        | GitHub clone            | GitHub clone     | Azure DevOps clone         |
+| `{{ISSUES_URL}}`       | Issues/bug tracker   | GitHub issues           | GitHub issues    | Azure DevOps work items    |
+| `{{NEW_ISSUE_URL}}`    | Create new issue     | GitHub new issue        | GitHub new issue | Azure DevOps new work item |
+| `{{DOCS_BASE_URL}}`    | Documentation base   | `http://localhost:8080` | GitHub Pages     | Azure DevOps Wiki          |
+| `{{CONTRIBUTING_URL}}` | Contributing guide   | Local path              | GitHub path      | Azure DevOps path          |
+| `{{PR_URL}}`           | Pull request base    | GitHub PRs              | GitHub PRs       | Azure DevOps PRs           |
+| `{{WIKI_URL}}`         | Wiki base            | Local docs              | GitHub wiki      | Azure DevOps wiki          |
 
 ### Publishing Contexts
 
 #### Local Development (`local`)
 
 - **Purpose**: Development and testing
-- **Docs Base**: `http://localhost:3000`
-- **Features**: Hot reload, runtime URL replacement, context switching
+- **Docs Base**: `http://localhost:8080`
+- **Features**: Hot reload, runtime URL replacement, automatic environment detection
 
 #### GitHub Pages (`github`)
 
@@ -139,7 +139,7 @@ URL mappings are defined in `scripts/url-config.json`:
   "local": {
     "REPO_URL": "https://github.com/microsoft/edge-ai",
     "CLONE_URL": "https://github.com/microsoft/edge-ai.git",
-    "DOCS_BASE_URL": "http://localhost:3000"
+    "DOCS_BASE_URL": "http://localhost:8080"
   },
   "github": {
     "REPO_URL": "https://github.com/microsoft/edge-ai",
@@ -259,10 +259,10 @@ To add a new navigation section:
 
 ### Quick Start
 
-1. **Set up URL configuration** (first time only):
+1. **Install dependencies** (first time only):
 
    ```bash
-   npm run docs:setup
+   npm install
    ```
 
 2. **Start the documentation server**:
@@ -275,43 +275,46 @@ To add a new navigation section:
 
 ### Local Development Server
 
-The enhanced documentation server provides:
+The unified documentation server starts two services:
 
 ```bash
 npm run docs
 ```
+
+**Services Started:**
+
+- **Docsify Server** (port 8080): Documentation site with hot reload
+- **Progress API Server** (port 3002): Backend for learning progress tracking
 
 **Features:**
 
 - 🔄 Hot reload for immediate preview
 - 🔀 Runtime URL replacement based on context
-- 🎯 Automatic context detection
-- 📊 Real-time link validation
+- 🎯 Automatic environment detection (container, Windows, Linux/macOS)
+- 📊 Progress tracking API integration
 
 **Server Options:**
 
-```bash
-npm run docs                    # Start with default context
-npm run docs -- --context=github   # Test GitHub Pages URLs
-npm run docs -- --context=azdo     # Test Azure DevOps URLs
-npm run docs -- --open             # Start and open browser
-npm run docs -- --port=8080        # Use different port
+```powershell
+# Start with defaults (Docsify on 8080, Progress API on 3002)
+npm run docs
+
+# Or run the PowerShell script directly with custom options
+pwsh ./scripts/Serve-Docs.ps1 -DocsPort 8080 -ProgressPort 3002
+
+# Open browser to a specific section
+pwsh ./scripts/Serve-Docs.ps1 -StartPage "learning/README"
 ```
 
 ### Testing Different Contexts
 
-Test your documentation in different publishing environments:
+URL replacement is handled automatically based on the deployment environment:
 
-```bash
-# Test GitHub Pages deployment
-npm run docs -- --context=github
+- **Local Development**: URLs are replaced at runtime by the Docsify plugins
+- **GitHub Pages**: URLs are replaced at build time by the GitHub workflow
+- **Azure DevOps Wiki**: URLs are replaced at build time by the `Build-Wiki.ps1` script
 
-# Test Azure DevOps Wiki deployment
-npm run docs -- --context=azdo
-
-# Back to local development
-npm run docs
-```
+To verify your documentation renders correctly, run `npm run docs` and check all links work as expected.
 
 ### URL Configuration
 
@@ -383,10 +386,13 @@ grep -r "{{.*}}" docs/
 ```bash
 # Clear cache and restart
 rm -rf node_modules/.cache
+npm install
 npm run docs
 
-# Check port conflicts (default port is 8080)
+# Check port conflicts
+# Docsify runs on port 8080, Progress API on port 3002
 lsof -i :8080
+lsof -i :3002
 ```
 
 ### Getting Help
@@ -398,12 +404,13 @@ lsof -i :8080
 
 ### Available Scripts
 
-| Script                   | Description                                                           | Usage             |
-|--------------------------|-----------------------------------------------------------------------|-------------------|
-| `npm run docs`           | Start development server with URL replacement                         | Local development |
-| `npm run docs:no-open`   | Start development server without opening browser                      | Local development |
-| `npm run mdlint`         | Run markdown linting                                                  | Quality assurance |
-| `scripts/Build-Wiki.ps1` | Build Azure DevOps Wiki with URL replacement and navigation structure | CI/CD pipeline    |
+| Script                    | Description                                                           | Usage             |
+|---------------------------|-----------------------------------------------------------------------|-------------------|
+| `npm run docs`            | Start Docsify (8080) and Progress API (3002) servers                  | Local development |
+| `npm run progress-server` | Start only the Progress API server                                    | API development   |
+| `npm run mdlint`          | Run markdown linting                                                  | Quality assurance |
+| `npm run mdlint-fix`      | Fix markdown linting issues automatically                             | Quality assurance |
+| `scripts/Build-Wiki.ps1`  | Build Azure DevOps Wiki with URL replacement and navigation structure | CI/CD pipeline    |
 
 ## Configuration Files
 
