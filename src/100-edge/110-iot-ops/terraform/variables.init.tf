@@ -7,14 +7,14 @@
  * you must also update the script and the aio-version-checker-template.yml pipeline.
  */
 
-variable "platform" {
+variable "cert_manager" {
   type = object({
     version = string
     train   = string
   })
   default = {
-    version = "0.7.29"
-    train   = "preview"
+    version = "0.6.2"
+    train   = "stable"
   }
 }
 

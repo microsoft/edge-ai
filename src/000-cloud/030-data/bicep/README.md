@@ -30,10 +30,10 @@ Creates storage resources including Azure Storage Account and Schema Registry fo
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|storageAccount|`Microsoft.Resources/deployments`|2022-09-01|
-|schemaRegistry|`Microsoft.Resources/deployments`|2022-09-01|
-|schemaRegistryRoleAssignment|`Microsoft.Resources/deployments`|2022-09-01|
-|adrNamespace|`Microsoft.Resources/deployments`|2022-09-01|
+|storageAccount|`Microsoft.Resources/deployments`|2025-04-01|
+|schemaRegistry|`Microsoft.Resources/deployments`|2025-04-01|
+|schemaRegistryRoleAssignment|`Microsoft.Resources/deployments`|2025-04-01|
+|adrNamespace|`Microsoft.Resources/deployments`|2025-04-01|
 
 ## Modules
 

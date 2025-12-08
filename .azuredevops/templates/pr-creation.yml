@@ -1,0 +1,498 @@
+---
+# Pull Request Creation Template
+#
+# Purpose:
+# This template provides standardized GitHub API operations for creating, managing, and
+# validating pull requests. It handles PR creation with comprehensive metadata, validation
+# of existing PRs to prevent conflicts, and standardized output for integration workflows.
+#
+# When to use:
+# - Release branch PR creation workflows
+# - Automated PR creation from CI/CD pipelines
+# - PR validation and conflict checking
+# - Standardized PR creation with labels, reviewers, and templates
+#
+# Functionality:
+# - Create new pull requests with full metadata support
+# - Check for existing conflicting pull requests
+# - Validate PR state and requirements
+# - Add labels, reviewers, and assignees
+# - Support for draft PRs and PR templates
+# - Comprehensive error handling and validation
+# - Standardized output variables for downstream operations
+#
+# Key Parameters:
+# - operation: Type of PR operation to perform
+# - head: Source branch name (without refs/heads/)
+# - base: Target branch name (without refs/heads/)
+# - title: Pull request title
+# - body: Pull request description/body
+# - installationToken: GitHub App installation token
+# - repository: GitHub repository (defaults to microsoft/edge-ai)
+
+parameters:
+  - name: operation
+    type: string
+    values:
+      - 'create-pr'
+      - 'check-conflicts'
+      - 'validate-pr'
+      - 'update-pr'
+    displayName: 'Pull request operation to perform'
+
+  - name: head
+    type: string
+    displayName: 'Source branch name (head branch)'
+
+  - name: base
+    type: string
+    default: 'main'
+    displayName: 'Target branch name (base branch)'
+
+  - name: title
+    type: string
+    displayName: 'Pull request title'
+
+  - name: body
+    type: string
+    default: ''
+    displayName: 'Pull request body/description'
+
+  - name: repository
+    type: string
+    default: 'microsoft/edge-ai'
+    displayName: 'GitHub repository (owner/name format)'
+
+  - name: installationToken
+    type: string
+    displayName: 'GitHub App installation token'
+
+  - name: isDraft
+    type: boolean
+    default: false
+    displayName: 'Create as draft pull request'
+
+  - name: labels
+    type: string
+    default: ''
+    displayName: 'Comma-separated list of labels to add'
+
+  - name: assignees
+    type: string
+    default: ''
+    displayName: 'Comma-separated list of GitHub usernames to assign'
+
+  - name: reviewers
+    type: string
+    default: ''
+    displayName: 'Comma-separated list of reviewers to request'
+
+  - name: teamReviewers
+    type: string
+    default: ''
+    displayName: 'Comma-separated list of team reviewers to request'
+
+  - name: milestone
+    type: string
+    default: ''
+    displayName: 'Milestone number or title'
+
+  - name: failOnConflict
+    type: boolean
+    default: true
+    displayName: 'Fail pipeline if conflicting PR exists'
+
+  - name: outputVariablePrefix
+    type: string
+    default: 'prOps'
+    displayName: 'Prefix for output variables'
+
+  - name: prNumber
+    type: string
+    default: ''
+    displayName: 'PR number for update operations'
+
+steps:
+  - ${{ if eq(parameters.operation, 'create-pr') }}:
+      - pwsh: |
+          $headers = @{
+            'Accept' = 'application/vnd.github+json'
+            'Authorization' = 'Bearer ${{ parameters.installationToken }}'
+            'X-GitHub-Api-Version' = '2022-11-28'
+            'Content-Type' = 'application/json'
+          }
+
+          Write-Host "🔄 Creating pull request: ${{ parameters.head }} → ${{ parameters.base }}"
+          Write-Host "  Repository: ${{ parameters.repository }}"
+          Write-Host "  Title: ${{ parameters.title }}"
+          Write-Host "  Draft: ${{ parameters.isDraft }}"
+
+          # Build PR body
+          $prBody = "${{ parameters.body }}"
+          if (-not $prBody) {
+            $prBody = "Automated pull request created from pipeline."
+          }
+
+          # Create PR request body
+          $requestBody = @{
+            title = "${{ parameters.title }}"
+            body = $prBody
+            head = "${{ parameters.head }}"
+            base = "${{ parameters.base }}"
+            draft = [bool]::Parse("${{ parameters.isDraft }}")
+          }
+
+          try {
+            $uri = "https://api.github.com/repos/${{ parameters.repository }}/pulls"
+            $jsonBody = $requestBody | ConvertTo-Json -Depth 10
+            Write-Host "📤 Sending PR creation request..."
+            Write-Host "Request body: $jsonBody"
+
+            # Use Invoke-WebRequest to get better error details
+            $webResponse = Invoke-WebRequest -Uri $uri -Headers $headers -Method POST -Body $jsonBody -ErrorAction Stop
+            $response = $webResponse.Content | ConvertFrom-Json
+
+            Write-Host "✅ Pull request created successfully"
+            Write-Host "  Number: #$($response.number)"
+            Write-Host "  URL: $($response.html_url)"
+            Write-Host "  State: $($response.state)"
+            Write-Host "  Draft: $($response.draft)"
+
+            # Set output variables
+            Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.created;isOutput=true]true"
+            Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.number;isOutput=true]$($response.number)"
+            Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.url;isOutput=true]$($response.html_url)"
+            Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.state;isOutput=true]$($response.state)"
+            Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.draft;isOutput=true]$($response.draft)"
+
+            # Add labels if specified
+            $labels = "${{ parameters.labels }}".Trim()
+            if ($labels) {
+              Write-Host "🏷️ Adding labels: $labels"
+              $labelArray = $labels -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ }
+              $labelBody = @{
+                labels = $labelArray
+              } | ConvertTo-Json
+
+              $labelUri = "https://api.github.com/repos/${{ parameters.repository }}/issues/$($response.number)/labels"
+              try {
+                Invoke-RestMethod -Uri $labelUri -Headers $headers -Method POST -Body $labelBody | Out-Null
+                Write-Host "✅ Labels added successfully"
+              }
+              catch {
+                Write-Warning "⚠️ Failed to add labels: $($_.Exception.Message)"
+              }
+            }
+
+            # Add assignees if specified
+            $assignees = "${{ parameters.assignees }}".Trim()
+            if ($assignees) {
+              Write-Host "👥 Adding assignees: $assignees"
+              $assigneeArray = $assignees -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ }
+              $assigneeBody = @{
+                assignees = $assigneeArray
+              } | ConvertTo-Json
+
+              $assigneeUri = "https://api.github.com/repos/${{ parameters.repository }}/issues/$($response.number)/assignees"
+              try {
+                Invoke-RestMethod -Uri $assigneeUri -Headers $headers -Method POST -Body $assigneeBody | Out-Null
+                Write-Host "✅ Assignees added successfully"
+              }
+              catch {
+                Write-Warning "⚠️ Failed to add assignees: $($_.Exception.Message)"
+              }
+            }
+
+            # Request reviewers if specified
+            $reviewers = "${{ parameters.reviewers }}".Trim()
+            $teamReviewers = "${{ parameters.teamReviewers }}".Trim()
+            if ($reviewers -or $teamReviewers) {
+              Write-Host "👁️ Requesting reviewers..."
+              $reviewerBody = @{}
+
+              if ($reviewers) {
+                $reviewerArray = $reviewers -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ }
+                $reviewerBody.reviewers = $reviewerArray
+                Write-Host "  Individual reviewers: $($reviewerArray -join ', ')"
+              }
+
+              if ($teamReviewers) {
+                $teamArray = $teamReviewers -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ }
+                $reviewerBody.team_reviewers = $teamArray
+                Write-Host "  Team reviewers: $($teamArray -join ', ')"
+              }
+
+              $reviewerUri = "https://api.github.com/repos/${{ parameters.repository }}/pulls/$($response.number)/requested_reviewers"
+              try {
+                $reviewerJson = $reviewerBody | ConvertTo-Json
+                Invoke-RestMethod -Uri $reviewerUri -Headers $headers -Method POST -Body $reviewerJson | Out-Null
+                Write-Host "✅ Reviewers requested successfully"
+              }
+              catch {
+                Write-Warning "⚠️ Failed to request reviewers: $($_.Exception.Message)"
+              }
+            }
+
+          }
+          catch {
+            $errorMessage = $_.Exception.Message
+            $statusCode = $null
+            $errorDetails = $null
+
+            # Get error details from ErrorDetails or Response
+            if ($_.ErrorDetails.Message) {
+              $errorDetails = $_.ErrorDetails.Message
+            }
+            elseif ($_.Exception.Response) {
+              $statusCode = [int]$_.Exception.Response.StatusCode
+
+              # Try to read response content
+              try {
+                $reader = [System.IO.StreamReader]::new($_.Exception.Response.GetResponseStream())
+                $reader.BaseStream.Position = 0
+                $errorDetails = $reader.ReadToEnd()
+                $reader.Close()
+              } catch {
+                $errorDetails = $null
+              }
+            }
+
+            Write-Host "❌ Error Message: $errorMessage"
+            if ($statusCode) { Write-Host "   Status Code: $statusCode" }
+            if ($errorDetails) {
+              Write-Host "   GitHub API Response:"
+              Write-Host $errorDetails
+            }
+
+            # Parse error details to determine cause
+            $isAlreadyExists = $false
+            if ($errorDetails) {
+              try {
+                $errorJson = $errorDetails | ConvertFrom-Json
+                if ($errorJson.message -like "*already exists*" -or
+                    ($errorJson.errors -and ($errorJson.errors | Where-Object { $_.message -like "*already exists*" }))) {
+                  $isAlreadyExists = $true
+                }
+              } catch {
+                # If JSON parsing fails, check raw message
+                if ($errorDetails -like "*already exists*") {
+                  $isAlreadyExists = $true
+                }
+              }
+            }
+
+            if ($statusCode -eq 422) {
+              # 422 typically means validation error (e.g., PR already exists, branch doesn't exist, etc.)
+              if ($isAlreadyExists -or $errorMessage -like "*already exists*") {
+                Write-Warning "⚠️ Pull request already exists for ${{ parameters.head }} → ${{ parameters.base }}"
+                Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.created;isOutput=true]false"
+                Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.error;isOutput=true]PR already exists"
+
+                if ('${{ parameters.failOnConflict }}' -eq 'true') {
+                  Write-Error "❌ PR creation failed and failOnConflict is enabled"
+                  exit 1
+                }
+              } else {
+                Write-Error "❌ Validation error (422): The GitHub API rejected the PR creation request"
+                Write-Error "   This typically means:"
+                Write-Error "   - The head branch ('${{ parameters.head }}') doesn't exist in the repository"
+                Write-Error "   - The base branch ('${{ parameters.base }}') doesn't exist"
+                Write-Error "   - Invalid branch name format"
+                Write-Error "   - Other validation constraints failed"
+                if ($errorDetails) {
+                  Write-Error "   Detailed error from GitHub:"
+                  Write-Error "   $errorDetails"
+                }
+                Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.created;isOutput=true]false"
+                Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.error;isOutput=true]Validation error"
+                exit 1
+              }
+            } else {
+              Write-Error "❌ Failed to create pull request: $errorMessage"
+              if ($statusCode) {
+                Write-Error "   Status code: $statusCode"
+              }
+              if ($errorDetails) {
+                Write-Error "   Response details: $errorDetails"
+              }
+              Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.created;isOutput=true]false"
+              Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.error;isOutput=true]$errorMessage"
+              exit 1
+            }
+          }
+        displayName: 'Create Pull Request'
+        name: '${{ parameters.outputVariablePrefix }}'
+
+  - ${{ if eq(parameters.operation, 'check-conflicts') }}:
+      - pwsh: |
+          $headers = @{
+            'Accept' = 'application/vnd.github+json'
+            'Authorization' = 'Bearer ${{ parameters.installationToken }}'
+            'X-GitHub-Api-Version' = '2022-11-28'
+          }
+
+          Write-Host "🔍 Checking for conflicting pull requests"
+          Write-Host "  Base branch: ${{ parameters.base }}"
+          Write-Host "  Head pattern: ${{ parameters.head }}"
+
+          try {
+            $uri = "https://api.github.com/repos/${{ parameters.repository }}/pulls?state=open&base=${{ parameters.base }}"
+            $pullRequests = Invoke-RestMethod -Uri $uri -Headers $headers -Method GET
+
+            # Check for exact match
+            $exactMatch = $pullRequests | Where-Object { $_.head.ref -eq "${{ parameters.head }}" }
+
+            # Check for pattern match (e.g., release/* branches)
+            $headPattern = "${{ parameters.head }}"
+            $patternMatch = $pullRequests | Where-Object { $_.head.ref -like $headPattern }
+
+            if ($exactMatch) {
+              Write-Host "❌ Exact match found:"
+              foreach ($pr in $exactMatch) {
+                Write-Host "  PR #$($pr.number): $($pr.title)"
+                Write-Host "    Branch: $($pr.head.ref) → $($pr.base.ref)"
+                Write-Host "    URL: $($pr.html_url)"
+              }
+              Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.hasExactConflict;isOutput=true]true"
+              Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.exactConflictNumber;isOutput=true]$($exactMatch[0].number)"
+            } else {
+              Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.hasExactConflict;isOutput=true]false"
+            }
+
+            if ($patternMatch) {
+              Write-Host "⚠️ Pattern matches found:"
+              foreach ($pr in $patternMatch) {
+                Write-Host "  PR #$($pr.number): $($pr.title)"
+                Write-Host "    Branch: $($pr.head.ref) → $($pr.base.ref)"
+                Write-Host "    URL: $($pr.html_url)"
+              }
+              Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.hasPatternConflict;isOutput=true]true"
+              $conflictNumbers = ($patternMatch | ForEach-Object { $_.number }) -join ','
+              Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.patternConflictNumbers;isOutput=true]$conflictNumbers"
+            } else {
+              Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.hasPatternConflict;isOutput=true]false"
+            }
+
+            $hasConflicts = $exactMatch -or ($patternMatch -and '${{ parameters.failOnConflict }}' -eq 'true')
+            Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.hasConflicts;isOutput=true]$hasConflicts"
+
+            if ($hasConflicts -and '${{ parameters.failOnConflict }}' -eq 'true') {
+              Write-Error "❌ Conflicting pull requests found and failOnConflict is enabled"
+              exit 1
+            } elseif (-not $hasConflicts) {
+              Write-Host "✅ No conflicting pull requests found"
+            }
+
+          }
+          catch {
+            Write-Error "❌ Failed to check conflicts: $($_.Exception.Message)"
+            Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.error;isOutput=true]$($_.Exception.Message)"
+            exit 1
+          }
+        displayName: 'Check PR Conflicts'
+        name: '${{ parameters.outputVariablePrefix }}'
+
+  - ${{ if eq(parameters.operation, 'validate-pr') }}:
+      - pwsh: |
+          $headers = @{
+            'Accept' = 'application/vnd.github+json'
+            'Authorization' = 'Bearer ${{ parameters.installationToken }}'
+            'X-GitHub-Api-Version' = '2022-11-28'
+          }
+
+          Write-Host "🔍 Validating pull request #${{ parameters.prNumber }}"
+
+          try {
+            $uri = "https://api.github.com/repos/${{ parameters.repository }}/pulls/${{ parameters.prNumber }}"
+            $response = Invoke-RestMethod -Uri $uri -Headers $headers -Method GET
+
+            Write-Host "✅ Pull request validation complete"
+            Write-Host "  Number: #$($response.number)"
+            Write-Host "  Title: $($response.title)"
+            Write-Host "  State: $($response.state)"
+            Write-Host "  Draft: $($response.draft)"
+            Write-Host "  Mergeable: $($response.mergeable)"
+            Write-Host "  Mergeable State: $($response.mergeable_state)"
+            Write-Host "  Head: $($response.head.ref) ($($response.head.sha.Substring(0,8)))"
+            Write-Host "  Base: $($response.base.ref) ($($response.base.sha.Substring(0,8)))"
+
+            # Set comprehensive output variables
+            Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.valid;isOutput=true]true"
+            Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.number;isOutput=true]$($response.number)"
+            Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.state;isOutput=true]$($response.state)"
+            Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.draft;isOutput=true]$($response.draft)"
+            Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.mergeable;isOutput=true]$($response.mergeable)"
+            Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.mergeableState;isOutput=true]$($response.mergeable_state)"
+            Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.headSha;isOutput=true]$($response.head.sha)"
+            Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.baseSha;isOutput=true]$($response.base.sha)"
+
+          }
+          catch {
+            if ($_.Exception.Response.StatusCode -eq 404) {
+              Write-Host "ℹ️ Pull request #${{ parameters.prNumber }} not found"
+              Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.valid;isOutput=true]false"
+              Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.error;isOutput=true]PR not found"
+            } else {
+              Write-Error "❌ Failed to validate pull request: $($_.Exception.Message)"
+              Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.valid;isOutput=true]false"
+              Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.error;isOutput=true]$($_.Exception.Message)"
+              exit 1
+            }
+          }
+        displayName: 'Validate Pull Request'
+        name: '${{ parameters.outputVariablePrefix }}'
+
+  - ${{ if eq(parameters.operation, 'update-pr') }}:
+      - pwsh: |
+          $headers = @{
+            'Accept' = 'application/vnd.github+json'
+            'Authorization' = 'Bearer ${{ parameters.installationToken }}'
+            'X-GitHub-Api-Version' = '2022-11-28'
+            'Content-Type' = 'application/json'
+          }
+
+          Write-Host "✏️ Updating pull request #${{ parameters.prNumber }}"
+
+          # Build update body
+          $updateBody = @{}
+
+          if ("${{ parameters.title }}") {
+            $updateBody.title = "${{ parameters.title }}"
+            Write-Host "  Updating title: ${{ parameters.title }}"
+          }
+
+          if ("${{ parameters.body }}") {
+            $updateBody.body = "${{ parameters.body }}"
+            Write-Host "  Updating body content"
+          }
+
+          if ("${{ parameters.base }}") {
+            $updateBody.base = "${{ parameters.base }}"
+            Write-Host "  Updating base branch: ${{ parameters.base }}"
+          }
+
+          try {
+            $uri = "https://api.github.com/repos/${{ parameters.repository }}/pulls/${{ parameters.prNumber }}"
+            $jsonBody = $updateBody | ConvertTo-Json -Depth 10
+
+            $response = Invoke-RestMethod -Uri $uri -Headers $headers -Method PATCH -Body $jsonBody
+
+            Write-Host "✅ Pull request updated successfully"
+            Write-Host "  Number: #$($response.number)"
+            Write-Host "  Title: $($response.title)"
+            Write-Host "  State: $($response.state)"
+
+            # Set output variables
+            Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.updated;isOutput=true]true"
+            Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.number;isOutput=true]$($response.number)"
+            Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.url;isOutput=true]$($response.html_url)"
+
+          }
+          catch {
+            Write-Error "❌ Failed to update pull request: $($_.Exception.Message)"
+            Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.updated;isOutput=true]false"
+            Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.error;isOutput=true]$($_.Exception.Message)"
+            exit 1
+          }
+        displayName: 'Update Pull Request'
+        name: '${{ parameters.outputVariablePrefix }}'

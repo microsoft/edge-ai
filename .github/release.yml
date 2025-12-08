@@ -1,0 +1,65 @@
+---
+# Automatic release notes configuration
+# Controls how GitHub generates release notes from commits and PRs
+# See: https://docs.github.com/en/repositories/releasing-projects-on-github/automatically-generated-release-notes
+
+changelog:
+  exclude:
+    labels:
+      - ignore-for-release
+      - dependencies
+    authors:
+      - dependabot
+
+  categories:
+    - title: 🚀 Features
+      labels:
+        - feature
+        - enhancement
+        - feat
+
+    - title: 🐛 Bug Fixes
+      labels:
+        - bug
+        - fix
+        - bugfix
+
+    - title: 📝 Documentation
+      labels:
+        - documentation
+        - docs
+
+    - title: 🔧 Maintenance
+      labels:
+        - chore
+        - refactor
+        - style
+
+    - title: 🏗️ Infrastructure
+      labels:
+        - build
+        - ci
+        - infrastructure
+
+    - title: ⚡ Performance
+      labels:
+        - performance
+        - perf
+
+    - title: 🧪 Testing
+      labels:
+        - test
+        - testing
+
+    - title: ⚠️ Breaking Changes
+      labels:
+        - breaking-change
+        - breaking
+
+    - title: 🔐 Security
+      labels:
+        - security
+
+    - title: Other Changes
+      labels:
+        - "*"

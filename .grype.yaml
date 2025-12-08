@@ -1,3 +1,4 @@
+---
 ignore:
   # atty crate - LOW severity
   # Justification: Crate is unmaintained but functional with no known exploits.

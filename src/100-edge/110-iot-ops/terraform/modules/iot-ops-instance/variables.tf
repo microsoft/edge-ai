@@ -119,10 +119,6 @@ variable "secret_store_cluster_extension_id" {
   description = "The resource ID of the Secret Store cluster extension"
 }
 
-variable "platform_cluster_extension_id" {
-  type        = string
-  description = "The resource ID of the AIO Platform cluster extension"
-}
 
 variable "should_enable_otel_collector" {
   type        = bool

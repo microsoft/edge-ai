@@ -1,0 +1,260 @@
+---
+# GitHub Branch Operations Template
+#
+# Purpose:
+# This template provides standardized GitHub API operations for branch management including
+# checking branch existence, creating branches, validating branch state, and performing
+# GitHub-specific operations through REST API calls.
+#
+# When to use:
+# - Release branch creation and validation workflows
+# - Branch existence checking before operations
+# - GitHub branch state validation
+# - Automated branch management through API
+#
+# Functionality:
+# - Check if branches exist on GitHub
+# - Create new branches from source branches
+# - Validate branch state and metadata
+# - Handle GitHub API authentication and error responses
+# - Provide standardized output variables for downstream steps
+#
+# Key Parameters:
+# - operation: Type of GitHub operation to perform
+# - branchName: Target branch name for operations
+# - sourceBranch: Source branch for creation operations
+# - installationToken: GitHub App installation token
+# - repository: GitHub repository (defaults to microsoft/edge-ai)
+
+parameters:
+  - name: operation
+    type: string
+    values:
+      - 'check-exists'
+      - 'create-branch'
+      - 'validate-state'
+      - 'get-branch-info'
+    displayName: 'GitHub branch operation to perform'
+
+  - name: branchName
+    type: string
+    displayName: 'Branch name to operate on'
+
+  - name: sourceBranch
+    type: string
+    default: 'main'
+    displayName: 'Source branch for creation operations'
+
+  - name: repository
+    type: string
+    default: 'microsoft/edge-ai'
+    displayName: 'GitHub repository (owner/name format)'
+
+  - name: installationToken
+    type: string
+    displayName: 'GitHub App installation token'
+
+  - name: failOnExists
+    type: boolean
+    default: false
+    displayName: 'Fail pipeline if branch already exists'
+
+  - name: failOnNotExists
+    type: boolean
+    default: false
+    displayName: 'Fail pipeline if branch does not exist'
+
+  - name: outputVariablePrefix
+    type: string
+    default: 'branchOps'
+    displayName: 'Prefix for output variables'
+
+steps:
+  - ${{ if eq(parameters.operation, 'check-exists') }}:
+      - pwsh: |
+          $headers = @{
+            'Accept' = 'application/vnd.github+json'
+            'Authorization' = 'Bearer ${{ parameters.installationToken }}'
+            'X-GitHub-Api-Version' = '2022-11-28'
+          }
+
+          try {
+            $uri = "https://api.github.com/repos/${{ parameters.repository }}/branches/${{ parameters.branchName }}"
+            $response = Invoke-RestMethod -Uri $uri -Headers $headers -Method GET
+
+            Write-Host "✅ Branch '${{ parameters.branchName }}' exists"
+            Write-Host "  SHA: $($response.commit.sha)"
+            Write-Host "  Protected: $($response.protected)"
+
+            # Set output variables
+            Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.exists;isOutput=true]true"
+            Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.sha;isOutput=true]$($response.commit.sha)"
+            Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.protected;isOutput=true]$($response.protected)"
+
+            if ('${{ parameters.failOnExists }}' -eq 'true') {
+              Write-Error "❌ Branch '${{ parameters.branchName }}' already exists and failOnExists is enabled"
+              exit 1
+            }
+          }
+          catch {
+            if ($_.Exception.Response.StatusCode -eq 404) {
+              Write-Host "ℹ️ Branch '${{ parameters.branchName }}' does not exist"
+              Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.exists;isOutput=true]false"
+
+              if ('${{ parameters.failOnNotExists }}' -eq 'true') {
+                Write-Error "❌ Branch '${{ parameters.branchName }}' does not exist and failOnNotExists is enabled"
+                exit 1
+              }
+            } else {
+              Write-Error "❌ API call failed: $($_.Exception.Message)"
+              Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.error;isOutput=true]$($_.Exception.Message)"
+              exit 1
+            }
+          }
+        displayName: 'Check Branch Existence'
+        name: '${{ parameters.outputVariablePrefix }}'
+
+  - ${{ if eq(parameters.operation, 'create-branch') }}:
+      - pwsh: |
+          $headers = @{
+            'Accept' = 'application/vnd.github+json'
+            'Authorization' = 'Bearer ${{ parameters.installationToken }}'
+            'X-GitHub-Api-Version' = '2022-11-28'
+            'Content-Type' = 'application/json'
+          }
+
+          Write-Host "🌿 Creating branch '${{ parameters.branchName }}' from '${{ parameters.sourceBranch }}' in ${{ parameters.repository }}"
+
+          try {
+            # First, get the source branch SHA
+            $sourceUri = "https://api.github.com/repos/${{ parameters.repository }}/branches/${{ parameters.sourceBranch }}"
+            $sourceResponse = Invoke-RestMethod -Uri $sourceUri -Headers $headers -Method GET
+            $sourceSha = $sourceResponse.commit.sha
+
+            Write-Host "📋 Source branch '${{ parameters.sourceBranch }}' SHA: $sourceSha"
+
+            # Create the new branch
+            $createUri = "https://api.github.com/repos/${{ parameters.repository }}/git/refs"
+            $body = @{
+              ref = "refs/heads/${{ parameters.branchName }}"
+              sha = $sourceSha
+            } | ConvertTo-Json
+
+            $createResponse = Invoke-RestMethod -Uri $createUri -Headers $headers -Method POST -Body $body
+
+            Write-Host "✅ Successfully created branch '${{ parameters.branchName }}'"
+            Write-Host "  SHA: $($createResponse.object.sha)"
+            Write-Host "  Ref: $($createResponse.ref)"
+
+            # Set output variables
+            Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.created;isOutput=true]true"
+            Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.sha;isOutput=true]$($createResponse.object.sha)"
+            Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.ref;isOutput=true]$($createResponse.ref)"
+          }
+          catch {
+            if ($_.Exception.Response.StatusCode -eq 422) {
+              Write-Warning "⚠️ Branch '${{ parameters.branchName }}' may already exist"
+              Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.created;isOutput=true]false"
+              Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.error;isOutput=true]Branch already exists"
+
+              if ('${{ parameters.failOnExists }}' -eq 'true') {
+                Write-Error "❌ Branch creation failed and failOnExists is enabled"
+                exit 1
+              }
+            } else {
+              Write-Error "❌ Failed to create branch: $($_.Exception.Message)"
+              Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.created;isOutput=true]false"
+              Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.error;isOutput=true]$($_.Exception.Message)"
+              exit 1
+            }
+          }
+        displayName: 'Create GitHub Branch'
+        name: '${{ parameters.outputVariablePrefix }}'
+
+  - ${{ if eq(parameters.operation, 'validate-state') }}:
+      - pwsh: |
+          $headers = @{
+            'Accept' = 'application/vnd.github+json'
+            'Authorization' = 'Bearer ${{ parameters.installationToken }}'
+            'X-GitHub-Api-Version' = '2022-11-28'
+          }
+
+          Write-Host "🔍 Validating branch state for '${{ parameters.branchName }}' in ${{ parameters.repository }}"
+
+          try {
+            # Get branch information
+            $branchUri = "https://api.github.com/repos/${{ parameters.repository }}/branches/${{ parameters.branchName }}"
+            $branchResponse = Invoke-RestMethod -Uri $branchUri -Headers $headers -Method GET
+
+            # Get commit information
+            $commitUri = "https://api.github.com/repos/${{ parameters.repository }}/commits/$($branchResponse.commit.sha)"
+            $commitResponse = Invoke-RestMethod -Uri $commitUri -Headers $headers -Method GET
+
+            Write-Host "✅ Branch validation complete"
+            Write-Host "  Branch: ${{ parameters.branchName }}"
+            Write-Host "  SHA: $($branchResponse.commit.sha)"
+            Write-Host "  Protected: $($branchResponse.protected)"
+            Write-Host "  Commit Author: $($commitResponse.commit.author.name)"
+            Write-Host "  Commit Date: $($commitResponse.commit.author.date)"
+            Write-Host "  Commit Message: $($commitResponse.commit.message)"
+
+            # Set comprehensive output variables
+            Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.valid;isOutput=true]true"
+            Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.sha;isOutput=true]$($branchResponse.commit.sha)"
+            Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.protected;isOutput=true]$($branchResponse.protected)"
+            Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.authorName;isOutput=true]$($commitResponse.commit.author.name)"
+            Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.commitDate;isOutput=true]$($commitResponse.commit.author.date)"
+            Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.commitMessage;isOutput=true]$($commitResponse.commit.message)"
+          } catch {
+            Write-Error "❌ Branch validation failed: $($_.Exception.Message)"
+            Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.valid;isOutput=true]false"
+            Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.error;isOutput=true]$($_.Exception.Message)"
+            exit 1
+          }
+        displayName: 'Validate Branch State'
+        name: '${{ parameters.outputVariablePrefix }}'
+
+  - ${{ if eq(parameters.operation, 'get-branch-info') }}:
+      - pwsh: |
+          $headers = @{
+            'Accept' = 'application/vnd.github+json'
+            'Authorization' = 'Bearer ${{ parameters.installationToken }}'
+            'X-GitHub-Api-Version' = '2022-11-28'
+          }
+
+          Write-Host "📋 Getting branch information for '${{ parameters.branchName }}' in ${{ parameters.repository }}"
+
+          try {
+            $uri = "https://api.github.com/repos/${{ parameters.repository }}/branches/${{ parameters.branchName }}"
+            $response = Invoke-RestMethod -Uri $uri -Headers $headers -Method GET
+
+            Write-Host "ℹ️ Branch Information:"
+            Write-Host "  Name: $($response.name)"
+            Write-Host "  SHA: $($response.commit.sha)"
+            Write-Host "  Protected: $($response.protected)"
+            Write-Host "  Commit URL: $($response.commit.url)"
+
+            # Set output variables with all available information
+            Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.name;isOutput=true]$($response.name)"
+            Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.sha;isOutput=true]$($response.commit.sha)"
+            Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.protected;isOutput=true]$($response.protected)"
+            Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.commitUrl;isOutput=true]$($response.commit.url)"
+
+            if ($response.protection) {
+              Write-Host "  Protection Rules: Enabled"
+              Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.hasProtection;isOutput=true]true"
+            } else {
+              Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.hasProtection;isOutput=true]false"
+            }
+          } catch {
+            if ($_.Exception.Response.StatusCode -eq 404) {
+              Write-Host "ℹ️ Branch '${{ parameters.branchName }}' not found"
+              Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.exists;isOutput=true]false"
+            } else {
+              Write-Error "❌ Failed to get branch information: $($_.Exception.Message)"
+              Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariablePrefix }}.error;isOutput=true]$($_.Exception.Message)"
+              exit 1
+            }
+          }
+        displayName: 'Get Branch Information'
+        name: '${{ parameters.outputVariablePrefix }}'

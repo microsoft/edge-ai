@@ -118,6 +118,7 @@ TERRAFORM_TFLINT_UNSECURED_ENV_VARIABLES:
   - GITHUB_TOKEN
 
 # YAML Lint configuration
+YAML_YAMLLINT_CONFIG_FILE: .yamllint.yml
 YAML_YAMLLINT_FILTER_REGEX_EXCLUDE: '(\.github/ISSUE_TEMPLATE|charts/templates|charts/.*/templates/.*)'
 
 # Spell checker configuration

@@ -447,7 +447,7 @@ Each phase must include:
 **Link Definitions** (at end of file):
 
 ```markdown
-[protocol-translation-device-management]: /docs/project-planning/capabilities/protocol-translation-device-management/
+[protocol-translation-device-management]: /docs/project-planning/capabilities/protocol-translation-device-management/README.md
 [edge-cluster-platform]: /docs/project-planning/capabilities/edge-cluster-platform/
 [edge-industrial-application-platform]: /docs/project-planning/capabilities/edge-industrial-application-platform/
 [cloud-data-platform]: /docs/project-planning/capabilities/cloud-data-platform/
@@ -650,21 +650,21 @@ Before publishing capability mapping:
 **Note**: These guidelines must be followed consistently across all scenario README files to ensure standardized capability mapping documentation that supports effective decision-making and implementation planning.
 
 <!-- Reference Links -->
-[protocol-translation-device-management]: /docs/project-planning/capabilities/protocol-translation-device-management/
-[edge-cluster-platform]: /docs/project-planning/capabilities/edge-cluster-platform/
-[edge-industrial-application-platform]: /docs/project-planning/capabilities/edge-industrial-application-platform/
-[cloud-data-platform]: /docs/project-planning/capabilities/cloud-data-platform/
-[cloud-ai-platform]: /docs/project-planning/capabilities/cloud-ai-platform/
-[cloud-insights-platform]: /docs/project-planning/capabilities/cloud-insights-platform/
-[advanced-simulation-digital-twin-platform]: /docs/project-planning/capabilities/advanced-simulation-digital-twin-platform/
-[physical-infrastructure]: /docs/project-planning/capabilities/physical-infrastructure/
-[business-enablement-integration-platform]: /docs/project-planning/capabilities/business-enablement-integration-platform/
-[opc-ua-data-ingestion]: /docs/project-planning/capabilities/protocol-translation-device-management/opc-ua-data-ingestion.md
-[edge-data-stream-processing]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-data-stream-processing.md
-[edge-dashboard-visualization]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-dashboard-visualization.md
-[edge-compute-orchestration]: /docs/project-planning/capabilities/edge-cluster-platform/edge-compute-orchestration.md
-[cloud-data-platform-services]: /docs/project-planning/capabilities/cloud-data-platform/cloud-data-platform-services.md
-[device-twin-management]: /docs/project-planning/capabilities/protocol-translation-device-management/device-twin-management.md
-[edge-camera-control]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-camera-control.md
-[computer-vision-platform]: /docs/project-planning/capabilities/edge-industrial-application-platform/computer-vision-platform.md
-[edge-inferencing-application-framework]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-inferencing-application-framework.md
+[protocol-translation-device-management]: /docs/project-planning/capabilities/protocol-translation-device-management/README
+[edge-cluster-platform]: /docs/project-planning/capabilities/edge-cluster-platform/README
+[edge-industrial-application-platform]: /docs/project-planning/capabilities/edge-industrial-application-platform/README
+[cloud-data-platform]: /docs/project-planning/capabilities/cloud-data-platform/README
+[cloud-ai-platform]: /docs/project-planning/capabilities/cloud-ai-platform/README
+[cloud-insights-platform]: /docs/project-planning/capabilities/cloud-insights-platform/README
+[advanced-simulation-digital-twin-platform]: /docs/project-planning/capabilities/advanced-simulation-digital-twin-platform/README
+[physical-infrastructure]: /docs/project-planning/capabilities/physical-infrastructure/README
+[business-enablement-integration-platform]: /docs/project-planning/capabilities/business-enablement-integration-platform/README
+[opc-ua-data-ingestion]: /docs/project-planning/capabilities/protocol-translation-device-management/opc-ua-data-ingestion
+[edge-data-stream-processing]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-data-stream-processing
+[edge-dashboard-visualization]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-dashboard-visualization
+[edge-compute-orchestration]: /docs/project-planning/capabilities/edge-cluster-platform/edge-compute-orchestration-platform
+[cloud-data-platform-services]: /docs/project-planning/capabilities/cloud-data-platform/cloud-data-platform-services
+[device-twin-management]: /docs/project-planning/capabilities/protocol-translation-device-management/device-twin-management
+[edge-camera-control]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-camera-control
+[computer-vision-platform]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-inferencing-application-framework
+[edge-inferencing-application-framework]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-inferencing-application-framework

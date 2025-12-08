@@ -1,0 +1,88 @@
+---
+# GitHub Authentication Template
+#
+# Purpose:
+# Provides standardized GitHub App authentication for Azure DevOps pipelines.
+# Creates installation tokens for secure GitHub API access with proper scoping.
+#
+# Usage:
+# - template: templates/github-auth.yml
+#   parameters:
+#     githubRepository: 'microsoft/edge-ai'
+#     outputVariableName: 'GITHUB_TOKEN'  # Optional, defaults to 'installationToken'
+#
+# Prerequisites:
+# - Variable group 'ai-on-edge-secrets' with:
+#   - github-edge-ai-app-client-id: GitHub App client ID
+#   - github-edge-ai-app-private-key: GitHub App private key (PEM format)
+# - PowerShell script: scripts/github/auth/Get-GitHubInstallationToken.ps1
+#
+# Outputs:
+# - $(outputVariableName): GitHub installation token for API access
+# - GITHUB_AUTH_SUCCESS: 'true' if authentication succeeded, 'false' otherwise
+
+parameters:
+  - name: githubRepository
+    type: string
+    default: 'microsoft/edge-ai'
+    displayName: 'GitHub repository (owner/repo format)'
+
+  - name: outputVariableName
+    type: string
+    default: 'installationToken'
+    displayName: 'Output variable name for the token'
+
+  - name: displayName
+    type: string
+    default: 'GitHub App Authentication'
+    displayName: 'Step display name'
+
+steps:
+  - task: PowerShell@2
+    displayName: '${{ parameters.displayName }}'
+    name: githubAuth
+    inputs:
+      pwsh: true
+      targetType: 'inline'
+      errorActionPreference: 'stop'
+      script: |
+        try {
+            Write-Host "=== GitHub App Authentication ==="
+            Write-Host "Repository: ${{ parameters.githubRepository }}"
+            Write-Host "Output Variable: ${{ parameters.outputVariableName }}"
+
+            Write-Host "Generating GitHub installation token..."
+
+            $token = & "$(System.DefaultWorkingDirectory)/scripts/github/auth/Get-GitHubInstallationToken.ps1" `
+                -ClientId "$(github-edge-ai-app-client-id)" `
+                -PrivateKey "$(github-edge-ai-app-private-key)" `
+                -Repository "${{ parameters.githubRepository }}"
+
+            if ([string]::IsNullOrWhiteSpace($token)) {
+                throw "Failed to obtain GitHub installation token"
+            }
+
+            Write-Host "✓ GitHub installation token obtained successfully"
+            $varName = "${{ parameters.outputVariableName }}"
+            Write-Host "##vso[task.setvariable variable=$varName;isSecret=true;isOutput=true]$token"
+            Write-Host "##vso[task.setvariable variable=GITHUB_AUTH_SUCCESS;isOutput=true]true"
+
+            # Validate token by testing GitHub API access
+            $headers = @{
+                'Accept' = 'application/vnd.github+json'
+                'Authorization' = "Bearer $token"
+                'X-GitHub-Api-Version' = '2022-11-28'
+            }
+
+            $testUrl = "https://api.github.com/repos/${{ parameters.githubRepository }}"
+            $response = Invoke-RestMethod -Uri $testUrl -Headers $headers -Method Get
+
+            Write-Host "✓ Token validation successful - repository access confirmed"
+            Write-Host "Repository: $($response.full_name)"
+            Write-Host "Visibility: $($response.visibility)"
+
+        } catch {
+            Write-Host "##[error]GitHub authentication failed: $($_.Exception.Message)"
+            Write-Host "##vso[task.setvariable variable=GITHUB_AUTH_SUCCESS;isOutput=true]false"
+            throw $_.Exception
+        }

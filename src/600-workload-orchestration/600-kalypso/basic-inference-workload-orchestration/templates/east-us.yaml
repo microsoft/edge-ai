@@ -1,0 +1,11 @@
+---
+apiVersion: scheduler.kalypso.io/v1alpha1
+kind: ClusterType
+metadata:
+  name: east-us
+  labels:
+    region: eastus
+spec:
+  reconciler: argocd
+  namespaceService: default
+  configType: configmap

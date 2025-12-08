@@ -139,10 +139,15 @@ jobs:
           $buildReason = '$(Build.Reason)'
           $buildSourceBranch = '$(Build.SourceBranch)'
           $value = ''
+          $scanStrategy = ''
 
           if ($buildReason -eq 'PullRequest') {
+            # PR builds: scan only commits between target branch and HEAD
             $value = '--log-opts="origin/$(System.PullRequest.TargetBranch)..HEAD"'
+            $scanStrategy = 'PR Incremental'
+
           } elseif ($buildSourceBranch -eq 'refs/heads/main') {
+            # Main branch: scan only last commit (or HEAD if first commit)
             $commitCount = 0
             try {
               $commitCount = [int](& git rev-list --count HEAD 2>$null)
@@ -152,11 +157,37 @@ jobs:
 
             if ($commitCount -gt 1) {
               $value = '--log-opts="HEAD~1..HEAD"'
+              $scanStrategy = 'Main Single Commit'
             } else {
               $value = '--log-opts="HEAD"'
+              $scanStrategy = 'Main Initial Commit'
             }
+
+          } elseif ($buildSourceBranch -match '^refs/heads/release/') {
+            # Release branches: full history scan for security validation
+            $value = ''
+            $scanStrategy = 'Release Full History'
+            Write-Host "##[warning]Release branch detected - performing full history security scan"
+
+          } elseif ($buildSourceBranch -match '^refs/heads/(dev|feature/|hotfix/)') {
+            # Development, feature, and hotfix branches: scan changes since main
+            Write-Host "Fetching origin/main reference for comparison..."
+            git fetch origin main --depth=1 | Out-Null
+            $value = '--log-opts="origin/main..HEAD"'
+            $scanStrategy = 'Feature Incremental'
+
+          } else {
+            # Fallback for unknown branches: scan changes since main
+            Write-Host "Fetching origin/main reference for comparison..."
+            git fetch origin main --depth=1 | Out-Null
+            $value = '--log-opts="origin/main..HEAD"'
+            $scanStrategy = 'Default Incremental'
+            Write-Host "##[warning]Unknown branch pattern '$buildSourceBranch' - defaulting to incremental scan from main"
           }
 
+          Write-Host "##[section]Gitleaks Scan Strategy: $scanStrategy"
+          Write-Host "##[section]Branch: $buildSourceBranch"
+          Write-Host "##[section]Build Reason: $buildReason"
           Write-Host "Setting MegaLinterGitleaksArgs to '$value'"
           Write-Host "##vso[task.setvariable variable=MegaLinterGitleaksArgs]$value"
         displayName: 'Configure MegaLinter Git diff arguments'

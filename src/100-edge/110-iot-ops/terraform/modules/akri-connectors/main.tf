@@ -10,32 +10,36 @@ locals {
   // Connector type metadata mapping for built-in Microsoft connectors
   connector_type_metadata = {
     rest = {
-      endpoint_type    = "Microsoft.Http"
-      image_name       = "azureiotoperations/akri-connectors/rest"
-      version          = "1.0"
-      default_tag      = "0.5.1"
-      default_registry = "mcr.microsoft.com"
+      endpoint_type       = "Microsoft.Http"
+      image_name          = "azureiotoperations/akri-connectors/rest"
+      version             = "1.0"
+      default_tag         = "1.0.6"
+      default_registry    = "mcr.microsoft.com"
+      default_min_version = "1.2.37"
     }
     media = {
-      endpoint_type    = "Microsoft.Media"
-      image_name       = "azureiotoperations/akri-connectors/media"
-      version          = "1.0"
-      default_tag      = "0.5.1"
-      default_registry = "mcr.microsoft.com"
+      endpoint_type       = "Microsoft.Media"
+      image_name          = "azureiotoperations/akri-connectors/media"
+      version             = "1.0"
+      default_tag         = "1.2.39"
+      default_registry    = "mcr.microsoft.com"
+      default_min_version = "1.2.37"
     }
     onvif = {
-      endpoint_type    = "Microsoft.Onvif"
-      image_name       = "azureiotoperations/akri-connectors/onvif"
-      version          = "1.0"
-      default_tag      = "0.5.1"
-      default_registry = "mcr.microsoft.com"
+      endpoint_type       = "Microsoft.Onvif"
+      image_name          = "azureiotoperations/akri-connectors/onvif"
+      version             = "1.0"
+      default_tag         = "1.2.39"
+      default_registry    = "mcr.microsoft.com"
+      default_min_version = "1.2.37"
     }
     sse = {
-      endpoint_type    = "Microsoft.Sse"
-      image_name       = "azureiotoperations/akri-connectors/sse"
-      version          = "1.0"
-      default_tag      = "0.5.1"
-      default_registry = "mcr.microsoft.com"
+      endpoint_type       = "Microsoft.Sse"
+      image_name          = "azureiotoperations/akri-connectors/sse"
+      version             = "1.0"
+      default_tag         = "1.0.5"
+      default_registry    = "mcr.microsoft.com"
+      default_min_version = "1.2.37"
     }
   }
 
@@ -57,12 +61,19 @@ locals {
       replicas                 = coalesce(conn.replicas, 1)
       image_pull_policy        = coalesce(conn.image_pull_policy, "IfNotPresent")
       log_level                = lower(coalesce(conn.log_level, "info"))
-      aio_min_version          = conn.aio_min_version
+      aio_min_version          = coalesce(conn.aio_min_version, conn.type != "custom" ? local.connector_type_metadata[conn.type].default_min_version : null)
       aio_max_version          = conn.aio_max_version
       allocation               = conn.allocation
       additional_configuration = conn.additional_configuration
       secrets                  = conn.secrets
       trust_settings           = conn.trust_settings
+
+      // Build connector metadata reference dynamically
+      connector_metadata_ref = conn.type == "custom" && conn.custom_connector_metadata_ref != null ? (
+        conn.custom_connector_metadata_ref
+        ) : (
+        "${coalesce(conn.registry, conn.type != "custom" ? local.connector_type_metadata[conn.type].default_registry : "mcr.microsoft.com")}/${conn.type == "custom" ? conn.custom_image_name : local.connector_type_metadata[conn.type].image_name}-metadata:${coalesce(conn.image_tag, conn.type != "custom" ? local.connector_type_metadata[conn.type].default_tag : "latest")}"
+      )
 
       // MQTT config - use connector-specific or fallback to shared
       mqtt_config = try(conn.mqtt_config, null) != null ? conn.mqtt_config : var.mqtt_shared_config
@@ -89,6 +100,7 @@ resource "azapi_resource" "connector_template" {
     }
     properties = merge(
       {
+        connectorMetadataRef = each.value.connector_metadata_ref
         deviceInboundEndpointTypes = [
           {
             endpointType = each.value.endpoint_type

@@ -21,8 +21,8 @@ Deploys Azure Container Registry (ACR) resources.
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|network|`Microsoft.Resources/deployments`|2022-09-01|
-|containerRegistry|`Microsoft.Resources/deployments`|2022-09-01|
+|network|`Microsoft.Resources/deployments`|2025-04-01|
+|containerRegistry|`Microsoft.Resources/deployments`|2025-04-01|
 
 ## Modules
 

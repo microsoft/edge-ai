@@ -1,11 +1,11 @@
+---
 # Security Deployment Workflow - Critical deployment security checks
 # This workflow performs comprehensive security validation for deployment readiness.
 # It mirrors the Azure DevOps Scheduled stage security suite.
 # Designed to run before critical deployments to ensure security posture compliance.
-
 name: Security Deployment Validation
 
-on:
+'on':
   workflow_call:
     inputs:
       max-age-days:
@@ -53,7 +53,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:

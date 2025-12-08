@@ -23,8 +23,8 @@ Deploys Azure cloud messaging resources including Event Hubs, Service Bus, and E
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|eventHub|`Microsoft.Resources/deployments`|2022-09-01|
-|eventGrid|`Microsoft.Resources/deployments`|2022-09-01|
+|eventHub|`Microsoft.Resources/deployments`|2025-04-01|
+|eventGrid|`Microsoft.Resources/deployments`|2025-04-01|
 
 ## Modules
 

@@ -3,15 +3,20 @@ variable "arc_connected_cluster_id" {
   description = "The resource ID of the connected cluster to deploy Azure IoT Operations Platform to"
 }
 
-variable "aio_platform_config" {
+variable "trust_config_source" {
+  type        = string
+  description = "TrustConfig source must be one of 'SelfSigned', 'CustomerManagedByoIssuer' or 'CustomerManagedGenerateIssuer'. Defaults to SelfSigned. When choosing CustomerManagedGenerateIssuer, ensure connectedk8s proxy is enabled on the cluster for current user. When choosing CustomerManagedByoIssuer, ensure an Issuer and ConfigMap resources exist in the cluster."
+}
+
+variable "aio_cert_manager_config" {
   type = object({
-    install_cert_manager  = bool
-    install_trust_manager = bool
+    agent_operation_timeout_in_minutes = string
+    global_telemetry_enabled           = bool
   })
   description = "Install cert-manager and trust-manager extensions"
 }
 
-variable "platform" {
+variable "cert_manager" {
   type = object({
     version = string
     train   = string

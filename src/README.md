@@ -59,11 +59,13 @@ engineers can deploy the `100-edge` components for on-premises cluster set-up.
 
 1. [(500-application)](./500-application/README.md) - Custom workloads and applications, including a basic Inference
    Pipeline, TIG/TICK stacks, InfluxDB Data Historian, reference data backup from cloud to edge, etc.
-2. [(900-tools-utilities)](./900-tools-utilities/README.md) - Utility scripts, tools, and supporting resources for edge
+2. [(600-workload-orchestration)](./600-workload-orchestration/README.md) - Multi-cluster workload orchestration tools
+   and solutions including Kalypso and Azure Arc workload orchestration
+3. [(900-tools-utilities)](./900-tools-utilities/README.md) - Utility scripts, tools, and supporting resources for edge
    deployments
-3. [(starter-kit/dataflows-acsa-egmqtt-bidirectional)](./starter-kit/dataflows-acsa-egmqtt-bidirectional/README.md) - Sample
+4. [(starter-kit/dataflows-acsa-egmqtt-bidirectional)](./starter-kit/dataflows-acsa-egmqtt-bidirectional/README.md) - Sample
    that provides assets with Azure IoT Operations Dataflows and supported infrastructure creation
-4. [(azure-resource-providers)](./azure-resource-providers/README.md) - Scripts to register required Azure resource
+5. [(azure-resource-providers)](./azure-resource-providers/README.md) - Scripts to register required Azure resource
    providers for AIO and Arc in your subscription
 
 ## Prerequisites and Setting Up Your Environment

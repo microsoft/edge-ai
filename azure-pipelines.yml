@@ -28,7 +28,7 @@
 trigger:
   branches:
     include:
-      - main
+      - dev
       - internal-eng
       - pre-release
 
@@ -57,14 +57,14 @@ schedules:
     displayName: Daily 9 PM PST/5 AM UTC Trigger
     branches:
       include:
-        - main
+        - dev
     always: true
 
 # set isMain to true if the branch is main to trigger main stage
 # set isPreRelease to true if the branch is pre-release to trigger pre-release stage
 # set isScheduled to true if the build is scheduled to trigger
 variables:
-  isMain: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
+  isMain: $[eq(variables['Build.SourceBranch'], 'refs/heads/dev')]
   isPreRelease: $[eq(variables['Build.SourceBranch'], 'refs/heads/pre-release')]
   isScheduled: $[eq(variables['Build.Reason'], 'Schedule')]
   # Use parameter override if provided, otherwise use system variable
@@ -103,17 +103,6 @@ stages:
           dependsOn: []
           displayName: "OSSF Scorecard Analysis"
           condition: succeeded()
-          agentPool:
-            name: $(poolName)
-            vmImage: $(vmImage)
-
-      # Network egress monitoring for build security
-      - template: .azdo/templates/egress-monitoring-template.yml
-        parameters:
-          dependsOn: []
-          displayName: "Network Egress Monitoring"
-          condition: succeeded()
-          allowedEndpoints: 'github.com,registry-1.docker.io,*.azurecr.io,packages.microsoft.com,*.azure.com'
           agentPool:
             name: $(poolName)
             vmImage: $(vmImage)
@@ -158,22 +147,13 @@ stages:
 
   - stage: Main
     displayName: Main Build
-    # Run the main build process only if the build is not scheduled and is the main branch
+    # Run the main build process only if the build is not scheduled and is the dev branch
     condition: and(eq(variables.isMain, true), eq(variables.isScheduled, false))
     jobs:
-      - template: .azdo/templates/harden-runner-template.yml
-        parameters:
-          dependsOn: []
-          displayName: "Security Hardening Setup"
-          condition: succeeded()
-          agentPool:
-            name: $(poolName)
-            vmImage: $(vmImage)
-
       # Use the megaLinter-template.yml to run MegaLinter
       - template: .azdo/templates/megalinter-template.yml
         parameters:
-          dependsOn: SecurityHardening
+          dependsOn: []
           displayName: "Run MegaLinter"
           condition: succeeded()
           # for main do not report results as there's no PR to report to
@@ -202,19 +182,10 @@ stages:
     # Run the pre-release build process only if the build is not scheduled and is the pre-release branch
     condition: and(eq(variables.isPreRelease, true), eq(variables.isScheduled, false))
     jobs:
-      - template: .azdo/templates/harden-runner-template.yml
-        parameters:
-          dependsOn: []
-          displayName: "PreRelease Security Hardening"
-          condition: succeeded()
-          agentPool:
-            name: $(poolName)
-            vmImage: $(vmImage)
-
       # Use the megaLinter-template.yml to run MegaLinter
       - template: .azdo/templates/megalinter-template.yml
         parameters:
-          dependsOn: SecurityHardening
+          dependsOn: []
           displayName: "Run MegaLinter"
           condition: succeeded()
           # for main do not report results as there's no PR to report to
@@ -225,18 +196,9 @@ stages:
 
   - stage: PR
     displayName: PR Build Process
-    # Run the PR build process only if the build is not scheduled, not the main branch and not the pre-release branch
+    # Run the PR build process only if the build is not scheduled, not the dev branch and not the pre-release branch
     condition: and(eq(variables.isMain, false), eq(variables.isPreRelease, false), eq(variables.isScheduled, false))
     jobs:
-      - template: .azdo/templates/harden-runner-template.yml
-        parameters:
-          dependsOn: []
-          displayName: "PR Security Hardening"
-          condition: succeeded()
-          agentPool:
-            name: $(poolName)
-            vmImage: $(vmImage)
-
       # Use the MegaLinter template for PR builds with Azure reporter enabled
       - template: .azdo/templates/megalinter-template.yml
         parameters:

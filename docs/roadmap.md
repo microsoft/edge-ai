@@ -36,7 +36,7 @@ Capabilities are ordered by frequency (most common first) within each phase.
 - 🟢 **Medium**: Beneficial enhancements, measurable improvements
 - 🔵 **Strategic**: Long-term advantages, competitive differentiation
 
-### Status Legend
+## Status Legend
 
 | Status                  | Meaning                                                                  |
 |-------------------------|--------------------------------------------------------------------------|

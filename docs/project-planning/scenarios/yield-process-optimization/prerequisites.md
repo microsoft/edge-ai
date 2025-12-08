@@ -302,18 +302,18 @@ When implementing multiple scenarios, optimize shared infrastructure:
 ---
 
 <!-- Reference Links -->
-[edge-ai-platform-capability-groups]: /docs/project-planning/capabilities/
-[getting-started-guide]: /docs/getting-started/README.md
-[blueprints-readme]: /blueprints/README.md
-[security-identity-module]: /src/000-cloud/010-security-identity/terraform/README.md
-[iot-operations-module]: /src/100-edge/110-iot-ops/terraform/README.md
-[full-single-node-cluster]: /blueprints/full-single-node-cluster
-[full-multi-node-cluster]: /blueprints/full-multi-node-cluster
-[only-edge-iot-ops]: /blueprints/only-edge-iot-ops
-[minimum-single-node-cluster]: /blueprints/minimum-single-node-cluster
-[quality-process-prereqs]: /docs/project-planning/scenarios/quality-process-optimization-automation/prerequisites.md
-[operational-performance-prereqs]: /docs/project-planning/scenarios/operational-performance-monitoring/prerequisites.md
-[predictive-maintenance-prereqs]: /docs/project-planning/scenarios/predictive-maintenance/prerequisites.md
+[edge-ai-platform-capability-groups]: /docs/project-planning/capabilities/README
+[getting-started-guide]: /docs/getting-started/README
+[blueprints-readme]: /blueprints/README
+[security-identity-module]: /src/000-cloud/010-security-identity/terraform/README
+[iot-operations-module]: /src/100-edge/110-iot-ops/terraform/README
+[full-single-node-cluster]: /blueprints/full-single-node-cluster/README
+[full-multi-node-cluster]: /blueprints/full-multi-node-cluster/README
+[only-edge-iot-ops]: /blueprints/only-edge-iot-ops/README
+[minimum-single-node-cluster]: /blueprints/minimum-single-node-cluster/README
+[quality-process-prereqs]: /docs/project-planning/scenarios/quality-process-optimization-automation/prerequisites
+[operational-performance-prereqs]: /docs/project-planning/scenarios/operational-performance-monitoring/prerequisites
+[predictive-maintenance-prereqs]: /docs/project-planning/scenarios/predictive-maintenance/prerequisites
 [azure-machine-learning]: https://learn.microsoft.com/azure/machine-learning/
 [azure-digital-twins]: https://learn.microsoft.com/azure/digital-twins/
 [azure-iot-operations]: https://learn.microsoft.com/azure/iot-operations/

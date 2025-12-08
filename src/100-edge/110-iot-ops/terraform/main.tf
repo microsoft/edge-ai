@@ -65,8 +65,9 @@ module "iot_ops_init" {
   depends_on = [module.role_assignments]
 
   arc_connected_cluster_id     = var.arc_connected_cluster.id
-  aio_platform_config          = var.aio_platform_config
-  platform                     = var.platform
+  trust_config_source          = var.trust_config_source
+  aio_cert_manager_config      = var.aio_cert_manager_config
+  cert_manager                 = var.cert_manager
   edge_storage_accelerator     = var.edge_storage_accelerator
   secret_sync_controller       = var.secret_sync_controller
   resource_group               = var.resource_group
@@ -136,8 +137,7 @@ module "iot_ops_instance" {
   dataflow_instance_count                 = var.dataflow_instance_count
   should_deploy_resource_sync_rules       = var.should_deploy_resource_sync_rules
   customer_managed_trust_settings         = local.customer_managed_trust_settings
-  secret_store_cluster_extension_id       = module.iot_ops_init.secret_store_extension_cluster_id
-  platform_cluster_extension_id           = module.iot_ops_init.platform_cluster_extension_id
+  secret_store_cluster_extension_id       = module.iot_ops_init.secret_store_cluster_extension_id
   should_enable_otel_collector            = var.should_enable_otel_collector
   aio_uami_id                             = var.aio_identity.id
   aio_features                            = var.aio_features

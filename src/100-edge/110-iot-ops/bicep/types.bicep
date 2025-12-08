@@ -62,24 +62,27 @@ var containerStorageExtensionDefaults = {
 
 @export()
 @description('The settings for the Azure IoT Operations Platform Extension.')
-type AioPlatformExtension = {
+type AioCertManagerExtension = {
   @description('The common settings for the extension.')
   release: Release
 
   settings: {
-    @description('Whether or not to install managers for trust in the cluster.')
-    installCertManager: bool?
+    @description('Agent operation timeout in minutes.')
+    agentOperationTimeoutInMinutes: string
+    @description('Enable or disable global telemetry.')
+    globalTelemetryEnabled: bool?
   }
 }
 
 @export()
-var aioPlatformExtensionDefaults = {
+var aioCertManagerExtensionDefaults = {
   release: {
-    version: '0.7.29'
-    train: 'preview'
+    version: '0.6.2'
+    train: 'stable'
   }
   settings: {
-    installCertManager: true
+    agentOperationTimeoutInMinutes: '20'
+    globalTelemetryEnabled: true
   }
 }
 

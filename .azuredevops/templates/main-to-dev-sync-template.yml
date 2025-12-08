@@ -1,0 +1,180 @@
+---
+# Main-to-Dev Sync Template
+#
+# Purpose:
+# Reusable template for main-to-dev branch synchronization. Merges main into dev
+# to integrate external contributions while preserving any unreleased work on dev.
+#
+# Usage:
+# This template is designed to be called from pipelines that need to sync main branch changes
+# to the development branch. It handles both automated (scheduled) and manual sync scenarios.
+#
+# Parameters:
+# - sourceBranch: Source branch to sync from (default: 'main')
+# - targetBranch: AzDO target branch to sync to (default: 'dev')
+# - githubTargetBranch: GitHub target branch name (default: 'develop')
+# - gitUserEmail: Git user email for commits (default: 'azure-pipelines@microsoft.com')
+# - gitUserName: Git user name for commits (default: 'Azure Pipelines')
+#
+# Output Variables:
+# - SYNC_EXECUTED: Whether sync was performed (true/false)
+# - CONFLICT_DETECTED: Whether merge conflicts occurred (true/false)
+#
+# Logic:
+# - If dev SHA == main SHA: Skip (nothing to do)
+# - Otherwise: Merge main into dev (preserves dev work, integrates main changes)
+#
+# Prerequisites:
+# - Full checkout (fetchDepth: 0) with persistCredentials: true
+# - GitHub App authentication via github-auth.yml template
+# - Variable group with GitHub App credentials
+# - Push permissions to target branch
+
+parameters:
+  - name: sourceBranch
+    type: string
+    default: 'main'
+  - name: targetBranch
+    type: string
+    default: 'dev'
+  - name: githubTargetBranch
+    type: string
+    default: 'develop'
+  - name: gitUserEmail
+    type: string
+    default: 'azure-pipelines@microsoft.com'
+  - name: gitUserName
+    type: string
+    default: 'Azure Pipelines'
+
+jobs:
+  - job: SyncMainToDev
+    displayName: 'Sync ${{ parameters.sourceBranch }} to ${{ parameters.targetBranch }}'
+    variables:
+      SYNC_EXECUTED: 'false'
+      CONFLICT_DETECTED: 'false'
+    steps:
+      - checkout: self
+        displayName: 'Checkout repository'
+        fetchDepth: 0
+        persistCredentials: true
+
+      # GitHub App Authentication
+      - template: github-auth.yml
+        parameters:
+          githubRepository: 'microsoft/edge-ai'
+          outputVariableName: 'installationToken'
+          displayName: 'Create GitHub access token'
+
+      # Configure Git
+      - template: git-sync-operations.yml
+        parameters:
+          operation: 'configure-git'
+          gitUserEmail: '${{ parameters.gitUserEmail }}'
+          gitUserName: '${{ parameters.gitUserName }}'
+
+      # Fetch branches
+      - template: git-sync-operations.yml
+        parameters:
+          operation: 'fetch-merge'
+          workingDirectory: '$(System.DefaultWorkingDirectory)'
+          sourceBranch: '${{ parameters.targetBranch }}'
+          mergeStrategy: 'merge'
+
+      # Check if sync needed and merge if so
+      - task: PowerShell@2
+        displayName: 'Sync ${{ parameters.sourceBranch }} to ${{ parameters.targetBranch }}'
+        name: SyncBranches
+        inputs:
+          pwsh: true
+          targetType: 'inline'
+          script: |
+            $sourceSHA = git rev-parse origin/${{ parameters.sourceBranch }}
+            $targetSHA = git rev-parse origin/${{ parameters.targetBranch }}
+
+            Write-Host "Source (${{ parameters.sourceBranch }}) SHA: $sourceSHA"
+            Write-Host "Target (${{ parameters.targetBranch }}) SHA: $targetSHA"
+            Write-Host ""
+
+            if ($sourceSHA -eq $targetSHA) {
+              Write-Host "✓ ${{ parameters.targetBranch }} is already at ${{ parameters.sourceBranch }} - nothing to do"
+              Write-Host "##vso[task.setvariable variable=SYNC_EXECUTED;isOutput=true]false"
+              exit 0
+            }
+
+            Write-Host "Merging ${{ parameters.sourceBranch }} into ${{ parameters.targetBranch }}..."
+
+            git checkout ${{ parameters.targetBranch }}
+            if ($LASTEXITCODE -ne 0) {
+              Write-Host "##vso[task.logissue type=error]Failed to checkout ${{ parameters.targetBranch }}"
+              exit 1
+            }
+
+            git merge origin/${{ parameters.sourceBranch }} --no-ff -m "chore: integrate changes from ${{ parameters.sourceBranch }}"
+            if ($LASTEXITCODE -ne 0) {
+              Write-Host ""
+              Write-Host "##vso[task.logissue type=error]Merge conflict detected"
+              Write-Host "##vso[task.setvariable variable=CONFLICT_DETECTED;isOutput=true]true"
+              Write-Host ""
+              Write-Host "Resolve manually:"
+              Write-Host "  git checkout ${{ parameters.targetBranch }}"
+              Write-Host "  git merge origin/${{ parameters.sourceBranch }}"
+              Write-Host "  # resolve conflicts"
+              Write-Host "  git commit && git push"
+              exit 1
+            }
+
+            Write-Host ""
+            Write-Host "✓ Merge completed"
+            Write-Host "##vso[task.setvariable variable=SYNC_EXECUTED;isOutput=true]true"
+
+      # Push to AzDO and GitHub
+      - task: PowerShell@2
+        displayName: 'Push to AzDO and GitHub'
+        condition: eq(variables['SyncBranches.SYNC_EXECUTED'], 'true')
+        inputs:
+          pwsh: true
+          targetType: 'inline'
+          script: |
+            Write-Host "Pushing to AzDO origin..."
+            git push origin ${{ parameters.targetBranch }}
+            if ($LASTEXITCODE -ne 0) {
+              Write-Host "##vso[task.logissue type=error]Failed to push to AzDO"
+              exit 1
+            }
+            Write-Host "✓ Pushed to AzDO"
+
+            Write-Host ""
+            Write-Host "Pushing to GitHub..."
+            $githubUrl = "$(github-edge-ai-repo-url)" -replace '__token__', '$(githubAuth.installationToken)'
+            git remote add github $githubUrl 2>$null || git remote set-url github $githubUrl
+
+            # Fetch from GitHub to update all remote-tracking refs for --force-with-lease
+            Write-Host "Fetching current state from GitHub..."
+            git fetch github
+            if ($LASTEXITCODE -ne 0) {
+              Write-Host "##vso[task.logissue type=warning]Failed to fetch from GitHub, continuing..."
+            }
+
+            git push github HEAD:${{ parameters.githubTargetBranch }} --force-with-lease=${{ parameters.githubTargetBranch }}
+            if ($LASTEXITCODE -ne 0) {
+              Write-Host "##vso[task.logissue type=error]Failed to push to GitHub"
+              exit 1
+            }
+            Write-Host "✓ Pushed to GitHub (${{ parameters.githubTargetBranch }})"
+
+      # Summary
+      - task: PowerShell@2
+        displayName: 'Output Summary'
+        condition: always()
+        inputs:
+          pwsh: true
+          targetType: 'inline'
+          script: |
+            Write-Host ""
+            Write-Host "=========================================="
+            Write-Host "${{ parameters.sourceBranch }}-to-${{ parameters.targetBranch }} Sync Summary"
+            Write-Host "=========================================="
+            Write-Host "Sync Executed:     $(SyncBranches.SYNC_EXECUTED)"
+            Write-Host "Conflict Detected: $(CONFLICT_DETECTED)"
+            Write-Host "=========================================="

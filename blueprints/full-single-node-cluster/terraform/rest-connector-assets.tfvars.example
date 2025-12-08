@@ -126,7 +126,7 @@ namespaced_assets = [
       {
         name                  = "weather-sensor-dataset"
         data_source           = "weather/input"
-        dataset_configuration = "{\"samplingIntervalInMilliseconds\":10000}"
+        dataset_configuration = "{\"key\":\"f1a2b3c4-d5e6-4f7a-8b9c-0d1e2f3a4b5c\",\"samplingIntervalInMilliseconds\":10000}"
         data_points = []
         destinations = [
           {
@@ -165,7 +165,7 @@ namespaced_assets = [
       {
         name                  = "sensor-data"
         data_source           = "sensor/array/field?field_id=temp-celsius-01&field_id=humidity-pct-01"
-        dataset_configuration = "{\"samplingIntervalInMilliseconds\":15000}"
+        dataset_configuration = "{\"key\":\"a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d\",\"samplingIntervalInMilliseconds\":15000}"
         data_points = []
         destinations = [
           {
@@ -179,7 +179,7 @@ namespaced_assets = [
         ]
       }
     ]
-    default_datasets_configuration = "{\"publishingInterval\":15000,\"samplingInterval\":15000,\"queueSize\":1}"
+    default_datasets_configuration = "{\"samplingIntervalInMilliseconds\":10000,\"transform\":\"\"}",
   },
 
   // Authenticated Device Asset - 20 second polling
@@ -203,7 +203,7 @@ namespaced_assets = [
       {
         name                  = "device-status"
         data_source           = "api/device/status"
-        dataset_configuration = "{\"samplingIntervalInMilliseconds\":20000}"
+        dataset_configuration = "{\"key\":\"b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e\",\"samplingIntervalInMilliseconds\":20000}"
         data_points = []
         destinations = [
           {
@@ -217,6 +217,6 @@ namespaced_assets = [
         ]
       }
     ]
-    default_datasets_configuration = "{\"publishingInterval\":20000,\"samplingInterval\":20000,\"queueSize\":1}"
+    default_datasets_configuration = "{\"samplingIntervalInMilliseconds\":10000,\"transform\":\"\"}",
   }
 ]

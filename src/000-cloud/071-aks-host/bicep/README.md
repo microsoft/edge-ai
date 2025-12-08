@@ -22,8 +22,8 @@ Deploys optionally Azure Kubernetes Service (AKS) resources.
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|network|`Microsoft.Resources/deployments`|2022-09-01|
-|aksCluster|`Microsoft.Resources/deployments`|2022-09-01|
+|network|`Microsoft.Resources/deployments`|2025-04-01|
+|aksCluster|`Microsoft.Resources/deployments`|2025-04-01|
 
 ## Modules
 
@@ -50,8 +50,6 @@ Creates subnets for AKS private endpoints in an existing Virtual Network.
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|vnet|`Microsoft.Network/virtualNetworks`|2024-05-01|
-|nsg|`Microsoft.Network/networkSecurityGroups`|2024-05-01|
 |snetAks|`Microsoft.Network/virtualNetworks/subnets`|2024-05-01|
 |snetAksPod|`Microsoft.Network/virtualNetworks/subnets`|2024-05-01|
 
@@ -83,7 +81,6 @@ Deploys an Azure Kubernetes Service (AKS) cluster with integration to Azure Cont
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|acr|`Microsoft.ContainerRegistry/registries`|2023-01-01-preview|
 |aksCluster|`Microsoft.ContainerService/managedClusters`|2023-06-01|
 |roleAssignment|`Microsoft.Authorization/roleAssignments`|2022-04-01|
 

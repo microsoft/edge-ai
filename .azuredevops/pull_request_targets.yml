@@ -1,3 +1,4 @@
+---
 # Default pull request target branches
 # When creating a PR, Azure DevOps will suggest these branches as targets
 # Developers work on feature branches and PR to dev branch
