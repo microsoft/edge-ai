@@ -42,7 +42,7 @@ Generates scripts for Azure IoT Operations CNCF cluster creation without deployi
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|edgeCncfCluster|`Microsoft.Resources/deployments`|2022-09-01|
+|edgeCncfCluster|`Microsoft.Resources/deployments`|2025-04-01|
 
 ## Modules
 
@@ -93,10 +93,10 @@ The scripts handle primary and secondary node(s) setup, cluster administration, 
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|ubuntuK3s|`Microsoft.Resources/deployments`|2022-09-01|
-|roleAssignment|`Microsoft.Resources/deployments`|2022-09-01|
-|keyVaultRoleAssignments|`Microsoft.Resources/deployments`|2022-09-01|
-|deployScriptsToVm|`Microsoft.Resources/deployments`|2022-09-01|
+|ubuntuK3s|`Microsoft.Resources/deployments`|2025-04-01|
+|roleAssignment|`Microsoft.Resources/deployments`|2025-04-01|
+|keyVaultRoleAssignments|`Microsoft.Resources/deployments`|2025-04-01|
+|deployScriptsToVm|`Microsoft.Resources/deployments`|2025-04-01|
 
 #### Outputs for edgeCncfCluster
 

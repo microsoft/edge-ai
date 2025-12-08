@@ -53,20 +53,16 @@ variable "aio_ca" {
   description = "CA certificate for the MQTT broker, can be either Root CA or Root CA with any number of Intermediate CAs. If not provided, a self-signed Root CA with a intermediate will be generated. Only valid when Trust Source is set to CustomerManaged"
 }
 
-variable "aio_platform_config" {
+variable "aio_cert_manager_config" {
   type = object({
-    install_cert_manager  = bool
-    install_trust_manager = bool
+    agent_operation_timeout_in_minutes = string
+    global_telemetry_enabled           = bool
   })
   default = {
-    install_cert_manager  = true
-    install_trust_manager = true
+    agent_operation_timeout_in_minutes = "20"
+    global_telemetry_enabled           = true
   }
-  validation {
-    condition     = var.trust_config_source == "CustomerManagedByoIssuer" ? (var.aio_platform_config.install_cert_manager == false && var.aio_platform_config.install_trust_manager == false) : true
-    error_message = "When trust_config_source is CustomerManagedByoIssuer, install_cert_manager and install_trust_manager must be false because these should always be installed as a pre-requisite"
-  }
-  description = "Install cert-manager and trust-manager extensions"
+  description = "Install cert-manager"
 }
 
 variable "enable_opc_ua_simulator" {

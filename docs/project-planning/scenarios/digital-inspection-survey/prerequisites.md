@@ -406,9 +406,9 @@ then carefully refined by our team of discerning human reviewers.*
 <!-- markdownlint-enable MD036 -->
 
 <!-- Reference Links -->
-[blueprints-prereqs]: /blueprints/README.md
-[cloud-ai-platform]: /docs/project-planning/capabilities/cloud-ai-platform/
-[edge-ai-platform-capability-groups]: /docs/project-planning/capabilities/
-[edge-industrial-platform]: /docs/project-planning/capabilities/edge-industrial-application-platform/
-[predictive-maintenance-prereqs]: /docs/project-planning/scenarios/predictive-maintenance/prerequisites.md
-[quality-process-prereqs]: /docs/project-planning/scenarios/quality-process-optimization-automation/prerequisites.md
+[blueprints-prereqs]: /blueprints
+[cloud-ai-platform]: /docs/project-planning/capabilities/cloud-ai-platform
+[edge-ai-platform-capability-groups]: /docs/project-planning/capabilities
+[edge-industrial-platform]: /docs/project-planning/capabilities/edge-industrial-application-platform
+[predictive-maintenance-prereqs]: /docs/project-planning/scenarios/predictive-maintenance/prerequisites
+[quality-process-prereqs]: /docs/project-planning/scenarios/quality-process-optimization-automation/prerequisites

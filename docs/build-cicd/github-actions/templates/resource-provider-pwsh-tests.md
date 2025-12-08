@@ -149,7 +149,7 @@ Common issues and their solutions:
 - [Pester Testing Framework](https://pester.dev/)
 - [GitHub Actions Documentation](https://docs.github.com/en/actions)
 - [Azure Resource Providers Documentation](https://learn.microsoft.com/azure/azure-resource-manager/management/resource-providers-and-types)
-- [PowerShell in GitHub Actions](https://github.com/PowerShell/PowerShell/tree/master/docs/hosting/GitHubActions)
+- [Use Azure Login Action with PowerShell](https://learn.microsoft.com/azure-stack/user/ci-cd-github-action-login-cli)
 - [Azure IoT Operations Documentation](https://learn.microsoft.com/azure/iot-operations/)
 
 ---

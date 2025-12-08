@@ -60,7 +60,7 @@ keywords:
 
 | Capability                                                                           | Technical | Business | Practical | Cohesion | Priority   |
 |--------------------------------------------------------------------------------------|-----------|----------|-----------|----------|------------|
-| [Advanced Analytics Platform][advanced-analytics-platform]                           | 9         | 9        | 7         | 9        | Core       |
+| [Cloud Data Platform Services][cloud-data-platform-services]                         | 9         | 9        | 7         | 9        | Core       |
 | [Automated Incident Response & Remediation][automated-incident-response-remediation] | 8         | 8        | 7         | 8        | Core       |
 | [Enterprise Application Integration Hub][enterprise-application-integration-hub]     | 8         | 7        | 7         | 9        | Supporting |
 | [Policy & Governance Framework][policy-governance-framework]                         | 7         | 7        | 8         | 8        | Supporting |
@@ -404,17 +404,16 @@ To implement this scenario, return to the main [Operational Performance Monitori
 ---
 
 <!-- Reference Links -->
-[edge-data-stream-processing]: /docs/capabilities/edge-industrial-application-platform/edge-data-stream-processing.md
-[edge-dashboard-visualization]: /docs/capabilities/edge-industrial-application-platform/edge-dashboard-visualization.md
-[opc-ua-data-ingestion]: /docs/capabilities/protocol-translation-device-management/opc-ua-data-ingestion.md
-[edge-inferencing-application-framework]: /docs/capabilities/edge-industrial-application-platform/edge-inferencing-application-framework.md
-[time-series-data-services]: /docs/capabilities/cloud-data-platform/specialized-time-series-data-services.md
-[cloud-data-platform-services]: /docs/capabilities/cloud-data-platform/cloud-data-platform-services.md
-[advanced-analytics-platform]: /docs/capabilities/cloud-insights-platform/advanced-analytics-platform.md
-[automated-incident-response-remediation]: /docs/capabilities/cloud-insights-platform/automated-incident-response-remediation.md
-[enterprise-application-integration-hub]: /docs/capabilities/business-enablement-integration-platform/enterprise-application-integration-hub.md
-[policy-governance-framework]: /docs/capabilities/business-enablement-integration-platform/policy-governance-framework.md
-[advanced-simulation-digital-twin-platform]: /docs/capabilities/advanced-simulation-digital-twin-platform/README.md
-[mlops-toolchain]: /docs/capabilities/cloud-ai-platform/mlops-toolchain.md
-[federated-learning-framework]: /docs/capabilities/cloud-ai-platform/federated-learning-framework.md
+[edge-data-stream-processing]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-data-stream-processing
+[edge-dashboard-visualization]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-dashboard-visualization
+[opc-ua-data-ingestion]: /docs/project-planning/capabilities/protocol-translation-device-management/opc-ua-data-ingestion
+[edge-inferencing-application-framework]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-inferencing-application-framework
+[time-series-data-services]: /docs/project-planning/capabilities/cloud-data-platform/specialized-time-series-data-services
+[cloud-data-platform-services]: /docs/project-planning/capabilities/cloud-data-platform/cloud-data-platform-services
+[automated-incident-response-remediation]: /docs/project-planning/capabilities/cloud-insights-platform/automated-incident-response-remediation
+[enterprise-application-integration-hub]: /docs/project-planning/capabilities/business-enablement-integration-platform/enterprise-application-integration-hub
+[policy-governance-framework]: /docs/project-planning/capabilities/developer-experience-platform-services/policy-governance-framework
+[advanced-simulation-digital-twin-platform]: /docs/project-planning/capabilities/advanced-simulation-digital-twin-platform/README
+[mlops-toolchain]: /docs/project-planning/capabilities/cloud-ai-platform/mlops-toolchain
+[federated-learning-framework]: /docs/project-planning/capabilities/cloud-ai-platform/federated-learning-framework
 [operational-performance-monitoring-readme]: ./README.md

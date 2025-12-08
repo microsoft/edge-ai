@@ -1,21 +1,18 @@
-# AI-Assisted Engineering Learning Platform
-
 ---
 title: AI-Assisted Engineering Learning Platform
 description: Develop AI-assisted engineering expertise through skill-based learning paths that build real-world competence
 author: Edge AI Team
-
 ms.date: 2025-07-21
 ms.topic: learning-path
 estimated_reading_time: 3
 difficulty: all levels
 keywords:
-
-- learning platform
-- ai-assisted engineering
-- katas
-- training labs
-- learning paths
+  - learning platform
+  - ai-assisted engineering
+  - katas
+  - training labs
+  - learning paths
+---
 
 ***"Where AI Empowers Every Engineer to Achieve More"***
 
@@ -37,33 +34,43 @@ This Learning Platform combines AI assistance with practical engineering challen
 
 ### Installation
 
-  git clone <https://github.com/your-org/edge-ai.git>
-
 1. **Clone the repository**:
 
-  ```bash
-  git clone <https://github.com/your-org/edge-ai.git>
-  cd edge-ai
-  ```
+   ```bash
+   git clone <https://github.com/microsoft/edge-ai.git>
+   cd edge-ai
+   ```
 
-1. **Install dependencies**:
+2. **Install dependencies** (if not already installed):
 
-1. **Navigate to the Learning Platform**:
+   ```bash
+   npm install
+   ```
 
-- Open your browser to `http://localhost:8080`
-- Navigate to the Learning section
-- Start with this README for learning paths
+3. **Launch the Learning Platform**:
+
+   ```bash
+   npm run docs
+   ```
+
+   This command automatically:
+   - ✅ Starts the local documentation server
+   - ✅ Opens your browser to `http://localhost:8080`
+   - ✅ Navigate to the Learning section to access all learning paths
 
 ## 🧭 Your First Steps
 
-**Benefits of assessment-first approach:**
+**Benefits of an assessment-first approach:**
 
 - 🎯 Get matched with the perfect difficulty level
 - 🤖 Receive AI coach guidance throughout your journey
 - ⚡ Skip content you already know
 - 📈 Track progress against your personal goals
 
-### 2. **Choose Your Learning Track** - Interactive Learning Dashboard
+### Recommended Learning Sequence
+
+1. **Start with Assessment** - Complete the [skill assessment](./skill-assessment.md) to get personalized recommendations
+2. **Choose Your Learning Track** - Browse the [Learning Catalog](./catalog.md) or select a [Learning Path](#learning-paths-)
 
 ## 📖 Learning Catalog
 

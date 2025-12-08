@@ -1,7 +1,10 @@
 {
 	"scripts": {
-		"mdlint": "markdownlint --config .markdownlint.json --ignore .copilot-tracking --ignore .github --ignore node_modules --ignore venv \"**/*.md\"; markdown-table-formatter --check \"{.github,**}/**/*.md\"",
-		"mdlint-fix": "markdownlint --config .markdownlint.json --ignore .copilot-tracking --ignore .github --ignore node_modules --ignore venv --fix \"**/*.md\"; markdown-table-formatter \"{.github,**}/**/*.md\"",
+		"mdlint": "npm run mdlint:check && npm run format-tables-check",
+		"mdlint-fix": "npm run mdlint:fix:only && npm run format-tables",
+		"mdlint:check": "markdownlint --config .markdownlint.json --ignore .copilot-tracking --ignore .github/copilot-instructions.md --ignore .github/instructions --ignore .github/prompts --ignore node_modules --ignore venv \"**/*.md\"",
+		"mdlint:fix:only": "markdownlint --config .markdownlint.json --ignore .copilot-tracking --ignore .github/copilot-instructions.md --ignore .github/instructions --ignore .github/prompts --ignore node_modules --ignore venv --fix \"**/*.md\"",
+		"mdlint:fix": "markdownlint --config .markdownlint.json --ignore .copilot-tracking --ignore .github/copilot-instructions.md --ignore .github/instructions --ignore .github/prompts --ignore node_modules --ignore venv --fix \"**/*.md\"",
 		"link-check": "pwsh -File ./scripts/linting/Docs-Link-Check.ps1",
 		"cspell": "mega-linter-runner  --env \"'ENABLE_LINTERS=SPELL_CSPELL'\"",
 		"docker-lint": "./scripts/docker-lint.sh",
@@ -24,14 +27,14 @@
 		"tf-plan-all": "SCRIPT_PATH=\"$PWD/scripts/tf-plan-smart.sh\"; ./scripts/tf-walker-parallel.sh \"terraform init && bash \\\"$SCRIPT_PATH\\\"\" \"tf-plan-all-$(date +%Y%m%d-%H%M%S)\" true 4",
 		"lint-devcontainer": "mega-linter-runner --env \"'BICEP_BICEP_LINTER_ARGUMENTS=--outdir ./megalinter-reports'\"",
 		"lint-fix-devcontainer": "mega-linter-runner --env \"'BICEP_BICEP_LINTER_ARGUMENTS=--outdir ./megalinter-reports'\" --fix",
-		"format-tables": "markdown-table-formatter \"{.github,node_modules,**}/*.md\"",
-		"format-tables-check": "markdown-table-formatter --check \"{.github,node_modules,**}/*.md\"",
+		"format-tables": "pwsh -File ./scripts/linting/Format-Markdown-Tables.ps1",
+		"format-tables-check": "pwsh -File ./scripts/linting/Format-Markdown-Tables.ps1 -Check",
 		"checkov-changes": "pwsh -Command \"& $PWD/scripts/build/Detect-Folder-Changes.ps1 -OutputJson | & $PWD/scripts/Run-Checkov.ps1 -OutputFolder './checkov-results' -OutputFile 'code-analysis.xml'\"",
 		"checkov-all": "pwsh -Command \"& $PWD/scripts/build/Detect-Folder-Changes.ps1 -IncludeAllIaC -OutputJson | & $PWD/scripts/Run-Checkov.ps1 -OutputFolder './checkov-results' -OutputFile 'code-analysis.xml'\"",
 		"link-lang-check": "pwsh -File ./scripts/linting/Link-Lang-Check.ps1",
 		"link-lang-fix": "pwsh -File ./scripts/linting/Link-Lang-Check.ps1 -Fix",
 		"generate-sidebar": "pwsh -File ./scripts/Generate-DocsSidebar.ps1 -DocsPath ./docs -SrcPath ./src -SidebarFile _sidebar.md -AllSections -Verbose",
-		"progress-server": "cd docs/_server && node app.js",
+		"progress-server": "cd docs/_server && npm install --silent && node app.js",
 		"docs": "pwsh -File ./scripts/Serve-Docs.ps1",
 		"test:frontend": "cd docs/assets/js && npm test",
 		"test:server": "cd docs/_server && npm test",
@@ -50,6 +53,7 @@
 	},
 	"devDependencies": {
 		"docsify-cli": "4.4.4",
+		"marked": "^4.0.10",
 		"markdown-link-check": "3.14.2"
 	},
 	"resolutions": {

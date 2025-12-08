@@ -216,7 +216,9 @@ For future considerations, if any AIO deployment tool that will be publicly avai
 
 [Use Azure Machine Learning compute cluster to distribute a training or batch inference process across a cluster of CPU or GPU compute nodes in the cloud](https://learn.microsoft.com/azure/machine-learning/how-to-create-attach-compute-cluster?view=azureml-api-2&tabs=python)
 
-[Deploy AI using Microsoft Azure & ONNX for the OpenVINO Toolkit](https://www.intel.com/content/www/us/en/developer/videos/microsoft-azure-onnx-runtime-for-openvino.html#gs.j0ucc8)
+[ONNX and Azure Machine Learning: Create and accelerate ML models](https://learn.microsoft.com/azure/machine-learning/concept-onnx)
+
+[Intel OpenVINO Toolkit for optimized inference](https://www.intel.com/content/www/us/en/developer/tools/openvino-toolkit/overview.html)
 
 [Implementing optimized CPU inference in AML using ONNX models and Intel's OpenVINO toolkit](https://learn.microsoft.com/shows/ai-show/combining-the-power-of-optimum-openvino-onnx-runtime-and-azure)
 

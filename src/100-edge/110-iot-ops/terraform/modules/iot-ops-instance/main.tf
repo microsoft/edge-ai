@@ -104,7 +104,7 @@ resource "azapi_resource" "custom_location" {
       hostResourceId      = var.arc_connected_cluster_id
       namespace           = var.operations_config.namespace
       displayName         = local.custom_location_name
-      clusterExtensionIds = [var.platform_cluster_extension_id, var.secret_store_cluster_extension_id, azurerm_arc_kubernetes_cluster_extension.iot_operations.id]
+      clusterExtensionIds = [var.secret_store_cluster_extension_id, azurerm_arc_kubernetes_cluster_extension.iot_operations.id]
     }
   }
   response_export_values = ["name", "id"]
@@ -180,6 +180,29 @@ resource "azapi_resource" "instance" {
   response_export_values = ["name", "id"]
 
   schema_validation_enabled = false # Disable schema validation for azapi_resource for 2025-10-01 until azapi provider supports it
+}
+
+resource "azapi_resource" "registry_endpoint" {
+  type      = "Microsoft.IoTOperations/instances/registryEndpoints@2025-10-01"
+  name      = "default"
+  parent_id = azapi_resource.instance.id
+
+  body = {
+    extendedLocation = {
+      type = "CustomLocation"
+      name = azapi_resource.custom_location.id
+    }
+    properties = {
+      host = "mcr.microsoft.com"
+      authentication = {
+        method            = "Anonymous"
+        anonymousSettings = {}
+      }
+    }
+  }
+
+  response_export_values    = ["name", "id"]
+  schema_validation_enabled = false
 }
 
 resource "azapi_resource" "broker" {

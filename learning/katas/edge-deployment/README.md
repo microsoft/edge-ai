@@ -139,8 +139,10 @@ These katas integrate with real project components for practical experience:
 |-----|-------------------------------------------------------------------------------------|-----------------|----------|-----------------|----------------------------------|-------------|
 | 100 | [100 - Deployment Basics](./100-deployment-basics.md)                               | ⭐ Foundation    | 30 min   | —               | Terraform, Azure, GitHub Copilot | Heavy       |
 | 100 | [100 - Edge Resource Management and Optimization](./100-resource-management.md)     | ⭐ Foundation    | 45 min   | → 100           | Terraform, Azure, Kubernetes     | Heavy       |
+| 300 | [300 - GitOps CI/CD Pipeline](./300-gitops-cicd-pipeline.md)                        | ⭐⭐⭐ Advanced    | 90 min   | → 100           | GitOps, GitHub Actions, Helm     | Medium      |
 | 300 | [300 - Multi-Blueprint Coordination](./300-multi-blueprint-coordination.md)         | ⭐⭐⭐ Advanced    | 90 min   | → 100, 100      | Terraform, Azure, GitHub Copilot | Medium      |
 | 400 | [400 - Enterprise Compliance Validation](./400-enterprise-compliance-validation.md) | ⭐⭐⭐⭐ Expert     | 120 min  | → 100, 100, 300 | Terraform, Azure, GitHub Copilot | Light       |
+| 400 | [400 - Multi-Cluster Workload Orchestration](./400-workload-orchestration.md)       | ⭐⭐⭐⭐ Expert     | 120 min  | → 100           | Kalypso, GitOps, Flux, Azure Arc | Light       |
 | 500 | [500 - Deployment Expert](./500-deployment-expert.md)                               | ⭐⭐⭐⭐⭐ Legendary | 150 min  | → 400           | Terraform, Bicep, Azure          | Light       |
 
 <!-- AUTO-GENERATED:END -->
@@ -157,14 +159,14 @@ These katas integrate with real project components for practical experience:
 
 ### 300 - Advanced Level
 
-- **Focus**: Learn multi-blueprint coordination for complex edge deployment scenarios with dependency management and staged deployment strategies
-- **Skills**: Terraform, Azure, GitHub Copilot
+- **Focus**: Implement GitOps CI/CD pipelines with multi-environment promotion flows and automated deployment orchestration. Learn multi-blueprint coordination for complex edge deployment scenarios with dependency management and staged deployment strategies
+- **Skills**: GitOps, GitHub Actions, Helm, Flux, Azure Arc, Terraform, Azure, GitHub Copilot
 - **Time-to-Practice**: 1-2 hours
 
 ### 400 - Expert Level
 
-- **Focus**: Learn AI-assisted compliance validation, security checking, and enterprise governance requirements for production-ready edge deployments
-- **Skills**: Terraform, Azure, GitHub Copilot, PowerShell
+- **Focus**: Learn AI-assisted compliance validation, security checking, and enterprise governance requirements for production-ready edge deployments. Master multi-cluster workload orchestration using Kalypso for distributed edge environments with GitOps-based scheduling and platform configuration management
+- **Skills**: Terraform, Azure, GitHub Copilot, PowerShell, Kalypso, GitOps, Flux, Azure Arc
 - **Time-to-Practice**: 2 hours
 
 ### 500 - Legendary Level
@@ -219,10 +221,12 @@ These streamlined katas prepare you for:
 **Estimated Costs by Kata**:
 
 - **Kata 100** (Deployment Basics): $20-35 USD for single blueprint deployment
-- **Kata 200** (Resource Management): $25-50 USD for IoT Operations and edge resources
+- **Kata 100** (Resource Management): $25-50 USD for IoT Operations and edge resources
+- **Kata 300** (GitOps CI/CD Pipeline): $30-50 USD for multi-environment CI/CD setup
 - **Kata 300** (Multi-Blueprint Coordination): $40-60 USD for coordinated multi-blueprint deployment
 - **Kata 400** (Enterprise Compliance): $30-50 USD for compliance validation resources
-- **Kata 405** (Deployment Expert): $45-70 USD for multi-region DR infrastructure
+- **Kata 400** (Workload Orchestration): $50-100 USD for Kalypso control plane and multi-cluster setup
+- **Kata 500** (Deployment Expert): $45-70 USD for multi-region DR infrastructure
 
 **Cost Management Best Practices**:
 

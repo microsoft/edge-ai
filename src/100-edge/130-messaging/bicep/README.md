@@ -25,8 +25,8 @@ Deploys Dataflow endpoints and dataflows for Azure IoT Operations messaging inte
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|eventHubDataflow|`Microsoft.Resources/deployments`|2022-09-01|
-|eventGridDataflow|`Microsoft.Resources/deployments`|2022-09-01|
+|eventHubDataflow|`Microsoft.Resources/deployments`|2025-04-01|
+|eventGridDataflow|`Microsoft.Resources/deployments`|2025-04-01|
 
 ## Modules
 

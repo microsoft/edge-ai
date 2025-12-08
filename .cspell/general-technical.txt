@@ -4,6 +4,9 @@ abap
 abfs
 acrolinx
 Dockerfiles
+fluxcd
+gitrepositories
+Multicluster
 nant
 upsell
 activex
@@ -1546,6 +1549,10 @@ extneded
 Clis
 clis
 interceptable
+issecret
+LASTEXITCODE
+showvariable
+Hashtable
 
 # Camera & Video Equipment Vendors
 Hikvision

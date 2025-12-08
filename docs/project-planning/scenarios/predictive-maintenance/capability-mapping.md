@@ -286,21 +286,21 @@ keywords:
 To implement this scenario, return to the main [Predictive Maintenance README][predictive-maintenance-readme] for implementation details and guidance.
 
 <!-- Reference Links -->
-[business-process-intelligence]: /docs/capabilities/developer-experience-platform-services/business-process-intelligence.md
-[cloud-business-intelligence-analytics-dashboards]: /docs/capabilities/developer-experience-platform-services/cloud-business-intelligence-analytics-dashboards.md
-[digital-twin-platform]: /docs/capabilities/advanced-simulation-digital-twin-platform/digital-twin-platform.md
-[federated-learning-framework]: /docs/capabilities/cloud-ai-platform/federated-learning-framework.md
-[edge-data-stream-processing]: /docs/capabilities/edge-industrial-application-platform/edge-data-stream-processing.md
-[opc-ua-data-ingestion]: /docs/capabilities/protocol-translation-device-management/opc-ua-data-ingestion.md
-[time-series-data-services]: /docs/capabilities/cloud-data-platform/specialized-time-series-data-services.md
-[edge-inferencing-application-framework]: /docs/capabilities/edge-industrial-application-platform/edge-inferencing-application-framework.md
-[automated-incident-response-remediation]: /docs/capabilities/cloud-insights-platform/automated-incident-response-remediation.md
-[mlops-toolchain]: /docs/capabilities/cloud-ai-platform/mlops-toolchain.md
-[advanced-predictive-analytics-platform]: /docs/capabilities/cloud-insights-platform/advanced-predictive-analytics-platform.md
-[enterprise-application-integration-hub]: /docs/capabilities/business-enablement-integration-platform/enterprise-application-integration-hub.md
-[cloud-ai-ml-model-training-management]: /docs/capabilities/cloud-ai-platform/cloud-ai-ml-model-training-management.md
-[device-twin-management]: /docs/capabilities/protocol-translation-device-management/device-twin-management.md
-[predictive-maintenance-readme]: ./README.md
+[business-process-intelligence]: /docs/project-planning/capabilities/developer-experience-platform-services/business-process-intelligence
+[cloud-business-intelligence-analytics-dashboards]: /docs/project-planning/capabilities/developer-experience-platform-services/cloud-business-intelligence-analytics-dashboards
+[digital-twin-platform]: /docs/project-planning/capabilities/advanced-simulation-digital-twin-platform/digital-twin-platform
+[federated-learning-framework]: /docs/project-planning/capabilities/cloud-ai-platform/federated-learning-framework
+[edge-data-stream-processing]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-data-stream-processing
+[opc-ua-data-ingestion]: /docs/project-planning/capabilities/protocol-translation-device-management/opc-ua-data-ingestion
+[time-series-data-services]: /docs/project-planning/capabilities/cloud-data-platform/specialized-time-series-data-services
+[edge-inferencing-application-framework]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-inferencing-application-framework
+[automated-incident-response-remediation]: /docs/project-planning/capabilities/cloud-insights-platform/automated-incident-response-remediation
+[mlops-toolchain]: /docs/project-planning/capabilities/cloud-ai-platform/mlops-toolchain
+[advanced-predictive-analytics-platform]: /docs/project-planning/capabilities/cloud-insights-platform/advanced-predictive-analytics-platform
+[enterprise-application-integration-hub]: /docs/project-planning/capabilities/business-enablement-integration-platform/enterprise-application-integration-hub
+[cloud-ai-ml-model-training-management]: /docs/project-planning/capabilities/cloud-ai-platform/cloud-ai-ml-model-training-management
+[device-twin-management]: /docs/project-planning/capabilities/protocol-translation-device-management/device-twin-management
+[predictive-maintenance-readme]: /docs/project-planning/scenarios/predictive-maintenance/README
 
 ---
 

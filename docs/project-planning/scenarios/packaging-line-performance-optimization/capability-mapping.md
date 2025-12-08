@@ -363,20 +363,20 @@ keywords:
 To implement this scenario, return to the main [Packaging Line Performance Optimization README][packaging-optimization-readme] for implementation details and guidance.
 
 <!-- Reference Links -->
-[edge-data-stream-processing]: /docs/capabilities/edge-industrial-application-platform/edge-data-stream-processing.md
-[opc-ua-data-ingestion]: /docs/capabilities/protocol-translation-device-management/opc-ua-data-ingestion.md
-[real-time-analytics]: /docs/capabilities/cloud-insights-platform/real-time-analytics-monitoring.md
-[advanced-computer-vision-analytics]: /docs/capabilities/cloud-ai-platform/advanced-computer-vision-analytics.md
-[automated-quality-control-systems]: /docs/capabilities/edge-industrial-application-platform/automated-quality-control-systems.md
-[predictive-maintenance-analytics]: /docs/capabilities/cloud-insights-platform/predictive-maintenance-analytics.md
-[mes-integration]: /docs/capabilities/business-enablement-integration-platform/manufacturing-execution-system-integration.md
-[closed-loop-process-control]: /docs/capabilities/edge-industrial-application-platform/closed-loop-process-control.md
-[enterprise-application-integration-hub]: /docs/capabilities/business-enablement-integration-platform/enterprise-application-integration-hub.md
-[industrial-security-framework]: /docs/capabilities/security-identity-platform/industrial-security-framework.md
-[federated-learning-framework]: /docs/capabilities/cloud-ai-platform/federated-learning-framework.md
-[multi-site-operations-management]: /docs/capabilities/business-enablement-integration-platform/multi-site-operations-management.md
-[cloud-business-intelligence-analytics-dashboards]: /docs/capabilities/developer-experience-platform-services/cloud-business-intelligence-analytics-dashboards.md
-[ai-model-lifecycle-management]: /docs/capabilities/cloud-ai-platform/ai-model-lifecycle-management.md
+[edge-data-stream-processing]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-data-stream-processing
+[opc-ua-data-ingestion]: /docs/project-planning/capabilities/protocol-translation-device-management/opc-ua-data-ingestion
+[real-time-analytics]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-data-stream-processing
+[advanced-computer-vision-analytics]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-inferencing-application-framework
+[automated-quality-control-systems]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-inferencing-application-framework
+[predictive-maintenance-analytics]: /docs/project-planning/capabilities/advanced-simulation-digital-twin-platform/predictive-maintenance-intelligence
+[mes-integration]: /docs/project-planning/capabilities/business-enablement-integration-platform/enterprise-application-integration-hub
+[closed-loop-process-control]: /docs/project-planning/capabilities/protocol-translation-device-management/opc-ua-data-ingestion
+[enterprise-application-integration-hub]: /docs/project-planning/capabilities/business-enablement-integration-platform/enterprise-application-integration-hub
+[federated-learning-framework]: /docs/project-planning/capabilities/cloud-ai-platform/federated-learning-framework
+[multi-site-operations-management]: /docs/project-planning/capabilities/business-enablement-integration-platform/enterprise-application-integration-hub
+[cloud-business-intelligence-analytics-dashboards]: /docs/project-planning/capabilities/developer-experience-platform-services/README
+[ai-model-lifecycle-management]: /docs/project-planning/capabilities/cloud-ai-platform/mlops-toolchain
+[industrial-security-framework]: /docs/project-planning/capabilities/edge-cluster-platform/edge-security-identity-management
 [packaging-optimization-readme]: ./README.md
 
 ## Conclusion

@@ -34,7 +34,7 @@ This project encourages the contribution of high-quality Security Plans that hav
 
 * Review the existing Security Plans in the library to see if an existing one can be extended or improved before contributing a new document.
 * All Security Plans must be formatted as Markdown documents and use the `.md` file extension
-* All Security Plans must follow the formatting of the [Security Plan template](./Security%20Plan%20Template.md)
+* All Security Plans must follow the formatting of the [Security Plan template](./security-plan-template.md)
 * All Security Plans must use short, concise, English file names
 * Security Plans may include optional language translations, please copy the Security Plan and add an intermediate, language extension using appropriate ISO 639 language codes (e.g. `CNCF Cluster Security Plan.en.md` and `CNCF Cluster Security Plan.zh.md` for English and Chinese)
 * Assign a workitem to yourself before beginning any effort, and set the item's status field accordingly.

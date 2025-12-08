@@ -128,10 +128,6 @@ run "create_customer_managed_byo_issuer" {
     adr_namespace         = run.setup_tests.adr_namespace
     arc_connected_cluster = run.setup_tests.arc_connected_cluster
     trust_config_source   = "CustomerManagedByoIssuer"
-    aio_platform_config = {
-      install_cert_manager  = false
-      install_trust_manager = false
-    }
     byo_issuer_trust_settings = {
       issuer_name    = "my-custom-issuer"
       issuer_kind    = "ClusterIssuer"

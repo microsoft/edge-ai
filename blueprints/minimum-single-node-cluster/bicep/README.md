@@ -23,13 +23,13 @@ Deploys the minimal set of resources required for Azure IoT Operations on a sing
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|cloudResourceGroup|`Microsoft.Resources/deployments`|2022-09-01|
-|cloudSecurityIdentity|`Microsoft.Resources/deployments`|2022-09-01|
-|cloudData|`Microsoft.Resources/deployments`|2022-09-01|
-|cloudNetworking|`Microsoft.Resources/deployments`|2022-09-01|
-|cloudVmHost|`Microsoft.Resources/deployments`|2022-09-01|
-|edgeCncfCluster|`Microsoft.Resources/deployments`|2022-09-01|
-|edgeIotOps|`Microsoft.Resources/deployments`|2022-09-01|
+|cloudResourceGroup|`Microsoft.Resources/deployments`|2025-04-01|
+|cloudSecurityIdentity|`Microsoft.Resources/deployments`|2025-04-01|
+|cloudData|`Microsoft.Resources/deployments`|2025-04-01|
+|cloudNetworking|`Microsoft.Resources/deployments`|2025-04-01|
+|cloudVmHost|`Microsoft.Resources/deployments`|2025-04-01|
+|edgeCncfCluster|`Microsoft.Resources/deployments`|2025-04-01|
+|edgeIotOps|`Microsoft.Resources/deployments`|2025-04-01|
 
 ## Modules
 
@@ -88,8 +88,8 @@ Provisions cloud resources required for Azure IoT Operations including Schema Re
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|identity|`Microsoft.Resources/deployments`|2022-09-01|
-|keyVault|`Microsoft.Resources/deployments`|2022-09-01|
+|identity|`Microsoft.Resources/deployments`|2025-04-01|
+|keyVault|`Microsoft.Resources/deployments`|2025-04-01|
 
 #### Outputs for cloudSecurityIdentity
 
@@ -137,10 +137,10 @@ Creates storage resources including Azure Storage Account and Schema Registry fo
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|storageAccount|`Microsoft.Resources/deployments`|2022-09-01|
-|schemaRegistry|`Microsoft.Resources/deployments`|2022-09-01|
-|schemaRegistryRoleAssignment|`Microsoft.Resources/deployments`|2022-09-01|
-|adrNamespace|`Microsoft.Resources/deployments`|2022-09-01|
+|storageAccount|`Microsoft.Resources/deployments`|2025-04-01|
+|schemaRegistry|`Microsoft.Resources/deployments`|2025-04-01|
+|schemaRegistryRoleAssignment|`Microsoft.Resources/deployments`|2025-04-01|
+|adrNamespace|`Microsoft.Resources/deployments`|2025-04-01|
 
 #### Outputs for cloudData
 
@@ -205,7 +205,7 @@ Provisions virtual machines and networking infrastructure for hosting Azure IoT 
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|virtualMachine|`Microsoft.Resources/deployments`|2022-09-01|
+|virtualMachine|`Microsoft.Resources/deployments`|2025-04-01|
 
 #### Outputs for cloudVmHost
 
@@ -259,10 +259,10 @@ The scripts handle primary and secondary node(s) setup, cluster administration, 
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|ubuntuK3s|`Microsoft.Resources/deployments`|2022-09-01|
-|roleAssignment|`Microsoft.Resources/deployments`|2022-09-01|
-|keyVaultRoleAssignments|`Microsoft.Resources/deployments`|2022-09-01|
-|deployScriptsToVm|`Microsoft.Resources/deployments`|2022-09-01|
+|ubuntuK3s|`Microsoft.Resources/deployments`|2025-04-01|
+|roleAssignment|`Microsoft.Resources/deployments`|2025-04-01|
+|keyVaultRoleAssignments|`Microsoft.Resources/deployments`|2025-04-01|
+|deployScriptsToVm|`Microsoft.Resources/deployments`|2025-04-01|
 
 #### Outputs for edgeCncfCluster
 
@@ -287,7 +287,7 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 |common|The common component configuration.|`[_2.Common](#user-defined-types)`|n/a|yes|
 |arcConnectedClusterName|The resource name for the Arc connected cluster.|`string`|n/a|yes|
 |containerStorageConfig|The settings for the Azure Container Store for Azure Arc Extension.|`[_1.ContainerStorageExtension](#user-defined-types)`|[variables('_1.containerStorageExtensionDefaults')]|no|
-|aioPlatformConfig|The settings for the Azure IoT Operations Platform Extension.|`[_1.AioPlatformExtension](#user-defined-types)`|[variables('_1.aioPlatformExtensionDefaults')]|no|
+|aioCertManagerConfig|The settings for the Azure IoT Operations Platform Extension.|`[_1.AioCertManagerExtension](#user-defined-types)`|[variables('_1.aioCertManagerExtensionDefaults')]|no|
 |secretStoreConfig|The settings for the Secret Store Extension.|`[_1.SecretStoreExtension](#user-defined-types)`|[variables('_1.secretStoreExtensionDefaults')]|no|
 |shouldInitAio|Whether to deploy the Azure IoT Operations initial connected cluster resources, Secret Sync, ACSA, OSM, AIO Platform.|`bool`|`true`|no|
 |aioIdentityName|The name of the User Assigned Managed Identity for Azure IoT Operations.|`string`|n/a|yes|
@@ -325,16 +325,16 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|deployArcK8sRoleAssignments|`Microsoft.Resources/deployments`|2022-09-01|
-|deployKeyVaultRoleAssignments|`Microsoft.Resources/deployments`|2022-09-01|
-|sseKeyVaultRoleAssignments|`Microsoft.Resources/deployments`|2022-09-01|
-|iotOpsInit|`Microsoft.Resources/deployments`|2022-09-01|
-|postInitScriptsSecrets|`Microsoft.Resources/deployments`|2022-09-01|
-|postInitScripts|`Microsoft.Resources/deployments`|2022-09-01|
-|iotOpsInstance|`Microsoft.Resources/deployments`|2022-09-01|
-|postInstanceScriptsSecrets|`Microsoft.Resources/deployments`|2022-09-01|
-|postInstanceScripts|`Microsoft.Resources/deployments`|2022-09-01|
-|opcUaSimulator|`Microsoft.Resources/deployments`|2022-09-01|
+|deployArcK8sRoleAssignments|`Microsoft.Resources/deployments`|2025-04-01|
+|deployKeyVaultRoleAssignments|`Microsoft.Resources/deployments`|2025-04-01|
+|sseKeyVaultRoleAssignments|`Microsoft.Resources/deployments`|2025-04-01|
+|iotOpsInit|`Microsoft.Resources/deployments`|2025-04-01|
+|postInitScriptsSecrets|`Microsoft.Resources/deployments`|2025-04-01|
+|postInitScripts|`Microsoft.Resources/deployments`|2025-04-01|
+|iotOpsInstance|`Microsoft.Resources/deployments`|2025-04-01|
+|postInstanceScriptsSecrets|`Microsoft.Resources/deployments`|2025-04-01|
+|postInstanceScripts|`Microsoft.Resources/deployments`|2025-04-01|
+|opcUaSimulator|`Microsoft.Resources/deployments`|2025-04-01|
 
 #### Outputs for edgeIotOps
 

@@ -27,9 +27,6 @@ param aioIdentityName string
 @description('The settings for the Azure IoT Operations Extension.')
 param aioExtensionConfig types.AioExtension
 
-@description('The resource ID for the Azure IoT Operations Platform Extension.')
-param aioPlatformExtensionId string
-
 param aioFeatures types.AioFeatures?
 
 /*
@@ -194,7 +191,7 @@ resource customLocation 'Microsoft.ExtendedLocation/customLocations@2021-08-31-p
     hostResourceId: arcConnectedCluster.id
     namespace: aioExtensionConfig.settings.namespace
     displayName: customLocationName
-    clusterExtensionIds: [aioPlatformExtensionId, secretStoreExtensionId, aioExtension.id]
+    clusterExtensionIds: [secretStoreExtensionId, aioExtension.id]
   }
 }
 
@@ -311,6 +308,22 @@ resource aioInstance 'Microsoft.IoTOperations/instances@2025-10-01' = {
           features: aioFeatures
         }
   )
+}
+
+resource registryEndpoint 'Microsoft.IoTOperations/instances/registryEndpoints@2025-10-01' = {
+  parent: aioInstance
+  name: 'default'
+  extendedLocation: {
+    name: customLocation.id
+    type: 'CustomLocation'
+  }
+  properties: {
+    host: 'mcr.microsoft.com'
+    authentication: {
+      method: 'Anonymous'
+      anonymousSettings: {}
+    }
+  }
 }
 
 resource broker 'Microsoft.IoTOperations/instances/brokers@2025-10-01' = {

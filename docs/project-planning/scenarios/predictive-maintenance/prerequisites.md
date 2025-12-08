@@ -301,17 +301,17 @@ When implementing multiple scenarios, optimize shared infrastructure:
 ---
 
 <!-- Reference Links -->
-[edge-ai-platform-capability-groups]: /docs/project-planning/capabilities/
-[blueprints-readme]: /blueprints/README.md
-[security-identity-module]: /src/000-cloud/010-security-identity/terraform/README.md
-[iot-operations-module]: /src/100-edge/110-iot-ops/terraform/README.md
-[full-single-node-cluster]: /blueprints/full-single-node-cluster
-[full-multi-node-cluster]: /blueprints/full-multi-node-cluster
-[minimum-single-node-cluster]: /blueprints/minimum-single-node-cluster
-[only-edge-iot-ops]: /blueprints/only-edge-iot-ops
-[digital-inspection-prereqs]: /docs/project-planning/scenarios/digital-inspection-survey/prerequisites.md
-[quality-process-prereqs]: /docs/project-planning/scenarios/quality-process-optimization-automation/prerequisites.md
-[operational-performance-prereqs]: /docs/project-planning/scenarios/operational-performance-monitoring/prerequisites.md
+[edge-ai-platform-capability-groups]: /docs/project-planning/capabilities/README
+[blueprints-readme]: /blueprints/README
+[security-identity-module]: /src/000-cloud/010-security-identity/terraform/README
+[iot-operations-module]: /src/100-edge/110-iot-ops/terraform/README
+[full-single-node-cluster]: /blueprints/full-single-node-cluster/README
+[full-multi-node-cluster]: /blueprints/full-multi-node-cluster/README
+[minimum-single-node-cluster]: /blueprints/minimum-single-node-cluster/README
+[only-edge-iot-ops]: /blueprints/only-edge-iot-ops/README
+[digital-inspection-prereqs]: /docs/project-planning/scenarios/digital-inspection-survey/prerequisites
+[quality-process-prereqs]: /docs/project-planning/scenarios/quality-process-optimization-automation/prerequisites
+[operational-performance-prereqs]: /docs/project-planning/scenarios/operational-performance-monitoring/prerequisites
 [azure-iot-operations]: https://learn.microsoft.com/azure/iot-operations/
 [azure-machine-learning]: https://learn.microsoft.com/azure/machine-learning/
 [azure-arc]: https://learn.microsoft.com/azure/azure-arc/

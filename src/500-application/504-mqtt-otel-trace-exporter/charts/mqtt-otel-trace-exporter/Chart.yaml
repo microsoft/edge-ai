@@ -1,3 +1,4 @@
+---
 apiVersion: v2
 name: mqtt-otel-trace-exporter
 description: MQTT to OpenTelemetry trace exporter for Azure IoT Operations workloads

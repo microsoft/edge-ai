@@ -24,8 +24,8 @@ Deploys observability resources including cluster extensions for metrics and log
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|clusterExtensionsObs|`Microsoft.Resources/deployments`|2022-09-01|
-|ruleAssociationsObs|`Microsoft.Resources/deployments`|2022-09-01|
+|clusterExtensionsObs|`Microsoft.Resources/deployments`|2025-04-01|
+|ruleAssociationsObs|`Microsoft.Resources/deployments`|2025-04-01|
 
 ## Modules
 

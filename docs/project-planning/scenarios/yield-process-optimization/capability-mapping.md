@@ -408,18 +408,18 @@ To implement this scenario, return to the main [Yield Process Optimization READM
 ---
 
 <!-- Reference Links -->
-[edge-data-stream-processing]: /docs/capabilities/edge-industrial-application-platform/edge-data-stream-processing.md
-[edge-dashboard-visualization]: /docs/capabilities/edge-industrial-application-platform/edge-dashboard-visualization.md
-[opc-ua-data-ingestion]: /docs/capabilities/protocol-translation-device-management/opc-ua-data-ingestion.md
-[edge-inferencing-application-framework]: /docs/capabilities/edge-industrial-application-platform/edge-inferencing-application-framework.md
-[time-series-data-services]: /docs/capabilities/cloud-data-platform/specialized-time-series-data-services.md
-[cloud-data-platform-services]: /docs/capabilities/cloud-data-platform/cloud-data-platform-services.md
-[opc-ua-closed-loop-control]: /docs/capabilities/protocol-translation-device-management/opc-ua-closed-loop-control.md
-[advanced-simulation-digital-twin-platform]: /docs/capabilities/advanced-simulation-digital-twin-platform/README.md
-[automated-incident-response-remediation]: /docs/capabilities/cloud-insights-platform/automated-incident-response-remediation.md
-[enterprise-application-integration-hub]: /docs/capabilities/business-enablement-integration-platform/enterprise-application-integration-hub.md
-[mlops-toolchain]: /docs/capabilities/cloud-ai-platform/mlops-toolchain.md
-[advanced-analytics-platform]: /docs/capabilities/cloud-insights-platform/advanced-analytics-platform.md
-[policy-governance-framework]: /docs/capabilities/business-enablement-integration-platform/policy-governance-framework.md
-[federated-learning-framework]: /docs/capabilities/cloud-ai-platform/federated-learning-framework.md
+[edge-data-stream-processing]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-data-stream-processing
+[edge-dashboard-visualization]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-dashboard-visualization
+[opc-ua-data-ingestion]: /docs/project-planning/capabilities/protocol-translation-device-management/opc-ua-data-ingestion
+[edge-inferencing-application-framework]: /docs/project-planning/capabilities/edge-industrial-application-platform/edge-inferencing-application-framework
+[time-series-data-services]: /docs/project-planning/capabilities/cloud-data-platform/specialized-time-series-data-services
+[cloud-data-platform-services]: /docs/project-planning/capabilities/cloud-data-platform/cloud-data-platform-services
+[opc-ua-closed-loop-control]: /docs/project-planning/capabilities/protocol-translation-device-management/opc-ua-closed-loop-control
+[advanced-simulation-digital-twin-platform]: /docs/project-planning/capabilities/advanced-simulation-digital-twin-platform/README
+[automated-incident-response-remediation]: /docs/project-planning/capabilities/cloud-insights-platform/automated-incident-response-remediation
+[enterprise-application-integration-hub]: /docs/project-planning/capabilities/business-enablement-integration-platform/enterprise-application-integration-hub
+[mlops-toolchain]: /docs/project-planning/capabilities/cloud-ai-platform/mlops-toolchain
+[advanced-analytics-platform]: /docs/project-planning/capabilities/cloud-insights-platform/advanced-analytics-platform
+[policy-governance-framework]: /docs/project-planning/capabilities/business-enablement-integration-platform/policy-governance-framework
+[federated-learning-framework]: /docs/project-planning/capabilities/cloud-ai-platform/federated-learning-framework
 [yield-process-optimization-readme]: ./README.md

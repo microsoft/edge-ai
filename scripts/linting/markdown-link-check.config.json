@@ -1,16 +1,17 @@
 {
-  "projectBaseUrl": ".",
   "timeout": "20s",
   "retryOn429": true,
   "ignorePatterns": [
     { "pattern": "\\{\\{[A-Z0-9_]+\\}\\}" },
     { "pattern": "^mailto:" },
-    { "pattern": "^tel:" }
+    { "pattern": "^tel:" },
+    { "pattern": "\\?id=" },
+    { "pattern": "^/\\.github/workflows/" },
+    { "pattern": "^/\\.azdo/templates/" },
+    { "pattern": "^vscode:" },
+    { "pattern": "^/README\\.md$" }
   ],
   "replacementPatterns": [
-    { "pattern": "^#/docs/", "replacement": "" },
-    { "pattern": "^#/(?!/)", "replacement": "../" },
-    { "pattern": "^/docs/", "replacement": "../docs/" },
-    { "pattern": "^docs/", "replacement": "" }
+    { "pattern": "^/([^#]+)(#.+)?$", "replacement": "{{BASEURL}}/$1.md$2" }
   ]
 }

@@ -1,0 +1,124 @@
+# GitHub Release Creation Workflow
+#
+# Purpose:
+# Automatically creates GitHub releases when release PRs are merged to main branch.
+# Generates release notes from conventional commits with emoji-categorized sections.
+#
+# Functionality:
+# - Triggers on PR merge from release/* branches to main
+# - Extracts version from release branch name (release/x.y.z -> vx.y.z)
+# - Checks for existing releases (idempotency)
+# - Creates GitHub release with auto-generated notes
+# - Creates version tag on main branch
+# - Handles API errors gracefully
+#
+# Parameters:
+# None - This workflow is triggered automatically on PR merge events
+#
+# Output Variables:
+# None - Results are visible in GitHub Releases and workflow logs
+#
+# Usage Examples:
+# This workflow runs automatically when a release PR is merged:
+# 1. Create release branch: release/1.2.3
+# 2. Create PR to main
+# 3. Merge PR -> workflow creates release v1.2.3
+#
+# This workflow implements Gap 3 for automated GitHub release creation.
+---
+name: Create GitHub Release
+
+permissions:
+  contents: write
+  pull-requests: read
+
+on:  # yamllint disable-line rule:truthy
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+
+jobs:
+  create-release:
+    name: Create Release
+    if: |
+      github.event.pull_request.merged == true &&
+      startsWith(github.event.pull_request.head.ref, 'release/')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Extract version from branch name
+        id: version
+        run: |
+          BRANCH_NAME="${{ github.event.pull_request.head.ref }}"
+          VERSION="${BRANCH_NAME#release/}"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=v$VERSION" >> $GITHUB_OUTPUT
+          echo "📦 Version: $VERSION"
+          echo "🏷️  Tag: v$VERSION"
+
+      - name: Check if release already exists
+        id: check
+        run: |
+          TAG_NAME="${{ steps.version.outputs.tag }}"
+          echo "🔍 Checking for existing release: $TAG_NAME"
+
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/${{ github.repository }}/releases/tags/$TAG_NAME")
+
+          if [ "$STATUS" = "200" ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "✓ Release already exists"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "ℹ️ Release does not exist yet"
+          fi
+
+      - name: Create GitHub Release
+        if: steps.check.outputs.exists == 'false'
+        run: |
+          TAG_NAME="${{ steps.version.outputs.tag }}"
+          VERSION="${{ steps.version.outputs.version }}"
+
+          echo "🚀 Creating release: $TAG_NAME"
+
+          RESPONSE=$(curl -X POST \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            -H "Content-Type: application/json" \
+            "https://api.github.com/repos/${{ github.repository }}/releases" \
+            -d "{
+              \"tag_name\": \"$TAG_NAME\",
+              \"target_commitish\": \"main\",
+              \"name\": \"Release $VERSION\",
+              \"body\": \"\",
+              \"draft\": false,
+              \"prerelease\": false,
+              \"generate_release_notes\": true
+            }")
+
+          if echo "$RESPONSE" | jq -e '.id' > /dev/null; then
+            RELEASE_URL=$(echo "$RESPONSE" | jq -r '.html_url')
+            echo "✓ Release created successfully: $RELEASE_URL"
+            echo "RELEASE_URL=$RELEASE_URL" >> $GITHUB_ENV
+          else
+            echo "✗ Release creation failed"
+            echo "$RESPONSE" | jq '.'
+            exit 1
+          fi
+
+      - name: Summary
+        if: always()
+        run: |
+          if [ "${{ steps.check.outputs.exists }}" = "true" ]; then
+            echo "📌 Release ${{ steps.version.outputs.tag }} already existed (idempotent skip)"
+          elif [ -n "$RELEASE_URL" ]; then
+            echo "🎉 Successfully created release ${{ steps.version.outputs.tag }}"
+            echo "🔗 $RELEASE_URL"
+          else
+            echo "⚠️ Release creation did not complete"
+          fi

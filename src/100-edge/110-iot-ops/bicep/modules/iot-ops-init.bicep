@@ -14,11 +14,14 @@ param arcConnectedClusterName string
 param containerStorageConfig types.ContainerStorageExtension
 
 @description('The settings for the Azure IoT Operations Platform Extension.')
-param aioPlatformConfig types.AioPlatformExtension
+param aioCertManagerConfig types.AioCertManagerExtension
 
 @description('The settings for the Secret Store Extension.')
 #disable-next-line secure-secrets-in-params
 param secretStoreConfig types.SecretStoreExtension
+
+@description('The trust issuer settings for Customer Managed Azure IoT Operations Settings.')
+param trustIssuerSettings types.TrustIssuerConfig
 
 /*
   Variables
@@ -48,13 +51,13 @@ resource arcConnectedCluster 'Microsoft.Kubernetes/connectedClusters@2021-03-01'
   name: arcConnectedClusterName
 }
 
-resource aioPlatform 'Microsoft.KubernetesConfiguration/extensions@2023-05-01' = {
+resource aioCertManager 'Microsoft.KubernetesConfiguration/extensions@2023-05-01' = if (trustIssuerSettings.trustSource == 'CustomerManagedByoIssuer') {
   scope: arcConnectedCluster
-  name: 'azure-iot-operations-platform'
+  name: 'azure-iot-operations-cert-manager'
   properties: {
-    extensionType: 'microsoft.iotoperations.platform'
-    version: aioPlatformConfig.release.version
-    releaseTrain: aioPlatformConfig.release.train
+    extensionType: 'microsoft.certmanagement'
+    version: aioCertManagerConfig.release.version
+    releaseTrain: aioCertManagerConfig.release.train
     autoUpgradeMinorVersion: false
     scope: {
       cluster: {
@@ -62,8 +65,8 @@ resource aioPlatform 'Microsoft.KubernetesConfiguration/extensions@2023-05-01' =
       }
     }
     configurationSettings: {
-      installCertManager: '${aioPlatformConfig.settings.?installCertManager ?? true}'
-      installTrustManager: '${aioPlatformConfig.settings.?installCertManager ?? true}'
+      AgentOperationTimeoutInMinutes: aioCertManagerConfig.settings.agentOperationTimeoutInMinutes
+      'global.telemetry.enabled': '${aioCertManagerConfig.settings.?globalTelemetryEnabled} ?? true'
     }
   }
 }
@@ -87,7 +90,7 @@ resource containerStorage 'Microsoft.KubernetesConfiguration/extensions@2023-05-
     }
   }
   dependsOn: [
-    aioPlatform
+    aioCertManager
   ]
 }
 
@@ -109,7 +112,7 @@ resource secretStore 'Microsoft.KubernetesConfiguration/extensions@2023-05-01' =
     }
   }
   dependsOn: [
-    aioPlatform
+    aioCertManager
   ]
 }
 
@@ -129,8 +132,5 @@ output secretStoreExtensionId string = secretStore.id
 @description('The name of the Secret Store Extension.')
 output secretStoreExtensionName string = secretStore.name
 
-@description('The ID of the Azure IoT Operations Platform Extension.')
-output aioPlatformExtensionId string = aioPlatform.id
-
-@description('The name of the Azure IoT Operations Platform Extension.')
-output aioPlatformExtensionName string = aioPlatform.name
+@description('The name of the Azure IoT Operations Cert-Manager Extension.')
+output aioCertManagerExtensionName string = aioCertManager.name

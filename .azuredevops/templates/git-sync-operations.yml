@@ -1,0 +1,327 @@
+---
+# Git Sync Operations Template
+#
+# Purpose:
+# Provides standardized git operations for repository synchronization between Azure DevOps
+# and GitHub. Supports configuring git, cloning repositories, pushing changes, and merging
+# branches with configurable strategies and conflict resolution.
+#
+# When to use:
+# - Synchronizing code between Azure DevOps and GitHub repositories
+# - Automated branch updates and merge operations
+# - Push operations requiring authentication token substitution
+# - Cloning external repositories with specific fetch depths
+#
+# Functionality:
+# - Configure Git user credentials for automated commits
+# - Clone from GitHub with authentication token substitution
+# - Push to GitHub with support for new branches and force-with-lease
+# - Fetch and merge with configurable strategies (merge/rebase/squash)
+# - Handle merge conflicts with configurable resolution strategies
+# - Support for remote management and branch creation
+#
+# Operations:
+# - configure-git: Set git user.email and user.name for commits
+# - clone-from-github: Clone repository with authentication, setup remotes
+# - push-to-github: Push changes to GitHub with branch creation support
+# - fetch-merge: Fetch latest changes and merge with strategy selection
+#
+# Key Parameters:
+# - operation: Git operation to perform (required)
+# - workingDirectory: Directory for git operations (default: System.DefaultWorkingDirectory)
+# - sourceBranch: Source branch name (default: Build.SourceBranch)
+# - targetBranch: Target branch name for push/merge operations
+# - pushSourceBranch: Explicit source branch for push (optional, defaults to sourceBranch)
+# - createNewBranch: Create new branch on GitHub (default: false)
+# - forceWithLease: Use force-with-lease for push (default: false)
+# - fetchDepth: Fetch depth for clone (default: 1, use 0 for full history)
+# - mergeStrategy: Strategy for fetch-merge (merge/rebase/squash, default: merge)
+# - conflictResolution: How to handle conflicts (fail/ours/theirs, default: fail)
+# - gitUserEmail: Email for git commits (default: noreply@microsoft.com)
+# - gitUserName: Name for git commits (default: Azure Pipelines)
+#
+# Prerequisites:
+# - Variable: $(githubAuth.installationToken) for GitHub authentication
+# - Variable: $(github-edge-ai-repo-url) with __token__ placeholder
+# - For push operations: GitHub repository URL with token substitution pattern
+# - For clone operations: Remote repository access and credentials
+#
+# Output Variables:
+# - pushedBranchName: Target branch name that was pushed (push-to-github operation only)
+#
+# Usage Examples:
+# ```yaml
+# # Configure git for automated commits
+# - template: ../templates/git-sync-operations.yml
+#   parameters:
+#     operation: 'configure-git'
+#     gitUserEmail: 'pipeline@microsoft.com'
+#     gitUserName: 'Azure Pipeline'
+#
+# # Clone from GitHub with full history
+# - template: ../templates/git-sync-operations.yml
+#   parameters:
+#     operation: 'clone-from-github'
+#     workingDirectory: '$(System.DefaultWorkingDirectory)'
+#     sourceBranch: 'main'
+#     fetchDepth: 0
+#
+# # Push to GitHub creating new branch
+# - template: ../templates/git-sync-operations.yml
+#   parameters:
+#     operation: 'push-to-github'
+#     workingDirectory: '$(System.DefaultWorkingDirectory)'
+#     sourceBranch: 'dev'
+#     targetBranch: 'release/1.0.0'
+#     createNewBranch: true
+#     forceWithLease: false
+#
+# # Push with explicit source:target branch mapping (e.g., dev -> develop)
+# - template: ../templates/git-sync-operations.yml
+#   parameters:
+#     operation: 'push-to-github'
+#     workingDirectory: '$(System.DefaultWorkingDirectory)'
+#     pushSourceBranch: 'dev'
+#     targetBranch: 'develop'
+#     forceWithLease: true
+#
+# # Fetch and merge with conflict resolution
+# - template: ../templates/git-sync-operations.yml
+#   parameters:
+#     operation: 'fetch-merge'
+#     workingDirectory: '$(System.DefaultWorkingDirectory)'
+#     sourceBranch: 'main'
+#     targetBranch: 'dev'
+#     mergeStrategy: 'merge'
+#     conflictResolution: 'fail'
+# ```
+#
+# Notes:
+# - Token substitution uses __token__ placeholder in github-edge-ai-repo-url
+# - All operations support custom working directories
+# - Force-with-lease provides safer force push with remote state validation
+# - Conflict resolution 'fail' mode is safest for automated workflows
+# - Clone operation sets up both origin (GitHub) and azdo remotes
+
+parameters:
+  - name: operation
+    type: string
+    values:
+      - 'configure-git'
+      - 'clone-from-github'
+      - 'push-to-github'
+      - 'fetch-merge'
+    displayName: 'Git operation to perform'
+
+  - name: workingDirectory
+    type: string
+    default: '$(System.DefaultWorkingDirectory)'
+    displayName: 'Working directory for git operations'
+
+  - name: sourceBranch
+    type: string
+    default: '$(Build.SourceBranch)'
+    displayName: 'Source branch name'
+
+  - name: targetBranch
+    type: string
+    default: ''
+    displayName: 'Target branch name (optional)'
+
+  - name: pushSourceBranch
+    type: string
+    default: ''
+    displayName: 'Explicit source branch for push operations (optional, defaults to sourceBranch)'
+
+  - name: createNewBranch
+    type: boolean
+    default: false
+    displayName: 'Create new branch on GitHub'
+
+  - name: forceWithLease
+    type: boolean
+    default: false
+    displayName: 'Use force with lease for push'
+
+  - name: fetchDepth
+    type: number
+    default: 1
+    displayName: 'Fetch depth for clone operations'
+
+  - name: mergeStrategy
+    type: string
+    default: 'merge'
+    values:
+      - 'merge'
+      - 'rebase'
+      - 'squash'
+    displayName: 'Merge strategy for fetch-merge operation'
+
+  - name: conflictResolution
+    type: string
+    default: 'fail'
+    values:
+      - 'fail'
+      - 'ours'
+      - 'theirs'
+    displayName: 'Conflict resolution strategy'
+
+  - name: gitUserEmail
+    type: string
+    default: 'noreply@microsoft.com'
+    displayName: 'Git user email for commits'
+
+  - name: gitUserName
+    type: string
+    default: 'Azure Pipelines'
+    displayName: 'Git user name for commits'
+
+steps:
+  - ${{ if eq(parameters.operation, 'configure-git') }}:
+      - pwsh: |
+          git config user.email "${{ parameters.gitUserEmail }}"
+          git config user.name "${{ parameters.gitUserName }}"
+          Write-Host "✓ Git configured for automated commits"
+          Write-Host "  Email: ${{ parameters.gitUserEmail }}"
+          Write-Host "  Name: ${{ parameters.gitUserName }}"
+        displayName: 'Configure Git User'
+        workingDirectory: '${{ parameters.workingDirectory }}'
+
+  - ${{ if eq(parameters.operation, 'clone-from-github') }}:
+      - pwsh: |
+          $githubUrl = "$(github-edge-ai-repo-url)"
+          $remoteUrl = $githubUrl -replace '__token__', "$(githubAuth.installationToken)"
+
+          Write-Host "🔄 Cloning from GitHub with authentication"
+          Write-Host "Source Branch: ${{ parameters.sourceBranch }}"
+          Write-Host "Fetch Depth: ${{ parameters.fetchDepth }}"
+
+          # Clone repository
+          $cloneArgs = @('clone')
+          if (${{ parameters.fetchDepth }} -gt 0) {
+            $cloneArgs += @('--depth', '${{ parameters.fetchDepth }}')
+          }
+          $cloneArgs += @('--branch', '${{ parameters.sourceBranch }}', $remoteUrl, '.')
+
+          & git @cloneArgs
+          if ($LASTEXITCODE -ne 0) {
+            throw "Failed to clone repository"
+          }
+
+          # Setup remotes
+          git remote add azdo "$(Build.Repository.Uri)"
+          git fetch azdo
+          Write-Host "✓ Repository cloned and remotes configured"
+        displayName: 'Clone from GitHub and Setup Remotes'
+        workingDirectory: '${{ parameters.workingDirectory }}'
+
+  - ${{ if eq(parameters.operation, 'push-to-github') }}:
+      - pwsh: |
+          $githubUrl = "$(github-edge-ai-repo-url)"
+          $remoteUrl = $githubUrl -replace '__token__', "$(githubAuth.installationToken)"
+          $sourceBranch = "${{ parameters.sourceBranch }}" -replace 'refs/heads/', ''
+
+          # Determine which source branch to use for push
+          $pushSource = if ('${{ parameters.pushSourceBranch }}') {
+            '${{ parameters.pushSourceBranch }}'
+          } else {
+            $sourceBranch
+          }
+
+          Write-Host "🚀 Pushing to GitHub"
+          Write-Host "Source Branch: $pushSource"
+          Write-Host "Target Branch: ${{ parameters.targetBranch }}"
+          Write-Host "Create New Branch: ${{ parameters.createNewBranch }}"
+          Write-Host "Force with Lease: ${{ parameters.forceWithLease }}"
+
+          # Setup GitHub remote (use set-url for safety)
+          $originExists = git remote | Select-String -Pattern '^origin$'
+          if ($originExists) {
+            git remote set-url origin $remoteUrl
+          } else {
+            git remote add origin $remoteUrl
+          }
+
+          # Determine target branch
+          if ('${{ parameters.createNewBranch }}' -eq 'True') {
+            $targetParam = '${{ parameters.targetBranch }}'
+            $branchName = if ($targetParam) { $targetParam } else { $pushSource }
+            Write-Host "📝 Creating new branch: $branchName"
+          } else {
+            $branchName = if ('${{ parameters.targetBranch }}') {
+              '${{ parameters.targetBranch }}'
+            } else { $pushSource }
+            Write-Host "📝 Pushing to existing branch: $branchName"
+          }
+
+          # Configure push arguments with explicit source:target mapping
+          $pushArgs = @('push', 'origin', "${pushSource}:refs/heads/$branchName")
+          if ('${{ parameters.forceWithLease }}' -eq 'True') {
+            $pushArgs += '--force-with-lease'
+          }
+
+          & git @pushArgs
+          if ($LASTEXITCODE -ne 0) {
+            throw "Failed to push to GitHub"
+          }
+
+          Write-Host "✓ Successfully pushed to GitHub branch: $branchName"
+          Write-Host "##vso[task.setvariable variable=pushedBranchName;isOutput=true]$branchName"
+        displayName: 'Push to GitHub'
+        workingDirectory: '${{ parameters.workingDirectory }}'
+        name: 'pushToGitHub'
+
+  - ${{ if eq(parameters.operation, 'fetch-merge') }}:
+      - pwsh: |
+          Write-Host "🔄 Fetching and merging changes"
+          Write-Host "Source Branch: ${{ parameters.sourceBranch }}"
+          Write-Host "Target Branch: ${{ parameters.targetBranch }}"
+          Write-Host "Strategy: ${{ parameters.mergeStrategy }}"
+
+          # Fetch latest changes
+          git fetch origin
+          git fetch azdo
+
+          $sourceBranch = "${{ parameters.sourceBranch }}" -replace 'refs/heads/', ''
+          $targetBranch = "${{ parameters.targetBranch }}" -replace 'refs/heads/', ''
+
+          # Switch to target branch
+          git checkout -B $targetBranch origin/$targetBranch
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "⚠ Target branch doesn't exist, creating new branch"
+            git checkout -b $targetBranch
+          }
+
+          # Perform merge based on strategy
+          switch ('${{ parameters.mergeStrategy }}') {
+            'merge' {
+              git merge origin/$sourceBranch --no-edit
+            }
+            'rebase' {
+              git rebase origin/$sourceBranch
+            }
+            'squash' {
+              git merge --squash origin/$sourceBranch
+              git commit -m "Squash merge from $sourceBranch"
+            }
+          }
+
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "⚠ Merge conflicts detected"
+            if ('${{ parameters.conflictResolution }}' -eq 'fail') {
+              throw "Merge conflicts require manual resolution"
+            } elseif ('${{ parameters.conflictResolution }}' -eq 'ours') {
+              git checkout --ours .
+              git add .
+              git commit -m "Resolve conflicts using ours strategy"
+            } elseif ('${{ parameters.conflictResolution }}' -eq 'theirs') {
+              git checkout --theirs .
+              git add .
+              git commit -m "Resolve conflicts using theirs strategy"
+            }
+          }
+
+          Write-Host "✓ Successfully merged changes"
+        displayName: 'Fetch and Merge Changes'
+        workingDirectory: '${{ parameters.workingDirectory }}'
+
