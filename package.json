@@ -34,7 +34,7 @@
 		"link-lang-check": "pwsh -File ./scripts/linting/Link-Lang-Check.ps1",
 		"link-lang-fix": "pwsh -File ./scripts/linting/Link-Lang-Check.ps1 -Fix",
 		"generate-sidebar": "pwsh -File ./scripts/Generate-DocsSidebar.ps1 -DocsPath ./docs -SrcPath ./src -SidebarFile _sidebar.md -AllSections -Verbose",
-		"progress-server": "cd docs/_server && node app.js",
+		"progress-server": "cd docs/_server && npm install --silent && node app.js",
 		"docs": "pwsh -File ./scripts/Serve-Docs.ps1",
 		"test:frontend": "cd docs/assets/js && npm test",
 		"test:server": "cd docs/_server && npm test",
@@ -53,6 +53,7 @@
 	},
 	"devDependencies": {
 		"docsify-cli": "4.4.4",
+		"marked": "^4.0.10",
 		"markdown-link-check": "3.14.2"
 	},
 	"resolutions": {
