@@ -2,6 +2,8 @@ metadata name = 'Full Multi-node Cluster Blueprint'
 metadata description = 'Deploys a complete end-to-end environment for Azure IoT Operations on a multi-node, Arc-enabled Kubernetes cluster.'
 
 import * as core from './types.core.bicep'
+import * as types from '../../../src/100-edge/110-iot-ops/bicep/types.bicep'
+import * as assetTypes from '../../../src/100-edge/111-assets/bicep/types.bicep'
 
 targetScope = 'subscription'
 
@@ -97,10 +99,48 @@ var shouldEnableOtelCollector = false
 // param shouldEnableOpcUaSimulator bool = true
 var shouldEnableOpcUaSimulator = false
 
-// Currently disable setting shouldDeployAioDeploymentScripts, remove when DeploymentScripts supports AZ CLI 2.71+ (post May 4)
-// @description('Whether or not to enable the OPC UA Simulator Asset for Azure IoT Operations.')
-// param shouldEnableOpcUaSimulatorAsset bool = true
-var shouldEnableOpcUaSimulatorAsset = false
+/*
+  Device Configuration Parameters
+*/
+
+@description('List of namespaced devices to create.')
+param namespacedDevices assetTypes.NamespacedDevice[] = []
+
+/*
+  Legacy Asset Configuration Parameters
+*/
+
+@description('List of asset endpoint profiles to create.')
+param assetEndpointProfiles assetTypes.AssetEndpointProfile[] = []
+
+@description('List of legacy assets to create.')
+param legacyAssets assetTypes.LegacyAsset[] = []
+
+/*
+  Namespaced Asset Configuration Parameters
+*/
+
+@description('List of namespaced assets to create.')
+param namespacedAssets assetTypes.NamespacedAsset[] = []
+
+/*
+  Akri Connectors Parameters
+*/
+
+@description('Deploy Akri REST HTTP Connector template to the IoT Operations instance.')
+param shouldEnableAkriRestConnector bool = false
+
+@description('Deploy Akri Media Connector template to the IoT Operations instance.')
+param shouldEnableAkriMediaConnector bool = false
+
+@description('Deploy Akri ONVIF Connector template to the IoT Operations instance.')
+param shouldEnableAkriOnvifConnector bool = false
+
+@description('Deploy Akri SSE Connector template to the IoT Operations instance.')
+param shouldEnableAkriSseConnector bool = false
+
+@description('List of custom Akri connector templates with user-defined endpoint types and container images.')
+param customAkriConnectors types.AkriConnectorTemplate[] = []
 
 /*
   Resources
@@ -262,7 +302,6 @@ module edgeIotOps '../../../src/100-edge/110-iot-ops/bicep/main.bicep' = {
     shouldCreateAnonymousBrokerListener: shouldCreateAnonymousBrokerListener
     shouldEnableOtelCollector: shouldEnableOtelCollector
     shouldEnableOpcUaSimulator: shouldEnableOpcUaSimulator
-    shouldEnableOpcUaSimulatorAsset: shouldEnableOpcUaSimulatorAsset
 
     // Trust Configuration Parameters
     trustIssuerSettings: trustIssuerSettings
@@ -273,6 +312,28 @@ module edgeIotOps '../../../src/100-edge/110-iot-ops/bicep/main.bicep' = {
 
     // Deployment Script Parameters
     shouldDeployAioDeploymentScripts: shouldDeployAioDeploymentScripts
+
+    // Akri Connectors Parameters
+    shouldEnableAkriRestConnector: shouldEnableAkriRestConnector
+    shouldEnableAkriMediaConnector: shouldEnableAkriMediaConnector
+    shouldEnableAkriOnvifConnector: shouldEnableAkriOnvifConnector
+    shouldEnableAkriSseConnector: shouldEnableAkriSseConnector
+    customAkriConnectors: customAkriConnectors
+  }
+}
+
+module edgeAssets '../../../src/100-edge/111-assets/bicep/main.bicep' = {
+  name: '${deployment().name}-ea6'
+  scope: resourceGroup(resourceGroupName)
+  params: {
+    common: common
+    customLocationId: edgeIotOps.outputs.customLocationId
+    adrNamespaceName: cloudData.outputs.adrNamespaceName
+    namespacedDevices: namespacedDevices
+    namespacedAssets: namespacedAssets
+    assetEndpointProfiles: assetEndpointProfiles
+    legacyAssets: legacyAssets
+    shouldCreateDefaultNamespacedAsset: shouldEnableOpcUaSimulator
   }
 }
 
@@ -324,16 +385,16 @@ output vmUsername string = cloudVmHost.outputs.adminUsername
 output vmNames array = cloudVmHost.outputs.vmNames
 
 @description('The AKS cluster name.')
-output aksName string = cloudKubernetes.outputs.aksName
+output aksName string? = cloudKubernetes.outputs.?aksName
 
 @description('The Azure Container Registry name.')
 output acrName string = cloudAcr.outputs.acrName
 
-@description('The ID of the Azure IoT Operations Platform Extension.')
-output aioPlatformExtensionId string = edgeIotOps.outputs.aioPlatformExtensionId
+@description('The ID of the Azure IoT Operations Cert-Manager Extension.')
+output aioCertManagerExtensionId string = edgeIotOps.outputs.aioCertManagerExtensionId
 
-@description('The name of the Azure IoT Operations Platform Extension.')
-output aioPlatformExtensionName string = edgeIotOps.outputs.aioPlatformExtensionName
+@description('The name of the Azure IoT Operations Cert-Manager Extension.')
+output aioCertManagerExtensionName string = edgeIotOps.outputs.aioCertManagerExtensionName
 
 @description('The ID of the Secret Store Extension.')
 output secretStoreExtensionId string = edgeIotOps.outputs.secretStoreExtensionId

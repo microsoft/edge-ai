@@ -30,7 +30,12 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 |shouldCreateAnonymousBrokerListener|Whether to enable an insecure anonymous AIO MQ Broker Listener. (Should only be used for dev or test environments)|`bool`|`false`|no|
 |shouldEnableOtelCollector|Whether or not to enable the Open Telemetry Collector for Azure IoT Operations.|`bool`|`true`|no|
 |shouldEnableOpcUaSimulator|Whether or not to enable the OPC UA Simulator for Azure IoT Operations.|`bool`|`true`|no|
-|shouldEnableOpcUaSimulatorAsset|Whether or not to create the OPC UA Simulator ADR Asset for Azure IoT Operations.|`bool`|[parameters('shouldEnableOpcUaSimulator')]|no|
+|shouldEnableAkriRestConnector|Deploy Akri REST HTTP Connector template to the IoT Operations instance.|`bool`|`false`|no|
+|shouldEnableAkriMediaConnector|Deploy Akri Media Connector template to the IoT Operations instance.|`bool`|`false`|no|
+|shouldEnableAkriOnvifConnector|Deploy Akri ONVIF Connector template to the IoT Operations instance.|`bool`|`false`|no|
+|shouldEnableAkriSseConnector|Deploy Akri SSE Connector template to the IoT Operations instance.|`bool`|`false`|no|
+|customAkriConnectors|List of custom Akri connector templates with user-defined endpoint types and container images.|`array`|[]|no|
+|akriMqttSharedConfig|Shared MQTT connection configuration for all Akri connectors.|`[_1.AkriMqttConfig](#user-defined-types)`|{'host': 'aio-broker:18883', 'audience': 'aio-internal', 'caConfigmap': 'azure-iot-operations-aio-ca-trust-bundle'}|no|
 |customLocationName|The name for the Custom Locations resource.|`string`|[format('{0}-cl', parameters('arcConnectedClusterName'))]|no|
 |trustIssuerSettings|The trust issuer settings for Customer Managed Azure IoT Operations Settings.|`[_1.TrustIssuerConfig](#user-defined-types)`|{'trustSource': 'SelfSigned'}|no|
 |sseKeyVaultName|The name of the Key Vault for Secret Sync. (Required when providing sseIdentityName)|`string`|n/a|yes|
@@ -58,9 +63,9 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 |postInitScriptsSecrets|`Microsoft.Resources/deployments`|2025-04-01|
 |postInitScripts|`Microsoft.Resources/deployments`|2025-04-01|
 |iotOpsInstance|`Microsoft.Resources/deployments`|2025-04-01|
+|akriConnectors|`Microsoft.Resources/deployments`|2025-04-01|
 |postInstanceScriptsSecrets|`Microsoft.Resources/deployments`|2025-04-01|
 |postInstanceScripts|`Microsoft.Resources/deployments`|2025-04-01|
-|opcUaSimulator|`Microsoft.Resources/deployments`|2025-04-01|
 
 ## Modules
 
@@ -73,9 +78,9 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 |postInitScriptsSecrets|Creates secrets in Key Vault for deployment script setup and initialization for Azure IoT Operations.|
 |postInitScripts|Runs deployment scripts for IoT Operations using an Azure deploymentScript resource, including tool installation and script execution.|
 |iotOpsInstance|Deploys Azure IoT Operations instance, broker, authentication, listeners, and data flow components on an Azure Arc-enabled Kubernetes cluster.|
+|akriConnectors|Deploys multiple Azure IoT Operations Akri Connector Templates as part of the IoT Operations deployment. Supports REST/HTTP, Media, ONVIF, and SSE connector types with configurable runtime and MQTT settings.|
 |postInstanceScriptsSecrets|Creates secrets in Key Vault for deployment script setup and initialization for Azure IoT Operations.|
 |postInstanceScripts|Runs deployment scripts for IoT Operations using an Azure deploymentScript resource, including tool installation and script execution.|
-|opcUaSimulator|Deploy and configure the OPC UA Simulator|
 
 ## Module Details
 
@@ -182,6 +187,7 @@ Initializes and configures the required Arc extensions for Azure IoT Operations 
 |containerStorageExtensionName|`string`|The name of the Container Storage Extension.|
 |secretStoreExtensionId|`string`|The ID of the Secret Store Extension.|
 |secretStoreExtensionName|`string`|The name of the Secret Store Extension.|
+|aioCertManagerExtensionId|`string`|The ID of the Azure IoT Operations Cert-Manager Extension.|
 |aioCertManagerExtensionName|`string`|The name of the Azure IoT Operations Cert-Manager Extension.|
 
 ### postInitScriptsSecrets
@@ -290,6 +296,7 @@ Deploys Azure IoT Operations instance, broker, authentication, listeners, and da
 |sseIdentity::sseFedCred|`Microsoft.ManagedIdentity/userAssignedIdentities/federatedIdentityCredentials`|2023-01-31|
 |aioIdentity::aioFedCred|`Microsoft.ManagedIdentity/userAssignedIdentities/federatedIdentityCredentials`|2023-01-31|
 |aioExtension|`Microsoft.KubernetesConfiguration/extensions`|2023-05-01|
+|aioExtensionSchemaRegistryContributor|`Microsoft.Authorization/roleAssignments`|2022-04-01|
 |customLocation|`Microsoft.ExtendedLocation/customLocations`|2021-08-31-preview|
 |aioSyncRule|`Microsoft.ExtendedLocation/customLocations/resourceSyncRules`|2021-08-31-preview|
 |adrSyncRule|`Microsoft.ExtendedLocation/customLocations/resourceSyncRules`|2021-08-31-preview|
@@ -329,6 +336,32 @@ Deploys Azure IoT Operations instance, broker, authentication, listeners, and da
 |brokerAuthnId|`string`|The ID of the deployed AIO MQ Broker Authentication.|
 |brokerListenerName|`string`|The name of the deployed AIO MQ Broker Listener.|
 |brokerListenerId|`string`|The ID of the deployed AIO MQ Broker Listener.|
+
+### akriConnectors
+
+Deploys multiple Azure IoT Operations Akri Connector Templates as part of the IoT Operations deployment. Supports REST/HTTP, Media, ONVIF, and SSE connector types with configurable runtime and MQTT settings.
+
+#### Parameters for akriConnectors
+
+|Name|Description|Type|Default|Required|
+| :--- | :--- | :--- | :--- | :--- |
+|aioInstanceId|Azure IoT Operations instance ID where connector templates will be deployed.|`string`|n/a|yes|
+|customLocationId|Custom location ID for the Azure IoT Operations deployment.|`string`|n/a|yes|
+|connectorTemplates|List of Akri connector templates to deploy.|`array`|n/a|yes|
+|mqttSharedConfig|Shared MQTT connection configuration for all connectors.|`[_1.AkriMqttConfig](#user-defined-types)`|n/a|yes|
+
+#### Resources for akriConnectors
+
+|Name|Type|API Version|
+| :--- | :--- | :--- |
+|connectorTemplate|`Microsoft.IoTOperations/instances/akriConnectorTemplates`|2025-10-01|
+
+#### Outputs for akriConnectors
+
+|Name|Type|Description|
+| :--- | :--- | :--- |
+|connectorTemplates|`array`|Map of deployed connector templates by name with id and type.|
+|connectorTypesDeployed|`array`|List of connector types that were deployed.|
 
 ### postInstanceScriptsSecrets
 
@@ -396,32 +429,6 @@ Runs deployment scripts for IoT Operations using an Azure deploymentScript resou
 | :--- | :--- | :--- |
 |deploymentScriptName|`string`|The name of the deployment script resource.|
 |deploymentScriptId|`string`|The ID of the deployment script resource.|
-
-### opcUaSimulator
-
-Deploy and configure the OPC UA Simulator
-
-#### Parameters for opcUaSimulator
-
-|Name|Description|Type|Default|Required|
-| :--- | :--- | :--- | :--- | :--- |
-|common|The common component configuration.|`[_1.Common](#user-defined-types)`|n/a|yes|
-|customLocationId|The ID of the custom location.|`string`|n/a|yes|
-|adrNamespaceId|The ID of the ADR namespace.|`string`|n/a|yes|
-
-#### Resources for opcUaSimulator
-
-|Name|Type|API Version|
-| :--- | :--- | :--- |
-|device|`Microsoft.DeviceRegistry/namespaces/devices`|2025-10-01|
-|asset|`Microsoft.DeviceRegistry/namespaces/assets`|2025-10-01|
-
-#### Outputs for opcUaSimulator
-
-|Name|Type|Description|
-| :--- | :--- | :--- |
-|deviceId|`string`|The ID of the device.|
-|assetId|`string`|The ID of the asset.|
 
 ## User Defined Types
 
@@ -493,6 +500,71 @@ Configuration for the insecure anonymous AIO MQ Broker Listener.
 |serviceName|`string`|The service name for the anonymous broker listener.|
 |port|`int`|The port for the anonymous broker listener.|
 |nodePort|`int`|The node port for the anonymous broker listener.|
+
+### `_1.AkriAllocationPolicy`
+
+Resource allocation policy for Akri connector pods.
+
+|Property|Type|Description|
+| :--- | :--- | :--- |
+|policy|`string`|Allocation policy type.|
+|bucketSize|`int`|Bucket size for allocation (1-100).|
+
+### `_1.AkriConnectorTemplate`
+
+Akri connector template configuration.
+
+|Property|Type|Description|
+| :--- | :--- | :--- |
+|name|`string`|Unique name for the connector (lowercase letters, numbers, and hyphens only).|
+|type|`string`|Connector type.|
+|customEndpointType|`string`|Custom endpoint type (required for custom connectors).|
+|customImageName|`string`|Custom image name (required for custom connectors).|
+|customEndpointVersion|`string`|Custom endpoint version.|
+|customConnectorMetadataRef|`string`|Custom connector metadata reference.|
+|registry|`string`|Container registry for pulling connector images.|
+|imageTag|`string`|Image tag for the connector.|
+|replicas|`int`|Number of connector replicas.|
+|imagePullPolicy|`string`|Image pull policy.|
+|logLevel|`string`|Log level for connector diagnostics.|
+|mqttConfig|`[_1.AkriMqttConfig](#user-defined-types)`|MQTT configuration override for this connector.|
+|aioMinVersion|`string`|Minimum AIO version requirement.|
+|aioMaxVersion|`string`|Maximum AIO version requirement.|
+|allocation|`[_1.AkriAllocationPolicy](#user-defined-types)`|Resource allocation policy.|
+|additionalConfiguration|`object`|Additional configuration key-value pairs.|
+|secrets|`array`|Secret configurations.|
+|trustSettings|`[_1.AkriTrustSettings](#user-defined-types)`|Trust settings configuration.|
+
+### `_1.AkriMqttConfig`
+
+MQTT connection configuration for Akri connectors.
+
+|Property|Type|Description|
+| :--- | :--- | :--- |
+|host|`string`|MQTT broker host address.|
+|audience|`string`|Service account token audience for authentication.|
+|caConfigmap|`string`|ConfigMap reference for trusted CA certificates.|
+|keepAliveSeconds|`int`|Keep alive interval in seconds.|
+|maxInflightMessages|`int`|Maximum number of in-flight messages.|
+|sessionExpirySeconds|`int`|Session expiry interval in seconds.|
+
+### `_1.AkriSecretConfig`
+
+Secret configuration for Akri connector.
+
+|Property|Type|Description|
+| :--- | :--- | :--- |
+|secretAlias|`string`|Alias for the secret.|
+|secretKey|`string`|Key within the secret.|
+|secretRef|`string`|Reference to the secret resource.|
+
+### `_1.AkriTrustSettings`
+
+Trust settings for Akri connector.
+
+|Property|Type|Description|
+| :--- | :--- | :--- |
+|trustListSecretRef|`string`|Reference to the trust list secret.|
 
 ### `_1.BrokerPersistence`
 
@@ -655,8 +727,8 @@ Common settings for the components.
 | :--- | :--- | :--- |
 |containerStorageExtensionId|`string`|The ID of the Container Storage Extension.|
 |containerStorageExtensionName|`string`|The name of the Container Storage Extension.|
-|aioPlatformExtensionId|`string`|The ID of the Azure IoT Operations Platform Extension.|
-|aioPlatformExtensionName|`string`|The name of the Azure IoT Operations Platform Extension.|
+|aioCertManagerExtensionId|`string`|The ID of the Azure IoT Operations Cert-Manager Extension.|
+|aioCertManagerExtensionName|`string`|The name of the Azure IoT Operations Cert-Manager Extension.|
 |secretStoreExtensionId|`string`|The ID of the Secret Store Extension.|
 |secretStoreExtensionName|`string`|The name of the Secret Store Extension.|
 |customLocationId|`string`|The ID of the deployed Custom Location.|
@@ -667,6 +739,8 @@ Common settings for the components.
 |dataFlowProfileName|`string`|The name of the deployed Azure IoT Operations Data Flow Profile.|
 |dataFlowEndpointId|`string`|The ID of the deployed Azure IoT Operations Data Flow Endpoint.|
 |dataFlowEndpointName|`string`|The name of the deployed Azure IoT Operations Data Flow Endpoint.|
+|akriConnectorTemplates|`array`|Map of deployed Akri connector templates by name with id and type.|
+|akriConnectorTypesDeployed|`array`|List of Akri connector types that were deployed.|
 
 <!-- markdown-table-prettify-ignore-end -->
 <!-- END_BICEP_DOCS -->

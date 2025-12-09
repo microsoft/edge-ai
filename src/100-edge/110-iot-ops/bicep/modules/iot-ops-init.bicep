@@ -51,9 +51,12 @@ resource arcConnectedCluster 'Microsoft.Kubernetes/connectedClusters@2021-03-01'
   name: arcConnectedClusterName
 }
 
-resource aioCertManager 'Microsoft.KubernetesConfiguration/extensions@2023-05-01' = if (trustIssuerSettings.trustSource == 'CustomerManagedByoIssuer') {
+resource aioCertManager 'Microsoft.KubernetesConfiguration/extensions@2023-05-01' = if (trustIssuerSettings.trustSource != 'CustomerManagedByoIssuer') {
   scope: arcConnectedCluster
-  name: 'azure-iot-operations-cert-manager'
+  name: 'cert-manager'
+  identity: {
+    type: 'SystemAssigned'
+  }
   properties: {
     extensionType: 'microsoft.certmanagement'
     version: aioCertManagerConfig.release.version
@@ -131,6 +134,9 @@ output secretStoreExtensionId string = secretStore.id
 
 @description('The name of the Secret Store Extension.')
 output secretStoreExtensionName string = secretStore.name
+
+@description('The ID of the Azure IoT Operations Cert-Manager Extension.')
+output aioCertManagerExtensionId string = aioCertManager.id
 
 @description('The name of the Azure IoT Operations Cert-Manager Extension.')
 output aioCertManagerExtensionName string = aioCertManager.name

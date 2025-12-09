@@ -84,4 +84,4 @@ module aksCluster './modules/aks-cluster.bicep' = if (shouldCreateAks) {
 */
 
 @description('The AKS cluster name.')
-output aksName string = aksCluster.outputs.aksName
+output aksName string? = shouldCreateAks ? aksCluster!.outputs.aksName : null

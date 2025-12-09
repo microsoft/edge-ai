@@ -181,6 +181,17 @@ resource aioExtension 'Microsoft.KubernetesConfiguration/extensions@2023-05-01' 
   }
 }
 
+@description('Role assignment granting the IoT Operations extension Contributor access to the Schema Registry for connector operations.')
+resource aioExtensionSchemaRegistryContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  scope: schemaRegistry
+  name: guid(schemaRegistry.id, aioExtension.id, 'b24988ac-6180-42a0-ab88-20f7382dd24c')
+  properties: {
+    principalId: aioExtension.identity.principalId
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c')
+    principalType: 'ServicePrincipal'
+  }
+}
+
 resource customLocation 'Microsoft.ExtendedLocation/customLocations@2021-08-31-preview' = {
   name: customLocationName
   location: common.location

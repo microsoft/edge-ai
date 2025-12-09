@@ -20,16 +20,16 @@ locals {
     default_datasets_configuration = "{\"samplingInterval\":500,\"queueSize\":1,\"publishingInterval\":1000}"
     description                    = "An oven is essential for baking a wide variety of products."
     display_name                   = "oven"
-    documentation_uri              = "http://docs.oven.asset.contoso"
+    documentation_uri              = "http://docs.contoso.com/ovens"
     enabled                        = true
-    hardware_revision              = "http://docs.oven.asset.contoso"
-    manufacturer                   = "http://asset.oven.contoso"
-    manufacturer_uri               = "http://oven.asset.contoso"
-    model                          = "Mymodel"
+    hardware_revision              = "2.3"
+    manufacturer                   = "Contoso"
+    manufacturer_uri               = "http://www.contoso.com/ovens"
+    model                          = "Oven-003"
     name                           = "oven"
     product_code                   = "12345C"
     serial_number                  = "12345"
-    software_revision              = "1.1"
+    software_revision              = "14.1"
     datasets = [
       {
         name = "default-dataset"
