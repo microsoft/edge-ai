@@ -112,7 +112,13 @@ Write-Host "Processing $($FilteredFiles.Count) markdown files after exclusions" 
 Write-Host "Running markdown-table-formatter..." -ForegroundColor Cyan
 
 # Find the markdown-table-formatter CLI
-$formatterPath = Join-Path $RepoRoot "node_modules\.bin\markdown-table-formatter.cmd"
+$formatterPath = if ($IsWindows) {
+    Join-Path $RepoRoot "node_modules\.bin\markdown-table-formatter.cmd"
+}
+else {
+    Join-Path $RepoRoot "node_modules/.bin/markdown-table-formatter"
+}
+
 if (-not (Test-Path $formatterPath)) {
     Write-Error "markdown-table-formatter not found. Run 'npm install' first."
     exit 1

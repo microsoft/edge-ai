@@ -44,5 +44,6 @@
   - [Mqtt Tools](/src/900-tools-utilities/900-mqtt-tools/README)
   - [Video Tools](/src/900-tools-utilities/901-video-tools/README)
   - [Aio Sidekick](/src/900-tools-utilities/902-aio-sidekick/README)
+  - [Multi Asset Deploy](/src/900-tools-utilities/903-multi-asset-deploy/README)
 
 - [Azure Resource Providers](/src/azure-resource-providers/README)

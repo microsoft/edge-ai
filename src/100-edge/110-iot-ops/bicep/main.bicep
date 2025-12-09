@@ -77,8 +77,31 @@ param shouldEnableOtelCollector bool = true
 @description('Whether or not to enable the OPC UA Simulator for Azure IoT Operations.')
 param shouldEnableOpcUaSimulator bool = true
 
-@description('Whether or not to create the OPC UA Simulator ADR Asset for Azure IoT Operations.')
-param shouldEnableOpcUaSimulatorAsset bool = shouldEnableOpcUaSimulator
+/*
+  Akri Connectors Parameters
+*/
+
+@description('Deploy Akri REST HTTP Connector template to the IoT Operations instance.')
+param shouldEnableAkriRestConnector bool = false
+
+@description('Deploy Akri Media Connector template to the IoT Operations instance.')
+param shouldEnableAkriMediaConnector bool = false
+
+@description('Deploy Akri ONVIF Connector template to the IoT Operations instance.')
+param shouldEnableAkriOnvifConnector bool = false
+
+@description('Deploy Akri SSE Connector template to the IoT Operations instance.')
+param shouldEnableAkriSseConnector bool = false
+
+@description('List of custom Akri connector templates with user-defined endpoint types and container images.')
+param customAkriConnectors types.AkriConnectorTemplate[] = []
+
+@description('Shared MQTT connection configuration for all Akri connectors.')
+param akriMqttSharedConfig types.AkriMqttConfig = {
+  host: 'aio-broker:18883'
+  audience: 'aio-internal'
+  caConfigmap: 'azure-iot-operations-aio-ca-trust-bundle'
+}
 
 /*
   Custom Location Parameters
@@ -141,6 +164,44 @@ param shouldAddDeployScriptsToKeyVault bool = false
 /*
   Local Variables
 */
+
+var shouldDeployAkriConnectors = shouldEnableAkriRestConnector || shouldEnableAkriMediaConnector || shouldEnableAkriOnvifConnector || shouldEnableAkriSseConnector || length(customAkriConnectors) > 0
+
+var akriConnectorTemplates = concat(
+  shouldEnableAkriRestConnector
+    ? [
+        {
+          name: 'rest-http-connector'
+          type: 'rest'
+        }
+      ]
+    : [],
+  shouldEnableAkriMediaConnector
+    ? [
+        {
+          name: 'media-connector'
+          type: 'media'
+        }
+      ]
+    : [],
+  shouldEnableAkriOnvifConnector
+    ? [
+        {
+          name: 'onvif-connector'
+          type: 'onvif'
+        }
+      ]
+    : [],
+  shouldEnableAkriSseConnector
+    ? [
+        {
+          name: 'sse-connector'
+          type: 'sse'
+        }
+      ]
+    : [],
+  customAkriConnectors
+)
 
 var trustSource = contains(trustIssuerSettings.trustSource, 'CustomerManaged') ? 'CustomerManaged' : 'SelfSigned'
 
@@ -306,6 +367,20 @@ module iotOpsInstance 'modules/iot-ops-instance.bicep' = if (shouldDeployAio && 
 }
 
 /*
+  Akri Connectors Module
+*/
+
+module akriConnectors 'modules/akri-connectors.bicep' = if (shouldDeployAkriConnectors && shouldDeployAio) {
+  name: '${deployment().name}-akri4'
+  params: {
+    aioInstanceId: iotOpsInstance.?outputs.?aioInstanceId ?? ''
+    customLocationId: iotOpsInstance.?outputs.?customLocationId ?? ''
+    connectorTemplates: akriConnectorTemplates
+    mqttSharedConfig: akriMqttSharedConfig
+  }
+}
+
+/*
   Post Instance Script Modules
 */
 
@@ -346,22 +421,6 @@ module postInstanceScripts 'modules/apply-scripts.bicep' = if (shouldDeployAioDe
 }
 
 /*
-  OPC UA Simulator Modules
-*/
-
-module opcUaSimulator 'modules/opc-ua-simulator-asset.bicep' = if (shouldEnableOpcUaSimulatorAsset && shouldDeployAio) {
-  name: '${deployment().name}-opc7'
-  dependsOn: [
-    postInstanceScripts
-  ]
-  params: {
-    common: common
-    customLocationId: (iotOpsInstance.?outputs.?customLocationId) ?? ''
-    adrNamespaceId: adrNamespace.id
-  }
-}
-
-/*
   Outputs
 */
 
@@ -371,11 +430,11 @@ output containerStorageExtensionId string = (iotOpsInit.?outputs.?containerStora
 @description('The name of the Container Storage Extension.')
 output containerStorageExtensionName string = (iotOpsInit.?outputs.?containerStorageExtensionName) ?? ''
 
-@description('The ID of the Azure IoT Operations Platform Extension.')
-output aioPlatformExtensionId string = (iotOpsInit.?outputs.?aioPlatformExtensionId) ?? ''
+@description('The ID of the Azure IoT Operations Cert-Manager Extension.')
+output aioCertManagerExtensionId string = (iotOpsInit.?outputs.?aioCertManagerExtensionId) ?? ''
 
-@description('The name of the Azure IoT Operations Platform Extension.')
-output aioPlatformExtensionName string = (iotOpsInit.?outputs.?aioPlatformExtensionName) ?? ''
+@description('The name of the Azure IoT Operations Cert-Manager Extension.')
+output aioCertManagerExtensionName string = (iotOpsInit.?outputs.?aioCertManagerExtensionName) ?? ''
 
 @description('The ID of the Secret Store Extension.')
 output secretStoreExtensionId string = (iotOpsInit.?outputs.?secretStoreExtensionId) ?? ''
@@ -414,3 +473,13 @@ output dataFlowEndpointId string = shouldDeployAio && shouldDeployResourceSyncRu
 output dataFlowEndpointName string = shouldDeployAio && shouldDeployResourceSyncRules
   ? (iotOpsInstance.?outputs.?dataFlowEndpointName ?? '')
   : ''
+
+@description('Map of deployed Akri connector templates by name with id and type.')
+output akriConnectorTemplates array = shouldDeployAkriConnectors
+  ? (akriConnectors.?outputs.?connectorTemplates ?? [])
+  : []
+
+@description('List of Akri connector types that were deployed.')
+output akriConnectorTypesDeployed array = shouldDeployAkriConnectors
+  ? (akriConnectors.?outputs.?connectorTypesDeployed ?? [])
+  : []
