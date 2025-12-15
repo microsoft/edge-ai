@@ -23,3 +23,243 @@ updates:
       - "dependencies"
       - "security"
       - "github-actions"
+
+  - package-ecosystem: npm
+    directory: /docs/_server
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /docs/assets/js
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: daily
+
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: daily
+
+  - package-ecosystem: docker
+    directory: /src/500-application/500-basic-inference/services/pipeline
+    schedule:
+      interval: daily
+
+  - package-ecosystem: nuget
+    directory: /src/500-application/500-basic-inference/services/pipeline/src/InferencePipeline.Tests
+    schedule:
+      interval: daily
+
+  - package-ecosystem: nuget
+    directory: /src/500-application/500-basic-inference/services/pipeline/src/InferencePipeline
+    schedule:
+      interval: daily
+
+  - package-ecosystem: cargo
+    directory: /src/500-application/501-rust-telemetry/services/receiver
+    schedule:
+      interval: daily
+
+  - package-ecosystem: docker
+    directory: /src/500-application/501-rust-telemetry/services/receiver
+    schedule:
+      interval: daily
+
+  - package-ecosystem: cargo
+    directory: /src/500-application/501-rust-telemetry/services/sender
+    schedule:
+      interval: daily
+
+  - package-ecosystem: docker
+    directory: /src/500-application/501-rust-telemetry/services/sender
+    schedule:
+      interval: daily
+
+  - package-ecosystem: cargo
+    directory: /src/500-application/502-rust-http-connector/services/broker
+    schedule:
+      interval: daily
+
+  - package-ecosystem: docker
+    directory: /src/500-application/502-rust-http-connector/services/broker
+    schedule:
+      interval: daily
+
+  - package-ecosystem: docker
+    directory: /src/500-application/502-rust-http-connector/services/sensor-simulator
+    schedule:
+      interval: daily
+
+  - package-ecosystem: pip
+    directory: /src/500-application/502-rust-http-connector/services/sensor-simulator/src
+    schedule:
+      interval: daily
+
+  - package-ecosystem: cargo
+    directory: /src/500-application/502-rust-http-connector/services/subscriber
+    schedule:
+      interval: daily
+
+  - package-ecosystem: docker
+    directory: /src/500-application/502-rust-http-connector/services/subscriber
+    schedule:
+      interval: daily
+
+  - package-ecosystem: cargo
+    directory: /src/500-application/503-media-capture-service/services/media-capture-service
+    schedule:
+      interval: daily
+
+  - package-ecosystem: docker
+    directory: /src/500-application/503-media-capture-service/services/media-capture-service
+    schedule:
+      interval: daily
+
+  - package-ecosystem: cargo
+    directory: /src/500-application/504-mqtt-otel-trace-exporter/services/mqtt-otel-trace-exporter
+    schedule:
+      interval: daily
+
+  - package-ecosystem: docker
+    directory: /src/500-application/504-mqtt-otel-trace-exporter/services/mqtt-otel-trace-exporter
+    schedule:
+      interval: daily
+
+  - package-ecosystem: docker
+    directory: /src/500-application/505-akri-rest-http-connector/services/authenticated-device
+    schedule:
+      interval: daily
+
+  - package-ecosystem: pip
+    directory: /src/500-application/505-akri-rest-http-connector/services/authenticated-device
+    schedule:
+      interval: daily
+
+  - package-ecosystem: docker
+    directory: /src/500-application/505-akri-rest-http-connector/services/connector-test-client
+    schedule:
+      interval: daily
+
+  - package-ecosystem: pip
+    directory: /src/500-application/505-akri-rest-http-connector/services/connector-test-client
+    schedule:
+      interval: daily
+
+  - package-ecosystem: docker
+    directory: /src/500-application/505-akri-rest-http-connector/services/sensor-simulator
+    schedule:
+      interval: daily
+
+  - package-ecosystem: pip
+    directory: /src/500-application/505-akri-rest-http-connector/services/sensor-simulator
+    schedule:
+      interval: daily
+
+  - package-ecosystem: docker
+    directory: /src/500-application/505-akri-rest-http-connector/services/weather-station
+    schedule:
+      interval: daily
+
+  - package-ecosystem: pip
+    directory: /src/500-application/505-akri-rest-http-connector/services/weather-station
+    schedule:
+      interval: daily
+
+  - package-ecosystem: pip
+    directory: /src/500-application/506-ros2-connector/services
+    schedule:
+      interval: daily
+
+  - package-ecosystem: docker
+    directory: /src/500-application/506-ros2-connector/services/ros2-connector
+    schedule:
+      interval: daily
+
+  - package-ecosystem: pip
+    directory: /src/500-application/506-ros2-connector/services/ros2-connector
+    schedule:
+      interval: daily
+
+  - package-ecosystem: docker
+    directory: /src/500-application/506-ros2-connector/services/ros2-simulator
+    schedule:
+      interval: daily
+
+  - package-ecosystem: pip
+    directory: /src/500-application/506-ros2-connector/services/ros2-simulator
+    schedule:
+      interval: daily
+
+  - package-ecosystem: cargo
+    directory: /src/500-application/507-ai-inference/services/ai-edge-inference-crate
+    schedule:
+      interval: daily
+
+  - package-ecosystem: cargo
+    directory: /src/500-application/507-ai-inference/services/ai-edge-inference-crate/tests/no-features-test
+    schedule:
+      interval: daily
+
+  - package-ecosystem: cargo
+    directory: /src/500-application/507-ai-inference/services/ai-edge-inference
+    schedule:
+      interval: daily
+
+  - package-ecosystem: docker
+    directory: /src/500-application/507-ai-inference/services/ai-edge-inference
+    schedule:
+      interval: daily
+
+  - package-ecosystem: docker
+    directory: /src/500-application/509-sse-connector/services/connector-test-client
+    schedule:
+      interval: daily
+
+  - package-ecosystem: pip
+    directory: /src/500-application/509-sse-connector/services/connector-test-client
+    schedule:
+      interval: daily
+
+  - package-ecosystem: docker
+    directory: /src/500-application/509-sse-connector/services/sse-server
+    schedule:
+      interval: daily
+
+  - package-ecosystem: pip
+    directory: /src/500-application/509-sse-connector/services/sse-server
+    schedule:
+      interval: daily
+
+  - package-ecosystem: docker
+    directory: /src/500-application/510-onvif-connector/services/onvif-camera-simulator
+    schedule:
+      interval: daily
+
+  - package-ecosystem: pip
+    directory: /src/500-application/510-onvif-connector/services/onvif-camera-simulator
+    schedule:
+      interval: daily
+
+  - package-ecosystem: docker
+    directory: /src/500-application/510-onvif-connector/services/onvif-connector-client
+    schedule:
+      interval: daily
+
+  - package-ecosystem: pip
+    directory: /src/500-application/510-onvif-connector/services/onvif-connector-client
+    schedule:
+      interval: daily
+
+  - package-ecosystem: cargo
+    directory: /src/900-tools-utilities/901-video-tools/cli/video-to-gif
+    schedule:
+      interval: daily
+
+  - package-ecosystem: docker
+    directory: /src/900-tools-utilities/901-video-tools/cli/video-to-gif
+    schedule:
+      interval: daily

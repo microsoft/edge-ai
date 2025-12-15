@@ -141,6 +141,11 @@ jobs:
       changesInApplications: ${{ steps.detect.outputs.changesInApplications }}
       changedApplicationFolders: ${{ steps.detect.outputs.changedApplicationFolders }}
     steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@20cf305ff2072d973412fa9b1e3a4f227bda3c76 # v2.14.0
+        with:
+          egress-policy: audit
+
       - name: Checkout repository
         uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493
         with:
@@ -214,5 +219,10 @@ jobs:
       changesInApplications: ${{ needs.detect-changes.outputs.changesInApplications }}
       changedApplicationFolders: ${{ needs.detect-changes.outputs.changedApplicationFolders }}
     steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@20cf305ff2072d973412fa9b1e3a4f227bda3c76 # v2.14.0
+        with:
+          egress-policy: audit
+
       - name: Map outputs for backward compatibility
         run: echo "Mapping outputs from detection job for backward compatibility"
