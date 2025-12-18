@@ -50,8 +50,8 @@ Creates subnets for AKS private endpoints in an existing Virtual Network.
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|snetAks|`Microsoft.Network/virtualNetworks/subnets`|2024-05-01|
-|snetAksPod|`Microsoft.Network/virtualNetworks/subnets`|2024-05-01|
+|snetAks|`Microsoft.Network/virtualNetworks/subnets`|2025-01-01|
+|snetAksPod|`Microsoft.Network/virtualNetworks/subnets`|2025-01-01|
 
 #### Outputs for network
 

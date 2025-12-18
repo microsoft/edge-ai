@@ -36,6 +36,7 @@ azmon
 azuredevops
 azuremonitor
 azureml
+cognitiveservices
 cosmosdb
 deviceregistry
 eastus

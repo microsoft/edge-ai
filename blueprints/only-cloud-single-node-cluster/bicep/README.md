@@ -85,6 +85,10 @@ Provisions cloud resources required for Azure IoT Operations including Schema Re
 |keyVaultResourceGroupName|The name for the Resource Group for the Key Vault.|`string`|[resourceGroup().name]|no|
 |shouldAssignAdminUserRole|Whether or not to create a role assignment for an admin user.|`bool`|`true`|no|
 |adminUserObjectId|The Object ID for an admin user that will be granted the "Key Vault Secrets Officer" role.|`string`|[deployer().objectId]|no|
+|shouldCreateKeyVaultPrivateEndpoint|Whether to create a private endpoint for the Key Vault.|`bool`|`false`|no|
+|keyVaultPrivateEndpointSubnetId|Subnet resource ID for the Key Vault private endpoint.|`string`|n/a|no|
+|keyVaultVirtualNetworkId|Virtual network resource ID for the Key Vault private DNS link.|`string`|n/a|no|
+|shouldEnableKeyVaultPublicNetworkAccess|Whether to enable public network access on the Key Vault.|`bool`|`true`|no|
 |telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|`false`|no|
 
 #### Resources for cloudSecurityIdentity
@@ -100,6 +104,11 @@ Provisions cloud resources required for Azure IoT Operations including Schema Re
 | :--- | :--- | :--- |
 |keyVaultName|`string`|The name of the Secret Store Extension Key Vault.|
 |keyVaultId|`string`|The resource ID of the Secret Store Extension Key Vault.|
+|keyVaultPrivateEndpointId|`string`|The Key Vault private endpoint ID when created.|
+|keyVaultPrivateEndpointName|`string`|The Key Vault private endpoint name when created.|
+|keyVaultPrivateEndpointIp|`string`|The Key Vault private endpoint IP address when created.|
+|keyVaultPrivateDnsZoneId|`string`|The Key Vault private DNS zone ID when created.|
+|keyVaultPrivateDnsZoneName|`string`|The Key Vault private DNS zone name when created.|
 |sseIdentityName|`string`|The Secret Store Extension User Assigned Managed Identity name.|
 |sseIdentityId|`string`|The Secret Store Extension User Assigned Managed Identity ID.|
 |sseIdentityPrincipalId|`string`|The Secret Store Extension User Assigned Managed Identity Principal ID.|
@@ -128,6 +137,9 @@ Deploys Azure observability resources including Azure Monitor Workspace, Log Ana
 |grafanaAdminPrincipalId|The principalId (objectId) of the user or service principal to assign the Grafana Admin role.|`string`|n/a|no|
 |logsDataCollectionRuleNamespaces|List of cluster namespaces to be exposed in the log analytics workspace|`array`|['kube-system', 'gatekeeper-system', 'azure-arc', 'azure-iot-operations']|no|
 |logsDataCollectionRuleStreams|List of streams to be enabled in the log analytics workspace|`array`|['Microsoft-ContainerLog', 'Microsoft-ContainerLogV2', 'Microsoft-KubeEvents', 'Microsoft-KubePodInventory', 'Microsoft-KubeNodeInventory', 'Microsoft-KubePVInventory', 'Microsoft-KubeServices', 'Microsoft-KubeMonAgentEvents', 'Microsoft-InsightsMetrics', 'Microsoft-ContainerInventory', 'Microsoft-ContainerNodeInventory', 'Microsoft-Perf']|no|
+|shouldEnablePrivateEndpoints|Whether to enable private endpoints for Azure Monitor resources.|`bool`|`false`|no|
+|privateEndpointSubnetId|Subnet resource ID used for the observability private endpoint.|`string`|n/a|no|
+|virtualNetworkId|Virtual network resource ID for private DNS links.|`string`|n/a|no|
 |telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|`false`|no|
 
 #### Resources for cloudObservability
@@ -144,6 +156,21 @@ Deploys Azure observability resources including Azure Monitor Workspace, Log Ana
 |dataCollectionEndpoint|`Microsoft.Insights/dataCollectionEndpoints`|2023-03-11|
 |logsDataCollectionRule|`Microsoft.Insights/dataCollectionRules`|2023-03-11|
 |metricsDataCollectionRule|`Microsoft.Insights/dataCollectionRules`|2023-03-11|
+|monitorPrivateLinkScope|`Microsoft.Insights/privateLinkScopes`|2021-09-01|
+|monitorPrivateLinkScopeLogAnalytics|`Microsoft.Insights/privateLinkScopes/scopedResources`|2021-09-01|
+|monitorPrivateLinkScopeDataCollectionEndpoint|`Microsoft.Insights/privateLinkScopes/scopedResources`|2021-09-01|
+|monitorPrivateDnsZoneMonitorAzure|`Microsoft.Network/privateDnsZones`|2020-06-01|
+|monitorPrivateDnsZoneOms|`Microsoft.Network/privateDnsZones`|2020-06-01|
+|monitorPrivateDnsZoneOds|`Microsoft.Network/privateDnsZones`|2020-06-01|
+|monitorPrivateDnsZoneAgentsvc|`Microsoft.Network/privateDnsZones`|2020-06-01|
+|monitorPrivateDnsZoneBlob|`Microsoft.Network/privateDnsZones`|2020-06-01|
+|monitorPrivateDnsLinkMonitorAzure|`Microsoft.Network/privateDnsZones/virtualNetworkLinks`|2020-06-01|
+|monitorPrivateDnsLinkOms|`Microsoft.Network/privateDnsZones/virtualNetworkLinks`|2020-06-01|
+|monitorPrivateDnsLinkOds|`Microsoft.Network/privateDnsZones/virtualNetworkLinks`|2020-06-01|
+|monitorPrivateDnsLinkAgentsvc|`Microsoft.Network/privateDnsZones/virtualNetworkLinks`|2020-06-01|
+|monitorPrivateDnsLinkBlob|`Microsoft.Network/privateDnsZones/virtualNetworkLinks`|2020-06-01|
+|monitorPrivateEndpoint|`Microsoft.Network/privateEndpoints`|2023-05-01|
+|monitorPrivateDnsZoneGroup|`Microsoft.Network/privateEndpoints/privateDnsZoneGroups`|2023-05-01|
 
 #### Outputs for cloudObservability
 
@@ -155,6 +182,16 @@ Deploys Azure observability resources including Azure Monitor Workspace, Log Ana
 |grafanaName|`string`|The Azure Managed Grafana name.|
 |metricsDataCollectionRuleName|`string`|The metrics data collection rule name.|
 |logsDataCollectionRuleName|`string`|The logs data collection rule name.|
+|monitorPrivateLinkScopeId|`string`|Azure Monitor Private Link Scope resource ID.|
+|monitorPrivateEndpointId|`string`|Azure Monitor private endpoint resource ID.|
+|monitorPrivateEndpointName|`string`|Azure Monitor private endpoint name.|
+|monitorPrivateEndpointIp|`string`|Azure Monitor private endpoint IP address.|
+|monitorPrivateDnsZoneMonitorAzureName|`string`|Private DNS zone name for privatelink.monitor.azure.com.|
+|monitorPrivateDnsZoneOmsName|`string`|Private DNS zone name for privatelink.oms.opinsights.azure.com.|
+|monitorPrivateDnsZoneOdsName|`string`|Private DNS zone name for privatelink.ods.opinsights.azure.com.|
+|monitorPrivateDnsZoneAgentsvcName|`string`|Private DNS zone name for privatelink.agentsvc.azure-automation.net.|
+|monitorPrivateDnsZoneBlobName|`string`|Private DNS zone name for the blob storage namespace.|
+|monitorPrivateDnsZoneBlobId|`string`|Private DNS zone ID for the blob storage namespace.|
 
 ### cloudData
 
@@ -169,6 +206,12 @@ Creates storage resources including Azure Storage Account and Schema Registry fo
 |storageAccountResourceGroupName|The name for the Resource Group for the Storage Account.|`string`|[if(parameters('shouldCreateStorageAccount'), resourceGroup().name, fail('storageAccountResourceGroupName required when shouldCreateStorageAccount is false'))]|no|
 |storageAccountName|The name for the Storage Account used by the Schema Registry.|`string`|[if(parameters('shouldCreateStorageAccount'), format('st{0}', uniqueString(resourceGroup().id)), fail('storageAccountName required when shouldCreateStorageAccount is false'))]|no|
 |storageAccountSettings|The settings for the new Storage Account.|`[_1.StorageAccountSettings](#user-defined-types)`|[variables('_1.storageAccountSettingsDefaults')]|no|
+|shouldEnableStoragePrivateEndpoint|Whether to enable a private endpoint for the Storage Account.|`bool`|`false`|no|
+|storagePrivateEndpointSubnetId|Subnet resource ID used when deploying the Storage Account private endpoint.|`string`|n/a|no|
+|storageVirtualNetworkId|Virtual network resource ID for Storage Account private DNS links.|`string`|n/a|no|
+|shouldEnableStoragePublicNetworkAccess|Whether to enable public network access for the Storage Account.|`bool`|`true`|no|
+|shouldCreateBlobPrivateDnsZone|Whether to create the blob private DNS zone. Set to false if using a shared DNS zone from observability component.|`bool`|`true`|no|
+|blobPrivateDnsZoneId|Existing blob Private DNS zone ID to reuse when private endpoints are enabled.|`string`|n/a|no|
 |shouldCreateSchemaRegistry|Whether to create the ADR Schema Registry.|`bool`|`true`|no|
 |shouldCreateSchemaContainer|Whether to create the Blob Container for schemas.|`bool`|`true`|no|
 |schemaContainerName|The name for the Blob Container for schemas.|`string`|schemas|no|
@@ -198,6 +241,10 @@ Creates storage resources including Azure Storage Account and Schema Registry fo
 |storageAccountName|`string`|The Storage Account Name.|
 |storageAccountId|`string`|The Storage Account ID.|
 |schemaContainerName|`string`|The Schema Container Name.|
+|storageBlobPrivateEndpointId|`string`|The blob private endpoint ID for the Storage Account when created.|
+|storageBlobPrivateEndpointIp|`string`|The blob private endpoint IP address for the Storage Account when created.|
+|blobPrivateDnsZoneId|`string`|The blob private DNS zone ID when managed by this component.|
+|blobPrivateDnsZoneName|`string`|The blob private DNS zone name when managed by this component.|
 |adrNamespaceName|`string`|The ADR Namespace Name.|
 |adrNamespaceId|`string`|The ADR Namespace ID.|
 |adrNamespace|`object`|The complete ADR namespace resource information.|
@@ -248,13 +295,19 @@ Creates virtual network, subnet, and network security group resources for Azure 
 | :--- | :--- | :--- | :--- | :--- |
 |common|The common component configuration.|`[_2.Common](#user-defined-types)`|n/a|yes|
 |networkingConfig|Networking configuration settings.|`[_1.NetworkingConfig](#user-defined-types)`|[variables('_1.networkingConfigDefaults')]|no|
+|natGatewayConfig|NAT Gateway configuration settings.|`[_1.NatGatewayConfig](#user-defined-types)`|[variables('_1.natGatewayConfigDefaults')]|no|
+|privateResolverConfig|Private DNS Resolver configuration settings.|`[_1.PrivateResolverConfig](#user-defined-types)`|[variables('_1.privateResolverConfigDefaults')]|no|
+|defaultOutboundAccessEnabled|Whether default outbound access is enabled for subnets.|`bool`|`false`|no|
 |telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|`false`|no|
 
 #### Resources for cloudNetworking
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|virtualNetwork|`Microsoft.Network/virtualNetworks`|2024-05-01|
+|virtualNetwork|`Microsoft.Network/virtualNetworks`|2025-01-01|
+|defaultSubnet|`Microsoft.Network/virtualNetworks/subnets`|2025-01-01|
+|natGateway|`Microsoft.Resources/deployments`|2025-04-01|
+|privateResolver|`Microsoft.Resources/deployments`|2025-04-01|
 
 #### Outputs for cloudNetworking
 
@@ -263,8 +316,18 @@ Creates virtual network, subnet, and network security group resources for Azure 
 |networkSecurityGroupId|`string`|The ID of the created network security group.|
 |networkSecurityGroupName|`string`|The name of the created network security group.|
 |subnetId|`string`|The ID of the created subnet.|
+|subnetName|`string`|The name of the created subnet.|
 |virtualNetworkId|`string`|The ID of the created virtual network.|
 |virtualNetworkName|`string`|The name of the created virtual network.|
+|natGatewayId|`string`|The ID of the NAT Gateway (if enabled).|
+|natGatewayName|`string`|The name of the NAT Gateway (if enabled).|
+|natGatewayPublicIps|`array`|The public IP addresses associated with NAT Gateway (if enabled).|
+|privateResolverId|`string`|The Private DNS Resolver ID (if enabled).|
+|privateResolverName|`string`|The Private DNS Resolver name (if enabled).|
+|dnsServerIp|`string`|The DNS server IP address from Private Resolver (if enabled).|
+|defaultOutboundAccessEnabled|`bool`|Whether default outbound access remains enabled for the shared subnet(s).|
+|subnetAddressPrefix|`string`|The address prefix allocated to the default subnet.|
+|virtualNetworkAddressPrefix|`string`|The address prefix allocated to the virtual network.|
 
 ### cloudVmHost
 
@@ -312,8 +375,11 @@ Deploys Azure Container Registry (ACR) resources.
 |common|The common component configuration.|`[_2.Common](#user-defined-types)`|n/a|yes|
 |virtualNetworkName|Virtual network name for subnet creation.|`string`|n/a|yes|
 |networkSecurityGroupName|Network security group name to apply to the subnets.|`string`|n/a|yes|
+|natGatewayId|NAT Gateway ID to associate with the ACR subnet for managed outbound egress.|`string`|n/a|no|
 |shouldCreateAcrPrivateEndpoint|Whether to create a private endpoint for the Azure Container Registry.|`bool`|`false`|no|
 |containerRegistryConfig|The settings for the Azure Container Registry.|`[_1.ContainerRegistry](#user-defined-types)`|[variables('_1.containerRegistryDefaults')]|no|
+|acrNetworkConfig|Networking configuration for the ACR subnet.|`[_1.AcrNetworkConfig](#user-defined-types)`|[variables('_1.acrNetworkConfigDefaults')]|no|
+|acrFirewallConfig|Firewall and public access configuration for the ACR.|`[_1.AcrFirewallConfig](#user-defined-types)`|[variables('_1.acrFirewallConfigDefaults')]|no|
 |telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|`false`|no|
 
 #### Resources for cloudAcr
@@ -327,7 +393,12 @@ Deploys Azure Container Registry (ACR) resources.
 
 |Name|Type|Description|
 | :--- | :--- | :--- |
+|acrId|`string`|The Azure Container Registry ID.|
 |acrName|`string`|The Azure Container Registry name.|
+|acrSubnetId|`string`|The ACR subnet ID (if private endpoint is enabled).|
+|acrPrivateEndpointId|`string`|The ACR private endpoint ID (if enabled).|
+|acrPrivateDnsZoneName|`string`|The ACR private DNS zone name (if enabled).|
+|isNatGatewayEnabled|`bool`|Whether NAT Gateway is associated with the ACR subnet.|
 
 ### cloudKubernetes
 
@@ -340,9 +411,14 @@ Deploys optionally Azure Kubernetes Service (AKS) resources.
 |common|The common component configuration.|`[_2.Common](#user-defined-types)`|n/a|yes|
 |virtualNetworkName|Virtual network name for subnet creation.|`string`|n/a|yes|
 |networkSecurityGroupName|Network security group name to apply to the subnets.|`string`|n/a|yes|
+|aksNetworkConfig|AKS network configuration for subnets and NAT gateway.|`[_1.AksNetworkConfig](#user-defined-types)`|[variables('_1.aksNetworkConfigDefaults')]|no|
+|natGatewayId|NAT gateway ID for associating AKS subnets.|`string`|n/a|no|
 |shouldCreateAks|Whether to create an Azure Kubernetes Service cluster.|`bool`|`false`|no|
 |kubernetesClusterConfig|The settings for the Azure Kubernetes Service cluster.|`[_1.KubernetesCluster](#user-defined-types)`|[variables('_1.kubernetesClusterDefaults')]|no|
 |containerRegistryName|Name of the Azure Container Registry to create.|`string`|n/a|yes|
+|aksPrivateClusterConfig|AKS private cluster configuration.|`[_1.AksPrivateClusterConfig](#user-defined-types)`|[variables('_1.aksPrivateClusterConfigDefaults')]|no|
+|privateEndpointSubnetId|Subnet ID for the private endpoint (from networking component).|`string`|n/a|no|
+|virtualNetworkId|Virtual network ID for private DNS zone linking.|`string`|n/a|no|
 |telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|`false`|no|
 
 #### Resources for cloudKubernetes
@@ -357,6 +433,18 @@ Deploys optionally Azure Kubernetes Service (AKS) resources.
 |Name|Type|Description|
 | :--- | :--- | :--- |
 |aksName|`string`|The AKS cluster name.|
+|aksId|`string`|The AKS cluster ID.|
+|aksPrincipalId|`string`|The AKS cluster principal ID.|
+|snetAksId|`string`|The AKS system node subnet ID.|
+|snetAksName|`string`|The AKS system node subnet name.|
+|snetAksPodId|`string`|The AKS pod subnet ID.|
+|snetAksPodName|`string`|The AKS pod subnet name.|
+|snetAksAddressPrefix|`string`|The address prefix for the AKS system node subnet.|
+|snetAksPodAddressPrefix|`string`|The address prefix for the AKS pod subnet.|
+|defaultOutboundAccessEnabled|`bool`|Whether default outbound access is enabled for AKS subnets.|
+|natGatewayEnabled|`bool`|Whether NAT gateway is enabled for AKS subnets.|
+|privateEndpointId|`string`|The private endpoint ID (if enabled).|
+|privateDnsZoneId|`string`|The private DNS zone ID (if enabled).|
 
 ## User Defined Types
 

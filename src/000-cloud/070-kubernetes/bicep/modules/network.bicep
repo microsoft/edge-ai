@@ -20,6 +20,24 @@ param virtualNetworkName string
 @description('Network security group name to apply to the subnets.')
 param networkSecurityGroupName string
 
+@description('Address prefix for the AKS system node subnet.')
+param subnetAddressPrefixAks string
+
+@description('Address prefix for the AKS pod subnet.')
+param subnetAddressPrefixAksPod string
+
+@description('Whether to enable default outbound internet access for AKS subnets.')
+param defaultOutboundAccessEnabled bool
+
+@description('Whether to associate AKS subnets with a NAT gateway for managed outbound egress.')
+param shouldEnableNatGateway bool
+
+@description('NAT gateway ID for associating AKS subnets.')
+param natGatewayId string?
+
+@description('Whether to enable private endpoint for AKS cluster; when true, subnet delegation is created.')
+param shouldEnablePrivateEndpoint bool
+
 /*
   Local Variables
 */
@@ -31,33 +49,55 @@ var labelPrefixAksPod = '${common.resourcePrefix}-aks-pod-${common.environment}-
   Resources
 */
 
-resource vnet 'Microsoft.Network/virtualNetworks@2024-05-01' existing = {
+resource vnet 'Microsoft.Network/virtualNetworks@2025-01-01' existing = {
   name: virtualNetworkName
 }
 
-resource nsg 'Microsoft.Network/networkSecurityGroups@2024-05-01' existing = {
+resource nsg 'Microsoft.Network/networkSecurityGroups@2025-01-01' existing = {
   name: networkSecurityGroupName
 }
 
-resource snetAks 'Microsoft.Network/virtualNetworks/subnets@2024-05-01' = {
+resource snetAks 'Microsoft.Network/virtualNetworks/subnets@2025-01-01' = {
   parent: vnet
   name: 'subnet-${labelPrefixAks}'
   properties: {
-    addressPrefix: '10.0.5.0/24'
+    addressPrefix: subnetAddressPrefixAks
     networkSecurityGroup: {
       id: nsg.id
     }
+    defaultOutboundAccess: defaultOutboundAccessEnabled
+    natGateway: shouldEnableNatGateway && !empty(natGatewayId)
+      ? {
+          id: natGatewayId!
+        }
+      : null
   }
 }
 
-resource snetAksPod 'Microsoft.Network/virtualNetworks/subnets@2024-05-01' = {
+resource snetAksPod 'Microsoft.Network/virtualNetworks/subnets@2025-01-01' = {
   parent: vnet
   name: 'subnet-${labelPrefixAksPod}'
   properties: {
-    addressPrefix: '10.0.6.0/24'
+    addressPrefix: subnetAddressPrefixAksPod
     networkSecurityGroup: {
       id: nsg.id
     }
+    defaultOutboundAccess: defaultOutboundAccessEnabled
+    natGateway: shouldEnableNatGateway && !empty(natGatewayId)
+      ? {
+          id: natGatewayId!
+        }
+      : null
+    delegations: shouldEnablePrivateEndpoint
+      ? [
+          {
+            name: 'aks-delegation'
+            properties: {
+              serviceName: 'Microsoft.ContainerService/managedClusters'
+            }
+          }
+        ]
+      : []
   }
   dependsOn: [
     snetAks // Make sure subnets are created in sequence to avoid conflicts
@@ -76,3 +116,12 @@ output snetAksName string = last(split(snetAks.name, '/'))
 
 @description('The subnet ID for the AKS pods.')
 output snetAksPodId string = snetAksPod.id
+
+@description('The subnet name for the AKS pods.')
+output snetAksPodName string = last(split(snetAksPod.name, '/'))
+
+@description('The address prefix for the AKS system node subnet.')
+output snetAksAddressPrefix string = subnetAddressPrefixAks
+
+@description('The address prefix for the AKS pod subnet.')
+output snetAksPodAddressPrefix string = subnetAddressPrefixAksPod

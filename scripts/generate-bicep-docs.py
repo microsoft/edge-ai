@@ -235,7 +235,8 @@ def is_existing_resource(
     # Method 1: Check for explicit existing property
     if res_info.get("existing") is True:
         if verbose:
-            print(f"Resource '{res_name}' marked as existing via 'existing' property.")
+            print(
+                f"Resource '{res_name}' marked as existing via 'existing' property.")
         return True
 
     # Method 2: Check if resource has deploymentScope or similar indicators of being a reference
@@ -288,7 +289,18 @@ def extract_resources(
     if "resources" not in json_data:
         return resources
 
-    for res_name, res_info in json_data["resources"].items():
+    # Handle both dictionary (main templates) and list (modules) formats
+    resources_data = json_data["resources"]
+    if isinstance(resources_data, list):
+        # For modules, resources is a list - convert to dictionary using symbolic names
+        resources_dict = {}
+        for idx, res_info in enumerate(resources_data):
+            # Use the symbolic name if available, otherwise use index
+            res_name = res_info.get("name", f"resource_{idx}")
+            resources_dict[res_name] = res_info
+        resources_data = resources_dict
+
+    for res_name, res_info in resources_data.items():
         # Skip attribution resources labeling the deployment
         if res_name == "attribution" and re.match(r"^pid-", res_info.get("name", "")):
             print(
@@ -344,10 +356,22 @@ def extract_modules(json_data: Dict[str, Any], max_nested_level: int = 1, curren
     if "resources" not in json_data or current_level > max_nested_level:
         return modules
 
-    for module_name, module_info in json_data["resources"].items():
-         # Skip attribution modules labeling the deployment
+    # Handle both dictionary (main templates) and list (modules) formats
+    resources_data = json_data["resources"]
+    if isinstance(resources_data, list):
+        # For modules, resources is a list - convert to dictionary using symbolic names
+        resources_dict = {}
+        for idx, res_info in enumerate(resources_data):
+            # Use the symbolic name if available, otherwise use index
+            res_name = res_info.get("name", f"resource_{idx}")
+            resources_dict[res_name] = res_info
+        resources_data = resources_dict
+
+    for module_name, module_info in resources_data.items():
+        # Skip attribution modules labeling the deployment
         if module_name == "attribution" and re.match(r"^pid-", module_info.get("name", "")):
-            print(f"Skipping module '{module_name}' with name 'pid' as it is an attribution.")
+            print(
+                f"Skipping module '{module_name}' with name 'pid' as it is an attribution.")
             continue
 
         # Check if this resource is a deployment (module)
@@ -528,9 +552,11 @@ def extract_modules(json_data: Dict[str, Any], max_nested_level: int = 1, curren
                 for param_name, param_value in module_params.items():
                     # Fix: param_value may be a dict or a direct value
                     if isinstance(param_value, dict) and "value" in param_value:
-                        mod_data["parameter_values"][param_name] = json.dumps(param_value["value"])
+                        mod_data["parameter_values"][param_name] = json.dumps(
+                            param_value["value"])
                     else:
-                        mod_data["parameter_values"][param_name] = json.dumps(param_value)
+                        mod_data["parameter_values"][param_name] = json.dumps(
+                            param_value)
 
             modules.append(mod_data)
 

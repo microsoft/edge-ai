@@ -2,7 +2,6 @@ metadata name = 'Only Edge IoT Ops Blueprint'
 metadata description = 'Deploys Azure IoT Operations on an existing Arc-enabled Kubernetes cluster without setting up cloud resources.'
 
 import * as core from './types.core.bicep'
-import * as types from '../../../src/100-edge/110-iot-ops/bicep/types.bicep'
 import * as assetTypes from '../../../src/100-edge/111-assets/bicep/types.bicep'
 /*
   Common Parameters
