@@ -18,6 +18,7 @@
   - [Azure Local Host](/src/000-cloud/072-azure-local-host/README)
   - [Vm Host](/src/000-cloud/073-vm-host/README)
   - [Azureml](/src/000-cloud/080-azureml/README)
+  - [Ai Foundry](/src/000-cloud/085-ai-foundry/README)
 
 - [Edge](/src/100-edge/README)
   - [Cncf Cluster](/src/100-edge/100-cncf-cluster/README)
@@ -39,6 +40,10 @@
   - [Onvif Connector](/src/500-application/510-onvif-connector/README)
 
 - [Ci Cd](/src/501-ci-cd/README)
+
+- [Workload Orchestration](/src/600-workload-orchestration/README)
+  - [Kalypso](/src/600-workload-orchestration/600-kalypso/README)
+  - [Workload Orchestration Azure Arc](/src/600-workload-orchestration/601-workload-orchestration-azure-arc/README)
 
 - [Tools Utilities](/src/900-tools-utilities/README)
   - [Mqtt Tools](/src/900-tools-utilities/900-mqtt-tools/README)

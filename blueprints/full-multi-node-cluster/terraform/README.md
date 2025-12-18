@@ -34,6 +34,7 @@ with the single-node blueprint while preserving multi-node specific capabilities
 | Name | Source | Version |
 |------|--------|---------|
 | cloud\_acr | ../../../src/000-cloud/060-acr/terraform | n/a |
+| cloud\_ai\_foundry | ../../../src/000-cloud/085-ai-foundry/terraform | n/a |
 | cloud\_azureml | ../../../src/000-cloud/080-azureml/terraform | n/a |
 | cloud\_data | ../../../src/000-cloud/030-data/terraform | n/a |
 | cloud\_kubernetes | ../../../src/000-cloud/070-kubernetes/terraform | n/a |
@@ -65,6 +66,14 @@ with the single-node blueprint while preserving multi-node specific capabilities
 | acr\_data\_endpoint\_enabled | Whether to enable the dedicated ACR data endpoint | `bool` | `true` | no |
 | acr\_public\_network\_access\_enabled | Whether to enable the ACR public endpoint alongside private connectivity | `bool` | `false` | no |
 | acr\_sku | SKU name for the Azure Container Registry | `string` | `"Premium"` | no |
+| ai\_foundry\_model\_deployments | Map of model deployments for AI Foundry | ```map(object({ name = string model = object({ format = string name = string version = string }) scale = object({ type = string capacity = number }) rai_policy_name = optional(string) version_upgrade_option = optional(string, "OnceNewDefaultVersionAvailable") }))``` | `{}` | no |
+| ai\_foundry\_private\_dns\_zone\_ids | List of private DNS zone IDs for the AI Foundry private endpoint | `list(string)` | `[]` | no |
+| ai\_foundry\_projects | Map of AI Foundry projects to create. SKU defaults to 'S0' (currently the only supported value) | ```map(object({ name = string display_name = string description = string sku = optional(string, "S0") }))``` | `{}` | no |
+| ai\_foundry\_rai\_policies | Map of Responsible AI (RAI) content filtering policies. Must be created before referenced in model deployments. | ```map(object({ name = string base_policy_name = optional(string, "Microsoft.Default") mode = optional(string, "Blocking") content_filters = optional(list(object({ name = string enabled = optional(bool, true) blocking = optional(bool, true) severity_threshold = optional(string, "Medium") source = string })), []) }))``` | `{}` | no |
+| ai\_foundry\_should\_enable\_local\_auth | Whether to enable local (API key) authentication for AI Foundry | `bool` | `true` | no |
+| ai\_foundry\_should\_enable\_private\_endpoint | Whether to enable private endpoint for AI Foundry | `bool` | `false` | no |
+| ai\_foundry\_should\_enable\_public\_network\_access | Whether to enable public network access to AI Foundry | `bool` | `true` | no |
+| ai\_foundry\_sku | SKU name for the AI Foundry account | `string` | `"S0"` | no |
 | aio\_features | AIO instance features with mode ('Stable', 'Preview', 'Disabled') and settings ('Enabled', 'Disabled') | ```map(object({ mode = optional(string) settings = optional(map(string)) }))``` | `null` | no |
 | aks\_private\_dns\_zone\_id | ID of the private DNS zone to use for AKS private cluster. Use 'system', 'none', or a resource ID | `string` | `null` | no |
 | aks\_should\_enable\_private\_cluster | Whether to enable private cluster mode for AKS | `bool` | `false` | no |
@@ -122,6 +131,7 @@ with the single-node blueprint while preserving multi-node specific capabilities
 | should\_create\_aks\_identity | Whether to create a user-assigned identity for the AKS cluster when using custom private DNS zones | `bool` | `false` | no |
 | should\_create\_anonymous\_broker\_listener | Whether to enable an insecure anonymous AIO MQ broker listener; use only for dev or test environments | `bool` | `false` | no |
 | should\_create\_azure\_functions | Whether to create the Azure Functions resources including the App Service plan | `bool` | `false` | no |
+| should\_deploy\_ai\_foundry | Whether to deploy Azure AI Foundry resources | `bool` | `false` | no |
 | should\_deploy\_azureml | Whether to deploy the Azure Machine Learning workspace and optional compute cluster | `bool` | `false` | no |
 | should\_deploy\_edge\_azureml | Whether to deploy the Azure Machine Learning edge extension when Azure ML is enabled | `bool` | `false` | no |
 | should\_deploy\_postgresql | Whether to deploy PostgreSQL Flexible Server component | `bool` | `false` | no |
@@ -160,6 +170,9 @@ with the single-node blueprint while preserving multi-node specific capabilities
 | Name | Description |
 |------|-------------|
 | acr\_network\_posture | Azure Container Registry network posture metadata. |
+| ai\_foundry | Azure AI Foundry account resources. |
+| ai\_foundry\_deployments | Azure AI Foundry model deployments. |
+| ai\_foundry\_projects | Azure AI Foundry project resources. |
 | container\_registry | Azure Container Registry resources. |
 | managed\_redis | Azure Managed Redis cache object. |
 | managed\_redis\_connection\_info | Azure Managed Redis connection information. |

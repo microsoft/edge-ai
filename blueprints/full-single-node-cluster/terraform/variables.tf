@@ -43,6 +43,12 @@ variable "use_existing_resource_group" {
   default     = false
 }
 
+variable "tags" {
+  type        = map(string)
+  default     = {}
+  description = "Tags to apply to all resources in this blueprint"
+}
+
 /*
  * Azure Arc Parameters
  */
@@ -336,6 +342,93 @@ variable "should_deploy_edge_azureml" {
   type        = bool
   description = "Whether to deploy the Azure Machine Learning edge extension when Azure ML is enabled"
   default     = false
+}
+
+/*
+ * Azure AI Foundry Parameters
+ */
+
+variable "should_deploy_ai_foundry" {
+  type        = bool
+  default     = false
+  description = "Whether to deploy Azure AI Foundry resources"
+}
+
+variable "ai_foundry_sku" {
+  type        = string
+  default     = "S0"
+  description = "SKU name for the AI Foundry account"
+}
+
+variable "ai_foundry_should_enable_public_network_access" {
+  type        = bool
+  default     = true
+  description = "Whether to enable public network access to AI Foundry"
+}
+
+variable "ai_foundry_should_enable_local_auth" {
+  type        = bool
+  default     = true
+  description = "Whether to enable local (API key) authentication for AI Foundry"
+}
+
+variable "ai_foundry_should_enable_private_endpoint" {
+  type        = bool
+  default     = false
+  description = "Whether to enable private endpoint for AI Foundry"
+}
+
+variable "ai_foundry_private_dns_zone_ids" {
+  type        = list(string)
+  default     = []
+  description = "List of private DNS zone IDs for the AI Foundry private endpoint"
+}
+
+variable "ai_foundry_projects" {
+  type = map(object({
+    name         = string
+    display_name = string
+    description  = string
+    sku          = optional(string, "S0")
+  }))
+  default     = {}
+  description = "Map of AI Foundry projects to create. SKU defaults to 'S0' (currently the only supported value)"
+}
+
+variable "ai_foundry_model_deployments" {
+  type = map(object({
+    name = string
+    model = object({
+      format  = string
+      name    = string
+      version = string
+    })
+    scale = object({
+      type     = string
+      capacity = number
+    })
+    rai_policy_name        = optional(string)
+    version_upgrade_option = optional(string, "OnceNewDefaultVersionAvailable")
+  }))
+  default     = {}
+  description = "Map of model deployments for AI Foundry"
+}
+
+variable "ai_foundry_rai_policies" {
+  type = map(object({
+    name             = string
+    base_policy_name = optional(string, "Microsoft.Default")
+    mode             = optional(string, "Blocking")
+    content_filters = optional(list(object({
+      name               = string
+      enabled            = optional(bool, true)
+      blocking           = optional(bool, true)
+      severity_threshold = optional(string, "Medium")
+      source             = string
+    })), [])
+  }))
+  default     = {}
+  description = "Map of Responsible AI (RAI) content filtering policies. Must be created before referenced in model deployments."
 }
 
 /*

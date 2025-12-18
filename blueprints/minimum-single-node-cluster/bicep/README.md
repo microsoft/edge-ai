@@ -89,6 +89,10 @@ Provisions cloud resources required for Azure IoT Operations including Schema Re
 |keyVaultResourceGroupName|The name for the Resource Group for the Key Vault.|`string`|[resourceGroup().name]|no|
 |shouldAssignAdminUserRole|Whether or not to create a role assignment for an admin user.|`bool`|`true`|no|
 |adminUserObjectId|The Object ID for an admin user that will be granted the "Key Vault Secrets Officer" role.|`string`|[deployer().objectId]|no|
+|shouldCreateKeyVaultPrivateEndpoint|Whether to create a private endpoint for the Key Vault.|`bool`|`false`|no|
+|keyVaultPrivateEndpointSubnetId|Subnet resource ID for the Key Vault private endpoint.|`string`|n/a|no|
+|keyVaultVirtualNetworkId|Virtual network resource ID for the Key Vault private DNS link.|`string`|n/a|no|
+|shouldEnableKeyVaultPublicNetworkAccess|Whether to enable public network access on the Key Vault.|`bool`|`true`|no|
 |telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|`false`|no|
 
 #### Resources for cloudSecurityIdentity
@@ -104,6 +108,11 @@ Provisions cloud resources required for Azure IoT Operations including Schema Re
 | :--- | :--- | :--- |
 |keyVaultName|`string`|The name of the Secret Store Extension Key Vault.|
 |keyVaultId|`string`|The resource ID of the Secret Store Extension Key Vault.|
+|keyVaultPrivateEndpointId|`string`|The Key Vault private endpoint ID when created.|
+|keyVaultPrivateEndpointName|`string`|The Key Vault private endpoint name when created.|
+|keyVaultPrivateEndpointIp|`string`|The Key Vault private endpoint IP address when created.|
+|keyVaultPrivateDnsZoneId|`string`|The Key Vault private DNS zone ID when created.|
+|keyVaultPrivateDnsZoneName|`string`|The Key Vault private DNS zone name when created.|
 |sseIdentityName|`string`|The Secret Store Extension User Assigned Managed Identity name.|
 |sseIdentityId|`string`|The Secret Store Extension User Assigned Managed Identity ID.|
 |sseIdentityPrincipalId|`string`|The Secret Store Extension User Assigned Managed Identity Principal ID.|
@@ -129,6 +138,12 @@ Creates storage resources including Azure Storage Account and Schema Registry fo
 |storageAccountResourceGroupName|The name for the Resource Group for the Storage Account.|`string`|[if(parameters('shouldCreateStorageAccount'), resourceGroup().name, fail('storageAccountResourceGroupName required when shouldCreateStorageAccount is false'))]|no|
 |storageAccountName|The name for the Storage Account used by the Schema Registry.|`string`|[if(parameters('shouldCreateStorageAccount'), format('st{0}', uniqueString(resourceGroup().id)), fail('storageAccountName required when shouldCreateStorageAccount is false'))]|no|
 |storageAccountSettings|The settings for the new Storage Account.|`[_1.StorageAccountSettings](#user-defined-types)`|[variables('_1.storageAccountSettingsDefaults')]|no|
+|shouldEnableStoragePrivateEndpoint|Whether to enable a private endpoint for the Storage Account.|`bool`|`false`|no|
+|storagePrivateEndpointSubnetId|Subnet resource ID used when deploying the Storage Account private endpoint.|`string`|n/a|no|
+|storageVirtualNetworkId|Virtual network resource ID for Storage Account private DNS links.|`string`|n/a|no|
+|shouldEnableStoragePublicNetworkAccess|Whether to enable public network access for the Storage Account.|`bool`|`true`|no|
+|shouldCreateBlobPrivateDnsZone|Whether to create the blob private DNS zone. Set to false if using a shared DNS zone from observability component.|`bool`|`true`|no|
+|blobPrivateDnsZoneId|Existing blob Private DNS zone ID to reuse when private endpoints are enabled.|`string`|n/a|no|
 |shouldCreateSchemaRegistry|Whether to create the ADR Schema Registry.|`bool`|`true`|no|
 |shouldCreateSchemaContainer|Whether to create the Blob Container for schemas.|`bool`|`true`|no|
 |schemaContainerName|The name for the Blob Container for schemas.|`string`|schemas|no|
@@ -158,6 +173,10 @@ Creates storage resources including Azure Storage Account and Schema Registry fo
 |storageAccountName|`string`|The Storage Account Name.|
 |storageAccountId|`string`|The Storage Account ID.|
 |schemaContainerName|`string`|The Schema Container Name.|
+|storageBlobPrivateEndpointId|`string`|The blob private endpoint ID for the Storage Account when created.|
+|storageBlobPrivateEndpointIp|`string`|The blob private endpoint IP address for the Storage Account when created.|
+|blobPrivateDnsZoneId|`string`|The blob private DNS zone ID when managed by this component.|
+|blobPrivateDnsZoneName|`string`|The blob private DNS zone name when managed by this component.|
 |adrNamespaceName|`string`|The ADR Namespace Name.|
 |adrNamespaceId|`string`|The ADR Namespace ID.|
 |adrNamespace|`object`|The complete ADR namespace resource information.|
@@ -172,13 +191,19 @@ Creates virtual network, subnet, and network security group resources for Azure 
 | :--- | :--- | :--- | :--- | :--- |
 |common|The common component configuration.|`[_2.Common](#user-defined-types)`|n/a|yes|
 |networkingConfig|Networking configuration settings.|`[_1.NetworkingConfig](#user-defined-types)`|[variables('_1.networkingConfigDefaults')]|no|
+|natGatewayConfig|NAT Gateway configuration settings.|`[_1.NatGatewayConfig](#user-defined-types)`|[variables('_1.natGatewayConfigDefaults')]|no|
+|privateResolverConfig|Private DNS Resolver configuration settings.|`[_1.PrivateResolverConfig](#user-defined-types)`|[variables('_1.privateResolverConfigDefaults')]|no|
+|defaultOutboundAccessEnabled|Whether default outbound access is enabled for subnets.|`bool`|`false`|no|
 |telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|`false`|no|
 
 #### Resources for cloudNetworking
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
-|virtualNetwork|`Microsoft.Network/virtualNetworks`|2024-05-01|
+|virtualNetwork|`Microsoft.Network/virtualNetworks`|2025-01-01|
+|defaultSubnet|`Microsoft.Network/virtualNetworks/subnets`|2025-01-01|
+|natGateway|`Microsoft.Resources/deployments`|2025-04-01|
+|privateResolver|`Microsoft.Resources/deployments`|2025-04-01|
 
 #### Outputs for cloudNetworking
 
@@ -187,8 +212,18 @@ Creates virtual network, subnet, and network security group resources for Azure 
 |networkSecurityGroupId|`string`|The ID of the created network security group.|
 |networkSecurityGroupName|`string`|The name of the created network security group.|
 |subnetId|`string`|The ID of the created subnet.|
+|subnetName|`string`|The name of the created subnet.|
 |virtualNetworkId|`string`|The ID of the created virtual network.|
 |virtualNetworkName|`string`|The name of the created virtual network.|
+|natGatewayId|`string`|The ID of the NAT Gateway (if enabled).|
+|natGatewayName|`string`|The name of the NAT Gateway (if enabled).|
+|natGatewayPublicIps|`array`|The public IP addresses associated with NAT Gateway (if enabled).|
+|privateResolverId|`string`|The Private DNS Resolver ID (if enabled).|
+|privateResolverName|`string`|The Private DNS Resolver name (if enabled).|
+|dnsServerIp|`string`|The DNS server IP address from Private Resolver (if enabled).|
+|defaultOutboundAccessEnabled|`bool`|Whether default outbound access remains enabled for the shared subnet(s).|
+|subnetAddressPrefix|`string`|The address prefix allocated to the default subnet.|
+|virtualNetworkAddressPrefix|`string`|The address prefix allocated to the virtual network.|
 
 ### cloudVmHost
 

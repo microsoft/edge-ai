@@ -21,6 +21,9 @@ param virtualNetworkName string
 @description('Network security group name to apply to the subnets.')
 param networkSecurityGroupName string
 
+@description('NAT Gateway ID to associate with the ACR subnet for managed outbound egress.')
+param natGatewayId string?
+
 /*
   Container Registry Parameters
 */
@@ -31,8 +34,14 @@ param shouldCreateAcrPrivateEndpoint bool = false
 @description('The settings for the Azure Container Registry.')
 param containerRegistryConfig types.ContainerRegistry = types.containerRegistryDefaults
 
+@description('Networking configuration for the ACR subnet.')
+param acrNetworkConfig types.AcrNetworkConfig = types.acrNetworkConfigDefaults
+
+@description('Firewall and public access configuration for the ACR.')
+param acrFirewallConfig types.AcrFirewallConfig = types.acrFirewallConfigDefaults
+
 /*
-  Kubernetes Cluster Parameters
+  Telemetry Parameter
 */
 
 @description('Whether to opt out of telemetry data collection.')
@@ -65,6 +74,10 @@ module network './modules/network.bicep' = {
     virtualNetworkName: virtualNetworkName
     networkSecurityGroupName: networkSecurityGroupName
     shouldCreateAcrPrivateEndpoint: shouldCreateAcrPrivateEndpoint
+    subnetAddressPrefix: acrNetworkConfig.subnetAddressPrefix
+    defaultOutboundAccessEnabled: acrNetworkConfig.defaultOutboundAccessEnabled
+    shouldEnableNatGateway: acrNetworkConfig.shouldEnableNatGateway
+    natGatewayId: natGatewayId
   }
 }
 
@@ -76,6 +89,10 @@ module containerRegistry './modules/container-registry.bicep' = {
     shouldCreateAcrPrivateEndpoint: shouldCreateAcrPrivateEndpoint
     snetAcrId: shouldCreateAcrPrivateEndpoint ? network.outputs.snetAcrId : ''
     virtualNetworkName: virtualNetworkName
+    publicNetworkAccessEnabled: acrFirewallConfig.publicNetworkAccessEnabled
+    allowTrustedServices: acrFirewallConfig.allowTrustedServices
+    allowedPublicIpRanges: acrFirewallConfig.allowedPublicIpRanges
+    shouldEnableDataEndpoints: acrFirewallConfig.shouldEnableDataEndpoints
   }
 }
 
@@ -83,5 +100,24 @@ module containerRegistry './modules/container-registry.bicep' = {
   Outputs
 */
 
+@description('The Azure Container Registry ID.')
+output acrId string = containerRegistry.outputs.acrId
+
 @description('The Azure Container Registry name.')
 output acrName string = containerRegistry.outputs.acrName
+
+@description('The ACR subnet ID (if private endpoint is enabled).')
+output acrSubnetId string? = shouldCreateAcrPrivateEndpoint ? network.outputs.snetAcrId : null
+
+@description('The ACR private endpoint ID (if enabled).')
+output acrPrivateEndpointId string? = shouldCreateAcrPrivateEndpoint
+  ? containerRegistry.outputs.?privateEndpointId
+  : null
+
+@description('The ACR private DNS zone name (if enabled).')
+output acrPrivateDnsZoneName string? = shouldCreateAcrPrivateEndpoint
+  ? containerRegistry.outputs.?privateDnsZoneName
+  : null
+
+@description('Whether NAT Gateway is associated with the ACR subnet.')
+output isNatGatewayEnabled bool = acrNetworkConfig.shouldEnableNatGateway && !empty(natGatewayId)
