@@ -113,8 +113,7 @@ The workflow executes two jobs for optimal output handling:
 
 1. **Detection Job**:
    - Checks out the repository with full history
-   - Installs PowerShell Core for cross-platform execution
-   - Runs the PowerShell detection script with appropriate parameters
+   - Runs the PowerShell detection script with appropriate parameters (PowerShell 7 is pre-installed on GitHub-hosted runners)
    - Parses the JSON output for change detection
    - Sets raw output values from the detection script
 
