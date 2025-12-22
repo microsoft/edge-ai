@@ -142,19 +142,9 @@ jobs:
       changedApplicationFolders: ${{ steps.detect.outputs.changedApplicationFolders }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # 4.3.1
         with:
           fetch-depth: 0  # Needed to get all history for comparing changes
-
-      - name: Install PowerShell
-        shell: bash
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y wget apt-transport-https software-properties-common
-          wget -q "https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb"
-          sudo dpkg -i packages-microsoft-prod.deb
-          sudo apt-get update
-          sudo apt-get install -y powershell
 
       - name: ${{ inputs.displayName }}
         id: detect
