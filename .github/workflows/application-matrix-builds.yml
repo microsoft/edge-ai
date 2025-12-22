@@ -571,7 +571,7 @@ jobs:
           if-no-files-found: ignore
 
       - name: Upload SARIF security results
-        uses: github/codeql-action/upload-sarif@fe4161a26a8629af62121b670040955b330f9af2
+        uses: github/codeql-action/upload-sarif@5d4e8d1aca955e8d8589aabd499c5cae939e33c7
         if: always() && needs.parse-configuration.outputs.enableSecurityScan == 'true'
         with:
           sarif_file: ${{ github.workspace }}/security-reports
