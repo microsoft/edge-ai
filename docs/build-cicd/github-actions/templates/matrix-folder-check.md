@@ -43,7 +43,7 @@ The workflow has been consolidated into a single, comprehensive solution that co
 ## Parameters
 
 | Parameter             | Type    | Required | Default                              | Description                                                                               |
-|-----------------------|---------|----------|--------------------------------------|-------------------------------------------------------------------------------------------|
+| --------------------- | ------- | -------- | ------------------------------------ | ----------------------------------------------------------------------------------------- |
 | `displayName`         | string  | No       | 'Check for changes in src directory' | Custom display name for the job                                                           |
 | `includeIaCFolders`   | boolean | No       | `false`                              | When true, returns all Infrastructure as Code folders regardless of changes               |
 | `includeApplications` | boolean | No       | `false`                              | When true, returns all application folders from src/500-application regardless of changes |
@@ -51,7 +51,7 @@ The workflow has been consolidated into a single, comprehensive solution that co
 ## Outputs
 
 | Output Variable              | Description                                                                      | Example                                                           |
-|------------------------------|----------------------------------------------------------------------------------|-------------------------------------------------------------------|
+| ---------------------------- | -------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
 | `changesInRpEnablementShell` | Boolean flag indicating if shell scripts in subscription setup have changed      | `needs.check-changes.outputs.changesInRpEnablementShell`          |
 | `changesInRpEnablementPwsh`  | Boolean flag indicating if PowerShell scripts in subscription setup have changed | `needs.check-changes.outputs.changesInRpEnablementPwsh`           |
 | `changesInTfInstall`         | Boolean flag indicating if any Terraform files have changed                      | `needs.check-changes.outputs.changesInTfInstall`                  |
@@ -91,14 +91,14 @@ jobs:
       includeIaCFolders: true
       displayName: "Check all IaC folders"
 
-# Include all application folders
+  # Include all application folders
   check-all-applications:
     uses: ./.github/workflows/matrix-folder-check.yml
     with:
       includeApplications: true
       displayName: "Check all applications"
 
-# Include both IaC and applications
+  # Include both IaC and applications
   check-all-components:
     uses: ./.github/workflows/matrix-folder-check.yml
     with:
@@ -112,9 +112,9 @@ jobs:
 The workflow executes two jobs for optimal output handling:
 
 1. **Detection Job**:
+
    - Checks out the repository with full history
-   - Installs PowerShell Core for cross-platform execution
-   - Runs the PowerShell detection script with appropriate parameters
+   - Runs the PowerShell detection script with appropriate parameters (PowerShell 7 is pre-installed on GitHub-hosted runners)
    - Parses the JSON output for change detection
    - Sets raw output values from the detection script
 
@@ -196,7 +196,7 @@ name: Weekly Full Test Run
 
 on:
   schedule:
-    - cron: '0 0 * * 0'
+    - cron: "0 0 * * 0"
 
 jobs:
   check-all-folders:
@@ -217,9 +217,11 @@ jobs:
 ## Troubleshooting
 
 1. **No Changes Detected**: Workflow reports no changes when there should be
+
    - **Solution**: Ensure fetch-depth is set to 0 to get full history
 
 2. **Matrix Generation Failures**: Invalid JSON for matrix strategy
+
    - **Solution**: Check that the detection script is functioning correctly and returning valid JSON
 
 3. **Missing Bicep Changes**: Bicep changes not detected properly
@@ -240,6 +242,8 @@ jobs:
 ---
 
 <!-- markdownlint-disable MD036 -->
-*🤖 Crafted with precision by ✨Copilot following brilliant human instruction,
-then carefully refined by our team of discerning human reviewers.*
+
+_🤖 Crafted with precision by ✨Copilot following brilliant human instruction,
+then carefully refined by our team of discerning human reviewers._
+
 <!-- markdownlint-enable MD036 -->
