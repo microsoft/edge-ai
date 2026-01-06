@@ -18,7 +18,7 @@ variable "operations_config" {
   default = {
     namespace                      = "azure-iot-operations"
     kubernetesDistro               = "K3s"
-    version                        = "1.2.112"
+    version                        = "1.2.154"
     train                          = "stable"
     agentOperationTimeoutInMinutes = 120
   }
@@ -269,4 +269,16 @@ variable "mqtt_broker_persistence_config" {
     )
     error_message = "persistent_volume_claim_spec.selector.match_expressions[].operator must be one of: 'In', 'NotIn', 'Exists', or 'DoesNotExist'."
   }
+}
+
+variable "configuration_settings_override" {
+  type        = map(string)
+  description = "Optional configuration settings to override default IoT Operations extension configuration. Use the same key names as the az iot ops --ops-config parameter."
+  default     = {}
+}
+
+variable "additional_cluster_extension_ids" {
+  type        = list(string)
+  description = "Additional cluster extension IDs to include in the custom location. Appended to the default Secret Store and IoT Operations extension IDs"
+  default     = []
 }

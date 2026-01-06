@@ -13,7 +13,7 @@ variable "cert_manager" {
     train   = string
   })
   default = {
-    version = "0.6.2"
+    version = "0.7.0"
     train   = "stable"
   }
 }
@@ -41,7 +41,7 @@ variable "secret_sync_controller" {
     train   = string
   })
   default = {
-    version = "1.0.2"
+    version = "1.1.5"
     train   = "stable"
   }
 }

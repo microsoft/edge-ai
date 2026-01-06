@@ -689,3 +689,67 @@ run "validate_multiple_connectors_deployment" {
     error_message = "Should have one custom connector in addition to built-in connectors"
   }
 }
+
+# Test configuration settings override for IoT Operations extension
+run "create_with_configuration_settings_override" {
+  command = plan
+  variables {
+    resource_group        = run.setup_tests.aio_resource_group
+    secret_sync_key_vault = run.setup_tests.sse_key_vault
+    secret_sync_identity  = run.setup_tests.sse_user_assigned_identity
+    aio_identity          = run.setup_tests.aio_user_assigned_identity
+    adr_schema_registry   = run.setup_tests.adr_schema_registry
+    adr_namespace         = run.setup_tests.adr_namespace
+    arc_connected_cluster = run.setup_tests.arc_connected_cluster
+    configuration_settings_override = {
+      "observability.metrics.enabled"                 = "false"
+      "connectors.values.mqttBroker.address"          = "mqtts://custom-broker:8883"
+      "dataFlows.values.tinyKube.mqttBroker.hostName" = "custom-broker"
+    }
+  }
+
+  # Verify configuration override is properly set
+  assert {
+    condition     = var.configuration_settings_override["observability.metrics.enabled"] == "false"
+    error_message = "Configuration override should contain observability.metrics.enabled set to false"
+  }
+
+  assert {
+    condition     = var.configuration_settings_override["connectors.values.mqttBroker.address"] == "mqtts://custom-broker:8883"
+    error_message = "Configuration override should contain custom MQTT broker address"
+  }
+
+  assert {
+    condition     = length(var.configuration_settings_override) == 3
+    error_message = "Configuration override should have exactly 3 custom settings"
+  }
+}
+
+# Test additional cluster extension IDs for custom location
+run "create_with_additional_cluster_extension_ids" {
+  command = plan
+  variables {
+    resource_group        = run.setup_tests.aio_resource_group
+    secret_sync_key_vault = run.setup_tests.sse_key_vault
+    secret_sync_identity  = run.setup_tests.sse_user_assigned_identity
+    aio_identity          = run.setup_tests.aio_user_assigned_identity
+    adr_schema_registry   = run.setup_tests.adr_schema_registry
+    adr_namespace         = run.setup_tests.adr_namespace
+    arc_connected_cluster = run.setup_tests.arc_connected_cluster
+    additional_cluster_extension_ids = [
+      "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-test/providers/Microsoft.KubernetesConfiguration/extensions/container-storage-ext",
+      "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-test/providers/Microsoft.KubernetesConfiguration/extensions/custom-ext"
+    ]
+  }
+
+  # Verify additional extension IDs are provided
+  assert {
+    condition     = length(var.additional_cluster_extension_ids) == 2
+    error_message = "Should have exactly 2 additional cluster extension IDs"
+  }
+
+  assert {
+    condition     = contains(var.additional_cluster_extension_ids, "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-test/providers/Microsoft.KubernetesConfiguration/extensions/container-storage-ext")
+    error_message = "Should contain container storage extension ID"
+  }
+}

@@ -31,13 +31,30 @@ locals {
   }
 
   metrics = {
-    enabled               = var.should_enable_otel_collector
-    otelCollectorAddress  = var.should_enable_otel_collector ? "aio-otel-collector.${var.operations_config.namespace}.svc.cluster.local:4317" : ""
-    exportIntervalSeconds = 60
+    enabled              = var.should_enable_otel_collector
+    otelCollectorAddress = var.should_enable_otel_collector ? "aio-otel-collector.${var.operations_config.namespace}.svc.cluster.local:4317" : ""
   }
 
   spc_name_hash_input = "${var.connected_cluster_name}-${var.resource_group.name}-${local.aio_instance_name}"
   spc_name            = "spc-ops-${substr(sha256(local.spc_name_hash_input), 0, 7)}"
+
+  default_configuration_settings = {
+    "AgentOperationTimeoutInMinutes"                                                  = tostring(var.operations_config.agentOperationTimeoutInMinutes)
+    "connectors.values.mqttBroker.address"                                            = local.mqtt_broker_address
+    "connectors.values.mqttBroker.serviceAccountTokenAudience"                        = var.mqtt_broker_config.serviceAccountAudience
+    "dataFlows.values.tinyKube.mqttBroker.hostName"                                   = local.mqtt_broker_hostname
+    "dataFlows.values.tinyKube.mqttBroker.port"                                       = tostring(var.mqtt_broker_config.brokerListenerPort)
+    "dataFlows.values.tinyKube.mqttBroker.authentication.serviceAccountTokenAudience" = var.mqtt_broker_config.serviceAccountAudience
+    "observability.metrics.enabled"                                                   = local.metrics.enabled ? "true" : "false"
+    "observability.metrics.openTelemetryCollectorAddress"                             = local.metrics.otelCollectorAddress
+    "trustSource"                                                                     = var.trust_source
+    "trustBundleSettings.issuer.name"                                                 = local.trust.issuer_name
+    "trustBundleSettings.issuer.kind"                                                 = local.trust.issuer_kind
+    "trustBundleSettings.configMap.name"                                              = local.trust.configmap_name
+    "trustBundleSettings.configMap.key"                                               = local.trust.configmap_key
+    "schemaRegistry.values.mqttBroker.host"                                           = local.mqtt_broker_address
+    "schemaRegistry.values.mqttBroker.serviceAccountTokenAudience"                    = var.mqtt_broker_config.serviceAccountAudience
+  }
 }
 
 
@@ -51,38 +68,10 @@ resource "azurerm_arc_kubernetes_cluster_extension" "iot_operations" {
   identity {
     type = "SystemAssigned"
   }
-  version           = var.operations_config.version
-  release_train     = var.operations_config.train
-  release_namespace = var.operations_config.namespace
-  # Current default config
-  configuration_settings = {
-    "AgentOperationTimeoutInMinutes"                                       = tostring(var.operations_config.agentOperationTimeoutInMinutes)
-    "connectors.values.mqttBroker.address"                                 = local.mqtt_broker_address
-    "connectors.values.mqttBroker.serviceAccountTokenAudience"             = var.mqtt_broker_config.serviceAccountAudience
-    "connectors.values.opcPlcSimulation.deploy"                            = "false"
-    "connectors.values.opcPlcSimulation.autoAcceptUntrustedCertificates"   = "false"
-    "adr.values.Microsoft.CustomLocation.ServiceAccount"                   = "default"
-    "akri.values.webhookConfiguration.enabled"                             = "false"
-    "akri.values.certManagerWebhookCertificate.enabled"                    = "false"
-    "akri.values.agent.extensionService.mqttBroker.hostName"               = "${var.mqtt_broker_config.brokerListenerServiceName}.${var.operations_config.namespace}"
-    "akri.values.agent.extensionService.mqttBroker.port"                   = tostring(var.mqtt_broker_config.brokerListenerPort)
-    "akri.values.agent.extensionService.mqttBroker.serviceAccountAudience" = var.mqtt_broker_config.serviceAccountAudience
-    "akri.values.agent.host.containerRuntimeSocket"                        = ""
-    "akri.values.kubernetesDistro"                                         = lower(var.operations_config.kubernetesDistro)
-    "mqttBroker.values.global.quickstart"                                  = "false"
-    "mqttBroker.values.operator.firstPartyMetricsOn"                       = "true"
-    "observability.metrics.enabled"                                        = local.metrics.enabled ? "true" : "false"
-    "observability.metrics.openTelemetryCollectorAddress"                  = local.metrics.otelCollectorAddress
-    "observability.metrics.exportIntervalSeconds"                          = tostring(local.metrics.exportIntervalSeconds)
-    "trustSource"                                                          = var.trust_source
-    "trustBundleSettings.issuer.name"                                      = local.trust.issuer_name
-    "trustBundleSettings.issuer.kind"                                      = local.trust.issuer_kind
-    "trustBundleSettings.configMap.name"                                   = local.trust.configmap_name
-    "trustBundleSettings.configMap.key"                                    = local.trust.configmap_key
-    "schemaRegistry.values.mqttBroker.host"                                = local.mqtt_broker_address
-    "schemaRegistry.values.mqttBroker.tlsEnabled"                          = true,
-    "schemaRegistry.values.mqttBroker.serviceAccountTokenAudience"         = var.mqtt_broker_config.serviceAccountAudience
-  }
+  version                = var.operations_config.version
+  release_train          = var.operations_config.train
+  release_namespace      = var.operations_config.namespace
+  configuration_settings = merge(local.default_configuration_settings, var.configuration_settings_override)
 }
 
 resource "azurerm_role_assignment" "schema_registry" {
@@ -104,7 +93,7 @@ resource "azapi_resource" "custom_location" {
       hostResourceId      = var.arc_connected_cluster_id
       namespace           = var.operations_config.namespace
       displayName         = local.custom_location_name
-      clusterExtensionIds = [var.secret_store_cluster_extension_id, azurerm_arc_kubernetes_cluster_extension.iot_operations.id]
+      clusterExtensionIds = concat([var.secret_store_cluster_extension_id, azurerm_arc_kubernetes_cluster_extension.iot_operations.id], var.additional_cluster_extension_ids)
     }
   }
   response_export_values = ["name", "id"]

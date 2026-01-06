@@ -317,3 +317,13 @@ variable "enable_instance_secret_sync" {
   type        = bool
   description = "Whether to enable secret sync on the Azure IoT Operations instance"
 }
+
+variable "configuration_settings_override" {
+  type        = map(string)
+  description = "Optional configuration settings to override default IoT Operations extension configuration. Use the same key names as the az iot ops --ops-config parameter."
+}
+
+variable "additional_cluster_extension_ids" {
+  type        = list(string)
+  description = "Additional cluster extension IDs to include in the custom location. Appended to the default Secret Store and IoT Operations extension IDs"
+}

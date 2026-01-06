@@ -26,7 +26,7 @@ type SecretStoreExtension = {
 @export()
 var secretStoreExtensionDefaults = {
   release: {
-    version: '1.0.2'
+    version: '1.1.5'
     train: 'stable'
   }
 }
@@ -77,7 +77,7 @@ type AioCertManagerExtension = {
 @export()
 var aioCertManagerExtensionDefaults = {
   release: {
-    version: '0.6.2'
+    version: '0.7.0'
     train: 'stable'
   }
   settings: {
@@ -107,7 +107,7 @@ type AioExtension = {
 @export()
 var aioExtensionDefaults = {
   release: {
-    version: '1.2.112'
+    version: '1.2.154'
     train: 'stable'
   }
   settings: {
