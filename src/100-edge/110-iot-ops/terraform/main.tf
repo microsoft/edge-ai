@@ -121,6 +121,7 @@ module "iot_ops_instance" {
   source     = "./modules/iot-ops-instance"
   depends_on = [module.apply_scripts_post_init]
 
+  additional_cluster_extension_ids        = var.additional_cluster_extension_ids
   resource_group                          = var.resource_group
   key_vault                               = var.secret_sync_key_vault
   enable_instance_secret_sync             = var.enable_instance_secret_sync
@@ -143,6 +144,7 @@ module "iot_ops_instance" {
   aio_features                            = var.aio_features
   should_create_anonymous_broker_listener = var.should_create_anonymous_broker_listener
   broker_listener_anonymous_config        = var.broker_listener_anonymous_config
+  configuration_settings_override         = var.configuration_settings_override
 }
 
 /*

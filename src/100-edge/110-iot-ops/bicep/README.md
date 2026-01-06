@@ -23,6 +23,7 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 |aioDataFlowInstanceConfig|The settings for Azure IoT Operations Data Flow Instances.|`[_1.AioDataFlowInstance](#user-defined-types)`|[variables('_1.aioDataFlowInstanceDefaults')]|no|
 |aioMqBrokerConfig|The settings for the Azure IoT Operations MQ Broker.|`[_1.AioMqBroker](#user-defined-types)`|[variables('_1.aioMqBrokerDefaults')]|no|
 |brokerListenerAnonymousConfig|Configuration for the insecure anonymous AIO MQ Broker Listener.|`[_1.AioMqBrokerAnonymous](#user-defined-types)`|[variables('_1.aioMqBrokerAnonymousDefaults')]|no|
+|configurationSettingsOverride|Optional configuration settings to override default IoT Operations extension configuration. Use the same key names as the az iot ops --ops-config parameter.|`object`|{}|no|
 |schemaRegistryName|The resource name for the ADR Schema Registry for Azure IoT Operations.|`string`|n/a|yes|
 |adrNamespaceName|The resource name for the ADR Namespace for Azure IoT Operations.|`string`|n/a|no|
 |shouldDeployAio|Whether to deploy an Azure IoT Operations Instance and all of its required components into the connected cluster.|`bool`|`true`|no|
@@ -37,6 +38,7 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 |customAkriConnectors|List of custom Akri connector templates with user-defined endpoint types and container images.|`array`|[]|no|
 |akriMqttSharedConfig|Shared MQTT connection configuration for all Akri connectors.|`[_1.AkriMqttConfig](#user-defined-types)`|{'host': 'aio-broker:18883', 'audience': 'aio-internal', 'caConfigmap': 'azure-iot-operations-aio-ca-trust-bundle'}|no|
 |customLocationName|The name for the Custom Locations resource.|`string`|[format('{0}-cl', parameters('arcConnectedClusterName'))]|no|
+|additionalClusterExtensionIds|Additional cluster extension IDs to include in the custom location. (Appended to the default Secret Store and IoT Operations extension IDs)|`array`|[]|no|
 |trustIssuerSettings|The trust issuer settings for Customer Managed Azure IoT Operations Settings.|`[_1.TrustIssuerConfig](#user-defined-types)`|{'trustSource': 'SelfSigned'}|no|
 |sseKeyVaultName|The name of the Key Vault for Secret Sync. (Required when providing sseIdentityName)|`string`|n/a|yes|
 |sseIdentityName|The name of the User Assigned Managed Identity for Secret Sync.|`string`|n/a|yes|
@@ -286,8 +288,10 @@ Deploys Azure IoT Operations instance, broker, authentication, listeners, and da
 |aioMqBrokerConfig|The settings for the Azure IoT Operations MQ Broker.|`[_1.AioMqBroker](#user-defined-types)`|n/a|yes|
 |shouldCreateAnonymousBrokerListener|Whether to enable an insecure anonymous AIO MQ Broker Listener. (Should only be used for dev or test environments)|`bool`|`false`|no|
 |aioDataFlowInstanceConfig|The settings for Azure IoT Operations Data Flow Instances.|`[_1.AioDataFlowInstance](#user-defined-types)`|n/a|yes|
+|configurationSettingsOverride|Optional configuration settings to override default IoT Operations extension configuration. Use the same key names as the az iot ops --ops-config parameter.|`object`|n/a|yes|
 |customLocationName|The name for the Custom Locations resource.|`string`|n/a|yes|
 |shouldDeployResourceSyncRules|Whether or not to deploy the Custom Locations Resource Sync Rules for the Azure IoT Operations resources.|`bool`|n/a|yes|
+|additionalClusterExtensionIds|Additional cluster extension IDs to include in the custom location. (Appended to the default Secret Store and IoT Operations extension IDs)|`array`|n/a|yes|
 
 #### Resources for iotOpsInstance
 

@@ -52,7 +52,7 @@ variable "custom_locations_oid" {
   description = <<-EOF
   The object id of the Custom Locations Entra ID application for your tenant.
   If none is provided, the script will attempt to retrieve this requiring 'Application.Read.All' or 'Directory.Read.All' permissions.
-  
+
   ```sh
   az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv
   ```
@@ -143,11 +143,14 @@ variable "namespaced_assets" {
     attributes        = optional(map(string), {})
     datasets = optional(list(object({
       name = string
-      data_points = list(object({
+      data_points = optional(list(object({
         name                     = string
         data_source              = string
         data_point_configuration = optional(string)
-      }))
+      })), [])
+      dataset_configuration = optional(string)
+      data_source           = optional(string)
+      type_ref              = optional(string)
       destinations = optional(list(object({
         target = string
         configuration = object({

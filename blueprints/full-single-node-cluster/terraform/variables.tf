@@ -173,11 +173,11 @@ variable "namespaced_assets" {
     attributes        = optional(map(string), {})
     datasets = optional(list(object({
       name = string
-      data_points = list(object({
+      data_points = optional(list(object({
         name                     = string
         data_source              = string
         data_point_configuration = optional(string)
-      }))
+      })), [])
       dataset_configuration = optional(string)
       data_source           = optional(string)
       type_ref              = optional(string)

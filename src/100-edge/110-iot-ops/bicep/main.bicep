@@ -56,6 +56,9 @@ param aioMqBrokerConfig types.AioMqBroker = types.aioMqBrokerDefaults
 @description('Configuration for the insecure anonymous AIO MQ Broker Listener.')
 param brokerListenerAnonymousConfig types.AioMqBrokerAnonymous = types.aioMqBrokerAnonymousDefaults
 
+@description('Optional configuration settings to override default IoT Operations extension configuration. Use the same key names as the az iot ops --ops-config parameter.')
+param configurationSettingsOverride object = {}
+
 @description('The resource name for the ADR Schema Registry for Azure IoT Operations.')
 param schemaRegistryName string
 
@@ -109,6 +112,9 @@ param akriMqttSharedConfig types.AkriMqttConfig = {
 
 @description('The name for the Custom Locations resource.')
 param customLocationName string = '${arcConnectedClusterName}-cl'
+
+@description('Additional cluster extension IDs to include in the custom location. (Appended to the default Secret Store and IoT Operations extension IDs)')
+param additionalClusterExtensionIds string[] = []
 
 /*
   Trust Configuration Parameters
@@ -343,6 +349,7 @@ module iotOpsInstance 'modules/iot-ops-instance.bicep' = if (shouldDeployAio && 
     postInitScripts
   ]
   params: {
+    additionalClusterExtensionIds: additionalClusterExtensionIds
     aioDataFlowInstanceConfig: aioDataFlowInstanceConfig
     aioExtensionConfig: aioExtensionConfig
     aioIdentityName: aioIdentityName
@@ -354,6 +361,7 @@ module iotOpsInstance 'modules/iot-ops-instance.bicep' = if (shouldDeployAio && 
     arcConnectedClusterName: arcConnectedClusterName
     brokerListenerAnonymousConfig: brokerListenerAnonymousConfig
     common: common
+    configurationSettingsOverride: configurationSettingsOverride
     customLocationName: customLocationName
     schemaRegistryName: schemaRegistryName
     adrNamespaceId: adrNamespace.?id
