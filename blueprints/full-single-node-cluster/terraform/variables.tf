@@ -43,12 +43,6 @@ variable "use_existing_resource_group" {
   default     = false
 }
 
-variable "tags" {
-  type        = map(string)
-  default     = {}
-  description = "Tags to apply to all resources in this blueprint"
-}
-
 /*
  * Azure Arc Parameters
  */
@@ -156,31 +150,53 @@ variable "namespaced_assets" {
   type = list(object({
     name         = string
     display_name = optional(string)
-    device_ref = object({
+    device_ref = optional(object({
       device_name   = string
       endpoint_name = string
-    })
-    description       = optional(string)
-    documentation_uri = optional(string)
-    enabled           = optional(bool, true)
-    hardware_revision = optional(string)
-    manufacturer      = optional(string)
-    manufacturer_uri  = optional(string)
-    model             = optional(string)
-    product_code      = optional(string)
-    serial_number     = optional(string)
-    software_revision = optional(string)
-    attributes        = optional(map(string), {})
+    }))
+    asset_endpoint_profile_ref     = optional(string)
+    default_datasets_configuration = optional(string)
+    default_streams_configuration  = optional(string)
+    default_events_configuration   = optional(string)
+    description                    = optional(string)
+    documentation_uri              = optional(string)
+    enabled                        = optional(bool, true)
+    hardware_revision              = optional(string)
+    manufacturer                   = optional(string)
+    manufacturer_uri               = optional(string)
+    model                          = optional(string)
+    product_code                   = optional(string)
+    serial_number                  = optional(string)
+    software_revision              = optional(string)
+    attributes                     = optional(map(string), {})
     datasets = optional(list(object({
       name = string
-      data_points = optional(list(object({
-        name                     = string
-        data_source              = string
-        data_point_configuration = optional(string)
-      })), [])
+      data_points = list(object({
+        data_point_configuration  = optional(string)
+        data_source               = string
+        name                      = string
+        observability_mode        = optional(string)
+        rest_sampling_interval_ms = optional(number)
+        rest_mqtt_topic           = optional(string)
+        rest_include_state_store  = optional(bool)
+        rest_state_store_key      = optional(string)
+      }))
       dataset_configuration = optional(string)
       data_source           = optional(string)
-      type_ref              = optional(string)
+      destinations = optional(list(object({
+        target = string
+        configuration = object({
+          topic  = optional(string)
+          retain = optional(string)
+          qos    = optional(string)
+        })
+      })), [])
+      type_ref = optional(string)
+    })), [])
+    streams = optional(list(object({
+      name                 = string
+      stream_configuration = optional(string)
+      type_ref             = optional(string)
       destinations = optional(list(object({
         target = string
         configuration = object({
@@ -190,11 +206,65 @@ variable "namespaced_assets" {
         })
       })), [])
     })), [])
-    default_datasets_configuration = optional(string)
-    default_events_configuration   = optional(string)
+    event_groups = optional(list(object({
+      name                      = string
+      data_source               = optional(string)
+      event_group_configuration = optional(string)
+      type_ref                  = optional(string)
+      default_destinations = optional(list(object({
+        target = string
+        configuration = object({
+          topic  = optional(string)
+          retain = optional(string)
+          qos    = optional(string)
+        })
+      })), [])
+      events = list(object({
+        name                = string
+        data_source         = string
+        event_configuration = optional(string)
+        type_ref            = optional(string)
+        destinations = optional(list(object({
+          target = string
+          configuration = object({
+            topic  = optional(string)
+            retain = optional(string)
+            qos    = optional(string)
+          })
+        })), [])
+      }))
+    })), [])
+    management_groups = optional(list(object({
+      name                           = string
+      data_source                    = optional(string)
+      management_group_configuration = optional(string)
+      type_ref                       = optional(string)
+      default_topic                  = optional(string)
+      default_timeout_in_seconds     = optional(number, 100)
+      actions = list(object({
+        name                 = string
+        action_type          = string
+        target_uri           = string
+        topic                = optional(string)
+        timeout_in_seconds   = optional(number)
+        action_configuration = optional(string)
+        type_ref             = optional(string)
+      }))
+    })), [])
   }))
-  description = "List of namespaced assets to create; otherwise, an empty list"
+  description = "List of namespaced assets with enhanced configuration support"
   default     = []
+
+  validation {
+    condition = alltrue([
+      for asset in var.namespaced_assets : alltrue([
+        for group in coalesce(asset.management_groups, []) : alltrue([
+          for action in group.actions : contains(["Call", "Read", "Write"], action.action_type)
+        ])
+      ])
+    ])
+    error_message = "All management action types must be one of: Call, Read, or Write."
+  }
 }
 
 variable "should_create_anonymous_broker_listener" {
@@ -342,93 +412,6 @@ variable "should_deploy_edge_azureml" {
   type        = bool
   description = "Whether to deploy the Azure Machine Learning edge extension when Azure ML is enabled"
   default     = false
-}
-
-/*
- * Azure AI Foundry Parameters
- */
-
-variable "should_deploy_ai_foundry" {
-  type        = bool
-  default     = false
-  description = "Whether to deploy Azure AI Foundry resources"
-}
-
-variable "ai_foundry_sku" {
-  type        = string
-  default     = "S0"
-  description = "SKU name for the AI Foundry account"
-}
-
-variable "ai_foundry_should_enable_public_network_access" {
-  type        = bool
-  default     = true
-  description = "Whether to enable public network access to AI Foundry"
-}
-
-variable "ai_foundry_should_enable_local_auth" {
-  type        = bool
-  default     = true
-  description = "Whether to enable local (API key) authentication for AI Foundry"
-}
-
-variable "ai_foundry_should_enable_private_endpoint" {
-  type        = bool
-  default     = false
-  description = "Whether to enable private endpoint for AI Foundry"
-}
-
-variable "ai_foundry_private_dns_zone_ids" {
-  type        = list(string)
-  default     = []
-  description = "List of private DNS zone IDs for the AI Foundry private endpoint"
-}
-
-variable "ai_foundry_projects" {
-  type = map(object({
-    name         = string
-    display_name = string
-    description  = string
-    sku          = optional(string, "S0")
-  }))
-  default     = {}
-  description = "Map of AI Foundry projects to create. SKU defaults to 'S0' (currently the only supported value)"
-}
-
-variable "ai_foundry_model_deployments" {
-  type = map(object({
-    name = string
-    model = object({
-      format  = string
-      name    = string
-      version = string
-    })
-    scale = object({
-      type     = string
-      capacity = number
-    })
-    rai_policy_name        = optional(string)
-    version_upgrade_option = optional(string, "OnceNewDefaultVersionAvailable")
-  }))
-  default     = {}
-  description = "Map of model deployments for AI Foundry"
-}
-
-variable "ai_foundry_rai_policies" {
-  type = map(object({
-    name             = string
-    base_policy_name = optional(string, "Microsoft.Default")
-    mode             = optional(string, "Blocking")
-    content_filters = optional(list(object({
-      name               = string
-      enabled            = optional(bool, true)
-      blocking           = optional(bool, true)
-      severity_threshold = optional(string, "Medium")
-      source             = string
-    })), [])
-  }))
-  default     = {}
-  description = "Map of Responsible AI (RAI) content filtering policies. Must be created before referenced in model deployments."
 }
 
 /*
@@ -912,4 +895,97 @@ variable "custom_akri_connectors" {
     ])
     error_message = "Connector replicas must be between 1 and 10."
   }
+}
+
+# ------------------------------------------------------------------------------
+# AI Foundry Variables
+# ------------------------------------------------------------------------------
+
+variable "should_deploy_ai_foundry" {
+  type        = bool
+  default     = false
+  description = "Whether to deploy Azure AI Foundry resources"
+}
+
+variable "ai_foundry_sku" {
+  type        = string
+  default     = "S0"
+  description = "SKU name for the AI Foundry account"
+}
+
+variable "ai_foundry_should_enable_public_network_access" {
+  type        = bool
+  default     = true
+  description = "Whether to enable public network access to AI Foundry"
+}
+
+variable "ai_foundry_should_enable_local_auth" {
+  type        = bool
+  default     = true
+  description = "Whether to enable local (API key) authentication for AI Foundry"
+}
+
+variable "ai_foundry_should_enable_private_endpoint" {
+  type        = bool
+  default     = false
+  description = "Whether to enable private endpoint for AI Foundry"
+}
+
+variable "ai_foundry_private_dns_zone_ids" {
+  type        = list(string)
+  default     = []
+  description = "List of private DNS zone IDs for the AI Foundry private endpoint"
+}
+
+variable "ai_foundry_projects" {
+  type = map(object({
+    name         = string
+    display_name = string
+    description  = string
+    sku          = optional(string, "S0")
+  }))
+  default     = {}
+  description = "Map of AI Foundry projects to create. SKU defaults to 'S0' (currently the only supported value)"
+}
+
+variable "ai_foundry_model_deployments" {
+  type = map(object({
+    name = string
+    model = object({
+      format  = string
+      name    = string
+      version = string
+    })
+    scale = object({
+      type     = string
+      capacity = number
+    })
+    rai_policy_name        = optional(string)
+    version_upgrade_option = optional(string, "OnceNewDefaultVersionAvailable")
+  }))
+  default     = {}
+  description = "Map of model deployments for AI Foundry"
+}
+
+variable "ai_foundry_rai_policies" {
+  type = map(object({
+    name             = string
+    base_policy_name = optional(string, "Microsoft.Default")
+    mode             = optional(string, "Blocking")
+    content_filters = optional(list(object({
+      name               = string
+      enabled            = optional(bool, true)
+      blocking           = optional(bool, true)
+      severity_threshold = optional(string, "Medium")
+      source             = string
+    })), [])
+  }))
+  default     = {}
+  description = "Map of Responsible AI (RAI) content filtering policies. Must be created before referenced in model deployments."
+}
+
+variable "tags" {
+  type        = map(string)
+  default     = {}
+  description = "Tags to apply to all resources in this blueprint"
 }

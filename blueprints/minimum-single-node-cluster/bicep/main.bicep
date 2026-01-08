@@ -219,11 +219,11 @@ module edgeAssets '../../../src/100-edge/111-assets/bicep/main.bicep' = {
     common: common
     customLocationId: edgeIotOps.outputs.customLocationId
     adrNamespaceName: cloudData.outputs.adrNamespaceName
-    shouldCreateDefaultNamespacedAsset: shouldCreateDefaultNamespacedAsset
     namespacedDevices: namespacedDevices
+    namespacedAssets: namespacedAssets
     assetEndpointProfiles: assetEndpointProfiles
     legacyAssets: legacyAssets
-    namespacedAssets: namespacedAssets
+    shouldCreateDefaultNamespacedAsset: shouldCreateDefaultNamespacedAsset
   }
 }
 

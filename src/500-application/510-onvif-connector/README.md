@@ -342,29 +342,43 @@ onvif_connector_devices = [
         name        = "warehouse-ptz-control"
         description = "PTZ control for warehouse camera"
 
-        commands = [
+        management_groups = [
           {
-            name = "pan_right"
-            topic = "cameras/warehouse/ptz/pan"
-            payload = jsonencode({direction = "right", speed = 0.5})
-          },
-          {
-            name = "tilt_up"
-            topic = "cameras/warehouse/ptz/tilt"
-            payload = jsonencode({direction = "up", speed = 0.5})
+            name = "ptz_controls"
+            actions = [
+              {
+                name        = "pan_right"
+                action_type = "Call"
+                target_uri  = "http://192.168.1.100/onvif/ptz_service"
+                topic       = "cameras/warehouse/ptz/pan"
+                action_configuration = jsonencode({direction = "right", speed = 0.5})
+              },
+              {
+                name        = "tilt_up"
+                action_type = "Call"
+                target_uri  = "http://192.168.1.100/onvif/ptz_service"
+                topic       = "cameras/warehouse/ptz/tilt"
+                action_configuration = jsonencode({direction = "up", speed = 0.5})
+              }
+            ]
           }
         ]
 
-        events = [
+        event_groups = [
           {
-            name           = "MOTION_DETECTED"
-            event_notifier = "motion"
-            destinations = [
+            name = "motion_events"
+            events = [
               {
-                target = "Mqtt"
-                configuration = {
-                  topic = "cameras/warehouse/events/motion"
-                }
+                name        = "MOTION_DETECTED"
+                data_source = "onvif://motion_detection"
+                destinations = [
+                  {
+                    target = "Mqtt"
+                    configuration = {
+                      topic = "cameras/warehouse/events/motion"
+                    }
+                  }
+                ]
               }
             ]
           }

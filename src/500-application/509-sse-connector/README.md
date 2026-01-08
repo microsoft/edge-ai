@@ -295,7 +295,7 @@ Python client that simulates Akri SSE connector behavior:
 ```python
 # Connects to SSE endpoint
 # Parses events by type
-# Publishes to MQTT topics based on event_notifier
+# Publishes to MQTT topics based on data_source
 # Handles reconnection with exponential backoff
 ```
 
@@ -312,19 +312,24 @@ Python client that simulates Akri SSE connector behavior:
 
 ### Event to Topic Mapping
 
-The connector routes events based on the `event_notifier` field in the asset definition:
+The connector routes events based on the `data_source` field in the asset definition:
 
 ```terraform
-events = [
+event_groups = [
   {
-    name           = "HEARTBEAT"
-    event_notifier = "HEARTBEAT"  # Matches SSE event type
-    destinations = [
+    name = "analytics_events"
+    events = [
       {
-        target = "Mqtt"
-        configuration = {
-          topic = "events/.../heartbeat"
-        }
+        name        = "HEARTBEAT"
+        data_source = "ns=2;s=HeartbeatEvent"  # OPC UA node ID
+        destinations = [
+          {
+            target = "Mqtt"
+            configuration = {
+              topic = "events/.../heartbeat"
+            }
+          }
+        ]
       }
     ]
   }
@@ -411,11 +416,16 @@ yield {
 1. Add event to asset configuration:
 
 ```terraform
-events = [
+event_groups = [
   {
-    name           = "MY_NEW_EVENT"
-    event_notifier = "MY_NEW_EVENT"
-    destinations = [...]
+    name = "custom_events"
+    events = [
+      {
+        name        = "MY_NEW_EVENT"
+        data_source = "ns=2;s=CustomEvent"
+        destinations = [...]
+      }
+    ]
   }
 ]
 ```
@@ -434,7 +444,7 @@ topic_map = {
 To integrate with your own SSE endpoints:
 
 1. Update `SSE_ENDPOINT` environment variable
-2. Configure event_notifier to match your event types
+2. Configure data_source in event_groups to match your event types
 3. Adjust MQTT topic structure as needed
 
 ### Performance Tuning

@@ -105,6 +105,38 @@ Legacy asset endpoint profile configuration.
 |opcAdditionalConfigString|`string`|Additional OPC configuration as JSON string.|
 |shouldEnableOpcAssetDiscovery|`bool`|Whether to enable OPC asset discovery.|
 
+### `_1.AssetEvent`
+
+Event configuration for assets.
+
+|Property|Type|Description|
+| :--- | :--- | :--- |
+|name|`string`|Name of the event.|
+|eventConfiguration|`string`|Event configuration as JSON string.|
+|eventPoints|`array`|Event points in the event.|
+|destinations|`array`|Destinations for the event.|
+
+### `_1.AssetEventPoint`
+
+Event point configuration for asset events.
+
+|Property|Type|Description|
+| :--- | :--- | :--- |
+|name|`string`|Name of the event point.|
+|eventNotifier|`string`|Event notifier address.|
+|eventPointConfiguration|`string`|Event point configuration as JSON string.|
+
+### `_1.AssetStreamSet`
+
+Stream set configuration for assets.
+
+|Property|Type|Description|
+| :--- | :--- | :--- |
+|name|`string`|Name of the stream set.|
+|streamSetConfiguration|`string`|Stream set configuration as JSON string.|
+|dataSource|`string`|Data source address for the stream.|
+|destinations|`array`|Destinations for the stream set.|
+
 ### `_1.DatasetDestination`
 
 Dataset destination configuration.
@@ -220,6 +252,9 @@ Namespaced asset configuration.
 |attributes|`object`|Custom attributes for the asset.|
 |datasets|`array`|Datasets for the asset.|
 |defaultDatasetsConfiguration|`string`|Default datasets configuration as JSON string.|
+|streamSets|`array`|Stream sets for the asset.|
+|defaultStreamSetsConfiguration|`string`|Default stream sets configuration as JSON string.|
+|events|`array`|Events for the asset.|
 |defaultEventsConfiguration|`string`|Default events configuration as JSON string.|
 
 ### `_1.NamespacedDevice`
