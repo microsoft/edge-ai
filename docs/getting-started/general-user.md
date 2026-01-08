@@ -2,7 +2,7 @@
 title: General User Guide - Getting Started
 description: Deploy and use the AI on Edge Flagship Accelerator with step-by-step instructions for both Terraform and Bicep deployments
 author: Edge AI Team
-ms.date: 2025-06-15
+ms.date: 2025-12-18
 ms.topic: how-to
 estimated_reading_time: 5
 keywords:
@@ -22,10 +22,32 @@ This guide is designed for users who want to deploy and use the AI on Edge Flags
 
 Before you begin, ensure you have:
 
-- **Azure subscription** with appropriate permissions
+- **Azure subscription** with appropriate permissions (see [Required Azure Permissions](#required-azure-permissions) below)
+- **Azure resource providers registered** - Run the registration script in [src/azure-resource-providers/][azure-resource-providers] once per subscription
+
+    ```sh
+    # Bash
+    ./src/azure-resource-providers/register-azure-providers.sh aio-azure-resource-providers.txt
+    # Or use PowerShell
+    ./src/azure-resource-providers/register-azure-providers.ps1 -filePath aio-azure-resource-providers.txt
+    ```
+
 - **GitHub account** with access to this repository
 - **Docker Desktop** installed and running (for Dev Container)
 - **Visual Studio Code** with the Dev Containers extension
+
+### Required Azure Permissions
+
+Deploying Azure IoT Operations requires permissions to create resources and assign roles. The simplest approach:
+
+| Approach        | Required Role                                         | Scope                          | Best For                              |
+|-----------------|-------------------------------------------------------|--------------------------------|---------------------------------------|
+| **Recommended** | Owner                                                 | Subscription or Resource Group | Full deployment with role assignments |
+| **Alternative** | Contributor + Role Based Access Control Administrator | Subscription or Resource Group | When Owner is unavailable             |
+
+> **Why role assignment permissions?** Blueprints create managed identities and assign them roles (e.g., Key Vault access, Arc cluster permissions). Without role assignment capability, deployments will fail during RBAC configuration.
+
+For complete details on individual permissions, see [Azure IoT Operations Required Permissions][iot-ops-permissions].
 
 > **💡 New to edge AI deployments?** Check out our [Learning Platform](/learning/) for hands-on learning experiences that complement this guide. Start with our [Edge-to-Cloud Systems Track](/learning/training-labs/02-edge-to-cloud-systems/) to build your expertise, learning to use AI and accelerate your solution development.
 
@@ -34,6 +56,25 @@ Before you begin, ensure you have:
 ### Option A: Using Dev Container (Recommended)
 
 The Dev Container provides a consistent, pre-configured development environment with all necessary tools.
+
+#### Choosing Your Dev Container
+
+This repository provides two Dev Container options in [.devcontainer/](/.devcontainer/):
+
+| Container   | Location                                | Purpose                                         | Recommended For                                           |
+|-------------|-----------------------------------------|-------------------------------------------------|-----------------------------------------------------------|
+| **Default** | `.devcontainer/devcontainer.json`       | Standard development with all core tools        | General users, infrastructure deployment                  |
+| **Beads**   | `.devcontainer/beads/devcontainer.json` | Extended Copilot features with Beads MCP server | Advanced users experimenting with AI-assisted development |
+
+The **default container** is recommended for most users. It includes:
+
+- Azure CLI with pre-installed extensions (`connectedk8s`, `k8s-extension`, `azure-iot-ops`, `amg`, `eventgrid`)
+- Terraform with terraform-docs
+- kubectl, Helm, K3d, K9s
+- Docker (using host daemon)
+- Python, Node.js, Go, Rust, .NET
+
+The **beads container** adds experimental Beads MCP server integration and custom Copilot chat modes. Use this only if you're exploring advanced AI-assisted workflows.
 
 1. **Clone the repository**:
 
@@ -52,6 +93,7 @@ The Dev Container provides a consistent, pre-configured development environment 
 
    - When prompted, click "Reopen in Container"
    - Or use Command Palette: `Remote-Containers: Reopen in Container`
+   - Select the default container
 
 4. **Verify setup**:
 
@@ -62,20 +104,39 @@ The Dev Container provides a consistent, pre-configured development environment 
    kubectl version --client
    ```
 
+> **🚀 Guided Deployment with GitHub Copilot**: Once you have the Dev Container running, you can use GitHub Copilot Chat to guide you through the entire deployment process.
+>
+> In Agent mode, enter:
+>
+> ```text
+> /getting-started help me deploy my first blueprint
+> ```
+>
+> This interactive prompt walks you through blueprint selection, variable configuration, and deployment step-by-step. It's the fastest way to get started!
+
 ### Option B: Local Development
 
 If you prefer local development, install these tools:
 
-- [Azure CLI][azure-cli]
-- [Terraform][terraform-install] (>= 1.0)
-- [terraform-docs][terraform-docs-install] (for generating variable templates)
+- [Azure CLI][azure-cli] with extensions `connectedk8s`, `k8s-extension`, `azure-iot-ops`, `amg` and `eventgrid`:
+
+   ```bash
+   # Install Azure CLI extensions
+   az extension add --name connectedk8s
+   az extension add --name k8s-extension
+   az extension add --name azure-iot-ops
+   az extension add --name amg
+   az extension add --name eventgrid
+   ```
+
+- [Terraform][terraform-install] (version 1.14.x recommended for lazy evaluation support)
 - [kubectl][kubectl-install]
 - [Docker][docker-install]
 - [Python][python-install]
 
 ## Step 2: Choose Your Blueprint
 
-Blueprints are pre-configured deployment templates. Select one based on your scenario:
+Blueprints are pre-configured deployment templates. Here is a quick overview of the common blueprints available:
 
 | Blueprint                                              | Description                     | Use Case                          |
 |--------------------------------------------------------|---------------------------------|-----------------------------------|
@@ -113,73 +174,80 @@ blueprints/
    cd blueprints/full-single-node-cluster/terraform
    ```
 
-2. **Initialize Terraform**:
+2. **Create your configuration file**:
 
-   ```bash
-   terraform init
-   ```
-
-3. **Generate and create configuration file**:
-
-   ```bash
-   # Generate terraform.tfvars template using terraform-docs
-   terraform-docs tfvars hcl .
-   ```
-
-   The generated output will look similar to the following:
+   Create a `terraform.auto.tfvars` file with the required variables. Most blueprints require only three core variables:
 
    ```terraform
-   # Required variables
-   environment     = "dev"                 # Environment type (dev, test, prod)
-   resource_prefix = "myprefix"            # Short unique prefix for resource naming
-   location        = "eastus2"             # Azure region location
-   # Optional (recommended) variables
-   instance        = "001"                 # Deployment instance number
+   # terraform.auto.tfvars - Minimal required configuration
+   environment     = "dev"         # dev, test, or prod
+   location        = "eastus2"     # Azure region
+   resource_prefix = "myprefix"    # 5-8 alphanumeric chars, must be globally unique
    ```
-
-   Copy this output to a file named `terraform.tfvars` and fill in your specific values:
 
    ```bash
    # Create and edit your configuration file
-   code terraform.tfvars
+   code terraform.auto.tfvars
    ```
 
    > **⚠️ Important**: Review and update these key variables before deployment:
    >
-   > - `resource_prefix`: Use a unique prefix (max 8 chars, alphanumeric only)
+   > - `resource_prefix`: Use a unique prefix (max 8 chars, alphanumeric only) - this affects resource naming globally
    > - `environment`: Set to "dev", "test", or "prod"
-   > - `location`: Choose your preferred Azure region
-   > - Update any optional values that you want to change as well
-   >
-   > **💡 Tip**: To have Terraform automatically use your variables, you can name your tfvars file `terraform.auto.tfvars`. Terraform will use variables from any `*.auto.tfvars` files located in the same deployment folder.
+   > - `location`: Choose your preferred Azure region (e.g., `eastus2`, `westus3`)
 
-4. **Set up environment variables and initialize Terraform**:
+   <!-- -->
+
+   > **💡 Tip**: Terraform automatically picks up `*.auto.tfvars` files without needing the `-var-file` flag, making deployment simpler.
+
+   <!-- -->
+
+   > **📝 Finding required vs optional variables**: Each blueprint's `README.md` documents all available variables:
+   >
+   > ```bash
+   > # View the Inputs section to identify required variables
+   > grep -A 100 "## Inputs" README.md | head -50
+   > ```
+   >
+   > Variables marked with `n/a` in the Default column are required; all others are optional with sensible defaults.
+
+   <!-- -->
+
+   > **💡 Advanced**: Generate a complete variable template using `terraform-docs`:
+   >
+   > ```bash
+   > terraform-docs tfvars hcl .
+   > ```
+   >
+   > **Note**: Do not use this output directly as it may override null defaults with empty values that can break deployment. Only add variables to `terraform.auto.tfvars` that you explicitly want to configure.
+
+3. **Set up environment variables and initialize Terraform**:
 
    ```bash
-   # Set required environment variable for Terraform Azure provider
-   export ARM_SUBSCRIPTION_ID=$(az account show --query id -o tsv)
+   # Set required environment variable for Terraform Azure provider by running the script
+   ../../../scripts/az-sub-init.sh
 
    # Initialize Terraform (pulls down providers and modules)
    terraform init -upgrade
    ```
 
-5. **Plan and apply the deployment**:
+4. **Plan and apply the deployment**:
 
    ```bash
    # Preview changes before applying
-   terraform plan -var-file=terraform.tfvars
+   terraform plan
 
    # Review resource change list, then deploy
-   terraform apply -var-file=terraform.tfvars
+   terraform apply
    ```
 
    > **🔍 Pre-Apply Checklist**:
    >
-   > - Verify your `terraform.tfvars` has the correct `resource_prefix`, `environment`, and `location`
+   > - Verify your `terraform.auto.tfvars` has the correct `resource_prefix`, `environment`, and `location`
    > - Ensure you're logged into the correct Azure subscription (`az account show`)
    > - Review the `terraform plan` output to confirm expected resources
    >
-   > **Note**: Add `-auto-approve` to the apply command to skip confirmation, or use `-var-file` if not using `*.auto.tfvars` file
+   > **Note**: Add `-auto-approve` to the apply command to skip confirmation.
 
 ### Using Bicep
 
@@ -223,14 +291,11 @@ param resourceGroupName = 'rg-${common.resourcePrefix}-${common.environment}-${c
 param useExistingResourceGroup = false
 param telemetry_opt_out = false
 param adminPassword = '' // Supply a secure password
-param shouldCreateAcrPrivateEndpoint = false
-param shouldCreateAks = false
 param customLocationsOid = '' // Replace with 'CUSTOM_LOCATIONS_OID' retrieved earlier
-param shouldCreateAnonymousBrokerListener = false
 EOF
 ```
 
-   After creating the file, open it in your editor (`code main.bicepparam`) and replace the sample values with the settings for your deployment. Replace `customLocationsOid` with the correct value from the environment variable `CUSTOM_LOCATIONS_OID`.
+After creating the file, open it in your editor (`code main.bicepparam`) and replace the sample values with the settings for your deployment. Replace `customLocationsOid` with the correct value from the environment variable `CUSTOM_LOCATIONS_OID`.
 
 > **⚠️ Important**: Confirm the `common` object matches your environment, choose the correct region, and review each optional parameter flag before continuing.
 
@@ -273,29 +338,6 @@ az connectedk8s proxy -n $ARC_CONNECTED_CLUSTER_NAME -g $RG_NAME
 # Verify connection (in a separate terminal)
 kubectl get nodes
 kubectl get pods --all-namespaces
-```
-
-## Step 5: Access Your Application
-
-The specific access methods depend on your chosen blueprint:
-
-### Web Interface Access
-
-```bash
-# Get external IP addresses
-kubectl get services --all-namespaces
-
-# Access applications (example URLs)
-# Grafana: http://<grafana-external-ip>:3000
-# Azure IoT Operations: http://<iot-ops-external-ip>:8080
-```
-
-### Command Line Access
-
-```bash
-# Port forward for local access
-kubectl port-forward service/grafana 3000:3000 -n monitoring
-kubectl port-forward service/iot-operations 8080:8080 -n azure-iot-operations
 ```
 
 ## GitHub Copilot Assistance
@@ -379,6 +421,98 @@ terraform import azurerm_resource_group.main /subscriptions/{subscription-id}/re
 3. **Rebuild container**:
    - Command Palette: `Remote-Containers: Rebuild Container`
 
+#### VM Extension Script Failures
+
+**Problem**: Azure VM custom script extension fails during cluster deployment
+
+VM extensions run scripts on the VM after provisioning. Common failure causes include:
+
+- Network connectivity issues preventing package downloads
+- Script timeouts (default 90 minutes)
+- Missing prerequisites on the VM
+- Key Vault access issues when using script-from-secrets deployment
+
+**Solution**:
+
+1. **Check extension status**:
+
+   ```bash
+   # Get extension provisioning state
+   az vm extension list --resource-group $RG_NAME --vm-name $VM_NAME --output table
+
+   # View detailed extension output
+   az vm extension show --resource-group $RG_NAME --vm-name $VM_NAME \
+     --name linux-cluster-server-setup --query "instanceView.statuses[0].message" -o tsv
+   ```
+
+2. **Review logs on the VM**:
+
+   ```bash
+   # SSH to VM and check extension logs
+   sudo cat /var/log/azure/custom-script/handler.log
+   sudo cat /var/lib/waagent/custom-script/download/0/stdout
+   sudo cat /var/lib/waagent/custom-script/download/0/stderr
+   ```
+
+3. **Handling VM extension failures**:
+
+   VM extension script deployments can fail for various reasons (network issues, timeouts, provider bugs). The most reliable solution is a full redeployment:
+
+   ```bash
+   # Destroy all resources
+   terraform destroy
+
+   # Redeploy from scratch
+   terraform apply
+   ```
+
+   This ensures a clean state and avoids issues with partial deployments, state inconsistencies, and script idempotency problems.
+
+4. **Key Vault script deployment issues**:
+
+   When using `should_use_script_from_secrets_for_deploy = true`:
+
+   - Verify the managed identity has `Key Vault Secrets User` role on the Key Vault
+   - Check that secrets exist with the expected naming pattern: `{prefix}-{distro}-{node_type}-script`
+   - Ensure the VM has network access to the Key Vault endpoint
+
+#### Arc Cluster Connectivity Issues
+
+**Problem**: `az connectedk8s proxy` succeeds but `kubectl` commands fail
+
+The `az connectedk8s proxy` command establishes a connection to the Arc cluster proxy service but does not verify actual cluster connectivity. If the VM hosting the cluster is shutdown or unreachable, the proxy command succeeds but `kubectl` commands fail.
+
+**Diagnostic command**:
+
+```bash
+# Check Arc cluster connectivity status
+az connectedk8s show -g "$RG_NAME" -n "$ARC_CONNECTED_CLUSTER_NAME" \
+  --query "{provisioningState:provisioningState, connectivityStatus:connectivityStatus}" -o yaml
+```
+
+**Expected output when cluster is healthy**:
+
+```yaml
+connectivityStatus: Connected
+provisioningState: Succeeded
+```
+
+**Common scenarios and solutions**:
+
+1. **VM shutdown**: If the VM is stopped, `connectivityStatus` shows `Offline` or `Expired`
+
+   **Solution**: Start the VM through Azure Portal or CLI:
+
+   ```bash
+   az vm start --resource-group $RG_NAME --name $VM_NAME
+   ```
+
+2. **Network connectivity**: VM cannot reach Azure Arc endpoints
+
+   **Solution**:
+   - Verify network security groups allow outbound HTTPS traffic to Arc service endpoints
+   - Check VM's network configuration and DNS resolution
+
 ### Getting Help
 
 1. **Check logs**:
@@ -422,7 +556,6 @@ _This guide is part of the AI on Edge Flagship Accelerator project. For the late
 
 [azure-cli]: https://docs.microsoft.com/cli/azure/install-azure-cli
 [terraform-install]: https://learn.hashicorp.com/tutorials/terraform/install-cli
-[terraform-docs-install]: https://terraform-docs.io/user-guide/installation/
 [kubectl-install]: https://kubernetes.io/docs/tasks/tools/install-kubectl/
 [docker-install]: https://docs.docker.com/get-docker/
 [blueprint-full-single]: /blueprints/full-single-node-cluster/
@@ -431,8 +564,10 @@ _This guide is part of the AI on Edge Flagship Accelerator project. For the late
 [blueprint-cloud-only]: /blueprints/only-cloud-single-node-cluster/
 [iot-ops-quickstart]: https://learn.microsoft.com/azure/iot-operations/get-started-end-to-end-sample/quickstart-deploy
 [iot-ops-docs]: https://learn.microsoft.com/azure/iot-operations/
+[iot-ops-permissions]: https://learn.microsoft.com/azure/iot-operations/deploy-iot-ops/overview-deploy#required-permissions
 [project-repo]: {{REPO_URL}}
 [python-install]: https://www.python.org/downloads/
+[azure-resource-providers]: /src/azure-resource-providers/
 
 _AI and automation capabilities described in this scenario should be implemented following responsible AI principles, including fairness, reliability, safety, privacy, inclusiveness, transparency, and accountability. Organizations should ensure appropriate governance, monitoring, and human oversight are in place for all AI-powered solutions._
 
