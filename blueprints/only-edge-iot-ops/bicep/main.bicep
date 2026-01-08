@@ -142,6 +142,13 @@ param legacyAssets assetTypes.LegacyAsset[] = []
 param namespacedAssets assetTypes.NamespacedAsset[] = []
 
 /*
+  Feature Flag Parameters
+*/
+
+@description('Whether to create a default namespaced asset and device.')
+param shouldCreateDefaultNamespacedAsset bool = true
+
+/*
   Resources
 */
 
@@ -210,11 +217,11 @@ module edgeAssets '../../../src/100-edge/111-assets/bicep/main.bicep' = {
     common: common
     customLocationId: edgeIotOps.outputs.customLocationId
     adrNamespaceName: adrNamespaceName!
-    shouldCreateDefaultNamespacedAsset: shouldEnableOpcUaSimulator
     namespacedDevices: namespacedDevices
+    namespacedAssets: namespacedAssets
     assetEndpointProfiles: assetEndpointProfiles
     legacyAssets: legacyAssets
-    namespacedAssets: namespacedAssets
+    shouldCreateDefaultNamespacedAsset: shouldCreateDefaultNamespacedAsset
   }
 }
 

@@ -120,6 +120,82 @@ type DatasetDestination = {
 }
 
 @export()
+@description('Event destination configuration.')
+type AssetEventDestination = {
+  @description('Target for the destination: Mqtt, etc.')
+  target: string
+
+  @description('Configuration for the destination.')
+  configuration: {
+    @description('MQTT topic for the destination.')
+    topic: string?
+
+    @description('Retain setting: Never, etc.')
+    retain: string?
+
+    @description('Quality of Service: Qos1, etc.')
+    qos: string?
+  }
+}
+
+@export()
+@description('Event configuration for assets.')
+type AssetEvent = {
+  @description('Name of the event.')
+  name: string
+
+  @description('Data source address for the event.')
+  dataSource: string
+
+  @description('Event configuration as JSON string.')
+  eventConfiguration: string?
+
+  @description('Type reference for the event.')
+  typeRef: string?
+
+  @description('Destinations for the event.')
+  destinations: AssetEventDestination[]?
+}
+
+@export()
+@description('Event group configuration for assets.')
+type AssetEventGroup = {
+  @description('Name of the event group.')
+  name: string
+
+  @description('Data source address for the event group.')
+  dataSource: string?
+
+  @description('Event group configuration as JSON string.')
+  eventGroupConfiguration: string?
+
+  @description('Type reference for the event group.')
+  typeRef: string?
+
+  @description('Default destinations for events in the group.')
+  defaultDestinations: AssetEventDestination[]?
+
+  @description('Events in the event group.')
+  events: AssetEvent[]
+}
+
+@export()
+@description('Stream configuration for assets.')
+type AssetStream = {
+  @description('Name of the stream.')
+  name: string
+
+  @description('Stream configuration as JSON string.')
+  streamConfiguration: string?
+
+  @description('Type reference for the stream.')
+  typeRef: string?
+
+  @description('Destinations for the stream set.')
+  destinations: DatasetDestination[]?
+}
+
+@export()
 @description('Dataset configuration for assets.')
 type AssetDataset = {
   @description('Name of the dataset.')
@@ -202,11 +278,73 @@ type NamespacedAsset = {
   @description('Datasets for the asset.')
   datasets: AssetDataset[]
 
+  @description('Streams for the asset.')
+  streams: AssetStream[]?
+
+  @description('Event groups for the asset.')
+  eventGroups: AssetEventGroup[]?
+
+  @description('Management groups for the asset.')
+  managementGroups: AssetManagementGroup[]?
+
   @description('Default datasets configuration as JSON string.')
   defaultDatasetsConfiguration: string?
 
+  @description('Default streams configuration as JSON string.')
+  defaultStreamsConfiguration: string?
+
   @description('Default events configuration as JSON string.')
   defaultEventsConfiguration: string?
+}
+
+@export()
+@description('Management action configuration for assets.')
+type AssetAction = {
+  @description('Name of the action.')
+  name: string
+
+  @description('Type of the action. Must be one of: Call, Read, or Write.')
+  actionType: string
+
+  @description('Target URI for the action.')
+  targetUri: string
+
+  @description('MQTT topic for the action.')
+  topic: string?
+
+  @description('Timeout in seconds for the action.')
+  timeoutInSeconds: int?
+
+  @description('Action configuration as JSON string.')
+  actionConfiguration: string?
+
+  @description('Type reference for the action.')
+  typeRef: string?
+}
+
+@export()
+@description('Management group configuration for assets.')
+type AssetManagementGroup = {
+  @description('Name of the management group.')
+  name: string
+
+  @description('Data source address for the management group.')
+  dataSource: string?
+
+  @description('Management group configuration as JSON string.')
+  managementGroupConfiguration: string?
+
+  @description('Type reference for the management group.')
+  typeRef: string?
+
+  @description('Default MQTT topic for actions in the group.')
+  defaultTopic: string?
+
+  @description('Default timeout in seconds for actions in the group.')
+  defaultTimeoutInSeconds: int?
+
+  @description('Actions in the management group.')
+  actions: AssetAction[]
 }
 
 @export()

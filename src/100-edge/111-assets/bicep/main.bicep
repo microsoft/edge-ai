@@ -95,7 +95,11 @@ var processedNamespacedAssets = [
     softwareRevision: asset.?softwareRevision
     attributes: asset.?attributes ?? {}
     datasets: asset.?datasets ?? []
+    streams: asset.?streams ?? []
+    eventGroups: asset.?eventGroups ?? []
+    managementGroups: asset.?managementGroups ?? []
     defaultDatasetsConfiguration: asset.?defaultDatasetsConfiguration ?? '{"publishingInterval":1000,"samplingInterval":500,"queueSize":1}'
+    defaultStreamsConfiguration: asset.?defaultStreamsConfiguration ?? '{"bufferSize":1024,"compressionEnabled":false}'
     defaultEventsConfiguration: asset.?defaultEventsConfiguration ?? '{"publishingInterval":1000,"samplingInterval":500,"queueSize":1}'
   }
 ]
@@ -187,6 +191,10 @@ resource namespacedAsset 'Microsoft.DeviceRegistry/namespaces/assets@2025-10-01'
         enabled: asset.isEnabled
         datasets: asset.datasets
       },
+      length(asset.streams) > 0 ? { streams: asset.streams } : {},
+      length(asset.eventGroups) > 0 ? { eventGroups: asset.eventGroups } : {},
+      length(asset.managementGroups) > 0 ? { managementGroups: asset.managementGroups } : {},
+      length(asset.streams) > 0 ? { defaultStreamsConfiguration: asset.defaultStreamsConfiguration } : {},
       asset.description != null ? { description: asset.description } : {},
       asset.documentationUri != null ? { documentationUri: asset.documentationUri } : {},
       asset.hardwareRevision != null ? { hardwareRevision: asset.hardwareRevision } : {},

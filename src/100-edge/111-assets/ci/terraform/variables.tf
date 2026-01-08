@@ -149,7 +149,30 @@ variable "namespaced_assets" {
         configuration = map(string)
       })), [])
     })), [])
+    streams = optional(list(object({
+      name                 = string
+      stream_configuration = optional(string)
+      data_source          = optional(string)
+      destinations = optional(list(object({
+        target        = string
+        configuration = map(string)
+      })), [])
+    })), [])
+    events = optional(list(object({
+      name                = string
+      event_configuration = optional(string)
+      event_points = list(object({
+        name                      = string
+        event_notifier            = string
+        event_point_configuration = optional(string)
+      }))
+      destinations = optional(list(object({
+        target        = string
+        configuration = map(string)
+      })), [])
+    })), [])
     default_datasets_configuration = optional(string)
+    default_streams_configuration  = optional(string)
     default_events_configuration   = optional(string)
   }))
   description = "List of namespaced assets to create. Otherwise, an empty list."

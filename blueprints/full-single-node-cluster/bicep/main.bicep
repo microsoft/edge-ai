@@ -476,11 +476,11 @@ module edgeAssets '../../../src/100-edge/111-assets/bicep/main.bicep' = {
     common: common
     customLocationId: edgeIotOps.outputs.customLocationId
     adrNamespaceName: cloudData.outputs.adrNamespaceName
-    shouldCreateDefaultNamespacedAsset: shouldEnableOpcUaSimulator
     namespacedDevices: namespacedDevices
+    namespacedAssets: namespacedAssets
     assetEndpointProfiles: assetEndpointProfiles
     legacyAssets: legacyAssets
-    namespacedAssets: namespacedAssets
+    shouldCreateDefaultNamespacedAsset: shouldEnableOpcUaSimulator
   }
 }
 

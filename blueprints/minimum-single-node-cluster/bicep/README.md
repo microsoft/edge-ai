@@ -22,6 +22,7 @@ Deploys the minimal set of resources required for Azure IoT Operations on a sing
 |assetEndpointProfiles|List of asset endpoint profiles to create.|`array`|[]|no|
 |legacyAssets|List of legacy assets to create.|`array`|[]|no|
 |namespacedAssets|List of namespaced assets to create.|`array`|[]|no|
+|shouldCreateDefaultAsset|Whether to create a default legacy asset and endpoint profile.|`bool`|`false`|no|
 |shouldCreateDefaultNamespacedAsset|Whether to create a default namespaced asset and device.|`bool`|`true`|no|
 
 ## Resources
@@ -46,7 +47,7 @@ Deploys the minimal set of resources required for Azure IoT Operations on a sing
 |cloudData|Creates storage resources including Azure Storage Account and Schema Registry for data in the Edge AI solution.|
 |cloudNetworking|Creates virtual network, subnet, and network security group resources for Azure deployments.|
 |cloudVmHost|Provisions virtual machines and networking infrastructure for hosting Azure IoT Operations edge deployments.|
-|edgeCncfCluster|This module provisions and deploys automation scripts to a VM host that create and configure a K3s Kubernetes cluster with Arc connectivity.<br>The scripts handle primary and secondary node(s) setup, cluster administration, workload identity enablement, and installation of required Azure Arc extensions.|
+|edgeCncfCluster|This module provisions and deploys automation scripts to a VM host that create and configure a K3s Kubernetes cluster with Arc connectivity. The scripts handle primary and secondary node(s) setup, cluster administration, workload identity enablement, and installation of required Azure Arc extensions.|
 |edgeIotOps|Deploys Azure IoT Operations extensions, instances, and configurations on Azure Arc-enabled Kubernetes clusters.|
 |edgeAssets|Deploys Kubernetes asset definitions to a connected cluster using the namespaced Device Registry model. This component facilitates the management of devices and assets within ADR namespaces.|
 
@@ -487,6 +488,38 @@ Legacy asset endpoint profile configuration.
 |opcAdditionalConfigString|`string`|Additional OPC configuration as JSON string.|
 |shouldEnableOpcAssetDiscovery|`bool`|Whether to enable OPC asset discovery.|
 
+### `_1.AssetEvent`
+
+Event configuration for assets.
+
+|Property|Type|Description|
+| :--- | :--- | :--- |
+|name|`string`|Name of the event.|
+|eventConfiguration|`string`|Event configuration as JSON string.|
+|eventPoints|`array`|Event points in the event.|
+|destinations|`array`|Destinations for the event.|
+
+### `_1.AssetEventPoint`
+
+Event point configuration for asset events.
+
+|Property|Type|Description|
+| :--- | :--- | :--- |
+|name|`string`|Name of the event point.|
+|eventNotifier|`string`|Event notifier address.|
+|eventPointConfiguration|`string`|Event point configuration as JSON string.|
+
+### `_1.AssetStreamSet`
+
+Stream set configuration for assets.
+
+|Property|Type|Description|
+| :--- | :--- | :--- |
+|name|`string`|Name of the stream set.|
+|streamSetConfiguration|`string`|Stream set configuration as JSON string.|
+|dataSource|`string`|Data source address for the stream.|
+|destinations|`array`|Destinations for the stream set.|
+
 ### `_1.DatasetDestination`
 
 Dataset destination configuration.
@@ -601,7 +634,10 @@ Namespaced asset configuration.
 |softwareRevision|`string`|Software revision of the asset.|
 |attributes|`object`|Custom attributes for the asset.|
 |datasets|`array`|Datasets for the asset.|
+|streamSets|`array`|Stream sets for the asset.|
+|events|`array`|Events for the asset.|
 |defaultDatasetsConfiguration|`string`|Default datasets configuration as JSON string.|
+|defaultStreamSetsConfiguration|`string`|Default stream sets configuration as JSON string.|
 |defaultEventsConfiguration|`string`|Default events configuration as JSON string.|
 
 ### `_1.NamespacedDevice`
