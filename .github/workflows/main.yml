@@ -64,7 +64,7 @@ jobs:
           fetch-depth: 0
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@fe4161a26a8629af62121b670040955b330f9af2
+        uses: github/codeql-action/init@cdefb33c0f6224e58673d9004f47f7cb3e328b89
         with:
           languages: ${{ matrix.language }}
           build-mode: none
@@ -75,10 +75,10 @@ jobs:
           # queries: security-extended,security-and-quality
 
       - name: Autobuild
-        uses: github/codeql-action/autobuild@fe4161a26a8629af62121b670040955b330f9af2
+        uses: github/codeql-action/autobuild@cdefb33c0f6224e58673d9004f47f7cb3e328b89
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@fe4161a26a8629af62121b670040955b330f9af2
+        uses: github/codeql-action/analyze@cdefb33c0f6224e58673d9004f47f7cb3e328b89
         with:
           category: "/language:${{matrix.language}}"
 
