@@ -67,10 +67,26 @@ param logsDataCollectionRuleStreams array = [
 ]
 
 /*
+  Private Networking Parameters
+*/
+
+@description('Whether to enable private endpoints for Azure Monitor resources.')
+param shouldEnablePrivateEndpoints bool = false
+
+@description('Subnet resource ID used for the observability private endpoint.')
+param privateEndpointSubnetId string?
+
+@description('Virtual network resource ID for private DNS links.')
+param virtualNetworkId string?
+
+/*
   Local Variables
 */
 
 var grafanaAdminLocalPrincipalId = grafanaAdminPrincipalId ?? deployer().objectId
+var blobPrivateDnsZoneName = format('privatelink.blob.{0}', environment().suffixes.storage)
+var monitorPrivateLinkScopeName = 'ampls-${common.resourcePrefix}-${common.environment}-${common.instance}'
+var monitorPrivateLinkScopeResourceId = resourceId('Microsoft.Insights/privateLinkScopes', monitorPrivateLinkScopeName)
 
 @description('Whether to opt out of telemetry data collection.')
 param telemetry_opt_out bool = false
@@ -221,7 +237,7 @@ resource dataCollectionEndpoint 'Microsoft.Insights/dataCollectionEndpoints@2023
   properties: {
     description: 'Data Collection Endpoint for Azure Monitor'
     networkAcls: {
-      publicNetworkAccess: 'Enabled'
+      publicNetworkAccess: shouldEnablePrivateEndpoints ? 'Disabled' : 'Enabled'
     }
   }
   tags: union(defaultTags, tags)
@@ -302,6 +318,185 @@ resource metricsDataCollectionRule 'Microsoft.Insights/dataCollectionRules@2023-
 }
 
 /*
+  Private Networking Resources
+*/
+
+resource monitorPrivateLinkScope 'Microsoft.Insights/privateLinkScopes@2021-09-01' = if (shouldEnablePrivateEndpoints) {
+  name: monitorPrivateLinkScopeName
+  location: 'global'
+  properties: {
+    accessModeSettings: {
+      ingestionAccessMode: 'PrivateOnly'
+      queryAccessMode: 'PrivateOnly'
+    }
+  }
+}
+
+resource monitorPrivateLinkScopeLogAnalytics 'Microsoft.Insights/privateLinkScopes/scopedResources@2021-09-01' = if (shouldEnablePrivateEndpoints) {
+  parent: monitorPrivateLinkScope
+  name: 'log-analytics'
+  properties: {
+    linkedResourceId: logAnalytics.id
+  }
+}
+
+resource monitorPrivateLinkScopeDataCollectionEndpoint 'Microsoft.Insights/privateLinkScopes/scopedResources@2021-09-01' = if (shouldEnablePrivateEndpoints) {
+  parent: monitorPrivateLinkScope
+  name: 'data-collection-endpoint'
+  properties: {
+    linkedResourceId: dataCollectionEndpoint.id
+  }
+}
+resource monitorPrivateDnsZoneMonitorAzure 'Microsoft.Network/privateDnsZones@2020-06-01' = if (shouldEnablePrivateEndpoints) {
+  name: 'privatelink.monitor.azure.com'
+  location: 'global'
+}
+
+resource monitorPrivateDnsZoneOms 'Microsoft.Network/privateDnsZones@2020-06-01' = if (shouldEnablePrivateEndpoints) {
+  name: 'privatelink.oms.opinsights.azure.com'
+  location: 'global'
+}
+
+resource monitorPrivateDnsZoneOds 'Microsoft.Network/privateDnsZones@2020-06-01' = if (shouldEnablePrivateEndpoints) {
+  name: 'privatelink.ods.opinsights.azure.com'
+  location: 'global'
+}
+
+resource monitorPrivateDnsZoneAgentsvc 'Microsoft.Network/privateDnsZones@2020-06-01' = if (shouldEnablePrivateEndpoints) {
+  name: 'privatelink.agentsvc.azure-automation.net'
+  location: 'global'
+}
+
+resource monitorPrivateDnsZoneBlob 'Microsoft.Network/privateDnsZones@2020-06-01' = if (shouldEnablePrivateEndpoints) {
+  name: blobPrivateDnsZoneName
+  location: 'global'
+}
+
+resource monitorPrivateDnsLinkMonitorAzure 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = if (shouldEnablePrivateEndpoints) {
+  parent: monitorPrivateDnsZoneMonitorAzure
+  name: 'vnet-link-monitor-${common.resourcePrefix}-${common.environment}-${common.instance}'
+  location: 'global'
+  properties: {
+    virtualNetwork: {
+      id: virtualNetworkId!
+    }
+    registrationEnabled: false
+  }
+}
+
+resource monitorPrivateDnsLinkOms 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = if (shouldEnablePrivateEndpoints) {
+  parent: monitorPrivateDnsZoneOms
+  name: 'vnet-link-oms-${common.resourcePrefix}-${common.environment}-${common.instance}'
+  location: 'global'
+  properties: {
+    virtualNetwork: {
+      id: virtualNetworkId!
+    }
+    registrationEnabled: false
+  }
+}
+
+resource monitorPrivateDnsLinkOds 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = if (shouldEnablePrivateEndpoints) {
+  parent: monitorPrivateDnsZoneOds
+  name: 'vnet-link-ods-${common.resourcePrefix}-${common.environment}-${common.instance}'
+  location: 'global'
+  properties: {
+    virtualNetwork: {
+      id: virtualNetworkId!
+    }
+    registrationEnabled: false
+  }
+}
+
+resource monitorPrivateDnsLinkAgentsvc 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = if (shouldEnablePrivateEndpoints) {
+  parent: monitorPrivateDnsZoneAgentsvc
+  name: 'vnet-link-agentsvc-${common.resourcePrefix}-${common.environment}-${common.instance}'
+  location: 'global'
+  properties: {
+    virtualNetwork: {
+      id: virtualNetworkId!
+    }
+    registrationEnabled: false
+  }
+}
+
+resource monitorPrivateDnsLinkBlob 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = if (shouldEnablePrivateEndpoints) {
+  parent: monitorPrivateDnsZoneBlob
+  name: 'vnet-link-blob-${common.resourcePrefix}-${common.environment}-${common.instance}'
+  location: 'global'
+  properties: {
+    virtualNetwork: {
+      id: virtualNetworkId!
+    }
+    registrationEnabled: false
+  }
+}
+
+resource monitorPrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-05-01' = if (shouldEnablePrivateEndpoints) {
+  name: 'pe-monitor-${common.resourcePrefix}-${common.environment}-${common.instance}'
+  location: common.location
+  properties: {
+    subnet: {
+      id: privateEndpointSubnetId!
+    }
+    privateLinkServiceConnections: [
+      {
+        name: 'monitor-private-connection'
+        properties: {
+          privateLinkServiceId: monitorPrivateLinkScopeResourceId
+          groupIds: [
+            'azuremonitor'
+          ]
+        }
+      }
+    ]
+  }
+  dependsOn: [
+    monitorPrivateLinkScopeLogAnalytics
+    monitorPrivateLinkScopeDataCollectionEndpoint
+  ]
+}
+
+resource monitorPrivateDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-05-01' = if (shouldEnablePrivateEndpoints) {
+  parent: monitorPrivateEndpoint
+  name: 'monitor-dns-zone-group'
+  properties: {
+    privateDnsZoneConfigs: [
+      {
+        name: 'monitor-azure-com'
+        properties: {
+          privateDnsZoneId: monitorPrivateDnsZoneMonitorAzure.id
+        }
+      }
+      {
+        name: 'oms-opinsights-azure-com'
+        properties: {
+          privateDnsZoneId: monitorPrivateDnsZoneOms.id
+        }
+      }
+      {
+        name: 'ods-opinsights-azure-com'
+        properties: {
+          privateDnsZoneId: monitorPrivateDnsZoneOds.id
+        }
+      }
+      {
+        name: 'agentsvc-automation-net'
+        properties: {
+          privateDnsZoneId: monitorPrivateDnsZoneAgentsvc.id
+        }
+      }
+      {
+        name: 'blob-core-windows-net'
+        properties: {
+          privateDnsZoneId: monitorPrivateDnsZoneBlob.id
+        }
+      }
+    ]
+  }
+}
+
+/*
   Outputs
 */
 
@@ -322,3 +517,39 @@ output metricsDataCollectionRuleName string = metricsDataCollectionRule.name
 
 @description('The logs data collection rule name.')
 output logsDataCollectionRuleName string = logsDataCollectionRule.name
+
+@description('Azure Monitor Private Link Scope resource ID.')
+output monitorPrivateLinkScopeId string? = shouldEnablePrivateEndpoints ? monitorPrivateLinkScopeResourceId : null
+
+@description('Azure Monitor private endpoint resource ID.')
+output monitorPrivateEndpointId string? = shouldEnablePrivateEndpoints ? monitorPrivateEndpoint.id : null
+
+@description('Azure Monitor private endpoint name.')
+output monitorPrivateEndpointName string? = shouldEnablePrivateEndpoints ? monitorPrivateEndpoint.name : null
+
+@description('Azure Monitor private endpoint IP address.')
+output monitorPrivateEndpointIp string? = shouldEnablePrivateEndpoints
+  ? monitorPrivateEndpoint!.properties.customDnsConfigs[0].ipAddresses[0]
+  : null
+
+@description('Private DNS zone name for privatelink.monitor.azure.com.')
+output monitorPrivateDnsZoneMonitorAzureName string? = shouldEnablePrivateEndpoints
+  ? monitorPrivateDnsZoneMonitorAzure.name
+  : null
+
+@description('Private DNS zone name for privatelink.oms.opinsights.azure.com.')
+output monitorPrivateDnsZoneOmsName string? = shouldEnablePrivateEndpoints ? monitorPrivateDnsZoneOms.name : null
+
+@description('Private DNS zone name for privatelink.ods.opinsights.azure.com.')
+output monitorPrivateDnsZoneOdsName string? = shouldEnablePrivateEndpoints ? monitorPrivateDnsZoneOds.name : null
+
+@description('Private DNS zone name for privatelink.agentsvc.azure-automation.net.')
+output monitorPrivateDnsZoneAgentsvcName string? = shouldEnablePrivateEndpoints
+  ? monitorPrivateDnsZoneAgentsvc.name
+  : null
+
+@description('Private DNS zone name for the blob storage namespace.')
+output monitorPrivateDnsZoneBlobName string? = shouldEnablePrivateEndpoints ? monitorPrivateDnsZoneBlob.name : null
+
+@description('Private DNS zone ID for the blob storage namespace.')
+output monitorPrivateDnsZoneBlobId string? = shouldEnablePrivateEndpoints ? monitorPrivateDnsZoneBlob.id : null

@@ -36,6 +36,18 @@ param shouldAssignAdminUserRole bool = true
 @description('The Object ID for an admin user that will be granted the "Key Vault Secrets Officer" role.')
 param adminUserObjectId string = deployer().objectId
 
+@description('Whether to create a private endpoint for the Key Vault.')
+param shouldCreateKeyVaultPrivateEndpoint bool = false
+
+@description('Subnet resource ID for the Key Vault private endpoint.')
+param keyVaultPrivateEndpointSubnetId string?
+
+@description('Virtual network resource ID for the Key Vault private DNS link.')
+param keyVaultVirtualNetworkId string?
+
+@description('Whether to enable public network access on the Key Vault.')
+param shouldEnableKeyVaultPublicNetworkAccess bool = true
+
 @description('Whether to opt out of telemetry data collection.')
 param telemetry_opt_out bool = false
 
@@ -76,6 +88,10 @@ module keyVault 'modules/key-vault.bicep' = if (shouldCreateKeyVault) {
     keyVaultName: keyVaultName
     shouldAssignAdminUserRole: shouldAssignAdminUserRole
     adminUserObjectId: adminUserObjectId
+    shouldCreatePrivateEndpoint: shouldCreateKeyVaultPrivateEndpoint
+    privateEndpointSubnetId: keyVaultPrivateEndpointSubnetId
+    virtualNetworkId: keyVaultVirtualNetworkId
+    shouldEnablePublicNetworkAccess: shouldEnableKeyVaultPublicNetworkAccess
   }
 }
 
@@ -88,6 +104,23 @@ output keyVaultName string? = shouldCreateKeyVault ? keyVault.?outputs.keyVaultN
 
 @description('The resource ID of the Secret Store Extension Key Vault.')
 output keyVaultId string? = shouldCreateKeyVault ? keyVault.?outputs.keyVaultId : null
+
+@description('The Key Vault private endpoint ID when created.')
+output keyVaultPrivateEndpointId string? = shouldCreateKeyVault ? keyVault.?outputs.?keyVaultPrivateEndpointId : null
+
+@description('The Key Vault private endpoint name when created.')
+output keyVaultPrivateEndpointName string? = shouldCreateKeyVault
+  ? keyVault.?outputs.?keyVaultPrivateEndpointName
+  : null
+
+@description('The Key Vault private endpoint IP address when created.')
+output keyVaultPrivateEndpointIp string? = shouldCreateKeyVault ? keyVault.?outputs.?keyVaultPrivateEndpointIp : null
+
+@description('The Key Vault private DNS zone ID when created.')
+output keyVaultPrivateDnsZoneId string? = shouldCreateKeyVault ? keyVault.?outputs.?keyVaultPrivateDnsZoneId : null
+
+@description('The Key Vault private DNS zone name when created.')
+output keyVaultPrivateDnsZoneName string? = shouldCreateKeyVault ? keyVault.?outputs.?keyVaultPrivateDnsZoneName : null
 
 @description('The Secret Store Extension User Assigned Managed Identity name.')
 output sseIdentityName string = identity.outputs.sseIdentityName

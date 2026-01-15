@@ -1,7 +1,7 @@
 /*
  * Optional Variables
  *
- * IMPORTANT: The variable names in this file ('platform', 'secret_sync_controller',
+ * IMPORTANT: The variable names in this file ('cert_manager', 'secret_sync_controller',
  * 'edge_storage_accelerator') are explicitly referenced by the
  * aio-version-checker.py script. If you rename these variables or change their structure,
  * you must also update the script and the aio-version-checker-template.yml pipeline.
@@ -13,7 +13,7 @@ variable "cert_manager" {
     train   = string
   })
   default = {
-    version = "0.6.2"
+    version = "0.7.0"
     train   = "stable"
   }
 }
@@ -41,7 +41,7 @@ variable "secret_sync_controller" {
     train   = string
   })
   default = {
-    version = "1.0.2"
+    version = "1.1.5"
     train   = "stable"
   }
 }

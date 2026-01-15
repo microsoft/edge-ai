@@ -60,7 +60,7 @@ resource "azurerm_arc_kubernetes_cluster_extension" "container_storage" {
 
 resource "azurerm_arc_kubernetes_cluster_extension" "cert_manager" {
   count          = var.trust_config_source != "CustomerManagedByoIssuer" ? 1 : 0
-  name           = "azure-iot-operations-cert-manager"
+  name           = "cert-manager"
   cluster_id     = var.arc_connected_cluster_id
   extension_type = "microsoft.certmanagement"
   identity {

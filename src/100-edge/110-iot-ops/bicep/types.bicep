@@ -1,5 +1,5 @@
 /*
- * IMPORTANT: The variable names in this file ('aioPlatformExtensionDefaults',
+ * IMPORTANT: The variable names in this file ('aioCertManagerExtensionDefaults',
  * 'secretStoreExtensionDefaults', 'containerStorageExtensionDefaults',
  * 'aioExtensionDefaults') are explicitly referenced
  * by the aio-version-checker.py script. If you rename these variables or change their structure,
@@ -26,7 +26,7 @@ type SecretStoreExtension = {
 @export()
 var secretStoreExtensionDefaults = {
   release: {
-    version: '1.0.2'
+    version: '1.1.5'
     train: 'stable'
   }
 }
@@ -77,7 +77,7 @@ type AioCertManagerExtension = {
 @export()
 var aioCertManagerExtensionDefaults = {
   release: {
-    version: '0.6.2'
+    version: '0.7.0'
     train: 'stable'
   }
   settings: {
@@ -107,7 +107,7 @@ type AioExtension = {
 @export()
 var aioExtensionDefaults = {
   release: {
-    version: '1.2.112'
+    version: '1.2.154'
     train: 'stable'
   }
   settings: {
@@ -583,3 +583,117 @@ func tryCreateDeployScriptFiles(
         },
         scriptFiles
       )
+
+@export()
+@description('MQTT connection configuration for Akri connectors.')
+type AkriMqttConfig = {
+  @description('MQTT broker host address.')
+  host: string
+
+  @description('Service account token audience for authentication.')
+  audience: string
+
+  @description('ConfigMap reference for trusted CA certificates.')
+  caConfigmap: string
+
+  @description('Keep alive interval in seconds.')
+  keepAliveSeconds: int?
+
+  @description('Maximum number of in-flight messages.')
+  maxInflightMessages: int?
+
+  @description('Session expiry interval in seconds.')
+  sessionExpirySeconds: int?
+}
+
+@export()
+@description('Resource allocation policy for Akri connector pods.')
+type AkriAllocationPolicy = {
+  @description('Allocation policy type.')
+  policy: 'Bucketized'
+
+  @description('Bucket size for allocation (1-100).')
+  @minValue(1)
+  @maxValue(100)
+  bucketSize: int
+}
+
+@export()
+@description('Secret configuration for Akri connector.')
+type AkriSecretConfig = {
+  @description('Alias for the secret.')
+  secretAlias: string
+
+  @description('Key within the secret.')
+  secretKey: string
+
+  @description('Reference to the secret resource.')
+  secretRef: string
+}
+
+@export()
+@description('Trust settings for Akri connector.')
+type AkriTrustSettings = {
+  @description('Reference to the trust list secret.')
+  trustListSecretRef: string
+}
+
+@export()
+@description('Akri connector template configuration.')
+type AkriConnectorTemplate = {
+  @description('Unique name for the connector (lowercase letters, numbers, and hyphens only).')
+  name: string
+
+  @description('Connector type.')
+  type: 'rest' | 'media' | 'onvif' | 'sse' | 'custom'
+
+  @description('Custom endpoint type (required for custom connectors).')
+  customEndpointType: string?
+
+  @description('Custom image name (required for custom connectors).')
+  customImageName: string?
+
+  @description('Custom endpoint version.')
+  customEndpointVersion: string?
+
+  @description('Custom connector metadata reference.')
+  customConnectorMetadataRef: string?
+
+  @description('Container registry for pulling connector images.')
+  registry: string?
+
+  @description('Image tag for the connector.')
+  imageTag: string?
+
+  @description('Number of connector replicas.')
+  @minValue(1)
+  @maxValue(10)
+  replicas: int?
+
+  @description('Image pull policy.')
+  imagePullPolicy: ('Always' | 'IfNotPresent' | 'Never')?
+
+  @description('Log level for connector diagnostics.')
+  logLevel: ('trace' | 'debug' | 'info' | 'warning' | 'error' | 'critical')?
+
+  @description('MQTT configuration override for this connector.')
+  mqttConfig: AkriMqttConfig?
+
+  @description('Minimum AIO version requirement.')
+  aioMinVersion: string?
+
+  @description('Maximum AIO version requirement.')
+  aioMaxVersion: string?
+
+  @description('Resource allocation policy.')
+  allocation: AkriAllocationPolicy?
+
+  @description('Additional configuration key-value pairs.')
+  additionalConfiguration: object?
+
+  @description('Secret configurations.')
+  secrets: AkriSecretConfig[]?
+
+  @description('Trust settings configuration.')
+  trustSettings: AkriTrustSettings?
+}

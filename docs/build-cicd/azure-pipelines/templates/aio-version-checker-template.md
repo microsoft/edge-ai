@@ -99,21 +99,20 @@ The template runs through the following process:
 
 The version checker verifies these components:
 
-| Component         | Terraform Name           | Bicep Name                        | Remote Manifest Source |
-|-------------------|--------------------------|-----------------------------------|------------------------|
-| Platform          | platform                 | aioPlatformExtensionDefaults      | enablement             |
-| Secret Store      | secret_sync_controller   | secretStoreExtensionDefaults      | enablement             |
-| Container Storage | edge_storage_accelerator | containerStorageExtensionDefaults | enablement             |
-| IoT Operations    | azure-iot-operations     | aioExtensionDefaults              | instance               |
+| Component      | Terraform Name         | Bicep Name                      | Remote Manifest Source |
+|----------------|------------------------|---------------------------------|------------------------|
+| Cert Manager   | cert_manager           | aioCertManagerExtensionDefaults | enablement             |
+| Secret Store   | secret_sync_controller | secretStoreExtensionDefaults    | enablement             |
+| IoT Operations | azure-iot-operations   | aioExtensionDefaults            | instance               |
 
 ### Files Checked
 
 - **Terraform**:
-- `./src/040-iot-ops/terraform/variables.init.tf` - Platform components
-- `./src/040-iot-ops/terraform/variables.instance.tf` - IoT Operations instance config
+- `./src/100-edge/110-iot-ops/terraform/variables.init.tf` - Cert Manager and enablement components
+- `./src/100-edge/110-iot-ops/terraform/variables.instance.tf` - IoT Operations instance config
 
 - **Bicep**:
-- `./src/040-iot-ops/bicep/types.bicep` - All component extension defaults
+- `./src/100-edge/110-iot-ops/bicep/types.bicep` - All component extension defaults
 
 ## Examples
 

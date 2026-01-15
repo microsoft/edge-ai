@@ -2,6 +2,7 @@ metadata name = 'Minimum Single Node Cluster Blueprint'
 metadata description = 'Deploys the minimal set of resources required for Azure IoT Operations on a single-node, Arc-enabled Kubernetes cluster.'
 
 import * as core from './types.core.bicep'
+import * as assetTypes from '../../../src/100-edge/111-assets/bicep/types.bicep'
 
 targetScope = 'subscription'
 
@@ -52,6 +53,37 @@ param shouldInitAio bool = true
 
 @description('Whether to deploy an Azure IoT Operations Instance and all of its required components into the connected cluster.')
 param shouldDeployAio bool = true
+
+/*
+  Device Configuration Parameters
+*/
+
+@description('List of namespaced devices to create.')
+param namespacedDevices assetTypes.NamespacedDevice[] = []
+
+/*
+  Legacy Asset Configuration Parameters
+*/
+
+@description('List of asset endpoint profiles to create.')
+param assetEndpointProfiles assetTypes.AssetEndpointProfile[] = []
+
+@description('List of legacy assets to create.')
+param legacyAssets assetTypes.LegacyAsset[] = []
+
+/*
+  Namespaced Asset Configuration Parameters
+*/
+
+@description('List of namespaced assets to create.')
+param namespacedAssets assetTypes.NamespacedAsset[] = []
+
+/*
+  Feature Flag Parameters
+*/
+
+@description('Whether to create a default namespaced asset and device.')
+param shouldCreateDefaultNamespacedAsset bool = true
 
 /*
   Resources
@@ -167,7 +199,6 @@ module edgeIotOps '../../../src/100-edge/110-iot-ops/bicep/main.bicep' = {
 
     // Minimize resource usage
     shouldEnableOpcUaSimulator: false
-    shouldEnableOpcUaSimulatorAsset: false
     shouldEnableOtelCollector: false
 
     // Trust Configuration Parameters - use self-signed for simplicity
@@ -179,6 +210,20 @@ module edgeIotOps '../../../src/100-edge/110-iot-ops/bicep/main.bicep' = {
 
     // Deployment Identity and Script Parameters - disable deployment scripts to minimize resources
     shouldDeployAioDeploymentScripts: false
+  }
+}
+module edgeAssets '../../../src/100-edge/111-assets/bicep/main.bicep' = {
+  name: '${deployment().name}-ea1'
+  scope: resourceGroup(resourceGroupName)
+  params: {
+    common: common
+    customLocationId: edgeIotOps.outputs.customLocationId
+    adrNamespaceName: cloudData.outputs.adrNamespaceName
+    namespacedDevices: namespacedDevices
+    namespacedAssets: namespacedAssets
+    assetEndpointProfiles: assetEndpointProfiles
+    legacyAssets: legacyAssets
+    shouldCreateDefaultNamespacedAsset: shouldCreateDefaultNamespacedAsset
   }
 }
 
@@ -195,5 +240,5 @@ output vmUsername string = cloudVmHost.outputs.adminUsername
 @description('An array containing the names of all virtual machines that were deployed as part of this blueprint.')
 output vmNames array = cloudVmHost.outputs.vmNames
 
-@description('The ID of the Azure IoT Operations Platform Extension.')
-output aioPlatformExtensionId string = edgeIotOps.outputs.aioPlatformExtensionId
+@description('The ID of the Azure IoT Operations Cert-Manager Extension.')
+output aioCertManagerExtensionId string = edgeIotOps.outputs.aioCertManagerExtensionId

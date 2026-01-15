@@ -2,12 +2,23 @@
 
 This component deploys and manages Kubernetes asset definitions for Edge AI applications. It facilitates the creation of asset types and asset instances that can be utilized across your Edge AI infrastructure.
 
+## API Version Support
+
+This implementation supports:
+
+* ✅ Microsoft Device Registry REST API **2025-10-01** (stable)
+* ✅ Microsoft Device Registry REST API **2025-11-01-preview** (preview)
+
+**Forward Compatibility:** Current implementation is fully compatible with both API versions due to zero breaking changes and additive-only enhancements in the preview version.
+
+**Reference:** [API Version Compatibility Research](../../.copilot-tracking/research/20260108-api-version-compatibility-research.md)
+
 ## Features
 
-- Create and manage asset type definitions
-- Deploy asset instances with their properties
-- Support for custom Kubernetes manifest deployment via scripts
-- Integration with Azure Arc-enabled Kubernetes clusters
+* Create and manage asset type definitions
+* Deploy asset instances with their properties
+* Support for custom Kubernetes manifest deployment via scripts
+* Integration with Azure Arc-enabled Kubernetes clusters
 
 ## Usage
 
@@ -73,6 +84,6 @@ module "assets" {
 
 ## Requirements
 
-- Azure Arc-enabled Kubernetes cluster
-- Terraform >= 1.9.8
-- Azure CLI with `connectedk8s` extension
+* Azure Arc-enabled Kubernetes cluster
+* Terraform >= 1.9.8
+* Azure CLI with `connectedk8s` extension

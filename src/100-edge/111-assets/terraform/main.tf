@@ -20,16 +20,16 @@ locals {
     default_datasets_configuration = "{\"samplingInterval\":500,\"queueSize\":1,\"publishingInterval\":1000}"
     description                    = "An oven is essential for baking a wide variety of products."
     display_name                   = "oven"
-    documentation_uri              = "http://docs.oven.asset.contoso"
+    documentation_uri              = "http://docs.contoso.com/ovens"
     enabled                        = true
-    hardware_revision              = "http://docs.oven.asset.contoso"
-    manufacturer                   = "http://asset.oven.contoso"
-    manufacturer_uri               = "http://oven.asset.contoso"
-    model                          = "Mymodel"
+    hardware_revision              = "2.3"
+    manufacturer                   = "Contoso"
+    manufacturer_uri               = "http://www.contoso.com/ovens"
+    model                          = "Oven-003"
     name                           = "oven"
     product_code                   = "12345C"
     serial_number                  = "12345"
-    software_revision              = "1.1"
+    software_revision              = "14.1"
     datasets = [
       {
         name = "default-dataset"
@@ -132,10 +132,7 @@ locals {
       }
     ]
     default_datasets_configuration = "{\"publishingInterval\":1000,\"samplingInterval\":500,\"queueSize\":1}"
-    default_events_configuration   = "{\"publishingInterval\":1000,\"samplingInterval\":500,\"queueSize\":1}"
   }
-
-  /* Processed collections for legacy assets with enhanced logic */
 
   processed_asset_endpoint_profiles = {
     for profile in concat(
@@ -258,9 +255,16 @@ locals {
           destinations = try(dataset.destinations, [])
         }
       ]
+      streams           = try(asset.streams, [])
+      event_groups      = try(asset.event_groups, [])
+      management_groups = try(asset.management_groups, [])
       default_datasets_configuration = coalesce(
         try(asset.default_datasets_configuration, null),
         "{\"publishingInterval\":1000,\"samplingInterval\":500,\"queueSize\":1}"
+      )
+      default_streams_configuration = coalesce(
+        try(asset.default_streams_configuration, null),
+        "{\"bufferSize\":1024,\"compressionEnabled\":false}"
       )
       default_events_configuration = coalesce(
         try(asset.default_events_configuration, null),
@@ -357,6 +361,70 @@ resource "azapi_resource" "namespaced_asset" {
           )
         ]
       },
+      length(each.value.streams) > 0 ? {
+        streams = [
+          for stream in each.value.streams : merge(
+            {
+              name         = stream.name
+              destinations = try(stream.destinations, [])
+            },
+            stream.stream_configuration != null ? { streamConfiguration = stream.stream_configuration } : {},
+            stream.type_ref != null ? { typeRef = stream.type_ref } : {}
+          )
+        ]
+      } : {},
+      length(each.value.event_groups) > 0 ? {
+        eventGroups = [
+          for event_group in each.value.event_groups : merge(
+            {
+              name = event_group.name
+              events = [
+                for event in event_group.events : merge(
+                  {
+                    name       = event.name
+                    dataSource = event.data_source
+                  },
+                  event.event_configuration != null ? { eventConfiguration = event.event_configuration } : {},
+                  event.type_ref != null ? { typeRef = event.type_ref } : {},
+                  length(try(event.destinations, [])) > 0 ? { destinations = event.destinations } : {}
+                )
+              ]
+            },
+            event_group.data_source != null ? { dataSource = event_group.data_source } : {},
+            event_group.event_group_configuration != null ? { eventGroupConfiguration = event_group.event_group_configuration } : {},
+            event_group.type_ref != null ? { typeRef = event_group.type_ref } : {},
+            length(try(event_group.default_destinations, [])) > 0 ? { defaultDestinations = event_group.default_destinations } : {}
+          )
+        ]
+      } : {},
+      length(each.value.management_groups) > 0 ? {
+        managementGroups = [
+          for management_group in each.value.management_groups : merge(
+            {
+              name = management_group.name
+              actions = [
+                for action in management_group.actions : merge(
+                  {
+                    name       = action.name
+                    actionType = action.action_type
+                    targetUri  = action.target_uri
+                  },
+                  action.topic != null ? { topic = action.topic } : {},
+                  action.timeout_in_seconds != null ? { timeoutInSeconds = action.timeout_in_seconds } : {},
+                  action.action_configuration != null ? { actionConfiguration = action.action_configuration } : {},
+                  action.type_ref != null ? { typeRef = action.type_ref } : {}
+                )
+              ]
+            },
+            management_group.data_source != null ? { dataSource = management_group.data_source } : {},
+            management_group.management_group_configuration != null ? { managementGroupConfiguration = management_group.management_group_configuration } : {},
+            management_group.type_ref != null ? { typeRef = management_group.type_ref } : {},
+            management_group.default_topic != null ? { defaultTopic = management_group.default_topic } : {},
+            management_group.default_timeout_in_seconds != null ? { defaultTimeoutInSeconds = management_group.default_timeout_in_seconds } : {}
+          )
+        ]
+      } : {},
+      length(each.value.streams) > 0 ? { defaultStreamsConfiguration = each.value.default_streams_configuration } : {},
       each.value.description != null ? { description = each.value.description } : {},
       each.value.documentation_uri != null ? { documentationUri = each.value.documentation_uri } : {},
       each.value.hardware_revision != null ? { hardwareRevision = each.value.hardware_revision } : {},

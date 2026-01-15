@@ -17,6 +17,10 @@ Provisions cloud resources required for Azure IoT Operations including Schema Re
 |keyVaultResourceGroupName|The name for the Resource Group for the Key Vault.|`string`|[resourceGroup().name]|no|
 |shouldAssignAdminUserRole|Whether or not to create a role assignment for an admin user.|`bool`|`true`|no|
 |adminUserObjectId|The Object ID for an admin user that will be granted the "Key Vault Secrets Officer" role.|`string`|[deployer().objectId]|no|
+|shouldCreateKeyVaultPrivateEndpoint|Whether to create a private endpoint for the Key Vault.|`bool`|`false`|no|
+|keyVaultPrivateEndpointSubnetId|Subnet resource ID for the Key Vault private endpoint.|`string`|n/a|no|
+|keyVaultVirtualNetworkId|Virtual network resource ID for the Key Vault private DNS link.|`string`|n/a|no|
+|shouldEnableKeyVaultPublicNetworkAccess|Whether to enable public network access on the Key Vault.|`bool`|`true`|no|
 |telemetry_opt_out|Whether to opt out of telemetry data collection.|`bool`|`false`|no|
 
 ## Resources
@@ -83,6 +87,10 @@ Creates an Azure Key Vault for use with the Secret Sync Extension to securely st
 |keyVaultName|The name of the Key Vault.|`string`|n/a|yes|
 |shouldAssignAdminUserRole|Whether or not to create a role assignment for an admin user.|`bool`|n/a|yes|
 |adminUserObjectId|The Object ID for an admin user that will be granted the "Key Vault Secrets Officer" role.|`string`|n/a|yes|
+|shouldCreatePrivateEndpoint|Whether to create a private endpoint for the Key Vault.|`bool`|`false`|no|
+|privateEndpointSubnetId|Subnet resource ID for the Key Vault private endpoint.|`string`|n/a|no|
+|virtualNetworkId|Virtual network resource ID for the Key Vault private DNS link.|`string`|n/a|no|
+|shouldEnablePublicNetworkAccess|Whether public network access remains enabled on the Key Vault.|`bool`|`true`|no|
 
 #### Resources for keyVault
 
@@ -90,6 +98,10 @@ Creates an Azure Key Vault for use with the Secret Sync Extension to securely st
 | :--- | :--- | :--- |
 |keyVault|`Microsoft.KeyVault/vaults`|2023-07-01|
 |keyVaultSecretsOfficerCurrentUser|`Microsoft.Authorization/roleAssignments`|2022-04-01|
+|keyVaultPrivateEndpoint|`Microsoft.Network/privateEndpoints`|2023-09-01|
+|keyVaultPrivateDnsZone|`Microsoft.Network/privateDnsZones`|2020-06-01|
+|keyVaultDnsZoneLink|`Microsoft.Network/privateDnsZones/virtualNetworkLinks`|2020-06-01|
+|keyVaultPrivateDnsRecord|`Microsoft.Network/privateDnsZones/A`|2020-06-01|
 
 #### Outputs for keyVault
 
@@ -97,6 +109,11 @@ Creates an Azure Key Vault for use with the Secret Sync Extension to securely st
 | :--- | :--- | :--- |
 |keyVaultName|`string`|The name of the Secret Store Extension Key Vault.|
 |keyVaultId|`string`|The resource ID of the Secret Store Extension Key Vault.|
+|keyVaultPrivateEndpointId|`string`|The Key Vault private endpoint ID when created.|
+|keyVaultPrivateEndpointName|`string`|The Key Vault private endpoint name when created.|
+|keyVaultPrivateEndpointIp|`string`|The Key Vault private endpoint IP address when created.|
+|keyVaultPrivateDnsZoneId|`string`|The Key Vault private DNS zone ID when created.|
+|keyVaultPrivateDnsZoneName|`string`|The Key Vault private DNS zone name when created.|
 
 ## User Defined Types
 
@@ -117,6 +134,11 @@ Common settings for the components.
 | :--- | :--- | :--- |
 |keyVaultName|`string`|The name of the Secret Store Extension Key Vault.|
 |keyVaultId|`string`|The resource ID of the Secret Store Extension Key Vault.|
+|keyVaultPrivateEndpointId|`string`|The Key Vault private endpoint ID when created.|
+|keyVaultPrivateEndpointName|`string`|The Key Vault private endpoint name when created.|
+|keyVaultPrivateEndpointIp|`string`|The Key Vault private endpoint IP address when created.|
+|keyVaultPrivateDnsZoneId|`string`|The Key Vault private DNS zone ID when created.|
+|keyVaultPrivateDnsZoneName|`string`|The Key Vault private DNS zone name when created.|
 |sseIdentityName|`string`|The Secret Store Extension User Assigned Managed Identity name.|
 |sseIdentityId|`string`|The Secret Store Extension User Assigned Managed Identity ID.|
 |sseIdentityPrincipalId|`string`|The Secret Store Extension User Assigned Managed Identity Principal ID.|

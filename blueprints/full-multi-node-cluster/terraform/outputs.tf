@@ -46,3 +46,22 @@ output "managed_redis_connection_info" {
   sensitive   = true
   value       = try(module.cloud_managed_redis[0].connection_info, null)
 }
+
+/*
+ * AI Foundry Outputs
+ */
+
+output "ai_foundry" {
+  description = "Azure AI Foundry account resources."
+  value       = try(module.cloud_ai_foundry[0].ai_foundry, null)
+}
+
+output "ai_foundry_projects" {
+  description = "Azure AI Foundry project resources."
+  value       = try(module.cloud_ai_foundry[0].projects, null)
+}
+
+output "ai_foundry_deployments" {
+  description = "Azure AI Foundry model deployments."
+  value       = try(module.cloud_ai_foundry[0].deployments, null)
+}

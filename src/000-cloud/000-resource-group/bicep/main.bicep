@@ -71,10 +71,10 @@ resource existingResourceGroup 'Microsoft.Resources/resourceGroups@2022-09-01' e
 */
 
 @description('The ID of the resource group.')
-output resourceGroupId string = useExistingResourceGroup ? existingResourceGroup.id : newResourceGroup.id
+output resourceGroupId string = useExistingResourceGroup ? existingResourceGroup!.id : newResourceGroup!.id
 
 @description('The name of the resource group.')
 output resourceGroupName string = resourceGroupName
 
 @description('The location of the resource group.')
-output location string = useExistingResourceGroup ? existingResourceGroup.location : newResourceGroup.location
+output location string = useExistingResourceGroup ? existingResourceGroup!.location : newResourceGroup!.location

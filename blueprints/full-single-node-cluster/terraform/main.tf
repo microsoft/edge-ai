@@ -323,6 +323,31 @@ module "cloud_azureml" {
   registry_acr             = try(module.cloud_acr.acr, null)
 }
 
+module "cloud_ai_foundry" {
+  count  = var.should_deploy_ai_foundry ? 1 : 0
+  source = "../../../src/000-cloud/085-ai-foundry/terraform"
+
+  environment     = var.environment
+  resource_prefix = var.resource_prefix
+  location        = var.location
+  instance        = var.instance
+
+  resource_group = module.cloud_resource_group.resource_group
+
+  sku                                 = var.ai_foundry_sku
+  should_enable_public_network_access = var.ai_foundry_should_enable_public_network_access
+  should_enable_local_auth            = var.ai_foundry_should_enable_local_auth
+  should_enable_private_endpoint      = var.ai_foundry_should_enable_private_endpoint
+  private_endpoint_subnet_id          = var.ai_foundry_should_enable_private_endpoint ? try(module.cloud_networking.subnet_id, null) : null
+  private_dns_zone_ids                = var.ai_foundry_should_enable_private_endpoint ? var.ai_foundry_private_dns_zone_ids : []
+
+  ai_projects       = var.ai_foundry_projects
+  rai_policies      = var.ai_foundry_rai_policies
+  model_deployments = var.ai_foundry_model_deployments
+
+  tags = var.tags
+}
+
 module "edge_cncf_cluster" {
   source = "../../../src/100-edge/100-cncf-cluster/terraform"
 
@@ -369,6 +394,7 @@ module "edge_iot_ops" {
   should_enable_akri_onvif_connector = var.should_enable_akri_onvif_connector
   should_enable_akri_sse_connector   = var.should_enable_akri_sse_connector
   custom_akri_connectors             = var.custom_akri_connectors
+
 }
 
 module "edge_assets" {

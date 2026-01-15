@@ -15,6 +15,12 @@ Creates storage resources including Azure Storage Account and Schema Registry fo
 |storageAccountResourceGroupName|The name for the Resource Group for the Storage Account.|`string`|[if(parameters('shouldCreateStorageAccount'), resourceGroup().name, fail('storageAccountResourceGroupName required when shouldCreateStorageAccount is false'))]|no|
 |storageAccountName|The name for the Storage Account used by the Schema Registry.|`string`|[if(parameters('shouldCreateStorageAccount'), format('st{0}', uniqueString(resourceGroup().id)), fail('storageAccountName required when shouldCreateStorageAccount is false'))]|no|
 |storageAccountSettings|The settings for the new Storage Account.|`[_1.StorageAccountSettings](#user-defined-types)`|[variables('_1.storageAccountSettingsDefaults')]|no|
+|shouldEnableStoragePrivateEndpoint|Whether to enable a private endpoint for the Storage Account.|`bool`|`false`|no|
+|storagePrivateEndpointSubnetId|Subnet resource ID used when deploying the Storage Account private endpoint.|`string`|n/a|no|
+|storageVirtualNetworkId|Virtual network resource ID for Storage Account private DNS links.|`string`|n/a|no|
+|shouldEnableStoragePublicNetworkAccess|Whether to enable public network access for the Storage Account.|`bool`|`true`|no|
+|shouldCreateBlobPrivateDnsZone|Whether to create the blob private DNS zone. Set to false if using a shared DNS zone from observability component.|`bool`|`true`|no|
+|blobPrivateDnsZoneId|Existing blob Private DNS zone ID to reuse when private endpoints are enabled.|`string`|n/a|no|
 |shouldCreateSchemaRegistry|Whether to create the ADR Schema Registry.|`bool`|`true`|no|
 |shouldCreateSchemaContainer|Whether to create the Blob Container for schemas.|`bool`|`true`|no|
 |schemaContainerName|The name for the Blob Container for schemas.|`string`|schemas|no|
@@ -59,6 +65,12 @@ Creates an Azure Storage Account and blob container for storing schemas.
 |storageAccountName|The name of the storage account.|`string`|n/a|yes|
 |shouldCreateSchemaContainer|Whether to create the Blob Container for schemas.|`bool`|n/a|yes|
 |schemaContainerName|The name of the blob container for schemas.|`string`|n/a|yes|
+|shouldEnablePrivateEndpoint|Whether to enable private endpoints for the storage account.|`bool`|`false`|no|
+|privateEndpointSubnetId|Subnet resource ID used for storage private endpoints.|`string`|n/a|no|
+|virtualNetworkId|Virtual network resource ID used for private DNS links.|`string`|n/a|no|
+|shouldEnablePublicNetworkAccess|Whether to enable public network access for the storage account.|`bool`|`true`|no|
+|shouldCreateBlobPrivateDnsZone|Whether to create the blob Private DNS zone when a shared zone is not supplied.|`bool`|`true`|no|
+|blobPrivateDnsZoneId|Existing blob Private DNS zone ID to reuse for the storage private endpoint.|`string`|n/a|no|
 
 #### Resources for storageAccount
 
@@ -67,6 +79,18 @@ Creates an Azure Storage Account and blob container for storing schemas.
 |storageAccount::blobService::container|`Microsoft.Storage/storageAccounts/blobServices/containers`|2024-01-01|
 |storageAccount::blobService|`Microsoft.Storage/storageAccounts/blobServices`|2024-01-01|
 |storageAccount|`Microsoft.Storage/storageAccounts`|2024-01-01|
+|blobPrivateDnsZone|`Microsoft.Network/privateDnsZones`|2020-06-01|
+|blobPrivateDnsZoneLink|`Microsoft.Network/privateDnsZones/virtualNetworkLinks`|2020-06-01|
+|filePrivateDnsZone|`Microsoft.Network/privateDnsZones`|2020-06-01|
+|filePrivateDnsZoneLink|`Microsoft.Network/privateDnsZones/virtualNetworkLinks`|2020-06-01|
+|dfsPrivateDnsZone|`Microsoft.Network/privateDnsZones`|2020-06-01|
+|dfsPrivateDnsZoneLink|`Microsoft.Network/privateDnsZones/virtualNetworkLinks`|2020-06-01|
+|storageBlobPrivateEndpoint|`Microsoft.Network/privateEndpoints`|2023-05-01|
+|storageFilePrivateEndpoint|`Microsoft.Network/privateEndpoints`|2023-05-01|
+|storageDfsPrivateEndpoint|`Microsoft.Network/privateEndpoints`|2023-05-01|
+|storageBlobPrivateDnsZoneGroup|`Microsoft.Network/privateEndpoints/privateDnsZoneGroups`|2023-05-01|
+|storageFilePrivateDnsZoneGroup|`Microsoft.Network/privateEndpoints/privateDnsZoneGroups`|2023-05-01|
+|storageDfsPrivateDnsZoneGroup|`Microsoft.Network/privateEndpoints/privateDnsZoneGroups`|2023-05-01|
 
 #### Outputs for storageAccount
 
@@ -77,6 +101,10 @@ Creates an Azure Storage Account and blob container for storing schemas.
 |primaryBlobEndpoint|`string`|The primary blob endpoint URL of the storage account.|
 |schemaContainerName|`string`|The name of the schema container.|
 |schemaContainerId|`string`|The resource ID of the schema container, or null if not created.|
+|storageBlobPrivateEndpointId|`string`|The blob private endpoint ID when created.|
+|storageBlobPrivateEndpointIp|`string`|The blob private endpoint IP address when created.|
+|blobPrivateDnsZoneId|`string`|The blob private DNS zone ID when available.|
+|blobPrivateDnsZoneName|`string`|The blob private DNS zone name when managed by this component.|
 
 ### schemaRegistry
 
@@ -223,6 +251,10 @@ Common settings for the components.
 |storageAccountName|`string`|The Storage Account Name.|
 |storageAccountId|`string`|The Storage Account ID.|
 |schemaContainerName|`string`|The Schema Container Name.|
+|storageBlobPrivateEndpointId|`string`|The blob private endpoint ID for the Storage Account when created.|
+|storageBlobPrivateEndpointIp|`string`|The blob private endpoint IP address for the Storage Account when created.|
+|blobPrivateDnsZoneId|`string`|The blob private DNS zone ID when managed by this component.|
+|blobPrivateDnsZoneName|`string`|The blob private DNS zone name when managed by this component.|
 |adrNamespaceName|`string`|The ADR Namespace Name.|
 |adrNamespaceId|`string`|The ADR Namespace ID.|
 |adrNamespace|`object`|The complete ADR namespace resource information.|
