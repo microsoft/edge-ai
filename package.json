@@ -47,7 +47,7 @@
 		"markdown-table-formatter": "1.6.1",
 		"markdownlint": "0.38.0",
 		"markdownlint-cli": "0.46.0",
-		"mega-linter-runner": "^8.1.0",
+		"mega-linter-runner": "^9.3.0",
 		"js-yaml": "^4.1.1",
 		"glob": "^11.1.0"
 	},
