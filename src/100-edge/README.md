@@ -10,14 +10,24 @@ The 100-edge components provide the edge computing infrastructure including CNCF
 
 ### Core Edge Platform
 
-- **[100-cncf-cluster](./100-cncf-cluster/README.md)** - CNCF cluster installation (K3s) with Arc enablement and workload identity. Extensible approach supports future Kubernetes distributions
-- **[110-iot-ops](./110-iot-ops/README.md)** - Azure IoT Operations deployment with core infrastructure components (MQ, Device Registry, etc.). Compatible with any Arc-enabled cluster
-- **[111-assets](./111-assets/README.md)** - Asset management and device configuration
+| Component                                        | Description                                                                    | Terraform | Bicep |
+|--------------------------------------------------|--------------------------------------------------------------------------------|-----------|-------|
+| [100-cncf-cluster](./100-cncf-cluster/README.md) | CNCF cluster setup with K3s, Azure Arc enablement, and workload identity       | ✅         | ✅     |
+| [110-iot-ops](./110-iot-ops/README.md)           | Azure IoT Operations deployment with MQTT broker, trust management, and OPC UA | ✅         | ✅     |
+| [111-assets](./111-assets/README.md)             | Asset management with asset types, instances, and custom Kubernetes manifests  | ✅         | ✅     |
 
 ### Edge Services
 
-- **[120-observability](./120-observability/README.md)** - Edge-specific monitoring, logging, and observability
-- **[130-messaging](./130-messaging/README.md)** - Edge messaging and communication services
+| Component                                          | Description                                                                  | Terraform | Bicep |
+|----------------------------------------------------|------------------------------------------------------------------------------|-----------|-------|
+| [120-observability](./120-observability/README.md) | Edge monitoring with Container Insights, Prometheus, and Grafana integration | ✅         | ✅     |
+| [130-messaging](./130-messaging/README.md)         | Edge dataflows for Event Hub, Event Grid, and Fabric RTI destinations        | ✅         | ✅     |
+
+### AI & Machine Learning
+
+| Component                              | Description                                                                      | Terraform | Bicep |
+|----------------------------------------|----------------------------------------------------------------------------------|-----------|-------|
+| [140-azureml](./140-azureml/README.md) | Azure ML Arc extension for distributed training and secure inference at the edge | ✅         | ❌     |
 
 ## Architecture
 
@@ -26,17 +36,20 @@ The edge infrastructure follows a layered approach with integrated services:
 ```mermaid
 flowchart TD
     %% Foundation
-    K3s[100-cncf-cluster<br/>K3s Cluster<br/>Arc Enablement]
+    K3s[100-cncf-cluster<br/>K3s Cluster<br/>Arc Enablement<br/>Workload Identity]
 
     %% Core Platform
-    IoTOps[110-iot-ops<br/>Azure IoT Operations<br/>Core Infrastructure]
+    IoTOps[110-iot-ops<br/>Azure IoT Operations<br/>MQTT Broker<br/>OPC UA Simulator]
 
     %% Edge Services
-    Assets[111-assets<br/>Asset Management<br/>Device Configuration]
+    Assets[111-assets<br/>Asset Types<br/>Asset Instances<br/>Device Configuration]
 
-    Observability[120-observability<br/>Edge Monitoring<br/>Local Metrics]
+    Observability[120-observability<br/>Container Insights<br/>Prometheus<br/>Grafana Integration]
 
-    Messaging[130-messaging<br/>Edge Communication<br/>Protocol Translation]
+    Messaging[130-messaging<br/>Edge Dataflows<br/>Event Hub & Grid<br/>Fabric RTI]
+
+    %% AI & ML
+    AzureML[140-azureml<br/>ML Arc Extension<br/>Distributed Training<br/>Secure Inference]
 
     %% Applications
     EdgeApps[Edge Applications<br/>AI Workloads<br/>Industrial Apps]
@@ -48,15 +61,19 @@ flowchart TD
     IoTOps --> Assets
     IoTOps --> Observability
     IoTOps --> Messaging
+    K3s --> AzureML
 
     %% Service to application flow
     Assets --> EdgeApps
     Observability --> EdgeApps
     Messaging --> EdgeApps
+    AzureML --> EdgeApps
 
     %% Cloud integration
     EdgeApps --> CloudSync
     Observability --> CloudSync
+    Messaging --> CloudSync
+    AzureML --> CloudSync
 
     %% Cross-service relationships
     Assets -.-> Messaging
@@ -68,6 +85,7 @@ flowchart TD
     style Assets fill:#fff3e0,stroke:#e65100,stroke-width:2px
     style Observability fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
     style Messaging fill:#dbeafe,stroke:#1e40af,stroke-width:2px
+    style AzureML fill:#fef3c7,stroke:#d97706,stroke-width:2px
     style EdgeApps fill:#e0f2fe,stroke:#0369a1,stroke-width:2px
     style CloudSync fill:#cffafe,stroke:#059669,stroke-width:2px
 ```
@@ -76,11 +94,20 @@ flowchart TD
 
 Components are numbered to indicate their deployment order and dependencies:
 
+### Core Platform (100-119)
+
 1. **100-cncf-cluster** - Deploy first to establish the Kubernetes foundation (skip if using existing Arc-enabled cluster)
 2. **110-iot-ops** - Install Azure IoT Operations on any Arc-enabled cluster
 3. **111-assets** - Configure asset management and device connectivity
-4. **120-observability** - Set up edge-specific monitoring and logging
-5. **130-messaging** - Configure edge messaging and communication
+
+### Edge Services (120-139)
+
+1. **120-observability** - Set up edge-specific monitoring and logging
+2. **130-messaging** - Configure edge dataflows for cloud destinations
+
+### AI & Machine Learning (140-199)
+
+1. **140-azureml** - Install Azure ML Arc extension for edge ML workloads (optional)
 
 ## Framework Support
 

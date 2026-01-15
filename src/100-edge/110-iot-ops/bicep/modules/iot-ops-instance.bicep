@@ -86,6 +86,9 @@ param shouldCreateAnonymousBrokerListener bool = false
 @description('The settings for Azure IoT Operations Data Flow Instances.')
 param aioDataFlowInstanceConfig types.AioDataFlowInstance
 
+@description('Optional configuration settings to override default IoT Operations extension configuration. Use the same key names as the az iot ops --ops-config parameter.')
+param configurationSettingsOverride object
+
 /*
   Custom Location Parameters
 */
@@ -96,6 +99,9 @@ param customLocationName string
 @description('Whether or not to deploy the Custom Locations Resource Sync Rules for the Azure IoT Operations resources.')
 param shouldDeployResourceSyncRules bool
 
+@description('Additional cluster extension IDs to include in the custom location. (Appended to the default Secret Store and IoT Operations extension IDs)')
+param additionalClusterExtensionIds string[]
+
 /*
   Variables
 */
@@ -105,7 +111,6 @@ var metrics = {
   otelCollectorAddress: shouldEnableOtelCollector
     ? 'aio-otel-collector.${aioExtensionConfig.settings.namespace}.svc.cluster.local:4317'
     : ''
-  exportIntervalSeconds: 60
 }
 
 // For now, only support self signed cert and trust until customer managed has been implemented
@@ -119,6 +124,26 @@ var trust = trustIssuerSettings ?? {
 }
 
 var aioMqBrokerAddress = 'mqtts://${aioMqBrokerConfig.brokerListenerServiceName}.${aioExtensionConfig.settings.namespace}:${aioMqBrokerConfig.brokerListenerPort}'
+
+var defaultConfigurationSettings = {
+  #disable-next-line prefer-unquoted-property-names
+  'AgentOperationTimeoutInMinutes': any(aioExtensionConfig.settings.agentOperationTimeoutInMinutes)
+  'connectors.values.mqttBroker.address': aioMqBrokerAddress
+  'connectors.values.mqttBroker.serviceAccountTokenAudience': aioMqBrokerConfig.serviceAccountAudience
+  'dataFlows.values.tinyKube.mqttBroker.hostName': '${aioMqBrokerConfig.brokerListenerServiceName}.${aioExtensionConfig.settings.namespace}'
+  'dataFlows.values.tinyKube.mqttBroker.port': any(aioMqBrokerConfig.brokerListenerPort)
+  'dataFlows.values.tinyKube.mqttBroker.authentication.serviceAccountTokenAudience': aioMqBrokerConfig.serviceAccountAudience
+  'observability.metrics.enabled': '${metrics.enabled}'
+  'observability.metrics.openTelemetryCollectorAddress': metrics.otelCollectorAddress
+  #disable-next-line prefer-unquoted-property-names
+  'trustSource': trustSource
+  'trustBundleSettings.issuer.name': trust.issuerName
+  'trustBundleSettings.issuer.kind': trust.issuerKind
+  'trustBundleSettings.configMap.name': trust.configMapName
+  'trustBundleSettings.configMap.key': trust.configMapKey
+  'schemaRegistry.values.mqttBroker.host': aioMqBrokerAddress
+  'schemaRegistry.values.mqttBroker.serviceAccountTokenAudience': aioMqBrokerConfig.serviceAccountAudience
+}
 
 /*
   Resources
@@ -148,36 +173,21 @@ resource aioExtension 'Microsoft.KubernetesConfiguration/extensions@2023-05-01' 
         releaseNamespace: aioExtensionConfig.settings.namespace
       }
     }
-    configurationSettings: {
-      #disable-next-line prefer-unquoted-property-names
-      'AgentOperationTimeoutInMinutes': any(aioExtensionConfig.settings.agentOperationTimeoutInMinutes)
-      'connectors.values.mqttBroker.address': aioMqBrokerAddress
-      'connectors.values.mqttBroker.serviceAccountTokenAudience': aioMqBrokerConfig.serviceAccountAudience
-      'connectors.values.opcPlcSimulation.deploy': 'false'
-      'connectors.values.opcPlcSimulation.autoAcceptUntrustedCertificates': 'false'
-      'adr.values.Microsoft.CustomLocation.ServiceAccount': 'default'
-      'akri.values.webhookConfiguration.enabled': 'false'
-      'akri.values.certManagerWebhookCertificate.enabled': 'false'
-      'akri.values.agent.extensionService.mqttBroker.hostName': '${aioMqBrokerConfig.brokerListenerServiceName}.${aioExtensionConfig.settings.namespace}'
-      'akri.values.agent.extensionService.mqttBroker.port': any(aioMqBrokerConfig.brokerListenerPort)
-      'akri.values.agent.extensionService.mqttBroker.serviceAccountAudience': aioMqBrokerConfig.serviceAccountAudience
-      'akri.values.agent.host.containerRuntimeSocket': ''
-      'akri.values.kubernetesDistro': toLower(aioExtensionConfig.settings.kubernetesDistro)
-      'mqttBroker.values.global.quickstart': 'false'
-      'mqttBroker.values.operator.firstPartyMetricsOn': 'true'
-      'observability.metrics.enabled': '${metrics.enabled}'
-      'observability.metrics.openTelemetryCollectorAddress': metrics.otelCollectorAddress
-      'observability.metrics.exportIntervalSeconds': '${metrics.exportIntervalSeconds}'
-      #disable-next-line prefer-unquoted-property-names
-      'trustSource': trustSource
-      'trustBundleSettings.issuer.name': trust.issuerName
-      'trustBundleSettings.issuer.kind': trust.issuerKind
-      'trustBundleSettings.configMap.name': trust.configMapName
-      'trustBundleSettings.configMap.key': trust.configMapKey
-      'schemaRegistry.values.mqttBroker.host': aioMqBrokerAddress
-      'schemaRegistry.values.mqttBroker.tlsEnabled': any(true)
-      'schemaRegistry.values.mqttBroker.serviceAccountTokenAudience': aioMqBrokerConfig.serviceAccountAudience
-    }
+    configurationSettings: union(defaultConfigurationSettings, configurationSettingsOverride)
+  }
+}
+
+@description('Role assignment granting the IoT Operations extension Contributor access to the Schema Registry for connector operations.')
+resource aioExtensionSchemaRegistryContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  scope: schemaRegistry
+  name: guid(schemaRegistry.id, aioExtension.id, 'b24988ac-6180-42a0-ab88-20f7382dd24c')
+  properties: {
+    principalId: aioExtension.identity.principalId
+    roleDefinitionId: subscriptionResourceId(
+      'Microsoft.Authorization/roleDefinitions',
+      'b24988ac-6180-42a0-ab88-20f7382dd24c'
+    )
+    principalType: 'ServicePrincipal'
   }
 }
 
@@ -191,7 +201,7 @@ resource customLocation 'Microsoft.ExtendedLocation/customLocations@2021-08-31-p
     hostResourceId: arcConnectedCluster.id
     namespace: aioExtensionConfig.settings.namespace
     displayName: customLocationName
-    clusterExtensionIds: [secretStoreExtensionId, aioExtension.id]
+    clusterExtensionIds: concat([secretStoreExtensionId, aioExtension.id], additionalClusterExtensionIds)
   }
 }
 

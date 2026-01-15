@@ -105,17 +105,15 @@ IaCType = Literal["terraform", "bicep"]
 
 # Component mappings for Terraform (local_name:remote_name)
 TERRAFORM_COMPONENTS = [
-    "platform:platform",
+    "cert_manager:certManager",
     "secret_sync_controller:secretStore",
-    "edge_storage_accelerator:containerStorage",
     "azure-iot-operations:iotOperations",  # Maps to iotOperations in manifest
 ]
 
 # Component mappings for Bicep (bicep_name:remote_name)
 BICEP_COMPONENTS = [
-    "aioPlatformExtensionDefaults:platform",
+    "aioCertManagerExtensionDefaults:certManager",
     "secretStoreExtensionDefaults:secretStore",
-    "containerStorageExtensionDefaults:containerStorage",
     "aioExtensionDefaults:iotOperations",  # Maps to iotOperations in manifest
 ]
 

@@ -32,6 +32,28 @@ param storageAccountName string = shouldCreateStorageAccount
 param storageAccountSettings types.StorageAccountSettings = types.storageAccountSettingsDefaults
 
 /*
+  Private Networking Parameters
+*/
+
+@description('Whether to enable a private endpoint for the Storage Account.')
+param shouldEnableStoragePrivateEndpoint bool = false
+
+@description('Subnet resource ID used when deploying the Storage Account private endpoint.')
+param storagePrivateEndpointSubnetId string?
+
+@description('Virtual network resource ID for Storage Account private DNS links.')
+param storageVirtualNetworkId string?
+
+@description('Whether to enable public network access for the Storage Account.')
+param shouldEnableStoragePublicNetworkAccess bool = true
+
+@description('Whether to create the blob private DNS zone. Set to false if using a shared DNS zone from observability component.')
+param shouldCreateBlobPrivateDnsZone bool = true
+
+@description('Existing blob Private DNS zone ID to reuse when private endpoints are enabled.')
+param blobPrivateDnsZoneId string?
+
+/*
   Schema Registry Parameters
 */
 
@@ -94,10 +116,16 @@ module storageAccount 'modules/storage-account.bicep' = if (shouldCreateStorageA
   scope: resourceGroup(storageAccountResourceGroupName)
   params: {
     common: common
+    blobPrivateDnsZoneId: blobPrivateDnsZoneId
+    privateEndpointSubnetId: storagePrivateEndpointSubnetId
     shouldCreateSchemaContainer: shouldCreateSchemaContainer
+    shouldCreateBlobPrivateDnsZone: shouldCreateBlobPrivateDnsZone
+    shouldEnablePrivateEndpoint: shouldEnableStoragePrivateEndpoint
+    shouldEnablePublicNetworkAccess: shouldEnableStoragePublicNetworkAccess
     schemaContainerName: schemaContainerName
     storageAccountSettings: storageAccountSettings
     storageAccountName: storageAccountName
+    virtualNetworkId: storageVirtualNetworkId
   }
 }
 
@@ -155,6 +183,18 @@ output storageAccountId string = shouldCreateStorageAccount ? storageAccount!.ou
 output schemaContainerName string = shouldCreateStorageAccount
   ? storageAccount!.outputs.schemaContainerName
   : schemaContainerName
+
+@description('The blob private endpoint ID for the Storage Account when created.')
+output storageBlobPrivateEndpointId string? = storageAccount.?outputs.?storageBlobPrivateEndpointId
+
+@description('The blob private endpoint IP address for the Storage Account when created.')
+output storageBlobPrivateEndpointIp string? = storageAccount.?outputs.?storageBlobPrivateEndpointIp
+
+@description('The blob private DNS zone ID when managed by this component.')
+output blobPrivateDnsZoneId string? = storageAccount.?outputs.?blobPrivateDnsZoneId
+
+@description('The blob private DNS zone name when managed by this component.')
+output blobPrivateDnsZoneName string? = storageAccount.?outputs.?blobPrivateDnsZoneName
 
 /*
   ADR Namespace Outputs

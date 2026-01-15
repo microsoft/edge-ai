@@ -2,6 +2,10 @@ metadata name = 'Full Multi-node Cluster Blueprint'
 metadata description = 'Deploys a complete end-to-end environment for Azure IoT Operations on a multi-node, Arc-enabled Kubernetes cluster.'
 
 import * as core from './types.core.bicep'
+import * as types from '../../../src/100-edge/110-iot-ops/bicep/types.bicep'
+import * as assetTypes from '../../../src/100-edge/111-assets/bicep/types.bicep'
+import * as aiFoundryTypes from '../../../src/000-cloud/085-ai-foundry/bicep/types.bicep'
+import * as vpnGatewayTypes from '../../../src/000-cloud/055-vpn-gateway/bicep/types.bicep'
 
 targetScope = 'subscription'
 
@@ -58,6 +62,96 @@ param serverToken string?
 param shouldCreateAcrPrivateEndpoint bool = false
 
 /*
+  AI Foundry Parameters
+*/
+
+@description('Whether to deploy AI Foundry resources.')
+param shouldDeployAiFoundry bool = false
+
+@description('The AI Foundry configuration settings.')
+param aiFoundryConfig aiFoundryTypes.AiFoundryConfig = aiFoundryTypes.aiFoundryConfigDefaults
+
+@description('Array of AI Foundry projects to create.')
+param aiFoundryProjects aiFoundryTypes.AiProject[] = []
+
+@description('Array of RAI policies to create.')
+param aiFoundryRaiPolicies aiFoundryTypes.RaiPolicy[] = []
+
+@description('Array of model deployments to create.')
+param aiFoundryModelDeployments aiFoundryTypes.ModelDeployment[] = []
+
+@description('Whether to create a private endpoint for AI Foundry.')
+param shouldCreateAiFoundryPrivateEndpoint bool = false
+
+/*
+  NAT Gateway Parameters
+*/
+
+@description('Whether to enable NAT Gateway for managed outbound access.')
+param shouldEnableNatGateway bool = false
+
+@description('Whether to disable default outbound access for subnets when NAT gateway is enabled.')
+param shouldDisableDefaultOutboundAccess bool = true
+
+@description('Number of public IP addresses for NAT Gateway (1-16).')
+@minValue(1)
+@maxValue(16)
+param natGatewayPublicIpCount int = 1
+
+@description('Idle timeout in minutes for NAT gateway connections (4-120).')
+@minValue(4)
+@maxValue(120)
+param natGatewayIdleTimeoutMinutes int = 4
+
+@description('Availability zones for NAT Gateway. Empty array for regional deployment.')
+param natGatewayZones string[] = []
+
+/*
+  VPN Gateway Parameters
+*/
+
+@description('Whether to deploy VPN Gateway for remote access.')
+param shouldEnableVpnGateway bool = false
+
+@description('VPN Gateway configuration settings.')
+param vpnGatewayConfig vpnGatewayTypes.VpnGatewayConfig = vpnGatewayTypes.vpnGatewayConfigDefaults
+
+@description('Azure AD authentication configuration for VPN Gateway.')
+param vpnGatewayAzureAdConfig vpnGatewayTypes.AzureAdConfig = vpnGatewayTypes.azureAdConfigDefaults
+
+/*
+  Private Endpoint and DNS Parameters
+*/
+
+@description('Whether to enable private endpoints across Key Vault, storage, and observability resources.')
+param shouldEnablePrivateEndpoints bool = false
+
+@description('Whether to enable Azure Private Resolver for VPN client DNS resolution of private endpoints.')
+param shouldEnablePrivateResolver bool = false
+
+@description('Address prefix for the private resolver subnet; must be /28 or larger and not overlap with other subnets.')
+param resolverSubnetAddressPrefix string = '10.0.9.0/28'
+
+@description('Whether to enable public network access for the Key Vault.')
+param shouldEnableKeyVaultPublicNetworkAccess bool = true
+
+@description('Whether to enable public network access for the storage account.')
+param shouldEnableStoragePublicNetworkAccess bool = true
+
+/*
+  Subnet Configuration Parameters
+*/
+
+@description('Address prefix for the ACR subnet.')
+param subnetAddressPrefixAcr string = '10.0.4.0/24'
+
+@description('Address prefix for the AKS subnet.')
+param subnetAddressPrefixAks string = '10.0.5.0/24'
+
+@description('Address prefix for the AKS pod subnet.')
+param subnetAddressPrefixAksPod string = '10.0.6.0/24'
+
+/*
   Azure Kubernetes Service Parameters
 */
 
@@ -97,10 +191,48 @@ var shouldEnableOtelCollector = false
 // param shouldEnableOpcUaSimulator bool = true
 var shouldEnableOpcUaSimulator = false
 
-// Currently disable setting shouldDeployAioDeploymentScripts, remove when DeploymentScripts supports AZ CLI 2.71+ (post May 4)
-// @description('Whether or not to enable the OPC UA Simulator Asset for Azure IoT Operations.')
-// param shouldEnableOpcUaSimulatorAsset bool = true
-var shouldEnableOpcUaSimulatorAsset = false
+/*
+  Device Configuration Parameters
+*/
+
+@description('List of namespaced devices to create.')
+param namespacedDevices assetTypes.NamespacedDevice[] = []
+
+/*
+  Legacy Asset Configuration Parameters
+*/
+
+@description('List of asset endpoint profiles to create.')
+param assetEndpointProfiles assetTypes.AssetEndpointProfile[] = []
+
+@description('List of legacy assets to create.')
+param legacyAssets assetTypes.LegacyAsset[] = []
+
+/*
+  Namespaced Asset Configuration Parameters
+*/
+
+@description('List of namespaced assets to create.')
+param namespacedAssets assetTypes.NamespacedAsset[] = []
+
+/*
+  Akri Connectors Parameters
+*/
+
+@description('Deploy Akri REST HTTP Connector template to the IoT Operations instance.')
+param shouldEnableAkriRestConnector bool = false
+
+@description('Deploy Akri Media Connector template to the IoT Operations instance.')
+param shouldEnableAkriMediaConnector bool = false
+
+@description('Deploy Akri ONVIF Connector template to the IoT Operations instance.')
+param shouldEnableAkriOnvifConnector bool = false
+
+@description('Deploy Akri SSE Connector template to the IoT Operations instance.')
+param shouldEnableAkriSseConnector bool = false
+
+@description('List of custom Akri connector templates with user-defined endpoint types and container images.')
+param customAkriConnectors types.AkriConnectorTemplate[] = []
 
 /*
   Resources
@@ -147,6 +279,10 @@ module cloudSecurityIdentity '../../../src/000-cloud/010-security-identity/bicep
   dependsOn: [cloudResourceGroup]
   params: {
     common: common
+    shouldCreateKeyVaultPrivateEndpoint: shouldEnablePrivateEndpoints
+    shouldEnableKeyVaultPublicNetworkAccess: shouldEnableKeyVaultPublicNetworkAccess
+    keyVaultPrivateEndpointSubnetId: shouldEnablePrivateEndpoints ? cloudNetworking.outputs.subnetId : null
+    keyVaultVirtualNetworkId: shouldEnablePrivateEndpoints ? cloudNetworking.outputs.virtualNetworkId : null
   }
 }
 
@@ -156,6 +292,9 @@ module cloudObservability '../../../src/000-cloud/020-observability/bicep/main.b
   dependsOn: [cloudResourceGroup]
   params: {
     common: common
+    shouldEnablePrivateEndpoints: shouldEnablePrivateEndpoints
+    privateEndpointSubnetId: shouldEnablePrivateEndpoints ? cloudNetworking.outputs.subnetId : null
+    virtualNetworkId: shouldEnablePrivateEndpoints ? cloudNetworking.outputs.virtualNetworkId : null
   }
 }
 
@@ -166,6 +305,12 @@ module cloudData '../../../src/000-cloud/030-data/bicep/main.bicep' = {
   params: {
     common: common
     shouldCreateAdrNamespace: true
+    shouldEnableStoragePrivateEndpoint: shouldEnablePrivateEndpoints
+    shouldEnableStoragePublicNetworkAccess: shouldEnableStoragePublicNetworkAccess
+    storagePrivateEndpointSubnetId: shouldEnablePrivateEndpoints ? cloudNetworking.outputs.subnetId : null
+    storageVirtualNetworkId: shouldEnablePrivateEndpoints ? cloudNetworking.outputs.virtualNetworkId : null
+    shouldCreateBlobPrivateDnsZone: !shouldEnablePrivateEndpoints
+    blobPrivateDnsZoneId: shouldEnablePrivateEndpoints ? cloudObservability.outputs.?monitorPrivateDnsZoneBlobId : null
   }
 }
 
@@ -185,6 +330,17 @@ module cloudNetworking '../../../src/000-cloud/050-networking/bicep/main.bicep' 
   dependsOn: [cloudResourceGroup]
   params: {
     common: common
+    natGatewayConfig: {
+      shouldEnable: shouldEnableNatGateway
+      publicIpCount: natGatewayPublicIpCount
+      idleTimeoutMinutes: natGatewayIdleTimeoutMinutes
+      zones: natGatewayZones
+    }
+    privateResolverConfig: {
+      shouldEnable: shouldEnablePrivateResolver
+      subnetAddressPrefix: resolverSubnetAddressPrefix
+    }
+    defaultOutboundAccessEnabled: !(shouldEnableNatGateway && shouldDisableDefaultOutboundAccess)
   }
 }
 
@@ -201,8 +357,20 @@ module cloudVmHost '../../../src/000-cloud/051-vm-host/bicep/main.bicep' = {
   }
 }
 
+module cloudVpnGateway '../../../src/000-cloud/055-vpn-gateway/bicep/main.bicep' = if (shouldEnableVpnGateway) {
+  name: '${deployment().name}-cvg5'
+  scope: resourceGroup(resourceGroupName)
+  dependsOn: [cloudResourceGroup, cloudVmHost, cloudAcr]
+  params: {
+    common: common
+    virtualNetworkName: cloudNetworking.outputs.virtualNetworkName
+    vpnGatewayConfig: vpnGatewayConfig
+    azureAdConfig: vpnGatewayAzureAdConfig
+  }
+}
+
 module cloudAcr '../../../src/000-cloud/060-acr/bicep/main.bicep' = {
-  name: '${deployment().name}-caa5'
+  name: '${deployment().name}-caa6'
   scope: resourceGroup(resourceGroupName)
   dependsOn: [cloudResourceGroup]
   params: {
@@ -210,11 +378,34 @@ module cloudAcr '../../../src/000-cloud/060-acr/bicep/main.bicep' = {
     virtualNetworkName: cloudNetworking.outputs.virtualNetworkName
     networkSecurityGroupName: cloudNetworking.outputs.networkSecurityGroupName
     shouldCreateAcrPrivateEndpoint: shouldCreateAcrPrivateEndpoint
+    natGatewayId: shouldEnableNatGateway ? cloudNetworking.outputs.?natGatewayId : null
+    acrNetworkConfig: {
+      subnetAddressPrefix: subnetAddressPrefixAcr
+      defaultOutboundAccessEnabled: !(shouldEnableNatGateway && shouldDisableDefaultOutboundAccess)
+      shouldEnableNatGateway: shouldEnableNatGateway
+    }
+  }
+}
+
+module cloudAiFoundry '../../../src/000-cloud/085-ai-foundry/bicep/main.bicep' = if (shouldDeployAiFoundry) {
+  name: '${deployment().name}-caf7'
+  scope: resourceGroup(resourceGroupName)
+  dependsOn: [cloudResourceGroup]
+  params: {
+    common: common
+    aiFoundryConfig: aiFoundryConfig
+    aiProjects: aiFoundryProjects
+    raiPolicies: aiFoundryRaiPolicies
+    modelDeployments: aiFoundryModelDeployments
+    shouldCreatePrivateEndpoint: shouldCreateAiFoundryPrivateEndpoint
+    privateEndpointSubnetId: shouldCreateAiFoundryPrivateEndpoint ? cloudNetworking.outputs.subnetId : ''
+    virtualNetworkId: shouldCreateAiFoundryPrivateEndpoint ? cloudNetworking.outputs.virtualNetworkId : ''
+    tags: {}
   }
 }
 
 module cloudKubernetes '../../../src/000-cloud/070-kubernetes/bicep/main.bicep' = {
-  name: '${deployment().name}-ck6'
+  name: '${deployment().name}-ck8'
   scope: resourceGroup(resourceGroupName)
   dependsOn: [cloudResourceGroup]
   params: {
@@ -223,6 +414,20 @@ module cloudKubernetes '../../../src/000-cloud/070-kubernetes/bicep/main.bicep' 
     networkSecurityGroupName: cloudNetworking.outputs.networkSecurityGroupName
     containerRegistryName: cloudAcr.outputs.acrName
     shouldCreateAks: shouldCreateAks
+    natGatewayId: shouldEnableNatGateway ? cloudNetworking.outputs.?natGatewayId : null
+    aksNetworkConfig: {
+      subnetAddressPrefixAks: subnetAddressPrefixAks
+      subnetAddressPrefixAksPod: subnetAddressPrefixAksPod
+      defaultOutboundAccessEnabled: !(shouldEnableNatGateway && shouldDisableDefaultOutboundAccess)
+      shouldEnableNatGateway: shouldEnableNatGateway
+    }
+    aksPrivateClusterConfig: {
+      shouldEnablePrivateCluster: shouldEnablePrivateEndpoints
+      shouldEnablePrivateClusterPublicFqdn: false
+      shouldEnablePrivateEndpoint: shouldEnablePrivateEndpoints
+    }
+    privateEndpointSubnetId: shouldEnablePrivateEndpoints ? cloudNetworking.outputs.subnetId : null
+    virtualNetworkId: shouldEnablePrivateEndpoints ? cloudNetworking.outputs.virtualNetworkId : null
   }
 }
 
@@ -262,7 +467,6 @@ module edgeIotOps '../../../src/100-edge/110-iot-ops/bicep/main.bicep' = {
     shouldCreateAnonymousBrokerListener: shouldCreateAnonymousBrokerListener
     shouldEnableOtelCollector: shouldEnableOtelCollector
     shouldEnableOpcUaSimulator: shouldEnableOpcUaSimulator
-    shouldEnableOpcUaSimulatorAsset: shouldEnableOpcUaSimulatorAsset
 
     // Trust Configuration Parameters
     trustIssuerSettings: trustIssuerSettings
@@ -271,8 +475,31 @@ module edgeIotOps '../../../src/100-edge/110-iot-ops/bicep/main.bicep' = {
     sseIdentityName: cloudSecurityIdentity.outputs.sseIdentityName
     sseKeyVaultName: cloudSecurityIdentity.outputs.keyVaultName!
 
-    // Deployment Script Parameters
+    // Deployment Identity and Script Parameters
+    deployIdentityName: cloudSecurityIdentity.outputs.deployIdentityName
     shouldDeployAioDeploymentScripts: shouldDeployAioDeploymentScripts
+
+    // Akri Connectors Parameters
+    shouldEnableAkriRestConnector: shouldEnableAkriRestConnector
+    shouldEnableAkriMediaConnector: shouldEnableAkriMediaConnector
+    shouldEnableAkriOnvifConnector: shouldEnableAkriOnvifConnector
+    shouldEnableAkriSseConnector: shouldEnableAkriSseConnector
+    customAkriConnectors: customAkriConnectors
+  }
+}
+
+module edgeAssets '../../../src/100-edge/111-assets/bicep/main.bicep' = {
+  name: '${deployment().name}-ea6'
+  scope: resourceGroup(resourceGroupName)
+  params: {
+    common: common
+    customLocationId: edgeIotOps.outputs.customLocationId
+    adrNamespaceName: cloudData.outputs.adrNamespaceName
+    namespacedDevices: namespacedDevices
+    namespacedAssets: namespacedAssets
+    assetEndpointProfiles: assetEndpointProfiles
+    legacyAssets: legacyAssets
+    shouldCreateDefaultNamespacedAsset: shouldEnableOpcUaSimulator
   }
 }
 
@@ -324,16 +551,25 @@ output vmUsername string = cloudVmHost.outputs.adminUsername
 output vmNames array = cloudVmHost.outputs.vmNames
 
 @description('The AKS cluster name.')
-output aksName string = cloudKubernetes.outputs.aksName
+output aksName string? = cloudKubernetes.outputs.?aksName
 
 @description('The Azure Container Registry name.')
 output acrName string = cloudAcr.outputs.acrName
 
-@description('The ID of the Azure IoT Operations Platform Extension.')
-output aioPlatformExtensionId string = edgeIotOps.outputs.aioPlatformExtensionId
+@description('The AI Foundry account name.')
+output aiFoundryName string? = shouldDeployAiFoundry ? cloudAiFoundry.?outputs.?aiFoundryName : null
 
-@description('The name of the Azure IoT Operations Platform Extension.')
-output aioPlatformExtensionName string = edgeIotOps.outputs.aioPlatformExtensionName
+@description('The AI Foundry account endpoint.')
+output aiFoundryEndpoint string? = shouldDeployAiFoundry ? cloudAiFoundry.?outputs.?aiFoundryEndpoint : null
+
+@description('The AI Foundry account principal ID.')
+output aiFoundryPrincipalId string? = shouldDeployAiFoundry ? cloudAiFoundry.?outputs.?aiFoundryPrincipalId : null
+
+@description('The ID of the Azure IoT Operations Cert-Manager Extension.')
+output aioCertManagerExtensionId string = edgeIotOps.outputs.aioCertManagerExtensionId
+
+@description('The name of the Azure IoT Operations Cert-Manager Extension.')
+output aioCertManagerExtensionName string = edgeIotOps.outputs.aioCertManagerExtensionName
 
 @description('The ID of the Secret Store Extension.')
 output secretStoreExtensionId string = edgeIotOps.outputs.secretStoreExtensionId
@@ -364,3 +600,62 @@ output dataFlowEndpointId string = edgeIotOps.outputs.dataFlowEndpointId
 
 @description('The name of the deployed Azure IoT Operations Data Flow Endpoint.')
 output dataFlowEndpointName string = edgeIotOps.outputs.dataFlowEndpointName
+
+/*
+  NAT Gateway Outputs
+*/
+
+@description('The NAT Gateway ID (if enabled).')
+output natGatewayId string? = shouldEnableNatGateway ? cloudNetworking.outputs.?natGatewayId : null
+
+@description('The NAT Gateway name (if enabled).')
+output natGatewayName string? = shouldEnableNatGateway ? cloudNetworking.outputs.?natGatewayName : null
+
+@description('Whether default outbound access is enabled.')
+output defaultOutboundAccessEnabled bool = !(shouldEnableNatGateway && shouldDisableDefaultOutboundAccess)
+
+/*
+  Private Resolver Outputs
+*/
+
+@description('The Private DNS Resolver ID (if enabled).')
+output privateResolverId string? = shouldEnablePrivateResolver ? cloudNetworking.outputs.?privateResolverId : null
+
+@description('The Private DNS Resolver name (if enabled).')
+output privateResolverName string? = shouldEnablePrivateResolver ? cloudNetworking.outputs.?privateResolverName : null
+
+@description('The DNS server IP from Private Resolver (if enabled).')
+output dnsServerIp string? = shouldEnablePrivateResolver ? cloudNetworking.outputs.?dnsServerIp : null
+
+/*
+  Private Endpoint Outputs
+*/
+
+@description('Whether private endpoints are enabled.')
+output privateEndpointsEnabled bool = shouldEnablePrivateEndpoints
+
+@description('The Key Vault private endpoint ID (if enabled).')
+output keyVaultPrivateEndpointId string? = shouldEnablePrivateEndpoints
+  ? cloudSecurityIdentity.outputs.?keyVaultPrivateEndpointId
+  : null
+
+@description('The storage account blob private endpoint ID (if enabled).')
+output storageBlobPrivateEndpointId string? = shouldEnablePrivateEndpoints
+  ? cloudData.outputs.?storageBlobPrivateEndpointId
+  : null
+
+/*
+  VPN Gateway Outputs
+*/
+
+@description('The VPN Gateway ID (if enabled).')
+output vpnGatewayId string? = shouldEnableVpnGateway ? cloudVpnGateway.?outputs.?vpnGatewayId : null
+
+@description('The VPN Gateway name (if enabled).')
+output vpnGatewayName string? = shouldEnableVpnGateway ? cloudVpnGateway.?outputs.?vpnGatewayName : null
+
+@description('The VPN Gateway public IP address (if enabled).')
+output vpnGatewayPublicIp string? = shouldEnableVpnGateway ? cloudVpnGateway.?outputs.?vpnGatewayPublicIp : null
+
+@description('VPN client connection information (if enabled).')
+output vpnClientConnectionInfo object? = shouldEnableVpnGateway ? cloudVpnGateway.?outputs.?clientConnectionInfo : null

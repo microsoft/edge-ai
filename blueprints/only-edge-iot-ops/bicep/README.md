@@ -32,18 +32,24 @@ Deploys Azure IoT Operations on an existing Arc-enabled Kubernetes cluster witho
 |shouldDeployAio|Whether to deploy Azure IoT Operations. (For debugging)|`bool`|`true`|no|
 |shouldCreateAnonymousBrokerListener|Whether to enable an insecure anonymous Azure IoT Operations MQ Broker Listener. Should only be used for dev or test environments.|`bool`|`false`|no|
 |shouldDeployResourceSyncRules|Whether to deploy Custom Locations Resource Sync Rules for the Azure IoT Operations resources.|`bool`|`true`|no|
+|namespacedDevices|List of namespaced devices to create.|`array`|[]|no|
+|assetEndpointProfiles|List of asset endpoint profiles to create.|`array`|[]|no|
+|legacyAssets|List of legacy assets to create.|`array`|[]|no|
+|namespacedAssets|List of namespaced assets to create.|`array`|[]|no|
 
 ## Resources
 
 |Name|Type|API Version|
 | :--- | :--- | :--- |
 |edgeIotOps|`Microsoft.Resources/deployments`|2025-04-01|
+|edgeAssets|`Microsoft.Resources/deployments`|2025-04-01|
 
 ## Modules
 
 |Name|Description|
 | :--- | :--- |
 |edgeIotOps|Deploys Azure IoT Operations extensions, instances, and configurations on Azure Arc-enabled Kubernetes clusters.|
+|edgeAssets|Deploys Kubernetes asset definitions to a connected cluster using the namespaced Device Registry model. This component facilitates the management of devices and assets within ADR namespaces.|
 
 ## Module Details
 
@@ -68,6 +74,7 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 |aioDataFlowInstanceConfig|The settings for Azure IoT Operations Data Flow Instances.|`[_1.AioDataFlowInstance](#user-defined-types)`|[variables('_1.aioDataFlowInstanceDefaults')]|no|
 |aioMqBrokerConfig|The settings for the Azure IoT Operations MQ Broker.|`[_1.AioMqBroker](#user-defined-types)`|[variables('_1.aioMqBrokerDefaults')]|no|
 |brokerListenerAnonymousConfig|Configuration for the insecure anonymous AIO MQ Broker Listener.|`[_1.AioMqBrokerAnonymous](#user-defined-types)`|[variables('_1.aioMqBrokerAnonymousDefaults')]|no|
+|configurationSettingsOverride|Optional configuration settings to override default IoT Operations extension configuration. Use the same key names as the az iot ops --ops-config parameter.|`object`|{}|no|
 |schemaRegistryName|The resource name for the ADR Schema Registry for Azure IoT Operations.|`string`|n/a|yes|
 |adrNamespaceName|The resource name for the ADR Namespace for Azure IoT Operations.|`string`|n/a|no|
 |shouldDeployAio|Whether to deploy an Azure IoT Operations Instance and all of its required components into the connected cluster.|`bool`|`true`|no|
@@ -75,8 +82,14 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 |shouldCreateAnonymousBrokerListener|Whether to enable an insecure anonymous AIO MQ Broker Listener. (Should only be used for dev or test environments)|`bool`|`false`|no|
 |shouldEnableOtelCollector|Whether or not to enable the Open Telemetry Collector for Azure IoT Operations.|`bool`|`true`|no|
 |shouldEnableOpcUaSimulator|Whether or not to enable the OPC UA Simulator for Azure IoT Operations.|`bool`|`true`|no|
-|shouldEnableOpcUaSimulatorAsset|Whether or not to create the OPC UA Simulator ADR Asset for Azure IoT Operations.|`bool`|[parameters('shouldEnableOpcUaSimulator')]|no|
+|shouldEnableAkriRestConnector|Deploy Akri REST HTTP Connector template to the IoT Operations instance.|`bool`|`false`|no|
+|shouldEnableAkriMediaConnector|Deploy Akri Media Connector template to the IoT Operations instance.|`bool`|`false`|no|
+|shouldEnableAkriOnvifConnector|Deploy Akri ONVIF Connector template to the IoT Operations instance.|`bool`|`false`|no|
+|shouldEnableAkriSseConnector|Deploy Akri SSE Connector template to the IoT Operations instance.|`bool`|`false`|no|
+|customAkriConnectors|List of custom Akri connector templates with user-defined endpoint types and container images.|`array`|[]|no|
+|akriMqttSharedConfig|Shared MQTT connection configuration for all Akri connectors.|`[_1.AkriMqttConfig](#user-defined-types)`|{'host': 'aio-broker:18883', 'audience': 'aio-internal', 'caConfigmap': 'azure-iot-operations-aio-ca-trust-bundle'}|no|
 |customLocationName|The name for the Custom Locations resource.|`string`|[format('{0}-cl', parameters('arcConnectedClusterName'))]|no|
+|additionalClusterExtensionIds|Additional cluster extension IDs to include in the custom location. (Appended to the default Secret Store and IoT Operations extension IDs)|`array`|[]|no|
 |trustIssuerSettings|The trust issuer settings for Customer Managed Azure IoT Operations Settings.|`[_1.TrustIssuerConfig](#user-defined-types)`|{'trustSource': 'SelfSigned'}|no|
 |sseKeyVaultName|The name of the Key Vault for Secret Sync. (Required when providing sseIdentityName)|`string`|n/a|yes|
 |sseIdentityName|The name of the User Assigned Managed Identity for Secret Sync.|`string`|n/a|yes|
@@ -103,9 +116,9 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 |postInitScriptsSecrets|`Microsoft.Resources/deployments`|2025-04-01|
 |postInitScripts|`Microsoft.Resources/deployments`|2025-04-01|
 |iotOpsInstance|`Microsoft.Resources/deployments`|2025-04-01|
+|akriConnectors|`Microsoft.Resources/deployments`|2025-04-01|
 |postInstanceScriptsSecrets|`Microsoft.Resources/deployments`|2025-04-01|
 |postInstanceScripts|`Microsoft.Resources/deployments`|2025-04-01|
-|opcUaSimulator|`Microsoft.Resources/deployments`|2025-04-01|
 
 #### Outputs for edgeIotOps
 
@@ -113,8 +126,8 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 | :--- | :--- | :--- |
 |containerStorageExtensionId|`string`|The ID of the Container Storage Extension.|
 |containerStorageExtensionName|`string`|The name of the Container Storage Extension.|
-|aioPlatformExtensionId|`string`|The ID of the Azure IoT Operations Platform Extension.|
-|aioPlatformExtensionName|`string`|The name of the Azure IoT Operations Platform Extension.|
+|aioCertManagerExtensionId|`string`|The ID of the Azure IoT Operations Cert-Manager Extension.|
+|aioCertManagerExtensionName|`string`|The name of the Azure IoT Operations Cert-Manager Extension.|
 |secretStoreExtensionId|`string`|The ID of the Secret Store Extension.|
 |secretStoreExtensionName|`string`|The name of the Secret Store Extension.|
 |customLocationId|`string`|The ID of the deployed Custom Location.|
@@ -125,221 +138,224 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 |dataFlowProfileName|`string`|The name of the deployed Azure IoT Operations Data Flow Profile.|
 |dataFlowEndpointId|`string`|The ID of the deployed Azure IoT Operations Data Flow Endpoint.|
 |dataFlowEndpointName|`string`|The name of the deployed Azure IoT Operations Data Flow Endpoint.|
+|akriConnectorTemplates|`array`|Map of deployed Akri connector templates by name with id and type.|
+|akriConnectorTypesDeployed|`array`|List of Akri connector types that were deployed.|
+
+### edgeAssets
+
+Deploys Kubernetes asset definitions to a connected cluster using the namespaced Device Registry model. This component facilitates the management of devices and assets within ADR namespaces.
+
+#### Parameters for edgeAssets
+
+|Name|Description|Type|Default|Required|
+| :--- | :--- | :--- | :--- | :--- |
+|common|The common component configuration.|`[_2.Common](#user-defined-types)`|n/a|yes|
+|customLocationId|The ID (resource ID) of the custom location to retrieve.|`string`|n/a|yes|
+|adrNamespaceName|Azure Device Registry namespace name to use with Azure IoT Operations.|`string`|n/a|yes|
+|namespacedDevices|List of namespaced devices to create.|`array`|[]|no|
+|assetEndpointProfiles|List of asset endpoint profiles to create.|`array`|[]|no|
+|legacyAssets|List of legacy assets to create.|`array`|[]|no|
+|namespacedAssets|List of namespaced assets to create.|`array`|[]|no|
+|shouldCreateDefaultAsset|Whether to create a default legacy asset and endpoint profile.|`bool`|`false`|no|
+|shouldCreateDefaultNamespacedAsset|Whether to create a default namespaced asset and device.|`bool`|`false`|no|
+|k8sBridgePrincipalId|The principal ID of the K8 Bridge for Azure IoT Operations. Required for OPC asset discovery.|`string`|n/a|no|
+
+#### Resources for edgeAssets
+
+|Name|Type|API Version|
+| :--- | :--- | :--- |
+|namespacedDevice|`Microsoft.DeviceRegistry/namespaces/devices`|2025-10-01|
+|namespacedAsset|`Microsoft.DeviceRegistry/namespaces/assets`|2025-10-01|
+|assetEndpointProfile|`Microsoft.DeviceRegistry/assetEndpointProfiles`|2025-10-01|
+|legacyAsset|`Microsoft.DeviceRegistry/assets`|2025-10-01|
+|k8BridgeRoleAssignment|`Microsoft.Resources/deployments`|2025-04-01|
+
+#### Outputs for edgeAssets
+
+|Name|Type|Description|
+| :--- | :--- | :--- |
+|assetEndpointProfiles|`array`|Array of legacy asset endpoint profiles created by this component.|
+|legacyAssets|`array`|Array of legacy assets created by this component.|
+|namespacedDevices|`array`|Array of namespaced devices created by this component.|
+|namespacedAssets|`array`|Array of namespaced assets created by this component.|
+|shouldEnableOpcAssetDiscovery|`bool`|Whether OPC simulation asset discovery is enabled for any endpoint profile.|
 
 ## User Defined Types
 
-### `_1.AioCaConfig`
+### `_1.AssetDataPoint`
 
-Configuration for Azure IoT Operations Certificate Authority.
-
-|Property|Type|Description|
-| :--- | :--- | :--- |
-|rootCaCertPem|`securestring`|The PEM-formatted root CA certificate.|
-|caCertChainPem|`securestring`|The PEM-formatted CA certificate chain.|
-|caKeyPem|`securestring`|The PEM-formatted CA private key.|
-
-### `_1.AioCertManagerExtension`
-
-The settings for the Azure IoT Operations Platform Extension.
+Data point configuration for asset datasets.
 
 |Property|Type|Description|
 | :--- | :--- | :--- |
-|release|`[_1.Release](#user-defined-types)`|The common settings for the extension.|
-|settings|`object`||
+|name|`string`|Name of the data point.|
+|dataSource|`string`|Data source address.|
+|dataPointConfiguration|`string`|Data point configuration as JSON string.|
+|samplingIntervalMs|`int`|Sampling interval in milliseconds for REST endpoints.|
+|mqttTopic|`string`|MQTT topic for REST state store.|
+|includeStateStore|`bool`|Whether to include state store for REST endpoints.|
+|stateStoreKey|`string`|State store key for REST endpoints.|
 
-### `_1.AioDataFlowInstance`
+### `_1.AssetDataset`
 
-The settings for Azure IoT Operations Data Flow Instances.
-
-|Property|Type|Description|
-| :--- | :--- | :--- |
-|count|`int`|The number of data flow instances.|
-
-### `_1.AioExtension`
-
-The settings for the Azure IoT Operations Extension.
+Dataset configuration for assets.
 
 |Property|Type|Description|
 | :--- | :--- | :--- |
-|release|`[_1.Release](#user-defined-types)`|The common settings for the extension.|
-|settings|`object`||
+|name|`string`|Name of the dataset.|
+|datasetConfiguration|`string`|Dataset configuration as JSON string.|
+|dataSource|`string`|Data source address for the dataset.|
+|typeRef|`string`|Type reference for the dataset.|
+|dataPoints|`array`|Data points in the dataset.|
+|destinations|`array`|Destinations for the dataset.|
 
-### `_1.AioFeatures`
+### `_1.AssetEndpointProfile`
 
-AIO Instance features.
-
-### `_1.AioMqBroker`
-
-The settings for the Azure IoT Operations MQ Broker.
-
-|Property|Type|Description|
-| :--- | :--- | :--- |
-|brokerListenerServiceName|`string`|The service name for the broker listener.|
-|brokerListenerPort|`int`|The port for the broker listener.|
-|serviceAccountAudience|`string`|The audience for the service account.|
-|frontendReplicas|`int`|The number of frontend replicas for the broker.|
-|frontendWorkers|`int`|The number of frontend workers for the broker.|
-|backendRedundancyFactor|`int`|The redundancy factor for the backend of the broker.|
-|backendWorkers|`int`|The number of backend workers for the broker.|
-|backendPartitions|`int`|The number of partitions for the backend of the broker.|
-|memoryProfile|`string`|The memory profile for the broker (Low, Medium, High).|
-|serviceType|`string`|The service type for the broker (ClusterIP, LoadBalancer, NodePort).|
-|logsLevel|`string`|The log level for broker diagnostics (info, debug, trace).|
-|persistence|`[_1.BrokerPersistence](#user-defined-types)`|Broker persistence configuration for disk-backed message storage.|
-
-### `_1.AioMqBrokerAnonymous`
-
-Configuration for the insecure anonymous AIO MQ Broker Listener.
+Legacy asset endpoint profile configuration.
 
 |Property|Type|Description|
 | :--- | :--- | :--- |
-|serviceName|`string`|The service name for the anonymous broker listener.|
-|port|`int`|The port for the anonymous broker listener.|
-|nodePort|`int`|The node port for the anonymous broker listener.|
+|name|`string`|Name of the asset endpoint profile.|
+|endpointProfileType|`string`|Type of the endpoint profile: Microsoft.OpcUa, etc.|
+|method|`string`|Authentication method: Anonymous, etc.|
+|targetAddress|`string`|Target address of the endpoint.|
+|opcAdditionalConfigString|`string`|Additional OPC configuration as JSON string.|
+|shouldEnableOpcAssetDiscovery|`bool`|Whether to enable OPC asset discovery.|
 
-### `_1.BrokerPersistence`
+### `_1.DatasetDestination`
 
-Broker persistence configuration for disk-backed message storage.
-
-|Property|Type|Description|
-| :--- | :--- | :--- |
-|enabled|`bool`|Whether persistence is enabled.|
-|maxSize|`string`|Maximum size of the message buffer on disk (e.g., "500M", "1G").|
-|encryption|`object`|Encryption configuration for the persistence database.|
-|dynamicSettings|`object`|Dynamic settings for MQTTv5 user property-based persistence control.|
-|retain|`object`|Controls which retained messages should be persisted to disk.|
-|stateStore|`object`|Controls which state store keys should be persisted to disk.|
-|subscriberQueue|`object`|Controls which subscriber queues should be persisted to disk.|
-|persistentVolumeClaimSpec|`object`|Persistent volume claim specification for storage.|
-
-### `_1.ContainerStorageExtension`
-
-The settings for the Azure Container Store for Azure Arc Extension.
+Dataset destination configuration.
 
 |Property|Type|Description|
 | :--- | :--- | :--- |
-|release|`[_1.Release](#user-defined-types)`|The common settings for the extension.|
-|settings|`object`||
+|target|`string`|Target for the destination: Mqtt, etc.|
+|configuration|`object`|Configuration for the destination.|
 
-### `_1.CustomerManagedByoIssuerConfig`
+### `_1.DeviceEndpoint`
 
-The configuration for Customer Managed Bring Your Own Issuer for Azure IoT Operations certificates.
-
-|Property|Type|Description|
-| :--- | :--- | :--- |
-|trustSource|`string`||
-|trustSettings|`[_1.TrustSettingsConfig](#user-defined-types)`|The trust settings for Azure IoT Operations.|
-
-### `_1.CustomerManagedGenerateIssuerConfig`
-
-The configuration for the Customer Managed Generated trust source of Azure IoT Operations certificates.
+Endpoint configuration for devices.
 
 |Property|Type|Description|
 | :--- | :--- | :--- |
-|trustSource|`string`||
-|aioCa|`[_1.AioCaConfig](#user-defined-types)`|The CA certificate, chain, and key for Azure IoT Operations.|
+|endpointType|`string`|Type of the endpoint: Microsoft.OpcUa, etc.|
+|address|`string`|Address of the endpoint.|
+|version|`string`|Version of the endpoint protocol.|
+|additionalConfiguration|`string`|Additional configuration as JSON string.|
+|authentication|`[_1.EndpointAuthentication](#user-defined-types)`|Authentication configuration for the endpoint.|
+|trustSettings|`[_1.TrustSettings](#user-defined-types)`|Trust settings for the endpoint.|
 
-### `_1.IncludeFileConfig`
+### `_1.DeviceEndpoints`
 
-Additional file configuration for deployment scripts.
-
-|Property|Type|Description|
-| :--- | :--- | :--- |
-|name|`string`|The name of the file to create.|
-|content|`securestring`|The content of the file to create.|
-
-### `_1.InstanceFeature`
-
-Individual feature object within the AIO instance.
+Device endpoints configuration.
 
 |Property|Type|Description|
 | :--- | :--- | :--- |
-|mode|`[_1.InstanceFeatureMode](#user-defined-types)`||
-|settings|`object`||
+|outbound|`object`|Outbound endpoint configuration.|
+|inbound|`object`|Inbound endpoint configurations.|
 
-### `_1.InstanceFeatureMode`
+### `_1.DeviceReference`
 
-The mode of the AIO instance feature. Either "Stable", "Preview" or "Disabled".
-
-### `_1.InstanceFeatureSettingValue`
-
-The setting value of the AIO instance feature. Either "Enabled" or "Disabled".
-
-### `_1.Release`
-
-The common settings for Azure Arc Extensions.
+Device reference for namespaced assets.
 
 |Property|Type|Description|
 | :--- | :--- | :--- |
-|version|`string`|The version of the extension.|
-|train|`string`|The release train that has the version to deploy (ex., "preview", "stable").|
+|deviceName|`string`|Name of the device.|
+|endpointName|`string`|Name of the endpoint on the device.|
 
-### `_1.ScriptConfig`
+### `_1.EndpointAuthentication`
 
-Script configuration for deployment scripts.
-
-|Property|Type|Description|
-| :--- | :--- | :--- |
-|content|`securestring`|The script content to be executed.|
-|env|`array`|Environment variables for the script.|
-
-### `_1.ScriptEnvironmentVariable`
-
-Environment variable configuration for scripts.
+Endpoint authentication configuration for assets.
 
 |Property|Type|Description|
 | :--- | :--- | :--- |
-|name|`string`|The name of the environment variable.|
-|value|`string`|The value of the environment variable.|
-|secureValue|`securestring`|The secure value of the environment variable.|
+|method|`string`|Authentication method: Anonymous, UsernamePassword, or X509|
+|usernamePasswordCredentials|`object`|Username and password credentials for authentication.|
+|x509Credentials|`object`|X509 certificate credentials for authentication.|
 
-### `_1.ScriptFilesConfig`
+### `_1.LegacyAsset`
 
-The script and additional configuration files for deployment scripts.
-
-|Property|Type|Description|
-| :--- | :--- | :--- |
-|scripts|`array`|The script configuration for deployment scripts.|
-|includeFiles|`array`|The additional file configuration for deployment scripts.s|
-
-### `_1.SecretStoreExtension`
-
-The settings for the Secret Store Extension.
+Legacy asset configuration.
 
 |Property|Type|Description|
 | :--- | :--- | :--- |
-|release|`[_1.Release](#user-defined-types)`|The common settings for the extension.|
+|name|`string`|Name of the asset.|
+|assetEndpointProfileRef|`string`|Reference to the asset endpoint profile.|
+|displayName|`string`|Display name of the asset.|
+|description|`string`|Description of the asset.|
+|documentationUri|`string`|Documentation URI for the asset.|
+|isEnabled|`bool`|Whether the asset is enabled.|
+|hardwareRevision|`string`|Hardware revision of the asset.|
+|manufacturer|`string`|Manufacturer of the asset.|
+|manufacturerUri|`string`|Manufacturer URI of the asset.|
+|model|`string`|Model of the asset.|
+|productCode|`string`|Product code of the asset.|
+|serialNumber|`string`|Serial number of the asset.|
+|softwareRevision|`string`|Software revision of the asset.|
+|datasets|`array`|Datasets for the asset.|
+|defaultDatasetsConfiguration|`string`|Default datasets configuration as JSON string.|
 
-### `_1.SelfSignedIssuerConfig`
+### `_1.LegacyAssetDataPoint`
 
-The configuration for Self-Signed Issuer for Azure IoT Operations certificates.
-
-|Property|Type|Description|
-| :--- | :--- | :--- |
-|trustSource|`string`||
-
-### `_1.TrustConfigSource`
-
-The config source of trust for how to use or generate Azure IoT Operations certificates.
-
-### `_1.TrustIssuerConfig`
-
-The configuration for the trust source of Azure IoT Operations certificates.
-
-### `_1.TrustSettingsConfig`
-
-The configuration for the trust settings of Azure IoT Operations certificates.
+Legacy asset data point configuration.
 
 |Property|Type|Description|
 | :--- | :--- | :--- |
-|issuerName|`string`||
-|issuerKind|`string`||
-|configMapName|`string`||
-|configMapKey|`string`||
+|name|`string`|Name of the data point.|
+|dataSource|`string`|Data source address.|
+|dataPointConfiguration|`string`|Data point configuration as JSON string.|
+|observabilityMode|`string`|Observability mode: None, etc.|
 
-### `_1.TrustSource`
+### `_1.LegacyAssetDataset`
 
-The source of trust for Azure IoT Operations certificates.
+Legacy asset dataset configuration.
+
+|Property|Type|Description|
+| :--- | :--- | :--- |
+|name|`string`|Name of the dataset.|
+|dataPoints|`array`|Data points in the dataset.|
+
+### `_1.NamespacedAsset`
+
+Namespaced asset configuration.
+
+|Property|Type|Description|
+| :--- | :--- | :--- |
+|name|`string`|Name of the asset.|
+|displayName|`string`|Display name of the asset.|
+|deviceRef|`[_1.DeviceReference](#user-defined-types)`|Reference to the device and endpoint.|
+|description|`string`|Description of the asset.|
+|documentationUri|`string`|Documentation URI for the asset.|
+|externalAssetId|`string`|Asset Id provided by external system for the asset.|
+|isEnabled|`bool`|Whether the asset is enabled.|
+|hardwareRevision|`string`|Hardware revision of the asset.|
+|manufacturer|`string`|Manufacturer of the asset.|
+|manufacturerUri|`string`|Manufacturer URI of the asset.|
+|model|`string`|Model of the asset.|
+|productCode|`string`|Product code of the asset.|
+|serialNumber|`string`|Serial number of the asset.|
+|softwareRevision|`string`|Software revision of the asset.|
+|attributes|`object`|Custom attributes for the asset.|
+|datasets|`array`|Datasets for the asset.|
+|defaultDatasetsConfiguration|`string`|Default datasets configuration as JSON string.|
+|defaultEventsConfiguration|`string`|Default events configuration as JSON string.|
+
+### `_1.NamespacedDevice`
+
+Namespaced device configuration.
+
+|Property|Type|Description|
+| :--- | :--- | :--- |
+|name|`string`|Name of the device.|
+|isEnabled|`bool`|Whether the device is enabled.|
+|endpoints|`[_1.DeviceEndpoints](#user-defined-types)`|Endpoint configurations for the device.|
+
+### `_1.TrustSettings`
+
+Trust settings for endpoint connections.
+
+|Property|Type|Description|
+| :--- | :--- | :--- |
+|trustList|`string`|Trust list configuration.|
 
 ### `_2.Common`
 
@@ -356,8 +372,8 @@ Common settings for the components.
 
 |Name|Type|Description|
 | :--- | :--- | :--- |
-|aioPlatformExtensionId|`string`|The ID of the Azure IoT Operations Platform Extension.|
-|aioPlatformExtensionName|`string`|The name of the Azure IoT Operations Platform Extension.|
+|aioCertManagerExtensionId|`string`|The ID of the Azure IoT Operations Cert-Manager Extension.|
+|aioCertManagerExtensionName|`string`|The name of the Azure IoT Operations Cert-Manager Extension.|
 |secretStoreExtensionId|`string`|The ID of the Secret Store Extension.|
 |secretStoreExtensionName|`string`|The name of the Secret Store Extension.|
 |customLocationId|`string`|The ID of the deployed Custom Location.|

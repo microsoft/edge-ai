@@ -94,33 +94,33 @@ module eventGrid 'modules/event-grid.bicep' = if (shouldCreateEventGrid) {
 */
 
 @description('The Event Hubs Namespace name.')
-output eventHubNamespaceName string = shouldCreateEventHub ? eventHub.outputs.namespaceName : ''
+output eventHubNamespaceName string = shouldCreateEventHub ? eventHub!.outputs.namespaceName : ''
 
 @description('The Event Hubs Namespace ID.')
-output eventHubNamespaceId string = shouldCreateEventHub ? eventHub.outputs.namespaceId : ''
+output eventHubNamespaceId string = shouldCreateEventHub ? eventHub!.outputs.namespaceId : ''
 
 @description('The list of Event Hub names created in the namespace.')
-output eventHubNames array = shouldCreateEventHub ? eventHub.outputs.eventHubNames : []
+output eventHubNames array = shouldCreateEventHub ? eventHub!.outputs.eventHubNames : []
 
 @description('The Event Grid topic name created.')
-output eventGridTopicNames string = shouldCreateEventGrid ? eventGrid.outputs.topicSpaceName : ''
+output eventGridTopicNames string = shouldCreateEventGrid ? eventGrid!.outputs.topicSpaceName : ''
 
 @description('The Event Grid endpoint URL for MQTT connections')
-output eventGridMqttEndpoint string = shouldCreateEventGrid ? eventGrid.outputs.mqttEndpoint : ''
+output eventGridMqttEndpoint string = shouldCreateEventGrid ? eventGrid!.outputs.mqttEndpoint : ''
 
 @description('The Event Hub configuration object for edge messaging.')
 output eventHubConfig object = shouldCreateEventHub
   ? {
-      namespaceName: eventHub.outputs.namespaceName
-      eventHubName: length(eventHub.outputs.eventHubNames) > 0 ? eventHub.outputs.eventHubNames[0] : ''
+      namespaceName: eventHub!.outputs.namespaceName
+      eventHubName: length(eventHub!.outputs.eventHubNames) > 0 ? eventHub!.outputs.eventHubNames[0] : ''
     }
   : {}
 
 @description('The Event Grid configuration object for edge messaging.')
 output eventGridConfig object = shouldCreateEventGrid
   ? {
-      name: eventGrid.outputs.namespaceName
-      topicName: eventGrid.outputs.topicSpaceName
-      endpoint: eventGrid.outputs.mqttEndpoint
+      name: eventGrid!.outputs.namespaceName
+      topicName: eventGrid!.outputs.topicSpaceName
+      endpoint: eventGrid!.outputs.mqttEndpoint
     }
   : {}

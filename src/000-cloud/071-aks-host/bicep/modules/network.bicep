@@ -31,15 +31,15 @@ var labelPrefixAksPod = '${common.resourcePrefix}-aks-pod-${common.environment}-
   Resources
 */
 
-resource vnet 'Microsoft.Network/virtualNetworks@2024-05-01' existing = {
+resource vnet 'Microsoft.Network/virtualNetworks@2025-01-01' existing = {
   name: virtualNetworkName
 }
 
-resource nsg 'Microsoft.Network/networkSecurityGroups@2024-05-01' existing = {
+resource nsg 'Microsoft.Network/networkSecurityGroups@2025-01-01' existing = {
   name: networkSecurityGroupName
 }
 
-resource snetAks 'Microsoft.Network/virtualNetworks/subnets@2024-05-01' = {
+resource snetAks 'Microsoft.Network/virtualNetworks/subnets@2025-01-01' = {
   parent: vnet
   name: 'subnet-${labelPrefixAks}'
   properties: {
@@ -50,7 +50,7 @@ resource snetAks 'Microsoft.Network/virtualNetworks/subnets@2024-05-01' = {
   }
 }
 
-resource snetAksPod 'Microsoft.Network/virtualNetworks/subnets@2024-05-01' = {
+resource snetAksPod 'Microsoft.Network/virtualNetworks/subnets@2025-01-01' = {
   parent: vnet
   name: 'subnet-${labelPrefixAksPod}'
   properties: {

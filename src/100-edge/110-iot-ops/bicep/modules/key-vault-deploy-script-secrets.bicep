@@ -103,25 +103,25 @@ resource keyVault 'Microsoft.KeyVault/vaults@2024-11-01' existing = {
 */
 
 @description('The name of the Key Vault include files secret if created.')
-output includeFilesSecretName string? = !empty(includeFileScriptContent) ? keyVault::includeFiles.name : null
+output includeFilesSecretName string? = !empty(includeFileScriptContent) ? keyVault::includeFiles!.name : null
 
 @description('The URI of the Key Vault include files secret if created.')
 output includeFilesSecretUri string? = !empty(includeFileScriptContent)
-  ? keyVault::includeFiles.properties.secretUri
+  ? keyVault::includeFiles!.properties.secretUri
   : null
 
 @description('The name of the Key Vault environment variables secret if created.')
 output environmentVariablesSecretName string? = !empty(environmentVariablesScriptContent)
-  ? keyVault::environmentVariables.name
+  ? keyVault::environmentVariables!.name
   : null
 
 @description('The URI of the Key Vault environment variables secret if created.')
 output environmentVariablesSecretUri string? = !empty(environmentVariablesScriptContent)
-  ? keyVault::environmentVariables.properties.secretUri
+  ? keyVault::environmentVariables!.properties.secretUri
   : null
 
 @description('The name of the Key Vault script secret if created.')
-output scriptSecretName string? = !empty(scriptContent) ? keyVault::script.name : null
+output scriptSecretName string? = !empty(scriptContent) ? keyVault::script!.name : null
 
 @description('The URI of the Key Vault script secret if created.')
-output scriptSecretUri string? = !empty(scriptContent) ? keyVault::script.properties.secretUri : null
+output scriptSecretUri string? = !empty(scriptContent) ? keyVault::script!.properties.secretUri : null

@@ -28,6 +28,35 @@ param virtualNetworkName string
 param snetAcrId string
 
 /*
+  Firewall and Access Parameters
+*/
+
+@description('Whether to enable the registry public endpoint alongside private connectivity.')
+param publicNetworkAccessEnabled bool
+
+@description('Whether trusted Azure services can bypass registry network rules when the public endpoint is restricted.')
+param allowTrustedServices bool
+
+@description('CIDR ranges permitted to reach the registry public endpoint.')
+param allowedPublicIpRanges string[]
+
+@description('Whether to enable dedicated data endpoints for the registry (Premium SKU only).')
+param shouldEnableDataEndpoints bool
+
+/*
+  Local Variables
+*/
+
+var shouldEnableDataEndpoint = shouldEnableDataEndpoints && shouldCreateAcrPrivateEndpoint && toLower(sku) == 'premium'
+var shouldConfigureNetworkRules = publicNetworkAccessEnabled && length(allowedPublicIpRanges) > 0
+var ipRules = [
+  for ipCidr in allowedPublicIpRanges: {
+    action: 'Allow'
+    value: ipCidr
+  }
+]
+
+/*
   Resources
 */
 
@@ -47,10 +76,19 @@ resource acr 'Microsoft.ContainerRegistry/registries@2023-01-01-preview' = {
   }
   properties: {
     adminUserEnabled: true
+    publicNetworkAccess: publicNetworkAccessEnabled ? 'Enabled' : 'Disabled'
+    dataEndpointEnabled: shouldEnableDataEndpoint
+    networkRuleBypassOptions: allowTrustedServices ? 'AzureServices' : 'None'
+    networkRuleSet: shouldConfigureNetworkRules
+      ? {
+          defaultAction: 'Deny'
+          ipRules: ipRules
+        }
+      : null
   }
 }
 
-resource privateEndpoint 'Microsoft.Network/privateEndpoints@2022-07-01' = if (shouldCreateAcrPrivateEndpoint) {
+resource privateEndpoint 'Microsoft.Network/privateEndpoints@2024-05-01' = if (shouldCreateAcrPrivateEndpoint) {
   name: 'pe-${common.resourcePrefix}-acr-${common.environment}-${common.instance}'
   location: common.location
   tags: {
@@ -81,7 +119,7 @@ resource privateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = if (sho
 }
 
 resource vnetLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = if (shouldCreateAcrPrivateEndpoint) {
-  name: 'vnet-pzl-acr-${common.resourcePrefix}-${common.environment}-${common.instance ?? ''}'
+  name: 'vnet-pzl-acr-${common.resourcePrefix}-${common.environment}-${common.instance}'
   parent: privateDnsZone
   location: 'global'
   properties: {
@@ -92,14 +130,16 @@ resource vnetLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06
   }
 }
 
-resource aRecord 'Microsoft.Network/privateDnsZones/A@2020-06-01' = if (shouldCreateAcrPrivateEndpoint) {
-  name: acr.name
-  parent: privateDnsZone
+resource privateDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2024-05-01' = if (shouldCreateAcrPrivateEndpoint) {
+  name: 'default'
+  parent: privateEndpoint
   properties: {
-    ttl: 300
-    aRecords: [
+    privateDnsZoneConfigs: [
       {
-        ipv4Address: shouldCreateAcrPrivateEndpoint ? privateEndpoint.properties.customDnsConfigs[0].ipAddresses[0] : ''
+        name: 'acr-dns-config'
+        properties: {
+          privateDnsZoneId: privateDnsZone.id
+        }
       }
     ]
   }
@@ -114,3 +154,18 @@ output acrId string = acr.id
 
 @description('The Azure Container Registry name.')
 output acrName string = acr.name
+
+@description('The ACR private endpoint ID (if enabled).')
+output privateEndpointId string? = shouldCreateAcrPrivateEndpoint ? privateEndpoint.id : null
+
+@description('The ACR private DNS zone name (if enabled).')
+output privateDnsZoneName string? = shouldCreateAcrPrivateEndpoint ? privateDnsZone.name : null
+
+@description('The ACR private DNS zone ID (if enabled).')
+output privateDnsZoneId string? = shouldCreateAcrPrivateEndpoint ? privateDnsZone.id : null
+
+@description('Whether data endpoints are enabled for the ACR.')
+output isDataEndpointEnabled bool = shouldEnableDataEndpoint
+
+@description('Whether public network access is enabled for the ACR.')
+output isPublicNetworkAccessEnabled bool = publicNetworkAccessEnabled

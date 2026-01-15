@@ -34,3 +34,13 @@ module mainModule '../../bicep/main.bicep' = {
     containerRegistryConfig: containerRegistryConfig
   }
 }
+
+/*
+  Outputs
+*/
+
+@description('The Azure Container Registry ID.')
+output acrId string = mainModule.outputs.acrId
+
+@description('The Azure Container Registry name.')
+output acrName string = mainModule.outputs.acrName

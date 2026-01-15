@@ -1,0 +1,202 @@
+/*
+ * Microsoft Foundry Project Configuration Example
+ *
+ * This file demonstrates how to configure Microsoft Foundry resources including
+ * the Foundry account, projects, model deployments, and Responsible AI (RAI) content filtering policies.
+ *
+ * Microsoft Foundry provides a unified platform for building, deploying, and managing
+ * AI applications with enterprise-grade security and governance capabilities.
+ *
+ * Copy the contents to enrich your terraform.tfvars with these values.
+ */
+
+/*
+ * Enable Microsoft Foundry Deployment
+ *
+ * REQUIRED: Must be set to true to deploy the Microsoft Foundry account and associated resources.
+ * Without this, no Foundry resources will be created.
+ */
+should_deploy_ai_foundry = true
+
+/*
+ * Microsoft Foundry Account Configuration
+ *
+ * The Foundry account is the central resource that contains projects, model deployments,
+ * and shared configurations like RAI policies.
+ */
+
+// SKU for the Foundry account (currently only S0 is supported)
+ai_foundry_sku = "S0"
+
+// Network access settings
+ai_foundry_should_enable_public_network_access = true
+
+// Local authentication (API key) - disable for production with managed identity only
+ai_foundry_should_enable_local_auth = true
+
+// Private endpoint configuration (set to true for secure network access)
+ai_foundry_should_enable_private_endpoint = false
+
+/*
+ * Microsoft Foundry Projects
+ *
+ * Projects are logical containers within the Foundry account that organize
+ * AI resources, models, and deployments for different teams or applications.
+ *
+ * Each project can have its own set of deployments and access controls.
+ */
+ai_foundry_projects = {
+  // Production inference project
+  "inference-prod" = {
+    name         = "inference-prod"
+    display_name = "Production Inference"
+    description  = "Production AI inference workloads with GPT-4o models"
+    sku          = "S0"
+  }
+
+  // Development and experimentation project
+  "dev-experiments" = {
+    name         = "dev-experiments"
+    display_name = "Development & Experiments"
+    description  = "Development environment for AI model experimentation and testing"
+    sku          = "S0"
+  }
+
+  // Edge AI integration project
+  "edge-integration" = {
+    name         = "edge-integration"
+    display_name = "Edge AI Integration"
+    description  = "AI models and endpoints for edge device integration scenarios"
+    sku          = "S0"
+  }
+}
+
+/*
+ * Responsible AI (RAI) Content Filtering Policies
+ *
+ * RAI Policies are optional, remove and don't add any references to RAI to use default
+ *
+ * RAI policies define content filtering rules for AI model interactions.
+ * These policies must be created BEFORE they can be referenced by model deployments.
+ *
+ * Content filter categories:
+ * - Hate: Hateful or discriminatory content
+ * - Sexual: Sexually explicit content
+ * - Violence: Violent content
+ * - SelfHarm: Self-harm related content
+ *
+ * Severity thresholds: Low, Medium, High
+ * Sources: Prompt (input filtering), Completion (output filtering)
+ * Modes: Blocking (blocks content), Default (logs only)
+ *
+ */
+ai_foundry_rai_policies = {
+  // Standard production policy with medium thresholds
+  "production-standard" = {
+    name             = "ProductionStandard"
+    base_policy_name = "Microsoft.Default"
+    mode             = "Blocking"
+    content_filters = [
+      // Input (Prompt) filtering
+      { name = "Hate", severity_threshold = "Medium", source = "Prompt" },
+      { name = "Sexual", severity_threshold = "Medium", source = "Prompt" },
+      { name = "Violence", severity_threshold = "Medium", source = "Prompt" },
+      { name = "SelfHarm", severity_threshold = "Medium", source = "Prompt" },
+      // Output (Completion) filtering
+      { name = "Hate", severity_threshold = "Medium", source = "Completion" },
+      { name = "Sexual", severity_threshold = "Medium", source = "Completion" },
+      { name = "Violence", severity_threshold = "Medium", source = "Completion" },
+      { name = "SelfHarm", severity_threshold = "Medium", source = "Completion" }
+    ]
+  }
+
+  // Strict policy for sensitive applications
+  "strict-enterprise" = {
+    name             = "StrictEnterprise"
+    base_policy_name = "Microsoft.Default"
+    mode             = "Blocking"
+    content_filters = [
+      // Input (Prompt) filtering - Low threshold (most restrictive)
+      { name = "Hate", severity_threshold = "Low", source = "Prompt" },
+      { name = "Sexual", severity_threshold = "Low", source = "Prompt" },
+      { name = "Violence", severity_threshold = "Low", source = "Prompt" },
+      { name = "SelfHarm", severity_threshold = "Low", source = "Prompt" },
+      // Output (Completion) filtering - Low threshold (most restrictive)
+      { name = "Hate", severity_threshold = "Low", source = "Completion" },
+      { name = "Sexual", severity_threshold = "Low", source = "Completion" },
+      { name = "Violence", severity_threshold = "Low", source = "Completion" },
+      { name = "SelfHarm", severity_threshold = "Low", source = "Completion" }
+    ]
+  }
+}
+
+/*
+ * Model Deployments
+ *
+ * Configure AI model deployments within the Microsoft Foundry.
+ * Model availability varies by Azure region. Check regional availability before deployment.
+ * Scale availability also depends on your own existing deployments
+ *
+ * Check <https://learn.microsoft.com/azure/ai-foundry/reference/region-support?view=foundry&preserve-view=true>
+ *
+ * Common models:
+ * - Chat/Completion: gpt-4o, gpt-4o-mini, gpt-4, gpt-35-turbo
+ * - Embeddings: text-embedding-ada-002, text-embedding-3-small, text-embedding-3-large
+ *
+ * Scale types:
+ * - GlobalStandard: Regional deployment with standard quotas
+ * - Standard: Regional deployment with custom quotas
+ *
+ * Version upgrade options:
+ * - OnceNewDefaultVersionAvailable: Auto-upgrade when new default version releases
+ * - NoAutoUpgrade: Manual upgrades only
+ * - OnceCurrentVersionExpired: Upgrade when current version is deprecated
+ */
+ai_foundry_model_deployments = {
+  // Primary chat model - GPT-4o Mini (cost-effective)
+  "gpt-4o-mini-primary" = {
+    name = "gpt-4o-mini-primary"
+    model = {
+      format  = "OpenAI"
+      name    = "gpt-4o-mini"
+      version = "2024-07-18"
+    }
+    scale = {
+      type     = "GlobalStandard"
+      capacity = 250 // Tokens per minute (TPM) in thousands
+    }
+    version_upgrade_option = "OnceNewDefaultVersionAvailable"
+  }
+
+  // Advanced reasoning model - GPT-4o
+  "gpt-4o-advanced" = {
+    name = "gpt-4o-advanced"
+    model = {
+      format  = "OpenAI"
+      name    = "gpt-4o"
+      version = "2024-11-20"
+    }
+    scale = {
+      type     = "GlobalStandard"
+      capacity = 150
+    }
+    rai_policy_name        = "StrictEnterprise"
+    version_upgrade_option = "OnceNewDefaultVersionAvailable"
+  }
+
+  // Text embeddings model for semantic search and RAG
+  "text-embedding-3-small" = {
+    name = "text-embedding-3-small"
+    model = {
+      format  = "OpenAI"
+      name    = "text-embedding-3-small"
+      version = "1"
+    }
+    scale = {
+      type     = "GlobalStandard"
+      capacity = 350
+    }
+    // Embedding models typically don't need RAI policies
+    version_upgrade_option = "OnceNewDefaultVersionAvailable"
+  }
+}

@@ -42,9 +42,11 @@ Deploys an AIO instance.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| additional\_cluster\_extension\_ids | Additional cluster extension IDs to include in the custom location. Appended to the default Secret Store and IoT Operations extension IDs | `list(string)` | n/a | yes |
 | aio\_uami\_id | The principal ID of the User Assigned Managed Identity for the Azure IoT Operations instance | `string` | n/a | yes |
 | arc\_connected\_cluster\_id | The resource ID of the connected cluster to deploy Azure IoT Operations Platform to | `string` | n/a | yes |
 | broker\_listener\_anonymous\_config | Configuration for the insecure anonymous AIO MQ Broker Listener.  For additional information, refer to: <https://learn.microsoft.com/azure/iot-operations/manage-mqtt-broker/howto-test-connection?tabs=bicep#node-port> | ```object({ serviceName = string port = number nodePort = number })``` | n/a | yes |
+| configuration\_settings\_override | Optional configuration settings to override default IoT Operations extension configuration. Use the same key names as the az iot ops --ops-config parameter. | `map(string)` | n/a | yes |
 | connected\_cluster\_location | The location of the connected cluster resource | `string` | n/a | yes |
 | connected\_cluster\_name | The name of the connected cluster to deploy Azure IoT Operations to | `string` | n/a | yes |
 | customer\_managed\_trust\_settings | Values for AIO CustomerManaged trust resources | ```object({ issuer_name = string issuer_kind = string configmap_name = string configmap_key = string })``` | n/a | yes |
