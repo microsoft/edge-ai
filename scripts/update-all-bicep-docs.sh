@@ -151,6 +151,13 @@ echo "⚠️  Before you commit!"
 echo "    Please run 'npm run mdlint-fix' to fix any markdown linting issues by the generated markdown content."
 echo "======================================"
 
+# Post-processing: Format markdown tables for MD060 compliance
+echo "Formatting tables in generated README.md files..."
+for dir in "${DIRS[@]}"; do
+    find "$dir" -path "*/bicep/README.md" -type f -print0 | xargs -0 -r npx markdown-table-formatter
+done
+echo "✅ Table formatting complete"
+
 # Cleanup: Remove the temporary .arm directory
 echo "Cleaning up temporary files..."
 if [ -d "$ROOT_ARM_DIR" ]; then

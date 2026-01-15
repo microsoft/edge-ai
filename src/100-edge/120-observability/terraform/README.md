@@ -1,42 +1,40 @@
 <!-- BEGIN_TF_DOCS -->
-<!-- markdown-table-prettify-ignore-start -->
 # IoT Ops Utilities Extensions
 
 Creates resources needed for additional utilities and features.
 
 ## Requirements
 
-| Name | Version |
-|------|---------|
+| Name      | Version         |
+|-----------|-----------------|
 | terraform | >= 1.9.8, < 2.0 |
-| azapi | >= 2.3.0 |
-| azurerm | >= 4.51.0 |
+| azapi     | >= 2.3.0        |
+| azurerm   | >= 4.51.0       |
 
 ## Modules
 
-| Name | Source | Version |
-|------|--------|---------|
-| cluster\_extensions\_obs | ./modules/cluster-extensions-obs | n/a |
-| rule\_associations\_obs | ./modules/rule-associations-obs | n/a |
+| Name                     | Source                           | Version |
+|--------------------------|----------------------------------|---------|
+| cluster\_extensions\_obs | ./modules/cluster-extensions-obs | n/a     |
+| rule\_associations\_obs  | ./modules/rule-associations-obs  | n/a     |
 
 ## Inputs
 
-| Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
-| aio\_azure\_managed\_grafana | n/a | ```object({ id = string })``` | n/a | yes |
-| aio\_azure\_monitor\_workspace | n/a | ```object({ id = string })``` | n/a | yes |
-| aio\_log\_analytics\_workspace | n/a | ```object({ id = string workspace_id = string primary_shared_key = string })``` | n/a | yes |
-| aio\_logs\_data\_collection\_rule | n/a | ```object({ name = string id = string })``` | n/a | yes |
-| aio\_metrics\_data\_collection\_rule | n/a | ```object({ name = string id = string })``` | n/a | yes |
-| arc\_connected\_cluster | n/a | ```object({ name = string id = string location = string })``` | n/a | yes |
-| resource\_group | Resource group object containing name and id where resources will be deployed | ```object({ name = string id = string location = string })``` | n/a | yes |
-| scrape\_interval | Interval to scrape metrics from the cluster, valid values are between 1m and 30m (PT1M and PT30M) | `string` | `"PT1M"` | no |
+| Name                                 | Description                                                                                       | Type                                                                            | Default  | Required |
+|--------------------------------------|---------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------|----------|:--------:|
+| aio\_azure\_managed\_grafana         | n/a                                                                                               | ```object({ id = string })```                                                   | n/a      |   yes    |
+| aio\_azure\_monitor\_workspace       | n/a                                                                                               | ```object({ id = string })```                                                   | n/a      |   yes    |
+| aio\_log\_analytics\_workspace       | n/a                                                                                               | ```object({ id = string workspace_id = string primary_shared_key = string })``` | n/a      |   yes    |
+| aio\_logs\_data\_collection\_rule    | n/a                                                                                               | ```object({ name = string id = string })```                                     | n/a      |   yes    |
+| aio\_metrics\_data\_collection\_rule | n/a                                                                                               | ```object({ name = string id = string })```                                     | n/a      |   yes    |
+| arc\_connected\_cluster              | n/a                                                                                               | ```object({ name = string id = string location = string })```                   | n/a      |   yes    |
+| resource\_group                      | Resource group object containing name and id where resources will be deployed                     | ```object({ name = string id = string location = string })```                   | n/a      |   yes    |
+| scrape\_interval                     | Interval to scrape metrics from the cluster, valid values are between 1m and 30m (PT1M and PT30M) | `string`                                                                        | `"PT1M"` |    no    |
 
 ## Outputs
 
-| Name | Description |
-|------|-------------|
-| cluster\_extensions | The cluster extensions for observability. |
-| rule\_associations | The data collection rule associations for observability. |
-<!-- markdown-table-prettify-ignore-end -->
+| Name                | Description                                              |
+|---------------------|----------------------------------------------------------|
+| cluster\_extensions | The cluster extensions for observability.                |
+| rule\_associations  | The data collection rule associations for observability. |
 <!-- END_TF_DOCS -->
