@@ -47,47 +47,46 @@ on:  # yamllint disable-line rule:truthy
         type: boolean
 
 jobs:
-  # #CodeQL Analysis job for PR code security scanning
-  # codeql-analysis:
-  #   name: CodeQL Analysis
-  #   runs-on: ubuntu-latest
-  #   permissions:
-  #     # Required for all workflows
-  #     security-events: write
-  #     # Only required for workflows in private repositories
-  #     actions: read
-  #     contents: read
-  #
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       language: ['javascript', 'python', 'typescript', 'csharp']
-  #       # CodeQL supports these languages: https://aka.ms/codeql-docs/language-support
-  #
-  #   steps:
-  #     - name: Checkout Repository
-  #       uses: actions/checkout@v4
-  #       with:
-  #         fetch-depth: 0
-  #
-  #     - name: Initialize CodeQL
-  #       uses: github/codeql-action/init@v2
-  #       with:
-  #         languages: ${{ matrix.language }}
-  #
-  #     - name: Autobuild
-  #       uses: github/codeql-action/autobuild@v2
-  #
-  #     - name: Perform CodeQL Analysis
-  #       uses: github/codeql-action/analyze@v2
-  #       with:
-  #         category: "/language:${{matrix.language}}"
+  # CodeQL Analysis job for PR code security scanning
+  codeql-analysis:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ['javascript', 'python', 'typescript', 'csharp', 'rust']
+        # CodeQL supports these languages: https://aka.ms/codeql-docs/language-support
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@a2d9de63c2916881d0621fdb7e65abe32141606d
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: none
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@a2d9de63c2916881d0621fdb7e65abe32141606d
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@a2d9de63c2916881d0621fdb7e65abe32141606d
+        with:
+          category: "/language:${{matrix.language}}"
 
   # Dependency scanning job for PRs
   dependency-scan:
     name: Dependency Scan
     runs-on: ubuntu-latest
-    # needs: [codeql-analysis]
+    needs: [codeql-analysis]
     steps:
       - name: Checkout Repository
         uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98 # v4.2.2
