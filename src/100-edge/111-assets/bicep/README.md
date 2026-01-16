@@ -65,6 +65,20 @@ Assigns Azure Kubernetes Service Arc Contributor Role to K8 Bridge principal for
 
 ## User Defined Types
 
+### `_1.AssetAction`
+
+Management action configuration for assets.
+
+|Property|Type|Description|
+| :--- | :--- | :--- |
+|name|`string`|Name of the action.|
+|actionType|`string`|Type of the action. Must be one of: Call, Read, or Write.|
+|targetUri|`string`|Target URI for the action.|
+|topic|`string`|MQTT topic for the action.|
+|timeoutInSeconds|`int`|Timeout in seconds for the action.|
+|actionConfiguration|`string`|Action configuration as JSON string.|
+|typeRef|`string`|Type reference for the action.|
+
 ### `_1.AssetDataPoint`
 
 Data point configuration for asset datasets.
@@ -112,29 +126,56 @@ Event configuration for assets.
 |Property|Type|Description|
 | :--- | :--- | :--- |
 |name|`string`|Name of the event.|
+|dataSource|`string`|Data source address for the event.|
 |eventConfiguration|`string`|Event configuration as JSON string.|
-|eventPoints|`array`|Event points in the event.|
+|typeRef|`string`|Type reference for the event.|
 |destinations|`array`|Destinations for the event.|
 
-### `_1.AssetEventPoint`
+### `_1.AssetEventDestination`
 
-Event point configuration for asset events.
-
-|Property|Type|Description|
-| :--- | :--- | :--- |
-|name|`string`|Name of the event point.|
-|eventNotifier|`string`|Event notifier address.|
-|eventPointConfiguration|`string`|Event point configuration as JSON string.|
-
-### `_1.AssetStreamSet`
-
-Stream set configuration for assets.
+Event destination configuration.
 
 |Property|Type|Description|
 | :--- | :--- | :--- |
-|name|`string`|Name of the stream set.|
-|streamSetConfiguration|`string`|Stream set configuration as JSON string.|
-|dataSource|`string`|Data source address for the stream.|
+|target|`string`|Target for the destination: Mqtt, etc.|
+|configuration|`object`|Configuration for the destination.|
+
+### `_1.AssetEventGroup`
+
+Event group configuration for assets.
+
+|Property|Type|Description|
+| :--- | :--- | :--- |
+|name|`string`|Name of the event group.|
+|dataSource|`string`|Data source address for the event group.|
+|eventGroupConfiguration|`string`|Event group configuration as JSON string.|
+|typeRef|`string`|Type reference for the event group.|
+|defaultDestinations|`array`|Default destinations for events in the group.|
+|events|`array`|Events in the event group.|
+
+### `_1.AssetManagementGroup`
+
+Management group configuration for assets.
+
+|Property|Type|Description|
+| :--- | :--- | :--- |
+|name|`string`|Name of the management group.|
+|dataSource|`string`|Data source address for the management group.|
+|managementGroupConfiguration|`string`|Management group configuration as JSON string.|
+|typeRef|`string`|Type reference for the management group.|
+|defaultTopic|`string`|Default MQTT topic for actions in the group.|
+|defaultTimeoutInSeconds|`int`|Default timeout in seconds for actions in the group.|
+|actions|`array`|Actions in the management group.|
+
+### `_1.AssetStream`
+
+Stream configuration for assets.
+
+|Property|Type|Description|
+| :--- | :--- | :--- |
+|name|`string`|Name of the stream.|
+|streamConfiguration|`string`|Stream configuration as JSON string.|
+|typeRef|`string`|Type reference for the stream.|
 |destinations|`array`|Destinations for the stream set.|
 
 ### `_1.DatasetDestination`
@@ -251,10 +292,11 @@ Namespaced asset configuration.
 |softwareRevision|`string`|Software revision of the asset.|
 |attributes|`object`|Custom attributes for the asset.|
 |datasets|`array`|Datasets for the asset.|
+|streams|`array`|Streams for the asset.|
+|eventGroups|`array`|Event groups for the asset.|
+|managementGroups|`array`|Management groups for the asset.|
 |defaultDatasetsConfiguration|`string`|Default datasets configuration as JSON string.|
-|streamSets|`array`|Stream sets for the asset.|
-|defaultStreamSetsConfiguration|`string`|Default stream sets configuration as JSON string.|
-|events|`array`|Events for the asset.|
+|defaultStreamsConfiguration|`string`|Default streams configuration as JSON string.|
 |defaultEventsConfiguration|`string`|Default events configuration as JSON string.|
 
 ### `_1.NamespacedDevice`

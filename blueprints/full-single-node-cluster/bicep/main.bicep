@@ -428,10 +428,19 @@ module edgeCncfCluster '../../../src/100-edge/100-cncf-cluster/bicep/main.bicep'
   }
 }
 
+module edgeArcExtensions '../../../src/100-edge/109-arc-extensions/bicep/main.bicep' = {
+  name: '${deployment().name}-eae4'
+  scope: resourceGroup(resourceGroupName)
+  dependsOn: [cloudResourceGroup]
+  params: {
+    arcConnectedClusterName: edgeCncfCluster.outputs.connectedClusterName
+  }
+}
+
 module edgeIotOps '../../../src/100-edge/110-iot-ops/bicep/main.bicep' = {
   name: '${deployment().name}-eio5'
   scope: resourceGroup(resourceGroupName)
-  dependsOn: [cloudResourceGroup]
+  dependsOn: [edgeArcExtensions]
   params: {
     // Common Parameters
     common: common
@@ -548,10 +557,10 @@ output aiFoundryEndpoint string? = shouldDeployAiFoundry ? cloudAiFoundry.?outpu
 output aiFoundryPrincipalId string? = shouldDeployAiFoundry ? cloudAiFoundry.?outputs.?aiFoundryPrincipalId : null
 
 @description('The ID of the Azure IoT Operations Cert-Manager Extension.')
-output aioCertManagerExtensionId string = edgeIotOps.outputs.aioCertManagerExtensionId
+output aioCertManagerExtensionId string = edgeArcExtensions.outputs.certManagerExtensionId
 
 @description('The name of the Azure IoT Operations Cert-Manager Extension.')
-output aioCertManagerExtensionName string = edgeIotOps.outputs.aioCertManagerExtensionName
+output aioCertManagerExtensionName string = edgeArcExtensions.outputs.certManagerExtensionName
 
 @description('The ID of the Secret Store Extension.')
 output secretStoreExtensionId string = edgeIotOps.outputs.secretStoreExtensionId

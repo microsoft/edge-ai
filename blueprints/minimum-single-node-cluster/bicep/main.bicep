@@ -91,6 +91,7 @@ param shouldCreateDefaultNamespacedAsset bool = true
 
 resource attribution 'Microsoft.Resources/deployments@2020-06-01' = if (!telemetry_opt_out) {
   name: 'pid-acce1e78-0375-4637-a593-86aa36dcfeac'
+  location: common.location
   properties: {
     mode: 'Incremental'
     template: {
@@ -178,10 +179,19 @@ module edgeCncfCluster '../../../src/100-edge/100-cncf-cluster/bicep/main.bicep'
   }
 }
 
+module edgeArcExtensions '../../../src/100-edge/109-arc-extensions/bicep/main.bicep' = {
+  name: '${deployment().name}-eae4'
+  scope: resourceGroup(resourceGroupName)
+  dependsOn: [cloudResourceGroup]
+  params: {
+    arcConnectedClusterName: edgeCncfCluster.outputs.connectedClusterName
+  }
+}
+
 module edgeIotOps '../../../src/100-edge/110-iot-ops/bicep/main.bicep' = {
   name: '${deployment().name}-eio5'
   scope: resourceGroup(resourceGroupName)
-  dependsOn: [cloudResourceGroup]
+  dependsOn: [edgeArcExtensions]
   params: {
     // Common Parameters
     common: common
@@ -241,4 +251,4 @@ output vmUsername string = cloudVmHost.outputs.adminUsername
 output vmNames array = cloudVmHost.outputs.vmNames
 
 @description('The ID of the Azure IoT Operations Cert-Manager Extension.')
-output aioCertManagerExtensionId string = edgeIotOps.outputs.aioCertManagerExtensionId
+output aioCertManagerExtensionId string = edgeArcExtensions.outputs.certManagerExtensionId

@@ -32,6 +32,7 @@ for a single-node cluster deployment, including observability, messaging, and da
 | cloud\_security\_identity | ../../../src/000-cloud/010-security-identity/terraform | n/a |
 | cloud\_vm\_host | ../../../src/000-cloud/051-vm-host/terraform | n/a |
 | cloud\_vpn\_gateway | ../../../src/000-cloud/055-vpn-gateway/terraform | n/a |
+| edge\_arc\_extensions | ../../../src/100-edge/109-arc-extensions/terraform | n/a |
 | edge\_assets | ../../../src/100-edge/111-assets/terraform | n/a |
 | edge\_azureml | ../../../src/100-edge/140-azureml/terraform | n/a |
 | edge\_cncf\_cluster | ../../../src/100-edge/100-cncf-cluster/terraform | n/a |

@@ -1,9 +1,10 @@
 /*
- * IMPORTANT: The variable names in this file ('aioCertManagerExtensionDefaults',
- * 'secretStoreExtensionDefaults', 'containerStorageExtensionDefaults',
+ * IMPORTANT: The variable names in this file ('secretStoreExtensionDefaults',
  * 'aioExtensionDefaults') are explicitly referenced
  * by the aio-version-checker.py script. If you rename these variables or change their structure,
  * you must also update the script and the aio-version-checker-template.yml pipeline.
+ * NOTE: 'aioCertManagerExtensionDefaults' and 'containerStorageExtensionDefaults' have been
+ * moved to the 109-arc-extensions component.
  */
 
 @export()
@@ -28,61 +29,6 @@ var secretStoreExtensionDefaults = {
   release: {
     version: '1.1.5'
     train: 'stable'
-  }
-}
-
-@export()
-@description('The settings for the Azure Container Store for Azure Arc Extension.')
-type ContainerStorageExtension = {
-  @description('The common settings for the extension.')
-  release: Release
-
-  settings: {
-    @description('Whether or not to enable fault tolerant storage in the cluster.')
-    faultToleranceEnabled: bool
-
-    @description('The storage class for the cluster. (Otherwise, "acstor-arccontainerstorage-storage-pool" for fault tolerant storage else "default,local-path")')
-    diskStorageClass: string?
-
-    @description('The disk mount point for the cluster when using fault tolerant storage. (Otherwise: "/mnt" when using fault tolerant storage)')
-    diskMountPoint: string?
-  }
-}
-
-@export()
-var containerStorageExtensionDefaults = {
-  release: {
-    version: '2.6.0'
-    train: 'stable'
-  }
-  settings: {
-    faultToleranceEnabled: false
-  }
-}
-
-@export()
-@description('The settings for the Azure IoT Operations Platform Extension.')
-type AioCertManagerExtension = {
-  @description('The common settings for the extension.')
-  release: Release
-
-  settings: {
-    @description('Agent operation timeout in minutes.')
-    agentOperationTimeoutInMinutes: string
-    @description('Enable or disable global telemetry.')
-    globalTelemetryEnabled: bool?
-  }
-}
-
-@export()
-var aioCertManagerExtensionDefaults = {
-  release: {
-    version: '0.7.0'
-    train: 'stable'
-  }
-  settings: {
-    agentOperationTimeoutInMinutes: '20'
-    globalTelemetryEnabled: true
   }
 }
 
