@@ -225,7 +225,7 @@ blueprints/
 
    ```bash
    # Set required environment variable for Terraform Azure provider by running the script
-   ../../../scripts/az-sub-init.sh
+   source ../../../scripts/az-sub-init.sh
 
    # Initialize Terraform (pulls down providers and modules)
    terraform init -upgrade
