@@ -23,6 +23,7 @@
 
 - [Edge](/src/100-edge/README)
   - [Cncf Cluster](/src/100-edge/100-cncf-cluster/README)
+  - [Arc Extensions](/src/100-edge/109-arc-extensions/README)
   - [Iot Ops](/src/100-edge/110-iot-ops/README)
   - [Assets](/src/100-edge/111-assets/README)
   - [Observability](/src/100-edge/120-observability/README)

@@ -65,10 +65,6 @@ module "iot_ops_init" {
   depends_on = [module.role_assignments]
 
   arc_connected_cluster_id     = var.arc_connected_cluster.id
-  trust_config_source          = var.trust_config_source
-  aio_cert_manager_config      = var.aio_cert_manager_config
-  cert_manager                 = var.cert_manager
-  edge_storage_accelerator     = var.edge_storage_accelerator
   secret_sync_controller       = var.secret_sync_controller
   resource_group               = var.resource_group
   connected_cluster_name       = var.arc_connected_cluster.name

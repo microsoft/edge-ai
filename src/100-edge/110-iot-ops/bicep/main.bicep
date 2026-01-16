@@ -18,12 +18,6 @@ param arcConnectedClusterName string
   Azure IoT Operations Init Parameters
 */
 
-@description('The settings for the Azure Container Store for Azure Arc Extension.')
-param containerStorageConfig types.ContainerStorageExtension = types.containerStorageExtensionDefaults
-
-@description('The settings for the Azure IoT Operations Platform Extension.')
-param aioCertManagerConfig types.AioCertManagerExtension = types.aioCertManagerExtensionDefaults
-
 @description('The settings for the Secret Store Extension.')
 #disable-next-line secure-secrets-in-params
 param secretStoreConfig types.SecretStoreExtension = types.secretStoreExtensionDefaults
@@ -288,11 +282,8 @@ module iotOpsInit 'modules/iot-ops-init.bicep' = if (shouldInitAio) {
     deployKeyVaultRoleAssignments
   ]
   params: {
-    aioCertManagerConfig: aioCertManagerConfig
     arcConnectedClusterName: arcConnectedClusterName
-    containerStorageConfig: containerStorageConfig
     secretStoreConfig: secretStoreConfig
-    trustIssuerSettings: trustIssuerSettings
   }
 }
 
@@ -432,17 +423,11 @@ module postInstanceScripts 'modules/apply-scripts.bicep' = if (shouldDeployAioDe
   Outputs
 */
 
-@description('The ID of the Container Storage Extension.')
-output containerStorageExtensionId string = (iotOpsInit.?outputs.?containerStorageExtensionId) ?? ''
+@description('The ID of the Azure IoT Operations Platform Extension.')
+output aioPlatformExtensionId string = shouldDeployAio ? (iotOpsInstance.?outputs.?aioExtensionId ?? '') : ''
 
-@description('The name of the Container Storage Extension.')
-output containerStorageExtensionName string = (iotOpsInit.?outputs.?containerStorageExtensionName) ?? ''
-
-@description('The ID of the Azure IoT Operations Cert-Manager Extension.')
-output aioCertManagerExtensionId string = (iotOpsInit.?outputs.?aioCertManagerExtensionId) ?? ''
-
-@description('The name of the Azure IoT Operations Cert-Manager Extension.')
-output aioCertManagerExtensionName string = (iotOpsInit.?outputs.?aioCertManagerExtensionName) ?? ''
+@description('The name of the Azure IoT Operations Platform Extension.')
+output aioPlatformExtensionName string = shouldDeployAio ? (iotOpsInstance.?outputs.?aioExtensionName ?? '') : ''
 
 @description('The ID of the Secret Store Extension.')
 output secretStoreExtensionId string = (iotOpsInit.?outputs.?secretStoreExtensionId) ?? ''

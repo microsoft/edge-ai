@@ -53,18 +53,6 @@ variable "aio_ca" {
   description = "CA certificate for the MQTT broker, can be either Root CA or Root CA with any number of Intermediate CAs. If not provided, a self-signed Root CA with a intermediate will be generated. Only valid when Trust Source is set to CustomerManaged"
 }
 
-variable "aio_cert_manager_config" {
-  type = object({
-    agent_operation_timeout_in_minutes = string
-    global_telemetry_enabled           = bool
-  })
-  default = {
-    agent_operation_timeout_in_minutes = "20"
-    global_telemetry_enabled           = true
-  }
-  description = "Install cert-manager"
-}
-
 variable "enable_opc_ua_simulator" {
   type        = bool
   default     = true

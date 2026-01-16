@@ -22,7 +22,6 @@ Deploys the minimal set of resources required for Azure IoT Operations on a sing
 |assetEndpointProfiles|List of asset endpoint profiles to create.|`array`|[]|no|
 |legacyAssets|List of legacy assets to create.|`array`|[]|no|
 |namespacedAssets|List of namespaced assets to create.|`array`|[]|no|
-|shouldCreateDefaultAsset|Whether to create a default legacy asset and endpoint profile.|`bool`|`false`|no|
 |shouldCreateDefaultNamespacedAsset|Whether to create a default namespaced asset and device.|`bool`|`true`|no|
 
 ## Resources
@@ -35,6 +34,7 @@ Deploys the minimal set of resources required for Azure IoT Operations on a sing
 |cloudNetworking|`Microsoft.Resources/deployments`|2025-04-01|
 |cloudVmHost|`Microsoft.Resources/deployments`|2025-04-01|
 |edgeCncfCluster|`Microsoft.Resources/deployments`|2025-04-01|
+|edgeArcExtensions|`Microsoft.Resources/deployments`|2025-04-01|
 |edgeIotOps|`Microsoft.Resources/deployments`|2025-04-01|
 |edgeAssets|`Microsoft.Resources/deployments`|2025-04-01|
 
@@ -47,7 +47,8 @@ Deploys the minimal set of resources required for Azure IoT Operations on a sing
 |cloudData|Creates storage resources including Azure Storage Account and Schema Registry for data in the Edge AI solution.|
 |cloudNetworking|Creates virtual network, subnet, and network security group resources for Azure deployments.|
 |cloudVmHost|Provisions virtual machines and networking infrastructure for hosting Azure IoT Operations edge deployments.|
-|edgeCncfCluster|This module provisions and deploys automation scripts to a VM host that create and configure a K3s Kubernetes cluster with Arc connectivity. The scripts handle primary and secondary node(s) setup, cluster administration, workload identity enablement, and installation of required Azure Arc extensions.|
+|edgeCncfCluster|This module provisions and deploys automation scripts to a VM host that create and configure a K3s Kubernetes cluster with Arc connectivity.<br>The scripts handle primary and secondary node(s) setup, cluster administration, workload identity enablement, and installation of required Azure Arc extensions.|
+|edgeArcExtensions|Deploys foundational Arc-enabled Kubernetes cluster extensions including cert-manager and Azure Container Storage (ACSA).|
 |edgeIotOps|Deploys Azure IoT Operations extensions, instances, and configurations on Azure Arc-enabled Kubernetes clusters.|
 |edgeAssets|Deploys Kubernetes asset definitions to a connected cluster using the namespaced Device Registry model. This component facilitates the management of devices and assets within ADR namespaces.|
 
@@ -319,6 +320,34 @@ The scripts handle primary and secondary node(s) setup, cluster administration, 
 |clusterServerScriptSecretShowCommand|`string`|The AZ CLI command to get the cluster server script from Key Vault|
 |clusterNodeScriptSecretShowCommand|`string`|The AZ CLI command to get the cluster node script from Key Vault|
 
+### edgeArcExtensions
+
+Deploys foundational Arc-enabled Kubernetes cluster extensions including cert-manager and Azure Container Storage (ACSA).
+
+#### Parameters for edgeArcExtensions
+
+|Name|Description|Type|Default|Required|
+| :--- | :--- | :--- | :--- | :--- |
+|arcConnectedClusterName|The resource name for the Arc connected cluster.|`string`|n/a|yes|
+|certManagerConfig|The settings for the cert-manager Extension.|`[_1.CertManagerExtension](#user-defined-types)`|[variables('_1.certManagerExtensionDefaults')]|no|
+|containerStorageConfig|The settings for the Azure Container Storage for Azure Arc Extension.|`[_1.ContainerStorageExtension](#user-defined-types)`|[variables('_1.containerStorageExtensionDefaults')]|no|
+
+#### Resources for edgeArcExtensions
+
+|Name|Type|API Version|
+| :--- | :--- | :--- |
+|aioCertManager|`Microsoft.KubernetesConfiguration/extensions`|2024-11-01|
+|containerStorage|`Microsoft.KubernetesConfiguration/extensions`|2024-11-01|
+
+#### Outputs for edgeArcExtensions
+
+|Name|Type|Description|
+| :--- | :--- | :--- |
+|certManagerExtensionId|`string`|The resource ID of the cert-manager extension.|
+|certManagerExtensionName|`string`|The name of the cert-manager extension.|
+|containerStorageExtensionId|`string`|The resource ID of the Azure Container Storage extension.|
+|containerStorageExtensionName|`string`|The name of the Azure Container Storage extension.|
+
 ### edgeIotOps
 
 Deploys Azure IoT Operations extensions, instances, and configurations on Azure Arc-enabled Kubernetes clusters.
@@ -329,8 +358,6 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 | :--- | :--- | :--- | :--- | :--- |
 |common|The common component configuration.|`[_2.Common](#user-defined-types)`|n/a|yes|
 |arcConnectedClusterName|The resource name for the Arc connected cluster.|`string`|n/a|yes|
-|containerStorageConfig|The settings for the Azure Container Store for Azure Arc Extension.|`[_1.ContainerStorageExtension](#user-defined-types)`|[variables('_1.containerStorageExtensionDefaults')]|no|
-|aioCertManagerConfig|The settings for the Azure IoT Operations Platform Extension.|`[_1.AioCertManagerExtension](#user-defined-types)`|[variables('_1.aioCertManagerExtensionDefaults')]|no|
 |secretStoreConfig|The settings for the Secret Store Extension.|`[_1.SecretStoreExtension](#user-defined-types)`|[variables('_1.secretStoreExtensionDefaults')]|no|
 |shouldInitAio|Whether to deploy the Azure IoT Operations initial connected cluster resources, Secret Sync, ACSA, OSM, AIO Platform.|`bool`|`true`|no|
 |aioIdentityName|The name of the User Assigned Managed Identity for Azure IoT Operations.|`string`|n/a|yes|
@@ -390,10 +417,8 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 
 |Name|Type|Description|
 | :--- | :--- | :--- |
-|containerStorageExtensionId|`string`|The ID of the Container Storage Extension.|
-|containerStorageExtensionName|`string`|The name of the Container Storage Extension.|
-|aioCertManagerExtensionId|`string`|The ID of the Azure IoT Operations Cert-Manager Extension.|
-|aioCertManagerExtensionName|`string`|The name of the Azure IoT Operations Cert-Manager Extension.|
+|aioPlatformExtensionId|`string`|The ID of the Azure IoT Operations Platform Extension.|
+|aioPlatformExtensionName|`string`|The name of the Azure IoT Operations Platform Extension.|
 |secretStoreExtensionId|`string`|The ID of the Secret Store Extension.|
 |secretStoreExtensionName|`string`|The name of the Secret Store Extension.|
 |customLocationId|`string`|The ID of the deployed Custom Location.|
@@ -448,6 +473,20 @@ Deploys Kubernetes asset definitions to a connected cluster using the namespaced
 
 ## User Defined Types
 
+### `_1.AssetAction`
+
+Management action configuration for assets.
+
+|Property|Type|Description|
+| :--- | :--- | :--- |
+|name|`string`|Name of the action.|
+|actionType|`string`|Type of the action. Must be one of: Call, Read, or Write.|
+|targetUri|`string`|Target URI for the action.|
+|topic|`string`|MQTT topic for the action.|
+|timeoutInSeconds|`int`|Timeout in seconds for the action.|
+|actionConfiguration|`string`|Action configuration as JSON string.|
+|typeRef|`string`|Type reference for the action.|
+
 ### `_1.AssetDataPoint`
 
 Data point configuration for asset datasets.
@@ -495,29 +534,56 @@ Event configuration for assets.
 |Property|Type|Description|
 | :--- | :--- | :--- |
 |name|`string`|Name of the event.|
+|dataSource|`string`|Data source address for the event.|
 |eventConfiguration|`string`|Event configuration as JSON string.|
-|eventPoints|`array`|Event points in the event.|
+|typeRef|`string`|Type reference for the event.|
 |destinations|`array`|Destinations for the event.|
 
-### `_1.AssetEventPoint`
+### `_1.AssetEventDestination`
 
-Event point configuration for asset events.
-
-|Property|Type|Description|
-| :--- | :--- | :--- |
-|name|`string`|Name of the event point.|
-|eventNotifier|`string`|Event notifier address.|
-|eventPointConfiguration|`string`|Event point configuration as JSON string.|
-
-### `_1.AssetStreamSet`
-
-Stream set configuration for assets.
+Event destination configuration.
 
 |Property|Type|Description|
 | :--- | :--- | :--- |
-|name|`string`|Name of the stream set.|
-|streamSetConfiguration|`string`|Stream set configuration as JSON string.|
-|dataSource|`string`|Data source address for the stream.|
+|target|`string`|Target for the destination: Mqtt, etc.|
+|configuration|`object`|Configuration for the destination.|
+
+### `_1.AssetEventGroup`
+
+Event group configuration for assets.
+
+|Property|Type|Description|
+| :--- | :--- | :--- |
+|name|`string`|Name of the event group.|
+|dataSource|`string`|Data source address for the event group.|
+|eventGroupConfiguration|`string`|Event group configuration as JSON string.|
+|typeRef|`string`|Type reference for the event group.|
+|defaultDestinations|`array`|Default destinations for events in the group.|
+|events|`array`|Events in the event group.|
+
+### `_1.AssetManagementGroup`
+
+Management group configuration for assets.
+
+|Property|Type|Description|
+| :--- | :--- | :--- |
+|name|`string`|Name of the management group.|
+|dataSource|`string`|Data source address for the management group.|
+|managementGroupConfiguration|`string`|Management group configuration as JSON string.|
+|typeRef|`string`|Type reference for the management group.|
+|defaultTopic|`string`|Default MQTT topic for actions in the group.|
+|defaultTimeoutInSeconds|`int`|Default timeout in seconds for actions in the group.|
+|actions|`array`|Actions in the management group.|
+
+### `_1.AssetStream`
+
+Stream configuration for assets.
+
+|Property|Type|Description|
+| :--- | :--- | :--- |
+|name|`string`|Name of the stream.|
+|streamConfiguration|`string`|Stream configuration as JSON string.|
+|typeRef|`string`|Type reference for the stream.|
 |destinations|`array`|Destinations for the stream set.|
 
 ### `_1.DatasetDestination`
@@ -634,10 +700,11 @@ Namespaced asset configuration.
 |softwareRevision|`string`|Software revision of the asset.|
 |attributes|`object`|Custom attributes for the asset.|
 |datasets|`array`|Datasets for the asset.|
-|streamSets|`array`|Stream sets for the asset.|
-|events|`array`|Events for the asset.|
+|streams|`array`|Streams for the asset.|
+|eventGroups|`array`|Event groups for the asset.|
+|managementGroups|`array`|Management groups for the asset.|
 |defaultDatasetsConfiguration|`string`|Default datasets configuration as JSON string.|
-|defaultStreamSetsConfiguration|`string`|Default stream sets configuration as JSON string.|
+|defaultStreamsConfiguration|`string`|Default streams configuration as JSON string.|
 |defaultEventsConfiguration|`string`|Default events configuration as JSON string.|
 
 ### `_1.NamespacedDevice`

@@ -168,6 +168,13 @@ resource attribution 'Microsoft.Resources/deployments@2020-06-01' = if (!telemet
   Modules
 */
 
+module edgeArcExtensions '../../../src/100-edge/109-arc-extensions/bicep/main.bicep' = {
+  name: '${deployment().name}-eae0'
+  params: {
+    arcConnectedClusterName: arcConnectedClusterName
+  }
+}
+
 module edgeIotOps '../../../src/100-edge/110-iot-ops/bicep/main.bicep' = {
   name: '${deployment().name}-eio0'
   params: {
@@ -230,10 +237,10 @@ module edgeAssets '../../../src/100-edge/111-assets/bicep/main.bicep' = {
 */
 
 @description('The ID of the Azure IoT Operations Cert-Manager Extension.')
-output aioCertManagerExtensionId string = edgeIotOps.outputs.aioCertManagerExtensionId
+output aioCertManagerExtensionId string = edgeArcExtensions.outputs.certManagerExtensionId
 
 @description('The name of the Azure IoT Operations Cert-Manager Extension.')
-output aioCertManagerExtensionName string = edgeIotOps.outputs.aioCertManagerExtensionName
+output aioCertManagerExtensionName string = edgeArcExtensions.outputs.certManagerExtensionName
 
 @description('The ID of the Secret Store Extension.')
 output secretStoreExtensionId string = edgeIotOps.outputs.secretStoreExtensionId

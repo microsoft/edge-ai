@@ -44,6 +44,7 @@ Each cluster operates independently but can communicate through the peered virtu
 | cluster\_a\_cloud\_resource\_group | ../../../src/000-cloud/000-resource-group/terraform | n/a |
 | cluster\_a\_cloud\_security\_identity | ../../../src/000-cloud/010-security-identity/terraform | n/a |
 | cluster\_a\_cloud\_vm\_host | ../../../src/000-cloud/051-vm-host/terraform | n/a |
+| cluster\_a\_edge\_arc\_extensions | ../../../src/100-edge/109-arc-extensions/terraform | n/a |
 | cluster\_a\_edge\_assets | ../../../src/100-edge/111-assets/terraform | n/a |
 | cluster\_a\_edge\_cncf\_cluster | ../../../src/100-edge/100-cncf-cluster/terraform | n/a |
 | cluster\_a\_edge\_iot\_ops | ../../../src/100-edge/110-iot-ops/terraform | n/a |
@@ -58,6 +59,7 @@ Each cluster operates independently but can communicate through the peered virtu
 | cluster\_b\_cloud\_resource\_group | ../../../src/000-cloud/000-resource-group/terraform | n/a |
 | cluster\_b\_cloud\_security\_identity | ../../../src/000-cloud/010-security-identity/terraform | n/a |
 | cluster\_b\_cloud\_vm\_host | ../../../src/000-cloud/051-vm-host/terraform | n/a |
+| cluster\_b\_edge\_arc\_extensions | ../../../src/100-edge/109-arc-extensions/terraform | n/a |
 | cluster\_b\_edge\_assets | ../../../src/100-edge/111-assets/terraform | n/a |
 | cluster\_b\_edge\_cncf\_cluster | ../../../src/100-edge/100-cncf-cluster/terraform | n/a |
 | cluster\_b\_edge\_iot\_ops | ../../../src/100-edge/110-iot-ops/terraform | n/a |
