@@ -93,7 +93,8 @@ jobs:
             -OutputFormat json `
             -MaxAge $MaxAge `
             -LogPath "./logs/sha-staleness-check.log" `
-            -OutputPath "./stale-dependencies.json"
+            -OutputPath "./stale-dependencies.json" `
+            -ExitOnFailure $BreakBuild
 
           # Check for stale dependencies and fail if break-build is enabled
           if (Test-Path "./stale-dependencies.json") {
@@ -116,7 +117,7 @@ jobs:
 
       - name: Upload staleness results
         if: always()
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: dependency-staleness-results
           path: stale-dependencies.json
@@ -143,7 +144,7 @@ jobs:
 
       - name: Upload OSSF Scorecard results
         if: always()
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: ossf-scorecard-results
           path: scorecard-results.sarif
@@ -166,7 +167,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Setup Python
-        uses: actions/setup-python@4f41a90a1f38628c7ccc608d05fbafe701bc20ae # v5.3.0
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
         with:
           python-version: '3.11'
 
@@ -184,7 +185,7 @@ jobs:
 
       - name: Upload AIO version results
         if: always()
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: aio-version-check-results
           path: aio-version-check-results.json
@@ -233,7 +234,7 @@ jobs:
 
       - name: Upload security summary
         if: always()
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: security-deployment-summary
           path: security-summary.md

@@ -161,7 +161,8 @@ jobs:
             -OutputFormat json `
             -MaxAge $MaxAge `
             -LogPath "./logs/sha-staleness-check.log" `
-            -OutputPath "./stale-dependencies.json"
+            -OutputPath "./stale-dependencies.json" `
+            -ExitOnFailure $false
 
           # Parse results for outputs
           if (Test-Path "./stale-dependencies.json") {
@@ -184,7 +185,7 @@ jobs:
 
       - name: Upload staleness results
         if: always()
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: dependency-staleness-results
           path: stale-dependencies.json
@@ -231,7 +232,7 @@ jobs:
 
       - name: Upload OSSF Scorecard results
         if: always()
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: ossf-scorecard-results
           path: scorecard-results.sarif
@@ -285,7 +286,7 @@ jobs:
 
       - name: Upload AIO version results
         if: always()
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: aio-version-check-results
           path: aio-version-check-results.json
@@ -385,7 +386,7 @@ jobs:
 
       - name: Upload security analysis results
         if: inputs.publish-artifacts
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: comprehensive-security-analysis
           path: |
@@ -478,7 +479,7 @@ jobs:
 
       - name: Upload comprehensive security summary
         if: always()
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: comprehensive-security-summary
           path: comprehensive-security-summary.md
