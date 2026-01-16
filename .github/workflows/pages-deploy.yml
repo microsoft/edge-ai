@@ -134,7 +134,7 @@ jobs:
       hashes: ${{ steps.hash.outputs.hashes }}
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493
+        uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
         with:
           fetch-depth: 0
           ref: ${{ inputs.source_branch }}
@@ -149,7 +149,7 @@ jobs:
           cache: 'npm'
 
       - name: Cache Docsify CLI
-        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
+        uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb
         with:
           path: ~/.npm
           key: ${{ runner.os }}-docsify-${{ hashFiles('**/package-lock.json') }}
@@ -760,7 +760,7 @@ jobs:
           echo "🔐 SLSA subjects: $SUBJECTS_JSON"
 
       - name: Upload build artifact
-        uses: actions/upload-artifact@2848b2cda0e5190984587ec6bb1f36730ca78d50
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
         with:
           name: documentation-build-${{ github.run_number }}
           path: site-artifact.tar.gz

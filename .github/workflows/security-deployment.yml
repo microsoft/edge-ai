@@ -75,22 +75,44 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup Python
-        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
-        with:
-          python-version: '3.11'
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+      - name: Create logs directory
+        shell: bash
+        run: mkdir -p logs
 
       - name: Run dependency staleness check
+        shell: pwsh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          python scripts/dependency-staleness-check.py \
-            --max-age-days ${{ inputs.max-age-days }} \
-            --output-path stale-dependencies.json \
-            --fail-on-stale ${{ inputs.break-build }}
+          $MaxAge = [int]"${{ inputs.max-age-days }}"
+          $BreakBuild = "${{ inputs.break-build }}" -eq "true"
+
+          Write-Host "Running SHA staleness check with MaxAge=$MaxAge days, BreakBuild=$BreakBuild"
+
+          ./scripts/security/Test-SHAStaleness.ps1 `
+            -OutputFormat json `
+            -MaxAge $MaxAge `
+            -LogPath "./logs/sha-staleness-check.log" `
+            -OutputPath "./stale-dependencies.json"
+
+          # Check for stale dependencies and fail if break-build is enabled
+          if (Test-Path "./stale-dependencies.json") {
+            $results = Get-Content "./stale-dependencies.json" | ConvertFrom-Json
+            $staleCount = $results.TotalStaleItems
+
+            if ($staleCount -gt 0) {
+              Write-Warning "$staleCount stale dependencies found"
+              if ($BreakBuild) {
+                Write-Error "Build failed due to stale dependencies (break-build enabled)"
+                exit 1
+              }
+            } else {
+              Write-Host "All dependencies are within staleness threshold"
+            }
+          } else {
+            Write-Error "Error: staleness check failed to generate results"
+            exit 1
+          }
 
       - name: Upload staleness results
         if: always()
@@ -144,7 +166,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Setup Python
-        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
+        uses: actions/setup-python@4f41a90a1f38628c7ccc608d05fbafe701bc20ae # v5.3.0
         with:
           python-version: '3.11'
 

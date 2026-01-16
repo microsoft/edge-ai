@@ -143,40 +143,44 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup Python
-        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
-        with:
-          python-version: '3.11'
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+      - name: Create logs directory
+        shell: bash
+        run: mkdir -p logs
 
       - name: Run dependency staleness check
         id: staleness-check
+        shell: pwsh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          python scripts/dependency-staleness-check.py \
-            --max-age-days ${{ inputs.max-age-days }} \
-            --output-path stale-dependencies.json \
-            --output-format json
+          $MaxAge = [int]"${{ inputs.max-age-days }}"
+
+          Write-Host "Running SHA staleness check with MaxAge=$MaxAge days"
+
+          ./scripts/security/Test-SHAStaleness.ps1 `
+            -OutputFormat json `
+            -MaxAge $MaxAge `
+            -LogPath "./logs/sha-staleness-check.log" `
+            -OutputPath "./stale-dependencies.json"
 
           # Parse results for outputs
-          if [[ -f "stale-dependencies.json" ]]; then
-            stale_count=$(jq '.stale_dependencies | length' stale-dependencies.json)
-            echo "stale-count=$stale_count" >> $GITHUB_OUTPUT
+          if (Test-Path "./stale-dependencies.json") {
+            $results = Get-Content "./stale-dependencies.json" | ConvertFrom-Json
+            $staleCount = $results.TotalStaleItems
 
-            if [[ $stale_count -gt 0 ]]; then
-              echo "threshold-failed=true" >> $GITHUB_OUTPUT
-              echo "Warning: $stale_count stale dependencies found"
-            else
-              echo "threshold-failed=false" >> $GITHUB_OUTPUT
-              echo "All dependencies are within staleness threshold"
-            fi
-          else
-            echo "Error: staleness check failed to generate results"
+            "stale-count=$staleCount" >> $env:GITHUB_OUTPUT
+
+            if ($staleCount -gt 0) {
+              "threshold-failed=true" >> $env:GITHUB_OUTPUT
+              Write-Warning "$staleCount stale dependencies found"
+            } else {
+              "threshold-failed=false" >> $env:GITHUB_OUTPUT
+              Write-Host "All dependencies are within staleness threshold"
+            }
+          } else {
+            Write-Error "Error: staleness check failed to generate results"
             exit 1
-          fi
+          }
 
       - name: Upload staleness results
         if: always()
