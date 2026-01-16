@@ -1,0 +1,14 @@
+{
+  "id": "{{ .BindingId }}",
+  "dataBindingConfiguration": {
+    "dataBindingType": "NonTimeSeries",
+    "propertyBindings": {{ .PropertyBindings }},
+    "sourceTableProperties": {
+      "sourceType": "LakehouseTable",
+      "workspaceId": "{{ .WorkspaceId }}",
+      "itemId": "{{ .LakehouseId }}",
+      "sourceTableName": "{{ .TableName }}",
+      "sourceSchema": "dbo"
+    }
+  }
+}

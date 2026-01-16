@@ -1,0 +1,3 @@
+Id,Name,Description,Namespace,Source
+group1,Welding Cell,Group of welding robots in north factory,CORA,Example
+group2,Assembly Line,Group of assembly and handling robots,CORA,Example

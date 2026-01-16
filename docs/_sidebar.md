@@ -376,6 +376,8 @@
   - [Data](/src/000-cloud/030-data/README)
   - [Fabric](/src/000-cloud/031-fabric/README)
   - [Fabric Rti](/src/000-cloud/032-fabric-rti/README)
+  - [Fabric Ontology](/src/000-cloud/033-fabric-ontology/README)
+  - [Fabric Ontology Dim](/src/000-cloud/033-fabric-ontology/fabric-ontology-dim/README)
   - [Postgresql](/src/000-cloud/035-postgresql/README)
   - [Managed Redis](/src/000-cloud/036-managed-redis/README)
   - [Messaging](/src/000-cloud/040-messaging/README)

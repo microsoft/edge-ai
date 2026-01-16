@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PositionMeasure",
+  "type": "object",
+  "properties": {
+    "Id": {
+      "type": "string"
+    },
+    "Name": {
+      "type": "string"
+    },
+    "Description": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "X": {
+      "type": "number",
+      "description": "X coordinate in meters"
+    },
+    "Y": {
+      "type": "number",
+      "description": "Y coordinate in meters"
+    },
+    "Z": {
+      "type": "number",
+      "description": "Z coordinate in meters"
+    },
+    "CoordinateSystemId": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Reference to PositionCoordinateSystem"
+    },
+    "Timestamp": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "ISO 8601 timestamp of measurement"
+    },
+    "Namespace": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "Source": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "Id",
+    "X",
+    "Y",
+    "Z"
+  ]
+}

@@ -1,0 +1,4 @@
+Id,Name,Description,X,Y,Z,CoordinateSystemId,Timestamp,Namespace,Source
+pos1,ABB Home Position,Home position for ABB IRB 6700,1.5,2.0,0.8,pcs1,2026-01-08T00:00:00Z,POS,Example
+pos2,KUKA Home Position,Home position for KUKA KR 16,4.5,2.0,0.6,pcs1,2026-01-08T00:00:00Z,POS,Example
+pos3,Fanuc Home Position,Home position for Fanuc M-20iA,7.5,3.5,0.7,pcs1,2026-01-08T00:00:00Z,POS,Example
