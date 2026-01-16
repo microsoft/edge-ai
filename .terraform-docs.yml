@@ -29,9 +29,7 @@ output:
   mode: replace
   template: |-
     <!-- BEGIN_TF_DOCS -->
-    <!-- markdown-table-prettify-ignore-start -->
     {{ .Content }}
-    <!-- markdown-table-prettify-ignore-end -->
     <!-- END_TF_DOCS -->{{ println }}
 
 sort:

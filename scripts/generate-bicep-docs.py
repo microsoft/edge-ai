@@ -697,6 +697,12 @@ def format_description_for_table(description: str) -> str:
     if not description:
         return ""
 
+    # Strip leading/trailing whitespace first to prevent table formatting issues
+    description = description.strip()
+
+    # Normalize line endings to Unix-style before processing
+    description = description.replace('\r\n', '\n').replace('\r', '\n')
+
     # Special handling for code blocks in markdown tables
     # In markdown tables, code blocks need special treatment
     # Convert ```sh ... ``` blocks to HTML-friendly format
@@ -715,6 +721,9 @@ def format_description_for_table(description: str) -> str:
 
     # Then replace regular newlines with breaks for other parts of the text
     result = result.replace('\n', '<br>')
+
+    # Escape pipe characters to prevent breaking markdown tables
+    result = result.replace('|', '\\|')
 
     return result
 

@@ -1,5 +1,4 @@
 <!-- BEGIN_BICEP_DOCS -->
-<!-- markdown-table-prettify-ignore-start -->
 <!-- markdownlint-disable MD033 -->
 
 # {{ metadata.get('name', 'Bicep Module') }}
@@ -64,5 +63,4 @@
 | :--- | :--- | :--- |
 {% for output in outputs %}|{{ output.name }}|`{{ output.type }}`|{{ output.description | format_description_for_table }}|
 {% endfor %}{% endif %}
-<!-- markdown-table-prettify-ignore-end -->
 <!-- END_BICEP_DOCS -->
