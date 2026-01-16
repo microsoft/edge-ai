@@ -1,0 +1,16 @@
+{
+  "id": "{{ .BindingId }}",
+  "dataBindingConfiguration": {
+    "dataBindingType": "TimeSeries",
+    "timestampColumnName": "{{ .TimestampColumn }}",
+    "propertyBindings": {{ .PropertyBindings }},
+    "sourceTableProperties": {
+      "sourceType": "KustoTable",
+      "workspaceId": "{{ .WorkspaceId }}",
+      "itemId": "{{ .EventhouseId }}",
+      "clusterUri": "{{ .ClusterUri }}",
+      "databaseName": "{{ .DatabaseName }}",
+      "sourceTableName": "{{ .TableName }}"
+    }
+  }
+}

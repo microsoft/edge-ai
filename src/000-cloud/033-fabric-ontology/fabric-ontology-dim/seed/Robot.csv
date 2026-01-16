@@ -1,0 +1,4 @@
+Id,Name,Description,Namespace,Source
+robot1,ABB IRB 6700,Industrial welding robot with 6-axis arm,CORA,Example
+robot2,KUKA KR 16,Precision assembly robot for electronics,CORA,Example
+robot3,Fanuc M-20iA,Material handling robot with payload capacity 20kg,CORA,Example

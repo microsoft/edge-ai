@@ -1,0 +1,4 @@
+Id,FromId,ToId,RelationType,Namespace,Source
+rel_cs1,pcs1,ocs1,transform,POS,Example
+rel_cs2,pcs2,ocs1,transform,POS,Example
+rel_cs3,pcs1,ocs2,transform,POS,Example

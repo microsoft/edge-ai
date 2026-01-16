@@ -1,0 +1,3 @@
+Id,Name,Description,Namespace,Source
+ocs1,Euler ZYX,Euler angles with ZYX rotation order,POS,Example
+ocs2,Quaternion,Quaternion orientation representation,POS,Example

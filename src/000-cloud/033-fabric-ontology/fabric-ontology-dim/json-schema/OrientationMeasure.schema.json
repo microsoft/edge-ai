@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "OrientationMeasure",
+  "type": "object",
+  "properties": {
+    "Id": {
+      "type": "string"
+    },
+    "Name": {
+      "type": "string"
+    },
+    "Description": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "Roll": {
+      "type": "number",
+      "description": "Roll angle in radians"
+    },
+    "Pitch": {
+      "type": "number",
+      "description": "Pitch angle in radians"
+    },
+    "Yaw": {
+      "type": "number",
+      "description": "Yaw angle in radians"
+    },
+    "CoordinateSystemId": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Reference to OrientationCoordinateSystem"
+    },
+    "Timestamp": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "ISO 8601 timestamp of measurement"
+    },
+    "Namespace": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "Source": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "Id",
+    "Roll",
+    "Pitch",
+    "Yaw"
+  ]
+}

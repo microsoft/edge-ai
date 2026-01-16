@@ -1,0 +1,4 @@
+Id,FromId,ToId,RelationType,Namespace,Source
+rel_orient1,robot1,orient1,has,POS,Example
+rel_orient2,robot2,orient2,has,POS,Example
+rel_orient3,robot3,orient3,has,POS,Example

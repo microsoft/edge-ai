@@ -1,0 +1,16 @@
+// KQL Table Creation Template
+// Generates .create-merge table command from placeholder variables
+//
+// Required Variables (set via envsubst):
+//   TABLE_NAME     - Name of the table to create
+//   COLUMN_SCHEMA  - Comma-separated column definitions (e.g., "AssetId: string, Timestamp: datetime")
+//
+// Usage:
+//   export TABLE_NAME="FreezerTelemetry"
+//   export COLUMN_SCHEMA="timestamp: datetime, storeId: string, freezerId: string, temperatureC: real"
+//   envsubst < create-table.kql.tmpl
+//
+// Output Example:
+//   .create-merge table FreezerTelemetry (timestamp: datetime, storeId: string, freezerId: string, temperatureC: real)
+
+.create-merge table ${TABLE_NAME} (${COLUMN_SCHEMA})

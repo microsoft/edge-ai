@@ -1,0 +1,4 @@
+Id,FromId,ToId,RelationType,Namespace,Source
+rel_rg1,robot1,group1,member,CORA,Example
+rel_rg2,robot2,group2,member,CORA,Example
+rel_rg3,robot3,group2,member,CORA,Example

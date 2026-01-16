@@ -1,0 +1,3 @@
+expression DatabaseQuery =
+	AzureStorage.DataLake("https://onelake.dfs.fabric.microsoft.com/${WORKSPACE_ID}/${LAKEHOUSE_ID}")
+	meta [IsParameterQuery=false]

@@ -1,0 +1,3 @@
+Id,Name,Description,Namespace,Source
+pcs1,World Frame,Global reference coordinate system for factory,POS,Example
+pcs2,Base Frame,Robot base coordinate system origin,POS,Example
