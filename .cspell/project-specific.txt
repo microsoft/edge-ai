@@ -126,3 +126,6 @@ roboticenvironment
 positionmeasure
 orientationmeasure
 posemeasure
+fixturing
+mqttui
+strobing

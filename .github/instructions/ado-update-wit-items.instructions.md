@@ -117,8 +117,8 @@ Always source parameter values from the active planning artifacts (`work-items.m
 
 1. **Create Top Level Work Items**: mcp_ado_wit_create_work_item
 2. **Create Child Work Items**: mcp_ado_wit_add_child_work_items
-4. **Update Existing Work Items**: mcp_ado_wit_update_work_items_batch
-5. **Create Additional Relationship Links**: mcp_ado_wit_work_items_link
+3. **Update Existing Work Items**: mcp_ado_wit_update_work_items_batch
+4. **Create Additional Relationship Links**: mcp_ado_wit_work_items_link
 
 **Error Handling**:
 
