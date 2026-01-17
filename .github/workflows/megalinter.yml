@@ -75,7 +75,7 @@ jobs:
     steps:
       # Git Checkout
       - name: Checkout Code
-        uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493
+        uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
         with:
           # If you use VALIDATE_ALL_CODEBASE = true, you can remove
           # this line to improve performances
@@ -85,7 +85,7 @@ jobs:
         id: ml
         # You can override MegaLinter flavor used to have faster performances
         # More info at https://megalinter.io/flavors/
-        uses: oxsecurity/megalinter@0e4861763d50a19b117ba306d31a25b51bead739
+        uses: oxsecurity/megalinter@42bb470545e359597e7f12156947c436e4e3fb9a # v9.3.0
         env:
           # All available variables are described in documentation
           # https://megalinter.io/configuration/
@@ -109,7 +109,7 @@ jobs:
       # Upload MegaLinter artifacts
       - name: Archive production artifacts
         if: success() || failure()
-        uses: actions/upload-artifact@2848b2cda0e5190984587ec6bb1f36730ca78d50
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
         with:
           name: MegaLinter reports
           path: |
