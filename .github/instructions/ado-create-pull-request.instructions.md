@@ -617,7 +617,7 @@ Please review the PR content. You can:
 * Modify description ("Update description: [changes]")
 * Request regeneration ("Regenerate description")
 
-```
+```text
 <!-- </example-gate2> -->
 
 **Wait for user response before proceeding to Gate 3.**

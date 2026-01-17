@@ -13,14 +13,17 @@ Items in **HIGHEST PRIORITY** sections from attached instructions files override
 **Artifacts:** Do not create or modify tests, scripts, or one-off markdown docs unless explicitly requested.
 
 **Comment policy:** Never include thought processes, step-by-step reasoning, or narrative comments in code.
+
 * Keep comments brief and factual; describe **behavior/intent, invariants, edge cases**.
 * Remove or update comments that contradict the current behavior. Do not restate obvious functionality.
 * Do NOT add temporal or plan-phase markers (e.g. "Phase 1 cleanup", "... after migration", dates, or task references) to code files. When editing or updating any code files, always remove or replace these types of comments.
 
 **Conventions and Styling:** Always follow conventions and styling in this codebase FIRST for all changes, edits, updates, and new files.
+
 * Conventions and styling are in instruction files and must be read in with the `read_file` tool if not already added as an `<attachment>`.
 
 **Proactive fixes:** Always fix problems and errors you encounter, even if unrelated to the original request. Prefer root-cause, constructive fixes over symptom-only patches.
+
 * Always correct conventions and styling and comments.
 
 **Deleting files and folders:** Use `rm` with the run_in_terminal tool when needing to delete files or folders.
@@ -32,6 +35,7 @@ Items in **HIGHEST PRIORITY** sections from attached instructions files override
 **Context-first:** Evaluate the current user prompt, any attachments, target folders, repo conventions, and files already read.
 
 **Discover & match (do this BEFORE any edit):**
+
 * Run `<search-for-prompts-files>` using the rules below (see table).
 * For each matched prompts/instructions/copilot file:
   * If it is NOT already provided as a full, non-summarized `<attachment>` in this conversation and NOT already fetched via `read_file`, then read it now.
@@ -87,7 +91,7 @@ Components are organized in deployment-ordered groupings:
 
 Each component follows this mandatory directory structure:
 
-```
+```text
 {grouping}/{000}-{component_name}/
 ├── README.md                    # Component documentation and usage
 ├── {framework}/                 # Implementation (terraform, bicep, etc.)
@@ -104,7 +108,7 @@ Each component follows this mandatory directory structure:
 
 Blueprints are Infrastructure as Code composition mechanisms that combine multiple components into end-to-end deployable solutions.
 
-```
+```text
 blueprints/{solution_name}/
 ├── README.md                    # Blueprint documentation and deployment instructions
 └── {framework}/                 # Framework-specific implementation
@@ -119,12 +123,14 @@ blueprints/{solution_name}/
 ### Blueprint Framework Patterns
 
 **Terraform Blueprints**:
+
 * **Main Configuration**: Root module orchestrating component deployment with explicit dependency management
 * **Module References**: Direct component source references using relative paths to `/src` components
 * **State Management**: Local state by default, configurable for remote backends
 * **Dependency Control**: Uses `depends_on` meta-argument for explicit ordering
 
 **Bicep Blueprints**:
+
 * **Main Configuration**: Orchestrates component modules with declarative dependency management
 * **Type Definitions**: Shared type definitions such as `types.core.bicep` (duplicated) or `../../../src/{grouping}/{component}/bicep/types.bicep` for parameter consistency
 * **Module References**: Component source references using relative paths to `/src` components
@@ -133,6 +139,7 @@ blueprints/{solution_name}/
 ### Blueprint Conventions and Standards
 
 **Common Parameter Object Pattern**:
+
 * **Terraform**: Standard variables (`environment`, `resource_prefix`, `location`, `instance`) passed to all components
 * **Bicep**: `Common` type object containing standardized properties for consistent resource naming (`environment`, `resource`, `location`, `instance`)
 * **Conventions**:
@@ -141,12 +148,14 @@ blueprints/{solution_name}/
   * Sensible defaults should always be provided
 
 **Blueprint Naming Convention**:
+
 * **Descriptive Names**: Clear indication of deployment scope and architecture pattern
 * **Hyphenated Format**: Use hyphens for multi-word blueprint names
 * **Scope Indicators**: Include deployment scope (`single-node`, `multi-node`, `cloud-only`, `edge-only`)
 * **Purpose Indicators**: Include deployment purpose (`full`, `minimum`, `partial`, `fabric-rti`)
 
 **Blueprint Categories**:
+
 * **Complete Deployments**: Full infrastructure solutions (`full-single-node-cluster`, `full-multi-node-cluster`)
 * **Partial Deployments**: Subset of components (`only-cloud-single-node-cluster`, `only-edge-iot-ops`)
 * **Specialized Solutions**: Domain-specific implementations (`fabric`, `fabric-rti`)
@@ -155,23 +164,26 @@ blueprints/{solution_name}/
 ### Component Dependency Management
 
 **Explicit Dependencies**:
+
 * Terraform (*.tf): Use `depends_on` meta-argument when implicit dependencies are insufficient
 * Bicep (*.bicep): Use `dependsOn` property for modules requiring specific deployment ordering
 * **Resource Dependencies**: Components declare dependencies via input parameter requirements
 * **Output Dependencies**: Components expose required outputs for dependent component consumption
 
 **Inter-Component Communication Patterns**:
+
 1. **Module Output to Input**: Primary component outputs become input parameters for dependent components
 2. **Existing Resource**:
-  * Terraform (*.tf): `data` resources passed as-is into component modules as inputs
-  * Bicep (*.bicep): Resource name and scope used for `existing` Bicep resources, name passed to component modules for existing resources.
+   * Terraform (*.tf): `data` resources passed as-is into component modules as inputs
+   * Bicep (*.bicep): Resource name and scope used for `existing` Bicep resources, name passed to component modules for existing resources.
 3. **Resource Reference Passing**:
-  * Terraform (*.tf): Resource objects, IDs, and configurations passed via output references as objects, typically defined in variables.dep.tf as dependency variables
-  * Bicep (*.bicep): Resource name and scope. Always avoid passing resource ID
+   * Terraform (*.tf): Resource objects, IDs, and configurations passed via output references as objects, typically defined in variables.dep.tf as dependency variables
+   * Bicep (*.bicep): Resource name and scope. Always avoid passing resource ID
 
 **Component Dependency Analysis**:
+
 1. **Blueprint and CI Impact Analysis**: Use `grep_search` with `includePattern: "**/{blueprints,ci}/**/{framework}/**"` to find component references
-3. **Output Reference Analysis**: Use `grep_search` with `includePattern: "src/**"` to find output usage patterns
+2. **Output Reference Analysis**: Use `grep_search` with `includePattern: "src/**"` to find output usage patterns
 
 ### Decimal Naming Convention
 
@@ -183,11 +195,13 @@ blueprints/{solution_name}/
 ### Internal Modules Management
 
 **Module Isolation Rules**:
+
 1. **NEVER reference internal modules from outside their parent component**
 2. **ALWAYS use component outputs to share functionality with other components**
 3. **CREATE reusable functionality through component outputs, not direct module access**
 
 **Internal Module Organization**:
+
 * **Component-Scoped Modules**: Internal modules organized under `{component}/{framework}/modules/`
 * **Functionality Grouping**: Related functionality grouped into logical internal modules
 * **Output Abstraction**: Component main module abstracts internal module complexity via outputs
@@ -196,12 +210,14 @@ blueprints/{solution_name}/
 ### Blueprint Layering and Composition
 
 **Blueprint Layering Support**:
+
 * **Incremental Deployment**: Blueprints can be applied on top of existing infrastructure
   * Terraform (*.tf): Use `data` resources to reference resources from previously deployed blueprints
   * Bicep (*.bicep): Provide `name` parameters (and name of scope when needed) to reference resources from previously deployed blueprints
 * **Parameters and Variables**: Provide the same parameters and variables from previously deployed blueprints to layer a blueprint deployment
 
 **Composition Examples**:
+
 * **Base + Extension**: Deploy `full-single-node-cluster` then layer `fabric-rti` for additional capabilities
 * **Partial + Complete**: Start with `only-cloud-single-node-cluster` then add edge components
 * **Combine Blueprints**: Build new blueprints by copying from existing blueprints
@@ -209,11 +225,13 @@ blueprints/{solution_name}/
 ### Deployment Patterns
 
 **CI Deployment** (Minimal Configuration):
+
 * **Location**: `{component}/ci/{framework}/`
 * **Purpose**: Contains minimum required parameters and variables for component deployment, never add parameters or variables to `{component}/ci/{framework}/` deployments if they specify default values
 * **Usage**: For individual component testing and basic deployments
 
 **Blueprint Deployment** (Complete Solutions):
+
 * **Location**: `/blueprints/{solution_name}/{framework}/`
 * **Purpose**: Orchestrates multiple components for end-to-end solutions
 * **Usage**: For full or partial environment provisioning. Blueprints can be layered on top of each others (e.g. `blueprints/fabric-rti` can be applied after a `blueprints/full-single-node-cluster` with matching variables and parameters)
@@ -224,15 +242,18 @@ blueprints/{solution_name}/
 When modifying any component, follow this validation sequence:
 
 **Component Impact Analysis**:
+
 * Search component references in blueprints with `includePattern: "blueprints/**"`
 * Search for output references in src components with `includePattern: "src/**"`
 
 **Component Variable Analysis**:
+
 * Search for same or similar named variables in blueprints and in src components
 * Ensure consistent descriptions, usages, and any validation
 * Internal Module variables should always be required and have no defaults
 
 **Update Validation Checklist**:
+
 * [ ] Component outputs are never required to be backward compatible - breaking changes must be fixed in other components and blueprints
 * [ ] Internal module changes can break component functionality as long as it is addressed and corrected in the component
 * [ ] Component README.md should reflect what the component itself does, not interface changes
@@ -243,6 +264,7 @@ When modifying any component, follow this validation sequence:
 ### Reference Components
 
 **Well-structured Examples**:
+
 * **Security Foundation**: `/src/000-cloud/010-security-identity/`
 * **Edge IoT Operations**: `/src/100-edge/110-iot-ops/`
 * **Complete Blueprint**: `/blueprints/full-single-node-cluster/`
@@ -263,6 +285,7 @@ Use these as templates when creating new components or understanding expected pa
 ### Terraform Validation and Testing Steps
 
 Final steps for ONLY terraform changes:
+
 * Iterate with `npm run tf-validate` and `npm run tflint-fix-all` and fix all issues, continue to iterate until all issues are fixed
 * NEVER add any tests unless specifically asked to add tests from the user
   * All tests must ONLY EVER be for `command = plan` tests

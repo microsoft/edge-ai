@@ -88,14 +88,16 @@ User may use generic terms:
 * e.g., "my pull request", "My branch", "Current branch", "This branch"
   * Must derive [PR number] to get [branch name] from current git branch
 * e.g., "latest build", "failing build, "current build"
-  * Must derive [build ID] using `mcp_ado_build_get_builds` and setting parameters based on the user's prompt.
+  * Must derive [build ID] using `mcp_ado_build_get_builds` and setting parameters
+    based on the user's prompt.
 
-### 3. Iterate gathering requested ado build information (update tracking file if requested)
+### 3. Iterate gathering ADO build information (update tracking file if needed)
 
 * Gather information from `mcp_ado_build_get_status` or `mcp_ado_build_get_log`
 * If using tracking file, update tracking file with gathered information
 * If all information gathered move on to the next protocol step
-* Otherwise, iterate using `mcp_ado_build_get_log_by_id` and updating the tracking file after each log until complete
+* Otherwise, iterate using `mcp_ado_build_get_log_by_id` and updating the tracking file
+  after each log until complete
 
 ### 4. Provide accurate information and summary to user
 

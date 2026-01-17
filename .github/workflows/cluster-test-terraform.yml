@@ -128,7 +128,7 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493
+        uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
 
       # Process working directory: extract paths and check for CI folders
       - name: Process working directories
@@ -188,7 +188,7 @@ jobs:
         if: inputs.keyvault-name != ''
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@712b43959e9be7e82c34d18450fa5ec3237af3f1
+        uses: hashicorp/setup-terraform@93d5a27adc7ac26085422db72568ae486f091042
         with:
           terraform_version: ${{ inputs.terraform-version }}
           cli_config_credentials_token: ${{ secrets.TERRAFORM_API_TOKEN }}
@@ -337,7 +337,7 @@ jobs:
         run: exit 1
 
       - name: Setup Node.js for test processing
-        uses: actions/setup-node@b9b25d45f70a5d94d88496aa4896bf9ed8f49b67
+        uses: actions/setup-node@65d868f8d4d85d7d4abb7de0875cde3fcc8798f5 # v4.3.0
         with:
           node-version: '22.x'
         if: steps.workingDirProcessor.outputs.tfTestsExist == 'true'
@@ -418,7 +418,7 @@ jobs:
       #     check_name: "${{ steps.workingDirProcessor.outputs.folderPathSafe }} Test Results"
 
       - name: Upload Terraform Plan
-        uses: actions/upload-artifact@2848b2cda0e5190984587ec6bb1f36730ca78d50
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
         with:
           name: ${{ steps.workingDirProcessor.outputs.folderPathSafe }}-terraform-plan
           path: ${{ github.workspace }}/${{ github.run_id }}.${{ steps.workingDirProcessor.outputs.folderPathSafe }}.tfplan
@@ -426,7 +426,7 @@ jobs:
           if-no-files-found: ignore
 
       - name: Upload Terraform Test Output
-        uses: actions/upload-artifact@2848b2cda0e5190984587ec6bb1f36730ca78d50
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
         if: steps.workingDirProcessor.outputs.tfTestsExist == 'true'
         with:
           name: ${{ steps.workingDirProcessor.outputs.folderPathSafe }}-test-output

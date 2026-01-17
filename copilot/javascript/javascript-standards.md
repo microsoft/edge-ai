@@ -307,7 +307,7 @@ class ListRenderer {
 
 ## Code Conventions and Styles
 
-### Module System Selection (Project-Wide Standards)
+### Module System Selection Standards
 
 #### ES6 Modules (Preferred for New Code)
 
@@ -384,7 +384,7 @@ module.exports = FileProcessor;
 })(window);
 ```
 
-### Naming Conventions (Code Standards)
+### Code Naming Conventions
 
 - **Variables**: Use camelCase for variables and functions
 - **Constants**: Use UPPER_SNAKE_CASE for module-level constants
@@ -450,7 +450,7 @@ function createLogger(options = {}) {
 }
 ```
 
-### Variable Declarations (Best Practices)
+### Variable Declaration Patterns
 
 - **const**: Use for values that won't be reassigned
 - **let**: Use for variables that will be reassigned
