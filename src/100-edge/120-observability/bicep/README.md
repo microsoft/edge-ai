@@ -53,8 +53,8 @@ Creates the cluster extensions required to expose cluster and container metrics.
 
 | Name                    | Type                                           | API Version |
 |:------------------------|:-----------------------------------------------|:------------|
-| azuremonitor-metrics    | `Microsoft.KubernetesConfiguration/extensions` | 2023-05-01  |
-| azuremonitor-containers | `Microsoft.KubernetesConfiguration/extensions` | 2023-05-01  |
+| azuremonitor-metrics    | `Microsoft.KubernetesConfiguration/extensions` | 2024-11-01  |
+| azuremonitor-containers | `Microsoft.KubernetesConfiguration/extensions` | 2024-11-01  |
 
 #### Outputs for clusterExtensionsObs
 
