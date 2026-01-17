@@ -70,7 +70,7 @@ Write progress files in these situations:
 
 ## Kata Progress Files
 
-### File Structure
+### Kata Progress File Structure
 
 ```json
 {
@@ -99,7 +99,7 @@ Write progress files in these situations:
 
 ## Lab Progress Files
 
-### File Structure
+### Lab Progress File Structure
 
 ```json
 {
@@ -118,7 +118,7 @@ Write progress files in these situations:
 }
 ```
 
-### Implementation Guidelines
+### Lab Progress Implementation Guidelines
 
 - **File naming**: `lab-progress-{labId}-{timestamp}.json`
 - **Support multi-session tracking** with session arrays
@@ -128,7 +128,7 @@ Write progress files in these situations:
 
 ## Self-Assessment Files
 
-### File Structure
+### Self-Assessment File Structure
 
 ```json
 {
@@ -155,7 +155,7 @@ Write progress files in these situations:
 }
 ```
 
-### Implementation Guidelines
+### Self-Assessment Implementation Guidelines
 
 - **File naming**: `self-assessment-progress-{timestamp}.json`
 - **Always use** `"kataId": "self-assessment-workflow"`
@@ -217,7 +217,7 @@ Write progress files in these situations:
 }
 ```
 
-### Implementation Guidelines
+### Learning Path Implementation Guidelines
 
 - **File naming**: `learning-path-progress-{pathId}-{timestamp}.json`
 - **Use consistent `learningPathId`** in kebab-case throughout session
@@ -228,7 +228,7 @@ Write progress files in these situations:
 
 ## Learning Recommendation Files
 
-### File Structure
+### Learning Recommendation File Structure
 
 ```json
 {
@@ -283,7 +283,7 @@ Write progress files in these situations:
 }
 ```
 
-### Implementation Guidelines
+### Learning Recommendation Implementation Guidelines
 
 - **File naming**: `learning-recommendation-{recommendationId}-{timestamp}.json`
 - **Base on assessment results** when available

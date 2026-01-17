@@ -1,75 +1,73 @@
 <!-- BEGIN_TF_DOCS -->
-<!-- markdown-table-prettify-ignore-start -->
 # Cloud Fabric
 
 Contains all the resources needed for Fabric based resources.
 
 ## Requirements
 
-| Name | Version |
-|------|---------|
+| Name      | Version           |
+|-----------|-------------------|
 | terraform | >= 1.9.8, < 2.0.0 |
-| azurerm | >= 4.51.0 |
-| fabric | 1.3.0 |
+| azurerm   | >= 4.51.0         |
+| fabric    | 1.3.0             |
 
 ## Providers
 
-| Name | Version |
-|------|---------|
-| fabric | 1.3.0 |
-| terraform | n/a |
+| Name      | Version |
+|-----------|---------|
+| fabric    | 1.3.0   |
+| terraform | n/a     |
 
 ## Resources
 
-| Name | Type |
-|------|------|
-| [terraform_data.defer_fabric_capacity_created](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data) | resource |
-| [terraform_data.defer_fabric_capacity_existing](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data) | resource |
-| [terraform_data.defer_fabric_workspace](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data) | resource |
-| [fabric_capacity.created](https://registry.terraform.io/providers/microsoft/fabric/1.3.0/docs/data-sources/capacity) | data source |
-| [fabric_capacity.existing](https://registry.terraform.io/providers/microsoft/fabric/1.3.0/docs/data-sources/capacity) | data source |
-| [fabric_workspace.existing](https://registry.terraform.io/providers/microsoft/fabric/1.3.0/docs/data-sources/workspace) | data source |
+| Name                                                                                                                                    | Type        |
+|-----------------------------------------------------------------------------------------------------------------------------------------|-------------|
+| [terraform_data.defer_fabric_capacity_created](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data)  | resource    |
+| [terraform_data.defer_fabric_capacity_existing](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data) | resource    |
+| [terraform_data.defer_fabric_workspace](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data)         | resource    |
+| [fabric_capacity.created](https://registry.terraform.io/providers/microsoft/fabric/1.3.0/docs/data-sources/capacity)                    | data source |
+| [fabric_capacity.existing](https://registry.terraform.io/providers/microsoft/fabric/1.3.0/docs/data-sources/capacity)                   | data source |
+| [fabric_workspace.existing](https://registry.terraform.io/providers/microsoft/fabric/1.3.0/docs/data-sources/workspace)                 | data source |
 
 ## Modules
 
-| Name | Source | Version |
-|------|--------|---------|
-| fabric\_capacity | ./modules/capacity | n/a |
-| fabric\_eventhouse | ./modules/eventhouse | n/a |
-| fabric\_lakehouse | ./modules/lakehouse | n/a |
-| fabric\_workspace | ./modules/workspace | n/a |
+| Name               | Source               | Version |
+|--------------------|----------------------|---------|
+| fabric\_capacity   | ./modules/capacity   | n/a     |
+| fabric\_eventhouse | ./modules/eventhouse | n/a     |
+| fabric\_lakehouse  | ./modules/lakehouse  | n/a     |
+| fabric\_workspace  | ./modules/workspace  | n/a     |
 
 ## Inputs
 
-| Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
-| environment | Environment for all resources in this module: dev, test, or prod | `string` | n/a | yes |
-| location | Azure region where all resources will be deployed | `string` | n/a | yes |
-| resource\_group | Resource group object containing name and id where resources will be deployed | ```object({ name = string })``` | n/a | yes |
-| resource\_prefix | Prefix for all resources in this module | `string` | n/a | yes |
-| additional\_kql\_databases | Additional KQL databases to create within the eventhouse. | ```map(object({ display_name = string description = string }))``` | `{}` | no |
-| eventhouse\_description | The description of the Microsoft Fabric eventhouse | `string` | `"Eventhouse for real-time analytics of Edge device data"` | no |
-| fabric\_capacity\_admins | List of user principal names (UPNs) or Azure AD object IDs for Fabric capacity administrators. For users, provide UPN (<user@domain.com>) or Object ID. For service principals, provide Application ID or Object ID. At least one administrator is required when creating a capacity. | `list(string)` | `[]` | no |
-| fabric\_capacity\_name | The name of the Microsoft Fabric capacity. Otherwise, 'cap{resource\_prefix\_no\_hyphens}{environment}{instance}'. | `string` | `null` | no |
-| fabric\_capacity\_sku | The SKU name for the Fabric capacity. | `string` | `"F2"` | no |
-| fabric\_eventhouse\_name | The name of the Microsoft Fabric eventhouse. Otherwise, 'evh-{resource\_prefix}-{environment}-{instance}' | `string` | `null` | no |
-| fabric\_lakehouse\_name | The name of the Microsoft Fabric lakehouse. Otherwise, 'lh\_{resource\_prefix}\_{environment}\_{instance}'. | `string` | `null` | no |
-| fabric\_workspace\_name | The name of the Microsoft Fabric workspace. Otherwise, 'ws-{resource\_prefix}-{environment}-{instance}' | `string` | `null` | no |
-| instance | Instance identifier for naming resources: 001, 002, etc | `string` | `"001"` | no |
-| lakehouse\_description | The description of the Microsoft Fabric lakehouse | `string` | `"Lakehouse for storing and analyzing data from Edge devices"` | no |
-| should\_create\_fabric\_capacity | Whether to create a new Fabric capacity or use an existing one. | `bool` | `false` | no |
-| should\_create\_fabric\_eventhouse | Whether to create a Microsoft Fabric Eventhouse for real-time intelligence scenarios. | `bool` | `false` | no |
-| should\_create\_fabric\_lakehouse | Whether to create a Microsoft Fabric lakehouse. | `bool` | `false` | no |
-| should\_create\_fabric\_workspace | Whether to create a new Microsoft Fabric workspace or use an existing one. | `bool` | `false` | no |
-| workspace\_description | The description of the Microsoft Fabric workspace | `string` | `"Microsoft Fabric workspace for the Edge AI Accelerator solution"` | no |
+| Name                               | Description                                                                                                                                                                                                                                                                           | Type                                                              | Default                                                             | Required |
+|------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------|---------------------------------------------------------------------|:--------:|
+| environment                        | Environment for all resources in this module: dev, test, or prod                                                                                                                                                                                                                      | `string`                                                          | n/a                                                                 |   yes    |
+| location                           | Azure region where all resources will be deployed                                                                                                                                                                                                                                     | `string`                                                          | n/a                                                                 |   yes    |
+| resource\_group                    | Resource group object containing name and id where resources will be deployed                                                                                                                                                                                                         | ```object({ name = string })```                                   | n/a                                                                 |   yes    |
+| resource\_prefix                   | Prefix for all resources in this module                                                                                                                                                                                                                                               | `string`                                                          | n/a                                                                 |   yes    |
+| additional\_kql\_databases         | Additional KQL databases to create within the eventhouse.                                                                                                                                                                                                                             | ```map(object({ display_name = string description = string }))``` | `{}`                                                                |    no    |
+| eventhouse\_description            | The description of the Microsoft Fabric eventhouse                                                                                                                                                                                                                                    | `string`                                                          | `"Eventhouse for real-time analytics of Edge device data"`          |    no    |
+| fabric\_capacity\_admins           | List of user principal names (UPNs) or Azure AD object IDs for Fabric capacity administrators. For users, provide UPN (<user@domain.com>) or Object ID. For service principals, provide Application ID or Object ID. At least one administrator is required when creating a capacity. | `list(string)`                                                    | `[]`                                                                |    no    |
+| fabric\_capacity\_name             | The name of the Microsoft Fabric capacity. Otherwise, 'cap{resource\_prefix\_no\_hyphens}{environment}{instance}'.                                                                                                                                                                    | `string`                                                          | `null`                                                              |    no    |
+| fabric\_capacity\_sku              | The SKU name for the Fabric capacity.                                                                                                                                                                                                                                                 | `string`                                                          | `"F2"`                                                              |    no    |
+| fabric\_eventhouse\_name           | The name of the Microsoft Fabric eventhouse. Otherwise, 'evh-{resource\_prefix}-{environment}-{instance}'                                                                                                                                                                             | `string`                                                          | `null`                                                              |    no    |
+| fabric\_lakehouse\_name            | The name of the Microsoft Fabric lakehouse. Otherwise, 'lh\_{resource\_prefix}\_{environment}\_{instance}'.                                                                                                                                                                           | `string`                                                          | `null`                                                              |    no    |
+| fabric\_workspace\_name            | The name of the Microsoft Fabric workspace. Otherwise, 'ws-{resource\_prefix}-{environment}-{instance}'                                                                                                                                                                               | `string`                                                          | `null`                                                              |    no    |
+| instance                           | Instance identifier for naming resources: 001, 002, etc                                                                                                                                                                                                                               | `string`                                                          | `"001"`                                                             |    no    |
+| lakehouse\_description             | The description of the Microsoft Fabric lakehouse                                                                                                                                                                                                                                     | `string`                                                          | `"Lakehouse for storing and analyzing data from Edge devices"`      |    no    |
+| should\_create\_fabric\_capacity   | Whether to create a new Fabric capacity or use an existing one.                                                                                                                                                                                                                       | `bool`                                                            | `false`                                                             |    no    |
+| should\_create\_fabric\_eventhouse | Whether to create a Microsoft Fabric Eventhouse for real-time intelligence scenarios.                                                                                                                                                                                                 | `bool`                                                            | `false`                                                             |    no    |
+| should\_create\_fabric\_lakehouse  | Whether to create a Microsoft Fabric lakehouse.                                                                                                                                                                                                                                       | `bool`                                                            | `false`                                                             |    no    |
+| should\_create\_fabric\_workspace  | Whether to create a new Microsoft Fabric workspace or use an existing one.                                                                                                                                                                                                            | `bool`                                                            | `false`                                                             |    no    |
+| workspace\_description             | The description of the Microsoft Fabric workspace                                                                                                                                                                                                                                     | `string`                                                          | `"Microsoft Fabric workspace for the Edge AI Accelerator solution"` |    no    |
 
 ## Outputs
 
-| Name | Description |
-|------|-------------|
-| fabric\_capacity | Fabric capacity details. |
+| Name               | Description                                           |
+|--------------------|-------------------------------------------------------|
+| fabric\_capacity   | Fabric capacity details.                              |
 | fabric\_eventhouse | Fabric eventhouse details for real-time intelligence. |
-| fabric\_lakehouse | Fabric lakehouse details. |
-| fabric\_workspace | Fabric workspace details. |
-<!-- markdown-table-prettify-ignore-end -->
+| fabric\_lakehouse  | Fabric lakehouse details.                             |
+| fabric\_workspace  | Fabric workspace details.                             |
 <!-- END_TF_DOCS -->

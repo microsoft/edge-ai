@@ -154,9 +154,7 @@ Common issues and their solutions.
 
 Guidelines for contributing to this specific application.
 
-```
-
-#### Environment Configuration (.env)
+### Environment Configuration (.env)
 
 Create a `.env` template file:
 
@@ -704,7 +702,7 @@ The build pipeline automatically:
 3. **Testing Strategy**: Automated testing at multiple levels
 4. **Continuous Integration**: Automated builds and deployments
 
-## Troubleshooting
+## Application Troubleshooting
 
 ### Common Issues
 

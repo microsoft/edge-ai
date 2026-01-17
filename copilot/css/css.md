@@ -10,7 +10,7 @@ CSS development for the Edge AI Platform documentation site follows a sophistica
 
 The CSS system uses a hierarchical modular structure that separates concerns and optimizes loading performance:
 
-```text
+```plaintext
 docs/assets/css/
 ├── main.css                 # Import orchestration
 ├── theme/                   # Design system foundation

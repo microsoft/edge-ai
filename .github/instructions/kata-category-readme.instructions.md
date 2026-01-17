@@ -255,7 +255,7 @@ We welcome feedback and contributions! Please:
 *🤖 Crafted with precision by ✨Copilot following brilliant human instruction,
 then carefully refined by our team of discerning human reviewers.*
 <!-- markdownlint-enable MD036 -->
-```
+```text
 
 <!-- </kata-category-readme-pattern> -->
 

@@ -261,7 +261,7 @@ jobs:
       buildId: ${{ steps.generate-id.outputs.buildId }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493
+        uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
 
       - name: Generate unique build ID
         id: generate-id
@@ -315,11 +315,11 @@ jobs:
       fail-fast: false
     steps:
       - name: Checkout repository
-        uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493
+        uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
 
       - name: Log in to Container Registry
         if: ${{ needs.parse-configuration.outputs.pushImages == 'true' }}
-        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef
+        uses: docker/login-action@0567fa5ae8c9a197cb207537dc5cbb43ca3d803f
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ secrets.REGISTRY_USERNAME }}
@@ -559,7 +559,7 @@ jobs:
           }
 
       - name: Upload Compressed Security Reports
-        uses: actions/upload-artifact@2848b2cda0e5190984587ec6bb1f36730ca78d50
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
         if: always()
         with:
           name: security-reports-${{ matrix.applicationName }}
@@ -571,7 +571,7 @@ jobs:
           if-no-files-found: ignore
 
       - name: Upload SARIF security results
-        uses: github/codeql-action/upload-sarif@fe4161a26a8629af62121b670040955b330f9af2
+        uses: github/codeql-action/upload-sarif@a2d9de63c2916881d0621fdb7e65abe32141606d
         if: always() && needs.parse-configuration.outputs.enableSecurityScan == 'true'
         with:
           sarif_file: ${{ github.workspace }}/security-reports
@@ -590,7 +590,7 @@ jobs:
       securityScanResults: ${{ steps.summarize.outputs.securityScanResults }}
     steps:
       - name: Download all build artifacts
-        uses: actions/download-artifact@4a24838f3d5601fd639834081e118c2995d51e1c
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
         with:
           pattern: 'security-reports-*'
           path: 'collected-build-artifacts'
@@ -661,7 +661,7 @@ jobs:
           echo "securityScanResults=${SECURITY_SUMMARY}" >> $GITHUB_OUTPUT
 
       - name: Upload consolidated build summary
-        uses: actions/upload-artifact@2848b2cda0e5190984587ec6bb1f36730ca78d50
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
         if: always()
         with:
           name: build-summary-${{ needs.prepare-builds.outputs.buildId }}

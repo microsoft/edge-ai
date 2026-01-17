@@ -75,26 +75,49 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup Python
-        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
-        with:
-          python-version: '3.11'
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+      - name: Create logs directory
+        shell: bash
+        run: mkdir -p logs
 
       - name: Run dependency staleness check
+        shell: pwsh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          python scripts/dependency-staleness-check.py \
-            --max-age-days ${{ inputs.max-age-days }} \
-            --output-path stale-dependencies.json \
-            --fail-on-stale ${{ inputs.break-build }}
+          $MaxAge = [int]"${{ inputs.max-age-days }}"
+          $BreakBuild = "${{ inputs.break-build }}" -eq "true"
+
+          Write-Host "Running SHA staleness check with MaxAge=$MaxAge days, BreakBuild=$BreakBuild"
+
+          ./scripts/security/Test-SHAStaleness.ps1 `
+            -OutputFormat json `
+            -MaxAge $MaxAge `
+            -LogPath "./logs/sha-staleness-check.log" `
+            -OutputPath "./stale-dependencies.json" `
+            -ExitOnFailure $BreakBuild
+
+          # Check for stale dependencies and fail if break-build is enabled
+          if (Test-Path "./stale-dependencies.json") {
+            $results = Get-Content "./stale-dependencies.json" | ConvertFrom-Json
+            $staleCount = $results.TotalStaleItems
+
+            if ($staleCount -gt 0) {
+              Write-Warning "$staleCount stale dependencies found"
+              if ($BreakBuild) {
+                Write-Error "Build failed due to stale dependencies (break-build enabled)"
+                exit 1
+              }
+            } else {
+              Write-Host "All dependencies are within staleness threshold"
+            }
+          } else {
+            Write-Error "Error: staleness check failed to generate results"
+            exit 1
+          }
 
       - name: Upload staleness results
         if: always()
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: dependency-staleness-results
           path: stale-dependencies.json
@@ -121,7 +144,7 @@ jobs:
 
       - name: Upload OSSF Scorecard results
         if: always()
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: ossf-scorecard-results
           path: scorecard-results.sarif
@@ -162,7 +185,7 @@ jobs:
 
       - name: Upload AIO version results
         if: always()
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: aio-version-check-results
           path: aio-version-check-results.json
@@ -211,7 +234,7 @@ jobs:
 
       - name: Upload security summary
         if: always()
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: security-deployment-summary
           path: security-summary.md

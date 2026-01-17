@@ -86,8 +86,8 @@ Counts: `Summarized: X / Total: Y` plus summarized ID list and remaining ID list
 
 Guidance: choose the Top Recommendation or any other Ready-to-Research Prompt Seed to begin next-phase research. Provide a consolidated Handoff Payload bullet list (no fenced code):
 
-- Top Recommendation ID: <id>
-- All Summarized IDs: <comma-separated list>
+- Top Recommendation ID: `<id>`
+- All Summarized IDs: `<comma-separated list>`
 - Date: YYYY-MM-DD
 
 <!-- </handoff-structure> -->

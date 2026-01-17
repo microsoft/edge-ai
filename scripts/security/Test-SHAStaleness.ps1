@@ -53,7 +53,10 @@ param(
     [string]$LogPath = "./logs/sha-staleness-monitoring.log",
 
     [Parameter(Mandatory = $false)]
-    [string]$OutputPath = "./logs/stale-dependencies.json"
+    [string]$OutputPath = "./logs/stale-dependencies.json",
+
+    [Parameter(Mandatory = $false)]
+    [bool]$ExitOnFailure = $true
 )
 
 # Ensure logging directory exists
@@ -824,8 +827,13 @@ Write-SecurityLog "SHA staleness monitoring completed" -Level Success
 Write-SecurityLog "Stale dependencies found: $($StaleDependencies.Count)" -Level Info
 
 # Exit with appropriate code for CI/CD
-if ($StaleDependencies.Count -gt 0) {
-    exit 1  # Indicate issues found
+if ($StaleDependencies.Count -gt 0 -and $ExitOnFailure) {
+    Write-Host "Stale dependencies found - exiting with code 1" -ForegroundColor Red
+    exit 1
+}
+elseif ($StaleDependencies.Count -gt 0) {
+    Write-Host "Stale dependencies found but ExitOnFailure is false - continuing" -ForegroundColor Yellow
+    exit 0
 }
 else {
     exit 0  # All good

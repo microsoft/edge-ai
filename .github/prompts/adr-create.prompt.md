@@ -103,8 +103,6 @@ You MUST ensure the working draft follows the solution library template by:
 
 ## Research and Analysis Requirements
 
-## Research and Analysis Requirements
-
 ### Collaborative Research Approach
 
 You MUST assist the user in researching relevant technical information by:

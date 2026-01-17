@@ -205,11 +205,11 @@ az keyvault update --name "your-vault" --public-network-access Enabled
 ## Troubleshooting
 
 | Error                             | Cause                                            | Solution                                                                                                                                                                                 |
-|-----------------------------------|--------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|:----------------------------------|:-------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **"Integration not found" (404)** | GitHub App not installed or invalid Client ID    | Verify App installation on repository, check Client ID is correct, ensure repository format is `owner/repo`                                                                              |
 | **"Bad credentials" (401)**       | Invalid JWT signature or expired token           | Verify private key matches GitHub App, check PEM format (headers/footers intact), verify system clock is accurate                                                                        |
 | **Key Vault access errors**       | Network restrictions or insufficient permissions | Testing: `az keyvault update --name <vault> --public-network-access Enabled`. Production: Use service principal with proper permissions or run from Cloud Shell/VM with private endpoint |
-| **Private key format issues** | Key Vault returns array instead of string | Use conversion: `$key = if ($raw -is [array]) { $raw -join "\`n" } else { $raw }` |
+| **Private key format issues**     | Key Vault returns array instead of string        | Use conversion: `$key = if ($raw -is [array]) { $raw -join [Environment]::NewLine } else { $raw }`                                                                                       |
 
 ## Migration from Old Structure
 

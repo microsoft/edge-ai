@@ -59,12 +59,12 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493
+        uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
         with:
           fetch-depth: 0
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@fe4161a26a8629af62121b670040955b330f9af2
+        uses: github/codeql-action/init@a2d9de63c2916881d0621fdb7e65abe32141606d
         with:
           languages: ${{ matrix.language }}
           build-mode: none
@@ -75,10 +75,10 @@ jobs:
           # queries: security-extended,security-and-quality
 
       - name: Autobuild
-        uses: github/codeql-action/autobuild@fe4161a26a8629af62121b670040955b330f9af2
+        uses: github/codeql-action/autobuild@a2d9de63c2916881d0621fdb7e65abe32141606d
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@fe4161a26a8629af62121b670040955b330f9af2
+        uses: github/codeql-action/analyze@a2d9de63c2916881d0621fdb7e65abe32141606d
         with:
           category: "/language:${{matrix.language}}"
 
@@ -88,12 +88,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493
+        uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
 
       # GitHub doesn't have a direct equivalent to Azure's ComponentGovernanceComponentDetection
       # Using a basic dependency check with built-in security scanning
       - name: Dependency Review
-        uses: actions/dependency-review-action@3c4e3dcb1aa7874d2c16be7d79418e9b7efd6261
+        uses: actions/dependency-review-action@98884d411b0f1c583e5ee579e7e897d4623019c2
         with:
           head-ref: refs/heads/main
           base-ref: refs/heads/main
