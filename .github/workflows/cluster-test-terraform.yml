@@ -337,7 +337,7 @@ jobs:
         run: exit 1
 
       - name: Setup Node.js for test processing
-        uses: actions/setup-node@b9b25d45f70a5d94d88496aa4896bf9ed8f49b67
+        uses: actions/setup-node@65d868f8d4d85d7d4abb7de0875cde3fcc8798f5 # v4.3.0
         with:
           node-version: '22.x'
         if: steps.workingDirProcessor.outputs.tfTestsExist == 'true'
