@@ -1,0 +1,18 @@
+// KQL CSV Ingestion Mapping Template
+// Generates .create-or-alter table ingestion csv mapping command
+//
+// Required Variables (set via envsubst):
+//   TABLE_NAME       - Name of the table
+//   MAPPING_NAME     - Name for the mapping (typically "${TABLE_NAME}CsvMapping")
+//   MAPPING_JSON     - JSON array of column mappings with Name, DataType, Ordinal
+//
+// Usage:
+//   export TABLE_NAME="FreezerTelemetry"
+//   export MAPPING_NAME="FreezerTelemetryCsvMapping"
+//   export MAPPING_JSON='[{"Name":"timestamp","DataType":"datetime","Ordinal":0},{"Name":"storeId","DataType":"string","Ordinal":1}]'
+//   envsubst < create-mapping.kql.tmpl
+//
+// Output Example:
+//   .create-or-alter table FreezerTelemetry ingestion csv mapping 'FreezerTelemetryCsvMapping' '[...]'
+
+.create-or-alter table ${TABLE_NAME} ingestion csv mapping '${MAPPING_NAME}' '${MAPPING_JSON}'

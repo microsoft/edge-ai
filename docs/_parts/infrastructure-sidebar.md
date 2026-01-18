@@ -11,6 +11,7 @@
   - [Data](/src/000-cloud/030-data/README)
   - [Fabric](/src/000-cloud/031-fabric/README)
   - [Fabric Rti](/src/000-cloud/032-fabric-rti/README)
+  - [Fabric Ontology](/src/000-cloud/033-fabric-ontology/README)
   - [Postgresql](/src/000-cloud/035-postgresql/README)
   - [Managed Redis](/src/000-cloud/036-managed-redis/README)
   - [Messaging](/src/000-cloud/040-messaging/README)
@@ -22,6 +23,7 @@
 
 - [Edge](/src/100-edge/README)
   - [Cncf Cluster](/src/100-edge/100-cncf-cluster/README)
+  - [Arc Extensions](/src/100-edge/109-arc-extensions/README)
   - [Iot Ops](/src/100-edge/110-iot-ops/README)
   - [Assets](/src/100-edge/111-assets/README)
   - [Observability](/src/100-edge/120-observability/README)

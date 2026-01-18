@@ -124,10 +124,18 @@ module "azure_local_host" {
   aad_profile                         = var.azure_local_aad_profile
 }
 
+module "edge_arc_extensions" {
+  source = "../../../src/100-edge/109-arc-extensions/terraform"
+
+  depends_on = [module.azure_local_host]
+
+  arc_connected_cluster = module.azure_local_host
+}
+
 module "edge_iot_ops" {
   source = "../../../src/100-edge/110-iot-ops/terraform"
 
-  depends_on = [module.azure_local_host, module.cloud_security_identity]
+  depends_on = [module.edge_arc_extensions, module.cloud_security_identity]
 
   adr_schema_registry   = module.cloud_data.schema_registry
   adr_namespace         = module.cloud_data.adr_namespace

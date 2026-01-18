@@ -157,7 +157,7 @@ resource arcConnectedCluster 'Microsoft.Kubernetes/connectedClusters@2024-12-01-
   name: arcConnectedClusterName
 }
 
-resource aioExtension 'Microsoft.KubernetesConfiguration/extensions@2023-05-01' = {
+resource aioExtension 'Microsoft.KubernetesConfiguration/extensions@2024-11-01' = {
   scope: arcConnectedCluster
   name: 'azure-iot-operations-${take(uniqueString(arcConnectedCluster.id), 5)}'
   identity: {

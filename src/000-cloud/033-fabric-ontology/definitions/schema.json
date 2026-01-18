@@ -1,0 +1,411 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Fabric Ontology Definition",
+  "description": "Schema for defining Microsoft Fabric Ontology deployments",
+  "type": "object",
+  "required": ["apiVersion", "kind", "metadata", "entityTypes"],
+  "additionalProperties": false,
+  "properties": {
+    "apiVersion": {
+      "type": "string",
+      "const": "fabric.ontology/v1",
+      "description": "Schema version identifier"
+    },
+    "kind": {
+      "type": "string",
+      "const": "OntologyDefinition",
+      "description": "Resource kind"
+    },
+    "metadata": {
+      "$ref": "#/definitions/metadata"
+    },
+    "dataSources": {
+      "$ref": "#/definitions/dataSources"
+    },
+    "entityTypes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/entityType"
+      },
+      "description": "Entity type definitions"
+    },
+    "relationships": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/relationship"
+      },
+      "description": "Relationship definitions between entity types"
+    },
+    "semanticModel": {
+      "$ref": "#/definitions/semanticModel"
+    }
+  },
+  "definitions": {
+    "metadata": {
+      "type": "object",
+      "required": ["name"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "description": "Ontology display name"
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 1024,
+          "description": "Ontology description"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "description": "Semantic version"
+        }
+      }
+    },
+    "dataSources": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "lakehouse": {
+          "$ref": "#/definitions/lakehouseDataSource"
+        },
+        "eventhouse": {
+          "$ref": "#/definitions/eventhouseDataSource"
+        }
+      },
+      "description": "Data source configurations"
+    },
+    "lakehouseDataSource": {
+      "type": "object",
+      "required": ["name", "tables"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Lakehouse display name"
+        },
+        "tables": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/lakehouseTable"
+          }
+        }
+      }
+    },
+    "lakehouseTable": {
+      "type": "object",
+      "required": ["name"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Table name in Lakehouse"
+        },
+        "sourceFile": {
+          "type": "string",
+          "description": "Relative path to source data file"
+        },
+        "sourceUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to download source data file"
+        },
+        "format": {
+          "type": "string",
+          "enum": ["csv", "parquet"],
+          "default": "csv",
+          "description": "Source file format"
+        },
+        "options": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "header": {
+              "type": "boolean",
+              "default": true
+            },
+            "delimiter": {
+              "type": "string",
+              "default": ","
+            }
+          }
+        }
+      }
+    },
+    "eventhouseDataSource": {
+      "type": "object",
+      "required": ["name", "database", "tables"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Eventhouse display name"
+        },
+        "database": {
+          "type": "string",
+          "minLength": 1,
+          "description": "KQL database name"
+        },
+        "tables": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/eventhouseTable"
+          }
+        }
+      }
+    },
+    "eventhouseTable": {
+      "type": "object",
+      "required": ["name", "schema"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "KQL table name"
+        },
+        "sourceFile": {
+          "type": "string",
+          "description": "Relative path to source data file"
+        },
+        "sourceUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to download source data file"
+        },
+        "format": {
+          "type": "string",
+          "enum": ["csv", "parquet", "json"],
+          "default": "csv"
+        },
+        "schema": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/kqlColumn"
+          },
+          "description": "Explicit KQL table schema"
+        },
+        "policies": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "retention": {
+              "type": "string",
+              "pattern": "^[0-9]+d$",
+              "default": "30d",
+              "description": "Data retention period (e.g., 30d)"
+            },
+            "caching": {
+              "type": "string",
+              "pattern": "^[0-9]+d$",
+              "default": "7d",
+              "description": "Hot cache period (e.g., 7d)"
+            }
+          }
+        }
+      }
+    },
+    "kqlColumn": {
+      "type": "object",
+      "required": ["name", "type"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Column name"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["string", "int", "double", "datetime", "boolean", "object"],
+          "description": "Column data type"
+        }
+      }
+    },
+    "entityType": {
+      "type": "object",
+      "required": ["name", "key", "properties"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "description": "Entity type name"
+        },
+        "key": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Primary key property name (must match a property name)"
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Property used for entity display name"
+        },
+        "dataBinding": {
+          "$ref": "#/definitions/entityDataBinding",
+          "description": "Single data binding (use dataBindings for multiple)"
+        },
+        "dataBindings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/entityDataBinding"
+          },
+          "description": "Multiple data bindings (static + timeseries)"
+        },
+        "properties": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/entityProperty"
+          },
+          "description": "Entity properties"
+        }
+      }
+    },
+    "entityDataBinding": {
+      "type": "object",
+      "required": ["type", "source", "table"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["static", "timeseries"],
+          "description": "Binding type"
+        },
+        "source": {
+          "type": "string",
+          "enum": ["lakehouse", "eventhouse"],
+          "description": "Data source type"
+        },
+        "table": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Source table name"
+        },
+        "timestampColumn": {
+          "type": "string",
+          "description": "Timestamp column for timeseries bindings"
+        },
+        "correlationColumn": {
+          "type": "string",
+          "description": "Column linking timeseries to entity key"
+        }
+      }
+    },
+    "entityProperty": {
+      "type": "object",
+      "required": ["name", "type"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "description": "Property name"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["string", "int", "double", "datetime", "boolean", "object"],
+          "description": "Property data type"
+        },
+        "sourceColumn": {
+          "type": "string",
+          "description": "Source table column name (defaults to property name)"
+        },
+        "binding": {
+          "type": "string",
+          "enum": ["static", "timeseries"],
+          "description": "Which binding this property comes from (for multi-binding entities)"
+        }
+      }
+    },
+    "relationship": {
+      "type": "object",
+      "required": ["name", "from", "to"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "description": "Relationship name"
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 1024,
+          "description": "Relationship description"
+        },
+        "from": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Source entity type name"
+        },
+        "to": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Target entity type name"
+        },
+        "cardinality": {
+          "type": "string",
+          "enum": ["one-to-one", "one-to-many", "many-to-many"],
+          "default": "one-to-many",
+          "description": "Relationship cardinality"
+        },
+        "binding": {
+          "type": "object",
+          "required": ["table", "fromColumn", "toColumn"],
+          "additionalProperties": false,
+          "properties": {
+            "table": {
+              "type": "string",
+              "description": "Table containing the foreign key relationship"
+            },
+            "fromColumn": {
+              "type": "string",
+              "description": "Column matching source entity key"
+            },
+            "toColumn": {
+              "type": "string",
+              "description": "Column matching target entity key"
+            }
+          }
+        }
+      }
+    },
+    "semanticModel": {
+      "type": "object",
+      "required": ["name"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "description": "Semantic model display name"
+        },
+        "mode": {
+          "type": "string",
+          "enum": ["directLake", "import"],
+          "default": "directLake",
+          "description": "Semantic model storage mode"
+        },
+        "generateFrom": {
+          "type": "string",
+          "enum": ["definition", "lakehouse"],
+          "default": "definition",
+          "description": "How to generate tables - from this definition or auto-detect from lakehouse"
+        }
+      }
+    }
+  }
+}

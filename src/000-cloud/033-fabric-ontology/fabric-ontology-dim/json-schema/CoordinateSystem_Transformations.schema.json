@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CoordinateSystem_Transformations",
+  "type": "object",
+  "properties": {
+    "Id": {
+      "type": "string"
+    },
+    "FromId": {
+      "type": "string"
+    },
+    "ToId": {
+      "type": "string"
+    },
+    "RelationType": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "Namespace": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "Source": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "Id",
+    "FromId",
+    "ToId"
+  ]
+}

@@ -1,0 +1,4 @@
+Id,Name,Description,X,Y,Z,Roll,Pitch,Yaw,CoordinateSystemId,Timestamp,Namespace,Source
+pose1,ABB Home Pose,Home pose for ABB IRB 6700,1.5,2.0,0.8,0.0,0.0,1.57,pcs1,2026-01-08T00:00:00Z,POS,Example
+pose2,KUKA Home Pose,Home pose for KUKA KR 16,4.5,2.0,0.6,0.0,0.0,0.0,pcs1,2026-01-08T00:00:00Z,POS,Example
+pose3,Fanuc Home Pose,Home pose for Fanuc M-20iA,7.5,3.5,0.7,0.0,0.0,-1.57,pcs1,2026-01-08T00:00:00Z,POS,Example

@@ -1554,6 +1554,9 @@ issecret
 LASTEXITCODE
 showvariable
 Hashtable
+jqlang
+choco
+Farah
 
 # Camera & Video Equipment Vendors
 Hikvision
