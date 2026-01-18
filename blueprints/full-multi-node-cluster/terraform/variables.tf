@@ -1,4 +1,9 @@
 /*
+ * Blueprint variables - Full Multi Node Cluster
+ */
+
+
+/*
  * Core Parameters - Required
  */
 

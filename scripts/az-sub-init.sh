@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 tenant=""
-help="Usage: az-sub-init.sh [--tenant your-tenant.onmicrosoft.com] [--help]
+help="Usage: source az-sub-init.sh [--tenant your-tenant.onmicrosoft.com] [--help]
 
 Attempts to set the ARM_SUBSCRIPTION_ID env var to 'id' from 'az account show' in the following ways:
 - 'az login' if not logged in (optionally with specific tenant)

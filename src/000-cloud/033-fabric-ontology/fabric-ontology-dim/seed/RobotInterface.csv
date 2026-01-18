@@ -1,0 +1,4 @@
+Id,Name,Description,Namespace,Source
+iface1,Weld Torch Interface,Welding torch end effector for ABB IRB 6700,CORA,Example
+iface2,Gripper Interface,Precision gripper for KUKA KR 16,CORA,Example
+iface3,Vacuum Suction Interface,Vacuum end effector for Fanuc M-20iA,CORA,Example

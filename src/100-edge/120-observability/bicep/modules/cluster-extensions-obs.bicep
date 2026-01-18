@@ -48,7 +48,7 @@ resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2023-09
   scope: resourceGroup(logAnalyticsWorkspaceResourceGroupName)
 }
 
-resource containerMetricsExtension 'Microsoft.KubernetesConfiguration/extensions@2023-05-01' = {
+resource containerMetricsExtension 'Microsoft.KubernetesConfiguration/extensions@2024-11-01' = {
   scope: arcConnectedCluster
   name: 'azuremonitor-metrics'
   properties: {
@@ -66,7 +66,7 @@ resource containerMetricsExtension 'Microsoft.KubernetesConfiguration/extensions
   }
 }
 
-resource containerLogsExtension 'Microsoft.KubernetesConfiguration/extensions@2023-05-01' = {
+resource containerLogsExtension 'Microsoft.KubernetesConfiguration/extensions@2024-11-01' = {
   scope: arcConnectedCluster
   name: 'azuremonitor-containers'
   properties: {

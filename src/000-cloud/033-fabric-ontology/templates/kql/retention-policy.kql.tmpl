@@ -1,0 +1,27 @@
+// KQL Retention and Caching Policy Template
+// Generates .alter table policy commands for retention and caching
+//
+// Required Variables (set via envsubst):
+//   TABLE_NAME        - Name of the table
+//
+// Optional Variables:
+//   RETENTION_DAYS    - Data retention period in days (default: 30)
+//   CACHING_DAYS      - Hot cache period in days (default: 7)
+//
+// Usage:
+//   export TABLE_NAME="FreezerTelemetry"
+//   export RETENTION_DAYS="30"
+//   export CACHING_DAYS="7"
+//   envsubst < retention-policy.kql.tmpl
+//
+// Output Example:
+//   .alter table FreezerTelemetry policy retention @'{"SoftDeletePeriod":"30.00:00:00","Recoverability":"Enabled"}'
+//   .alter table FreezerTelemetry policy caching hot = 7d
+//
+// Notes:
+//   - SoftDeletePeriod format: "days.hours:minutes:seconds"
+//   - Caching hot period uses shorthand format: Nd (days)
+//   - Recoverability is enabled by default for data recovery
+
+.alter table ${TABLE_NAME} policy retention @'{"SoftDeletePeriod":"${RETENTION_DAYS}.00:00:00","Recoverability":"Enabled"}'
+.alter table ${TABLE_NAME} policy caching hot = ${CACHING_DAYS}d

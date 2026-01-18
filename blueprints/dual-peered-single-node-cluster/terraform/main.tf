@@ -192,10 +192,18 @@ module "cluster_a_edge_cncf_cluster" {
   key_vault = module.cluster_a_cloud_security_identity.key_vault
 }
 
+module "cluster_a_edge_arc_extensions" {
+  source = "../../../src/100-edge/109-arc-extensions/terraform"
+
+  depends_on = [module.cluster_a_edge_cncf_cluster]
+
+  arc_connected_cluster = module.cluster_a_edge_cncf_cluster.arc_connected_cluster
+}
+
 module "cluster_a_edge_iot_ops" {
   source = "../../../src/100-edge/110-iot-ops/terraform"
 
-  depends_on = [module.cluster_a_edge_cncf_cluster]
+  depends_on = [module.cluster_a_edge_arc_extensions]
 
   adr_schema_registry   = module.cluster_a_cloud_data.schema_registry
   resource_group        = module.cluster_a_cloud_resource_group.resource_group
@@ -437,10 +445,18 @@ module "cluster_b_edge_cncf_cluster" {
   key_vault = module.cluster_b_cloud_security_identity.key_vault
 }
 
+module "cluster_b_edge_arc_extensions" {
+  source = "../../../src/100-edge/109-arc-extensions/terraform"
+
+  depends_on = [module.cluster_b_edge_cncf_cluster]
+
+  arc_connected_cluster = module.cluster_b_edge_cncf_cluster.arc_connected_cluster
+}
+
 module "cluster_b_edge_iot_ops" {
   source = "../../../src/100-edge/110-iot-ops/terraform"
 
-  depends_on = [module.cluster_b_edge_cncf_cluster]
+  depends_on = [module.cluster_b_edge_arc_extensions]
 
   adr_schema_registry   = module.cluster_b_cloud_data.schema_registry
   resource_group        = module.cluster_b_cloud_resource_group.resource_group

@@ -371,10 +371,18 @@ module "edge_cncf_cluster" {
   key_vault = module.cloud_security_identity.key_vault
 }
 
+module "edge_arc_extensions" {
+  source = "../../../src/100-edge/109-arc-extensions/terraform"
+
+  depends_on = [module.edge_cncf_cluster]
+
+  arc_connected_cluster = module.edge_cncf_cluster.arc_connected_cluster
+}
+
 module "edge_iot_ops" {
   source = "../../../src/100-edge/110-iot-ops/terraform"
 
-  depends_on = [module.edge_cncf_cluster]
+  depends_on = [module.edge_arc_extensions]
 
   adr_schema_registry   = module.cloud_data.schema_registry
   adr_namespace         = module.cloud_data.adr_namespace

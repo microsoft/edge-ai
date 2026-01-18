@@ -25,6 +25,9 @@ MCAP
 edgevolume
 storageaccountendpoint
 arccontainerstorage
+cainjector
+certmanager
+containerstorage
 inotify
 unregistration
 customendpoint
@@ -83,6 +86,7 @@ thermodyanmics
 fanout
 opcfoundation
 secretproviderclass
+storagepools
 connectorinstance
 connectorinstances
 connectortemplate

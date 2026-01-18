@@ -1,0 +1,12 @@
+{
+  "id": "{{ .ContextualizationId }}",
+  "dataBindingTable": {
+    "workspaceId": "{{ .WorkspaceId }}",
+    "itemId": "{{ .LakehouseId }}",
+    "sourceTableName": "{{ .TableName }}",
+    "sourceSchema": "dbo",
+    "sourceType": "LakehouseTable"
+  },
+  "sourceKeyRefBindings": {{ .SourceKeyRefBindings }},
+  "targetKeyRefBindings": {{ .TargetKeyRefBindings }}
+}

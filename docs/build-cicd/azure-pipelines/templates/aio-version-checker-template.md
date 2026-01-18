@@ -101,7 +101,7 @@ The version checker verifies these components:
 
 | Component      | Terraform Name         | Bicep Name                      | Remote Manifest Source |
 |----------------|------------------------|---------------------------------|------------------------|
-| Cert Manager   | cert_manager           | aioCertManagerExtensionDefaults | enablement             |
+| Cert Manager   | cert_manager_extension | aioCertManagerExtensionDefaults | enablement             |
 | Secret Store   | secret_sync_controller | secretStoreExtensionDefaults    | enablement             |
 | IoT Operations | azure-iot-operations   | aioExtensionDefaults            | instance               |
 
