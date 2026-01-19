@@ -429,6 +429,8 @@ output aioPlatformExtensionId string = shouldDeployAio ? (iotOpsInstance.?output
 @description('The name of the Azure IoT Operations Platform Extension.')
 output aioPlatformExtensionName string = shouldDeployAio ? (iotOpsInstance.?outputs.?aioExtensionName ?? '') : ''
 
+output aioNamespace string = aioExtensionConfig.settings.namespace
+
 @description('The ID of the Secret Store Extension.')
 output secretStoreExtensionId string = (iotOpsInit.?outputs.?secretStoreExtensionId) ?? ''
 
