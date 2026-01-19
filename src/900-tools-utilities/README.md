@@ -21,6 +21,7 @@ The 900-tools-utilities components (900-999 range) provide essential development
 | **[901-video-tools](./901-video-tools/README.md)**               | Video processing utilities including video-to-GIF conversion for captured media files |
 | **[902-aio-sidekick](./902-aio-sidekick/README.md)**             | Azure IoT Operations diagnostic and troubleshooting sidekick utility                  |
 | **[903-multi-asset-deploy](./903-multi-asset-deploy/README.md)** | Batch deployment tool for multiple IoT assets from CSV files                          |
+| **[904-test-utilities](./904-test-utilities/README.md)**         | Shared testing utilities for blueprint validation across Terraform and Bicep          |
 
 ## Framework Support
 

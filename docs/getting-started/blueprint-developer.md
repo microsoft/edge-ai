@@ -295,6 +295,81 @@ Before coding, define:
 
 ## Testing and Validation
 
+### Blueprint Test Infrastructure
+
+Selected blueprints include comprehensive test suites using Go and the Terratest framework. Tests validate both infrastructure declarations and actual deployments.
+
+**Test Types:**
+
+- **Contract Tests** - Fast static validation ensuring output declarations match test expectations (runs in seconds, zero Azure cost)
+- **Deployment Tests** - Full end-to-end validation creating real Azure resources and testing functionality (30-45 minutes, creates billable resources)
+
+**Available Test Infrastructure:**
+
+- **Shared utilities**: [src/900-tools-utilities/904-test-utilities/](../../src/900-tools-utilities/904-test-utilities/) - Reusable test functions for all blueprints
+- **Reference implementation**: [blueprints/full-single-node-cluster/tests/](../../blueprints/full-single-node-cluster/tests/) - Complete test suite example
+
+### Creating Tests for Your Blueprint
+
+1. **Create test directory structure**:
+
+   ```bash
+   cd blueprints/my-custom-blueprint
+   mkdir tests
+   cd tests
+   ```
+
+2. **Initialize Go module**:
+
+   ```bash
+   go mod init github.com/microsoft/edge-ai/blueprints/my-custom-blueprint/tests
+   go get github.com/microsoft/edge-ai/src/900-tools-utilities/904-test-utilities
+   go get github.com/gruntwork-io/terratest/modules/terraform
+   ```
+
+3. **Define output contract** in `tests/outputs.go`:
+
+   Define a struct matching your blueprint's outputs with framework-specific tags.
+
+   **See:** [full-single-node-cluster/tests/outputs.go](../../blueprints/full-single-node-cluster/tests/outputs.go) for pattern
+
+4. **Create contract tests**:
+
+   Create `contract_terraform_test.go` and `contract_bicep_test.go` that validate declared outputs match your struct.
+
+   **See:** [full-single-node-cluster/tests/contract_terraform_test.go](../../blueprints/full-single-node-cluster/tests/contract_terraform_test.go)
+
+5. **Create deployment tests**:
+
+   Create `deploy_terraform_test.go` and `deploy_bicep_test.go` for end-to-end validation.
+
+   **See:** [full-single-node-cluster/tests/deploy_terraform_test.go](../../blueprints/full-single-node-cluster/tests/deploy_terraform_test.go)
+
+6. **Add helper scripts**:
+
+   Copy and adapt `run-contract-tests.sh` and `run-deployment-tests.sh` from the reference implementation.
+
+### Running Tests
+
+**Contract tests** (fast, run before every commit):
+
+```bash
+cd blueprints/my-custom-blueprint/tests
+./run-contract-tests.sh both
+```
+
+**Deployment tests** (slow, run before PR):
+
+```bash
+# Set cleanup to auto-delete resources
+export CLEANUP_RESOURCES=true
+
+# Run tests
+./run-deployment-tests.sh terraform  # or bicep, or both
+```
+
+**Documentation:** See [src/900-tools-utilities/904-test-utilities/README.md](../../src/900-tools-utilities/904-test-utilities/README.md) for complete testing guide and API reference
+
 ### Linting and Code Quality
 
 Run validation tools before committing:
@@ -353,35 +428,6 @@ npm run lint
    az group delete --name "rg-test-blueprint" --yes
    ```
 
-### Automated Testing
-
-Create test scripts for CI/CD validation:
-
-```bash
-# Create test script
-mkdir -p tests/blueprints/my-custom-blueprint
-cat > tests/blueprints/my-custom-blueprint/test.sh << 'EOF'
-#!/bin/bash
-set -e
-
-echo "Testing my-custom-blueprint..."
-
-# Test Terraform
-cd blueprints/my-custom-blueprint/terraform
-terraform init
-terraform validate
-terraform plan -var-file="terraform.tfvars.example"
-
-# Test Bicep
-cd ../bicep
-az bicep build --file main.bicep
-
-echo "All tests passed!"
-EOF
-
-chmod +x tests/blueprints/my-custom-blueprint/test.sh
-```
-
 ## Best Practices
 
 ### Blueprint Integration Best Practices
@@ -390,6 +436,16 @@ chmod +x tests/blueprints/my-custom-blueprint/test.sh
 2. **Respect dependencies**: Use `depends_on` (Terraform) or `dependsOn` (Bicep) for proper ordering
 3. **Maintain consistency**: Ensure Terraform and Bicep implementations produce equivalent results
 4. **Follow naming conventions**: Use consistent resource naming across components
+5. **Include test coverage**: Add contract and deployment tests for your blueprint
+6. **Document test requirements**: Update README with test setup and usage instructions
+
+### Testing Best Practices
+
+1. **Run contract tests first**: Catch configuration errors before expensive deployments
+2. **Use CLEANUP_RESOURCES**: Enable automatic cleanup during development to avoid resource accumulation
+3. **Test both frameworks**: Ensure Terraform and Bicep produce equivalent results
+4. **Update tests with changes**: Keep output contracts and validation logic synchronized with blueprint changes
+5. **Validate before PR**: Run full deployment tests before submitting pull requests
 
 ### Documentation Standards
 

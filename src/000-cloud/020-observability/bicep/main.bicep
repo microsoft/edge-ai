@@ -512,6 +512,9 @@ output logAnalyticsId string = logAnalytics.id
 @description('The Azure Managed Grafana name.')
 output grafanaName string = grafana.name
 
+@description('The Azure Managed Grafana endpoint.')
+output grafanaEndpoint string = grafana.properties.endpoint
+
 @description('The metrics data collection rule name.')
 output metricsDataCollectionRuleName string = metricsDataCollectionRule.name
 
