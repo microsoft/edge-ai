@@ -31,8 +31,3 @@ variable "node_pools" {
   description = "Configuration for additional node pool subnets; map key is used as the node pool name"
   default     = {}
 }
-
-variable "should_enable_private_endpoint" {
-  type        = bool
-  description = "Whether to enable private endpoint for AKS cluster; when true, subnet delegations are created"
-}

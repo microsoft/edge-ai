@@ -226,6 +226,32 @@ param shouldEnableAkriSseConnector bool = false
 @description('List of custom Akri connector templates with user-defined endpoint types and container images.')
 param customAkriConnectors types.AkriConnectorTemplate[] = []
 
+@description('List of additional container registry endpoints. MCR is always added automatically.')
+param registryEndpoints types.RegistryEndpointConfig[] = []
+
+@description('Whether to include the deployed ACR as a registry endpoint with System Assigned Managed Identity authentication.')
+param shouldIncludeAcrRegistryEndpoint bool = false
+
+/*
+  Local Variables
+*/
+
+var acrRegistryEndpoint = shouldIncludeAcrRegistryEndpoint
+  ? [
+      {
+        name: 'acr-${common.resourcePrefix}'
+        host: '${cloudAcr.outputs.acrName}.azurecr.io'
+        acrResourceId: cloudAcr.outputs.acrId
+        authentication: {
+          method: 'SystemAssignedManagedIdentity'
+          systemAssignedManagedIdentitySettings: {}
+        }
+      }
+    ]
+  : []
+
+var combinedRegistryEndpoints = concat(registryEndpoints, acrRegistryEndpoint)
+
 /*
   Resources
 */
@@ -475,6 +501,9 @@ module edgeIotOps '../../../src/100-edge/110-iot-ops/bicep/main.bicep' = {
     shouldEnableAkriOnvifConnector: shouldEnableAkriOnvifConnector
     shouldEnableAkriSseConnector: shouldEnableAkriSseConnector
     customAkriConnectors: customAkriConnectors
+
+    // Registry Endpoints Parameters
+    registryEndpoints: combinedRegistryEndpoints
   }
 }
 
@@ -692,7 +721,7 @@ output securityIdentity object = {
   aioIdentity: cloudSecurityIdentity.outputs.aioIdentityName
   keyVaultName: cloudSecurityIdentity.outputs.?keyVaultName ?? 'Not deployed'
   keyVaultUri: cloudSecurityIdentity.outputs.?keyVaultName != null
-    ? 'https://${cloudSecurityIdentity.outputs.keyVaultName}.vault.azure.net/'
+    ? 'https://${cloudSecurityIdentity.outputs.?keyVaultName}${environment().suffixes.keyvaultDns}/'
     : 'Not deployed'
 }
 

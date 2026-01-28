@@ -45,7 +45,6 @@ module "network" {
   subnet_address_prefixes_aks     = var.subnet_address_prefixes_aks
   subnet_address_prefixes_aks_pod = var.subnet_address_prefixes_aks_pod
   node_pools                      = var.node_pools
-  should_enable_private_endpoint  = var.should_enable_private_endpoint
 }
 
 
