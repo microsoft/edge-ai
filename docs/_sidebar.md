@@ -521,6 +521,7 @@
     - [Iot Ops Init](/src/100-edge/110-iot-ops/terraform/modules/iot-ops-init/README)
     - [Iot Ops Instance](/src/100-edge/110-iot-ops/terraform/modules/iot-ops-instance/README)
     - [Opc Ua Simulator](/src/100-edge/110-iot-ops/terraform/modules/opc-ua-simulator/README)
+    - [Registry Endpoints](/src/100-edge/110-iot-ops/terraform/modules/registry-endpoints/README)
     - [Role Assignment](/src/100-edge/110-iot-ops/terraform/modules/role-assignment/README)
     - [Self Signed Ca](/src/100-edge/110-iot-ops/terraform/modules/self-signed-ca/README)
   - [Assets](/src/100-edge/111-assets/terraform/README)

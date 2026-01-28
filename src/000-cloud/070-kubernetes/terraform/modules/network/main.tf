@@ -41,14 +41,11 @@ resource "azurerm_subnet" "snet_aks_pod" {
   address_prefixes                = var.subnet_address_prefixes_aks_pod
   default_outbound_access_enabled = var.default_outbound_access_enabled
 
-  dynamic "delegation" {
-    for_each = var.should_enable_private_endpoint ? [1] : []
-    content {
-      name = "aks-delegation"
-      service_delegation {
-        name    = "Microsoft.ContainerService/managedClusters"
-        actions = ["Microsoft.Network/virtualNetworks/subnets/join/action"]
-      }
+  delegation {
+    name = "aks-delegation"
+    service_delegation {
+      name    = "Microsoft.ContainerService/managedClusters"
+      actions = ["Microsoft.Network/virtualNetworks/subnets/join/action"]
     }
   }
 }
@@ -86,14 +83,11 @@ resource "azurerm_subnet" "snet_aks_node_pool_pod" {
   address_prefixes                = each.value.pod_subnet_address_prefixes
   default_outbound_access_enabled = var.default_outbound_access_enabled
 
-  dynamic "delegation" {
-    for_each = var.should_enable_private_endpoint ? [1] : []
-    content {
-      name = "aks-delegation"
-      service_delegation {
-        name    = "Microsoft.ContainerService/managedClusters"
-        actions = ["Microsoft.Network/virtualNetworks/subnets/join/action"]
-      }
+  delegation {
+    name = "aks-delegation"
+    service_delegation {
+      name    = "Microsoft.ContainerService/managedClusters"
+      actions = ["Microsoft.Network/virtualNetworks/subnets/join/action"]
     }
   }
 }

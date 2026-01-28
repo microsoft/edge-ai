@@ -52,5 +52,6 @@
   - [Video Tools](/src/900-tools-utilities/901-video-tools/README)
   - [Aio Sidekick](/src/900-tools-utilities/902-aio-sidekick/README)
   - [Multi Asset Deploy](/src/900-tools-utilities/903-multi-asset-deploy/README)
+  - [Test Utilities](/src/900-tools-utilities/904-test-utilities/README)
 
 - [Azure Resource Providers](/src/azure-resource-providers/README)

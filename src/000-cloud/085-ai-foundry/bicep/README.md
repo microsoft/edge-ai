@@ -7,19 +7,19 @@ Deploys Microsoft Foundry account with optional projects, model deployments, RAI
 
 ## Parameters
 
-| Name                        | Description                                                                                                  | Type                                        | Default                                   | Required |
-|:----------------------------|:-------------------------------------------------------------------------------------------------------------|:--------------------------------------------|:------------------------------------------|:---------|
-| common                      | The common component configuration.                                                                          | `[_2.Common](#user-defined-types)`          | n/a                                       | yes      |
-| aiFoundryName               | Name for the AI Foundry account. If not provided, defaults to aif-{resourcePrefix}-{environment}-{instance}. | `string`                                    | n/a                                       | no       |
-| aiFoundryConfig             | Configuration settings for the Microsoft Foundry account.                                                    | `[_1.AiFoundryConfig](#user-defined-types)` | [variables('_1.aiFoundryConfigDefaults')] | no       |
-| tags                        | Tags to apply to all resources.                                                                              | `object`                                    | {}                                        | no       |
-| telemetry_opt_out           | Whether to opt out of telemetry data collection.                                                             | `bool`                                      | `false`                                   | no       |
-| aiProjects                  | Array of AI Foundry projects to create.                                                                      | `array`                                     | []                                        | no       |
-| raiPolicies                 | Array of RAI policies to create.                                                                             | `array`                                     | []                                        | no       |
-| modelDeployments            | Array of model deployments to create.                                                                        | `array`                                     | []                                        | no       |
-| shouldCreatePrivateEndpoint | Whether to create a private endpoint for the Microsoft Foundry account.                                      | `bool`                                      | `false`                                   | no       |
-| privateEndpointSubnetId     | Subnet ID for the private endpoint.                                                                          | `string`                                    |                                           | no       |
-| virtualNetworkId            | Virtual network ID for DNS zone links.                                                                       | `string`                                    |                                           | no       |
+| Name                        | Description                                                                                                  | Type                                          | Default                                   | Required |
+|:----------------------------|:-------------------------------------------------------------------------------------------------------------|:----------------------------------------------|:------------------------------------------|:---------|
+| common                      | The common component configuration.                                                                          | `[_2.Common](#user-defined-types)`            | n/a                                       | yes      |
+| aiFoundryName               | Name for the AI Foundry account. If not provided, defaults to aif-{resourcePrefix}-{environment}-{instance}. | `string`                                      | n/a                                       | no       |
+| aiFoundryConfig             | Configuration settings for the Microsoft Foundry account.                                                    | `[_1.AiFoundryConfig](#user-defined-types)`   | [variables('_1.aiFoundryConfigDefaults')] | no       |
+| tags                        | Tags to apply to all resources.                                                                              | `object`                                      | {}                                        | no       |
+| telemetry_opt_out           | Whether to opt out of telemetry data collection.                                                             | `bool`                                        | `false`                                   | no       |
+| aiProjects                  | Array of AI Foundry projects to create.                                                                      | `[_1.AiProject](#user-defined-types)[]`       | []                                        | no       |
+| raiPolicies                 | Array of RAI policies to create.                                                                             | `[_1.RaiPolicy](#user-defined-types)[]`       | []                                        | no       |
+| modelDeployments            | Array of model deployments to create.                                                                        | `[_1.ModelDeployment](#user-defined-types)[]` | []                                        | no       |
+| shouldCreatePrivateEndpoint | Whether to create a private endpoint for the Microsoft Foundry account.                                      | `bool`                                        | `false`                                   | no       |
+| privateEndpointSubnetId     | Subnet ID for the private endpoint.                                                                          | `string`                                      |                                           | no       |
+| virtualNetworkId            | Virtual network ID for DNS zone links.                                                                       | `string`                                      |                                           | no       |
 
 ## Resources
 

@@ -1004,6 +1004,100 @@ variable "custom_akri_connectors" {
   }
 }
 
+variable "registry_endpoints" {
+  type = list(object({
+    name                           = string
+    host                           = string
+    acr_resource_id                = optional(string)
+    should_assign_acr_pull_for_aio = optional(bool, false)
+    authentication = object({
+      method = string
+      system_assigned_managed_identity_settings = optional(object({
+        audience = optional(string)
+      }))
+      user_assigned_managed_identity_settings = optional(object({
+        client_id = string
+        tenant_id = string
+        scope     = optional(string)
+      }))
+      artifact_pull_secret_settings = optional(object({
+        secret_ref = string
+      }))
+    })
+  }))
+
+  default     = []
+  description = <<-EOT
+    List of additional container registry endpoints for pulling custom artifacts (WASM modules, graph definitions, connector templates).
+    MCR (mcr.microsoft.com) is always added automatically with anonymous authentication.
+
+    The `acr_resource_id` field enables automatic AcrPull role assignment for ACR endpoints
+    using SystemAssignedManagedIdentity authentication. When `should_assign_acr_pull_for_aio` is true
+    and `acr_resource_id` is provided, the AIO extension's identity will be granted AcrPull access to the specified ACR.
+  EOT
+
+  validation {
+    condition = alltrue([
+      for ep in var.registry_endpoints :
+      can(regex("^[a-z0-9][a-z0-9-]*[a-z0-9]$", ep.name)) && length(ep.name) >= 3 && length(ep.name) <= 63
+    ])
+    error_message = "Registry endpoint name must be 3-63 characters, contain only lowercase letters, numbers, and hyphens, and cannot start or end with a hyphen"
+  }
+
+  validation {
+    condition = alltrue([
+      for ep in var.registry_endpoints :
+      contains(["SystemAssignedManagedIdentity", "UserAssignedManagedIdentity", "ArtifactPullSecret", "Anonymous"], ep.authentication.method)
+    ])
+    error_message = "Authentication method must be one of: SystemAssignedManagedIdentity, UserAssignedManagedIdentity, ArtifactPullSecret, Anonymous"
+  }
+
+  validation {
+    condition = alltrue([
+      for ep in var.registry_endpoints :
+      ep.authentication.method != "UserAssignedManagedIdentity" || (
+        ep.authentication.user_assigned_managed_identity_settings != null &&
+        ep.authentication.user_assigned_managed_identity_settings.client_id != null &&
+        ep.authentication.user_assigned_managed_identity_settings.tenant_id != null
+      )
+    ])
+    error_message = "UserAssignedManagedIdentity authentication requires client_id and tenant_id in user_assigned_managed_identity_settings"
+  }
+
+  validation {
+    condition = alltrue([
+      for ep in var.registry_endpoints :
+      ep.authentication.method != "ArtifactPullSecret" || (
+        ep.authentication.artifact_pull_secret_settings != null &&
+        ep.authentication.artifact_pull_secret_settings.secret_ref != null
+      )
+    ])
+    error_message = "ArtifactPullSecret authentication requires secret_ref in artifact_pull_secret_settings"
+  }
+
+  validation {
+    condition = alltrue([
+      for ep in var.registry_endpoints :
+      ep.name != "mcr" && ep.name != "default"
+    ])
+    error_message = "Registry endpoint names 'mcr' and 'default' are reserved"
+  }
+
+  validation {
+    condition = alltrue([
+      for ep in var.registry_endpoints :
+      ep.acr_resource_id == null || ep.authentication.method == "SystemAssignedManagedIdentity"
+    ])
+    error_message = "acr_resource_id can only be specified with SystemAssignedManagedIdentity authentication method"
+  }
+}
+
+variable "should_include_acr_registry_endpoint" {
+  type        = bool
+  default     = false
+  description = "Whether to include the deployed ACR as a registry endpoint with System Assigned Managed Identity authentication"
+}
+
 # ------------------------------------------------------------------------------
 # AI Foundry Variables
 # ------------------------------------------------------------------------------

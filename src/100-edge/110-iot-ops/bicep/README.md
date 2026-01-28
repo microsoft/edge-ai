@@ -7,49 +7,50 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 
 ## Parameters
 
-| Name                                | Description                                                                                                                                                  | Type                                             | Default                                                                                                                       | Required |
-|:------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------|:-------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------|:---------|
-| common                              | The common component configuration.                                                                                                                          | `[_2.Common](#user-defined-types)`               | n/a                                                                                                                           | yes      |
-| arcConnectedClusterName             | The resource name for the Arc connected cluster.                                                                                                             | `string`                                         | n/a                                                                                                                           | yes      |
-| secretStoreConfig                   | The settings for the Secret Store Extension.                                                                                                                 | `[_1.SecretStoreExtension](#user-defined-types)` | [variables('_1.secretStoreExtensionDefaults')]                                                                                | no       |
-| shouldInitAio                       | Whether to deploy the Azure IoT Operations initial connected cluster resources, Secret Sync, ACSA, OSM, AIO Platform.                                        | `bool`                                           | `true`                                                                                                                        | no       |
-| aioIdentityName                     | The name of the User Assigned Managed Identity for Azure IoT Operations.                                                                                     | `string`                                         | n/a                                                                                                                           | yes      |
-| aioExtensionConfig                  | The settings for the Azure IoT Operations Extension.                                                                                                         | `[_1.AioExtension](#user-defined-types)`         | [variables('_1.aioExtensionDefaults')]                                                                                        | no       |
-| aioFeatures                         | AIO Instance features.                                                                                                                                       | `[_1.AioFeatures](#user-defined-types)`          | n/a                                                                                                                           | no       |
-| aioInstanceName                     | The name for the Azure IoT Operations Instance resource.                                                                                                     | `string`                                         | [format('{0}-ops-instance', parameters('arcConnectedClusterName'))]                                                           | no       |
-| aioDataFlowInstanceConfig           | The settings for Azure IoT Operations Data Flow Instances.                                                                                                   | `[_1.AioDataFlowInstance](#user-defined-types)`  | [variables('_1.aioDataFlowInstanceDefaults')]                                                                                 | no       |
-| aioMqBrokerConfig                   | The settings for the Azure IoT Operations MQ Broker.                                                                                                         | `[_1.AioMqBroker](#user-defined-types)`          | [variables('_1.aioMqBrokerDefaults')]                                                                                         | no       |
-| brokerListenerAnonymousConfig       | Configuration for the insecure anonymous AIO MQ Broker Listener.                                                                                             | `[_1.AioMqBrokerAnonymous](#user-defined-types)` | [variables('_1.aioMqBrokerAnonymousDefaults')]                                                                                | no       |
-| configurationSettingsOverride       | Optional configuration settings to override default IoT Operations extension configuration. Use the same key names as the az iot ops --ops-config parameter. | `object`                                         | {}                                                                                                                            | no       |
-| schemaRegistryName                  | The resource name for the ADR Schema Registry for Azure IoT Operations.                                                                                      | `string`                                         | n/a                                                                                                                           | yes      |
-| adrNamespaceName                    | The resource name for the ADR Namespace for Azure IoT Operations.                                                                                            | `string`                                         | n/a                                                                                                                           | no       |
-| shouldDeployAio                     | Whether to deploy an Azure IoT Operations Instance and all of its required components into the connected cluster.                                            | `bool`                                           | `true`                                                                                                                        | no       |
-| shouldDeployResourceSyncRules       | Whether or not to deploy the Custom Locations Resource Sync Rules for the Azure IoT Operations resources.                                                    | `bool`                                           | `true`                                                                                                                        | no       |
-| shouldCreateAnonymousBrokerListener | Whether to enable an insecure anonymous AIO MQ Broker Listener. (Should only be used for dev or test environments)                                           | `bool`                                           | `false`                                                                                                                       | no       |
-| shouldEnableOtelCollector           | Whether or not to enable the Open Telemetry Collector for Azure IoT Operations.                                                                              | `bool`                                           | `true`                                                                                                                        | no       |
-| shouldEnableOpcUaSimulator          | Whether or not to enable the OPC UA Simulator for Azure IoT Operations.                                                                                      | `bool`                                           | `true`                                                                                                                        | no       |
-| shouldEnableAkriRestConnector       | Deploy Akri REST HTTP Connector template to the IoT Operations instance.                                                                                     | `bool`                                           | `false`                                                                                                                       | no       |
-| shouldEnableAkriMediaConnector      | Deploy Akri Media Connector template to the IoT Operations instance.                                                                                         | `bool`                                           | `false`                                                                                                                       | no       |
-| shouldEnableAkriOnvifConnector      | Deploy Akri ONVIF Connector template to the IoT Operations instance.                                                                                         | `bool`                                           | `false`                                                                                                                       | no       |
-| shouldEnableAkriSseConnector        | Deploy Akri SSE Connector template to the IoT Operations instance.                                                                                           | `bool`                                           | `false`                                                                                                                       | no       |
-| customAkriConnectors                | List of custom Akri connector templates with user-defined endpoint types and container images.                                                               | `array`                                          | []                                                                                                                            | no       |
-| akriMqttSharedConfig                | Shared MQTT connection configuration for all Akri connectors.                                                                                                | `[_1.AkriMqttConfig](#user-defined-types)`       | {'host': 'aio-broker:18883', 'audience': 'aio-internal', 'caConfigmap': 'azure-iot-operations-aio-ca-trust-bundle'}           | no       |
-| customLocationName                  | The name for the Custom Locations resource.                                                                                                                  | `string`                                         | [format('{0}-cl', parameters('arcConnectedClusterName'))]                                                                     | no       |
-| additionalClusterExtensionIds       | Additional cluster extension IDs to include in the custom location. (Appended to the default Secret Store and IoT Operations extension IDs)                  | `array`                                          | []                                                                                                                            | no       |
-| trustIssuerSettings                 | The trust issuer settings for Customer Managed Azure IoT Operations Settings.                                                                                | `[_1.TrustIssuerConfig](#user-defined-types)`    | {'trustSource': 'SelfSigned'}                                                                                                 | no       |
-| sseKeyVaultName                     | The name of the Key Vault for Secret Sync. (Required when providing sseIdentityName)                                                                         | `string`                                         | n/a                                                                                                                           | yes      |
-| sseIdentityName                     | The name of the User Assigned Managed Identity for Secret Sync.                                                                                              | `string`                                         | n/a                                                                                                                           | yes      |
-| sseKeyVaultResourceGroupName        | The name of the Resource Group for the Key Vault for Secret Sync. (Required when providing sseIdentityName)                                                  | `string`                                         | [resourceGroup().name]                                                                                                        | no       |
-| shouldAssignSseKeyVaultRoles        | Whether to assign roles for Key Vault to the provided Secret Sync Identity.                                                                                  | `bool`                                           | `true`                                                                                                                        | no       |
-| shouldAssignDeployIdentityRoles     | Whether to assign roles to the deploy identity.                                                                                                              | `bool`                                           | [not(empty(parameters('deployIdentityName')))]                                                                                | no       |
-| deployIdentityName                  | The resource name for a managed identity that will be given deployment admin permissions.                                                                    | `string`                                         | n/a                                                                                                                           | no       |
-| shouldDeployAioDeploymentScripts    | Whether to deploy DeploymentScripts for Azure IoT Operations.                                                                                                | `bool`                                           | `false`                                                                                                                       | no       |
-| deployKeyVaultName                  | The name of the Key Vault that will have scripts and secrets for deployment.                                                                                 | `string`                                         | [parameters('sseKeyVaultName')]                                                                                               | no       |
-| deployKeyVaultResourceGroupName     | The resource group name where the Key Vault is located. Defaults to the current resource group.                                                              | `string`                                         | [parameters('sseKeyVaultResourceGroupName')]                                                                                  | no       |
-| deployUserTokenSecretName           | The name for the deploy user token secret in Key Vault.                                                                                                      | `string`                                         | deploy-user-token                                                                                                             | no       |
-| deploymentScriptsSecretNamePrefix   | The prefix used with constructing the secret name that will have the deployment script.                                                                      | `string`                                         | [format('{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)] | no       |
-| shouldAddDeployScriptsToKeyVault    | Whether to add the deploy scripts for DeploymentScripts to Key Vault as secrets. (Required for DeploymentScripts)                                            | `bool`                                           | `false`                                                                                                                       | no       |
-| telemetry_opt_out                   | Whether to opt out of telemetry data collection.                                                                                                             | `bool`                                           | `false`                                                                                                                       | no       |
+| Name                                | Description                                                                                                                                                  | Type                                                 | Default                                                                                                                       | Required |
+|:------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------|:---------|
+| common                              | The common component configuration.                                                                                                                          | `[_2.Common](#user-defined-types)`                   | n/a                                                                                                                           | yes      |
+| arcConnectedClusterName             | The resource name for the Arc connected cluster.                                                                                                             | `string`                                             | n/a                                                                                                                           | yes      |
+| secretStoreConfig                   | The settings for the Secret Store Extension.                                                                                                                 | `[_1.SecretStoreExtension](#user-defined-types)`     | [variables('_1.secretStoreExtensionDefaults')]                                                                                | no       |
+| shouldInitAio                       | Whether to deploy the Azure IoT Operations initial connected cluster resources, Secret Sync, ACSA, OSM, AIO Platform.                                        | `bool`                                               | `true`                                                                                                                        | no       |
+| aioIdentityName                     | The name of the User Assigned Managed Identity for Azure IoT Operations.                                                                                     | `string`                                             | n/a                                                                                                                           | yes      |
+| aioExtensionConfig                  | The settings for the Azure IoT Operations Extension.                                                                                                         | `[_1.AioExtension](#user-defined-types)`             | [variables('_1.aioExtensionDefaults')]                                                                                        | no       |
+| aioFeatures                         | AIO Instance features.                                                                                                                                       | `[_1.AioFeatures](#user-defined-types)`              | n/a                                                                                                                           | no       |
+| aioInstanceName                     | The name for the Azure IoT Operations Instance resource.                                                                                                     | `string`                                             | [format('{0}-ops-instance', parameters('arcConnectedClusterName'))]                                                           | no       |
+| aioDataFlowInstanceConfig           | The settings for Azure IoT Operations Data Flow Instances.                                                                                                   | `[_1.AioDataFlowInstance](#user-defined-types)`      | [variables('_1.aioDataFlowInstanceDefaults')]                                                                                 | no       |
+| aioMqBrokerConfig                   | The settings for the Azure IoT Operations MQ Broker.                                                                                                         | `[_1.AioMqBroker](#user-defined-types)`              | [variables('_1.aioMqBrokerDefaults')]                                                                                         | no       |
+| brokerListenerAnonymousConfig       | Configuration for the insecure anonymous AIO MQ Broker Listener.                                                                                             | `[_1.AioMqBrokerAnonymous](#user-defined-types)`     | [variables('_1.aioMqBrokerAnonymousDefaults')]                                                                                | no       |
+| configurationSettingsOverride       | Optional configuration settings to override default IoT Operations extension configuration. Use the same key names as the az iot ops --ops-config parameter. | `object`                                             | {}                                                                                                                            | no       |
+| schemaRegistryName                  | The resource name for the ADR Schema Registry for Azure IoT Operations.                                                                                      | `string`                                             | n/a                                                                                                                           | yes      |
+| adrNamespaceName                    | The resource name for the ADR Namespace for Azure IoT Operations.                                                                                            | `string`                                             | n/a                                                                                                                           | no       |
+| shouldDeployAio                     | Whether to deploy an Azure IoT Operations Instance and all of its required components into the connected cluster.                                            | `bool`                                               | `true`                                                                                                                        | no       |
+| shouldDeployResourceSyncRules       | Whether or not to deploy the Custom Locations Resource Sync Rules for the Azure IoT Operations resources.                                                    | `bool`                                               | `true`                                                                                                                        | no       |
+| shouldCreateAnonymousBrokerListener | Whether to enable an insecure anonymous AIO MQ Broker Listener. (Should only be used for dev or test environments)                                           | `bool`                                               | `false`                                                                                                                       | no       |
+| shouldEnableOtelCollector           | Whether or not to enable the Open Telemetry Collector for Azure IoT Operations.                                                                              | `bool`                                               | `true`                                                                                                                        | no       |
+| shouldEnableOpcUaSimulator          | Whether or not to enable the OPC UA Simulator for Azure IoT Operations.                                                                                      | `bool`                                               | `true`                                                                                                                        | no       |
+| shouldEnableAkriRestConnector       | Deploy Akri REST HTTP Connector template to the IoT Operations instance.                                                                                     | `bool`                                               | `false`                                                                                                                       | no       |
+| shouldEnableAkriMediaConnector      | Deploy Akri Media Connector template to the IoT Operations instance.                                                                                         | `bool`                                               | `false`                                                                                                                       | no       |
+| shouldEnableAkriOnvifConnector      | Deploy Akri ONVIF Connector template to the IoT Operations instance.                                                                                         | `bool`                                               | `false`                                                                                                                       | no       |
+| shouldEnableAkriSseConnector        | Deploy Akri SSE Connector template to the IoT Operations instance.                                                                                           | `bool`                                               | `false`                                                                                                                       | no       |
+| customAkriConnectors                | List of custom Akri connector templates with user-defined endpoint types and container images.                                                               | `[_1.AkriConnectorTemplate](#user-defined-types)[]`  | []                                                                                                                            | no       |
+| registryEndpoints                   | List of additional container registry endpoints for pulling custom artifacts. MCR is always added automatically.                                             | `[_1.RegistryEndpointConfig](#user-defined-types)[]` | []                                                                                                                            | no       |
+| akriMqttSharedConfig                | Shared MQTT connection configuration for all Akri connectors.                                                                                                | `[_1.AkriMqttConfig](#user-defined-types)`           | {'host': 'aio-broker:18883', 'audience': 'aio-internal', 'caConfigmap': 'azure-iot-operations-aio-ca-trust-bundle'}           | no       |
+| customLocationName                  | The name for the Custom Locations resource.                                                                                                                  | `string`                                             | [format('{0}-cl', parameters('arcConnectedClusterName'))]                                                                     | no       |
+| additionalClusterExtensionIds       | Additional cluster extension IDs to include in the custom location. (Appended to the default Secret Store and IoT Operations extension IDs)                  | `string[]`                                           | []                                                                                                                            | no       |
+| trustIssuerSettings                 | The trust issuer settings for Customer Managed Azure IoT Operations Settings.                                                                                | `[_1.TrustIssuerConfig](#user-defined-types)`        | {'trustSource': 'SelfSigned'}                                                                                                 | no       |
+| sseKeyVaultName                     | The name of the Key Vault for Secret Sync. (Required when providing sseIdentityName)                                                                         | `string`                                             | n/a                                                                                                                           | yes      |
+| sseIdentityName                     | The name of the User Assigned Managed Identity for Secret Sync.                                                                                              | `string`                                             | n/a                                                                                                                           | yes      |
+| sseKeyVaultResourceGroupName        | The name of the Resource Group for the Key Vault for Secret Sync. (Required when providing sseIdentityName)                                                  | `string`                                             | [resourceGroup().name]                                                                                                        | no       |
+| shouldAssignSseKeyVaultRoles        | Whether to assign roles for Key Vault to the provided Secret Sync Identity.                                                                                  | `bool`                                               | `true`                                                                                                                        | no       |
+| shouldAssignDeployIdentityRoles     | Whether to assign roles to the deploy identity.                                                                                                              | `bool`                                               | [not(empty(parameters('deployIdentityName')))]                                                                                | no       |
+| deployIdentityName                  | The resource name for a managed identity that will be given deployment admin permissions.                                                                    | `string`                                             | n/a                                                                                                                           | no       |
+| shouldDeployAioDeploymentScripts    | Whether to deploy DeploymentScripts for Azure IoT Operations.                                                                                                | `bool`                                               | `false`                                                                                                                       | no       |
+| deployKeyVaultName                  | The name of the Key Vault that will have scripts and secrets for deployment.                                                                                 | `string`                                             | [parameters('sseKeyVaultName')]                                                                                               | no       |
+| deployKeyVaultResourceGroupName     | The resource group name where the Key Vault is located. Defaults to the current resource group.                                                              | `string`                                             | [parameters('sseKeyVaultResourceGroupName')]                                                                                  | no       |
+| deployUserTokenSecretName           | The name for the deploy user token secret in Key Vault.                                                                                                      | `string`                                             | deploy-user-token                                                                                                             | no       |
+| deploymentScriptsSecretNamePrefix   | The prefix used with constructing the secret name that will have the deployment script.                                                                      | `string`                                             | [format('{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)] | no       |
+| shouldAddDeployScriptsToKeyVault    | Whether to add the deploy scripts for DeploymentScripts to Key Vault as secrets. (Required for DeploymentScripts)                                            | `bool`                                               | `false`                                                                                                                       | no       |
+| telemetry_opt_out                   | Whether to opt out of telemetry data collection.                                                                                                             | `bool`                                               | `false`                                                                                                                       | no       |
 
 ## Resources
 
@@ -63,6 +64,7 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 | postInitScripts               | `Microsoft.Resources/deployments` | 2025-04-01  |
 | iotOpsInstance                | `Microsoft.Resources/deployments` | 2025-04-01  |
 | akriConnectors                | `Microsoft.Resources/deployments` | 2025-04-01  |
+| registryEndpointsModule       | `Microsoft.Resources/deployments` | 2025-04-01  |
 | postInstanceScriptsSecrets    | `Microsoft.Resources/deployments` | 2025-04-01  |
 | postInstanceScripts           | `Microsoft.Resources/deployments` | 2025-04-01  |
 
@@ -78,6 +80,7 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 | postInitScripts               | Runs deployment scripts for IoT Operations using an Azure deploymentScript resource, including tool installation and script execution.                                                                          |
 | iotOpsInstance                | Deploys Azure IoT Operations instance, broker, authentication, listeners, and data flow components on an Azure Arc-enabled Kubernetes cluster.                                                                  |
 | akriConnectors                | Deploys multiple Azure IoT Operations Akri Connector Templates as part of the IoT Operations deployment. Supports REST/HTTP, Media, ONVIF, and SSE connector types with configurable runtime and MQTT settings. |
+| registryEndpointsModule       | Manages container registry endpoints for Azure IoT Operations, including the default MCR endpoint, custom registry endpoints, and ACR role assignments.                                                         |
 | postInstanceScriptsSecrets    | Creates secrets in Key Vault for deployment script setup and initialization for Azure IoT Operations.                                                                                                           |
 | postInstanceScripts           | Runs deployment scripts for IoT Operations using an Azure deploymentScript resource, including tool installation and script execution.                                                                          |
 
@@ -294,7 +297,6 @@ Deploys Azure IoT Operations instance, broker, authentication, listeners, and da
 | adrSyncRule                           | `Microsoft.ExtendedLocation/customLocations/resourceSyncRules`                  | 2021-08-31-preview |
 | defaultSecretSyncSecretProviderClass  | `Microsoft.SecretSyncController/azureKeyVaultSecretProviderClasses`             | 2024-08-21-preview |
 | aioInstance                           | `Microsoft.IoTOperations/instances`                                             | 2025-10-01         |
-| registryEndpoint                      | `Microsoft.IoTOperations/instances/registryEndpoints`                           | 2025-10-01         |
 | broker                                | `Microsoft.IoTOperations/instances/brokers`                                     | 2025-10-01         |
 | brokerAuthn                           | `Microsoft.IoTOperations/instances/brokers/authentications`                     | 2025-10-01         |
 | brokerListener                        | `Microsoft.IoTOperations/instances/brokers/listeners`                           | 2025-10-01         |
@@ -328,6 +330,7 @@ Deploys Azure IoT Operations instance, broker, authentication, listeners, and da
 | brokerAuthnId               | `string` | The ID of the deployed AIO MQ Broker Authentication.              |
 | brokerListenerName          | `string` | The name of the deployed AIO MQ Broker Listener.                  |
 | brokerListenerId            | `string` | The ID of the deployed AIO MQ Broker Listener.                    |
+| extensionIdentity           | `object` | AIO Arc extension identity information for role assignments.      |
 
 ### akriConnectors
 
@@ -354,6 +357,35 @@ Deploys multiple Azure IoT Operations Akri Connector Templates as part of the Io
 |:-----------------------|:--------|:--------------------------------------------------------------|
 | connectorTemplates     | `array` | Map of deployed connector templates by name with id and type. |
 | connectorTypesDeployed | `array` | List of connector types that were deployed.                   |
+
+### registryEndpointsModule
+
+Manages container registry endpoints for Azure IoT Operations, including the default MCR endpoint, custom registry endpoints, and ACR role assignments.
+
+#### Parameters for registryEndpointsModule
+
+| Name                 | Description                                                       | Type     | Default | Required |
+|:---------------------|:------------------------------------------------------------------|:---------|:--------|:---------|
+| aioInstanceId        | Azure IoT Operations instance ID (parent for registry endpoints). | `string` | n/a     | yes      |
+| customLocationId     | Custom location ID for the Azure IoT Operations deployment.       | `string` | n/a     | yes      |
+| extensionPrincipalId | Principal ID of the AIO Arc extension for ACR role assignments.   | `string` | n/a     | yes      |
+| registryEndpoints    | List of custom registry endpoints to configure.                   | `array`  | n/a     | yes      |
+
+#### Resources for registryEndpointsModule
+
+| Name                   | Type                                                  | API Version |
+|:-----------------------|:------------------------------------------------------|:------------|
+| mcrEndpoint            | `Microsoft.IoTOperations/instances/registryEndpoints` | 2025-10-01  |
+| customEndpoints        | `Microsoft.IoTOperations/instances/registryEndpoints` | 2025-10-01  |
+| acrPullRoleAssignments | `Microsoft.Authorization/roleAssignments`             | 2022-04-01  |
+
+#### Outputs for registryEndpointsModule
+
+| Name                  | Type     | Description                         |
+|:----------------------|:---------|:------------------------------------|
+| mcrEndpoint           | `object` | Default MCR registry endpoint.      |
+| customEndpointsOutput | `array`  | Array of custom registry endpoints. |
+| acrRoleAssignments    | `array`  | Array of ACR role assignment IDs.   |
 
 ### postInstanceScriptsSecrets
 
@@ -549,6 +581,14 @@ Trust settings for Akri connector.
 |:-------------------|:---------|:------------------------------------|
 | trustListSecretRef | `string` | Reference to the trust list secret. |
 
+### `_1.ArtifactPullSecretSettings`
+
+Authentication settings for Artifact Pull Secret.
+
+| Property  | Type     | Description                                                               |
+|:----------|:---------|:--------------------------------------------------------------------------|
+| secretRef | `string` | The name of the kubernetes secret that contains the artifact pull secret. |
+
 ### `_1.BrokerPersistence`
 
 Broker persistence configuration for disk-backed message storage.
@@ -608,6 +648,57 @@ The mode of the AIO instance feature. Either "Stable", "Preview" or "Disabled".
 
 The setting value of the AIO instance feature. Either "Enabled" or "Disabled".
 
+### `_1.RegistryAuthAnonymous`
+
+Anonymous authentication for registry endpoint.
+
+| Property          | Type     | Description                                       |
+|:------------------|:---------|:--------------------------------------------------|
+| method            | `string` | Authentication method.                            |
+| anonymousSettings | `object` | Anonymous authentication settings (empty object). |
+
+### `_1.RegistryAuthArtifactPullSecret`
+
+Artifact Pull Secret authentication for registry endpoint.
+
+| Property                   | Type                                                   | Description                    |
+|:---------------------------|:-------------------------------------------------------|:-------------------------------|
+| method                     | `string`                                               | Authentication method.         |
+| artifactPullSecretSettings | `[_1.ArtifactPullSecretSettings](#user-defined-types)` | Artifact pull secret settings. |
+
+### `_1.RegistryAuthentication`
+
+Authentication configuration for a registry endpoint.
+
+### `_1.RegistryAuthSystemAssignedManagedIdentity`
+
+System-Assigned Managed Identity authentication for registry endpoint.
+
+| Property                              | Type                                                              | Description                                |
+|:--------------------------------------|:------------------------------------------------------------------|:-------------------------------------------|
+| method                                | `string`                                                          | Authentication method.                     |
+| systemAssignedManagedIdentitySettings | `[_1.SystemAssignedManagedIdentitySettings](#user-defined-types)` | System-assigned managed identity settings. |
+
+### `_1.RegistryAuthUserAssignedManagedIdentity`
+
+User-Assigned Managed Identity authentication for registry endpoint.
+
+| Property                            | Type                                                            | Description                              |
+|:------------------------------------|:----------------------------------------------------------------|:-----------------------------------------|
+| method                              | `string`                                                        | Authentication method.                   |
+| userAssignedManagedIdentitySettings | `[_1.UserAssignedManagedIdentitySettings](#user-defined-types)` | User-assigned managed identity settings. |
+
+### `_1.RegistryEndpointConfig`
+
+Container registry endpoint configuration for AIO instance.
+
+| Property       | Type                                               | Description                                                                                                                                  |
+|:---------------|:---------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------|
+| name           | `string`                                           | Unique name for the registry endpoint (3-63 chars, lowercase alphanumeric and hyphens).                                                      |
+| host           | `string`                                           | Container registry hostname (e.g., myregistry.azurecr.io).                                                                                   |
+| acrResourceId  | `string`                                           | Optional ACR resource ID for automatic AcrPull role assignment. Only applicable when authentication.method is SystemAssignedManagedIdentity. |
+| authentication | `[_1.RegistryAuthentication](#user-defined-types)` | Authentication configuration for the registry.                                                                                               |
+
 ### `_1.Release`
 
 The common settings for Azure Arc Extensions.
@@ -661,6 +752,14 @@ The configuration for Self-Signed Issuer for Azure IoT Operations certificates.
 |:------------|:---------|:------------|
 | trustSource | `string` |             |
 
+### `_1.SystemAssignedManagedIdentitySettings`
+
+Authentication settings for System-Assigned Managed Identity.
+
+| Property | Type     | Description                                                                                             |
+|:---------|:---------|:--------------------------------------------------------------------------------------------------------|
+| audience | `string` | Audience of the service to authenticate against. Defaults to "<https://management.azure.com/>" for ACR. |
+
 ### `_1.TrustConfigSource`
 
 The config source of trust for how to use or generate Azure IoT Operations certificates.
@@ -684,6 +783,16 @@ The configuration for the trust settings of Azure IoT Operations certificates.
 
 The source of trust for Azure IoT Operations certificates.
 
+### `_1.UserAssignedManagedIdentitySettings`
+
+Authentication settings for User-Assigned Managed Identity.
+
+| Property | Type     | Description                                                    |
+|:---------|:---------|:---------------------------------------------------------------|
+| clientId | `string` | Client ID for the user-assigned managed identity.              |
+| tenantId | `string` | Tenant ID where the managed identity is located.               |
+| scope    | `string` | Resource identifier (application ID URI) with .default suffix. |
+
 ### `_2.Common`
 
 Common settings for the components.
@@ -697,21 +806,22 @@ Common settings for the components.
 
 ## Outputs
 
-| Name                       | Type     | Description                                                        |
-|:---------------------------|:---------|:-------------------------------------------------------------------|
-| aioPlatformExtensionId     | `string` | The ID of the Azure IoT Operations Platform Extension.             |
-| aioPlatformExtensionName   | `string` | The name of the Azure IoT Operations Platform Extension.           |
-| secretStoreExtensionId     | `string` | The ID of the Secret Store Extension.                              |
-| secretStoreExtensionName   | `string` | The name of the Secret Store Extension.                            |
-| customLocationId           | `string` | The ID of the deployed Custom Location.                            |
-| customLocationName         | `string` | The name of the deployed Custom Location.                          |
-| aioInstanceId              | `string` | The ID of the deployed Azure IoT Operations instance.              |
-| aioInstanceName            | `string` | The name of the deployed Azure IoT Operations instance.            |
-| dataFlowProfileId          | `string` | The ID of the deployed Azure IoT Operations Data Flow Profile.     |
-| dataFlowProfileName        | `string` | The name of the deployed Azure IoT Operations Data Flow Profile.   |
-| dataFlowEndpointId         | `string` | The ID of the deployed Azure IoT Operations Data Flow Endpoint.    |
-| dataFlowEndpointName       | `string` | The name of the deployed Azure IoT Operations Data Flow Endpoint.  |
-| akriConnectorTemplates     | `array`  | Map of deployed Akri connector templates by name with id and type. |
-| akriConnectorTypesDeployed | `array`  | List of Akri connector types that were deployed.                   |
+| Name                       | Type     | Description                                                           |
+|:---------------------------|:---------|:----------------------------------------------------------------------|
+| aioPlatformExtensionId     | `string` | The ID of the Azure IoT Operations Platform Extension.                |
+| aioPlatformExtensionName   | `string` | The name of the Azure IoT Operations Platform Extension.              |
+| aioNamespace               | `string` | The namespace in the cluster where Azure IoT Operations is installed. |
+| secretStoreExtensionId     | `string` | The ID of the Secret Store Extension.                                 |
+| secretStoreExtensionName   | `string` | The name of the Secret Store Extension.                               |
+| customLocationId           | `string` | The ID of the deployed Custom Location.                               |
+| customLocationName         | `string` | The name of the deployed Custom Location.                             |
+| aioInstanceId              | `string` | The ID of the deployed Azure IoT Operations instance.                 |
+| aioInstanceName            | `string` | The name of the deployed Azure IoT Operations instance.               |
+| dataFlowProfileId          | `string` | The ID of the deployed Azure IoT Operations Data Flow Profile.        |
+| dataFlowProfileName        | `string` | The name of the deployed Azure IoT Operations Data Flow Profile.      |
+| dataFlowEndpointId         | `string` | The ID of the deployed Azure IoT Operations Data Flow Endpoint.       |
+| dataFlowEndpointName       | `string` | The name of the deployed Azure IoT Operations Data Flow Endpoint.     |
+| akriConnectorTemplates     | `array`  | Map of deployed Akri connector templates by name with id and type.    |
+| akriConnectorTypesDeployed | `array`  | List of Akri connector types that were deployed.                      |
 
 <!-- END_BICEP_DOCS -->

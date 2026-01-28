@@ -207,3 +207,17 @@ module "akri_connectors" {
     ca_configmap = "azure-iot-operations-aio-ca-trust-bundle"
   }
 }
+
+/*
+ * Registry Endpoints
+ */
+
+module "registry_endpoints" {
+  source     = "./modules/registry-endpoints"
+  depends_on = [module.iot_ops_instance]
+
+  aio_instance_id        = module.iot_ops_instance.aio_instance.id
+  custom_location_id     = module.iot_ops_instance.custom_locations.id
+  extension_principal_id = module.iot_ops_instance.extension_identity.principal_id
+  registry_endpoints     = var.registry_endpoints
+}
