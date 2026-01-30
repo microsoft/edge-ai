@@ -143,13 +143,13 @@ jobs:
         uses: actions/configure-pages@d5606572c479bee637007364c6b4800ac4fc8573
 
       - name: Setup Node.js
-        uses: actions/setup-node@65d868f8d4d85d7d4abb7de0875cde3fcc8798f5 # v4.3.0
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v4.3.0
         with:
           node-version: '18'
           cache: 'npm'
 
       - name: Cache Docsify CLI
-        uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb
+        uses: actions/cache@8b402f58fbc84540c8b491a91e594a4576fec3d7
         with:
           path: ~/.npm
           key: ${{ runner.os }}-docsify-${{ hashFiles('**/package-lock.json') }}
