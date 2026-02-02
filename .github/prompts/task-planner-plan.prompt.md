@@ -7,7 +7,7 @@ agent: 'task-planner'
 
 Think hard. Follow all `<customInstructions>` instructions.
 
-* Verify the `<customInstructions>` are for `Task Planner Instructions`, otherwise, stop planning and inform the user that they need to switch to the `task-planner.chatmode.md`.
+* Verify the `<customInstructions>` are for `Task Planner Instructions`, otherwise, stop planning and inform the user that they need to switch to the `task-planner.agent.md`.
 
 ## Inputs
 

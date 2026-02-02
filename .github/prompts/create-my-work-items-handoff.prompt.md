@@ -1,5 +1,4 @@
 ---
-mode: "agent"
 description: "Generate a single comprehensive work item handoff markdown from latest raw assigned-to-me work items with repo context enrichment."
 ---
 

@@ -35,7 +35,7 @@ complexity_factors:
 uses_prompts: []
 uses_instructions:
   - .github/instructions/task-implementation.instructions.md
-uses_chatmodes: []
+uses_agents: []
 repository_paths:
   - .copilot-tracking/
   - project-adrs/
@@ -157,7 +157,7 @@ Practice with real project planning tools and documentation:
 
 ### 400 - Expert Level
 
-- **Focus**: Develop expert in complex task planning through multi-component scenario implementation, planning integration of edge computing capabilities for predictive and Learn systematic extraction and packaging of AI prompts, instructions, and chatmodes for client project delivery using comprehensive task planning and system
+- **Focus**: Develop expert in complex task planning through multi-component scenario implementation, planning integration of edge computing capabilities for predictive and Learn systematic extraction and packaging of AI prompts, instructions, and agents for client project delivery using comprehensive task planning and system
 - **Skills**: GitHub Copilot, Azure DevOps
 - **Time-to-Practice**: 6 hours
 
@@ -213,7 +213,7 @@ then carefully refined by our team of discerning human reviewers.*
 <!-- Reference Links -->
 <!-- Internal Project Links -->
 [project-planning-guides]: /docs/project-planning/README
-[task-planning-prompts]: /.github/chatmodes/task-planner.chatmode
+[task-planning-prompts]: /.github/agents/task-planner.agent
 [contribution-workflows]: /CONTRIBUTING
 [edge-doc-planning]: /learning/katas/task-planning/100-edge-documentation-planning
 

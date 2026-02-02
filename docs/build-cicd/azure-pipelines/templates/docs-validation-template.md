@@ -41,7 +41,7 @@ high standards.
 - **Link Validation**: Checks all documentation links for accessibility and correctness
 - **Multi-Folder Support**: Validates content across docs, src, blueprints, learning, and .github folders
 - **Learning Content Validation**: Specialized validation for learning platform content
-- **GitHub Resources Validation**: Validates prompts, chatmodes, and issue templates
+- **GitHub Resources Validation**: Validates prompts, custom agents, and issue templates
 - **Configurable Severity**: Can produce warnings or fail builds based on requirements
 - **Azure DevOps Integration**: Uses proper logging commands for build system integration
 
@@ -75,7 +75,7 @@ This template depends on the following:
 - **Required Project Structure**:
   - Three-tree documentation architecture (docs, src, blueprints folders)
   - Learning platform content (learning folder)
-  - GitHub resources (.github folder with prompts, chatmodes, templates)
+  - GitHub resources (.github folder with prompts, agents, templates)
 
 ## Usage
 

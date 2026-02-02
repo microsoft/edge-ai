@@ -98,7 +98,7 @@ Achieve expertise in orchestrating complex multi-system integrations at enterpri
   **Prerequisites:** fabric-integration-100-prerequisite-full-deployment, fabric-integration-200-fabric-workspace-configuration, fabric-integration-105-fabric-rti-blueprint-deployment, fabric-integration-300-edge-to-cloud-data-pipeline • **Technologies:** Microsoft Fabric, KQL, DAX, Power BI, Azure IoT Operations
 
 - [ ] [**Kata: 100 - Feature Request Analysis**](../katas/product-requirements/100-basic-prd-creation.md)
-  *Foundation | 50 min* • Learn to create structured product requirements documents using AI assistance and the PRD chatmode for edge AI solutions
+  *Foundation | 50 min* • Learn to create structured product requirements documents using AI assistance and the PRD agent for edge AI solutions
   **Prerequisites:** None • **Technologies:** GitHub Copilot
 
 - [ ] [**Kata: 400 - Bug Report Transformation**](../katas/task-planning/400-advanced-capability-integration.md)

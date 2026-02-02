@@ -1974,7 +1974,7 @@
         showStatus,
         enhanceProgressBannerForSkillAssessment,
         generatePersonalizedCompletionMessage,
-        getChatmodeRecommendation,
+        getCustomagentRecommendation,
         formatKataRecommendations,
         enhanceCompletionExperience
     };
@@ -1996,7 +1996,7 @@ Thank you for completing the skill assessment. Your results have been saved.
 
 **Your Next Step:**
 
-🤖 **Get Your Personalized Learning Path**: Visit the [Kata Coach](#/github-copilot/chatmodes/learning-kata-coach) to receive customized recommendations based on your assessment results.
+🤖 **Get Your Personalized Learning Path**: Visit the [Kata Coach](#/github-copilot/customagents/learning-kata-coach) to receive customized recommendations based on your assessment results.
 
 🎯 **Additional Resources:**
 - [Learning Dashboard](#/learning) - Explore all available content
@@ -2011,7 +2011,7 @@ Ready to continue your edge AI journey!`;
             }
 
             const { skillLevel, learningPath, recommendedKatas } = recommendations;
-            const chatmodeRec = getChatmodeRecommendation(skillLevel);
+            const customagentRec = getCustomagentRecommendation(skillLevel);
             const kataList = formatKataRecommendations(recommendedKatas || []);
 
             let message = `🎉 Assessment Complete!
@@ -2020,9 +2020,9 @@ Based on your responses, you're at a **${skillLevel}** skill level.
 
 **Your Next Step:**
 
-🤖 **Get Your Personalized Learning Path**: Visit the ${chatmodeRec.displayName} to receive customized kata recommendations and guided practice tailored to your skill level.
+🤖 **Get Your Personalized Learning Path**: Visit the ${customagentRec.displayName} to receive customized kata recommendations and guided practice tailored to your skill level.
 
-[Launch ${chatmodeRec.displayName}](#/github-copilot/chatmodes/${chatmodeRec.chatmode})
+[Launch ${customagentRec.displayName}](#/github-copilot/customagents/${customagentRec.customagent})
 
 🎯 **Additional Resources:**
 - [Learning Dashboard](#/learning) - Explore all available content
@@ -2039,14 +2039,14 @@ Ready to accelerate your edge AI expertise!`;
     }
 
     /**
-     * Gets chatmode recommendation - always kata coach for personalized learning paths
+     * Gets custom agent recommendation - always kata coach for personalized learning paths
      * @param {string} skillLevel - User's assessed skill level (for future use)
-     * @returns {Object} Chatmode recommendation with name and description
+     * @returns {Object} Custom agent recommendation with name and description
      */
-    function getChatmodeRecommendation(skillLevel) {
+    function getCustomagentRecommendation(skillLevel) {
         // Always recommend kata coach for personalized learning path creation
         return {
-            chatmode: 'learning-kata-coach',
+            customagent: 'learning-kata-coach',
             displayName: 'kata coach',
             description: 'Get a personalized learning path and guided practice based on your skill level'
         };
@@ -2541,7 +2541,7 @@ Ready to accelerate your edge AI expertise!`;
             showCompletionMessage,
             showCompletionStatus,
             generatePersonalizedCompletionMessage,
-            getChatmodeRecommendation,
+            getCustomagentRecommendation,
             formatKataRecommendations,
             enhanceCompletionExperience,
             showCompletionModal,
@@ -2569,7 +2569,7 @@ Ready to accelerate your edge AI expertise!`;
                 showCompletionMessage,
                 showCompletionStatus,
                 generatePersonalizedCompletionMessage,
-                getChatmodeRecommendation,
+                getCustomagentRecommendation,
                 formatKataRecommendations,
                 enhanceCompletionExperience,
                 showCompletionModal,
@@ -2591,7 +2591,7 @@ Ready to accelerate your edge AI expertise!`;
                 showCompletionMessage,
                 showCompletionStatus,
                 generatePersonalizedCompletionMessage,
-                getChatmodeRecommendation,
+                getCustomagentRecommendation,
                 formatKataRecommendations,
                 enhanceCompletionExperience,
                 showCompletionModal,

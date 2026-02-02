@@ -83,15 +83,15 @@ search_keywords:
 
 **Quick Validation**: Verify previous ADR kata completion and access to Azure networking and IoT Operations documentation.
 
-**💡 Pro Tip**: This is a Board-level architecture decision - use appropriate chatmodes for research, analysis, and executive documentation phases.
+**💡 Pro Tip**: This is a Board-level architecture decision - use appropriate agents for research, analysis, and executive documentation phases.
 
 **📁 Pro Tip**: Task Researcher automatically saves research documents to `.copilot-tracking/research/` - organize VPN topology research, MQTT bridging analysis, and security compliance documentation there.
 
 > **🤖 Want Interactive AI Coaching?**
 >
-> Load the **Learning Kata Coach** chat mode for task check-offs, progress tracking, progressive hints, and personalized guidance.
+> Load the **Learning Kata Coach** custom agent for task check-offs, progress tracking, progressive hints, and personalized guidance.
 >
-> In GitHub Copilot Chat, select **Learning Kata Coach** mode and say:
+> In GitHub Copilot Chat, select **Learning Kata Coach** custom agent and say:
 >
 > ```text
 > I'm working on 04 - Cross-Site Industrial Data Architecture kata and want interactive coaching with progress tracking.
@@ -244,8 +244,8 @@ Ready for more? This capstone kata demonstrates proficiency in complex cross-sit
 
 **Optional AI Assistance Tools**:
 
-- [Task Researcher Chatmode][task-researcher] - For systematic research and analysis ([`.github/chatmodes/task-researcher.chatmode.md`](.github/chatmodes/task-researcher.chatmode.md))
-- [ADR Creation Chatmode][adr-create] - For professional documentation and strategic writing ([`.github/chatmodes/adr-creation.chatmode.md`](.github/chatmodes/adr-creation.chatmode.md))
+- [Task Researcher Agent][task-researcher] - For systematic research and analysis ([`.github/agents/task-researcher.agent.md`](.github/agents/task-researcher.agent.md))
+- [ADR Creation Agent][adr-create] - For professional documentation and strategic writing ([`.github/agents/adr-creation.agent.md`](.github/agents/adr-creation.agent.md))
 - [ADR Solution Library][adr-library] - Templates and examples for reference ([`docs/solution-adr-library`](docs/solution-adr-library))
 
 **Azure IoT Operations Documentation**:
@@ -299,8 +299,8 @@ then carefully refined by our team of discerning human reviewers.*
 <!-- markdownlint-enable MD036 -->
 
 <!-- Reference Links -->
-[task-researcher]: /.github/chatmodes/task-researcher.chatmode.md
-[adr-create]: /.github/chatmodes/adr-creation.chatmode.md
+[task-researcher]: /.github/agents/task-researcher.agent.md
+[adr-create]: /.github/agents/adr-creation.agent.md
 [adr-library]: /docs/solution-adr-library/
 [ms-azure-iot-operations]: https://docs.microsoft.com/azure/iot-operations/
 [ms-aio-mqtt-broker]: https://docs.microsoft.com/azure/iot-operations/manage-mqtt-broker/
