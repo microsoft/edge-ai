@@ -1,5 +1,5 @@
 ---
-mode: 'agent'
+agent: 'prompt-builder'
 description: 'Refactors existing prompt/instruction files to improve clarity, organization, and effectiveness - Brought to you by microsoft/edge-ai'
 ---
 

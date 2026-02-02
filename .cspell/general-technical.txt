@@ -76,6 +76,8 @@ chatbot
 chatbots
 chatmode
 chatmodes
+customagent
+customagents
 chatagent
 cheatham
 checkmarx

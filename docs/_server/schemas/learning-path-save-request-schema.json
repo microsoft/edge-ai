@@ -99,9 +99,9 @@
       "type": "object",
       "description": "Coaching recommendations based on assessment results",
       "properties": {
-        "chatmodeRecommendation": {
+        "customagentRecommendation": {
           "type": "string",
-          "description": "Specific guidance for using the learning coach chatmode",
+          "description": "Specific guidance for using the learning coach custom agent",
           "minLength": 10,
           "maxLength": 500
         },

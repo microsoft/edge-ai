@@ -690,9 +690,9 @@ With **Phases 1-7 completed**, the scenario-capability mapping project has achie
 
 4. **Interactive Planning Tool Enhancement** (✅ Complete)
    - ✅ **Template Cleanup**: Removed duplicate/unused template files and created comprehensive template inventory
-   - ✅ **Prompt Migration**: Migrated `edge-ai-project-planning.prompt.md` to interactive chatmode format
-   - ✅ **Enhanced Planning Workflow**: Created `edge-ai-project-planner.chatmode.md` with scenario selection, capability mapping, and documentation generation
-   - ✅ **Copilot-Tracking Integration**: Configured chatmode to output structured project plans to `./.copilot-tracking/` directory
+   - ✅ **Prompt Migration**: Migrated `edge-ai-project-planning.prompt.md` to interactive agent format
+   - ✅ **Enhanced Planning Workflow**: Created `edge-ai-project-planner.agent.md` with scenario selection, capability mapping, and documentation generation
+   - ✅ **Copilot-Tracking Integration**: Configured agent to output structured project plans to `./.copilot-tracking/` directory
    - ✅ **User Experience Optimization**: Implemented focused, step-by-step interaction flow to avoid overwhelming users
 
 **Validated Scenario Status** (6 of 6 Complete):
@@ -741,7 +741,7 @@ With **Phases 1-7 completed**, the scenario-capability mapping project has achie
 - ✅ **Quality Assurance**: 100% of existing scenario files pass markdownlint validation
 - ✅ **Documentation Consistency**: Prerequisites, capability mapping, and README files aligned across all scenarios
 - ✅ **Navigation Enhancement**: All emoji headers corrected and frontmatter standardized
-- ✅ **Interactive Planning Tools**: Chatmode prompt created for guided project planning with automated documentation generation
+- ✅ **Interactive Planning Tools**: Agent prompt created for guided project planning with automated documentation generation
 - ✅ **Template Optimization**: Cleanup completed with comprehensive inventory of active templates
 
 **Upcoming Success Criteria**:

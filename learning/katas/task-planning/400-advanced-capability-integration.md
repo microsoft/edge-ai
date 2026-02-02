@@ -62,15 +62,15 @@ Complete these prerequisite checks to ensure a successful learning experience:
 - [ ] Access to project workspace with folder navigation capability
 - [ ] Completion of previous task planning katas for context
 
-**Quick Validation**: Verify you can open GitHub Copilot Chat and navigate to `.github/chatmodes/` to see task-planner.chatmode.md.
+**Quick Validation**: Verify you can open GitHub Copilot Chat and navigate to `.github/agents/` to see task-planner.agent.md.
 
 **Understanding Check**: This kata teaches you advanced task planning for complex system integration with multiple dependencies and parallel workstreams.
 
 > **🤖 Want Interactive AI Coaching?**
 >
-> Load the **Learning Kata Coach** chat mode for task check-offs, progress tracking, progressive hints, and personalized guidance.
+> Load the **Learning Kata Coach** custom agent for task check-offs, progress tracking, progressive hints, and personalized guidance.
 >
-> In GitHub Copilot Chat, select **Learning Kata Coach** mode and say:
+> In GitHub Copilot Chat, select **Learning Kata Coach** custom agent and say:
 >
 > ```text
 > I'm working on 05 - Advanced Capability Integration kata and want interactive coaching with progress tracking.
@@ -155,7 +155,7 @@ Have you achieved advanced capability integration planning excellence?
 
 ### Help Resources
 
-- **Task Planning Chat Mode** (`.github/chatmodes/task-planner.chatmode.md`): Advanced planning methodology for multi-component integration scenarios with dependency management and stakeholder coordination
+- **Task Planning Custom Agent** (`.github/agents/task-planner.agent.md`): Advanced planning methodology for multi-component integration scenarios with dependency management and stakeholder coordination
 - **Azure IoT Edge Documentation**: Edge computing integration patterns, deployment strategies, and best practices for IoT and AI workload orchestration
 - **Azure Solution Accelerators**: Enterprise integration examples demonstrating predictive maintenance architectures and multi-component system coordination
 

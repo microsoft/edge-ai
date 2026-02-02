@@ -158,7 +158,7 @@ Within **Steps** sections under tasks/phases, use this specific checkbox pattern
 **Steps**:
 
 1. **Create** research document
-   - [ ] In Task Researcher chatmode, say: *"Help me research..."*
+   - [ ] In Task Researcher custom agent, say: *"Help me research..."**
    - [ ] Ask for output as a comparison table
    - **Pro tip**: Task Researcher auto-saves to `.copilot-tracking/research/`
    - [ ] **Expected result**: Research document framework created

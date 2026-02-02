@@ -1,5 +1,4 @@
 ---
-mode: "agent"
 description: "Prompt to update work items based on planning files"
 ---
 

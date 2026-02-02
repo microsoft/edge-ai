@@ -58,9 +58,9 @@ Learn systematic task planning through practical documentation improvement using
 
 > **🤖 Want Interactive AI Coaching?**
 >
-> Load the **Learning Kata Coach** chat mode for task check-offs, progress tracking, progressive hints, and personalized guidance.
+> Load the **Learning Kata Coach** custom agent for task check-offs, progress tracking, progressive hints, and personalized guidance.
 >
-> In GitHub Copilot Chat, select **Learning Kata Coach** mode and say:
+> In GitHub Copilot Chat, select **Learning Kata Coach** custom agent and say:
 >
 > ```text
 > I'm working on 01 - Edge Documentation Planning kata and want interactive coaching with progress tracking.
@@ -78,9 +78,9 @@ Complete these prerequisite checks to ensure a successful learning experience:
 - [ ] GitHub Copilot subscription and chat functionality enabled
 - [ ] Access to project workspace with folder navigation capability
 - [ ] Basic understanding of markdown and file navigation
-- [ ] Awareness of three key project files — **Digital Inspection Scenario** (`docs/project-planning/scenarios/digital-inspection-survey/README.md`), **Task Planner Chatmode** (`.github/chatmodes/task-planner.chatmode.md`), **Task Implementation Instructions** (`.github/instructions/task-implementation.instructions.md`)
+- [ ] Awareness of three key project files — **Digital Inspection Scenario** (`docs/project-planning/scenarios/digital-inspection-survey/README.md`), **Task Planner Agent** (`.github/agents/task-planner.agent.md`), **Task Implementation Instructions** (`.github/instructions/task-implementation.instructions.md`)
 
-**Quick Validation**: Verify you can open GitHub Copilot Chat and navigate to both `.github/chatmodes/` and `docs/project-planning/scenarios/` folders.
+**Quick Validation**: Verify you can open GitHub Copilot Chat and navigate to both `.github/agents/` and `docs/project-planning/scenarios/` folders.
 
 **Understanding Check**: This kata teaches you the workflow from task planning through implementation using actual project tools and methodologies.
 
@@ -117,19 +117,19 @@ research-first planning: (1) Analyze current state and user needs, (2) Categoriz
 
 **Success Criteria**: Comprehensive analysis with specific file references documenting current state issues and prioritized improvement opportunities.
 
-### Task 2: Improvement Strategy with Chat Mode Discovery (10 minutes)
+### Task 2: Improvement Strategy with Custom Agent Discovery (10 minutes)
 
-**What You'll Do**: Discover and use the task planning chat mode to create an improvement roadmap.
+**What You'll Do**: Discover and use the task planning custom agent to create an improvement roadmap.
 
 **Steps**:
 
 1. **Explore** the project's AI-assisted planning infrastructure
-   - [ ] Navigate to `.github/chatmodes/` folder
-   - [ ] Open the Task Planner Chatmode (see Setup Validation above)
+   - [ ] Navigate to `.github/agents/` folder
+   - [ ] Open the Task Planner Agent (see Setup Validation above)
    - [ ] Read the first 50 lines to understand the task planning methodology
    - [ ] **Expected result**: Understanding of available AI planning tools and templates
 
-2. **Practice with task planning chat mode**
+2. **Practice with task planning custom agent**
    - [ ] In GitHub Copilot Chat, reference the task planner with *"Using the task planner methodology, help me categorize documentation improvements by impact and effort"*
    - [ ] Ask for phases with *"What phases should I define for implementing documentation enhancements with dependencies and timelines?"*
    - [ ] Try research-first approach with *"Based on the scenario, create a research-first planning approach for documentation improvements"*
@@ -149,7 +149,7 @@ research-first planning: (1) Analyze current state and user needs, (2) Categoriz
 **Steps**:
 
 1. **Create** a task plan using project templates
-   - [ ] Open the Task Planner Chatmode and find the plan template (around line 130-200)
+   - [ ] Open the Task Planner Agent and find the plan template (around line 130-200)
    - [ ] Study the template structure: Overview, Objectives, Research Summary, Implementation Plan, Dependencies, Success Criteria
    - [ ] Use GitHub Copilot Chat: *"Following the task planner template structure, create a task plan for improving Digital Inspection documentation with these phases: Research current state, Plan improvements, Implement changes, Validate results"*
    - [ ] Structure your plan following the template with **Research phase** (information gathering and analysis), **Planning phase** (strategy development and resource allocation), **Implementation phase** (content creation and improvement execution), **Validation phase** (testing, review, and iteration tasks)
@@ -159,7 +159,7 @@ research-first planning: (1) Analyze current state and user needs, (2) Categoriz
    - [ ] Save your task plan (you can create it in `.copilot-tracking/plans/` folder if available)
    - [ ] Open the Task Implementation Instructions (see Setup Validation above)
    - [ ] Read the first 100 lines to understand how plans transition to implementation
-   - [ ] Ask GitHub Copilot: *"Explain how to transition from the task planning chat mode to using implementation instructions"*
+   - [ ] Ask GitHub Copilot: *"Explain how to transition from the task planning custom agent to using implementation instructions"*
    - [ ] **Expected result**: Clear understanding of complete workflow from planning through execution with practical transition steps
 
 3. **Apply quality assurance planning methodology**
@@ -189,7 +189,7 @@ research-first planning: (1) Analyze current state and user needs, (2) Categoriz
    - [ ] **Expected result**: Understanding of how to move from planning to systematic implementation
 
 3. **Validate** your workflow understanding
-   - [ ] Explain to GitHub Copilot what you learned: *"I learned to use task planning chat mode for strategy, then switch to implementation instructions for systematic execution"*
+   - [ ] Explain to GitHub Copilot what you learned: *"I learned to use task planning custom agent for strategy, then switch to implementation instructions for systematic execution"*
    - [ ] Ask for confirmation: *"Is this the correct workflow pattern for this project?"*
    - [ ] **Expected result**: Confirmed understanding of complete planning-to-implementation workflow
 
@@ -202,7 +202,7 @@ research-first planning: (1) Analyze current state and user needs, (2) Categoriz
 **Step 1: Planning Phase Example**:
 
 - **Scenario**: You need to improve the Digital Inspection documentation
-- **Use task planner**: *"Using task-planner chat mode, create a plan to add missing prerequisites section to Digital Inspection documentation"*
+- **Use task planner**: *"Using task-planner custom agent, create a plan to add missing prerequisites section to Digital Inspection documentation"*
 - **Create research notes**: Save findings in `.copilot-tracking/research/` if working on real projects
 - **Expected output**: Comprehensive plan with research, implementation, and validation phases
 
@@ -240,39 +240,39 @@ research-first planning: (1) Analyze current state and user needs, (2) Categoriz
 - ⚠️ **Need more planning**: Vague tasks, unclear requirements, missing context
 - 🔄 **Ready for validation**: Implementation complete, need quality review and feedback
 
-**Chat Mode Discovery and Exploration Exercise**:
+**Custom Agent Discovery and Exploration Exercise**:
 
 **Practice Exercise**: Discover and explore the available AI assistance modes:
 
-**1. Explore the Chat Modes Infrastructure**:
+**1. Explore the Custom Agents Infrastructure**:
 
-- Navigate to `.github/chatmodes/` folder in your file explorer
-- List all available chat mode files:
-  - `task-planner.chatmode.md` - for systematic planning
-  - `prompt-builder.chatmode.md` - for prompt engineering
-  - `learning-kata-coach.chatmode.md` - for learning assistance
-  - `learning-lab-coach.chatmode.md` - for lab guidance
+- Navigate to `.github/agents/` folder in your file explorer
+- List all available custom agent files:
+  - `task-planner.agent.md` - for systematic planning
+  - `prompt-builder.agent.md` - for prompt engineering
+  - `learning-kata-coach.agent.md` - for learning assistance
+  - `learning-lab-coach.agent.md` - for lab guidance
 - **Expected result**: Understanding of available specialized AI assistance modes
 
-**2. Deep Dive into Task Planner Chat Mode**:
+**2. Deep Dive into Task Planner Custom Agent**:
 
-- Open the Task Planner Chatmode
+- Open the Task Planner Agent
 - Read lines 1-50 to understand the specialized planning approach
 - Find the planning template (around line 100) and examine its structure
-- Ask GitHub Copilot: *"Explain the task planner chat mode methodology and when I should use it"*
+- Ask GitHub Copilot: *"Explain the task planner custom agent methodology and when I should use it"*
 - **Expected result**: Clear understanding of task planning methodology and template structure
 
-**3. Practice Chat Mode Usage**:
+**3. Practice Custom Agent Usage**:
 
-- Try this command: *"Using the task-planner chat mode approach, help me create a research plan for understanding edge AI documentation patterns"*
+- Try this command: *"Using the task-planner custom agent approach, help me create a research plan for understanding edge AI documentation patterns"*
 - Compare with general chat: *"Help me create a research plan for understanding edge AI documentation patterns"*
 - Notice the difference in specificity and methodology
 - **Expected result**: Experience with specialized vs general AI assistance approaches
 
-**4. Validation of Chat Mode Understanding**:
+**4. Validation of Custom Agent Understanding**:
 
-- Ask: *"When should I use task-planner chat mode vs prompt files vs instruction files for AI assistance?"*
-- Verify your understanding: *"I should use task-planner when I need to create systematic plans, prompts when I need guidance, and instructions when I need to implement plans. Is this correct?"*
+- Ask: *"When should I use task-planner custom agent vs prompt files vs instruction files for AI assistance?"*
+- Verify your understanding: *"I should use task-planner custom agent when I need to create systematic plans, prompts when I need guidance, and instructions when I need to implement plans. Is this correct?"*
 - **Expected result**: Confirmed understanding of when to use each assistance approach
 
 **File-Specific Exploration and Validation Checkpoints**:
@@ -281,7 +281,7 @@ research-first planning: (1) Analyze current state and user needs, (2) Categoriz
 
 **1. Task Planning Template Structure Validation**:
 
-- Open `.github/chatmodes/task-planner.chatmode.md` and go to line 100-150
+- Open `.github/agents/task-planner.agent.md` and go to line 100-150
 - Find the plan template section and examine the required elements:
   - Overview and Objectives sections
   - Research Summary with file references
@@ -313,7 +313,7 @@ research-first planning: (1) Analyze current state and user needs, (2) Categoriz
 1. **Describe** your research-first planning approach for the Digital Inspection documentation. What specific analysis steps did you take to identify improvement opportunities?
 2. **Explain** how you categorized documentation improvements by impact and effort. What criteria determined whether something was a quick win versus a structural change?
 3. **What** phases did you define in your implementation roadmap? How do they build upon each other with clear dependencies?
-4. **How** did you use the task-planner chat mode to create your improvement strategy? What specific prompts generated the most valuable planning insights?
+4. **How** did you use the task-planner custom agent to create your improvement strategy? What specific prompts generated the most valuable planning insights?
 5. **Describe** your success metrics for the documentation enhancements. How will you measure whether the improvements achieve their intended impact?
 
 ---
@@ -322,7 +322,7 @@ research-first planning: (1) Analyze current state and user needs, (2) Categoriz
 
 ### Help Resources
 
-- **Task Planning Chat Mode** - See Setup Validation section for full path and description
+- **Task Planning Custom Agent** - See Setup Validation section for full path and description
 - **Digital Inspection & Survey Scenario** - See Setup Validation section for full path and description
 - **Task Implementation Instructions** - See Setup Validation section for full path and description
 - **Getting Started Guide** `docs/getting-started/` - User onboarding patterns to understand documentation structure

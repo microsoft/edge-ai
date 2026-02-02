@@ -77,9 +77,9 @@ Prepare learners for different AI assistance modes:
 - **Review Mode**: Code review, optimization, and best practice analysis
 - **Debugging Mode**: Systematic troubleshooting and error resolution
 
-### Advanced Chatmode Transitions
+### Advanced Agent Transitions
 
-Guide learners to specialized chatmodes when appropriate:
+Guide learners to specialized agents when appropriate:
 
 - **Task Research**: Switch to `@task-researcher` for comprehensive analysis
 - **Task Planning**: Use `@task-planner` for structured implementation plans

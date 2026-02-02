@@ -11,7 +11,7 @@ I'm your collaborative partner for creating effective learning content. I work W
 
 ### Template Files - ALWAYS Reference These
 
-**PRECEDENCE HIERARCHY**: Instructions > Templates > Chatmode
+**PRECEDENCE HIERARCHY**: Instructions > Templates > Custom Agent
 
 - **Kata Content Instructions**: `.github/instructions/kata-content.instructions.md` (AUTHORITATIVE source for individual katas)
   - Individual kata requirements (28 fields: 21 required + 7 optional, AI coaching, Quick Context)
@@ -416,7 +416,7 @@ Include when applicable to enhance learning experience:
 | `related_katas`         | array  | Complementary learning paths    |
 | `related_labs`          | array  | Extended practice opportunities |
 | `skill_assessment_id`   | string | Link to competency assessment   |
-| `chatmode_references`   | array  | AI coaching modes used          |
+| `agent_references`      | array  | AI coaching agents used         |
 | `file_references`       | array  | Key repository files used       |
 | `validation_commands`   | array  | Commands to verify success      |
 | `troubleshooting_guide` | string | Link to troubleshooting doc     |
@@ -456,7 +456,7 @@ Include when applicable to enhance learning experience:
 
 #### AI Coaching Design Patterns
 
-**Pattern 1: Single Chatmode Reference (Beginner)**
+**Pattern 1: Single Custom Agent Reference (Beginner)**
 Use for guided learning with consistent coaching approach:
 
 ```markdown
@@ -466,7 +466,7 @@ Use for guided learning with consistent coaching approach:
 > - Explanation of concepts as you encounter them
 ```
 
-**Pattern 2: Sequential Chatmode Orchestration (Intermediate)**
+**Pattern 2: Sequential Custom Agent Orchestration (Intermediate)**
 Use when different phases require different coaching styles:
 
 ```markdown
@@ -485,14 +485,14 @@ Use for teaching prompt engineering and AI interaction:
 - [ ] Analyze the response and identify the three primary services
 ```
 
-**Pattern 4: Mode Discovery Exercise (Meta-Learning)**
-Use for teaching learners how to find and use chatmodes:
+**Pattern 4: Agent Discovery Exercise (Meta-Learning)**
+Use for teaching learners how to find and use custom agents:
 
 ```markdown
-### Task 1: Discover Available Modes
-- [ ] Type `@` in Copilot Chat and review available chatmodes
-- [ ] Identify which mode is best for task planning
-- [ ] Explain why you selected that mode
+### Task 1: Discover Available Agents
+- [ ] Type `@` in Copilot Chat and review available custom agents
+- [ ] Identify which agent is best for task planning
+- [ ] Explain why you selected that agent
 ```
 
 #### Scaffolding Implementation Guide
@@ -764,7 +764,7 @@ Learning verification through self-explanation:
 
 ##### AI Coaching Integration
 
-- [ ] Chatmode references are accurate and accessible
+- [ ] Custom agent references are accurate and accessible
 - [ ] Coaching prompts guide without solving
 - [ ] Mode selection matches learning objectives
 - [ ] Learner can complete kata with coach assistance
@@ -789,7 +789,7 @@ Learning verification through self-explanation:
 
 1. **Fresh Environment Test**: Complete kata in clean workspace without prior context
 2. **Time Validation**: Track actual completion time vs. estimated (target: ±10%)
-3. **Coaching Test**: Use referenced chatmode(s) to verify guidance quality
+3. **Coaching Test**: Use referenced custom agent(s) to verify guidance quality
 4. **Checkpoint Validation**: Verify each success criterion is achievable and measurable
 
 ##### Observation Protocol
@@ -852,7 +852,7 @@ Learning verification through self-explanation:
 ##### 6. Document Learnings
 
 - Share common issues and solutions with content creator community
-- Update this chatmode with new patterns discovered
+- Update this custom agent with new patterns discovered
 - Contribute improvements to shared templates
 - Celebrate successful learning outcomes
 

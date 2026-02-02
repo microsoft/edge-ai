@@ -58,15 +58,15 @@ Complete these prerequisite checks to ensure a successful learning experience:
 - [ ] Edge AI repository cloned and accessible
 - [ ] Understanding of full-single-node-cluster blueprint architecture
 - [ ] Basic knowledge of IoT Operations and messaging components
-- [ ] Access to task-planner chatmode for systematic approach
+- [ ] Access to task-planner agent for systematic approach
 
 **Quick Validation**: Verify you can navigate to blueprint directories and access component documentation in `src/`.
 
 > **🤖 Want Interactive AI Coaching?**
 >
-> Load the **Learning Kata Coach** chat mode for task check-offs, progress tracking, progressive hints, and personalized guidance.
+> Load the **Learning Kata Coach** custom agent for task check-offs, progress tracking, progressive hints, and personalized guidance.
 >
-> In GitHub Copilot Chat, select **Learning Kata Coach** mode and say:
+> In GitHub Copilot Chat, select **Learning Kata Coach** custom agent and say:
 >
 > ```text
 > I'm working on 02 - Multi-Component System Debugging kata and want interactive coaching with progress tracking.
@@ -86,7 +86,7 @@ Complete these prerequisite checks to ensure a successful learning experience:
    - [ ] **Expected result**: Clear dependency diagram showing component interactions
 
 2. **Use Task Planner** to create systematic debugging approach
-   - [ ] Load task-planner.chatmode.md in Copilot Chat
+   - [ ] Load task-planner.agent.md in Copilot Chat
    - [ ] Request: "Create debugging plan for multi-component Edge AI system failure"
    - [ ] Include dependency analysis and isolation strategies
    - [ ] **Expected result**: Structured debugging plan with clear phases and validation steps
@@ -158,7 +158,7 @@ Complete these prerequisite checks to ensure a successful learning experience:
 
 ### Help Resources
 
-- **Task Planner**: Use task-planner.chatmode.md for systematic debugging and recovery planning
+- **Task Planner**: Use task-planner.agent.md for systematic debugging and recovery planning
 - **Blueprint Architecture**: Reference `blueprints/full-single-node-cluster/` for component relationships
 - **IoT Operations**: Study `src/100-edge/110-iot-ops/` for Edge component details
 - **Messaging Infrastructure**: Review `src/000-cloud/040-messaging/` for cloud component patterns

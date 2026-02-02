@@ -51,7 +51,7 @@ Katas emphasize:
 
 ### How to Load Your AI Coach
 
-**Step 1**: In GitHub Copilot Chat, select the **Learning Kata Coach** mode from the chat mode selector.
+**Step 1**: In GitHub Copilot Chat, select the **Learning Kata Coach** custom agent from the agent selector.
 
 **Step 2**: Send this starter message to begin your coached session:
 

@@ -26,7 +26,7 @@ describe('Assessment Modal Display Integration', () => {
             <div class="path-title"></div>
             <div class="path-description"></div>
             <div class="estimated-duration"></div>
-            <div class="chatmode-description"></div>
+            <div class="customagent-description"></div>
           </div>
           <div class="modal-footer">
             <button id="assessment-modal-save-path">Save Learning Path</button>

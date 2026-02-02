@@ -195,22 +195,22 @@
   font-weight: 500;
 }
 
-.chatmode-recommendation {
+.customagent-recommendation {
   background: var(--sidebar-toggle-background);
   padding: 20px;
   border-radius: 8px;
   border-left: 4px solid var(--theme-color);
 }
 
-.chatmode-recommendation p {
+.customagent-recommendation p {
   margin: 0 0 8px 0;
 }
 
-.chatmode-recommendation p:last-child {
+.customagent-recommendation p:last-child {
   margin: 0;
 }
 
-.chatmode-description {
+.customagent-description {
   color: var(--text-color-secondary);
   font-style: italic;
 }

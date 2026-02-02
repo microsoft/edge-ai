@@ -69,9 +69,9 @@ Complete these prerequisite checks to ensure a successful learning experience:
 
 > **🤖 Want Interactive AI Coaching?**
 >
-> Load the **Learning Kata Coach** chat mode for task check-offs, progress tracking, progressive hints, and personalized guidance.
+> Load the **Learning Kata Coach** custom agent for task check-offs, progress tracking, progressive hints, and personalized guidance.
 >
-> In GitHub Copilot Chat, select **Learning Kata Coach** mode and say:
+> In GitHub Copilot Chat, select **Learning Kata Coach** custom agent and say:
 >
 > ```text
 > I'm working on 04 - Learning Platform Extraction kata and want interactive coaching with progress tracking.
@@ -129,7 +129,7 @@ Complete these prerequisite checks to ensure a successful learning experience:
    - [ ] **Success check**: Complete learning platform package with Edge Insights customization plan
      - [ ] Use AI to analyze repository's edge computing capabilities documentation (`docs/project-planning/capabilities/edge-industrial-application-platform/`, `docs/project-planning/capabilities/cloud-insights-platform/`) to understand business intelligence scenarios
      - [ ] Leverage AI to identify realistic Edge Insights use cases from `docs/solution-adr-library/` edge computing technical patterns and visualization capabilities
-     - [ ] Use Task Planner chat mode to develop edge computing business intelligence scenarios that align with documented capabilities and real-world applications
+     - [ ] Use Task Planner custom agent to develop edge computing business intelligence scenarios that align with documented capabilities and real-world applications
    - [ ] Design customization approach for coaching modes and learning progression for Edge Insights context
    - [ ] Plan branding and terminology adaptation for Tailspin Toys Edge Insights platform
    - [ ] Create strategy for maintaining learning platform capabilities in client edge computing environment
@@ -143,13 +143,13 @@ Complete these prerequisite checks to ensure a successful learning experience:
 
 ### Task 3: Business-Specific Kata Planning and Systematic Implementation (15 minutes)
 
-**What You'll Do**: Create task plans for two Edge Insights platform-specific katas using Task Planner chat mode, then execute systematic implementation
+**What You'll Do**: Create task plans for two Edge Insights platform-specific katas using Task Planner custom agent, then execute systematic implementation
 
 **Steps**:
 
-1. **Design** Edge Insights kata concepts using Task Planner chat mode
-   - [ ] Use Task Planner chat mode to create task plan for "Edge Analytics Deployment" kata (edge computing business intelligence focus)
-   - [ ] Use Task Planner chat mode to create task plan for "Edge Inventory Optimization Implementation" kata (edge operational analytics focus)
+1. **Design** Edge Insights kata concepts using Task Planner custom agent
+   - [ ] Use Task Planner custom agent to create task plan for "Edge Analytics Deployment" kata (edge computing business intelligence focus)
+   - [ ] Use Task Planner custom agent to create task plan for "Edge Inventory Optimization Implementation" kata (edge operational analytics focus)
    - [ ] Design kata progression that builds on Edge Insights platform capabilities and edge computing concepts
    - [ ] Plan integration with existing task planning methodology and coaching systems for edge computing context
    - [ ] **Expected result**: Two complete kata task plans designed for Edge Insights business analytics scenarios created using Task Planner methodology
@@ -189,7 +189,7 @@ Before moving forward, validate your understanding:
 
 - [Documentation Framework][docs-structure] - Understanding the documentation system architecture and build process
 - [Learning Platform][learning-readme] - Complete learning system capabilities and kata structures
-- [Task Planner Chat Mode][task-planner-mode] - Systematic planning assistance for complex extractions
+- [Task Planner Custom Agent][task-planner-mode] - Systematic planning assistance for complex extractions
 - [Task Implementation Instructions][task-implementation] - Systematic execution methodology for deliverable packaging
 - [Kata Coach][kata-coach] - Interactive learning support and progress tracking system
 
@@ -218,6 +218,6 @@ then carefully refined by our team of discerning human reviewers.*
 <!-- Reference Links -->
 [learning-readme]: /learning/README.md
 [docs-structure]: /docs/
-[task-planner-mode]: /.github/chatmodes/task-planner.chatmode.md
+[task-planner-mode]: /.github/agents/task-planner.agent.md
 [task-implementation]: /.github/instructions/task-implementation.instructions.md
-[kata-coach]: /.github/chatmodes/learning-kata-coach.chatmode.md
+[kata-coach]: /.github/agents/learning-kata-coach.agent.md

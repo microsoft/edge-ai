@@ -121,7 +121,7 @@ describe('Learning Paths API', () => {
         ]
       },
       recommendations: {
-        chatmodeRecommendation: 'Focus on IoT Edge deployment scenarios and troubleshooting',
+        customagentRecommendation: 'Focus on IoT Edge deployment scenarios and troubleshooting',
         learningPath: 'intermediate-edge-development'
       },
       timestamp: '2025-09-21T16:43:10.000Z'
@@ -250,7 +250,7 @@ describe('Learning Paths API', () => {
           ]
         },
         recommendations: {
-          chatmodeRecommendation: 'Test recommendation',
+          customagentRecommendation: 'Test recommendation',
           learningPath: 'test-path'
         }
       };

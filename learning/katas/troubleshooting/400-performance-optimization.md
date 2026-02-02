@@ -57,16 +57,16 @@ Complete these prerequisite checks to ensure a successful learning experience:
 - [ ] GitHub Copilot Chat enabled in VS Code
 - [ ] Edge AI repository cloned and accessible
 - [ ] Understanding of full-single-node-cluster blueprint architecture
-- [ ] Access to task-planner and deploy chatmodes
+- [ ] Access to task-planner and deploy agents
 - [ ] Basic knowledge of Kubernetes resource management
 
 **Quick Validation**: Verify you can open GitHub Copilot Chat and navigate to edge AI component directories in `src/`.
 
 > **🤖 Want Interactive AI Coaching?**
 >
-> Load the **Learning Kata Coach** chat mode for task check-offs, progress tracking, progressive hints, and personalized guidance.
+> Load the **Learning Kata Coach** custom agent for task check-offs, progress tracking, progressive hints, and personalized guidance.
 >
-> In GitHub Copilot Chat, select **Learning Kata Coach** mode and say:
+> In GitHub Copilot Chat, select **Learning Kata Coach** custom agent and say:
 >
 > ```text
 > I'm working on 03 - Performance Optimization kata and want interactive coaching with progress tracking.
@@ -93,7 +93,7 @@ Complete these prerequisite checks to ensure a successful learning experience:
    - [ ] **Expected result**: Real-time visibility into system performance characteristics
 
 3. **Use Copilot** for optimization planning
-   - [ ] Load task-planner.chatmode.md
+   - [ ] Load task-planner.agent.md
    - [ ] Request: "Create performance optimization plan for IoT Operations data pipeline"
    - [ ] Generate systematic profiling and tuning approach
    - **Success check**: Clear plan that identifies bottlenecks and optimization opportunities

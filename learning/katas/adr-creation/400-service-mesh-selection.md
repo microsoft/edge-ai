@@ -68,15 +68,15 @@ Choose between Istio, Linkerd, and Open Service Mesh (OSM) for service mesh depl
 
 **Quick Validation**: If you can explain Istio's sidecar model vs Linkerd's lightweight approach and understand mTLS/zero-trust concepts, you're ready. If not, see appendix for recommended preparation resources.
 
-**💡 Pro Tip**: Specialized chatmodes can help you approach different phases of your work more effectively - consider whether you need a research mindset or a documentation mindset.
+**💡 Pro Tip**: Specialized agents can help you approach different phases of your work more effectively - consider whether you need a research mindset or a documentation mindset.
 
 **📁 Pro Tip**: Task Researcher automatically saves research documents to `.copilot-tracking/research/` - check there for your research files.
 
 > **🤖 Want Interactive AI Coaching?**
 >
-> Load the **Learning Kata Coach** chat mode for task check-offs, progress tracking, progressive hints, and personalized guidance.
+> Load the **Learning Kata Coach** custom agent for task check-offs, progress tracking, progressive hints, and personalized guidance.
 >
-> In GitHub Copilot Chat, select **Learning Kata Coach** mode and say:
+> In GitHub Copilot Chat, select **Learning Kata Coach** custom agent and say:
 >
 > ```text
 > I'm working on 04 - Service Mesh Selection kata and want interactive coaching with progress tracking.
@@ -204,8 +204,8 @@ Ready for more? Try applying these infrastructure decision techniques to other c
 
 **Optional AI Assistance Tools**:
 
-- [Task Researcher Chatmode][task-researcher] - For systematic research and analysis phases (`.github/chatmodes/task-researcher.chatmode.md`)
-- [ADR Creation Chatmode][adr-create] - For professional documentation and strategic writing (`.github/chatmodes/adr-creation.chatmode.md`)
+- [Task Researcher Agent][task-researcher] - For systematic research and analysis phases (`.github/agents/task-researcher.agent.md`)
+- [ADR Creation Agent][adr-create] - For professional documentation and strategic writing (`.github/agents/adr-creation.agent.md`)
 - [ADR Solution Library][adr-library] - Templates and examples for reference (`docs/solution-adr-library/`)
 
 **Technical Documentation**:
@@ -249,8 +249,8 @@ then carefully refined by our team of discerning human reviewers.*
 <!-- markdownlint-enable MD036 -->
 
 <!-- Reference Links -->
-[task-researcher]: /.github/chatmodes/task-researcher.chatmode.md
-[adr-create]: /.github/chatmodes/adr-creation.chatmode.md
+[task-researcher]: /.github/agents/task-researcher.agent.md
+[adr-create]: /.github/agents/adr-creation.agent.md
 [adr-library]: /docs/solution-adr-library/
 [ms-azure-kubernetes]: https://docs.microsoft.com/azure/aks/
 [ms-azure-iot-operations]: https://docs.microsoft.com/azure/iot-operations/

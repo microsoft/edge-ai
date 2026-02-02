@@ -228,4 +228,4 @@ For implementation details, refer to:
 - `/docs/_server/schemas/` - Schema definitions
 - `/docs/_server/PROGRESS-SYSTEM.md` - System architecture
 - `/learning/kata-progress-tracking.md` - User guide
-- `/.github/chatmodes/learning-*-coach.chatmode.md` - Coach integration
+- `/.github/agents/learning-*-coach.agent.md` - Coach integration

@@ -65,9 +65,9 @@ You've written a Terraform resource but forgot to add required tags. Instead of 
 
 > **🤖 Want Interactive AI Coaching?**
 >
-> Load the **Learning Kata Coach** chat mode for task check-offs, progress tracking, progressive hints, and personalized guidance.
+> Load the **Learning Kata Coach** custom agent for task check-offs, progress tracking, progressive hints, and personalized guidance.
 >
-> In GitHub Copilot Chat, select **Learning Kata Coach** mode and say:
+> In GitHub Copilot Chat, select **Learning Kata Coach** custom agent and say:
 >
 > ```text
 > I'm working on 100 - Inline Chat Quick Edits kata and want interactive coaching with progress tracking.
@@ -252,7 +252,7 @@ You've written a Terraform resource but forgot to add required tags. Instead of 
 - [ ] I understand how selection size controls edit scope
 - [ ] I can choose the right mode (inline vs. panel) based on edit complexity
 
-**Next Steps**: Continue to **100 - AI Development Fundamentals** to learn about prompts, instructions, and chat modes, or jump to **100 - Copilot Modes** to learn Ask, Edit, and Agent mode workflows.
+**Next Steps**: Continue to **100 - AI Development Fundamentals** to learn about prompts, instructions, and custom agents, or jump to **100 - Copilot Modes** to learn Ask, Edit, and Agent mode workflows.
 
 ---
 

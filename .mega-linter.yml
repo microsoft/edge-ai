@@ -107,7 +107,7 @@ MARKDOWN_MARKDOWN_TABLE_FORMATTER_FILTER_REGEX_EXCLUDE: '(\.copilot-tracking/.*)
 
 # Markdown Linter configuration - treat warnings as errors
 MARKDOWN_MARKDOWNLINT_DISABLE_ERRORS: false
-MARKDOWN_MARKDOWNLINT_FILTER_REGEX_EXCLUDE: '(\.copilot-tracking/.*|\.github/prompts/.*|\.github/instructions/.*|\.github/chatmodes/.*|\.github/copilot-instructions.md)'
+MARKDOWN_MARKDOWNLINT_FILTER_REGEX_EXCLUDE: '(\.copilot-tracking/.*|\.github/prompts/.*|\.github/instructions/.*|\.github/agents/.*|\.github/copilot-instructions.md)'
 
 # Terraform Format configuration
 TERRAFORM_TERRAFORM_FMT_DISABLE_ERRORS: false

@@ -1,5 +1,4 @@
 ---
-mode: 'agent'
 description: 'Provides prompt instructions for pull request (PR) generation - Brought to you by microsoft/edge-ai'
 ---
 

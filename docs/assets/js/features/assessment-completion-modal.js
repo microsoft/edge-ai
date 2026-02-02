@@ -84,9 +84,9 @@ class AssessmentCompletionModal {
 
                         <div class="next-steps">
                             <h3>🚀 Next Steps</h3>
-                            <div class="chatmode-recommendation">
+                            <div class="customagent-recommendation">
                                 <p>Get personalized guidance from our <strong>Kata Coach</strong></p>
-                                <p class="chatmode-description"></p>
+                                <p class="customagent-description"></p>
                             </div>
                         </div>
                     </div>
@@ -207,8 +207,8 @@ class AssessmentCompletionModal {
             estimatedDuration.textContent = 'Estimated Duration: 4-6 weeks';
         }
 
-        // Chatmode recommendation
-        const chatmodeDescription = modal.querySelector('.chatmode-description');
+        // Custom agent recommendation
+        const customagentDescription = modal.querySelector('.customagent-description');
 
         // Use recommendations data if available
         if (recommendations && recommendations.suggestedItems && recommendations.suggestedItems.length > 0) {
@@ -218,15 +218,15 @@ class AssessmentCompletionModal {
                 `• ${item.title} (${item.difficulty}, ~${item.estimatedTime} min)`
             ).join('\n');
 
-            chatmodeDescription.textContent = `Here are your top recommended learning activities:\n\n${suggestionsText}\n\nOur Kata Coach can guide you through these items step-by-step.`;
+            customagentDescription.textContent = `Here are your top recommended learning activities:\n\n${suggestionsText}\n\nOur Kata Coach can guide you through these items step-by-step.`;
         } else {
-            // Fallback to generic chatmode recommendation
+            // Fallback to generic custom agent recommendation
             const skillLevel = assessmentResults?.skillLevel || DIFFICULTY.BEGINNER;
-            const chatmodeRec = window.LearningProgressTracker?.getChatmodeRecommendation(skillLevel);
-            if (chatmodeRec) {
-                chatmodeDescription.textContent = chatmodeRec.description;
+            const customagentRec = window.LearningProgressTracker?.getCustomagentRecommendation(skillLevel);
+            if (customagentRec) {
+                customagentDescription.textContent = customagentRec.description;
             } else {
-                chatmodeDescription.textContent = 'Our AI-powered Kata Coach will provide personalized guidance based on your assessment results.';
+                customagentDescription.textContent = 'Our AI-powered Kata Coach will provide personalized guidance based on your assessment results.';
             }
         }
     }
@@ -263,7 +263,7 @@ class AssessmentCompletionModal {
 
       const startCoachingBtn = modal.querySelector('#assessment-modal-start-coaching');
       if (startCoachingBtn) {
-        startCoachingBtn.addEventListener('click', () => this.startChatmodeCoaching());
+        startCoachingBtn.addEventListener('click', () => this.startCustomagentCoaching());
       }
 
       // Overlay and keyboard handlers
@@ -384,14 +384,14 @@ class AssessmentCompletionModal {
     }
 
     /**
-     * Starts chatmode coaching session
+     * Starts custom agent coaching session
      */
-    startChatmodeCoaching() {
-        const chatmodeRec = window.LearningProgressTracker?.getChatmodeRecommendation();
-        if (chatmodeRec) {
-            // Navigate to chatmode - use correct Docsify path
-            const chatmodeUrl = `#/docs/github-copilot/chatmodes/${chatmodeRec.chatmode}`;
-            window.location.hash = chatmodeUrl;
+    startCustomagentCoaching() {
+        const customagentRec = window.LearningProgressTracker?.getCustomagentRecommendation();
+        if (customagentRec) {
+            // Navigate to custom agent - use correct Docsify path
+            const customagentUrl = `#/docs/github-copilot/customagents/${customagentRec.customagent}`;
+            window.location.hash = customagentUrl;
 
             // Close modal
             this.closeModal('coaching');
@@ -606,7 +606,7 @@ class AssessmentCompletionModal {
                     color: var(--accent-color, #0084ff);
                 }
 
-                .chatmode-recommendation {
+                .customagent-recommendation {
                     text-align: center;
                 }
 
