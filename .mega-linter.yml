@@ -101,6 +101,9 @@ AZURE_COMMENT_REPORTER: true
 # LINTER SPECIFIC CONFIGURATION
 # ----------------------------------------
 
+# ShellCheck configuration
+BASH_SHELLCHECK_CONFIG_FILE: .shellcheckrc
+
 # Markdown Table Formatter configuration - treat warnings as errors
 MARKDOWN_MARKDOWN_TABLE_FORMATTER_DISABLE_ERRORS: false
 MARKDOWN_MARKDOWN_TABLE_FORMATTER_FILTER_REGEX_EXCLUDE: '(\.copilot-tracking/.*)'
