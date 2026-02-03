@@ -117,6 +117,9 @@ TERRAFORM_TERRAFORM_FMT_ARGUMENTS: "-check -diff"
 TERRAFORM_TFLINT_UNSECURED_ENV_VARIABLES:
   - GITHUB_TOKEN
 
+# Secretlint configuration
+REPOSITORY_SECRETLINT_CONFIG_FILE: .secretlintrc.json
+
 # YAML Lint configuration
 YAML_YAMLLINT_CONFIG_FILE: .yamllint.yml
 YAML_YAMLLINT_FILTER_REGEX_EXCLUDE: '(\.github/ISSUE_TEMPLATE|charts/templates|charts/.*/templates/.*)'
