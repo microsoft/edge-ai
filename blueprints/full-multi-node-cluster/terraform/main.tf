@@ -94,6 +94,7 @@ module "cloud_security_identity" {
 
   aio_resource_group = module.cloud_resource_group.resource_group
 
+  onboard_identity_type                    = var.onboard_identity_type
   should_create_key_vault_private_endpoint = var.should_enable_private_endpoints
   key_vault_private_endpoint_subnet_id     = var.should_enable_private_endpoints ? module.cloud_networking.subnet_id : null
   key_vault_virtual_network_id             = var.should_enable_private_endpoints ? module.cloud_networking.virtual_network.id : null

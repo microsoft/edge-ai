@@ -580,6 +580,25 @@ variable "acr_public_network_access_enabled" {
  * Identity and Key Vault Parameters
  */
 
+variable "onboard_identity_type" {
+  description = <<-EOF
+    Identity type to use for onboarding the cluster to Azure Arc.
+
+    Allowed values:
+
+    - id: User-assigned managed identity (default for VM-based deployments)
+    - sp: Service principal
+    - skip: Skip identity creation (use when Arc machines already have system-assigned identity)
+  EOF
+  type        = string
+  default     = "id"
+
+  validation {
+    condition     = contains(["id", "sp", "skip"], var.onboard_identity_type)
+    error_message = "Only ['id', 'sp', 'skip'] allowed for 'onboard_identity_type'"
+  }
+}
+
 variable "should_create_aks_identity" {
   type        = bool
   description = "Whether to create a user-assigned identity for the AKS cluster when using custom private DNS zones"
