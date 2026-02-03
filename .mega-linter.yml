@@ -101,8 +101,7 @@ AZURE_COMMENT_REPORTER: true
 # LINTER SPECIFIC CONFIGURATION
 # ----------------------------------------
 
-# ShellCheck configuration
-BASH_SHELLCHECK_CONFIG_FILE: .shellcheckrc
+# ShellCheck reads .shellcheckrc automatically from workdir
 
 # Markdown Table Formatter configuration - treat warnings as errors
 MARKDOWN_MARKDOWN_TABLE_FORMATTER_DISABLE_ERRORS: false
