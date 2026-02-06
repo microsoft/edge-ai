@@ -58,9 +58,9 @@ echo
 # Exclude tests, .terraform, and ci directories. Remove duplicates with `sort -u`.
 find "$script_dir/../src" "$script_dir/../blueprints" \
   -type d \( -name "tests" -o -name ".terraform" -o -name "ci" \) -prune -false -o \
-  -type f -name "*.tf" -exec dirname {} \; |
-  sort -u |
-  while read -r folder; do
+  -type f -name "*.tf" -exec dirname {} \; \
+  | sort -u \
+  | while read -r folder; do
     if [ -d "$folder" ]; then
       echo "Updating Terraform docs in folder: $folder"
       terraform-docs "$folder" --config "$terraform_docs_config"
@@ -75,7 +75,7 @@ echo "Formatting tables for MD060 compliance..."
 # Find all generated README.md files in terraform directories and format tables
 find "$script_dir/../src" "$script_dir/../blueprints" \
   -type d \( -name "tests" -o -name ".terraform" -o -name "ci" \) -prune -false -o \
-  -path "*/terraform/README.md" -type f -print0 |
-  xargs -0 -r npx markdown-table-formatter
+  -path "*/terraform/README.md" -type f -print0 \
+  | xargs -0 -r npx markdown-table-formatter
 
 echo "Table formatting complete"

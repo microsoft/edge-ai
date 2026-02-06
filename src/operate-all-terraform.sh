@@ -10,25 +10,25 @@ operation="apply"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-  --start-layer)
-    start_layer="$2"
-    shift
-    shift
-    ;;
-  --end-layer)
-    end_layer="$2"
-    shift
-    shift
-    ;;
-  --operation)
-    operation="$2"
-    shift
-    shift
-    ;;
-  *)
-    echo "Usage: $0 [--start-layer LAYER_NUMBER] [--end-layer LAYER_NUMBER] [--operation apply|test]"
-    exit 1
-    ;;
+    --start-layer)
+      start_layer="$2"
+      shift
+      shift
+      ;;
+    --end-layer)
+      end_layer="$2"
+      shift
+      shift
+      ;;
+    --operation)
+      operation="$2"
+      shift
+      shift
+      ;;
+    *)
+      echo "Usage: $0 [--start-layer LAYER_NUMBER] [--end-layer LAYER_NUMBER] [--operation apply|test]"
+      exit 1
+      ;;
   esac
 done
 

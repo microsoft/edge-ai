@@ -32,11 +32,11 @@ log() {
   local color=""
 
   case "$msg_type" in
-  "INFO") color="$BLUE" ;;
-  "SUCCESS") color="$GREEN" ;;
-  "ERROR") color="$RED" ;;
-  "WARNING") color="$YELLOW" ;;
-  *) color="$NC" ;;
+    "INFO") color="$BLUE" ;;
+    "SUCCESS") color="$GREEN" ;;
+    "ERROR") color="$RED" ;;
+    "WARNING") color="$YELLOW" ;;
+    *) color="$NC" ;;
   esac
 
   echo -e "${color}${BOLD}[$msg_type]${NC} $message" | tee -a "$LOG_FILE"
