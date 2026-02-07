@@ -196,14 +196,14 @@
           "fullId": "project-planning-100-basic-prompt-usage"
         },
         {
-          "kataId": "200-copilot-edit-mode-basics",
+          "kataId": "200-copilot-edit-agent-basics",
           "category": "ai-assisted-engineering",
-          "fullId": "ai-assisted-engineering-200-copilot-edit-mode-basics"
+          "fullId": "ai-assisted-engineering-200-copilot-edit-agent-basics"
         },
         {
-          "kataId": "200-copilot-edit-mode-iac-patterns",
+          "kataId": "200-copilot-edit-agent-iac-patterns",
           "category": "ai-assisted-engineering",
-          "fullId": "ai-assisted-engineering-200-copilot-edit-mode-iac-patterns"
+          "fullId": "ai-assisted-engineering-200-copilot-edit-agent-iac-patterns"
         },
         {
           "kataId": "200-advanced-observability-stack",

@@ -371,7 +371,7 @@ Progress files automatically integrate with:
 ### Related Systems
 
 - Learning platform
-- Coach chatmode integration
+- Coach custom agent integration
 - Progress tracking UI
 - Skill assessment system
 

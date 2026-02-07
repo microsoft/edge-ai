@@ -351,7 +351,7 @@ from all documentation folders throughout the repository.
 - **Features**:
   - Parses docs/_parts/_sidebar.md to extract complete 4-level navigation hierarchy
   - Creates wiki structure with proper directory hierarchy and .order files at every level
-  - Includes standalone content from all documentation folders (.github/prompts, .github/chatmodes, .github/instructions, copilot/, learning/)
+  - Includes standalone content from all documentation folders (.github/prompts, .github/agents, .github/instructions, copilot/, learning/)
   - Updates relative links to work correctly in the new wiki structure
   - Handles URL token replacement for Azure DevOps integration
   - Integrates blueprint documentation seamlessly
@@ -359,7 +359,7 @@ from all documentation folders throughout the repository.
 - **Content Areas**:
   - Main documentation from docs/ folder following sidebar navigation
   - Blueprint documentation from blueprints/*/README.md
-  - GitHub resources including prompts, chatmodes, and instructions
+  - GitHub resources including prompts, custom agents, and instructions
   - AI Assistant guides from copilot/ folder
   - Learning platform materials from learning/ folder
 - **Build Integration**: Used by the [wiki-update-template.yml](../.azdo/wiki-update-template.yml) job to rebuild the Azure DevOps wiki

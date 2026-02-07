@@ -67,7 +67,8 @@ $SidebarFile = "docs/_parts/_sidebar.md"
 Write-Host "Setting up wiki directory..."
 if (Test-Path $WikiRepoFolder) {
     Get-ChildItem $WikiRepoFolder -Exclude ".git" | Remove-Item -Recurse -Force
-} else {
+}
+else {
     New-Item -ItemType Directory -Path $WikiRepoFolder -Force | Out-Null
 }
 
@@ -151,15 +152,18 @@ function ConvertFrom-SidebarNavigation {
                 # **[Title](path)** - Bold link
                 $title = $matches[1]
                 $path = $matches[2]
-            } elseif ($content -match '^\[([^\]]+)\]\(([^)]+)\)$') {
+            }
+            elseif ($content -match '^\[([^\]]+)\]\(([^)]+)\)$') {
                 # [Title](path) - Regular link
                 $title = $matches[1]
                 $path = $matches[2]
-            } elseif ($content -match '^\*\*([^*]+)\*\*$') {
+            }
+            elseif ($content -match '^\*\*([^*]+)\*\*$') {
                 # **Title** - Bold section header (no link)
                 $title = $matches[1]
                 $path = ""
-            } else {
+            }
+            else {
                 # Plain text - Section header (no link)
                 $title = $content
                 $path = ""
@@ -176,7 +180,8 @@ function ConvertFrom-SidebarNavigation {
                 if ($stack.Count -gt 0) {
                     $parent = $stack.Peek()
                     $parent.AddChild($navItem)
-                } else {
+                }
+                else {
                     $rootItems.Add($navItem)
                 }
 
@@ -297,7 +302,8 @@ function Build-WikiStructure {
                     Copy-Item $sourcePath $destPath -Force
                     Write-Host "    Copied content as index: $sourcePath -> $destPath"
                     $navItem.DestPath = $destPath
-                } else {
+                }
+                else {
                     Write-Warning "    Source file not found: $sourcePath"
                 }
             }
@@ -307,7 +313,8 @@ function Build-WikiStructure {
                 Build-WikiStructure -NavItems $navItem.Children -BasePath $folderPath
             }
 
-        } elseif ($hasContent) {
+        }
+        elseif ($hasContent) {
             # This is a standalone content page (no children)
             $sourcePath = $navItem.Path
 
@@ -330,10 +337,12 @@ function Build-WikiStructure {
                 # Add to order list (without .md extension)
                 $orderName = [System.IO.Path]::GetFileNameWithoutExtension($destFileName)
                 $orderItems += $orderName
-            } else {
+            }
+            else {
                 Write-Warning "  Source file not found: $sourcePath"
             }
-        } else {
+        }
+        else {
             # This is a section header with no content and no children - create empty folder
             $folderName = Get-SafeFileName $navItem.Title
             $folderPath = Join-Path $BasePath $folderName
@@ -377,14 +386,14 @@ function New-UrlConfiguration {
 
     $urlConfig = @{
         azdo = @{
-            REPO_URL = $env:BUILD_REPOSITORY_URI
-            REPO_BASE_URL = "$($env:BUILD_REPOSITORY_URI)?path="
-            DOCS_BASE_URL = "https://dev.azure.com/$orgName/$($env:SYSTEM_TEAMPROJECT)/_wiki/wikis/$($env:BUILD_REPOSITORY_NAME)"
-            CLONE_URL = $env:BUILD_REPOSITORY_URI
-            NEW_ISSUE_URL = "https://dev.azure.com/$orgName/$($env:SYSTEM_TEAMPROJECT)/_workitems/create/Issue"
-            ISSUES_URL = "https://dev.azure.com/$orgName/$($env:SYSTEM_TEAMPROJECT)/_workitems"
+            REPO_URL        = $env:BUILD_REPOSITORY_URI
+            REPO_BASE_URL   = "$($env:BUILD_REPOSITORY_URI)?path="
+            DOCS_BASE_URL   = "https://dev.azure.com/$orgName/$($env:SYSTEM_TEAMPROJECT)/_wiki/wikis/$($env:BUILD_REPOSITORY_NAME)"
+            CLONE_URL       = $env:BUILD_REPOSITORY_URI
+            NEW_ISSUE_URL   = "https://dev.azure.com/$orgName/$($env:SYSTEM_TEAMPROJECT)/_workitems/create/Issue"
+            ISSUES_URL      = "https://dev.azure.com/$orgName/$($env:SYSTEM_TEAMPROJECT)/_workitems"
             DISCUSSIONS_URL = "https://dev.azure.com/$orgName/$($env:SYSTEM_TEAMPROJECT)/_boards/queries"
-            LICENSE_URL = "$($env:BUILD_REPOSITORY_URI)?path=/LICENSE"
+            LICENSE_URL     = "$($env:BUILD_REPOSITORY_URI)?path=/LICENSE"
         }
     }
 
@@ -561,7 +570,8 @@ function Copy-BlueprintReadme {
             Write-Host "  Updated blueprint-documentation/bicep-blueprints/.order file" -ForegroundColor Gray
         }
 
-    } else {
+    }
+    else {
         Write-Host "  Blueprint directory not found: $blueprintPath" -ForegroundColor Yellow
     }
 }
@@ -652,7 +662,8 @@ function Update-RelativeLink {
 
                         if ($relativePath) {
                             $updatedLink = "$relativePath/$fileName"
-                        } else {
+                        }
+                        else {
                             $updatedLink = $fileName
                         }
 
@@ -691,7 +702,8 @@ function Get-RelativePath {
     for ($i = 0; $i -lt [Math]::Min($fromParts.Length, $toParts.Length); $i++) {
         if ($fromParts[$i] -eq $toParts[$i]) {
             $commonLength++
-        } else {
+        }
+        else {
             break
         }
     }
@@ -723,7 +735,7 @@ function Build-StandaloneContent {
     .DESCRIPTION
         Processes content from:
         - .github/prompts/ (AI prompt files)
-        - .github/chatmodes/ (Chat mode configurations)
+        - .github/agents/ (Custom agent configurations)
         - .github/instructions/ (Instruction files)
         - copilot/ (AI assistant guides and conventions)
         - learning/ (Training and learning content)
@@ -736,32 +748,32 @@ function Build-StandaloneContent {
 
     # Define standalone content folders to process
     $standaloneContent = @{
-        "copilot" = @{
-            SourcePath = "copilot"
+        "copilot"             = @{
+            SourcePath  = "copilot"
             WikiSection = "copilot-guides"
             DisplayName = "Copilot Guides"
             Description = "AI assistant instructions and development conventions"
         }
-        "learning" = @{
-            SourcePath = "learning"
+        "learning"            = @{
+            SourcePath  = "learning"
             WikiSection = "learning"
             DisplayName = "Learning Platform"
             Description = "Training materials and learning resources"
         }
-        "github-prompts" = @{
-            SourcePath = ".github/prompts"
+        "github-prompts"      = @{
+            SourcePath  = ".github/prompts"
             WikiSection = "github-resources"
             DisplayName = "GitHub Resources"
-            Description = "AI prompts, chat modes, and instructions"
+            Description = "AI prompts, custom agents, and instructions"
         }
-        "github-chatmodes" = @{
-            SourcePath = ".github/chatmodes"
+        "github-agents"       = @{
+            SourcePath  = ".github/agents"
             WikiSection = "github-resources"
-            DisplayName = "Chat Modes"
-            Description = "AI chat mode configurations"
+            DisplayName = "Custom Agents"
+            Description = "AI custom agent configurations"
         }
         "github-instructions" = @{
-            SourcePath = ".github/instructions"
+            SourcePath  = ".github/instructions"
             WikiSection = "github-resources"
             DisplayName = "Instructions"
             Description = "Development and contribution instructions"
@@ -787,7 +799,8 @@ function Build-StandaloneContent {
 
             # Process content based on folder structure
             Copy-StandaloneFolder -SourcePath $sourcePath -DestPath $wikiSectionPath -ContentKey $contentKey -Config $config
-        } else {
+        }
+        else {
             Write-Host "  Skipping $displayName - source folder not found: $sourcePath" -ForegroundColor Yellow
         }
     }
@@ -918,10 +931,10 @@ function Update-StandaloneRelativeLink {
 
     # Define path mappings for standalone content
     $pathMappings = @{
-        "copilot/" = "copilot-guides/"
-        "learning/" = "learning/"
-        ".github/prompts/" = "github-resources/"
-        ".github/chatmodes/" = "github-resources/"
+        "copilot/"              = "copilot-guides/"
+        "learning/"             = "learning/"
+        ".github/prompts/"      = "github-resources/"
+        ".github/agents/"       = "github-resources/"
         ".github/instructions/" = "github-resources/"
     }
 
@@ -987,7 +1000,8 @@ try {
     Write-Host "Wiki build completed successfully!"
     Write-Host "Wiki structure created in: $WikiRepoFolder"
 
-} catch {
+}
+catch {
     Write-Error "Wiki build failed: $($_.Exception.Message)"
     Write-Error $_.Exception.StackTrace
     exit 1

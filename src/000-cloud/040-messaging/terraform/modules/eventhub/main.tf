@@ -11,6 +11,8 @@ resource "azurerm_eventhub_namespace" "destination_eventhub_namespace" {
 
   sku      = "Standard"
   capacity = var.capacity
+
+  local_authentication_enabled = false
 }
 
 resource "azurerm_eventhub" "destination_eh" {
