@@ -1,37 +1,37 @@
 ---
-title: GitHub Copilot Chat Modes
-description: Specialized AI assistance modes for enhanced development workflows and coaching
+title: GitHub Copilot Custom Agents
+description: Specialized AI assistance agents for enhanced development workflows and coaching
 author: Edge AI Team
 ms.date: 2025-01-11
 ms.topic: reference
 estimated_reading_time: 3
 keywords:
   - github copilot
-  - chat modes
+  - custom agents
   - ai assistance
   - coaching
   - task planning
   - prompt engineering
 ---
 
-This directory contains specialized GitHub Copilot chat mode configurations designed to provide enhanced AI assistance for specific development workflows and learning scenarios.
+This directory contains specialized GitHub Copilot custom agent configurations designed to provide enhanced AI assistance for specific development workflows and learning scenarios.
 
 ## Overview
 
-Chat modes are advanced AI assistant configurations that enable specialized coaching, planning, and development support. Each mode is tailored for specific workflows and includes comprehensive tool access for deep project integration.
+Custom agents are advanced AI assistant configurations that enable specialized coaching, planning, and development support. Each agent is tailored for specific workflows and includes comprehensive tool access for deep project integration.
 
-## Available Chat Modes
+## Available Custom Agents
 
-### [Learning Kata Coach](learning-kata-coach.chatmode.md)
+### [Learning Kata Coach](learning-kata-coach.agent.md)
 
 Interactive AI coaching for focused practice exercises with progress tracking and resumption capabilities.
 
 - **Purpose**: Guide learners through hands-on discovery using OpenHack-style methodology
-- **Capabilities**: Socratic questioning, progress tracking, mode transition guidance
+- **Capabilities**: Socratic questioning, progress tracking, agent transition guidance
 - **Best For**: Skill-building exercises, practice scenarios, iterative learning
 - **Philosophy**: Teach a person to fish - discovery over direct answers
 
-### [Learning Lab Coach](learning-lab-coach.chatmode.md)
+### [Learning Lab Coach](learning-lab-coach.agent.md)
 
 Complex training lab coaching for multi-component systems and comprehensive scenarios.
 
@@ -40,7 +40,7 @@ Complex training lab coaching for multi-component systems and comprehensive scen
 - **Best For**: Advanced labs, system deployments, complex integrations
 - **Philosophy**: Structured guidance for comprehensive real-world scenarios
 
-### [Task Planner](task-planner.chatmode.md)
+### [Task Planner](task-planner.agent.md)
 
 Comprehensive task planning with research capabilities and systematic implementation planning.
 
@@ -49,7 +49,7 @@ Comprehensive task planning with research capabilities and systematic implementa
 - **Best For**: Project planning, requirement gathering, implementation strategy
 - **Philosophy**: Research-first planning with validated project context
 
-### [Task Researcher](task-researcher.chatmode.md)
+### [Task Researcher](task-researcher.agent.md)
 
 Specialized research-only assistant for comprehensive project analysis and documentation.
 
@@ -58,7 +58,7 @@ Specialized research-only assistant for comprehensive project analysis and docum
 - **Best For**: Research phases, information gathering, technical analysis
 - **Philosophy**: Research-only operations with evidence-based findings
 
-### [ADR Creation](adr-creation.chatmode.md)
+### [ADR Creation](adr-creation.agent.md)
 
 Interactive architectural decision record creation with comprehensive research and analysis capabilities.
 
@@ -67,7 +67,7 @@ Interactive architectural decision record creation with comprehensive research a
 - **Best For**: Architecture decisions, technical documentation, collaborative analysis
 - **Philosophy**: Interactive markdown collaboration with progressive content development
 
-### [Prompt Builder](prompt-builder.chatmode.md)
+### [Prompt Builder](prompt-builder.agent.md)
 
 Expert prompt engineering and validation system for creating high-quality AI prompts.
 
@@ -76,7 +76,7 @@ Expert prompt engineering and validation system for creating high-quality AI pro
 - **Best For**: Prompt optimization, AI instruction refinement, quality assurance
 - **Philosophy**: Iterative engineering with built-in validation cycles
 
-### [Security Plan Creator](security-plan-creator.chatmode.md)
+### [Security Plan Creator](security-plan-creator.agent.md)
 
 Expert security architect for creating comprehensive cloud security plans with threat modeling and risk assessment.
 
@@ -87,7 +87,7 @@ Expert security architect for creating comprehensive cloud security plans with t
 
 ## Usage Guidelines
 
-### Selecting the Right Mode
+### Selecting the Right Agent
 
 1. **Learning and Skill Building**: Use Learning Kata Coach for focused practice
 2. **Complex System Work**: Use Learning Lab Coach for multi-component scenarios
@@ -99,16 +99,16 @@ Expert security architect for creating comprehensive cloud security plans with t
 
 ### Activation
 
-Chat modes are activated through GitHub Copilot's interface by selecting the appropriate `.chatmode.md` file as context for your conversation.
+Custom agents are activated through GitHub Copilot's interface by selecting the appropriate `.agent.md` file as context for your conversation.
 
 ### Integration
 
-All chat modes are designed to integrate with the broader project ecosystem:
+All custom agents are designed to integrate with the broader project ecosystem:
 
 - Reference project standards and conventions
 - Utilize comprehensive tool access for file operations
 - Connect to documentation and guidance resources
-- Support transitions between different assistance modes
+- Support transitions between different assistance agents
 
 ## Related Resources
 

@@ -46,8 +46,8 @@
 						"path": "/bin/bash"
 					}
 				},
-				"chat.modeFilesLocations": {
-					"copilot/beads/chatmodes": true
+				"chat.agentFilesLocations": {
+					"copilot/beads/agents": true
 				},
 				"chat.instructionsFilesLocations": {
 					"copilot/beads/instructions": true

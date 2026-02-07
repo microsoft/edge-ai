@@ -61,7 +61,7 @@ Build proficiency in AI-powered documentation, research, and code generation thr
   **Prerequisites:** None • **Technologies:** GitHub Copilot
 
 - [ ] [**Kata: 100 - AI Development Fundamentals**](../katas/ai-assisted-engineering/100-ai-development-fundamentals.md)
-  *Foundation | 30 min* • Learn AI-assisted, hyper-velocity engineering through hands-on practice with prompts, instructions, and chat modes that accelerate development
+  *Foundation | 30 min* • Learn AI-assisted, hyper-velocity engineering through hands-on practice with prompts, instructions, and custom agents that accelerate development
   **Prerequisites:** None • **Technologies:** GitHub Copilot
 
 - [ ] [**Kata: 100 - Copilot Modes**](../katas/ai-assisted-engineering/100-copilot-modes.md)
@@ -78,13 +78,13 @@ Build proficiency in AI-powered documentation, research, and code generation thr
 
 #### Learning AI-Assisted Workflows (200-level)
 
-- [ ] [**Kata: 200 - Copilot Edit Mode Basics**](../katas/ai-assisted-engineering/200-copilot-edit-mode-basics.md)
+- [ ] [**Kata: 200 - Copilot Edit Mode Basics**](../katas/ai-assisted-engineering/200-copilot-edit-agent-basics.md)
   *Intermediate | 60 min* • Learn Edit Mode fundamentals including activation methods, file selection strategies, and coordinated multi-file editing workflows
   **Prerequisites:** ai-assisted-engineering-100-inline-suggestions-basics, ai-assisted-engineering-100-inline-chat-quick-edits • **Technologies:** GitHub Copilot
 
-- [ ] [**Kata: 200 - Copilot Edit Mode IaC Patterns**](../katas/ai-assisted-engineering/200-copilot-edit-mode-iac-patterns.md)
+- [ ] [**Kata: 200 - Copilot Edit Mode IaC Patterns**](../katas/ai-assisted-engineering/200-copilot-edit-agent-iac-patterns.md)
   *Intermediate | 60 min* • Learn Edit Mode for Infrastructure as Code with patterns for Terraform consistency, Bicep type coordination, and Kubernetes manifest updates
-  **Prerequisites:** ai-assisted-engineering-200-copilot-edit-mode-basics • **Technologies:** GitHub Copilot, Terraform, Bicep, Kubernetes
+  **Prerequisites:** ai-assisted-engineering-200-copilot-edit-agent-basics • **Technologies:** GitHub Copilot, Terraform, Bicep, Kubernetes
 
 - [ ] [**Kata: 200 - Research-Driven ADR Creation**](../katas/adr-creation/200-advanced-observability-stack.md)
   *Intermediate | 50 min* • Learn complex ADR creation through multi-component evaluation, comparing TIG vs TICK stack for edge observability and monitoring
@@ -106,7 +106,7 @@ Build proficiency in AI-powered documentation, research, and code generation thr
 
 - [ ] [**Kata: 300 - Getting Started Advanced**](../katas/ai-assisted-engineering/300-getting-started-advanced.md)
   *Advanced | 55 min* • Learn advanced AI-assisted onboarding with complex environment setups, multi-component deployment, and sophisticated project initialization workflows
-  **Prerequisites:** ai-assisted-engineering-100-ai-development-fundamentals, ai-assisted-engineering-200-copilot-edit-mode-basics • **Technologies:** GitHub Copilot
+  **Prerequisites:** ai-assisted-engineering-100-ai-development-fundamentals, ai-assisted-engineering-200-copilot-edit-agent-basics • **Technologies:** GitHub Copilot
 
 - [ ] [**Kata: 100 - Automated Task Planning**](../katas/task-planning/100-edge-documentation-planning.md)
   *Foundation | 40 min* • Learn systematic task planning through practical documentation improvement using Azure project planning principles
@@ -117,7 +117,7 @@ Build proficiency in AI-powered documentation, research, and code generation thr
   **Prerequisites:** task-planning-100-edge-documentation-planning • **Technologies:** GitHub Copilot
 
 - [ ] [**Kata: 100 - Feature Request Analysis**](../katas/product-requirements/100-basic-prd-creation.md)
-  *Foundation | 50 min* • Learn to create structured product requirements documents using AI assistance and the PRD chatmode for edge AI solutions
+  *Foundation | 50 min* • Learn to create structured product requirements documents using AI assistance and the PRD agent for edge AI solutions
   **Prerequisites:** None • **Technologies:** GitHub Copilot
 
 #### Expert Strategic Planning (400-level)

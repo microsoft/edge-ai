@@ -179,6 +179,7 @@ Deploys Azure observability resources including Azure Monitor Workspace, Log Ana
 | logAnalyticsName                      | `string` | The Log Analytics Workspace name.                                    |
 | logAnalyticsId                        | `string` | The Log Analytics Workspace ID.                                      |
 | grafanaName                           | `string` | The Azure Managed Grafana name.                                      |
+| grafanaEndpoint                       | `string` | The Azure Managed Grafana endpoint.                                  |
 | metricsDataCollectionRuleName         | `string` | The metrics data collection rule name.                               |
 | logsDataCollectionRuleName            | `string` | The logs data collection rule name.                                  |
 | monitorPrivateLinkScopeId             | `string` | Azure Monitor Private Link Scope resource ID.                        |

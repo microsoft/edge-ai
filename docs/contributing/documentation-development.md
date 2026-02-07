@@ -438,7 +438,7 @@ The project uses `scripts/Build-Wiki.ps1` to build Azure DevOps Wiki documentati
 - **Comprehensive Content Coverage**: Includes all documentation from multiple areas:
   - Main documentation from `docs/` directory following section-specific sidebar navigation
   - Blueprint documentation from `blueprints/*/README.md` files
-  - GitHub resources from `.github/prompts/`, `.github/chatmodes/`, `.github/instructions/`
+  - GitHub resources from `.github/prompts/`, `.github/agents/`, `.github/instructions/`
   - AI Assistant guides from `copilot/` folder
   - Learning platform materials from `learning/` folder
 - **Section-Specific Navigation**: Parses section-specific `docs/_parts/*.md` files to recreate hierarchical folder structure organized by documentation section (Documentation, Learning, Blueprints, Infrastructure, GitHub Copilot)
@@ -457,7 +457,7 @@ This creates a `.wiki` folder with comprehensive documentation coverage includin
 
 - **Complete documentation** from docs/ folder following section-specific sidebar navigation
 - **Blueprint documentation** organized by framework (terraform/bicep)
-- **GitHub resources section** with prompts, chatmodes, and instructions
+- **GitHub resources section** with prompts, agents, and instructions
 - **Copilot guides section** with AI assistant conventions and instructions
 - **Learning section** with training materials and learning resources
 - **Azure DevOps URLs** replacing all variable tokens
@@ -491,7 +491,7 @@ The generated wiki organizes content as follows:
 │   └── *.md                        # Training materials and resources
 └── github-resources/                # GitHub resources
     ├── .order                      # GitHub resources navigation
-    └── *.md                        # Prompts, chatmodes, instructions
+    └── *.md                        # Prompts, agents, instructions
 ```
 
 ### Integration with Azure Pipelines

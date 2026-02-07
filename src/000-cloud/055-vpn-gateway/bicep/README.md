@@ -8,19 +8,19 @@ Ths component currently only supports Azure AD (Entra ID) authentication for Poi
 
 ## Parameters
 
-| Name                         | Description                                                    | Type                                         | Default                                    | Required |
-|:-----------------------------|:---------------------------------------------------------------|:---------------------------------------------|:-------------------------------------------|:---------|
-| common                       | The common component configuration.                            | `[_2.Common](#user-defined-types)`           | n/a                                        | yes      |
-| vpnGatewayConfig             | VPN Gateway configuration settings.                            | `[_1.VpnGatewayConfig](#user-defined-types)` | [variables('_1.vpnGatewayConfigDefaults')] | no       |
-| gatewaySubnetAddressPrefix   | Gateway subnet address prefix.                                 | `string`                                     | 10.0.2.0/27                                | no       |
-| virtualNetworkName           | Virtual network name for Gateway subnet creation.              | `string`                                     | n/a                                        | yes      |
-| azureAdConfig                | Azure AD configuration for VPN Gateway authentication.         | `[_1.AzureAdConfig](#user-defined-types)`    | [variables('_1.azureAdConfigDefaults')]    | no       |
-| defaultOutboundAccessEnabled | Whether default outbound access is enabled for Gateway subnet. | `bool`                                       | `false`                                    | no       |
-| tags                         | Resource tags.                                                 | `object`                                     | {}                                         | no       |
-| telemetry_opt_out            | Whether to opt out of telemetry data collection.               | `bool`                                       | `false`                                    | no       |
-| vpnSiteConnections           | Site-to-site VPN connection definitions.                       | `array`                                      | []                                         | no       |
-| vpnSiteDefaultIpsecPolicy    | Fallback IPsec policy applied when sites omit an override.     | `[_1.VpnIpsecPolicy](#user-defined-types)`   | n/a                                        | no       |
-| vpnSiteSharedKeys            | Pre-shared keys keyed by sharedKeyReference values.            | `secureObject`                               | {}                                         | no       |
+| Name                         | Description                                                    | Type                                            | Default                                    | Required |
+|:-----------------------------|:---------------------------------------------------------------|:------------------------------------------------|:-------------------------------------------|:---------|
+| common                       | The common component configuration.                            | `[_2.Common](#user-defined-types)`              | n/a                                        | yes      |
+| vpnGatewayConfig             | VPN Gateway configuration settings.                            | `[_1.VpnGatewayConfig](#user-defined-types)`    | [variables('_1.vpnGatewayConfigDefaults')] | no       |
+| gatewaySubnetAddressPrefix   | Gateway subnet address prefix.                                 | `string`                                        | 10.0.2.0/27                                | no       |
+| virtualNetworkName           | Virtual network name for Gateway subnet creation.              | `string`                                        | n/a                                        | yes      |
+| azureAdConfig                | Azure AD configuration for VPN Gateway authentication.         | `[_1.AzureAdConfig](#user-defined-types)`       | [variables('_1.azureAdConfigDefaults')]    | no       |
+| defaultOutboundAccessEnabled | Whether default outbound access is enabled for Gateway subnet. | `bool`                                          | `false`                                    | no       |
+| tags                         | Resource tags.                                                 | `object`                                        | {}                                         | no       |
+| telemetry_opt_out            | Whether to opt out of telemetry data collection.               | `bool`                                          | `false`                                    | no       |
+| vpnSiteConnections           | Site-to-site VPN connection definitions.                       | `[_1.VpnSiteConnection](#user-defined-types)[]` | []                                         | no       |
+| vpnSiteDefaultIpsecPolicy    | Fallback IPsec policy applied when sites omit an override.     | `[_1.VpnIpsecPolicy](#user-defined-types)`      | n/a                                        | no       |
+| vpnSiteSharedKeys            | Pre-shared keys keyed by sharedKeyReference values.            | `secureObject`                                  | {}                                         | no       |
 
 ## Resources
 
