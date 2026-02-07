@@ -36,6 +36,17 @@ output "custom_locations" {
 }
 
 /*
+ * Extension Identity Outputs
+ */
+
+output "extension_identity" {
+  description = "AIO Arc extension identity information for role assignments."
+  value = {
+    principal_id = azurerm_arc_kubernetes_cluster_extension.iot_operations.identity[0].principal_id
+  }
+}
+
+/*
  * MQTT Broker Outputs
  */
 

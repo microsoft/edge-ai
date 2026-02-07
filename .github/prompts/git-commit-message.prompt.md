@@ -1,5 +1,4 @@
 ---
-mode: 'agent'
 description: 'Generates a commit message following the commit-message.instructions.md rules based on all changes in the branch'
 ---
 

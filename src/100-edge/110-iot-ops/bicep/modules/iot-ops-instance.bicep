@@ -320,22 +320,6 @@ resource aioInstance 'Microsoft.IoTOperations/instances@2025-10-01' = {
   )
 }
 
-resource registryEndpoint 'Microsoft.IoTOperations/instances/registryEndpoints@2025-10-01' = {
-  parent: aioInstance
-  name: 'default'
-  extendedLocation: {
-    name: customLocation.id
-    type: 'CustomLocation'
-  }
-  properties: {
-    host: 'mcr.microsoft.com'
-    authentication: {
-      method: 'Anonymous'
-      anonymousSettings: {}
-    }
-  }
-}
-
 resource broker 'Microsoft.IoTOperations/instances/brokers@2025-10-01' = {
   parent: aioInstance
   name: 'default'
@@ -550,3 +534,8 @@ output brokerListenerName string = brokerListener.name
 
 @description('The ID of the deployed AIO MQ Broker Listener.')
 output brokerListenerId string = brokerListener.id
+
+@description('AIO Arc extension identity information for role assignments.')
+output extensionIdentity object = {
+  principalId: aioExtension.identity.principalId
+}

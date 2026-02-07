@@ -65,6 +65,21 @@ Each blueprint in this repository follows a consistent structure:
 - **CNCF Cluster Script Only**: Ideal for environments with existing infrastructure or custom deployment processes
 - **Azure Fabric Environment**: For users looking to provision Azure Fabric environments with options to deploy Lakehouse, EventStream, and Fabric workspace
 
+## Testing Blueprints
+
+Selected blueprints include comprehensive test suites for validation and quality assurance. Tests validate both infrastructure declarations (contract tests) and actual deployments (integration tests).
+
+**Available Tests:**
+
+- **Contract Tests** - Fast static validation ensuring output declarations match expectations (zero cost, runs in seconds)
+- **Deployment Tests** - Full end-to-end validation creating real Azure resources and testing functionality
+
+**Blueprints with Test Coverage:**
+
+- [Full Single Cluster](./full-single-node-cluster/tests/) - Complete test suite for Terraform and Bicep
+
+See individual blueprint `tests/` directories for detailed testing documentation, setup instructions, and maintainer guidelines.
+
 ## Using Existing Resource Groups
 
 All blueprints support deploying to existing resource groups rather than creating new ones.

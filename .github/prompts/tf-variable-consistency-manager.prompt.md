@@ -1,5 +1,4 @@
 ---
-mode: 'agent'
 description: 'Terraform variable consistency management with detection→fix workflow - Brought to you by microsoft/edge-ai'
 ---
 

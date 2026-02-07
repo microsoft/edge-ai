@@ -226,6 +226,32 @@ param shouldEnableAkriSseConnector bool = false
 @description('List of custom Akri connector templates with user-defined endpoint types and container images.')
 param customAkriConnectors types.AkriConnectorTemplate[] = []
 
+@description('List of additional container registry endpoints. MCR is always added automatically.')
+param registryEndpoints types.RegistryEndpointConfig[] = []
+
+@description('Whether to include the deployed ACR as a registry endpoint with System Assigned Managed Identity authentication.')
+param shouldIncludeAcrRegistryEndpoint bool = false
+
+/*
+  Local Variables
+*/
+
+var acrRegistryEndpoint = shouldIncludeAcrRegistryEndpoint
+  ? [
+      {
+        name: 'acr-${common.resourcePrefix}'
+        host: '${cloudAcr.outputs.acrName}.azurecr.io'
+        acrResourceId: cloudAcr.outputs.acrId
+        authentication: {
+          method: 'SystemAssignedManagedIdentity'
+          systemAssignedManagedIdentitySettings: {}
+        }
+      }
+    ]
+  : []
+
+var combinedRegistryEndpoints = concat(registryEndpoints, acrRegistryEndpoint)
+
 /*
   Resources
 */
@@ -475,6 +501,9 @@ module edgeIotOps '../../../src/100-edge/110-iot-ops/bicep/main.bicep' = {
     shouldEnableAkriOnvifConnector: shouldEnableAkriOnvifConnector
     shouldEnableAkriSseConnector: shouldEnableAkriSseConnector
     customAkriConnectors: customAkriConnectors
+
+    // Registry Endpoints Parameters
+    registryEndpoints: combinedRegistryEndpoints
   }
 }
 
@@ -532,121 +561,187 @@ module edgeMessaging '../../../src/100-edge/130-messaging/bicep/main.bicep' = {
   Outputs
 */
 
-@description('The name of the Arc-enabled Kubernetes cluster that was connected to Azure. This can be used to reference the cluster in other deployments.')
-output arcConnectedClusterName string = edgeCncfCluster.outputs.connectedClusterName
+/*
+  Azure IoT Operations Outputs
+*/
+@description('Azure IoT Operations deployment details.')
+output azureIotOperations object = {
+  customLocationId: edgeIotOps.outputs.customLocationId
+  instanceName: edgeIotOps.outputs.aioInstanceName
+  namespace: edgeIotOps.outputs.aioNamespace
+}
 
-@description('The administrative username that can be used to SSH into the deployed virtual machines.')
-output vmUsername string = cloudVmHost.outputs.adminUsername
-
-@description('An array containing the names of all virtual machines that were deployed as part of this blueprint.')
-output vmNames array = cloudVmHost.outputs.vmNames
-
-@description('The AKS cluster name.')
-output aksName string? = cloudKubernetes.outputs.?aksName
-
-@description('The Azure Container Registry name.')
-output acrName string = cloudAcr.outputs.acrName
-
-@description('The AI Foundry account name.')
-output aiFoundryName string? = shouldDeployAiFoundry ? cloudAiFoundry.?outputs.?aiFoundryName : null
-
-@description('The AI Foundry account endpoint.')
-output aiFoundryEndpoint string? = shouldDeployAiFoundry ? cloudAiFoundry.?outputs.?aiFoundryEndpoint : null
-
-@description('The AI Foundry account principal ID.')
-output aiFoundryPrincipalId string? = shouldDeployAiFoundry ? cloudAiFoundry.?outputs.?aiFoundryPrincipalId : null
-
-@description('The ID of the Azure IoT Operations Cert-Manager Extension.')
-output aioCertManagerExtensionId string = edgeArcExtensions.outputs.certManagerExtensionId
-
-@description('The name of the Azure IoT Operations Cert-Manager Extension.')
-output aioCertManagerExtensionName string = edgeArcExtensions.outputs.certManagerExtensionName
-
-@description('The ID of the Secret Store Extension.')
-output secretStoreExtensionId string = edgeIotOps.outputs.secretStoreExtensionId
-
-@description('The name of the Secret Store Extension.')
-output secretStoreExtensionName string = edgeIotOps.outputs.secretStoreExtensionName
-
-@description('The ID of the deployed Custom Location.')
-output customLocationId string = edgeIotOps.outputs.customLocationId
-
-@description('The name of the deployed Custom Location.')
-output customLocationName string = edgeIotOps.outputs.customLocationName
-
-@description('The ID of the deployed Azure IoT Operations instance.')
-output aioInstanceId string = edgeIotOps.outputs.aioInstanceId
-
-@description('The name of the deployed Azure IoT Operations instance.')
-output aioInstanceName string = edgeIotOps.outputs.aioInstanceName
-
-@description('The ID of the deployed Azure IoT Operations Data Flow Profile.')
-output dataFlowProfileId string = edgeIotOps.outputs.dataFlowProfileId
-
-@description('The name of the deployed Azure IoT Operations Data Flow Profile.')
-output dataFlowProfileName string = edgeIotOps.outputs.dataFlowProfileName
-
-@description('The ID of the deployed Azure IoT Operations Data Flow Endpoint.')
-output dataFlowEndpointId string = edgeIotOps.outputs.dataFlowEndpointId
-
-@description('The name of the deployed Azure IoT Operations Data Flow Endpoint.')
-output dataFlowEndpointName string = edgeIotOps.outputs.dataFlowEndpointName
+@description('IoT asset resources.')
+output assets object = {
+  assets: edgeAssets.outputs.namespacedAssets
+  assetEndpointProfiles: edgeAssets.outputs.assetEndpointProfiles
+}
 
 /*
-  NAT Gateway Outputs
+  Cluster Connection Outputs
 */
 
-@description('The NAT Gateway ID (if enabled).')
-output natGatewayId string? = shouldEnableManagedOutboundAccess ? cloudNetworking.outputs.?natGatewayId : null
-
-@description('The NAT Gateway name (if enabled).')
-output natGatewayName string? = shouldEnableManagedOutboundAccess ? cloudNetworking.outputs.?natGatewayName : null
-
-@description('Whether default outbound access is enabled (inverse of managed outbound).')
-output defaultOutboundAccessEnabled bool = !shouldEnableManagedOutboundAccess
+@description('Commands and information to connect to the deployed cluster.')
+output clusterConnection object = {
+  arcClusterName: edgeCncfCluster.outputs.connectedClusterName
+  arcClusterResourceGroup: cloudResourceGroup.outputs.resourceGroupName
+  arcProxyCommand: edgeCncfCluster.outputs.azureArcProxyCommand
+}
 
 /*
-  Private Resolver Outputs
+  Container Registry Outputs
 */
 
-@description('The Private DNS Resolver ID (if enabled).')
-output privateResolverId string? = shouldEnablePrivateResolver ? cloudNetworking.outputs.?privateResolverId : null
+@description('Azure Container Registry resources.')
+output containerRegistry object = {
+  id: cloudAcr.outputs.acrId
+  name: cloudAcr.outputs.acrName
+}
 
-@description('The Private DNS Resolver name (if enabled).')
-output privateResolverName string? = shouldEnablePrivateResolver ? cloudNetworking.outputs.?privateResolverName : null
+@description('Azure Container Registry network posture metadata.')
+output acrNetworkPosture object = {
+  isNatGatewayEnabled: cloudAcr.outputs.isNatGatewayEnabled
+}
 
-@description('The DNS server IP from Private Resolver (if enabled).')
-output dnsServerIp string? = shouldEnablePrivateResolver ? cloudNetworking.outputs.?dnsServerIp : null
-
-/*
-  Private Endpoint Outputs
-*/
-
-@description('Whether private endpoints are enabled.')
-output privateEndpointsEnabled bool = shouldEnablePrivateEndpoints
-
-@description('The Key Vault private endpoint ID (if enabled).')
-output keyVaultPrivateEndpointId string? = shouldEnablePrivateEndpoints
-  ? cloudSecurityIdentity.outputs.?keyVaultPrivateEndpointId
+@description('Azure Kubernetes Service resources.')
+output kubernetes object? = shouldCreateAks
+  ? {
+      id: cloudKubernetes.outputs.?aksId
+      name: cloudKubernetes.outputs.?aksName
+      principalId: cloudKubernetes.outputs.?aksPrincipalId
+    }
   : null
 
-@description('The storage account blob private endpoint ID (if enabled).')
-output storageBlobPrivateEndpointId string? = shouldEnablePrivateEndpoints
-  ? cloudData.outputs.?storageBlobPrivateEndpointId
+/*
+  Data Storage Outputs
+*/
+
+@description('Data storage resources.')
+output dataStorage object = {
+  schemaRegistryName: cloudData.outputs.schemaRegistryName
+  storageAccountName: cloudData.outputs.storageAccountName
+}
+
+/*
+  Deployment Summary Outputs
+*/
+
+@description('Summary of the deployment configuration.')
+output deploymentSummary object = {
+  resourceGroup: cloudResourceGroup.outputs.resourceGroupName
+}
+
+/*
+  Networking Outputs
+*/
+
+@description('NAT gateway resource when managed outbound access is enabled.')
+output natGateway object? = shouldEnableManagedOutboundAccess
+  ? {
+      id: cloudNetworking.outputs.?natGatewayId
+      name: cloudNetworking.outputs.?natGatewayName
+    }
   : null
+
+@description('Public IP resources associated with the NAT gateway keyed by name.')
+output natGatewayPublicIps array? = shouldEnableManagedOutboundAccess && cloudNetworking.outputs.?natGatewayPublicIps != null
+  ? cloudNetworking.outputs.?natGatewayPublicIps
+  : null
+
+/*
+  Messaging Outputs
+*/
+
+@description('Cloud messaging resources.')
+output messaging object = {
+  eventGridTopicEndpoint: cloudMessaging.outputs.eventGridMqttEndpoint != ''
+    ? cloudMessaging.outputs.eventGridMqttEndpoint
+    : 'Not deployed'
+  eventGridTopicName: cloudMessaging.outputs.eventGridTopicNames != ''
+    ? cloudMessaging.outputs.eventGridTopicNames
+    : 'Not deployed'
+  eventhubName: length(cloudMessaging.outputs.eventHubNames) > 0
+    ? cloudMessaging.outputs.eventHubNames[0]
+    : 'Not deployed'
+  eventhubNamespaceName: cloudMessaging.outputs.eventHubNamespaceName != ''
+    ? cloudMessaging.outputs.eventHubNamespaceName
+    : 'Not deployed'
+}
+
+/*
+  AI Foundry Outputs
+*/
+
+@description('Azure AI Foundry account resources.')
+output aiFoundry object? = shouldDeployAiFoundry ? cloudAiFoundry.?outputs.?aiFoundry : null
+
+@description('Azure AI Foundry project resources.')
+output aiFoundryProjects array? = shouldDeployAiFoundry ? cloudAiFoundry.?outputs.?projectsArray : null
+
+@description('Azure AI Foundry model deployments.')
+output aiFoundryDeployments array? = shouldDeployAiFoundry ? cloudAiFoundry.?outputs.?deploymentsArray : null
+
+/*
+  Edge Infrastructure Outputs
+*/
+
+@description('Virtual machine host resources.')
+output vmHost array = [
+  {
+    id: cloudVmHost.outputs.vmIds[0]
+    location: common.location
+    name: cloudVmHost.outputs.vmNames[0]
+  }
+]
+
+@description('Azure Arc connected cluster resources.')
+output arcConnectedCluster object = {
+  name: edgeCncfCluster.outputs.connectedClusterName
+  location: common.location
+}
+
+/*
+  Observability Outputs
+*/
+
+@description('Monitoring and observability resources.')
+output observability object = {
+  azureMonitorWorkspaceName: cloudObservability.outputs.monitorWorkspaceName
+  grafanaEndpoint: cloudObservability.outputs.grafanaEndpoint
+  grafanaName: cloudObservability.outputs.grafanaName
+  logAnalyticsWorkspaceName: cloudObservability.outputs.logAnalyticsName
+}
+
+/*
+  Security and Identity Outputs
+*/
+
+@description('Security and identity resources.')
+output securityIdentity object = {
+  aioIdentity: cloudSecurityIdentity.outputs.aioIdentityName
+  keyVaultName: cloudSecurityIdentity.outputs.?keyVaultName ?? 'Not deployed'
+  keyVaultUri: cloudSecurityIdentity.outputs.?keyVaultName != null
+    ? 'https://${cloudSecurityIdentity.outputs.?keyVaultName}${environment().suffixes.keyvaultDns}/'
+    : 'Not deployed'
+}
 
 /*
   VPN Gateway Outputs
 */
 
-@description('The VPN Gateway ID (if enabled).')
-output vpnGatewayId string? = shouldEnableVpnGateway ? cloudVpnGateway.?outputs.?vpnGatewayId : null
+@description('VPN Gateway configuration when enabled.')
+output vpnGateway object? = shouldEnableVpnGateway
+  ? {
+      id: cloudVpnGateway.?outputs.?vpnGatewayId
+      name: cloudVpnGateway.?outputs.?vpnGatewayName
+    }
+  : null
 
-@description('The VPN Gateway name (if enabled).')
-output vpnGatewayName string? = shouldEnableVpnGateway ? cloudVpnGateway.?outputs.?vpnGatewayName : null
-
-@description('The VPN Gateway public IP address (if enabled).')
+@description('VPN Gateway public IP address for client configuration.')
 output vpnGatewayPublicIp string? = shouldEnableVpnGateway ? cloudVpnGateway.?outputs.?vpnGatewayPublicIp : null
 
-@description('VPN client connection information (if enabled).')
+@description('VPN client connection information including download URLs.')
 output vpnClientConnectionInfo object? = shouldEnableVpnGateway ? cloudVpnGateway.?outputs.?clientConnectionInfo : null
+
+@description('Private Resolver DNS IP address for VPN client configuration.')
+output privateResolverDnsIp string? = cloudNetworking.outputs.?dnsServerIp

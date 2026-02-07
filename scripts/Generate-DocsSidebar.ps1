@@ -396,7 +396,7 @@ function Add-CopilotResourcesSection {
 
     .DESCRIPTION
     Creates a standardized GitHub Copilot Resources section including AI Prompts,
-    Chat Modes (docs only), Instructions, and Copilot Guides with proper anchor
+    Custom Agents (docs only), Instructions, and Copilot Guides with proper anchor
     links to specific README sections.
 
     This function replaces the buggy Build-GitHubResourcesSidebar helper function
@@ -406,14 +406,14 @@ function Add-CopilotResourcesSection {
     .PARAMETER RootPath
     The root path of the repository
 
-    .PARAMETER IncludeChatModes
-    Include the Chat Modes subsection (for docs sidebar only)
+    .PARAMETER IncludeAgents
+    Include the Custom Agents subsection (for docs sidebar only)
     #>
     param(
         [Parameter(Mandatory = $true)]
         [string]$RootPath,
 
-        [switch]$IncludeChatModes
+        [switch]$IncludeAgents
     )
 
     $output = ""
@@ -451,22 +451,22 @@ function Add-CopilotResourcesSection {
         }
     }
 
-    # Chat Modes subsection (docs sidebar only - conditional)
-    if ($IncludeChatModes) {
-        $chatModesPath = Join-Path $RootPath ".github/chatmodes"
-        if (Test-Path $chatModesPath) {
-            $chatModesReadme = Join-Path $chatModesPath "README.md"
-            if (Test-Path $chatModesReadme) {
-                $relativePath = Get-DocsifyRelativePath -FilePath $chatModesReadme -RootPath $RootPath
+    # Custom Agents subsection (docs sidebar only - conditional)
+    if ($IncludeAgents) {
+        $agentsPath = Join-Path $RootPath ".github/agents"
+        if (Test-Path $agentsPath) {
+            $agentsReadme = Join-Path $agentsPath "README.md"
+            if (Test-Path $agentsReadme) {
+                $relativePath = Get-DocsifyRelativePath -FilePath $agentsReadme -RootPath $RootPath
                 $docsifyLink = Convert-ToDocsifyHashRoute -RelativePath $relativePath
-                $output += "  - [Chat Modes]($docsifyLink)`n"
+                $output += "  - [Custom Agents]($docsifyLink)`n"
             }
             else {
-                $output += "  - Chat Modes`n"
+                $output += "  - Custom Agents`n"
             }
 
-            $chatmodeFiles = Get-ChildItem -Path $chatModesPath -Filter "*.chatmode.md" -File | Sort-Object Name
-            foreach ($file in $chatmodeFiles) {
+            $agentFiles = Get-ChildItem -Path $agentsPath -Filter "*.agent.md" -File | Sort-Object Name
+            foreach ($file in $agentFiles) {
                 $displayName = Get-DisplayName -FilePath $file.FullName
                 $relativePath = Get-DocsifyRelativePath -FilePath $file.FullName -RootPath $RootPath
                 $docsifyLink = Convert-ToDocsifyHashRoute -RelativePath $relativePath
@@ -1444,34 +1444,34 @@ function Build-DocsSectionSidebar {
         $sidebar += "  - [$displayName]($docsifyLink)`n"
     }
 
-        # Process subdirectories and create proper nested structure
-        $subdirectories = Get-ChildItem -Path $SectionPath -Directory | Sort-Object Name
-        foreach ($subdir in $subdirectories) {
-            $subdirName = $subdir.Name
+    # Process subdirectories and create proper nested structure
+    $subdirectories = Get-ChildItem -Path $SectionPath -Directory | Sort-Object Name
+    foreach ($subdir in $subdirectories) {
+        $subdirName = $subdir.Name
 
-            # Skip excluded directories
-            if ($ExcludeDirs -contains $subdirName) {
-                Write-Verbose "Skipping excluded directory: $subdirName"
-                continue
-            }
+        # Skip excluded directories
+        if ($ExcludeDirs -contains $subdirName) {
+            Write-Verbose "Skipping excluded directory: $subdirName"
+            continue
+        }
 
-            # Check if subdirectory contains any markdown files
-            $hasMarkdown = Get-ChildItem -Path $subdir.FullName -Filter "*.md" -File -ErrorAction SilentlyContinue | Select-Object -First 1
-            if (-not $hasMarkdown) {
-                Write-Verbose "Skipping directory without markdown files: $subdirName"
-                continue
-            }
+        # Check if subdirectory contains any markdown files
+        $hasMarkdown = Get-ChildItem -Path $subdir.FullName -Filter "*.md" -File -ErrorAction SilentlyContinue | Select-Object -First 1
+        if (-not $hasMarkdown) {
+            Write-Verbose "Skipping directory without markdown files: $subdirName"
+            continue
+        }
 
-            $subdirDisplayName = Get-DisplayName -FilePath $subdirName
+        $subdirDisplayName = Get-DisplayName -FilePath $subdirName
 
-            # Check if subdirectory has README.md to use as section header
-            $readmeFile = Get-ChildItem -Path $subdir.FullName -Filter "README.md" -ErrorAction SilentlyContinue
-            if ($readmeFile) {
-                # Use README.md as linked section header
-                $relativePath = Get-DocsifyRelativePath -FilePath $readmeFile.FullName -RootPath $RootPath
-                $docsifyLink = Convert-ToDocsifyHashRoute -RelativePath $relativePath
-                $sidebar += "  - [$subdirDisplayName]($docsifyLink)`n"
-            }        # Get files in this subdirectory (non-recursive, single level)
+        # Check if subdirectory has README.md to use as section header
+        $readmeFile = Get-ChildItem -Path $subdir.FullName -Filter "README.md" -ErrorAction SilentlyContinue
+        if ($readmeFile) {
+            # Use README.md as linked section header
+            $relativePath = Get-DocsifyRelativePath -FilePath $readmeFile.FullName -RootPath $RootPath
+            $docsifyLink = Convert-ToDocsifyHashRoute -RelativePath $relativePath
+            $sidebar += "  - [$subdirDisplayName]($docsifyLink)`n"
+        }        # Get files in this subdirectory (non-recursive, single level)
         $subdirFiles = Get-ChildItem -Path $subdir.FullName -Filter "*.md" | Where-Object {
             $_.Name -notmatch '^(index|readme)\.md$'
         } | Sort-Object Name
@@ -1712,7 +1712,7 @@ function Build-SectionSidebar {
             }
 
             # GitHub Resources
-            $githubResourcesSidebar = Add-CopilotResourcesSection -RootPath $RootPath -IncludeChatModes
+            $githubResourcesSidebar = Add-CopilotResourcesSection -RootPath $RootPath -IncludeAgents
 
             # Special files
             $specialFilesSidebar = Build-SpecialFilesSidebar -DocsPath $DocsPath -RootPath $RootPath
@@ -1751,7 +1751,7 @@ function Build-SectionSidebar {
                 $sidebarContent += Build-LearningSectionSidebar -SectionPath $learningPath -RootPath $RootPath
 
                 # Add GitHub Resources and Copilot Guides for Learning
-                $copilotSection = Add-CopilotResourcesSection -RootPath $RootPath -IncludeChatModes
+                $copilotSection = Add-CopilotResourcesSection -RootPath $RootPath -IncludeAgents
                 $sidebarContent += "`n$copilotSection`n"
             }
         }
@@ -2064,25 +2064,25 @@ function Build-SectionSidebar {
                 }
             }
 
-            # Chat Modes
-            $chatModesPath = Join-Path $RootPath ".github/chatmodes"
-            if (Test-Path $chatModesPath) {
-                $chatModesReadme = Join-Path $chatModesPath "README.md"
-                if (Test-Path $chatModesReadme) {
-                    $relativePath = Get-DocsifyRelativePath -FilePath $chatModesReadme -RootPath $RootPath
+            # Custom Agents
+            $agentsPath = Join-Path $RootPath ".github/agents"
+            if (Test-Path $agentsPath) {
+                $agentsReadme = Join-Path $agentsPath "README.md"
+                if (Test-Path $agentsReadme) {
+                    $relativePath = Get-DocsifyRelativePath -FilePath $agentsReadme -RootPath $RootPath
                     $docsifyLink = Convert-ToDocsifyHashRoute -RelativePath $relativePath
-                    $sidebarContent += "`n- [💬 Chat Modes]($docsifyLink)`n"
+                    $sidebarContent += "`n- [🤖 Custom Agents]($docsifyLink)`n"
                 }
                 else {
-                    $sidebarContent += "`n- 💬 Chat Modes`n"
+                    $sidebarContent += "`n- 🤖 Custom Agents`n"
                 }
 
-                # Individual chatmode files
-                $chatmodeFiles = Get-ChildItem -Path $chatModesPath -Filter "*.chatmode.md" -File | Sort-Object Name
-                if ($chatmodeFiles.Count -gt 0) {
-                    foreach ($file in $chatmodeFiles) {
+                # Individual agent files
+                $agentFiles = Get-ChildItem -Path $agentsPath -Filter "*.agent.md" -File | Sort-Object Name
+                if ($agentFiles.Count -gt 0) {
+                    foreach ($file in $agentFiles) {
                         $fileName = [System.IO.Path]::GetFileNameWithoutExtension($file.Name)
-                        $fileName = $fileName -replace '\.chatmode$', ''
+                        $fileName = $fileName -replace '\.agent$', ''
                         $displayName = Get-DisplayName -FilePath $file.FullName
                         if (-not $displayName) {
                             $displayName = $fileName -replace '-', ' '
@@ -2137,7 +2137,7 @@ function Build-SectionSidebar {
 
                     # Get root-level copilot files (excluding README.md)
                     $rootCopilotFiles = Get-ChildItem -Path $copilotPath -Filter "*.md" -File |
-                    Where-Object { $_.Name -ne 'README.md' }
+                        Where-Object { $_.Name -ne 'README.md' }
                     foreach ($file in $rootCopilotFiles) {
                         $allInstructionFiles += @{
                             Path    = $file.FullName
@@ -2663,7 +2663,7 @@ $sectionSidebar
 
         # Generate GitHub Copilot resource sections
         $promptsSidebar = Add-CopilotResourcesSection -RootPath $rootPath
-        $chatModesSidebar = ""
+        $agentsSidebar = ""
         $instructionsSidebar = ""
 
 
@@ -2689,7 +2689,7 @@ $sectionSidebar
         # if ($templatesSidebar.Trim()) { $allSections += $templatesSidebar.TrimEnd() }
 
         if ($promptsSidebar.Trim()) { $allSections += $promptsSidebar.TrimEnd() }
-        if ($chatModesSidebar.Trim()) { $allSections += $chatModesSidebar.TrimEnd() }
+        if ($agentsSidebar.Trim()) { $allSections += $agentsSidebar.TrimEnd() }
         if ($instructionsSidebar.Trim()) { $allSections += $instructionsSidebar.TrimEnd() }
 
         if ($infrastructureSidebar.Trim()) { $allSections += $infrastructureSidebar.TrimEnd() }

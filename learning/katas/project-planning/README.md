@@ -23,7 +23,7 @@ target_audience:
 # Learning Framework
 learning_objectives:
   - "Develop proficiency in Edge AI project planning methodology and scenario selection"
-  - "Use interactive project planner chatmode for guided planning sessions"
+  - "Use interactive project planner agent for guided planning sessions"
   - "Create comprehensive project documentation and capability mappings"
   - "Apply iterative planning techniques for complex edge AI implementations"
 content_type: interactive-workshop
@@ -35,16 +35,16 @@ real_world_application: |
 # Technical Complexity & Integration
 complexity_factors:
   - "Multi-scenario analysis and comparative planning approaches"
-  - "Interactive chatmode navigation and effective prompt engineering"
+  - "Interactive agent navigation and effective prompt engineering"
   - "Complex capability mapping between business needs and technical solutions"
   - "Iterative refinement of project scope and technical requirements"
 # Repository Integration
 uses_prompts: []
 uses_instructions: []
-uses_chatmodes:
-  - .github/chatmodes/edge-ai-project-planner.chatmode.md
+uses_agents:
+  - .github/agents/edge-ai-project-planner.agent.md
 repository_paths:
-  - .github/chatmodes/
+  - .github/agents/
   - project-adrs/
   - docs/
 repository_integration:
@@ -54,7 +54,7 @@ repository_integration:
   - "blueprints/"
 # Success Criteria & Assessment
 success_criteria:
-  - "Successfully use project planner chatmode to generate comprehensive project plans"
+  - "Successfully use project planner agent to generate comprehensive project plans"
   - "Create detailed scenario documentation with capability mappings"
   - "Demonstrate iterative planning refinement techniques"
   - "Produce project documentation ready for stakeholder review and implementation"
@@ -67,17 +67,17 @@ keywords:
   - learning
   - project planning
   - edge ai scenarios
-  - project planner chatmode
+  - project planner agent
   - capability mapping
 tags:
   - planning
-  - chatmode
+  - agent
   - scenarios
   - documentation
 # AI Coaching & Validation
 ai_coaching_enabled: true
 validation_checkpoints:
-  - "Project planner interaction: Verify successful chatmode usage and guided planning session completion"
+  - "Project planner interaction: Verify successful agent usage and guided planning session completion"
   - "Scenario documentation quality: Confirm comprehensive scenario details and capability mappings"
   - "Planning refinement demonstration: Validate iterative improvement of project scope and requirements"
 extension_challenges:
@@ -91,7 +91,7 @@ extension_challenges:
     estimated_time: 120 minutes
 troubleshooting_guide: |
   **Common Issues:**
-  - Chatmode not responding properly: Verify correct chatmode file path and restart VS Code if needed
+  - Agent not responding properly: Verify correct agent file path and restart VS Code if needed
   - Incomplete scenario generation: Provide more specific business context and technical constraints
   - Weak capability mappings: Focus on connecting specific business outcomes to technical Edge AI features
   - Planning session gets stuck: Use more targeted prompts and break complex planning into smaller steps
@@ -99,7 +99,7 @@ troubleshooting_guide: |
 
 ## Quick Context
 
-Edge AI project planning requires systematic approach to scenario selection, capability mapping, and documentation generation. These progressive katas teach project planning expertise through hands-on practice with the interactive edge-ai-project-planner chatmode and real project templates.
+Edge AI project planning requires systematic approach to scenario selection, capability mapping, and documentation generation. These progressive katas teach project planning expertise through hands-on practice with the interactive edge-ai-project-planner agent and real project templates.
 
 📊 **[Track Your Progress](../../catalog.md)** - Monitor your progress on your learning journey
 
@@ -107,7 +107,7 @@ Edge AI project planning requires systematic approach to scenario selection, cap
 
 This kata category includes AI coaching support to help guide you through:
 
-- Interactive project planner chatmode usage and navigation
+- Interactive project planner agent usage and navigation
 - Scenario selection methodology and business context analysis
 - Capability mapping techniques connecting business needs to technical solutions
 - Documentation generation and iterative planning refinement
@@ -117,20 +117,20 @@ This kata category includes AI coaching support to help guide you through:
 By completing these project planning katas, you will:
 
 - **Develop AI-powered Project Planning Methodologies**: Apply systematic Edge AI project planning approach and scenario selection
-- **Use Interactive Planning Tools**: Navigate project planner chatmode effectively for guided planning sessions
+- **Use Interactive Planning Tools**: Navigate project planner agent effectively for guided planning sessions
 - **Create Comprehensive Documentation**: Generate detailed project plans with capability mappings and technical requirements
 - **Apply Iterative Techniques**: Refine project scope and requirements through structured iterative planning
 - **Connect Business to Technical**: Map business outcomes to specific Edge AI technical capabilities and solutions
 
 ## Project Planning Katas
 
-Streamlined practice for developing expertise in Edge AI project planning through progressive exercises that teach scenario selection, capability mapping, and comprehensive project documentation generation using the interactive edge-ai-project-planner chatmode and planning templates. These optimized katas focus on real project planning scenarios with minimal reading overhead.
+Streamlined practice for developing expertise in Edge AI project planning through progressive exercises that teach scenario selection, capability mapping, and comprehensive project documentation generation using the interactive edge-ai-project-planner agent and planning templates. These optimized katas focus on real project planning scenarios with minimal reading overhead.
 
 ### Project Integration Resources
 
 These katas leverage real project planning assets:
 
-- **Edge AI Project Planner**: Interactive chatmode for guided scenario selection and planning
+- **Edge AI Project Planner**: Interactive agent for guided scenario selection and planning
 - **Planning Templates**: Production-ready templates for scenario documentation and capability mapping
 - **Scenario Library**: Comprehensive scenarios covering manufacturing, operations, and maintenance use cases
 
@@ -192,13 +192,13 @@ These streamlined katas prepare you for:
 
 ### Essential References
 
-- [Edge AI Project Planner Chatmode](../../.github/chatmodes/edge-ai-project-planner.chatmode.md) - Interactive planning tool with guided scenarios
+- [Edge AI Project Planner Agent](../../.github/agents/edge-ai-project-planner.agent.md) - Interactive planning tool with guided scenarios
 - [Project ADRs](../../project-adrs/) - Architecture decision templates for technical planning documentation
 - [Solution Documentation](../../docs/) - Comprehensive project examples and implementation patterns
 
 ### Planning Tools
 
-- Interactive project planner chatmode for guided scenario selection and planning
+- Interactive project planner agent for guided scenario selection and planning
 - Capability mapping templates connecting business needs to technical solutions
 - Scenario library covering manufacturing, operations, and maintenance use cases
 
@@ -206,7 +206,7 @@ These streamlined katas prepare you for:
 
 **Common Issues:**
 
-- **Chatmode not responding properly**: Verify correct chatmode file path and restart VS Code if needed
+- **Agent not responding properly**: Verify correct agent file path and restart VS Code if needed
 - **Incomplete scenario generation**: Provide more specific business context and technical constraints in prompts
 - **Weak capability mappings**: Focus on connecting specific business outcomes to technical Edge AI features
 - **Planning session gets stuck**: Use more targeted prompts and break complex planning into smaller, manageable steps
@@ -223,7 +223,7 @@ These streamlined katas prepare you for:
 
 **AI Coaching Support Available:**
 
-- Interactive project planner chatmode usage and navigation guidance
+- Interactive project planner agent usage and navigation guidance
 - Scenario selection methodology and business context analysis assistance
 - Capability mapping techniques connecting business needs to technical solutions
 - Documentation generation and iterative planning refinement coaching
@@ -231,7 +231,7 @@ These streamlined katas prepare you for:
 **How to Access:**
 
 - Use the 🤖 AI coaching prompts embedded within each kata
-- Access the edge-ai-project-planner chatmode for guided planning sessions
+- Access the edge-ai-project-planner agent for guided planning sessions
 - Request assistance with specific planning challenges or scenario development
 
 ---

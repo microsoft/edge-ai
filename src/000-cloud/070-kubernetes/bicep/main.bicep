@@ -87,7 +87,6 @@ module network './modules/network.bicep' = {
     defaultOutboundAccessEnabled: aksNetworkConfig.defaultOutboundAccessEnabled
     shouldEnableNatGateway: aksNetworkConfig.shouldEnableNatGateway
     natGatewayId: natGatewayId
-    shouldEnablePrivateEndpoint: aksPrivateClusterConfig.shouldEnablePrivateEndpoint
   }
 }
 

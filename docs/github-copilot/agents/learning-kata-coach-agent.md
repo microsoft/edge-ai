@@ -5,27 +5,27 @@ Welcome to the **Learning Kata Coach** – your personalized AI mentor for focus
 
 ## 🚀 Get Started
 
-description: 'Learning coach chatmode for interactive AI-powered skill assessment and learning path recommendations'
+description: 'Learning coach agent for interactive AI-powered skill assessment and learning path recommendations'
 
-The Learning Kata Coach is available as a GitHub Copilot Chat mode in VS Code. Here's how to access it:
+The Learning Kata Coach is available as a GitHub Copilot Custom Agent in VS Code. Here's how to access it:
 
 ### Option 1: VS Code GitHub Copilot Chat
 
 1. **Open VS Code** in your edge-ai workspace
 1. **Open GitHub Copilot Chat** (Ctrl+Shift+I or Cmd+Shift+I)
-1. **Type the chat mode command**:
+1. **Type the custom agent command**:
 
   ```text
-  @workspace #file:.github/chatmodes/learning-kata-coach.chatmode.md
+  @workspace #file:.github/agents/learning-kata-coach.agent.md
   ```
 
 1. **Start your conversation** with your learning goals!
 
 ### Option 2: Direct File Reference
 
-If you have GitHub Copilot installed, you can also reference the chatmode directly:
+If you have GitHub Copilot installed, you can also reference the agent directly:
 
-**Chat Mode File**: [`.github/chatmodes/learning-kata-coach.chatmode.md`](../../.github/chatmodes/learning-kata-coach.chatmode.md)
+**Custom Agent File**: [`.github/agents/learning-kata-coach.agent.md`](../../.github/agents/learning-kata-coach.agent.md)
 
 ## 🎯 What the Kata Coach Can Help With
 
@@ -117,7 +117,7 @@ Saves assessment results and learning path recommendations.
     "recommendations": {
       "type": "object",
       "properties": {
-        "chatmodeRecommendation": { "type": "string" },
+        "agentRecommendation": { "type": "string" },
         "learningPath": { "type": "string" }
       }
     },
@@ -174,7 +174,7 @@ Saves assessment results and learning path recommendations.
 
 - [Learning Dashboard](../learning/)
 - [Skill Assessment](../learning/skill-assessment.html)
-- [All Chat Modes](../.github/chatmodes/README.md)
+- [All Custom Agents](../.github/agents/README.md)
 - [Learning Paths](../learning/paths/)
 
 ---

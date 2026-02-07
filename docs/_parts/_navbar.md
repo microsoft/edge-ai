@@ -47,7 +47,7 @@
   * [Copilot Guides](/copilot/README.md)
   * [GitHub Resources Hub](/docs/github-copilot/README.md)
   * [Core Instructions](/.github/copilot-instructions.md)
-  * [Chat Modes](/.github/chatmodes/README.md)
+  * [Custom Agents](/.github/agents/README.md)
   * [Development Instructions](/.github/instructions/README.md)
   * [Prompt Library](/.github/prompts/README.md)
 

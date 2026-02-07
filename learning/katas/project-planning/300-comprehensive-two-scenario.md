@@ -64,9 +64,9 @@ search_keywords:
 
 > **🤖 Want Interactive AI Coaching?**
 >
-> Load the **Learning Kata Coach** chat mode for task check-offs, progress tracking, progressive hints, and personalized guidance.
+> Load the **Learning Kata Coach** custom agent for task check-offs, progress tracking, progressive hints, and personalized guidance.
 >
-> In GitHub Copilot Chat, select **Learning Kata Coach** mode and say:
+> In GitHub Copilot Chat, select **Learning Kata Coach** custom agent and say:
 >
 > ```text
 > I'm working on 02 - Comprehensive Two Scenario kata and want interactive coaching with progress tracking.
@@ -80,7 +80,7 @@ search_keywords:
 
 **Steps**:
 
-1. **Launch** the edge-ai-project-planner chatmode
+1. **Launch** the edge-ai-project-planner agent
    - [ ] Open GitHub Copilot Chat and type `@edge-ai-project-planner` to activate the project planner mode
    - [ ] **Expected result**: Project planner mode is active and ready
 

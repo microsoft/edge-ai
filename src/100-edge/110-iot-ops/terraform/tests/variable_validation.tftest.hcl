@@ -1037,3 +1037,238 @@ run "test__custom_akri_connectors__valid_custom_configuration" {
   }
   # This should pass validation
 }
+
+# Test cases for registry_endpoints validation
+
+# Test registry endpoint with reserved name 'mcr'
+run "test__registry_endpoints__error_with_reserved_name_mcr" {
+  command = plan
+  variables {
+    resource_group        = run.setup_tests.aio_resource_group
+    secret_sync_key_vault = run.setup_tests.sse_key_vault
+    secret_sync_identity  = run.setup_tests.sse_user_assigned_identity
+    aio_identity          = run.setup_tests.aio_user_assigned_identity
+    arc_connected_cluster = run.setup_tests.arc_connected_cluster
+    adr_schema_registry   = run.setup_tests.adr_schema_registry
+    adr_namespace         = run.setup_tests.adr_namespace
+
+    registry_endpoints = [
+      {
+        name = "mcr" # Reserved name
+        host = "custom.azurecr.io"
+        authentication = {
+          method = "SystemAssignedManagedIdentity"
+        }
+      }
+    ]
+  }
+  expect_failures = [var.registry_endpoints]
+}
+
+# Test registry endpoint with reserved name 'default'
+run "test__registry_endpoints__error_with_reserved_name_default" {
+  command = plan
+  variables {
+    resource_group        = run.setup_tests.aio_resource_group
+    secret_sync_key_vault = run.setup_tests.sse_key_vault
+    secret_sync_identity  = run.setup_tests.sse_user_assigned_identity
+    aio_identity          = run.setup_tests.aio_user_assigned_identity
+    arc_connected_cluster = run.setup_tests.arc_connected_cluster
+    adr_schema_registry   = run.setup_tests.adr_schema_registry
+    adr_namespace         = run.setup_tests.adr_namespace
+
+    registry_endpoints = [
+      {
+        name = "default" # Reserved name
+        host = "custom.azurecr.io"
+        authentication = {
+          method = "SystemAssignedManagedIdentity"
+        }
+      }
+    ]
+  }
+  expect_failures = [var.registry_endpoints]
+}
+
+# Test registry endpoint with invalid name format (uppercase)
+run "test__registry_endpoints__error_with_invalid_name_uppercase" {
+  command = plan
+  variables {
+    resource_group        = run.setup_tests.aio_resource_group
+    secret_sync_key_vault = run.setup_tests.sse_key_vault
+    secret_sync_identity  = run.setup_tests.sse_user_assigned_identity
+    aio_identity          = run.setup_tests.aio_user_assigned_identity
+    arc_connected_cluster = run.setup_tests.arc_connected_cluster
+    adr_schema_registry   = run.setup_tests.adr_schema_registry
+    adr_namespace         = run.setup_tests.adr_namespace
+
+    registry_endpoints = [
+      {
+        name = "MyACR" # Invalid: contains uppercase
+        host = "myacr.azurecr.io"
+        authentication = {
+          method = "SystemAssignedManagedIdentity"
+        }
+      }
+    ]
+  }
+  expect_failures = [var.registry_endpoints]
+}
+
+# Test registry endpoint with invalid name format (too short)
+run "test__registry_endpoints__error_with_invalid_name_too_short" {
+  command = plan
+  variables {
+    resource_group        = run.setup_tests.aio_resource_group
+    secret_sync_key_vault = run.setup_tests.sse_key_vault
+    secret_sync_identity  = run.setup_tests.sse_user_assigned_identity
+    aio_identity          = run.setup_tests.aio_user_assigned_identity
+    arc_connected_cluster = run.setup_tests.arc_connected_cluster
+    adr_schema_registry   = run.setup_tests.adr_schema_registry
+    adr_namespace         = run.setup_tests.adr_namespace
+
+    registry_endpoints = [
+      {
+        name = "ab" # Invalid: less than 3 characters
+        host = "myacr.azurecr.io"
+        authentication = {
+          method = "SystemAssignedManagedIdentity"
+        }
+      }
+    ]
+  }
+  expect_failures = [var.registry_endpoints]
+}
+
+# Test registry endpoint with invalid authentication method
+run "test__registry_endpoints__error_with_invalid_auth_method" {
+  command = plan
+  variables {
+    resource_group        = run.setup_tests.aio_resource_group
+    secret_sync_key_vault = run.setup_tests.sse_key_vault
+    secret_sync_identity  = run.setup_tests.sse_user_assigned_identity
+    aio_identity          = run.setup_tests.aio_user_assigned_identity
+    arc_connected_cluster = run.setup_tests.arc_connected_cluster
+    adr_schema_registry   = run.setup_tests.adr_schema_registry
+    adr_namespace         = run.setup_tests.adr_namespace
+
+    registry_endpoints = [
+      {
+        name = "myacr"
+        host = "myacr.azurecr.io"
+        authentication = {
+          method = "InvalidMethod" # Invalid authentication method
+        }
+      }
+    ]
+  }
+  expect_failures = [var.registry_endpoints]
+}
+
+# Test registry endpoint with acr_resource_id on non-SystemAssignedManagedIdentity auth
+run "test__registry_endpoints__error_with_acr_resource_id_wrong_auth" {
+  command = plan
+  variables {
+    resource_group        = run.setup_tests.aio_resource_group
+    secret_sync_key_vault = run.setup_tests.sse_key_vault
+    secret_sync_identity  = run.setup_tests.sse_user_assigned_identity
+    aio_identity          = run.setup_tests.aio_user_assigned_identity
+    arc_connected_cluster = run.setup_tests.arc_connected_cluster
+    adr_schema_registry   = run.setup_tests.adr_schema_registry
+    adr_namespace         = run.setup_tests.adr_namespace
+
+    registry_endpoints = [
+      {
+        name            = "myacr"
+        host            = "myacr.azurecr.io"
+        acr_resource_id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-test/providers/Microsoft.ContainerRegistry/registries/myacr"
+        authentication = {
+          method = "ArtifactPullSecret" # acr_resource_id requires SystemAssignedManagedIdentity
+          artifact_pull_secret_settings = {
+            secret_ref = "acr-creds"
+          }
+        }
+      }
+    ]
+  }
+  expect_failures = [var.registry_endpoints]
+}
+
+# Test registry endpoint with UserAssignedManagedIdentity missing required settings
+run "test__registry_endpoints__error_with_uami_missing_settings" {
+  command = plan
+  variables {
+    resource_group        = run.setup_tests.aio_resource_group
+    secret_sync_key_vault = run.setup_tests.sse_key_vault
+    secret_sync_identity  = run.setup_tests.sse_user_assigned_identity
+    aio_identity          = run.setup_tests.aio_user_assigned_identity
+    arc_connected_cluster = run.setup_tests.arc_connected_cluster
+    adr_schema_registry   = run.setup_tests.adr_schema_registry
+    adr_namespace         = run.setup_tests.adr_namespace
+
+    registry_endpoints = [
+      {
+        name = "myacr"
+        host = "myacr.azurecr.io"
+        authentication = {
+          method = "UserAssignedManagedIdentity"
+          # Missing required user_assigned_managed_identity_settings
+        }
+      }
+    ]
+  }
+  expect_failures = [var.registry_endpoints]
+}
+
+# Test registry endpoint with ArtifactPullSecret missing required settings
+run "test__registry_endpoints__error_with_artifact_secret_missing_settings" {
+  command = plan
+  variables {
+    resource_group        = run.setup_tests.aio_resource_group
+    secret_sync_key_vault = run.setup_tests.sse_key_vault
+    secret_sync_identity  = run.setup_tests.sse_user_assigned_identity
+    aio_identity          = run.setup_tests.aio_user_assigned_identity
+    arc_connected_cluster = run.setup_tests.arc_connected_cluster
+    adr_schema_registry   = run.setup_tests.adr_schema_registry
+    adr_namespace         = run.setup_tests.adr_namespace
+
+    registry_endpoints = [
+      {
+        name = "myregistry"
+        host = "myregistry.example.com"
+        authentication = {
+          method = "ArtifactPullSecret"
+          # Missing required artifact_pull_secret_settings
+        }
+      }
+    ]
+  }
+  expect_failures = [var.registry_endpoints]
+}
+
+# Test registry endpoint with valid SystemAssignedManagedIdentity and acr_resource_id
+run "test__registry_endpoints__valid_with_acr_resource_id" {
+  command = plan
+  variables {
+    resource_group        = run.setup_tests.aio_resource_group
+    secret_sync_key_vault = run.setup_tests.sse_key_vault
+    secret_sync_identity  = run.setup_tests.sse_user_assigned_identity
+    aio_identity          = run.setup_tests.aio_user_assigned_identity
+    arc_connected_cluster = run.setup_tests.arc_connected_cluster
+    adr_schema_registry   = run.setup_tests.adr_schema_registry
+    adr_namespace         = run.setup_tests.adr_namespace
+
+    registry_endpoints = [
+      {
+        name                           = "myacr"
+        host                           = "myacr.azurecr.io"
+        acr_resource_id                = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-test/providers/Microsoft.ContainerRegistry/registries/myacr"
+        should_assign_acr_pull_for_aio = true
+        authentication = {
+          method = "SystemAssignedManagedIdentity"
+        }
+      }
+    ]
+  }
+  # This should pass validation
+}

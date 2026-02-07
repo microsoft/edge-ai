@@ -234,6 +234,32 @@ param shouldEnableAkriSseConnector bool = false
 @description('List of custom Akri connector templates with user-defined endpoint types and container images.')
 param customAkriConnectors types.AkriConnectorTemplate[] = []
 
+@description('Custom container registry endpoints to add alongside the default MCR endpoint.')
+param registryEndpoints types.RegistryEndpointConfig[] = []
+
+@description('Whether to include the deployed ACR as a registry endpoint with System Assigned Managed Identity authentication.')
+param shouldIncludeAcrRegistryEndpoint bool = false
+
+/*
+  Local Variables
+*/
+
+var acrRegistryEndpoint = shouldIncludeAcrRegistryEndpoint
+  ? [
+      {
+        name: 'acr-${common.resourcePrefix}'
+        host: '${cloudAcr.outputs.acrName}.azurecr.io'
+        acrResourceId: cloudAcr.outputs.acrId
+        authentication: {
+          method: 'SystemAssignedManagedIdentity'
+          systemAssignedManagedIdentitySettings: {}
+        }
+      }
+    ]
+  : []
+
+var combinedRegistryEndpoints = concat(registryEndpoints, acrRegistryEndpoint)
+
 /*
   Resources
 */
@@ -494,6 +520,7 @@ module edgeIotOps '../../../src/100-edge/110-iot-ops/bicep/main.bicep' = {
     shouldEnableAkriOnvifConnector: shouldEnableAkriOnvifConnector
     shouldEnableAkriSseConnector: shouldEnableAkriSseConnector
     customAkriConnectors: customAkriConnectors
+    registryEndpoints: combinedRegistryEndpoints
   }
 }
 

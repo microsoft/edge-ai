@@ -1,5 +1,4 @@
 ---
-mode: "agent"
 description: "Retrieve ALL @Me work items (prioritized types first, then fallback) using mcp_ado_search_workitem with paging; progressively persist raw + hydrated JSON and output summary table."
 ---
 

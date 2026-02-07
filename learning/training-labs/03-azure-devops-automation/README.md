@@ -10,7 +10,7 @@ keywords:
   - learning
   - azure devops
   - automation
-  - chatmodes
+  - agents
   - work items
   - ci cd
   - mcp tools
@@ -18,14 +18,14 @@ keywords:
 
 ## 🚧 Coming Soon - Track 3 Development
 
-Track 3 is currently under development and will focus on building complete Azure DevOps automation workflows using the edge-ai repository's chatmode, prompt, and instruction file ecosystem. This comprehensive track will take you from requirement analysis through work item planning, creation, pull request management, and build validation.
+Track 3 is currently under development and will focus on building complete Azure DevOps automation workflows using the edge-ai repository's agent, prompt, and instruction file ecosystem. This comprehensive track will take you from requirement analysis through work item planning, creation, pull request management, and build validation.
 
 > **📅 Development Status**: All lab modules are currently in development. The detailed curriculum below represents our planned content to demonstrate the comprehensive learning experience we're creating.
 
 ### What You'll Learn (Planned)
 
 - **End-to-End Automation**: From PRD documents to deployed changes with build validation
-- **Chatmode Orchestration**: Coordinate multiple specialized AI assistants across complex scenarios
+- **Agent Orchestration**: Coordinate multiple specialized AI assistants across complex scenarios
 - **MCP Tool Integration**: Azure DevOps work items, repositories, pipelines, and wikis
 - **Instruction File Workflows**: Ensure consistent, repeatable automation across teams
 
@@ -38,7 +38,7 @@ Track 3 is currently under development and will focus on building complete Azure
 
 ## Overview (Planned)
 
-This comprehensive training lab will guide you through building complete Azure DevOps automation workflows using the edge-ai repository's chatmode, prompt, and instruction file ecosystem. You'll develop expertise in end-to-end automation from requirement analysis through work item planning, creation, pull request management, and build validation.
+This comprehensive training lab will guide you through building complete Azure DevOps automation workflows using the edge-ai repository's agent, prompt, and instruction file ecosystem. You'll develop expertise in end-to-end automation from requirement analysis through work item planning, creation, pull request management, and build validation.
 
 Unlike individual katas that focus on specific skills, this lab integrates all Azure DevOps automation capabilities into realistic workflows that mirror actual enterprise development scenarios.
 
@@ -47,7 +47,7 @@ Unlike individual katas that focus on specific skills, this lab integrates all A
 By completing this training lab, you will:
 
 - Develop expertise in end-to-end automation workflows from Product Requirements Documents (PRDs) to deployed changes with build validation
-- Apply chatmode orchestration patterns to coordinate multiple specialized AI assistants across complex automation scenarios
+- Apply agent orchestration patterns to coordinate multiple specialized AI assistants across complex automation scenarios
 - Build proficiency with MCP tool integration for Azure DevOps work items, repositories, pipelines, and wikis
 - Implement systematic instruction file workflows that ensure consistent, repeatable automation across teams
 - Create production-ready automation patterns that scale from individual contributors to enterprise teams
@@ -108,7 +108,7 @@ This lab will implement a complete automation workflow that:
 
 **Objectives**:
 
-- Activate appropriate chatmodes for requirement analysis
+- Activate appropriate agents for requirement analysis
 - Use MCP tools to discover related work items and avoid duplication
 - Parse PRD documents to identify Epic/Feature/Story structure
 - Validate requirement completeness and clarity
@@ -178,12 +178,12 @@ This lab will implement a complete automation workflow that:
 - [ ] Pull request created with reviewer assignment and work item links
 - [ ] Build pipeline monitored and validated
 - [ ] Work items updated with build results and deployment status
-- [ ] All chatmodes and instruction files used appropriately
+- [ ] All agents and instruction files used appropriately
 - [ ] Automation patterns documented for team reuse
 
 ### Key Learning Takeaways (Planned)
 
-- **Chatmode Orchestration (Coming Soon)**: Different chatmodes specialize in different tasks - use `ado-prd-to-wit` for planning, default/generic for PR creation and build monitoring
+- **Agent Orchestration (Coming Soon)**: Different agents specialize in different tasks - use `ado-prd-to-wit` for planning, default/generic for PR creation and build monitoring
 - **Instruction Files as Playbooks (Planned)**: Instruction files ensure consistent workflows across team members and prevent missed steps
 - **MCP Tool Proficiency (Coming Soon)**: Batch operations, proper error handling, and tool parameter understanding are critical for reliable automation
 - **End-to-End Thinking (Planned)**: Automation must span the entire workflow from requirement to deployment, not just individual phases
@@ -192,10 +192,10 @@ This lab will implement a complete automation workflow that:
 ### Recommended Next Steps (Planned)
 
 - **Scale to Multiple Repositories (Coming Soon)**: Apply these patterns across repository portfolios with coordinated work items and PRs
-- **Build Custom Chatmodes (Coming Soon)**: Create specialized chatmodes for your team's unique workflows and tooling
+- **Build Custom Agents (Coming Soon)**: Create specialized agents for your team's unique workflows and tooling
 - **Automate Deployment Pipelines (Planned)**: Extend automation to include deployment approvals, monitoring, and rollback
 - **Integrate Advanced Analytics (Coming Soon)**: Add work item analytics, cycle time tracking, and team velocity measurements
-- **Share with Team (Planned)**: Document your automation patterns and train team members on chatmode usage
+- **Share with Team (Planned)**: Document your automation patterns and train team members on agent usage
 
 ## Planned Optional Advanced Challenges (Coming Soon)
 
@@ -211,29 +211,29 @@ Coordinate work items and pull requests across multiple repositories (e.g., infr
 - Monitor builds across repositories
 - Update work items with cross-repo links
 
-### Challenge B: Custom Chatmode Development (Coming Soon)
+### Challenge B: Custom Agent Development (Coming Soon)
 
 **Duration**: 4-5 hours | **Difficulty**: Expert
 
-Build a custom chatmode for your team's specific automation needs:
+Build a custom agent for your team's specific automation needs:
 
-- Design chatmode for specialized workflow (e.g., security review, compliance validation)
+- Design agent for specialized workflow (e.g., security review, compliance validation)
 - Define required MCP tools and permissions
-- Write comprehensive chatmode description and usage examples
-- Test chatmode with real scenarios
-- Document chatmode for team adoption
+- Write comprehensive agent description and usage examples
+- Test agent with real scenarios
+- Document agent for team adoption
 
 ## Planned Troubleshooting Guide (Coming Soon)
 
 ### Common Issues (Planned)
 
-#### Problem: MCP Tool Not Available in Chatmode (Coming Soon)
+#### Problem: MCP Tool Not Available in Agent (Coming Soon)
 
 **Solution**:
 
-1. Verify chatmode file includes tool in `tools:` array
+1. Verify agent file includes tool in `tools:` array
 2. Check GitHub Copilot MCP extension is enabled
-3. Restart VS Code and re-activate chatmode
+3. Restart VS Code and re-activate agent
 4. Manually specify tool in prompt: "Use mcp_azure-devops_wit_create_work_item to..."
 
 #### Problem: Work Item Creation Fails with Field Validation Error (Coming Soon)
@@ -286,7 +286,7 @@ Build a custom chatmode for your team's specific automation needs:
 ### edge-ai Repository Resources (Coming Soon)
 
 - [Azure DevOps Automation Katas][ado-katas] - Individual skill-building exercises
-- [Chatmode Documentation][chatmode-docs] - Complete chatmode reference and examples
+- [Agent Documentation][agent-docs] - Complete agent reference and examples
 - [Instruction Files][instruction-files] - All available instruction file workflows
 - [Prompt Templates][prompt-templates] - Reusable prompt patterns for common tasks
 
@@ -313,7 +313,7 @@ then carefully refined by our team of discerning human reviewers.*
 [module-4-details]: #module-4-pull-request-automation-with-work-item-linking-coming-soon
 [module-5-details]: #module-5-build-monitoring--deployment-validation-coming-soon
 [ado-katas]: /learning/katas/ado-automation/README
-[chatmode-docs]: /.github/chatmodes/README
+[agent-docs]: /.github/agents/README
 [instruction-files]: /.github/instructions/README
 [prompt-templates]: /.github/prompts/README
 [ado-rest-api]: https://learn.microsoft.com/rest/api/azure/devops

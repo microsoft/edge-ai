@@ -36,7 +36,7 @@ uses_prompts:
   - .github/prompts/
 uses_instructions:
   - .github/copilot-instructions.md
-uses_chatmodes: []
+uses_agents: []
 repository_paths:
   - .github/prompts/
   - .github/copilot-instructions.md

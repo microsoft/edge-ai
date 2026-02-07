@@ -643,3 +643,101 @@ type AkriConnectorTemplate = {
   @description('Trust settings configuration.')
   trustSettings: AkriTrustSettings?
 }
+
+// ============================================================================
+// Registry Endpoint Types
+// ============================================================================
+
+@export()
+@description('Authentication settings for System-Assigned Managed Identity.')
+type SystemAssignedManagedIdentitySettings = {
+  @description('Audience of the service to authenticate against. Defaults to "https://management.azure.com/" for ACR.')
+  audience: string?
+}
+
+@export()
+@description('Authentication settings for User-Assigned Managed Identity.')
+type UserAssignedManagedIdentitySettings = {
+  @description('Client ID for the user-assigned managed identity.')
+  clientId: string
+
+  @description('Tenant ID where the managed identity is located.')
+  tenantId: string
+
+  @description('Resource identifier (application ID URI) with .default suffix.')
+  scope: string?
+}
+
+@export()
+@description('Authentication settings for Artifact Pull Secret.')
+type ArtifactPullSecretSettings = {
+  @description('The name of the kubernetes secret that contains the artifact pull secret.')
+  secretRef: string
+}
+
+@export()
+@description('Authentication configuration for a registry endpoint.')
+@discriminator('method')
+type RegistryAuthentication =
+  | RegistryAuthSystemAssignedManagedIdentity
+  | RegistryAuthUserAssignedManagedIdentity
+  | RegistryAuthArtifactPullSecret
+  | RegistryAuthAnonymous
+
+@export()
+@description('System-Assigned Managed Identity authentication for registry endpoint.')
+type RegistryAuthSystemAssignedManagedIdentity = {
+  @description('Authentication method.')
+  method: 'SystemAssignedManagedIdentity'
+
+  @description('System-assigned managed identity settings.')
+  systemAssignedManagedIdentitySettings: SystemAssignedManagedIdentitySettings
+}
+
+@export()
+@description('User-Assigned Managed Identity authentication for registry endpoint.')
+type RegistryAuthUserAssignedManagedIdentity = {
+  @description('Authentication method.')
+  method: 'UserAssignedManagedIdentity'
+
+  @description('User-assigned managed identity settings.')
+  userAssignedManagedIdentitySettings: UserAssignedManagedIdentitySettings
+}
+
+@export()
+@description('Artifact Pull Secret authentication for registry endpoint.')
+type RegistryAuthArtifactPullSecret = {
+  @description('Authentication method.')
+  method: 'ArtifactPullSecret'
+
+  @description('Artifact pull secret settings.')
+  artifactPullSecretSettings: ArtifactPullSecretSettings
+}
+
+@export()
+@description('Anonymous authentication for registry endpoint.')
+type RegistryAuthAnonymous = {
+  @description('Authentication method.')
+  method: 'Anonymous'
+
+  @description('Anonymous authentication settings (empty object).')
+  anonymousSettings: object?
+}
+
+@export()
+@description('Container registry endpoint configuration for AIO instance.')
+type RegistryEndpointConfig = {
+  @description('Unique name for the registry endpoint (3-63 chars, lowercase alphanumeric and hyphens).')
+  @minLength(3)
+  @maxLength(63)
+  name: string
+
+  @description('Container registry hostname (e.g., myregistry.azurecr.io).')
+  host: string
+
+  @description('Optional ACR resource ID for automatic AcrPull role assignment. Only applicable when authentication.method is SystemAssignedManagedIdentity.')
+  acrResourceId: string?
+
+  @description('Authentication configuration for the registry.')
+  authentication: RegistryAuthentication
+}

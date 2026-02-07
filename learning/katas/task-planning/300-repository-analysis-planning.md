@@ -64,9 +64,9 @@ Complete these prerequisite checks to ensure a successful learning experience:
 
 > **🤖 Want Interactive AI Coaching?**
 >
-> Load the **Learning Kata Coach** chat mode for task check-offs, progress tracking, progressive hints, and personalized guidance.
+> Load the **Learning Kata Coach** custom agent for task check-offs, progress tracking, progressive hints, and personalized guidance.
 >
-> In GitHub Copilot Chat, select **Learning Kata Coach** mode and say:
+> In GitHub Copilot Chat, select **Learning Kata Coach** custom agent and say:
 >
 > ```text
 > I'm working on 02 - Repository Analysis Planning kata and want interactive coaching with progress tracking.
@@ -152,7 +152,7 @@ Complete these prerequisite checks to ensure a successful learning experience:
 
 ### Help Resources
 
-- **Learning Kata Coach** (`.github/chatmodes/learning-kata-coach.chatmode.md`) - Interactive coaching for planning assistance with progress tracking
+- **Learning Kata Coach** (`.github/agents/learning-kata-coach.agent.md`) - Interactive coaching for planning assistance with progress tracking
 - **Task Planner** (`.github/prompts/task-planner.prompt.md`) - Specialized guidance for systematic task planning and implementation workflows
 - **Project Components** (`src/` directory) - Real component examples for understanding structure, patterns, and classification approaches
 

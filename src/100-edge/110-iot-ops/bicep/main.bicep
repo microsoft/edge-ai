@@ -93,6 +93,9 @@ param shouldEnableAkriSseConnector bool = false
 @description('List of custom Akri connector templates with user-defined endpoint types and container images.')
 param customAkriConnectors types.AkriConnectorTemplate[] = []
 
+@description('List of additional container registry endpoints for pulling custom artifacts. MCR is always added automatically.')
+param registryEndpoints types.RegistryEndpointConfig[] = []
+
 @description('Shared MQTT connection configuration for all Akri connectors.')
 param akriMqttSharedConfig types.AkriMqttConfig = {
   host: 'aio-broker:18883'
@@ -380,6 +383,20 @@ module akriConnectors 'modules/akri-connectors.bicep' = if (shouldDeployAkriConn
 }
 
 /*
+  Registry Endpoints Module
+*/
+
+module registryEndpointsModule 'modules/registry-endpoints.bicep' = if (shouldDeployAio) {
+  name: '${deployment().name}-regep5'
+  params: {
+    aioInstanceId: iotOpsInstance.?outputs.?aioInstanceId ?? ''
+    customLocationId: iotOpsInstance.?outputs.?customLocationId ?? ''
+    extensionPrincipalId: iotOpsInstance.?outputs.?extensionIdentity.?principalId ?? ''
+    registryEndpoints: registryEndpoints
+  }
+}
+
+/*
   Post Instance Script Modules
 */
 
@@ -428,6 +445,9 @@ output aioPlatformExtensionId string = shouldDeployAio ? (iotOpsInstance.?output
 
 @description('The name of the Azure IoT Operations Platform Extension.')
 output aioPlatformExtensionName string = shouldDeployAio ? (iotOpsInstance.?outputs.?aioExtensionName ?? '') : ''
+
+@description('The namespace in the cluster where Azure IoT Operations is installed.')
+output aioNamespace string = aioExtensionConfig.settings.namespace
 
 @description('The ID of the Secret Store Extension.')
 output secretStoreExtensionId string = (iotOpsInit.?outputs.?secretStoreExtensionId) ?? ''

@@ -1,0 +1,59 @@
+/*
+ * Simple Multi-Node Cluster Configuration Example
+ *
+ * This file provides minimal configuration for deploying a multi-node cluster
+ * with Azure Virtual Machines hosting the K3s Kubernetes cluster.
+ *
+ * This configuration excludes optional components:
+ * - AI Foundry
+ * - Microsoft Fabric
+ * - PostgreSQL
+ * - Redis
+ * - Azure Machine Learning
+ *
+ * Usage:
+ *   terraform apply -var-file="simple.tfvars"
+ *
+ * Or copy this file to terraform.tfvars and customize values.
+ */
+
+/*
+ * Core Parameters - Required
+ *
+ * These are the minimum required parameters for deployment.
+ */
+environment     = "dev"
+location        = "eastus2"
+resource_prefix = "edgeai"
+
+/*
+ * Instance Identifier - Optional
+ *
+ * Use this to distinguish multiple deployments with the same prefix.
+ */
+instance = "001"
+
+/*
+ * Multi-Node Cluster Configuration
+ *
+ * Number of VMs to create for the cluster:
+ * - First VM becomes the K3s server node
+ * - Additional VMs join as worker nodes
+ */
+host_machine_count = 3
+
+/*
+ * OPC UA Simulator - Optional
+ *
+ * Enable OPC UA simulator for testing asset discovery and data ingestion.
+ * Set to true for development and testing environments.
+ */
+should_enable_opc_ua_simulator = true
+
+/*
+ * Anonymous MQTT Broker Listener - Optional
+ *
+ * WARNING: Only enable in development/test environments.
+ * Creates an insecure MQTT listener without authentication.
+ */
+should_create_anonymous_broker_listener = false

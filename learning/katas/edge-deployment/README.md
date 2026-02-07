@@ -36,7 +36,7 @@ uses_prompts: []
 uses_instructions:
   - .github/instructions/terraform.instructions.md
   - .github/instructions/bicep.instructions.md
-uses_chatmodes: []
+uses_agents: []
 repository_paths:
   - src/
   - blueprints/

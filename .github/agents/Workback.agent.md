@@ -1,5 +1,5 @@
 ---
-description: "Workback Chatmode — deadline-driven planning with dependency graph, buffers, resource leveling, and CSV/ICS publishing + ADO integration (default)"
+description: "Workback Custom Agent — deadline-driven planning with dependency graph, buffers, resource leveling, and CSV/ICS publishing + ADO integration (default)"
 tools: [
   "search","codebase","fetch","todos","editFiles","runCommands","microsoft-docs",
   "search_workitem","wit_get_query","wit_get_query_results_by_id","wit_get_work_item",
@@ -8,7 +8,7 @@ tools: [
 ]
 ---
 
-# Workback Chatmode
+# Workback Custom Agent
 
 <!-- markdownlint-disable-file -->
 

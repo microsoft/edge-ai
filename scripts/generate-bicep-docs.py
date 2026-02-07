@@ -178,7 +178,19 @@ def extract_parameters(json_data: Dict[str, Any]) -> List[Dict[str, Any]]:
             ref_path = param_info["$ref"].split('/')[-1]
             param_data["type"] = f"[{ref_path}](#user-defined-types)"
         elif "type" in param_info:
-            param_data["type"] = param_info["type"]
+            param_type = param_info["type"]
+            # Check for typed arrays (array with items.$ref)
+            if param_type == "array" and "items" in param_info:
+                items = param_info["items"]
+                if "$ref" in items:
+                    ref_path = items["$ref"].split('/')[-1]
+                    param_data["type"] = f"[{ref_path}](#user-defined-types)[]"
+                elif "type" in items:
+                    param_data["type"] = f"{items['type']}[]"
+                else:
+                    param_data["type"] = param_type
+            else:
+                param_data["type"] = param_type
 
         # Extract description and sanitize markdown within it
         if "metadata" in param_info and "description" in param_info["metadata"]:

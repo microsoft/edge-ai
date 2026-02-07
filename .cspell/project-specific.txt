@@ -20,6 +20,7 @@ docsify
 Docsify
 docstrings
 edgeai
+edgeserver
 fabricmcp
 fabrictool
 GHCP

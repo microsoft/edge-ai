@@ -34,8 +34,8 @@ uses_prompts:
 uses_instructions:
   - .github/instructions/instruction-file-1.instructions.md
   - .github/instructions/instruction-file-2.instructions.md
-uses_chatmodes:
-  - .github/chatmodes/chatmode-file-1.chatmode.md
+uses_agents:
+  - .github/agents/agent-file-1.agent.md
 # Success Criteria & Assessment
 success_criteria:
   - Demonstrate proficiency in key skill 1

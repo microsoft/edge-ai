@@ -17,8 +17,8 @@ learning_objectives:
 prerequisite_katas:
   - 'ai-assisted-engineering-100-ai-development-fundamentals'
   - 'ai-assisted-engineering-100-copilot-modes'
-  - 'ai-assisted-engineering-200-copilot-edit-mode-basics'
-  - 'ai-assisted-engineering-200-copilot-edit-mode-iac-patterns'
+  - 'ai-assisted-engineering-200-copilot-edit-agent-basics'
+  - 'ai-assisted-engineering-200-copilot-edit-agent-iac-patterns'
 technologies:
   - GitHub Copilot
   - GitHub Copilot Edit Mode
@@ -59,7 +59,7 @@ search_keywords:
 ## Essential Setup
 
 - [ ] VS Code with GitHub Copilot extension and active subscription
-- [ ] Completed ai-assisted-engineering-100, 100-copilot-modes, 200-copilot-edit-mode-basics, 200-iac katas
+- [ ] Completed ai-assisted-engineering-100, 100-copilot-modes, 200-copilot-edit-agent-basics, 200-iac katas
 - [ ] Azure CLI, Terraform, Bicep, Docker installed; verify with `az --version && terraform --version && bicep --version && docker --version`
 - [ ] Container deployment experience (Docker Compose, Kubernetes basics, or similar orchestration)
 - [ ] Multi-service architecture understanding and dependency management experience
@@ -70,9 +70,9 @@ search_keywords:
 
 > **🤖 Want Interactive AI Coaching?**
 >
-> Load the **Learning Kata Coach** chat mode for task check-offs, progress tracking, progressive hints, and personalized guidance.
+> Load the **Learning Kata Coach** custom agent for task check-offs, progress tracking, progressive hints, and personalized guidance.
 >
-> In GitHub Copilot Chat, select **Learning Kata Coach** mode and say:
+> In GitHub Copilot Chat, select **Learning Kata Coach** custom agent and say:
 >
 > ```text
 > I'm working on 03 - Getting Started Advanced kata and want interactive coaching with progress tracking.

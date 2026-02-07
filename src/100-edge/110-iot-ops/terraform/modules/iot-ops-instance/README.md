@@ -31,7 +31,6 @@ Deploys an AIO instance.
 | [azapi_resource.data_profiles](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource)                                                          | resource    |
 | [azapi_resource.default_aio_keyvault_secret_provider_class](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource)                             | resource    |
 | [azapi_resource.instance](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource)                                                               | resource    |
-| [azapi_resource.registry_endpoint](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource)                                                      | resource    |
 | [azapi_update_resource.aio_instance_secret_sync_update](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/update_resource)                          | resource    |
 | [azurerm_arc_kubernetes_cluster_extension.iot_operations](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/arc_kubernetes_cluster_extension) | resource    |
 | [azurerm_role_assignment.schema_registry](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment)                                  | resource    |
@@ -68,12 +67,13 @@ Deploys an AIO instance.
 
 ## Outputs
 
-| Name                             | Description                                           |
-|----------------------------------|-------------------------------------------------------|
-| aio\_broker\_listener\_anonymous | Anonymous MQTT Broker Listener configuration details. |
-| aio\_dataflow\_profile           | Azure IoT Operations dataflow profile details.        |
-| aio\_instance                    | Azure IoT Operations instance details.                |
-| aio\_mqtt\_broker                | MQTT Broker configuration details.                    |
-| aio\_namespace                   | Azure IoT Operations namespace.                       |
-| custom\_locations                | Custom location details.                              |
+| Name                             | Description                                                  |
+|----------------------------------|--------------------------------------------------------------|
+| aio\_broker\_listener\_anonymous | Anonymous MQTT Broker Listener configuration details.        |
+| aio\_dataflow\_profile           | Azure IoT Operations dataflow profile details.               |
+| aio\_instance                    | Azure IoT Operations instance details.                       |
+| aio\_mqtt\_broker                | MQTT Broker configuration details.                           |
+| aio\_namespace                   | Azure IoT Operations namespace.                              |
+| custom\_locations                | Custom location details.                                     |
+| extension\_identity              | AIO Arc extension identity information for role assignments. |
 <!-- END_TF_DOCS -->

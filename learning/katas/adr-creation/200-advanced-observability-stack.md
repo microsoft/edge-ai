@@ -74,22 +74,22 @@ Complete these prerequisite checks to ensure a successful learning experience:
 - [ ] Understanding of observability concepts (metrics, logs, traces)
 - [ ] Access to solution ADR library templates and examples in /docs
 
-**💡 Pro Tip**: Consider using specialized chatmodes for different phases of your work - one approach for systematic research, another for professional documentation. Separating these cognitive tasks can improve quality and efficiency.
+**💡 Pro Tip**: Consider using specialized agents for different phases of your work - one approach for systematic research, another for professional documentation. Separating these cognitive tasks can improve quality and efficiency.
 
 **📁 Pro Tip**: Task Researcher automatically saves research documents to `.copilot-tracking/research/` - check there for your research files.
 
 **Before starting the tasks**:
 
-- [ ] Load the **Task Researcher** chatmode (`.github/chatmodes/task-researcher.chatmode.md`) for research phases
-- [ ] Load the **ADR Creation Chatmode** (`.github/chatmodes/adr-creation.chatmode.md`) — specialized mode for transforming research into professional ADR documentation with template structure, stakeholder perspective analysis, and executive-level writing guidance
+- [ ] Load the **Task Researcher** agent (`.github/agents/task-researcher.agent.md`) for research phases
+- [ ] Load the **ADR Creation Agent** (`.github/agents/adr-creation.agent.md`) — specialized mode for transforming research into professional ADR documentation with template structure, stakeholder perspective analysis, and executive-level writing guidance
 
 **Quick Validation**: Verify you have completed the Basic Messaging Architecture kata and can access observability component documentation.
 
 > **🤖 Want Interactive AI Coaching?**
 >
-> Load the **Learning Kata Coach** chat mode for task check-offs, progress tracking, progressive hints, and personalized guidance.
+> Load the **Learning Kata Coach** custom agent for task check-offs, progress tracking, progressive hints, and personalized guidance.
 >
-> In GitHub Copilot Chat, select **Learning Kata Coach** mode and say:
+> In GitHub Copilot Chat, select **Learning Kata Coach** custom agent and say:
 >
 > ```text
 > I'm working on 02 - Advanced Observability Stack kata and want interactive coaching with progress tracking.
@@ -103,8 +103,8 @@ Complete these prerequisite checks to ensure a successful learning experience:
 
 **Steps**:
 
-1. **Create research document** using Task Researcher chatmode
-   - [ ] Switch to or confirm Task Researcher chatmode is active
+1. **Create research document** using Task Researcher agent
+   - [ ] Switch to or confirm Task Researcher agent is active
    - [ ] Copy and paste this exact prompt:
 
    ```text
@@ -122,14 +122,14 @@ Complete these prerequisite checks to ensure a successful learning experience:
    - [ ] **Expected result**: Initial research document saved to `.copilot-tracking/research/`
 
 2. **Update research document** with architecture analysis
-   - [ ] Continue working with Task Researcher chatmode
+   - [ ] Continue working with Task Researcher agent
    - [ ] Request analysis of: TIG stack component relationships, data flow patterns, edge deployment patterns
    - [ ] Request analysis of: TICK stack complete platform integration, stream processing, alerting capabilities
    - [ ] Request analysis of: Performance characteristics at scale, resource footprint comparison
    - [ ] **Expected result**: Comprehensive understanding of both architectures with scalability focus
 
 3. **Continue updating research document** with edge computing analysis
-   - [ ] Still working with Task Researcher chatmode
+   - [ ] Still working with Task Researcher agent
    - [ ] Request analysis of: Data collection strategies, resource utilization patterns
    - [ ] Request analysis of: Storage optimization, query performance, distributed deployment considerations
    - [ ] **Success check**: Can articulate key architectural differences and trade-offs between stacks with specific evidence
@@ -202,7 +202,7 @@ An executive-level ADR is more than just a technical comparison - it must:
 
 **Before starting documentation**:
 
-- [ ] **Switch to ADR Creation chatmode** (see Essential Setup above)
+- [ ] **Switch to ADR Creation agent** (see Essential Setup above)
 - [ ] Find your research document in `.copilot-tracking/research/` and add it to the chat context (attach file)
 - [ ] Copy and paste this exact prompt:
 
@@ -220,7 +220,7 @@ Structure the ADR to address all stakeholder perspectives with clear business im
 **Steps**:
 
 1. **Create** structured technology comparison using your research analysis
-   - [ ] Work with ADR Creation chatmode to structure the document
+   - [ ] Work with ADR Creation agent to structure the document
    - [ ] Context section using scenario from Quick Context (500+ nodes, edge constraints, 1M+ data points/minute)
    - [ ] Apply evaluation criteria to both stacks with specific evidence from your research
    - [ ] Include quantified analysis where possible (performance, cost, complexity)
@@ -252,7 +252,7 @@ Structure the ADR to address all stakeholder perspectives with clear business im
 **You've Succeeded When**:
 
 - [ ] Created comprehensive ADR comparing TIG vs TICK stacks with detailed analysis
-- [ ] Used Task Researcher chatmode to create structured research before ADR creation
+- [ ] Used Task Researcher agent to create structured research before ADR creation
 - [ ] Used Ask mode to review and strengthen analysis with differential perspectives
 - [ ] Separated research phase from documentation phase for better quality outcomes
 - [ ] Addressed technical, operational, and business stakeholder requirements
@@ -269,8 +269,8 @@ Structure the ADR to address all stakeholder perspectives with clear business im
 
 **Core Learning Tools**:
 
-- [Task Researcher Chatmode][task-researcher] - `.github/chatmodes/task-researcher.chatmode.md` for structured research
-- [ADR Creation Chatmode][adr-create] - See Essential Setup section for full path and description
+- [Task Researcher Agent][task-researcher] - `.github/agents/task-researcher.agent.md` for structured research
+- [ADR Creation Agent][adr-create] - See Essential Setup section for full path and description
 - [ADR Solution Library][adr-library] - `docs/solution-adr-library/` for templates and examples
 
 **Azure Observability Documentation**:
@@ -282,7 +282,7 @@ Structure the ADR to address all stakeholder perspectives with clear business im
 ### Professional Tips
 
 - Break down complex multi-component stack evaluations into focused research phases (architecture, requirements, comparison) before synthesizing into ADR
-- Use multiple AI chatmodes strategically: Task Researcher for gathering evidence, Ask mode for challenging your assumptions, ADR Creation for professional documentation
+- Use multiple AI agents strategically: Task Researcher for gathering evidence, Ask mode for challenging your assumptions, ADR Creation for professional documentation
 - Address multi-stakeholder perspectives early - technical, operational, and business criteria often conflict and require explicit trade-off analysis
 - Include quantified metrics wherever possible (performance numbers, cost estimates, resource requirements) to strengthen technical arguments
 
@@ -308,8 +308,8 @@ then carefully refined by our team of discerning human reviewers.*
 <!-- markdownlint-enable MD036 -->
 
 <!-- Reference Links -->
-[task-researcher]: /.github/chatmodes/task-researcher.chatmode.md
-[adr-create]: /.github/chatmodes/adr-creation.chatmode.md
+[task-researcher]: /.github/agents/task-researcher.agent.md
+[adr-create]: /.github/agents/adr-creation.agent.md
 [adr-library]: /docs/solution-adr-library/
 [ms-azure-monitor]: https://docs.microsoft.com/azure/azure-monitor/
 [ms-application-insights]: https://docs.microsoft.com/azure/azure-monitor/app/app-insights-overview

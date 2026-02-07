@@ -1,6 +1,6 @@
 ﻿---
 title: Azure DevOps Automation Katas
-description: Learn Azure DevOps automation using chatmodes, prompts, and instructions for work item management and CI/CD workflows
+description: Learn Azure DevOps automation using agents, prompts, and instructions for work item management and CI/CD workflows
 author: Edge AI Team
 ms.date: 2025-10-14
 ms.topic: kata-category
@@ -22,7 +22,7 @@ target_audience:
   - Product Managers
   - Technical Leads
 learning_objectives:
-  - Develop expertise in Azure DevOps chatmode activation and prompt-driven work item automation
+  - Develop expertise in Azure DevOps agent activation and prompt-driven work item automation
   - Apply instruction files for systematic work item discovery and planning workflows
   - Develop expertise in pull request automation and build pipeline integration
   - Build effective Azure DevOps automation workflows using MCP tool patterns
@@ -31,7 +31,7 @@ content_type: hands-on
 real_world_application: Real-world Azure DevOps automation scenarios for work item management, pull requests, and CI/CD integration
 complexity_factors:
   - MCP server configuration and authentication
-  - Understanding chatmode activation and context switching patterns
+  - Understanding agent activation and context switching patterns
   - Balancing automated workflows with manual oversight and validation
   - Integrating multiple instruction files for complex multi-phase operations
 # Repository Integration
@@ -46,26 +46,26 @@ uses_instructions:
   - .github/instructions/ado-update-wit-items.instructions.md
   - .github/instructions/ado-get-build-info.instructions.md
   - .github/instructions/ado-create-pull-request.instructions.md
-uses_chatmodes:
-  - .github/chatmodes/ado-prd-to-wit.chatmode.md
+uses_agents:
+  - .github/agents/ado-prd-to-wit.agent.md
 repository_paths:
   - .github/prompts/ado-*.md
   - .github/instructions/ado-*.md
-  - .github/chatmodes/ado-*.md
+  - .github/agents/ado-*.md
 repository_integration:
   - ".github/prompts/ado-*.md"
   - ".github/instructions/ado-*.md"
-  - ".github/chatmodes/ado-*.md"
+  - ".github/agents/ado-*.md"
 # Success Criteria & Assessment
 success_criteria:
-  - Demonstrate effective chatmode usage for Azure DevOps automation
+  - Demonstrate effective agent usage for Azure DevOps automation
   - Apply systematic instruction file workflows for work item management
   - Execute end-to-end pull request and build automation workflows
   - Integrate MCP tools effectively for Azure DevOps operations
 common_pitfalls:
   - "MCP server not configured": Complete Kata 01 before attempting other katas
   - "Authentication failures": Verify PAT token has correct scopes and hasn't expired
-  - "Incorrect chatmode selection": Review chatmode descriptions and tool availability before activation
+  - "Incorrect agent selection": Review agent descriptions and tool availability before activation
   - "Skipping instruction file steps": Follow all phases in instruction files sequentially
   - "Manual work item creation": Leverage MCP tools for automated work item operations
   - "Incomplete work item linking": Ensure proper parent-child and related work item relationships
@@ -73,7 +73,7 @@ common_pitfalls:
 keywords:
   - azure-devops
   - ado
-  - chatmode
+  - agent
   - automation
   - work-items
   - mcp-tools
@@ -82,13 +82,13 @@ keywords:
 tags:
   - azure-devops
   - automation
-  - chatmodes
+  - agents
   - work-items
   - ci-cd
 # AI Coaching Integration
 ai_coaching_enabled: true
 validation_checkpoints:
-  - "Chatmode activation: Verify correct chatmode selected with appropriate tool access"
+  - "Agent activation: Verify correct agent selected with appropriate tool access"
   - "Instruction compliance: Confirm all phases and steps from instruction files completed"
   - "Work item validation: Ensure proper hierarchy, linking, and field population"
   - "Automation workflow: Validate end-to-end automation from discovery to deployment"
@@ -98,12 +98,12 @@ extension_challenges:
     difficulty: advanced
     estimated_time: 75 minutes
   - challenge_name: Custom Build Pipeline Integration
-    description: Create custom chatmode and instructions for specialized build pipeline automation workflows
+    description: Create custom agent and instructions for specialized build pipeline automation workflows
     difficulty: expert
     estimated_time: 90 minutes
 troubleshooting_guide: |
   **Common Issues:**
-  - MCP tool not available: Verify chatmode includes required MCP tool in tools list
+  - MCP tool not available: Verify agent includes required MCP tool in tools list
   - Instruction file phase errors: Re-read instruction file and ensure all prerequisites met
   - Work item creation failures: Check Azure DevOps permissions and project configuration
   - Build status retrieval issues: Verify build ID or branch name and pipeline configuration
@@ -111,7 +111,7 @@ troubleshooting_guide: |
 
 ## Quick Context
 
-Azure DevOps Automation katas provide hands-on practice with the edge-ai repository's Azure DevOps chatmodes, prompts, and instruction files. These exercises teach you how to leverage specialized AI assistants (chatmodes) and structured workflows (instruction files) to automate work item management, pull request creation, and CI/CD integration using MCP (Model Context Protocol) tools.
+Azure DevOps Automation katas provide hands-on practice with the edge-ai repository's Azure DevOps agents, prompts, and instruction files. These exercises teach you how to leverage specialized AI assistants (agents) and structured workflows (instruction files) to automate work item management, pull request creation, and CI/CD integration using MCP (Model Context Protocol) tools.
 
 📊 **[Track Your Progress](../../catalog.md)** - Monitor your progress on your learning journey
 
@@ -119,7 +119,7 @@ Azure DevOps Automation katas provide hands-on practice with the edge-ai reposit
 
 This kata category includes AI coaching support to help guide you through:
 
-- Understanding and activating Azure DevOps-specific chatmodes
+- Understanding and activating Azure DevOps-specific agents
 - Following instruction file workflows for systematic automation
 - Using MCP tools for Azure DevOps work item and pipeline operations
 - Troubleshooting common automation and integration challenges
@@ -129,7 +129,7 @@ This kata category includes AI coaching support to help guide you through:
 By completing these Azure DevOps Automation katas, you will:
 
 - **MCP Server Configuration**: Set up and validate Azure DevOps MCP server connection with PAT authentication
-- **Chatmode Proficiency**: Understand how to select and activate specialized chatmodes for Azure DevOps tasks
+- **Agent Proficiency**: Understand how to select and activate specialized agents for Azure DevOps tasks
 - **Work Item Operations**: Learn to search, create, and link work items using MCP tools
 - **Instruction File Workflows**: Follow multi-phase instruction files for systematic automation workflows
 - **Pull Request Automation**: Automate PR creation with work item linking and reviewer assignment
@@ -138,11 +138,11 @@ By completing these Azure DevOps Automation katas, you will:
 
 ## Azure DevOps Automation Katas
 
-This kata category focuses on building expertise with the Azure DevOps automation capabilities built into the edge-ai repository. You'll learn how to leverage specialized chatmodes (context-aware AI assistants), prompts (reusable automation templates), and instruction files (structured workflow guides) to automate common DevOps tasks like work item creation, pull request management, and build monitoring.
+This kata category focuses on building expertise with the Azure DevOps automation capabilities built into the edge-ai repository. You'll learn how to leverage specialized agents (context-aware AI assistants), prompts (reusable automation templates), and instruction files (structured workflow guides) to automate common DevOps tasks like work item creation, pull request management, and build monitoring.
 
 ### What You'll Practice
 
-- **Chatmode Activation**: Select and activate the appropriate chatmode for Azure DevOps tasks (e.g., `ado-prd-to-wit` for work item planning)
+- **Agent Activation**: Select and activate the appropriate agent for Azure DevOps tasks (e.g., `ado-prd-to-wit` for work item planning)
 - **Instruction File Navigation**: Follow structured, multi-phase instruction files that ensure consistent and complete automation workflows
 - **MCP Tool Usage**: Execute Azure DevOps operations using MCP tools for work items, repositories, pipelines, and wikis
 - **Workflow Integration**: Connect multiple automation phases from discovery to planning to execution and validation
@@ -151,7 +151,7 @@ This kata category focuses on building expertise with the Azure DevOps automatio
 
 These katas integrate directly with the Azure DevOps automation resources in the edge-ai repository:
 
-- **Chatmodes** (`.github/chatmodes/`): Specialized AI assistants pre-configured with Azure DevOps MCP tools and domain expertise
+- **Agents** (`.github/agents/`): Specialized AI assistants pre-configured with Azure DevOps MCP tools and domain expertise
 - **Prompts** (`.github/prompts/`): Reusable prompt templates for common Azure DevOps automation scenarios
 - **Instructions** (`.github/instructions/`): Structured workflow guides defining multi-phase automation processes
 
@@ -227,7 +227,7 @@ Complete **[Kata 01 - Configure Azure DevOps MCP Server][kata-01]** before attem
 
 🚀 **[Begin with 01 - Configure Azure DevOps MCP Server][kata-01]**
 
-*Excel at Azure DevOps automation by learning to leverage the powerful chatmode and instruction file ecosystem built into the edge-ai repository.*
+*Excel at Azure DevOps automation by learning to leverage the powerful agent and instruction file ecosystem built into the edge-ai repository.*
 
 ---
 

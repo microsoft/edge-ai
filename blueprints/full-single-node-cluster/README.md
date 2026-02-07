@@ -239,6 +239,54 @@ See [rest-connector-assets.tfvars.example](terraform/rest-connector-assets.tfvar
 
 Follow detailed deployment instructions from the blueprints README.md, [Detailed Deployment Workflow](../README.md#detailed-deployment-workflow)
 
+## Testing and Validation
+
+This blueprint includes comprehensive test suites for validating deployments and maintaining code quality.
+
+### Test Directory
+
+**Location:** [tests/](tests/)
+
+The tests directory contains contract tests and end-to-end deployment validation for both Terraform and Bicep implementations.
+
+**Key Components:**
+
+- **Contract Tests** - Fast static validation ensuring output declarations match test expectations (zero cost, no Azure resources)
+- **Deployment Tests** - Full end-to-end deployment validation with infrastructure creation and functional testing
+- **Helper Scripts** - `run-contract-tests.sh` and `run-deployment-tests.sh` for simplified test execution
+
+**See:** [tests/README.md](tests/README.md) for complete testing documentation including setup, usage, and troubleshooting
+
+### For Maintainers
+
+When modifying this blueprint:
+
+#### Before Making Changes
+
+1. **Run contract tests** to establish baseline: `cd tests && ./run-contract-tests.sh both`
+2. **Review test structure** in [tests/outputs.go](tests/outputs.go) to understand output contract
+
+#### After Making Changes
+
+1. **Update output contract** if adding/removing/renaming outputs:
+   - Update struct fields in [tests/outputs.go](tests/outputs.go)
+   - Update framework configurations: [terraform/outputs.tf](terraform/outputs.tf) or [bicep/main.bicep](bicep/main.bicep)
+
+2. **Run contract tests** to verify declarations: `cd tests && ./run-contract-tests.sh both`
+
+3. **Update deployment tests** if changing deployment behavior:
+   - Review [tests/deploy_terraform_test.go](tests/deploy_terraform_test.go) or [tests/deploy_bicep_test.go](tests/deploy_bicep_test.go)
+   - Update validation logic in [tests/validation.go](tests/validation.go) if needed
+
+4. **Run deployment tests** to validate changes: `cd tests && ./run-deployment-tests.sh <framework>`
+   - Valid framework values: 'terraform', 'bicep', or 'both'
+   - Set `CLEANUP_RESOURCES=true` to auto-delete resources after testing
+   - Expected duration: 30-45 minutes for full deployment
+
+5. **Update documentation** if changing parameters, modules, or architecture:
+   - Update this README.md with new parameters or module references
+   - Update [tests/README.md](tests/README.md) if test behavior changes
+
 ---
 
 <!-- markdownlint-disable MD036 -->

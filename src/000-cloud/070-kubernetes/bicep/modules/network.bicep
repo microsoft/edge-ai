@@ -35,9 +35,6 @@ param shouldEnableNatGateway bool
 @description('NAT gateway ID for associating AKS subnets.')
 param natGatewayId string?
 
-@description('Whether to enable private endpoint for AKS cluster; when true, subnet delegation is created.')
-param shouldEnablePrivateEndpoint bool
-
 /*
   Local Variables
 */
@@ -88,16 +85,15 @@ resource snetAksPod 'Microsoft.Network/virtualNetworks/subnets@2025-01-01' = {
           id: natGatewayId!
         }
       : null
-    delegations: shouldEnablePrivateEndpoint
-      ? [
-          {
-            name: 'aks-delegation'
-            properties: {
-              serviceName: 'Microsoft.ContainerService/managedClusters'
-            }
-          }
-        ]
-      : []
+    // Delegation required for Azure CNI with dedicated pod subnet (podSubnetID)
+    delegations: [
+      {
+        name: 'aks-delegation'
+        properties: {
+          serviceName: 'Microsoft.ContainerService/managedClusters'
+        }
+      }
+    ]
   }
   dependsOn: [
     snetAks // Make sure subnets are created in sequence to avoid conflicts

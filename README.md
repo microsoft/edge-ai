@@ -165,7 +165,7 @@ code .
 
 ## 🔗 Want to Use Edge-AI Tools in Your Own Repository?
 
-Share our AI instructions, chatmodes, and prompts across your projects with a simple dev container setup:
+Share our AI instructions, custom agents, and prompts across your projects with a simple dev container setup:
 
 **Step 1:** Clone both repositories into the same workspace
 
@@ -188,9 +188,9 @@ git clone https://github.com/<your-organization>/<your-project>.git  # Replace w
 
 ```json
 {
-  "chat.modeFilesLocations": {
-    ".github/chatmodes": true,
-    "../edge-ai/.github/chatmodes": true
+  "chat.agentFilesLocations": {
+    ".github/agents": true,
+    "../edge-ai/.github/agents": true
   },
   "chat.instructionsFilesLocations": {
     ".github/instructions": true,
@@ -205,7 +205,7 @@ git clone https://github.com/<your-organization>/<your-project>.git  # Replace w
 
 **Result:** Rebuild your dev container and gain instant access to:
 
-- ✅ **Task researcher** and **task planner** modes
+- ✅ **Task researcher** and **task planner** custom agents
 - ✅ **AI-assisted engineering** workflows
 - ✅ **Coding standards** and conventions
 - ✅ **Always up-to-date** - no file copying needed

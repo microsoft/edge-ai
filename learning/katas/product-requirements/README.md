@@ -22,7 +22,7 @@ target_audience:
   - Technical Leaders
 learning_objectives:
   - Develop structured product requirements document creation
-  - Apply PRD chatmode for AI-assisted requirements gathering
+  - Apply PRD agent for AI-assisted requirements gathering
   - Develop stakeholder analysis and user story skills
   - Build comprehensive technical requirements documentation
 # Content Classification
@@ -36,12 +36,12 @@ complexity_factors:
 # Repository Integration
 uses_prompts: []
 uses_instructions: []
-uses_chatmodes:
-  - .github/copilot-instructions-chatmode-prd.md
+uses_agents:
+  - .github/copilot-instructions-agent-prd.md
 repository_paths:
-  - .github/copilot-instructions-chatmode-prd.md
+  - .github/copilot-instructions-agent-prd.md
 repository_integration:
-  - PRD chatmode for structured requirements generation
+  - PRD agent for structured requirements generation
   - Azure IoT Operations component references
 # Success Criteria & Assessment
 success_criteria:
@@ -84,7 +84,7 @@ extension_challenges:
     estimated_time: 45 minutes
 troubleshooting_guide: |
   **Common Issues:**
-  - PRD chatmode responses too generic: Provide more specific context about edge device types, alert categories, and operational constraints
+  - PRD agent responses too generic: Provide more specific context about edge device types, alert categories, and operational constraints
   - User stories lack technical detail: Use follow-up prompts asking for implementation approaches and technology stack recommendations
   - Missing stakeholder perspectives: Always consider primary, secondary, and tertiary user personas
 ---
@@ -100,7 +100,7 @@ Product Requirements Document (PRD) katas provide systematic practice for creati
 This kata category includes AI coaching support to help guide you through:
 
 - Systematic PRD creation and optimization techniques
-- Effective use of the PRD chatmode for requirements gathering
+- Effective use of the PRD agent for requirements gathering
 - Best practices for stakeholder analysis and user story development
 
 ## Learning Objectives
@@ -108,7 +108,7 @@ This kata category includes AI coaching support to help guide you through:
 After completing these katas, you'll be able to:
 
 - Learn structured product requirements document creation
-- Apply PRD chatmode for AI-assisted requirements gathering
+- Apply PRD agent for AI-assisted requirements gathering
 - Develop stakeholder analysis and user story skills
 - Build comprehensive technical requirements documentation
 
@@ -120,7 +120,7 @@ This category teaches you to:
 - **Create** comprehensive user stories with acceptance criteria
 - **Document** technical requirements and system constraints
 - **Establish** measurable success metrics and acceptance criteria
-- **Use** AI assistance (PRD chatmode) to accelerate requirements gathering
+- **Use** AI assistance (PRD agent) to accelerate requirements gathering
 - **Structure** professional PRDs that guide development teams effectively
 
 ## Prerequisites
@@ -150,7 +150,7 @@ Learn to define measurable technical requirements, constraints, and success metr
 Successful completion requires:
 
 - [ ] Translate stakeholder requirements into structured PRDs with clear acceptance criteria
-- [ ] Apply PRD chatmode effectively to accelerate requirements documentation
+- [ ] Apply PRD agent effectively to accelerate requirements documentation
 - [ ] Define comprehensive stakeholder personas with goals and pain points
 - [ ] Create user stories that capture functional requirements accurately
 - [ ] Establish measurable success metrics with quantifiable baselines and targets
@@ -173,7 +173,7 @@ Successful completion requires:
 
 ### 100 - Foundation Level
 
-- **Focus**: Learn to create structured product requirements documents using AI assistance and the PRD chatmode for edge AI solutions
+- **Focus**: Learn to create structured product requirements documents using AI assistance and the PRD agent for edge AI solutions
 - **Skills**: GitHub Copilot
 - **Time-to-Practice**: 1-2 hours
 
@@ -188,7 +188,7 @@ After completing these katas, you'll be able to:
 - Generate user stories that capture functional requirements
 - Define technical requirements, constraints, and assumptions
 - Establish quantifiable success metrics with baselines and targets
-- Use the PRD chatmode effectively to accelerate requirements work
+- Use the PRD agent effectively to accelerate requirements work
 
 ## Related Learning Paths
 
@@ -204,7 +204,7 @@ After completing these katas, you'll be able to:
 
 ---
 
-*This kata category is part of the Edge AI Learning Platform. For support or questions, engage with the learning-kata-coach chatmode or refer to the [learning platform documentation](../README.md).*
+*This kata category is part of the Edge AI Learning Platform. For support or questions, engage with the learning-kata-coach agent or refer to the [learning platform documentation](../README.md).*
 
 <!-- Reference Links -->
 

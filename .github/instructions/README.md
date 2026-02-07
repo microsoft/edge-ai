@@ -219,7 +219,7 @@ The instruction system uses sophisticated pattern matching to automatically appl
 
 ## Related Resources
 
-- **[Chat Modes](../chatmodes/README.md)**: Specialized AI coaching and workflow assistance
+- **[Custom Agents](../agents/README.md)**: Specialized AI coaching and workflow assistance
 - **[Prompts](../prompts/README.md)**: Reusable prompts for specific development tasks
 - **[AI-Assisted Engineering Guide](../../docs/contributing/ai-assisted-engineering.md)**: Comprehensive AI assistance documentation
 

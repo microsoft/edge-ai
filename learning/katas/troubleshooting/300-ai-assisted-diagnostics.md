@@ -63,9 +63,9 @@ Complete these prerequisite checks to ensure a successful learning experience:
 
 > **🤖 Want Interactive AI Coaching?**
 >
-> Load the **Learning Kata Coach** chat mode for task check-offs, progress tracking, progressive hints, and personalized guidance.
+> Load the **Learning Kata Coach** custom agent for task check-offs, progress tracking, progressive hints, and personalized guidance.
 >
-> In GitHub Copilot Chat, select **Learning Kata Coach** mode and say:
+> In GitHub Copilot Chat, select **Learning Kata Coach** custom agent and say:
 >
 > ```text
 > I'm working on 01 - AI Assisted Diagnostics kata and want interactive coaching with progress tracking.
@@ -92,7 +92,7 @@ Complete these prerequisite checks to ensure a successful learning experience:
    - [ ] **Expected result**: Repeatable diagnostic methodology
 
 3. **Use Task Planner** for complex diagnostic scenarios
-   - [ ] Load task-planner.chatmode.md in Copilot Chat
+   - [ ] Load task-planner.agent.md in Copilot Chat
    - [ ] Request: "Create diagnostic workflow for IoT Operations message routing failure"
    - [ ] Break down investigation into systematic, verifiable steps
    - **Success check**: Have clear plan that methodically isolates root cause

@@ -12,6 +12,21 @@ locals {
   vm_host_virtual_machines        = try(module.cloud_vm_host[0].virtual_machines, [])
   cluster_machine_count           = local.should_use_arc_machines ? var.arc_machine_count : var.host_machine_count
   cluster_node_machine_count      = max(local.cluster_machine_count - 1, 0)
+
+  acr_registry_endpoint = var.should_include_acr_registry_endpoint ? [{
+    name                           = "acr-${var.resource_prefix}"
+    host                           = "${module.cloud_acr.acr.name}.azurecr.io"
+    acr_resource_id                = module.cloud_acr.acr.id
+    should_assign_acr_pull_for_aio = true
+    authentication = {
+      method                                    = "SystemAssignedManagedIdentity"
+      system_assigned_managed_identity_settings = null
+      user_assigned_managed_identity_settings   = null
+      artifact_pull_secret_settings             = null
+    }
+  }] : []
+
+  combined_registry_endpoints = concat(var.registry_endpoints, local.acr_registry_endpoint)
 }
 
 /*
@@ -79,6 +94,7 @@ module "cloud_security_identity" {
 
   aio_resource_group = module.cloud_resource_group.resource_group
 
+  onboard_identity_type                    = var.onboard_identity_type
   should_create_key_vault_private_endpoint = var.should_enable_private_endpoints
   key_vault_private_endpoint_subnet_id     = var.should_enable_private_endpoints ? module.cloud_networking.subnet_id : null
   key_vault_virtual_network_id             = var.should_enable_private_endpoints ? module.cloud_networking.virtual_network.id : null
@@ -442,6 +458,7 @@ module "edge_iot_ops" {
   should_enable_akri_onvif_connector = var.should_enable_akri_onvif_connector
   should_enable_akri_sse_connector   = var.should_enable_akri_sse_connector
   custom_akri_connectors             = var.custom_akri_connectors
+  registry_endpoints                 = local.combined_registry_endpoints
   should_enable_otel_collector       = var.should_enable_otel_collector
 }
 

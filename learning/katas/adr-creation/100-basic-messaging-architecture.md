@@ -48,13 +48,13 @@ Your industrial IoT system needs to choose between MQTT and Apache Kafka for str
 - [ ] Repository cloned with access to `docs/solution-adr-library/` folder
 - [ ] Basic understanding of IoT/messaging concepts (MQTT, Apache Kafka, edge computing principles)
 - [ ] Familiarity with Architecture Decision Record structure and purpose
-- [ ] Load Task Researcher chatmode (`.github/chatmodes/task-researcher.chatmode.md`)
-- [ ] Load ADR Creation chatmode (`.github/chatmodes/adr-creation.chatmode.md`)
+- [ ] Load Task Researcher agent (`.github/agents/task-researcher.agent.md`)
+- [ ] Load ADR Creation agent (`.github/agents/adr-creation.agent.md`)
 - [ ] ADR template reviewed (`docs/solution-adr-library/adr-template-solutions.md` — complete ADR structure with YAML frontmatter instructions)
 - [ ] Example ADR browsed (e.g., `mqtt-qos.md` or `asset-connectivity-monitoring.md`)
 - [ ] Time allocated: ⏱️ **60 minutes** (ADR research, evaluation, documentation)
 
-**Quick Validation**: Verify Copilot with `code --list-extensions | grep -i copilot`. Chatmode workflow: Research with Task Researcher → Document with ADR Creation.
+**Quick Validation**: Verify Copilot with `code --list-extensions | grep -i copilot`. Agent workflow: Research with Task Researcher → Document with ADR Creation.
 
 ## Practice Tasks
 
@@ -85,12 +85,12 @@ Your industrial IoT system needs to choose between MQTT and Apache Kafka for str
 
 ### Task 2: Research and Compare Technologies (15 minutes)
 
-**What You'll Do**: Create a structured research document comparing MQTT vs Apache Kafka using the Task Researcher chatmode, then iteratively add findings.
+**What You'll Do**: Create a structured research document comparing MQTT vs Apache Kafka using the Task Researcher agent, then iteratively add findings.
 
 **Steps**:
 
-1. **Create research document using Task Researcher chatmode**
-   - [ ] Open GitHub Copilot Chat and ensure Task Researcher chatmode is active
+1. **Create research document using Task Researcher agent**
+   - [ ] Open GitHub Copilot Chat and ensure Task Researcher agent is active
    - [ ] Copy and paste this exact prompt:
 
    ```text
@@ -144,14 +144,14 @@ Your industrial IoT system needs to choose between MQTT and Apache Kafka for str
 
 ### Task 3: Create Professional ADR Documentation (15 minutes)
 
-**What You'll Do**: Transform your research into a complete ADR using ADR Creation chatmode and project templates.
+**What You'll Do**: Transform your research into a complete ADR using ADR Creation agent and project templates.
 
 **Steps**:
 
-1. **Switch to ADR Creation chatmode with research in context**
+1. **Switch to ADR Creation agent with research in context**
    - [ ] Find your research document in `.copilot-tracking/research/` (should be named with timestamp)
    - [ ] In GitHub Copilot Chat, attach your research document using the paperclip icon or drag-and-drop
-   - [ ] Switch to **ADR Creation chatmode** from the mode selector dropdown
+   - [ ] Switch to **ADR Creation agent** from the mode selector dropdown
    - [ ] Copy and paste this exact prompt:
 
    ```text
@@ -170,12 +170,12 @@ Your industrial IoT system needs to choose between MQTT and Apache Kafka for str
 
    - [ ] Copy the ADR Template content as your starting point
    - [ ] Name your ADR file appropriately (e.g., "messaging-architecture-mqtt-vs-kafka.md")
-   - [ ] Work with ADR Creation chatmode to fill in Context section using the scenario from Quick Context (200+ edge devices, sensor data streaming, real-time processing)
+   - [ ] Work with ADR Creation agent to fill in Context section using the scenario from Quick Context (200+ edge devices, sensor data streaming, real-time processing)
    - **Validation checkpoint**: Does your Context section clearly explain the business problem and technical requirements?
    - [ ] **Expected result**: ADR structure with professional context documentation based on your research
 
 2. **Document** your technology evaluation and decision
-   - [ ] Work with ADR Creation chatmode to present MQTT vs Kafka comparison with specific trade-offs per criteria
+   - [ ] Work with ADR Creation agent to present MQTT vs Kafka comparison with specific trade-offs per criteria
    - [ ] Use your research document as evidence: reference specific findings from your comparison table
    - [ ] Make clear recommendation with strong technical justification based on your research
    - [ ] Include consideration of Azure services integration and edge computing requirements
@@ -194,7 +194,7 @@ Your industrial IoT system needs to choose between MQTT and Apache Kafka for str
 
 **You've Succeeded When**:
 
-- [ ] Used Task Researcher chatmode to create structured research document before ADR creation
+- [ ] Used Task Researcher agent to create structured research document before ADR creation
 - [ ] Navigated project ADR library confidently and understood template structure
 - [ ] Successfully used AI assistance for technology research with structured evaluation criteria
 - [ ] Created a complete ADR following project template with professional documentation quality
@@ -214,7 +214,7 @@ Your industrial IoT system needs to choose between MQTT and Apache Kafka for str
 - [ ] I could create another ADR for a different architectural decision using this same process
 - [ ] I understand the difference between a weak ADR ("X is popular") and a strong one ("X meets criteria A, B, C as shown...")
 
-**Ready for more?** Try creating an ADR for a different messaging technology decision (e.g., RabbitMQ vs Azure Service Bus) using this same process without chatmode guidance.
+**Ready for more?** Try creating an ADR for a different messaging technology decision (e.g., RabbitMQ vs Azure Service Bus) using this same process without agent guidance.
 
 ---
 
@@ -224,8 +224,8 @@ Your industrial IoT system needs to choose between MQTT and Apache Kafka for str
 
 **Core Resources** (you used these during the kata):
 
-- [Task Researcher Chatmode][task-researcher] - `.github/chatmodes/task-researcher.chatmode.md`
-- [ADR Creation Chatmode][adr-create] - `.github/chatmodes/adr-creation.chatmode.md`
+- [Task Researcher Agent][task-researcher] - `.github/agents/task-researcher.agent.md`
+- [ADR Creation Agent][adr-create] - `.github/agents/adr-creation.agent.md`
 - [ADR Template][project-adr-library] - See Essential Setup section for full path and description
 - [Example ADRs][project-adr-library] - `mqtt-qos.md`, `asset-connectivity-monitoring.md`
 
@@ -260,9 +260,9 @@ then carefully refined by our team of discerning human reviewers.*
 <!-- markdownlint-enable MD036 -->
 
 <!-- Reference Links -->
-[kata-coach]: /.github/chatmodes/learning-kata-coach.chatmode.md
-[task-researcher]: /.github/chatmodes/task-researcher.chatmode.md
-[adr-create]: /.github/chatmodes/adr-creation.chatmode.md
+[kata-coach]: /.github/agents/learning-kata-coach.agent.md
+[task-researcher]: /.github/agents/task-researcher.agent.md
+[adr-create]: /.github/agents/adr-creation.agent.md
 [project-adr-library]: /docs/solution-adr-library/README
 [ms-azure-iot-ops]: https://learn.microsoft.com/azure/iot-operations/
 [ms-azure-event-hubs]: https://docs.microsoft.com/azure/event-hubs/

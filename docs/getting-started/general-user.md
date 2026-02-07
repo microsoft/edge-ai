@@ -74,7 +74,7 @@ The **default container** is recommended for most users. It includes:
 - Docker (using host daemon)
 - Python, Node.js, Go, Rust, .NET
 
-The **beads container** adds experimental Beads MCP server integration and custom Copilot chat modes. Use this only if you're exploring advanced AI-assisted workflows.
+The **beads container** adds experimental Beads MCP server integration and custom Copilot custom agents. Use this only if you're exploring advanced AI-assisted workflows.
 
 1. **Clone the repository**:
 

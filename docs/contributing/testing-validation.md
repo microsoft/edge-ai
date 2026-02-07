@@ -302,9 +302,108 @@ enable_monitoring = true
 
 ## Blueprint Testing
 
-### Integration Testing
+Some blueprints include comprehensive test suites using Go and the Terratest framework. The testing infrastructure validates both IaC declarations and actual deployments.
 
-Test blueprint deployments end-to-end:
+### Blueprint Test Architecture
+
+**Shared Test Utilities:** [src/900-tools-utilities/904-test-utilities/](../../src/900-tools-utilities/904-test-utilities/)
+
+Provides reusable testing functions for all blueprints including:
+
+- Contract validation functions for Terraform and Bicep
+- Deployment and cleanup utilities
+- Output normalization across frameworks
+
+**Reference Implementation:** [blueprints/full-single-node-cluster/tests/](../../blueprints/full-single-node-cluster/tests/)
+
+Complete test suite demonstrating:
+
+- Contract tests for both Terraform and Bicep
+- End-to-end deployment validation
+- Helper scripts for test execution
+- Output contract definitions
+
+### Contract Testing
+
+**Purpose:** Fast static validation ensuring output declarations match test expectations
+
+**Characteristics:**
+
+- Runs in seconds without Azure authentication
+- Zero cost - no Azure resources created
+- Validates IaC configuration correctness
+- Catches drift before expensive deployments
+
+**Running Contract Tests:**
+
+```bash
+cd blueprints/full-single-node-cluster/tests
+
+# Test both frameworks
+./run-contract-tests.sh both
+
+# Test specific framework
+./run-contract-tests.sh terraform
+./run-contract-tests.sh bicep
+
+# Direct Go execution
+go test -v -run Contract
+```
+
+### Deployment Testing
+
+**Purpose:** Full end-to-end validation with real Azure resource deployment
+
+**Characteristics:**
+
+- Creates billable Azure resources
+- Tests actual infrastructure deployment
+- Validates resource connectivity and functionality
+- Duration: 30-45 minutes per test
+
+**Running Deployment Tests:**
+
+```bash
+cd blueprints/full-single-node-cluster/tests
+
+# Enable automatic cleanup
+export CLEANUP_RESOURCES=true
+
+# Test specific framework
+./run-deployment-tests.sh terraform
+./run-deployment-tests.sh bicep
+
+# Direct Go execution
+go test -v -run TestTerraformFullSingleNodeClusterDeploy -timeout 2h
+go test -v -run TestBicepFullSingleNodeClusterDeploy -timeout 2h
+```
+
+**Environment Variables:**
+
+- `CLEANUP_RESOURCES` - Auto-delete resources after test (default: `false`)
+- `TEST_ENVIRONMENT` - Environment name (default: `dev`)
+- `TEST_LOCATION` - Azure region (default: `eastus2`)
+- `TEST_RESOURCE_PREFIX` - Resource naming prefix (default: `t6`)
+- `SKIP_BICEP_DEPLOYMENT` - Use existing deployment (default: `false`)
+
+### Blueprint Test Organization
+
+Each blueprint test suite includes:
+
+```text
+blueprints/{blueprint-name}/tests/
+├── outputs.go                     # Output contract definition
+├── contract_terraform_test.go     # Terraform contract validation
+├── contract_bicep_test.go         # Bicep contract validation
+├── deploy_terraform_test.go       # Terraform deployment test
+├── deploy_bicep_test.go           # Bicep deployment test
+├── validation.go                  # Shared validation functions
+├── setup.go                       # Post-deployment setup
+├── run-contract-tests.sh          # Contract test runner
+└── run-deployment-tests.sh        # Deployment test runner
+```
+
+### Blueprint Integration Testing
 
 ```bash
 # Navigate to blueprint directory
@@ -319,12 +418,24 @@ terraform plan -var-file="test.tfvars"
 # Apply to test environment
 terraform apply -var-file="test.tfvars" -auto-approve
 
-# Validate deployment
-./scripts/validate-deployment.sh
 
 # Clean up
 terraform destroy -var-file="test.tfvars" -auto-approve
 ```
+
+### Creating Blueprint Tests
+
+When creating a new blueprint, add comprehensive test coverage:
+
+1. **Define output contract** in `tests/outputs.go` with struct tags for both frameworks
+2. **Create contract tests** for static validation
+3. **Create deployment tests** for end-to-end validation
+4. **Add helper scripts** for simplified test execution
+5. **Document test requirements** in blueprint README
+
+**See:** [Blueprint Developer Guide](../getting-started/blueprint-developer.md#testing-and-validation) for detailed instructions
+
+**See:** [test-utilities README](../../src/900-tools-utilities/904-test-utilities/README.md) for complete API reference
 
 ### Blueprint Validation Script
 
@@ -522,13 +633,17 @@ go test -v -cpuprofile=cpu.prof -memprofile=mem.prof ./tests/...
 - **Use descriptive test names** that explain what is being tested
 - **Include both positive and negative test cases**
 - **Test error conditions** and edge cases
+- **Implement contract tests** for fast validation before deployment tests
+- **Use test-utilities package** for consistent testing patterns across blueprints
 
 ### Best Practices for Test Data
 
 - **Use parameterized tests** for multiple scenarios
-- **Clean up test resources** automatically
+- **Clean up test resources** automatically (set `CLEANUP_RESOURCES=true`)
 - **Isolate test environments** to prevent interference
 - **Use realistic test data** that represents production scenarios
+- **Run contract tests first** to catch errors before expensive deployments
+- **Enable cleanup in CI/CD** to prevent resource accumulation
 
 ### Validation Strategy
 

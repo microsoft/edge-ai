@@ -45,8 +45,8 @@ This focused skill assessment helps you understand your current capabilities acr
 
 1. **Load the Kata Coach in VS Code**:
    - Open GitHub Copilot Chat in VS Code (Ctrl+Shift+I or Cmd+Shift+I)
-   - In the chat interface, click the chat mode selector (gear icon or dropdown)
-   - Select **"Learning Kata Coach"** from the available chat modes
+   - In the chat interface, click the agent selector (gear icon or dropdown)
+   - Select **"Learning Kata Coach"** from the available custom agents
    - You should see "Learning Kata Coach" displayed at the top of the chat
 
 2. **Request Your Skill Assessment**:
@@ -106,7 +106,7 @@ This focused skill assessment helps you understand your current capabilities acr
 ### How to Get Your Development Plan
 
 1. **Complete the Assessment**: Answer the skill questions below honestly
-2. **Open the Learning Kata Coach**: In VS Code, select "Learning Kata Coach" chat mode
+2. **Open the Learning Kata Coach**: In VS Code, select "Learning Kata Coach" custom agent
 3. **Request Your Plan**: Say *"I just completed the skill assessment, can you recommend my next steps?"*
 4. **Start Learning**: The coach will load specific katas tailored to your current skill level
 

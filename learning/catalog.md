@@ -63,7 +63,7 @@ Complete catalog of all available learning resources. Check items to track your 
   **Prerequisites:** None • **Technologies:** Architecture Decision Records, MQTT, Apache Kafka, GitHub Copilot
 
 - [ ] [**Kata: 100 - AI Development Fundamentals**](katas/ai-assisted-engineering/100-ai-development-fundamentals.md)
-  *Foundation | 30 min* • Learn AI-assisted, hyper-velocity engineering through hands-on practice with prompts, instructions, and chat modes
+  *Foundation | 30 min* • Learn AI-assisted, hyper-velocity engineering through hands-on practice with prompts, instructions, and custom agents
   **Prerequisites:** None • **Technologies:** GitHub Copilot, GitHub Copilot Chat, VS Code, AI-assisted development
 
 - [ ] [**Kata: 100 - Conversation Checkpoint Restore**](katas/ai-assisted-engineering/100-conversation-checkpoint-restore.md)
@@ -103,7 +103,7 @@ Complete catalog of all available learning resources. Check items to track your 
   **Prerequisites:** fabric-integration-200-prerequisite-full-deployment, fabric-integration-200-fabric-workspace-configuration • **Technologies:** Terraform, Microsoft Fabric, Azure IoT Operations, EventStream, KQL (Kusto Query Language), MQTT
 
 - [ ] [**Kata: 100 - Basic Product Requirements Document Creation**](katas/product-requirements/100-basic-prd-creation.md)
-  *Foundation | 60 min* • Learn to create structured product requirements documents using AI assistance and the PRD chatmode for edge AI solutions
+  *Foundation | 60 min* • Learn to create structured product requirements documents using AI assistance and the PRD custom agent for edge AI solutions
   **Prerequisites:** None • **Technologies:** GitHub Copilot
 
 - [ ] [**Kata: 100 - Basic Project Planning Prompt Usage**](katas/project-planning/100-basic-prompt-usage.md)
@@ -130,13 +130,13 @@ Complete catalog of all available learning resources. Check items to track your 
   *Skill | 50 min* • Learn complex ADR creation through multi-component evaluation, comparing TIG vs TICK stack for edge observability and monitoring...
   **Prerequisites:** adr-creation-100-basic-messaging-architecture • **Technologies:** Telegraf, InfluxDB, Grafana, Chronograf, Kapacitor, Azure Monitor, observability-stacks, time-series-databases
 
-- [ ] [**Kata: 200 - Copilot Edit Mode Basics**](katas/ai-assisted-engineering/200-copilot-edit-mode-basics.md)
+- [ ] [**Kata: 200 - Copilot Edit Mode Basics**](katas/ai-assisted-engineering/200-copilot-edit-agent-basics.md)
   *Skill | 60 min* • Learn GitHub Copilot Edit Mode fundamentals including activation methods, file selection strategies, and coordinated multi-file editing for consistent codebase changes
   **Prerequisites:** ai-assisted-engineering-100-copilot-modes • **Technologies:** GitHub Copilot, GitHub Copilot Edit Mode, VS Code
 
-- [ ] [**Kata: 200 - GitHub Copilot Edit Mode for IaC Patterns**](katas/ai-assisted-engineering/200-copilot-edit-mode-iac-patterns.md)
+- [ ] [**Kata: 200 - GitHub Copilot Edit Mode for IaC Patterns**](katas/ai-assisted-engineering/200-copilot-edit-agent-iac-patterns.md)
   *Skill | 60 min* • Apply GitHub Copilot Edit Mode to Infrastructure as Code workflows including Terraform consistency, Bicep type coordination, and Kubernetes manifest patterns
-  **Prerequisites:** ai-assisted-engineering-200-copilot-edit-mode-basics • **Technologies:** GitHub Copilot, GitHub Copilot Edit Mode, Terraform, Bicep, Kubernetes
+  **Prerequisites:** ai-assisted-engineering-200-copilot-edit-agent-basics • **Technologies:** GitHub Copilot, GitHub Copilot Edit Mode, Terraform, Bicep, Kubernetes
 
 - [ ] [**Kata: 200 - Token-Efficient Context Strategies**](katas/ai-assisted-engineering/200-token-efficient-context.md)
   *Skill | 30 min* • Learn efficient token usage, minimize verbose context, and build precise prompting patterns for optimal AI assistance
@@ -168,7 +168,7 @@ Complete catalog of all available learning resources. Check items to track your 
 
 - [ ] [**Kata: 300 - Getting Started Advanced**](katas/ai-assisted-engineering/300-getting-started-advanced.md)
   *Advanced | 120 min* • Learn advanced AI-assisted onboarding with complex environment setups, multi-component deployment, and sophisticated project initialization workflows
-  **Prerequisites:** ai-assisted-engineering-100-ai-development-fundamentals, ai-assisted-engineering-100-copilot-modes, ai-assisted-engineering-200-copilot-edit-mode-basics, ai-assisted-engineering-200-copilot-edit-mode-iac-patterns • **Technologies:** GitHub Copilot, GitHub Copilot Edit Mode, Azure, Terraform, Bicep
+  **Prerequisites:** ai-assisted-engineering-100-ai-development-fundamentals, ai-assisted-engineering-100-copilot-modes, ai-assisted-engineering-200-copilot-edit-agent-basics, ai-assisted-engineering-200-copilot-edit-agent-iac-patterns • **Technologies:** GitHub Copilot, GitHub Copilot Edit Mode, Azure, Terraform, Bicep
 
 - [ ] [**Kata: 300 - Multi-Blueprint Coordination**](katas/edge-deployment/300-multi-blueprint-coordination.md)
   *Advanced | 90 min* • Learn multi-blueprint coordination for complex edge deployment scenarios with dependency management and staged deployment strategies
@@ -231,7 +231,7 @@ Complete catalog of all available learning resources. Check items to track your 
   **Prerequisites:** task-planning-100-edge-documentation-planning, task-planning-300-repository-analysis-planning, task-planning-400-ai-asset-extraction, task-planning-400-learning-platform-extraction • **Technologies:** GitHub Copilot
 
 - [ ] [**Kata: 400 - AI Asset Extraction**](katas/task-planning/400-ai-asset-extraction.md)
-  *Expert | 120 min* • Learn systematic extraction and packaging of AI prompts, instructions, and chatmodes for client project delivery using comprehensive task planning and system...
+  *Expert | 120 min* • Learn systematic extraction and packaging of AI prompts, instructions, and custom agents for client project delivery using comprehensive task planning and system...
   **Prerequisites:** task-planning-100-edge-documentation-planning, task-planning-300-repository-analysis-planning • **Technologies:** GitHub Copilot
 
 - [ ] [**Kata: 400 - PR Generation**](katas/task-planning/400-pr-generation.md)
