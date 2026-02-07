@@ -18,8 +18,7 @@ declare -A DEFAULT_VARS=(
 # Check if variables.tf exists
 if [ ! -f "variables.tf" ]; then
   echo "No variables.tf found in current directory, running terraform plan without variables"
-  # shellcheck disable=SC2068
-  terraform plan $@
+  terraform plan "$@"
   exit $?
 fi
 
@@ -31,8 +30,7 @@ done < <(grep -oE 'variable\s+"[^"]+"' variables.tf | grep -oE '"[^"]+"' | tr -d
 
 if [ ${#DECLARED_VARS[@]} -eq 0 ]; then
   echo "No variables declared in variables.tf, running terraform plan without variables"
-  # shellcheck disable=SC2068
-  terraform plan $@
+  terraform plan "$@"
   exit $?
 fi
 

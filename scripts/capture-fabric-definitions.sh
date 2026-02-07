@@ -27,7 +27,7 @@ fi
 
 # Extract and decode each part of the definition
 # Create output directory if it doesn't exist
-mkdir -p "${DEFINITION_DIR:out}"
+mkdir -p "${DEFINITION_DIR}"
 echo "$response_body" | jq -c '.definition.parts[]' | while read -r part; do
   path=$(echo "$part" | jq -r '.path')
   payload=$(echo "$part" | jq -r '.payload')

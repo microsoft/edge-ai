@@ -28,7 +28,7 @@ if [ -z "$REGISTRY" ]; then
   exit 1
 fi
 
-if ! az account show 2>&1; then
+if ! az account show >/dev/null; then
   echo "Azure CLI is not logged in. Please log in using 'az login' or ensure the pipeline has access."
   exit 1
 fi

@@ -54,16 +54,15 @@ update_urls() {
   # echo "Updating URLs in $file:"
   # Extract and print all URLs from the document that do not begin with
   # http:// or https:// and do not contain "media" or "mailto"
+  # Read each URL and update the URL in the document by iterating
+  # over the tuples array and replacing the URL with the dest path
+  # This will miss some URLs that are not in the tuples array
+  # but without more engineering, this is the best we can do.
   grep -oP '(?<=\]\()[^)\s]+(?=\))|(?<=\]\<)[^>\s]+(?=\>)' "$file" \
     | grep -vP '^(http://|https://|#)' \
     | grep -v 'media' \
     | grep -v 'mailto' \
-    |
-    # Read each URL and update the URL in the document by iterating
-    # over the tuples array and replacing the URL with the dest path
-    # This will miss some URLs that are not in the tuples array
-    # but without more engineering, this is the best we can do.
-    while read -r url; do
+    | while read -r url; do
       # echo "Updating URLs in $file:"
       # echo "url: $url"
       # If the $url begins with "./" then strip the "./"

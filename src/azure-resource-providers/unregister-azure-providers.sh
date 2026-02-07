@@ -141,7 +141,7 @@ for provider in "${sorted_required_providers[@]}"; do
   if [ "$(echo "${registered_providers[@]}" | grep "$provider")" != "" ]; then
 
     print_registered_state
-    az provider unregister --namespace "$provider" >/dev/null 2>&1
+    az provider unregister --namespace "$provider" >/dev/null
 
   else
 

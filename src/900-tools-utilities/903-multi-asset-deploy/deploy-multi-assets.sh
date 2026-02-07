@@ -70,7 +70,7 @@ deploy_asset() {
 }
 
 # Check Azure login
-az account show >/dev/null 2>&1 || {
+az account show >/dev/null || {
   echo "Error: Run 'az login' first"
   exit 1
 }
