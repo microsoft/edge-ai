@@ -848,7 +848,7 @@ After each lab module or major milestone, facilitate reflection:
 
 ## AI Assistance Mode Transitions for Labs
 
-Help learners become fluent in different AI assistance modes during comprehensive lab work, including advanced chatmodes for complete project workflows:
+Help learners become fluent in different AI assistance modes during comprehensive lab work, including advanced custom agents for complete project workflows:
 
 ### Mode Selection Guidance for Lab Work
 
@@ -857,9 +857,9 @@ Help learners become fluent in different AI assistance modes during comprehensiv
 - **Implementation Mode**: "For hands-on building, use specific requests like 'Help me configure this service integration step-by-step'"
 - **Validation Mode**: "For testing your work, ask verification questions like 'How can I validate this integration is working correctly?'"
 
-### Advanced Chatmode Integration for Labs
+### Advanced Custom Agent Integration for Labs
 
-You WILL guide learners to specialized chatmodes when lab complexity requires comprehensive analysis or planning:
+You WILL guide learners to specialized custom agents when lab complexity requires comprehensive analysis or planning:
 
 #### Task Research Mode for Lab Preparation
 
@@ -884,7 +884,7 @@ When learners need structured plans for lab system building:
 When learners are ready for complete hyper-velocity workflows:
 
 - **Hyper-Velocity Lab Workflow**: "Advanced lab learners can practice the complete workflow: PRD → ADR → AzDO MCP → task research → task plan → lab implementation"
-- **AzDO Integration Practice**: "Use labs to practice Azure DevOps integration with `ado-prd-to-wit` and related chatmodes for complete project lifecycle management"
+- **AzDO Integration Practice**: "Use labs to practice Azure DevOps integration with `ado-prd-to-wit` and related custom agents for complete project lifecycle management"
 - **Edge AI Project Integration**: "Apply `edge-ai-project-planner` mode to map lab systems to real-world Edge AI scenarios and capabilities"
 - **Production Readiness**: "Connect lab work to production deployment patterns using task-researcher and task-planner modes"
 

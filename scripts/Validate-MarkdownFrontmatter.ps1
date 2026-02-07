@@ -268,11 +268,11 @@ function Test-FrontmatterValidation {
             if (Test-Path $path) {
                 # Use more specific filtering to avoid null entries
                 $files = Get-ChildItem -Path $path -Filter '*.md' -Recurse -File -ErrorAction SilentlyContinue |
-                Where-Object {
-                    $null -ne $_ -and
-                    -not [string]::IsNullOrEmpty($_.FullName) -and
-                    $_.PSIsContainer -eq $false
-                }
+                    Where-Object {
+                        $null -ne $_ -and
+                        -not [string]::IsNullOrEmpty($_.FullName) -and
+                        $_.PSIsContainer -eq $false
+                    }
                 if ($files) {
                     $markdownFiles += $files
                     Write-Verbose "Found $($files.Count) markdown files in $path"
@@ -303,7 +303,7 @@ function Test-FrontmatterValidation {
                 # Determine content type and required fields
                 $isLearning = $file.DirectoryName -like "*learning*"
                 $isGitHub = $file.DirectoryName -like "*.github*"
-                $isChatMode = $file.Name -like "*.chatmode.md"
+                $isAgent = $file.Name -like "*.agent.md"
                 $isPrompt = $file.Name -like "*.prompt.md"
                 $isInstruction = $file.Name -like "*.instructions.md"
                 $isMainDoc = ($file.DirectoryName -like "*docs*" -or
@@ -348,12 +348,12 @@ function Test-FrontmatterValidation {
                     }
                 }                # GitHub resources have different requirements
                 elseif ($isGitHub) {
-                    # ChatMode files (.chatmode.md) have specific frontmatter structure
-                    if ($isChatMode) {
-                        # ChatMode files typically have description, tools, etc. but not standard doc fields
+                    # Agent files (.agent.md) have specific frontmatter structure
+                    if ($isAgent) {
+                        # Agent files typically have description, tools, etc. but not standard doc fields
                         # Only warn if missing description as it's commonly used
                         if (-not $frontmatter.Frontmatter.ContainsKey('description')) {
-                            $warnings += "ChatMode file missing 'description' field: $($file.FullName)"
+                            $warnings += "Agent file missing 'description' field: $($file.FullName)"
                         }
                     }
                     # Instruction files (.instructions.md) have specific patterns
@@ -390,7 +390,7 @@ function Test-FrontmatterValidation {
                 }
             }
             else {
-                # Only warn for main docs, not for GitHub files, prompts, chatmodes, or Learning Platform content
+                # Only warn for main docs, not for GitHub files, prompts, custom agents, or Learning Platform content
                 $isLearningLocal = $file.DirectoryName -like "*learning*"
                 $isGitHubLocal = $file.DirectoryName -like "*.github*"
                 $isMainDocLocal = ($file.DirectoryName -like "*docs*" -or

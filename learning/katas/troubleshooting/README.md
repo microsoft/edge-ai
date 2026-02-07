@@ -35,7 +35,7 @@ complexity_factors:
 uses_prompts: []
 uses_instructions:
   - .github/copilot-instructions.md
-uses_chatmodes: []
+uses_agents: []
 repository_paths:
   - src/
   - scripts/
@@ -163,7 +163,7 @@ These katas leverage comprehensive repository assets for realistic troubleshooti
 
 - **Observability Components**: `src/000-cloud/020-observability/`, `src/100-edge/120-observability/`
 - **Blueprints**: `blueprints/full-single-node-cluster/` for complete system scenarios
-- **Chatmodes**: `learning-kata-coach.chatmode.md`, `task-planner.chatmode.md`
+- **Agents**: `learning-kata-coach.agent.md`, `task-planner.agent.md`
 - **Instructions**: `terraform.instructions.md`, `bicep.instructions.md`
 
 ## Learning Path Alignment

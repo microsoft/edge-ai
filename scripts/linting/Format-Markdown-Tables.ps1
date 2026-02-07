@@ -11,7 +11,7 @@
 
 .PARAMETER Exclude
     Array of folder patterns to exclude from formatting.
-    Default: @('node_modules', '.git', '.vscode', '.devcontainer', 'venv', '.github/instructions', '.github/prompts', '.copilot-tracking')
+    Default: @('node_modules', '.git', 'venv', '.github/copilot-instructions.md', '.github/instructions', '.github/prompts', '.copilot-tracking')
 
 .PARAMETER Include
     Array of folder patterns to explicitly include (overrides default exclusions).
@@ -47,6 +47,9 @@ param(
         'node_modules',
         '.git',
         'venv',
+        '.github/copilot-instructions.md',
+        '.github/instructions',
+        '.github/prompts',
         '.copilot-tracking'
     ),
 
@@ -76,12 +79,17 @@ Write-Host "Found $($AllMarkdownFiles.Count) total markdown files" -ForegroundCo
 # Filter out excluded paths
 $FilteredFiles = $AllMarkdownFiles | Where-Object {
     $filePath = $_.FullName.Replace($RepoRoot.Path, '').TrimStart('\', '/')
+    $normalizedPath = $filePath -replace '\\', '/'
     $shouldExclude = $false
 
     # Check if file is in an excluded folder
     foreach ($excludePattern in $Exclude) {
-        $normalizedPattern = $excludePattern.Replace('/', '\')
-        if ($filePath -like "*\$normalizedPattern\*" -or $filePath -like "$normalizedPattern\*") {
+        $normalizedPattern = $excludePattern -replace '\\', '/'
+        $isMatch = $normalizedPath -eq $normalizedPattern -or
+        $normalizedPath -like "$normalizedPattern/*" -or
+        $normalizedPath -like "*/$normalizedPattern/*" -or
+        $normalizedPath -like "*/$normalizedPattern"
+        if ($isMatch) {
             $shouldExclude = $true
             break
         }
@@ -90,8 +98,12 @@ $FilteredFiles = $AllMarkdownFiles | Where-Object {
     # Check if file is explicitly included (overrides exclusion)
     if ($shouldExclude -and $Include.Count -gt 0) {
         foreach ($includePattern in $Include) {
-            $normalizedPattern = $includePattern.Replace('/', '\')
-            if ($filePath -like "*\$normalizedPattern\*" -or $filePath -like "$normalizedPattern\*") {
+            $normalizedPattern = $includePattern -replace '\\', '/'
+            $isMatch = $normalizedPath -eq $normalizedPattern -or
+            $normalizedPath -like "$normalizedPattern/*" -or
+            $normalizedPath -like "*/$normalizedPattern/*" -or
+            $normalizedPath -like "*/$normalizedPattern"
+            if ($isMatch) {
                 $shouldExclude = $false
                 break
             }

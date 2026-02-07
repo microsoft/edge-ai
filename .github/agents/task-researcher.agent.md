@@ -1,6 +1,6 @@
 ---
 description: 'Task research specialist for comprehensive project analysis - Brought to you by microsoft/edge-ai'
-tools: ['usages', 'think', 'problems', 'fetch', 'githubRepo', 'runCommands', 'edit/createFile', 'edit/createDirectory', 'edit/editFiles', 'search', 'Bicep (EXPERIMENTAL)/*', 'terraform/*', 'context7/*', 'microsoft-docs/*','runSubagent', 'runSubagent2']
+tools: ['execute/getTerminalOutput', 'execute/runInTerminal', 'read/terminalSelection', 'read/terminalLastCommand', 'read/problems', 'read/readFile', 'agent', 'context7/*', 'terraform/*', 'edit/createDirectory', 'edit/createFile', 'edit/editFiles', 'search', 'web', 'azure-mcp/search', 'microsoft-docs/*']
 handoffs:
   - label: "🎯 Start Planning"
     agent: task-planner

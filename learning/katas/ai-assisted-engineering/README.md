@@ -35,7 +35,7 @@ complexity_factors:
 uses_prompts: []
 uses_instructions:
   - .github/copilot-instructions.md
-uses_chatmodes: []
+uses_agents: []
 repository_paths:
   - .github/copilot-instructions.md
   - copilot/
@@ -125,7 +125,7 @@ Streamlined practice exercises for building proficiency in AI-powered developmen
 These katas leverage real project AI assistance tools:
 
 - **Copilot Instructions**: Practice with [getting started instructions][getting-started-instructions] for context-aware assistance
-- **AI Chat Modes**: Learn specialized modes from [GitHub chat configurations][github-chat-modes]
+- **AI Custom Agents**: Learn specialized modes from [GitHub chat configurations][github-chat-modes]
 - **Getting Started Prompts**: Use [onboarding guidance][getting-started-guidance] for practical workflows
 
 ### Getting Started
@@ -149,19 +149,19 @@ This automatically opens the documentation and navigates directly to the Learnin
 
 ## Streamlined Kata Progression
 
-| #   | Kata Title                                                                                 | Difficulty   | Duration | Prerequisites        | Technology Focus                                              | Scaffolding  |
-|-----|--------------------------------------------------------------------------------------------|--------------|----------|----------------------|---------------------------------------------------------------|--------------|
-| 100 | [100 - AI Development Fundamentals](./100-ai-development-fundamentals.md)                  | ⭐ Foundation | 30 min   | —                    | GitHub Copilot, GitHub Copilot Chat, VS Code                  | Heavy        |
-| 100 | [100 - Conversation Checkpoint Restore](./100-conversation-checkpoint-restore.md)          | ⭐ Foundation | 25 min   | —                    | GitHub Copilot Chat, VS Code                                  | Heavy        |
-| 100 | [100 - Conversation Clearing Strategy](./100-conversation-clearing-strategy.md)            | ⭐ Foundation | 25 min   | → 100                | manage VS Code conversation history limits                    | Heavy        |
-| 100 | [100 - GitHub Copilot Modes](./100-copilot-modes.md)                                       | ⭐ Foundation | 30 min   | → 100                | GitHub Copilot, GitHub Copilot Chat, GitHub Copilot Edit Mode | Heavy        |
-| 100 | [100 - Getting Started Basics](./100-getting-started-basics.md)                            | ⭐ Foundation | 45 min   | → 100                | GitHub Copilot, Azure, Terraform                              | Heavy        |
-| 100 | [100 - Inline Chat Quick Edits](./100-inline-chat-quick-edits.md)                          | ⭐ Foundation | 30 min   | → 100                | GitHub Copilot, Terraform, Bicep                              | Heavy        |
-| 100 | [100 - Inline Suggestions Basics](./100-inline-suggestions-basics.md)                      | ⭐ Foundation | 30 min   | —                    | GitHub Copilot, Terraform, Bicep                              | Heavy        |
-| 200 | [200 - Copilot Edit Mode Basics](./200-copilot-edit-mode-basics.md)                        | ⭐⭐ Skill     | 60 min   | → 100                | GitHub Copilot, GitHub Copilot Edit Mode, VS Code             | Medium-Heavy |
-| 200 | [200 - GitHub Copilot Edit Mode for IaC Patterns](./200-copilot-edit-mode-iac-patterns.md) | ⭐⭐ Skill     | 60 min   | → 200                | GitHub Copilot, GitHub Copilot Edit Mode, Terraform           | Medium-Heavy |
-| 200 | [200 - Token-Efficient Context Strategies](./200-token-efficient-context.md)               | ⭐⭐ Skill     | 30 min   | → 100, 100           | GitHub Copilot Chat, VS Code                                  | Medium-Heavy |
-| 300 | [300 - Getting Started Advanced](./300-getting-started-advanced.md)                        | ⭐⭐⭐ Advanced | 120 min  | → 100, 100, 200, 200 | GitHub Copilot, GitHub Copilot Edit Mode, Azure               | Medium       |
+| #   | Kata Title                                                                                  | Difficulty   | Duration | Prerequisites        | Technology Focus                                              | Scaffolding  |
+|-----|---------------------------------------------------------------------------------------------|--------------|----------|----------------------|---------------------------------------------------------------|--------------|
+| 100 | [100 - AI Development Fundamentals](./100-ai-development-fundamentals.md)                   | ⭐ Foundation | 30 min   | —                    | GitHub Copilot, GitHub Copilot Chat, VS Code                  | Heavy        |
+| 100 | [100 - Conversation Checkpoint Restore](./100-conversation-checkpoint-restore.md)           | ⭐ Foundation | 25 min   | —                    | GitHub Copilot Chat, VS Code                                  | Heavy        |
+| 100 | [100 - Conversation Clearing Strategy](./100-conversation-clearing-strategy.md)             | ⭐ Foundation | 25 min   | → 100                | manage VS Code conversation history limits                    | Heavy        |
+| 100 | [100 - GitHub Copilot Modes](./100-copilot-modes.md)                                        | ⭐ Foundation | 30 min   | → 100                | GitHub Copilot, GitHub Copilot Chat, GitHub Copilot Edit Mode | Heavy        |
+| 100 | [100 - Getting Started Basics](./100-getting-started-basics.md)                             | ⭐ Foundation | 45 min   | → 100                | GitHub Copilot, Azure, Terraform                              | Heavy        |
+| 100 | [100 - Inline Chat Quick Edits](./100-inline-chat-quick-edits.md)                           | ⭐ Foundation | 30 min   | → 100                | GitHub Copilot, Terraform, Bicep                              | Heavy        |
+| 100 | [100 - Inline Suggestions Basics](./100-inline-suggestions-basics.md)                       | ⭐ Foundation | 30 min   | —                    | GitHub Copilot, Terraform, Bicep                              | Heavy        |
+| 200 | [200 - Copilot Edit Mode Basics](./200-copilot-edit-agent-basics.md)                        | ⭐⭐ Skill     | 60 min   | → 100                | GitHub Copilot, GitHub Copilot Edit Mode, VS Code             | Medium-Heavy |
+| 200 | [200 - GitHub Copilot Edit Mode for IaC Patterns](./200-copilot-edit-agent-iac-patterns.md) | ⭐⭐ Skill     | 60 min   | → 200                | GitHub Copilot, GitHub Copilot Edit Mode, Terraform           | Medium-Heavy |
+| 200 | [200 - Token-Efficient Context Strategies](./200-token-efficient-context.md)                | ⭐⭐ Skill     | 30 min   | → 100, 100           | GitHub Copilot Chat, VS Code                                  | Medium-Heavy |
+| 300 | [300 - Getting Started Advanced](./300-getting-started-advanced.md)                         | ⭐⭐⭐ Advanced | 120 min  | → 100, 100, 200, 200 | GitHub Copilot, GitHub Copilot Edit Mode, Azure               | Medium       |
 
 <!-- AUTO-GENERATED:END -->
 
@@ -171,7 +171,7 @@ This automatically opens the documentation and navigates directly to the Learnin
 
 ### 100 - Foundation Level
 
-- **Focus**: Learn AI-assisted, hyper-velocity engineering through hands-on practice with prompts, instructions, and chat modes and Learn when and how to restore conversation checkpoints for efficient workflow recovery and context management
+- **Focus**: Learn AI-assisted, hyper-velocity engineering through hands-on practice with prompts, instructions, and custom agents and Learn when and how to restore conversation checkpoints for efficient workflow recovery and context management
 - **Skills**: GitHub Copilot, GitHub Copilot Chat, VS Code, AI-assisted development, GitHub Copilot Edit Mode
 - **Time-to-Practice**: 4 hours
 
@@ -218,7 +218,7 @@ then carefully refined by our team of discerning human reviewers.*
 <!-- Reference Links -->
 <!-- Internal Project Links -->
 [getting-started-instructions]: /.github/instructions/
-[github-chat-modes]: /.github/chatmodes/
+[github-chat-modes]: /.github/agents/
 [getting-started-guidance]: /docs/getting-started/
 [kata-100-fundamentals]: /learning/katas/ai-assisted-engineering/100-ai-development-fundamentals
 

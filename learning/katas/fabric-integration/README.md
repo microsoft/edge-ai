@@ -167,7 +167,7 @@ This category focuses on **emerging capabilities** in Microsoft Fabric and RTI i
 
 2. **Validate prerequisites**: Ensure you have access to Azure subscription and repository blueprints
 
-3. **Enable AI coaching** (recommended): Use Learning Kata Coach chatmode for guided practice and progress tracking
+3. **Enable AI coaching** (recommended): Use Learning Kata Coach agent for guided practice and progress tracking
 
 ## Resources
 

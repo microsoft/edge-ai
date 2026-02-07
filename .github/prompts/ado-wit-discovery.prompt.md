@@ -1,5 +1,4 @@
 ---
-mode: "agent"
 description: "Analyze research, plans, or repository changes to discover and plan Azure DevOps User Stories and Bugs with handoff for creation or updates."
 ---
 
