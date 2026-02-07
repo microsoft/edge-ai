@@ -139,11 +139,11 @@ Core guidance files integrate with the broader AI assistance ecosystem:
 - **Main Copilot Instructions**: Automatically reference these files for context-aware assistance
 - **Context Instructions**: Specific instruction files reference relevant core guidance
 - **Prompts**: Reusable prompts leverage guidance for consistent coaching
-- **Chat Modes**: Specialized assistance modes utilize guidance for expert-level support
+- **Custom Agents**: Specialized agents utilize guidance for expert-level support and workflow assistance
 
 ## Related Resources
 
-- **[Chat Modes](../.github/chatmodes/README.md)**: Specialized AI coaching and workflow assistance
+- **[Custom Agents](../.github/agents/README.md)**: Specialized AI coaching and workflow assistance
 - **[Instructions](../.github/instructions/README.md)**: Context-specific development instructions
 - **[Prompts](../.github/prompts/README.md)**: Reusable prompts for specific development tasks
 - **[AI-Assisted Engineering Guide](../docs/contributing/ai-assisted-engineering.md)**: Comprehensive AI assistance documentation

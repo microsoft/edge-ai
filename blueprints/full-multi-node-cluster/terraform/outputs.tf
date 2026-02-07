@@ -2,14 +2,31 @@
  * Full Multi Node Cluster Blueprint Outputs
  */
 
-output "container_registry" {
-  description = "Azure Container Registry resources."
-  value       = module.cloud_acr.acr
+/*
+ * Cluster Connection Outputs
+ */
+
+output "cluster_connection" {
+  description = "Commands and information to connect to the deployed cluster."
+  value = {
+    arc_cluster_name           = module.edge_cncf_cluster.connected_cluster_name
+    arc_cluster_resource_group = module.edge_cncf_cluster.connected_cluster_resource_group_name
+    arc_proxy_command          = module.edge_cncf_cluster.azure_arc_proxy_command
+  }
 }
+
+/*
+ * Container Registry Outputs
+ */
 
 output "acr_network_posture" {
   description = "Azure Container Registry network posture metadata."
   value       = module.cloud_acr.acr_network_posture
+}
+
+output "container_registry" {
+  description = "Azure Container Registry resources."
+  value       = module.cloud_acr.acr
 }
 
 /*

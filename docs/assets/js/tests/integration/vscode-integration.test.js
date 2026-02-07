@@ -231,7 +231,7 @@ describe('VSCodeIntegration', () => {
       expect(result).toBe(false);
     });
 
-    it('should support custom chat modes', () => {
+    it('should support custom agents', () => {
       const customCoachContext = {
         mode: 'custom-coach-mode',
         context: {

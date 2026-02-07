@@ -51,8 +51,8 @@ describe('Modal Integration with Skill Assessment', () => {
           promptEngineering: { score: 3.6 }
         }
       }),
-      getChatmodeRecommendation: vi.fn().mockReturnValue({
-        chatmode: 'learning-kata-coach',
+      getCustomagentRecommendation: vi.fn().mockReturnValue({
+        customagent: 'learning-kata-coach',
         displayName: 'kata coach',
         description: 'Get a personalized learning path and guided practice based on your skill level'
       }),
@@ -222,11 +222,11 @@ describe('Modal Integration with Skill Assessment', () => {
       }).not.toThrow();
     });
 
-    it('should validate chatmode recommendation structure', () => {
-      const chatmodeRec = learningProgressTracker.getChatmodeRecommendation('skill-developer');
+    it('should validate custom agent recommendation structure', () => {
+      const customagentRec = learningProgressTracker.getCustomagentRecommendation('skill-developer');
 
-      expect(chatmodeRec).toEqual({
-        chatmode: 'learning-kata-coach',
+      expect(customagentRec).toEqual({
+        customagent: 'learning-kata-coach',
         displayName: 'kata coach',
         description: 'Get a personalized learning path and guided practice based on your skill level'
       });
@@ -360,7 +360,7 @@ describe('Modal Integration with Skill Assessment', () => {
 
       // Verify required methods exist
       expect(typeof learningProgressTracker.getCurrentProgress).toBe('function');
-      expect(typeof learningProgressTracker.getChatmodeRecommendation).toBe('function');
+      expect(typeof learningProgressTracker.getCustomagentRecommendation).toBe('function');
       expect(typeof assessmentPathGenerator.generateRecommendations).toBe('function');
     });
   });

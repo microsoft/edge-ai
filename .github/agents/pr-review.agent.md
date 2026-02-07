@@ -182,11 +182,11 @@ Always log actions (directory creation, script invocation, parsing status) in `i
 
 <!-- <example-diff-mapping> -->
 ```plaintext
-diff --git a/.github/chatmodes/pr-review.chatmode.md b/.github/chatmodes/pr-review.chatmode.md
+diff --git a/.github/agents/pr-review.agent.md b/.github/agents/pr-review.agent.md
 new file mode 100644
 index 00000000..17bd6ffe
 --- /dev/null
-+++ b/.github/chatmodes/pr-review.chatmode.md
++++ b/.github/agents/pr-review.agent.md
 @@ -0,0 +1,219 @@
 ```
 <!-- </example-diff-mapping> -->

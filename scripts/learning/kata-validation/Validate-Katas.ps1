@@ -147,8 +147,8 @@ else {
 
 # Ensure PowerShell-Yaml module is available for robust YAML parsing
 function Install-YamlModule {
-        try {
-            Import-Module powershell-yaml -ErrorAction Stop
+    try {
+        Import-Module powershell-yaml -ErrorAction Stop
         if (-not $Script:Quiet) {
             Write-Information "✓ PowerShell-Yaml module loaded successfully" -InformationAction Continue
         }
@@ -312,8 +312,8 @@ function Find-KataFile {
             # If directory, add all kata files under it
             if (Test-Path $candidate -PathType Container) {
                 $dirFiles = Get-ChildItem -Path $candidate -Recurse -Filter "*.md" |
-                Where-Object { $_.Name -notmatch "README\.md" -and $_.Name -match "^\d{2,3}-.*\.md$" } |
-                ForEach-Object { $_.FullName }
+                    Where-Object { $_.Name -notmatch "README\.md" -and $_.Name -match "^\d{2,3}-.*\.md$" } |
+                    ForEach-Object { $_.FullName }
                 $kataFiles += $dirFiles
                 continue
             }
@@ -321,8 +321,8 @@ function Find-KataFile {
             # If pattern contains wildcard, expand
             if ($candidate -like '*[*?]*') {
                 $globMatches = Get-ChildItem -Path (Split-Path $candidate) -Filter (Split-Path $candidate -Leaf) -Recurse -ErrorAction SilentlyContinue |
-                Where-Object { $_.Name -notmatch "README\.md" -and $_.Name -match "^\d{2,3}-.*\.md$" } |
-                ForEach-Object { $_.FullName }
+                    Where-Object { $_.Name -notmatch "README\.md" -and $_.Name -match "^\d{2,3}-.*\.md$" } |
+                    ForEach-Object { $_.FullName }
 
                 if ($globMatches) { $kataFiles += $globMatches } else { Write-ValidationLog -Level Error -Message "No files matched pattern: $path" }
                 continue
@@ -350,16 +350,16 @@ function Find-KataFile {
     # Otherwise, discover all files (existing behavior)
     # Always include individual numbered kata files (01-*.md, 02-*.md, 100-*.md, 200-*.md, etc.)
     $individualFiles = Get-ChildItem -Path $KataDirectory -Recurse -Filter "*.md" |
-    Where-Object { $_.Name -notmatch "README\.md" -and $_.Name -match "^\d{2,3}-.*\.md$" } |
-    ForEach-Object { $_.FullName }
+        Where-Object { $_.Name -notmatch "README\.md" -and $_.Name -match "^\d{2,3}-.*\.md$" } |
+        ForEach-Object { $_.FullName }
 
     $kataFiles += $individualFiles
 
     # Include category README.md files only if explicitly requested
     if ($Script:IncludeCategoryReadmes) {
         $readmeFiles = Get-ChildItem -Path $KataDirectory -Recurse -Name "README.md" |
-        Where-Object { $_ -ne "README.md" } |
-        ForEach-Object { Join-Path $KataDirectory $_ }
+            Where-Object { $_ -ne "README.md" } |
+            ForEach-Object { Join-Path $KataDirectory $_ }
 
         $kataFiles += $readmeFiles
     }
@@ -952,8 +952,8 @@ function Test-Prerequisite {
     # Build a kata_id -> filepath lookup cache on first use to support slug-style prerequisites
     if ($Script:KataIdLookup.Count -eq 0) {
         $kataFiles = Get-ChildItem -Path $KataDirectory -Recurse -Filter "*.md" |
-        Where-Object { $_.Name -match "^\d\d-.*\.md$" } |
-        ForEach-Object { $_.FullName }
+            Where-Object { $_.Name -match "^\d\d-.*\.md$" } |
+            ForEach-Object { $_.FullName }
 
         foreach ($kf in $kataFiles) {
             $fm = Get-YamlFrontmatter -FilePath $kf
@@ -1633,7 +1633,7 @@ function Test-ResourceRedundancy {
     .DESCRIPTION
     Validates single-source-of-truth principle:
     - Each file path should be mentioned ≤2 times total
-    - Each chatmode should be described once, then referenced
+    - Each custom agent should be described once, then referenced
     #>
     param([string]$FilePath)
 
@@ -1642,7 +1642,7 @@ function Test-ResourceRedundancy {
     $hasWarnings = $false
 
     # Extract all file path references
-    $filePathPattern = '`([^`]+\.(md|json|yaml|txt|sh|ps1|chatmode))`'
+    $filePathPattern = '`([^`]+\.(md|json|yaml|txt|sh|ps1|agent))`'
     $fileReferences = [regex]::Matches($content, $filePathPattern)
 
     $fileCount = @{}
@@ -2502,38 +2502,38 @@ tags:
 # Main execution - always run when script is executed
 try {
     if ($Script:FixCommonIssues) {
-            # Auto-fix mode - find all individual kata files
-            Write-Information "🔧 Running auto-fix mode for individual kata files..." -InformationAction Continue
+        # Auto-fix mode - find all individual kata files
+        Write-Information "🔧 Running auto-fix mode for individual kata files..." -InformationAction Continue
 
-            if (-not (Test-Path $KataDirectory)) {
-                Write-Error "Kata directory not found: $KataDirectory"
-                exit 1
-            }
+        if (-not (Test-Path $KataDirectory)) {
+            Write-Error "Kata directory not found: $KataDirectory"
+            exit 1
+        }
 
-            $individualKataFiles = Get-ChildItem -Path $KataDirectory -Recurse -Filter "*.md" |
+        $individualKataFiles = Get-ChildItem -Path $KataDirectory -Recurse -Filter "*.md" |
             Where-Object { $_.Name -notmatch "README\.md" -and $_.Name -match "^\d\d-.*\.md$" } |
             ForEach-Object { $_.FullName }
 
-            Write-Information "📚 Found $($individualKataFiles.Count) individual kata files to fix" -InformationAction Continue
+        Write-Information "📚 Found $($individualKataFiles.Count) individual kata files to fix" -InformationAction Continue
 
-            foreach ($filePath in $individualKataFiles) {
-                # Fix frontmatter field issues (existing functionality)
-                Repair-KataFrontmatter -FilePath $filePath
+        foreach ($filePath in $individualKataFiles) {
+            # Fix frontmatter field issues (existing functionality)
+            Repair-KataFrontmatter -FilePath $filePath
 
-                # Fix content issues (NEW: Master language, orphaned YAML, markdownlint)
-                Repair-KataContent -FilePath $filePath
-            }
-
-            Write-Information "`n✅ Auto-fix completed for $($individualKataFiles.Count) files" -InformationAction Continue
-            Write-Information "   🔍 Run validation to verify fixes: .\Validate-Katas.ps1" -InformationAction Continue
+            # Fix content issues (NEW: Master language, orphaned YAML, markdownlint)
+            Repair-KataContent -FilePath $filePath
         }
-        else {
-            # Normal validation mode
-            $success = Invoke-KataValidation
-            exit $(if ($success) { 0 } else { 1 })
-        }
+
+        Write-Information "`n✅ Auto-fix completed for $($individualKataFiles.Count) files" -InformationAction Continue
+        Write-Information "   🔍 Run validation to verify fixes: .\Validate-Katas.ps1" -InformationAction Continue
     }
-    catch {
-        Write-Error "💥 Validation failed with error: $($_.Exception.Message)"
-        exit 1
+    else {
+        # Normal validation mode
+        $success = Invoke-KataValidation
+        exit $(if ($success) { 0 } else { 1 })
     }
+}
+catch {
+    Write-Error "💥 Validation failed with error: $($_.Exception.Message)"
+    exit 1
+}

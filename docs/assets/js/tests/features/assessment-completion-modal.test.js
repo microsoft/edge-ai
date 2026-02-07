@@ -144,8 +144,8 @@ describe('Assessment Completion Modal', () => {
 
     // Mock global learning progress tracker
     window.LearningProgressTracker = {
-      getChatmodeRecommendation: vi.fn().mockReturnValue({
-        chatmode: 'learning-kata-coach',
+      getCustomagentRecommendation: vi.fn().mockReturnValue({
+        customagent: 'learning-kata-coach',
         displayName: 'kata coach',
         description: 'Get a personalized learning path and guided practice based on your skill level'
       })
@@ -209,9 +209,9 @@ describe('Assessment Completion Modal', () => {
                   </div>
                   <div class="next-steps">
                     <h3>🚀 Next Steps</h3>
-                    <div class="chatmode-recommendation">
+                    <div class="customagent-recommendation">
                       <p>Get personalized guidance from our <strong>Kata Coach</strong></p>
-                      <p class="chatmode-description"></p>
+                      <p class="customagent-description"></p>
                     </div>
                   </div>
                 </div>
@@ -275,11 +275,11 @@ describe('Assessment Completion Modal', () => {
             estimatedDuration.textContent = 'Estimated Duration: 4-6 weeks';
           }
 
-          // Chatmode recommendation
-          const chatmodeDescription = modal.querySelector('.chatmode-description');
-          const chatmodeRec = window.LearningProgressTracker?.getChatmodeRecommendation(assessmentResults.skillLevel);
-          if (chatmodeRec) {
-            chatmodeDescription.textContent = chatmodeRec.description;
+          // Custom agent recommendation
+          const customagentDescription = modal.querySelector('.customagent-description');
+          const customagentRec = window.LearningProgressTracker?.getCustomagentRecommendation(assessmentResults.skillLevel);
+          if (customagentRec) {
+            customagentDescription.textContent = customagentRec.description;
           }
         }
 
@@ -308,7 +308,7 @@ describe('Assessment Completion Modal', () => {
           savePathBtn?.addEventListener('click', () => this.saveLearningPath());
 
           const startCoachingBtn = modal.querySelector('#assessment-modal-start-coaching');
-          startCoachingBtn?.addEventListener('click', () => this.startChatmodeCoaching());
+          startCoachingBtn?.addEventListener('click', () => this.startCustomagentCoaching());
 
           // Overlay and keyboard handlers
           modal.addEventListener('click', (e) => {
@@ -369,10 +369,10 @@ describe('Assessment Completion Modal', () => {
           }
         }
 
-        startChatmodeCoaching() {
-          const chatmodeRec = window.LearningProgressTracker?.getChatmodeRecommendation();
-          if (chatmodeRec) {
-            window.location.hash = `#/github-copilot/chatmodes/${chatmodeRec.chatmode}`;
+        startCustomagentCoaching() {
+          const customagentRec = window.LearningProgressTracker?.getCustomagentRecommendation();
+          if (customagentRec) {
+            window.location.hash = `#/github-copilot/customagents/${customagentRec.customagent}`;
             this.closeModal('coaching');
           }
         }
@@ -529,11 +529,11 @@ describe('Assessment Completion Modal', () => {
       expect(estimatedDuration.textContent).toBe('Estimated Duration: 8-10 weeks');
     });
 
-    it('should populate chatmode recommendation', () => {
+    it('should populate custom agent recommendation', () => {
       modal.populateModalContent(mockAssessmentResults.beginner, mockRecommendations.beginner);
 
-      const chatmodeDescription = modal.modal.querySelector('.chatmode-description');
-      expect(chatmodeDescription.textContent).toBe('Get a personalized learning path and guided practice based on your skill level');
+      const customagentDescription = modal.modal.querySelector('.customagent-description');
+      expect(customagentDescription.textContent).toBe('Get a personalized learning path and guided practice based on your skill level');
     });
 
     it('should handle missing recommendations gracefully', () => {
@@ -589,7 +589,7 @@ describe('Assessment Completion Modal', () => {
       );
     });
 
-    it('should handle chatmode coaching action', async () => {
+    it('should handle custom agent coaching action', async () => {
       const showPromise = modal.showModal(mockAssessmentResults.beginner, mockRecommendations.beginner);
 
       // Mock window.location.hash
@@ -601,7 +601,7 @@ describe('Assessment Completion Modal', () => {
       const startCoachingBtn = modal.modal.querySelector('#assessment-modal-start-coaching');
       startCoachingBtn.click();
 
-      expect(window.location.hash).toBe('#/github-copilot/chatmodes/learning-kata-coach');
+      expect(window.location.hash).toBe('#/github-copilot/customagents/learning-kata-coach');
 
       const result = await showPromise;
       expect(result.action).toBe('coaching');
@@ -1019,9 +1019,9 @@ describe('Assessment Completion Modal', () => {
       it('should display next steps with kata coach guidance information', () => {
         modal.populateModalContent(mockAssessmentResults.intermediate, mockRecommendations.intermediate);
 
-        const chatmodeDescription = modal.modal.querySelector('.chatmode-description');
-        expect(chatmodeDescription.textContent.trim()).not.toBe('');
-        expect(chatmodeDescription.textContent).toContain('personalized learning path');
+        const customagentDescription = modal.modal.querySelector('.customagent-description');
+        expect(customagentDescription.textContent.trim()).not.toBe('');
+        expect(customagentDescription.textContent).toContain('personalized learning path');
       });
     });
 
@@ -1073,7 +1073,7 @@ describe('Assessment Completion Modal', () => {
         expect(clickSpy).toHaveBeenCalled();
       });
 
-      it('should navigate to kata coach chatmode when start coaching button is clicked', async () => {
+      it('should navigate to kata coach custom agent when start coaching button is clicked', async () => {
         const showPromise = modal.showModal(mockAssessmentResults.beginner, mockRecommendations.beginner);
 
         // Mock window.location.hash
@@ -1089,7 +1089,7 @@ describe('Assessment Completion Modal', () => {
         // Simulate click
         coachBtn.click();
 
-        expect(window.location.hash).toBe('#/github-copilot/chatmodes/learning-kata-coach');
+        expect(window.location.hash).toBe('#/github-copilot/customagents/learning-kata-coach');
         const result = await showPromise;
         expect(result.action).toBe('coaching');
       });
@@ -1130,7 +1130,7 @@ describe('Assessment Completion Modal', () => {
         });
 
         coachBtn.click();
-        expect(window.location.hash).toBe('#/github-copilot/chatmodes/learning-kata-coach');
+        expect(window.location.hash).toBe('#/github-copilot/customagents/learning-kata-coach');
       });
     });
 
