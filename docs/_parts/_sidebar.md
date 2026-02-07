@@ -171,8 +171,8 @@
     - [Hybrid Workload Processing](docs/solution-technology-paper-library/hybrid-workload-processing.md)
     - [Mlops Tooling Requirements](docs/solution-technology-paper-library/mlops-tooling-requirements.md)
   - [Github Copilot](docs/github-copilot/README.md)
-    - Chatmodes
-      - [Learning Kata Coach](docs/github-copilot/chatmodes/learning-kata-coach.md)
+    - Custom Agents
+      - [Learning Kata Coach](docs/github-copilot/agents/learning-kata-coach.md)
 
 - Learning Platform
   - [Overview](learning/README.md)
@@ -392,20 +392,20 @@
   - [Terraform.Instructions](.github/instructions/terraform.instructions.md)
   - [Tf Variable Consistency Manager.Instructions](.github/instructions/tf-variable-consistency-manager.instructions.md)
   - [Training Lab Content.Instructions](.github/instructions/training-lab-content.instructions.md)
-- Chatmodes
-  - [Ado Prd To Wit.Chatmode](.github/chatmodes/ado-prd-to-wit.chatmode.md)
-  - [Adr Creation.Chatmode](.github/chatmodes/adr-creation.chatmode.md)
-  - [Learning Content Creator.Chatmode](.github/chatmodes/learning-content-creator.chatmode.md)
-  - [Learning Kata Coach.Chatmode](.github/chatmodes/learning-kata-coach.chatmode.md)
-  - [Learning Lab Coach.Chatmode](.github/chatmodes/learning-lab-coach.chatmode.md)
-  - [Pr Review.Chatmode](.github/chatmodes/pr-review.chatmode.md)
-  - [Prd Builder.Chatmode](.github/chatmodes/prd-builder.chatmode.md)
-  - [Project Envisioning.Chatmode](.github/chatmodes/project-envisioning.chatmode.md)
-  - [Prompt Builder.Chatmode](.github/chatmodes/prompt-builder.chatmode.md)
-  - [Overview](.github/chatmodes/README.md)
-  - [Security Plan Creator.Chatmode](.github/chatmodes/security-plan-creator.chatmode.md)
-  - [Task Planner.Chatmode](.github/chatmodes/task-planner.chatmode.md)
-  - [Task Researcher.Chatmode](.github/chatmodes/task-researcher.chatmode.md)
+- Custom Agents
+  - [Ado Prd To Wit.Agent](.github/agents/ado-prd-to-wit.agent.md)
+  - [Adr Creation.Agent](.github/agents/adr-creation.agent.md)
+  - [Learning Content Creator.Agent](.github/agents/learning-content-creator.agent.md)
+  - [Learning Kata Coach.Agent](.github/agents/learning-kata-coach.agent.md)
+  - [Learning Lab Coach.Agent](.github/agents/learning-lab-coach.agent.md)
+  - [Pr Review.Agent](.github/agents/pr-review.agent.md)
+  - [Prd Builder.Agent](.github/agents/prd-builder.agent.md)
+  - [Project Envisioning.Agent](.github/agents/project-envisioning.agent.md)
+  - [Prompt Builder.Agent](.github/agents/prompt-builder.agent.md)
+  - [Overview](.github/agents/README.md)
+  - [Security Plan Creator.Agent](.github/agents/security-plan-creator.agent.md)
+  - [Task Planner.Agent](.github/agents/task-planner.agent.md)
+  - [Task Researcher.Agent](.github/agents/task-researcher.agent.md)
 - GitHub Files
   - [Copilot Instructions](.github/copilot-instructions.md)
   - [Github Copilot Resources](.github/github-copilot-resources.md)

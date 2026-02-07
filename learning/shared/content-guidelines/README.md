@@ -104,7 +104,7 @@ All learning content MUST adhere to these guidelines:
 - **Template Reference**: `learning/shared/templates/kata-template.md`
 - **Schema Documentation**: `/.github/instructions/learning-coach-schema.instructions.md`
 - **Validation Scripts**: `scripts/kata-validation/`
-- **AI Coaching Prompt**: `.github/chatmodes/learning-kata-coach.chatmode.md`
+- **AI Coaching Prompt**: `.github/agents/learning-kata-coach.agent.md`
 - **Platform Documentation**: Repository-wide standards and conventions
 
 ---

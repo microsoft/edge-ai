@@ -7,18 +7,18 @@ Deploys Kubernetes asset definitions to a connected cluster using the namespaced
 
 ## Parameters
 
-| Name                               | Description                                                                                   | Type                               | Default | Required |
-|:-----------------------------------|:----------------------------------------------------------------------------------------------|:-----------------------------------|:--------|:---------|
-| common                             | The common component configuration.                                                           | `[_2.Common](#user-defined-types)` | n/a     | yes      |
-| customLocationId                   | The ID (resource ID) of the custom location to retrieve.                                      | `string`                           | n/a     | yes      |
-| adrNamespaceName                   | Azure Device Registry namespace name to use with Azure IoT Operations.                        | `string`                           | n/a     | yes      |
-| namespacedDevices                  | List of namespaced devices to create.                                                         | `array`                            | []      | no       |
-| assetEndpointProfiles              | List of asset endpoint profiles to create.                                                    | `array`                            | []      | no       |
-| legacyAssets                       | List of legacy assets to create.                                                              | `array`                            | []      | no       |
-| namespacedAssets                   | List of namespaced assets to create.                                                          | `array`                            | []      | no       |
-| shouldCreateDefaultAsset           | Whether to create a default legacy asset and endpoint profile.                                | `bool`                             | `false` | no       |
-| shouldCreateDefaultNamespacedAsset | Whether to create a default namespaced asset and device.                                      | `bool`                             | `false` | no       |
-| k8sBridgePrincipalId               | The principal ID of the K8 Bridge for Azure IoT Operations. Required for OPC asset discovery. | `string`                           | n/a     | no       |
+| Name                               | Description                                                                                   | Type                                               | Default | Required |
+|:-----------------------------------|:----------------------------------------------------------------------------------------------|:---------------------------------------------------|:--------|:---------|
+| common                             | The common component configuration.                                                           | `[_2.Common](#user-defined-types)`                 | n/a     | yes      |
+| customLocationId                   | The ID (resource ID) of the custom location to retrieve.                                      | `string`                                           | n/a     | yes      |
+| adrNamespaceName                   | Azure Device Registry namespace name to use with Azure IoT Operations.                        | `string`                                           | n/a     | yes      |
+| namespacedDevices                  | List of namespaced devices to create.                                                         | `[_1.NamespacedDevice](#user-defined-types)[]`     | []      | no       |
+| assetEndpointProfiles              | List of asset endpoint profiles to create.                                                    | `[_1.AssetEndpointProfile](#user-defined-types)[]` | []      | no       |
+| legacyAssets                       | List of legacy assets to create.                                                              | `[_1.LegacyAsset](#user-defined-types)[]`          | []      | no       |
+| namespacedAssets                   | List of namespaced assets to create.                                                          | `[_1.NamespacedAsset](#user-defined-types)[]`      | []      | no       |
+| shouldCreateDefaultAsset           | Whether to create a default legacy asset and endpoint profile.                                | `bool`                                             | `false` | no       |
+| shouldCreateDefaultNamespacedAsset | Whether to create a default namespaced asset and device.                                      | `bool`                                             | `false` | no       |
+| k8sBridgePrincipalId               | The principal ID of the K8 Bridge for Azure IoT Operations. Required for OPC asset discovery. | `string`                                           | n/a     | no       |
 
 ## Resources
 
