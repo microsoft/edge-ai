@@ -7,7 +7,7 @@ while IFS= read -r -d '' file; do
   docker run --rm \
     -v "${PWD}:/workdir" \
     --workdir /workdir \
-    hadolint/hadolint:latest \
+    hadolint/hadolint:v2.12.0-alpine \
     hadolint "$file"
 done < <(find . -type f -name 'Dockerfile*' \
   -not -path './node_modules/*' \

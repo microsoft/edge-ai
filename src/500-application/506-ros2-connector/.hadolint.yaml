@@ -1,8 +1,9 @@
 # Hadolint configuration for ROS2 connector application
 #
 # Mirrors root .hadolint.yaml settings plus DL3006 exemption.
-# Hadolint does not merge configs; this file fully replaces root
-# when running from this directory.
+# Hadolint does not merge configs; this file fully replaces root.
+# Hadolint discovers config from CWD ($PWD), not from the Dockerfile
+# location. Use --config to load this file when running from repo root.
 #
 # ROS2 images are exempt from SHA256 pinning (DL3006) due to upstream team's
 # rolling tag strategy and build pruning practices. Timestamped ROS2 builds

@@ -374,25 +374,25 @@ jobs:
           wget -O /usr/local/bin/hadolint "https://github.com/hadolint/hadolint/releases/download/v${HADOLINT_VERSION}/hadolint-Linux-x86_64"
           chmod +x /usr/local/bin/hadolint
 
-          # Find all Dockerfiles
-          DOCKERFILES=$(find "${{ matrix.applicationPath }}" -type f -name "Dockerfile")
-
-          if [[ -z "$DOCKERFILES" ]]; then
-            echo "⚠️  No Dockerfiles found in ${{ matrix.applicationPath }}"
-            exit 0
-          fi
-
           VALIDATION_FAILED=0
+          found=0
 
-          for dockerfile in $DOCKERFILES; do
+          while IFS= read -r -d '' dockerfile; do
+            found=1
             echo "Validating: $dockerfile"
 
             if [[ "$dockerfile" == *"506-ros2-connector"* ]]; then
               echo "  ⏭️  ROS2 file (uses local .hadolint.yaml with DL3006 exemption)"
+              hadolint --config "src/500-application/506-ros2-connector/.hadolint.yaml" "$dockerfile" || VALIDATION_FAILED=1
+            else
+              hadolint "$dockerfile" || VALIDATION_FAILED=1
             fi
+          done < <(find "${{ matrix.applicationPath }}" -type f -name "Dockerfile" -print0)
 
-            hadolint "$dockerfile" || VALIDATION_FAILED=1
-          done
+          if [[ ${found} -eq 0 ]]; then
+            echo "⚠️  No Dockerfiles found in ${{ matrix.applicationPath }}"
+            exit 0
+          fi
 
           if [[ ${VALIDATION_FAILED} -ne 0 ]]; then
             echo "❌ Hadolint validation failed. Dockerfiles must use SHA256 digests on all FROM statements."
