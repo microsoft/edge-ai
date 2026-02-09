@@ -69,6 +69,8 @@ src/
 
 ### Dev Container Configuration
 
+> **Note:** The Dev Container auto-installs the [HVE Core extension](https://marketplace.visualstudio.com/items?itemName=ise-hve-essentials.hve-core), which provides AI prompts, agents, and coding instructions for this project.
+
 1. **Open the repository in VS Code**:
 
    ```bash
@@ -473,6 +475,8 @@ Use these patterns when working with GitHub Copilot:
 - **"Explain the outputs I need from the networking component for IoT Operations"**
 
 ### Project-Specific Prompts
+
+> **Note:** These prompts are provided by the [HVE Core extension](https://marketplace.visualstudio.com/items?itemName=ise-hve-essentials.hve-core), which is auto-installed in the Dev Container.
 
 Use repository-specific prompts for blueprint development:
 
