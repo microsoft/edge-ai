@@ -61,7 +61,7 @@ Prompts can be invoked in GitHub Copilot Chat using `/prompt-name` syntax (e.g.,
 
 ### Documentation & Process
 
-- **[ADR Creation](./adr-create.prompt.md)** - Architecture Decision Record creation guidance *(Migrated to [ADR Creation Chatmode](../chatmodes/adr-creation.chatmode.md) for enhanced capabilities)*
+- **[ADR Creation](./adr-create.prompt.md)** - Architecture Decision Record creation guidance *(Migrated to [ADR Creation Custom Agent](../agents/adr-creation.agent.md) for enhanced capabilities)*
 - **[Pull Request](./pull-request.prompt.md)** - PR description and review assistance
 
 ### Prompt Engineering
@@ -69,11 +69,11 @@ Prompts can be invoked in GitHub Copilot Chat using `/prompt-name` syntax (e.g.,
 - **[Prompt Creation](./prompt-new.prompt.md)** - Creating new prompt files systematically
 - **[Prompt Refactor](./prompt-refactor.prompt.md)** - Optimizing and improving existing prompts
 
-## Prompts vs Instructions vs Chat Modes
+## Prompts vs Instructions vs Custom Agents
 
 - **Prompts** (this directory): Coaching and educational guidance for learning
 - **[Instructions](../instructions/README.md)**: Systematic implementation and automation
-- **[Chat Modes](../chatmodes/README.md)**: Specialized AI assistance with enhanced capabilities
+- **[Custom Agents](../agents/README.md)**: Specialized AI assistance with enhanced capabilities
 
 ## Quick Start
 

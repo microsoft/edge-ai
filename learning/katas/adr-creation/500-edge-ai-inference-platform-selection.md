@@ -92,9 +92,9 @@ search_keywords:
 
 > **🤖 Want Interactive AI Coaching?**
 >
-> Load the **Learning Kata Coach** chat mode for task check-offs, progress tracking, progressive hints, and personalized guidance.
+> Load the **Learning Kata Coach** custom agent for task check-offs, progress tracking, progressive hints, and personalized guidance.
 >
-> In GitHub Copilot Chat, select **Learning Kata Coach** mode and say:
+> In GitHub Copilot Chat, select **Learning Kata Coach** custom agent and say:
 >
 > ```text
 > I'm working on 05 - Edge AI Inference Platform Selection kata and want interactive coaching with progress tracking.
@@ -226,8 +226,8 @@ search_keywords:
 
 ### Help Resources
 
-- [Task Researcher Chatmode][task-researcher] — For systematic platform research and performance analysis
-- [ADR Creation Chatmode][adr-create] — For professional documentation and strategic writing
+- [Task Researcher Agent][task-researcher] — For systematic platform research and performance analysis
+- [ADR Creation Agent][adr-create] — For professional documentation and strategic writing
 - [ADR Solution Library][adr-library] — Templates and examples for reference
 - [Azure IoT Edge][ms-azure-iot-edge] — Edge runtime and module deployment for Azure IoT solutions
 - [NVIDIA Triton Inference Server][nvidia-triton] — Production-ready AI inference server with multi-framework support
@@ -265,8 +265,8 @@ search_keywords:
 <!-- markdownlint-enable MD036 -->
 
 <!-- Reference Links -->
-[task-researcher]: /.github/chatmodes/task-researcher.chatmode.md
-[adr-create]: /.github/chatmodes/adr-creation.chatmode.md
+[task-researcher]: /.github/agents/task-researcher.agent.md
+[adr-create]: /.github/agents/adr-creation.agent.md
 [adr-library]: /docs/solution-adr-library/
 [ms-azure-iot-edge]: https://docs.microsoft.com/azure/iot-edge/
 [nvidia-triton]: https://developer.nvidia.com/triton-inference-server

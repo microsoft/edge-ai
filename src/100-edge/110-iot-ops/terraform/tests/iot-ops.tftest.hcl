@@ -753,3 +753,231 @@ run "create_with_additional_cluster_extension_ids" {
     error_message = "Should contain container storage extension ID"
   }
 }
+
+# Test default empty registry_endpoints array (MCR endpoint always created)
+run "create_with_default_registry_endpoints" {
+  command = plan
+  variables {
+    resource_group        = run.setup_tests.aio_resource_group
+    secret_sync_key_vault = run.setup_tests.sse_key_vault
+    secret_sync_identity  = run.setup_tests.sse_user_assigned_identity
+    aio_identity          = run.setup_tests.aio_user_assigned_identity
+    adr_schema_registry   = run.setup_tests.adr_schema_registry
+    adr_namespace         = run.setup_tests.adr_namespace
+    arc_connected_cluster = run.setup_tests.arc_connected_cluster
+  }
+
+  assert {
+    condition     = length(var.registry_endpoints) == 0
+    error_message = "Default registry_endpoints should be empty array"
+  }
+}
+
+# Test single ACR endpoint with SystemAssignedManagedIdentity
+run "create_with_acr_registry_endpoint" {
+  command = plan
+  variables {
+    resource_group        = run.setup_tests.aio_resource_group
+    secret_sync_key_vault = run.setup_tests.sse_key_vault
+    secret_sync_identity  = run.setup_tests.sse_user_assigned_identity
+    aio_identity          = run.setup_tests.aio_user_assigned_identity
+    adr_schema_registry   = run.setup_tests.adr_schema_registry
+    adr_namespace         = run.setup_tests.adr_namespace
+    arc_connected_cluster = run.setup_tests.arc_connected_cluster
+    registry_endpoints = [
+      {
+        name = "myacr"
+        host = "myregistry.azurecr.io"
+        authentication = {
+          method = "SystemAssignedManagedIdentity"
+          system_assigned_managed_identity_settings = {
+            audience = "https://management.azure.com/"
+          }
+        }
+      }
+    ]
+  }
+
+  assert {
+    condition     = length(var.registry_endpoints) == 1
+    error_message = "Should have one custom registry endpoint"
+  }
+
+  assert {
+    condition     = var.registry_endpoints[0].name == "myacr"
+    error_message = "Registry endpoint name should be 'myacr'"
+  }
+
+  assert {
+    condition     = var.registry_endpoints[0].authentication.method == "SystemAssignedManagedIdentity"
+    error_message = "Authentication method should be SystemAssignedManagedIdentity"
+  }
+}
+
+# Test multiple endpoints with different authentication methods
+run "create_with_multiple_registry_endpoints" {
+  command = plan
+  variables {
+    resource_group        = run.setup_tests.aio_resource_group
+    secret_sync_key_vault = run.setup_tests.sse_key_vault
+    secret_sync_identity  = run.setup_tests.sse_user_assigned_identity
+    aio_identity          = run.setup_tests.aio_user_assigned_identity
+    adr_schema_registry   = run.setup_tests.adr_schema_registry
+    adr_namespace         = run.setup_tests.adr_namespace
+    arc_connected_cluster = run.setup_tests.arc_connected_cluster
+    registry_endpoints = [
+      {
+        name = "company-acr"
+        host = "contoso.azurecr.io"
+        authentication = {
+          method = "SystemAssignedManagedIdentity"
+        }
+      },
+      {
+        name = "dockerhub"
+        host = "docker.io"
+        authentication = {
+          method = "ArtifactPullSecret"
+          artifact_pull_secret_settings = {
+            secret_ref = "dockerhub-creds"
+          }
+        }
+      }
+    ]
+  }
+
+  assert {
+    condition     = length(var.registry_endpoints) == 2
+    error_message = "Should have two custom registry endpoints"
+  }
+
+  assert {
+    condition     = var.registry_endpoints[0].authentication.method == "SystemAssignedManagedIdentity"
+    error_message = "First endpoint should use SystemAssignedManagedIdentity"
+  }
+
+  assert {
+    condition     = var.registry_endpoints[1].authentication.method == "ArtifactPullSecret"
+    error_message = "Second endpoint should use ArtifactPullSecret"
+  }
+}
+
+# Test ACR endpoint with acr_resource_id for automatic AcrPull role assignment
+run "create_with_acr_registry_endpoint_and_role_assignment" {
+  command = plan
+  variables {
+    resource_group        = run.setup_tests.aio_resource_group
+    secret_sync_key_vault = run.setup_tests.sse_key_vault
+    secret_sync_identity  = run.setup_tests.sse_user_assigned_identity
+    aio_identity          = run.setup_tests.aio_user_assigned_identity
+    adr_schema_registry   = run.setup_tests.adr_schema_registry
+    adr_namespace         = run.setup_tests.adr_namespace
+    arc_connected_cluster = run.setup_tests.arc_connected_cluster
+    registry_endpoints = [
+      {
+        name                           = "myacr"
+        host                           = "myregistry.azurecr.io"
+        acr_resource_id                = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-test/providers/Microsoft.ContainerRegistry/registries/myregistry"
+        should_assign_acr_pull_for_aio = true
+        authentication = {
+          method = "SystemAssignedManagedIdentity"
+          system_assigned_managed_identity_settings = {
+            audience = "https://management.azure.com/"
+          }
+        }
+      }
+    ]
+  }
+
+  assert {
+    condition     = length(var.registry_endpoints) == 1
+    error_message = "Should have one registry endpoint"
+  }
+
+  assert {
+    condition     = var.registry_endpoints[0].acr_resource_id != null
+    error_message = "Registry endpoint should have acr_resource_id configured"
+  }
+
+  assert {
+    condition     = var.registry_endpoints[0].should_assign_acr_pull_for_aio == true
+    error_message = "should_assign_acr_pull_for_aio should be true for AIO extension ACR access"
+  }
+
+  assert {
+    condition     = var.registry_endpoints[0].authentication.method == "SystemAssignedManagedIdentity"
+    error_message = "Authentication method should be SystemAssignedManagedIdentity when using acr_resource_id"
+  }
+}
+
+# Test multiple endpoints with mixed acr_resource_id usage
+run "create_with_mixed_acr_registry_endpoints" {
+  command = plan
+  variables {
+    resource_group        = run.setup_tests.aio_resource_group
+    secret_sync_key_vault = run.setup_tests.sse_key_vault
+    secret_sync_identity  = run.setup_tests.sse_user_assigned_identity
+    aio_identity          = run.setup_tests.aio_user_assigned_identity
+    adr_schema_registry   = run.setup_tests.adr_schema_registry
+    adr_namespace         = run.setup_tests.adr_namespace
+    arc_connected_cluster = run.setup_tests.arc_connected_cluster
+    registry_endpoints = [
+      {
+        name                           = "primary-acr"
+        host                           = "primary.azurecr.io"
+        acr_resource_id                = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-test/providers/Microsoft.ContainerRegistry/registries/primary"
+        should_assign_acr_pull_for_aio = true
+        authentication = {
+          method = "SystemAssignedManagedIdentity"
+        }
+      },
+      {
+        name = "secondary-acr"
+        host = "secondary.azurecr.io"
+        authentication = {
+          method = "SystemAssignedManagedIdentity"
+        }
+      },
+      {
+        name = "private-registry"
+        host = "private.example.com"
+        authentication = {
+          method = "ArtifactPullSecret"
+          artifact_pull_secret_settings = {
+            secret_ref = "private-registry-creds"
+          }
+        }
+      }
+    ]
+  }
+
+  assert {
+    condition     = length(var.registry_endpoints) == 3
+    error_message = "Should have three registry endpoints"
+  }
+
+  assert {
+    condition     = var.registry_endpoints[0].acr_resource_id != null
+    error_message = "First endpoint should have acr_resource_id for automatic role assignment"
+  }
+
+  assert {
+    condition     = var.registry_endpoints[0].should_assign_acr_pull_for_aio == true
+    error_message = "First endpoint should have should_assign_acr_pull_for_aio enabled"
+  }
+
+  assert {
+    condition     = var.registry_endpoints[1].should_assign_acr_pull_for_aio == false
+    error_message = "Second endpoint should default to should_assign_acr_pull_for_aio = false when omitted"
+  }
+
+  assert {
+    condition     = var.registry_endpoints[1].acr_resource_id == null
+    error_message = "Second endpoint should not have acr_resource_id"
+  }
+
+  assert {
+    condition     = var.registry_endpoints[2].acr_resource_id == null
+    error_message = "Third endpoint should not have acr_resource_id"
+  }
+}

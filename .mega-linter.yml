@@ -101,13 +101,16 @@ AZURE_COMMENT_REPORTER: true
 # LINTER SPECIFIC CONFIGURATION
 # ----------------------------------------
 
+# ShellCheck rc file
+BASH_SHELLCHECK_ARGUMENTS: "--rcfile .shellcheckrc"
+
 # Markdown Table Formatter configuration - treat warnings as errors
 MARKDOWN_MARKDOWN_TABLE_FORMATTER_DISABLE_ERRORS: false
 MARKDOWN_MARKDOWN_TABLE_FORMATTER_FILTER_REGEX_EXCLUDE: '(\.copilot-tracking/.*)'
 
 # Markdown Linter configuration - treat warnings as errors
 MARKDOWN_MARKDOWNLINT_DISABLE_ERRORS: false
-MARKDOWN_MARKDOWNLINT_FILTER_REGEX_EXCLUDE: '(\.copilot-tracking/.*|\.github/prompts/.*|\.github/instructions/.*|\.github/chatmodes/.*|\.github/copilot-instructions.md)'
+MARKDOWN_MARKDOWNLINT_FILTER_REGEX_EXCLUDE: '(\.copilot-tracking/.*|\.github/prompts/.*|\.github/instructions/.*|\.github/agents/.*|\.github/copilot-instructions.md)'
 
 # Terraform Format configuration
 TERRAFORM_TERRAFORM_FMT_DISABLE_ERRORS: false
@@ -116,6 +119,9 @@ TERRAFORM_TERRAFORM_FMT_ARGUMENTS: "-check -diff"
 # TFLint configuration
 TERRAFORM_TFLINT_UNSECURED_ENV_VARIABLES:
   - GITHUB_TOKEN
+
+# Secretlint configuration
+REPOSITORY_SECRETLINT_CONFIG_FILE: .secretlintrc.json
 
 # YAML Lint configuration
 YAML_YAMLLINT_CONFIG_FILE: .yamllint.yml

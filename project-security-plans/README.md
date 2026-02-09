@@ -50,7 +50,7 @@ Repository for ISE Security Plans and SecureDev Program
 
 ## Automated Security Plan Creation
 
-For infrastructure blueprints in this repository, you can use the **[Security Plan Creator](../.github/chatmodes/security-plan-creator.chatmode.md)** chatmode to automatically generate comprehensive security plans:
+For infrastructure blueprints in this repository, you can use the **[Security Plan Creator](../.github/agents/security-plan-creator.agent.md)** custom agent to automatically generate comprehensive security plans:
 
 - **Blueprint Analysis**: Automatically analyzes infrastructure code (Terraform, Bicep) to identify security-relevant components
 - **Threat Assessment**: Maps threats from the threat catalog to specific architectural components
@@ -60,7 +60,7 @@ For infrastructure blueprints in this repository, you can use the **[Security Pl
 
 ### Usage
 
-1. Select the Security Plan Creator chatmode in GitHub Copilot
+1. Select the Security Plan Creator custom agent in GitHub Copilot
 2. Request "Create me a security plan"
 3. Choose from available infrastructure blueprints when prompted
 4. Review and refine the generated security plan as needed

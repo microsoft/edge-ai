@@ -44,17 +44,16 @@ Creates subnets for AKS private endpoints in an existing Virtual Network.
 
 #### Parameters for network
 
-| Name                         | Description                                                                                  | Type                               | Default | Required |
-|:-----------------------------|:---------------------------------------------------------------------------------------------|:-----------------------------------|:--------|:---------|
-| common                       | The common component configuration.                                                          | `[_1.Common](#user-defined-types)` | n/a     | yes      |
-| virtualNetworkName           | Virtual network name for subnet creation.                                                    | `string`                           | n/a     | yes      |
-| networkSecurityGroupName     | Network security group name to apply to the subnets.                                         | `string`                           | n/a     | yes      |
-| subnetAddressPrefixAks       | Address prefix for the AKS system node subnet.                                               | `string`                           | n/a     | yes      |
-| subnetAddressPrefixAksPod    | Address prefix for the AKS pod subnet.                                                       | `string`                           | n/a     | yes      |
-| defaultOutboundAccessEnabled | Whether to enable default outbound internet access for AKS subnets.                          | `bool`                             | n/a     | yes      |
-| shouldEnableNatGateway       | Whether to associate AKS subnets with a NAT gateway for managed outbound egress.             | `bool`                             | n/a     | yes      |
-| natGatewayId                 | NAT gateway ID for associating AKS subnets.                                                  | `string`                           | n/a     | no       |
-| shouldEnablePrivateEndpoint  | Whether to enable private endpoint for AKS cluster; when true, subnet delegation is created. | `bool`                             | n/a     | yes      |
+| Name                         | Description                                                                      | Type                               | Default | Required |
+|:-----------------------------|:---------------------------------------------------------------------------------|:-----------------------------------|:--------|:---------|
+| common                       | The common component configuration.                                              | `[_1.Common](#user-defined-types)` | n/a     | yes      |
+| virtualNetworkName           | Virtual network name for subnet creation.                                        | `string`                           | n/a     | yes      |
+| networkSecurityGroupName     | Network security group name to apply to the subnets.                             | `string`                           | n/a     | yes      |
+| subnetAddressPrefixAks       | Address prefix for the AKS system node subnet.                                   | `string`                           | n/a     | yes      |
+| subnetAddressPrefixAksPod    | Address prefix for the AKS pod subnet.                                           | `string`                           | n/a     | yes      |
+| defaultOutboundAccessEnabled | Whether to enable default outbound internet access for AKS subnets.              | `bool`                             | n/a     | yes      |
+| shouldEnableNatGateway       | Whether to associate AKS subnets with a NAT gateway for managed outbound egress. | `bool`                             | n/a     | yes      |
+| natGatewayId                 | NAT gateway ID for associating AKS subnets.                                      | `string`                           | n/a     | no       |
 
 #### Resources for network
 
