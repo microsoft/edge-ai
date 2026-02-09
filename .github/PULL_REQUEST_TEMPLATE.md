@@ -28,6 +28,7 @@
 - [ ] Blueprint deployment test
 - [ ] Unit tests
 - [ ] Integration tests
+- [ ] Regression test for bug fix (see [Test Policy](docs/contributing/testing-validation.md)); if not feasible, explain why
 - [ ] Manual validation
 - [ ] Other:
 
