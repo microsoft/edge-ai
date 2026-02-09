@@ -90,7 +90,7 @@ The security analysis workflow provides:
 
 ### Stage 4: Planning File Generation
 
-- Creates structured planning files following repository conventions defined in [`.github/instructions/ado-wit-planning.instructions.md`](../.github/instructions/ado-wit-planning.instructions.md)
+- Creates structured planning files following repository conventions (work item planning instructions are provided by the [hve-core](https://github.com/microsoft/hve-core) VS Code extension)
 
 - Generates proper acceptance criteria and story points
 - **Note**: This stage creates planning files only - actual Azure DevOps work items are created separately using Copilot chat with the handoff file
@@ -132,7 +132,6 @@ The generated planning files follow repository work item planning conventions an
 
 - [Invoke-SecurityAnalysisWithWorkItems.ps1 Script](../scripts/Invoke-SecurityAnalysisWithWorkItems.ps1)
 - [Run-Checkov.ps1 Documentation](../scripts/README.md)
-- [Azure DevOps Work Item Planning Instructions](../.github/instructions/ado-wit-planning.instructions.md)
 - [Checkov Configuration Reference](../.checkov.yml)
 
 ---

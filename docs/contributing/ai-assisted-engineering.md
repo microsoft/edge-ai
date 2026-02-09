@@ -75,16 +75,14 @@ Instruction files designed to be attached to Copilot context using **Add Context
 
 Prompt files for specific tasks that can be invoked using `/prompt-name` in Copilot chat:
 
-| Prompt Name                          | Invocation                  | Description                                    | Use Case                                             |
-|--------------------------------------|-----------------------------|------------------------------------------------|------------------------------------------------------|
-| `csharp-tests.prompt.md`             | `/csharp-tests`             | C# test development guidance                   | Creating unit and integration tests                  |
-| `deploy.prompt.md`                   | `/deploy`                   | Deployment workflows and best practices        | Infrastructure deployment assistance                 |
-| `getting-started.prompt.md`          | `/getting-started`          | Project onboarding and initial setup guidance  | New contributor onboarding                           |
-| `iotops-version-upgrade.prompt.md`   | `/iotops-version-upgrade`   | Azure IoT Operations version upgrade process   | Updating IoT Ops components to latest versions       |
-| `prompt-refactor.prompt.md`          | `/prompt-refactor`          | Optimizing and improving existing prompts      | Enhancing prompt effectiveness                       |
-| `pull-request.prompt.md`             | `/pull-request`             | PR description and review assistance           | Creating comprehensive pull requests                 |
-| `python-script.prompt.md`            | `/python-script`            | Python scripting standards and patterns        | Python automation and scripting                      |
-| `terraform-from-blueprint.prompt.md` | `/terraform-from-blueprint` | Converting blueprints to Terraform             | Translating blueprint designs to infrastructure code |
+| Prompt Name                          | Invocation                  | Description                                   | Use Case                                             |
+|--------------------------------------|-----------------------------|-----------------------------------------------|------------------------------------------------------|
+| `csharp-tests.prompt.md`             | `/csharp-tests`             | C# test development guidance                  | Creating unit and integration tests                  |
+| `deploy.prompt.md`                   | `/deploy`                   | Deployment workflows and best practices       | Infrastructure deployment assistance                 |
+| `getting-started.prompt.md`          | `/getting-started`          | Project onboarding and initial setup guidance | New contributor onboarding                           |
+| `iotops-version-upgrade.prompt.md`   | `/iotops-version-upgrade`   | Azure IoT Operations version upgrade process  | Updating IoT Ops components to latest versions       |
+| `python-script.prompt.md`            | `/python-script`            | Python scripting standards and patterns       | Python automation and scripting                      |
+| `terraform-from-blueprint.prompt.md` | `/terraform-from-blueprint` | Converting blueprints to Terraform            | Translating blueprint designs to infrastructure code |
 
 > **Note**: Additional prompts for ADR creation and prompt engineering are available through the [hve-core](https://github.com/microsoft/hve-core) VS Code extension.
 

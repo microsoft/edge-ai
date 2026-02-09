@@ -44,28 +44,9 @@ Prompts can be invoked in GitHub Copilot Chat using `/prompt-name` syntax (e.g.,
 - **[Terraform Variable Consistency Manager](./tf-variable-consistency-manager.prompt.md)** - Terraform variable standardization and consistency management
 - **[IoT Operations Version Upgrade](./iotops-version-upgrade.prompt.md)** - Azure IoT Operations component upgrade workflow and implementation
 
-### Source Control & Commit Quality
-
-- **[Git Commit (Stage + Commit)](./git-commit.prompt.md)** - Stages all changes and creates a Conventional Commit automatically
-- **[Git Commit Message Generator](./git-commit-message.prompt.md)** - Generates a compliant commit message for currently staged changes
-- **[Git Merge](./git-merge.prompt.md)** - Git merge, rebase, and rebase --onto workflows with conflict handling
-- **[Git Setup](./git-setup.prompt.md)** - Verification-first Git configuration assistant
-
 ### Azure DevOps Integration
 
-- **[ADO Create Pull Request](./ado-create-pull-request.prompt.md)** - Creates Azure DevOps PRs with work item discovery and reviewer identification
-- **[ADO Get Build Info](./ado-get-build-info.prompt.md)** - Retrieves Azure DevOps build information for PRs or specific builds
 - **[ADO Work Item Discovery](./ado-wit-discovery.prompt.md)** - Discovers and plans Azure DevOps User Stories and Bugs from research or changes
-- **[ADO Update Work Items](./ado-update-wit-items.prompt.md)** - Updates work items based on planning files
-- **[Get My Work Items](./get-my-work-items.prompt.md)** - Retrieves ordered @Me Azure DevOps work items and exports raw JSON
-
-### Documentation & Process
-
-- **[Pull Request](./pull-request.prompt.md)** - PR description and review assistance
-
-### Prompt Engineering
-
-- **[Prompt Refactor](./prompt-refactor.prompt.md)** - Optimizing and improving existing prompts
 
 ## Prompts vs Instructions vs Custom Agents
 
@@ -79,12 +60,6 @@ Prompts can be invoked in GitHub Copilot Chat using `/prompt-name` syntax (e.g.,
 2. **Planning scope or roadmap?** Use [Project Planning](./edge-ai-project-planning.prompt.md)
 3. **Need deployment help?** Use [Deploy](./deploy.prompt.md)
 4. **Working on infra translation?** Use [Terraform from Blueprint](./terraform-from-blueprint.prompt.md)
-5. **Committing changes?** Use [Git Commit Message Generator](./git-commit-message.prompt.md) or [Git Commit](./git-commit.prompt.md)
-6. **Handling merge conflicts?** Use [Git Merge](./git-merge.prompt.md)
-7. **Tracking your work?** Run [Get My Work Items](./get-my-work-items.prompt.md)
-8. **Creating Azure DevOps PRs?** Use [ADO Create Pull Request](./ado-create-pull-request.prompt.md)
-9. **Checking build status?** Use [ADO Get Build Info](./ado-get-build-info.prompt.md)
-10. **Creating documentation?** Use [Pull Request](./pull-request.prompt.md)
 
 ## Related Resources
 

@@ -30,6 +30,10 @@ Items in **HIGHEST PRIORITY** sections from attached instructions files override
 
 **Edit tools:** Never use `insert_edit_into_file` tool when other edit and file modification tools are available.
 
+## Repository Configuration
+
+* **Default branch**: `origin/dev` — use as the base for all new branches, comparisons, and PR targets unless explicitly overridden.
+
 ### CRITICAL - Required Prompts & Instruction Compliance
 
 **Context-first:** Evaluate the current user prompt, any attachments, target folders, repo conventions, and files already read.
@@ -61,7 +65,6 @@ When working with specific types of files or contexts, you must:
 |-----------------------------------|--------------------------------------------------------|
 | Any deployment-related context    | `./.github/prompts/deploy.prompt.md`                   |
 | Any getting started context       | `./.github/prompts/getting-started.prompt.md`          |
-| Any pull request creation context | `./.github/prompts/pull-request.prompt.md`             |
 | Any terraform context             | `./.github/instructions/terraform.instructions.md`     |
 | Any bicep context                 | `./.github/instructions/bicep.instructions.md`         |
 | Any shell or bash context         | `./.github/instructions/shell.instructions.md`         |

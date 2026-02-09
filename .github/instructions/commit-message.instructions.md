@@ -9,7 +9,7 @@ This document provides instructions for generating standardized commit messages.
 ## Format Requirements
 
 - Use Conventional Commit Messages
-- All changes MUST be in present tense
+- All changes MUST use imperative mood
 
 ## Types
 
@@ -46,8 +46,6 @@ Scopes MUST be one of the following:
 - `(vm-host)`
 - `(cncf-cluster)`
 - `(iot-ops)`
-- `(observability)`
-- `(messaging)`
 - `(blueprints)`
 - `(terraform)`
 - `(bicep)`
