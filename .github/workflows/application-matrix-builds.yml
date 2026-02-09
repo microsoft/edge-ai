@@ -388,7 +388,7 @@ jobs:
             echo "Validating: $dockerfile"
 
             if [[ "$dockerfile" == *"506-ros2-connector"* ]]; then
-              echo "  ⏭️  ROS2 file (DL3006 exempt via SHA256-pinned FROM lines)"
+              echo "  ⏭️  ROS2 file (uses local .hadolint.yaml with DL3006 exemption)"
             fi
 
             hadolint "$dockerfile" || VALIDATION_FAILED=1
