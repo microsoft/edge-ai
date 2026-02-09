@@ -1,6 +1,6 @@
 ---
 title: 'Kata: 100 - Basic Product Requirements Document Creation'
-description: Learn to create structured product requirements documents using AI assistance and the PRD chatmode for edge AI solutions
+description: Learn to create structured product requirements documents using AI assistance and the PRD agent for edge AI solutions
 author: Edge AI Team
 ms.date: 2025-01-25
 kata_id: product-requirements-100-basic-prd-creation
@@ -23,7 +23,7 @@ success_criteria:
   - Technical requirements cover integration, UI/UX, performance, and security
   - Success metrics are quantifiable with baseline and target values
   - Document structure follows professional PRD standards
-  - All chatmode prompts are effective and yield quality outputs
+  - All agent prompts are effective and yield quality outputs
 ai_coaching_level: guided
 scaffolding_level: heavy
 hint_strategy: progressive
@@ -32,7 +32,7 @@ common_pitfalls:
   - User stories lack specific acceptance criteria
   - Technical requirements are vague or unmeasurable
   - Success metrics are qualitative rather than quantitative
-  - Not using PRD chatmode iteratively to refine outputs
+  - Not using PRD agent iteratively to refine outputs
 requires_azure_subscription: false
 requires_local_environment: true
 tags:
@@ -60,15 +60,15 @@ You're a product manager at a manufacturing company with 50+ edge devices deploy
 **Complete these checks before starting** - verifying your setup ensures successful kata completion:
 
 - [ ] **VS Code** with **GitHub Copilot Chat** extension installed and activated
-- [ ] **PRD Chatmode** available at `.github/copilot-instructions-chatmode-prd.md`
-- [ ] **Learning Coach Chatmode** available at `.github/chatmodes/learning-kata-coach.chatmode.md`
+- [ ] **PRD Agent** available at `.github/copilot-instructions-agent-prd.md`
+- [ ] **Learning Coach Agent** available at `.github/agents/learning-kata-coach.agent.md`
 - [ ] **45-60 minutes** of uninterrupted time to complete all tasks
 
 > **🤖 Want Interactive AI Coaching?**
 >
-> Load the **Learning Kata Coach** chat mode for task check-offs, progress tracking, progressive hints, and personalized guidance.
+> Load the **Learning Kata Coach** custom agent for task check-offs, progress tracking, progressive hints, and personalized guidance.
 >
-> In GitHub Copilot Chat, select **Learning Kata Coach** mode and say:
+> In GitHub Copilot Chat, select **Learning Kata Coach** custom agent and say:
 >
 > ```text
 > I'm working on 01 - Basic Product Requirements Document Creation kata and want interactive coaching with progress tracking.
@@ -86,10 +86,10 @@ Create the foundation of your PRD by defining the problem and stakeholders.
 
 **Steps**:
 
-1. **Activate PRD Chatmode**
+1. **Activate PRD Agent**
    - [ ] Open GitHub Copilot Chat in VS Code
-   - [ ] Type `@chatmode` and select the prd-builder chatmode
-   - [ ] Confirm chatmode is active
+   - [ ] Type `@agent` and select the prd-builder agent
+   - [ ] Confirm agent is active
 
 2. **Generate Executive Summary and Problem Statement**
    - [ ] Prompt: *"I need to create a PRD for an Edge Device Alert Dashboard. The Operations Team at a manufacturing company with 50+ edge devices across 3 facilities is manually checking individual dashboards, causing 15-30 minute delays in responding to critical alerts. Generate an executive summary and detailed problem statement."*
@@ -211,7 +211,7 @@ Your PRD is complete when:
 - [ ] **Success Metrics**: 5-7 quantifiable metrics with baseline and target values
 - [ ] **Acceptance Criteria**: Technical and business criteria for project completion
 
-**Final validation**: Share your PRD with the Learning Coach chatmode and ask: *"Review my PRD for completeness and clarity. Does it provide enough detail for a development team to begin implementation?"*
+**Final validation**: Share your PRD with the Learning Coach agent and ask: *"Review my PRD for completeness and clarity. Does it provide enough detail for a development team to begin implementation?"*
 
 ---
 
@@ -219,14 +219,14 @@ Your PRD is complete when:
 
 ### Help Resources
 
-- **PRD Chatmode**: Use prd.chatmode.md for systematic PRD creation with structured prompts
-- **Learning Coach**: Reference learning-coach.chatmode.md for interactive coaching and progress tracking
+- **PRD Agent**: Use prd.agent.md for systematic PRD creation with structured prompts
+- **Learning Coach**: Reference learning-coach.agent.md for interactive coaching and progress tracking
 - **Product Planning**: Study project-planning katas for comprehensive planning methodologies
 - **Requirements Documentation**: Reference CONTRIBUTING.md for documentation standards and best practices
 
 ### Professional Tips
 
-**Tip 1: Iterate with the PRD chatmode**: Don't accept the first output. Ask follow-up questions like *"Make the acceptance criteria more specific"* or *"Add more detail to the performance requirements."*
+**Tip 1: Iterate with the PRD agent**: Don't accept the first output. Ask follow-up questions like *"Make the acceptance criteria more specific"* or *"Add more detail to the performance requirements."*
 
 **Tip 2: Keep stakeholders front and center**: Every requirement should trace back to a stakeholder need. If you can't explain which persona benefits, reconsider the requirement.
 
@@ -238,7 +238,7 @@ Your PRD is complete when:
 
 ### Troubleshooting
 
-**PRD chatmode generates generic content**:
+**PRD agent generates generic content**:
 
 - Provide more specific context about edge device types (e.g., "temperature sensors, vibration monitors, PLCs"), facility layout (e.g., "3 buildings across 50-acre campus"), and operational workflows (e.g., "2-shift operation, 16 hours/day")
 

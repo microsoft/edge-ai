@@ -53,3 +53,22 @@ output "akri_connector_templates" {
     length(var.custom_akri_connectors) > 0
   ]) ? module.akri_connectors[0].connector_templates : null
 }
+
+/*
+ * Registry Endpoints Outputs
+ */
+
+output "registry_endpoint_mcr" {
+  description = "The default MCR registry endpoint."
+  value       = module.registry_endpoints.mcr_endpoint
+}
+
+output "registry_endpoints_custom" {
+  description = "Map of custom registry endpoints by name with id, name, and host."
+  value       = module.registry_endpoints.custom_endpoints
+}
+
+output "registry_endpoints_acr_role_assignments" {
+  description = "Map of ACR role assignments by endpoint name."
+  value       = module.registry_endpoints.acr_role_assignments
+}

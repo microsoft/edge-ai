@@ -34,7 +34,7 @@ complexity_factors:
 # Repository Integration
 uses_prompts: []
 uses_instructions: []
-uses_chatmodes: []
+uses_agents: []
 repository_paths:
   - project-adrs/
   - docs/solution-adr-library/
@@ -218,7 +218,7 @@ You'll know you've successfully completed this kata category when you can:
 - Apply systematic decision frameworks to evaluate technology alternatives
 - Document comprehensive trade-off analyses for architectural choices
 - Write clear, stakeholder-ready ADRs that communicate decisions effectively
-- Leverage AI tools (chatmodes, Ask mode) appropriately throughout the decision process
+- Leverage AI tools (agents, Ask mode) appropriately throughout the decision process
 
 **Ready to start practicing ADR creation?**
 
