@@ -39,13 +39,13 @@ search_keywords:
 
 ## Quick Context
 
-**You'll Learn**: How to use the edge-ai-project-planner chatmode to create comprehensive project documentation from a business scenario
+**You'll Learn**: How to use the edge-ai-project-planner agent to create comprehensive project documentation from a business scenario
 
 **Prerequisites**: VS Code with GitHub Copilot Chat, basic understanding of project planning concepts
 
 **Real Challenge**: Your manufacturing facility has frequent unexpected equipment breakdowns causing production delays and high maintenance costs. You need to implement an Edge AI solution that can predict equipment failures before they occur.
 
-**Your Task**: Use the edge-ai-project-planner chatmode to create a complete predictive maintenance project plan with scenario documentation and capability mapping.
+**Your Task**: Use the edge-ai-project-planner agent to create a complete predictive maintenance project plan with scenario documentation and capability mapping.
 
 ## Essential Setup
 
@@ -57,11 +57,11 @@ search_keywords:
 - [ ] Access to the edge-ai workspace (this repository)
 - [ ] Basic understanding of manufacturing operations
 
-**Quick Validation**: Open GitHub Copilot Chat and verify you can type `@` to see available chat mode suggestions.
+**Quick Validation**: Open GitHub Copilot Chat and verify you can type `@` to see available custom agent suggestions.
 
 > **🤖 Want Interactive AI Coaching?**
 >
-> Load the **Learning Kata Coach** chat mode for task check-offs, progress tracking, progressive hints, and personalized guidance.
+> Load the **Learning Kata Coach** custom agent for task check-offs, progress tracking, progressive hints, and personalized guidance.
 >
 > In GitHub Copilot Chat, select **Learning Kata Coach** mode and say:
 >
@@ -73,7 +73,7 @@ search_keywords:
 
 ### Task 1: Launch the Project Planner (8 minutes)
 
-**What You'll Do**: Start the edge-ai-project-planner chatmode and provide your manufacturing scenario
+**What You'll Do**: Start the edge-ai-project-planner agent and provide your manufacturing scenario
 
 **Steps**:
 
@@ -81,9 +81,9 @@ search_keywords:
    - [ ] Click the Copilot Chat icon in the Activity Bar
    - [ ] **Expected result**: Chat panel opens on the side
 
-2. **Activate** the edge-ai-project-planner chat mode
+2. **Activate** the edge-ai-project-planner custom agent
    - [ ] In the chat input box, type `@edge-ai-project-planner`
-   - [ ] **Expected result**: You see the project planner mode suggested/activated in the chat interface
+   - [ ] **Expected result**: You see the project planner custom agent suggested/activated in the chat interface
 
 3. **Provide** your manufacturing scenario using this exact description:
 
@@ -144,7 +144,7 @@ search_keywords:
 
 **Before moving on, verify your understanding**:
 
-- [ ] **Explain aloud** in 2-3 sentences: How does the edge-ai-project-planner chatmode help create comprehensive project documentation?
+- [ ] **Explain aloud** in 2-3 sentences: How does the edge-ai-project-planner agent help create comprehensive project documentation?
 - [ ] **List from memory** at least 3 key files generated in the project plan folder structure
 - [ ] **Describe without looking** the main steps in the predictive maintenance scenario selection workflow
 
@@ -154,7 +154,7 @@ search_keywords:
 - [ ] Navigated scenario selection and chose Predictive Maintenance scenario
 - [ ] Reviewed generated project documentation and understand capability requirements
 - [ ] Can explain the predictive maintenance implementation approach and required capabilities
-- [ ] Built proficiency in prompt engineering for project planning using GitHub Copilot chat modes
+- [ ] Built proficiency in prompt engineering for project planning using GitHub Copilot custom agents
 - [ ] Developed comprehensive project planning workflows that leverage AI assistance
 - [ ] Created professional documentation artifacts that meet enterprise quality standards
 - [ ] Can implement AI-assisted planning methodologies and apply them to real-world scenarios

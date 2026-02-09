@@ -1,6 +1,6 @@
 /**
  * Skill Assessment Completion Experience Tests
- * Tests for personalized learning path recommendations and chatmode guidance
+ * Tests for personalized learning path recommendations and custom agent guidance
  */
 
 import { expect, describe, it, beforeEach, afterEach, vi } from 'vitest';
@@ -98,17 +98,17 @@ describe('Skill Assessment Completion Experience', () => {
     });
   });
 
-  describe('getChatmodeRecommendation', () => {
+  describe('getCustomagentRecommendation', () => {
     it('should recommend kata coach for beginner skill level', () => {
       // Arrange
       const beginnerResults = { skillLevel: 'beginner' };
 
       // Act
-      const recommendation = window.learningProgressTracker.getChatmodeRecommendation(beginnerResults);
+      const recommendation = window.learningProgressTracker.getCustomagentRecommendation(beginnerResults);
 
       // Assert
       expect(recommendation).toEqual({
-        chatmode: 'learning-kata-coach',
+        customagent: 'learning-kata-coach',
         displayName: 'kata coach',
         description: 'Get a personalized learning path and guided practice based on your skill level'
       });
@@ -119,11 +119,11 @@ describe('Skill Assessment Completion Experience', () => {
       const intermediateResults = { skillLevel: 'intermediate' };
 
       // Act
-      const recommendation = window.learningProgressTracker.getChatmodeRecommendation(intermediateResults);
+      const recommendation = window.learningProgressTracker.getCustomagentRecommendation(intermediateResults);
 
       // Assert
       expect(recommendation).toEqual({
-        chatmode: 'learning-kata-coach',
+        customagent: 'learning-kata-coach',
         displayName: 'kata coach',
         description: 'Get a personalized learning path and guided practice based on your skill level'
       });
@@ -134,11 +134,11 @@ describe('Skill Assessment Completion Experience', () => {
       const advancedResults = { skillLevel: 'advanced' };
 
       // Act
-      const recommendation = window.learningProgressTracker.getChatmodeRecommendation(advancedResults);
+      const recommendation = window.learningProgressTracker.getCustomagentRecommendation(advancedResults);
 
       // Assert
       expect(recommendation).toEqual({
-        chatmode: 'learning-kata-coach',
+        customagent: 'learning-kata-coach',
         displayName: 'kata coach',
         description: 'Get a personalized learning path and guided practice based on your skill level'
       });
@@ -146,11 +146,11 @@ describe('Skill Assessment Completion Experience', () => {
 
     it('should handle missing assessment results', () => {
       // Act
-      const recommendation = window.learningProgressTracker.getChatmodeRecommendation(null);
+      const recommendation = window.learningProgressTracker.getCustomagentRecommendation(null);
 
       // Assert
       expect(recommendation).toEqual({
-        chatmode: 'learning-kata-coach',
+        customagent: 'learning-kata-coach',
         displayName: 'kata coach',
         description: 'Get a personalized learning path and guided practice based on your skill level'
       });
@@ -161,11 +161,11 @@ describe('Skill Assessment Completion Experience', () => {
       const unknownResults = { skillLevel: 'unknown' };
 
       // Act
-      const recommendation = window.learningProgressTracker.getChatmodeRecommendation(unknownResults);
+      const recommendation = window.learningProgressTracker.getCustomagentRecommendation(unknownResults);
 
       // Assert
       expect(recommendation).toEqual({
-        chatmode: 'learning-kata-coach',
+        customagent: 'learning-kata-coach',
         displayName: 'kata coach',
         description: 'Get a personalized learning path and guided practice based on your skill level'
       });
@@ -179,11 +179,11 @@ describe('Skill Assessment Completion Experience', () => {
 
       // Act
       const personalizedMessage = window.learningProgressTracker.generatePersonalizedCompletionMessage(assessmentResults);
-      const recommendation = window.learningProgressTracker.getChatmodeRecommendation(assessmentResults);
+      const recommendation = window.learningProgressTracker.getCustomagentRecommendation(assessmentResults);
 
       // Assert
       expect(personalizedMessage).toContain('Assessment Complete');
-      expect(recommendation.chatmode).toBe('learning-kata-coach');
+      expect(recommendation.customagent).toBe('learning-kata-coach');
     });
 
     it('should handle assessment result parsing errors gracefully', () => {
@@ -193,7 +193,7 @@ describe('Skill Assessment Completion Experience', () => {
       // Act & Assert (should not throw)
       expect(() => {
         window.learningProgressTracker.generatePersonalizedCompletionMessage(corruptedResults);
-        window.learningProgressTracker.getChatmodeRecommendation(corruptedResults);
+        window.learningProgressTracker.getCustomagentRecommendation(corruptedResults);
       }).not.toThrow();
     });
   });

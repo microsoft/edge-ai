@@ -20,7 +20,7 @@ Learn more at [steveyegge/beads](https://github.com/steveyegge/beads).
 
 ## Why Use Beads in edge-ai?
 
-Beads provides an alternative to the `task-planner` chatmode and `.copilot-tracking/plans` Markdown files for tracking GitHub Copilot implementation work:
+Beads provides an alternative to the `task-planner` custom agent and `.copilot-tracking/plans` Markdown files for tracking GitHub Copilot implementation work:
 
 * Structured tracking instead of Markdown
 * Dependency graphs instead of linear task lists
@@ -34,7 +34,7 @@ This guide covers:
 * 🚀 [Getting Started](#getting-started) - Install bd CLI and configure MCP
 * 🎯 [Using bd Commands](#-using-bd-commands) - Essential CLI commands
 * 🔄 [Typical Beads Workflow](#-typical-beads-workflow) - Complete development cycle
-* 📚 [Reference](#-reference) - Chatmodes, prompts, and additional resources
+* 📚 [Reference](#-reference) - Custom agents, prompts, and additional resources
 
 ## Getting Started
 
@@ -49,7 +49,7 @@ The fastest way to get started with beads is to use the pre-configured Beads dev
 * Beads CLI (`bd`) pre-installed
 * Beads MCP server pre-configured
 * All required dependencies (uv, Go toolchain)
-* Beads-specific chat settings (instructions, prompts, chatmodes)
+* Beads-specific chat settings (instructions, prompts, custom agents)
 
 #### Launch the Beads DevContainer
 
@@ -64,7 +64,7 @@ When the devcontainer starts:
 
 * ✅ Beads CLI available: `bd --version`
 * ✅ MCP server automatically configured in agent mode
-* ✅ Beads chatmodes, instructions, and prompts ready to use
+* ✅ Beads custom agents, instructions, and prompts ready to use
 * ✅ All GitHub Copilot settings configured for beads workflow
 
 #### Verify Setup
@@ -231,7 +231,7 @@ This workflow guides you from initial research through implementation and commit
 
 ### Phase 1: 📝 Research & Discovery
 
-Use the `task-researcher` chatmode to build comprehensive research before creating beads.
+Use the `task-researcher` custom agent to build comprehensive research before creating beads.
 
 1. Switch to `task-researcher` mode in Copilot Chat
 2. Provide a research prompt with specific tools
@@ -253,7 +253,7 @@ concise research document.
 Convert research into actionable beads with proper dependencies.
 
 1. `/clear` your Copilot Chat context to start fresh
-2. Switch to `bd-task-planner` chatmode
+2. Switch to `bd-task-planner` custom agent
 3. Invoke the planner with your research
 
 Example:
@@ -369,12 +369,12 @@ Or ask Copilot:
 
 ### Project Files
 
-| File                                                                                | Purpose                                                     |
-|-------------------------------------------------------------------------------------|-------------------------------------------------------------|
-| [bd-task-planner.chatmode.md](chatmodes/bd-task-planner.chatmode.md)                | Chatmode for planning work and creating beads from research |
-| [bd-implementation.instructions.md](instructions/bd-implementation.instructions.md) | Instructions for agent mode implementation using beads      |
-| [bd-planner-plan.prompt.md](prompts/bd-planner-plan.prompt.md)                      | Prompt template for bead planning workflow                  |
-| [bd-start.prompt.md](prompts/bd-start.prompt.md)                                    | Prompt template for starting bead implementation            |
+| File                                                                                | Purpose                                                         |
+|-------------------------------------------------------------------------------------|-----------------------------------------------------------------|
+| [bd-task-planner.agent.md](agents/bd-task-planner.agent.md)                         | Custom agent for planning work and creating beads from research |
+| [bd-implementation.instructions.md](instructions/bd-implementation.instructions.md) | Instructions for agent mode implementation using beads          |
+| [bd-planner-plan.prompt.md](prompts/bd-planner-plan.prompt.md)                      | Prompt template for bead planning workflow                      |
+| [bd-start.prompt.md](prompts/bd-start.prompt.md)                                    | Prompt template for starting bead implementation                |
 
 ### External Resources
 
@@ -391,7 +391,7 @@ Or ask Copilot:
 
 * Review existing beads: `bd list` or ask Copilot "show me all beads"
 * Check bead details: `bd show <id>` or ask Copilot "show details for edge-ai-5"
-* Find examples: Browse chatmodes and prompts in this directory
+* Find examples: Browse custom agents and prompts in this directory
 * Ask Copilot: Use agent mode for interactive help with beads
 
 🎉 **Ready to start?** Launch the Beads DevContainer and initialize beads:
