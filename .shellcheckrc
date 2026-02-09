@@ -1,0 +1,16 @@
+# ShellCheck configuration for edge-ai repository
+# https://github.com/koalaman/shellcheck/wiki/Ignore
+#
+# Conventions:
+# - Scripts use #!/usr/bin/env bash and strict mode (set -e -o pipefail)
+# - Terraform-generated scripts have templatefile variables
+# - External sourced files may not be available during linting
+
+# Default shell dialect
+shell=bash
+
+# Disable codes for project-wide patterns
+# SC1091: Not following sourced files
+#   - Terraform templatefile() scripts source external configs
+#   - Sourced files may not exist at lint time
+disable=SC1091
