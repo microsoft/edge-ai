@@ -24,11 +24,12 @@
 
 ## Testing Performed
 <!-- Describe the testing you have performed or plan to perform -->
+<!-- For bug fixes: A regression test verifies the fix and prevents the issue from recurring -->
 - [ ] Terraform plan/apply
 - [ ] Blueprint deployment test
 - [ ] Unit tests
 - [ ] Integration tests
-- [ ] Regression test for bug fix (see [Test Policy](docs/contributing/testing-validation.md)); if not feasible, explain why
+- [ ] Bug fix includes regression test (see [Test Policy](docs/contributing/testing-validation.md))
 - [ ] Manual validation
 - [ ] Other:
 
