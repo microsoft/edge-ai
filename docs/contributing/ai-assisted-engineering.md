@@ -48,15 +48,12 @@ Comprehensive guidance files referenced by the main copilot instructions:
 
 - **`deploy.md`** - Deployment guidance and best practices
 - **`getting-started.md`** - Getting started guidance for new contributors
-- **`python-script.md`** - Python scripting standards and conventions
-- **`csharp-tests.md`** - C# testing standards and practices
-- **`bash/bash.md`** - Bash development guidance and standards
 - **`bicep/bicep.md`** - Bicep development guidance and standards
 - **`bicep/bicep-standards.md`** - Bicep coding standards and best practices
-- **`csharp/csharp.md`** - C# development guidance and standards
-- **`csharp/csharp-standards.md`** - C# coding standards and best practices
 - **`terraform/terraform.md`** - Terraform development guidance and standards
 - **`terraform/terraform-standards.md`** - Terraform coding standards and best practices
+
+> **Note**: Comprehensive guidance for Python scripting, Bash, and C# conventions are provided by the [hve-core](https://github.com/microsoft/hve-core) VS Code extension and loaded automatically when installed.
 
 ### Context Instructions (`/.github/instructions/`)
 
@@ -80,16 +77,16 @@ Prompt files for specific tasks that can be invoked using `/prompt-name` in Copi
 
 | Prompt Name                          | Invocation                  | Description                                    | Use Case                                             |
 |--------------------------------------|-----------------------------|------------------------------------------------|------------------------------------------------------|
-| `adr-create.prompt.md`               | `/adr-create`               | Architecture Decision Record creation guidance | Documenting architectural decisions                  |
 | `csharp-tests.prompt.md`             | `/csharp-tests`             | C# test development guidance                   | Creating unit and integration tests                  |
 | `deploy.prompt.md`                   | `/deploy`                   | Deployment workflows and best practices        | Infrastructure deployment assistance                 |
 | `getting-started.prompt.md`          | `/getting-started`          | Project onboarding and initial setup guidance  | New contributor onboarding                           |
 | `iotops-version-upgrade.prompt.md`   | `/iotops-version-upgrade`   | Azure IoT Operations version upgrade process   | Updating IoT Ops components to latest versions       |
-| `prompt-new.prompt.md`               | `/prompt-new`               | Creating new prompt files systematically       | Developing new AI prompts                            |
 | `prompt-refactor.prompt.md`          | `/prompt-refactor`          | Optimizing and improving existing prompts      | Enhancing prompt effectiveness                       |
 | `pull-request.prompt.md`             | `/pull-request`             | PR description and review assistance           | Creating comprehensive pull requests                 |
 | `python-script.prompt.md`            | `/python-script`            | Python scripting standards and patterns        | Python automation and scripting                      |
 | `terraform-from-blueprint.prompt.md` | `/terraform-from-blueprint` | Converting blueprints to Terraform             | Translating blueprint designs to infrastructure code |
+
+> **Note**: Additional prompts for ADR creation and prompt engineering are available through the [hve-core](https://github.com/microsoft/hve-core) VS Code extension.
 
 ### Enhanced Custom Agents (`/.github/agents/`)
 
@@ -99,9 +96,9 @@ Advanced agent files with comprehensive tool access for specialized coaching and
 - **`edge-ai-project-planner.agent.md`** - Edge AI project planning and solution architecture guidance
 - **`learning-kata-coach.agent.md`** - Interactive kata coaching with enhanced tool access
 - **`learning-lab-coach.agent.md`** - Complex training lab coaching for multi-component systems
-- **`prompt-builder.agent.md`** - Expert prompt engineering and validation system
 - **`security-plan-creator.agent.md`** - Security planning and assessment guidance for project implementations
-- **`task-planner.agent.md`** - Comprehensive task planning with research capabilities
+
+> **Note**: Task planning and prompt engineering agents are available through the [hve-core](https://github.com/microsoft/hve-core) VS Code extension.
 
 ## Using Repository AI Resources
 
@@ -135,7 +132,7 @@ Custom agents provide specialized AI coaching with enhanced tool access, changin
 
 #### Task Planning and Implementation
 
-- **Task Planner Custom Agent**: Access advanced planning capabilities by choosing the custom agent `task-planner` in Copilot Chat (instead of Agent mode)
+- **Task Planner Custom Agent**: Access advanced planning capabilities through the [hve-core](https://github.com/microsoft/hve-core) VS Code extension
   - Creates structured development plans with phases and tasks
   - Performs research to gather context for comprehensive planning
   - Generates documentation in `./.copilot-tracking/plans/` (excluded from git)
@@ -174,9 +171,9 @@ All Learning coaching modes are pre-configured and ready to use immediately in t
 - Ensures proper documentation updates and review checklist completion
 - Options: `includeMarkdown=true`, `branch=feat/branch-name`
 
-### Task Planning (`/task-planner`)
+### Task Planning
 
-- **`/task-planner`**: Creates structured development plans with phases and tasks
+- **Task Planner**: Available through the [hve-core](https://github.com/microsoft/hve-core) VS Code extension
 - Files stored in `./.copilot-tracking/` (excluded from git)
 - Works with the `task-implementation.instructions.md` for enhanced guidance
 
@@ -185,9 +182,9 @@ All Learning coaching modes are pre-configured and ready to use immediately in t
 - Provides deployment guidance and workflows specific to project blueprints
 - Infrastructure deployment assistance following project conventions
 
-### Architecture Decision Records (`/adr-create`)
+### Architecture Decision Records
 
-- Guided ADR creation following project templates
+- Guided ADR creation using the `adr-creation` custom agent
 - Ensures proper documentation of architectural decisions
 
 ## Project Structure Integration
