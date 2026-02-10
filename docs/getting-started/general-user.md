@@ -35,6 +35,7 @@ Before you begin, ensure you have:
 - **GitHub account** with access to this repository
 - **Docker Desktop** installed and running (for Dev Container)
 - **Visual Studio Code** with the Dev Containers extension
+- **[HVE Core extension](https://marketplace.visualstudio.com/items?itemName=ise-hve-essentials.hve-core)** — provides AI prompts, agents, and coding instructions (auto-installed in Dev Container)
 
 ### Required Azure Permissions
 
@@ -352,6 +353,8 @@ Use GitHub Copilot throughout your deployment for interactive help:
 - **"What Azure resources will be created by this blueprint?"**
 
 ### Using Copilot Prompts
+
+> **Note:** Copilot prompts like `/getting-started` are provided by the [HVE Core extension](https://marketplace.visualstudio.com/items?itemName=ise-hve-essentials.hve-core), which is auto-installed in the Dev Container.
 
 1. **Getting Started Prompt**: Use `/getting-started` in Copilot chat for guided setup
 2. **Deployment Assistance**: Ask specific questions about your chosen infrastructure tool

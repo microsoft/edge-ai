@@ -93,7 +93,7 @@ Complete these prerequisite checks to ensure a successful learning experience:
    - [ ] **Expected result**: Real-time visibility into system performance characteristics
 
 3. **Use Copilot** for optimization planning
-   - [ ] Load task-planner.agent.md
+   - [ ] Load the task-planner agent (available via [hve-core](https://github.com/microsoft/hve-core) extension)
    - [ ] Request: "Create performance optimization plan for IoT Operations data pipeline"
    - [ ] Generate systematic profiling and tuning approach
    - **Success check**: Clear plan that identifies bottlenecks and optimization opportunities

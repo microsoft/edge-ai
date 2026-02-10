@@ -167,6 +167,17 @@ The guide covers:
 - Best practices for using Copilot with project-specific context
 - Step-by-step examples for Infrastructure as Code development
 
+### HVE Core Integration
+
+Edge-ai uses [hve-core](https://github.com/microsoft/hve-core) for general-purpose prompt engineering artifacts including standardized agents, prompts, and instructions for common development tasks (Bash, C#, Python, task planning, ADR creation, TDD workflows).
+
+**Setup options:**
+
+- **VS Code extension**: Install `ise-hve-essentials.hve-core` from the marketplace
+- **Peer clone**: Clone hve-core to `../hve-core/` relative to the edge-ai workspace
+
+The `.vscode/settings.json` configuration is already set up to load hve-core artifacts from the peer directory. Edge-ai retains domain-specific artifacts (Terraform, Bicep, IoT Operations, deployment, and project-specific agents and prompts).
+
 ## Attribution
 
 This guide is based on the **contributing.md**. [Make your own](https://contributing.md/)!

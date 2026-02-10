@@ -2,7 +2,7 @@
 title: GitHub Copilot Core Guidance
 description: Comprehensive guidance files for development standards, deployment practices, and AI-assisted engineering workflows
 author: Edge AI Team
-ms.date: 2025-06-18
+ms.date: 2026-02-08
 ms.topic: reference
 estimated_reading_time: 4
 keywords:
@@ -15,6 +15,10 @@ keywords:
 ---
 
 This directory contains comprehensive core guidance files that are referenced by the main GitHub Copilot instructions to ensure consistent development practices and standards across the project.
+
+## HVE Core Dependency
+
+General-purpose language standards for Bash, C#, and Python are provided by [hve-core](https://github.com/microsoft/hve-core) and loaded automatically via `.vscode/settings.json`. Install the `ise-hve-essentials.hve-core` VS Code extension or clone hve-core to `../hve-core/` relative to this workspace. This directory retains only edge-ai-specific guidance (Terraform, Bicep, JavaScript, CSS, deploy, getting started).
 
 ## Overview
 
@@ -40,24 +44,6 @@ Getting started guidance and onboarding procedures for new contributors.
 - **Coverage**: Dev container setup, Azure authentication, project familiarization
 - **Integration**: Referenced for new contributor assistance and project orientation
 
-### [Python Script Guidance](python-script.md)
-
-Python scripting standards and conventions for project automation.
-
-- **Purpose**: Standardized Python development practices and script organization
-- **Scope**: Code structure, error handling, documentation standards, testing practices
-- **Coverage**: Script development, automation workflows, Python best practices
-- **Integration**: Applied automatically for Python-related development tasks
-
-### [C# Testing Guidance](csharp-tests.md)
-
-C# testing standards and practices for .NET applications.
-
-- **Purpose**: Comprehensive testing standards for C# codebases
-- **Scope**: Unit testing, integration testing, test organization, best practices
-- **Coverage**: Testing frameworks, test structure, assertion patterns, mocking
-- **Integration**: Referenced for C# test development and quality assurance
-
 ### Technology-Specific Guidance
 
 #### [Terraform Standards](terraform/)
@@ -76,14 +62,6 @@ Azure Bicep development guidance and infrastructure deployment standards.
 - **Scope**: Template design, resource organization, parameter management, best practices
 - **Coverage**: Bicep syntax, template structure, deployment patterns, Azure conventions
 
-#### [C# Development Standards](csharp/)
-
-C# development guidance and coding standards for .NET applications.
-
-- **Purpose**: Development standards for C# application development
-- **Scope**: Code structure, naming conventions, architectural patterns, best practices
-- **Coverage**: C# syntax, project organization, dependency management, conventions
-
 #### [JavaScript Development Standards](javascript/)
 
 JavaScript development guidance and coding standards for frontend and backend applications.
@@ -100,14 +78,6 @@ CSS development guidance and styling standards for frontend applications.
 - **Purpose**: Development standards for CSS, styling, and frontend appearance
 - **Scope**: Modern CSS features, responsive design, component styling, accessibility, performance
 - **Coverage**: CSS syntax, organization patterns, responsive design principles, accessibility standards
-
-#### [Bash Development Standards](bash/)
-
-Bash scripting guidance and shell automation standards.
-
-- **Purpose**: Shell scripting standards for automation and CI/CD workflows
-- **Scope**: Script structure, error handling, automation patterns, best practices
-- **Coverage**: Bash syntax, script organization, testing patterns, shell conventions
 
 ## Usage Guidelines
 

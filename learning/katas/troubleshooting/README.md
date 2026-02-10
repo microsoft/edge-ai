@@ -163,7 +163,7 @@ These katas leverage comprehensive repository assets for realistic troubleshooti
 
 - **Observability Components**: `src/000-cloud/020-observability/`, `src/100-edge/120-observability/`
 - **Blueprints**: `blueprints/full-single-node-cluster/` for complete system scenarios
-- **Agents**: `learning-kata-coach.agent.md`, `task-planner.agent.md`
+- **Agents**: `learning-kata-coach.agent.md`, task-planner agent (available via [hve-core](https://github.com/microsoft/hve-core) extension)
 - **Instructions**: `terraform.instructions.md`, `bicep.instructions.md`
 
 ## Learning Path Alignment
