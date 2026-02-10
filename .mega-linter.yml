@@ -136,7 +136,6 @@ POWERSHELL_POWERSHELL_CONFIG_FILE: PSScriptAnalyzerSettings.psd1
 
 # Dockerfile Hadolint configuration
 DOCKERFILE_HADOLINT_FILTER_REGEX_INCLUDE: "(src/500-application/.*/services/.*/Dockerfile)"
-DOCKERFILE_HADOLINT_ARGUMENTS: "--ignore SC1091 --failure-threshold warning"
 DOCKERFILE_HADOLINT_FILE_NAME: Dockerfile
 
 # Terrascan configuration (currently disabled)
