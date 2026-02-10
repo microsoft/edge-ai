@@ -1,17 +1,17 @@
 ---
-title: 'Kata: 200 - Copilot Edit Chat Mode Basics'
-description: Learn GitHub Copilot Edit chat mode fundamentals including chat mode selection, @workspace context, #-file mentions, and coordinated multi-file editing for consistent codebase changes
+title: 'Kata: 200 - Copilot Edit Agent Basics'
+description: Learn GitHub Copilot Edit agent fundamentals including agent selection, @workspace context, #-file mentions, and coordinated multi-file editing for consistent codebase changes
 author: Edge AI Team
 ms.date: 2025-01-24
-kata_id: ai-assisted-engineering-200-copilot-edit-mode-basics
+kata_id: ai-assisted-engineering-200-copilot-edit-agent-basics
 kata_category:
   - ai-assisted-engineering
 kata_difficulty: 2
 estimated_time_minutes: 60
 learning_objectives:
-  - Activate GitHub Copilot Edit chat mode using the mode selector dropdown
+  - Activate GitHub Copilot Edit agent using the mode selector dropdown
   - Provide context for multi-file edits using @workspace and #-file mentions
-  - Apply basic refactoring patterns using Edit chat mode
+  - Apply basic refactoring patterns using Edit agent
   - Understand when to use @workspace vs #-mentions for file discovery
 prerequisite_katas:
   - ai-assisted-engineering-100-copilot-modes
@@ -21,9 +21,9 @@ technologies:
   - Chat Edit Mode
   - VS Code
 success_criteria:
-  - Activate Edit chat mode using the mode selector dropdown in Chat panel
+  - Activate Edit agent using the mode selector dropdown in Chat panel
   - Successfully coordinate edits across 3+ related files using @workspace or #-mentions
-  - Apply basic refactoring patterns with Edit chat mode assistance
+  - Apply basic refactoring patterns with Edit agent assistance
   - Demonstrate understanding of when to use @workspace vs #-file mentions
 ai_coaching_level: guided
 scaffolding_level: medium-heavy
@@ -37,8 +37,8 @@ requires_local_environment: true
 tags:
   - ai-assisted-engineering
 search_keywords:
-  - copilot edit chat mode
-  - chat mode selector
+  - copilot edit agent
+  - agent selector
   - workspace context
   - multi-file editing
   - coordinated edits
@@ -47,11 +47,10 @@ search_keywords:
 
 ## Quick Context
 
-**You'll Learn**: Activate Edit chat mode using the mode selector dropdown in the Chat panel; provide context for multi-file edits using @workspace and #-file mentions; execute multi-file configuration updates; apply basic refactoring patterns including function extraction and variable renaming; and recognize when to use Edit chat mode vs. Ask chat mode.
-
+**You'll Learn**: Activate Edit agent using the mode selector dropdown in the Chat panel; provide context for multi-file edits using @workspace and #-file mentions; execute multi-file configuration updates; apply basic refactoring patterns including function extraction and variable renaming; and recognize when to use Edit agent vs. Ask agent.
 **Real Challenge**: You're a platform engineer working on a microservices architecture where shared configuration parameters appear across 5 different service files. Your team discovered a timeout setting needs updating from 30 to 60 seconds. Manual updates are error-prone and time-consuming - you risk missing files or introducing typos. Additionally, you've identified duplicated utility functions that should be extracted to a shared module.
 
-This kata teaches you to use Edit chat mode with @workspace context to coordinate these changes efficiently, accurately, and confidently.
+This kata teaches you to use Edit agent with @workspace context to coordinate these changes efficiently, accurately, and confidently.
 
 ## Essential Setup
 
@@ -59,7 +58,7 @@ This kata teaches you to use Edit chat mode with @workspace context to coordinat
 
 - VS Code with GitHub Copilot extension installed and active subscription
 - GitHub Copilot Chat panel accessible (Ctrl+Alt+I / Cmd+Alt+I)
-- Chat mode selector visible in Chat panel for switching between Ask/Edit/Plan/Agent modes
+- Agent selector visible in Chat panel for switching between Ask/Edit/Plan/Agent modes
 - Completion of GitHub Copilot Modes kata (ai-assisted-engineering-100-copilot-modes)
 
 **Required Knowledge**:
@@ -71,9 +70,9 @@ This kata teaches you to use Edit chat mode with @workspace context to coordinat
 
 > **🤖 Want Interactive AI Coaching?**
 >
-> Load the **Learning Kata Coach** chat mode for task check-offs, progress tracking, progressive hints, and personalized guidance.
+> Load the **Learning Kata Coach** custom agent for task check-offs, progress tracking, progressive hints, and personalized guidance.
 >
-> In GitHub Copilot Chat, select **Learning Kata Coach** mode and say:
+> In GitHub Copilot Chat, select **Learning Kata Coach** custom agent and say:
 >
 > ```text
 > I'm working on Edit Mode Basics kata and want interactive coaching with progress tracking.
@@ -81,18 +80,18 @@ This kata teaches you to use Edit chat mode with @workspace context to coordinat
 
 ## Practice Tasks
 
-### Task 1: Edit Mode Activation and File Selection
+### Task 1: Edit Agent Activation and File Selection
 
-<!-- AI_COACH: This phase introduces Edit chat mode activation and context provision fundamentals. If learners struggle with context provision, guide them to think about file relationships—which files share related concepts or configurations? Encourage starting with 2-3 files using #-mentions before scaling up to @workspace for broader discovery. -->
-<!-- AI_COACH: Remind them that Edit chat mode uses @workspace for automatic file discovery and #-mentions for explicit file targeting. Unlike Ask mode which has full workspace context by default, you explicitly choose your context provision strategy in Edit chat mode. -->
+<!-- AI_COACH: This phase introduces Edit agent activation and context provision fundamentals. If learners struggle with context provision, guide them to think about file relationships—which files share related concepts or configurations? Encourage starting with 2-3 files using #-mentions before scaling up to @workspace for broader discovery. -->
+<!-- AI_COACH: Remind them that Edit agent uses @workspace for automatic file discovery and #-mentions for explicit file targeting. Unlike Ask agent which has full workspace context by default, you explicitly choose your context provision strategy in Edit agent. -->
 
-Edit Mode is specifically designed for coordinated multi-file changes. Understanding activation methods and file selection strategies is fundamental to using Edit Mode effectively.
+Edit agent is specifically designed for coordinated multi-file changes. Understanding activation methods and file selection strategies is fundamental to using Edit agent effectively.
 
-#### Activating Edit Chat Mode
+#### Activating Edit Agent
 
-Edit chat mode is one of four built-in chat modes selectable via dropdown in the Chat panel:
+Edit agent is one of four built-in custom agents selectable via dropdown in the Chat panel:
 
-**Chat Mode Selector** (Standard activation method):
+**Custom Agent Selector** (Standard activation method):
 
 1. Open GitHub Copilot Chat panel:
    - Windows/Linux: `Ctrl+Alt+I`
@@ -102,18 +101,18 @@ Edit chat mode is one of four built-in chat modes selectable via dropdown in the
 4. Select "Edit" from the list of available modes
 5. The chat interface remains in the same panel - no separate window opens
 
-**Available Chat Modes** in the dropdown:
+**Available Custom Agents** in the dropdown:
 
 - **Ask**: Question-answering and code explanations (default mode)
 - **Edit**: Multi-file editing and coordinated changes
 - **Plan**: Breaking down complex tasks into steps (Insiders only)
 - **Agent**: Autonomous multi-step task execution
 
-**Use Edit chat mode when**: You need to make consistent changes across multiple related files
+**Use Edit agent when**: You need to make consistent changes across multiple related files
 
 #### Context Provision Strategies
 
-Edit chat mode uses chat context mechanisms instead of explicit file selection. Provide context strategically:
+Edit agent uses chat context mechanisms instead of explicit file selection. Provide context strategically:
 
 **@workspace for Broad Discovery**:
 
@@ -152,11 +151,11 @@ Create a realistic microservices configuration scenario and practice coordinated
    - **Pro tip**: These are real production Terraform files - all changes will be reverted with `git restore` after practice
    - [ ] **Expected result**: You can open and view these three real variables.tf files, and git status shows clean working directory
 
-2. **Activate Edit chat mode via mode selector**
+2. **Activate Edit agent via mode selector**
    - [ ] Open GitHub Copilot Chat panel: `Ctrl+Alt+I` / `Cmd+Alt+I`
    - [ ] Click the mode selector dropdown at the top of the Chat panel
    - [ ] Select "Edit" from the dropdown menu (changes from default "Ask" mode)
-   - [ ] The Chat panel remains in the same location - you're now in Edit chat mode
+   - [ ] The Chat panel remains in the same location - you're now in Edit agent mode
    - [ ] **Expected result**: Chat panel shows "Edit" mode selected in dropdown
 
 3. **Apply coordinated description additions with @workspace**
@@ -277,7 +276,7 @@ Apply Edit Mode to extract duplicated PowerShell functionality into a shared mod
    - [ ] Create empty file: `scripts/shared/Markdown-Utils.psm1`
    - [ ] **Expected result**: Module file ready to receive extracted function
 
-3. **Prepare Edit chat mode for coordinated refactoring**
+3. **Prepare Edit agent for coordinated refactoring**
    - [ ] Open GitHub Copilot Chat: `Ctrl+Alt+I` / `Cmd+Alt+I`
    - [ ] Select "Edit" mode from the mode selector dropdown
    - [ ] **Expected result**: Chat panel in Edit mode, ready for multi-file PowerShell refactoring
@@ -312,7 +311,7 @@ Apply Edit Mode to extract duplicated PowerShell functionality into a shared mod
    ```
 
    - [ ] Review Copilot's analysis
-   - **Pro tip**: Edit chat mode can validate refactoring without executing code
+   - **Pro tip**: Edit agent can validate refactoring without executing code
    - [ ] If issues found, accept suggested fixes; if correct, proceed to next step
    - [ ] **Expected result**: Confirmation that refactoring is complete and correct
 
@@ -339,7 +338,7 @@ When module structure changes, import statements need consistent updates across 
 
 **Scenario**: You renamed `shared/Markdown-Utils.psm1` to `shared/Frontmatter-Utils.psm1`
 
-**Edit Chat Mode Workflow**:
+**Edit Agent Workflow**:
 
 1. Activate Edit mode in Chat panel
 2. Use @workspace to discover all scripts importing the module:
@@ -371,21 +370,21 @@ When module structure changes, import statements need consistent updates across 
 
 **You've Succeeded When**:
 
-- [ ] You can activate Edit chat mode using the mode selector dropdown in the Chat panel
+- [ ] You can activate Edit agent using the mode selector dropdown in the Chat panel
 - [ ] You successfully coordinated configuration updates across 3+ service files using @workspace context and #-file mentions
-- [ ] You applied the extract-function refactoring pattern with Edit chat mode, creating shared utilities and updating imports
+- [ ] You applied the extract-function refactoring pattern with Edit agent, creating shared utilities and updating imports
 - [ ] You understand the difference between @workspace context (broad discovery) and #-file mentions (specific targeting)
 - [ ] You practiced the review-in-chat-then-Accept workflow and successfully discarded unwanted changes
 - [ ] You completed both practice exercises with consistent multi-file results validated by manual inspection
 
 **Success Criteria Validation**:
 
-- Can you explain when to use Edit mode vs. Ask mode for multi-file scenarios?
-- Can you describe how to activate Edit chat mode and provide context using @workspace and #-mentions?
+- Can you explain when to use Edit agent vs. Ask agent for multi-file scenarios?
+- Can you describe how to activate Edit agent and provide context using @workspace and #-mentions?
 - Have you successfully extracted a shared function and updated multiple consuming files?
 - Do you understand context provision best practices (@workspace for discovery, #-mentions for known file sets)?
 
-**Next Steps**: [200 - Edit Mode for IaC Patterns][kata-200-iac] — Apply Edit Mode to Infrastructure as Code workflows
+**Next Steps**: [200 - Edit Agent for IaC Patterns][kata-200-iac] — Apply Edit Agent to Infrastructure as Code workflows
 
 ---
 
@@ -393,17 +392,17 @@ When module structure changes, import statements need consistent updates across 
 
 ### Help Resources
 
-- [GitHub Copilot Edit Mode Documentation](https://docs.github.com/copilot/using-github-copilot/editing-code-with-github-copilot) - Official Edit Mode guide
+- [GitHub Copilot Edit Agent Documentation](https://docs.github.com/copilot/using-github-copilot/editing-code-with-github-copilot) - Official Edit Agent guide
 - [VS Code Multi-cursor and Selection](https://code.visualstudio.com/docs/editor/codebasics#_multiple-selections-multicursor) - File selection techniques
-- [Refactoring Patterns](https://refactoring.guru/refactoring/catalog) - Common refactoring patterns that work well with Edit Mode
+- [Refactoring Patterns](https://refactoring.guru/refactoring/catalog) - Common refactoring patterns that work well with Edit Agent
 
 ### Professional Tips
 
-- **Start Small**: Begin with 2-3 files using #-mentions to understand Edit chat mode behavior before scaling with @workspace
+- **Start Small**: Begin with 2-3 files using #-mentions to understand Edit agent behavior before scaling with @workspace
 - **Choose Context Strategy**: Use @workspace for discovery when file set is unknown; use #-mentions when targeting known files
 - **Review Before Accept**: Always validate multi-file changes in the chat diff view before accepting
-- **Use Explicit Prompts**: Specify exact changes needed across files to improve Edit mode accuracy
-- **Incremental Updates**: Edit chat mode works for both bulk refactoring and incremental updates to existing patterns
+- **Use Explicit Prompts**: Specify exact changes needed across files to improve Edit agent accuracy
+- **Incremental Updates**: Edit agent works for both bulk refactoring and incremental updates to existing patterns
 - **Scope @workspace**: Narrow @workspace with directory paths (`@workspace In src/`) to improve discovery relevance
 
 ### Troubleshooting
@@ -429,4 +428,4 @@ then carefully refined by our team of discerning human reviewers.*
 
 <!-- Reference Links -->
 
-[kata-200-iac]: /learning/katas/ai-assisted-engineering/200-copilot-edit-mode-iac-patterns.md
+[kata-200-iac]: /learning/katas/ai-assisted-engineering/200-copilot-edit-agent-iac-patterns.md

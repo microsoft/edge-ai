@@ -1,5 +1,4 @@
 ---
-mode: 'agent'
 description: 'Provides getting started, quick start, and how-to instructions and interactions - Brought to you by microsoft/edge-ai'
 ---
 # Project Getting Started Instructions

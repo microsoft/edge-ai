@@ -1,0 +1,122 @@
+/*
+ * Simple Multi-Node Cluster Configuration for Azure Arc Servers
+ *
+ * This file provides configuration for deploying a multi-node cluster
+ * using existing Azure Arc-enabled servers instead of creating new VMs.
+ *
+ * Prerequisites:
+ * - Azure Arc-enabled servers already registered in your subscription
+ * - Servers must have K3s or Kubernetes prerequisites (see documentation)
+ * - System-assigned managed identity enabled on Arc machines
+ *
+ * This configuration excludes optional components:
+ * - AI Foundry
+ * - Microsoft Fabric
+ * - PostgreSQL
+ * - Redis
+ * - Azure Machine Learning
+ *
+ * Usage:
+ *   terraform apply -var-file="simple-arc.tfvars"
+ *
+ * Or copy this file to terraform.tfvars and customize values.
+ */
+
+/*
+ * Core Parameters - Required
+ *
+ * These are the minimum required parameters for deployment.
+ */
+environment     = "dev"
+location        = "eastus2"
+resource_prefix = "edgeai"
+
+/*
+ * Instance Identifier - Optional
+ *
+ * Use this to distinguish multiple deployments with the same prefix.
+ */
+instance = "001"
+
+/*
+ * Azure Arc Server Configuration - Required for Arc Deployments
+ *
+ * Enable Arc machine mode instead of creating Azure VMs.
+ */
+should_use_arc_machines = true
+
+/*
+ * Arc Machine Count
+ *
+ * Number of Arc-enabled servers to use for the cluster:
+ * - First machine becomes the K3s server node
+ * - Additional machines join as worker nodes
+ */
+arc_machine_count = 3
+
+/*
+ * Arc Machine Name Prefix
+ *
+ * Prefix used for Arc machine names. Machines are expected to follow
+ * the naming pattern: {prefix}1, {prefix}2, {prefix}3, etc.
+ *
+ * Example: If prefix is "edgeserver", machines should be named:
+ *   edgeserver1, edgeserver2, edgeserver3
+ *
+ * When null, uses resource_prefix as the prefix.
+ */
+arc_machine_name_prefix = "edgeserver"
+
+/*
+ * Arc Machine Resource Group - Optional
+ *
+ * Resource group containing the Arc-enabled servers.
+ * When null, uses the same resource group as other resources.
+ */
+arc_machine_resource_group_name = null
+
+/*
+ * Cluster Server IP Address - Required for Arc Deployments
+ *
+ * The private IP address of the first Arc server (server node).
+ * Worker nodes use this IP to join the K3s cluster.
+ */
+cluster_server_ip = "10.0.0.10"
+
+/*
+ * Cluster Server SSH Username - Optional
+ *
+ * Username configured on the Arc machines for SSH access.
+ * Used for cluster setup operations requiring SSH connectivity.
+ * When null, uses resource_prefix.
+ */
+cluster_server_host_machine_username = "azureuser"
+
+/*
+ * Onboard Identity Type
+ *
+ * Identity type for Arc cluster onboarding:
+ * - "id"   : Create user-assigned managed identity (default for VM deployments)
+ * - "sp"   : Create service principal
+ * - "skip" : Skip identity creation (use for Arc servers with system-assigned identity)
+ *
+ * When using Arc-enabled servers, the system-assigned identity from Arc
+ * onboarding is typically used, so set this to "skip".
+ */
+onboard_identity_type = "skip"
+
+/*
+ * OPC UA Simulator - Optional
+ *
+ * Enable OPC UA simulator for testing asset discovery and data ingestion.
+ * Set to true for development and testing environments.
+ */
+should_enable_opc_ua_simulator = true
+
+/*
+ * Anonymous MQTT Broker Listener - Optional
+ *
+ * WARNING: Only enable in development/test environments.
+ * Creates an insecure MQTT listener without authentication.
+ */
+should_create_anonymous_broker_listener = false

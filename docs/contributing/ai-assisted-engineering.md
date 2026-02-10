@@ -91,17 +91,17 @@ Prompt files for specific tasks that can be invoked using `/prompt-name` in Copi
 | `python-script.prompt.md`            | `/python-script`            | Python scripting standards and patterns        | Python automation and scripting                      |
 | `terraform-from-blueprint.prompt.md` | `/terraform-from-blueprint` | Converting blueprints to Terraform             | Translating blueprint designs to infrastructure code |
 
-### Enhanced Chat modes (`/.github/chatmodes/`)
+### Enhanced Custom Agents (`/.github/agents/`)
 
-Advanced chatmode files with comprehensive tool access for specialized coaching and workflow assistance:
+Advanced agent files with comprehensive tool access for specialized coaching and workflow assistance:
 
-- **`adr-creation.chatmode.md`** - Interactive architectural decision record creation with comprehensive research and analysis capabilities
-- **`edge-ai-project-planner.chatmode.md`** - Edge AI project planning and solution architecture guidance
-- **`learning-kata-coach.chatmode.md`** - Interactive kata coaching with enhanced tool access
-- **`learning-lab-coach.chatmode.md`** - Complex training lab coaching for multi-component systems
-- **`prompt-builder.chatmode.md`** - Expert prompt engineering and validation system
-- **`security-plan-creator.chatmode.md`** - Security planning and assessment guidance for project implementations
-- **`task-planner.chatmode.md`** - Comprehensive task planning with research capabilities
+- **`adr-creation.agent.md`** - Interactive architectural decision record creation with comprehensive research and analysis capabilities
+- **`edge-ai-project-planner.agent.md`** - Edge AI project planning and solution architecture guidance
+- **`learning-kata-coach.agent.md`** - Interactive kata coaching with enhanced tool access
+- **`learning-lab-coach.agent.md`** - Complex training lab coaching for multi-component systems
+- **`prompt-builder.agent.md`** - Expert prompt engineering and validation system
+- **`security-plan-creator.agent.md`** - Security planning and assessment guidance for project implementations
+- **`task-planner.agent.md`** - Comprehensive task planning with research capabilities
 
 ## Using Repository AI Resources
 
@@ -118,24 +118,24 @@ Advanced chatmode files with comprehensive tool access for specialized coaching 
 2. Or type `/prompt-name` directly in Copilot chat (e.g., `/pull-request`, `/getting-started`)
 3. Follow the guided workflow provided by the prompt
 
-### Using Enhanced Chat Modes
+### Using Enhanced Custom Agents
 
-Chat modes provide specialized AI coaching with enhanced tool access, changing the system prompt in addition to the instructions:
+Custom agents provide specialized AI coaching with enhanced tool access, changing the system prompt in addition to the instructions:
 
-1. **Reference Chat Modes**: Use the chat mode drop-down in Copilot Chat to select a custom chat mode
+1. **Reference Custom Agents**: Use the agent drop-down in Copilot Chat to select a custom agent
 
 1. **Learning Coaching**:
 
-- **Kata Coach**: `#file:/.github/chatmodes/learning-kata-coach.chatmode.md` for focused practice exercises
-- **Lab Coach**: `#file:/.github/chatmodes/learning-lab-coach.chatmode.md` for complex training labs
+- **Kata Coach**: `#file:/.github/agents/learning-kata-coach.agent.md` for focused practice exercises
+- **Lab Coach**: `#file:/.github/agents/learning-lab-coach.agent.md` for complex training labs
 
-1. **Enhanced Capabilities**: Chat modes have comprehensive tool access for research, file editing, and system interaction
+1. **Enhanced Capabilities**: Custom agents have comprehensive tool access for research, file editing, and system interaction
 
 1. **Coaching Methodology**: Follows OpenHack-style discovery-based learning with systematic guidance
 
 #### Task Planning and Implementation
 
-- **Task Planner Chat Mode**: Access advanced planning capabilities by choosing the custom chat mode `task-planner` in Copilot Chat (instead of Agent mode)
+- **Task Planner Custom Agent**: Access advanced planning capabilities by choosing the custom agent `task-planner` in Copilot Chat (instead of Agent mode)
   - Creates structured development plans with phases and tasks
   - Performs research to gather context for comprehensive planning
   - Generates documentation in `./.copilot-tracking/plans/` (excluded from git)
@@ -164,7 +164,7 @@ Explore advanced AI-assisted engineering practices through our **[Learning Platf
 3. **Start Learning**: Say "I'm working on learning and want interactive coaching"
 4. **Get Personalized Path**: Take the skill assessment for customized kata recommendations
 
-All Learning coaching modes are pre-configured and ready to use immediately in this repository. All advanced chatmode prompts can be easily copied into your own project for immediate AI-assisted engineering acceleration.
+All Learning coaching modes are pre-configured and ready to use immediately in this repository. All advanced agent prompts can be easily copied into your own project for immediate AI-assisted engineering acceleration.
 
 ## Essential Project Prompts
 

@@ -40,7 +40,7 @@
 # - Comprehensive content copying for all documentation folders (docs/, src/, blueprints/, learning/, .github/, copilot/)
 # - Section-based navigation architecture support with docs/_parts/ structure
 # - Dynamic sidebar currency validation (fails deployment if outdated)
-# - Content-aware validation for special file types (.prompt.md, .chatmode.md, .instructions.md)
+# - Content-aware validation for special file types (.prompt.md, .agent.md, .instructions.md)
 # - Post-deployment verification with site accessibility and path testing
 # - Generates GitHub Pages-specific URL configuration for token replacement
 # - Builds Docsify documentation with all assets and plugins
@@ -149,7 +149,7 @@ jobs:
           cache: 'npm'
 
       - name: Cache Docsify CLI
-        uses: actions/cache@8b402f58fbc84540c8b491a91e594a4576fec3d7
+        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306
         with:
           path: ~/.npm
           key: ${{ runner.os }}-docsify-${{ hashFiles('**/package-lock.json') }}
@@ -632,9 +632,9 @@ jobs:
             ((special_files_found++))
           fi
 
-          if find ./_site -name "*.chatmode.md" | head -1 > /dev/null 2>&1; then
-            chatmode_count=$(find ./_site -name "*.chatmode.md" | wc -l)
-            echo "[SUCCESS] Chatmode files found: $chatmode_count"
+          if find ./_site -name "*.agent.md" | head -1 > /dev/null 2>&1; then
+            agent_count=$(find ./_site -name "*.agent.md" | wc -l)
+            echo "[SUCCESS] Agent files found: $agent_count"
             ((special_files_found++))
           fi
 

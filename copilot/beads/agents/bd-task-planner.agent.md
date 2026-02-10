@@ -2,7 +2,7 @@
 description: 'Beads-first planner for MCP-only workflows - Brought to you by microsoft/edge-ai'
 tools: ['runCommands', 'terraform/*', 'context7/*', 'microsoft-docs/*', 'Bicep (EXPERIMENTAL)/*', 'search', 'beads/*', 'problems', 'fetch', 'githubRepo', 'runSubagent']
 ---
-# Beads Task Planner Chatmode
+# Beads Task Planner Custom Agent
 
 ## Role Definition
 

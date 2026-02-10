@@ -95,7 +95,7 @@ Build sophisticated edge-to-cloud data pipelines with Microsoft Fabric for enter
   **Prerequisites:** task-planning-100-edge-documentation-planning, task-planning-200-repository-analysis-planning, task-planning-300-ai-asset-extraction • **Technologies:** GitHub Copilot, Docsify
 
 - [ ] [**Kata: 400 - Cross-Region Replication**](../katas/task-planning/400-ai-asset-extraction.md)
-  *Expert | 70 min* • Learn systematic extraction and packaging of AI prompts, instructions, and chatmodes for client project delivery using comprehensive task planning
+  *Expert | 70 min* • Learn systematic extraction and packaging of AI prompts, instructions, and agents for client project delivery using comprehensive task planning
   **Prerequisites:** task-planning-100-edge-documentation-planning, task-planning-200-repository-analysis-planning • **Technologies:** GitHub Copilot
 
 - [ ] [**Kata: 400 - Compliance & Governance**](../katas/task-planning/400-pr-generation.md)
