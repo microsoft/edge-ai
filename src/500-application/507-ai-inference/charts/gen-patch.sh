@@ -45,7 +45,7 @@ IMAGE_VERSION="${IMAGE_VERSION:-latest}"
 NAMESPACE="${NAMESPACE:-azure-iot-operations}"
 
 # Create the container patch file
-cat > patch-containers.yaml << EOF
+cat >patch-containers.yaml <<EOF
 - op: replace
   path: /spec/template/spec/containers/0/image
   value: ${ACR_NAME}.azurecr.io/${IMAGE_NAME}:${IMAGE_VERSION}

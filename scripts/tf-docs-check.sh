@@ -45,7 +45,7 @@ if ! command -v terraform-docs &>/dev/null; then
 fi
 
 # Check if jq is installed
-if ! command -v jq &> /dev/null; then
+if ! command -v jq &>/dev/null; then
   echo "jq could not be found."
   echo "Please install jq and ensure it is in your PATH."
   echo "Installation instructions for jq can be found at: https://stedolan.github.io/jq/download/."
@@ -68,12 +68,12 @@ echo "Checking for changes in README.md files ..."
 changed_files=$(git diff --name-only)
 readme_changed=false
 for file in $changed_files; do
-    if [[ $file == src/*/README.md ]]; then
-        if head -n 1 "$file" | grep -q "^<!-- BEGIN_TF_DOCS -->$"; then
-        echo "Updates required for: ./$file"
-        readme_changed=true
-        fi
+  if [[ $file == src/*/README.md ]]; then
+    if head -n 1 "$file" | grep -q "^<!-- BEGIN_TF_DOCS -->$"; then
+      echo "Updates required for: ./$file"
+      readme_changed=true
     fi
+  fi
 done
 echo "README.md files checked."
 echo $readme_changed

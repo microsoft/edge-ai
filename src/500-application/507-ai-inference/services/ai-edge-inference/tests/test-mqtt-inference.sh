@@ -54,34 +54,34 @@ TEST_IMAGES_DIR="/tmp/test_images"
 
 # Check if test images exist
 if [ ! -d "$TEST_IMAGES_DIR" ]; then
-    echo "❌ Test images directory not found: $TEST_IMAGES_DIR"
-    exit 1
+  echo "❌ Test images directory not found: $TEST_IMAGES_DIR"
+  exit 1
 fi
 
 # Function to encode image to base64
 encode_image() {
-    local image_path="$1"
-    if [ -f "$image_path" ]; then
-        base64 -w 0 "$image_path"
-    else
-        echo "❌ Image not found: $image_path"
-        return 1
-    fi
+  local image_path="$1"
+  if [ -f "$image_path" ]; then
+    base64 -w 0 "$image_path"
+  else
+    echo "❌ Image not found: $image_path"
+    return 1
+  fi
 }
 
 # Function to create MQTT message with real image
 create_image_message() {
-    local image_path="$1"
-    local camera_id="$2"
-    local timestamp
-    timestamp=$(date +%s)
+  local image_path="$1"
+  local camera_id="$2"
+  local timestamp
+  timestamp=$(date +%s)
 
-    local image_base64
-    if ! image_base64=$(encode_image "$image_path"); then
-        return 1
-    fi
+  local image_base64
+  if ! image_base64=$(encode_image "$image_path"); then
+    return 1
+  fi
 
-    cat << EOF
+  cat <<EOF
 {
   "message_type": "image_snapshot",
   "camera_id": "$camera_id",
@@ -120,48 +120,48 @@ echo ""
 test_images=("$TEST_IMAGES_DIR/test_image_1.jpg" "$TEST_IMAGES_DIR/test_image_2.jpeg" "$TEST_IMAGES_DIR/test_image_3.jpeg")
 
 for i in "${!test_images[@]}"; do
-    image_path="${test_images[$i]}"
-    camera_id="mqtt-test-cam-$((i + 1))"
+  image_path="${test_images[$i]}"
+  camera_id="mqtt-test-cam-$((i + 1))"
 
-    if [ ! -f "$image_path" ]; then
-        echo "⚠️  Skipping missing image: $image_path"
-        continue
-    fi
+  if [ ! -f "$image_path" ]; then
+    echo "⚠️  Skipping missing image: $image_path"
+    continue
+  fi
 
-    echo ""
-    echo "📸 Test $((i + 1)): Processing $(basename "$image_path")"
+  echo ""
+  echo "📸 Test $((i + 1)): Processing $(basename "$image_path")"
 
-    # Create message file
-    message_file="/tmp/mqtt_test_message_$((i + 1)).json"
-    if ! create_image_message "$image_path" "$camera_id" > "$message_file"; then
-        echo "❌ Failed to create message for $image_path"
-        continue
-    fi
+  # Create message file
+  message_file="/tmp/mqtt_test_message_$((i + 1)).json"
+  if ! create_image_message "$image_path" "$camera_id" >"$message_file"; then
+    echo "❌ Failed to create message for $image_path"
+    continue
+  fi
 
-    echo "   📝 Message size: $(wc -c < "$message_file") bytes"
-    echo "   🎯 Camera ID: $camera_id"
+  echo "   📝 Message size: $(wc -c <"$message_file") bytes"
+  echo "   🎯 Camera ID: $camera_id"
 
-    # Publish to MQTT
-    echo "   📤 Publishing to MQTT..."
-    if kubectl exec mqtt-client -n azure-iot-operations -- mosquitto_pub \
-      --host aio-broker.azure-iot-operations \
-      --port 18883 \
-      --username 'K8S-SAT' \
-      --pw "$(kubectl exec mqtt-client -n azure-iot-operations -- cat /var/run/secrets/tokens/broker-sat)" \
-      --cafile /var/run/certs/ca.crt \
-      --topic "$INPUT_TOPIC" \
-      --file - < "$message_file" 2>/dev/null; then
-        echo "   ✅ Published successfully"
-    else
-        echo "   ❌ Failed to publish"
-    fi
+  # Publish to MQTT
+  echo "   📤 Publishing to MQTT..."
+  if kubectl exec mqtt-client -n azure-iot-operations -- mosquitto_pub \
+    --host aio-broker.azure-iot-operations \
+    --port 18883 \
+    --username 'K8S-SAT' \
+    --pw "$(kubectl exec mqtt-client -n azure-iot-operations -- cat /var/run/secrets/tokens/broker-sat)" \
+    --cafile /var/run/certs/ca.crt \
+    --topic "$INPUT_TOPIC" \
+    --file - <"$message_file" 2>/dev/null; then
+    echo "   ✅ Published successfully"
+  else
+    echo "   ❌ Failed to publish"
+  fi
 
-    # Cleanup temp file
-    rm -f "$message_file"
+  # Cleanup temp file
+  rm -f "$message_file"
 
-    # Wait between tests
-    echo "   ⏳ Waiting 5 seconds..."
-    sleep 5
+  # Wait between tests
+  echo "   ⏳ Waiting 5 seconds..."
+  sleep 5
 done
 
 echo ""

@@ -26,33 +26,33 @@ BASE_BRANCH="origin/dev"
 OUTPUT_FILE="${REPO_ROOT}/.copilot-tracking/pr/pr-reference.xml"
 while [[ $# -gt 0 ]]; do
   case "$1" in
-  --no-md-diff)
-    NO_MD_DIFF=true
-    shift
-    ;;
-  --base-branch)
-    if [[ -z $2 || $2 == --* ]]; then
-      echo "Error: --base-branch requires an argument"
+    --no-md-diff)
+      NO_MD_DIFF=true
+      shift
+      ;;
+    --base-branch)
+      if [[ -z $2 || $2 == --* ]]; then
+        echo "Error: --base-branch requires an argument"
+        show_usage
+      fi
+      BASE_BRANCH="$2"
+      shift 2
+      ;;
+    --output)
+      if [[ -z $2 || $2 == --* ]]; then
+        echo "Error: --output requires an argument"
+        show_usage
+      fi
+      OUTPUT_FILE="$2"
+      shift 2
+      ;;
+    --help | -h)
       show_usage
-    fi
-    BASE_BRANCH="$2"
-    shift 2
-    ;;
-  --output)
-    if [[ -z $2 || $2 == --* ]]; then
-      echo "Error: --output requires an argument"
+      ;;
+    *)
+      echo "Unknown option: $1"
       show_usage
-    fi
-    OUTPUT_FILE="$2"
-    shift 2
-    ;;
-  --help | -h)
-    show_usage
-    ;;
-  *)
-    echo "Unknown option: $1"
-    show_usage
-    ;;
+      ;;
   esac
 done
 

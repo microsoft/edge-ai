@@ -67,64 +67,64 @@ check_and_install_dependencies() {
   echo "Detected package manager: $PKG_MANAGER"
 
   case $PKG_MANAGER in
-  apt-get)
-    apt-get update
-    apt-get install -y "${missing_deps[@]}"
-    ;;
-  yum)
-    yum install -y "${missing_deps[@]}"
-    ;;
-  dnf)
-    dnf install -y "${missing_deps[@]}"
-    ;;
-  tdnf)
-    tdnf install -y "${missing_deps[@]}"
-    ;;
-  apk)
-    apk add --no-cache "${missing_deps[@]}"
-    ;;
-  pacman)
-    pacman -Sy --noconfirm "${missing_deps[@]}"
-    ;;
-  zypper)
-    zypper install -y "${missing_deps[@]}"
-    ;;
-  *)
-    echo "No package manager detected. Attempting alternative installation methods..."
+    apt-get)
+      apt-get update
+      apt-get install -y "${missing_deps[@]}"
+      ;;
+    yum)
+      yum install -y "${missing_deps[@]}"
+      ;;
+    dnf)
+      dnf install -y "${missing_deps[@]}"
+      ;;
+    tdnf)
+      tdnf install -y "${missing_deps[@]}"
+      ;;
+    apk)
+      apk add --no-cache "${missing_deps[@]}"
+      ;;
+    pacman)
+      pacman -Sy --noconfirm "${missing_deps[@]}"
+      ;;
+    zypper)
+      zypper install -y "${missing_deps[@]}"
+      ;;
+    *)
+      echo "No package manager detected. Attempting alternative installation methods..."
 
-    # Alternative method for git if needed
-    if [[ " ${missing_deps[*]} " =~ " git " ]]; then
-      echo "Attempting to download and install git manually..."
-      mkdir -p /tmp/git_install
-      cd /tmp/git_install
+      # Alternative method for git if needed
+      if [[ " ${missing_deps[*]} " =~ " git " ]]; then
+        echo "Attempting to download and install git manually..."
+        mkdir -p /tmp/git_install
+        cd /tmp/git_install
 
-      # Try to download a pre-compiled git binary
-      curl -L -o git.tar.gz https://github.com/git/git/archive/refs/tags/v2.35.1.tar.gz ||
-        wget https://github.com/git/git/archive/refs/tags/v2.35.1.tar.gz -O git.tar.gz
+        # Try to download a pre-compiled git binary
+        curl -L -o git.tar.gz https://github.com/git/git/archive/refs/tags/v2.35.1.tar.gz \
+          || wget https://github.com/git/git/archive/refs/tags/v2.35.1.tar.gz -O git.tar.gz
 
-      if [ -f git.tar.gz ]; then
-        tar -xzf git.tar.gz
-        cd git-*
-        # Only try to build if make and gcc are available
-        if command -v make &>/dev/null && command -v gcc &>/dev/null; then
-          make prefix=/usr/local all
-          make prefix=/usr/local install
+        if [ -f git.tar.gz ]; then
+          tar -xzf git.tar.gz
+          cd git-*
+          # Only try to build if make and gcc are available
+          if command -v make &>/dev/null && command -v gcc &>/dev/null; then
+            make prefix=/usr/local all
+            make prefix=/usr/local install
+          else
+            echo "Failed to install git: make or gcc not available"
+            return 1
+          fi
         else
-          echo "Failed to install git: make or gcc not available"
+          echo "Failed to download git source"
           return 1
         fi
-      else
-        echo "Failed to download git source"
+      fi
+
+      # For tar, it's usually pre-installed on most systems
+      if [[ " ${missing_deps[*]} " =~ " tar " ]]; then
+        echo "tar is a fundamental utility and should be available. Please install it manually."
         return 1
       fi
-    fi
-
-    # For tar, it's usually pre-installed on most systems
-    if [[ " ${missing_deps[*]} " =~ " tar " ]]; then
-      echo "tar is a fundamental utility and should be available. Please install it manually."
-      return 1
-    fi
-    ;;
+      ;;
   esac
 
   # Verify installation

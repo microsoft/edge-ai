@@ -23,11 +23,14 @@ while getopts ":nfp" opt; do
     n) dry_run=true ;;
     f) force=true ;;
     p) push=true ;;
-    *) echo "Usage: $0 [-n] [-f] [-p] [components_dir]" >&2; exit 2 ;;
+    *)
+      echo "Usage: $0 [-n] [-f] [-p] [components_dir]" >&2
+      exit 2
+      ;;
   esac
 done
 
-shift $((OPTIND-1))
+shift $((OPTIND - 1))
 
 # Set components directory from parameter or use current directory as default
 components_dir="${1:-.}"

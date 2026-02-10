@@ -9,7 +9,7 @@ set -euo pipefail
 kubectl create namespace osmo --dry-run=client -o yaml | kubectl apply -f -
 
 kubectl create serviceaccount osmo-workload \
-	--namespace osmo --dry-run=client -o yaml | kubectl apply -f -
+  --namespace osmo --dry-run=client -o yaml | kubectl apply -f -
 
 ###
 # Helm Repo Add
@@ -26,8 +26,8 @@ helm repo update
 
 # Install the NVIDIA GPU Operator into the cluster
 helm upgrade -i --wait gpu-operator -n gpu-operator --version 24.9.1 \
-	--create-namespace nvidia/gpu-operator --disable-openapi-validation \
-	-f ./values/nvidia-gpu-operator-values.yaml
+  --create-namespace nvidia/gpu-operator --disable-openapi-validation \
+  -f ./values/nvidia-gpu-operator-values.yaml
 
 ###
 # GPU Metrics Monitoring
@@ -38,4 +38,4 @@ kubectl get podmonitor -n kube-system nvidia-dcgm-exporter
 # Install KAI Scheduler into the cluster for NVIDIA OSMO
 helm fetch oci://ghcr.io/nvidia/kai-scheduler/kai-scheduler --version v0.5.5
 helm upgrade -i --wait -n kai-scheduler kai-scheduler kai-scheduler-v0.5.5.tgz \
-	--create-namespace --values ./values/kai-scheduler-values.yaml
+  --create-namespace --values ./values/kai-scheduler-values.yaml

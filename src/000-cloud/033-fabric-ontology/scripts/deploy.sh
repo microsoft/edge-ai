@@ -59,7 +59,7 @@ CLUSTER_URI=""
 ####
 
 usage() {
-  cat << EOF
+  cat <<EOF
 Usage: $(basename "$0") [OPTIONS]
 
 Deploy a complete ontology with data to Microsoft Fabric.
@@ -144,7 +144,7 @@ while [[ $# -gt 0 ]]; do
       DRY_RUN="true"
       shift
       ;;
-    -h|--help)
+    -h | --help)
       usage
       exit 0
       ;;
@@ -481,7 +481,7 @@ if [[ "$DRY_RUN" == "true" ]]; then
   exit 0
 fi
 
-cat << EOF
+cat <<EOF
 
 === Deployment Summary ===
 
@@ -496,7 +496,7 @@ if [[ -n "$EVENTHOUSE_ID" ]]; then
   echo "  Eventhouse: $EVENTHOUSE_ID"
 fi
 
-cat << EOF
+cat <<EOF
 
 === Next Steps ===
 

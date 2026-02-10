@@ -63,10 +63,10 @@ DEBUG="${DEBUG:-false}"
 
 usage() {
   echo "Usage: ${0##*/}"
-  grep -x -B99 -m 1 "^###" "$0" |
-    sed -E -e '/^[^#]+=/ {s/^([^ ])/  \1/ ; s/#/ / ; s/=[^ ]*$// ;}' |
-    sed -E -e ':x' -e '/^[^#]+=/ {s/^(  [^ ]+)[^ ] /\1  / ;}' -e 'tx' |
-    sed -e 's/^## //' -e '/^#/d' -e '/^$/d'
+  grep -x -B99 -m 1 "^###" "$0" \
+    | sed -E -e '/^[^#]+=/ {s/^([^ ])/  \1/ ; s/#/ / ; s/=[^ ]*$// ;}' \
+    | sed -E -e ':x' -e '/^[^#]+=/ {s/^(  [^ ]+)[^ ] /\1  / ;}' -e 'tx' \
+    | sed -e 's/^## //' -e '/^#/d' -e '/^$/d'
   exit 1
 }
 
@@ -122,12 +122,12 @@ while [[ $# -gt 0 ]]; do
       DRY_RUN="true"
       shift
       ;;
-    -d|--debug)
+    -d | --debug)
       DEBUG="true"
       enable_debug
       shift
       ;;
-    -h|--help)
+    -h | --help)
       usage
       ;;
     *)
@@ -445,7 +445,7 @@ create_kql_table() {
 
   # Generate KQL command from template (strip comments)
   local kql_command
-  kql_command=$(TABLE_NAME="$table_name" COLUMN_SCHEMA="$column_schema" envsubst < "$TEMPLATE_DIR/create-table.kql.tmpl" | strip_kql_comments)
+  kql_command=$(TABLE_NAME="$table_name" COLUMN_SCHEMA="$column_schema" envsubst <"$TEMPLATE_DIR/create-table.kql.tmpl" | strip_kql_comments)
 
   info "Creating KQL table: $table_name"
   execute_kql "$EVENTHOUSE_QUERY_URI" "$database_name" "$kql_command"
@@ -478,7 +478,7 @@ create_kql_csv_mapping() {
 
   # Generate KQL command from template (strip comments)
   local kql_command
-  kql_command=$(TABLE_NAME="$table_name" MAPPING_NAME="$mapping_name" MAPPING_JSON="$mapping_json" envsubst < "$TEMPLATE_DIR/create-mapping.kql.tmpl" | strip_kql_comments)
+  kql_command=$(TABLE_NAME="$table_name" MAPPING_NAME="$mapping_name" MAPPING_JSON="$mapping_json" envsubst <"$TEMPLATE_DIR/create-mapping.kql.tmpl" | strip_kql_comments)
 
   info "Creating CSV mapping: $mapping_name"
   execute_kql "$EVENTHOUSE_QUERY_URI" "$database_name" "$kql_command"
@@ -492,7 +492,7 @@ set_kql_retention_policy() {
 
   # Generate KQL commands from template
   local kql_commands
-  kql_commands=$(TABLE_NAME="$table_name" RETENTION_DAYS="$retention_days" CACHING_DAYS="$caching_days" envsubst < "$TEMPLATE_DIR/retention-policy.kql.tmpl")
+  kql_commands=$(TABLE_NAME="$table_name" RETENTION_DAYS="$retention_days" CACHING_DAYS="$caching_days" envsubst <"$TEMPLATE_DIR/retention-policy.kql.tmpl")
 
   info "Setting retention policy: ${retention_days}d retention, ${caching_days}d caching"
 
@@ -503,7 +503,7 @@ set_kql_retention_policy() {
     if [[ -n "$command" && ! "$command" =~ ^// ]]; then
       execute_kql "$EVENTHOUSE_QUERY_URI" "$database_name" "$command"
     fi
-  done <<< "$kql_commands"
+  done <<<"$kql_commands"
 }
 
 ingest_kql_data() {
