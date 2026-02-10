@@ -5,7 +5,7 @@
 # for running the media-capture-service with Docker Compose or other deployment methods.
 # It uses current environment variables as values, with sensible defaults for unset variables.
 
-set -e  # Exit immediately if a command exits with a non-zero status
+set -e # Exit immediately if a command exits with a non-zero status
 
 CURRENT_DIR=$(dirname "$0")
 
@@ -27,7 +27,7 @@ CAPTURE_DURATION_SECONDS=${CAPTURE_DURATION_SECONDS:-10}
 VIDEO_FEED_DELAY_SECONDS=${VIDEO_FEED_DELAY_SECONDS:-5}
 
 # Generate .env file
-cat <<EOF > "${CURRENT_DIR}"/../.env
+cat <<EOF >"${CURRENT_DIR}"/../.env
 # Container Registry Configuration
 ACR_NAME=${ACR_NAME}
 
