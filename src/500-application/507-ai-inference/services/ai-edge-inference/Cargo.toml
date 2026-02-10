@@ -97,3 +97,6 @@ overflow-checks = true
 
 [workspace]
 resolver = "2"
+
+[profile.release]
+strip = true
