@@ -39,7 +39,7 @@ WIKI_REPO_FOLDER=".wiki"
 
 # Create the directory if it does not exist
 if [ ! -d "$WIKI_REPO_FOLDER" ]; then
-  mkdir -p $WIKI_REPO_FOLDER
+  mkdir -p "./${WIKI_REPO_FOLDER}"
 fi
 
 # Remove all contents in the work_dir except the .git folder

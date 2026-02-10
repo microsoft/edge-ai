@@ -35,7 +35,7 @@ fi
 
 # Assume Azure CLI is already logged in via the Azure DevOps service connection (AzureCLI@2)
 echo "Using existing Azure CLI login context (service connection). Verifying access to ACR '$ACR_NAME'..."
-if ! az acr show -n "$ACR_NAME" -g "$ACR_RESOURCE_GROUP" >/dev/null 2>&1; then
+if ! az acr show -n "${ACR_NAME}" -g "${ACR_RESOURCE_GROUP}" >/dev/null; then
   echo "Failed to access ACR '$ACR_NAME' in resource group '$ACR_RESOURCE_GROUP'. Ensure the service connection has permissions."
   exit 1
 fi
@@ -55,7 +55,7 @@ update_tag() {
   fi
 
   # Fetch tags using az acr CLI
-  tags=$(az acr repository show-tags -n "$ACR_NAME" --repository "$acr_repo" --orderby time_desc --output tsv 2>/dev/null)
+  tags=$(az acr repository show-tags -n "${ACR_NAME}" --repository "${acr_repo}" --orderby time_desc --output tsv)
 
   if [ -z "$tags" ]; then
     echo "Failed to fetch tags for $acr_repo"
