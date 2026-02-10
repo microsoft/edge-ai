@@ -213,7 +213,7 @@ then carefully refined by our team of discerning human reviewers.*
 <!-- Reference Links -->
 <!-- Internal Project Links -->
 [project-planning-guides]: /docs/project-planning/README
-[task-planning-prompts]: /.github/agents/task-planner.agent
+[task-planning-prompts]: https://github.com/microsoft/hve-core
 [contribution-workflows]: /CONTRIBUTING
 [edge-doc-planning]: /learning/katas/task-planning/100-edge-documentation-planning
 

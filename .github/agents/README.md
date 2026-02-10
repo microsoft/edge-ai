@@ -40,15 +40,6 @@ Complex training lab coaching for multi-component systems and comprehensive scen
 - **Best For**: Advanced labs, system deployments, complex integrations
 - **Philosophy**: Structured guidance for comprehensive real-world scenarios
 
-### [Task Planner](task-planner.agent.md)
-
-Comprehensive task planning with research capabilities and systematic implementation planning.
-
-- **Purpose**: Create actionable task plans through iterative research and progressive planning
-- **Capabilities**: Research automation, plan documentation, requirement analysis
-- **Best For**: Project planning, requirement gathering, implementation strategy
-- **Philosophy**: Research-first planning with validated project context
-
 ### [Task Researcher](task-researcher.agent.md)
 
 Specialized research-only assistant for comprehensive project analysis and documentation.
@@ -67,15 +58,6 @@ Interactive architectural decision record creation with comprehensive research a
 - **Best For**: Architecture decisions, technical documentation, collaborative analysis
 - **Philosophy**: Interactive markdown collaboration with progressive content development
 
-### [Prompt Builder](prompt-builder.agent.md)
-
-Expert prompt engineering and validation system for creating high-quality AI prompts.
-
-- **Purpose**: Engineer and validate effective prompts using expert principles
-- **Capabilities**: Prompt analysis, improvement iteration, validation testing
-- **Best For**: Prompt optimization, AI instruction refinement, quality assurance
-- **Philosophy**: Iterative engineering with built-in validation cycles
-
 ### [Security Plan Creator](security-plan-creator.agent.md)
 
 Expert security architect for creating comprehensive cloud security plans with threat modeling and risk assessment.
@@ -92,10 +74,10 @@ Expert security architect for creating comprehensive cloud security plans with t
 1. **Learning and Skill Building**: Use Learning Kata Coach for focused practice
 2. **Complex System Work**: Use Learning Lab Coach for multi-component scenarios
 3. **Research and Analysis**: Use Task Researcher for comprehensive project investigation
-4. **Project Planning**: Use Task Planner for strategic planning after research is complete
-5. **Architecture Documentation**: Use ADR Creation for collaborative decision records
-6. **Prompt Development**: Use Prompt Builder for AI instruction optimization
-7. **Security Planning**: Use Security Plan Creator for threat analysis and security documentation
+4. **Architecture Documentation**: Use ADR Creation for collaborative decision records
+5. **Security Planning**: Use Security Plan Creator for threat analysis and security documentation
+
+> **Note**: Additional agents for task planning and prompt engineering are available through the [hve-core](https://github.com/microsoft/hve-core) VS Code extension.
 
 ### Activation
 

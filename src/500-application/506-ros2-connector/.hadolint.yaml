@@ -1,10 +1,18 @@
 # Hadolint configuration for ROS2 connector application
 #
-# ROS2 images are exempt from SHA256 pinning (DL3006) due to upstream team's
-# rolling tag strategy and build pruning practices. Timestamped ROS2 builds
-# are regularly deleted by the upstream team, making SHA256 pins unstable.
+# Mirrors root .hadolint.yaml settings.
+# Hadolint does not merge configs; this file fully replaces root.
+# Hadolint discovers config from CWD ($PWD), not from the Dockerfile
+# location. Use --config to load this file when running from repo root.
 #
-# See: scripts/security/Ros2ExclusionHelper.ps1
+# Architecture: MCR Ubuntu base images (SHA256-pinned) with ROS2 Jazzy
+# installed via apt packages. No DL3006 exemption needed.
 ---
+failure-threshold: warning
+
 ignored:
-  - DL3006  # Ignore missing SHA256 digests on FROM statements
+  - SC1091
+
+trustedRegistries:
+  - mcr.microsoft.com
+  - docker.io
