@@ -319,7 +319,7 @@ jobs:
 
       - name: Log in to Container Registry
         if: ${{ needs.parse-configuration.outputs.pushImages == 'true' }}
-        uses: docker/login-action@0567fa5ae8c9a197cb207537dc5cbb43ca3d803f
+        uses: docker/login-action@3227f5311cb93ffd14d13e65d8cc400d30f4dd8a
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ secrets.REGISTRY_USERNAME }}
@@ -374,30 +374,27 @@ jobs:
           wget -O /usr/local/bin/hadolint "https://github.com/hadolint/hadolint/releases/download/v${HADOLINT_VERSION}/hadolint-Linux-x86_64"
           chmod +x /usr/local/bin/hadolint
 
-          # Find all Dockerfiles
-          DOCKERFILES=$(find "${{ matrix.applicationPath }}" -type f -name "Dockerfile")
+          VALIDATION_FAILED=0
+          found=0
 
-          if [ -z "$DOCKERFILES" ]; then
+          while IFS= read -r -d '' dockerfile; do
+            found=1
+            echo "Validating: $dockerfile"
+
+            if [[ "$dockerfile" == *"506-ros2-connector"* ]]; then
+              echo "  ⏭️  ROS2 file (uses local .hadolint.yaml with DL3006 exemption)"
+              hadolint --config "src/500-application/506-ros2-connector/.hadolint.yaml" "$dockerfile" || VALIDATION_FAILED=1
+            else
+              hadolint "$dockerfile" || VALIDATION_FAILED=1
+            fi
+          done < <(find "${{ matrix.applicationPath }}" -type f -name "Dockerfile" -print0)
+
+          if [[ ${found} -eq 0 ]]; then
             echo "⚠️  No Dockerfiles found in ${{ matrix.applicationPath }}"
             exit 0
           fi
 
-          VALIDATION_FAILED=0
-
-          for dockerfile in $DOCKERFILES; do
-            echo "Validating: $dockerfile"
-
-            # Check if this is a ROS2 file (exempt from DL3006)
-            if [[ "$dockerfile" == *"506-ros2-connector"* ]]; then
-              echo "  ⏭️  Skipping ROS2 file (exempt from SHA256 pinning per security policy)"
-              hadolint --ignore DL3006 --ignore SC1091 --failure-threshold warning "$dockerfile" || VALIDATION_FAILED=1
-            else
-              echo "  🔍 Enforcing DL3006 (SHA256 pinning required)"
-              hadolint --ignore SC1091 --failure-threshold warning "$dockerfile" || VALIDATION_FAILED=1
-            fi
-          done
-
-          if [ $VALIDATION_FAILED -ne 0 ]; then
+          if [[ ${VALIDATION_FAILED} -ne 0 ]]; then
             echo "❌ Hadolint validation failed. Dockerfiles must use SHA256 digests on all FROM statements."
             echo "Fix: pwsh scripts/security/Update-DockerSHAPinning.ps1"
             exit 1

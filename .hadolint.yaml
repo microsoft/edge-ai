@@ -1,0 +1,9 @@
+---
+failure-threshold: warning
+
+ignored:
+  - SC1091
+
+trustedRegistries:
+  - mcr.microsoft.com
+  - docker.io

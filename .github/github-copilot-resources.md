@@ -2,15 +2,19 @@
 
 This directory contains GitHub Copilot configuration files, prompts, custom agents, and instructions to enhance AI-assisted development workflows for the Edge AI Platform.
 
+## HVE Core Integration
+
+Edge-ai integrates with [hve-core](https://github.com/microsoft/hve-core) for general-purpose prompt engineering artifacts. The `.vscode/settings.json` configuration loads hve-core agents, prompts, and instructions from the peer `../hve-core/.github/` directory. Install the `ise-hve-essentials.hve-core` VS Code extension or clone hve-core alongside this workspace to enable these resources.
+
 ## Directory Structure
 
 ### 📝 [AI Prompts](prompts/)
 
-Reusable prompt templates for specific development tasks including ADR creation, deployment, testing, and project planning.
+Reusable prompt templates for specific development tasks including deployment, testing, and project planning. General-purpose prompts (task planning, ADR creation, prompt engineering, work item management) are loaded from hve-core.
 
 ### 💬 [Custom Agents](agents/)
 
-Custom agent configurations for specialized AI assistance patterns including kata coaching, code reviews, and technical guidance.
+Custom agent configurations for specialized AI assistance patterns including kata coaching, code reviews, and technical guidance. General-purpose agents (prompt-builder, task-planner, TDD) are loaded from hve-core.
 
 ### 📋 [Instructions](instructions/)
 

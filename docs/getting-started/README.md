@@ -77,6 +77,7 @@ This opens the documentation with both the main docs and the interactive **Learn
 - **GitHub account** with access to this repository
 - **Docker Desktop** installed and running
 - **Visual Studio Code** with Dev Containers extension
+- **[HVE Core extension](https://marketplace.visualstudio.com/items?itemName=ise-hve-essentials.hve-core)** — provides AI prompts, agents, and coding instructions (auto-installed in Dev Container)
 
 ### Next Steps After Getting Started
 

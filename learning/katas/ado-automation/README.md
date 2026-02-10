@@ -37,15 +37,6 @@ complexity_factors:
 # Repository Integration
 uses_prompts:
   - .github/prompts/ado-wit-discovery.prompt.md
-  - .github/prompts/ado-update-wit-items.prompt.md
-  - .github/prompts/ado-get-build-info.prompt.md
-  - .github/prompts/ado-create-pull-request.prompt.md
-uses_instructions:
-  - .github/instructions/ado-wit-discovery.instructions.md
-  - .github/instructions/ado-wit-planning.instructions.md
-  - .github/instructions/ado-update-wit-items.instructions.md
-  - .github/instructions/ado-get-build-info.instructions.md
-  - .github/instructions/ado-create-pull-request.instructions.md
 uses_agents:
   - .github/agents/ado-prd-to-wit.agent.md
 repository_paths:

@@ -87,7 +87,8 @@
 				"golang.go",
 				"redhat.vscode-yaml",
 				"GitHub.copilot@prerelease",
-				"GitHub.copilot-chat@prerelease"
+				"GitHub.copilot-chat@prerelease",
+				"ise-hve-essentials.hve-core"
 			]
 		}
 	},

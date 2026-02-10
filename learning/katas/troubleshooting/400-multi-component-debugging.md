@@ -86,7 +86,7 @@ Complete these prerequisite checks to ensure a successful learning experience:
    - [ ] **Expected result**: Clear dependency diagram showing component interactions
 
 2. **Use Task Planner** to create systematic debugging approach
-   - [ ] Load task-planner.agent.md in Copilot Chat
+   - [ ] Load the task-planner agent (available via [hve-core](https://github.com/microsoft/hve-core) extension) in Copilot Chat
    - [ ] Request: "Create debugging plan for multi-component Edge AI system failure"
    - [ ] Include dependency analysis and isolation strategies
    - [ ] **Expected result**: Structured debugging plan with clear phases and validation steps
@@ -158,7 +158,7 @@ Complete these prerequisite checks to ensure a successful learning experience:
 
 ### Help Resources
 
-- **Task Planner**: Use task-planner.agent.md for systematic debugging and recovery planning
+- **Task Planner**: Use the task-planner agent (available via [hve-core](https://github.com/microsoft/hve-core) extension) for systematic debugging and recovery planning
 - **Blueprint Architecture**: Reference `blueprints/full-single-node-cluster/` for component relationships
 - **IoT Operations**: Study `src/100-edge/110-iot-ops/` for Edge component details
 - **Messaging Infrastructure**: Review `src/000-cloud/040-messaging/` for cloud component patterns

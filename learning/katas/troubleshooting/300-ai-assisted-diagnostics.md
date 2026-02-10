@@ -92,7 +92,7 @@ Complete these prerequisite checks to ensure a successful learning experience:
    - [ ] **Expected result**: Repeatable diagnostic methodology
 
 3. **Use Task Planner** for complex diagnostic scenarios
-   - [ ] Load task-planner.agent.md in Copilot Chat
+   - [ ] Load the task-planner agent (available via [hve-core](https://github.com/microsoft/hve-core) extension) in Copilot Chat
    - [ ] Request: "Create diagnostic workflow for IoT Operations message routing failure"
    - [ ] Break down investigation into systematic, verifiable steps
    - **Success check**: Have clear plan that methodically isolates root cause

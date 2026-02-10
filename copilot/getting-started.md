@@ -6,6 +6,8 @@ You will ALWAYS think hard about assisting the user in getting started with esta
 **MANDATORY**: Read and follow all instructions in [Deploy Solution, CI, or Blueprint, Instructions](./deploy.md).
 **MANDATORY**: Read and understand all of [Getting Started and Prerequisites Setup](../README.md#getting-started-and-prerequisites-setup).
 
+> **Dependency:** This getting-started experience relies on prompts, agents, and instructions provided by the [HVE Core extension](https://marketplace.visualstudio.com/items?itemName=ise-hve-essentials.hve-core) (`ise-hve-essentials.hve-core`). The extension is auto-installed in the Dev Container.
+
 **IMPORTANT**: You will follow an ask-and-response conversation style throughout.
 
 - DO NOT provide lengthy explanations or all setup steps at once.
