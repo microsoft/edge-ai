@@ -9,7 +9,7 @@ NODE_TYPE="${NODE_TYPE}"                 # The type of this node (ex. 'server', 
 
 ## Optional Environment Variables:
 
-CLIENT_ID="${CLIENT_ID:-}"                     # Client ID of the User Assigned Managed Identity to use for authentication
+CLIENT_ID="${CLIENT_ID:-}"                   # Client ID of the User Assigned Managed Identity to use for authentication
 SECRET_NAME_PREFIX="${SECRET_NAME_PREFIX}"   # Optional prefix for constructing the secret name
 SKIP_INSTALL_AZ_CLI="${SKIP_INSTALL_AZ_CLI}" # Skips downloading and installing Azure CLI (Ubuntu, Debian) from https://aka.ms/InstallAzureCLIDeb
 SKIP_AZ_LOGIN="${SKIP_AZ_LOGIN}"             # Skips calling 'az login' and instead expects this to have been done previously
@@ -21,10 +21,10 @@ SKIP_AZ_LOGIN="${SKIP_AZ_LOGIN}"             # Skips calling 'az login' and inst
 
 usage() {
   echo "usage: ${0##*./}"
-  grep -x -B99 -m 1 "^###" "$0" |
-    sed -E -e '/^[^#]+=/ {s/^([^ ])/  \1/ ; s/#/ / ; s/=[^ ]*$// ;}' |
-    sed -E -e ':x' -e '/^[^#]+=/ {s/^(  [^ ]+)[^ ] /\1  / ;}' -e 'tx' |
-    sed -e 's/^## //' -e '/^#/d' -e '/^$/d'
+  grep -x -B99 -m 1 "^###" "$0" \
+    | sed -E -e '/^[^#]+=/ {s/^([^ ])/  \1/ ; s/#/ / ; s/=[^ ]*$// ;}' \
+    | sed -E -e ':x' -e '/^[^#]+=/ {s/^(  [^ ]+)[^ ] /\1  / ;}' -e 'tx' \
+    | sed -e 's/^## //' -e '/^#/d' -e '/^$/d'
   exit 1
 }
 
@@ -44,12 +44,12 @@ enable_debug() {
 
 if [ $# -gt 0 ]; then
   case "$1" in
-  -d | --debug)
-    enable_debug
-    ;;
-  *)
-    usage
-    ;;
+    -d | --debug)
+      enable_debug
+      ;;
+    *)
+      usage
+      ;;
   esac
 fi
 
@@ -96,12 +96,12 @@ if ! command -v "az" &>/dev/null; then
   if [ -z "$SKIP_INSTALL_AZ_CLI" ]; then
     log "Installing Azure CLI"
     case "$OS_TYPE" in
-    ubuntu)
-      curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
-      ;;
-    *)
-      err "'az' command missing and not able to install Azure CLI. Please install Azure CLI before running this script."
-      ;;
+      ubuntu)
+        curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+        ;;
+      *)
+        err "'az' command missing and not able to install Azure CLI. Please install Azure CLI before running this script."
+        ;;
     esac
   else
     err "'az' is missing and required"

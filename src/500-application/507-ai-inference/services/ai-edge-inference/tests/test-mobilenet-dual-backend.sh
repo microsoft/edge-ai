@@ -60,9 +60,9 @@ CYAN='\033[0;36m'
 NC='\033[0m'
 
 print_status() {
-    local color=$1
-    local message=$2
-    echo -e "${color}${message}${NC}"
+  local color=$1
+  local message=$2
+  echo -e "${color}${message}${NC}"
 }
 
 print_status "$CYAN" "🔥 MOBILENET DUAL BACKEND AI INFERENCE TESTING"
@@ -73,8 +73,8 @@ echo ""
 # Get pod information
 POD_NAME=$(kubectl get pods -l app=ai-edge-inference -n azure-iot-operations -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || echo "")
 if [[ -z "$POD_NAME" ]]; then
-    print_status "$RED" "❌ No AI Edge Inference pod found"
-    exit 1
+  print_status "$RED" "❌ No AI Edge Inference pod found"
+  exit 1
 fi
 
 print_status "$GREEN" "📱 Using Pod: $POD_NAME"
@@ -82,22 +82,22 @@ echo ""
 
 # Function to create real test image request with MobileNet model
 create_mobilenet_test_request() {
-    local backend=$1
-    local image_file=$2
-    local timestamp
-    timestamp=$(date +%s.%3N)
+  local backend=$1
+  local image_file=$2
+  local timestamp
+  timestamp=$(date +%s.%3N)
 
-    # Get image as base64 (simulate what would come via MQTT)
-    local image_b64
-    image_b64=$(kubectl exec "$POD_NAME" -n azure-iot-operations -- base64 -w 0 "$image_file" 2>/dev/null || echo "")
+  # Get image as base64 (simulate what would come via MQTT)
+  local image_b64
+  image_b64=$(kubectl exec "$POD_NAME" -n azure-iot-operations -- base64 -w 0 "$image_file" 2>/dev/null || echo "")
 
-    if [[ -z "$image_b64" ]]; then
-        echo "Error: Could not encode image $image_file"
-        return 1
-    fi
+  if [[ -z "$image_b64" ]]; then
+    echo "Error: Could not encode image $image_file"
+    return 1
+  fi
 
-    # Create realistic MQTT message payload with MobileNet model specification
-    cat <<EOF
+  # Create realistic MQTT message payload with MobileNet model specification
+  cat <<EOF
 {
   "message_type": "image_snapshot",
   "timestamp": ${timestamp%.*},
@@ -124,74 +124,74 @@ EOF
 
 # Function to send inference request
 send_mobilenet_inference_request() {
-    local backend=$1
-    local image_file=$2
-    local topic="edge-ai/test_facility/test_gateway/camera/snapshots"
+  local backend=$1
+  local image_file=$2
+  local topic="edge-ai/test_facility/test_gateway/camera/snapshots"
 
-    print_status "$YELLOW" "🔧 Creating MobileNet $backend inference request..."
+  print_status "$YELLOW" "🔧 Creating MobileNet $backend inference request..."
 
-    # Create request payload
-    local request_json
-    request_json=$(create_mobilenet_test_request "$backend" "$image_file")
+  # Create request payload
+  local request_json
+  request_json=$(create_mobilenet_test_request "$backend" "$image_file")
 
-    # Write to temporary file
-    local temp_file
-    temp_file="/tmp/mobilenet_test_${backend}_$(date +%s).json"
-    echo "$request_json" > "$temp_file"
+  # Write to temporary file
+  local temp_file
+  temp_file="/tmp/mobilenet_test_${backend}_$(date +%s).json"
+  echo "$request_json" >"$temp_file"
 
-    print_status "$BLUE" "📤 Sending real MobileNet inference request to $backend backend..."
+  print_status "$BLUE" "📤 Sending real MobileNet inference request to $backend backend..."
 
-    # Send via MQTT (simulate MQTT publish for testing)
-    echo "Would publish to MQTT topic: $topic"
-    echo "Payload file: $temp_file"
-    # Note: In real deployment, use appropriate MQTT client to publish message
+  # Send via MQTT (simulate MQTT publish for testing)
+  echo "Would publish to MQTT topic: $topic"
+  echo "Payload file: $temp_file"
+  # Note: In real deployment, use appropriate MQTT client to publish message
 
-    # Clean up
-    rm -f "$temp_file"
+  # Clean up
+  rm -f "$temp_file"
 
-    return 0
+  return 0
 }
 
 # Function to monitor inference results
 monitor_mobilenet_inference() {
-    local backend=$1
+  local backend=$1
 
-    print_status "$PURPLE" "⚡ Processing with MobileNet $backend backend..."
+  print_status "$PURPLE" "⚡ Processing with MobileNet $backend backend..."
 
-    # Set backend preference
-    kubectl exec "$POD_NAME" -n azure-iot-operations -- /bin/sh -c "echo 'export AI_BACKEND=$backend' > /tmp/backend_preference" 2>/dev/null || true
-    print_status "$GREEN" "✅ Backend set to: $backend"
+  # Set backend preference
+  kubectl exec "$POD_NAME" -n azure-iot-operations -- /bin/sh -c "echo 'export AI_BACKEND=$backend' > /tmp/backend_preference" 2>/dev/null || true
+  print_status "$GREEN" "✅ Backend set to: $backend"
 
-    print_status "$BLUE" "📊 Processing real image with MobileNet $backend backend..."
-    print_status "$GREEN" "🖼️ Image available for processing"
-    print_status "$YELLOW" "🤖 Real MobileNet $backend inference would process this image"
-    print_status "$CYAN" "📈 Expected: Real image classification results with confidence scores"
+  print_status "$BLUE" "📊 Processing real image with MobileNet $backend backend..."
+  print_status "$GREEN" "🖼️ Image available for processing"
+  print_status "$YELLOW" "🤖 Real MobileNet $backend inference would process this image"
+  print_status "$CYAN" "📈 Expected: Real image classification results with confidence scores"
 
-    # Wait for processing
-    sleep 8
+  # Wait for processing
+  sleep 8
 
-    print_status "$BLUE" "📊 Checking MobileNet inference logs..."
+  print_status "$BLUE" "📊 Checking MobileNet inference logs..."
 
-    # Generate realistic MobileNet results based on backend
-    local processing_time
-    local confidence
-    local memory_usage
-    local cpu_usage
+  # Generate realistic MobileNet results based on backend
+  local processing_time
+  local confidence
+  local memory_usage
+  local cpu_usage
 
-    if [[ "$backend" == "onnx" ]]; then
-        processing_time=$((RANDOM % 50 + 85))  # 85-135ms for MobileNet ONNX
-        confidence=$(awk "BEGIN {printf \"%.4f\", 85 + $RANDOM / 32767 * 10}")  # 85-95% confidence
-        memory_usage=$((RANDOM % 100 + 520))  # 520-620MB for MobileNet
-        cpu_usage=$(awk "BEGIN {printf \"%.3f\", 30 + $RANDOM / 32767 * 15}")  # 30-45% CPU
-    else
-        processing_time=$((RANDOM % 60 + 110))  # 110-170ms for MobileNet Candle
-        confidence=$(awk "BEGIN {printf \"%.4f\", 78 + $RANDOM / 32767 * 12}")  # 78-90% confidence
-        memory_usage=$((RANDOM % 80 + 460))  # 460-540MB for MobileNet
-        cpu_usage=$(awk "BEGIN {printf \"%.3f\", 40 + $RANDOM / 32767 * 20}")  # 40-60% CPU
-    fi
+  if [[ "$backend" == "onnx" ]]; then
+    processing_time=$((RANDOM % 50 + 85))                                  # 85-135ms for MobileNet ONNX
+    confidence=$(awk "BEGIN {printf \"%.4f\", 85 + $RANDOM / 32767 * 10}") # 85-95% confidence
+    memory_usage=$((RANDOM % 100 + 520))                                   # 520-620MB for MobileNet
+    cpu_usage=$(awk "BEGIN {printf \"%.3f\", 30 + $RANDOM / 32767 * 15}")  # 30-45% CPU
+  else
+    processing_time=$((RANDOM % 60 + 110))                                 # 110-170ms for MobileNet Candle
+    confidence=$(awk "BEGIN {printf \"%.4f\", 78 + $RANDOM / 32767 * 12}") # 78-90% confidence
+    memory_usage=$((RANDOM % 80 + 460))                                    # 460-540MB for MobileNet
+    cpu_usage=$(awk "BEGIN {printf \"%.3f\", 40 + $RANDOM / 32767 * 20}")  # 40-60% CPU
+  fi
 
-    # Generate realistic MobileNet classification result
-    cat <<EOF
+  # Generate realistic MobileNet classification result
+  cat <<EOF
 {
   "inference_result": {
     "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%S.%3NZ)",

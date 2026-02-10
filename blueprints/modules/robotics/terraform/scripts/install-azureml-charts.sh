@@ -9,7 +9,7 @@ set -euo pipefail
 kubectl create namespace azureml --dry-run=client -o yaml | kubectl apply -f -
 
 kubectl create serviceaccount azureml-workload \
-	--namespace azureml --dry-run=client -o yaml | kubectl apply -f -
+  --namespace azureml --dry-run=client -o yaml | kubectl apply -f -
 
 ###
 # Helm Repo Add
@@ -26,4 +26,4 @@ helm repo update
 
 # Install Volcano Scheduler into the cluster for AzureML Extension
 helm upgrade -i --wait volcano -n azureml --version 1.12.2 --create-namespace \
-	volcano-sh/volcano -f ./values/volcano-sh-values.yaml
+  volcano-sh/volcano -f ./values/volcano-sh-values.yaml

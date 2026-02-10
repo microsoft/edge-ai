@@ -6,20 +6,20 @@ set -e
 source ./utils/common.sh
 
 replace_placeholders_in_template_and_apply() {
-    local templatePathName="$1"
-    local uniquePostfix="$2"
-    local endpointName="$3"
-    local dataSource="$4"
-    local dataDestination="$5"
+  local templatePathName="$1"
+  local uniquePostfix="$2"
+  local endpointName="$3"
+  local dataSource="$4"
+  local dataDestination="$5"
 
-    # Export variables for envsubst
-    export UNIQUE_POSTFIX=$uniquePostfix
-    export ENDPOINT_NAME=$endpointName
-    export DATA_SOURCE=$dataSource
-    export DATA_DESTINATION=$dataDestination
+  # Export variables for envsubst
+  export UNIQUE_POSTFIX=$uniquePostfix
+  export ENDPOINT_NAME=$endpointName
+  export DATA_SOURCE=$dataSource
+  export DATA_DESTINATION=$dataDestination
 
-    # Apply the template using envsubst
-    apply_template_with_envsubst "../yaml/${templatePathName}.yaml" | kubectl apply -f -
+  # Apply the template using envsubst
+  apply_template_with_envsubst "../yaml/${templatePathName}.yaml" | kubectl apply -f -
 }
 
 verify_kubectl_installed

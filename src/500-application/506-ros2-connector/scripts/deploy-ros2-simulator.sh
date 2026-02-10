@@ -12,10 +12,16 @@ if [[ "${DEBUG:-0}" == "1" ]]; then
   trap 'echo "[DEBUG] FAILED at line $LINENO: $BASH_COMMAND" >&2' ERR
 fi
 
-RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; NC='\033[0m'
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
 log() { printf "${GREEN}[INFO]${NC} %s\n" "$1"; }
 warn() { printf "${YELLOW}[WARN]${NC} %s\n" "$1"; }
-err() { printf "${RED}[ERROR]${NC} %s\n" "$1" >&2; exit 1; }
+err() {
+  printf "${RED}[ERROR]${NC} %s\n" "$1" >&2
+  exit 1
+}
 
 usage() {
   cat <<EOF
@@ -47,23 +53,23 @@ done
 # Environment Configuration
 # -----------------------------------------------------------------------------
 # Core namespace & workload behavior (single unified namespace)
-NAMESPACE="${NAMESPACE:-azure-iot-operations}"              # Namespace for PVC and simulator deployment
-USE_BAG_PLAYBACK="${USE_BAG_PLAYBACK:-false}"               # true/yes to enable PVC + copy operations
+NAMESPACE="${NAMESPACE:-azure-iot-operations}" # Namespace for PVC and simulator deployment
+USE_BAG_PLAYBACK="${USE_BAG_PLAYBACK:-false}"  # true/yes to enable PVC + copy operations
 
 # Rosbag PVC settings
-PVC_NAME="${PVC_NAME:-rosbag-pvc}"                          # PVC name for rosbag storage
-PVC_SIZE="${PVC_SIZE:-5Gi}"                                # Requested size for PVC creation
-PVC_STORAGE_CLASS="${PVC_STORAGE_CLASS:-}"                  # Optional StorageClass name
-TARGET_PATH="${TARGET_PATH:-/data}"                         # Mount path inside loader pod
-LOCAL_PATH="${LOCAL_PATH:-}"                                # Local file/dir to copy into PVC (optional)
-IMAGE="${IMAGE:-busybox:1.36}"                              # Loader pod image
-POD_NAME="rosbag-pvc-loader-$(date +%s)"                    # Ephemeral loader pod name
+PVC_NAME="${PVC_NAME:-rosbag-pvc}"         # PVC name for rosbag storage
+PVC_SIZE="${PVC_SIZE:-5Gi}"                # Requested size for PVC creation
+PVC_STORAGE_CLASS="${PVC_STORAGE_CLASS:-}" # Optional StorageClass name
+TARGET_PATH="${TARGET_PATH:-/data}"        # Mount path inside loader pod
+LOCAL_PATH="${LOCAL_PATH:-}"               # Local file/dir to copy into PVC (optional)
+IMAGE="${IMAGE:-busybox:1.36}"             # Loader pod image
+POD_NAME="rosbag-pvc-loader-$(date +%s)"   # Ephemeral loader pod name
 
 # Container image build/publish configuration (ALWAYS executed)
-ACR_NAME="${ACR_NAME:-}"                                    # Azure Container Registry name, no domain e.g. myregistry (required for deployment)
-SIMULATOR_IMAGE_NAME="${SIMULATOR_IMAGE_NAME:-${SIMULATOR_IMAGE:-ros2-simulator}}" # Image name (no registry domain)
-SIMULATOR_IMAGE_TAG="${SIMULATOR_IMAGE_TAG:-${IMAGE_TAG:-latest}}"        # Image tag
-BUILD_PLATFORM="${BUILD_PLATFORM:-linux/amd64}"            # Target platform for deployment (amd64 by default)                  # Additional docker build args
+ACR_NAME="${ACR_NAME:-}"                                                                   # Azure Container Registry name, no domain e.g. myregistry (required for deployment)
+SIMULATOR_IMAGE_NAME="${SIMULATOR_IMAGE_NAME:-${SIMULATOR_IMAGE:-ros2-simulator}}"         # Image name (no registry domain)
+SIMULATOR_IMAGE_TAG="${SIMULATOR_IMAGE_TAG:-${IMAGE_TAG:-latest}}"                         # Image tag
+BUILD_PLATFORM="${BUILD_PLATFORM:-linux/amd64}"                                            # Target platform for deployment (amd64 by default)                  # Additional docker build args
 PROJECT_ROOT="${PROJECT_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && cd .. && pwd)}" # Component root directory
 
 check_prereqs() {
@@ -87,12 +93,16 @@ load_env_variables() {
   script_dir="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
   component_root="${script_dir}/.."
   env_file="${component_root}/.env"
-  loaded=0; skipped=0
-  [[ -f "${env_file}" ]] || { warn "Environment file not found at ${env_file}"; return 0; }
+  loaded=0
+  skipped=0
+  [[ -f "${env_file}" ]] || {
+    warn "Environment file not found at ${env_file}"
+    return 0
+  }
   log "Loading environment variables from ${env_file}"
   # Use a simple read loop; the previous pattern with '|| [[ -n ${line} ]]' caused premature exit under 'set -e'
   while IFS= read -r line; do
-    line="${line%%$'\r'}"                                   # strip CR
+    line="${line%%$'\r'}"                                     # strip CR
     [[ $line =~ ^[[:space:]]*$ || $line == \#* ]] && continue # skip blank/comment
     local key="${line%%=*}" value="${line#*=}"
     if [[ "${DEBUG:-0}" == "1" ]]; then echo "[DEBUG] parsing line: '$line'" >&2; fi
@@ -101,17 +111,18 @@ load_env_variables() {
     key="${key%"${key##*[![:space:]]}"}"
     value="${value#"${value%%[![:space:]]*}"}"
     value="${value%"${value##*[![:space:]]}"}"
-    [[ $key =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] || continue        # validate key
+    [[ $key =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] || continue # validate key
     # strip balanced single/double quotes
-    if [[ ( $value == "\"*\"" && $value == *"\"" ) || ( $value == "'*'" && $value == *"'" ) ]]; then
+    if [[ ($value == "\"*\"" && $value == *"\"") || ($value == "'*'" && $value == *"'") ]]; then
       value="${value:1:-1}"
     fi
     if [[ -z "${!key:-}" ]]; then
-      export "${key}=${value}"; loaded=$((loaded+1))
+      export "${key}=${value}"
+      loaded=$((loaded + 1))
     else
-      skipped=$((skipped+1))
+      skipped=$((skipped + 1))
     fi
-  done < "${env_file}"
+  done <"${env_file}"
   log "Environment variables loaded: ${loaded} new, ${skipped} skipped"
 }
 
@@ -146,7 +157,7 @@ prepare_ros2_env_args() {
       emitted=1
     fi
   done
-  if (( emitted )); then
+  if ((emitted)); then
     log "Configuring ROS2 environment variables for deployment" >&2
   fi
 }
@@ -157,8 +168,6 @@ full_image_ref() {
   arch_suffix=$(echo "${BUILD_PLATFORM}" | cut -d'/' -f2)
   printf "%s/%s:%s-%s" "${ACR_NAME}.azurecr.io" "${SIMULATOR_IMAGE_NAME}" "${SIMULATOR_IMAGE_TAG}" "${arch_suffix}"
 }
-
-
 
 parse_cyclonedds_peers() {
   # CYCLONEDDS_PEERS is already loaded from .env file by load_env_variables function.
@@ -195,7 +204,7 @@ deploy_simulator_workload() {
   local release_name
   release_name="${HELM_RELEASE_NAME:-ros2-simulator}"
   local image_repo image_tag
-  image_repo="${image_ref%:*}"   # everything before last :
+  image_repo="${image_ref%:*}" # everything before last :
   image_tag="${image_ref##*:}"
 
   # Prepare CycloneDDS peer configuration for helm
@@ -204,7 +213,7 @@ deploy_simulator_workload() {
   if [[ -n "${CYCLONEDDS_PEERS:-}" ]]; then
     # Convert comma-separated peers to helm array format
     local index=0
-    IFS=',' read -ra peers_array <<< "${CYCLONEDDS_PEERS}"
+    IFS=',' read -ra peers_array <<<"${CYCLONEDDS_PEERS}"
     for peer in "${peers_array[@]}"; do
       cyclonedds_set_args+=("--set" "cycloneDDS.peers[${index}]=${peer}")
       ((++index))
@@ -217,7 +226,7 @@ deploy_simulator_workload() {
   # Interfaces list (env: CYCLONEDDS_INTERFACES comma-separated). Takes precedence over deprecated primary interface env.
   if [[ -n "${CYCLONEDDS_INTERFACES:-}" ]]; then
     local if_index=0
-    IFS=',' read -ra if_array <<< "${CYCLONEDDS_INTERFACES}"
+    IFS=',' read -ra if_array <<<"${CYCLONEDDS_INTERFACES}"
     for iface in "${if_array[@]}"; do
       cyclonedds_set_args+=("--set" "cycloneDDS.interfaces[${if_index}]=${iface}")
       ((++if_index))
@@ -342,18 +351,18 @@ copy_data() {
 
   # Use tar streaming for large files or large total size (>2GB) to avoid kubectl cp limitations
   if [[ ${has_large_files} == true ]] || [[ ${total_size} -gt 2147483648 ]]; then
-  log "Large files detected (total: $(numfmt --to=iec "${total_size}")), using tar streaming"
+    log "Large files detected (total: $(numfmt --to=iec "${total_size}")), using tar streaming"
     if [[ -f "${LOCAL_PATH}" ]]; then
       # Single file
-      tar -cf - -C "$(dirname "${LOCAL_PATH}")" "$(basename "${LOCAL_PATH}")" | \
-        kubectl exec -i -n "${NAMESPACE}" "${POD_NAME}" -- tar -xf - -C "${TARGET_PATH}"
+      tar -cf - -C "$(dirname "${LOCAL_PATH}")" "$(basename "${LOCAL_PATH}")" \
+        | kubectl exec -i -n "${NAMESPACE}" "${POD_NAME}" -- tar -xf - -C "${TARGET_PATH}"
     else
       # Directory - create the target directory and copy contents
       local dir_name
       dir_name=$(basename "${LOCAL_PATH}")
       kubectl exec -n "${NAMESPACE}" "${POD_NAME}" -- mkdir -p "${TARGET_PATH}/${dir_name}"
-      tar -cf - -C "${LOCAL_PATH}" . | \
-        kubectl exec -i -n "${NAMESPACE}" "${POD_NAME}" -- tar -xf - -C "${TARGET_PATH}/${dir_name}"
+      tar -cf - -C "${LOCAL_PATH}" . \
+        | kubectl exec -i -n "${NAMESPACE}" "${POD_NAME}" -- tar -xf - -C "${TARGET_PATH}/${dir_name}"
     fi
   else
     # Use kubectl cp for smaller files
@@ -365,7 +374,7 @@ copy_data() {
 }
 
 pvc_creator() {
- # Bag playback operations only if gate enabled
+  # Bag playback operations only if gate enabled
   if [[ ${USE_BAG_PLAYBACK,,} == true || ${USE_BAG_PLAYBACK,,} == yes ]]; then
     ensure_pvc
     if [[ -n ${LOCAL_PATH} ]]; then

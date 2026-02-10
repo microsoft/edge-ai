@@ -18,10 +18,9 @@ function show_usage {
 # crawls a given bicep file (and all referenced module files) to find all
 # referenced resource types in format Microsoft.Namespace/type
 # =============================================================================
-bicep_get_resources () {
+bicep_get_resources() {
   # check that the provided argument is a file
-  if [[ ! -f "$1" ]]
-  then
+  if [[ ! -f "$1" ]]; then
     return 1
   fi
 
@@ -30,8 +29,7 @@ bicep_get_resources () {
 
   directory=$(dirname "$1")
 
-  for module in "${modules[@]}"
-  do
+  for module in "${modules[@]}"; do
     mapfile -t -O "${#resources[@]}" resources < <(bicep_get_resources "$directory/$module")
   done
 
@@ -44,8 +42,7 @@ bicep_get_resources () {
 # =============================================================================
 terraform_get_resources() {
   # check that the provided argument is a directory
-  if [[ ! -d "$1" ]]
-  then
+  if [[ ! -d "$1" ]]; then
     return 1
   fi
 
@@ -53,10 +50,8 @@ terraform_get_resources() {
   mapfile -t resources < <(grep -E "^resource " "$directory/main.tf" | cut -d '"' -f 2 -)
   mapfile -t modules < <(grep -E "^\s+source " "$directory/main.tf" | cut -d '"' -f 2 -)
 
-  for module in "${modules[@]}"
-  do
-    if [[ $module == *json ]]
-    then
+  for module in "${modules[@]}"; do
+    if [[ $module == *json ]]; then
       continue
     fi
     mapfile -t -O "${#resources[@]}" resources < <(terraform_get_resources "$directory/$module")
@@ -73,8 +68,7 @@ terraform_get_resources() {
 # Check for required tooling
 # =============================================================================
 
-for tool in sort comm grep az
-do
+for tool in sort comm grep az; do
   if ! command -v "$tool" &>/dev/null; then
     echo "Error: Missing required tool, $tool" >&2
     exit 1
@@ -114,26 +108,22 @@ done
 # =============================================================================
 
 # gets script directory
-script_dir=$(cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd)
+script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 
 cd "$script_dir/../blueprints"
 
-if [[ -z "$blueprint" ]]
-then
+if [[ -z "$blueprint" ]]; then
   echo "Please provide a blueprint"
   show_usage
-elif [[ ! -d "$blueprint" ]]
-then
+elif [[ ! -d "$blueprint" ]]; then
   echo "Cannot find blueprint directory $1"
   show_usage
 fi
 
-if [[ -z "$method" ]]
-then
+if [[ -z "$method" ]]; then
   echo "Please provide a deployment method"
   show_usage
-elif [[ "$method" != "bicep" && "$method" != "terraform" ]]
-then
+elif [[ "$method" != "bicep" && "$method" != "terraform" ]]; then
   echo "Invalid method $1"
   show_usage
 fi
@@ -165,8 +155,7 @@ case "$method" in
 esac
 
 # return value of 1 indicates failure
-if [[ ${#resources[@]} -eq 0 ]]
-then
+if [[ ${#resources[@]} -eq 0 ]]; then
   echo "failed to find resources"
   exit 1
 fi
@@ -182,11 +171,10 @@ echo "================================================================"
 # =============================================================================
 # Fail on terraform
 # =============================================================================
-if [[ $method == "terraform/" || $method == "terraform" ]]
-then
+if [[ $method == "terraform/" || $method == "terraform" ]]; then
   echo
   echo "terraform is not currently supported for location checking"
-exit 1
+  exit 1
 fi
 
 # =============================================================================
@@ -198,8 +186,7 @@ echo "Finding workable locations..."
 mapfile -t locations < <(az account list-locations --query "[].displayName" -o tsv \
   | sort)
 
-for resource in "${resources[@]}"
-do
+for resource in "${resources[@]}"; do
   namespace=$(echo "$resource" | cut -d "/" -f 1 -)
   resourceType=$(echo "$resource" | cut -d "/" -f 2 -)
 
@@ -209,15 +196,14 @@ do
     | sort)
 
   # roleAssignments etc have no locations, and should be ignored
-  if [[ ${#newLocations[@]} -eq 0 ]]
-  then
+  if [[ ${#newLocations[@]} -eq 0 ]]; then
     continue
   fi
 
   # intersection of two files
   mapfile -t locations < <(comm -12 \
     <(for location in "${locations[@]}"; do echo "$location"; done) \
-    <(for location in "${newLocations[@]}"; do echo "$location"; done) )
+    <(for location in "${newLocations[@]}"; do echo "$location"; done))
 done
 
 # =============================================================================
