@@ -27,12 +27,12 @@ When working with Python files in the `/scripts` directory:
 
 ### Required File Details
 
-| Requirement         | Value                                              |
-|---------------------|----------------------------------------------------|
-| Instructions Source | hve-core extension `.github/instructions/` files   |
-| Read All Lines      | Required                                           |
-| Minimum Lines       | 1000                                               |
-| Follow Instructions | Required                                           |
+| Requirement         | Value                                            |
+|---------------------|--------------------------------------------------|
+| Instructions Source | hve-core extension `.github/instructions/` files |
+| Read All Lines      | Required                                         |
+| Minimum Lines       | 1000                                             |
+| Follow Instructions | Required                                         |
 <!-- </python-script-instructions> -->
 
 ## Scripts-Specific Guidelines

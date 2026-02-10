@@ -28,12 +28,12 @@ When working with C# files in this project:
 
 ### Required File Details
 
-| Requirement         | Value                                                    |
-|---------------------|----------------------------------------------------------|
-| Instructions Source | hve-core extension `.github/instructions/csharp/` files  |
-| Read All Lines      | Required                                                 |
-| Minimum Lines       | 1000 (combined)                                          |
-| Follow Instructions | Required                                                 |
+| Requirement         | Value                                                   |
+|---------------------|---------------------------------------------------------|
+| Instructions Source | hve-core extension `.github/instructions/csharp/` files |
+| Read All Lines      | Required                                                |
+| Minimum Lines       | 1000 (combined)                                         |
+| Follow Instructions | Required                                                |
 <!-- </csharp-instructions> -->
 
 ## Project-Specific Guidelines

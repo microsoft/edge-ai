@@ -61,16 +61,16 @@ When working with specific types of files or contexts, you must:
 
 ### Matching Patterns and Files for Prompts
 
-| Pattern/Context                   | Required Prompts Files                                 |
-|-----------------------------------|--------------------------------------------------------|
-| Any deployment-related context    | `./.github/prompts/deploy.prompt.md`                   |
-| Any getting started context       | `./.github/prompts/getting-started.prompt.md`          |
-| Any terraform context             | `./.github/instructions/terraform.instructions.md`     |
-| Any bicep context                 | `./.github/instructions/bicep.instructions.md`         |
-| Any shell or bash context         | `./.github/instructions/shell.instructions.md`         |
-| Any bash in src context           | `./.github/instructions/bash.instructions.md`          |
-| Any python context                | `./.github/instructions/python-script.instructions.md` |
-| Any C# or csharp context          | `./.github/instructions/csharp.instructions.md`        |
+| Pattern/Context                | Required Prompts Files                                 |
+|--------------------------------|--------------------------------------------------------|
+| Any deployment-related context | `./.github/prompts/deploy.prompt.md`                   |
+| Any getting started context    | `./.github/prompts/getting-started.prompt.md`          |
+| Any terraform context          | `./.github/instructions/terraform.instructions.md`     |
+| Any bicep context              | `./.github/instructions/bicep.instructions.md`         |
+| Any shell or bash context      | `./.github/instructions/shell.instructions.md`         |
+| Any bash in src context        | `./.github/instructions/bash.instructions.md`          |
+| Any python context             | `./.github/instructions/python-script.instructions.md` |
+| Any C# or csharp context       | `./.github/instructions/csharp.instructions.md`        |
 
 <!-- </search-for-prompts-files> -->
 
