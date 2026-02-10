@@ -6,16 +6,15 @@ description: 'Instructions for bash script implementation - Brought to you by mi
 
 You will ALWAYS think hard about bash instructions and established conventions
 
-* **CRITICAL**: You MUST ALWAYS read and follow ALL instructions in ALL files from:
-  * [copilot/bash/bash.md](../../copilot/bash/bash.md)
+* **CRITICAL**: Comprehensive bash conventions are provided by the [hve-core](https://github.com/microsoft/hve-core) VS Code extension and loaded automatically when installed
 
 ## Implementation Requirements
 
 When implementing any Bash-related functionality:
 
-* You must have read the complete Bash documentation before proceeding
-* You must adhere to all guidelines provided in the Bash documentation
-* You must implement all instructions exactly as specified
+* Follow all bash conventions from the hve-core extension instructions
+* Adhere to all guidelines provided in the Bash documentation
+* Implement all instructions exactly as specified
 
 ## Purpose
 

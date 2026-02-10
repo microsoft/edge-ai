@@ -62,7 +62,7 @@ Complete these prerequisite checks to ensure a successful learning experience:
 - [ ] Access to project workspace with folder navigation capability
 - [ ] Completion of previous task planning katas for context
 
-**Quick Validation**: Verify you can open GitHub Copilot Chat and navigate to `.github/agents/` to see task-planner.agent.md.
+**Quick Validation**: Verify you can open GitHub Copilot Chat and have the [hve-core](https://github.com/microsoft/hve-core) extension installed for task planning agent support.
 
 **Understanding Check**: This kata teaches you advanced task planning for complex system integration with multiple dependencies and parallel workstreams.
 
@@ -155,7 +155,7 @@ Have you achieved advanced capability integration planning excellence?
 
 ### Help Resources
 
-- **Task Planning Custom Agent** (`.github/agents/task-planner.agent.md`): Advanced planning methodology for multi-component integration scenarios with dependency management and stakeholder coordination
+- **Task Planning Custom Agent** (available via [hve-core](https://github.com/microsoft/hve-core) extension): Advanced planning methodology for multi-component integration scenarios with dependency management and stakeholder coordination
 - **Azure IoT Edge Documentation**: Edge computing integration patterns, deployment strategies, and best practices for IoT and AI workload orchestration
 - **Azure Solution Accelerators**: Enterprise integration examples demonstrating predictive maintenance architectures and multi-component system coordination
 

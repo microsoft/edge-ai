@@ -112,8 +112,7 @@ Complete these prerequisite checks to ensure a successful learning experience:
 1. **Discover** available custom agents infrastructure
    - [ ] Navigate to `.github/agents/` folder and explore available files
    - [ ] Open `learning-kata-coach.agent.md` - your specialized learning assistant
-   - [ ] Open `task-planner.agent.md` - for systematic planning assistance
-   - [ ] Open `prompt-builder.agent.md` - for prompt engineering workflows
+   - [ ] Explore additional agents for task planning and prompt engineering available via the [hve-core](https://github.com/microsoft/hve-core) VS Code extension
    - [ ] **Expected result**: Understanding of available specialized AI assistance modes
 
 2. **Practice** workspace context mode

@@ -218,6 +218,6 @@ then carefully refined by our team of discerning human reviewers.*
 <!-- Reference Links -->
 [learning-readme]: /learning/README.md
 [docs-structure]: /docs/
-[task-planner-mode]: /.github/agents/task-planner.agent.md
+[task-planner-mode]: https://github.com/microsoft/hve-core
 [task-implementation]: /.github/instructions/task-implementation.instructions.md
 [kata-coach]: /.github/agents/learning-kata-coach.agent.md

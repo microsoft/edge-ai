@@ -4,8 +4,6 @@ description: "Analyze research, plans, or repository changes to discover and pla
 
 # Discover Work Items & Produce Handoff
 
-Follow all instructions from #file:../instructions/ado-wit-discovery.instructions.md and #file:../instructions/ado-wit-planning.instructions.md
-
 ## Inputs
 
 * ${input:adoProject:edge-ai}: Azure DevOps project identifier.

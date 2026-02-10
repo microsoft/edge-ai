@@ -21,57 +21,11 @@ Instructions provide focused guidance for specific development contexts, technol
 
 ## Available Instructions
 
-### Azure DevOps Integration
-
-#### [ADO Create Pull Request Instructions](ado-create-pull-request.instructions.md)
-
-Required protocol for creating Azure DevOps pull requests with work item discovery, reviewer identification, and automated linking.
-
-- **Context**: Pull request creation workflows in Azure DevOps
-- **Scope**: PR creation, work item linking, reviewer assignment, automated tracking
-- **Apply When**: Creating pull requests in `**/.copilot-tracking/pr/new/**` pattern
-
-#### [ADO Get Build Info Instructions](ado-get-build-info.instructions.md)
-
-Required instructions for retrieving Azure DevOps build information including status, logs, and details.
-
-- **Context**: Azure DevOps pipeline monitoring and troubleshooting
-- **Scope**: Build status checks, log retrieval, pipeline analysis
-- **Apply When**: Working with `**/.copilot-tracking/pr/*-build-*.md` or investigating build issues
-
-#### [ADO Update Work Items Instructions](ado-update-wit-items.instructions.md)
-
-Required instructions for work item updating and creation leveraging MCP ADO tool calls.
-
-- **Context**: Azure DevOps work item management and updates
-- **Scope**: Work item creation, updates, state transitions, field modifications
-- **Apply When**: Working with `**/.copilot-tracking/workitems/**/handoff-logs.md`
-
-#### [ADO Work Item Discovery Instructions](ado-wit-discovery.instructions.md)
-
-Required protocol for discovering, planning, and handing off Azure DevOps User Stories and Bugs.
-
-- **Context**: Work item discovery and analysis workflows
-- **Scope**: Work item queries, discovery, planning, handoff documentation
-- **Apply When**: Working in `**/.copilot-tracking/workitems/discovery/**` pattern
-
-#### [ADO Work Item Planning Instructions](ado-wit-planning.instructions.md)
-
-Required instructions for work item planning and creation or updating leveraging MCP ADO tool calls.
-
-- **Context**: Work item planning and structured task breakdown
-- **Scope**: Sprint planning, task creation, dependency mapping, estimation
-- **Apply When**: Working with `**/.copilot-tracking/workitems/**` pattern
+> **Note:** Azure DevOps integration instructions (work item planning, discovery, pull request creation, build info, and work item updates) are now provided by the [hve-core](https://github.com/microsoft/hve-core) VS Code extension.
 
 ### Development Workflows
 
-#### [Git Merge Instructions](git-merge.instructions.md)
-
-Required protocol for Git merge, rebase, and rebase --onto workflows with conflict handling and stop controls.
-
-- **Context**: Git branch operations, conflict resolution, history management
-- **Scope**: Merge strategies, rebase workflows, conflict resolution, history cleanup
-- **Apply When**: Performing git merge, rebase, or complex branch operations
+> **Note:** Git merge, rebase, and branch operation instructions are now provided by the [hve-core](https://github.com/microsoft/hve-core) VS Code extension.
 
 #### [Task Implementation Instructions](task-implementation.instructions.md)
 
@@ -207,7 +161,6 @@ The instruction system uses sophisticated pattern matching to automatically appl
 | `src/000-cloud/010-security/terraform/main.tf`         | `terraform.instructions.md`                               |
 | `blueprints/full-single-node-cluster/bicep/main.bicep` | `bicep.instructions.md`                                   |
 | `scripts/deploy-infrastructure.py`                     | `python-script.instructions.md`                           |
-| `.copilot-tracking/pr/new/feature-123.md`              | `ado-create-pull-request.instructions.md`                 |
 | `src/500-application/501-rust-telemetry/README.md`     | `markdown.instructions.md`, `application.instructions.md` |
 
 ### Best Practices

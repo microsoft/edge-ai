@@ -78,7 +78,7 @@ Complete these prerequisite checks to ensure a successful learning experience:
 - [ ] GitHub Copilot subscription and chat functionality enabled
 - [ ] Access to project workspace with folder navigation capability
 - [ ] Basic understanding of markdown and file navigation
-- [ ] Awareness of three key project files — **Digital Inspection Scenario** (`docs/project-planning/scenarios/digital-inspection-survey/README.md`), **Task Planner Agent** (`.github/agents/task-planner.agent.md`), **Task Implementation Instructions** (`.github/instructions/task-implementation.instructions.md`)
+- [ ] Awareness of three key project files — **Digital Inspection Scenario** (`docs/project-planning/scenarios/digital-inspection-survey/README.md`), **Task Planner Agent** (available via [hve-core](https://github.com/microsoft/hve-core) extension), **Task Implementation Instructions** (`.github/instructions/task-implementation.instructions.md`)
 
 **Quick Validation**: Verify you can open GitHub Copilot Chat and navigate to both `.github/agents/` and `docs/project-planning/scenarios/` folders.
 
@@ -248,10 +248,9 @@ research-first planning: (1) Analyze current state and user needs, (2) Categoriz
 
 - Navigate to `.github/agents/` folder in your file explorer
 - List all available custom agent files:
-  - `task-planner.agent.md` - for systematic planning
-  - `prompt-builder.agent.md` - for prompt engineering
   - `learning-kata-coach.agent.md` - for learning assistance
   - `learning-lab-coach.agent.md` - for lab guidance
+  - Additional agents for task planning and prompt engineering are available via the [hve-core](https://github.com/microsoft/hve-core) extension
 - **Expected result**: Understanding of available specialized AI assistance modes
 
 **2. Deep Dive into Task Planner Custom Agent**:
@@ -281,7 +280,7 @@ research-first planning: (1) Analyze current state and user needs, (2) Categoriz
 
 **1. Task Planning Template Structure Validation**:
 
-- Open `.github/agents/task-planner.agent.md` and go to line 100-150
+- Open the Task Planner agent (available via [hve-core](https://github.com/microsoft/hve-core) extension) and examine the planning template
 - Find the plan template section and examine the required elements:
   - Overview and Objectives sections
   - Research Summary with file references
