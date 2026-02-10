@@ -27,7 +27,7 @@ WITH_SEED_DATA="false"
 PASSTHROUGH_ARGS=()
 
 usage() {
-  cat << EOF
+  cat <<EOF
 Usage: $(basename "$0") [OPTIONS]
 
 Deploy the IEEE 1872 CORA/CORAX robotics ontology to Microsoft Fabric.
@@ -86,7 +86,7 @@ while [[ $# -gt 0 ]]; do
       PASSTHROUGH_ARGS+=("$1")
       shift
       ;;
-    -h|--help)
+    -h | --help)
       usage
       exit 0
       ;;

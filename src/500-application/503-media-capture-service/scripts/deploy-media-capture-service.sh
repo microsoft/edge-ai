@@ -51,7 +51,7 @@ RUST_LOG="${RUST_LOG:-${DEFAULT_RUST_LOG}}"
 FIELD_NAMESPACE="${FIELD_NAMESPACE:-${DEFAULT_FIELD_NAMESPACE}}"
 
 usage() {
-  cat << EOF
+  cat <<EOF
 Usage: $0 [--uninstall]
 
 🚀 COMPLETE MEDIA CAPTURE SERVICE DEPLOYMENT SCRIPT 🚀
@@ -109,7 +109,7 @@ check_prerequisites() {
   # Check for required commands
   local commands=("docker" "az" "kubectl" "helm")
   for cmd in "${commands[@]}"; do
-    if ! command -v "${cmd}" &> /dev/null; then
+    if ! command -v "${cmd}" &>/dev/null; then
       echo "ERROR: Required command '${cmd}' not found"
       exit 1
     fi
@@ -134,7 +134,7 @@ load_env_file() {
     while IFS= read -r line || [[ -n "${line}" ]]; do
       # Skip comments and empty lines
       [[ "${line}" =~ ^[[:space:]]*# ]] && continue
-      [[ -z "${line// }" ]] && continue
+      [[ -z "${line// /}" ]] && continue
 
       # Extract key=value pairs
       if [[ "${line}" =~ ^[[:space:]]*([A-Za-z_][A-Za-z0-9_]*)=(.*)$ ]]; then
@@ -152,7 +152,7 @@ load_env_file() {
           export "${key}"="${value}"
         fi
       fi
-    done < "${env_file}"
+    done <"${env_file}"
   else
     echo "ERROR: .env file not found at ${env_file}. This file is required for deployment."
     echo "Please create a .env file with the necessary configuration variables."
@@ -241,9 +241,9 @@ step3_assign_storage_roles() {
   # Assign 'Storage Blob Data Contributor' role to the signed-in user
   echo "Assigning 'Storage Blob Data Contributor' role to the signed-in user..."
   az ad signed-in-user show --query id -o tsv | az role assignment create \
-      --role "Storage Blob Data Contributor" \
-      --assignee @- \
-      --scope /subscriptions/"$subscriptionId"/resourceGroups/"$ST_ACCOUNT_RESOURCE_GROUP"/providers/Microsoft.Storage/storageAccounts/"$STORAGE_ACCOUNT_NAME"
+    --role "Storage Blob Data Contributor" \
+    --assignee @- \
+    --scope /subscriptions/"$subscriptionId"/resourceGroups/"$ST_ACCOUNT_RESOURCE_GROUP"/providers/Microsoft.Storage/storageAccounts/"$STORAGE_ACCOUNT_NAME"
 
   # Get the ACSA extension identity
   echo "Retrieving ACSA extension identity..."
@@ -253,9 +253,9 @@ step3_assign_storage_roles() {
   # Assign 'Storage Blob Data Owner' role to the ACSA extension identity
   echo "Assigning 'Storage Blob Data Owner' role to the ACSA extension identity..."
   az role assignment create \
-      --assignee "$acsaExtensionIdentity" \
-      --role "Storage Blob Data Owner" \
-      --scope /subscriptions/"$subscriptionId"/resourceGroups/"$ST_ACCOUNT_RESOURCE_GROUP"/providers/Microsoft.Storage/storageAccounts/"$STORAGE_ACCOUNT_NAME"
+    --assignee "$acsaExtensionIdentity" \
+    --role "Storage Blob Data Owner" \
+    --scope /subscriptions/"$subscriptionId"/resourceGroups/"$ST_ACCOUNT_RESOURCE_GROUP"/providers/Microsoft.Storage/storageAccounts/"$STORAGE_ACCOUNT_NAME"
   echo "'Storage Blob Data Owner' role assigned successfully."
 
   echo "ACSA role configuration completed successfully."
@@ -279,7 +279,7 @@ step5_apply_subvolume_config() {
     export STORAGE_ACCOUNT_ENDPOINT="https://${STORAGE_ACCOUNT_NAME}.blob.core.windows.net/"
 
     echo "Applying subvolume configuration with storage account: ${STORAGE_ACCOUNT_NAME}"
-    envsubst < "${YAML_DIR}/mediaEdgeSubvolume.yaml" | kubectl apply -f -
+    envsubst <"${YAML_DIR}/mediaEdgeSubvolume.yaml" | kubectl apply -f -
   else
     echo "WARNING: mediaEdgeSubvolume.yaml not found, skipping subvolume configuration"
   fi
@@ -323,7 +323,7 @@ step7_deploy_helm_chart() {
   fi
 
   # Check if namespace exists
-  if ! kubectl get namespace "${FIELD_NAMESPACE}" &> /dev/null; then
+  if ! kubectl get namespace "${FIELD_NAMESPACE}" &>/dev/null; then
     echo "Creating namespace '${FIELD_NAMESPACE}'..."
     kubectl create namespace "${FIELD_NAMESPACE}"
   fi

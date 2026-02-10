@@ -35,7 +35,7 @@ DRY_RUN="false"
 ####
 
 usage() {
-  cat << EOF
+  cat <<EOF
 Usage: $(basename "$0") [OPTIONS]
 
 Deploy Direct Lake Semantic Model from ontology definition.
@@ -76,7 +76,7 @@ while [[ $# -gt 0 ]]; do
       DRY_RUN="true"
       shift
       ;;
-    -h|--help)
+    -h | --help)
       usage
       exit 0
       ;;
@@ -158,10 +158,10 @@ map_tmdl_type() {
   local def_type="$1"
   case "$def_type" in
     string) echo "string" ;;
-    int|integer) echo "int64" ;;
-    double|float|decimal) echo "double" ;;
+    int | integer) echo "int64" ;;
+    double | float | decimal) echo "double" ;;
     datetime) echo "dateTime" ;;
-    boolean|bool) echo "boolean" ;;
+    boolean | bool) echo "boolean" ;;
     *) echo "string" ;;
   esac
 }
@@ -188,13 +188,13 @@ generate_uuid() {
 
 generate_database_tmdl() {
   local model_name="$1"
-  MODEL_NAME="$model_name" envsubst < "$TEMPLATE_DIR/database.tmdl.tmpl"
+  MODEL_NAME="$model_name" envsubst <"$TEMPLATE_DIR/database.tmdl.tmpl"
 }
 
 generate_expressions_tmdl() {
   local workspace_id="$1"
   local lakehouse_id="$2"
-  WORKSPACE_ID="$workspace_id" LAKEHOUSE_ID="$lakehouse_id" envsubst < "$TEMPLATE_DIR/expressions.tmdl.tmpl"
+  WORKSPACE_ID="$workspace_id" LAKEHOUSE_ID="$lakehouse_id" envsubst <"$TEMPLATE_DIR/expressions.tmdl.tmpl"
 }
 
 generate_table_refs() {
@@ -211,7 +211,7 @@ generate_table_refs() {
 generate_model_tmdl() {
   local table_refs
   table_refs=$(generate_table_refs)
-  TABLE_REFS="$table_refs" envsubst < "$TEMPLATE_DIR/model.tmdl.tmpl"
+  TABLE_REFS="$table_refs" envsubst <"$TEMPLATE_DIR/model.tmdl.tmpl"
 }
 
 generate_table_tmdl() {
@@ -243,7 +243,7 @@ generate_table_tmdl() {
     echo "		schemaName: dbo"
     echo "		expressionSource: DatabaseQuery"
     echo ""
-  } > "$output_file"
+  } >"$output_file"
 
   # Write columns directly to file
   local properties prop_count prop_name prop_type source_col is_key binding tmdl_type summarize_by
@@ -272,7 +272,7 @@ generate_table_tmdl() {
 
     # Determine summarizeBy based on type and key status
     case "$tmdl_type" in
-      int64|double)
+      int64 | double)
         if [[ "$is_key" == "true" ]]; then
           summarize_by="none"
         else
@@ -294,7 +294,7 @@ generate_table_tmdl() {
       echo "		sourceColumn: $source_col"
       echo "		summarizeBy: $summarize_by"
       echo ""
-    } >> "$output_file"
+    } >>"$output_file"
   done
 }
 
@@ -345,17 +345,17 @@ build_semantic_model_definition() {
 
   # Generate database.tmdl
   database_tmdl=$(generate_database_tmdl "$MODEL_NAME")
-  echo "$database_tmdl" > "$temp_dir/definition/database.tmdl"
+  echo "$database_tmdl" >"$temp_dir/definition/database.tmdl"
   info "Generated: database.tmdl" >&2
 
   # Generate model.tmdl
   model_tmdl=$(generate_model_tmdl)
-  echo "$model_tmdl" > "$temp_dir/definition/model.tmdl"
+  echo "$model_tmdl" >"$temp_dir/definition/model.tmdl"
   info "Generated: model.tmdl" >&2
 
   # Generate expressions.tmdl
   expressions_tmdl=$(generate_expressions_tmdl "$WORKSPACE_ID" "$LAKEHOUSE_ID")
-  echo "$expressions_tmdl" > "$temp_dir/definition/expressions.tmdl"
+  echo "$expressions_tmdl" >"$temp_dir/definition/expressions.tmdl"
   info "Generated: expressions.tmdl" >&2
 
   # Generate table TMDL files
@@ -390,13 +390,13 @@ build_semantic_model_definition() {
 
   # Generate relationships.tmdl
   relationships_tmdl=$(generate_relationships_tmdl)
-  echo "$relationships_tmdl" > "$temp_dir/definition/relationships.tmdl"
+  echo "$relationships_tmdl" >"$temp_dir/definition/relationships.tmdl"
   info "Generated: relationships.tmdl" >&2
 
   # Generate definition.pbism (required for TMDL format, version 4.0+)
   local pbism_content
   pbism_content=$(cat "$TEMPLATE_DIR/definition.pbism.tmpl")
-  echo "$pbism_content" > "$temp_dir/definition.pbism"
+  echo "$pbism_content" >"$temp_dir/definition.pbism"
   info "Generated: definition.pbism" >&2
 
   echo "$temp_dir"
@@ -410,7 +410,7 @@ create_semantic_model() {
   local temp_dir="$1"
   local parts_file
   parts_file=$(mktemp)
-  echo "[]" > "$parts_file"
+  echo "[]" >"$parts_file"
 
   # Build definition parts from generated files using find for recursive traversal
   # Store file list first to avoid subshell issues with while loop
@@ -424,7 +424,7 @@ create_semantic_model() {
     rel_path="${file#"$temp_dir"/}"
 
     # Base64 encode
-    content_b64=$(base64 < "$file" | tr -d '\n\r')
+    content_b64=$(base64 <"$file" | tr -d '\n\r')
 
     # Build part object and append to array
     local current_parts new_parts
@@ -433,8 +433,8 @@ create_semantic_model() {
       --arg path "$rel_path" \
       --arg payload "$content_b64" \
       '. += [{"path": $path, "payload": $payload, "payloadType": "InlineBase64"}]')
-    echo "$new_parts" > "$parts_file"
-  done <<< "$file_list"
+    echo "$new_parts" >"$parts_file"
+  done <<<"$file_list"
 
   local parts_array
   parts_array=$(cat "$parts_file")
@@ -451,7 +451,7 @@ create_semantic_model() {
   # Build request body using file to avoid shell quoting issues
   local request_body_file
   request_body_file=$(mktemp)
-  echo "$parts_array" > "${request_body_file}.parts"
+  echo "$parts_array" >"${request_body_file}.parts"
 
   if ! jq -n \
     --arg name "$MODEL_NAME" \
@@ -462,7 +462,7 @@ create_semantic_model() {
         "format": "TMDL",
         "parts": $parts[0]
       }
-    }' > "$request_body_file" 2>&1; then
+    }' >"$request_body_file" 2>&1; then
     # Alternative: read file content directly
     jq -n \
       --arg name "$MODEL_NAME" \
@@ -473,7 +473,7 @@ create_semantic_model() {
           "format": "TMDL",
           "parts": $parts
         }
-      }' > "$request_body_file"
+      }' >"$request_body_file"
   fi
 
   rm -f "${request_body_file}.parts"
@@ -501,7 +501,7 @@ create_semantic_model() {
     # Update definition using file-based approach
     local update_body_file
     update_body_file=$(mktemp)
-    echo "$parts_array" > "${update_body_file}.parts"
+    echo "$parts_array" >"${update_body_file}.parts"
 
     jq -n \
       --slurpfile parts "${update_body_file}.parts" \
@@ -510,7 +510,7 @@ create_semantic_model() {
           "format": "TMDL",
           "parts": $parts[0]
         }
-      }' > "$update_body_file"
+      }' >"$update_body_file"
 
     rm -f "${update_body_file}.parts"
     local update_body
@@ -597,7 +597,7 @@ rm -rf "$TEMP_DIR"
 
 log "Deployment Complete"
 
-cat << EOF
+cat <<EOF
 
 === Semantic Model Summary ===
 

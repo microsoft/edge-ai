@@ -1,0 +1,70 @@
+# EditorConfig helps maintain consistent coding styles
+# https://editorconfig.org
+
+root = true
+
+# Default settings for all files
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2
+
+# Shell scripts (shfmt integration)
+# See: https://github.com/mvdan/sh/blob/master/cmd/shfmt/shfmt.1.scd#editorconfig
+[*.{sh,bash}]
+indent_style = space
+indent_size = 2
+shell_variant = bash
+binary_next_line = true
+switch_case_indent = true
+
+# Terraform
+[*.tf]
+indent_style = space
+indent_size = 2
+
+# Bicep
+[*.bicep]
+indent_style = space
+indent_size = 2
+
+# YAML
+[*.{yml,yaml}]
+indent_style = space
+indent_size = 2
+
+# JSON
+[*.json]
+indent_style = space
+indent_size = 2
+
+# JavaScript/TypeScript
+[*.{js,ts,jsx,tsx}]
+indent_style = space
+indent_size = 2
+
+# C#
+[*.cs]
+indent_style = space
+indent_size = 4
+
+# Python
+[*.py]
+indent_style = space
+indent_size = 4
+
+# Rust
+[*.rs]
+indent_style = space
+indent_size = 4
+
+# Markdown (preserve trailing spaces for line breaks)
+[*.md]
+trim_trailing_whitespace = false
+
+# Makefile (requires tabs)
+[Makefile]
+indent_style = tab

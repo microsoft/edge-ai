@@ -41,10 +41,10 @@ SKIP_DEPLOY_SAT="${SKIP_DEPLOY_SAT}"             # Skips adding a 'cluster-admin
 
 usage() {
   echo "usage: ${0##*./}"
-  grep -x -B99 -m 1 "^###" "$0" |
-    sed -E -e '/^[^#]+=/ {s/^([^ ])/  \1/ ; s/#/ / ; s/=[^ ]*$// ;}' |
-    sed -E -e ':x' -e '/^[^#]+=/ {s/^(  [^ ]+)[^ ] /\1  / ;}' -e 'tx' |
-    sed -e 's/^## //' -e '/^#/d' -e '/^$/d'
+  grep -x -B99 -m 1 "^###" "$0" \
+    | sed -E -e '/^[^#]+=/ {s/^([^ ])/  \1/ ; s/#/ / ; s/=[^ ]*$// ;}' \
+    | sed -E -e ':x' -e '/^[^#]+=/ {s/^(  [^ ]+)[^ ] /\1  / ;}' -e 'tx' \
+    | sed -e 's/^## //' -e '/^#/d' -e '/^$/d'
   exit 1
 }
 
@@ -64,12 +64,12 @@ enable_debug() {
 
 if [[ $# -gt 0 ]]; then
   case "$1" in
-  -d | --debug)
-    enable_debug
-    ;;
-  *)
-    usage
-    ;;
+    -d | --debug)
+      enable_debug
+      ;;
+    *)
+      usage
+      ;;
   esac
 fi
 
@@ -262,10 +262,10 @@ if [[ ${ENVIRONMENT,,} != "prod" ]]; then
 
   if ! command -v 'k9s' &>/dev/null; then
     log "Downloading and installing k9s"
-    curl -LO https://github.com/derailed/k9s/releases/latest/download/k9s_linux_amd64.tar.gz &&
-      sudo tar -xf k9s_linux_amd64.tar.gz --directory=/usr/local/bin k9s &&
-      sudo chmod +x /usr/local/bin/k9s &&
-      rm k9s_linux_amd64.tar.gz
+    curl -LO https://github.com/derailed/k9s/releases/latest/download/k9s_linux_amd64.tar.gz \
+      && sudo tar -xf k9s_linux_amd64.tar.gz --directory=/usr/local/bin k9s \
+      && sudo chmod +x /usr/local/bin/k9s \
+      && rm k9s_linux_amd64.tar.gz
   fi
 fi
 
@@ -432,8 +432,8 @@ wait_for_k3s_server_ready() {
     fi
 
     if kubectl wait --for condition=ready node --all --timeout=60s; then
-      if kubectl wait --for=jsonpath='{.status.phase}'=Running pod -l '!job-name' -n kube-system --timeout=60s &&
-        kubectl wait --for=jsonpath='{.status.phase}'=Succeeded pod -l 'job-name' -n kube-system --timeout=60s; then
+      if kubectl wait --for=jsonpath='{.status.phase}'=Running pod -l '!job-name' -n kube-system --timeout=60s \
+        && kubectl wait --for=jsonpath='{.status.phase}'=Succeeded pod -l 'job-name' -n kube-system --timeout=60s; then
         if kubectl cluster-info | grep -c -E "(Kubernetes control plane|CoreDNS|Metrics-server).*running" | grep -q "3"; then
           log "k3s server is ready and responding (${elapsed_time}s elapsed)"
           return 0
