@@ -156,6 +156,8 @@ For detailed information about our coding standards, please refer to the [Coding
 - Documentation requirements
 - Variable naming and structure conventions
 
+For testing requirements, please refer to the [Test Policy](docs/contributing/testing-validation.md#test-policy).
+
 ### GitHub Copilot Instructions and Prompts
 
 This project includes comprehensive GitHub Copilot instruction and prompt files to enhance the development experience. For detailed information about available files and how to use them effectively, please refer to the [AI-Assisted Engineering](./docs/contributing/ai-assisted-engineering.md) guide.
