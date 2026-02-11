@@ -22,7 +22,7 @@ resource "terraform_data" "defer" {
     workspace_display_name  = coalesce(var.fabric_workspace_name, "ws-${var.resource_prefix}-${var.environment}-${var.instance}")
     eventhouse_display_name = coalesce(var.fabric_eventhouse_name, "evh-${var.resource_prefix}-${var.environment}-${var.instance}")
     aio_identity_name       = coalesce(var.aio_identity_name, "id-${var.resource_prefix}-aio-${var.environment}-${var.instance}")
-    aio_instance_name       = coalesce(var.aio_instance_name, "iotops-${var.resource_prefix}-${var.environment}-${var.instance}")
+    aio_instance_name       = coalesce(var.aio_instance_name, "iotops-arck-${var.resource_prefix}-${var.environment}-${var.instance}")
     custom_location_name    = coalesce(var.custom_location_name, "cl-arck-${var.resource_prefix}-${var.environment}-${var.instance}")
   }
 }
