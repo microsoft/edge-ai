@@ -13,20 +13,20 @@ Current ARM_SUBSCRIPTION_ID: ${ARM_SUBSCRIPTION_ID}"
 
 while [[ $# -gt 0 ]]; do
   case $1 in
-  --tenant)
-    tenant="$2"
-    shift 2
-    ;;
-  --help)
-    echo "${help}"
-    exit 0
-    ;;
-  *)
-    echo "${help}"
-    echo
-    echo "Unknown option: $1"
-    exit 1
-    ;;
+    --tenant)
+      tenant="$2"
+      shift 2
+      ;;
+    --help)
+      echo "${help}"
+      exit 0
+      ;;
+    *)
+      echo "${help}"
+      echo
+      echo "Unknown option: $1"
+      exit 1
+      ;;
   esac
 done
 

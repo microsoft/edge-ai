@@ -10,10 +10,16 @@ if [[ "${DEBUG:-0}" == "1" ]]; then
   trap 'echo "[DEBUG] FAILED at line $LINENO: $BASH_COMMAND" >&2' ERR
 fi
 
-RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; NC='\033[0m'
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
 log() { printf "${GREEN}[INFO]${NC} %s\n" "$1"; }
 warn() { printf "${YELLOW}[WARN]${NC} %s\n" "$1"; }
-err() { printf "${RED}[ERROR]${NC} %s\n" "$1" >&2; exit 1; }
+err() {
+  printf "${RED}[ERROR]${NC} %s\n" "$1" >&2
+  exit 1
+}
 
 usage() {
   cat <<EOF
@@ -43,11 +49,11 @@ done
 # -----------------------------------------------------------------------------
 # Environment Configuration
 # -----------------------------------------------------------------------------
-NAMESPACE="${NAMESPACE:-azure-iot-operations}"              # Namespace for connector deployment
-ACR_NAME="${ACR_NAME:-}"                                    # Azure Container Registry name, no domain e.g. myregistry (required for deployment)
+NAMESPACE="${NAMESPACE:-azure-iot-operations}" # Namespace for connector deployment
+ACR_NAME="${ACR_NAME:-}"                       # Azure Container Registry name, no domain e.g. myregistry (required for deployment)
 CONNECTOR_IMAGE_NAME="${CONNECTOR_IMAGE_NAME:-${CONNECTOR_IMAGE:-ros2-connector}}"
 CONNECTOR_IMAGE_TAG="${CONNECTOR_IMAGE_TAG:-${IMAGE_TAG:-latest}}"
-BUILD_PLATFORM="${BUILD_PLATFORM:-linux/amd64}"            # Target platform for deployment (amd64 by default)
+BUILD_PLATFORM="${BUILD_PLATFORM:-linux/amd64}"                                            # Target platform for deployment (amd64 by default)
 PROJECT_ROOT="${PROJECT_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && cd .. && pwd)}" # Component root directory
 
 check_prereqs() {
@@ -63,12 +69,16 @@ load_env_variables() {
   script_dir="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
   component_root="${script_dir}/.."
   env_file="${component_root}/.env"
-  loaded=0; skipped=0
-  [[ -f "${env_file}" ]] || { warn "Environment file not found at ${env_file}"; return 0; }
+  loaded=0
+  skipped=0
+  [[ -f "${env_file}" ]] || {
+    warn "Environment file not found at ${env_file}"
+    return 0
+  }
   log "Loading environment variables from ${env_file}"
   # Use a simple read loop; the previous pattern with '|| [[ -n ${line} ]]' caused premature exit under 'set -e'
   while IFS= read -r line; do
-    line="${line%%$'\r'}"                                   # strip CR
+    line="${line%%$'\r'}"                                     # strip CR
     [[ $line =~ ^[[:space:]]*$ || $line == \#* ]] && continue # skip blank/comment
     local key="${line%%=*}" value="${line#*=}"
     if [[ "${DEBUG:-0}" == "1" ]]; then echo "[DEBUG] parsing line: '$line'" >&2; fi
@@ -77,17 +87,18 @@ load_env_variables() {
     key="${key%"${key##*[![:space:]]}"}"
     value="${value#"${value%%[![:space:]]*}"}"
     value="${value%"${value##*[![:space:]]}"}"
-    [[ $key =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] || continue        # validate key
+    [[ $key =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] || continue # validate key
     # strip balanced single/double quotes
-    if [[ ( $value == "\"*\"" && $value == *"\"" ) || ( $value == "'*'" && $value == *"'" ) ]]; then
+    if [[ ($value == "\"*\"" && $value == *"\"") || ($value == "'*'" && $value == *"'") ]]; then
       value="${value:1:-1}"
     fi
     if [[ -z "${!key:-}" ]]; then
-      export "${key}=${value}"; loaded=$((loaded+1))
+      export "${key}=${value}"
+      loaded=$((loaded + 1))
     else
-      skipped=$((skipped+1))
+      skipped=$((skipped + 1))
     fi
-  done < "${env_file}"
+  done <"${env_file}"
   log "Environment variables loaded: ${loaded} new, ${skipped} skipped"
 }
 
@@ -135,14 +146,14 @@ deploy_connector_workload() {
   local release_name
   release_name="${HELM_RELEASE_NAME:-ros2-connector}"
   local image_repo image_tag
-  image_repo="${image_ref%:*}"   # everything before last :
+  image_repo="${image_ref%:*}" # everything before last :
   image_tag="${image_ref##*:}"
 
   # Prepare CycloneDDS peer/interface configuration for helm (use arrays for safe arg expansion)
   local -a cyclonedds_set_args=()
   if [[ -n "${CYCLONEDDS_PEERS:-}" && "${CYCLONEDDS_PEERS}" != "eth0" ]]; then
     local index=0
-    IFS=',' read -ra peers_array <<< "${CYCLONEDDS_PEERS}"
+    IFS=',' read -ra peers_array <<<"${CYCLONEDDS_PEERS}"
     for peer in "${peers_array[@]}"; do
       cyclonedds_set_args+=(--set "cycloneDDS.peers[${index}]=${peer}")
       ((++index))
@@ -154,7 +165,7 @@ deploy_connector_workload() {
 
   if [[ -n "${CYCLONEDDS_INTERFACES:-}" ]]; then
     local if_index=0
-    IFS=',' read -ra if_array <<< "${CYCLONEDDS_INTERFACES}"
+    IFS=',' read -ra if_array <<<"${CYCLONEDDS_INTERFACES}"
     for iface in "${if_array[@]}"; do
       cyclonedds_set_args+=(--set "cycloneDDS.interfaces[${if_index}]=${iface}")
       ((++if_index))

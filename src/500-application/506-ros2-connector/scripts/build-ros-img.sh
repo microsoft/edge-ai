@@ -5,10 +5,16 @@
 
 set -euo pipefail
 
-RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; NC='\033[0m'
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
 log() { printf "${GREEN}[INFO]${NC} %s\n" "$1"; }
 warn() { printf "${YELLOW}[WARN]${NC} %s\n" "$1"; }
-err() { printf "${RED}[ERROR]${NC} %s\n" "$1" >&2; exit 1; }
+err() {
+  printf "${RED}[ERROR]${NC} %s\n" "$1" >&2
+  exit 1
+}
 
 usage() {
   cat <<EOF
@@ -36,7 +42,7 @@ EOF
 # Early help handling
 for arg in "$@"; do
   case "$arg" in
-    -h|--help)
+    -h | --help)
       usage
       exit 0
       ;;
@@ -47,16 +53,16 @@ done
 # Environment Configuration
 # -----------------------------------------------------------------------------
 # Container image build/publish configuration
-ACR_NAME="${ACR_NAME:-}"                                       # Azure Container Registry name, no domain e.g. myregistry (required)
-SIMULATOR_IMAGE_NAME="${SIMULATOR_IMAGE_NAME:-ros2-simulator}"  # Simulator image name (no registry domain)
-SIMULATOR_IMAGE_TAG="${SIMULATOR_IMAGE_TAG:-latest}"           # Simulator image tag
+ACR_NAME="${ACR_NAME:-}"                                                                     # Azure Container Registry name, no domain e.g. myregistry (required)
+SIMULATOR_IMAGE_NAME="${SIMULATOR_IMAGE_NAME:-ros2-simulator}"                               # Simulator image name (no registry domain)
+SIMULATOR_IMAGE_TAG="${SIMULATOR_IMAGE_TAG:-latest}"                                         # Simulator image tag
 DOCKERFILE_SIMULATOR_PATH="${DOCKERFILE_SIMULATOR_PATH:-services/ros2-simulator/Dockerfile}" # Simulator Dockerfile relative to project root
-CONNECTOR_IMAGE_NAME="${CONNECTOR_IMAGE_NAME:-ros2-connector}"  # Connector image name
-CONNECTOR_IMAGE_TAG="${CONNECTOR_IMAGE_TAG:-${SIMULATOR_IMAGE_TAG}}" # Connector image tag (defaults to simulator tag)
+CONNECTOR_IMAGE_NAME="${CONNECTOR_IMAGE_NAME:-ros2-connector}"                               # Connector image name
+CONNECTOR_IMAGE_TAG="${CONNECTOR_IMAGE_TAG:-${SIMULATOR_IMAGE_TAG}}"                         # Connector image tag (defaults to simulator tag)
 DOCKERFILE_CONNECTOR_PATH="${DOCKERFILE_CONNECTOR_PATH:-services/ros2-connector/Dockerfile}" # Connector Dockerfile
-BUILD_PLATFORM="${BUILD_PLATFORM:-linux/amd64}"               # Target platform for deployment (amd64 by default)
-PROJECT_ROOT="${PROJECT_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && cd .. && pwd)}" # Component root directory
-PUSH_IMAGES="${PUSH_IMAGES:-true}"                             # Push images to ACR
+BUILD_PLATFORM="${BUILD_PLATFORM:-linux/amd64}"                                              # Target platform for deployment (amd64 by default)
+PROJECT_ROOT="${PROJECT_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && cd .. && pwd)}"       # Component root directory
+PUSH_IMAGES="${PUSH_IMAGES:-true}"                                                           # Push images to ACR
 
 check_prereqs() {
   command -v docker >/dev/null 2>&1 || err "docker required to build image"
@@ -190,7 +196,6 @@ ensure_buildx_builder() {
   fi
 }
 
-
 build_simulator_image() {
   local dockerfile_path="${PROJECT_ROOT}/${DOCKERFILE_SIMULATOR_PATH}"
   local image_ref
@@ -201,11 +206,11 @@ build_simulator_image() {
     log "Cross-compilation required: building ${BUILD_PLATFORM} on $(uname -m)"
     ensure_buildx_builder
     # Use buildx for cross-compilation
-  (cd "${PROJECT_ROOT}" && docker buildx build --platform="${BUILD_PLATFORM}" -f "${dockerfile_path}" -t "${image_ref}" --load .)
+    (cd "${PROJECT_ROOT}" && docker buildx build --platform="${BUILD_PLATFORM}" -f "${dockerfile_path}" -t "${image_ref}" --load .)
   else
     log "Native build: building ${BUILD_PLATFORM} on $(uname -m)"
     # Native build
-  (cd "${PROJECT_ROOT}" && docker build --platform="${BUILD_PLATFORM}" -f "${dockerfile_path}" -t "${image_ref}" .)
+    (cd "${PROJECT_ROOT}" && docker build --platform="${BUILD_PLATFORM}" -f "${dockerfile_path}" -t "${image_ref}" .)
   fi
 }
 

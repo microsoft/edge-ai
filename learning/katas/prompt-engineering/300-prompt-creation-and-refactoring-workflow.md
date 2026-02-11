@@ -164,9 +164,8 @@ Complete these prerequisite checks to ensure a successful learning experience:
 
 ### Help Resources
 
-- [Prompts Overview](../../.github/prompts/README.md) - Complete guide to available prompts including prompt-new and prompt-refactor workflows
-- [Prompt-New Workflow](../../.github/prompts/prompt-new.prompt.md) - Systematic prompt creation guidance
-- [Prompt-Refactor Workflow](../../.github/prompts/prompt-refactor.prompt.md) - Prompt optimization methodology
+- [Prompts Overview](../../.github/prompts/README.md) - Complete guide to available prompts including prompt-refactor workflows
+- Additional prompt creation workflows are available via the [hve-core](https://github.com/microsoft/hve-core) VS Code extension
 - [Azure OpenAI Documentation][prompt-engineering-azure] - Prompt engineering principles for best practices
 
 ### Professional Tips

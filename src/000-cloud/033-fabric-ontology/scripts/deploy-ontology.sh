@@ -44,7 +44,7 @@ declare -A RELATIONSHIP_IDS
 ####
 
 usage() {
-  cat << EOF
+  cat <<EOF
 Usage: $(basename "$0") [OPTIONS]
 
 Deploy Fabric Ontology from ontology definition.
@@ -107,7 +107,7 @@ while [[ $# -gt 0 ]]; do
       DRY_RUN="true"
       shift
       ;;
-    -h|--help)
+    -h | --help)
       usage
       exit 0
       ;;
@@ -773,7 +773,7 @@ create_ontology() {
   local parts_file request_body_file response
   parts_file=$(mktemp)
   request_body_file=$(mktemp)
-  echo "$definition_parts" > "$parts_file"
+  echo "$definition_parts" >"$parts_file"
 
   # Build request body using file-based approach
   jq -n \
@@ -784,7 +784,7 @@ create_ontology() {
       "displayName": $name,
       "description": $desc,
       "definition": {"parts": $parts[0]}
-    }' > "$request_body_file"
+    }' >"$request_body_file"
 
   rm -f "$parts_file"
 

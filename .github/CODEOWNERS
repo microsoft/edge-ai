@@ -1,57 +1,44 @@
-# GitHub CODEOWNERS - Simplified
-# Based on actual repository structure and contributor analysis
-# Last matching pattern takes precedence
+# CODEOWNERS
+#
+# This file defines code ownership for the edge-ai repository.
+# Code owners are automatically requested for review when someone opens a pull
+# request that modifies files they own.
+#
+# Syntax: <file-pattern> @owner1 @owner2
+# More info:
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
 
-# Default owners
-* @WilliamBerryiii @agreaves-ms @katriendg @bindsi
+# Default owner for all files (fallback)
+* @microsoft/edge-ai-core-dev
+
+# Self-protection: CODEOWNERS file changes require core team approval
+/.github/CODEOWNERS @microsoft/edge-ai-core-dev
+
+# GitHub configuration (workflows, templates, instructions)
+/.github/ @microsoft/edge-ai-core-dev
+
+# CI/CD pipelines
+/azure-pipelines.yml @microsoft/edge-ai-core-dev
+/.azdo/ @microsoft/edge-ai-core-dev
 
 # Core infrastructure components
-src/ @WilliamBerryiii @agreaves-ms @bindsi @katriendg
-
-# Cloud infrastructure
-src/000-cloud/ @bindsi @katriendg @agreaves-ms
-
-# Edge and IoT components
-src/100-edge/ @nguyena2 @bindsi @agreaves-ms
-
-# Applications
-src/500-application/ @nguyena2 @agreaves-ms
+/src/ @microsoft/edge-ai-core-dev
 
 # Deployment blueprints
-blueprints/ @bindsi @agreaves-ms
-
-# Microsoft Fabric
-blueprints/fabric/ @agreaves-ms @bindsi
-blueprints/fabric-rti/ @agreaves-ms @bindsi
-src/000-cloud/031-fabric/ @agreaves-ms @bindsi
-src/000-cloud/032-fabric-rti/ @agreaves-ms @bindsi
+/blueprints/ @microsoft/edge-ai-core-dev
 
 # Documentation
-docs/ @WilliamBerryiii @auyidi1 @EliiseS
-README.md @WilliamBerryiii @agreaves-ms
-learning/ @WilliamBerryiii
+/docs/ @microsoft/edge-ai-core-dev
+/learning/ @microsoft/edge-ai-core-dev
 
 # Scripts and automation
-scripts/ @WilliamBerryiii @katriendg @agreaves-ms @azurecloudkevin
-
-# CI/CD and workflows
-.github/ @agreaves-ms @WilliamBerryiii
-azure-pipelines.yml @WilliamBerryiii @bindsi @agreaves-ms
-.azdo/ @WilliamBerryiii @bindsi @agreaves-ms
+/scripts/ @microsoft/edge-ai-core-dev
 
 # Development environment
-.devcontainer/ @agreaves-ms @WilliamBerryiii
+/.devcontainer/ @microsoft/edge-ai-core-dev
 
 # AI and prompts
-copilot/ @agreaves-ms @katriendg @WilliamBerryiii
-.github/instructions/ @agreaves-ms @druttka
-.github/prompts/ @agreaves-ms @WilliamBerryiii
+/copilot/ @microsoft/edge-ai-core-dev
 
 # Security
-SECURITY.md @EliiseS @agreaves-ms
-project-security-plans/ @EliiseS @agreaves-ms
-
-# Infrastructure as Code
-*.tf @agreaves-ms @bindsi @katriendg @azurecloudkevin
-*.bicep @katriendg @agreaves-ms @bindsi
-bicepconfig.json @katriendg @agreaves-ms
+/project-security-plans/ @microsoft/edge-ai-core-dev

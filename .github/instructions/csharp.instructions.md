@@ -11,29 +11,29 @@ C# files in this project are primarily for infrastructure-related applications, 
 
 You will ALWAYS think hard about C# instructions and established conventions.
 
-- **CRITICAL**: You MUST ALWAYS read in `csharp-instructions`
+- **CRITICAL**: Comprehensive C# conventions are provided by the [hve-core](https://github.com/microsoft/hve-core) VS Code extension and loaded automatically when installed
 - You will ALWAYS understand all guidelines and follow them precisely
-- You will ALWAYS read the complete C# documentation from the required files
+- You will ALWAYS follow the C# conventions from hve-core instructions
 
 <!-- <csharp-instructions> -->
 ## Required Reading Process
 
 When working with C# files in this project:
 
-1. You must read the comprehensive instructions: [copilot/csharp/csharp.md](../../copilot/csharp/csharp.md)
-2. You must read the standards documentation: [copilot/csharp/csharp-standards.md](../../copilot/csharp/csharp-standards.md)
-3. You must read the testing guidelines: [copilot/csharp/csharp-tests.md](../../copilot/csharp/csharp-tests.md)
-4. You must read ALL lines from these files
+1. Follow the comprehensive C# instructions provided by the hve-core extension
+2. Follow the C# standards documentation provided by the hve-core extension
+3. Follow the C# testing guidelines provided by the hve-core extension
+4. You must read ALL lines from instruction files
 5. You must FOLLOW ALL instructions contained in these files
 
 ### Required File Details
 
-| Requirement         | Value                                                                                              |
-|---------------------|----------------------------------------------------------------------------------------------------|
-| Instructions Files  | `copilot/csharp/csharp.md`, `copilot/csharp/csharp-standards.md`, `copilot/csharp/csharp-tests.md` |
-| Read All Lines      | Required                                                                                           |
-| Minimum Lines       | 1000 (combined)                                                                                    |
-| Follow Instructions | Required                                                                                           |
+| Requirement         | Value                                                   |
+|---------------------|---------------------------------------------------------|
+| Instructions Source | hve-core extension `.github/instructions/csharp/` files |
+| Read All Lines      | Required                                                |
+| Minimum Lines       | 1000 (combined)                                         |
+| Follow Instructions | Required                                                |
 <!-- </csharp-instructions> -->
 
 ## Project-Specific Guidelines
@@ -49,5 +49,5 @@ When working with C# files in this project:
 When implementing any C# functionality in this project:
 
 - You must have read the complete C# documentation before proceeding
-- You must adhere to all guidelines provided in the comprehensive instructions
-- You must implement all patterns exactly as specified in the copilot C# documentation files
+- You must adhere to all guidelines provided by the hve-core extension instructions
+- You must implement all patterns exactly as specified in the C# conventions

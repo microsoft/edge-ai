@@ -12,27 +12,27 @@ Python scripts are primarily in `/scripts/` directory with utility scripts for i
 
 You will ALWAYS think hard about python instructions and established conventions.
 
-- **CRITICAL**: You MUST ALWAYS read in `python-script-instructions`
+- **CRITICAL**: Comprehensive Python scripting conventions are provided by the [hve-core](https://github.com/microsoft/hve-core) VS Code extension and loaded automatically when installed
 - You will ALWAYS understand all guidelines and follow them precisely
-- You will ALWAYS read the complete Python documentation from the required file
+- You will ALWAYS follow the Python conventions from hve-core instructions
 
 <!-- <python-script-instructions> -->
 ## Required Reading Process
 
 When working with Python files in the `/scripts` directory:
 
-1. You must read the comprehensive instructions: [copilot/python-script.md](../../copilot/python-script.md)
-2. You must read ALL lines from this file
-3. You must FOLLOW ALL instructions contained in this file
+1. Follow the comprehensive Python scripting instructions provided by the hve-core extension
+2. You must read ALL lines from instruction files
+3. You must FOLLOW ALL instructions contained in these files
 
 ### Required File Details
 
-| Requirement         | Value                      |
-|---------------------|----------------------------|
-| Instructions File   | `copilot/python-script.md` |
-| Read All Lines      | Required                   |
-| Minimum Lines       | 1000                       |
-| Follow Instructions | Required                   |
+| Requirement         | Value                                            |
+|---------------------|--------------------------------------------------|
+| Instructions Source | hve-core extension `.github/instructions/` files |
+| Read All Lines      | Required                                         |
+| Minimum Lines       | 1000                                             |
+| Follow Instructions | Required                                         |
 <!-- </python-script-instructions> -->
 
 ## Scripts-Specific Guidelines
@@ -48,5 +48,5 @@ When working with Python files in the `/scripts` directory:
 When implementing any Python script functionality in the `/scripts` directory:
 
 - You must have read the complete Python documentation before proceeding
-- You must adhere to all guidelines provided in the comprehensive instructions
-- You must implement all patterns exactly as specified in `copilot/python-script.md`
+- You must adhere to all guidelines provided by the hve-core extension instructions
+- You must implement all patterns exactly as specified in the Python scripting conventions

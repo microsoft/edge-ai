@@ -24,10 +24,10 @@ METRIC3_TOPIC_TEMPLATE_NAME=${METRIC3_TOPIC_TEMPLATE_NAME:-"devices-health"}
 navigate_to_scripts_dir
 
 wait_for_edge_volume() {
-    local edgeVolumeName=$1
+  local edgeVolumeName=$1
 
-    echo "Waiting for edge volume $edgeVolumeName to be deployed..."
-    kubectl wait --for=jsonpath='{.status.state}'="deployed" edgevolumes/"$edgeVolumeName" --timeout=120s
+  echo "Waiting for edge volume $edgeVolumeName to be deployed..."
+  kubectl wait --for=jsonpath='{.status.state}'="deployed" edgevolumes/"$edgeVolumeName" --timeout=120s
 }
 
 # Create a storage account
@@ -38,9 +38,9 @@ az storage account create --name "$STORAGE_ACCOUNT_NAME" --resource-group "$RESO
 subscriptionId=$(az account show --query id --output tsv)
 
 az ad signed-in-user show --query id -o tsv | az role assignment create \
-    --role "Storage Blob Data Contributor" \
-    --assignee @- \
-    --scope /subscriptions/"$subscriptionId"/resourceGroups/"$RESOURCE_GROUP"/providers/Microsoft.Storage/storageAccounts/"$STORAGE_ACCOUNT_NAME"
+  --role "Storage Blob Data Contributor" \
+  --assignee @- \
+  --scope /subscriptions/"$subscriptionId"/resourceGroups/"$RESOURCE_GROUP"/providers/Microsoft.Storage/storageAccounts/"$STORAGE_ACCOUNT_NAME"
 
 # Get ACSA extension identity
 echo "Getting the identity of the ACSA extension..."
@@ -53,25 +53,25 @@ acsaExtensionIdentity=$(az k8s-extension list --cluster-name "$CLUSTER_NAME" --r
 echo "Assigning the Storage Blob Data Owner role to the ACSA extension principal..."
 
 az role assignment create \
-    --assignee "$acsaExtensionIdentity" \
-    --role "Storage Blob Data Owner" \
-    --scope /subscriptions/"$subscriptionId"/resourceGroups/"$RESOURCE_GROUP"/providers/Microsoft.Storage/storageAccounts/"$STORAGE_ACCOUNT_NAME"
+  --assignee "$acsaExtensionIdentity" \
+  --role "Storage Blob Data Owner" \
+  --scope /subscriptions/"$subscriptionId"/resourceGroups/"$RESOURCE_GROUP"/providers/Microsoft.Storage/storageAccounts/"$STORAGE_ACCOUNT_NAME"
 
 # Create a container in the storage account to store total counter metric
 totalCouterContainerName=$METRIC2_TOPIC_PATH_NAME
 echo "Creating container $totalCouterContainerName in storage account $STORAGE_ACCOUNT_NAME"
 az storage container create \
-    --account-name "$STORAGE_ACCOUNT_NAME" \
-    --name "$totalCouterContainerName" \
-    --auth-mode login
+  --account-name "$STORAGE_ACCOUNT_NAME" \
+  --name "$totalCouterContainerName" \
+  --auth-mode login
 
 # Create a container in the storage account to store mashine status metric
 machineStatusContainerName=$METRIC1_TOPIC_PATH_NAME
 echo "Creating container $machineStatusContainerName in storage account $STORAGE_ACCOUNT_NAME"
 az storage container create \
-    --account-name "$STORAGE_ACCOUNT_NAME" \
-    --name "$machineStatusContainerName" \
-    --auth-mode login
+  --account-name "$STORAGE_ACCOUNT_NAME" \
+  --name "$machineStatusContainerName" \
+  --auth-mode login
 
 edgeVolumeAioName=$ACSA_CLOUD_BACKED_AIO_PVC_NAME
 # Wait until Edge Volume is deployed

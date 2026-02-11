@@ -85,6 +85,7 @@ The Dev Container provides a fully configured development environment with all n
 1. **Prerequisites**:
    - Docker Desktop installed and running
    - Visual Studio Code with Dev Containers extension
+   - [HVE Core extension](https://marketplace.visualstudio.com/items?itemName=ise-hve-essentials.hve-core) — provides AI prompts and agents (auto-installed in Dev Container)
    - Git configured with your credentials
 
 2. **Clone and open repository**:
@@ -588,6 +589,8 @@ Every PR must include:
 6. **Security scan** results (if applicable)
 
 ### Project-Specific GitHub Copilot Prompts
+
+> **Note:** These prompts are provided by the [HVE Core extension](https://marketplace.visualstudio.com/items?itemName=ise-hve-essentials.hve-core), which is auto-installed in the Dev Container.
 
 #### Task Planning and Implementation
 

@@ -56,8 +56,8 @@
 
 .OUTPUTS
     Security analysis report and work item planning files for Azure DevOps handoff.
-    Generated planning files follow the structure defined in:
-    .github/instructions/ado-wit-planning.instructions.md
+    Generated planning files follow work item planning conventions
+    provided by the hve-core VS Code extension.
 #>
 
 [CmdletBinding(SupportsShouldProcess)]

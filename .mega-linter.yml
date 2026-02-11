@@ -18,6 +18,7 @@ ENABLE_LINTERS:
   # Shell scripts
   - BASH_EXEC
   - BASH_SHELLCHECK
+  - BASH_SHFMT
 
   # Infrastructure as Code
   - TERRAFORM_TERRAFORM_FMT
@@ -136,9 +137,12 @@ POWERSHELL_POWERSHELL_CONFIG_FILE: PSScriptAnalyzerSettings.psd1
 
 # Dockerfile Hadolint configuration
 DOCKERFILE_HADOLINT_FILTER_REGEX_INCLUDE: "(src/500-application/.*/services/.*/Dockerfile)"
-DOCKERFILE_HADOLINT_ARGUMENTS: "--ignore SC1091 --failure-threshold warning"
 DOCKERFILE_HADOLINT_FILE_NAME: Dockerfile
 
 # Terrascan configuration (currently disabled)
 # TERRAFORM_TERRASCAN_CONFIG_FILE: .terrascan.toml
 # TERRAFORM_TERRASCAN_DISABLE_ERRORS: true
+
+# shfmt shell formatter configuration
+# Uses EditorConfig for base settings, --diff shows changes in CI
+BASH_SHFMT_ARGUMENTS: "--diff"
