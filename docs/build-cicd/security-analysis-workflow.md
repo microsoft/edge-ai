@@ -90,7 +90,7 @@ The security analysis workflow provides:
 
 ### Stage 4: Planning File Generation
 
-- Creates structured planning files following repository conventions defined in [`.github/instructions/ado-wit-planning.instructions.md`](../.github/instructions/ado-wit-planning.instructions.md)
+- Creates structured planning files following repository conventions (work item planning instructions are provided by the [hve-core](https://github.com/microsoft/hve-core) VS Code extension)
 
 - Generates proper acceptance criteria and story points
 - **Note**: This stage creates planning files only - actual Azure DevOps work items are created separately using Copilot chat with the handoff file
@@ -128,11 +128,74 @@ The generated planning files follow repository work item planning conventions an
 3. **Track Progress**: Monitor resolution through Azure DevOps after work items are created
 4. **Follow-up Scanning**: Verify fixes with subsequent security scans
 
+## Troubleshooting
+
+### Common Issues
+
+#### Checkov Installation Issues
+
+**Symptom**: Script fails with "Checkov not found" or pip installation errors.
+
+**Resolution**:
+
+1. Verify Python 3.8+ is installed: `python --version`
+2. Install Checkov manually: `pip install checkov`
+3. Verify installation: `checkov --version`
+4. If using a virtual environment, ensure it is activated
+
+#### Scan Configuration Failures
+
+**Symptom**: Checkov runs but produces no results or skips all checks.
+
+**Resolution**:
+
+1. Verify `.checkov.yml` exists and is properly formatted
+2. Check that target directories exist and contain scannable files
+3. Run Checkov directly to see verbose output: `checkov -d <directory> --config-file .checkov.yml`
+4. Ensure the framework filters match your infrastructure code (terraform, kubernetes, etc.)
+
+#### Azure Authentication Errors
+
+**Symptom**: Work item creation fails with authentication or authorization errors.
+
+**Resolution**:
+
+1. Verify Azure DevOps PAT token has required permissions (Work Items: Read & Write)
+2. Check that the project name and organization are correct
+3. Ensure the area path and iteration path exist in the target project
+4. Test connectivity: `az devops project list --organization <org-url>`
+
+#### Work Item Creation Failures
+
+**Symptom**: Planning files generated but work items fail to create.
+
+**Resolution**:
+
+1. Review the generated planning files for formatting issues
+2. Verify all required fields are populated in `work-items.md`
+3. Check that the handoff file references valid work item definitions
+4. Ensure Copilot chat has access to the Azure DevOps MCP tools
+
+### Debugging Commands
+
+```bash
+# Verify Checkov installation and version
+checkov --version
+
+# Run Checkov with verbose output for debugging
+checkov -d src/100-edge/100-cncf-cluster/ --config-file .checkov.yml -o cli --compact
+
+# Test Azure DevOps connectivity
+az devops project list --organization https://dev.azure.com/<org>
+
+# Validate planning file structure
+cat .copilot-tracking/workitems/security-analysis/checkov-k8s-arc-findings/work-items.md
+```
+
 ## Related Documentation
 
 - [Invoke-SecurityAnalysisWithWorkItems.ps1 Script](../scripts/Invoke-SecurityAnalysisWithWorkItems.ps1)
 - [Run-Checkov.ps1 Documentation](../scripts/README.md)
-- [Azure DevOps Work Item Planning Instructions](../.github/instructions/ado-wit-planning.instructions.md)
 - [Checkov Configuration Reference](../.checkov.yml)
 
 ---

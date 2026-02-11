@@ -91,7 +91,7 @@ fabric_api_call_file() {
 
   # Handle different response codes
   case "$http_code" in
-    200|201)
+    200 | 201)
       rm -f "$headers_file"
       echo "$response_body"
       return 0
@@ -158,7 +158,7 @@ fabric_api_call() {
     # Use file-based approach to avoid shell argument length limits
     local body_file
     body_file=$(mktemp)
-    echo "$body" > "$body_file"
+    echo "$body" >"$body_file"
     response=$(curl -s -w "\n%{http_code}" -D "$headers_file" -X "$method" "$url" \
       -H "Authorization: Bearer $token" \
       -H "Content-Type: application/json" \
@@ -175,7 +175,7 @@ fabric_api_call() {
 
   # Handle different response codes
   case "$http_code" in
-    200|201)
+    200 | 201)
       rm -f "$headers_file"
       echo "$response_body"
       return 0
@@ -243,7 +243,7 @@ poll_operation() {
     status=$(echo "$response" | jq -r '.status // .Status // "Unknown"')
 
     case "$status" in
-      "Succeeded"|"succeeded")
+      "Succeeded" | "succeeded")
         # Fetch the result endpoint to get the created item
         local result_url="${operation_url}/result"
         local result_response
@@ -270,12 +270,12 @@ poll_operation() {
         fi
         return 0
         ;;
-      "Failed"|"failed")
+      "Failed" | "failed")
         echo "[ ERROR ]: Operation failed" >&2
         echo "$response" >&2
         return 1
         ;;
-      "Running"|"running"|"InProgress"|"inProgress"|"NotStarted"|"notStarted")
+      "Running" | "running" | "InProgress" | "inProgress" | "NotStarted" | "notStarted")
         echo "[ INFO ]: Operation status: $status (${elapsed}s/${max_wait}s)" >&2
         sleep "$sleep_interval"
         ((elapsed += sleep_interval))
@@ -577,7 +577,7 @@ upload_to_onelake() {
 
   # Upload content
   local file_size
-  file_size=$(wc -c < "$local_file")
+  file_size=$(wc -c <"$local_file")
   local append_url="${base_url}/${remote_path}?action=append&position=0"
 
   response=$(curl -s -w "\n%{http_code}" -X PATCH "$append_url" \

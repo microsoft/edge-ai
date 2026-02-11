@@ -139,7 +139,7 @@ Everything you need to know:
 
 ## 🛠️ Quick Setup (Dev Container Recommended)
 
-**Prerequisites:** Docker, VS Code, and GitHub Copilot (seriously, this repo is optimized for AI-assisted development)
+**Prerequisites:** Docker, VS Code, GitHub Copilot, and the [HVE Core extension](https://marketplace.visualstudio.com/items?itemName=ise-hve-essentials.hve-core) (seriously, this repo is optimized for AI-assisted development)
 
 ```bash
 # Clone and open in VS Code

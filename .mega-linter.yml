@@ -18,6 +18,7 @@ ENABLE_LINTERS:
   # Shell scripts
   - BASH_EXEC
   - BASH_SHELLCHECK
+  - BASH_SHFMT
 
   # Infrastructure as Code
   - TERRAFORM_TERRAFORM_FMT
@@ -101,6 +102,9 @@ AZURE_COMMENT_REPORTER: true
 # LINTER SPECIFIC CONFIGURATION
 # ----------------------------------------
 
+# ShellCheck rc file
+BASH_SHELLCHECK_ARGUMENTS: "--rcfile .shellcheckrc"
+
 # Markdown Table Formatter configuration - treat warnings as errors
 MARKDOWN_MARKDOWN_TABLE_FORMATTER_DISABLE_ERRORS: false
 MARKDOWN_MARKDOWN_TABLE_FORMATTER_FILTER_REGEX_EXCLUDE: '(\.copilot-tracking/.*)'
@@ -117,6 +121,9 @@ TERRAFORM_TERRAFORM_FMT_ARGUMENTS: "-check -diff"
 TERRAFORM_TFLINT_UNSECURED_ENV_VARIABLES:
   - GITHUB_TOKEN
 
+# Secretlint configuration
+REPOSITORY_SECRETLINT_CONFIG_FILE: .secretlintrc.json
+
 # YAML Lint configuration
 YAML_YAMLLINT_CONFIG_FILE: .yamllint.yml
 YAML_YAMLLINT_FILTER_REGEX_EXCLUDE: '(\.github/ISSUE_TEMPLATE|charts/templates|charts/.*/templates/.*)'
@@ -130,9 +137,12 @@ POWERSHELL_POWERSHELL_CONFIG_FILE: PSScriptAnalyzerSettings.psd1
 
 # Dockerfile Hadolint configuration
 DOCKERFILE_HADOLINT_FILTER_REGEX_INCLUDE: "(src/500-application/.*/services/.*/Dockerfile)"
-DOCKERFILE_HADOLINT_ARGUMENTS: "--ignore SC1091 --failure-threshold warning"
 DOCKERFILE_HADOLINT_FILE_NAME: Dockerfile
 
 # Terrascan configuration (currently disabled)
 # TERRAFORM_TERRASCAN_CONFIG_FILE: .terrascan.toml
 # TERRAFORM_TERRASCAN_DISABLE_ERRORS: true
+
+# shfmt shell formatter configuration
+# Uses EditorConfig for base settings, --diff shows changes in CI
+BASH_SHFMT_ARGUMENTS: "--diff"

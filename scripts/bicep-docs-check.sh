@@ -64,12 +64,12 @@ echo "Checking for changes in README.md files ..."
 changed_files=$(git diff --name-only)
 docs_changed=false
 for file in $changed_files; do
-    if [[ $file == src/*/bicep/README.md || $file == blueprints/*/bicep/README.md ]]; then
-        if head -n 1 "$file" | grep -q "^<!-- <!-- BEGIN_BICEP_DOCS --> -->$"; then
-        echo "Updates required for: ./$file"
-        docs_changed=true
-        fi
+  if [[ $file == src/*/bicep/README.md || $file == blueprints/*/bicep/README.md ]]; then
+    if head -n 1 "$file" | grep -q "^<!-- <!-- BEGIN_BICEP_DOCS --> -->$"; then
+      echo "Updates required for: ./$file"
+      docs_changed=true
     fi
+  fi
 done
 echo "README.md files checked."
 echo $docs_changed

@@ -179,7 +179,7 @@ Have you achieved AI asset extraction excellence?
 ### Help Resources
 
 - **Task Implementation Instructions** (`.github/instructions/task-implementation.instructions.md`): Systematic execution methodology for complex implementation projects
-- **Task Planner Custom Agent** (`.github/agents/task-planner.agent.md`): AI-assisted systematic planning methodology and workflow guidance
+- **Task Planner Custom Agent** (available via [hve-core](https://github.com/microsoft/hve-core) extension): AI-assisted systematic planning methodology and workflow guidance
 - **Learning Kata Coach** (`.github/agents/learning-kata-coach.agent.md`): Interactive learning support with progress tracking and hints
 - **Shell Script Instructions** (`.github/instructions/shell.instructions.md`): Guidelines for Bash and PowerShell script development
 

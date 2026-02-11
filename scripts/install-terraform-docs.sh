@@ -65,15 +65,15 @@ compare_versions() {
   read -ra ver2 <<<"$v2"
 
   # Fill empty fields with zeros
-  for ((i=${#ver1[@]}; i<3; i++)); do
+  for ((i = ${#ver1[@]}; i < 3; i++)); do
     ver1[i]=0
   done
-  for ((i=${#ver2[@]}; i<3; i++)); do
+  for ((i = ${#ver2[@]}; i < 3; i++)); do
     ver2[i]=0
   done
 
   # Compare major, minor, and patch versions
-  for ((i=0; i<3; i++)); do
+  for ((i = 0; i < 3; i++)); do
     if [[ -z ${ver1[i]} ]]; then
       ver1[i]=0
     fi
@@ -108,9 +108,9 @@ is_newer_version() {
   local result=$?
 
   if [[ $result -eq 1 ]]; then
-    return 0  # version1 is newer
+    return 0 # version1 is newer
   else
-    return 1  # version1 is not newer
+    return 1 # version1 is not newer
   fi
 }
 
@@ -141,7 +141,7 @@ else
 fi
 
 # Check if terraform-docs is already installed
-if command -v terraform-docs &> /dev/null; then
+if command -v terraform-docs &>/dev/null; then
   echo "terraform-docs is already installed"
   INSTALLED_VERSION=$(terraform-docs --version | head -n 1 | cut -d ' ' -f 3)
   echo "Installed version: $INSTALLED_VERSION"
@@ -157,10 +157,10 @@ if command -v terraform-docs &> /dev/null; then
     # Detect architecture for update
     ARCH=$(uname -m)
     case $ARCH in
-      x86_64|amd64)
+      x86_64 | amd64)
         TERRAFORM_DOCS_ARCH="amd64"
         ;;
-      aarch64|arm64)
+      aarch64 | arm64)
         TERRAFORM_DOCS_ARCH="arm64"
         ;;
       *)
@@ -184,10 +184,10 @@ else
   # Detect architecture
   ARCH=$(uname -m)
   case $ARCH in
-    x86_64|amd64)
+    x86_64 | amd64)
       TERRAFORM_DOCS_ARCH="amd64"
       ;;
-    aarch64|arm64)
+    aarch64 | arm64)
       TERRAFORM_DOCS_ARCH="arm64"
       ;;
     *)
