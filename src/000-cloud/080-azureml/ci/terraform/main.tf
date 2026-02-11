@@ -31,12 +31,12 @@ data "azurerm_container_registry" "existing" {
 }
 
 data "azurerm_virtual_network" "existing" {
-  name                = "vnet-${var.resource_prefix}-aio-${var.environment}-${var.instance}"
+  name                = "vnet-${var.resource_prefix}-${var.environment}-${var.instance}"
   resource_group_name = data.azurerm_resource_group.existing.name
 }
 
 data "azurerm_network_security_group" "existing" {
-  name                = "nsg-${var.resource_prefix}-aio-${var.environment}-${var.instance}"
+  name                = "nsg-${var.resource_prefix}-${var.environment}-${var.instance}"
   resource_group_name = data.azurerm_resource_group.existing.name
 }
 
