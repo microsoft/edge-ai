@@ -27,3 +27,6 @@ sha2 = "0.10"
 
 [workspace]
 resolver = "2"
+
+[profile.release]
+strip = true
