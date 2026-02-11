@@ -20,6 +20,22 @@ keywords:
 
 This guide covers testing strategies, validation procedures, and quality assurance practices for the AI on Edge Flagship Accelerator. Following these practices ensures reliable, secure, and maintainable infrastructure components.
 
+## Test Policy
+
+To maintain code quality and the OSSF Best Practices Badge, we enforce the following:
+
+1.  **New Functionality**: All new major functionality requires corresponding automated tests.
+2.  **Bug Fixes**: Bug fixes require regression tests that verify the fix.
+
+### Technology Requirements
+
+| Technology | Framework | Minimum Requirement |
+| :--- | :--- | :--- |
+| **Terraform** | native `terraform test` | One `.tftest.hcl` per component with `command = plan` |
+| **Rust** | `cargo test` | `#[cfg(test)]` module covering core logic |
+| **.NET** | xUnit / NUnit | Test project covering business logic |
+| **JavaScript** | vitest | Test file with 80% coverage threshold |
+
 ## Testing Philosophy
 
 The project follows a comprehensive testing approach:
