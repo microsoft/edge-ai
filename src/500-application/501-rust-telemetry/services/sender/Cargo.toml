@@ -32,3 +32,6 @@ opentelemetry-otlp = { version = "0.29", features = ["grpc-tonic"] }
 
 # Other
 async-trait = "0.1.88"
+
+[profile.release]
+strip = true
