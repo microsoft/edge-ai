@@ -79,3 +79,6 @@ features = ["gpu"]
 
 # Opt out of workspace - independent microservice with its own Cargo.lock
 [workspace]
+
+[profile.release]
+strip = true

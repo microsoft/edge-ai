@@ -34,3 +34,6 @@ futures-util = "0.3.31"
 opencv = { version = "0.94.4", features = ["videoio", "imgproc", "highgui", "clang-runtime"] }
 ffmpeg-next = "7.1.0"
 uuid = { version = "1.17.0", features = ["v4"] }
+
+[profile.release]
+strip = true

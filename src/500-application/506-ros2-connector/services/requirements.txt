@@ -8,7 +8,7 @@ werkzeug==3.1.5
 # Data processing and utilities
 numpy>=1.26.0
 opencv-python==4.10.0.84
-Pillow==10.4.0
+Pillow==12.1.1
 
 # System monitoring
 psutil==6.0.0
