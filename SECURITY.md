@@ -30,6 +30,20 @@ This information will help us triage your report more quickly.
 
 If you are reporting for a bug bounty, more complete reports can contribute to a higher bounty award. Please visit our [Microsoft Bug Bounty Program](https://aka.ms/security.md/msrc/bounty) page for more details about our active programs.
 
+## Vulnerability Response Timeline
+
+| Stage                           | Target SLA        | Notes                                         |
+|:--------------------------------|:------------------|:----------------------------------------------|
+| Initial acknowledgment          | 24 hours          | Via MSRC (existing)                           |
+| Severity assessment and triage  | 48 hours          | Assign severity, identify affected components |
+| Fix development (Critical/High) | 7–30 days         | Depending on complexity                       |
+| Fix development (Medium/Low)    | 90 days           | Standard remediation window                   |
+| Coordinated disclosure          | After fix release | Maximum 90-day disclosure window              |
+
+Timelines may vary based on complexity and coordination requirements with
+upstream dependencies. We commit to transparent communication throughout
+the process.
+
 ## Preferred Languages
 
 We prefer all communications to be in English.
