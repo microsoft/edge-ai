@@ -76,7 +76,7 @@ A good bug report shouldn't leave others needing to chase you up for more inform
 
 > You must never report security related issues, vulnerabilities or bugs including sensitive information to the issue tracker, or elsewhere in public. Instead sensitive bugs must be filed using [Report It Now](https://aka.ms/reportitnow).
 
-We use Azure DevOps issues to track bugs and errors. If you run into an issue with the project:
+We use GitHub Issues to track bugs and errors. If you run into an issue with the project:
 
 - Open an [Issue](https://github.com/microsoft/edge-ai/issues/new?template=bug_report.md). (Since we can't be sure at this point whether it is a bug or not, we ask you not to talk about a "bug" yet and not to label the issue as a "bug.")
 - Explain the behavior you would expect and the actual behavior.
@@ -114,10 +114,10 @@ Enhancement suggestions are tracked as [GitHub Issues](https://github.com/micros
 
 When contributing code to the project, please consider the following guidance:
 
-- Assign a workitem to yourself before beginning any effort, and set the item's status field accordingly.
+- Assign the GitHub Issue to yourself before beginning any effort, and set the item's status field accordingly.
 - If a work item for your contribution does not exist, [please file an issue](https://github.com/microsoft/edge-ai/issues/new/choose) first to engage the project's PO, TPM, or Tech Lead for guidance.
-- Commits (or at least one in a commit chain) should reference a User Story or Task item from the backlog for traceability.
-- When creating a PR, ensure descriptions use [Azure DevOps notation to close associated work items](https://learn.microsoft.com/azure/devops/repos/git/resolution-mentions?view=azure-devops).
+- Commits (or at least one in a commit chain) should reference the GitHub Issue using `Fixes #123` or `Closes #123` for traceability.
+- When creating a PR, ensure descriptions use [GitHub closing keywords](https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/linking-a-pull-request-to-an-issue).
 - All code PRs destined for the `main` branch will be reviewed by pre-determined reviewer groups that are automatically added to each PR.
 
 This project also includes a Dev Container for development work, and using that dev container is preferred, to ensure you are using the same toolchains and tool versions as other contributors. You can read more about the Dev Container in its [ReadMe](./.devcontainer/README.md).
