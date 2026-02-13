@@ -130,7 +130,7 @@ If you see issues with the documentation, please follow the [your first code con
 
 This project uses MegaLinter with numerous custom configured linters. These linters can be run locally to ensure that code reads the same across the project.
 
-For detailed information about our MegaLinter configuration, integration with our CI/CD pipeline, and available linters, please refer to our [MegaLinter documentation](./docs/build-cicd/pipelines/azure-devops/templates/megalinter-template.md).
+For detailed information about our MegaLinter configuration, integration with our CI/CD pipeline, and available linters, please refer to our [MegaLinter documentation](./docs/build-cicd/azure-pipelines/templates/megalinter-template.md).
 
 ### Development Environment
 
