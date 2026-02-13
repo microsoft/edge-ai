@@ -149,7 +149,7 @@ Refer to the [DevContainer README](./.devcontainer/README.md) for detailed infor
 
 ### Coding Conventions
 
-For detailed information about our coding standards, please refer to the [Coding Conventions](./docs/coding-conventions.md) document, which includes:
+For detailed information about our coding standards, please refer to the [Coding Conventions](./docs/contributing/coding-conventions.md) document, which includes:
 
 - Infrastructure as Code standards (Terraform and Bicep)
 - Git workflow practices including Conventional Commits
