@@ -115,7 +115,7 @@ Enhancement suggestions are tracked as [GitHub Issues](https://github.com/micros
 When contributing code to the project, please consider the following guidance:
 
 - Assign the GitHub Issue to yourself before beginning any effort, and set the item's status field accordingly.
-- If a work item for your contribution does not exist, [please file an issue](https://github.com/microsoft/edge-ai/issues/new/choose) first to engage the project's PO, TPM, or Tech Lead for guidance.
+- If an issue for your contribution does not exist, [please create one](https://github.com/microsoft/edge-ai/issues/new/choose) first to engage the project's PO, TPM, or Tech Lead for guidance.
 - Commits (or at least one in a commit chain) should reference the GitHub Issue using `Fixes #123` or `Closes #123` for traceability.
 - When creating a PR, ensure descriptions use [GitHub closing keywords](https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/linking-a-pull-request-to-an-issue).
 - All code PRs destined for the `main` branch will be reviewed by pre-determined reviewer groups that are automatically added to each PR.
