@@ -1,0 +1,21 @@
+{
+  "universe_usage_history": [
+    {
+      "assignment_id": "leak-detection-2026-02-16",
+      "universe": "Alien",
+      "timestamp": "2026-02-16T00:00:00Z"
+    }
+  ],
+  "assignment_cast_snapshots": {
+    "leak-detection-2026-02-16": {
+      "universe": "Alien",
+      "agent_map": {
+        "dallas": "Dallas",
+        "parker": "Parker",
+        "ripley": "Ripley",
+        "lambert": "Lambert"
+      },
+      "created_at": "2026-02-16T00:00:00Z"
+    }
+  }
+}

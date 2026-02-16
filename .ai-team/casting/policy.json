@@ -1,0 +1,16 @@
+{
+  "casting_policy_version": "1.1",
+  "allowlist_universes": [
+    "The Usual Suspects", "Reservoir Dogs", "Alien", "Ocean's Eleven",
+    "Arrested Development", "Star Wars", "The Matrix", "Firefly",
+    "The Goonies", "The Simpsons", "Breaking Bad", "Lost",
+    "Marvel Cinematic Universe", "DC Universe", "Monty Python",
+    "Doctor Who", "Attack on Titan", "The Lord of the Rings",
+    "Succession", "Severance", "Adventure Time", "Futurama",
+    "Seinfeld", "The Office", "Cowboy Bebop", "Fullmetal Alchemist",
+    "Stranger Things", "The Expanse", "Arcane", "Ted Lasso", "Dune"
+  ],
+  "universe_capacity": {
+    "Alien": 8
+  }
+}
