@@ -46,3 +46,4 @@
 - No axum dependency despite design proposal mention — health endpoint is minimal enough to avoid it
 
 📌 Team update (2025-07-17): leak-detection Terraform blueprint created with 14 modules; SSE connector hardcoded enabled, EventHub dataflows enabled, AKS/AzureML excluded — decided by Ripley
+📌 Team update (2025-07-16): DLQ policy is DROP — rate-limited alerts are silently dropped, no DLQ required. Parker's `TeamsError::RateLimited` return path in `send_card()` is confirmed correct — decided by Dallas (Carlos directed)

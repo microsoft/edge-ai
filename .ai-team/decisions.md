@@ -57,3 +57,34 @@
 
 **Status:** PROPOSED
 
+---
+
+### 2025-07-16: DLQ policy — DROP rate-limited alerts
+
+**By:** Dallas (resolving Lambert's test-plan question)
+
+**What:** Rate-limited alerts are silently dropped. No dead-letter queue (DLQ) or persistence layer is required. The current `TeamsError::RateLimited` return path in `send_card()` is the intended behavior.
+
+**Why:** Carlos directed "drop" when presented with the DLQ question. The leak-detection notification service is advisory — missed alerts are acceptable given the token-bucket rate limiter refills within 60 s. Adding a DLQ would increase infrastructure cost and complexity without meaningful safety benefit for this use case.
+
+**Status:** ACCEPTED
+
+---
+
+### 2025-07-17: Lambert test plan for leak detection accelerator
+
+**By:** Lambert (Tester)
+
+**What:** Comprehensive test plan created covering 511-teams-notification Rust service and leak-detection Terraform blueprint. 124 test cases across unit tests, integration tests, Terraform validation, security, performance, and acceptance criteria.
+
+**Artifacts:** `.ai-team/agents/dallas/test-plan.md`
+
+**Embedded decisions:**
+1. Rate limiter drop behavior documented as PERF-03 — validates current drop behavior as intended, not a defect.
+2. Integration test stack uses docker-compose — local mosquitto + mock webhook for reproducible E2E testing.
+3. Terraform tests restricted to plan-only — per project conventions.
+
+**Open questions resolved:** DLQ question answered by Dallas (DROP policy, see above).
+
+**Status:** PROPOSED
+
