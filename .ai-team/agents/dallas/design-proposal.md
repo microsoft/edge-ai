@@ -1,8 +1,8 @@
 # Leak Detection Accelerator — Design Proposal
 
 **Author:** Dallas (Lead Architect)
-**Date:** 2026-02-16
-**Status:** PROPOSED
+**Date:** 2026-02-17
+**Status:** PROPOSED (Revision 2)
 **Reviewer:** Carlos Sardo
 
 ---
@@ -16,15 +16,18 @@ The Leak Detection Accelerator delivers a production-ready, edge-native solution
 **Core delivery (Milestone 1):**
 
 1. Camera/sensor → edge AI inference → leak event generation
-2. Leak event → parallel fan-out to Media Capture, Edge-to-Cloud messaging, and Teams notification
-3. Cloud-side event archival, dashboards, and analytics
+2. Leak event → parallel fan-out to Media Capture and Edge-to-Cloud messaging
+3. Cloud-side Event Hub → Azure Logic App → Microsoft Teams Adaptive Card notification
+4. Cloud-side event archival, dashboards, and analytics
 
 **What's new:**
 
-- `511-teams-notification`: Rust microservice (the only greenfield application code)
-- Leak detection asset definitions in `111-assets`
-- A purpose-built `leak-detection` blueprint
-- Configuration tuning of existing components (509, 507, 503, 130)
+* Azure Logic App for Teams notification (cloud-side, triggered by Event Hub)
+* Leak detection asset definitions in `111-assets`
+* A purpose-built `leak-detection` blueprint
+* Configuration tuning of existing components (509, 507, 503, 130)
+
+**Architecture simplification (Revision 2):** The original design specified a Rust microservice (`511-teams-notification`) running on the edge for Teams notification. This revision replaces it with an Azure Logic App in the cloud, triggered by the Event Hub that already receives leak events via the 130-messaging dataflow. This eliminates a container build/deploy/maintain cycle on the edge, leverages built-in Logic App retry and connector capabilities, and reduces the edge workload footprint.
 
 ---
 
@@ -32,47 +35,38 @@ The Leak Detection Accelerator delivers a production-ready, edge-native solution
 
 ### 2.1 System Context Diagram
 
-```text
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│                              EDGE (K3s + Azure Arc)                            │
-│                                                                                │
-│  ┌──────────────┐    ┌──────────────┐    ┌──────────────────┐                  │
-│  │ Analytics     │SSE │ 509 SSE      │MQTT│ AIO MQTT Broker   │                 │
-│  │ Camera /      ├───►│ Connector    ├───►│ (aio-broker)      │                 │
-│  │ Sensor Array  │    │              │    │                    │                 │
-│  └──────────────┘    └──────────────┘    └────────┬───────────┘                 │
-│                                                   │                             │
-│                                          ┌────────▼───────────┐                 │
-│                                          │ 507 AI Inference    │                 │
-│                                          │ (ONNX / Candle)     │                 │
-│                                          │ Leak Detection Model│                 │
-│                                          └────────┬───────────┘                 │
-│                                                   │                             │
-│                                          ALERT_DLQC published                   │
-│                                          to leak alert topic                    │
-│                                                   │                             │
-│                          ┌────────────────────────┼──────────────────────┐      │
-│                          │                        │                      │      │
-│                 ┌────────▼────────┐    ┌──────────▼─────────┐  ┌────────▼─────┐│
-│                 │ 503 Media       │    │ 130 Edge Messaging  │  │ 511 Teams    ││
-│                 │ Capture Service │    │ (Dataflows)         │  │ Notification ││
-│                 │ RTSP → ACSA     │    │ MQTT → Event Hub    │  │ MQTT → Teams ││
-│                 └────────┬────────┘    └──────────┬─────────┘  └──────────────┘│
-│                          │                        │                             │
-└──────────────────────────┼────────────────────────┼─────────────────────────────┘
-                           │                        │
-                    ┌──────▼──────┐          ┌──────▼──────────┐
-                    │ Azure Blob  │          │ Azure Event Hub  │
-                    │ Storage     │          │ / Event Grid     │
-                    │ (video)     │          │ (leak events)    │
-                    └─────────────┘          └────────┬────────┘
-                                                      │
-                                             ┌────────▼────────┐
-                                             │ Cloud Analytics  │
-                                             │ Dashboards (020) │
-                                             │ Log Analytics    │
-                                             │ Grafana          │
-                                             └─────────────────┘
+```mermaid
+graph TD
+    subgraph EDGE["EDGE (K3s + Azure Arc)"]
+        CAM["Analytics Camera /<br/>Sensor Array"]
+        SSE["509 SSE Connector"]
+        BROKER["AIO MQTT Broker<br/>(aio-broker)"]
+        INFERENCE["507 AI Inference<br/>(ONNX / Candle)<br/>Leak Detection Model"]
+        MEDIA["503 Media Capture<br/>Service<br/>RTSP → ACSA"]
+        DATAFLOW["130 Edge Messaging<br/>(Dataflows)<br/>MQTT → Event Hub"]
+    end
+
+    subgraph CLOUD["CLOUD (Azure)"]
+        EVENTHUB["Azure Event Hub<br/>(040-messaging)"]
+        LOGICAPP["Azure Logic App<br/>Teams Notification<br/>(Event Hub → Teams)"]
+        TEAMS["Microsoft Teams<br/>Channel"]
+        BLOB["Azure Blob Storage<br/>(video evidence)"]
+        DASHBOARDS["Cloud Analytics<br/>Dashboards (020)<br/>Log Analytics / Grafana"]
+    end
+
+    CAM -- "SSE" --> SSE
+    SSE -- "MQTT" --> BROKER
+    BROKER --> INFERENCE
+    INFERENCE -- "ALERT_DLQC<br/>published to<br/>leak alert topic" --> MEDIA
+    INFERENCE -- "ALERT_DLQC" --> DATAFLOW
+    MEDIA --> BLOB
+    DATAFLOW --> EVENTHUB
+    EVENTHUB --> LOGICAPP
+    LOGICAPP -- "Adaptive Card" --> TEAMS
+    EVENTHUB --> DASHBOARDS
+
+    style EDGE fill:#1a1a2e,stroke:#0f3460,color:#e0e0e0
+    style CLOUD fill:#0f3460,stroke:#16213e,color:#e0e0e0
 ```
 
 ### 2.2 Edge Data Flow
@@ -91,10 +85,12 @@ The edge data flow follows a strict sequential pipeline with a terminal fan-out:
              Topic: alerts/{facility}/{device_id}/leak/dlqc
              Payload: ALERT_DLQC JSON (see §4)
 
-4. FAN-OUT:  Three independent subscribers on the leak alert topic:
-             a) 503-media-capture-service → captures RTSP evidence
-             b) 130-messaging dataflow   → routes to Event Hub
-             c) 511-teams-notification   → sends Teams Adaptive Card
+4. FAN-OUT:  Two independent subscribers on the leak alert topic:
+             a) 503-media-capture-service → captures RTSP evidence → Blob Storage
+             b) 130-messaging dataflow   → routes to Event Hub (cloud)
+
+5. NOTIFY:   Event Hub → Azure Logic App → Microsoft Teams Adaptive Card
+             (cloud-side, triggered by Event Hub consumer group)
 ```
 
 **Latency budget (target):**
@@ -103,15 +99,16 @@ The edge data flow follows a strict sequential pipeline with a terminal fan-out:
 |-------|--------|-------|
 | SSE → MQTT ingestion | < 50ms | Network + connector overhead |
 | MQTT → Inference result | < 250ms | Candle: 155ms, ONNX: 220ms typical |
-| ALERT_DLQC → Teams notification | < 2s | Webhook HTTP call + retry |
 | ALERT_DLQC → Media capture start | < 500ms | Ring buffer already recording |
 | ALERT_DLQC → Event Hub delivery | < 1s | Dataflow passthrough |
-| **Total: Camera → Teams** | **< 3s** | End-to-end detection + notification |
+| Event Hub → Logic App → Teams | < 3s | Logic App trigger + webhook call |
+| **Total: Camera → Teams** | **< 5s** | End-to-end detection + notification |
 
 ### 2.3 Cloud Data Flow
 
 ```text
 Event Hub (leak events)
+    ├─→ Azure Logic App → Teams Adaptive Card notification
     ├─→ Azure Stream Analytics / Functions → PostgreSQL (035) time-series storage
     ├─→ Log Analytics Workspace (020) → KQL dashboards
     └─→ Grafana (020) → operational dashboards and alerting rules
@@ -120,17 +117,16 @@ Blob Storage (video evidence)
     └─→ Indexed by event_id for forensic retrieval
 ```
 
-Cloud-side processing is out of scope for Milestone 1 but the pipeline is already wired — the 130-messaging dataflows and 503-media-capture ACSA sync handle delivery.
+Cloud-side processing beyond Logic App notification is out of scope for Milestone 1 but the pipeline is already wired — the 130-messaging dataflows and 503-media-capture ACSA sync handle delivery.
 
 ### 2.4 Component Interaction Map
 
 ```text
-Component                Source Path                                     Role
+Component                Source Path / Resource                          Role
 ─────────────────────────────────────────────────────────────────────────────────────
 509-sse-connector        src/500-application/509-sse-connector/          Event source (SSE → MQTT)
 507-ai-inference         src/500-application/507-ai-inference/           Leak detection model host
 503-media-capture        src/500-application/503-media-capture-service/  Evidence capture (RTSP → ACSA)
-511-teams-notification   src/500-application/511-teams-notification/     Teams alerting (NEW)
 110-iot-ops              src/100-edge/110-iot-ops/                       AIO platform (MQTT broker, Akri)
 111-assets               src/100-edge/111-assets/                       Device Registry definitions
 130-messaging            src/100-edge/130-messaging/                     Edge-to-cloud data transport
@@ -138,6 +134,7 @@ Component                Source Path                                     Role
 010-security-identity    src/000-cloud/010-security-identity/            Key Vault, identities, RBAC
 030-data                 src/000-cloud/030-data/                         Schema Registry, ADR, Storage
 040-messaging            src/000-cloud/040-messaging/                    Event Hub / Event Grid (cloud)
+Azure Logic App          Azure resource (cloud)                          Teams notification (NEW)
 ```
 
 ---
@@ -152,14 +149,16 @@ Component                Source Path                                     Role
 
 **Source:** `src/500-application/509-sse-connector/`
 
+**Protocol distinction (509 vs 508):** The SSE connector (509) and Media connector (508) serve complementary purposes using different AIO connector types. The SSE connector handles **structured JSON event data** via Server-Sent Events (endpoint type `Microsoft.SSE`) — this is how ALERT_DLQC events with 18+ structured fields (confidence, flow rate, mass, location, weather) are ingested. The Media connector (508) handles **RTSP binary data** (snapshots, video clips, streams from IP cameras) via the Media connector type. These are separate AIO portal connector types (ONVIF, Media, HTTP/REST, SSE, MQTT) and cannot substitute for each other.
+
 **Configuration changes for leak detection:**
 
-- Deploy with `should_enable_akri_sse_connector = true` in the blueprint
-- Configure SSE endpoint URL to point at leak detection cameras
-- Map event topics in asset definitions:
-  - `HEARTBEAT` → `events/{facility}/{device_id}/camera/heartbeat`
-  - `ALERT` → `alerts/{facility}/{device_id}/leak/basic`
-  - `ALERT_DLQC` → `alerts/{facility}/{device_id}/leak/dlqc`
+* Deploy with `should_enable_akri_sse_connector = true` in the blueprint
+* Configure SSE endpoint URL to point at leak detection cameras
+* Map event topics in asset definitions:
+  * `HEARTBEAT` → `events/{facility}/{device_id}/camera/heartbeat`
+  * `ALERT` → `alerts/{facility}/{device_id}/leak/basic`
+  * `ALERT_DLQC` → `alerts/{facility}/{device_id}/leak/dlqc`
 
 **No code changes required.** Configuration via Terraform asset definitions and Akri connector settings.
 
@@ -171,11 +170,11 @@ Component                Source Path                                     Role
 
 **Configuration for leak detection:**
 
-- Deploy a trained leak detection model (ONNX format) to the model directory
-- Set `MODEL_DIRECTORY` to point at the leak detection model
-- Configure MQTT subscription topic to match camera raw data topic
-- Set `TOPIC_PREFIX` to `alerts/{facility}/{device_id}/leak` so inference results publish to the correct alert topic
-- The `TopicRouter` (in `src/500-application/507-ai-inference/services/ai-edge-inference/src/topic_router.rs`) already supports priority-based routing based on inference confidence
+* Deploy a trained leak detection model (ONNX format) to the model directory
+* Set `MODEL_DIRECTORY` to point at the leak detection model
+* Configure MQTT subscription topic to match camera raw data topic
+* Set `TOPIC_PREFIX` to `alerts/{facility}/{device_id}/leak` so inference results publish to the correct alert topic
+* The `TopicRouter` (in `src/500-application/507-ai-inference/services/ai-edge-inference/src/topic_router.rs`) already supports priority-based routing based on inference confidence
 
 **No code changes required.** Model deployment + environment configuration only.
 
@@ -187,11 +186,11 @@ Component                Source Path                                     Role
 
 **Configuration for leak detection:**
 
-- Subscribe to `alerts/{facility}/+/leak/dlqc` for capture triggers
-- Configure RTSP stream URLs matching the leak detection cameras
-- Set capture window: 30 seconds pre-event (ring buffer) + 60 seconds post-event
-- ACSA configuration for cloud sync to a `leak-evidence` blob container
-- Video filename pattern: `{facility}_{device_id}_{event_id}_{timestamp}.mp4`
+* Subscribe to `alerts/{facility}/+/leak/dlqc` for capture triggers
+* Configure RTSP stream URLs matching the leak detection cameras
+* Set capture window: 30 seconds pre-event (ring buffer) + 60 seconds post-event
+* ACSA configuration for cloud sync to a `leak-evidence` blob container
+* Video filename pattern: `{facility}_{device_id}_{event_id}_{timestamp}.mp4`
 
 **No code changes required.** MQTT topic subscription + ACSA configuration.
 
@@ -203,10 +202,11 @@ Component                Source Path                                     Role
 
 **Configuration for leak detection:**
 
-- Use the EventHub dataflow module (`modules/eventhub/main.tf`): source `alerts/#/leak/dlqc` → destination Event Hub
-- Set `should_create_eventhub_dataflows = true` in the blueprint
-- MQTT source topic filter: `alerts/+/+/leak/dlqc`
-- Data transformation: PassThrough (the ALERT_DLQC schema is already well-structured)
+* Use the EventHub dataflow module (`modules/eventhub/main.tf`): source `alerts/#/leak/dlqc` → destination Event Hub
+* Set `should_create_eventhub_dataflows = true` in the blueprint
+* MQTT source topic filter: `alerts/+/+/leak/dlqc`
+* Data transformation: PassThrough (the ALERT_DLQC schema is already well-structured)
+* The Event Hub is the trigger source for the Logic App — no additional edge plumbing required
 
 **No code changes required.** Terraform variable configuration.
 
@@ -218,443 +218,183 @@ Component                Source Path                                     Role
 
 **Configuration for leak detection:**
 
-- `should_enable_akri_sse_connector = true` — enables the SSE connector for camera integration
-- Optional: `should_enable_akri_media_connector = true` for additional RTSP camera discovery
-- Optional: `should_enable_akri_onvif_connector = true` for ONVIF IP camera management
-- `should_create_anonymous_broker_listener = false` in production (mTLS enforced)
-- Registry endpoints configured for ACR pull of leak detection container images
+* `should_enable_akri_sse_connector = true` — enables the SSE connector for camera integration
+* Optional: `should_enable_akri_media_connector = true` for additional RTSP camera discovery
+* Optional: `should_enable_akri_onvif_connector = true` for ONVIF IP camera management
+* `should_create_anonymous_broker_listener = false` in production (mTLS enforced)
+* Registry endpoints configured for ACR pull of leak detection container images
 
 **No code changes required.** Feature flags in blueprint variables.
 
 ---
 
-### 3.2 New Implementation: 511-teams-notification
+### 3.2 New Implementation: Azure Logic App (Teams Notification)
 
-**Source:** `src/500-application/511-teams-notification/`
-**Status:** Empty scaffold — full implementation required
+**Resource type:** `Microsoft.Logic/workflows` (Azure Logic App — Consumption or Standard)
+**Deployment:** Terraform (`azurerm_logic_app_workflow`) or Bicep, as part of the leak-detection blueprint
+**Status:** Replaces the previously designed `511-teams-notification` Rust microservice
 
-#### 3.2.1 Service Architecture
+> **Disposition of `src/500-application/511-teams-notification/`:** The existing scaffold directory is not deleted by this design revision. Disposition is deferred to Carlos. The directory contains an implemented Rust service that is no longer part of the architecture — no blueprint module references it.
 
-A Rust microservice following the canonical AIO SDK pattern from `501-rust-telemetry`. The service:
+#### 3.2.1 Architecture Rationale
 
-1. Connects to the AIO MQTT Broker using `MqttConnectionSettingsBuilder::from_environment()`
-2. Subscribes to leak alert topics (`alerts/+/+/leak/dlqc`)
-3. Deserializes `ALERT_DLQC` payloads
-4. Formats Microsoft Teams Adaptive Cards with severity-coded alert information
-5. Posts to Teams Incoming Webhook URLs via HTTPS
-6. Handles rate limiting, deduplication, and retry logic
-7. Exposes health and readiness HTTP endpoints
-8. Publishes OpenTelemetry traces for end-to-end observability
+The 130-messaging dataflow already routes ALERT_DLQC events from the MQTT broker to Event Hub in the cloud. A Logic App subscribes to that same Event Hub — no new edge-to-cloud plumbing is needed. Benefits:
 
-#### 3.2.2 Directory Structure
+* **No edge container to build, deploy, or maintain** — eliminates Rust build pipeline, Dockerfile, Helm chart, ACR image
+* **Built-in retry and error handling** — Logic App provides configurable retry policies per action
+* **Native Teams connector** — Logic App has a first-party Microsoft Teams connector (or Incoming Webhook action)
+* **Azure Monitor integration** — run history, diagnostic logs, and alerts out of the box
+* **Managed identity authentication** — accesses Event Hub and Key Vault via system-assigned managed identity
+
+#### 3.2.2 Workflow Definition
+
+The Logic App workflow consists of five actions:
 
 ```text
-src/500-application/511-teams-notification/
-├── README.md
-├── docker-compose.yaml
-├── charts/
-│   └── teams-notification/
-│       ├── Chart.yaml
-│       ├── values.yaml
-│       └── templates/
-│           ├── _helpers.tpl
-│           ├── deployment.yaml
-│           └── service.yaml
-└── services/
-    └── teams-notification/
-        ├── Cargo.toml
-        ├── Dockerfile
-        └── src/
-            ├── main.rs
-            ├── config.rs
-            ├── alert.rs          # ALERT_DLQC deserialization
-            ├── teams.rs          # Teams webhook client
-            ├── adaptive_card.rs  # Adaptive Card builder
-            ├── dedup.rs          # Deduplication cache
-            ├── health.rs         # Health endpoint
-            └── otel.rs           # OpenTelemetry setup
+1. TRIGGER:  Event Hub trigger (When events are available)
+             - Consumer group: leak-notifications
+             - Event Hub: from 040-messaging module output
+             - Batch size: 1 (process events individually)
+
+2. PARSE:    Parse JSON action
+             - Content: trigger body (ALERT_DLQC payload)
+             - Schema: §4 ALERT_DLQC schema
+
+3. DERIVE:   Condition / Switch action — severity from confidence_level
+             - 80–100 → CRITICAL (Attention style)
+             - 60–79  → HIGH (Warning style)
+             - 40–59  → MEDIUM (Accent style)
+             - 0–39   → LOW (Good style)
+
+4. BUILD:    Compose action — Adaptive Card JSON
+             - Uses parsed fields and derived severity
+             - Template matches the canonical design (see §3.2.3)
+
+5. SEND:     HTTP action — POST to Teams Incoming Webhook URL
+             - URL: retrieved from Key Vault via managed identity
+             - Content-Type: application/json
+             - Body: Adaptive Card payload
 ```
 
-#### 3.2.3 MQTT Subscription Pattern
+#### 3.2.3 Adaptive Card Template
 
-```rust
-use azure_iot_operations_mqtt::{
-    session::{Session, SessionManagedClient, SessionOptionsBuilder},
-    MqttConnectionSettingsBuilder,
-};
-use azure_iot_operations_protocol::{
-    application::ApplicationContextBuilder,
-    telemetry,
-};
+The Logic App composes the same Adaptive Card format used across the system:
 
-const DEFAULT_TOPIC: &str = "alerts/+/+/leak/dlqc";
-
-#[tokio::main(flavor = "current_thread")]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    setup_otel_tracing("teams-notification");
-
-    let config = Config::from_env();
-
-    let connection_settings = MqttConnectionSettingsBuilder::from_environment()
-        .unwrap()
-        .build()
-        .unwrap();
-
-    let session_options = SessionOptionsBuilder::default()
-        .connection_settings(connection_settings)
-        .build()?;
-
-    let session = Session::new(session_options)?;
-    let exit_handle = session.create_exit_handle();
-
-    let application_context = ApplicationContextBuilder::default().build()?;
-
-    let receiver_options = telemetry::receiver::OptionsBuilder::default()
-        .topic_pattern(&config.topic)
-        .auto_ack(true)
-        .build()?;
-
-    let mut receiver: telemetry::Receiver<AlertPayload, _> = telemetry::Receiver::new(
-        application_context.clone(),
-        session.create_managed_client(),
-        receiver_options,
-    )?;
-
-    let teams_client = TeamsClient::new(&config);
-    let dedup_cache = DedupCache::new(config.dedup_window_secs);
-    let health_service = HealthService::new(config.health_port);
-
-    tokio::select! {
-        r = alert_processing_loop(&mut receiver, &teams_client, &dedup_cache) => {
-            r.map_err(|e| e as Box<dyn std::error::Error>)?
+```json
+{
+  "type": "message",
+  "attachments": [{
+    "contentType": "application/vnd.microsoft.card.adaptive",
+    "content": {
+      "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+      "type": "AdaptiveCard",
+      "version": "1.4",
+      "body": [
+        {
+          "type": "Container",
+          "style": "@{severity_style}",
+          "items": [{
+            "type": "TextBlock",
+            "text": "LEAK DETECTED — @{severity_label} — Event #@{event_id}",
+            "weight": "Bolder",
+            "size": "Large",
+            "wrap": true
+          }]
         },
-        r = session.run() => r?,
-        r = health_service.serve() => r?,
+        {
+          "type": "FactSet",
+          "facts": [
+            {"title": "Camera ID", "value": "@{camera_id}"},
+            {"title": "Confidence", "value": "@{confidence_level}%"},
+            {"title": "Flow Rate", "value": "@{flow_rate} @{unit}"},
+            {"title": "Mass", "value": "@{mass} @{mass_unit}"},
+            {"title": "Location", "value": "@{leak_lat}°, @{leak_lon}°"},
+            {"title": "Temperature", "value": "@{temperature}° @{temperature_unit}"},
+            {"title": "Wind", "value": "@{wind_speed} @{wind_speed_unit} at @{wind_direction}°"},
+            {"title": "Humidity", "value": "@{humidity}%"},
+            {"title": "Timestamp", "value": "@{timestamp}"}
+          ]
+        }
+      ]
     }
-
-    receiver.shutdown().await?;
-    exit_handle.try_exit().await?;
-    Ok(())
+  }]
 }
 ```
 
-#### 3.2.4 Alert Payload Deserialization
+#### 3.2.4 Severity Derivation
 
-```rust
-use serde::{Deserialize, Serialize};
+Implemented as a Logic App Switch action on the parsed `confidence_level` field:
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AlertDlqc {
-    #[serde(rename = "type")]
-    pub event_type: String,
-    pub timestamp: u64,
-    pub message: String,
-    pub event_id: u64,
-    pub camera_id: u32,
-    pub leak_location: GeoLocation,
-    pub camera_location: GeoLocation,
-    pub flow_rate: f64,
-    pub unit: String,
-    pub mass: f64,
-    pub mass_unit: String,
-    pub confidence_level: u32,
-    pub camera_orientation: u32,
-    pub depression_angle: u32,
-    pub wind_speed: f64,
-    pub wind_speed_unit: String,
-    pub wind_direction: u32,
-    pub temperature: f64,
-    pub temperature_unit: String,
-    pub humidity: u32,
-}
+| `confidence_level` | Severity | `severity_style` | `severity_label` |
+|---------------------|----------|-------------------|-------------------|
+| 80–100 | CRITICAL | Attention | CRITICAL |
+| 60–79 | HIGH | Warning | HIGH |
+| 40–59 | MEDIUM | Accent | MEDIUM |
+| 0–39 | LOW | Good | LOW |
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GeoLocation {
-    pub longitude: f64,
-    pub latitude: f64,
-}
+This is the same derivation table used across all components (§4).
 
-impl AlertDlqc {
-    pub fn severity(&self) -> AlertSeverity {
-        match self.confidence_level {
-            80..=100 => AlertSeverity::Critical,
-            60..=79  => AlertSeverity::High,
-            40..=59  => AlertSeverity::Medium,
-            _        => AlertSeverity::Low,
-        }
-    }
-}
+#### 3.2.5 Rate Limiting and Deduplication
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum AlertSeverity {
-    Critical,
-    High,
-    Medium,
-    Low,
-}
+* **Concurrency control:** Logic App trigger concurrency set to `1` — processes one event at a time, preventing burst flooding
+* **Event Hub consumer group:** Dedicated `leak-notifications` consumer group prevents interference with other consumers
+* **Event Hub sequence-based dedup:** Logic App tracks the Event Hub sequence number; replayed events from the same partition are idempotent
+* **Stateful workflow (optional):** For advanced dedup, use a Standard Logic App with stateful workflow to maintain a sliding window of processed `event_id` values
+* **Teams connector rate limit:** Logic App concurrency of 1 inherently throttles to well below the Teams webhook rate limit
 
-impl AlertSeverity {
-    pub fn color(&self) -> &'static str {
-        match self {
-            AlertSeverity::Critical => "Attention",
-            AlertSeverity::High     => "Warning",
-            AlertSeverity::Medium   => "Accent",
-            AlertSeverity::Low      => "Good",
-        }
-    }
-
-    pub fn label(&self) -> &'static str {
-        match self {
-            AlertSeverity::Critical => "CRITICAL",
-            AlertSeverity::High     => "HIGH",
-            AlertSeverity::Medium   => "MEDIUM",
-            AlertSeverity::Low      => "LOW",
-        }
-    }
-}
-```
-
-#### 3.2.5 Teams Webhook Integration (Adaptive Card)
-
-The service posts to a Microsoft Teams Incoming Webhook URL using the Adaptive Card schema:
-
-```rust
-use reqwest::Client;
-use serde_json::json;
-
-pub struct TeamsClient {
-    http_client: Client,
-    webhook_url: String,
-    max_retries: u32,
-    retry_delay_ms: u64,
-}
-
-impl TeamsClient {
-    pub fn new(config: &Config) -> Self {
-        Self {
-            http_client: Client::builder()
-                .timeout(std::time::Duration::from_secs(10))
-                .build()
-                .expect("HTTP client creation"),
-            webhook_url: config.teams_webhook_url.clone(),
-            max_retries: config.max_retries,
-            retry_delay_ms: config.retry_delay_ms,
-        }
-    }
-
-    pub async fn send_alert(&self, alert: &AlertDlqc) -> Result<(), TeamsError> {
-        let card = self.build_adaptive_card(alert);
-
-        for attempt in 0..=self.max_retries {
-            match self.http_client
-                .post(&self.webhook_url)
-                .header("Content-Type", "application/json")
-                .json(&card)
-                .send()
-                .await
-            {
-                Ok(response) if response.status().is_success() => return Ok(()),
-                Ok(response) if response.status() == 429 => {
-                    // Rate limited — respect Retry-After header
-                    let retry_after = response
-                        .headers()
-                        .get("Retry-After")
-                        .and_then(|v| v.to_str().ok())
-                        .and_then(|v| v.parse::<u64>().ok())
-                        .unwrap_or(self.retry_delay_ms / 1000);
-                    tokio::time::sleep(
-                        std::time::Duration::from_secs(retry_after)
-                    ).await;
-                    continue;
-                }
-                Ok(response) => {
-                    tracing::warn!(
-                        status = %response.status(),
-                        attempt,
-                        "Teams webhook returned non-success status"
-                    );
-                }
-                Err(e) => {
-                    tracing::warn!(error = %e, attempt, "Teams webhook request failed");
-                }
-            }
-            if attempt < self.max_retries {
-                let backoff = self.retry_delay_ms * 2u64.pow(attempt);
-                tokio::time::sleep(std::time::Duration::from_millis(backoff)).await;
-            }
-        }
-        Err(TeamsError::MaxRetriesExceeded)
-    }
-
-    fn build_adaptive_card(&self, alert: &AlertDlqc) -> serde_json::Value {
-        let severity = alert.severity();
-        json!({
-            "type": "message",
-            "attachments": [{
-                "contentType": "application/vnd.microsoft.card.adaptive",
-                "contentUrl": null,
-                "content": {
-                    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
-                    "type": "AdaptiveCard",
-                    "version": "1.4",
-                    "body": [
-                        {
-                            "type": "Container",
-                            "style": severity.color(),
-                            "items": [
-                                {
-                                    "type": "TextBlock",
-                                    "text": format!(
-                                        "🚨 LEAK DETECTED — {} — Event #{}",
-                                        severity.label(),
-                                        alert.event_id
-                                    ),
-                                    "weight": "Bolder",
-                                    "size": "Large",
-                                    "wrap": true
-                                }
-                            ]
-                        },
-                        {
-                            "type": "FactSet",
-                            "facts": [
-                                {"title": "Camera ID", "value": format!("{}", alert.camera_id)},
-                                {"title": "Confidence", "value": format!("{}%", alert.confidence_level)},
-                                {"title": "Flow Rate", "value": format!("{:.2} {}", alert.flow_rate, alert.unit)},
-                                {"title": "Mass", "value": format!("{:.2} {}", alert.mass, alert.mass_unit)},
-                                {"title": "Location", "value": format!(
-                                    "{:.4}°, {:.4}°",
-                                    alert.leak_location.latitude,
-                                    alert.leak_location.longitude
-                                )},
-                                {"title": "Temperature", "value": format!(
-                                    "{:.1}° {}",
-                                    alert.temperature,
-                                    alert.temperature_unit
-                                )},
-                                {"title": "Wind", "value": format!(
-                                    "{:.1} {} at {}°",
-                                    alert.wind_speed,
-                                    alert.wind_speed_unit,
-                                    alert.wind_direction
-                                )},
-                                {"title": "Humidity", "value": format!("{}%", alert.humidity)},
-                                {"title": "Timestamp", "value": format!("{}", alert.timestamp)}
-                            ]
-                        }
-                    ]
-                }
-            }]
-        })
-    }
-}
-```
-
-#### 3.2.6 Rate Limiting and Deduplication
-
-```rust
-use std::collections::HashMap;
-use std::time::{Duration, Instant};
-
-pub struct DedupCache {
-    seen: HashMap<u64, Instant>,
-    window: Duration,
-}
-
-impl DedupCache {
-    pub fn new(window_secs: u64) -> Self {
-        Self {
-            seen: HashMap::new(),
-            window: Duration::from_secs(window_secs),
-        }
-    }
-
-    /// Returns true if this event_id has NOT been seen within the dedup window.
-    pub fn check_and_insert(&mut self, event_id: u64) -> bool {
-        self.evict_expired();
-        if self.seen.contains_key(&event_id) {
-            false
-        } else {
-            self.seen.insert(event_id, Instant::now());
-            true
-        }
-    }
-
-    fn evict_expired(&mut self) {
-        let cutoff = Instant::now() - self.window;
-        self.seen.retain(|_, ts| *ts > cutoff);
-    }
-}
-```
-
-Rate limiting strategy:
-- **Per-camera rate limit:** Maximum 1 notification per camera per 30 seconds (configurable via `RATE_LIMIT_WINDOW_SECS`)
-- **Global rate limit:** Maximum 10 notifications per minute across all cameras (configurable via `GLOBAL_RATE_LIMIT_PER_MIN`)
-- **Dedup window:** Default 60 seconds — duplicate `event_id` values within this window are silently dropped
-
-#### 3.2.7 Error Handling and Retry
+#### 3.2.6 Error Handling and Retry
 
 | Error | Behavior |
 |-------|----------|
-| MQTT connection lost | AIO SDK auto-reconnect with exponential backoff |
-| Teams webhook 429 (rate limited) | Respect `Retry-After` header, then retry |
-| Teams webhook 5xx | Exponential backoff: 500ms, 1s, 2s, 4s (max 3 retries) |
-| Teams webhook 4xx (non-429) | Log error, drop message (bad request = bug in card format) |
-| Deserialization failure | Log warning with payload, skip message, continue processing |
-| Health endpoint failure | Log error, service still processes alerts (health is non-critical) |
+| Event Hub trigger failure | Logic App runtime auto-retries with exponential backoff |
+| JSON parse failure | Run fails; visible in Logic App run history; event skipped |
+| Teams webhook 429 (rate limited) | Logic App retry policy: fixed interval 30s, max 3 retries |
+| Teams webhook 5xx | Logic App retry policy: exponential backoff, max 4 retries |
+| Teams webhook 4xx (non-429) | Run marked failed; no retry (bad request = template issue) |
+| Key Vault secret retrieval failure | Logic App retry policy applies; falls back to cached value if available |
 
-#### 3.2.8 Health Endpoints
+#### 3.2.7 Deployment Options
 
-```text
-GET /health     → 200 OK { "status": "healthy", "uptime_secs": N }
-GET /readiness  → 200 OK { "status": "ready", "mqtt_connected": true, "last_alert_secs_ago": N }
+**Terraform (preferred):**
+
+```terraform
+resource "azurerm_logic_app_workflow" "teams_notification" {
+  name                = "${var.resource_prefix}-leak-teams-notify"
+  location            = var.location
+  resource_group_name = module.cloud_resource_group.resource_group.name
+
+  identity {
+    type = "SystemAssigned"
+  }
+
+  tags = local.common_tags
+}
 ```
 
-Implemented with `axum` (lightweight, tokio-native). Kubernetes liveness and readiness probes point here.
+**Bicep (alternative):**
 
-#### 3.2.9 Configuration (Environment Variables)
-
-| Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `TEAMS_WEBHOOK_URL` | Yes | — | Teams Incoming Webhook URL |
-| `TOPIC` | No | `alerts/+/+/leak/dlqc` | MQTT topic pattern |
-| `HEALTH_PORT` | No | `8080` | Health endpoint port |
-| `MAX_RETRIES` | No | `3` | Max webhook retry attempts |
-| `RETRY_DELAY_MS` | No | `500` | Base retry delay (exponential) |
-| `DEDUP_WINDOW_SECS` | No | `60` | Event deduplication window |
-| `RATE_LIMIT_WINDOW_SECS` | No | `30` | Per-camera rate limit window |
-| `GLOBAL_RATE_LIMIT_PER_MIN` | No | `10` | Max alerts/minute globally |
-| `RUST_LOG` | No | `info` | Log level |
-| `OTEL_EXPORTER_OTLP_ENDPOINT` | No | — | OTLP endpoint for tracing |
-
-All AIO MQTT connection variables (`AIO_MQ_*`, `AIO_BROKER_*`) are handled by `MqttConnectionSettingsBuilder::from_environment()`.
-
-#### 3.2.10 Cargo.toml Dependencies
-
-```toml
-[package]
-name = "teams-notification"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-tokio = { version = "1.14.0", features = ["full"] }
-azure_iot_operations_protocol = { version = "0.9.0", registry = "aio-sdks" }
-azure_iot_operations_mqtt = { version = "0.9.0", registry = "aio-sdks" }
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-reqwest = { version = "0.12", features = ["json", "rustls-tls"], default-features = false }
-tracing = { version = "0.1", features = ["std", "attributes"] }
-tracing-subscriber = { version = "0.3", features = ["env-filter", "registry", "std", "fmt"] }
-tracing-opentelemetry = "0.30"
-opentelemetry = { version = "0.29" }
-opentelemetry_sdk = { version = "0.29", features = ["rt-tokio"] }
-opentelemetry-otlp = { version = "0.29", features = ["grpc-tonic"] }
-axum = "0.8"
-
-[profile.release]
-strip = true
+```bicep
+resource logicApp 'Microsoft.Logic/workflows@2019-05-01' = {
+  name: '${resourcePrefix}-leak-teams-notify'
+  location: location
+  identity: {
+    type: 'SystemAssigned'
+  }
+  properties: {
+    definition: workflowDefinition
+  }
+}
 ```
+
+The Logic App can be deployed as part of a new cloud component or integrated into the existing `040-messaging` module. Architectural recommendation: create a lightweight Terraform module within the leak-detection blueprint or add to `040-messaging` as a conditional resource.
+
+#### 3.2.8 Teams Connector Configuration
+
+Two options for Teams integration:
+
+1. **Incoming Webhook (recommended for Milestone 1):** Webhook URL stored in Key Vault (`teams-webhook-url` secret). Logic App retrieves it via managed identity at workflow execution time using a Key Vault "Get secret" action.
+
+2. **Logic App Teams connector (future):** Uses the built-in Microsoft Teams connector action "Post adaptive card in a chat or channel." Requires OAuth consent and a service account. More robust but adds identity management overhead.
 
 ---
 
@@ -905,7 +645,22 @@ module "edge_messaging" {
 
   should_create_eventhub_dataflows = true
 }
+
+# ── Cloud-side Notification ──────────────────────────────────
+# Logic App for Teams notification, triggered by Event Hub.
+# Can be implemented as an inline resource or a dedicated module.
+# See §3.2.7 for Terraform resource definition.
 ```
+
+#### Logic App Deployment Note
+
+The Logic App (`azurerm_logic_app_workflow`) is a cloud-side resource. It can be:
+
+1. **Inline in the blueprint** — defined directly in `main.tf` as a resource with role assignments for Event Hub and Key Vault
+2. **Part of `040-messaging`** — added as a conditional resource within the cloud messaging module (gated by `should_create_teams_notification = true`)
+3. **A new cloud component** — a dedicated `041-notification` or similar module
+
+Recommendation: start inline in the blueprint for Milestone 1 and extract to a reusable module if other blueprints need it.
 
 #### Key Differences from full-single-node-cluster
 
@@ -920,12 +675,13 @@ module "edge_messaging" {
 | SSE Connector | Configurable | Always enabled |
 | Asset definitions | Generic OPC-UA | Leak detection camera assets |
 | Dataflows | All types configurable | EventHub always enabled |
+| Teams notification | Not included | Logic App (cloud-side) |
 
 ---
 
 ## 4. ALERT_DLQC Event Schema
 
-This is the **canonical contract** between all components. Every agent must use this schema exactly.
+This is the **canonical contract** between all components. Every agent must use this schema exactly. It is consumed by the SSE connector (509), the edge-to-cloud dataflow (130), and the Logic App workflow.
 
 **Source of truth:** `src/500-application/509-sse-connector/services/sse-server/events_simulator.py` (line 125)
 
@@ -991,7 +747,7 @@ This is the **canonical contract** between all components. Every agent must use 
 
 Components derive severity from `confidence_level`:
 
-| Range | Severity | Teams Card Color |
+| Range | Severity | Teams Card Style |
 |-------|----------|-----------------|
 | 80–100 | CRITICAL | Attention (red) |
 | 60–79 | HIGH | Warning (orange) |
@@ -1021,13 +777,6 @@ edge-ai/
 │               ├── basic                             # ALERT events (basic leak)
 │               └── dlqc                              # ALERT_DLQC (detailed leak)
 │
-├── notifications/                                    # Notification status
-│   └── {facility}/
-│       └── {device_id}/
-│           └── teams/
-│               ├── sent                              # Notification delivery confirmations
-│               └── failed                            # Notification failures
-│
 ├── media/                                            # Media capture lifecycle
 │   └── {facility}/
 │       └── {device_id}/
@@ -1052,7 +801,6 @@ edge-ai/
 | `events/+/+/camera/heartbeat` | 0 | Best-effort, periodic, loss-tolerant |
 | `alerts/+/+/leak/dlqc` | 1 | At-least-once: critical safety data |
 | `alerts/+/+/leak/basic` | 1 | At-least-once |
-| `notifications/+/+/teams/*` | 0 | Informational, loss-tolerant |
 | `media/+/+/capture/*` | 1 | At-least-once: evidence chain integrity |
 | `inference/+/+/vision/leak-detection/*` | 0 | High-volume metrics |
 
@@ -1062,9 +810,9 @@ edge-ai/
 |-----------|---------------|--------------|
 | 509-sse-connector | External SSE endpoint | `events/{f}/{d}/camera/*`, `alerts/{f}/{d}/leak/*` |
 | 507-ai-inference | `events/{f}/{d}/camera/raw` | `alerts/{f}/{d}/leak/dlqc`, `inference/{f}/{d}/vision/*` |
-| 511-teams-notification | `alerts/+/+/leak/dlqc` | `notifications/{f}/{d}/teams/sent\|failed` |
 | 503-media-capture | `alerts/+/+/leak/dlqc` | `media/{f}/{d}/capture/*` |
 | 130-messaging (dataflow) | `alerts/+/+/leak/dlqc` | → Event Hub (cloud) |
+| Logic App | Event Hub (cloud-side) | → Teams channel (HTTP webhook) |
 
 ---
 
@@ -1072,28 +820,28 @@ edge-ai/
 
 ### Edge-to-Cloud Authentication
 
-- **AIO MQTT Broker:** mTLS for all service-to-broker connections (Kubernetes SAT tokens for authentication, no anonymous listeners in production)
-- **Event Hub dataflow:** User-assigned Managed Identity (UAMI) for Kafka-protocol authentication — already configured in 130-messaging
-- **ACSA cloud sync:** Managed Identity for Blob Storage access — already configured in 503-media-capture
+* **AIO MQTT Broker:** mTLS for all service-to-broker connections (Kubernetes SAT tokens for authentication, no anonymous listeners in production)
+* **Event Hub dataflow:** User-assigned Managed Identity (UAMI) for Kafka-protocol authentication — already configured in 130-messaging
+* **ACSA cloud sync:** Managed Identity for Blob Storage access — already configured in 503-media-capture
 
 ### Webhook Security (Teams)
 
-- **Webhook URL storage:** The Teams Incoming Webhook URL must be stored in Azure Key Vault, retrieved at startup via AIO Secret Sync
-- **Secret name:** `teams-webhook-url`
-- **Key Vault reference:** The 010-security-identity component provisions the Key Vault; the blueprint wires it to AIO secret sync
-- **HTTPS only:** `reqwest` client enforces HTTPS for webhook calls (use `rustls-tls` backend, no OpenSSL dependency)
+* **Webhook URL storage:** The Teams Incoming Webhook URL is stored in Azure Key Vault
+* **Secret name:** `teams-webhook-url`
+* **Key Vault access:** Logic App system-assigned managed identity with Key Vault Secrets User role
+* **HTTPS only:** Logic App HTTP action enforces HTTPS for webhook calls
 
 ### MQTT TLS/mTLS
 
-- **Broker listener:** TLS with the AIO-provisioned CA certificate
-- **Client authentication:** Kubernetes Service Account Token (SAT) authentication, bound to a dedicated ServiceAccount for the teams-notification pod
-- **Topic authorization:** AIO BrokerAuthorization resource restricting `511-teams-notification` to subscribe on `alerts/#` and publish on `notifications/#` only
+* **Broker listener:** TLS with the AIO-provisioned CA certificate
+* **Client authentication:** Kubernetes Service Account Token (SAT) authentication for edge services
+* **Topic authorization:** AIO BrokerAuthorization resources restricting each service to its required topic scope
 
 ### Key Vault Integration
 
-| Secret | Component | Purpose |
-|--------|-----------|---------|
-| `teams-webhook-url` | 511-teams-notification | Teams Incoming Webhook URL |
+| Secret | Consumer | Purpose |
+|--------|----------|---------|
+| `teams-webhook-url` | Logic App (managed identity) | Teams Incoming Webhook URL |
 | AIO MQTT CA cert | All edge services | Broker TLS trust chain |
 | ACSA storage key | 503-media-capture | Cloud sync authentication |
 
@@ -1103,16 +851,18 @@ edge-ai/
 |----------|------|-------|---------|
 | AIO UAMI | Azure Event Hubs Data Sender | Event Hub namespace | Dataflow write |
 | AIO UAMI | Storage Blob Data Contributor | Storage account | ACSA media sync |
-| Secret Sync identity | Key Vault Secrets User | Key Vault | Runtime secret retrieval |
+| Secret Sync identity | Key Vault Secrets User | Key Vault | Edge runtime secret retrieval |
 | Arc onboarding SP | Kubernetes Cluster Admin | Subscription | Arc onboarding |
+| Logic App managed identity | Azure Event Hubs Data Receiver | Event Hub namespace | Logic App trigger consumer |
+| Logic App managed identity | Key Vault Secrets User | Key Vault | Webhook URL retrieval |
 
 ---
 
 ## 7. Observability
 
-### OpenTelemetry Tracing Spans
+### OpenTelemetry Tracing Spans (Edge)
 
-Every leak detection event should carry a distributed trace from detection to notification:
+Every leak detection event carries a distributed trace from detection to cloud delivery:
 
 ```text
 Trace: leak-detection-{event_id}
@@ -1123,10 +873,6 @@ Trace: leak-detection-{event_id}
 │   ├── span: inference/execute
 │   └── span: inference/postprocess
 ├── span: mqtt-broker/publish-alert            (AIO)
-├── span: teams-notification/receive-alert     (511)
-│   ├── span: teams/dedup-check
-│   ├── span: teams/build-adaptive-card
-│   └── span: teams/send-webhook
 ├── span: media-capture/trigger-capture        (503)
 │   ├── span: media/extract-buffer
 │   └── span: media/cloud-sync
@@ -1135,16 +881,28 @@ Trace: leak-detection-{event_id}
 
 The AIO SDK receiver automatically propagates trace context from MQTT message headers. The 501 pattern already demonstrates this with `handle_receive_trace()`.
 
+### Cloud Monitoring (Logic App)
+
+The Logic App provides built-in observability through Azure platform capabilities:
+
+| Signal | Source | Purpose |
+|--------|--------|---------|
+| Run history | Logic App blade (Azure Portal) | Per-execution success/failure, input/output inspection |
+| Diagnostic logs | Azure Monitor Diagnostic Settings | Workflow runtime and trigger events to Log Analytics |
+| Metrics | Azure Monitor Metrics | Runs started, succeeded, failed, latency |
+| Alerts | Azure Monitor Alert Rules | Notify on Logic App failure rate or latency threshold |
+| Application Insights | Optional integration | Distributed tracing across Logic App actions |
+
 ### Grafana Dashboards
 
 Ripley should deploy a Grafana dashboard (via 020-observability) with:
 
 | Panel | Metric | Alert Threshold |
 |-------|--------|-----------------|
-| Leak Events / Hour | Count of `ALERT_DLQC` events | > 50/hr → warning |
+| Leak Events / Hour | Count of `ALERT_DLQC` events on Event Hub | > 50/hr → warning |
 | Detection Latency | P95 duration: SSE receive → alert publish | > 500ms → warning |
-| Notification Latency | P95 duration: alert receive → Teams 200 OK | > 5s → critical |
-| Teams Webhook Errors | Count of non-2xx responses in sliding window | > 5/hr → warning |
+| Logic App Run Latency | P95 duration: Event Hub trigger → Teams post | > 5s → critical |
+| Logic App Failure Rate | Failed runs / total runs in sliding window | > 5% → warning |
 | Media Capture Success Rate | Captures completed / captures triggered | < 95% → warning |
 | Inference Confidence Distribution | Histogram of `confidence_level` values | Informational |
 | Active Cameras | Count of cameras with heartbeat in last 60s | < expected → critical |
@@ -1152,33 +910,37 @@ Ripley should deploy a Grafana dashboard (via 020-observability) with:
 ### Log Analytics Queries
 
 ```kql
-// Leak events in last 24 hours by severity
-ContainerLog
-| where LogEntry contains "ALERT_DLQC"
-| extend confidence = toint(extract("confidence_level\":(\\d+)", 1, LogEntry))
-| extend severity = case(
-    confidence >= 80, "CRITICAL",
-    confidence >= 60, "HIGH",
-    confidence >= 40, "MEDIUM",
-    "LOW"
-  )
-| summarize count() by severity, bin(TimeGenerated, 1h)
+// Leak events in last 24 hours by severity (from Event Hub diagnostic logs)
+AzureDiagnostics
+| where ResourceProvider == "MICROSOFT.EVENTHUB"
+| where Category == "OperationalLogs"
+| summarize EventCount = count() by bin(TimeGenerated, 1h)
 | render columnchart
 
-// Teams notification latency
-ContainerLog
-| where ContainerName == "teams-notification"
-| where LogEntry contains "webhook_duration_ms"
-| extend latency_ms = todouble(extract("webhook_duration_ms=(\\d+)", 1, LogEntry))
-| summarize percentile(latency_ms, 95) by bin(TimeGenerated, 5m)
+// Logic App notification latency and success rate
+AzureDiagnostics
+| where ResourceProvider == "MICROSOFT.LOGIC"
+| where Category == "WorkflowRuntime"
+| extend duration_ms = tolong(duration_s) * 1000
+| summarize
+    P95_Latency = percentile(duration_ms, 95),
+    SuccessRate = countif(status_s == "Succeeded") * 100.0 / count()
+  by bin(TimeGenerated, 5m)
+
+// Logic App failures for investigation
+AzureDiagnostics
+| where ResourceProvider == "MICROSOFT.LOGIC"
+| where status_s == "Failed"
+| project TimeGenerated, resource_workflowName_s, error_code_s, error_message_s
+| order by TimeGenerated desc
 ```
 
 ### SLA/SLO Targets
 
 | Metric | SLO | Measurement |
 |--------|-----|-------------|
-| Detection-to-notification latency | < 5 seconds (P95) | End-to-end trace duration |
-| Notification delivery success rate | > 99.5% | Teams webhook 2xx / total attempts |
+| Detection-to-notification latency | < 5 seconds (P95) | Event Hub ingestion time → Logic App completion |
+| Notification delivery success rate | > 99.5% | Logic App succeeded runs / total runs |
 | Detection model uptime | > 99.9% | Inference engine health check |
 | Event ingestion availability | > 99.9% | SSE connector health check |
 | Media capture success rate | > 95% | Captures completed / triggered |
@@ -1187,31 +949,26 @@ ContainerLog
 
 ## 8. Implementation Plan
 
-### 8.1 Phase 1 — Parker: 511-teams-notification
+### 8.1 Phase 1 — Logic App: Teams Notification
 
-Parker implements the Teams notification Rust microservice. This is the only greenfield application code.
+Deploy an Azure Logic App for Teams notification. This replaces the previously planned Rust microservice (511-teams-notification) and is significantly simpler to implement and maintain.
 
-**Prerequisite:** This design document (Parker reads §3.2, §4, §5 for contracts)
+**Prerequisite:** This design document (§3.2, §4 for schema and workflow definition)
 
-| # | Task | File Path | Notes |
-|---|------|-----------|-------|
-| 1 | Create Cargo.toml | `src/500-application/511-teams-notification/services/teams-notification/Cargo.toml` | Use deps from §3.2.10 |
-| 2 | Implement `main.rs` | `…/src/main.rs` | Follow 501 AIO SDK pattern (§3.2.3) |
-| 3 | Implement `config.rs` | `…/src/config.rs` | Env var parsing per §3.2.9 |
-| 4 | Implement `alert.rs` | `…/src/alert.rs` | ALERT_DLQC struct per §3.2.4, §4 |
-| 5 | Implement `teams.rs` | `…/src/teams.rs` | Webhook client per §3.2.5 |
-| 6 | Implement `adaptive_card.rs` | `…/src/adaptive_card.rs` | Adaptive Card builder per §3.2.5 |
-| 7 | Implement `dedup.rs` | `…/src/dedup.rs` | Per §3.2.6 |
-| 8 | Implement `health.rs` | `…/src/health.rs` | Axum health server per §3.2.8 |
-| 9 | Implement `otel.rs` | `…/src/otel.rs` | Copy pattern from 501 receiver |
-| 10 | Create Dockerfile | `…/Dockerfile` | Multi-stage Rust build |
-| 11 | Create docker-compose.yaml | `src/500-application/511-teams-notification/docker-compose.yaml` | Local dev with MQTT broker |
-| 12 | Create Helm chart | `src/500-application/511-teams-notification/charts/teams-notification/` | Deployment + Service |
-| 13 | Write README.md | `src/500-application/511-teams-notification/README.md` | Follow repo README conventions |
+| # | Task | Owner | Notes |
+|---|------|-------|-------|
+| 1 | Define Logic App workflow JSON (trigger, parse, switch, compose, HTTP) | Ripley | Per §3.2.2 workflow definition |
+| 2 | Create `azurerm_logic_app_workflow` Terraform resource in blueprint | Ripley | Per §3.2.7 |
+| 3 | Configure Event Hub trigger with `leak-notifications` consumer group | Ripley | Consumer group on 040-messaging Event Hub |
+| 4 | Build Adaptive Card template as Logic App Compose action | Ripley | Per §3.2.3 |
+| 5 | Configure Key Vault access for webhook URL (managed identity + role) | Ripley | Per §6 RBAC requirements |
+| 6 | Configure Logic App retry policies and concurrency settings | Ripley | Per §3.2.5, §3.2.6 |
+| 7 | Deploy and test end-to-end: Event Hub → Logic App → Teams | Ripley | Use 509 SSE simulator to generate events |
+| 8 | Configure Azure Monitor diagnostic settings for Logic App | Ripley | Per §7 cloud monitoring |
 
 ### 8.2 Phase 2 — Ripley: Leak Detection Blueprint & IaC
 
-Ripley creates the Terraform blueprint and asset definitions. Depends on Phase 1 being code-complete (for container image reference in Helm chart values).
+Ripley creates the Terraform blueprint and asset definitions. Can run in parallel with Phase 1.
 
 **Prerequisite:** This design document (Ripley reads §3.3, §3.4, §5, §6)
 
@@ -1231,22 +988,17 @@ Ripley creates the Terraform blueprint and asset definitions. Depends on Phase 1
 
 ### 8.3 Phase 3 — Lambert: Test Strategy
 
-Lambert designs and implements tests. Depends on Phase 1 code completion.
+Lambert designs and implements tests. Depends on Phase 2 completion.
 
 **Prerequisite:** This design document (Lambert reads §4, §5, §12)
 
 | # | Test Category | Scope | Approach |
 |---|---------------|-------|----------|
-| 1 | Unit: alert deserialization | `alert.rs` | Test ALERT_DLQC parsing, edge cases, malformed JSON |
-| 2 | Unit: severity derivation | `alert.rs` | Boundary values: 0, 39, 40, 59, 60, 79, 80, 100 |
-| 3 | Unit: Adaptive Card format | `adaptive_card.rs` | Validate JSON structure matches Teams schema |
-| 4 | Unit: dedup cache | `dedup.rs` | Window expiry, duplicate detection, eviction |
-| 5 | Unit: rate limiting | `dedup.rs` | Per-camera and global rate limits |
-| 6 | Integration: MQTT → Teams | Full service | Mock MQTT broker + mock webhook endpoint |
-| 7 | Integration: health endpoints | `health.rs` | HTTP GET /health and /readiness |
-| 8 | Terraform: blueprint plan | `blueprints/leak-detection/terraform/` | `command = plan` only |
-| 9 | Terraform: asset definitions | `src/100-edge/111-assets/` | Validate asset variables accepted |
-| 10 | E2E: detection pipeline | Full stack | SSE → broker → inference → alert → notification (manual verification guide) |
+| 1 | Terraform: blueprint plan | `blueprints/leak-detection/terraform/` | `command = plan` only |
+| 2 | Terraform: asset definitions | `src/100-edge/111-assets/` | Validate asset variables accepted |
+| 3 | Terraform: Logic App resource | Blueprint Logic App definition | Validate resource configuration in plan |
+| 4 | Integration: Logic App workflow | Logic App test run | Send test ALERT_DLQC event to Event Hub, verify Teams card |
+| 5 | E2E: detection pipeline | Full stack | SSE → broker → inference → alert → Event Hub → Logic App → Teams |
 
 ---
 
@@ -1254,13 +1006,13 @@ Lambert designs and implements tests. Depends on Phase 1 code completion.
 
 | Task | Agent | Inputs | Outputs | Dependencies |
 |------|-------|--------|---------|--------------|
-| 511-teams-notification service | Parker | §3.2, §4, §5 of this document; 501 receiver pattern | Rust service, Dockerfile, Helm chart, docker-compose, README | None |
-| Leak detection blueprint | Ripley | §3.4, §6 of this document; full-single-node-cluster reference | `blueprints/leak-detection/terraform/` full module set | None (parallel with Parker) |
+| Logic App workflow + Terraform | Ripley | §3.2 of this document | Logic App resource in blueprint | None |
+| Leak detection blueprint | Ripley | §3.4, §6 of this document; full-single-node-cluster reference | `blueprints/leak-detection/terraform/` full module set | None (parallel) |
 | Asset definitions (tfvars) | Ripley | §3.3 of this document; 111-assets variable schema | Example tfvars for leak detection assets | None (parallel) |
 | Grafana dashboard config | Ripley | §7 of this document; 020-observability patterns | Dashboard JSON / Terraform config | Blueprint completion |
-| Unit tests for 511 | Lambert | Parker's source code; §4 schema | Rust test modules | Phase 1 complete |
-| Integration tests for 511 | Lambert | Parker's complete service | Docker Compose test harness | Phase 1 complete |
+| Azure Monitor alerting | Ripley | §7 of this document | Alert rules for Logic App failures | Logic App deployment |
 | Terraform plan tests | Lambert | Ripley's blueprint | `.tftest.hcl` files (`command = plan`) | Phase 2 complete |
+| Integration test (Logic App) | Lambert | Ripley's Logic App | Test event → verify Teams card | Logic App deployed |
 | Code review of all work | Dallas | All outputs above | Approval or revision requests | Phases 1–3 complete |
 
 ---
@@ -1269,13 +1021,14 @@ Lambert designs and implements tests. Depends on Phase 1 code completion.
 
 | Risk | Impact | Likelihood | Mitigation |
 |------|--------|------------|------------|
-| Teams webhook URL expires or is rotated | Notifications stop | Medium | Store in Key Vault with rotation policy; monitor `notifications/*/teams/failed` topic |
-| Leak detection model accuracy insufficient | False positives flood Teams channel | High | Confidence threshold filtering (only notify on ≥40%); per-camera rate limiting |
+| Teams webhook URL expires or is rotated | Notifications stop | Medium | Store in Key Vault with rotation policy; Logic App run history shows failures immediately |
+| Leak detection model accuracy insufficient | False positives flood Teams channel | High | Confidence threshold filtering (only notify on ≥40%); Logic App concurrency control limits throughput |
 | SSE connector drops connection to camera | Event loss during reconnect | Medium | SSE client has built-in exponential backoff reconnection; heartbeat monitoring detects gaps |
 | MQTT broker restart causes message loss | In-flight ALERT_DLQC events dropped | Low | QoS 1 (at-least-once) with session persistence; AIO broker is HA |
-| Teams rate limiting (connector limit) | Notifications delayed during burst events | Medium | Global rate limit of 10/min; dedup cache; queue and batch during high-volume |
+| Logic App Consumption plan cold start | First notification delayed 1–3s on cold start | Medium | Use Standard plan for latency-sensitive deployments; Consumption plan acceptable for Milestone 1 |
+| Logic App connector/action limits | Throttled during sustained burst events | Low | Concurrency set to 1; Event Hub consumer group provides backpressure; Logic App Standard plan has higher limits |
 | Video evidence capture fails (RTSP timeout) | Missing forensic evidence | Medium | Ring buffer ensures pre-event capture exists; ACSA retry on cloud sync failure |
-| Network partition (edge ↔ cloud) | Events queued, cloud dashboards stale | Low | AIO dataflow buffering; store-and-forward when reconnected; edge has local monitoring |
+| Network partition (edge ↔ cloud) | Events queued, cloud dashboards stale, notifications delayed | Low | AIO dataflow buffering; store-and-forward when reconnected; edge has local monitoring |
 | Container image pull failure (ACR unreachable) | New service versions can't deploy | Low | ACR pull-through cache; pre-pull images on K3s node |
 | Inference engine OOM on small edge hardware | 507 pod evicted | Medium | Set Kubernetes resource limits; use Candle backend (lower memory footprint) |
 
@@ -1285,16 +1038,17 @@ Lambert designs and implements tests. Depends on Phase 1 code completion.
 
 The following are explicitly **out of scope** for this milestone:
 
-1. **Cloud-side analytics pipelines** — Stream Analytics, Functions, or Data Factory processing of leak events in the cloud. The data arrives in Event Hub; downstream consumption is a separate workstream.
+1. **Cloud-side analytics pipelines** — Stream Analytics, Functions, or Data Factory processing of leak events in the cloud. The Logic App handles notification only; downstream analytics consumption from Event Hub is a separate workstream.
 2. **Model training** — Training leak detection models via Azure ML (080-azureml). Milestone 1 assumes a pre-trained ONNX model is provided.
 3. **Multi-node cluster support** — This design targets a single-node K3s cluster. Multi-node HA is a future blueprint.
 4. **Fabric / Fabric RTI integration** — The dataflow module supports it, but it's not wired in the leak-detection blueprint.
-5. **Custom Teams bot** — We use a simple Incoming Webhook. A full Teams Bot Framework integration is out of scope.
+5. **Custom Teams bot** — We use a simple Incoming Webhook via Logic App. A full Teams Bot Framework integration is out of scope.
 6. **Mobile notifications** — Push notifications to mobile devices (beyond Teams mobile app).
 7. **Automated incident response** — Automated valve shutoff or process control actions. This is notification-only.
 8. **PostgreSQL time-series storage** — The 035-postgresql component exists but is not included in Phase 1.
 9. **VPN Gateway** — Optional in blueprint but not required for Milestone 1.
 10. **OPC-UA integration** — This design uses SSE-based cameras. OPC-UA sensor integration (pressure, flow sensors) is a future milestone.
+11. **Edge-side notification service** — The `511-teams-notification` Rust service is superseded by the cloud-side Logic App. The existing scaffold is retained but not deployed.
 
 ---
 
@@ -1304,11 +1058,12 @@ Step-by-step guide to verify the full pipeline end-to-end.
 
 ### Prerequisites
 
-- Leak detection blueprint deployed (`blueprints/leak-detection/terraform/`)
-- Teams Incoming Webhook URL configured in Key Vault
-- SSE server running (use the 509 simulator for testing)
-- `kubectl` access to the edge cluster
-- `mosquitto_sub` available (or use AIO MQTT client pod)
+* Leak detection blueprint deployed (`blueprints/leak-detection/terraform/`)
+* Teams Incoming Webhook URL configured in Key Vault (`teams-webhook-url` secret)
+* Logic App deployed with Event Hub trigger and Key Vault access
+* SSE server running (use the 509 simulator for testing)
+* `kubectl` access to the edge cluster
+* `mosquitto_sub` available (or use AIO MQTT client pod)
 
 ### Step 1: Verify SSE Connector is Receiving Events
 
@@ -1347,33 +1102,7 @@ kubectl logs -l app=ai-edge-inference -n azure-iot-operations --tail=20
 
 Expected: Inference results with confidence levels being published.
 
-### Step 4: Verify Teams Notification Delivery
-
-```bash
-# Check teams-notification pod
-kubectl get pods -n azure-iot-operations -l app=teams-notification
-
-# View notification logs
-kubectl logs -l app=teams-notification -n azure-iot-operations --tail=20
-```
-
-Expected: Logs showing `Alert received`, `Webhook sent successfully`, `event_id=NNNN`.
-
-**Manual verification:** Check the configured Teams channel for Adaptive Cards with leak detection information.
-
-### Step 5: Verify Media Capture
-
-```bash
-# Check media-capture pod
-kubectl get pods -n azure-iot-operations -l app=media-capture-service
-
-# Check captured files
-kubectl exec -it media-capture-pod -n azure-iot-operations -- ls -la /capture/
-```
-
-Expected: `.mp4` files with timestamps matching recent `ALERT_DLQC` events.
-
-### Step 6: Verify Edge-to-Cloud Dataflow
+### Step 4: Verify Edge-to-Cloud Dataflow
 
 ```bash
 # Check dataflow status
@@ -1386,20 +1115,50 @@ az eventhubs eventhub show --resource-group <rg> --namespace-name <ns> --name <e
 
 Expected: Incoming message count increasing in Event Hub.
 
-### Step 7: End-to-End Latency Check
+### Step 5: Verify Logic App — Teams Notification
+
+1. **Azure Portal:** Navigate to the Logic App resource → **Run history**
+2. Verify runs are triggering when ALERT_DLQC events arrive in Event Hub
+3. Check each run's status: `Succeeded` = Teams card was posted
+4. Click into a run to inspect: trigger input (ALERT_DLQC JSON), parse output, compose output (Adaptive Card), HTTP action response
+5. **Manual verification:** Check the configured Teams channel for Adaptive Cards with leak detection information (camera ID, confidence, flow rate, location, weather)
+
+If runs are failing:
 
 ```bash
-# Subscribe to notification confirmation topic
-kubectl exec -it mqtt-client -n azure-iot-operations -- \
-  mosquitto_sub --host aio-broker --port 18883 \
-  --username 'K8S-SAT' --pw $(cat /var/run/secrets/tokens/broker-sat) \
-  --cafile /var/run/certs/ca.crt \
-  --topic 'notifications/#' -v
+# Check Logic App diagnostic logs in Log Analytics
+az monitor diagnostic-settings list --resource <logic-app-resource-id>
 ```
 
-Compare timestamps: `ALERT_DLQC.timestamp` vs. `notification sent` timestamp. Target: < 5 seconds.
+### Step 6: Verify Media Capture
+
+```bash
+# Check media-capture pod
+kubectl get pods -n azure-iot-operations -l app=media-capture-service
+
+# Check captured files
+kubectl exec -it media-capture-pod -n azure-iot-operations -- ls -la /capture/
+```
+
+Expected: `.mp4` files with timestamps matching recent `ALERT_DLQC` events.
+
+### Step 7: End-to-End Latency Check
+
+Compare timestamps:
+
+1. `ALERT_DLQC.timestamp` (event generation time)
+2. Event Hub `EnqueuedTimeUtc` (cloud arrival time)
+3. Logic App run completion time (Teams notification sent)
+
+Target: < 5 seconds from event generation to Teams notification.
+
+```bash
+# Check Event Hub metrics for ingestion latency
+az monitor metrics list --resource <eventhub-resource-id> \
+  --metric "IncomingMessages" --interval PT1M
+```
 
 ---
 
 *Prepared by Dallas (Lead Architect) for the Edge AI Leak Detection Accelerator.*
-*All code samples are illustrative for design purposes. Parker owns final implementation.*
+*Revision 2: 511-teams-notification replaced with Azure Logic App. 509 SSE connector retained (complementary to 508 Media connector).*

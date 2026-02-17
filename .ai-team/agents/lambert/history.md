@@ -17,4 +17,6 @@
 📌 Design deviation: health endpoints are /healthz and /readyz (raw TcpListener), not /health and /readiness (axum) as in design proposal
 📌 Design deviation: dedup key is composite (camera_id, event_id) not single (event_id) — improves cross-camera isolation
 📌 Team update (2025-07-16): DLQ policy is DROP — rate-limited alerts are silently dropped, no DLQ. Lambert's open question resolved; PERF-03 drop behavior is confirmed intended — decided by Dallas (Carlos directed)
+📌 Team update (2025-07-24): 511 Rust service superseded by Azure Logic App. Test strategy needs updating: no Rust unit/integration tests for 511, replace with Logic App integration tests (Event Hub trigger → Adaptive Card delivery). 13 Parker Rust tasks → 8 Ripley IaC tasks — decided by Dallas
+📌 Team update (2025-07-24): 509-sse-connector confirmed retained — complementary to 508 Media Connector. Existing test cases for 509 remain valid — decided by Dallas
 

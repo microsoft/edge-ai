@@ -38,3 +38,10 @@
 
 📌 Team update (2025-07-17): 511-teams-notification implemented with raw TcpListener health (no axum), composite dedup key (camera_id, event_id) — decided by Parker
 📌 Team update (2025-07-17): leak-detection Terraform blueprint created with 14 modules; SSE connector hardcoded enabled, EventHub dataflows enabled — decided by Ripley
+
+### 2026-02-17: Architecture Revision — 509 Stays, 511 → Azure Logic App
+
+* **509-sse-connector retained.** Analysis of AIO portal connector types confirmed SSE and Media are separate native connectors serving different data types. 508-media-connector handles RTSP binary data (snapshots, video clips, streams). 509-sse-connector handles structured JSON events via Server-Sent Events. ALERT_DLQC events are structured JSON with 18+ fields — SSE is the correct protocol. 508 cannot replace 509; they are complementary.
+* **511-teams-notification replaced with Azure Logic App.** The 130-messaging dataflow already routes ALERT_DLQC events from edge MQTT broker to Event Hub. A Logic App triggered by Event Hub eliminates the need for an edge Rust container. Benefits: no container build/deploy/maintain cycle, built-in retry and Teams connector, Azure Monitor integration, managed identity auth to Key Vault and Event Hub. The 511 directory is retained but no longer deployed.
+* **Design proposal updated (Revision 2).** All 12 sections updated: system context diagram moves notification to cloud tier, edge fan-out reduced from 3 to 2 subscribers, §3.2 rewritten from Rust microservice design to Logic App workflow design, MQTT topic hierarchy removes `notifications/` tree, security updated for Logic App managed identity, observability updated for Azure Monitor/Logic App run history, implementation plan simplified from 13 Rust tasks to 8 IaC tasks, delegation shifts from Parker to Ripley, risk register updated for Logic App-specific risks.
+* **Key simplification metric.** Original §3.2 was ~350 lines of Rust code samples and service architecture. Revised §3.2 is ~120 lines of Logic App workflow definition and deployment options. Fewer moving parts on the edge.

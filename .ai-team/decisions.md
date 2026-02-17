@@ -88,3 +88,54 @@
 
 **Status:** PROPOSED
 
+---
+
+### 2026-02-17: 509 SSE Connector retained — complementary to 508 Media Connector
+
+**By:** Dallas (Lead)
+
+**What:** After architecture review, the 509-sse-connector is confirmed as a required component. SSE and Media are separate AIO portal connector types serving different data types:
+
+* **509-sse-connector** uses `Microsoft.SSE` endpoint type for structured JSON event data (ALERT_DLQC with 18+ fields: confidence, flow rate, mass, location, weather)
+* **508-media-connector** uses the Media connector type for RTSP binary data (snapshots, video clips, camera streams)
+
+These are two of five distinct AIO connector types (ONVIF, Media, HTTP/REST, SSE, MQTT) and cannot substitute for each other. The leak detection pipeline requires both: SSE for event ingestion and Media for evidence capture.
+
+**Why:** There was a question about whether 509 duplicated the purpose of 508. Analysis of the AIO connector framework and the data types involved shows they are complementary. ALERT_DLQC events are structured JSON — SSE is the correct ingestion protocol. RTSP binary streams cannot carry structured event metadata, and SSE cannot carry binary video data.
+
+**Impact:** No changes required. 509 remains in the architecture, blueprint, and design proposal as originally specified. Design proposal §3.1.1 updated with a "Protocol distinction" paragraph documenting this rationale.
+
+**Status:** PROPOSED
+
+---
+
+### 2026-02-17: 511-teams-notification replaced with Azure Logic App
+
+**By:** Dallas (Lead)
+
+**What:** The `511-teams-notification` Rust microservice is replaced by an Azure Logic App (Consumption or Standard) running in the cloud. The Logic App is triggered by Event Hub (which already receives ALERT_DLQC events via the 130-messaging dataflow) and posts Adaptive Cards to Microsoft Teams via Incoming Webhook.
+
+**Why:** The 130-messaging dataflow already routes ALERT_DLQC events from the edge MQTT broker to Event Hub. A cloud-side Logic App subscribes to that Event Hub — no new edge-to-cloud plumbing is needed. Benefits:
+
+* No edge container to build, deploy, or maintain (eliminates Rust build pipeline, Dockerfile, Helm chart, ACR image)
+* Built-in retry and error handling via Logic App retry policies
+* Native Teams connector with webhook support
+* Azure Monitor integration (run history, diagnostic logs, alerts out of the box)
+* Managed identity authentication to Event Hub and Key Vault
+* Simpler operational model — fewer moving parts on the edge
+
+**Architecture changes:**
+
+* Design proposal updated to Revision 2 (all 12 sections modified)
+* Edge fan-out reduced from 3 to 2 subscribers (503-media-capture and 130-messaging only)
+* §3.2 rewritten from Rust microservice design (~350 lines) to Logic App workflow design (~120 lines)
+* MQTT topic hierarchy: `notifications/` tree removed
+* Security: Logic App system-assigned managed identity replaces edge SAT-based auth; two new RBAC roles added (Event Hubs Data Receiver, Key Vault Secrets User)
+* Observability: edge OTel spans for 511 removed; replaced with Azure Monitor / Logic App run history
+* Implementation plan Phase 1: 13 Parker Rust tasks replaced with 8 Ripley IaC tasks
+* Delegation: Logic App work assigned to Ripley (IaC), not Parker (App Dev)
+
+**Disposition of `src/500-application/511-teams-notification/`:** The existing directory and implemented Rust service are retained but no longer part of the architecture. No blueprint module references it. Disposition deferred to Carlos.
+
+**Status:** PROPOSED
+
