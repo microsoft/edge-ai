@@ -139,3 +139,10 @@ These are two of five distinct AIO connector types (ONVIF, Media, HTTP/REST, SSE
 
 **Status:** PROPOSED
 
+---
+
+### 2025-07-25: Logic App notification component created at 045-notification
+
+**By:** Ripley
+**What:** Created src/000-cloud/045-notification/terraform/ with 6 files (main.tf, variables.core.tf, variables.deps.tf, variables.tf, outputs.tf, versions.tf) plus CI config. Updated leak-detection blueprint (main.tf, variables.tf, outputs.tf) to include cloud_notification module.
+**Why:** Implements §3.2 of the design proposal — Azure Logic App for Teams leak detection notifications, replacing the previously planned 511 Rust service. Logic App uses SystemAssigned managed identity with Event Hubs Data Receiver and Key Vault Secrets User roles.

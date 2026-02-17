@@ -7,4 +7,9 @@
 *.docx binary
 *.jpg binary
 *.png binary
+# Squad: union merge for append-only team state files
+.ai-team/decisions.md merge=union
+.ai-team/agents/*/history.md merge=union
+.ai-team/log/** merge=union
+.ai-team/orchestration-log/** merge=union
 *.onnx filter=lfs diff=lfs merge=lfs -text

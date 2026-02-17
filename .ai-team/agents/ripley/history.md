@@ -41,3 +41,31 @@ Created the complete `blueprints/leak-detection/terraform/` blueprint with 6 fil
 📌 Team update (2025-07-24): 511-teams-notification Rust service replaced with Azure Logic App (cloud-side). Implementation tasks changed: 13 Parker Rust tasks → 8 Ripley IaC tasks. Logic App triggered by Event Hub, posts Adaptive Cards to Teams. Ripley owns Logic App IaC — decided by Dallas
 📌 Team update (2025-07-24): 509-sse-connector confirmed retained — complementary to 508 Media Connector. No blueprint changes needed — decided by Dallas
 
+## 2025-07-25: Created Logic App Notification Component (045-notification)
+
+### What
+
+Created `src/000-cloud/045-notification/terraform/` with 6 files:
+
+- **main.tf** — Logic App workflow with SystemAssigned identity, Event Hubs Data Receiver and Key Vault Secrets User role assignments
+- **variables.core.tf** — environment, resource_prefix (with regex validation), instance (default "001")
+- **variables.deps.tf** — resource_group, eventhub_namespace, key_vault dependency objects
+- **variables.tf** — should_assign_roles, tags, teams_webhook_secret_name optional vars
+- **outputs.tf** — logic_app output (id, name, identity_principal_id)
+- **versions.tf** — azurerm >= 4.51.0, azapi >= 2.3.0, terraform >= 1.9.8 < 2.0
+
+Created CI config at `src/000-cloud/045-notification/ci/terraform/main.tf` with mock resource IDs and `should_assign_roles = false`.
+
+Updated `blueprints/leak-detection/terraform/`:
+- **main.tf** — Added `module "cloud_notification"` after `cloud_messaging`, gated by `should_create_teams_notification`
+- **variables.tf** — Added `should_create_teams_notification` bool (default true)
+- **outputs.tf** — Added `notification` output section with `logic_app_name` and `logic_app_id`
+
+### Key Patterns
+
+- Followed 040-messaging file structure and naming conventions exactly
+- Logic App resource name: `la-${var.resource_prefix}-leak-notify-${var.environment}-${var.instance}`
+- Infrastructure-first approach: workflow shell + identity + roles; trigger/actions configured later
+- Role assignments gated by `should_assign_roles` count pattern
+- Blueprint uses `should_create_teams_notification` to gate role assignments (Logic App always created for workflow presence)
+

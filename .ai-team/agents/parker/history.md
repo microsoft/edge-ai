@@ -49,3 +49,4 @@
 📌 Team update (2025-07-16): DLQ policy is DROP — rate-limited alerts are silently dropped, no DLQ required. Parker's `TeamsError::RateLimited` return path in `send_card()` is confirmed correct — decided by Dallas (Carlos directed)
 📌 Team update (2025-07-24): 511-teams-notification Rust service is superseded by Azure Logic App (cloud-side). 13 Parker Rust tasks replaced with 8 Ripley IaC tasks. Existing 511 Rust code retained but no longer part of architecture. Disposition deferred to Carlos — decided by Dallas
 📌 Team update (2025-07-24): 509-sse-connector confirmed retained — complementary to 508 Media Connector (SSE for structured JSON, Media for RTSP binary). No changes needed — decided by Dallas
+📌 Team update (2025-07-25): Logic App notification component created at 045-notification — decided by Ripley

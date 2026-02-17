@@ -1,0 +1,90 @@
+// Leak detection SSE camera device and event asset definitions.
+// Copy these values into your .tfvars file or terraform.tfvars.
+
+namespaced_devices = [
+  {
+    name    = "leak-detection-camera"
+    enabled = true
+    endpoints = {
+      outbound = { assigned = {} }
+      inbound = {
+        "sse-leak-camera-endpoint" = {
+          endpoint_type = "Microsoft.SSE"
+          address       = "http://analytics-camera:8080/camera-events"
+          authentication = {
+            method = "Anonymous"
+          }
+        }
+      }
+    }
+  }
+]
+
+namespaced_assets = [
+  {
+    name         = "leak-detection-asset"
+    display_name = "Leak Detection Analytics Camera"
+    device_ref = {
+      device_name   = "leak-detection-camera"
+      endpoint_name = "sse-leak-camera-endpoint"
+    }
+    description  = "Analytics camera asset for leak detection with DLQC events"
+    manufacturer = "Site Analytics Corp"
+    model        = "LAC-5000"
+    enabled      = true
+    attributes = {
+      facility    = "plant-alpha"
+      zone        = "pipeline-section-3"
+      asset_class = "leak-detection"
+    }
+    event_groups = [
+      {
+        name = "leak_detection_events"
+        events = [
+          {
+            name        = "HEARTBEAT"
+            data_source = "ns=2;s=HeartbeatEvent"
+            destinations = [
+              {
+                target = "Mqtt"
+                configuration = {
+                  topic  = "events/plant-alpha/leak-cam-01/camera/heartbeat"
+                  retain = "Never"
+                  qos    = "Qos0"
+                }
+              }
+            ]
+          },
+          {
+            name        = "ALERT_DLQC"
+            data_source = "ns=2;s=AlertDlqcEvent"
+            destinations = [
+              {
+                target = "Mqtt"
+                configuration = {
+                  topic  = "alerts/plant-alpha/leak-cam-01/leak/dlqc"
+                  retain = "Never"
+                  qos    = "Qos1"
+                }
+              }
+            ]
+          },
+          {
+            name        = "ALERT"
+            data_source = "ns=2;s=AlertEvent"
+            destinations = [
+              {
+                target = "Mqtt"
+                configuration = {
+                  topic  = "alerts/plant-alpha/leak-cam-01/leak/basic"
+                  retain = "Never"
+                  qos    = "Qos1"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]
