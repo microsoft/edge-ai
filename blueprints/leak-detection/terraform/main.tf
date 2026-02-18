@@ -24,6 +24,8 @@ locals {
   }] : []
 
   combined_registry_endpoints = concat(var.registry_endpoints, local.acr_registry_endpoint)
+
+  iot_ops_path = "${path.module}/../../../src/100-edge/110-iot-ops"
 }
 
 // ── Cloud Foundation ──────────────────────────────────────────

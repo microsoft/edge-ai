@@ -26,9 +26,9 @@ RUN tdnf install -y \
 # Set shell options for better error handling with pipes
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-# Install Rust manually (needed for Rust 1.86+ for Azure IoT Operations crates)
+# Install Rust manually (needed for Rust 1.88+ for ort crate and Azure IoT Operations crates)
 RUN wget -q https://sh.rustup.rs -O /tmp/rustup.sh && \
-    bash /tmp/rustup.sh -y --profile minimal --default-toolchain 1.86.0 --component rustc,cargo,rust-std,rustfmt && \
+    bash /tmp/rustup.sh -y --profile minimal --default-toolchain 1.88.0 --component rustc,cargo,rust-std,rustfmt && \
     rm /tmp/rustup.sh
 
 # Add Rust binaries to PATH for subsequent RUN commands
