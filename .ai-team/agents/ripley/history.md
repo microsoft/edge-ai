@@ -104,6 +104,9 @@ Performed comprehensive IaC and deployment automation analysis covering 7 areas:
 
 - Decision inbox: `.ai-team/decisions/inbox/ripley-507-infra-analysis.md`
 
+📌 Team update (2025-07-25): ACR public network access must be enabled for `az acr build` workflows. The `cloud_acr` module defaults `publicNetworkAccess: "Disabled"` (secure-by-default) but ACR Build agents run on Microsoft-hosted VMs outside the VNet. Leak-detection deployment required `-var 'acr_public_network_access_enabled=true'`. Future options: ACR Tasks VNet integration (preview), dedicated agent pools, local build + docker push via private endpoint, or IP-restricted public access — noted by Scribe (Carlos directive)
+📌 Team update (2025-07-25): 507 Dockerfile incompatible with ACR Build dependency scanner — `FROM --platform=$BUILDPLATFORM tonistiigi/xx:master AS xx` causes `"failed to scan dependencies"` error. Cross-compilation scaffolding removed from Dockerfile. ACR Build Run ID `ch3` failed in 3s at scan phase. 509 (sse-server) built successfully. Third plan (`fullleakdet-edge3.tfplan`) pending apply — noted by Scribe (Carlos directive)
+
 📌 Team update (2025-07-15): 507-ai-inference automation gaps identified — blueprint integration delegated to Ripley (High priority). Helm chart conversion, health probes, base image migration assigned to Parker — decided by Parker
 📌 Team update (2025-07-15): 507 deployment automation — Hybrid approach recommended (CI/CD for Docker build/push, Terraform `terraform_data` for Kustomize deploy). Blueprint gains `should_deploy_ai_inference` feature flag — decided by Dallas
 

@@ -265,3 +265,5 @@ Build context: `src/500-application/503-media-capture-service/` (the entire comp
 7. **509 is stateless** — no volumes, no MQTT connection, just serves HTTP SSE
 8. **503 uses AIO MQTT SDK** (`azure_iot_operations_mqtt`) — needs SAT token + CA trust bundle volumes
 9. **For the leak-detection blueprint**, the TRIGGER_TOPICS for 503 must be set to the topics that carry leak alert events (from the 507/509 pipeline)
+
+📌 Team update (2025-07-25): 507 Dockerfile cross-compilation scaffolding (`FROM --platform=$BUILDPLATFORM tonistiigi/xx:master AS xx`, `COPY --from=xx / /`, `ARG TARGETPLATFORM`) removed for ACR Build compatibility. ACR Build's dependency scanner cannot parse `--platform=$BUILDPLATFORM` in FROM lines (static analysis, not runtime eval). No functional impact — cross-compilation not needed for ACR Build on amd64. File: `src/500-application/507-ai-inference/services/ai-edge-inference/Dockerfile` (modified, uncommitted). 503-media-capture-service Dockerfile cross-checked and already compatible — noted by Scribe (Carlos directive)
