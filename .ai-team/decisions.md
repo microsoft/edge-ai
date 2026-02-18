@@ -146,3 +146,59 @@ These are two of five distinct AIO connector types (ONVIF, Media, HTTP/REST, SSE
 **By:** Ripley
 **What:** Created src/000-cloud/045-notification/terraform/ with 6 files (main.tf, variables.core.tf, variables.deps.tf, variables.tf, outputs.tf, versions.tf) plus CI config. Updated leak-detection blueprint (main.tf, variables.tf, outputs.tf) to include cloud_notification module.
 **Why:** Implements §3.2 of the design proposal — Azure Logic App for Teams leak detection notifications, replacing the previously planned 511 Rust service. Logic App uses SystemAssigned managed identity with Event Hubs Data Receiver and Key Vault Secrets User roles.
+
+---
+
+### 2025-07-25: 507-ai-inference automation gaps identified
+
+**By:** Parker (Edge Developer)
+
+**What:** Deep analysis of `src/500-application/507-ai-inference/` revealed the service is fully implemented (dual ONNX/Candle backends, AIO SDK integration, Kustomize manifests, deploy script) but not wired into the leak-detection blueprint or any automated deployment path. The `industrial-safety.yaml` model config includes `"leak"` as a class label, confirming alignment with leak detection.
+
+**Gaps identified:**
+
+1. Blueprint integration — 507 not referenced in `blueprints/leak-detection/terraform/main.tf` (High)
+2. Helm vs Kustomize inconsistency — 507 is the only app using Kustomize; recommend conversion to Helm (Medium)
+3. Health probes disabled in `deployment.yaml` — commented out for debugging (High)
+4. Base image modernization — CBL-Mariner 2.0 should migrate to Azure Linux 3.0 (Medium)
+5. Model provisioning not automated (Medium)
+6. Hardcoded ACR references (Low)
+
+**Delegation:** Blueprint integration → Ripley (High), Helm chart conversion → Parker (Medium), Health probes → Parker (High), Base image migration → Parker (Medium), Model provisioning → Ripley + Parker (Medium), ACR parameterization → Parker (Low).
+
+**Status:** PROPOSED
+
+---
+
+### 2025-07-25: 507 AI inference edge deployment automation — Hybrid approach recommended
+
+**By:** Dallas (Lead Architect)
+
+**What:** The leak-detection blueprint deploys 15 Terraform modules but stops short of deploying the 507 AI inference workload. A "last mile" gap exists between Terraform-provisioned infrastructure and the running application. Evaluated 4 options:
+
+- **Option A (CI/CD Pipeline):** Build/push/deploy via pipeline after `terraform apply`. Clean separation but requires pipeline infrastructure.
+- **Option B (Terraform local-exec):** `terraform_data` with `local-exec` runs build/push/deploy during apply. Single command but slow and fragile.
+- **Option C (Arc GitOps/Flux):** `azurerm_kubernetes_flux_configuration` for declarative sync. Self-healing but heavyweight and still needs separate build/push.
+- **Option D (Hybrid — Recommended):** CI/CD pipeline handles Docker build and ACR push. Blueprint Terraform adds a `terraform_data` provisioner for Kustomize deploy via Arc proxy, reusing the existing `apply-scripts` pattern.
+
+**Key technical details:** Private ACR pull already wired via AIO registry endpoints. Arc proxy for kubectl access solved in `init-scripts.sh`. Blueprint gains `should_deploy_ai_inference` feature flag (default: `false`).
+
+**Status:** PROPOSED
+
+---
+
+### 2025-07-25: Infrastructure analysis for 507 application deployment
+
+**By:** Ripley (Infra Dev)
+
+**What:** Comprehensive infrastructure analysis for deploying leak detection containers to the edge K3s cluster. Covered 7 areas: dependency chain (14 modules), ACR configuration (Premium SKU, private endpoints, SystemAssignedManagedIdentity auth), Key Vault access (RBAC + Secret Sync Extension), networking (single VNet, private DNS zones), existing build/push patterns (all standalone bash scripts), Terraform execution patterns (`terraform_data`/`local-exec` and `helm_release`), and CI/CD patterns (Kalypso/Flux GitOps).
+
+**Decisions proposed:**
+
+- D1: Use `terraform_data` + `local-exec` for image build/push (follows `apply-scripts` pattern)
+- D2: Use `helm_release` for edge Helm deployments (follows `arc-agents` pattern)
+- D3: Set `should_include_acr_registry_endpoint = true` for leak detection (required for custom image pulls)
+- D4: Existing secret sync mechanism is sufficient — no additional IaC needed
+- D5: Document private ACR network prerequisites for Terraform executor
+
+**Status:** PROPOSED

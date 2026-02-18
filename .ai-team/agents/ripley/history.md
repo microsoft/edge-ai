@@ -69,3 +69,40 @@ Updated `blueprints/leak-detection/terraform/`:
 - Role assignments gated by `should_assign_roles` count pattern
 - Blueprint uses `should_create_teams_notification` to gate role assignments (Logic App always created for workflow presence)
 
+## 2025-07-25: Infrastructure Analysis for Application Deployment
+
+### What
+
+Performed comprehensive IaC and deployment automation analysis covering 7 areas: dependency chain, ACR config, Key Vault access, networking, existing Docker build/push patterns, CI/CD patterns, and concrete Terraform/IaC proposals.
+
+### Key Findings
+
+- **No Terraform Docker build/push exists** — all image builds are standalone bash scripts (503, 506, 507)
+- **`terraform_data` + `local-exec`** is the established pattern for script execution (apply-scripts, observability)
+- **`helm_release`** is the established pattern for Helm deployments (arc-agents module)
+- **ACR auth for AIO** uses `SystemAssignedManagedIdentity` via `registry-endpoints` module with AcrPull role
+- **`should_include_acr_registry_endpoint`** defaults to `false` — must be `true` for custom images
+- **Secret Sync Extension** handles KV→edge secrets — no additional IaC needed
+- **Private ACR** requires Terraform executor to have Azure CLI access for `az acr login`
+
+### File References
+
+- Registry endpoints: `src/100-edge/110-iot-ops/terraform/modules/registry-endpoints/main.tf`
+- Apply scripts: `src/100-edge/110-iot-ops/terraform/modules/apply-scripts/main.tf`
+- Arc agents helm: `src/100-edge/100-cncf-cluster/terraform/modules/arc-agents/main.tf`
+- Deploy scripts: `src/500-application/507-ai-inference/services/ai-edge-inference/scripts/deploy.sh`, `src/500-application/503-media-capture-service/scripts/deploy-media-capture-service.sh`
+
+### Decisions Proposed
+
+- D1: Use `terraform_data` + `local-exec` for image build/push (follows apply-scripts pattern)
+- D2: Use `helm_release` for edge Helm deployments (follows arc-agents pattern)
+- D3: Set `should_include_acr_registry_endpoint = true` for leak detection
+- D4: Existing secret sync mechanism is sufficient
+- D5: Document private ACR network prerequisites for Terraform executor
+
+### Artifact
+
+- Decision inbox: `.ai-team/decisions/inbox/ripley-507-infra-analysis.md`
+
+📌 Team update (2025-07-15): 507-ai-inference automation gaps identified — blueprint integration delegated to Ripley (High priority). Helm chart conversion, health probes, base image migration assigned to Parker — decided by Parker
+📌 Team update (2025-07-15): 507 deployment automation — Hybrid approach recommended (CI/CD for Docker build/push, Terraform `terraform_data` for Kustomize deploy). Blueprint gains `should_deploy_ai_inference` feature flag — decided by Dallas

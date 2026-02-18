@@ -47,3 +47,17 @@
 * **Key simplification metric.** Original §3.2 was ~350 lines of Rust code samples and service architecture. Revised §3.2 is ~120 lines of Logic App workflow definition and deployment options. Fewer moving parts on the edge.
 
 📌 Team update (2025-07-25): Logic App notification component created at 045-notification — decided by Ripley
+
+### 2025-07-25: 507 AI Inference Deployment Analysis Complete
+
+* **507 uses Kustomize, not Helm.** `charts/` directory contains Kustomize base (deployment.yaml, service.yaml, serviceaccount.yaml, pvc-models.yaml) with JSON Patch overlay via `gen-patch.sh`. This differs from 500-basic-inference and 503-media-capture-service which use Helm charts.
+* **deploy.sh is a 334-line imperative script.** Flow: `check_prerequisites` → `build_image` (docker build from parent dir for crate context) → `authenticate_acr` (az acr login) → `push_image` → `generate_patches` (gen-patch.sh) → `apply_manifests` (kubectl apply -k) → `restart_pods` → `wait_for_rollout` → `verify_deployment`. Supports `--build-only`, `--deploy-only`, `--skip-restart` flags.
+* **Docker build requires AIO SDK private feed credentials.** Dockerfile uses `aio-sdks` Azure DevOps Artifacts Cargo registry. The `USE_REPLACE_WITH` build arg controls whether crates.io is mirrored through the feed (for CI) or direct (for local dev).
+* **Private ACR image pull is already wired in IaC.** Blueprint's `acr_registry_endpoint` local creates an AIO registry endpoint with `SystemAssignedManagedIdentity` auth and `should_assign_acr_pull_for_aio = true`. Gated by `should_include_acr_registry_endpoint` variable (default: `false`).
+* **`apply-scripts` pattern exists in the codebase.** `110-iot-ops/terraform/modules/apply-scripts` uses `terraform_data` with `local-exec` provisioner, sourcing `init-scripts.sh` for Arc proxy management. The `dual-peered-single-node-cluster` blueprint copies this pattern for cross-cluster script execution.
+* **init-scripts.sh handles Arc proxy lifecycle (267 lines).** Manages `az connectedk8s proxy` with race condition fixes (temp file → atomic move), cleanup on exit/interrupt, optional Key Vault token auth, and namespace creation.
+* **Model download is from public GitHub.** `model-downloader-job.yaml` fetches ONNX models (tiny-yolov2, yolov4) from `github.com/onnx/models`. Incompatible with air-gapped environments.
+* **Recommended approach: Hybrid CI/CD Build + Terraform Deploy.** CI/CD pipeline builds and pushes Docker image (using `az acr build` for private ACR access). Blueprint adds a `terraform_data` provisioner module that deploys Kustomize manifests via Arc proxy, reusing the existing `apply-scripts` pattern. Decision filed at `.ai-team/decisions/inbox/dallas-507-inference-deployment-analysis.md`.
+
+📌 Team update (2025-07-15): 507-ai-inference automation gaps identified — 6 gaps including missing blueprint integration, disabled health probes, Kustomize/Helm inconsistency, outdated base image. Blueprint integration delegated to Ripley — decided by Parker
+📌 Team update (2025-07-15): Infrastructure analysis confirms `terraform_data` + `local-exec` for image build/push, `helm_release` for Helm deploys, `should_include_acr_registry_endpoint = true` required — decided by Ripley

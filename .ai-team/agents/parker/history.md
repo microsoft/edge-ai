@@ -50,3 +50,35 @@
 📌 Team update (2025-07-24): 511-teams-notification Rust service is superseded by Azure Logic App (cloud-side). 13 Parker Rust tasks replaced with 8 Ripley IaC tasks. Existing 511 Rust code retained but no longer part of architecture. Disposition deferred to Carlos — decided by Dallas
 📌 Team update (2025-07-24): 509-sse-connector confirmed retained — complementary to 508 Media Connector (SSE for structured JSON, Media for RTSP binary). No changes needed — decided by Dallas
 📌 Team update (2025-07-25): Logic App notification component created at 045-notification — decided by Ripley
+
+### 2025-07-25: 507-ai-inference deep technical analysis
+
+**Scope:** Full audit of 507-ai-inference and cross-comparison with all 11 application directories.
+
+**Key findings:**
+
+- **Build chain:** Multi-stage Dockerfile on CBL-Mariner 2.0 (SHA-pinned), Rust 1.88.0, dual backend via `BACKEND` build arg (`onnx` → ONNX Runtime 1.17.0, `candle` → pure Rust). Docker Compose context is `./services` so both crates are in scope. Binary name: `ai-edge-mqtt-publisher`.
+- **Deployment:** Kustomize-based (only app not using Helm). Base resources: Deployment, Service (8080 metrics, 8081 health), ServiceAccount, PVC (10Gi local-path). Overlay sets namespace `azure-iot-operations` and patches image via JSON Patch.
+- **Auth:** Projected SAT volume (audience `aio-internal`, 3600s expiry) + AIO CA trust bundle ConfigMap. Connects to `aio-broker.azure-iot-operations:18883` with TLS.
+- **Scripts:** `services/ai-edge-inference/scripts/deploy.sh` (334 lines) — full build→push→deploy pipeline. `charts/gen-patch.sh` (60 lines) — Kustomize patch generator.
+- **CI/CD:** `Application-Builder.ps1` (shared) detects `docker-compose.yaml` and builds. Pipeline builds and pushes but does NOT auto-deploy to edge.
+- **Model configs:** `industrial-safety.yaml` includes "leak" as a class label — confirms alignment with leak detection use case.
+
+**Gaps identified:**
+
+| Gap | Severity |
+|-----|----------|
+| Not referenced in leak-detection blueprint `main.tf` | High |
+| Health probes commented out in `deployment.yaml` | High |
+| CBL-Mariner 2.0 (old) vs Azure Linux 3.0 (current standard) | Medium |
+| Version-pinned OS packages that will break on updates | Medium |
+| Kustomize instead of Helm (inconsistent with other apps) | Medium |
+| Hardcoded `acrmodules01.azurecr.io` in deployment.yaml | Low |
+| No automated model provisioning | Medium |
+| Placeholder models in `resources/models/` | Low |
+
+**Report:** `.ai-team/agents/parker/507-analysis-report.md`
+**Decision proposal:** `.ai-team/decisions/inbox/507-inference-automation-gaps.md`
+
+📌 Team update (2025-07-15): 507 deployment automation — Hybrid approach recommended (CI/CD for Docker build/push, Terraform for Kustomize deploy via Arc proxy). Blueprint gains `should_deploy_ai_inference` feature flag — decided by Dallas
+📌 Team update (2025-07-15): Infrastructure analysis confirms `terraform_data` + `local-exec` for builds, `helm_release` for Helm deploys, ACR registry endpoint must be enabled — decided by Ripley
