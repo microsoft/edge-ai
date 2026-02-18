@@ -629,8 +629,18 @@ variable "should_include_acr_registry_endpoint" {
  * Tags
  */
 
-variable "tags" {
-  type        = map(string)
-  default     = {}
-  description = "Tags to apply to all resources in this blueprint"
+/*
+ * Edge Application Deployment
+ */
+
+variable "should_deploy_edge_applications" {
+  type        = bool
+  default     = false
+  description = "Whether to build and deploy edge applications (509-sse-connector, 507-ai-inference, 503-media-capture-service)"
+}
+
+variable "app_image_version" {
+  type        = string
+  default     = "latest"
+  description = "Container image tag for edge application builds"
 }

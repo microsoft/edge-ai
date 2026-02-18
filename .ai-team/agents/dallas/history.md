@@ -61,3 +61,13 @@
 
 📌 Team update (2025-07-15): 507-ai-inference automation gaps identified — 6 gaps including missing blueprint integration, disabled health probes, Kustomize/Helm inconsistency, outdated base image. Blueprint integration delegated to Ripley — decided by Parker
 📌 Team update (2025-07-15): Infrastructure analysis confirms `terraform_data` + `local-exec` for image build/push, `helm_release` for Helm deploys, `should_include_acr_registry_endpoint = true` required — decided by Ripley
+
+### 2025-07-25: Full Edge Application Deployment Plan (509 + 507 + 503)
+
+* **Grouped deployment architecture chosen.** Two `terraform_data` resources: one for ACR builds (no proxy), one for edge deployment (single Arc proxy session). Avoids three separate proxy lifecycle cycles. Matches existing `apply-scripts` pattern.
+* **ACSA extension principal_id is a prerequisite gap.** `109-arc-extensions/modules/container-storage` has `identity { type = "SystemAssigned" }` but never exposes `identity[0].principal_id` in outputs. Must be added to both the inner module and the parent 109 component outputs before `azurerm_role_assignment` can reference it.
+* **503 ACSA: hybrid Terraform + kubectl approach.** Storage container (`azurerm_storage_container`) and role assignment (`azurerm_role_assignment`) are native Terraform. PVC (`cloudBackedPVC.yaml`) and EdgeSubvolume (`mediaEdgeSubvolume.yaml`) stay as kubectl applies through Arc proxy — no Terraform provider for in-cluster CRDs.
+* **509 needs Kustomize manifests created from scratch.** No k8s manifests exist today. Following 507's Kustomize pattern (not Helm) — Deployment (port 8080, `/health` probe), Service (ClusterIP), kustomization.yaml, gen-patch.sh.
+* **`az acr build` for all three images.** Builds run in ACR compute, bypassing private networking. Build contexts: 509=`services/sse-server/` (self-contained Python), 507=`services/` (parent dir for sibling crate), 503=component root (Dockerfile at `services/media-capture-service/Dockerfile`, context=`./`). 503 is heaviest (~15-30 min: x264+FFmpeg+OpenCV from source).
+* **9-step implementation checklist.** (1) Expose ACSA principal_id, (2) Create 509 manifests, (3) Create acsa-storage module, (4) Create build script, (5) Create deploy script, (6-8) Update blueprint main/vars/outputs, (9) Validate.
+* Plan filed at `.ai-team/agents/dallas/507-503-509-deployment-plan.md`.

@@ -156,3 +156,24 @@ output "security_identity" {
     key_vault_uri  = try(module.cloud_security_identity.key_vault.vault_uri, "Not deployed")
   }
 }
+
+/*
+ * Edge Applications
+ */
+
+output "edge_applications" {
+  description = "Edge application deployment status and metadata."
+  value = var.should_deploy_edge_applications ? {
+    deployed      = true
+    image_version = var.app_image_version
+    acr_name      = module.cloud_acr.acr.name
+    storage = {
+      container_name = try(module.acsa_storage[0].storage_container_name, "Not deployed")
+    }
+    } : {
+    deployed      = false
+    image_version = null
+    acr_name      = null
+    storage       = null
+  }
+}

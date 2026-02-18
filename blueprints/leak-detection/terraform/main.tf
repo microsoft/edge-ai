@@ -279,3 +279,67 @@ module "edge_messaging" {
   should_create_eventhub_dataflows  = true
   should_create_eventgrid_dataflows = false
 }
+
+// ── Edge Application Deployment ──────────────────────────────
+
+module "acsa_storage" {
+  source = "./modules/acsa-storage"
+
+  count = var.should_deploy_edge_applications ? 1 : 0
+
+  depends_on = [module.edge_arc_extensions]
+
+  storage_account_id          = module.cloud_data.storage_account.id
+  acsa_extension_principal_id = module.edge_arc_extensions.container_storage_extension_principal_id
+}
+
+resource "terraform_data" "acr_image_builds" {
+  count = var.should_deploy_edge_applications ? 1 : 0
+
+  depends_on = [module.cloud_acr]
+
+  triggers_replace = var.app_image_version
+
+  provisioner "local-exec" {
+    command     = "${path.module}/../scripts/build-app-images.sh"
+    interpreter = ["/bin/bash", "-euo", "pipefail", "-c"]
+
+    environment = {
+      TF_ACR_NAME      = module.cloud_acr.acr.name
+      TF_IMAGE_VERSION = var.app_image_version
+      TF_APP_509_PATH  = "${path.module}/../../../src/500-application/509-sse-connector"
+      TF_APP_507_PATH  = "${path.module}/../../../src/500-application/507-ai-inference"
+      TF_APP_503_PATH  = "${path.module}/../../../src/500-application/503-media-capture-service"
+    }
+  }
+}
+
+resource "terraform_data" "edge_app_deployment" {
+  count = var.should_deploy_edge_applications ? 1 : 0
+
+  depends_on = [
+    terraform_data.acr_image_builds,
+    module.edge_iot_ops,
+    module.acsa_storage
+  ]
+
+  triggers_replace = var.app_image_version
+
+  provisioner "local-exec" {
+    command     = "source ${local.iot_ops_path}/scripts/init-scripts.sh && ${path.module}/../scripts/deploy-edge-apps.sh"
+    interpreter = ["/bin/bash", "-euo", "pipefail", "-c"]
+
+    environment = {
+      TF_CONNECTED_CLUSTER_NAME   = module.edge_cncf_cluster.arc_connected_cluster.name
+      TF_RESOURCE_GROUP_NAME      = module.cloud_resource_group.resource_group.name
+      TF_AIO_NAMESPACE            = "azure-iot-operations"
+      TF_MODULE_PATH              = path.module
+      TF_ACR_NAME                 = module.cloud_acr.acr.name
+      TF_IMAGE_VERSION            = var.app_image_version
+      TF_APP_509_PATH             = "${path.module}/../../../src/500-application/509-sse-connector"
+      TF_APP_507_PATH             = "${path.module}/../../../src/500-application/507-ai-inference"
+      TF_APP_503_PATH             = "${path.module}/../../../src/500-application/503-media-capture-service"
+      TF_STORAGE_ACCOUNT_ENDPOINT = module.cloud_data.storage_account.primary_blob_endpoint
+    }
+  }
+}

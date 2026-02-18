@@ -1,0 +1,20 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: azure-iot-operations
+
+resources:
+  - ./base
+
+patches:
+  - target:
+      group: apps
+      version: v1
+      kind: Deployment
+      name: sse-server
+    path: patch-containers.yaml
+
+images:
+  - name: sse-server
+    newTag: latest

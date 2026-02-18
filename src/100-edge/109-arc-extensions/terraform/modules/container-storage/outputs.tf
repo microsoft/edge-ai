@@ -16,3 +16,8 @@ output "extension" {
     name = azurerm_arc_kubernetes_cluster_extension.container_storage.name
   }
 }
+
+output "extension_principal_id" {
+  description = "The principal ID of the container storage extension's system-assigned managed identity"
+  value       = azurerm_arc_kubernetes_cluster_extension.container_storage.identity[0].principal_id
+}

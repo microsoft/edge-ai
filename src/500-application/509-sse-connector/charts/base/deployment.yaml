@@ -1,0 +1,68 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sse-server
+  namespace: azure-iot-operations
+  labels:
+    app: sse-server
+    component: sse-connector
+    part-of: edge-ai-leak-detection
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sse-server
+  template:
+    metadata:
+      labels:
+        app: sse-server
+        component: sse-connector
+        part-of: edge-ai-leak-detection
+    spec:
+      serviceAccountName: default
+      containers:
+        - name: sse-server
+          image: sse-server:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+              name: http
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+          volumeMounts:
+            - name: mq-sat
+              mountPath: /var/run/secrets/tokens
+              readOnly: true
+            - name: aio-ca-trust-bundle
+              mountPath: /var/run/certs
+              readOnly: true
+      volumes:
+        - name: mq-sat
+          projected:
+            sources:
+              - serviceAccountToken:
+                  path: mq-sat
+                  audience: aio-internal
+                  expirationSeconds: 86400
+        - name: aio-ca-trust-bundle
+          configMap:
+            name: azure-iot-operations-aio-ca-trust-bundle

@@ -106,3 +106,150 @@ Performed comprehensive IaC and deployment automation analysis covering 7 areas:
 
 📌 Team update (2025-07-15): 507-ai-inference automation gaps identified — blueprint integration delegated to Ripley (High priority). Helm chart conversion, health probes, base image migration assigned to Parker — decided by Parker
 📌 Team update (2025-07-15): 507 deployment automation — Hybrid approach recommended (CI/CD for Docker build/push, Terraform `terraform_data` for Kustomize deploy). Blueprint gains `should_deploy_ai_inference` feature flag — decided by Dallas
+
+## 2026-02-18: ACSA Integration Analysis for 503-media-capture-service
+
+### Task
+
+Analyzed Terraform integration requirements for deploying 503-media-capture-service's ACSA dependencies, storage/role requirements, and kubectl-applied Kubernetes manifests.
+
+### Finding 1: ACSA Already Deployed via Blueprint
+
+The `edge_arc_extensions` module in the leak-detection blueprint already deploys ACSA (`microsoft.arc.containerstorage`) with `container_storage_extension.enabled = true` (default). The extension creates a `SystemAssigned` identity. No additional extension deployment needed.
+
+- Component: `src/100-edge/109-arc-extensions/terraform`
+- Extension module: `modules/container-storage/main.tf`
+- Extension type: `microsoft.arc.containerstorage`
+- Extension resource name: `azure-arc-containerstorage`
+- Confirmed in state: `identity[0].principal_id` is computed and available (e.g., `b6ed977f-b9a8-46a1-b92a-b10f2ac564bf`)
+
+### Finding 2: ACSA Identity NOT Exposed in Output Chain
+
+**Gap identified.** The `azurerm_arc_kubernetes_cluster_extension.container_storage` resource computes `identity[0].principal_id`, but neither the container-storage internal module nor the 109-arc-extensions component exposes it as an output. This blocks using `azurerm_role_assignment` in the blueprint.
+
+**Required changes to expose identity:**
+
+1. `src/100-edge/109-arc-extensions/terraform/modules/container-storage/outputs.tf` — add:
+   ```terraform
+   output "identity_principal_id" {
+     description = "The principal ID of the container storage extension's system-assigned managed identity"
+     value       = azurerm_arc_kubernetes_cluster_extension.container_storage.identity[0].principal_id
+   }
+   ```
+
+2. `src/100-edge/109-arc-extensions/terraform/outputs.tf` — add:
+   ```terraform
+   output "container_storage_extension_identity_principal_id" {
+     description = "The principal ID of the Azure Container Storage extension's system-assigned managed identity."
+     value       = try(module.container_storage_extension[0].identity_principal_id, null)
+   }
+   ```
+
+### Finding 3: Kubernetes YAML Manifests — kubectl via terraform_data
+
+**cloudBackedPVC.yaml** (static):
+- PVC named `pvc-acsa-cloud-backed` in `azure-iot-operations` namespace
+- 3Gi, ReadWriteMany, storageClassName `cloud-backed-sc`
+- No templating needed — static YAML
+- Apply: `kubectl apply -f cloudBackedPVC.yaml`
+
+**mediaEdgeSubvolume.yaml** (templated):
+- EdgeSubvolume CRD (`arccontainerstorage.azure.net/v1`) named `media`
+- References PVC `pvc-acsa-cloud-backed`, container `media`, auth `MANAGED_IDENTITY`
+- Uses shell-style `${STORAGE_ACCOUNT_ENDPOINT}` variable
+- Deploy script sets `STORAGE_ACCOUNT_ENDPOINT="https://${STORAGE_ACCOUNT_NAME}.blob.core.windows.net/"`
+- Terraform equivalent: `module.cloud_data.storage_account.primary_blob_endpoint`
+
+**Recommended approach** — `terraform_data` + `local-exec` with `envsubst`:
+
+```terraform
+resource "terraform_data" "acsa_pvc" {
+  depends_on = [module.edge_arc_extensions]
+
+  provisioner "local-exec" {
+    command = "kubectl apply -f ${path.module}/../../../src/500-application/503-media-capture-service/yaml/cloudBackedPVC.yaml"
+  }
+}
+
+resource "terraform_data" "acsa_subvolume" {
+  depends_on = [terraform_data.acsa_pvc, azurerm_role_assignment.acsa_blob_data_owner]
+
+  provisioner "local-exec" {
+    command = "envsubst < ${path.module}/../../../src/500-application/503-media-capture-service/yaml/mediaEdgeSubvolume.yaml | kubectl apply -f -"
+    environment = {
+      STORAGE_ACCOUNT_ENDPOINT = module.cloud_data.storage_account.primary_blob_endpoint
+    }
+  }
+}
+```
+
+This reuses the original YAML files without duplication and matches the envsubst pattern from the deploy script.
+
+### Finding 4: Storage Role Assignments — Pure Terraform
+
+Both role assignments from the deploy script can be `azurerm_role_assignment` resources:
+
+```terraform
+data "azurerm_client_config" "current" {}
+
+# "Storage Blob Data Contributor" → signed-in user (Terraform executor)
+resource "azurerm_role_assignment" "current_user_blob_contributor" {
+  scope                = module.cloud_data.storage_account.id
+  role_definition_name = "Storage Blob Data Contributor"
+  principal_id         = data.azurerm_client_config.current.object_id
+}
+
+# "Storage Blob Data Owner" → ACSA extension identity
+resource "azurerm_role_assignment" "acsa_blob_data_owner" {
+  scope                = module.cloud_data.storage_account.id
+  role_definition_name = "Storage Blob Data Owner"
+  principal_id         = module.edge_arc_extensions.container_storage_extension_identity_principal_id
+}
+```
+
+No need for `az k8s-extension list` script — the principal ID flows through the Terraform output chain once Finding 2 changes are applied.
+
+### Finding 5: Storage Container Creation — Pure Terraform
+
+The deploy script's `az storage container create --name media` becomes:
+
+```terraform
+resource "azurerm_storage_container" "media" {
+  name                 = "media"
+  storage_account_id   = module.cloud_data.storage_account.id
+}
+```
+
+### Finding 6: Available Module Outputs in Blueprint
+
+| Module | Key Outputs |
+|---|---|
+| `cloud_data.storage_account` | `id`, `name`, `primary_blob_endpoint`, `primary_file_endpoint`, `primary_queue_endpoint`, `primary_table_endpoint` |
+| `cloud_acr.acr` | ACR resource (id, name, login_server) |
+| `edge_cncf_cluster.arc_connected_cluster` | `id`, `name`, `location` |
+| `cloud_resource_group.resource_group` | resource group object |
+| `edge_arc_extensions` | `container_storage_extension_id`, `container_storage_extension_name`, `container_storage_extension` object — **missing** `identity_principal_id` |
+| `cloud_security_identity` | `aio_identity`, `key_vault`, `secret_sync_identity`, `arc_onboarding_identity` |
+
+### Implementation Roadmap
+
+**Phase 1 — Output chain fix (prerequisite):**
+1. Add `identity_principal_id` output to container-storage internal module
+2. Add `container_storage_extension_identity_principal_id` output to 109-arc-extensions component
+3. Run `npm run tf-validate` and `npm run tflint-fix-all` on 109-arc-extensions
+
+**Phase 2 — Blueprint ACSA integration (in leak-detection main.tf):**
+1. Add `data "azurerm_client_config" "current" {}`
+2. Add `azurerm_storage_container.media`
+3. Add `azurerm_role_assignment.current_user_blob_contributor`
+4. Add `azurerm_role_assignment.acsa_blob_data_owner`
+5. Add `terraform_data.acsa_pvc` (kubectl apply cloudBackedPVC.yaml)
+6. Add `terraform_data.acsa_subvolume` (envsubst + kubectl apply mediaEdgeSubvolume.yaml)
+7. Gate all with `should_deploy_media_capture` feature flag
+8. Run `npm run tf-validate` and `npm run tflint-fix-all` on the blueprint
+
+### Decisions Needed
+
+- D1: Confirm container name is `media` (design proposal says `leak-evidence` in one place, deploy script says `media`)
+- D2: Should `should_deploy_media_capture` default to `true` or `false`?
+- D3: The kubectl applies require cluster connectivity during Terraform — same prerequisite as other `terraform_data`/`local-exec` patterns in the codebase

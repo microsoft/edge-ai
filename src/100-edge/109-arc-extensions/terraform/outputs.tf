@@ -27,3 +27,8 @@ output "container_storage_extension" {
   description = "Self-contained container_storage object (id, name, enabled, version, train) or null if not deployed"
   value       = try(module.container_storage_extension[0].container_storage, null)
 }
+
+output "container_storage_extension_principal_id" {
+  description = "The principal ID of the container storage extension's system-assigned managed identity, or null if not deployed"
+  value       = try(module.container_storage_extension[0].extension_principal_id, null)
+}
