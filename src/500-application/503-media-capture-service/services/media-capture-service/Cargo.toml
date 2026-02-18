@@ -37,3 +37,5 @@ uuid = { version = "1.17.0", features = ["v4"] }
 
 [profile.release]
 strip = true
+
+[workspace]

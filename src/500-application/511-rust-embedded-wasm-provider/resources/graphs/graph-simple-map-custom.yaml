@@ -1,0 +1,32 @@
+metadata:
+  $schema: "https://www.schemastore.org/aio-wasm-graph-config-1.0.0.json"
+  name: "Simple map-custom graph"
+  description: "A simple graph with a source, a map module to inject custom logic, and a sink"
+  version: "1.0.0"
+  vendor: "Microsoft"
+
+moduleRequirements:
+  apiVersion: "1.1.0"
+  runtimeVersion: "1.1.0"
+
+operations:
+  - operationType: "source"
+    name: "source"
+
+  - operationType: "map"
+    name: "module-temperature/map-custom"
+    module: "map-custom:1.0.0"
+
+  - operationType: "sink"
+    name: "sink"
+
+connections:
+  - from:
+      name: "source"
+    to:
+      name: "module-temperature/map-custom"
+
+  - from:
+      name: "module-temperature/map-custom"
+    to:
+      name: "sink"

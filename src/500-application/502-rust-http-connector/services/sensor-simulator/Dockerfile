@@ -18,6 +18,11 @@ RUN pip wheel --no-cache-dir --wheel-dir /wheels -r requirements.txt
 # STAGE 2: Runtime - Creates the minimal production image
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/azurelinux/base/python:3.12.9-4-azl3.0.20250910@sha256:4033c29d6a292bd24a68cf0c42b650222a1f1a40474486461accaf9ae51a5ca2 AS runtime
 
+# Upgrade all packages to latest versions to fix vulnerabilities
+RUN rpm --import /etc/pki/rpm-gpg/MICROSOFT-RPM-GPG-KEY && \
+    tdnf upgrade -y && \
+    tdnf clean all
+
 WORKDIR /app
 
 # Install Python dependencies from pre-built wheels

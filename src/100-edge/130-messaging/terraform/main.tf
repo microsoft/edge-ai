@@ -58,3 +58,13 @@ module "sample_fabric_rti_dataflow" {
   fabric_eventstream_endpoint = var.fabric_eventstream_endpoint
   fabric_workspace            = var.fabric_workspace
 }
+
+module "dataflow_graphs" {
+  count = length(var.dataflow_graphs) > 0 ? 1 : 0
+
+  source = "./modules/dataflow-graphs"
+
+  aio_dataflow_profile = var.aio_dataflow_profile
+  custom_location      = var.aio_custom_locations
+  dataflow_graphs      = var.dataflow_graphs
+}

@@ -151,6 +151,14 @@ func runValidationTests(t *testing.T, outputs *BlueprintOutputs, subscriptionID,
 		// Use Azure module to verify storage account exists
 		assert.True(t, azure.StorageAccountExists(t, storageAccountName, resourceGroupName, subscriptionID),
 			"Storage account should exist in Azure")
+
+		schemaRegistryName := dataStorage["schema_registry_name"].(string)
+		assert.NotEmpty(t, schemaRegistryName, "Schema registry name should be set")
+		assert.NotEqual(t, "Not deployed", schemaRegistryName, "Schema registry should be deployed")
+
+		schemaRegistryEndpoint := dataStorage["schema_registry_endpoint"].(string)
+		assert.NotEmpty(t, schemaRegistryEndpoint, "Schema registry endpoint should be set")
+		assert.NotEqual(t, "Not deployed", schemaRegistryEndpoint, "Schema registry endpoint should be deployed")
 	})
 
 	// Validate container registry outputs

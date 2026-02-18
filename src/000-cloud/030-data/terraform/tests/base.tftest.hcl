@@ -161,6 +161,119 @@ run "create_without_adr_namespace" {
   }
 }
 
+# Test with a single schema deployed
+run "create_with_single_schema" {
+  command = plan
+
+  variables {
+    resource_prefix = run.setup_tests.resource_prefix
+    resource_group  = run.setup_tests.resource_group
+    location        = run.setup_tests.location
+    environment     = run.setup_tests.environment
+    instance        = run.setup_tests.instance
+    schemas = [
+      {
+        name         = "temperature-schema"
+        display_name = "Temperature Schema"
+        description  = "Schema for temperature sensor readings"
+        format       = "JsonSchema/draft-07"
+        type         = "MessageSchema"
+        versions = {
+          "1-0-0" = {
+            description = "Initial version"
+            content = jsonencode({
+              "$schema" = "http://json-schema.org/draft-07/schema#"
+              type      = "object"
+              properties = {
+                temperature = { type = "number", description = "Temperature in Celsius" }
+                unit        = { type = "string", enum = ["C", "F", "K"] }
+                timestamp   = { type = "string", format = "date-time" }
+              }
+              required = ["temperature", "unit", "timestamp"]
+            })
+          }
+        }
+      }
+    ]
+  }
+
+  assert {
+    condition     = length(module.schemas) > 0
+    error_message = "Schemas module should be created when schemas are provided"
+  }
+}
+
+# Test with multiple schemas deployed
+run "create_with_multiple_schemas" {
+  command = plan
+
+  variables {
+    resource_prefix = run.setup_tests.resource_prefix
+    resource_group  = run.setup_tests.resource_group
+    location        = run.setup_tests.location
+    environment     = run.setup_tests.environment
+    instance        = run.setup_tests.instance
+    schemas = [
+      {
+        name        = "temperature-schema"
+        description = "Schema for temperature sensor readings"
+        versions = {
+          "1-0-0" = {
+            description = "Initial version"
+            content = jsonencode({
+              "$schema" = "http://json-schema.org/draft-07/schema#"
+              type      = "object"
+              properties = {
+                temperature = { type = "number" }
+                unit        = { type = "string", enum = ["C", "F", "K"] }
+                timestamp   = { type = "string", format = "date-time" }
+              }
+              required = ["temperature", "unit", "timestamp"]
+            })
+          }
+          "1-1-0" = {
+            description = "Added optional sensor ID field"
+            content = jsonencode({
+              "$schema" = "http://json-schema.org/draft-07/schema#"
+              type      = "object"
+              properties = {
+                temperature = { type = "number" }
+                unit        = { type = "string", enum = ["C", "F", "K"] }
+                timestamp   = { type = "string", format = "date-time" }
+                sensor_id   = { type = "string" }
+              }
+              required = ["temperature", "unit", "timestamp"]
+            })
+          }
+        }
+      },
+      {
+        name        = "pressure-schema"
+        description = "Schema for pressure sensor readings"
+        versions = {
+          "1-0-0" = {
+            description = "Initial version"
+            content = jsonencode({
+              "$schema" = "http://json-schema.org/draft-07/schema#"
+              type      = "object"
+              properties = {
+                pressure  = { type = "number", description = "Pressure in hPa" }
+                timestamp = { type = "string", format = "date-time" }
+              }
+              required = ["pressure", "timestamp"]
+            })
+          }
+        }
+      }
+    ]
+  }
+
+  assert {
+    condition     = length(module.schemas) > 0
+    error_message = "Schemas module should be created when multiple schemas are provided"
+  }
+}
+
 # Test ADR namespace with minimal messaging endpoints
 run "create_adr_namespace_with_minimal_endpoints" {
   command = plan

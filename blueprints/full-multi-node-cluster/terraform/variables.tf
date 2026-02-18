@@ -1203,3 +1203,133 @@ variable "ai_foundry_rai_policies" {
   default     = {}
   description = "Map of Responsible AI (RAI) content filtering policies. Must be created before referenced in model deployments."
 }
+
+/*
+ * Schema Parameters
+ */
+
+variable "schemas" {
+  type = list(object({
+    name         = string
+    display_name = optional(string)
+    description  = optional(string)
+    format       = optional(string, "JsonSchema/draft-07")
+    type         = optional(string, "MessageSchema")
+    versions = map(object({
+      description = string
+      content     = string
+    }))
+  }))
+  description = "List of schemas to create in the schema registry with their versions"
+  default = [
+    {
+      name         = "temperature-schema"
+      display_name = "Temperature Schema"
+      description  = "Schema for temperature sensor data"
+      format       = "JsonSchema/draft-07"
+      type         = "MessageSchema"
+      versions = {
+        "1" = {
+          description = "Initial version"
+          content     = "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"name\":\"temperature-schema\",\"type\":\"object\",\"properties\":{\"temperature\":{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"number\"},\"unit\":{\"type\":\"string\"}},\"required\":[\"value\",\"unit\"]}},\"required\":[\"temperature\"]}"
+        }
+      }
+    }
+  ]
+
+  validation {
+    condition = alltrue([
+      for schema in var.schemas :
+      can(regex("^[a-z0-9][a-z0-9-]*[a-z0-9]$", schema.name)) && length(schema.name) >= 3 && length(schema.name) <= 63
+    ])
+    error_message = "Schema name must be 3-63 characters, contain only lowercase letters, numbers, and hyphens, and cannot start or end with a hyphen."
+  }
+
+  validation {
+    condition = alltrue([
+      for schema in var.schemas :
+      length(schema.versions) > 0
+    ])
+    error_message = "Each schema must have at least one version defined."
+  }
+}
+
+/*
+ * Dataflow Graph Parameters
+ */
+
+variable "dataflow_graphs" {
+  type = list(object({
+    name                     = string
+    mode                     = optional(string, "Enabled")
+    request_disk_persistence = optional(string, "Disabled")
+    nodes = list(object({
+      nodeType = string
+      name     = string
+      sourceSettings = optional(object({
+        endpointRef = string
+        dataSources = list(string)
+      }))
+      graphSettings = optional(object({
+        registryEndpointRef = string
+        artifact            = string
+        configuration = optional(list(object({
+          key   = string
+          value = string
+        })))
+      }))
+      destinationSettings = optional(object({
+        endpointRef     = string
+        dataDestination = string
+      }))
+    }))
+    node_connections = list(object({
+      from = object({
+        name = string
+        schema = optional(object({
+          schemaRef           = string
+          serializationFormat = optional(string, "Json")
+        }))
+      })
+      to = object({
+        name = string
+      })
+    }))
+  }))
+  description = "List of dataflow graphs to create with their node configurations"
+  default     = []
+
+  validation {
+    condition = alltrue([
+      for graph in var.dataflow_graphs :
+      can(regex("^[a-z0-9][a-z0-9-]*[a-z0-9]$", graph.name)) && length(graph.name) >= 3 && length(graph.name) <= 63
+    ])
+    error_message = "Dataflow graph name must be 3-63 characters, contain only lowercase letters, numbers, and hyphens, and cannot start or end with a hyphen."
+  }
+
+  validation {
+    condition = alltrue([
+      for graph in var.dataflow_graphs :
+      contains(["Enabled", "Disabled"], graph.mode)
+    ])
+    error_message = "Dataflow graph mode must be either 'Enabled' or 'Disabled'."
+  }
+
+  validation {
+    condition = alltrue([
+      for graph in var.dataflow_graphs :
+      contains(["Enabled", "Disabled"], graph.request_disk_persistence)
+    ])
+    error_message = "Dataflow graph request_disk_persistence must be either 'Enabled' or 'Disabled'."
+  }
+
+  validation {
+    condition = alltrue([
+      for graph in var.dataflow_graphs : alltrue([
+        for node in graph.nodes :
+        contains(["Source", "Graph", "Destination"], node.nodeType)
+      ])
+    ])
+    error_message = "Node type must be one of: 'Source', 'Graph', or 'Destination'."
+  }
+}

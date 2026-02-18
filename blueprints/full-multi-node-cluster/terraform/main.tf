@@ -163,6 +163,8 @@ module "cloud_data" {
 
   should_create_blob_dns_zone = !var.should_enable_private_endpoints
   blob_dns_zone               = var.should_enable_private_endpoints ? module.cloud_observability.blob_private_dns_zone : null
+
+  schemas = var.schemas
 }
 
 module "cloud_postgresql" {
@@ -507,6 +509,8 @@ module "edge_messaging" {
   eventgrid            = module.cloud_messaging.eventgrid
   eventhub             = module.cloud_messaging.eventhubs[0]
   adr_namespace        = module.cloud_data.adr_namespace
+
+  dataflow_graphs = var.dataflow_graphs
 }
 
 module "edge_azureml" {

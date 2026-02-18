@@ -1,14 +1,10 @@
 {
     "json.schemaDownload.enable": true,
-
     "files.eol": "\n",
     "files.trimTrailingWhitespace": true,
     "files.insertFinalNewline": true,
-
     "diffEditor.ignoreTrimWhitespace": false,
-
     "editor.insertSpaces": true,
-
     "markdownlint.configFile": ".markdownlint.json",
     "markdownlint.lintWorkspaceGlobs": [
         "**/*.{md,mkd,mdwn,mdown,markdown,markdn,mdtxt,mdtext,workbook}",
@@ -19,13 +15,11 @@
         "!**/.git",
         "!**/vendor"
     ],
-
     "[markdown]": {
         "editor.formatOnSave": true,
         "editor.wordWrap": "on",
         "editor.detectIndentation": false,
     },
-
     "[terraform-vars]": {
         "editor.defaultFormatter": "hashicorp.terraform",
         "editor.formatOnSave": true,
@@ -34,12 +28,10 @@
             "source.formatAll.terraform": "explicit"
         },
     },
-
     "[terraform-test]": {
         "editor.formatOnSave": true,
         "editor.tabSize": 2,
     },
-
     "[terraform]": {
         "editor.defaultFormatter": "hashicorp.terraform",
         "editor.formatOnSave": true,
@@ -48,27 +40,22 @@
             "source.formatAll.terraform": "explicit"
         },
     },
-
     "[bicep]": {
         "editor.formatOnSave": true,
         "editor.tabSize": 2,
     },
-
     "[shellscript]": {
         "editor.formatOnSave": true,
         "editor.tabSize": 2,
     },
-
     "[csharp]": {
         "editor.formatOnSave": true,
         "editor.tabSize": 4,
     },
-
     "[python]": {
         "editor.formatOnSave": true,
         "editor.tabSize": 4,
     },
-
     "[powershell]": {
         "debug.saveBeforeStart": "nonUntitledEditorsInActiveGroup",
         "editor.semanticHighlighting.enabled": false,
@@ -76,10 +63,8 @@
         "editor.formatOnSave": true,
         "editor.tabSize": 4,
     },
-
     "shellcheck.enableQuickFix": true,
     "shellcheck.run": "onSave",
-
     "yaml.schemas": {
         "https://raw.githubusercontent.com/microsoft/azure-pipelines-vscode/master/service-schema.json": "*-pipelines.yml"
     },
@@ -119,4 +104,8 @@
         "/Users/vscode/repos/prompts": true,
         ".copilot-tracking/prompts": true
     },
+    "rust-analyzer.linkedProjects": [
+        "src/500-application/511-rust-embedded-wasm-provider/operators/custom-provider/Cargo.toml",
+        "src/500-application/511-rust-embedded-wasm-provider/operators/map/Cargo.toml",
+    ]
 }

@@ -16,3 +16,8 @@ output "fabric_rti_dataflow" {
   description = "The Fabric RTI dataflow details."
   value       = try(module.sample_fabric_rti_dataflow[0], null)
 }
+
+output "dataflow_graphs" {
+  description = "Map of dataflow graph resources by name."
+  value       = try(module.dataflow_graphs[0].dataflow_graphs, {})
+}

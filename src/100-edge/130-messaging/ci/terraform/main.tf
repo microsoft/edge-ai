@@ -58,4 +58,7 @@ module "ci" {
   // Fabric RTI Configuration for CI Testing
   fabric_eventstream_endpoint = var.fabric_eventstream_endpoint
   fabric_workspace            = var.fabric_workspace
+
+  // Dataflow Graphs Configuration for CI Testing
+  dataflow_graphs = var.dataflow_graphs
 }

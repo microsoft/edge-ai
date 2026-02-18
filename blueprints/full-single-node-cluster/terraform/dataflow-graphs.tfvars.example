@@ -1,0 +1,63 @@
+/*
+ * Dataflow Graphs Configuration Example
+ *
+ * This file demonstrates how to configure dataflow graphs for IoT Operations.
+ * Dataflow graphs define processing pipelines with source, graph, and destination nodes
+ * connected to route and transform data through custom WASM-based graph operators.
+ *
+ * The graph nodes reference WASM modules hosted in ACR. After deploying this blueprint,
+ * build and push the modules from src/500-application/511-rust-embedded-wasm-provider:
+ *   ./scripts/build-wasm.sh
+ *   ./scripts/push-to-acr.sh <acr_name>
+ *
+ * Copy the contents to enrich your terraform.tfvars with these values.
+ * Ensure your terraform.tfvars also includes the required core variables, for example:
+ *
+ *   environment     = "graphs"
+ *   resource_prefix = "wasm"
+ *   location        = "eastus2"
+ *   instance        = "001"
+ */
+
+dataflow_graphs = [
+  {
+    name = "temperature-processing"
+    nodes = [
+      {
+        nodeType = "Source"
+        name     = "temperature-source"
+        sourceSettings = {
+          endpointRef = "default"
+          dataSources = ["raw"]
+        }
+      },
+      {
+        nodeType = "Graph"
+        name     = "temperature-map-custom"
+        graphSettings = {
+          // Must match the registry endpoint name: acr-{var.resource_prefix}
+          registryEndpointRef = "acr-wasm"
+          artifact            = "graph-simple-map-custom:1.0.0"
+        }
+      },
+      {
+        nodeType = "Destination"
+        name     = "temperature-destination"
+        destinationSettings = {
+          endpointRef     = "default"
+          dataDestination = "processed"
+        }
+      }
+    ]
+    node_connections = [
+      {
+        from = { name = "temperature-source" }
+        to   = { name = "temperature-map-custom" }
+      },
+      {
+        from = { name = "temperature-map-custom" }
+        to   = { name = "temperature-destination" }
+      }
+    ]
+  }
+]

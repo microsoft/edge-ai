@@ -15,4 +15,6 @@ module "ci" {
   instance        = var.instance
   resource_group  = data.azurerm_resource_group.aio
   location        = data.azurerm_resource_group.aio.location
+
+  schemas = var.schemas
 }
