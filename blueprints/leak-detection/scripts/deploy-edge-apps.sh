@@ -72,7 +72,7 @@ metadata:
   name: pvc-acsa-cloud-backed
   namespace: azure-iot-operations
 spec:
-  storageClassName: acstor-arccontainerstorage-cloud-backed
+  storageClassName: cloud-backed-sc
   accessModes:
     - ReadWriteMany
   resources:
@@ -110,7 +110,7 @@ helm upgrade --install media-capture-service \
 # Step 6 — Deploy model-downloader job for 507
 echo "=== Step 6: Deploying model-downloader job ==="
 kubectl apply \
-  -f "${TF_APP_507_PATH}/charts/base/model-downloader-job.yaml" \
+  -f "${TF_APP_507_PATH}/charts/model-downloader-job.yaml" \
   --namespace "${TF_AIO_NAMESPACE}" 2>/dev/null || true
 
 # Wait for rollouts

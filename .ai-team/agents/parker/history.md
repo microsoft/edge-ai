@@ -267,3 +267,24 @@ Build context: `src/500-application/503-media-capture-service/` (the entire comp
 9. **For the leak-detection blueprint**, the TRIGGER_TOPICS for 503 must be set to the topics that carry leak alert events (from the 507/509 pipeline)
 
 📌 Team update (2025-07-25): 507 Dockerfile cross-compilation scaffolding (`FROM --platform=$BUILDPLATFORM tonistiigi/xx:master AS xx`, `COPY --from=xx / /`, `ARG TARGETPLATFORM`) removed for ACR Build compatibility. ACR Build's dependency scanner cannot parse `--platform=$BUILDPLATFORM` in FROM lines (static analysis, not runtime eval). No functional impact — cross-compilation not needed for ACR Build on amd64. File: `src/500-application/507-ai-inference/services/ai-edge-inference/Dockerfile` (modified, uncommitted). 503-media-capture-service Dockerfile cross-checked and already compatible — noted by Scribe (Carlos directive)
+
+### 2026-02-19: Switched from ACR Build to local Docker builds + push
+
+**Requested by:** Carlos Sardo
+
+**Files created:**
+- `blueprints/leak-detection/scripts/build-app-images-local.sh` — local Docker build for all 3 edge app images (509, 507, 503)
+
+**Files modified:**
+- `blueprints/leak-detection/scripts/build-app-images.sh` — converted from `az acr build` to `docker tag` + `docker push` for pre-built local images
+
+**Why:** ACR Build's constrained server-side environment causes layer eviction on large images (503-media-capture-service compiles FFmpeg, OpenCV, and Rust — ~30 min build exceeding ACR Build resource limits).
+
+**Key patterns established:**
+- Two-stage workflow: `build-app-images-local.sh` (build) → `build-app-images.sh` (push). Build is self-contained; push is Terraform-invoked.
+- Local build script derives all paths from its own location — no Terraform env vars required for building. `TF_IMAGE_VERSION` defaults to `latest`.
+- Push script validates local image existence via `docker image inspect` before attempting push, with clear error message pointing to the local build script.
+- Image names unchanged: `sse-server`, `ai-edge-inference`, `media-capture-service` — maintains compatibility with downstream Kubernetes manifests and Helm charts.
+- `TF_APP_*_PATH` env vars no longer validated by push script (Terraform still sets them but they're unused).
+
+**Decision:** `.ai-team/decisions/inbox/parker-local-docker-builds.md`

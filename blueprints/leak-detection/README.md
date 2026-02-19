@@ -2,7 +2,7 @@
 title: Leak Detection Blueprint
 description: Purpose-built Azure IoT Operations deployment for leak detection in Oil & Gas and Energy environments using SSE camera connectors and EventHub dataflows
 author: Edge AI Team
-ms.date: 2025-06-07
+ms.date: 2026-02-19
 ms.topic: reference
 keywords:
   - azure iot operations
@@ -14,7 +14,7 @@ keywords:
   - single node cluster
   - oil and gas
   - dlqc
-estimated_reading_time: 3
+estimated_reading_time: 10
 ---
 
 ## Leak Detection Blueprint
@@ -114,8 +114,186 @@ Ensure you have the following prerequisites:
 
 ## Deployment
 
+Deployment follows three phases: build container images, deploy infrastructure with Terraform, and deploy the edge applications onto the Arc-connected cluster.
+
+### End-to-End Deployment Workflow
+
+1. **Build images** — compile and package the three edge application containers locally, then push them to Azure Container Registry
+2. **Deploy infrastructure** — run Terraform to provision the VM, K3s cluster, Arc connection, IoT Operations, networking, ACR, and all supporting cloud resources
+3. **Deploy edge apps** — connect to the cluster via Arc proxy and deploy the application workloads with Kustomize and Helm
+
+### Phase 1: Build and Push Container Images
+
+Three application images are required:
+
+| Image                    | Source Component              | Description                                    |
+|--------------------------|-------------------------------|------------------------------------------------|
+| `sse-server`             | `509-sse-connector`           | SSE camera connector for event ingestion       |
+| `ai-edge-inference`      | `507-ai-inference`            | ONNX-based leak detection inference service    |
+| `media-capture-service`  | `503-media-capture-service`   | FFmpeg/OpenCV media capture and storage        |
+
+Images are built locally because `503-media-capture-service` compiles FFmpeg, OpenCV, and Rust from source (~30 minutes), which exceeds ACR Build task time limits.
+
+#### Step 1: Build images locally
+
+Run `build-app-images-local.sh` from the blueprint scripts directory. Set `TF_IMAGE_VERSION` to tag the images (defaults to `latest`).
+
 ```bash
+cd blueprints/leak-detection/scripts
+export TF_IMAGE_VERSION="1.0.0"
+./build-app-images-local.sh
+```
+
+This produces three local Docker images: `sse-server`, `ai-edge-inference`, and `media-capture-service`, each tagged with the specified version.
+
+#### Step 2: Push images to ACR
+
+Run `build-app-images.sh` to tag and push the local images to your Azure Container Registry. Both `TF_ACR_NAME` and `TF_IMAGE_VERSION` are required.
+
+```bash
+export TF_ACR_NAME="myacrname"
+export TF_IMAGE_VERSION="1.0.0"
+./build-app-images.sh
+```
+
+> **Note:** The ACR must have `anonymousPull` enabled so the edge cluster can pull images without pull secrets. Alternatively, configure image pull secrets on the cluster.
+
+### Phase 2: Deploy Infrastructure with Terraform
+
+From the blueprint Terraform directory, initialize and apply the configuration. Key variables to set:
+
+| Variable                             | Example Value | Purpose                                          |
+|--------------------------------------|---------------|--------------------------------------------------|
+| `resource_prefix`                    | `leakdet`     | Short alphanumeric prefix for all resource names |
+| `environment`                        | `dev`         | Environment type (dev, test, prod)               |
+| `location`                           | `eastus2`     | Azure region for deployment                      |
+| `should_deploy_edge_applications`    | `true`        | Enables ACR and app deployment outputs           |
+| `acr_public_network_access_enabled`  | `true`        | Allows image push/pull over public network       |
+
+Terraform deploys the full stack: resource group, virtual network, NAT gateway, VM host, K3s cluster, Azure Arc connection, Key Vault, Storage Account, Schema Registry, Azure Container Registry, IoT Operations, device and asset definitions, EventHub dataflows, and observability.
+
+```bash
+cd blueprints/leak-detection/terraform
 terraform init
-terraform plan -var-file="leak-detection-assets.tfvars.example" -var="environment=dev" -var="resource_prefix=leakdet" -var="location=eastus2"
-terraform apply -var-file="leak-detection-assets.tfvars.example" -var="environment=dev" -var="resource_prefix=leakdet" -var="location=eastus2"
+terraform plan \
+  -var-file="leak-detection-assets.tfvars.example" \
+  -var="environment=dev" \
+  -var="resource_prefix=leakdet" \
+  -var="location=eastus2"
+terraform apply \
+  -var-file="leak-detection-assets.tfvars.example" \
+  -var="environment=dev" \
+  -var="resource_prefix=leakdet" \
+  -var="location=eastus2"
+```
+
+> **Note:** If Key Vault or Storage Account is configured with private access, use `terraform apply -refresh=false` on subsequent applies to avoid refresh errors from network restrictions.
+
+### Phase 3: Deploy Edge Applications
+
+After Terraform completes, deploy the application workloads to the Arc-connected cluster.
+
+#### Step 1: Source init-scripts.sh
+
+Source the IoT Operations init script to establish an Arc proxy tunnel and export required environment variables from Terraform output.
+
+```bash
+cd blueprints/leak-detection/terraform
+source ../../../src/100-edge/110-iot-ops/scripts/init-scripts.sh
+```
+
+This script:
+
+* Starts `az connectedk8s proxy` to create an HTTPS tunnel (port 9800) to the Arc-connected cluster
+* Waits for the kubeconfig to become ready
+* Creates the AIO namespace if it does not exist
+* Exports `TF_*` environment variables from Terraform output for use by downstream scripts
+
+#### Step 2: Set required environment variables
+
+The `init-scripts.sh` script exports most variables automatically from Terraform output. Verify these are set:
+
+| Variable                       | Description                                        |
+|--------------------------------|----------------------------------------------------|
+| `TF_CONNECTED_CLUSTER_NAME`    | Arc-connected cluster name                         |
+| `TF_RESOURCE_GROUP_NAME`       | Azure resource group name                          |
+| `TF_AIO_NAMESPACE`             | Kubernetes namespace for AIO (azure-iot-operations)|
+| `TF_MODULE_PATH`               | Terraform module path                              |
+| `TF_ACR_NAME`                  | Azure Container Registry name                      |
+| `TF_IMAGE_VERSION`             | Image tag for deployments                          |
+| `TF_APP_509_PATH`              | Path to 509-sse-connector source                   |
+| `TF_APP_507_PATH`              | Path to 507-ai-inference source                    |
+| `TF_APP_503_PATH`              | Path to 503-media-capture-service source           |
+| `TF_STORAGE_ACCOUNT_ENDPOINT`  | Blob storage endpoint for ACSA EdgeSubvolume       |
+
+#### Step 3: Run deploy-edge-apps.sh
+
+Deploy all three applications to the cluster:
+
+```bash
+cd blueprints/leak-detection/scripts
+./deploy-edge-apps.sh
+```
+
+The script executes the following sequence:
+
+1. Deploys `509-sse-connector` via Kustomize (generates ACR image patches, applies manifests)
+2. Deploys `507-ai-inference` via Kustomize
+3. Creates an ACSA PersistentVolumeClaim (`pvc-acsa-cloud-backed`) with `cloud-backed-sc` StorageClass
+4. Creates an ACSA EdgeSubvolume for media storage with managed identity authentication
+5. Deploys `503-media-capture-service` via Helm with the ACSA PVC
+6. Deploys the `model-downloader-job` to fetch the ONNX model for inference
+7. Waits for all three deployment rollouts to complete
+
+#### Step 4: Verify deployment
+
+Confirm all three application pods are running:
+
+```bash
+kubectl get pods -n azure-iot-operations -l 'app in (sse-server,ai-edge-inference,media-capture-service)'
+```
+
+Expected output:
+
+```text
+NAME                                      READY   STATUS    RESTARTS   AGE
+sse-server-6b8f9c4d5-x2k7m                1/1     Running   0          2m
+ai-edge-inference-7c9d8e5f6-n3p4q          1/1     Running   0          2m
+media-capture-service-8d0e9f6g7-r5s6t      1/1     Running   0          2m
+```
+
+## Troubleshooting
+
+### ImagePullBackOff
+
+The cluster cannot pull images from ACR. Verify that `anonymousPull` is enabled on the ACR, or configure image pull secrets on the cluster. Confirm the image tag matches what was pushed.
+
+### CrashLoopBackOff on ai-edge-inference
+
+The inference service requires the ONNX model to be present at `/models/default.onnx`. Verify the `model-downloader-job` completed successfully:
+
+```bash
+kubectl get jobs -n azure-iot-operations
+kubectl logs job/model-downloader -n azure-iot-operations
+```
+
+### Arc Proxy Connection Drops
+
+The `az connectedk8s proxy` tunnel can drop after periods of inactivity. Re-source the init script to re-establish connectivity:
+
+```bash
+cd blueprints/leak-detection/terraform
+source ../../../src/100-edge/110-iot-ops/scripts/init-scripts.sh
+```
+
+### PVC Binding Failures
+
+Verify the correct StorageClass exists on the cluster:
+
+* `cloud-backed-sc` — required for ACSA-backed PVCs (media storage with cloud sync)
+* `local-path` — used for local-only volumes
+
+```bash
+kubectl get storageclass
+kubectl describe pvc pvc-acsa-cloud-backed -n azure-iot-operations
 ```

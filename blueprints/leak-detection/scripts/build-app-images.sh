@@ -2,29 +2,22 @@
 set -euo pipefail
 
 ##############################################################################
-# Build App Images — ACR Build for 509, 507, 503
+# Push App Images — Tag and push local images to ACR
 ##############################################################################
 #
 # DESCRIPTION:
-#   Builds container images for all three edge applications using
-#   az acr build. Runs sequentially: 509 (fastest) -> 507 -> 503
-#   (slowest, 15-30 min).
+#   Pushes pre-built local Docker images to Azure Container Registry.
+#   Images must be built first using build-app-images-local.sh.
 #
 # ENVIRONMENT VARIABLES (required, set by Terraform):
 #   TF_ACR_NAME      - Azure Container Registry name
 #   TF_IMAGE_VERSION - Image tag for all builds
-#   TF_APP_509_PATH  - Path to 509-sse-connector component
-#   TF_APP_507_PATH  - Path to 507-ai-inference component
-#   TF_APP_503_PATH  - Path to 503-media-capture-service component
 #
 ##############################################################################
 
 readonly REQUIRED_VARS=(
   TF_ACR_NAME
   TF_IMAGE_VERSION
-  TF_APP_509_PATH
-  TF_APP_507_PATH
-  TF_APP_503_PATH
 )
 
 for var in "${REQUIRED_VARS[@]}"; do
@@ -34,28 +27,35 @@ for var in "${REQUIRED_VARS[@]}"; do
   fi
 done
 
-echo "=== Building 509-sse-connector ==="
-az acr build \
-  --registry "${TF_ACR_NAME}" \
-  --image "sse-server:${TF_IMAGE_VERSION}" \
-  --file \
-  "${TF_APP_509_PATH}/services/sse-server/Dockerfile" \
-  "${TF_APP_509_PATH}/services/sse-server"
+readonly ACR_NAME="${TF_ACR_NAME}"
+readonly VERSION="${TF_IMAGE_VERSION}"
+readonly ACR_LOGIN="${ACR_NAME}.azurecr.io"
 
-echo "=== Building 507-ai-inference ==="
-az acr build \
-  --registry "${TF_ACR_NAME}" \
-  --image "ai-edge-inference:${TF_IMAGE_VERSION}" \
-  --file \
-  "${TF_APP_507_PATH}/services/ai-edge-inference/Dockerfile" \
-  "${TF_APP_507_PATH}/services/"
+readonly -a IMAGES=(
+  "sse-server"
+  "ai-edge-inference"
+  "media-capture-service"
+)
 
-echo "=== Building 503-media-capture-service ==="
-az acr build \
-  --registry "${TF_ACR_NAME}" \
-  --image "media-capture-service:${TF_IMAGE_VERSION}" \
-  --file \
-  "${TF_APP_503_PATH}/services/media-capture-service/Dockerfile" \
-  "${TF_APP_503_PATH}"
+# Verify all local images exist before pushing
+for img in "${IMAGES[@]}"; do
+  if ! docker image inspect "${img}:${VERSION}" \
+    &>/dev/null; then
+    echo "ERROR: Local image ${img}:${VERSION} not found." >&2
+    echo "Run build-app-images-local.sh first." >&2
+    exit 1
+  fi
+done
 
-echo "=== All images built successfully ==="
+echo "=== Logging into ACR: ${ACR_NAME} ==="
+az acr login --name "${ACR_NAME}"
+
+for img in "${IMAGES[@]}"; do
+  local_tag="${img}:${VERSION}"
+  remote_tag="${ACR_LOGIN}/${img}:${VERSION}"
+  echo "=== Pushing ${local_tag} ==="
+  docker tag "${local_tag}" "${remote_tag}"
+  docker push "${remote_tag}"
+done
+
+echo "=== All images pushed successfully ==="

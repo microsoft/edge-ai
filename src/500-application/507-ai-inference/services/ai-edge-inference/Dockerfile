@@ -1,11 +1,9 @@
 # Multi-stage build for ai-edge-inference with configurable backend support
 # Build with: docker build --build-arg BACKEND=onnx|candle .
-# Cross-compilation support stage
-FROM --platform=$BUILDPLATFORM tonistiigi/xx:master AS xx
 
 # Build stage - using SHA-pinned Azure Linux image
 # SHA mapping maintained in scripts/security/Update-DockerSHAPinning.ps1
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/cbl-mariner/base/core:2.0@sha256:3ea2978438516bea837ebcf2140d487c1305317c2acea100393b775365b0d7f5 AS build
+FROM mcr.microsoft.com/cbl-mariner/base/core:2.0@sha256:3ea2978438516bea837ebcf2140d487c1305317c2acea100393b775365b0d7f5 AS build
 
 # Install build dependencies including Rust and cross-compilation tools
 RUN tdnf install -y \
@@ -34,8 +32,6 @@ RUN wget -q https://sh.rustup.rs -O /tmp/rustup.sh && \
 # Add Rust binaries to PATH for subsequent RUN commands
 ENV PATH="/root/.cargo/bin:${PATH}"
 
-COPY --from=xx / /
-ARG TARGETPLATFORM
 ARG BACKEND=onnx
 
 # Create minimal installation root for Azure Linux runtime
@@ -90,9 +86,10 @@ RUN mkdir -p .cargo && \
 # Copy the ai-edge-inference-crate dependency to the correct relative path
 COPY ./ai-edge-inference-crate ../ai-edge-inference-crate
 
-# Copy source code and configuration
+# Copy source code, lock file, and configuration
 COPY ./ai-edge-inference/src ./src
 COPY ./ai-edge-inference/Cargo.toml ./Cargo.toml
+COPY ./ai-edge-inference/Cargo.lock ./Cargo.lock
 COPY ./ai-edge-inference/.cargo ./.cargo
 
 # Build the application with backend-specific features

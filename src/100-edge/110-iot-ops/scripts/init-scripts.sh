@@ -54,10 +54,10 @@ if [ ${#missing_vars[@]} -gt 0 ]; then
 fi
 
 # Validate optional token variables are both set or both unset
-if [[ -n "${DEPLOY_USER_TOKEN_SECRET}" && -z "${DEPLOY_KEY_VAULT_NAME}" ]]; then
+if [[ -n "${DEPLOY_USER_TOKEN_SECRET:-}" && -z "${DEPLOY_KEY_VAULT_NAME:-}" ]]; then
   echo "ERROR: DEPLOY_USER_TOKEN_SECRET is set but DEPLOY_KEY_VAULT_NAME is not" >&2
   exit 1
-elif [[ -z "${DEPLOY_USER_TOKEN_SECRET}" && -n "${DEPLOY_KEY_VAULT_NAME}" ]]; then
+elif [[ -z "${DEPLOY_USER_TOKEN_SECRET:-}" && -n "${DEPLOY_KEY_VAULT_NAME:-}" ]]; then
   echo "ERROR: DEPLOY_KEY_VAULT_NAME is set but DEPLOY_USER_TOKEN_SECRET is not" >&2
   exit 1
 fi
@@ -146,7 +146,7 @@ start_proxy() {
     "--file" "$kube_config_temp"
   )
   local deploy_user_token=""
-  if [[ $DEPLOY_USER_TOKEN_SECRET ]]; then
+  if [[ ${DEPLOY_USER_TOKEN_SECRET:-} ]]; then
     echo "Getting Deploy User Token..."
     if ! deploy_user_token=$(az keyvault secret show \
       --name "$DEPLOY_USER_TOKEN_SECRET" \
@@ -247,6 +247,9 @@ else
 
   start_proxy || exit 1
 fi
+
+# Export KUBECONFIG so all subsequent kubectl/helm commands use the active kubeconfig
+export KUBECONFIG="$kube_config_file"
 
 # Ensure aio namespace is created and exists
 if ! kubectl get namespace "$TF_AIO_NAMESPACE" --kubeconfig "$kube_config_file" &>/dev/null; then

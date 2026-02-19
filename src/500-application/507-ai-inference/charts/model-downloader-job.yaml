@@ -29,10 +29,12 @@ spec:
               mkdir -p /models/tiny-yolov2
               mkdir -p /models/yolov4
               echo "Downloading Tiny YOLOv2 model..."
-              curl -L -o /models/tiny-yolov2/tinyyolov2-8.onnx \
+              curl -L --retry 3 --retry-delay 5 -o /models/tiny-yolov2/tinyyolov2-8.onnx \
                 "https://github.com/onnx/models/raw/main/validated/vision/object_detection_segmentation/tiny-yolov2/model/tinyyolov2-8.onnx"
+              echo "Copying Tiny YOLOv2 as default model..."
+              cp /models/tiny-yolov2/tinyyolov2-8.onnx /models/default.onnx
               echo "Downloading YOLOv4 model..."
-              curl -L -o /models/yolov4/yolov4.onnx \
+              curl -L --retry 3 --retry-delay 5 -o /models/yolov4/yolov4.onnx \
                 "https://github.com/onnx/models/raw/main/validated/vision/object_detection_segmentation/yolov4/model/yolov4.onnx"
               cat > /models/models.json << EOF
               {
