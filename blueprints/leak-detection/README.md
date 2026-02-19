@@ -114,15 +114,16 @@ Ensure you have the following prerequisites:
 
 ## Deployment
 
-Deployment follows three phases: build container images, deploy infrastructure with Terraform, and deploy the edge applications onto the Arc-connected cluster.
+Deployment follows four phases: build container images locally, deploy infrastructure with Terraform (which creates ACR), push images to the newly created ACR, and deploy the edge applications onto the Arc-connected cluster.
 
 ### End-to-End Deployment Workflow
 
-1. **Build images** — compile and package the three edge application containers locally, then push them to Azure Container Registry
+1. **Build images locally** — compile and package the three edge application containers on your local machine
 2. **Deploy infrastructure** — run Terraform to provision the VM, K3s cluster, Arc connection, IoT Operations, networking, ACR, and all supporting cloud resources
-3. **Deploy edge apps** — connect to the cluster via Arc proxy and deploy the application workloads with Kustomize and Helm
+3. **Push images to ACR** — tag and push the locally built images to the ACR created in phase 2
+4. **Deploy edge apps** — connect to the cluster via Arc proxy and deploy the application workloads with Kustomize and Helm
 
-### Phase 1: Build and Push Container Images
+### Phase 1: Build Container Images Locally
 
 Three application images are required:
 
@@ -134,8 +135,6 @@ Three application images are required:
 
 Images are built locally because `503-media-capture-service` compiles FFmpeg, OpenCV, and Rust from source (~30 minutes), which exceeds ACR Build task time limits.
 
-#### Step 1: Build images locally
-
 Run `build-app-images-local.sh` from the blueprint scripts directory. Set `TF_IMAGE_VERSION` to tag the images (defaults to `latest`).
 
 ```bash
@@ -146,17 +145,7 @@ export TF_IMAGE_VERSION="1.0.0"
 
 This produces three local Docker images: `sse-server`, `ai-edge-inference`, and `media-capture-service`, each tagged with the specified version.
 
-#### Step 2: Push images to ACR
-
-Run `build-app-images.sh` to tag and push the local images to your Azure Container Registry. Both `TF_ACR_NAME` and `TF_IMAGE_VERSION` are required.
-
-```bash
-export TF_ACR_NAME="myacrname"
-export TF_IMAGE_VERSION="1.0.0"
-./build-app-images.sh
-```
-
-> **Note:** The ACR must have `anonymousPull` enabled so the edge cluster can pull images without pull secrets. Alternatively, configure image pull secrets on the cluster.
+> **Note:** This phase has no cloud dependencies. You can build images while waiting for infrastructure to deploy, or build them beforehand.
 
 ### Phase 2: Deploy Infrastructure with Terraform
 
@@ -189,7 +178,23 @@ terraform apply \
 
 > **Note:** If Key Vault or Storage Account is configured with private access, use `terraform apply -refresh=false` on subsequent applies to avoid refresh errors from network restrictions.
 
-### Phase 3: Deploy Edge Applications
+### Phase 3: Push Images to ACR
+
+Now that Terraform has created the Azure Container Registry, push the locally built images. The ACR name is available from the Terraform output.
+
+```bash
+cd blueprints/leak-detection/terraform
+export TF_ACR_NAME=$(terraform output -raw acr_name)
+export TF_IMAGE_VERSION="1.0.0"
+cd ../scripts
+./build-app-images.sh
+```
+
+This script logs into the ACR, tags each local image with the ACR registry prefix, and pushes all three images.
+
+> **Note:** The ACR must have `anonymousPull` enabled so the edge cluster can pull images without pull secrets. Alternatively, configure image pull secrets on the cluster.
+
+### Phase 4: Deploy Edge Applications
 
 After Terraform completes, deploy the application workloads to the Arc-connected cluster.
 
