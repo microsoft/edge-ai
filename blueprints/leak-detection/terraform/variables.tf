@@ -286,6 +286,16 @@ variable "should_enable_opc_ua_simulator" {
 }
 
 /*
+ * Notification Parameters
+ */
+
+variable "should_create_notification" {
+  type        = bool
+  description = "Whether to create the Logic App notification workflow that sends Teams alerts on leak detection events"
+  default     = true
+}
+
+/*
  * Azure Functions Parameters
  */
 

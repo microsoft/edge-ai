@@ -129,6 +129,22 @@ module "cloud_messaging" {
   should_create_azure_functions = var.should_create_azure_functions
 }
 
+// ── Notification ─────────────────────────────────────────────
+
+module "cloud_notification" {
+  source = "../../../src/000-cloud/045-notification/terraform"
+
+  count = var.should_create_notification ? 1 : 0
+
+  resource_group     = module.cloud_resource_group.resource_group
+  eventhub_namespace = module.cloud_messaging.eventhub_namespace
+  eventhub_name      = module.cloud_messaging.eventhubs[0].eventhub_name
+  key_vault          = module.cloud_security_identity.key_vault
+  environment        = var.environment
+  resource_prefix    = var.resource_prefix
+  instance           = var.instance
+}
+
 // ── VM Host and Container Registry ───────────────────────────
 
 module "cloud_vm_host" {

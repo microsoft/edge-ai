@@ -116,6 +116,18 @@ output "edge_messaging" {
 }
 
 /*
+ * Notification Outputs
+ */
+
+output "notification" {
+  description = "Logic App notification workflow for leak detection alerts."
+  value = {
+    logic_app_name = try(module.cloud_notification[0].logic_app.name, "Not deployed")
+    logic_app_id   = try(module.cloud_notification[0].logic_app.id, "Not deployed")
+  }
+}
+
+/*
  * Edge Infrastructure Outputs
  */
 

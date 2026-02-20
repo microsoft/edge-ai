@@ -19,6 +19,11 @@ variable "eventhub_namespace" {
   description = "Event Hub namespace for Logic App trigger connectivity and role assignment"
 }
 
+variable "eventhub_name" {
+  type        = string
+  description = "Name of the Event Hub to subscribe to for leak detection events"
+}
+
 variable "key_vault" {
   type = object({
     id        = string
