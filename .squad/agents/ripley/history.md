@@ -3,7 +3,7 @@
 ## Project Learnings (from import)
 
 - **Project:** Edge AI — Leak Detection Accelerator for Oil & Gas / Energy
-- **User:** Carlos Sardo (carlos.sardo@gmail.com)
+- **User:** Carlos Sardo
 - **Stack:** Terraform, Bicep, Rust, Azure IoT Operations, Azure Arc, K3s
 - **Goal:** Provide IaC components and deployment artifacts for the leak detection accelerator.
 - **Component structure:** Each component follows {grouping}/{000}-{component_name}/{framework}/ pattern

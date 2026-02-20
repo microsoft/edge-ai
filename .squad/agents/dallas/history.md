@@ -3,7 +3,7 @@
 ## Project Learnings (from import)
 
 - **Project:** Edge AI — Leak Detection Accelerator for Oil & Gas / Energy
-- **User:** Carlos Sardo (carlos.sardo@gmail.com)
+- **User:** Carlos Sardo
 - **Stack:** Terraform, Bicep, Rust, Azure IoT Operations, Azure Arc, K3s
 - **Goal:** Analyze the existing Edge AI repo and design+implement a Leak Detection use case. Edge inference → event propagation → Teams notification.
 - **Repo structure:** Cloud infra (000-cloud/), Edge infra (100-edge/), Applications (500-application/), Utilities (900-tools-utilities/), Blueprints (blueprints/)

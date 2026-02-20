@@ -3,7 +3,7 @@
 ## Project Learnings (from import)
 
 - **Project:** Edge AI — Leak Detection Accelerator for Oil & Gas / Energy
-- **User:** Carlos Sardo (carlos.sardo@gmail.com)
+- **User:** Carlos Sardo
 - **Stack:** Terraform, Bicep, Rust, Azure IoT Operations, Azure Arc, K3s
 - **Goal:** Build the edge-side leak detection service: capture inference events, produce metadata, deliver Teams notifications.
 - **Existing Rust services:** src/500-application/ contains 500-basic-inference, 501-rust-telemetry, 502-rust-http-connector, 503-media-capture-service

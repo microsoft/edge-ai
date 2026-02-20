@@ -5,7 +5,7 @@
 | Field | Value |
 |-------|-------|
 | **User** | Carlos Sardo |
-| **Email** | carlos.sardo@gmail.com |
+| **Email** | [email scrubbed] |
 | **Project** | Edge AI — Leak Detection Accelerator (Oil & Gas) |
 | **Stack** | Terraform, Bicep, Rust, Azure IoT Operations, Azure Arc, K3s |
 | **Description** | Analyze the existing Edge AI repository and design+implement a Leak Detection use case for Oil & Gas / Energy. Reuse existing services, components, and architectural patterns. Edge inference → event propagation → Teams notification. |

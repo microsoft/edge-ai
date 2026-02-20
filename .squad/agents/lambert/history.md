@@ -3,7 +3,7 @@
 ## Project Learnings (from import)
 
 - **Project:** Edge AI — Leak Detection Accelerator for Oil & Gas / Energy
-- **User:** Carlos Sardo (carlos.sardo@gmail.com)
+- **User:** Carlos Sardo
 - **Stack:** Terraform, Bicep, Rust, Azure IoT Operations, Azure Arc, K3s
 - **Goal:** Validate the leak detection accelerator: unit tests, integration tests, edge-to-cloud flow tests, notification delivery, failure/retry.
 - **Testing approach:** Rust tests (cargo test), Terraform tests (command = plan only), edge-to-cloud validation
