@@ -28,14 +28,18 @@ spec:
               echo "Starting model download..."
               mkdir -p /models/tiny-yolov2
               mkdir -p /models/yolov4
+              mkdir -p /models/yolov8n-leak
               echo "Downloading Tiny YOLOv2 model..."
               curl -L --retry 3 --retry-delay 5 -o /models/tiny-yolov2/tinyyolov2-8.onnx \
                 "https://github.com/onnx/models/raw/main/validated/vision/object_detection_segmentation/tiny-yolov2/model/tinyyolov2-8.onnx"
-              echo "Copying Tiny YOLOv2 as default model..."
-              cp /models/tiny-yolov2/tinyyolov2-8.onnx /models/default.onnx
               echo "Downloading YOLOv4 model..."
               curl -L --retry 3 --retry-delay 5 -o /models/yolov4/yolov4.onnx \
                 "https://github.com/onnx/models/raw/main/validated/vision/object_detection_segmentation/yolov4/model/yolov4.onnx"
+              echo "Downloading YOLOv4 Leak model..."
+              curl -L --retry 3 --retry-delay 5 -o /models/yolov8n-leak/yolov8n-leak.onnx \
+                "https://github.com/L3ONARDO/LD-Data-Dump/raw/refs/heads/main/yolov8n-leak.onnx"
+              echo "Copying YOLOv8n Leak as default model..."
+              cp /models/yolov8n-leak/yolov8n-leak.onnx /models/default.onnx
               cat > /models/models.json << EOF
               {
                 "models": [
@@ -53,6 +57,15 @@ spec:
                     "path": "/models/yolov4/yolov4.onnx",
                     "type": "object_detection",
                     "input_shape": [1, 3, 608, 608],
+                    "output_shape": [1, 25200, 85],
+                    "confidence_threshold": 0.5,
+                    "classes": 80
+                  },
+                  {
+                    "name": "yolov8n-leak",
+                    "path": "/models/yolov8n-leak/yolov8n-leak.onnx",
+                    "type": "object_detection",
+                    "input_shape": [1, 3, 640, 640],
                     "output_shape": [1, 25200, 85],
                     "confidence_threshold": 0.5,
                     "classes": 80
