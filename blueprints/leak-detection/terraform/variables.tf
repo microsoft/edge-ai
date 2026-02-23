@@ -295,6 +295,12 @@ variable "should_create_notification" {
   default     = true
 }
 
+variable "teams_recipient_id" {
+  type        = string
+  description = "Teams chat or channel thread ID for posting leak detection notifications"
+  default     = null
+}
+
 /*
  * Azure Functions Parameters
  */

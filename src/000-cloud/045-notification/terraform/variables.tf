@@ -14,8 +14,13 @@ variable "tags" {
   default     = {}
 }
 
-variable "teams_webhook_secret_name" {
+variable "teams_recipient_id" {
   type        = string
-  description = "Name of the Key Vault secret containing the Teams Incoming Webhook URL"
-  default     = "teams-webhook-url"
+  description = "Teams chat or channel thread ID for posting leak detection notifications"
+}
+
+variable "teams_post_location" {
+  type        = string
+  description = "Teams posting location type for the notification message"
+  default     = "Group chat"
 }

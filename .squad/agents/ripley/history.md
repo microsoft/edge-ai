@@ -40,6 +40,7 @@ Created the complete `blueprints/leak-detection/terraform/` blueprint with 6 fil
 📌 Team update (2025-07-17): 511-teams-notification implemented with raw TcpListener health (no axum), composite dedup key (camera_id, event_id), token-bucket rate limiter — decided by Parker
 📌 Team update (2025-07-24): 511-teams-notification Rust service replaced with Azure Logic App (cloud-side). Implementation tasks changed: 13 Parker Rust tasks → 8 Ripley IaC tasks. Logic App triggered by Event Hub, posts Adaptive Cards to Teams. Ripley owns Logic App IaC — decided by Dallas
 📌 Team update (2025-07-24): 509-sse-connector confirmed retained — complementary to 508 Media Connector. No blueprint changes needed — decided by Dallas
+📌 Team update (2025-01-18): 045-notification migrated to Teams API Connection (OAuth). Replaced Key Vault webhook approach with direct Teams connector. Recurrence changed from 1 minute to 5 seconds. Teams connection requires post-deployment OAuth consent. Removed derive_severity and get_webhook_secret actions, simplified to parse + post pattern — requested by Carlos
 
 ## 2025-07-25: Created Logic App Notification Component (045-notification)
 
@@ -256,3 +257,24 @@ resource "azurerm_storage_container" "media" {
 - D1: Confirm container name is `media` (design proposal says `leak-evidence` in one place, deploy script says `media`)
 - D2: Should `should_deploy_media_capture` default to `true` or `false`?
 - D3: The kubectl applies require cluster connectivity during Terraform — same prerequisite as other `terraform_data`/`local-exec` patterns in the codebase
+
+## 2026-02-23: Created 045-notification README and updated leak-detection blueprint README
+
+### What
+
+Created `src/000-cloud/045-notification/README.md` and updated `blueprints/leak-detection/README.md`.
+
+**Component README** — followed the 040-messaging README structure: YAML frontmatter, Purpose and Role, Component Resources (Logic App, API Connections, Workflow Actions, RBAC), Notification Workflow, Post-Deployment Steps, Variables/Outputs/Provider tables, Deployment Options, footer comment.
+
+**Blueprint README updates:**
+- Added `cloud_notification` row to Key Modules table (after `cloud_messaging`)
+- Added `should_create_notification` and `teams_recipient_id` to Variable Reference table
+- Added "Notification (Teams Alerts)" section with post-deployment authorization, configuration, and testing guidance
+- Updated `ms.date` to 2026-02-23
+
+### Key Patterns
+
+- Component README documents both API connections requiring manual portal authorization post-deployment
+- Teams connection uses OAuth user consent (not managed identity) — critical post-deployment step
+- Blueprint notification section gated by `should_create_notification` (default false)
+- `teams_recipient_id` format documented as `19:xxx@thread.v2`

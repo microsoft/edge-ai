@@ -23,12 +23,3 @@ variable "eventhub_name" {
   type        = string
   description = "Name of the Event Hub to subscribe to for leak detection events"
 }
-
-variable "key_vault" {
-  type = object({
-    id        = string
-    name      = string
-    vault_uri = string
-  })
-  description = "Key Vault containing the Teams webhook URL secret"
-}

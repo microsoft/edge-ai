@@ -2,14 +2,15 @@
  * # Notification
  *
  * Deploys an Azure Logic App that subscribes to Event Hub ALERT_DLQC events,
- * derives severity from confidence_level, composes an Adaptive Card, and posts
- * it to a Microsoft Teams Incoming Webhook URL retrieved from Key Vault.
+ * parses the leak detection payload, and posts messages directly to Microsoft Teams
+ * using the Teams API Connection (OAuth connector). The Teams connection requires
+ * user consent after deployment via the Azure Portal.
  */
 
 locals {
   logic_app_name     = "la-${var.resource_prefix}-leak-notify-${var.environment}-${var.instance}"
   eventhub_conn_name = "apicon-evhub-${var.resource_prefix}-${var.environment}-${var.instance}"
-  keyvault_conn_name = "apicon-kv-${var.resource_prefix}-${var.environment}-${var.instance}"
+  teams_conn_name    = "apicon-teams-${var.resource_prefix}-${var.environment}-${var.instance}"
 }
 
 // ── Managed API Lookups ──────────────────────────────────────
@@ -19,8 +20,8 @@ data "azurerm_managed_api" "eventhub" {
   location = var.resource_group.location
 }
 
-data "azurerm_managed_api" "keyvault" {
-  name     = "keyvault"
+data "azurerm_managed_api" "teams" {
+  name     = "teams"
   location = var.resource_group.location
 }
 
@@ -53,9 +54,9 @@ resource "azapi_resource" "eventhub_connection" {
   }
 }
 
-resource "azapi_resource" "keyvault_connection" {
+resource "azapi_resource" "teams_connection" {
   type      = "Microsoft.Web/connections@2016-06-01"
-  name      = local.keyvault_conn_name
+  name      = local.teams_conn_name
   location  = var.resource_group.location
   parent_id = var.resource_group.id
   tags      = var.tags
@@ -65,17 +66,9 @@ resource "azapi_resource" "keyvault_connection" {
   body = {
     properties = {
       api = {
-        id = data.azurerm_managed_api.keyvault.id
+        id = data.azurerm_managed_api.teams.id
       }
-      displayName = "Key Vault (Managed Identity)"
-      parameterValueSet = {
-        name = "oauthMI"
-        values = {
-          vaultName = {
-            value = var.key_vault.name
-          }
-        }
-      }
+      displayName = "Teams"
     }
   }
 }
@@ -111,15 +104,11 @@ resource "azurerm_logic_app_workflow" "teams_notification" {
           }
         }
       }
-      keyvault = {
-        connectionId   = azapi_resource.keyvault_connection.id
-        connectionName = azapi_resource.keyvault_connection.name
-        id             = data.azurerm_managed_api.keyvault.id
-        connectionProperties = {
-          authentication = {
-            type = "ManagedServiceIdentity"
-          }
-        }
+      teams = {
+        connectionId         = azapi_resource.teams_connection.id
+        connectionName       = azapi_resource.teams_connection.name
+        id                   = data.azurerm_managed_api.teams.id
+        connectionProperties = {}
       }
     })
   }
@@ -128,7 +117,7 @@ resource "azurerm_logic_app_workflow" "teams_notification" {
 // ── Workflow Trigger ─────────────────────────────────────────
 
 resource "azurerm_logic_app_trigger_custom" "eventhub_trigger" {
-  name         = "When_events_arrive_in_Event_Hub"
+  name         = "When_events_are_available_in_Event_Hub"
   logic_app_id = azurerm_logic_app_workflow.teams_notification.id
 
   body = jsonencode({
@@ -143,14 +132,14 @@ resource "azurerm_logic_app_trigger_custom" "eventhub_trigger" {
       method = "get"
       path   = "/@{encodeURIComponent('${var.eventhub_name}')}/events/batch/head"
       queries = {
-        contentType        = "application/json"
+        contentType        = "application/octet-stream"
         consumerGroupName  = "$Default"
         maximumEventsCount = 50
       }
     }
     recurrence = {
-      frequency = "Minute"
-      interval  = 1
+      frequency = "Second"
+      interval  = 5
     }
   })
 }
@@ -181,23 +170,8 @@ resource "azurerm_logic_app_action_custom" "parse_payload" {
   })
 }
 
-resource "azurerm_logic_app_action_custom" "derive_severity" {
-  name         = "Derive_Severity"
-  logic_app_id = azurerm_logic_app_workflow.teams_notification.id
-
-  body = jsonencode({
-    type   = "Compose"
-    inputs = "@if(greaterOrEquals(body('Parse_Leak_Event')?['confidence_level'], 0.8), 'High', if(greaterOrEquals(body('Parse_Leak_Event')?['confidence_level'], 0.5), 'Medium', 'Low'))"
-    runAfter = {
-      Parse_Leak_Event = ["Succeeded"]
-    }
-  })
-
-  depends_on = [azurerm_logic_app_action_custom.parse_payload]
-}
-
-resource "azurerm_logic_app_action_custom" "get_webhook_secret" {
-  name         = "Get_Teams_Webhook_URL"
+resource "azurerm_logic_app_action_custom" "post_teams_message" {
+  name         = "Post_message_in_a_chat_or_channel"
   logic_app_id = azurerm_logic_app_workflow.teams_notification.id
 
   body = jsonencode({
@@ -205,11 +179,15 @@ resource "azurerm_logic_app_action_custom" "get_webhook_secret" {
     inputs = {
       host = {
         connection = {
-          name = "@parameters('$connections')['keyvault']['connectionId']"
+          name = "@parameters('$connections')['teams']['connectionId']"
         }
       }
-      method = "get"
-      path   = "/secrets/@{encodeURIComponent('${var.teams_webhook_secret_name}')}/value"
+      method = "post"
+      body = {
+        recipient   = var.teams_recipient_id
+        messageBody = "<p class=\"editor-paragraph\">Leak Detection Alert:</p><br><p class=\"editor-paragraph\">@{body('Parse_Leak_Event')}</p>"
+      }
+      path = "/beta/teams/conversation/message/poster/Flow bot/location/@{encodeURIComponent('${var.teams_post_location}')}"
     }
     runAfter = {
       Parse_Leak_Event = ["Succeeded"]
@@ -217,73 +195,6 @@ resource "azurerm_logic_app_action_custom" "get_webhook_secret" {
   })
 
   depends_on = [azurerm_logic_app_action_custom.parse_payload]
-}
-
-resource "azurerm_logic_app_action_custom" "post_teams_notification" {
-  name         = "Post_Teams_Notification"
-  logic_app_id = azurerm_logic_app_workflow.teams_notification.id
-
-  body = jsonencode({
-    type = "Http"
-    inputs = {
-      method = "POST"
-      uri    = "@body('Get_Teams_Webhook_URL')?['value']"
-      headers = {
-        "Content-Type" = "application/json"
-      }
-      body = {
-        type = "message"
-        attachments = [
-          {
-            contentType = "application/vnd.microsoft.card.adaptive"
-            content = {
-              "$schema" = "http://adaptivecards.io/schemas/adaptive-card.json"
-              type      = "AdaptiveCard"
-              version   = "1.4"
-              body = [
-                {
-                  type   = "TextBlock"
-                  text   = "🚨 Leak Detection Alert"
-                  weight = "Bolder"
-                  size   = "Large"
-                  color  = "Attention"
-                },
-                {
-                  type   = "TextBlock"
-                  text   = "Severity: @{outputs('Derive_Severity')}"
-                  weight = "Bolder"
-                },
-                {
-                  type = "FactSet"
-                  facts = [
-                    { title = "Device", value = "@{body('Parse_Leak_Event')?['device_id']}" },
-                    { title = "Location", value = "@{body('Parse_Leak_Event')?['location']}" },
-                    { title = "Confidence", value = "@{body('Parse_Leak_Event')?['confidence_level']}" },
-                    { title = "Alert Type", value = "@{body('Parse_Leak_Event')?['alert_type']}" },
-                    { title = "Time", value = "@{body('Parse_Leak_Event')?['timestamp']}" },
-                  ]
-                },
-                {
-                  type = "TextBlock"
-                  text = "@{coalesce(body('Parse_Leak_Event')?['message'], 'No additional details')}"
-                  wrap = true
-                },
-              ]
-            }
-          },
-        ]
-      }
-    }
-    runAfter = {
-      Derive_Severity       = ["Succeeded"]
-      Get_Teams_Webhook_URL = ["Succeeded"]
-    }
-  })
-
-  depends_on = [
-    azurerm_logic_app_action_custom.derive_severity,
-    azurerm_logic_app_action_custom.get_webhook_secret,
-  ]
 }
 
 // ── Role Assignments ─────────────────────────────────────────
@@ -293,13 +204,5 @@ resource "azurerm_role_assignment" "eventhub_data_receiver" {
 
   scope                = var.eventhub_namespace.id
   role_definition_name = "Azure Event Hubs Data Receiver"
-  principal_id         = azurerm_logic_app_workflow.teams_notification.identity[0].principal_id
-}
-
-resource "azurerm_role_assignment" "key_vault_secrets_user" {
-  count = var.should_assign_roles ? 1 : 0
-
-  scope                = var.key_vault.id
-  role_definition_name = "Key Vault Secrets User"
   principal_id         = azurerm_logic_app_workflow.teams_notification.identity[0].principal_id
 }

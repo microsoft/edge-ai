@@ -139,10 +139,10 @@ module "cloud_notification" {
   resource_group     = module.cloud_resource_group.resource_group
   eventhub_namespace = module.cloud_messaging.eventhub_namespace
   eventhub_name      = module.cloud_messaging.eventhubs[0].eventhub_name
-  key_vault          = module.cloud_security_identity.key_vault
   environment        = var.environment
   resource_prefix    = var.resource_prefix
   instance           = var.instance
+  teams_recipient_id = var.teams_recipient_id
 }
 
 // ── VM Host and Container Registry ───────────────────────────

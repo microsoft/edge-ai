@@ -1,0 +1,116 @@
+{
+    "definition": {
+        "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+        "contentVersion": "1.0.0.0",
+        "triggers": {
+            "When_events_are_available_in_Event_Hub": {
+                "recurrence": {
+                    "interval": 5,
+                    "frequency": "Second"
+                },
+                "evaluatedRecurrence": {
+                    "interval": 5,
+                    "frequency": "Second"
+                },
+                "splitOn": "@triggerBody()",
+                "type": "ApiConnection",
+                "inputs": {
+                    "host": {
+                        "connection": {
+                            "name": "@parameters('$connections')['eventhubs']['connectionId']"
+                        }
+                    },
+                    "method": "get",
+                    "path": "/@{encodeURIComponent('evh-aio-sample')}/events/batch/head",
+                    "queries": {
+                        "contentType": "application/octet-stream",
+                        "consumerGroupName": "$Default",
+                        "maximumEventsCount": 50
+                    }
+                }
+            }
+        },
+        "actions": {
+            "Parse_Leak_Event": {
+                "runAfter": {},
+                "type": "ParseJson",
+                "inputs": {
+                    "content": "@base64ToString(triggerBody()?['ContentData'])",
+                    "schema": {
+                        "properties": {
+                            "alert_type": {
+                                "type": "string"
+                            },
+                            "confidence_level": {
+                                "type": "number"
+                            },
+                            "device_id": {
+                                "type": "string"
+                            },
+                            "location": {
+                                "type": "string"
+                            },
+                            "message": {
+                                "type": "string"
+                            },
+                            "timestamp": {
+                                "type": "string"
+                            }
+                        },
+                        "type": "object"
+                    }
+                }
+            },
+            "Post_message_in_a_chat_or_channel": {
+                "runAfter": {
+                    "Parse_Leak_Event": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "ApiConnection",
+                "inputs": {
+                    "host": {
+                        "connection": {
+                            "name": "@parameters('$connections')['teams']['connectionId']"
+                        }
+                    },
+                    "method": "post",
+                    "body": {
+                        "recipient": "19:d725430aea604596a9f8e0d96f585d76@thread.v2",
+                        "messageBody": "<p class=\"editor-paragraph\">This is a Leak Detection message body:</p><br><p class=\"editor-paragraph\">@{body('Parse_Leak_Event')}</p>"
+                    },
+                    "path": "/beta/teams/conversation/message/poster/Flow bot/location/@{encodeURIComponent('Group chat')}"
+                }
+            }
+        },
+        "parameters": {
+            "$connections": {
+                "type": "Object",
+                "defaultValue": {}
+            }
+        }
+    },
+    "parameters": {
+        "$connections": {
+            "type": "Object",
+            "value": {
+                "eventhubs": {
+                    "id": "/subscriptions/12d78ff6-2cb7-471d-af66-9520baa9f399/providers/Microsoft.Web/locations/eastus2/managedApis/eventhubs",
+                    "connectionId": "/subscriptions/12d78ff6-2cb7-471d-af66-9520baa9f399/resourceGroups/rg-fullleakdet-dev-001/providers/Microsoft.Web/connections/apicon-evhub-fullleakdet-dev-001",
+                    "connectionName": "apicon-evhub-fullleakdet-dev-001",
+                    "connectionProperties": {
+                        "authentication": {
+                            "type": "ManagedServiceIdentity"
+                        }
+                    }
+                },
+                "teams": {
+                    "id": "/subscriptions/12d78ff6-2cb7-471d-af66-9520baa9f399/providers/Microsoft.Web/locations/eastus2/managedApis/teams",
+                    "connectionId": "/subscriptions/12d78ff6-2cb7-471d-af66-9520baa9f399/resourceGroups/rg-fullleakdet-dev-001/providers/Microsoft.Web/connections/teams",
+                    "connectionName": "teams",
+                    "connectionProperties": {}
+                }
+            }
+        }
+    }
+}

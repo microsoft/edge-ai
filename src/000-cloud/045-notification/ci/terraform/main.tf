@@ -22,11 +22,9 @@ module "notification" {
     name = "evhns-ci-dev-001"
   }
 
-  key_vault = {
-    id        = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-ci-dev-001/providers/Microsoft.KeyVault/vaults/kv-ci-dev-001"
-    name      = "kv-ci-dev-001"
-    vault_uri = "https://kv-ci-dev-001.vault.azure.net/"
-  }
+  eventhub_name = "evh-aio-sample"
+
+  teams_recipient_id = "19:mock-thread-id@thread.v2"
 
   should_assign_roles = false
 }

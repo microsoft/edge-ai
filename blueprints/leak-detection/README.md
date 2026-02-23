@@ -2,7 +2,7 @@
 title: Leak Detection Blueprint
 description: Purpose-built Azure IoT Operations deployment for leak detection in Oil & Gas and Energy environments using SSE camera connectors and EventHub dataflows
 author: Edge AI Team
-ms.date: 2026-02-19
+ms.date: 2026-02-23
 ms.topic: reference
 keywords:
   - azure iot operations
@@ -58,6 +58,7 @@ This blueprint consists of the following key components:
 | `cloud_observability`     | Sets up monitoring infrastructure        | `../../../src/000-cloud/020-observability/terraform`     |
 | `cloud_data`              | Creates data storage and schema registry | `../../../src/000-cloud/030-data/terraform`              |
 | `cloud_messaging`         | Sets up EventHub and Event Grid          | `../../../src/000-cloud/040-messaging/terraform`         |
+| `cloud_notification`      | Sends Teams alerts on leak events        | `../../../src/000-cloud/045-notification/terraform`      |
 | `cloud_vm_host`           | Creates the VM host for the cluster      | `../../../src/000-cloud/051-vm-host/terraform`           |
 | `cloud_acr`               | Deploys Azure Container Registry         | `../../../src/000-cloud/060-acr/terraform`               |
 | `edge_cncf_cluster`       | Deploys K3s Kubernetes cluster with Arc  | `../../../src/100-edge/100-cncf-cluster/terraform`       |
@@ -81,6 +82,8 @@ This blueprint consists of the following key components:
 | `namespaced_devices`                      | SSE camera device definitions             | `[]`     | See `leak-detection-assets.tfvars.example`                 |
 | `namespaced_assets`                       | Leak detection asset definitions          | `[]`     | See `leak-detection-assets.tfvars.example`                 |
 | `aio_features`                            | AIO feature configurations                | `null`   | Map of feature settings for Azure IoT Operations           |
+| `should_create_notification`              | Enable the Teams notification workflow    | `false`  | Creates Logic App + Teams integration when true            |
+| `teams_recipient_id`                      | Teams thread ID for leak alert messages   | `null`   | Required when `should_create_notification` is `true`       |
 
 For additional configuration options, review the variables in `variables.tf`.
 
@@ -302,3 +305,29 @@ Verify the correct StorageClass exists on the cluster:
 kubectl get storageclass
 kubectl describe pvc pvc-acsa-cloud-backed -n azure-iot-operations
 ```
+
+## Notification (Teams Alerts)
+
+When `should_create_notification = true`, this blueprint deploys an Azure Logic App that monitors the Event Hub for leak detection events and posts alert messages to Microsoft Teams. This is optional and disabled by default.
+
+### Post-Deployment Authorization
+
+The Logic App requires two manual authorization steps in the Azure Portal after Terraform deployment:
+
+1. Navigate to the resource group in the Azure Portal
+2. **Authorize the EventHub API Connection**: Open `apicon-evhub-{prefix}-{env}-{instance}` → Edit API connection → Authorize → select **Logic Apps Managed Identity** → Save
+3. **Authorize the Teams API Connection**: Open `apicon-teams-{prefix}-{env}-{instance}` → Edit API connection → Authorize → complete the **OAuth user consent flow** → Save
+
+The Logic App begins processing events once both connections are authorized.
+
+### Configuration
+
+Set the `teams_recipient_id` variable to the Teams chat or channel thread ID where alerts should be posted. The format is `19:xxx@thread.v2` — a Teams chat or channel thread identifier.
+
+### Testing
+
+After authorizing both API connections:
+
+1. Send a test event to the Event Hub (or wait for an ALERT_DLQC event from the edge)
+2. Open the Logic App run history in the Azure Portal to verify the trigger fired
+3. Confirm the alert message appears in the configured Teams chat or channel
