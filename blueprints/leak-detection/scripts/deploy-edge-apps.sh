@@ -43,6 +43,9 @@ for var in "${REQUIRED_VARS[@]}"; do
   fi
 done
 
+# Step 0 — Enable anonymous pull on ACR (for Arc cluster to pull images without auth)
+az acr update --name "${TF_ACR_NAME}" --anonymous-pull-enabled
+
 # Step 1 — Deploy 509 (Kustomize)
 echo "=== Step 1: Deploying 509-sse-connector ==="
 "${TF_APP_509_PATH}/charts/gen-patch.sh" \
