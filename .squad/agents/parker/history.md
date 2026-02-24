@@ -288,3 +288,12 @@ Build context: `src/500-application/503-media-capture-service/` (the entire comp
 - `TF_APP_*_PATH` env vars no longer validated by push script (Terraform still sets them but they're unused).
 
 **Decision:** `.ai-team/decisions/inbox/parker-local-docker-builds.md`
+
+### 2026-02-24: ONVIF simulator configured for leaking-pipe.mp4 video streaming
+
+ONVIF simulator configured for leaking-pipe.mp4 video streaming.
+
+**Changes:**
+- Dockerfile: Added `COPY media/leaking-pipe.mp4 /data/leaking-pipe.mp4` after the default.jpg copy
+- deployment.yaml: `CAM1_SOURCE` → `/data/leaking-pipe.mp4`, `CAM1_TYPE` → `video` (enables `-re -stream_loop -1 -i` looping playback in rtsp_manager)
+- build-app-images-local.sh: Pre-build copy of `media/leaking-pipe.mp4` into ONVIF build context, post-build cleanup via `rm -f`

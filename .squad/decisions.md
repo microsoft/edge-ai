@@ -314,6 +314,18 @@ ACR Build has constrained server-side environment. The 503-media-capture-service
 
 ---
 
+### 2026-02-24: ONVIF simulator switched from test pattern to leaking-pipe.mp4
+
+**By:** Parker (Edge Developer)
+
+**What:** The ONVIF camera simulator now streams `leaking-pipe.mp4` in a loop instead of an FFmpeg test pattern. The build script temporarily copies the video into the Docker build context (it lives outside at `blueprints/leak-detection/media/`) and cleans up after the build.
+
+**Why:** The e2e leak detection demo requires realistic video of a leaking pipe rather than a synthetic test pattern. The video file lives in the blueprint's shared `media/` directory (outside the ONVIF service build context), so the build script handles the copy/cleanup lifecycle.
+
+**Status:** PROPOSED
+
+---
+
 ### 2026-02-23: 045-notification end-to-end deployment validated
 
 **By:** Ripley (Infra Dev), validated by Carlos Sardo
