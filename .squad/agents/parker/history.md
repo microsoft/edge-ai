@@ -297,3 +297,17 @@ ONVIF simulator configured for leaking-pipe.mp4 video streaming.
 - Dockerfile: Added `COPY media/leaking-pipe.mp4 /data/leaking-pipe.mp4` after the default.jpg copy
 - deployment.yaml: `CAM1_SOURCE` → `/data/leaking-pipe.mp4`, `CAM1_TYPE` → `video` (enables `-re -stream_loop -1 -i` looping playback in rtsp_manager)
 - build-app-images-local.sh: Pre-build copy of `media/leaking-pipe.mp4` into ONVIF build context, post-build cleanup via `rm -f`
+
+### 2026-02-24: FFmpeg video loop crash fix (ONVIF camera simulator)
+
+**Problem:** FFmpeg crashes every ~4 minutes when looping video files with `-stream_loop -1`. At the loop boundary, timestamps jump discontinuously (e.g., 240s → 0s) and the RTSP muxer crashes. The monitor detects the crash and restarts, but the cycle breaks downstream AIO Media Connector (Akri).
+
+**Root cause:** `-stream_loop -1` requires seeking, and the RTSP muxer can't handle the timestamp discontinuity at loop boundaries.
+
+**Fixes applied to `blueprints/leak-detection/services/onvif-camera-simulator/src/rtsp_manager.py`:**
+
+1. **`-fflags +genpts`** added before `-i` in the video branch — regenerates presentation timestamps at loop boundaries, eliminating the discontinuity
+2. **`-nostdin`** added as first arg after `"ffmpeg"` in ALL four command branches (fallback pattern, pattern, image/jpeg, video) — prevents stdin reads that cause hangs in container environments
+3. **`await asyncio.sleep(1.0)`** added in `restart_stream()` between `stop_stream()` and `start_stream()` — gives MediaMTX time to tear down the old RTSP path before the new FFmpeg process republishes
+
+**Key learning:** `-fflags +genpts` is the standard fix for FFmpeg timestamp discontinuities with `-stream_loop`. Must appear before `-i` in the command.

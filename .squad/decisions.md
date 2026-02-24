@@ -348,3 +348,19 @@ ACR Build has constrained server-side environment. The 503-media-capture-service
 **Lesson learned:** `az eventhubs eventhub send-event` CLI command does not exist. Event Hub namespaces with `disableLocalAuth=true` reject connection-string-based sends. Use Python SDK with `DefaultAzureCredential` and ensure the sender has "Azure Event Hubs Data Sender" RBAC role.
 
 **Status:** ACCEPTED
+
+---
+
+### 2026-02-24: FFmpeg video loop crash fix — `-fflags +genpts` and `-nostdin`
+
+**By:** Parker (App Dev)
+
+**What:** Fixed FFmpeg crashing every ~4 minutes when looping video files via `-stream_loop -1` in the ONVIF camera simulator. Three changes to `rtsp_manager.py`:
+
+1. Added `-fflags +genpts` before `-i` in the video source branch to regenerate presentation timestamps at loop boundaries
+2. Added `-nostdin` to all four FFmpeg command branches for container safety
+3. Added 1-second async delay in `restart_stream()` to let MediaMTX clean up old RTSP paths
+
+**Why:** The RTSP muxer crashes on the timestamp discontinuity when FFmpeg seeks back to the start of the video. `-fflags +genpts` is the standard FFmpeg fix. The `-nostdin` flag prevents stdin-related hangs in headless containers. The restart delay prevents a race condition where the new FFmpeg process tries to publish to a path that hasn't been fully torn down.
+
+**Status:** PROPOSED
