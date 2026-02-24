@@ -35,6 +35,7 @@ readonly -a IMAGES=(
   "sse-server"
   "ai-edge-inference"
   "media-capture-service"
+  "onvif-camera-simulator"
 )
 
 # Verify all local images exist before pushing

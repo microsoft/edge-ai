@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: onvif-camera-simulator
+  labels:
+    app: onvif-camera-simulator
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+      protocol: TCP
+    - name: rtsp
+      port: 8554
+      targetPort: rtsp
+      protocol: TCP
+    - name: webrtc-udp
+      port: 8189
+      targetPort: webrtc-udp
+      protocol: UDP
+    - name: webrtc-tcp
+      port: 8189
+      targetPort: webrtc-tcp
+      protocol: TCP
+  selector:
+    app: onvif-camera-simulator

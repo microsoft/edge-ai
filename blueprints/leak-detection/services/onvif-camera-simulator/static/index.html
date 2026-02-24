@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ONVIF Camera Simulator</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background: #f0f2f5;
+    color: #333;
+    line-height: 1.5;
+  }
+
+  header {
+    background: #1a1a2e;
+    color: #fff;
+    padding: 1rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  header h1 { font-size: 1.4rem; font-weight: 600; }
+
+  #overall-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: #ccc;
+  }
+
+  .status-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .status-streaming { background: #4caf50; }
+  .status-stopped   { background: #9e9e9e; }
+  .status-error     { background: #f44336; }
+  .status-starting  { background: #ff9800; }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1.5rem 1rem;
+  }
+
+  section { margin-bottom: 2rem; }
+
+  section h2 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 2px solid #ddd;
+  }
+
+  /* Camera grid */
+  .camera-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 1rem;
+  }
+
+  .camera-card {
+    background: #fff;
+    border-radius: 8px;
+    padding: 1.25rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .camera-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .camera-header .camera-name {
+    font-weight: 600;
+    font-size: 1.05rem;
+    flex: 1;
+  }
+
+  .camera-header .camera-id {
+    font-size: 0.8rem;
+    color: #777;
+    font-family: monospace;
+  }
+
+  .camera-detail {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    color: #555;
+  }
+
+  .camera-detail label {
+    font-weight: 600;
+    min-width: 70px;
+    flex-shrink: 0;
+  }
+
+  .camera-detail .uri {
+    font-family: monospace;
+    font-size: 0.8rem;
+    background: #f5f5f5;
+    padding: 2px 6px;
+    border-radius: 3px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+  }
+
+  .copy-btn {
+    background: none;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    padding: 2px 6px;
+    color: #555;
+    flex-shrink: 0;
+  }
+
+  .copy-btn:hover { background: #eee; }
+
+  .camera-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 0.25rem;
+  }
+
+  .camera-actions select {
+    flex: 1;
+    min-width: 0;
+    padding: 0.35rem 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-family: inherit;
+  }
+
+  .btn {
+    padding: 0.4rem 0.85rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-family: inherit;
+    font-weight: 500;
+  }
+
+  .btn-swap { background: #2196f3; color: #fff; }
+  .btn-swap:hover { background: #1976d2; }
+
+  .btn-remove { background: #f44336; color: #fff; }
+  .btn-remove:hover { background: #d32f2f; }
+
+  .btn-primary { background: #4caf50; color: #fff; }
+  .btn-primary:hover { background: #388e3c; }
+
+  .btn-upload { background: #ff9800; color: #fff; }
+  .btn-upload:hover { background: #f57c00; }
+
+  /* Add camera form */
+  .add-form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.75rem;
+    background: #fff;
+    padding: 1.25rem;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+
+  .add-form .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  .add-form label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #555;
+  }
+
+  .add-form input,
+  .add-form select {
+    padding: 0.4rem 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-family: inherit;
+  }
+
+  .add-form .form-actions {
+    display: flex;
+    align-items: flex-end;
+  }
+
+  /* Media section */
+  .media-panel {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    padding: 1.25rem;
+  }
+
+  .media-list {
+    list-style: none;
+    margin-bottom: 1rem;
+  }
+
+  .media-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #eee;
+    font-size: 0.9rem;
+  }
+
+  .media-list li:last-child { border-bottom: none; }
+
+  .media-name { font-family: monospace; font-weight: 500; }
+
+  .media-meta {
+    color: #777;
+    font-size: 0.8rem;
+    display: flex;
+    gap: 1rem;
+  }
+
+  .upload-form {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid #eee;
+    flex-wrap: wrap;
+  }
+
+  .upload-form input[type="file"] { font-size: 0.85rem; font-family: inherit; }
+
+  .no-cameras {
+    text-align: center;
+    color: #999;
+    padding: 2rem;
+    font-size: 0.95rem;
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    background: #333;
+    color: #fff;
+    padding: 0.6rem 1.2rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+    z-index: 100;
+  }
+
+  .toast.visible { opacity: 1; }
+
+  /* Stream preview */
+  .preview-container {
+    display: none;
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #111;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .preview-container.active { display: block; }
+
+  .preview-container video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .preview-container .preview-overlay {
+    position: absolute;
+    top: 0.4rem;
+    right: 0.4rem;
+    background: rgba(0,0,0,0.55);
+    color: #fff;
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    border-radius: 3px;
+    pointer-events: none;
+  }
+
+  .btn-preview { background: #7c4dff; color: #fff; }
+  .btn-preview:hover { background: #651fff; }
+  .btn-preview.active { background: #f44336; }
+  .btn-preview.active:hover { background: #d32f2f; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>ONVIF Camera Simulator</h1>
+  <div id="overall-status">
+    <span class="status-dot status-stopped"></span>
+    <span id="status-text">Loading…</span>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- Cameras -->
+  <section>
+    <h2>Cameras</h2>
+    <div id="camera-grid" class="camera-grid">
+      <div class="no-cameras">Loading cameras…</div>
+    </div>
+  </section>
+
+  <!-- Add Camera -->
+  <section>
+    <h2>Add Camera</h2>
+    <div class="add-form" id="add-form">
+      <div class="form-group">
+        <label for="new-id">ID</label>
+        <input id="new-id" type="text" placeholder="cam-03">
+      </div>
+      <div class="form-group">
+        <label for="new-name">Name</label>
+        <input id="new-name" type="text" placeholder="Valve Room 3">
+      </div>
+      <div class="form-group">
+        <label for="new-source">Source</label>
+        <select id="new-source"></select>
+      </div>
+      <div class="form-group">
+        <label for="new-type">Type</label>
+        <select id="new-type">
+          <option value="video">video</option>
+          <option value="image">image</option>
+          <option value="pattern">pattern</option>
+        </select>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-primary" onclick="addCamera()">Add Camera</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Media Files -->
+  <section>
+    <h2>Media Files</h2>
+    <div class="media-panel">
+      <ul id="media-list" class="media-list">
+        <li class="no-cameras">Loading media…</li>
+      </ul>
+      <div class="upload-form">
+        <input id="media-file" type="file" accept="video/*,image/*">
+        <button class="btn btn-upload" onclick="uploadMedia()">Upload</button>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+  let mediaFiles = [];
+  let patternList = [];
+  const activePreviews = new Map();
+
+  /* -- Toast notification -- */
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('visible');
+    setTimeout(() => t.classList.remove('visible'), 2500);
+  }
+
+  /* -- Clipboard -- */
+  function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(
+      () => showToast('Copied to clipboard'),
+      () => showToast('Copy failed')
+    );
+  }
+
+  /* -- Format bytes -- */
+  function fmtSize(bytes) {
+    if (bytes == null) return '';
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / 1048576).toFixed(1) + ' MB';
+  }
+
+  /* -- Status helpers -- */
+  function statusClass(s) {
+    switch ((s || '').toLowerCase()) {
+      case 'streaming': return 'status-streaming';
+      case 'starting':  return 'status-starting';
+      case 'error':     return 'status-error';
+      default:          return 'status-stopped';
+    }
+  }
+
+  function statusLabel(s) {
+    const v = (s || 'stopped').toLowerCase();
+    return v.charAt(0).toUpperCase() + v.slice(1);
+  }
+
+  /* -- Source display helper -- */
+  function formatSource(cam) {
+    if (cam.source_type === 'pattern') {
+      const p = patternList.find(p => p.name === cam.source_path);
+      return 'Pattern: ' + (p ? p.label : cam.source_path);
+    }
+    return esc(cam.source_path || '—') + ' (' + esc(cam.source_type || '—') + ')';
+  }
+
+  /* -- Build swap options based on type -- */
+  function buildSwapOptions(cam) {
+    if (cam.source_type === 'pattern') {
+      return patternList.map(p =>
+        `<option value="${esc(p.name)}" ${p.name === cam.source_path ? 'selected' : ''}>${esc(p.label)}</option>`
+      ).join('');
+    }
+    return mediaFiles.map(f =>
+      `<option value="${esc(f.name)}" ${f.name === cam.source_path ? 'selected' : ''}>${esc(f.name)}</option>`
+    ).join('');
+  }
+
+  /* -- Build swap type toggle -- */
+  function buildSwapTypeOptions(cam) {
+    const types = ['video', 'image', 'pattern'];
+    return types.map(t =>
+      `<option value="${t}" ${t === cam.source_type ? 'selected' : ''}>${t}</option>`
+    ).join('');
+  }
+
+  /* -- Build a camera card -- */
+  function buildCard(cam) {
+    const card = document.createElement('div');
+    card.className = 'camera-card';
+    const isStreaming = (cam.status || '').toLowerCase() === 'streaming';
+    const hasPreview = activePreviews.has(cam.id);
+
+    card.innerHTML = `
+      <div class="preview-container${hasPreview ? ' active' : ''}" id="preview-box-${esc(cam.id)}">
+        <video id="preview-video-${esc(cam.id)}" autoplay muted playsinline></video>
+        <span class="preview-overlay">LIVE</span>
+      </div>
+      <div class="camera-header">
+        <span class="status-dot ${statusClass(cam.status)}"></span>
+        <span class="camera-name">${esc(cam.name)}</span>
+        <span class="camera-id">${esc(cam.id)}</span>
+      </div>
+      <div class="camera-detail">
+        <label>Status</label>
+        <span>${statusLabel(cam.status)}</span>
+      </div>
+      <div class="camera-detail">
+        <label>RTSP</label>
+        <span class="uri" title="${esc(cam.rtsp_uri || '')}">${esc(cam.rtsp_uri || '—')}</span>
+        ${cam.rtsp_uri ? `<button class="copy-btn" onclick="copyToClipboard('${escAttr(cam.rtsp_uri)}')">Copy</button>` : ''}
+      </div>
+      <div class="camera-detail">
+        <label>ONVIF</label>
+        <span class="uri" title="${esc(cam.onvif_uri || '')}">${esc(cam.onvif_uri || '—')}</span>
+        ${cam.onvif_uri ? `<button class="copy-btn" onclick="copyToClipboard('${escAttr(cam.onvif_uri)}')">Copy</button>` : ''}
+      </div>
+      <div class="camera-detail">
+        <label>Source</label>
+        <span>${formatSource(cam)}</span>
+      </div>
+      ${cam.resolution ? `<div class="camera-detail"><label>Video</label><span>${esc(cam.resolution)}${cam.framerate ? ' @ ' + cam.framerate + ' fps' : ''}</span></div>` : ''}
+      <div class="camera-actions">
+        ${isStreaming ? `<button class="btn btn-preview${hasPreview ? ' active' : ''}" id="preview-btn-${esc(cam.id)}" onclick="togglePreview('${escAttr(cam.id)}')">${hasPreview ? 'Stop' : 'Preview'}</button>` : ''}
+        <select id="swap-type-${esc(cam.id)}" onchange="onSwapTypeChange('${escAttr(cam.id)}')">${buildSwapTypeOptions(cam)}</select>
+        <select id="swap-${esc(cam.id)}">${buildSwapOptions(cam)}</select>
+        <button class="btn btn-swap" onclick="swapSource('${escAttr(cam.id)}')">Swap</button>
+        <button class="btn btn-remove" onclick="removeCamera('${escAttr(cam.id)}')">Remove</button>
+      </div>
+    `;
+
+    if (hasPreview) {
+      const video = card.querySelector('#preview-video-' + cam.id);
+      const entry = activePreviews.get(cam.id);
+      if (video && entry && entry.stream) {
+        video.srcObject = entry.stream;
+      }
+    }
+
+    return card;
+  }
+
+  /* -- Update swap source dropdown when swap type changes -- */
+  function onSwapTypeChange(cameraId) {
+    const typeSel = document.getElementById('swap-type-' + cameraId);
+    const srcSel = document.getElementById('swap-' + cameraId);
+    if (!typeSel || !srcSel) return;
+
+    if (typeSel.value === 'pattern') {
+      srcSel.innerHTML = patternList.map(p =>
+        `<option value="${esc(p.name)}">${esc(p.label)}</option>`
+      ).join('');
+    } else {
+      srcSel.innerHTML = mediaFiles.map(f =>
+        `<option value="${esc(f.name)}">${esc(f.name)}</option>`
+      ).join('');
+    }
+  }
+
+  /* -- Escape helpers -- */
+  function esc(s) {
+    const d = document.createElement('span');
+    d.textContent = s || '';
+    return d.innerHTML;
+  }
+
+  function escAttr(s) {
+    return (s || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+  }
+
+  /* -- Interaction guard: skip DOM rebuild while user is using a dropdown -- */
+  function isUserInteracting() {
+    const active = document.activeElement;
+    if (!active) return false;
+    const tag = active.tagName.toLowerCase();
+    if (tag === 'select' || tag === 'input' || tag === 'textarea') return true;
+    const grid = document.getElementById('camera-grid');
+    return grid && grid.contains(active);
+  }
+
+  /* -- Refresh cameras -- */
+  async function refreshCameras(force) {
+    if (!force && isUserInteracting()) return;
+
+    try {
+      const res = await fetch('/api/cameras');
+      if (!res.ok) throw new Error(res.statusText);
+      const cameras = await res.json();
+      const grid = document.getElementById('camera-grid');
+      grid.innerHTML = '';
+
+      if (!cameras.length) {
+        grid.innerHTML = '<div class="no-cameras">No cameras configured</div>';
+      } else {
+        cameras.forEach(c => grid.appendChild(buildCard(c)));
+      }
+
+      updateOverallStatus(cameras);
+    } catch (e) {
+      document.getElementById('status-text').textContent = 'API unreachable';
+      document.querySelector('#overall-status .status-dot').className = 'status-dot status-error';
+    }
+  }
+
+  function updateOverallStatus(cameras) {
+    const dot = document.querySelector('#overall-status .status-dot');
+    const txt = document.getElementById('status-text');
+    const total = cameras.length;
+    const streaming = cameras.filter(c => (c.status || '').toLowerCase() === 'streaming').length;
+    const errors = cameras.filter(c => (c.status || '').toLowerCase() === 'error').length;
+
+    if (!total) {
+      dot.className = 'status-dot status-stopped';
+      txt.textContent = 'No cameras';
+    } else if (errors > 0) {
+      dot.className = 'status-dot status-error';
+      txt.textContent = `${errors} error${errors > 1 ? 's' : ''} · ${streaming}/${total} streaming`;
+    } else if (streaming === total) {
+      dot.className = 'status-dot status-streaming';
+      txt.textContent = `${total} camera${total > 1 ? 's' : ''} streaming`;
+    } else {
+      dot.className = 'status-dot status-starting';
+      txt.textContent = `${streaming}/${total} streaming`;
+    }
+  }
+
+  /* -- Swap source -- */
+  async function swapSource(cameraId) {
+    const typeSel = document.getElementById('swap-type-' + cameraId);
+    const srcSel = document.getElementById('swap-' + cameraId);
+    if (!srcSel) return;
+    const sourcePath = srcSel.value;
+    const sourceType = typeSel ? typeSel.value : guessType(sourcePath);
+    try {
+      const res = await fetch(`/api/cameras/${encodeURIComponent(cameraId)}/source`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ source_path: sourcePath, source_type: sourceType })
+      });
+      if (!res.ok) throw new Error(await res.text());
+      showToast('Source swapped');
+      refreshCameras(true);
+    } catch (e) {
+      showToast('Swap failed: ' + e.message);
+    }
+  }
+
+  function guessType(name) {
+    const ext = (name || '').split('.').pop().toLowerCase();
+    if (['mp4', 'avi', 'mkv', 'mov', 'webm'].includes(ext)) return 'video';
+    if (['jpg', 'jpeg', 'png', 'bmp', 'tiff'].includes(ext)) return 'image';
+    return 'pattern';
+  }
+
+  /* -- Add camera -- */
+  async function addCamera() {
+    const id = document.getElementById('new-id').value.trim();
+    const name = document.getElementById('new-name').value.trim();
+    const sourceSel = document.getElementById('new-source');
+    const source_path = sourceSel.value;
+    const source_type = document.getElementById('new-type').value;
+
+    if (!id || !name) { showToast('ID and Name are required'); return; }
+
+    try {
+      const res = await fetch('/api/cameras', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, name, source_path, source_type })
+      });
+      if (!res.ok) throw new Error(await res.text());
+      showToast('Camera added');
+      document.getElementById('new-id').value = '';
+      document.getElementById('new-name').value = '';
+      refreshCameras(true);
+    } catch (e) {
+      showToast('Add failed: ' + e.message);
+    }
+  }
+
+  /* -- Toggle add-form source dropdown based on type -- */
+  function onNewTypeChange() {
+    const typeSel = document.getElementById('new-type');
+    const srcSel = document.getElementById('new-source');
+    if (typeSel.value === 'pattern') {
+      srcSel.innerHTML = patternList.map(p =>
+        `<option value="${esc(p.name)}">${esc(p.label)}</option>`
+      ).join('');
+    } else {
+      populateSourceDropdowns();
+    }
+  }
+
+  /* -- Remove camera -- */
+  async function removeCamera(cameraId) {
+    if (!confirm('Remove camera ' + cameraId + '?')) return;
+    try {
+      const res = await fetch(`/api/cameras/${encodeURIComponent(cameraId)}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error(await res.text());
+      showToast('Camera removed');
+      refreshCameras(true);
+    } catch (e) {
+      showToast('Remove failed: ' + e.message);
+    }
+  }
+
+  /* -- Refresh media -- */
+  async function refreshMedia() {
+    try {
+      const res = await fetch('/api/media');
+      if (!res.ok) throw new Error(res.statusText);
+      mediaFiles = await res.json();
+
+      const list = document.getElementById('media-list');
+      if (!mediaFiles.length) {
+        list.innerHTML = '<li class="no-cameras">No media files</li>';
+      } else {
+        list.innerHTML = mediaFiles.map(f => `
+          <li>
+            <span class="media-name">${esc(f.name)}</span>
+            <span class="media-meta">
+              <span>${esc(f.type || '')}</span>
+              <span>${fmtSize(f.size)}</span>
+            </span>
+          </li>
+        `).join('');
+      }
+
+      populateSourceDropdowns();
+    } catch (e) {
+      document.getElementById('media-list').innerHTML =
+        '<li class="no-cameras">Failed to load media</li>';
+    }
+  }
+
+  function populateSourceDropdowns() {
+    const newSrc = document.getElementById('new-source');
+    const typeSel = document.getElementById('new-type');
+    if (typeSel && typeSel.value === 'pattern') return;
+
+    const current = newSrc.value;
+    newSrc.innerHTML = mediaFiles.map(f =>
+      `<option value="${esc(f.name)}">${esc(f.name)}</option>`
+    ).join('');
+    if (current && mediaFiles.some(f => f.name === current)) {
+      newSrc.value = current;
+    }
+  }
+
+  /* -- Fetch patterns -- */
+  async function refreshPatterns() {
+    try {
+      const res = await fetch('/api/patterns');
+      if (!res.ok) throw new Error(res.statusText);
+      patternList = await res.json();
+    } catch (e) {
+      patternList = [{ name: 'testsrc', label: 'Test Source', description: 'Default test pattern' }];
+    }
+  }
+
+  /* -- Upload media -- */
+  async function uploadMedia() {
+    const input = document.getElementById('media-file');
+    if (!input.files.length) { showToast('Select a file first'); return; }
+
+    const form = new FormData();
+    form.append('file', input.files[0]);
+
+    try {
+      const res = await fetch('/api/media/upload', { method: 'POST', body: form });
+      if (!res.ok) throw new Error(await res.text());
+      showToast('File uploaded');
+      input.value = '';
+      refreshMedia();
+    } catch (e) {
+      showToast('Upload failed: ' + e.message);
+    }
+  }
+
+  /* -- WebRTC preview via WHEP -- */
+
+  function togglePreview(cameraId) {
+    if (activePreviews.has(cameraId)) {
+      stopPreview(cameraId);
+    } else {
+      startPreview(cameraId);
+    }
+  }
+
+  async function startPreview(cameraId) {
+    const pc = new RTCPeerConnection({
+      iceServers: [],
+      bundlePolicy: 'max-bundle',
+    });
+
+    pc.addTransceiver('video', { direction: 'recvonly' });
+    pc.addTransceiver('audio', { direction: 'recvonly' });
+
+    const stream = new MediaStream();
+    pc.ontrack = (ev) => {
+      stream.addTrack(ev.track);
+      const video = document.getElementById('preview-video-' + cameraId);
+      if (video) video.srcObject = stream;
+    };
+
+    pc.onconnectionstatechange = () => {
+      if (['failed', 'disconnected', 'closed'].includes(pc.connectionState)) {
+        cleanupPreview(cameraId);
+      }
+    };
+
+    try {
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+
+      const res = await fetch(`/api/cameras/${encodeURIComponent(cameraId)}/whep`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/sdp' },
+        body: pc.localDescription.sdp,
+      });
+
+      if (!res.ok) {
+        pc.close();
+        showToast('Preview failed: ' + res.statusText);
+        return;
+      }
+
+      const sdpAnswer = await res.text();
+      const sessionUrl = res.headers.get('Location') || '';
+
+      await pc.setRemoteDescription(new RTCSessionDescription({
+        type: 'answer',
+        sdp: sdpAnswer,
+      }));
+
+      activePreviews.set(cameraId, { pc, stream, sessionUrl });
+
+      const box = document.getElementById('preview-box-' + cameraId);
+      if (box) box.classList.add('active');
+      const btn = document.getElementById('preview-btn-' + cameraId);
+      if (btn) { btn.textContent = 'Stop'; btn.classList.add('active'); }
+    } catch (e) {
+      pc.close();
+      showToast('Preview error: ' + e.message);
+    }
+  }
+
+  async function stopPreview(cameraId) {
+    const entry = activePreviews.get(cameraId);
+    if (!entry) return;
+
+    if (entry.sessionUrl) {
+      try {
+        await fetch(entry.sessionUrl, { method: 'DELETE' });
+      } catch (_) { /* best-effort teardown */ }
+    }
+
+    entry.pc.close();
+    activePreviews.delete(cameraId);
+
+    const box = document.getElementById('preview-box-' + cameraId);
+    if (box) box.classList.remove('active');
+    const video = document.getElementById('preview-video-' + cameraId);
+    if (video) video.srcObject = null;
+    const btn = document.getElementById('preview-btn-' + cameraId);
+    if (btn) { btn.textContent = 'Preview'; btn.classList.remove('active'); }
+  }
+
+  function cleanupPreview(cameraId) {
+    const entry = activePreviews.get(cameraId);
+    if (!entry) return;
+    entry.pc.close();
+    activePreviews.delete(cameraId);
+    refreshCameras(true);
+  }
+
+  /* -- Init -- */
+  (async function init() {
+    await refreshPatterns();
+    refreshMedia();
+    refreshCameras(true);
+    setInterval(() => refreshCameras(), 2000);
+
+    document.getElementById('new-type').addEventListener('change', onNewTypeChange);
+  })();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,33 @@
+---
+services:
+  onvif-camera-simulator:
+    build:
+      context: ./services/onvif-camera-simulator
+      dockerfile: Dockerfile
+    image: ${REGISTRY:-local}/${APPLICATION:-leak-detection}/onvif-camera-simulator:${BUILD_ID:-latest}
+    container_name: onvif-camera-simulator
+    ports:
+      - "${ONVIF_PORT:-8080}:8080"
+      - "${MEDIAMTX_RTSP_PORT:-8554}:8554"
+      - "${WEBRTC_MEDIA_PORT:-8189}:8189/udp"
+      - "${WEBRTC_MEDIA_PORT:-8189}:8189/tcp"
+    volumes:
+      - ./services/onvif-camera-simulator/media:/data:ro
+    env_file:
+      - ./services/onvif-camera-simulator/.env.example
+    environment:
+      - DEVICE_HOSTNAME=${DEVICE_HOSTNAME:-localhost}
+      - MTX_WEBRTCADDITIONALHOSTS=${DEVICE_HOSTNAME:-localhost}
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python3",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health')"
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    restart: unless-stopped

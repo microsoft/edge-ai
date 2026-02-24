@@ -1,0 +1,30 @@
+# MediaMTX configuration for ONVIF Camera Simulator
+
+logLevel: warn
+logDestinations: [stdout]
+
+# RTSP server
+rtsp: true
+rtspAddress: :8554
+rtspTransports: [tcp]
+
+# WebRTC server (WHEP playback for browser preview)
+webrtc: true
+webrtcAddress: :8889
+webrtcLocalUDPAddress: :8189
+webrtcLocalTCPAddress: :8189
+webrtcIPsFromInterfaces: true
+# Set webrtcAdditionalHosts when running in Docker/K8s where the container IP
+# differs from the host. Override via MTX_WEBRTCADDITIONALHOSTS env var.
+# webrtcAdditionalHosts: [192.168.1.100]
+
+# Disable unused protocols
+rtmp: false
+hls: false
+srt: false
+
+# Allow dynamic path creation when FFmpeg publishers connect
+paths:
+  all:
+    source: publisher
+    sourceOnDemand: false

@@ -1,19 +1,22 @@
 // Leak detection SSE camera device and event asset definitions.
 // Copy these values into your .tfvars file or terraform.tfvars.
+should_enable_akri_media_connector = true
+should_enable_akri_onvif_connector = true
 
 namespaced_devices = [
   {
-    name    = "leak-detection-camera"
+    name    = "pipe"
     enabled = true
     endpoints = {
       outbound = { assigned = {} }
       inbound = {
-        "sse-leak-camera-endpoint" = {
-          endpoint_type = "Microsoft.SSE"
-          address       = "http://analytics-camera:8080/camera-events"
+        "pipe-stream" = {
+          endpoint_type = "Custom"
+          address       = "rtsp://onvif-camera-simulator:8554/cam1"  # ← Update with your RTSP URL
           authentication = {
-            method = "Anonymous"
+            method = "Anonymous"  // For development/testing only
           }
+          trustSettings = null
         }
       }
     }
@@ -22,68 +25,20 @@ namespaced_devices = [
 
 namespaced_assets = [
   {
-    name         = "leak-detection-asset"
-    display_name = "Leak Detection Analytics Camera"
+    name         = "pipe-snapshots"
+    display_name = "Pipe Snapshots"
     device_ref = {
-      device_name   = "leak-detection-camera"
-      endpoint_name = "sse-leak-camera-endpoint"
+      device_name   = "pipe"
+      endpoint_name = "pipe-stream"
     }
-    description  = "Analytics camera asset for leak detection with DLQC events"
-    manufacturer = "Site Analytics Corp"
-    model        = "LAC-5000"
-    enabled      = true
-    attributes = {
-      facility    = "plant-alpha"
-      zone        = "pipeline-section-3"
-      asset_class = "leak-detection"
-    }
-    event_groups = [
+    enabled = true
+    datasets = [
       {
-        name = "leak_detection_events"
-        events = [
-          {
-            name        = "HEARTBEAT"
-            data_source = "ns=2;s=HeartbeatEvent"
-            destinations = [
-              {
-                target = "Mqtt"
-                configuration = {
-                  topic  = "events/plant-alpha/leak-cam-01/camera/heartbeat"
-                  retain = "Never"
-                  qos    = "Qos0"
-                }
-              }
-            ]
-          },
-          {
-            name        = "ALERT_DLQC"
-            data_source = "ns=2;s=AlertDlqcEvent"
-            destinations = [
-              {
-                target = "Mqtt"
-                configuration = {
-                  topic  = "alerts/plant-alpha/leak-cam-01/leak/dlqc"
-                  retain = "Never"
-                  qos    = "Qos1"
-                }
-              }
-            ]
-          },
-          {
-            name        = "ALERT"
-            data_source = "ns=2;s=AlertEvent"
-            destinations = [
-              {
-                target = "Mqtt"
-                configuration = {
-                  topic  = "alerts/plant-alpha/leak-cam-01/leak/basic"
-                  retain = "Never"
-                  qos    = "Qos1"
-                }
-              }
-            ]
-          }
-        ]
+        name = "snapshots"
+        dataset_configuration = "{\"taskType\":\"snapshot-to-mqtt\",\"intervalSeconds\":5,\"quality\":75,\"width\":640,\"height\":480}"
+        destinations = [{ target = "Mqtt", configuration = { topic = "edge-ai/test/pipe/camera/snapshots" } }]
+        data_points = []
+        data_source = ""
       }
     ]
   }

@@ -2,11 +2,11 @@
 set -euo pipefail
 
 ##############################################################################
-# Build App Images Locally — Docker Build for 509, 507, 503
+# Build App Images Locally — Docker Build for 509, 507, 503, ONVIF Simulator
 ##############################################################################
 #
 # DESCRIPTION:
-#   Builds container images for all three edge applications using
+#   Builds container images for all edge applications using
 #   local docker build (linux/amd64). Run this before pushing
 #   images with build-app-images.sh.
 #
@@ -26,29 +26,34 @@ readonly PLATFORM="linux/amd64"
 readonly APP_509="${REPO_ROOT}/src/500-application/509-sse-connector"
 readonly APP_507="${REPO_ROOT}/src/500-application/507-ai-inference"
 readonly APP_503="${REPO_ROOT}/src/500-application/503-media-capture-service"
+readonly BLUEPRINT_DIR="${SCRIPT_DIR}/.."
 
 readonly -a IMAGES=(
   "sse-server"
   "ai-edge-inference"
   "media-capture-service"
+  "onvif-camera-simulator"
 )
 
 readonly -a DOCKERFILES=(
   "${APP_509}/services/sse-server/Dockerfile"
   "${APP_507}/services/ai-edge-inference/Dockerfile"
   "${APP_503}/services/media-capture-service/Dockerfile"
+  "${BLUEPRINT_DIR}/services/onvif-camera-simulator/Dockerfile"
 )
 
 readonly -a CONTEXTS=(
   "${APP_509}/services/sse-server"
   "${APP_507}/services/"
   "${APP_503}"
+  "${BLUEPRINT_DIR}/services/onvif-camera-simulator"
 )
 
 readonly -a LABELS=(
   "509-sse-connector"
   "507-ai-inference"
   "503-media-capture-service"
+  "onvif-camera-simulator"
 )
 
 echo "=== Local Docker Build ==="

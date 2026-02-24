@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: onvif-camera-simulator
+  labels:
+    app: onvif-camera-simulator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: onvif-camera-simulator
+  template:
+    metadata:
+      labels:
+        app: onvif-camera-simulator
+    spec:
+      containers:
+        - name: onvif-camera-simulator
+          image: PLACEHOLDER_IMAGE
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+            - name: rtsp
+              containerPort: 8554
+              protocol: TCP
+            - name: webrtc-udp
+              containerPort: 8189
+              protocol: UDP
+            - name: webrtc-tcp
+              containerPort: 8189
+              protocol: TCP
+          env:
+            - name: ONVIF_PORT
+              value: "8080"
+            - name: MEDIAMTX_RTSP_PORT
+              value: "8554"
+            - name: CAMERAS
+              value: "cam1"
+            - name: CAM1_NAME
+              value: "Leak Detection Camera"
+            - name: CAM1_SOURCE
+              value: "/data/default.jpg"
+            - name: CAM1_TYPE
+              value: "jpeg"
+            - name: LOG_LEVEL
+              value: "INFO"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 200m
+              memory: 128Mi
+            limits:
+              cpu: "1"
+              memory: 512Mi

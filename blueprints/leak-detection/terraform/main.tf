@@ -356,6 +356,7 @@ resource "terraform_data" "edge_app_deployment" {
       TF_APP_507_PATH             = "${path.module}/../../../src/500-application/507-ai-inference"
       TF_APP_503_PATH             = "${path.module}/../../../src/500-application/503-media-capture-service"
       TF_STORAGE_ACCOUNT_ENDPOINT = module.cloud_data.storage_account.primary_blob_endpoint
+      TF_BLUEPRINT_DIR            = "${path.module}/.."
     }
   }
 }
