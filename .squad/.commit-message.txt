@@ -1,1 +1,6 @@
-chore: log e2e leak detection deployment session
+docs(.squad): log Parker FFmpeg video loop crash fix
+
+- Orchestration log for Parker sync task: 3 fixes to rtsp_manager.py
+  (-fflags +genpts, restart delay, -nostdin)
+- Merged inbox decision into decisions.md (PROPOSED)
+- Updated Parker agent history
