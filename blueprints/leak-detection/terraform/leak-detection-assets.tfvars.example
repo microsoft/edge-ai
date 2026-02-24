@@ -11,12 +11,12 @@ namespaced_devices = [
       outbound = { assigned = {} }
       inbound = {
         "pipe-stream" = {
-          endpoint_type = "Custom"
+          endpoint_type = "Microsoft.Media"
+          version       = "1.0"
           address       = "rtsp://onvif-camera-simulator:8554/cam1"  # ← Update with your RTSP URL
           authentication = {
-            method = "Anonymous"  // For development/testing only
+            method = "Anonymous"
           }
-          trustSettings = null
         }
       }
     }
@@ -32,13 +32,18 @@ namespaced_assets = [
       endpoint_name = "pipe-stream"
     }
     enabled = true
-    datasets = [
+    streams = [
       {
-        name = "snapshots"
-        dataset_configuration = "{\"taskType\":\"snapshot-to-mqtt\",\"intervalSeconds\":5,\"quality\":75,\"width\":640,\"height\":480}"
-        destinations = [{ target = "Mqtt", configuration = { topic = "edge-ai/test/pipe/camera/snapshots" } }]
-        data_points = []
-        data_source = ""
+        name                 = "snapshots"
+        stream_configuration = "{\"taskType\":\"snapshot-to-mqtt\",\"autostart\":true,\"loop\":true,\"snapshotsPerSecond\":0.2,\"format\":\"jpeg\",\"imageWidth\":640,\"imageHeight\":480}"
+        destinations = [{
+          target = "Mqtt"
+          configuration = {
+            topic  = "azure-iot-operations/data/pipe-snapshots/snapshots"
+            qos    = "Qos1"
+            retain = "Never"
+          }
+        }]
       }
     ]
   }

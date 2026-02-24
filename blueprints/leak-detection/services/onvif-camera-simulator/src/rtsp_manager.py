@@ -40,10 +40,21 @@ class RTSPManager:
         self._mediamtx_process = await asyncio.create_subprocess_exec(
             self.mediamtx_binary,
             self.mediamtx_config,
-            stdout=asyncio.subprocess.PIPE,
+            stdout=asyncio.subprocess.DEVNULL,
             stderr=asyncio.subprocess.PIPE,
         )
         logger.info("MediaMTX started with PID %d", self._mediamtx_process.pid)
+        asyncio.create_task(self._drain_mediamtx_stderr())
+
+    async def _drain_mediamtx_stderr(self) -> None:
+        """Read and log mediamtx stderr to prevent pipe buffer blockage."""
+        proc = self._mediamtx_process
+        if proc is None or proc.stderr is None:
+            return
+        async for line in proc.stderr:
+            text = line.decode(errors="replace").rstrip()
+            if text:
+                logger.warning("mediamtx: %s", text)
 
     async def stop_mediamtx(self) -> None:
         """Gracefully terminate the MediaMTX process."""

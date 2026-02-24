@@ -42,6 +42,7 @@ COPY mediamtx.yml /app/mediamtx.yml
 
 # Copy default media and create upload directory
 COPY media/pipe.jpg /data/default.jpg
+COPY media/leaking-pipe.mp4 /data/leaking-pipe.mp4
 RUN mkdir -p /app/uploads \
     && chown -R appuser:appuser /app /data
 

@@ -125,9 +125,13 @@ helm upgrade --install media-capture-service \
 
 # Step 7 — Deploy model-downloader job for 507
 echo "=== Step 7: Deploying model-downloader job ==="
+kubectl delete job/model-downloader \
+  -n "${TF_AIO_NAMESPACE}" --ignore-not-found
 kubectl apply \
   -f "${TF_APP_507_PATH}/charts/model-downloader-job.yaml" \
-  --namespace "${TF_AIO_NAMESPACE}" 2>/dev/null || true
+  --namespace "${TF_AIO_NAMESPACE}"
+kubectl wait --for=condition=complete job/model-downloader \
+  -n "${TF_AIO_NAMESPACE}" --timeout=300s
 
 # Wait for rollouts
 echo "=== Waiting for rollouts ==="

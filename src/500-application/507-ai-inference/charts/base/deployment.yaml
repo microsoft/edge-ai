@@ -65,7 +65,7 @@ spec:
             - name: AIO_MQTT_CLIENT_ID
               value: "ai-edge-inference-edge-device-01"
             - name: MQTT_INPUT_TOPICS
-              value: "edge-ai/+/+/camera/snapshots"
+              value: "azure-iot-operations/data/+/snapshots"
             - name: MQTT_QOS_LEVEL
               value: "1"
             - name: TOPIC_PREFIX

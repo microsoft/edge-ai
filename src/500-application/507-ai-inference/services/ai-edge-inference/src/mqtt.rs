@@ -20,7 +20,7 @@ use anyhow::Result;
 /// MQTT publisher for AI Edge Inference service - using Azure IoT Operations SDK pattern
 pub struct MqttPublisher {
     client: SessionManagedClient,
-    session: Option<Session>,
+    session: std::sync::Mutex<Option<Session>>,
     exit_handle: SessionExitHandle,
     monitor: SessionConnectionMonitor,
     config: MqttConfig,
@@ -152,14 +152,14 @@ impl MqttPublisher {
         let monitor = session.create_connection_monitor();
         let client = session.create_managed_client();
         let exit_handle = session.create_exit_handle();
-        
+
         info!("Successfully created MQTT session with Azure IoT Operations SDK");
-        
-        Ok(Self { 
-            client, 
-            session: Some(session),
+
+        Ok(Self {
+            client,
+            session: std::sync::Mutex::new(Some(session)),
             exit_handle,
-            monitor, 
+            monitor,
             config,
             inference_engine,
             stats: Arc::new(RwLock::new(MqttStats::default())),
@@ -177,9 +177,15 @@ impl MqttPublisher {
     pub async fn start_processing(&self) -> anyhow::Result<()> {
         info!("Starting MQTT message processing using Azure IoT Operations SDK");
 
-        // Wait for connection with retry mechanism instead of timeout exit  
+        // Take the MQTT session for driving the TCP/TLS/MQTT connection
+        let session = self.session.lock()
+            .map_err(|e| anyhow::anyhow!("Failed to lock session mutex: {}", e))?
+            .take()
+            .ok_or_else(|| anyhow::anyhow!("MQTT session already consumed"))?;
+
+        // Wait for connection with retry mechanism instead of timeout exit
         info!("Waiting for MQTT broker connection...");
-        
+
         // Spawn connection monitoring task like http-connector
         let monitor_clone = self.monitor.clone();
         tokio::spawn(async move {
@@ -205,7 +211,7 @@ impl MqttPublisher {
             .unwrap_or(&"edge-ai/+/+/camera/snapshots".to_string())
             .clone();
         info!("Attempting subscription to pattern: {}", topics_pattern);
-        
+
         // Spawn subscription task with retry mechanism
         let client_clone = self.client.clone();
         let pattern_for_sub = topics_pattern.clone();
@@ -227,24 +233,35 @@ impl MqttPublisher {
         // Start message processing using proper Azure IoT Operations SDK receiver
         let context = self.clone_for_processing().await;
         let pattern_clone = topics_pattern.clone();
-        
+
         tokio::spawn(async move {
             info!("Starting Azure IoT Operations message processing for pattern: {}", pattern_clone);
             if let Err(e) = context.process_aio_messages(&pattern_clone).await {
                 error!("❌ Error in AIO message processing: {}", e);
             }
         });
-        
-        // Keep the service running with periodic heartbeats
-        info!("✅ MQTT message processing active");
-        loop {
-            tokio::time::sleep(tokio::time::Duration::from_secs(30)).await;
-            debug!("MQTT processing heartbeat - subscription active");
-            
-            // Update stats to show we're operational
-            let mut stats = self.stats.write().await;
-            stats.is_connected = true;
+
+        // Run session.run() to drive the actual MQTT connection alongside heartbeat monitoring
+        info!("✅ MQTT message processing active, starting session");
+        let heartbeat_stats = Arc::clone(&self.stats);
+        tokio::select! {
+            result = session.run() => {
+                match result {
+                    Ok(()) => info!("MQTT session completed normally"),
+                    Err(e) => error!("MQTT session error: {}", e),
+                }
+            }
+            _ = async move {
+                loop {
+                    tokio::time::sleep(tokio::time::Duration::from_secs(30)).await;
+                    debug!("MQTT processing heartbeat - subscription active");
+                    let mut stats = heartbeat_stats.write().await;
+                    stats.is_connected = true;
+                }
+            } => {}
         }
+
+        Ok(())
     }
 
     /// Create a processing context for handling messages in parallel tasks
@@ -381,7 +398,7 @@ impl MqttPublisher {
         priority: String
     ) -> Result<(), Box<dyn Error>> {
         info!("Processing alert trigger: {} (priority: {})", trigger_id, priority);
-        
+
         // Create alert message
         let alert_message = serde_json::json!({
             "message_type": "alert_trigger",
@@ -395,7 +412,7 @@ impl MqttPublisher {
 
         let topic = format!("{}alerts/triggers", self.config.topic_prefix);
         let payload = serde_json::to_string(&alert_message)?;
-        
+
         self.publish_with_retry(&topic, &payload).await?;
         info!("Published alert trigger to topic: {}", topic);
 
@@ -428,7 +445,7 @@ impl MqttPublisher {
                     "status": "loaded", // This would come from the inference engine
                     "timestamp": chrono::Utc::now().to_rfc3339()
                 });
-                
+
                 let topic = format!("{}ai/status/models", self.config.topic_prefix);
                 let payload = serde_json::to_string(&status_message)?;
                 self.publish_with_retry(&topic, &payload).await?;
@@ -444,7 +461,7 @@ impl MqttPublisher {
     /// Publish inference result to output topic
     async fn publish_inference_result(&self, result: InferenceResult, topic: &str) -> Result<(), Box<dyn Error>> {
         let enrichment = self.create_enrichment_data(&result).await;
-        
+
         let message = InferenceResultMessage {
             message_type: "ai_inference_result".to_string(),
             timestamp: chrono::Utc::now().timestamp(),
@@ -456,14 +473,14 @@ impl MqttPublisher {
         let payload = serde_json::to_string(&message)?;
 
         self.publish_with_retry(topic, &payload).await?;
-        
+
         info!("Published inference result to topic: {}", topic);
-        
+
         // Update statistics
         let mut stats = self.stats.write().await;
         stats.successful_publishes += 1;
         stats.last_publish_time = Some(chrono::Utc::now());
-        
+
         Ok(())
     }
 
@@ -515,9 +532,9 @@ impl MqttPublisher {
     async fn publish_with_retry(&self, topic: &str, payload: &str) -> Result<(), Box<dyn Error>> {
         const MAX_RETRIES: usize = 3;
         const RETRY_DELAY: Duration = Duration::from_secs(2);
-        
+
         for attempt in 1..=MAX_RETRIES {
-            match timeout(Duration::from_secs(10), 
+            match timeout(Duration::from_secs(10),
                          self.client.publish(topic.to_string(), QoS::AtLeastOnce, false, payload.to_string())).await {
                 Ok(Ok(_)) => {
                     debug!("Successfully published to topic: {} (attempt {})", topic, attempt);
@@ -530,19 +547,19 @@ impl MqttPublisher {
                     error!("Publish attempt {} timed out", attempt);
                 }
             }
-            
+
             if attempt < MAX_RETRIES {
                 tokio::time::sleep(RETRY_DELAY).await;
             }
         }
-        
+
         Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, "Failed to publish after all retry attempts")))
     }
 
     /// Publish inference result to specified topic (public method for external use)
     pub async fn publish_result(&self, result: InferenceResult, topic: &str) -> Result<(), Box<dyn Error>> {
         let enrichment = self.create_enrichment_data(&result).await;
-        
+
         let message = InferenceResultMessage {
             message_type: "ai_inference_result".to_string(),
             timestamp: chrono::Utc::now().timestamp(),
@@ -554,9 +571,9 @@ impl MqttPublisher {
         let payload = serde_json::to_string(&message)?;
 
         self.publish_with_retry(topic, &payload).await?;
-        
+
         info!("📤 Published inference result to topic: {}", topic);
-        
+
         Ok(())
     }
 
@@ -599,19 +616,16 @@ impl MqttProcessingContext {
 
         loop {
             info!("Calling receiver.recv().await for topic: {}", topic);
-            
+
             // Try with a timeout to see if recv() is blocking indefinitely
             match tokio::time::timeout(Duration::from_secs(10), receiver.recv()).await {
                 Ok(Some(message)) => {
                     let topic_str = String::from_utf8_lossy(&message.topic);
                     info!("✅ Message received on topic {}: payload size {} bytes", topic_str, message.payload.len());
-                    
-                    // Convert bytes to strings
-                    let payload_str = String::from_utf8_lossy(&message.payload);
-                    
-                    info!("Processing message from topic: {} (payload: {})", topic_str, &payload_str[..std::cmp::min(100, payload_str.len())]);
-                    
-                    match self.handle_incoming_message(&payload_str, &topic_str).await {
+
+                    info!("Processing message from topic: {} ({} bytes)", topic_str, message.payload.len());
+
+                    match self.handle_incoming_bytes(&message.payload, &topic_str).await {
                         Ok(_) => {
                             info!("Successfully processed message from topic: {}", topic_str);
                             let mut stats = self.stats.write().await;
@@ -644,20 +658,20 @@ impl MqttProcessingContext {
     /// Process messages using Azure IoT Operations SDK receiver
     pub async fn process_aio_messages(&self, pattern: &str) -> anyhow::Result<()> {
         info!("Starting Azure IoT Operations message processing for pattern: {}", pattern);
-        
+
         // Create unfiltered receiver (we'll filter manually)
         let mut receiver = self.client.create_unfiltered_pub_receiver();
-        
+
         let mut heartbeat_counter = 0;
-        
+
         loop {
             heartbeat_counter += 1;
-            
+
             // Log heartbeat every 60 iterations (about 1 minute at 1 second intervals)
             if heartbeat_counter % 60 == 0 {
                 debug!("AIO message processing heartbeat - pattern: {}", pattern);
             }
-            
+
             // Wait for connection if needed
             if heartbeat_counter % 300 == 0 { // Every 5 minutes
                 match timeout(Duration::from_secs(5), self.monitor.connected()).await {
@@ -668,21 +682,18 @@ impl MqttProcessingContext {
                     }
                 }
             }
-            
+
             // Try to receive message with reasonable timeout
             match timeout(Duration::from_secs(1), receiver.recv()).await {
                 Ok(Some(message)) => {
                     let topic_str = String::from_utf8_lossy(&message.topic);
                     info!("🚀 AIO MESSAGE RECEIVED on topic: {} (payload: {} bytes)", topic_str, message.payload.len());
-                    
+
                     // Check if topic matches our pattern
                     if self.topic_matches_pattern(&topic_str, pattern) {
-                        let payload_str = String::from_utf8_lossy(&message.payload);
-                        info!("Processing AIO message from topic: {} (payload preview: {})", 
-                              topic_str, 
-                              &payload_str[..std::cmp::min(100, payload_str.len())]);
-                        
-                        match self.handle_incoming_message(&payload_str, &topic_str).await {
+                        info!("Processing AIO message from topic: {} ({} bytes)", topic_str, message.payload.len());
+
+                        match self.handle_incoming_bytes(&message.payload, &topic_str).await {
                             Ok(_) => {
                                 info!("✅ Successfully processed AIO message from topic: {}", topic_str);
                                 let mut stats = self.stats.write().await;
@@ -714,17 +725,17 @@ impl MqttProcessingContext {
     fn topic_matches_pattern(&self, topic: &str, pattern: &str) -> bool {
         let topic_parts: Vec<&str> = topic.split('/').collect();
         let pattern_parts: Vec<&str> = pattern.split('/').collect();
-        
+
         if topic_parts.len() != pattern_parts.len() {
             return false;
         }
-        
+
         for (topic_part, pattern_part) in topic_parts.iter().zip(pattern_parts.iter()) {
             if *pattern_part != "+" && *pattern_part != *topic_part {
                 return false;
             }
         }
-        
+
         true
     }
 
@@ -737,18 +748,18 @@ impl MqttProcessingContext {
 
         loop {
             info!("Calling filtered receiver.recv().await for pattern: {}", pattern);
-            
+
             // Use same timeout approach but with filtered receiver
             match tokio::time::timeout(Duration::from_secs(10), receiver.recv()).await {
                 Ok(Some(message)) => {
                     let topic_str = String::from_utf8_lossy(&message.topic);
                     info!("✅ Filtered message received on topic {}: payload size {} bytes", topic_str, message.payload.len());
-                    
+
                     // Convert bytes to strings
                     let payload_str = String::from_utf8_lossy(&message.payload);
-                    
+
                     info!("Processing filtered message from topic: {} (payload: {})", topic_str, &payload_str[..std::cmp::min(100, payload_str.len())]);
-                    
+
                     match self.handle_incoming_message(&payload_str, &topic_str).await {
                         Ok(_) => {
                             info!("Successfully processed filtered message from topic: {}", topic_str);
@@ -784,21 +795,21 @@ impl MqttProcessingContext {
 
         loop {
             info!("Calling unfiltered receiver.recv().await for pattern: {}", pattern);
-            
+
             // Try with a timeout to see if recv() is blocking indefinitely
             match tokio::time::timeout(Duration::from_secs(10), receiver.recv()).await {
                 Ok(Some(message)) => {
                     let topic_str = String::from_utf8_lossy(&message.topic);
-                    
+
                     // Filter for camera snapshot topics
                     if topic_str.ends_with("/camera/snapshots") {
                         info!("✅ Camera snapshot message received on topic {}: payload size {} bytes", topic_str, message.payload.len());
-                        
+
                         // Convert bytes to strings
                         let payload_str = String::from_utf8_lossy(&message.payload);
-                        
+
                         info!("Processing camera message from topic: {} (payload: {})", topic_str, &payload_str[..std::cmp::min(100, payload_str.len())]);
-                        
+
                         match self.handle_incoming_message(&payload_str, &topic_str).await {
                             Ok(_) => {
                                 info!("Successfully processed camera message from topic: {}", topic_str);
@@ -830,13 +841,103 @@ impl MqttProcessingContext {
         Ok(())
     }
 
-    /// Handle incoming message and perform inference + publishing  
+    /// Handle incoming message and perform inference + publishing
+    /// Route raw bytes: detect binary image formats before falling back to text-based parsing
+    async fn handle_incoming_bytes(&self, payload: &[u8], topic: &str) -> anyhow::Result<()> {
+        // JPEG magic bytes: FF D8 FF
+        if payload.len() >= 3 && payload[0] == 0xFF && payload[1] == 0xD8 && payload[2] == 0xFF {
+            info!("Detected raw JPEG payload ({} bytes) on topic: {}", payload.len(), topic);
+            return self.handle_raw_image_inference(payload, topic).await;
+        }
+
+        // PNG magic bytes: 89 50 4E 47
+        if payload.len() >= 4 && payload[0] == 0x89 && payload[1] == 0x50 && payload[2] == 0x4E && payload[3] == 0x47 {
+            info!("Detected raw PNG payload ({} bytes) on topic: {}", payload.len(), topic);
+            return self.handle_raw_image_inference(payload, topic).await;
+        }
+
+        // Not a known binary image format — treat as text
+        let payload_str = String::from_utf8_lossy(payload);
+        self.handle_incoming_message(&payload_str, topic).await
+    }
+
+    /// Process a raw image payload (JPEG/PNG bytes) without base64 or JSON wrapping
+    async fn handle_raw_image_inference(&self, raw_bytes: &[u8], topic: &str) -> anyhow::Result<()> {
+        // Extract camera_id from topic segments (best-effort)
+        let camera_id = topic.split('/').last().unwrap_or("unknown_camera").to_string();
+        let device_name = std::env::var("DEVICE_NAME").unwrap_or_else(|_| "edge-device".to_string());
+        let timestamp = chrono::Utc::now().timestamp();
+
+        info!("Running inference on raw image ({} bytes) from topic: {}", raw_bytes.len(), topic);
+
+        let image = image::load_from_memory(raw_bytes)
+            .map_err(|e| anyhow::anyhow!("Failed to decode raw image: {}", e))?;
+
+        let metadata = ImageMetadata {
+            width: image.width(),
+            height: image.height(),
+            channels: 3,
+            format: "RGB".to_string(),
+        };
+
+        let _inference_input = InferenceInput::Image {
+            data: image,
+            metadata,
+        };
+
+        // Base64-encode the raw bytes for the InferenceRequest (engine expects base64 input_data)
+        let image_data_b64 = base64::engine::general_purpose::STANDARD.encode(raw_bytes);
+
+        let request = InferenceRequest {
+            request_id: uuid::Uuid::new_v4().to_string(),
+            input_data: image_data_b64,
+            input_type: "image".to_string(),
+            model_name: None,
+            metadata: {
+                let mut map = std::collections::HashMap::new();
+                map.insert("camera_id".to_string(), serde_json::Value::String(camera_id.clone()));
+                map.insert("device_name".to_string(), serde_json::Value::String(device_name.clone()));
+                map.insert("timestamp".to_string(), serde_json::Value::Number(serde_json::Number::from(timestamp)));
+                map.insert("source".to_string(), serde_json::Value::String("raw_binary".to_string()));
+                map
+            },
+        };
+
+        match self.inference_engine.infer(request).await {
+            Ok(result) => {
+                info!("🔍 Raw image inference completed: model={}, confidence={:.2}, predictions={}",
+                      result.model_name, result.confidence, result.predictions.len());
+
+                match self.publish_inference_result(result, &camera_id).await {
+                    Ok(_) => {
+                        info!("📤 Published inference result for raw image from: {}", camera_id);
+                        let mut stats = self.stats.write().await;
+                        stats.successful_publishes += 1;
+                        stats.last_publish_time = Some(chrono::Utc::now());
+                    }
+                    Err(e) => {
+                        error!("Failed to publish inference result for {}: {}", camera_id, e);
+                        let mut stats = self.stats.write().await;
+                        stats.failed_publishes += 1;
+                    }
+                }
+            }
+            Err(e) => {
+                error!("Raw image inference failed for {}: {}", camera_id, e);
+                let mut stats = self.stats.write().await;
+                stats.failed_publishes += 1;
+            }
+        }
+
+        Ok(())
+    }
+
     async fn handle_incoming_message(&self, payload: &str, topic: &str) -> anyhow::Result<()> {
         debug!("Processing message from topic: {} (payload size: {} bytes)", topic, payload.len());
 
         // Try to parse as JSON first
         let parsed_message: Result<IncomingMessage, _> = serde_json::from_str(payload);
-        
+
         match parsed_message {
             Ok(message) => {
                 match message {
@@ -867,32 +968,32 @@ impl MqttProcessingContext {
     /// Handle simplified message format (for direct image data or simple payloads)
     async fn handle_simplified_message(&self, payload: &str, topic: &str) -> anyhow::Result<()> {
         info!("Processing simplified message from topic: {}", topic);
-        
+
         // Try to parse as a simple JSON object that might contain image_data
         if let Ok(json_value) = serde_json::from_str::<serde_json::Value>(payload) {
             if let Some(image_data_str) = json_value.get("image_data").and_then(|v| v.as_str()) {
                 info!("Found image_data in simplified message, processing as image inference");
-                
+
                 // Extract basic fields with defaults
                 let camera_id = json_value.get("camera_id")
                     .and_then(|v| v.as_str())
                     .unwrap_or("unknown_camera")
                     .to_string();
-                
+
                 let device_name = json_value.get("device_name")
                     .and_then(|v| v.as_str())
                     .unwrap_or("unknown_device")
                     .to_string();
-                
+
                 let timestamp = json_value.get("timestamp")
                     .and_then(|v| v.as_i64())
                     .unwrap_or_else(|| chrono::Utc::now().timestamp());
-                
+
                 self.handle_image_inference(camera_id, timestamp, image_data_str.to_string(), device_name, None).await?;
                 return Ok(());
             }
         }
-        
+
         warn!("Unable to process simplified message format for topic: {}", topic);
         Ok(())
     }
@@ -907,7 +1008,7 @@ impl MqttProcessingContext {
         _location: Option<(f64, f64)>
     ) -> anyhow::Result<()> {
         info!("Processing image inference for camera: {} from device: {}", camera_id, device_name);
-        
+
         // Decode base64 image
         let image_bytes = base64::engine::general_purpose::STANDARD.decode(&image_data)?;
         let image = image::load_from_memory(&image_bytes)?;
@@ -943,9 +1044,9 @@ impl MqttProcessingContext {
         match self.inference_engine.infer(request).await {
             Ok(result) => {
                 info!("Image inference completed successfully for camera: {}", camera_id);
-                info!("Inference result: model={}, confidence={:.2}, predictions={}", 
+                info!("Inference result: model={}, confidence={:.2}, predictions={}",
                       result.model_name, result.confidence, result.predictions.len());
-                
+
                 // Publish the result back to MQTT
                 match self.publish_inference_result(result, &camera_id).await {
                     Ok(_) => {
@@ -991,7 +1092,7 @@ impl MqttProcessingContext {
     async fn publish_inference_result(&self, result: InferenceResult, camera_id: &str) -> anyhow::Result<()> {
         // Create enrichment data
         let enrichment = self.create_enrichment_data(&result).await;
-        
+
         // Create result message
         let result_message = InferenceResultMessage {
             message_type: "inference_result".to_string(),
@@ -1010,12 +1111,12 @@ impl MqttProcessingContext {
 
         // Serialize and publish
         let payload = serde_json::to_string(&result_message)?;
-        
+
         // Publish to MQTT using the client
         info!("Publishing inference result to topic: {} (payload size: {} bytes)", output_topic, payload.len());
         debug!("Inference result payload: {}", payload);
-        
-        match timeout(Duration::from_secs(10), 
+
+        match timeout(Duration::from_secs(10),
                      self.client.publish(output_topic.clone(), QoS::AtLeastOnce, false, payload)).await {
             Ok(Ok(_)) => {
                 info!("Successfully published inference result to topic: {}", output_topic);
@@ -1093,17 +1194,17 @@ impl MqttPublisherState {
         info!("Processing messages for topic: {}", topic);
 
         while let Some(message) = receiver.recv().await {
-            debug!("Received message on topic: {} (payload size: {} bytes)", 
-                   String::from_utf8_lossy(&message.topic), 
+            debug!("Received message on topic: {} (payload size: {} bytes)",
+                   String::from_utf8_lossy(&message.topic),
                    message.payload.len());
-            
+
             // Delegate to parent publisher for processing
             // This is a simplified approach - in practice you'd implement the same logic here
-            
+
             let mut stats = self.stats.write().await;
             stats.total_messages += 1;
         }
-        
+
         warn!("Message processing stopped for topic: {}", topic);
         Ok(())
     }

@@ -17,8 +17,8 @@ class Camera:
     name: str
     source_path: str
     source_type: str
-    resolution: str = "1920x1080"
-    framerate: int = 25
+    resolution: str = "640x480"
+    framerate: int = 5
     status: str = "stopped"
     ffmpeg_pid: int | None = None
 
@@ -49,8 +49,8 @@ class CameraManager:
             name = os.getenv(f"{env_key}_NAME", cam_id)
             source = os.getenv(f"{env_key}_SOURCE", "")
             source_type = os.getenv(f"{env_key}_TYPE", "jpeg")
-            resolution = os.getenv(f"{env_key}_RESOLUTION", "1920x1080")
-            framerate = int(os.getenv(f"{env_key}_FRAMERATE", "25"))
+            resolution = os.getenv(f"{env_key}_RESOLUTION", "640x480")
+            framerate = int(os.getenv(f"{env_key}_FRAMERATE", "5"))
 
             if not source and source_type != "pattern":
                 logger.warning(
@@ -70,8 +70,8 @@ class CameraManager:
         name: str,
         source_path: str,
         source_type: str,
-        resolution: str = "1920x1080",
-        framerate: int = 25,
+        resolution: str = "640x480",
+        framerate: int = 5,
     ) -> Camera:
         """Register a new camera."""
         camera = Camera(

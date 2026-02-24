@@ -23,8 +23,11 @@ rtmp: false
 hls: false
 srt: false
 
-# Allow dynamic path creation when FFmpeg publishers connect
+# Default settings applied to all paths
+pathDefaults:
+  source: publisher
+  sourceOnDemand: false
+
+# Dynamic path creation: accept any FFmpeg publisher path
 paths:
-  all:
-    source: publisher
-    sourceOnDemand: false
+  all_others:
