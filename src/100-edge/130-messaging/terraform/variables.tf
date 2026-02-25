@@ -23,6 +23,18 @@ variable "should_create_eventgrid_dataflows" {
   default     = true
 }
 
+variable "eventgrid_mqtt_source_topics" {
+  type        = list(string)
+  description = "Custom MQTT source topics for the Event Grid dataflow. When set, overrides the default asset-based data source and removes the asset reference"
+  default     = null
+}
+
+variable "eventhub_mqtt_source_topics" {
+  type        = list(string)
+  description = "Custom MQTT source topics for the Event Hub dataflow. When set, overrides the default asset-based data source and removes the asset reference"
+  default     = null
+}
+
 variable "should_create_eventhub_dataflows" {
   type        = bool
   description = "Whether to create EventHub dataflows in the edge messaging component"

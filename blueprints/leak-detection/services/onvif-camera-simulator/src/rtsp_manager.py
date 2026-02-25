@@ -104,6 +104,7 @@ class RTSPManager:
     async def restart_stream(self, camera: Camera) -> None:
         """Stop then start the stream for hot-swapping sources."""
         await self.stop_stream(camera.id)
+        await asyncio.sleep(1.0)
         await self.start_stream(camera)
 
     async def monitor_streams(self, camera_manager: CameraManager) -> None:
@@ -154,6 +155,7 @@ class RTSPManager:
             lavfi = get_pattern_filter(_FALLBACK_PATTERN, w, h, fps)
             return [
                 "ffmpeg",
+                "-nostdin",
                 "-re",
                 "-f", "lavfi",
                 "-i", lavfi,
@@ -172,6 +174,7 @@ class RTSPManager:
             lavfi = get_pattern_filter(camera.source_path, w, h, fps)
             return [
                 "ffmpeg",
+                "-nostdin",
                 "-re",
                 "-f", "lavfi",
                 "-i", lavfi,
@@ -189,6 +192,7 @@ class RTSPManager:
         if camera.source_type in ("jpeg", "image"):
             return [
                 "ffmpeg",
+                "-nostdin",
                 "-re", "-loop", "1",
                 "-i", camera.source_path,
                 "-vf", f"scale={w}:{h}",
@@ -205,12 +209,13 @@ class RTSPManager:
 
         return [
             "ffmpeg",
+            "-nostdin",
             "-re", "-stream_loop", "-1",
             "-i", camera.source_path,
+            "-vf", f"scale={w}:{h}",
             "-c:v", "libx264",
             "-preset", "ultrafast",
             "-tune", "zerolatency",
-            "-vf", f"scale={w}:{h}",
             "-pix_fmt", "yuv420p",
             "-r", fps,
             "-g", gop,

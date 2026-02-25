@@ -5,7 +5,9 @@
  */
 
 locals {
-  asset_ref = var.adr_namespace != null ? "${var.adr_namespace.name}/${var.asset_name}" : var.asset_name
+  asset_ref       = var.adr_namespace != null ? "${var.adr_namespace.name}/${var.asset_name}" : var.asset_name
+  is_custom_topic = var.mqtt_source_topics != null
+  data_sources    = coalesce(var.mqtt_source_topics, ["azure-iot-operations/data/${var.asset_name}"])
 }
 
 resource "azapi_resource" "dataflow_endpoint_to_eventgrid" {
@@ -54,12 +56,16 @@ resource "azapi_resource" "dataflow_to_eventgrid" {
       operations = [
         {
           operationType = "Source"
-          sourceSettings = {
-            endpointRef         = "default"
-            assetRef            = local.asset_ref
-            serializationFormat = "Json"
-            dataSources         = ["azure-iot-operations/data/${var.asset_name}"]
-          }
+          sourceSettings = merge(
+            {
+              endpointRef         = "default"
+              serializationFormat = "Json"
+              dataSources         = local.data_sources
+            },
+            local.is_custom_topic ? {} : {
+              assetRef = local.asset_ref
+            }
+          )
         },
         {
           operationType = "BuiltInTransformation"

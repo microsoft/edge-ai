@@ -61,9 +61,6 @@ echo "Version: ${VERSION}"
 echo "Platform: ${PLATFORM}"
 echo ""
 
-cp "${BLUEPRINT_DIR}/media/leaking-pipe.mp4" \
-  "${BLUEPRINT_DIR}/services/onvif-camera-simulator/media/"
-
 for i in "${!IMAGES[@]}"; do
   echo "=== Building ${LABELS[${i}]} ==="
   docker build \
@@ -73,8 +70,6 @@ for i in "${!IMAGES[@]}"; do
     "${CONTEXTS[${i}]}"
   echo ""
 done
-
-rm -f "${BLUEPRINT_DIR}/services/onvif-camera-simulator/media/leaking-pipe.mp4"
 
 echo "=== Build Summary ==="
 printf "%-30s %s\n" "IMAGE" "SIZE"

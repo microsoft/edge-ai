@@ -111,7 +111,8 @@ output "messaging" {
 output "edge_messaging" {
   description = "Edge messaging dataflow details."
   value = {
-    event_hub_dataflow = module.edge_messaging.event_hub_dataflow
+    event_hub_dataflow  = module.edge_messaging.event_hub_dataflow
+    event_grid_dataflow = module.edge_messaging.event_grid_dataflow
   }
 }
 

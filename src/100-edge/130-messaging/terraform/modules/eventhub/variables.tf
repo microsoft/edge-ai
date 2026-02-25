@@ -40,3 +40,8 @@ variable "aio_uami_client_id" {
   type        = string
   description = "Client ID of the User Assigned Managed Identity for the Azure IoT Operations instance"
 }
+
+variable "mqtt_source_topics" {
+  type        = list(string)
+  description = "Custom MQTT source topics for the dataflow. When set, overrides the default asset-based data source and removes the asset reference"
+}

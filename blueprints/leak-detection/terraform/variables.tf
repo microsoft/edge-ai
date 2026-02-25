@@ -273,6 +273,12 @@ variable "should_create_anonymous_broker_listener" {
   default     = false
 }
 
+variable "should_create_eventgrid_dataflows" {
+  type        = bool
+  description = "Whether to create Event Grid dataflows for routing inference results to Event Grid in addition to Event Hub"
+  default     = false
+}
+
 variable "should_deploy_resource_sync_rules" {
   type        = bool
   description = "Whether to deploy resource sync rules"

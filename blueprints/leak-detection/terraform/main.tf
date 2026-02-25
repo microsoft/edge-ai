@@ -293,7 +293,9 @@ module "edge_messaging" {
   adr_namespace        = module.cloud_data.adr_namespace
 
   should_create_eventhub_dataflows  = true
-  should_create_eventgrid_dataflows = false
+  should_create_eventgrid_dataflows = var.should_create_eventgrid_dataflows
+  eventhub_mqtt_source_topics       = ["edge-ai/+/+/+/inference/onnx/#"]
+  eventgrid_mqtt_source_topics      = var.should_create_eventgrid_dataflows ? ["edge-ai/+/+/+/inference/onnx/#"] : null
 }
 
 // ── Edge Application Deployment ──────────────────────────────

@@ -157,12 +157,62 @@ resource "azurerm_logic_app_action_custom" "parse_payload" {
       schema = {
         type = "object"
         properties = {
-          confidence_level = { type = "number" }
-          timestamp        = { type = "string" }
-          device_id        = { type = "string" }
-          location         = { type = "string" }
-          alert_type       = { type = "string" }
-          message          = { type = "string" }
+          message_type  = { type = "string" }
+          timestamp     = { type = "number" }
+          source_device = { type = "string" }
+          inference_result = {
+            type = "object"
+            properties = {
+              model_name        = { type = "string" }
+              model_type        = { type = "string" }
+              confidence        = { type = "number" }
+              inference_time_ms = { type = "number" }
+              metadata = {
+                type = "object"
+                properties = {
+                  backend        = { type = "string" }
+                  inference_type = { type = "string" }
+                  model_path     = { type = "string" }
+                  request_id     = { type = "string" }
+                }
+              }
+              predictions = {
+                type = "array"
+                items = {
+                  type = "object"
+                  properties = {
+                    class      = { type = "string" }
+                    confidence = { type = "number" }
+                    bbox       = {}
+                    severity   = { type = "string" }
+                    metadata = {
+                      type = "object"
+                      properties = {
+                        backend        = { type = "string" }
+                        class_index    = { type = "integer" }
+                        inference_type = { type = "string" }
+                        model_name     = { type = "string" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+          enrichment = {
+            type = "object"
+            properties = {
+              site          = { type = "string" }
+              facility      = { type = "string" }
+              business_unit = { type = "string" }
+              alert_level   = { type = "string" }
+              region        = { type = "string" }
+              recommended_actions = {
+                type  = "array"
+                items = { type = "string" }
+              }
+            }
+          }
         }
       }
     }
@@ -184,8 +234,18 @@ resource "azurerm_logic_app_action_custom" "post_teams_message" {
       }
       method = "post"
       body = {
-        recipient   = var.teams_recipient_id
-        messageBody = "<p class=\"editor-paragraph\">Leak Detection Alert:</p><br><p class=\"editor-paragraph\">@{body('Parse_Leak_Event')}</p>"
+        recipient = var.teams_recipient_id
+        messageBody = join("", [
+          "<p class=\"editor-paragraph\"><strong>Leak Detection Alert</strong></p><br>",
+          "<p class=\"editor-paragraph\"><strong>Source:</strong> @{body('Parse_Leak_Event')?['source_device']}</p>",
+          "<p class=\"editor-paragraph\"><strong>Timestamp:</strong> @{body('Parse_Leak_Event')?['timestamp']}</p>",
+          "<p class=\"editor-paragraph\"><strong>Model:</strong> @{body('Parse_Leak_Event')?['inference_result']?['model_name']} (@{body('Parse_Leak_Event')?['inference_result']?['model_type']})</p>",
+          "<p class=\"editor-paragraph\"><strong>Confidence:</strong> @{body('Parse_Leak_Event')?['inference_result']?['confidence']}</p>",
+          "<p class=\"editor-paragraph\"><strong>Predictions:</strong> @{body('Parse_Leak_Event')?['inference_result']?['predictions']}</p>",
+          "<p class=\"editor-paragraph\"><strong>Alert Level:</strong> @{body('Parse_Leak_Event')?['enrichment']?['alert_level']}</p>",
+          "<p class=\"editor-paragraph\"><strong>Site:</strong> @{body('Parse_Leak_Event')?['enrichment']?['site']} / @{body('Parse_Leak_Event')?['enrichment']?['facility']}</p>",
+          "<p class=\"editor-paragraph\"><strong>Recommended Actions:</strong> @{body('Parse_Leak_Event')?['enrichment']?['recommended_actions']}</p>",
+        ])
       }
       path = "/beta/teams/conversation/message/poster/Flow bot/location/@{encodeURIComponent('${var.teams_post_location}')}"
     }

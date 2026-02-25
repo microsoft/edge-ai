@@ -21,6 +21,7 @@ module "sample_eventhub_dataflow" {
   aio_uami_client_id   = var.aio_identity.client_id
   aio_instance         = var.aio_instance
   aio_dataflow_profile = var.aio_dataflow_profile
+  mqtt_source_topics   = var.eventhub_mqtt_source_topics
 }
 
 module "sample_eventgrid_dataflow" {
@@ -39,6 +40,7 @@ module "sample_eventgrid_dataflow" {
   aio_uami_tenant_id   = var.aio_identity.tenant_id
   aio_uami_client_id   = var.aio_identity.client_id
   aio_dataflow_profile = var.aio_dataflow_profile
+  mqtt_source_topics   = var.eventgrid_mqtt_source_topics
 }
 
 module "sample_fabric_rti_dataflow" {
