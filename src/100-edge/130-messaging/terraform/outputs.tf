@@ -21,3 +21,13 @@ output "dataflow_graphs" {
   description = "Map of dataflow graph resources by name."
   value       = try(module.dataflow_graphs[0].dataflow_graphs, {})
 }
+
+output "dataflows" {
+  description = "Map of dataflow resources by name."
+  value       = try(module.dataflows[0].dataflows, {})
+}
+
+output "dataflow_endpoints" {
+  description = "Map of dataflow endpoint resources by name."
+  value       = try(module.dataflow_endpoints[0].dataflow_endpoints, {})
+}

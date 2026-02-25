@@ -1,0 +1,117 @@
+/*
+ * Dataflow Configuration Example
+ *
+ * This file demonstrates how to configure dataflows for IoT Operations.
+ * Dataflows define data processing pipelines with source, optional built-in
+ * transformation, and destination operations to route and transform data
+ * between endpoints.
+ *
+ * Copy the contents to enrich your terraform.tfvars with these values.
+ * Ensure your terraform.tfvars also includes the required core variables, for example:
+ *
+ *   environment     = "dev"
+ *   resource_prefix = "myprefix"
+ *   location        = "eastus2"
+ *   instance        = "001"
+ */
+
+dataflows = [
+  {
+    name = "mqtt-passthrough"
+    operations = [
+      {
+        operationType = "Source"
+        name          = "source1"
+        sourceSettings = {
+          endpointRef = "aio-builtin-broker-endpoint"
+          dataSources = ["sensors/+/telemetry/#"]
+        }
+      },
+      {
+        operationType = "BuiltInTransformation"
+        name          = "passthrough1"
+        builtInTransformationSettings = {
+          map = [
+            {
+              inputs = ["*"]
+              output = "*"
+            }
+          ]
+        }
+      },
+      {
+        operationType = "Destination"
+        name          = "destination1"
+        destinationSettings = {
+          endpointRef     = "aio-builtin-broker-endpoint"
+          dataDestination = "sensors/processed/telemetry"
+        }
+      }
+    ]
+  },
+  {
+    name = "aio-to-event-grid"
+    operations = [
+      {
+        operationType = "Source"
+        name          = "source1"
+        sourceSettings = {
+          endpointRef = "aio-builtin-broker-endpoint"
+          dataSources = ["thermostats/+/telemetry/temperature/#"]
+        }
+      },
+      {
+        operationType = "Destination"
+        name          = "destination1"
+        destinationSettings = {
+          endpointRef     = "event-grid-endpoint"
+          dataDestination = "factory/telemetry"
+        }
+      }
+    ]
+  },
+  {
+    name = "aio-to-event-hub-transformed"
+    operations = [
+      {
+        operationType = "Source"
+        name          = "source1"
+        sourceSettings = {
+          endpointRef = "aio-builtin-broker-endpoint"
+          dataSources = ["azure-iot-operations/data/thermostat"]
+        }
+      },
+      {
+        operationType = "BuiltInTransformation"
+        name          = "transformation1"
+        builtInTransformationSettings = {
+          filter = [
+            {
+              inputs     = ["temperature.Value", "\"Tag 10\".Value"]
+              expression = "$1 > 9000 && $2 >= 8000"
+            }
+          ]
+          map = [
+            {
+              inputs = ["*"]
+              output = "*"
+            },
+            {
+              inputs     = ["temperature.Value", "\"Tag 10\".Value"]
+              expression = "($1+$2)/2"
+              output     = "AvgTemp.Value"
+            }
+          ]
+        }
+      },
+      {
+        operationType = "Destination"
+        name          = "destination1"
+        destinationSettings = {
+          endpointRef     = "event-hub-endpoint"
+          dataDestination = "myuniqueeventhub"
+        }
+      }
+    ]
+  }
+]

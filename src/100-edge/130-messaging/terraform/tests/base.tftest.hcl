@@ -44,6 +44,16 @@ run "create_default_configuration" {
     condition     = length(module.dataflow_graphs) == 0
     error_message = "Dataflow graphs should not be created by default"
   }
+
+  assert {
+    condition     = length(module.dataflows) == 0
+    error_message = "Dataflows should not be created by default"
+  }
+
+  assert {
+    condition     = length(module.dataflow_endpoints) == 0
+    error_message = "Dataflow endpoints should not be created by default"
+  }
 }
 
 # Test with all dataflows disabled
@@ -81,6 +91,16 @@ run "create_all_disabled" {
   assert {
     condition     = length(module.dataflow_graphs) == 0
     error_message = "Dataflow graphs should not be created when disabled"
+  }
+
+  assert {
+    condition     = length(module.dataflows) == 0
+    error_message = "Dataflows should not be created when disabled"
+  }
+
+  assert {
+    condition     = length(module.dataflow_endpoints) == 0
+    error_message = "Dataflow endpoints should not be created when disabled"
   }
 }
 
@@ -352,5 +372,521 @@ run "create_with_custom_asset_name" {
   assert {
     condition     = length(module.sample_eventhub_dataflow) > 0
     error_message = "EventHub dataflow should be created with custom asset name"
+  }
+}
+
+# Test with a simple dataflow (source to destination)
+run "create_with_simple_dataflow" {
+  command = plan
+
+  variables {
+    resource_prefix                   = run.setup_tests.resource_prefix
+    environment                       = run.setup_tests.environment
+    instance                          = run.setup_tests.instance
+    aio_identity                      = run.setup_tests.aio_identity
+    aio_custom_locations              = run.setup_tests.aio_custom_locations
+    aio_instance                      = run.setup_tests.aio_instance
+    aio_dataflow_profile              = run.setup_tests.aio_dataflow_profile
+    should_create_eventhub_dataflows  = false
+    should_create_eventgrid_dataflows = false
+    dataflows = [
+      {
+        name = "aio-to-event-grid"
+        operations = [
+          {
+            operationType = "Source"
+            name          = "aio-source"
+            sourceSettings = {
+              endpointRef = "default"
+              dataSources = ["azure-iot-operations/data/thermostat"]
+            }
+          },
+          {
+            operationType = "Destination"
+            name          = "event-grid-destination"
+            destinationSettings = {
+              endpointRef     = "event-grid-endpoint"
+              dataDestination = "telemetry/aio"
+            }
+          }
+        ]
+      }
+    ]
+  }
+
+  assert {
+    condition     = length(module.dataflows) > 0
+    error_message = "Dataflows module should be created with dataflows"
+  }
+}
+
+# Test with a dataflow including built-in transformation
+run "create_with_transformation_dataflow" {
+  command = plan
+
+  variables {
+    resource_prefix                   = run.setup_tests.resource_prefix
+    environment                       = run.setup_tests.environment
+    instance                          = run.setup_tests.instance
+    aio_identity                      = run.setup_tests.aio_identity
+    aio_custom_locations              = run.setup_tests.aio_custom_locations
+    aio_instance                      = run.setup_tests.aio_instance
+    aio_dataflow_profile              = run.setup_tests.aio_dataflow_profile
+    should_create_eventhub_dataflows  = false
+    should_create_eventgrid_dataflows = false
+    dataflows = [
+      {
+        name                     = "aio-to-event-hub-transformed"
+        mode                     = "Enabled"
+        request_disk_persistence = "Enabled"
+        operations = [
+          {
+            operationType = "Source"
+            name          = "aio-source"
+            sourceSettings = {
+              endpointRef         = "default"
+              serializationFormat = "Json"
+              dataSources         = ["azure-iot-operations/data/thermostat"]
+            }
+          },
+          {
+            operationType = "BuiltInTransformation"
+            name          = "transform"
+            builtInTransformationSettings = {
+              filter = [
+                {
+                  inputs     = ["temperature.value"]
+                  expression = "$1 > 20"
+                }
+              ]
+              map = [
+                {
+                  inputs = ["temperature.value"]
+                  output = "payload.temperature"
+                },
+                {
+                  inputs     = ["*"]
+                  expression = ""
+                  output     = "payload.raw"
+                }
+              ]
+            }
+          },
+          {
+            operationType = "Destination"
+            name          = "event-hub-destination"
+            destinationSettings = {
+              endpointRef     = "event-hub-endpoint"
+              dataDestination = "telemetry"
+            }
+          }
+        ]
+      }
+    ]
+  }
+
+  assert {
+    condition     = length(module.dataflows) > 0
+    error_message = "Dataflows module should be created with transformation dataflow"
+  }
+}
+
+# Test with multiple dataflows
+run "create_with_multiple_dataflows" {
+  command = plan
+
+  variables {
+    resource_prefix                   = run.setup_tests.resource_prefix
+    environment                       = run.setup_tests.environment
+    instance                          = run.setup_tests.instance
+    aio_identity                      = run.setup_tests.aio_identity
+    aio_custom_locations              = run.setup_tests.aio_custom_locations
+    aio_instance                      = run.setup_tests.aio_instance
+    aio_dataflow_profile              = run.setup_tests.aio_dataflow_profile
+    should_create_eventhub_dataflows  = false
+    should_create_eventgrid_dataflows = false
+    dataflows = [
+      {
+        name = "dataflow-one"
+        operations = [
+          {
+            operationType = "Source"
+            name          = "source"
+            sourceSettings = {
+              endpointRef = "default"
+              dataSources = ["raw"]
+            }
+          },
+          {
+            operationType = "Destination"
+            name          = "destination"
+            destinationSettings = {
+              endpointRef     = "endpoint-one"
+              dataDestination = "topic-one"
+            }
+          }
+        ]
+      },
+      {
+        name                     = "dataflow-two"
+        mode                     = "Disabled"
+        request_disk_persistence = "Enabled"
+        operations = [
+          {
+            operationType = "Source"
+            name          = "source"
+            sourceSettings = {
+              endpointRef = "default"
+              dataSources = ["metrics"]
+            }
+          },
+          {
+            operationType = "Destination"
+            name          = "destination"
+            destinationSettings = {
+              endpointRef     = "endpoint-two"
+              dataDestination = "topic-two"
+            }
+          }
+        ]
+      }
+    ]
+  }
+
+  assert {
+    condition     = length(module.dataflows) > 0
+    error_message = "Dataflows module should be created with multiple dataflows"
+  }
+}
+
+# Test with empty dataflows list
+run "create_with_empty_dataflows" {
+  command = plan
+
+  variables {
+    resource_prefix                   = run.setup_tests.resource_prefix
+    environment                       = run.setup_tests.environment
+    instance                          = run.setup_tests.instance
+    aio_identity                      = run.setup_tests.aio_identity
+    aio_custom_locations              = run.setup_tests.aio_custom_locations
+    aio_instance                      = run.setup_tests.aio_instance
+    aio_dataflow_profile              = run.setup_tests.aio_dataflow_profile
+    should_create_eventhub_dataflows  = false
+    should_create_eventgrid_dataflows = false
+    dataflows                         = []
+  }
+
+  assert {
+    condition     = length(module.dataflows) == 0
+    error_message = "Dataflows module should not be created with an empty list"
+  }
+}
+
+# Test with a Kafka dataflow endpoint
+run "create_with_kafka_endpoint" {
+  command = plan
+
+  variables {
+    resource_prefix                   = run.setup_tests.resource_prefix
+    environment                       = run.setup_tests.environment
+    instance                          = run.setup_tests.instance
+    aio_identity                      = run.setup_tests.aio_identity
+    aio_custom_locations              = run.setup_tests.aio_custom_locations
+    aio_instance                      = run.setup_tests.aio_instance
+    aio_dataflow_profile              = run.setup_tests.aio_dataflow_profile
+    should_create_eventhub_dataflows  = false
+    should_create_eventgrid_dataflows = false
+    dataflow_endpoints = [
+      {
+        name         = "event-hub-endpoint"
+        endpointType = "Kafka"
+        hostType     = "Eventhub"
+        kafkaSettings = {
+          host = "example.servicebus.windows.net:9093"
+          authentication = {
+            method                                = "SystemAssignedManagedIdentity"
+            systemAssignedManagedIdentitySettings = {}
+          }
+          tls = {
+            mode = "Enabled"
+          }
+          consumerGroupId = "aiodataflows"
+        }
+      }
+    ]
+  }
+
+  assert {
+    condition     = length(module.dataflow_endpoints) > 0
+    error_message = "Dataflow endpoints module should be created with Kafka endpoint"
+  }
+}
+
+# Test with an MQTT dataflow endpoint
+run "create_with_mqtt_endpoint" {
+  command = plan
+
+  variables {
+    resource_prefix                   = run.setup_tests.resource_prefix
+    environment                       = run.setup_tests.environment
+    instance                          = run.setup_tests.instance
+    aio_identity                      = run.setup_tests.aio_identity
+    aio_custom_locations              = run.setup_tests.aio_custom_locations
+    aio_instance                      = run.setup_tests.aio_instance
+    aio_dataflow_profile              = run.setup_tests.aio_dataflow_profile
+    should_create_eventhub_dataflows  = false
+    should_create_eventgrid_dataflows = false
+    dataflow_endpoints = [
+      {
+        name         = "event-grid-mqtt"
+        endpointType = "Mqtt"
+        hostType     = "EventGrid"
+        mqttSettings = {
+          host = "example.westeurope-1.ts.eventgrid.azure.net:8883"
+          authentication = {
+            method                                = "SystemAssignedManagedIdentity"
+            systemAssignedManagedIdentitySettings = {}
+          }
+          tls = {
+            mode = "Enabled"
+          }
+        }
+      }
+    ]
+  }
+
+  assert {
+    condition     = length(module.dataflow_endpoints) > 0
+    error_message = "Dataflow endpoints module should be created with MQTT endpoint"
+  }
+}
+
+# Test with multiple dataflow endpoint types
+run "create_with_multiple_endpoint_types" {
+  command = plan
+
+  variables {
+    resource_prefix                   = run.setup_tests.resource_prefix
+    environment                       = run.setup_tests.environment
+    instance                          = run.setup_tests.instance
+    aio_identity                      = run.setup_tests.aio_identity
+    aio_custom_locations              = run.setup_tests.aio_custom_locations
+    aio_instance                      = run.setup_tests.aio_instance
+    aio_dataflow_profile              = run.setup_tests.aio_dataflow_profile
+    should_create_eventhub_dataflows  = false
+    should_create_eventgrid_dataflows = false
+    dataflow_endpoints = [
+      {
+        name         = "kafka-endpoint"
+        endpointType = "Kafka"
+        kafkaSettings = {
+          host = "example.servicebus.windows.net:9093"
+          authentication = {
+            method                                = "SystemAssignedManagedIdentity"
+            systemAssignedManagedIdentitySettings = {}
+          }
+        }
+      },
+      {
+        name         = "adx-endpoint"
+        endpointType = "DataExplorer"
+        dataExplorerSettings = {
+          host     = "example.westeurope.kusto.windows.net"
+          database = "telemetry"
+          authentication = {
+            method                                = "SystemAssignedManagedIdentity"
+            systemAssignedManagedIdentitySettings = {}
+          }
+        }
+      },
+      {
+        name         = "local-storage"
+        endpointType = "LocalStorage"
+        localStorageSettings = {
+          persistentVolumeClaimRef = "example-pvc"
+        }
+      },
+      {
+        name         = "fabric-endpoint"
+        endpointType = "FabricOneLake"
+        fabricOneLakeSettings = {
+          host = "onelake.dfs.fabric.microsoft.com"
+          authentication = {
+            method                                = "SystemAssignedManagedIdentity"
+            systemAssignedManagedIdentitySettings = {}
+          }
+          names = {
+            workspaceName = "test-workspace"
+            lakehouseName = "test-lakehouse"
+          }
+          oneLakePathType = "Tables"
+        }
+      }
+    ]
+  }
+
+  assert {
+    condition     = length(module.dataflow_endpoints) > 0
+    error_message = "Dataflow endpoints module should be created with multiple endpoint types"
+  }
+}
+
+# Test with empty dataflow endpoints list
+run "create_with_empty_dataflow_endpoints" {
+  command = plan
+
+  variables {
+    resource_prefix                   = run.setup_tests.resource_prefix
+    environment                       = run.setup_tests.environment
+    instance                          = run.setup_tests.instance
+    aio_identity                      = run.setup_tests.aio_identity
+    aio_custom_locations              = run.setup_tests.aio_custom_locations
+    aio_instance                      = run.setup_tests.aio_instance
+    aio_dataflow_profile              = run.setup_tests.aio_dataflow_profile
+    should_create_eventhub_dataflows  = false
+    should_create_eventgrid_dataflows = false
+    dataflow_endpoints                = []
+  }
+
+  assert {
+    condition     = length(module.dataflow_endpoints) == 0
+    error_message = "Dataflow endpoints module should not be created with an empty list"
+  }
+}
+
+# Test with DataLakeStorage endpoint
+run "create_with_datalake_endpoint" {
+  command = plan
+
+  variables {
+    resource_prefix                   = run.setup_tests.resource_prefix
+    environment                       = run.setup_tests.environment
+    instance                          = run.setup_tests.instance
+    aio_identity                      = run.setup_tests.aio_identity
+    aio_custom_locations              = run.setup_tests.aio_custom_locations
+    aio_instance                      = run.setup_tests.aio_instance
+    aio_dataflow_profile              = run.setup_tests.aio_dataflow_profile
+    should_create_eventhub_dataflows  = false
+    should_create_eventgrid_dataflows = false
+    dataflow_endpoints = [
+      {
+        name         = "datalake-endpoint"
+        endpointType = "DataLakeStorage"
+        dataLakeStorageSettings = {
+          host = "example.blob.core.windows.net"
+          authentication = {
+            method                                = "SystemAssignedManagedIdentity"
+            systemAssignedManagedIdentitySettings = {}
+          }
+          batching = {
+            latencySeconds = 60
+            maxMessages    = 100000
+          }
+        }
+      }
+    ]
+  }
+
+  assert {
+    condition     = length(module.dataflow_endpoints) > 0
+    error_message = "Dataflow endpoints module should be created with DataLakeStorage endpoint"
+  }
+}
+
+# Test with OpenTelemetry endpoint
+run "create_with_otel_endpoint" {
+  command = plan
+
+  variables {
+    resource_prefix                   = run.setup_tests.resource_prefix
+    environment                       = run.setup_tests.environment
+    instance                          = run.setup_tests.instance
+    aio_identity                      = run.setup_tests.aio_identity
+    aio_custom_locations              = run.setup_tests.aio_custom_locations
+    aio_instance                      = run.setup_tests.aio_instance
+    aio_dataflow_profile              = run.setup_tests.aio_dataflow_profile
+    should_create_eventhub_dataflows  = false
+    should_create_eventgrid_dataflows = false
+    dataflow_endpoints = [
+      {
+        name         = "otel-endpoint"
+        endpointType = "OpenTelemetry"
+        openTelemetrySettings = {
+          host = "otel-collector.observability.svc.cluster.local:4317"
+          authentication = {
+            method            = "Anonymous"
+            anonymousSettings = {}
+          }
+        }
+      }
+    ]
+  }
+
+  assert {
+    condition     = length(module.dataflow_endpoints) > 0
+    error_message = "Dataflow endpoints module should be created with OpenTelemetry endpoint"
+  }
+}
+
+# Test with dataflows and dataflow endpoints together
+run "create_with_dataflows_and_endpoints" {
+  command = plan
+
+  variables {
+    resource_prefix                   = run.setup_tests.resource_prefix
+    environment                       = run.setup_tests.environment
+    instance                          = run.setup_tests.instance
+    aio_identity                      = run.setup_tests.aio_identity
+    aio_custom_locations              = run.setup_tests.aio_custom_locations
+    aio_instance                      = run.setup_tests.aio_instance
+    aio_dataflow_profile              = run.setup_tests.aio_dataflow_profile
+    should_create_eventhub_dataflows  = false
+    should_create_eventgrid_dataflows = false
+    dataflow_endpoints = [
+      {
+        name         = "mqtt-endpoint"
+        endpointType = "Mqtt"
+        mqttSettings = {
+          host = "broker.example.com:8883"
+          authentication = {
+            method                                = "SystemAssignedManagedIdentity"
+            systemAssignedManagedIdentitySettings = {}
+          }
+        }
+      }
+    ]
+    dataflows = [
+      {
+        name = "broker-to-mqtt"
+        operations = [
+          {
+            operationType = "Source"
+            name          = "source"
+            sourceSettings = {
+              endpointRef = "default"
+              dataSources = ["telemetry/#"]
+            }
+          },
+          {
+            operationType = "Destination"
+            name          = "destination"
+            destinationSettings = {
+              endpointRef     = "mqtt-endpoint"
+              dataDestination = "remote/telemetry"
+            }
+          }
+        ]
+      }
+    ]
+  }
+
+  assert {
+    condition     = length(module.dataflows) > 0
+    error_message = "Dataflows module should be created"
+  }
+
+  assert {
+    condition     = length(module.dataflow_endpoints) > 0
+    error_message = "Dataflow endpoints module should be created"
   }
 }

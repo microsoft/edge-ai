@@ -23,13 +23,14 @@ variable "custom_location" {
 variable "dataflow_graphs" {
   type = list(object({
     name                     = string
-    mode                     = optional(string, "Enabled")
-    request_disk_persistence = optional(string, "Disabled")
+    mode                     = optional(string)
+    request_disk_persistence = optional(string)
     nodes = list(object({
       nodeType = string
       name     = string
       sourceSettings = optional(object({
         endpointRef = string
+        assetRef    = optional(string)
         dataSources = list(string)
       }))
       graphSettings = optional(object({
@@ -43,6 +44,11 @@ variable "dataflow_graphs" {
       destinationSettings = optional(object({
         endpointRef     = string
         dataDestination = string
+        headers = optional(list(object({
+          actionType = string
+          key        = string
+          value      = optional(string)
+        })))
       }))
     }))
     node_connections = list(object({
@@ -50,7 +56,7 @@ variable "dataflow_graphs" {
         name = string
         schema = optional(object({
           schemaRef           = string
-          serializationFormat = optional(string, "Json")
+          serializationFormat = optional(string)
         }))
       })
       to = object({
@@ -92,5 +98,18 @@ variable "dataflow_graphs" {
       ])
     ])
     error_message = "Node type must be one of: 'Source', 'Graph', or 'Destination'."
+  }
+
+  validation {
+    condition = alltrue([
+      for graph in var.dataflow_graphs : alltrue([
+        for node in graph.nodes :
+        node.destinationSettings == null || node.destinationSettings.headers == null || alltrue([
+          for header in coalesce(node.destinationSettings.headers, []) :
+          contains(["AddIfNotPresent", "AddOrReplace", "Remove"], header.actionType)
+        ])
+      ])
+    ])
+    error_message = "Header action type must be one of: 'AddIfNotPresent', 'AddOrReplace', or 'Remove'."
   }
 }

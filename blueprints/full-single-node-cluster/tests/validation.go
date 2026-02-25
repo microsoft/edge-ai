@@ -249,6 +249,63 @@ func runValidationTests(t *testing.T, outputs *BlueprintOutputs, subscriptionID,
 		require.NotNil(t, acrNetworkPosture, "ACR network posture output should exist")
 	})
 
+	// Validate dataflow graphs output
+	t.Run("ValidateDataflowGraphs", func(t *testing.T) {
+		require.NotNil(t, outputs.DataflowGraphs, "dataflow_graphs output should exist")
+
+		graphsMap, ok := outputs.DataflowGraphs.(map[string]any)
+		if ok && len(graphsMap) > 0 {
+			for name, graph := range graphsMap {
+				assert.NotEmpty(t, name, "Dataflow graph name should not be empty")
+				graphData, isMap := graph.(map[string]any)
+				if isMap {
+					assert.NotEmpty(t, graphData, "Dataflow graph %s should have data", name)
+				}
+			}
+			t.Logf("Found %d dataflow graph(s)", len(graphsMap))
+		} else {
+			t.Log("No dataflow graphs configured (empty map is valid)")
+		}
+	})
+
+	// Validate dataflows output
+	t.Run("ValidateDataflows", func(t *testing.T) {
+		require.NotNil(t, outputs.Dataflows, "dataflows output should exist")
+
+		flowsMap, ok := outputs.Dataflows.(map[string]any)
+		if ok && len(flowsMap) > 0 {
+			for name, flow := range flowsMap {
+				assert.NotEmpty(t, name, "Dataflow name should not be empty")
+				flowData, isMap := flow.(map[string]any)
+				if isMap {
+					assert.NotEmpty(t, flowData, "Dataflow %s should have data", name)
+				}
+			}
+			t.Logf("Found %d dataflow(s)", len(flowsMap))
+		} else {
+			t.Log("No dataflows configured (empty map is valid)")
+		}
+	})
+
+	// Validate dataflow endpoints output
+	t.Run("ValidateDataflowEndpoints", func(t *testing.T) {
+		require.NotNil(t, outputs.DataflowEndpoints, "dataflow_endpoints output should exist")
+
+		endpointsMap, ok := outputs.DataflowEndpoints.(map[string]any)
+		if ok && len(endpointsMap) > 0 {
+			for name, endpoint := range endpointsMap {
+				assert.NotEmpty(t, name, "Dataflow endpoint name should not be empty")
+				epData, isMap := endpoint.(map[string]any)
+				if isMap {
+					assert.NotEmpty(t, epData, "Dataflow endpoint %s should have data", name)
+				}
+			}
+			t.Logf("Found %d dataflow endpoint(s)", len(endpointsMap))
+		} else {
+			t.Log("No dataflow endpoints configured (empty map is valid)")
+		}
+	})
+
 	// Validate Kubernetes cluster connectivity
 	t.Run("ValidateKubernetesCluster", func(t *testing.T) {
 		t.Run("CheckClusterNodes", func(t *testing.T) {

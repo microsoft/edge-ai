@@ -68,3 +68,23 @@ module "dataflow_graphs" {
   custom_location      = var.aio_custom_locations
   dataflow_graphs      = var.dataflow_graphs
 }
+
+module "dataflow_endpoints" {
+  count = length(var.dataflow_endpoints) > 0 ? 1 : 0
+
+  source = "./modules/dataflow-endpoint"
+
+  aio_instance       = var.aio_instance
+  custom_location    = var.aio_custom_locations
+  dataflow_endpoints = var.dataflow_endpoints
+}
+
+module "dataflows" {
+  count = length(var.dataflows) > 0 ? 1 : 0
+
+  source = "./modules/dataflow"
+
+  aio_dataflow_profile = var.aio_dataflow_profile
+  custom_location      = var.aio_custom_locations
+  dataflows            = var.dataflows
+}

@@ -505,6 +505,8 @@
     - [Cluster Extensions Obs](/src/100-edge/120-observability/terraform/modules/cluster-extensions-obs/README)
     - [Rule Associations Obs](/src/100-edge/120-observability/terraform/modules/rule-associations-obs/README)
   - [Messaging](/src/100-edge/130-messaging/terraform/README)
+    - [Dataflow](/src/100-edge/130-messaging/terraform/modules/dataflow/README)
+    - [Dataflow Endpoint](/src/100-edge/130-messaging/terraform/modules/dataflow-endpoint/README)
     - [Dataflow Graphs](/src/100-edge/130-messaging/terraform/modules/dataflow-graphs/README)
     - [Eventgrid](/src/100-edge/130-messaging/terraform/modules/eventgrid/README)
     - [Eventhub](/src/100-edge/130-messaging/terraform/modules/eventhub/README)

@@ -82,3 +82,42 @@ output "ai_foundry_deployments" {
   description = "Azure AI Foundry model deployments."
   value       = try(module.cloud_ai_foundry[0].deployments, null)
 }
+
+output "event_grid_topic_endpoint" {
+  description = "Event Grid topic endpoint."
+  value       = try(module.cloud_messaging.eventgrid.endpoint, "Not deployed")
+}
+
+output "event_grid_topic_name" {
+  description = "Event Grid topic name."
+  value       = try(module.cloud_messaging.eventgrid.topic_name, "Not deployed")
+}
+
+output "eventhub_name" {
+  description = "Event Hub name."
+  value       = try(module.cloud_messaging.eventhubs[0].eventhub_name, "Not deployed")
+}
+
+output "eventhub_namespace_name" {
+  description = "Event Hub namespace name."
+  value       = try(module.cloud_messaging.eventhubs[0].namespace_name, "Not deployed")
+}
+
+/*
+ * Dataflow Outputs
+ */
+
+output "dataflow_graphs" {
+  description = "Map of dataflow graph resources by name."
+  value       = try(module.edge_messaging.dataflow_graphs, {})
+}
+
+output "dataflows" {
+  description = "Map of dataflow resources by name."
+  value       = try(module.edge_messaging.dataflows, {})
+}
+
+output "dataflow_endpoints" {
+  description = "Map of dataflow endpoint resources by name."
+  value       = try(module.edge_messaging.dataflow_endpoints, {})
+}

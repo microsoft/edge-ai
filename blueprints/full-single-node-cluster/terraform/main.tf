@@ -469,6 +469,8 @@ module "edge_messaging" {
   eventhub             = module.cloud_messaging.eventhubs[0]
   adr_namespace        = module.cloud_data.adr_namespace
   dataflow_graphs      = var.dataflow_graphs
+  dataflows            = var.dataflows
+  dataflow_endpoints   = var.dataflow_endpoints
 }
 
 module "edge_azureml" {
