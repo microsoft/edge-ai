@@ -1,0 +1,81 @@
+name: Feature request
+description: Suggest an idea for this project
+title: "[FEATURE] "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        > **IMPORTANT:** Before submitting, please remove all sensitive data, secrets, tokens, or confidential information. Ensure you've redacted any NDA-covered information, IP addresses, resource names, or security-related details that shouldn't be publicly disclosed.
+
+  - type: checkboxes
+    id: components
+    attributes:
+      label: Target Components
+      description: Select all components affected by this request.
+      options:
+        - label: Terraform modules
+        - label: Bicep modules
+        - label: Blueprints
+        - label: GitHub Actions
+        - label: Documentation
+        - label: Other
+    validations:
+      required: true
+
+  - type: input
+    id: other-component-details
+    attributes:
+      label: Other Component Details
+      description: If you selected Other, provide a short description.
+      placeholder: Describe the component or area affected.
+
+  - type: textarea
+    id: problem-statement
+    attributes:
+      label: Problem Statement
+      description: Describe the problem this feature would solve.
+      placeholder: I'm always frustrated when...
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: Proposed Solution
+      description: Describe what you want to happen.
+      placeholder: A clear and concise description of the desired behavior.
+    validations:
+      required: true
+
+  - type: textarea
+    id: benefits
+    attributes:
+      label: Benefits
+      description: Describe how this change helps users and maintainers.
+      placeholder: Explain practical benefits, impact, and expected outcomes.
+
+  - type: textarea
+    id: alternative-solutions
+    attributes:
+      label: Alternative Solutions
+      description: Describe alternatives you've considered.
+
+  - type: textarea
+    id: implementation-ideas
+    attributes:
+      label: Implementation Ideas
+      description: Share implementation thoughts, if any.
+
+  - type: textarea
+    id: potential-challenges
+    attributes:
+      label: Potential Challenges
+      description: Describe potential challenges or considerations for implementation.
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Add context, links, screenshots, or mockups.
