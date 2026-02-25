@@ -33,3 +33,5 @@ async-trait = "0.1.88"
 
 [profile.release]
 strip = true
+
+[workspace]

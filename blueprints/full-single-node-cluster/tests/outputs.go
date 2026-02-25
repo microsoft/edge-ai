@@ -27,6 +27,9 @@ type BlueprintOutputs struct {
 	AzureIotOperations  map[string]any `output:"azure_iot_operations"`
 	Assets              map[string]any `output:"assets"`
 	ACRNetworkPosture   any            `output:"acr_network_posture"`
+	DataflowGraphs      any            `output:"dataflow_graphs"`
+	Dataflows           any            `output:"dataflows"`
+	DataflowEndpoints   any            `output:"dataflow_endpoints"`
 }
 
 // ParseTerraformBlueprintOutputs converts raw Terraform deployment outputs to strongly-typed BlueprintOutputs.

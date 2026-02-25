@@ -11,7 +11,7 @@ data "azurerm_resource_group" "aio" {
 }
 
 data "azurerm_user_assigned_identity" "aio" {
-  name                = "id-${var.resource_prefix}-${var.environment}-aio-${var.instance}"
+  name                = "id-${var.resource_prefix}-aio-${var.environment}-${var.instance}"
   resource_group_name = data.azurerm_resource_group.aio.name
 }
 
@@ -58,4 +58,7 @@ module "ci" {
   // Fabric RTI Configuration for CI Testing
   fabric_eventstream_endpoint = var.fabric_eventstream_endpoint
   fabric_workspace            = var.fabric_workspace
+
+  // Dataflow Graphs Configuration for CI Testing
+  dataflow_graphs = var.dataflow_graphs
 }

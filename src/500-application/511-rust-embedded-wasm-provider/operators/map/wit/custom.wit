@@ -1,0 +1,31 @@
+﻿package map:custom;
+
+interface types {
+    record module-configuration {
+        properties: list<tuple<string, string>>,
+    }
+
+    variant error {
+        invalid-argument(string),
+        internal(string),
+    }
+
+    record data-model {
+        payload: list<u8>,
+    }
+}
+
+interface custom {
+	use types.{data-model, error, module-configuration};
+
+	// A map operator takes a message and returns a new message
+	// that will be passed to the next node in the execution graph.
+	process: func(message: data-model) -> result<data-model, error>;
+
+	// The init function called on module load
+	init: func(configuration: module-configuration) -> bool;
+}
+
+world custom-impl {
+    import custom;
+}
