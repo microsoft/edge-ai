@@ -169,11 +169,12 @@ The operator tries parsing strategies in this order:
 | array                 | array     | Recursive conversion                     |
 | map                   | object    | Recursive conversion                     |
 | record                | object    | Field names as keys                      |
-| union                 | (varies)  | Unwrapped to selected variant            |
-| decimal, bigdecimal   | number    | Unscaled integer value                   |
-| date, time, timestamp | number    | Epoch-based numeric value                |
-| duration              | object    | `{ months, days, millis }`               |
-| uuid                  | string    | Standard UUID format                     |
+| union                 | (varies)  | Unwrapped to selected variant                                       |
+| decimal               | number    | Unscaled integer value (scale information not preserved from schema) |
+| bigdecimal            | string    | String representation preserving all decimal places                 |
+| date, time, timestamp | number    | Epoch-based numeric value                                           |
+| duration              | object    | `{ months, days, millis }`                                          |
+| uuid                  | string    | Standard UUID format                                                |
 
 ## Sample Schema
 

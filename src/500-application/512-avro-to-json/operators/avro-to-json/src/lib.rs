@@ -225,7 +225,13 @@ fn avro_init(configuration: ModuleConfiguration) -> bool {
                 logger::log(
                     Level::Error,
                     "avro-to-json",
-                    &format!("Failed to parse provided Avro schema: {}", e),
+                    &format!(
+                        "Failed to parse provided Avro schema: {}. \
+                         Ensure avroSchema is valid Avro schema JSON. \
+                         Example: {{\"type\":\"record\",\"name\":\"Example\",\"fields\":[...]}}. \
+                         See: https://avro.apache.org/docs/current/spec.html#schemas",
+                        e
+                    ),
                 );
                 e
             })
@@ -325,8 +331,11 @@ fn transform(input: DataModel) -> Result<DataModel, Error> {
         logger::log(
             Level::Error,
             "avro-to-json",
-            "Could not detect Avro format. Ensure data is in Object Container File format \
-             or provide schema via configuration parameter 'avroSchema'.",
+            "Could not detect Avro format. Supported formats: \
+             (1) Object Container File (starts with magic bytes 'Obj\\x01'), \
+             (2) Schema-based encoding (provide 'avroSchema' configuration). \
+             Verify your Kafka producer is sending valid Avro data. \
+             See: https://avro.apache.org/docs/current/spec.html",
         );
         None
     };
@@ -371,9 +380,12 @@ fn transform(input: DataModel) -> Result<DataModel, Error> {
             Err(Error {
                 message: format!(
                     "Could not detect Avro format (payload size: {} bytes). \
-                     Ensure data is in Object Container File format (magic bytes: Obj\\x01) \
-                     or provide schema via 'avroSchema' configuration parameter.",
-                    payload.len()
+                     Supported formats: (1) Object Container File (starts with magic bytes 'Obj\\x01'), \
+                     (2) Schema-based encoding (provide 'avroSchema' configuration). \
+                     Verify your Kafka producer is sending valid Avro data. \
+                     First 10 bytes (hex): {:02X?}",
+                    payload.len(),
+                    &payload.iter().take(10).copied().collect::<Vec<u8>>()
                 ),
             })
         }
@@ -559,5 +571,35 @@ mod tests {
         );
         let result = avro_to_json(&AvroValue::Duration(duration));
         assert_eq!(result, json!({"months": 0, "days": 0, "millis": 0}));
+    }
+
+    #[test]
+    fn avro_bigdecimal_to_json() {
+        use apache_avro::BigDecimal;
+        use std::str::FromStr;
+
+        let bd = BigDecimal::from_str("123.456").unwrap();
+        let result = avro_to_json(&AvroValue::BigDecimal(bd));
+        assert_eq!(result, json!("123.456"));
+    }
+
+    #[test]
+    fn avro_bigdecimal_large_value() {
+        use apache_avro::BigDecimal;
+        use std::str::FromStr;
+
+        let bd = BigDecimal::from_str("999999999999999999.123456789").unwrap();
+        let result = avro_to_json(&AvroValue::BigDecimal(bd));
+        assert_eq!(result, json!("999999999999999999.123456789"));
+    }
+
+    #[test]
+    fn avro_bigdecimal_negative() {
+        use apache_avro::BigDecimal;
+        use std::str::FromStr;
+
+        let bd = BigDecimal::from_str("-42.5").unwrap();
+        let result = avro_to_json(&AvroValue::BigDecimal(bd));
+        assert_eq!(result, json!("-42.5"));
     }
 }
