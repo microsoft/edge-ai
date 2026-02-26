@@ -139,6 +139,7 @@ module "cloud_notification" {
   resource_group     = module.cloud_resource_group.resource_group
   eventhub_namespace = module.cloud_messaging.eventhub_namespace
   eventhub_name      = module.cloud_messaging.eventhubs[0].eventhub_name
+  storage_account    = module.cloud_data.storage_account
   environment        = var.environment
   resource_prefix    = var.resource_prefix
   instance           = var.instance
@@ -249,7 +250,7 @@ module "edge_iot_ops" {
 module "edge_assets" {
   source = "../../../src/100-edge/111-assets/terraform"
 
-  depends_on = [module.edge_iot_ops]
+  depends_on = [module.edge_iot_ops, terraform_data.edge_app_deployment]
 
   location           = var.location
   resource_group     = module.cloud_resource_group.resource_group

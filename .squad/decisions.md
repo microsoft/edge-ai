@@ -364,3 +364,24 @@ ACR Build has constrained server-side environment. The 503-media-capture-service
 **Why:** The RTSP muxer crashes on the timestamp discontinuity when FFmpeg seeks back to the start of the video. `-fflags +genpts` is the standard FFmpeg fix. The `-nostdin` flag prevents stdin-related hangs in headless containers. The restart delay prevents a race condition where the new FFmpeg process tries to publish to a path that hasn't been fully torn down.
 
 **Status:** PROPOSED
+
+---
+
+### 2026-02-26: Leak notification deduplication and state management
+
+**By:** Dallas (Lead), implemented by Ripley (Infra Dev)
+
+**What:** Redesigned the 045-notification Logic App to eliminate Teams notification flooding during continuous leak events. Changes:
+
+1. **State management:** Azure Table Storage (`leaksessions` table) on existing `cloud_data` storage account. Schema: PartitionKey=source_device, RowKey="active", plus FirstDetectedAt, LastEventAt, EventCount, Confidence, AlertLevel.
+2. **Workflow redesign:** Removed `splitOn` from Event Hub trigger. Added For_Each loop with Table Storage lookup — only new leaks (entity not found → 404) trigger a Teams notification. Existing leaks silently update counters.
+3. **Close mechanism:** Separate HTTP-triggered Logic App. Teams notification includes a "Close Leak" hyperlink. Clicking it deletes the Table Storage entity and posts a closure summary (duration, event count).
+4. **Re-detection:** After close, state is clean — next event from that device triggers a fresh notification.
+5. **Role assignments:** Storage Table Data Contributor for both Logic App identities.
+6. **Blueprint updated:** `leak-detection` blueprint passes `storage_account` from `cloud_data` to `cloud_notification`.
+
+**Files modified:** `045-notification/terraform/main.tf` (major rewrite), `variables.deps.tf`, `outputs.tf`, `ci/terraform/main.tf`, `blueprints/leak-detection/terraform/main.tf`, `blueprints/leak-detection/terraform/outputs.tf`, `blueprints/leak-detection/logic-app-notification-code.json`.
+
+**Why:** Every Event Hub event triggered a separate Teams message. The `splitOn` property caused per-event workflow runs during 5-second polling cycles, flooding the channel during active leaks.
+
+**Status:** ACCEPTED

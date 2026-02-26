@@ -278,3 +278,35 @@ Created `src/000-cloud/045-notification/README.md` and updated `blueprints/leak-
 - Teams connection uses OAuth user consent (not managed identity) — critical post-deployment step
 - Blueprint notification section gated by `should_create_notification` (default false)
 - `teams_recipient_id` format documented as `19:xxx@thread.v2`
+
+## 2026-02-26: Notification Dedup Redesign — Table Storage State Management
+
+### What
+
+Rewrote `src/000-cloud/045-notification/terraform/main.tf` to implement deduplication via Azure Table Storage. The primary Logic App no longer fires a per-event Teams notification (splitOn removed). Instead, events are iterated via For_Each with conditional insert/update against a `leaksessions` table. Only new leaks trigger Teams alerts; existing leak sessions have their counters bumped.
+
+Added a second Logic App (`close_leak`) with an HTTP Request trigger that deletes the active session from Table Storage and posts a closure summary to Teams. The primary Logic App's Teams notification includes a "Close Leak" hyperlink pointing to the close Logic App's callback URL (obtained via `azapi_resource_action.listCallbackUrl`).
+
+### Files Modified
+
+- `src/000-cloud/045-notification/terraform/main.tf` — complete rewrite (locals, API lookups, table storage, table connection, primary workflow + trigger, close workflow + trigger + callback URL + 4 actions, 3 role assignments)
+- `src/000-cloud/045-notification/terraform/variables.deps.tf` — added `storage_account` variable
+- `src/000-cloud/045-notification/terraform/outputs.tf` — added `close_leak_endpoint` output
+- `src/000-cloud/045-notification/ci/terraform/main.tf` — added mock `storage_account`, fixed source path `../../` → `../../terraform`
+- `blueprints/leak-detection/terraform/main.tf` — added `storage_account = module.cloud_data.storage_account` passthrough
+- `blueprints/leak-detection/terraform/outputs.tf` — added `close_leak_endpoint` to notification output
+- `blueprints/leak-detection/logic-app-notification-code.json` — updated reference doc with new workflow design
+
+### Key Design Decisions
+
+- `splitOn` removed from Event Hub trigger — events processed as array via `For_Each` with `operationOptions = "Sequential"` to avoid race conditions on table writes
+- Table `leaksessions` on existing storage account: PartitionKey=`source_device`, RowKey=`active`
+- `Get_Active_Leak` action handles 404 via `runAfter: ["Succeeded", "Failed"]` on the downstream condition
+- Close Logic App shares the same `azapi_resource` API connections (table, teams) — both Logic Apps have their own SystemAssigned identity with Storage Table Data Contributor role
+- Close callback URL obtained via `azapi_resource_action` calling `listCallbackUrl` on the HTTP trigger — embedded directly in the primary Logic App's Teams notification HTML
+
+## Learnings
+
+📌 Architecture decision (2026-02-26): Table Storage dedup pattern — PartitionKey=device, RowKey=active, conditional insert/update. Close mechanism via separate HTTP-triggered Logic App. Avoids per-event Teams flooding — decided by Dallas
+📌 Bug fix (2026-02-26): 045-notification CI had incorrect module source `../../` instead of `../../terraform` — fixed during this change
+📌 Pattern (2026-02-26): `azapi_resource_action` with `listCallbackUrl` is the way to obtain Logic App HTTP trigger callback URLs in Terraform — no azurerm equivalent exists

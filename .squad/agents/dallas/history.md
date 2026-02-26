@@ -71,3 +71,14 @@
 * **`az acr build` for all three images.** Builds run in ACR compute, bypassing private networking. Build contexts: 509=`services/sse-server/` (self-contained Python), 507=`services/` (parent dir for sibling crate), 503=component root (Dockerfile at `services/media-capture-service/Dockerfile`, context=`./`). 503 is heaviest (~15-30 min: x264+FFmpeg+OpenCV from source).
 * **9-step implementation checklist.** (1) Expose ACSA principal_id, (2) Create 509 manifests, (3) Create acsa-storage module, (4) Create build script, (5) Create deploy script, (6-8) Update blueprint main/vars/outputs, (9) Validate.
 * Plan filed at `.ai-team/agents/dallas/507-503-509-deployment-plan.md`.
+
+### 2026-02-26: Leak Notification Deduplication Architecture
+
+* **Root cause: `splitOn` in Logic App trigger.** Every Event Hub message spawns a separate Logic App run, each posting to Teams. Removing `splitOn` and processing events as a batch is the primary fix.
+* **Azure Table Storage for leak state tracking.** The existing storage account from `cloud_data` already exposes `primary_table_endpoint`. Table schema: PK=`source_device`, RK=`"active"`, with `FirstDetectedAt`, `LastEventAt`, `EventCount`, `Confidence`, `AlertLevel` columns. Logic App uses Get/Insert/Update Entity actions to manage state.
+* **Conditional notification pattern.** For_Each event → Get_Entity → if not found (new leak) → Insert_Entity + post Teams notification. If found (existing leak) → Update_Entity only (suppress notification). Single notification per device per leak incident.
+* **HTTP-triggered close workflow.** Second Logic App with HTTP Request trigger. Teams message includes "Close Leak" hyperlink. On invocation: delete Table Storage entity → post closure summary with duration and event count → return 200. Clean state enables re-detection.
+* **No Adaptive Cards or Bot Framework needed.** Simple HTML Teams messages with close link. Adaptive Card action buttons would require Bot Framework registration — unnecessary complexity for this use case.
+* **Entirely cloud-side fix.** No edge changes, no inference service changes, no dataflow changes. Only `045-notification` component and `leak-detection` blueprint affected.
+* **New dependency: storage account.** 045-notification gains a `storage_account` input variable; blueprint passes `cloud_data.storage_account` through.
+* Decision filed at `.squad/decisions/inbox/dallas-leak-notification-dedup.md`. Delegation: all tasks to Ripley (IaC only).

@@ -123,8 +123,9 @@ output "edge_messaging" {
 output "notification" {
   description = "Logic App notification workflow for leak detection alerts."
   value = {
-    logic_app_name = try(module.cloud_notification[0].logic_app.name, "Not deployed")
-    logic_app_id   = try(module.cloud_notification[0].logic_app.id, "Not deployed")
+    close_leak_endpoint = try(module.cloud_notification[0].close_leak_endpoint, "Not deployed")
+    logic_app_name      = try(module.cloud_notification[0].logic_app.name, "Not deployed")
+    logic_app_id        = try(module.cloud_notification[0].logic_app.id, "Not deployed")
   }
 }
 

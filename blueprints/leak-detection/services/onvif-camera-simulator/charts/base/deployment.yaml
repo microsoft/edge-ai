@@ -31,6 +31,8 @@ spec:
               containerPort: 8189
               protocol: TCP
           env:
+            - name: DEVICE_HOSTNAME
+              value: "onvif-camera-simulator"
             - name: ONVIF_PORT
               value: "8080"
             - name: MEDIAMTX_RTSP_PORT

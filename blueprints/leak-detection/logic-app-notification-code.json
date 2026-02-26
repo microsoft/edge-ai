@@ -8,11 +8,6 @@
                     "interval": 5,
                     "frequency": "Second"
                 },
-                "evaluatedRecurrence": {
-                    "interval": 5,
-                    "frequency": "Second"
-                },
-                "splitOn": "@triggerBody()",
                 "type": "ApiConnection",
                 "inputs": {
                     "host": {
@@ -31,56 +26,141 @@
             }
         },
         "actions": {
-            "Parse_Leak_Event": {
-                "runAfter": {},
-                "type": "ParseJson",
-                "inputs": {
-                    "content": "@base64ToString(triggerBody()?['ContentData'])",
-                    "schema": {
-                        "properties": {
-                            "alert_type": {
-                                "type": "string"
-                            },
-                            "confidence_level": {
-                                "type": "number"
-                            },
-                            "device_id": {
-                                "type": "string"
-                            },
-                            "location": {
-                                "type": "string"
-                            },
-                            "message": {
-                                "type": "string"
-                            },
-                            "timestamp": {
-                                "type": "string"
+            "For_Each_Event": {
+                "type": "Foreach",
+                "foreach": "@triggerBody()",
+                "operationOptions": "Sequential",
+                "actions": {
+                    "Parse_Leak_Event": {
+                        "type": "ParseJson",
+                        "inputs": {
+                            "content": "@base64ToString(items('For_Each_Event')?['ContentData'])",
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message_type": { "type": "string" },
+                                    "timestamp": { "type": "number" },
+                                    "source_device": { "type": "string" },
+                                    "inference_result": {
+                                        "type": "object",
+                                        "properties": {
+                                            "model_name": { "type": "string" },
+                                            "model_type": { "type": "string" },
+                                            "confidence": { "type": "number" },
+                                            "inference_time_ms": { "type": "number" }
+                                        }
+                                    },
+                                    "enrichment": {
+                                        "type": "object",
+                                        "properties": {
+                                            "site": { "type": "string" },
+                                            "facility": { "type": "string" },
+                                            "alert_level": { "type": "string" }
+                                        }
+                                    }
+                                }
                             }
                         },
-                        "type": "object"
-                    }
-                }
-            },
-            "Post_message_in_a_chat_or_channel": {
-                "runAfter": {
-                    "Parse_Leak_Event": [
-                        "Succeeded"
-                    ]
-                },
-                "type": "ApiConnection",
-                "inputs": {
-                    "host": {
-                        "connection": {
-                            "name": "@parameters('$connections')['teams']['connectionId']"
+                        "runAfter": {}
+                    },
+                    "Get_Active_Leak": {
+                        "type": "ApiConnection",
+                        "inputs": {
+                            "host": {
+                                "connection": {
+                                    "name": "@parameters('$connections')['azuretables']['connectionId']"
+                                }
+                            },
+                            "method": "get",
+                            "path": "/v2/storageAccounts/@{encodeURIComponent(encodeURIComponent('STORAGE_ACCOUNT_NAME'))}/tables/@{encodeURIComponent('leaksessions')}/entities(PartitionKey='@{encodeURIComponent(body('Parse_Leak_Event')?['source_device'])}',RowKey='@{encodeURIComponent('active')}')"
+                        },
+                        "runAfter": {
+                            "Parse_Leak_Event": ["Succeeded"]
                         }
                     },
-                    "method": "post",
-                    "body": {
-                        "recipient": "19:d725430aea604596a9f8e0d96f585d76@thread.v2",
-                        "messageBody": "<p class=\"editor-paragraph\">This is a Leak Detection message body:</p><br><p class=\"editor-paragraph\">@{body('Parse_Leak_Event')}</p>"
-                    },
-                    "path": "/beta/teams/conversation/message/poster/Flow bot/location/@{encodeURIComponent('Group chat')}"
-                }
+                    "Check_New_Leak": {
+                        "type": "If",
+                        "expression": {
+                            "and": [
+                                {
+                                    "equals": [
+                                        "@outputs('Get_Active_Leak')['statusCode']",
+                                        404
+                                    ]
+                                }
+                            ]
+                        },
+                        "actions": {
+                            "Insert_Entity": {
+                                "type": "ApiConnection",
+                                "inputs": {
+                                    "host": {
+                                        "connection": {
+                                            "name": "@parameters('$connections')['azuretables']['connectionId']"
+                                        }
+                                    },
+                                    "method": "post",
+                                    "path": "/v2/storageAccounts/@{encodeURIComponent(encodeURIComponent('STORAGE_ACCOUNT_NAME'))}/tables/@{encodeURIComponent('leaksessions')}/entities",
+                                    "body": {
+                                        "PartitionKey": "@{body('Parse_Leak_Event')?['source_device']}",
+                                        "RowKey": "active",
+                                        "FirstDetectedAt": "@{utcNow()}",
+                                        "LastEventAt": "@{utcNow()}",
+                                        "EventCount": 1,
+                                        "Confidence": "@{body('Parse_Leak_Event')?['inference_result']?['confidence']}",
+                                        "AlertLevel": "@{coalesce(body('Parse_Leak_Event')?['enrichment']?['alert_level'], 'Unknown')}"
+                                    }
+                                },
+                                "runAfter": {}
+                            },
+                            "Post_Teams_Notification": {
+                                "type": "ApiConnection",
+                                "inputs": {
+                                    "host": {
+                                        "connection": {
+                                            "name": "@parameters('$connections')['teams']['connectionId']"
+                                        }
+                                    },
+                                    "method": "post",
+                                    "body": {
+                                        "recipient": "TEAMS_RECIPIENT_ID",
+                                        "messageBody": "<p><strong>🚨 Leak Detection Alert</strong></p><p><strong>Device:</strong> @{body('Parse_Leak_Event')?['source_device']}</p><p><strong>Detected At:</strong> @{utcNow()}</p><p><strong>Confidence:</strong> @{body('Parse_Leak_Event')?['inference_result']?['confidence']}</p><p><strong>Model:</strong> @{body('Parse_Leak_Event')?['inference_result']?['model_name']}</p><p><strong>Alert Level:</strong> @{coalesce(body('Parse_Leak_Event')?['enrichment']?['alert_level'], 'Unknown')}</p><p><strong>Site:</strong> @{coalesce(body('Parse_Leak_Event')?['enrichment']?['site'], 'Unknown')} / @{coalesce(body('Parse_Leak_Event')?['enrichment']?['facility'], 'Unknown')}</p><p><a href=\"CLOSE_LEAK_CALLBACK_URL&device=@{encodeUriComponent(body('Parse_Leak_Event')?['source_device'])}\">✅ Close Leak</a></p>"
+                                    },
+                                    "path": "/beta/teams/conversation/message/poster/Flow bot/location/@{encodeURIComponent('Group chat')}"
+                                },
+                                "runAfter": {
+                                    "Insert_Entity": ["Succeeded"]
+                                }
+                            }
+                        },
+                        "else": {
+                            "actions": {
+                                "Update_Entity": {
+                                    "type": "ApiConnection",
+                                    "inputs": {
+                                        "host": {
+                                            "connection": {
+                                                "name": "@parameters('$connections')['azuretables']['connectionId']"
+                                            }
+                                        },
+                                        "method": "patch",
+                                        "path": "/v2/storageAccounts/@{encodeURIComponent(encodeURIComponent('STORAGE_ACCOUNT_NAME'))}/tables/@{encodeURIComponent('leaksessions')}/entities(PartitionKey='@{encodeURIComponent(body('Parse_Leak_Event')?['source_device'])}',RowKey='@{encodeURIComponent('active')}')",
+                                        "body": {
+                                            "LastEventAt": "@{utcNow()}",
+                                            "EventCount": "@{add(int(body('Get_Active_Leak')?['EventCount']), 1)}",
+                                            "Confidence": "@{if(greater(float(body('Parse_Leak_Event')?['inference_result']?['confidence']), float(body('Get_Active_Leak')?['Confidence'])), body('Parse_Leak_Event')?['inference_result']?['confidence'], body('Get_Active_Leak')?['Confidence'])}"
+                                        }
+                                    },
+                                    "runAfter": {}
+                                }
+                            }
+                        },
+                        "runAfter": {
+                            "Get_Active_Leak": ["Succeeded", "Failed"]
+                        }
+                    }
+                },
+                "runAfter": {}
             }
         },
         "parameters": {
@@ -94,10 +174,20 @@
         "$connections": {
             "type": "Object",
             "value": {
+                "azuretables": {
+                    "id": "/subscriptions/SUBSCRIPTION_ID/providers/Microsoft.Web/locations/eastus2/managedApis/azuretables",
+                    "connectionId": "/subscriptions/SUBSCRIPTION_ID/resourceGroups/RESOURCE_GROUP/providers/Microsoft.Web/connections/apicon-tbl-PREFIX-ENV-INSTANCE",
+                    "connectionName": "apicon-tbl-PREFIX-ENV-INSTANCE",
+                    "connectionProperties": {
+                        "authentication": {
+                            "type": "ManagedServiceIdentity"
+                        }
+                    }
+                },
                 "eventhubs": {
-                    "id": "/subscriptions/12d78ff6-2cb7-471d-af66-9520baa9f399/providers/Microsoft.Web/locations/eastus2/managedApis/eventhubs",
-                    "connectionId": "/subscriptions/12d78ff6-2cb7-471d-af66-9520baa9f399/resourceGroups/rg-fullleakdet-dev-001/providers/Microsoft.Web/connections/apicon-evhub-fullleakdet-dev-001",
-                    "connectionName": "apicon-evhub-fullleakdet-dev-001",
+                    "id": "/subscriptions/SUBSCRIPTION_ID/providers/Microsoft.Web/locations/eastus2/managedApis/eventhubs",
+                    "connectionId": "/subscriptions/SUBSCRIPTION_ID/resourceGroups/RESOURCE_GROUP/providers/Microsoft.Web/connections/apicon-evhub-PREFIX-ENV-INSTANCE",
+                    "connectionName": "apicon-evhub-PREFIX-ENV-INSTANCE",
                     "connectionProperties": {
                         "authentication": {
                             "type": "ManagedServiceIdentity"
@@ -105,9 +195,9 @@
                     }
                 },
                 "teams": {
-                    "id": "/subscriptions/12d78ff6-2cb7-471d-af66-9520baa9f399/providers/Microsoft.Web/locations/eastus2/managedApis/teams",
-                    "connectionId": "/subscriptions/12d78ff6-2cb7-471d-af66-9520baa9f399/resourceGroups/rg-fullleakdet-dev-001/providers/Microsoft.Web/connections/teams",
-                    "connectionName": "teams",
+                    "id": "/subscriptions/SUBSCRIPTION_ID/providers/Microsoft.Web/locations/eastus2/managedApis/teams",
+                    "connectionId": "/subscriptions/SUBSCRIPTION_ID/resourceGroups/RESOURCE_GROUP/providers/Microsoft.Web/connections/apicon-teams-PREFIX-ENV-INSTANCE",
+                    "connectionName": "apicon-teams-PREFIX-ENV-INSTANCE",
                     "connectionProperties": {}
                 }
             }

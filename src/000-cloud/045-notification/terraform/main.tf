@@ -1,16 +1,20 @@
 /**
  * # Notification
  *
- * Deploys an Azure Logic App that subscribes to Event Hub ALERT_DLQC events,
- * parses the leak detection payload, and posts messages directly to Microsoft Teams
- * using the Teams API Connection (OAuth connector). The Teams connection requires
- * user consent after deployment via the Azure Portal.
+ * Deploys Azure Logic Apps for leak detection notifications with state tracking.
+ * The primary workflow subscribes to Event Hub ALERT_DLQC events, deduplicates
+ * using Azure Table Storage, and posts new-leak alerts to Microsoft Teams.
+ * A secondary workflow provides an HTTP endpoint to close active leak sessions.
+ * The Teams connection requires user consent after deployment via the Azure Portal.
  */
 
 locals {
-  logic_app_name     = "la-${var.resource_prefix}-leak-notify-${var.environment}-${var.instance}"
-  eventhub_conn_name = "apicon-evhub-${var.resource_prefix}-${var.environment}-${var.instance}"
-  teams_conn_name    = "apicon-teams-${var.resource_prefix}-${var.environment}-${var.instance}"
+  close_logic_app_name = "la-${var.resource_prefix}-leak-close-${var.environment}-${var.instance}"
+  eventhub_conn_name   = "apicon-evhub-${var.resource_prefix}-${var.environment}-${var.instance}"
+  logic_app_name       = "la-${var.resource_prefix}-leak-notify-${var.environment}-${var.instance}"
+  table_endpoint       = "https://${var.storage_account.name}.table.core.windows.net"
+  table_name           = "leaksessions"
+  teams_conn_name      = "apicon-teams-${var.resource_prefix}-${var.environment}-${var.instance}"
 }
 
 // ── Managed API Lookups ──────────────────────────────────────
@@ -25,7 +29,15 @@ data "azurerm_managed_api" "teams" {
   location = var.resource_group.location
 }
 
-// ── API Connections (Managed Identity) ───────────────────────
+// ── Azure Table Storage ──────────────────────────────────────
+
+resource "azapi_resource" "leak_sessions_table" {
+  type      = "Microsoft.Storage/storageAccounts/tableServices/tables@2023-05-01"
+  name      = local.table_name
+  parent_id = "${var.storage_account.id}/tableServices/default"
+}
+
+// ── API Connections ──────────────────────────────────────────
 
 resource "azapi_resource" "eventhub_connection" {
   type      = "Microsoft.Web/connections@2016-06-01"
@@ -73,7 +85,7 @@ resource "azapi_resource" "teams_connection" {
   }
 }
 
-// ── Logic App Workflow ───────────────────────────────────────
+// ── Primary Logic App: Leak Notification ─────────────────────
 
 resource "azurerm_logic_app_workflow" "teams_notification" {
   name                = local.logic_app_name
@@ -114,15 +126,14 @@ resource "azurerm_logic_app_workflow" "teams_notification" {
   }
 }
 
-// ── Workflow Trigger ─────────────────────────────────────────
+// ── Primary Workflow Trigger ─────────────────────────────────
 
 resource "azurerm_logic_app_trigger_custom" "eventhub_trigger" {
   name         = "When_events_are_available_in_Event_Hub"
   logic_app_id = azurerm_logic_app_workflow.teams_notification.id
 
   body = jsonencode({
-    type    = "ApiConnection"
-    splitOn = "@triggerBody()"
+    type = "ApiConnection"
     inputs = {
       host = {
         connection = {
@@ -144,75 +155,254 @@ resource "azurerm_logic_app_trigger_custom" "eventhub_trigger" {
   })
 }
 
-// ── Workflow Actions ─────────────────────────────────────────
+// ── Close Logic App: Leak Resolution ─────────────────────────
 
-resource "azurerm_logic_app_action_custom" "parse_payload" {
-  name         = "Parse_Leak_Event"
+resource "azurerm_logic_app_workflow" "close_leak" {
+  name                = local.close_logic_app_name
+  location            = var.resource_group.location
+  resource_group_name = var.resource_group.name
+  tags                = var.tags
+
+  identity {
+    type = "SystemAssigned"
+  }
+
+  workflow_parameters = {
+    "$connections" = jsonencode({
+      defaultValue = {}
+      type         = "Object"
+    })
+  }
+
+  parameters = {
+    "$connections" = jsonencode({
+      teams = {
+        connectionId         = azapi_resource.teams_connection.id
+        connectionName       = azapi_resource.teams_connection.name
+        id                   = data.azurerm_managed_api.teams.id
+        connectionProperties = {}
+      }
+    })
+  }
+}
+
+resource "azurerm_logic_app_trigger_custom" "close_leak_trigger" {
+  name         = "Close_Leak_Request"
+  logic_app_id = azurerm_logic_app_workflow.close_leak.id
+
+  body = jsonencode({
+    type = "Request"
+    kind = "Http"
+    inputs = {
+      method = "GET"
+      schema = {}
+    }
+  })
+}
+
+// ── Close Logic App Callback URL ─────────────────────────────
+
+resource "azapi_resource_action" "close_leak_callback_url" {
+  type                   = "Microsoft.Logic/workflows/triggers@2019-05-01"
+  resource_id            = "${azurerm_logic_app_workflow.close_leak.id}/triggers/${azurerm_logic_app_trigger_custom.close_leak_trigger.name}"
+  action                 = "listCallbackUrl"
+  response_export_values = ["value"]
+}
+
+// ── Primary Workflow Actions ─────────────────────────────────
+
+resource "azurerm_logic_app_action_custom" "for_each_event" {
+  name         = "For_Each_Event"
   logic_app_id = azurerm_logic_app_workflow.teams_notification.id
 
   body = jsonencode({
-    type = "ParseJson"
-    inputs = {
-      content = "@base64ToString(triggerBody()?['ContentData'])"
-      schema = {
-        type = "object"
-        properties = {
-          message_type  = { type = "string" }
-          timestamp     = { type = "number" }
-          source_device = { type = "string" }
-          inference_result = {
+    type             = "Foreach"
+    foreach          = "@triggerBody()"
+    operationOptions = "Sequential"
+    actions = {
+      Parse_Leak_Event = {
+        type = "ParseJson"
+        inputs = {
+          content = "@base64ToString(items('For_Each_Event')?['ContentData'])"
+          schema = {
             type = "object"
             properties = {
-              model_name        = { type = "string" }
-              model_type        = { type = "string" }
-              confidence        = { type = "number" }
-              inference_time_ms = { type = "number" }
-              metadata = {
+              message_type  = { type = "string" }
+              timestamp     = { type = "number" }
+              source_device = { type = "string" }
+              inference_result = {
                 type = "object"
                 properties = {
-                  backend        = { type = "string" }
-                  inference_type = { type = "string" }
-                  model_path     = { type = "string" }
-                  request_id     = { type = "string" }
-                }
-              }
-              predictions = {
-                type = "array"
-                items = {
-                  type = "object"
-                  properties = {
-                    class      = { type = "string" }
-                    confidence = { type = "number" }
-                    bbox       = {}
-                    severity   = { type = "string" }
-                    metadata = {
+                  model_name        = { type = "string" }
+                  model_type        = { type = "string" }
+                  confidence        = { type = "number" }
+                  inference_time_ms = { type = "number" }
+                  metadata = {
+                    type = "object"
+                    properties = {
+                      backend        = { type = "string" }
+                      inference_type = { type = "string" }
+                      model_path     = { type = "string" }
+                      request_id     = { type = "string" }
+                    }
+                  }
+                  predictions = {
+                    type = "array"
+                    items = {
                       type = "object"
                       properties = {
-                        backend        = { type = "string" }
-                        class_index    = { type = "integer" }
-                        inference_type = { type = "string" }
-                        model_name     = { type = "string" }
+                        class      = { type = "string" }
+                        confidence = { type = "number" }
+                        bbox       = {}
+                        severity   = { type = "string" }
+                        metadata = {
+                          type = "object"
+                          properties = {
+                            backend        = { type = "string" }
+                            class_index    = { type = "integer" }
+                            inference_type = { type = "string" }
+                            model_name     = { type = "string" }
+                          }
+                        }
                       }
                     }
                   }
                 }
               }
-            }
-          }
-          enrichment = {
-            type = "object"
-            properties = {
-              site          = { type = "string" }
-              facility      = { type = "string" }
-              business_unit = { type = "string" }
-              alert_level   = { type = "string" }
-              region        = { type = "string" }
-              recommended_actions = {
-                type  = "array"
-                items = { type = "string" }
+              enrichment = {
+                type = "object"
+                properties = {
+                  site          = { type = "string" }
+                  facility      = { type = "string" }
+                  business_unit = { type = "string" }
+                  alert_level   = { type = "string" }
+                  region        = { type = "string" }
+                  recommended_actions = {
+                    type  = "array"
+                    items = { type = "string" }
+                  }
+                }
               }
             }
           }
+        }
+        runAfter = {}
+      }
+      Get_Active_Leak = {
+        type = "Http"
+        inputs = {
+          method = "GET"
+          uri    = "${local.table_endpoint}/${local.table_name}(PartitionKey='@{body('Parse_Leak_Event')?['source_device']}',RowKey='active')"
+          headers = {
+            Accept         = "application/json;odata=nometadata"
+            "x-ms-version" = "2020-12-06"
+          }
+          authentication = {
+            type     = "ManagedServiceIdentity"
+            audience = "https://storage.azure.com/"
+          }
+        }
+        runAfter = {
+          Parse_Leak_Event = ["Succeeded"]
+        }
+      }
+      Check_New_Leak = {
+        type = "If"
+        expression = {
+          and = [
+            {
+              equals = [
+                "@outputs('Get_Active_Leak')['statusCode']",
+                404
+              ]
+            }
+          ]
+        }
+        actions = {
+          Insert_Entity = {
+            type = "Http"
+            inputs = {
+              method = "POST"
+              uri    = "${local.table_endpoint}/${local.table_name}"
+              headers = {
+                "Content-Type" = "application/json"
+                Accept         = "application/json;odata=nometadata"
+                "x-ms-version" = "2020-12-06"
+              }
+              body = {
+                PartitionKey    = "@{body('Parse_Leak_Event')?['source_device']}"
+                RowKey          = "active"
+                FirstDetectedAt = "@{utcNow()}"
+                LastEventAt     = "@{utcNow()}"
+                EventCount      = 1
+                Confidence      = "@{body('Parse_Leak_Event')?['inference_result']?['confidence']}"
+                AlertLevel      = "@{coalesce(body('Parse_Leak_Event')?['enrichment']?['alert_level'], 'Unknown')}"
+              }
+              authentication = {
+                type     = "ManagedServiceIdentity"
+                audience = "https://storage.azure.com/"
+              }
+            }
+            runAfter = {}
+          }
+          Post_Teams_Notification = {
+            type = "ApiConnection"
+            inputs = {
+              host = {
+                connection = {
+                  name = "@parameters('$connections')['teams']['connectionId']"
+                }
+              }
+              method = "post"
+              body = {
+                recipient = var.teams_recipient_id
+                messageBody = join("", [
+                  "<p><strong>🚨 Leak Detection Alert</strong></p>",
+                  "<p><strong>Device:</strong> @{body('Parse_Leak_Event')?['source_device']}</p>",
+                  "<p><strong>Detected At:</strong> @{utcNow()}</p>",
+                  "<p><strong>Confidence:</strong> @{body('Parse_Leak_Event')?['inference_result']?['confidence']}</p>",
+                  "<p><strong>Model:</strong> @{body('Parse_Leak_Event')?['inference_result']?['model_name']}</p>",
+                  "<p><strong>Alert Level:</strong> @{coalesce(body('Parse_Leak_Event')?['enrichment']?['alert_level'], 'Unknown')}</p>",
+                  "<p><strong>Site:</strong> @{coalesce(body('Parse_Leak_Event')?['enrichment']?['site'], 'Unknown')} / @{coalesce(body('Parse_Leak_Event')?['enrichment']?['facility'], 'Unknown')}</p>",
+                  "<p><a href=\"${azapi_resource_action.close_leak_callback_url.output.value}&device=@{encodeUriComponent(body('Parse_Leak_Event')?['source_device'])}\">✅ Close Leak</a></p>",
+                ])
+              }
+              path = "/beta/teams/conversation/message/poster/Flow bot/location/@{encodeURIComponent('${var.teams_post_location}')}"
+            }
+            runAfter = {
+              Insert_Entity = ["Succeeded"]
+            }
+          }
+        }
+        else = {
+          actions = {
+            Update_Entity = {
+              type = "Http"
+              inputs = {
+                method = "PATCH"
+                uri    = "${local.table_endpoint}/${local.table_name}(PartitionKey='@{body('Parse_Leak_Event')?['source_device']}',RowKey='active')"
+                headers = {
+                  "Content-Type" = "application/json"
+                  Accept         = "application/json;odata=nometadata"
+                  "x-ms-version" = "2020-12-06"
+                  "If-Match"     = "*"
+                }
+                body = {
+                  LastEventAt = "@{utcNow()}"
+                  EventCount  = "@{add(int(body('Get_Active_Leak')?['EventCount']), 1)}"
+                  Confidence  = "@{if(greater(float(body('Parse_Leak_Event')?['inference_result']?['confidence']), float(body('Get_Active_Leak')?['Confidence'])), body('Parse_Leak_Event')?['inference_result']?['confidence'], body('Get_Active_Leak')?['Confidence'])}"
+                }
+                authentication = {
+                  type     = "ManagedServiceIdentity"
+                  audience = "https://storage.azure.com/"
+                }
+              }
+              runAfter = {}
+            }
+          }
+        }
+        runAfter = {
+          Get_Active_Leak = ["Succeeded", "Failed"]
         }
       }
     }
@@ -220,9 +410,60 @@ resource "azurerm_logic_app_action_custom" "parse_payload" {
   })
 }
 
-resource "azurerm_logic_app_action_custom" "post_teams_message" {
-  name         = "Post_message_in_a_chat_or_channel"
-  logic_app_id = azurerm_logic_app_workflow.teams_notification.id
+// ── Close Workflow Actions ───────────────────────────────────
+
+resource "azurerm_logic_app_action_custom" "get_leak_session" {
+  name         = "Get_Leak_Session"
+  logic_app_id = azurerm_logic_app_workflow.close_leak.id
+
+  body = jsonencode({
+    type = "Http"
+    inputs = {
+      method = "GET"
+      uri    = "${local.table_endpoint}/${local.table_name}(PartitionKey='@{triggerOutputs()['queries']['device']}',RowKey='active')"
+      headers = {
+        Accept         = "application/json;odata=nometadata"
+        "x-ms-version" = "2020-12-06"
+      }
+      authentication = {
+        type     = "ManagedServiceIdentity"
+        audience = "https://storage.azure.com/"
+      }
+    }
+    runAfter = {}
+  })
+}
+
+resource "azurerm_logic_app_action_custom" "delete_entity" {
+  name         = "Delete_Entity"
+  logic_app_id = azurerm_logic_app_workflow.close_leak.id
+
+  body = jsonencode({
+    type = "Http"
+    inputs = {
+      method = "DELETE"
+      uri    = "${local.table_endpoint}/${local.table_name}(PartitionKey='@{triggerOutputs()['queries']['device']}',RowKey='active')"
+      headers = {
+        Accept         = "application/json;odata=nometadata"
+        "x-ms-version" = "2020-12-06"
+        "If-Match"     = "*"
+      }
+      authentication = {
+        type     = "ManagedServiceIdentity"
+        audience = "https://storage.azure.com/"
+      }
+    }
+    runAfter = {
+      Get_Leak_Session = ["Succeeded"]
+    }
+  })
+
+  depends_on = [azurerm_logic_app_action_custom.get_leak_session]
+}
+
+resource "azurerm_logic_app_action_custom" "post_closure_summary" {
+  name         = "Post_Closure_Summary"
+  logic_app_id = azurerm_logic_app_workflow.close_leak.id
 
   body = jsonencode({
     type = "ApiConnection"
@@ -236,25 +477,43 @@ resource "azurerm_logic_app_action_custom" "post_teams_message" {
       body = {
         recipient = var.teams_recipient_id
         messageBody = join("", [
-          "<p class=\"editor-paragraph\"><strong>Leak Detection Alert</strong></p><br>",
-          "<p class=\"editor-paragraph\"><strong>Source:</strong> @{body('Parse_Leak_Event')?['source_device']}</p>",
-          "<p class=\"editor-paragraph\"><strong>Timestamp:</strong> @{body('Parse_Leak_Event')?['timestamp']}</p>",
-          "<p class=\"editor-paragraph\"><strong>Model:</strong> @{body('Parse_Leak_Event')?['inference_result']?['model_name']} (@{body('Parse_Leak_Event')?['inference_result']?['model_type']})</p>",
-          "<p class=\"editor-paragraph\"><strong>Confidence:</strong> @{body('Parse_Leak_Event')?['inference_result']?['confidence']}</p>",
-          "<p class=\"editor-paragraph\"><strong>Predictions:</strong> @{body('Parse_Leak_Event')?['inference_result']?['predictions']}</p>",
-          "<p class=\"editor-paragraph\"><strong>Alert Level:</strong> @{body('Parse_Leak_Event')?['enrichment']?['alert_level']}</p>",
-          "<p class=\"editor-paragraph\"><strong>Site:</strong> @{body('Parse_Leak_Event')?['enrichment']?['site']} / @{body('Parse_Leak_Event')?['enrichment']?['facility']}</p>",
-          "<p class=\"editor-paragraph\"><strong>Recommended Actions:</strong> @{body('Parse_Leak_Event')?['enrichment']?['recommended_actions']}</p>",
+          "<p><strong>✅ Leak Resolved</strong></p>",
+          "<p><strong>Device:</strong> @{triggerOutputs()['queries']['device']}</p>",
+          "<p><strong>Active From:</strong> @{body('Get_Leak_Session')?['FirstDetectedAt']}</p>",
+          "<p><strong>Active Until:</strong> @{body('Get_Leak_Session')?['LastEventAt']}</p>",
+          "<p><strong>Total Events:</strong> @{body('Get_Leak_Session')?['EventCount']}</p>",
         ])
       }
       path = "/beta/teams/conversation/message/poster/Flow bot/location/@{encodeURIComponent('${var.teams_post_location}')}"
     }
     runAfter = {
-      Parse_Leak_Event = ["Succeeded"]
+      Delete_Entity = ["Succeeded"]
     }
   })
 
-  depends_on = [azurerm_logic_app_action_custom.parse_payload]
+  depends_on = [azurerm_logic_app_action_custom.delete_entity]
+}
+
+resource "azurerm_logic_app_action_custom" "close_response" {
+  name         = "Response"
+  logic_app_id = azurerm_logic_app_workflow.close_leak.id
+
+  body = jsonencode({
+    type = "Response"
+    kind = "Http"
+    inputs = {
+      statusCode = "@{if(equals(actions('Delete_Entity')['status'], 'Succeeded'), 200, if(equals(actions('Get_Leak_Session')['status'], 'Failed'), 404, 500))}"
+      headers = {
+        "Content-Type" = "text/plain"
+      }
+      body = "@{if(equals(actions('Delete_Entity')['status'], 'Succeeded'), 'Leak closed', if(equals(actions('Get_Leak_Session')['status'], 'Failed'), 'No active leak found for this device', 'Failed to close leak'))}"
+    }
+    runAfter = {
+      Post_Closure_Summary = ["Succeeded", "Failed", "Skipped", "TimedOut"]
+    }
+  })
+
+  depends_on = [azurerm_logic_app_action_custom.post_closure_summary]
 }
 
 // ── Role Assignments ─────────────────────────────────────────
@@ -265,4 +524,20 @@ resource "azurerm_role_assignment" "eventhub_data_receiver" {
   scope                = var.eventhub_namespace.id
   role_definition_name = "Azure Event Hubs Data Receiver"
   principal_id         = azurerm_logic_app_workflow.teams_notification.identity[0].principal_id
+}
+
+resource "azurerm_role_assignment" "storage_table_data_contributor" {
+  count = var.should_assign_roles ? 1 : 0
+
+  scope                = var.storage_account.id
+  role_definition_name = "Storage Table Data Contributor"
+  principal_id         = azurerm_logic_app_workflow.teams_notification.identity[0].principal_id
+}
+
+resource "azurerm_role_assignment" "close_leak_storage_table_data_contributor" {
+  count = var.should_assign_roles ? 1 : 0
+
+  scope                = var.storage_account.id
+  role_definition_name = "Storage Table Data Contributor"
+  principal_id         = azurerm_logic_app_workflow.close_leak.identity[0].principal_id
 }

@@ -5,7 +5,7 @@
  */
 
 module "notification" {
-  source = "../../"
+  source = "../../terraform"
 
   environment     = "dev"
   resource_prefix = "ci"
@@ -23,6 +23,11 @@ module "notification" {
   }
 
   eventhub_name = "evh-aio-sample"
+
+  storage_account = {
+    id   = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-ci-dev-001/providers/Microsoft.Storage/storageAccounts/stcidev001"
+    name = "stcidev001"
+  }
 
   teams_recipient_id = "19:mock-thread-id@thread.v2"
 

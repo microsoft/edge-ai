@@ -23,3 +23,11 @@ variable "eventhub_name" {
   type        = string
   description = "Name of the Event Hub to subscribe to for leak detection events"
 }
+
+variable "storage_account" {
+  type = object({
+    id   = string
+    name = string
+  })
+  description = "Storage account for leak state tracking via Table Storage"
+}
