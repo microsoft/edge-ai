@@ -64,7 +64,7 @@ checksum = "c08606f8c3cbf4ce6ec8e28fb0014a2c086708fe954eaa885384a6165172e7e8"
 
 [[package]]
 name = "avro-to-json"
-version = "1.25.0"
+version = "1.0.0"
 dependencies = [
  "apache-avro",
  "serde_json",

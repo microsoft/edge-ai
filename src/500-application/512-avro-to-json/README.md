@@ -26,7 +26,7 @@ The operator supports multiple Avro encoding formats including Object Container 
 
 ## Architecture
 
-This component implements a single `#[map_operator]` using the Azure IoT Operations WASM SDK. Unlike the [511-rust-embedded-wasm-provider](../511-rust-embedded-wasm-provider/README.md) which uses WIT component composition, this module is a standalone map operator compiled directly to `wasm32-wasip2`.
+This component implements a single `#[map_operator]` using the [Azure IoT Operations WASM SDK](https://learn.microsoft.com/azure/iot-operations/develop-edge-apps/howto-develop-wasm-modules?tabs=rust).
 
 The operator receives Avro binary payloads from the dataflow source, transforms them to JSON, and forwards the result to the dataflow sink.
 
@@ -50,73 +50,81 @@ The operator receives Avro binary payloads from the dataflow source, transforms 
 │       └── equipment-telemetry.avsc # Sample Avro schema
 └── scripts/
     ├── build-wasm.sh               # Build WASM module
-    ├── push-to-acr.sh              # Push module and graph to ACR
-    └── generate_test_data.py       # Generate test Avro files
+    └── push-to-acr.sh              # Push module and graph to ACR
 ```
 
 ## Prerequisites
 
-### Rust Toolchain
+- [Rust toolchain](https://rustup.rs/) with `wasm32-wasip2` target
+- [ORAS CLI](https://oras.land/docs/installation) for pushing to container registry
+- [Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli) with container registry access
+- A Kafka broker producing Avro-encoded messages
+
+## Deployment
+
+### Step 1: Deploy the Full Stack
+
+Deploy the [Full Single Node Cluster](../../../blueprints/full-single-node-cluster/) blueprint using [dataflow-graphs-avro-json.tfvars.example](../../../blueprints/full-single-node-cluster/terraform/dataflow-graphs-avro-json.tfvars.example) as the starting point for your `terraform.tfvars`.
+
+This creates the complete infrastructure including ACR, the AIO cluster, and a [Kafka DataflowEndpoint](https://learn.microsoft.com/azure/iot-operations/connect-to-cloud/howto-configure-kafka-endpoint?tabs=portal) (`kafka-source`) connecting to your Kafka broker. It also provisions the dataflow graph referencing the WASM module. The graph will temporarily reference an ACR artifact that does not yet exist — this is expected. The graph enters a pending state until Steps 2–4 publish the module.
+
+> [!NOTE]
+> If the full stack is already deployed from a previous run, skip to Step 2.
+
+### Step 2: Install WASM Target
 
 ```bash
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-source "$HOME/.cargo/env"
 rustup target add wasm32-wasip2
 ```
 
-### ORAS CLI
+### Step 3: Build the Module
 
-The [ORAS CLI](https://oras.land/docs/installation) pushes WASM modules and graph definitions to your container registry as OCI artifacts.
-
-### Azure CLI
-
-Required for authenticating with Azure Container Registry.
+Run the build script from the application root:
 
 ```bash
-az login
-```
-
-## Build
-
-Build the WASM module using the provided script:
-
-```bash
-cd src/500-application/512-avro-to-json
 ./scripts/build-wasm.sh
-```
-
-To build manually without the script:
-
-```bash
-cd src/500-application/512-avro-to-json
-cargo build --release \
-  --target wasm32-wasip2 \
-  --manifest-path operators/avro-to-json/Cargo.toml \
-  --config .cargo/config.toml
 ```
 
 The compiled WASM module is output to `operators/avro-to-json/target/wasm32-wasip2/release/avro_to_json.wasm`.
 
-## Push to ACR
+### Step 4: Push to Azure Container Registry
 
-Push the compiled WASM module and graph definition to Azure Container Registry:
+Push the compiled module and graph definition to your Azure Container Registry using the provided script. Pass your ACR name as an argument (without the `.azurecr.io` suffix). The script tags the artifacts with the version from `Cargo.toml` and pushes to ACR.
 
 ```bash
 ./scripts/push-to-acr.sh <acr_name>
 ```
 
-This pushes two OCI artifacts:
+This pushes:
 
 - `<acr_name>.azurecr.io/avro-to-json:<version>` — WASM module
-- `<acr_name>.azurecr.io/avro-to-json-graph:<version>` — Graph definition with version substituted
+- `<acr_name>.azurecr.io/avro-to-json-graph:<version>` — Graph definition
 
-## Deployment
+Once the artifacts are available in ACR, the dataflow graph resolves and begins processing.
 
-This component follows the edge-ai deployment convention where dataflow endpoints and graphs are managed through Terraform, not raw Kubernetes manifests.
+## Updating the Version
 
-Deploy using the [`full-single-node-cluster`](../../../blueprints/full-single-node-cluster/README.md) blueprint (or another applicable blueprint). The dataflow infrastructure is managed by [`src/100-edge/130-messaging`](../../100-edge/130-messaging/README.md) which provisions DataflowEndpoints and DataflowGraphs via Terraform.
+To release a new version of the module:
 
-To integrate this module into a blueprint deployment, add the WASM registry endpoint and graph artifact reference to your blueprint's dataflow configuration variables.
+1. Increment the version in [operators/avro-to-json/Cargo.toml](operators/avro-to-json/Cargo.toml):
+
+   ```toml
+   [package]
+   version = "2.0.0"
+   ```
+
+2. Update the graph artifact reference in your `terraform.tfvars` to match the new version:
+
+   ```hcl
+   artifact = "graph-avro-to-json:2.0.0"
+   ```
+
+3. Rebuild and push the updated artifacts:
+
+   ```bash
+   ./scripts/build-wasm.sh
+   ./scripts/push-to-acr.sh <acr_name>
+   ```
 
 ## Configuration
 
@@ -128,11 +136,11 @@ To integrate this module into a blueprint deployment, add the WASM registry endp
 
 ### Schema Handling
 
-**Option A: Schema embedded in messages (Object Container File format)**
+#### Option A: Schema embedded in messages (Object Container File format)
 
 If your source produces Avro Object Container File format (messages start with magic bytes `Obj\x01`), omit the `avroSchema` configuration. The module auto-detects the schema from the message header.
 
-**Option B: Raw Avro binary (schema provided via configuration)**
+### Option B: Raw Avro binary (schema provided via configuration)
 
 If messages contain raw Avro binary without an embedded schema, provide the schema as a JSON string in the `avroSchema` graph configuration parameter.
 
@@ -171,22 +179,6 @@ The operator tries parsing strategies in this order:
 
 The `resources/schemas/equipment-telemetry.avsc` file contains a sample Avro schema representing process manufacturing equipment telemetry. It covers key Avro types (string, enum, double, long, union, nested record) and can be used for testing the module's conversion capabilities.
 
-## Test Data Generation
-
-Generate sample Avro test files using the provided Python script:
-
-```bash
-pip install avro-python3
-python3 scripts/generate_test_data.py
-```
-
-This creates:
-
-- `test_binary.avro` — Raw Avro binary (requires schema to decode)
-- `test_container.avro` — Object Container File format (schema embedded)
-- `schema.json` — Schema in JSON format
-- `expected_output.json` — Expected JSON output after transformation
-
 ## Troubleshooting
 
 ### Build fails with `can't find crate for std`
@@ -223,4 +215,13 @@ az acr login --name <acr_name>
 
 ## License
 
-MIT
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+---
+
+<!-- markdownlint-disable MD036 -->
+
+_🤖 Crafted with precision by ✨Copilot following brilliant human instruction,
+then carefully refined by our team of discerning human reviewers._
+
+<!-- markdownlint-enable MD036 -->
