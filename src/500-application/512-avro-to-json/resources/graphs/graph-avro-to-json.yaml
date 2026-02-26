@@ -1,0 +1,38 @@
+metadata:
+  $schema: "https://www.schemastore.org/aio-wasm-graph-config-1.0.0.json"
+  name: "Avro to JSON Transformer"
+  description: "Converts Apache Avro binary data to JSON format for Azure IoT Operations"
+  version: "${VERSION}"
+  vendor: "Microsoft"
+
+moduleRequirements:
+  apiVersion: "1.1.0"
+  runtimeVersion: "1.1.0"
+
+moduleConfigurations:
+  - name: avro_to_json
+    parameters:
+      avroSchema:
+        name: avroSchema
+        description: "Optional Avro schema in JSON format. Required if messages don't include embedded schema."
+
+operations:
+  - operationType: "source"
+    name: "source"
+
+  - operationType: "map"
+    name: "avro_to_json"
+    module: "avro-to-json:${VERSION}"
+
+  - operationType: "sink"
+    name: "sink"
+
+connections:
+  - from:
+      name: "source"
+    to:
+      name: "avro_to_json"
+  - from:
+      name: "avro_to_json"
+    to:
+      name: "sink"
