@@ -458,8 +458,14 @@ impl MqttPublisher {
         Ok(())
     }
 
-    /// Publish inference result to output topic
+    /// Publish inference result to output topic (only if confidence meets threshold)
     async fn publish_inference_result(&self, result: InferenceResult, topic: &str) -> Result<(), Box<dyn Error>> {
+        let threshold = self.config.publish_confidence_threshold;
+        if result.confidence < threshold {
+            info!("⏭️ Skipping publish: confidence {:.4} below {} threshold", result.confidence, threshold);
+            return Ok(());
+        }
+
         let enrichment = self.create_enrichment_data(&result).await;
 
         let message = InferenceResultMessage {
@@ -1088,8 +1094,14 @@ impl MqttProcessingContext {
         Ok(())
     }
 
-    /// Publish inference result to MQTT
+    /// Publish inference result to MQTT (only if confidence meets threshold)
     async fn publish_inference_result(&self, result: InferenceResult, camera_id: &str) -> anyhow::Result<()> {
+        let threshold = self.config.publish_confidence_threshold;
+        if result.confidence < threshold {
+            info!("⏭️ Skipping publish: confidence {:.4} below {} threshold", result.confidence, threshold);
+            return Ok(());
+        }
+
         // Create enrichment data
         let enrichment = self.create_enrichment_data(&result).await;
 

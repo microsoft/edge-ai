@@ -311,3 +311,42 @@ ONVIF simulator configured for leaking-pipe.mp4 video streaming.
 3. **`await asyncio.sleep(1.0)`** added in `restart_stream()` between `stop_stream()` and `start_stream()` — gives MediaMTX time to tear down the old RTSP path before the new FFmpeg process republishes
 
 **Key learning:** `-fflags +genpts` is the standard fix for FFmpeg timestamp discontinuities with `-stream_loop`. Must appear before `-i` in the command.
+
+### 2026-02-25: Fixed 507-ai-inference model configuration for leak detection
+
+**Requested by:** Carlos Sardo
+
+**Files modified:**
+
+| File | Change |
+|------|--------|
+| `src/500-application/507-ai-inference/charts/base/deployment.yaml` | Init container: switched from `tinyyolov2-8.onnx` to `yolov8n-leak.onnx` download URL. `DEFAULT_MODELS` env var: `tiny-yolov2` → `yolov8n-leak`. |
+| `src/500-application/507-ai-inference/resources/model_configs/yolov8n_leak.yaml` | Fixed `path` from relative `models/yolov8n_leak.onnx` to absolute `/models/yolov8n-leak/yolov8n-leak.onnx` (matches model-downloader output). |
+| `src/500-application/507-ai-inference/charts/model-downloader-job.yaml` | Added heredoc step to write `yolov8n_leak.yaml` model config to PVC at `/models/yolov8n_leak.yaml`, after model download and copy steps. |
+
+**Key decisions:**
+- `DEFAULT_MODELS=yolov8n-leak` maps to the catch-all in `config.rs::parse_default_models` → `DefaultModel { name: "default", file_path: "default.onnx" }`. The init container and model-downloader both place `yolov8n-leak.onnx` at `/models/default.onnx`, so the model loaded at runtime is correct.
+- Model config YAML is inlined as a heredoc in the job script rather than mounted from a ConfigMap — keeps the model-downloader self-contained and ensures config availability on the PVC alongside the model binary.
+- The `MODEL_CONFIG_PATH=/models/yolov8n_leak.yaml` env var in the deployment matches the heredoc output path.
+
+### 2026-02-25: Fixed 507-ai-inference ONNX backend — real inference instead of simulation
+
+**Requested by:** Carlos Sardo
+
+**Problem:** Service outputs "person", "class_52", "class_355" instead of "leak". Three layers of bugs: simulated ONNX backend (never called `ort::Session::run()`), YAML config system never initialized (no class labels or postprocessing config), and `config.rs` catch-all ignored model name.
+
+**Files modified:**
+
+| File | Change |
+|------|--------|
+| `services/ai-edge-inference-crate/src/backends/onnx.rs` | Complete rewrite: real `ort::session::Session` execution with `Mutex` for interior mutability, NCHW image preprocessing, YOLOv8 `[1,5,8400]` output parsing with NMS, classification fallback. |
+| `services/ai-edge-inference/src/main.rs` | Added YAML config system initialization: `initialize_yaml_config_system()` with `MODELS_DIRECTORY` env var, `load_model_from_yaml()` with `MODEL_CONFIG_PATH` env var. |
+| `services/ai-edge-inference/src/config.rs` | Changed `parse_default_models` catch-all from hardcoded `"default.onnx"` to `format!("{}.onnx", model_name)`. |
+
+**Key technical details:**
+- `ort::session::Session::run()` requires `&mut self` but `InferenceBackend::infer()` is `&self` — resolved with `Mutex<Session>`.
+- Input tensors via `ort::value::Tensor::from_array((shape_vec, data_vec))` tuple form (no `ort/ndarray` feature needed).
+- YOLOv8 output `[1, 5, 8400]`: rows 0-3 = cx,cy,w,h box coordinates, row 4 = class confidence. Greedy NMS with IoU threshold 0.4.
+- Image preprocessing: `resize_exact` + `FilterType::Triangle` + NCHW normalize to `[0,1]`.
+
+**Decision:** `.squad/decisions/inbox/parker-onnx-real-inference.md`

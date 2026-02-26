@@ -40,6 +40,63 @@ spec:
                 "https://github.com/L3ONARDO/LD-Data-Dump/raw/refs/heads/main/yolov8n-leak.onnx"
               echo "Copying YOLOv8n Leak as default model..."
               cp /models/yolov8n-leak/yolov8n-leak.onnx /models/default.onnx
+              echo "Writing YOLOv8n Leak model config..."
+              cat > /models/yolov8n_leak.yaml << 'MODELCFG'
+              model:
+                name: "leak-detection-yolov8n"
+                version: "1.0.0"
+                model_type: "object_detection"
+                description: "YOLOv8 Nano fine-tuned for industrial leak detection"
+                path: "/models/yolov8n-leak/yolov8n-leak.onnx"
+                size_mb: 6.5
+                backends: ["onnx"]
+                performance:
+                  avg_inference_ms: 45.0
+                  memory_usage_mb: 30.0
+                  accuracy: null
+                  target_hardware: "cpu"
+              input:
+                shape: [1, 3, 640, 640]
+                dtype: "float32"
+                format: "NCHW"
+                value_range: [0.0, 1.0]
+                color_space: "RGB"
+                input_type: "image"
+              output:
+                tensors:
+                  - name: "output0"
+                    shape: [1, 5, 8400]
+                    dtype: "float32"
+                    semantic: "detections"
+                postprocess_type: "yolov8"
+                confidence_threshold: 0.90
+                nms_threshold: 0.4
+                max_detections: 10
+                class_labels:
+                  - "leak"
+              preprocessing:
+                resize_strategy: "letterbox"
+                target_size: [640, 640]
+                normalization:
+                  mean: [0.0, 0.0, 0.0]
+                  std: [1.0, 1.0, 1.0]
+                  scale_to_unit: true
+                steps: []
+              postprocessing:
+                postprocess_type: "yolov8"
+                parameters:
+                  anchors: []
+                  strides: [8, 16, 32]
+                  filter_classes: []
+                output_format: "detection"
+              parameters:
+                iou_threshold: 0.4
+                conf_threshold: 0.35
+                max_det: 10
+                agnostic_nms: false
+                target_class_index: 0
+                target_class_name: "leak"
+              MODELCFG
               cat > /models/models.json << EOF
               {
                 "models": [
@@ -59,7 +116,7 @@ spec:
                     "input_shape": [1, 3, 608, 608],
                     "output_shape": [1, 25200, 85],
                     "confidence_threshold": 0.5,
-                    "classes": 80
+                    "classes": 80,
                   },
                   {
                     "name": "yolov8n-leak",
@@ -68,7 +125,7 @@ spec:
                     "input_shape": [1, 3, 640, 640],
                     "output_shape": [1, 25200, 85],
                     "confidence_threshold": 0.5,
-                    "classes": 80
+                    "class_labels": ["leak"]
                   }
                 ]
               }

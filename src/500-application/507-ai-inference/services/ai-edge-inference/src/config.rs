@@ -4,8 +4,8 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use anyhow::{Result, Context};
 use ai_edge_inference_crate::{
-    InferenceConfig as CrateInferenceConfig, 
-    ModelsConfig, HardwareConfig, PerformanceConfig, 
+    InferenceConfig as CrateInferenceConfig,
+    ModelsConfig, HardwareConfig, PerformanceConfig,
     MonitoringConfig as CrateMonitoringConfig, SiteContext
 };
 
@@ -32,6 +32,7 @@ pub struct MqttConfig {
     pub connection_timeout_seconds: u16,
     pub retry_attempts: u8,
     pub retry_delay_ms: u64,
+    pub publish_confidence_threshold: f32,
 }
 
 /// Inference configuration that maps to ai-edge-inference-crate config
@@ -197,6 +198,7 @@ impl MqttConfig {
             connection_timeout_seconds: get_env_or_default("MQTT_CONNECTION_TIMEOUT_SECONDS", "30").parse().unwrap_or(30),
             retry_attempts: get_env_or_default("MQTT_RETRY_ATTEMPTS", "3").parse().unwrap_or(3),
             retry_delay_ms: get_env_or_default("MQTT_RETRY_DELAY_MS", "1000").parse().unwrap_or(1000),
+            publish_confidence_threshold: get_env_or_default("PUBLISH_CONFIDENCE_THRESHOLD", "0.9").parse().unwrap_or(0.9),
         }
     }
 }
@@ -272,7 +274,7 @@ fn parse_default_models(models_str: &str) -> Vec<DefaultModel> {
     // Parse comma-separated model names and map to actual model files
     let model_names: Vec<&str> = models_str.split(',').map(|s| s.trim()).collect();
     let mut models = Vec::new();
-    
+
     for model_name in model_names {
         match model_name {
             "tiny-yolov2" => {
@@ -296,10 +298,9 @@ fn parse_default_models(models_str: &str) -> Vec<DefaultModel> {
                 });
             },
             _ => {
-                // For any other model name, assume it's the filename
                 models.push(DefaultModel {
                     name: "default".to_string(),
-                    file_path: "default.onnx".to_string(),
+                    file_path: format!("{0}/{0}.onnx", model_name),
                     model_type: "Vision".to_string(),
                     version: "1.0.0".to_string(),
                     auto_load: true,
@@ -308,7 +309,7 @@ fn parse_default_models(models_str: &str) -> Vec<DefaultModel> {
             }
         }
     }
-    
+
     models
 }
 

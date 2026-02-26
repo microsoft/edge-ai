@@ -513,10 +513,39 @@ impl InferenceEngine {
             .map_err(|e| InferenceError::configuration(format!("Failed to serialize preprocessing: {}", e)))?;
 
         // Convert postprocessing to JSON if available
-        let postprocessing = yaml_config.postprocessing.as_ref()
+        let mut postprocessing = yaml_config.postprocessing.as_ref()
             .map(|p| serde_json::to_value(p))
             .transpose()
             .map_err(|e| InferenceError::configuration(format!("Failed to serialize postprocessing: {}", e)))?;
+
+        // Inject output-level fields (class_labels, postprocess_type, thresholds) into
+        // the postprocessing JSON so the backend's parse_postprocessing() can read them
+        let inject = |obj: &mut serde_json::Map<String, serde_json::Value>| {
+            if let Some(ref labels) = yaml_config.output.class_labels {
+                obj.entry("class_labels").or_insert_with(|| serde_json::json!(labels));
+            }
+            obj.entry("postprocess_type")
+                .or_insert_with(|| serde_json::json!(yaml_config.output.postprocess_type));
+            if let Some(ct) = yaml_config.output.confidence_threshold {
+                obj.entry("confidence_threshold").or_insert_with(|| serde_json::json!(ct));
+            }
+            if let Some(nt) = yaml_config.output.nms_threshold {
+                obj.entry("nms_threshold").or_insert_with(|| serde_json::json!(nt));
+            }
+        };
+
+        match postprocessing {
+            Some(ref mut val) => {
+                if let Some(obj) = val.as_object_mut() {
+                    inject(obj);
+                }
+            }
+            None => {
+                let mut obj = serde_json::Map::new();
+                inject(&mut obj);
+                postprocessing = Some(serde_json::Value::Object(obj));
+            }
+        }
 
         Ok(ModelConfig {
             model_path,

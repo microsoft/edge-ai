@@ -1,16 +1,16 @@
 use std::collections::HashMap;
+use std::sync::Mutex;
 use tracing::{info, warn, debug, error};
 use async_trait::async_trait;
 
 use crate::backend::{
-    InferenceBackend, BackendConfig, BackendError, BackendStatus, BackendType, 
+    InferenceBackend, BackendConfig, BackendError, BackendStatus, BackendType,
     DeviceType
 };
 use crate::{InferenceInput, InferenceResult, ModelConfig};
 
 /// ONNX Runtime backend implementation
 #[cfg(feature = "onnx-runtime")]
-#[derive(Debug)]
 pub struct OnnxRuntimeBackend {
     environment_initialized: bool,
     config: Option<BackendConfig>,
@@ -19,13 +19,46 @@ pub struct OnnxRuntimeBackend {
 }
 
 #[cfg(feature = "onnx-runtime")]
-#[derive(Debug)]
+impl std::fmt::Debug for OnnxRuntimeBackend {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("OnnxRuntimeBackend")
+            .field("environment_initialized", &self.environment_initialized)
+            .field("config", &self.config)
+            .field("loaded_models", &self.loaded_models.keys().collect::<Vec<_>>())
+            .field("stats", &self.stats)
+            .finish()
+    }
+}
+
+#[cfg(feature = "onnx-runtime")]
 struct OnnxModel {
     name: String,
     model_path: String,
+    session: Mutex<ort::session::Session>,
     input_name: String,
-    output_name: String,
+    input_shape: Vec<i64>,
+    class_labels: Vec<String>,
     confidence_threshold: f32,
+    nms_threshold: f32,
+    postprocess_type: String,
+    num_classes: usize,
+}
+
+#[cfg(feature = "onnx-runtime")]
+impl std::fmt::Debug for OnnxModel {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("OnnxModel")
+            .field("name", &self.name)
+            .field("model_path", &self.model_path)
+            .field("input_name", &self.input_name)
+            .field("input_shape", &self.input_shape)
+            .field("class_labels", &self.class_labels)
+            .field("confidence_threshold", &self.confidence_threshold)
+            .field("nms_threshold", &self.nms_threshold)
+            .field("postprocess_type", &self.postprocess_type)
+            .field("num_classes", &self.num_classes)
+            .finish()
+    }
 }
 
 #[cfg(feature = "onnx-runtime")]
@@ -35,6 +68,18 @@ struct BackendStats {
     total_inferences: u64,
     total_errors: u64,
     average_inference_time_ms: f64,
+}
+
+/// Raw detection before NMS
+#[cfg(feature = "onnx-runtime")]
+#[derive(Debug, Clone)]
+struct RawDetection {
+    x1: f32,
+    y1: f32,
+    x2: f32,
+    y2: f32,
+    confidence: f32,
+    class_id: usize,
 }
 
 #[cfg(feature = "onnx-runtime")]
@@ -52,6 +97,310 @@ impl OnnxRuntimeBackend {
             },
         }
     }
+
+    /// Parse postprocessing config from ModelConfig JSON
+    fn parse_postprocessing(model_config: &ModelConfig) -> (Vec<String>, f32, f32, String, usize) {
+        let mut class_labels: Vec<String> = Vec::new();
+        let mut confidence_threshold = model_config.confidence_threshold.unwrap_or(0.5);
+        let mut nms_threshold = 0.4f32;
+        let mut postprocess_type = "classification".to_string();
+        let mut num_classes = 0usize;
+
+        if let Some(post) = &model_config.postprocessing {
+            if let Some(pt) = post.get("postprocess_type").and_then(|v| v.as_str()) {
+                postprocess_type = pt.to_string();
+            }
+            if let Some(ct) = post.get("confidence_threshold").and_then(|v| v.as_f64()) {
+                confidence_threshold = ct as f32;
+            }
+            if let Some(nt) = post.get("nms_threshold").and_then(|v| v.as_f64()) {
+                nms_threshold = nt as f32;
+            }
+            if let Some(labels) = post.get("class_labels").and_then(|v| v.as_array()) {
+                class_labels = labels.iter()
+                    .filter_map(|v| v.as_str().map(|s| s.to_string()))
+                    .collect();
+            }
+        }
+
+        // Also check output.class_labels (YAML config puts them at top level of postprocessing JSON)
+        if class_labels.is_empty() {
+            if let Some(post) = &model_config.postprocessing {
+                if let Some(output) = post.get("output") {
+                    if let Some(labels) = output.get("class_labels").and_then(|v| v.as_array()) {
+                        class_labels = labels.iter()
+                            .filter_map(|v| v.as_str().map(|s| s.to_string()))
+                            .collect();
+                    }
+                }
+            }
+        }
+
+        num_classes = if class_labels.is_empty() { 1 } else { class_labels.len() };
+
+        (class_labels, confidence_threshold, nms_threshold, postprocess_type, num_classes)
+    }
+
+    /// Parse input shape from ModelConfig preprocessing JSON or use defaults
+    fn parse_input_shape(model_config: &ModelConfig) -> Vec<i64> {
+        if let Some(pre) = &model_config.preprocessing {
+            if let Some(target_size) = pre.get("target_size").and_then(|v| v.as_array()) {
+                let dims: Vec<i64> = target_size.iter()
+                    .filter_map(|v| v.as_i64())
+                    .collect();
+                if dims.len() == 2 {
+                    return vec![1, 3, dims[0], dims[1]];
+                }
+            }
+            if let Some(shape) = pre.get("shape").and_then(|v| v.as_array()) {
+                let dims: Vec<i64> = shape.iter()
+                    .filter_map(|v| v.as_i64())
+                    .collect();
+                if dims.len() == 4 {
+                    return dims;
+                }
+            }
+        }
+        // Default to YOLOv8 640x640 input
+        vec![1, 3, 640, 640]
+    }
+
+    /// Prepare NCHW float32 tensor data from a DynamicImage
+    /// Returns (shape, data) tuple suitable for ort::Tensor::from_array
+    fn prepare_input_from_image(
+        &self,
+        img: &image::DynamicImage,
+        input_shape: &[i64],
+    ) -> Result<(Vec<i64>, Vec<f32>), BackendError> {
+        let channels = input_shape[1] as usize;
+        let height = input_shape[2] as u32;
+        let width = input_shape[3] as u32;
+
+        debug!("Resizing image to {}x{} for model input", width, height);
+        let resized = img.resize_exact(width, height, image::imageops::FilterType::Triangle);
+        let rgb = resized.to_rgb8();
+
+        let h = height as usize;
+        let w = width as usize;
+        let mut tensor_data = vec![0.0f32; 1 * channels * h * w];
+
+        for y in 0..h {
+            for x in 0..w {
+                let pixel = rgb.get_pixel(x as u32, y as u32);
+                for c in 0..channels.min(3) {
+                    tensor_data[c * h * w + y * w + x] = pixel[c] as f32 / 255.0;
+                }
+            }
+        }
+
+        Ok((input_shape.to_vec(), tensor_data))
+    }
+
+    /// Run inference through the ONNX session
+    fn run_session_inference(
+        &self,
+        model: &OnnxModel,
+        input_shape: Vec<i64>,
+        input_data: Vec<f32>,
+    ) -> Result<Vec<f32>, BackendError> {
+        debug!("Running ONNX session inference for model '{}'", model.name);
+
+        let tensor = ort::value::Tensor::from_array((input_shape, input_data))
+            .map_err(|e| BackendError::InferenceFailed(format!("Failed to create input tensor: {}", e)))?;
+
+        let inputs = ort::inputs![&model.input_name => tensor.upcast()];
+
+        let mut session = model.session.lock()
+            .map_err(|e| BackendError::InferenceFailed(format!("Failed to lock session mutex: {}", e)))?;
+
+        let outputs = session
+            .run(inputs)
+            .map_err(|e| BackendError::InferenceFailed(format!("ONNX session run failed: {}", e)))?;
+
+        let (shape, data) = outputs[0]
+            .try_extract_tensor::<f32>()
+            .map_err(|e| BackendError::InferenceFailed(format!("Failed to extract output tensor: {}", e)))?;
+
+        debug!("Output tensor shape: {:?}", shape);
+        Ok(data.to_vec())
+    }
+
+    /// Determine output shape from the flat output vector and model metadata
+    fn infer_output_shape(&self, output_len: usize, model: &OnnxModel) -> Vec<usize> {
+        // YOLOv8 typical output: [1, 4+num_classes, num_detections]
+        let num_vals = 4 + model.num_classes;
+        if output_len % num_vals == 0 {
+            let num_detections = output_len / num_vals;
+            return vec![1, num_vals, num_detections];
+        }
+        vec![1, output_len]
+    }
+
+    /// Process YOLOv8 output tensor
+    /// Input shape: [1, 4+num_classes, num_detections] (raw from model)
+    /// Must transpose to iterate per-detection: [num_detections, 4+num_classes]
+    fn process_yolov8_output(
+        &self,
+        output_data: &[f32],
+        output_shape: &[usize],
+        model: &OnnxModel,
+    ) -> Result<Vec<crate::Prediction>, BackendError> {
+        if output_shape.len() != 3 || output_shape[0] != 1 {
+            return Err(BackendError::PostprocessingFailed(
+                format!("Unexpected YOLOv8 output shape: {:?}", output_shape),
+            ));
+        }
+
+        let rows = output_shape[1]; // 4 + num_classes (5 for single-class)
+        let cols = output_shape[2]; // num_detections (8400)
+        let num_classes = rows.saturating_sub(4);
+
+        if num_classes == 0 {
+            return Err(BackendError::PostprocessingFailed(
+                format!("Output has {} rows, need at least 5 (4 box + 1 class)", rows),
+            ));
+        }
+
+        debug!("Processing YOLOv8 output: {} detections, {} classes", cols, num_classes);
+
+        let mut detections: Vec<RawDetection> = Vec::new();
+
+        for det_idx in 0..cols {
+            // Data is laid out as [1, rows, cols] in row-major:
+            // output_data[row * cols + det_idx]
+            let cx = output_data[0 * cols + det_idx];
+            let cy = output_data[1 * cols + det_idx];
+            let w = output_data[2 * cols + det_idx];
+            let h = output_data[3 * cols + det_idx];
+
+            // Find best class
+            let mut best_conf = 0.0f32;
+            let mut best_class = 0usize;
+            for c in 0..num_classes {
+                let conf = output_data[(4 + c) * cols + det_idx];
+                if conf > best_conf {
+                    best_conf = conf;
+                    best_class = c;
+                }
+            }
+
+            if best_conf >= model.confidence_threshold {
+                detections.push(RawDetection {
+                    x1: cx - w / 2.0,
+                    y1: cy - h / 2.0,
+                    x2: cx + w / 2.0,
+                    y2: cy + h / 2.0,
+                    confidence: best_conf,
+                    class_id: best_class,
+                });
+            }
+        }
+
+        debug!("Found {} detections above threshold {}", detections.len(), model.confidence_threshold);
+
+        // Apply NMS
+        let kept = Self::apply_nms(&mut detections, model.nms_threshold);
+        debug!("After NMS: {} detections", kept.len());
+
+        // Convert to Prediction
+        let predictions: Vec<crate::Prediction> = kept.into_iter().map(|det| {
+            let class_name = model.class_labels.get(det.class_id)
+                .cloned()
+                .unwrap_or_else(|| format!("class_{}", det.class_id));
+
+            crate::Prediction {
+                class: class_name,
+                confidence: det.confidence,
+                bbox: Some([det.x1, det.y1, det.x2, det.y2]),
+                metadata: {
+                    let mut map = HashMap::new();
+                    map.insert("backend".to_string(), serde_json::Value::String("onnx-runtime".to_string()));
+                    map.insert("class_index".to_string(), serde_json::Value::Number((det.class_id as u64).into()));
+                    map.insert("model_name".to_string(), serde_json::Value::String(model.name.clone()));
+                    map
+                },
+                severity: if det.confidence > 0.7 { Some("high".to_string()) }
+                         else if det.confidence > 0.4 { Some("medium".to_string()) }
+                         else { Some("low".to_string()) },
+            }
+        }).collect();
+
+        Ok(predictions)
+    }
+
+    /// Process classification-style output (flat logits/probabilities)
+    fn process_classification_output(
+        &self,
+        output_data: &[f32],
+        model: &OnnxModel,
+    ) -> Result<Vec<crate::Prediction>, BackendError> {
+        let mut indexed: Vec<(usize, f32)> = output_data.iter().enumerate()
+            .map(|(i, &v)| (i, v))
+            .collect();
+        indexed.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
+
+        let predictions: Vec<crate::Prediction> = indexed.iter()
+            .take(3)
+            .filter(|(_, conf)| *conf > model.confidence_threshold)
+            .map(|(class_idx, confidence)| {
+                let class_name = model.class_labels.get(*class_idx)
+                    .cloned()
+                    .unwrap_or_else(|| format!("class_{}", class_idx));
+
+                crate::Prediction {
+                    class: class_name,
+                    confidence: *confidence,
+                    bbox: None,
+                    metadata: {
+                        let mut map = HashMap::new();
+                        map.insert("backend".to_string(), serde_json::Value::String("onnx-runtime".to_string()));
+                        map.insert("class_index".to_string(), serde_json::Value::Number((*class_idx as u64).into()));
+                        map.insert("model_name".to_string(), serde_json::Value::String(model.name.clone()));
+                        map
+                    },
+                    severity: if *confidence > 0.7 { Some("high".to_string()) }
+                             else if *confidence > 0.4 { Some("medium".to_string()) }
+                             else { Some("low".to_string()) },
+                }
+            })
+            .collect();
+
+        Ok(predictions)
+    }
+
+    /// Greedy NMS: suppress overlapping detections
+    fn apply_nms(detections: &mut Vec<RawDetection>, nms_threshold: f32) -> Vec<RawDetection> {
+        detections.sort_by(|a, b| b.confidence.partial_cmp(&a.confidence).unwrap_or(std::cmp::Ordering::Equal));
+        let mut keep: Vec<RawDetection> = Vec::new();
+        let mut suppressed = vec![false; detections.len()];
+
+        for i in 0..detections.len() {
+            if suppressed[i] { continue; }
+            keep.push(detections[i].clone());
+            for j in (i + 1)..detections.len() {
+                if suppressed[j] { continue; }
+                if Self::iou(&detections[i], &detections[j]) > nms_threshold {
+                    suppressed[j] = true;
+                }
+            }
+        }
+        keep
+    }
+
+    /// Intersection-over-Union for two bounding boxes
+    fn iou(a: &RawDetection, b: &RawDetection) -> f32 {
+        let inter_x1 = a.x1.max(b.x1);
+        let inter_y1 = a.y1.max(b.y1);
+        let inter_x2 = a.x2.min(b.x2);
+        let inter_y2 = a.y2.min(b.y2);
+
+        let inter_area = (inter_x2 - inter_x1).max(0.0) * (inter_y2 - inter_y1).max(0.0);
+        let area_a = (a.x2 - a.x1) * (a.y2 - a.y1);
+        let area_b = (b.x2 - b.x1) * (b.y2 - b.y1);
+        let union_area = area_a + area_b - inter_area;
+
+        if union_area <= 0.0 { 0.0 } else { inter_area / union_area }
+    }
 }
 
 #[cfg(feature = "onnx-runtime")]
@@ -59,46 +408,69 @@ impl OnnxRuntimeBackend {
 impl InferenceBackend for OnnxRuntimeBackend {
     async fn initialize(&mut self, config: &BackendConfig) -> Result<(), BackendError> {
         info!("Initializing ONNX Runtime backend");
-        
-        // For now, just mark as initialized
-        // TODO: Implement proper ONNX Runtime initialization when ort crate API stabilizes
         self.environment_initialized = true;
         self.config = Some(config.clone());
-        
-        info!("ONNX Runtime backend initialized successfully");
+        info!("ONNX Runtime backend initialized");
         Ok(())
     }
 
     async fn load_model(&mut self, model_name: &str, model_config: &ModelConfig) -> Result<(), BackendError> {
-        info!("Loading ONNX model: {}", model_name);
-        
+        info!("Loading ONNX model '{}' from '{}'", model_name, model_config.model_path);
+
         if !self.environment_initialized {
             return Err(BackendError::BackendNotInitialized("Environment not initialized".to_string()));
         }
 
-        // For now, just store model metadata
-        // TODO: Implement proper ONNX model loading when ort crate API stabilizes
+        // Build ort session from ONNX file
+        let session = ort::session::Session::builder()
+            .map_err(|e| BackendError::ModelLoadFailed(format!("Failed to create session builder: {}", e)))?
+            .commit_from_file(&model_config.model_path)
+            .map_err(|e| BackendError::ModelLoadFailed(format!("Failed to load ONNX model '{}': {}", model_config.model_path, e)))?;
+
+        // Extract input/output names from session metadata
+        let input_name = session.inputs.first()
+            .map(|i| i.name.clone())
+            .unwrap_or_else(|| "images".to_string());
+        info!("Model input name: '{}'", input_name);
+
+        // Parse postprocessing config from ModelConfig
+        let (class_labels, confidence_threshold, nms_threshold, postprocess_type, num_classes) =
+            Self::parse_postprocessing(model_config);
+
+        // Parse input shape
+        let input_shape = Self::parse_input_shape(model_config);
+
+        info!(
+            "Model '{}': postprocess={}, classes={:?}, conf_thresh={}, nms_thresh={}, input_shape={:?}",
+            model_name, postprocess_type, class_labels, confidence_threshold, nms_threshold, input_shape
+        );
+
         let model = OnnxModel {
             name: model_name.to_string(),
             model_path: model_config.model_path.clone(),
-            input_name: "input".to_string(),
-            output_name: "output".to_string(),
-            confidence_threshold: model_config.confidence_threshold.unwrap_or(0.5),
+            session: Mutex::new(session),
+            input_name,
+            input_shape,
+            class_labels,
+            confidence_threshold,
+            nms_threshold,
+            postprocess_type,
+            num_classes,
         };
 
         self.loaded_models.insert(model_name.to_string(), model);
         self.stats.models_loaded += 1;
-        
-        info!("ONNX model '{}' loaded successfully", model_name);
+
+        info!("ONNX model '{}' loaded with real ort::Session", model_name);
         Ok(())
     }
 
     async fn unload_model(&mut self, model_name: &str) -> Result<(), BackendError> {
         info!("Unloading ONNX model: {}", model_name);
-        
+
         if self.loaded_models.remove(model_name).is_some() {
             self.stats.models_loaded = self.stats.models_loaded.saturating_sub(1);
-            info!("ONNX model '{}' unloaded successfully", model_name);
+            info!("ONNX model '{}' unloaded", model_name);
             Ok(())
         } else {
             Err(BackendError::ModelUnloadFailed(format!("Model '{}' not found", model_name)))
@@ -106,99 +478,78 @@ impl InferenceBackend for OnnxRuntimeBackend {
     }
 
     async fn infer(&self, input: InferenceInput, model_name: Option<&str>) -> Result<InferenceResult, BackendError> {
-        debug!("Running ONNX inference with model: {:?}", model_name);
-        
+        let start = std::time::Instant::now();
+
         if !self.environment_initialized {
             return Err(BackendError::BackendNotInitialized("Environment not initialized".to_string()));
         }
 
-        // Default to "default" model if None is provided (temporary fix for deployment issue)
         let model_key = model_name.unwrap_or("default");
-        debug!("Using model key: {}", model_key);
-        
+        debug!("Running ONNX inference with model '{}'", model_key);
+
         let model = self.loaded_models.get(model_key)
+            .or_else(|| {
+                if model_key == "default" {
+                    let fallback = self.loaded_models.values().next();
+                    if let Some(m) = fallback {
+                        info!("Model 'default' not found, falling back to '{}'", m.name);
+                    }
+                    fallback
+                } else {
+                    None
+                }
+            })
             .ok_or_else(|| BackendError::ModelLoadFailed(format!("Model '{}' not loaded", model_key)))?;
 
-        // Extract image data based on input type
-        let image_data = match &input {
-            InferenceInput::Image { data, metadata: _ } => {
-                // Convert DynamicImage to bytes for processing
-                let mut buffer = Vec::new();
-                data.write_to(&mut std::io::Cursor::new(&mut buffer), image::ImageFormat::Png)
-                    .map_err(|e| BackendError::InferenceFailed(format!("Failed to encode image: {}", e)))?;
-                buffer
-            },
+        // Extract DynamicImage from input
+        let image = match &input {
+            InferenceInput::Image { data, metadata: _ } => data,
             InferenceInput::TimeSeries { .. } => {
-                return Err(BackendError::InferenceFailed("ONNX backend does not support time series input".to_string()));
+                return Err(BackendError::InferenceFailed(
+                    "ONNX backend does not support time series input".to_string(),
+                ));
             }
         };
 
-        // Prepare input tensor from image data
-        debug!("Preparing input tensor from {} bytes of image data", image_data.len());
-        let input_tensor = self.prepare_input_tensor(&image_data)?;
-        debug!("Prepared tensor with {} values", input_tensor.len());
-        
-        // Run actual ONNX inference
-        debug!("Running ONNX inference with model: {}", model_key);
-        match self.run_onnx_inference(model, input_tensor) {
-            Ok(output) => {
-                let predictions = self.process_onnx_output(output, model)?;
-                
-                // Calculate confidence first before moving predictions
-                let confidence = predictions.iter()
-                    .map(|p| p.confidence)
-                    .fold(0.0f32, f32::max);
-                
-                Ok(InferenceResult {
-                    model_name: model_name.unwrap_or("default").to_string(),
-                    model_type: "onnx".to_string(),
-                    predictions,
-                    confidence,
-                    inference_time_ms: 45.0, // TODO: Measure actual time
-                    metadata: serde_json::json!({
-                        "backend": "onnx-runtime",
-                        "model_path": model.model_path,
-                        "inference_type": "real",
-                        "request_id": uuid::Uuid::new_v4().to_string()
-                    }),
-                })
-            }
-            Err(e) => {
-                // COMMENTED OUT: Mock fallback logic - forcing real inference
-                error!("ONNX inference failed with error: {:?}", e);
-                return Err(BackendError::InferenceFailed(format!("ONNX inference failed: {:?}", e)));
-                
-                // OLD MOCK FALLBACK LOGIC - COMMENTED OUT
-                /*
-                warn!("ONNX inference failed - returning mock result as fallback");
-                
-                let predictions = vec![crate::Prediction {
-                    class: "mock_prediction".to_string(),
-                    confidence: 0.85,
-                    bbox: None,
-                    metadata: {
-                        let mut map = HashMap::new();
-                        map.insert("backend".to_string(), serde_json::Value::String("onnx-runtime".to_string()));
-                        map.insert("status".to_string(), serde_json::Value::String("mock_fallback".to_string()));
-                        map
-                    },
-                    severity: Some("medium".to_string()),
-                }];
+        // Prepare input tensor from image
+        let (input_shape, input_data) = self.prepare_input_from_image(image, &model.input_shape)?;
+        debug!("Input tensor shape: {:?}", input_shape);
 
-                Ok(InferenceResult {
-                    model_name: model_name.unwrap_or("default").to_string(),
-                    model_type: "mock".to_string(),
-                    predictions,
-                    confidence: 0.85,
-                    inference_time_ms: 42.0,
-                    metadata: serde_json::json!({
-                        "backend": "onnx-runtime",
-                        "inference_type": "mock"
-                    }),
-                })
-                */
+        // Run real ONNX session inference
+        let output_data = self.run_session_inference(model, input_shape, input_data)?;
+
+        // Determine output shape and route to correct postprocessor
+        let output_shape = self.infer_output_shape(output_data.len(), model);
+        debug!("Inferred output shape: {:?}, postprocess_type: {}", output_shape, model.postprocess_type);
+
+        let predictions = match model.postprocess_type.as_str() {
+            "yolov8" | "yolo" | "yolov5" => {
+                self.process_yolov8_output(&output_data, &output_shape, model)?
             }
-        }
+            _ => {
+                self.process_classification_output(&output_data, model)?
+            }
+        };
+
+        let confidence = predictions.iter()
+            .map(|p| p.confidence)
+            .fold(0.0f32, f32::max);
+
+        let elapsed_ms = start.elapsed().as_secs_f64() * 1000.0;
+
+        Ok(InferenceResult {
+            model_name: model_key.to_string(),
+            model_type: "onnx".to_string(),
+            predictions,
+            confidence,
+            inference_time_ms: elapsed_ms,
+            metadata: serde_json::json!({
+                "backend": "onnx-runtime",
+                "model_path": model.model_path,
+                "inference_type": "real",
+                "request_id": uuid::Uuid::new_v4().to_string()
+            }),
+        })
     }
 
     async fn get_loaded_models(&self) -> Vec<String> {
@@ -210,121 +561,15 @@ impl InferenceBackend for OnnxRuntimeBackend {
             backend_type: BackendType::OnnxRuntime,
             initialized: self.environment_initialized,
             loaded_models: self.loaded_models.keys().cloned().collect(),
-            device_type: DeviceType::Cpu, // TODO: Detect actual device
-            memory_usage_mb: 0.0, // TODO: Implement memory tracking
+            device_type: DeviceType::Cpu,
+            memory_usage_mb: 0.0,
             last_inference_time_ms: None,
-            total_inferences: 0,
-            errors: vec![], // TODO: Track errors
+            total_inferences: self.stats.total_inferences,
+            errors: vec![],
         }
     }
 
     fn backend_type(&self) -> BackendType {
         BackendType::OnnxRuntime
-    }
-}
-
-impl OnnxRuntimeBackend {
-
-    fn prepare_input_tensor(&self, image_data: &[u8]) -> Result<Vec<f32>, BackendError> {
-        // Simple image preprocessing - in production this should use our universal preprocessor
-        // For now, create a dummy tensor that represents processed image data
-        info!("Preparing input tensor from {} bytes of image data", image_data.len());
-        
-        // Standard ImageNet input shape: [1, 3, 224, 224] = 150,528 values
-        let tensor_size = 1 * 3 * 224 * 224;
-        let mut tensor = vec![0.0f32; tensor_size];
-        
-        // Simple normalization simulation - convert image bytes to normalized floats
-        for (i, &byte) in image_data.iter().enumerate().take(tensor_size) {
-            tensor[i] = (byte as f32 / 255.0 - 0.5) * 2.0; // Normalize to [-1, 1]
-        }
-        
-        Ok(tensor)
-    }
-
-    fn run_onnx_inference(&self, model: &OnnxModel, input_tensor: Vec<f32>) -> Result<Vec<f32>, BackendError> {
-        // Attempt to run actual ONNX inference
-        // This is a simplified implementation - in production we'd use ort crate properly
-        info!("Running ONNX inference with model: {}", model.name);
-        debug!("Input tensor size: {}, first 5 values: {:?}", 
-               input_tensor.len(), 
-               &input_tensor[..5.min(input_tensor.len())]);
-        
-        // For now, simulate inference by processing the input tensor
-        // In a real implementation, this would use ort::Session::run()
-        let output_size = 1000; // Standard ImageNet output
-        let mut output = vec![0.0f32; output_size];
-        
-        // Simulate some computation based on actual input
-        for (i, &input_val) in input_tensor.iter().enumerate().take(output_size) {
-            output[i] = input_val.tanh(); // Simple activation function
-        }
-        
-        debug!("Generated output tensor with {} values", output.len());
-        
-        // Add some realistic class probabilities based on input characteristics
-        let input_mean = input_tensor.iter().sum::<f32>() / input_tensor.len() as f32;
-        output[1] = (0.8 + input_mean * 0.1).abs().min(1.0); // High confidence for class 1
-        output[15] = (0.6 + input_mean * 0.05).abs().min(1.0); // Medium confidence for class 15
-        output[42] = (0.4 + input_mean * 0.03).abs().min(1.0); // Lower confidence for class 42
-        
-        Ok(output)
-    }
-
-    fn process_onnx_output(&self, output: Vec<f32>, model: &OnnxModel) -> Result<Vec<crate::Prediction>, BackendError> {
-        info!("Processing ONNX output for model: {}", model.name);
-        
-        let mut predictions = Vec::new();
-        
-        // Find top predictions
-        let mut indexed_outputs: Vec<(usize, f32)> = output.iter().enumerate().map(|(i, &v)| (i, v)).collect();
-        indexed_outputs.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
-        
-        // Take top 3 predictions above threshold
-        for (class_idx, confidence) in indexed_outputs.iter().take(3) {
-            if *confidence > model.confidence_threshold {
-                let class_name = match class_idx {
-                    1 => "person".to_string(),
-                    15 => "industrial_equipment".to_string(), 
-                    42 => "safety_hazard".to_string(),
-                    _ => format!("class_{}", class_idx),
-                };
-                
-                predictions.push(crate::Prediction {
-                    class: class_name,
-                    confidence: *confidence,
-                    bbox: None, // Classification model doesn't output bounding boxes
-                    metadata: {
-                        let mut map = HashMap::new();
-                        map.insert("backend".to_string(), serde_json::Value::String("onnx-runtime".to_string()));
-                        map.insert("class_index".to_string(), serde_json::Value::Number((*class_idx as u64).into()));
-                        map.insert("model_name".to_string(), serde_json::Value::String(model.name.clone()));
-                        map.insert("inference_type".to_string(), serde_json::Value::String("real".to_string()));
-                        map
-                    },
-                    severity: if *confidence > 0.7 { Some("high".to_string()) } 
-                             else if *confidence > 0.4 { Some("medium".to_string()) } 
-                             else { Some("low".to_string()) },
-                });
-            }
-        }
-        
-        // If no predictions above threshold, add a default one
-        if predictions.is_empty() {
-            predictions.push(crate::Prediction {
-                class: "no_detection".to_string(),
-                confidence: 0.1,
-                bbox: None,
-                metadata: {
-                    let mut map = HashMap::new();
-                    map.insert("backend".to_string(), serde_json::Value::String("onnx-runtime".to_string()));
-                    map.insert("status".to_string(), serde_json::Value::String("below_threshold".to_string()));
-                    map
-                },
-                severity: Some("low".to_string()),
-            });
-        }
-        
-        Ok(predictions)
     }
 }

@@ -30,9 +30,9 @@ spec:
               if [ -f /models/default.onnx ]; then
                 echo "Model already exists at /models/default.onnx, skipping download."
               else
-                echo "Downloading Tiny YOLOv2 model to /models/default.onnx..."
+                echo "Downloading YOLOv8n Leak model to /models/default.onnx..."
                 curl -L --retry 3 --retry-delay 5 -o /models/default.onnx \
-                  "https://github.com/onnx/models/raw/main/validated/vision/object_detection_segmentation/tiny-yolov2/model/tinyyolov2-8.onnx"
+                  "https://github.com/L3ONARDO/LD-Data-Dump/raw/refs/heads/main/yolov8n-leak.onnx"
                 echo "Download complete."
               fi
               ls -la /models/
@@ -70,8 +70,10 @@ spec:
               value: "1"
             - name: TOPIC_PREFIX
               value: "edge-ai/business_unit/facility/gateway_id/"
-            - name: MODEL_DIRECTORY
+            - name: MODELS_DIRECTORY
               value: "/models"
+            - name: MODEL_CONFIG_PATH
+              value: "/models/yolov8n_leak.yaml"
             - name: METRICS_PORT
               value: "8080"
             - name: HEALTH_PORT
@@ -102,8 +104,10 @@ spec:
               value: "/opt/onnxruntime/lib"
             - name: ONNXRUNTIME_SO_PATH
               value: "/opt/onnxruntime/lib/libonnxruntime.so"
+            - name: PUBLISH_CONFIDENCE_THRESHOLD
+              value: "0.9"
             - name: DEFAULT_MODELS
-              value: "tiny-yolov2"
+              value: "yolov8n-leak"
             - name: SKIP_MODEL_VALIDATION
               value: "true"
             - name: INFERENCE_MODE
