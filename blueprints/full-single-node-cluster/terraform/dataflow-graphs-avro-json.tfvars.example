@@ -72,41 +72,43 @@ dataflow_graphs = [
           configuration = [
             {
               key = "avroSchema"
-              value = jsonencode({
-                type      = "record"
-                name      = "EquipmentTelemetry"
-                namespace = "com.contoso.manufacturing"
-                doc       = "Equipment sensor telemetry from process manufacturing line"
-                fields = [
-                  { name = "equipmentId", type = "string", doc = "Unique identifier for the equipment" },
-                  {
-                    name = "sensorType"
-                    type = {
-                      type    = "enum"
-                      name    = "SensorType"
-                      symbols = ["TEMPERATURE", "PRESSURE", "VIBRATION", "FLOW_RATE"]
+              value = <<-EOF
+                {
+                  "type": "record",
+                  "name": "EquipmentTelemetry",
+                  "namespace": "com.contoso.manufacturing",
+                  "doc": "Equipment sensor telemetry from process manufacturing line",
+                  "fields": [
+                    { "name": "equipmentId", "type": "string", "doc": "Unique identifier for the equipment" },
+                    {
+                      "name": "sensorType",
+                      "type": {
+                        "type": "enum",
+                        "name": "SensorType",
+                        "symbols": ["TEMPERATURE", "PRESSURE", "VIBRATION", "FLOW_RATE"]
+                      },
+                      "doc": "Type of sensor reading"
+                    },
+                    { "name": "value", "type": "double", "doc": "Sensor reading value" },
+                    { "name": "unit", "type": "string", "doc": "Unit of measurement (e.g., celsius, bar, mm_s, l_min)" },
+                    { "name": "timestamp", "type": "long", "doc": "Unix timestamp in milliseconds" },
+                    { "name": "qualityCode", "type": ["null", "int"], "default": null, "doc": "OPC UA quality code, null if not available" },
+                    {
+                      "name": "location",
+                      "type": {
+                        "type": "record",
+                        "name": "Location",
+                        "fields": [
+                          { "name": "plant", "type": "string", "doc": "Plant identifier" },
+                          { "name": "line", "type": "string", "doc": "Production line" },
+                          { "name": "station", "type": "string", "doc": "Work station" }
+                        ]
+                      },
+                      "doc": "Physical location of the equipment"
                     }
-                    doc = "Type of sensor reading"
-                  },
-                  { name = "value",     type = "double", doc = "Sensor reading value" },
-                  { name = "unit",      type = "string", doc = "Unit of measurement (e.g., celsius, bar, mm_s, l_min)" },
-                  { name = "timestamp", type = "long",   doc = "Unix timestamp in milliseconds" },
-                  { name = "qualityCode", type = ["null", "int"], default = null, doc = "OPC UA quality code, null if not available" },
-                  {
-                    name = "location"
-                    type = {
-                      type = "record"
-                      name = "Location"
-                      fields = [
-                        { name = "plant",   type = "string", doc = "Plant identifier" },
-                        { name = "line",    type = "string", doc = "Production line" },
-                        { name = "station", type = "string", doc = "Work station" }
-                      ]
-                    }
-                    doc = "Physical location of the equipment"
-                  }
-                ]
-              })
+                  ]
+                }
+              EOF
             }
           ]
         }
