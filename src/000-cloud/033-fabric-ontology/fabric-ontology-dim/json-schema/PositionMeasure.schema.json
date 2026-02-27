@@ -10,10 +10,7 @@
       "type": "string"
     },
     "Description": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     },
     "X": {
       "type": "number",
@@ -28,36 +25,19 @@
       "description": "Z coordinate in meters"
     },
     "CoordinateSystemId": {
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["string", "null"],
       "description": "Reference to PositionCoordinateSystem"
     },
     "Timestamp": {
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["string", "null"],
       "description": "ISO 8601 timestamp of measurement"
     },
     "Namespace": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     },
     "Source": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     }
   },
-  "required": [
-    "Id",
-    "X",
-    "Y",
-    "Z"
-  ]
+  "required": ["Id", "X", "Y", "Z"]
 }
