@@ -131,7 +131,7 @@ To release a new version of the module:
 ### Graph Definition Parameters
 
 | Parameter    | Required | Default | Description                                                                                                            |
-| ------------ | -------- | ------- | ---------------------------------------------------------------------------------------------------------------------- |
+|--------------|----------|---------|------------------------------------------------------------------------------------------------------------------------|
 | `avroSchema` | No       | (none)  | Avro schema as a JSON string. Required when messages are raw Avro binary without embedded schema. Omit for OCF format. |
 
 ### Schema Handling
@@ -149,7 +149,7 @@ If messages contain raw Avro binary without an embedded schema, provide the sche
 The operator tries parsing strategies in this order:
 
 | Priority | Format                 | Detection                  | Schema Source                         |
-| -------- | ---------------------- | -------------------------- | ------------------------------------- |
+|----------|------------------------|----------------------------|---------------------------------------|
 | 1        | Configured schema      | `avroSchema` parameter set | Configuration                         |
 | 2        | Object Container File  | Magic bytes `Obj\x01`      | Embedded in message header            |
 | 3        | Single-object encoding | Marker `0xC3 0x01`         | Not supported (returns error)         |
@@ -157,24 +157,24 @@ The operator tries parsing strategies in this order:
 
 ## Avro Type Mapping
 
-| Avro Type             | JSON Type | Notes                                    |
-| --------------------- | --------- | ---------------------------------------- |
-| null                  | null      |                                          |
-| boolean               | boolean   |                                          |
-| int, long             | number    |                                          |
-| float, double         | number    |                                          |
-| string                | string    |                                          |
-| bytes, fixed          | string    | UTF-8 if valid, otherwise base64-encoded |
-| enum                  | string    | Symbol name                              |
-| array                 | array     | Recursive conversion                     |
-| map                   | object    | Recursive conversion                     |
-| record                | object    | Field names as keys                      |
-| union                 | (varies)  | Unwrapped to selected variant                                       |
+| Avro Type             | JSON Type | Notes                                                                |
+|-----------------------|-----------|----------------------------------------------------------------------|
+| null                  | null      |                                                                      |
+| boolean               | boolean   |                                                                      |
+| int, long             | number    |                                                                      |
+| float, double         | number    |                                                                      |
+| string                | string    |                                                                      |
+| bytes, fixed          | string    | UTF-8 if valid, otherwise base64-encoded                             |
+| enum                  | string    | Symbol name                                                          |
+| array                 | array     | Recursive conversion                                                 |
+| map                   | object    | Recursive conversion                                                 |
+| record                | object    | Field names as keys                                                  |
+| union                 | (varies)  | Unwrapped to selected variant                                        |
 | decimal               | number    | Unscaled integer value (scale information not preserved from schema) |
-| bigdecimal            | string    | String representation preserving all decimal places                 |
-| date, time, timestamp | number    | Epoch-based numeric value                                           |
-| duration              | object    | `{ months, days, millis }`                                          |
-| uuid                  | string    | Standard UUID format                                                |
+| bigdecimal            | string    | String representation preserving all decimal places                  |
+| date, time, timestamp | number    | Epoch-based numeric value                                            |
+| duration              | object    | `{ months, days, millis }`                                           |
+| uuid                  | string    | Standard UUID format                                                 |
 
 ## Sample Schema
 
