@@ -23,8 +23,7 @@ fi
 echo "Pushing avro-to-json module v${VERSION}"
 oras push \
   "${ACR_NAME}.azurecr.io/avro-to-json:${VERSION}" \
-  --artifact-type \
-  application/vnd.module.wasm.content.layer.v1+wasm \
+  --artifact-type application/vnd.module.wasm.content.layer.v1+wasm \
   "${WASM_FILE}:application/wasm" \
   --disable-path-validation
 

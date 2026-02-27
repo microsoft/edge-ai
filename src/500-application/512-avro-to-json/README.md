@@ -140,7 +140,7 @@ To release a new version of the module:
 
 If your source produces Avro Object Container File format (messages start with magic bytes `Obj\x01`), omit the `avroSchema` configuration. The module auto-detects the schema from the message header.
 
-### Option B: Raw Avro binary (schema provided via configuration)
+#### Option B: Raw Avro binary (schema provided via configuration)
 
 If messages contain raw Avro binary without an embedded schema, provide the schema as a JSON string in the `avroSchema` graph configuration parameter.
 

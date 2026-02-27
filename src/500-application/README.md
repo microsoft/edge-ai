@@ -427,11 +427,13 @@ While the sample applications in this repository are reference implementations a
    ```
 
 2. **Configure Container Registry Integration:**
+
    - Use registries that support SLSA attestation (GitHub Container Registry, Azure Container Registry)
    - Enable automatic vulnerability scanning
    - Implement signature verification policies
 
 3. **Consumer Verification:**
+
    - Document how downstream users can verify attestations
    - Provide verification tools and scripts
    - Include attestation verification in deployment documentation
