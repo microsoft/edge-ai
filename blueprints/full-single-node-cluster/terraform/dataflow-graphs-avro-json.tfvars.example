@@ -22,7 +22,7 @@
 
 // Step 1: Configure the Kafka broker as a DataflowEndpoint.
 // Replace the host with your Kafka broker address.
-// See: https://learn.microsoft.com/en-us/azure/iot-operations/connect-to-cloud/howto-configure-kafka-endpoint?tabs=portal
+// See: https://learn.microsoft.com/azure/iot-operations/connect-to-cloud/howto-configure-kafka-endpoint?tabs=portal
 dataflow_endpoints = [
   {
     name         = "kafka-source"

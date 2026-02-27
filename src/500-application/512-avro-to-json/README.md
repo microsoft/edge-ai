@@ -116,7 +116,7 @@ To release a new version of the module:
 2. Update the graph artifact reference in your `terraform.tfvars` to match the new version:
 
    ```hcl
-   artifact = "graph-avro-to-json:2.0.0"
+   artifact = "avro-to-json-graph:2.0.0"
    ```
 
 3. Rebuild and push the updated artifacts:
@@ -211,8 +211,8 @@ az acr login --name <acr_name>
 
 ## References
 
-- [Develop WASM Modules for AIO](https://learn.microsoft.com/en-us/azure/iot-operations/develop-edge-apps/howto-develop-wasm-modules?tabs=rust)
-- [Use WASM with Data Flow Graphs](https://learn.microsoft.com/en-us/azure/iot-operations/connect-to-cloud/howto-dataflow-graph-wasm?tabs=portal)
+- [Develop WASM Modules for AIO](https://learn.microsoft.com/azure/iot-operations/develop-edge-apps/howto-develop-wasm-modules?tabs=rust)
+- [Use WASM with Data Flow Graphs](https://learn.microsoft.com/azure/iot-operations/connect-to-cloud/howto-dataflow-graph-wasm?tabs=portal)
 
 ## License
 

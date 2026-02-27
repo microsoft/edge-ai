@@ -2,8 +2,8 @@
 //!
 //! Provides a stateless map operator that converts Apache Avro binary data to JSON.
 //! Supports multiple Avro encoding formats:
-//! - Single-object encoding with embedded schema
-//! - Object Container File format (with schema in header)
+//! - Detection of single-object encoding with embedded schema
+//!   (schema lookup is not implemented; decoding is not supported)
 //! - Schema-based decoding using a provided Avro schema
 //!
 //! This operator is designed to be generic and reusable across different Avro schemas.
@@ -73,13 +73,13 @@ fn avro_to_json(avro_value: &AvroValue) -> JsonValue {
             // Without schema-level scale info here, render as unscaled integer
             let bytes: Vec<u8> = decimal.clone().try_into().unwrap_or_default();
             if bytes.is_empty() {
-                json!(0)
+                json!("0")
             } else {
                 let mut value: i128 = if bytes[0] & 0x80 != 0 { -1 } else { 0 };
                 for &b in &bytes {
                     value = (value << 8) | b as i128;
                 }
-                json!(value)
+                json!(value.to_string())
             }
         }
         AvroValue::TimeMillis(t) => json!(t),
@@ -295,7 +295,7 @@ fn transform(input: DataModel) -> Result<DataModel, Error> {
     // 1. If schema is configured, use it
     // 2. Try Object Container File format (has embedded schema)
     // 3. Try single-object encoding (requires schema registry - will log warning)
-    // 4. Pass through unchanged with warning
+    // 4. If all strategies fail, return an error and log a warning
 
     let avro_value = if let Some(schema) = AVRO_SCHEMA.get().and_then(|s| s.as_ref()) {
         // Use configured schema
