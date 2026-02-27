@@ -33,7 +33,7 @@ if [[ -f "${GRAPH_FILE}" ]]; then
   GRAPH_TEMP=$(mktemp)
   trap 'rm -f "${GRAPH_TEMP}"' EXIT
   export VERSION
-  envsubst '${VERSION}' <"${GRAPH_FILE}" >"${GRAPH_TEMP}"
+  envsubst <"${GRAPH_FILE}" >"${GRAPH_TEMP}"
 
   echo "Pushing graph definition v${VERSION}"
   oras push \
