@@ -1,0 +1,87 @@
+/*
+ * Dataflow Endpoint Configuration Example
+ *
+ * This file demonstrates how to configure dataflow endpoints for IoT Operations.
+ * Dataflow endpoints define external service connections that dataflows use as
+ * sources or destinations. Supported types: Mqtt, Kafka, DataExplorer,
+ * DataLakeStorage, FabricOneLake, LocalStorage, and OpenTelemetry.
+ *
+ * Copy the contents to enrich your terraform.tfvars with these values.
+ * Ensure your terraform.tfvars also includes the required core variables, for example:
+ *
+ *   environment     = "dev"
+ *   resource_prefix = "myprefix"
+ *   location        = "eastus2"
+ *   instance        = "001"
+ */
+
+dataflow_endpoints = [
+  {
+    name         = "event-hub-endpoint"
+    endpointType = "Kafka"
+    kafkaSettings = {
+      host = "example.servicebus.windows.net:9093"
+      authentication = {
+        method                             = "SystemAssignedManagedIdentity"
+        systemAssignedManagedIdentitySettings = {}
+      }
+      tls = {
+        mode = "Enabled"
+      }
+      consumerGroupId = "aiodataflows"
+    }
+  },
+  {
+    name         = "event-grid-endpoint"
+    endpointType = "Mqtt"
+    mqttSettings = {
+      host = "example.westeurope-1.ts.eventgrid.azure.net:8883"
+      authentication = {
+        method                             = "SystemAssignedManagedIdentity"
+        systemAssignedManagedIdentitySettings = {}
+      }
+      tls = {
+        mode = "Enabled"
+      }
+    }
+  },
+  {
+    name         = "adx-endpoint"
+    endpointType = "DataExplorer"
+    dataExplorerSettings = {
+      host     = "example.westeurope.kusto.windows.net"
+      database = "example-database"
+      authentication = {
+        method                             = "SystemAssignedManagedIdentity"
+        systemAssignedManagedIdentitySettings = {}
+      }
+      batching = {
+        latencySeconds = 60
+        maxMessages    = 100000
+      }
+    }
+  },
+  {
+    name         = "fabric-endpoint"
+    endpointType = "FabricOneLake"
+    fabricOneLakeSettings = {
+      host = "onelake.dfs.fabric.microsoft.com"
+      authentication = {
+        method                             = "SystemAssignedManagedIdentity"
+        systemAssignedManagedIdentitySettings = {}
+      }
+      names = {
+        workspaceName = "example-workspace"
+        lakehouseName = "example-lakehouse"
+      }
+      oneLakePathType = "Tables"
+    }
+  },
+  {
+    name         = "local-storage-endpoint"
+    endpointType = "LocalStorage"
+    localStorageSettings = {
+      persistentVolumeClaimRef = "example-pvc"
+    }
+  }
+]

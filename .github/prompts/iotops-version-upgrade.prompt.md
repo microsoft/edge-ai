@@ -292,6 +292,8 @@ Check the following files within the `src/100-edge/110-iot-ops/` component:
 *   `terraform/modules/iot-ops-instance/main.tf`
 *   `terraform/modules/iot-ops-instance/variables.tf`
 
+**IMPORTANT - Scan ALL submodules**: The files above are the primary modules, but components may contain additional submodules (e.g., `modules/registry-endpoints/`). Before concluding that a resource type from the JSON is "NEW", scan ALL subdirectories under `terraform/modules/` and `bicep/modules/` for matching resource types. Use `file_search` with pattern `src/100-edge/110-iot-ops/**/modules/**/*.{tf,bicep}` to discover all module files, then check each for resource declarations.
+
 <!-- <example-plan-entry-format> -->
 ```markdown
 - [ ] Update `apiVersion` for `Microsoft.IoTOperations/instance` in `src/100-edge/110-iot-ops/bicep/modules/iot-ops-instance.bicep` from `2024-11-01-preview` to `2025-06-24-preview`
@@ -383,6 +385,8 @@ Before moving to the next step: update the plan file.
    - **Variables in code but NOT in JSON** = Deprecated configuration variables
    - **Parameters in JSON but NOT in code** = New input parameters
    - **Parameters in code but NOT in JSON** = Deprecated input parameters
+
+   **FALSE-POSITIVE PREVENTION**: Before flagging a resource as "NEW", search ALL submodules under the component (not just the primary module files listed in step 4). Components often implement resource types in dedicated submodules (e.g., `registryEndpoints` may be in a `registry-endpoints/` submodule rather than the main `iot-ops-instance` module). Use `grep_search` with `includePattern: "src/100-edge/**"` to search for the resource type across the entire component tree.
 
 4. **Detect property-level changes**:
    - For resources present in both: compare `extensionType`, `name`, and key properties

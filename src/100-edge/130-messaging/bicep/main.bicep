@@ -43,6 +43,15 @@ param eventHub types.EventHub?
 @description('Values for the existing Event Grid. If not provided, Event Grid dataflow will not be created.')
 param eventGrid types.EventGrid?
 
+@description('The list of dataflow graphs to create.')
+param dataflowGraphs types.DataflowGraph[] = []
+
+@description('The list of dataflows to create.')
+param dataflows types.Dataflow[] = []
+
+@description('The list of dataflow endpoints to create.')
+param dataflowEndpoints types.DataflowEndpoint[] = []
+
 @description('Whether to opt out of telemetry data collection.')
 param telemetry_opt_out bool = false
 
@@ -107,3 +116,47 @@ module eventGridDataflow 'modules/event-grid.bicep' = if (eventGrid != null) {
     adrNamespaceName: adrNamespaceName
   }
 }
+
+module dataflowGraphsModule 'modules/dataflow-graphs.bicep' = if (!empty(dataflowGraphs)) {
+  name: '${deployment().name}-dfg'
+  params: {
+    aioInstanceName: aioInstanceName
+    aioDataflowProfileName: aioDataflowProfileName
+    customLocationId: aioCustomLocation.id
+    dataflowGraphs: dataflowGraphs
+  }
+}
+
+module dataflowsModule 'modules/dataflow.bicep' = if (!empty(dataflows)) {
+  name: '${deployment().name}-df'
+  params: {
+    aioInstanceName: aioInstanceName
+    aioDataflowProfileName: aioDataflowProfileName
+    customLocationId: aioCustomLocation.id
+    dataflows: dataflows
+  }
+}
+
+module dataflowEndpointsModule 'modules/dataflow-endpoint.bicep' = if (!empty(dataflowEndpoints)) {
+  name: '${deployment().name}-dfe'
+  params: {
+    aioInstanceName: aioInstanceName
+    customLocationId: aioCustomLocation.id
+    dataflowEndpoints: dataflowEndpoints
+  }
+}
+
+/*
+  Outputs
+*/
+
+@description('List of dataflow graph names.')
+output dataflowGraphNames string[] = !empty(dataflowGraphs) ? dataflowGraphsModule.outputs.dataflowGraphNames : []
+
+@description('List of dataflow names.')
+output dataflowNames string[] = !empty(dataflows) ? dataflowsModule.outputs.dataflowNames : []
+
+@description('List of dataflow endpoint names.')
+output dataflowEndpointNames string[] = !empty(dataflowEndpoints)
+  ? dataflowEndpointsModule.outputs.dataflowEndpointNames
+  : []

@@ -9,7 +9,7 @@ Deploys a complete end-to-end environment for Azure IoT Operations on a single-n
 
 | Name                                    | Description                                                                                                                                                                                                                                   | Type                                                 | Default                                                                                                                          | Required |
 |:----------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------|:---------|
-| common                                  | The common component configuration.                                                                                                                                                                                                           | `[_5.Common](#user-defined-types)`                   | n/a                                                                                                                              | yes      |
+| common                                  | The common component configuration.                                                                                                                                                                                                           | `[_6.Common](#user-defined-types)`                   | n/a                                                                                                                              | yes      |
 | resourceGroupName                       | The name for the resource group. If not provided, a default name will be generated.                                                                                                                                                           | `string`                                             | [format('rg-{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)] | no       |
 | useExistingResourceGroup                | Whether to use an existing resource group instead of creating a new one.                                                                                                                                                                      | `bool`                                               | `false`                                                                                                                          | no       |
 | telemetry_opt_out                       | Whether to opt-out of telemetry. Set to true to disable telemetry.                                                                                                                                                                            | `bool`                                               | `false`                                                                                                                          | no       |
@@ -52,6 +52,9 @@ Deploys a complete end-to-end environment for Azure IoT Operations on a single-n
 | customAkriConnectors                    | List of custom Akri connector templates with user-defined endpoint types and container images.                                                                                                                                                | `[_3.AkriConnectorTemplate](#user-defined-types)[]`  | []                                                                                                                               | no       |
 | registryEndpoints                       | List of additional container registry endpoints. MCR is always added automatically.                                                                                                                                                           | `[_3.RegistryEndpointConfig](#user-defined-types)[]` | []                                                                                                                               | no       |
 | shouldIncludeAcrRegistryEndpoint        | Whether to include the deployed ACR as a registry endpoint with System Assigned Managed Identity authentication.                                                                                                                              | `bool`                                               | `false`                                                                                                                          | no       |
+| dataflowGraphs                          | The list of dataflow graphs to create.                                                                                                                                                                                                        | `[_5.DataflowGraph](#user-defined-types)[]`          | []                                                                                                                               | no       |
+| dataflows                               | The list of dataflows to create.                                                                                                                                                                                                              | `[_5.Dataflow](#user-defined-types)[]`               | []                                                                                                                               | no       |
+| dataflowEndpoints                       | The list of dataflow endpoints to create.                                                                                                                                                                                                     | `[_5.DataflowEndpoint](#user-defined-types)[]`       | []                                                                                                                               | no       |
 
 ## Resources
 
@@ -852,14 +855,28 @@ Deploys Dataflow endpoints and dataflows for Azure IoT Operations messaging inte
 | adrNamespaceName       | The name of the Azure IoT Operations Device Registry namespace to use when referencing the asset.                   | `string`                              | n/a     | no       |
 | eventHub               | Values for the existing Event Hub namespace and Event Hub. If not provided, Event Hub dataflow will not be created. | `[_1.EventHub](#user-defined-types)`  | n/a     | no       |
 | eventGrid              | Values for the existing Event Grid. If not provided, Event Grid dataflow will not be created.                       | `[_1.EventGrid](#user-defined-types)` | n/a     | no       |
+| dataflowGraphs         | The list of dataflow graphs to create.                                                                              | `array`                               | []      | no       |
+| dataflows              | The list of dataflows to create.                                                                                    | `array`                               | []      | no       |
+| dataflowEndpoints      | The list of dataflow endpoints to create.                                                                           | `array`                               | []      | no       |
 | telemetry_opt_out      | Whether to opt out of telemetry data collection.                                                                    | `bool`                                | `false` | no       |
 
 #### Resources for edgeMessaging
 
-| Name              | Type                              | API Version |
-|:------------------|:----------------------------------|:------------|
-| eventHubDataflow  | `Microsoft.Resources/deployments` | 2025-04-01  |
-| eventGridDataflow | `Microsoft.Resources/deployments` | 2025-04-01  |
+| Name                    | Type                              | API Version |
+|:------------------------|:----------------------------------|:------------|
+| eventHubDataflow        | `Microsoft.Resources/deployments` | 2025-04-01  |
+| eventGridDataflow       | `Microsoft.Resources/deployments` | 2025-04-01  |
+| dataflowGraphsModule    | `Microsoft.Resources/deployments` | 2025-04-01  |
+| dataflowsModule         | `Microsoft.Resources/deployments` | 2025-04-01  |
+| dataflowEndpointsModule | `Microsoft.Resources/deployments` | 2025-04-01  |
+
+#### Outputs for edgeMessaging
+
+| Name                  | Type    | Description                      |
+|:----------------------|:--------|:---------------------------------|
+| dataflowGraphNames    | `array` | List of dataflow graph names.    |
+| dataflowNames         | `array` | List of dataflow names.          |
+| dataflowEndpointNames | `array` | List of dataflow endpoint names. |
 
 ## User Defined Types
 
@@ -1571,7 +1588,483 @@ Trust settings for endpoint connections.
 |:----------|:---------|:--------------------------|
 | trustList | `string` | Trust list configuration. |
 
-### `_5.Common`
+### `_5.AccessTokenSettings`
+
+Access token authentication settings.
+
+| Property  | Type     | Description                                |
+|:----------|:---------|:-------------------------------------------|
+| secretRef | `string` | The secret reference for the access token. |
+
+### `_5.BatchingSettingsSeconds`
+
+Batching settings with latency in seconds.
+
+| Property       | Type  | Description                               |
+|:---------------|:------|:------------------------------------------|
+| latencySeconds | `int` | The batching latency in seconds.          |
+| maxMessages    | `int` | The maximum number of messages per batch. |
+
+### `_5.DataExplorerAuthentication`
+
+Data Explorer authentication settings.
+
+| Property                              | Type                                                              | Description                                |
+|:--------------------------------------|:------------------------------------------------------------------|:-------------------------------------------|
+| method                                | `string`                                                          | The authentication method.                 |
+| systemAssignedManagedIdentitySettings | `[_5.SystemAssignedManagedIdentitySettings](#user-defined-types)` | System-assigned managed identity settings. |
+| userAssignedManagedIdentitySettings   | `[_5.UserAssignedManagedIdentitySettings](#user-defined-types)`   | User-assigned managed identity settings.   |
+
+### `_5.DataExplorerSettings`
+
+Data Explorer endpoint settings.
+
+| Property       | Type                                                   | Description                  |
+|:---------------|:-------------------------------------------------------|:-----------------------------|
+| authentication | `[_5.DataExplorerAuthentication](#user-defined-types)` | The authentication settings. |
+| batching       | `[_5.BatchingSettingsSeconds](#user-defined-types)`    | The batching settings.       |
+| database       | `string`                                               | The database name.           |
+| host           | `string`                                               | The Data Explorer host URI.  |
+
+### `_5.Dataflow`
+
+Dataflow configuration with operations.
+
+| Property               | Type     | Description                                                                          |
+|:-----------------------|:---------|:-------------------------------------------------------------------------------------|
+| name                   | `string` | The name of the dataflow. Must be 3-63 lowercase alphanumeric characters or hyphens. |
+| mode                   | `string` | The mode of the dataflow.                                                            |
+| requestDiskPersistence | `string` | Whether to persist data to disk for recovery.                                        |
+| operations             | `array`  | The list of operations in the dataflow.                                              |
+
+### `_5.DataflowBuiltInTransformationSettings`
+
+Built-in transformation settings for a dataflow operation.
+
+| Property            | Type     | Description               |
+|:--------------------|:---------|:--------------------------|
+| serializationFormat | `string` | The serialization format. |
+| schemaRef           | `string` | The schema reference.     |
+| datasets            | `array`  | The dataset definitions.  |
+| filter              | `array`  | The filter definitions.   |
+| map                 | `array`  | The map definitions.      |
+
+### `_5.DataflowDestinationSettings`
+
+Destination settings for a dataflow operation.
+
+| Property        | Type     | Description                         |
+|:----------------|:---------|:------------------------------------|
+| endpointRef     | `string` | The endpoint reference name.        |
+| dataDestination | `string` | The data destination path or topic. |
+
+### `_5.DataflowEndpoint`
+
+Dataflow endpoint configuration.
+
+| Property                | Type                                                | Description                                                                          |
+|:------------------------|:----------------------------------------------------|:-------------------------------------------------------------------------------------|
+| name                    | `string`                                            | The name of the endpoint. Must be 3-63 lowercase alphanumeric characters or hyphens. |
+| endpointType            | `string`                                            | The type of the endpoint.                                                            |
+| hostType                | `string`                                            | The host type for the endpoint.                                                      |
+| dataExplorerSettings    | `[_5.DataExplorerSettings](#user-defined-types)`    | Data Explorer endpoint settings.                                                     |
+| dataLakeStorageSettings | `[_5.DataLakeStorageSettings](#user-defined-types)` | Data Lake Storage endpoint settings.                                                 |
+| fabricOneLakeSettings   | `[_5.FabricOneLakeSettings](#user-defined-types)`   | Fabric OneLake endpoint settings.                                                    |
+| kafkaSettings           | `[_5.KafkaSettings](#user-defined-types)`           | Kafka endpoint settings.                                                             |
+| localStorageSettings    | `[_5.LocalStorageSettings](#user-defined-types)`    | Local storage endpoint settings.                                                     |
+| mqttSettings            | `[_5.MqttSettings](#user-defined-types)`            | MQTT endpoint settings.                                                              |
+| openTelemetrySettings   | `[_5.OpenTelemetrySettings](#user-defined-types)`   | OpenTelemetry endpoint settings.                                                     |
+
+### `_5.DataflowGraph`
+
+Dataflow graph configuration with nodes and connections.
+
+| Property               | Type     | Description                                                                                |
+|:-----------------------|:---------|:-------------------------------------------------------------------------------------------|
+| name                   | `string` | The name of the dataflow graph. Must be 3-63 lowercase alphanumeric characters or hyphens. |
+| mode                   | `string` | The mode of the dataflow graph.                                                            |
+| requestDiskPersistence | `string` | Whether to persist data to disk for recovery.                                              |
+| nodes                  | `array`  | The list of nodes in the graph.                                                            |
+| nodeConnections        | `array`  | The list of connections between nodes.                                                     |
+
+### `_5.DataflowGraphConfiguration`
+
+Configuration key-value pair for a dataflow graph node.
+
+| Property | Type     | Description              |
+|:---------|:---------|:-------------------------|
+| key      | `string` | The configuration key.   |
+| value    | `string` | The configuration value. |
+
+### `_5.DataflowGraphConnectionFrom`
+
+Connection from a source node in a dataflow graph.
+
+| Property | Type                                            | Description                    |
+|:---------|:------------------------------------------------|:-------------------------------|
+| name     | `string`                                        | The name of the source node.   |
+| schema   | `[_5.DataflowGraphSchema](#user-defined-types)` | The schema for the connection. |
+
+### `_5.DataflowGraphConnectionTo`
+
+Connection to a target node in a dataflow graph.
+
+| Property | Type     | Description                  |
+|:---------|:---------|:-----------------------------|
+| name     | `string` | The name of the target node. |
+
+### `_5.DataflowGraphDestinationHeaderAction`
+
+Header action for a dataflow graph destination node.
+
+| Property   | Type     | Description                                                                     |
+|:-----------|:---------|:--------------------------------------------------------------------------------|
+| actionType | `string` | The type of header operation to perform.                                        |
+| key        | `string` | The name of the header.                                                         |
+| value      | `string` | The value of the header. Required for AddIfNotPresent and AddOrReplace actions. |
+
+### `_5.DataflowGraphDestinationSettings`
+
+Destination settings for a dataflow graph node.
+
+| Property        | Type     | Description                         |
+|:----------------|:---------|:------------------------------------|
+| endpointRef     | `string` | The endpoint reference name.        |
+| dataDestination | `string` | The data destination path or topic. |
+| headers         | `array`  | Headers for the output data.        |
+
+### `_5.DataflowGraphNode`
+
+Node in a dataflow graph.
+
+| Property            | Type                                                         | Description                                        |
+|:--------------------|:-------------------------------------------------------------|:---------------------------------------------------|
+| nodeType            | `string`                                                     | The type of the node.                              |
+| name                | `string`                                                     | The name of the node.                              |
+| sourceSettings      | `[_5.DataflowGraphSourceSettings](#user-defined-types)`      | Source settings when nodeType is Source.           |
+| graphSettings       | `[_5.DataflowGraphSettings](#user-defined-types)`            | Graph processing settings when nodeType is Graph.  |
+| destinationSettings | `[_5.DataflowGraphDestinationSettings](#user-defined-types)` | Destination settings when nodeType is Destination. |
+
+### `_5.DataflowGraphNodeConnection`
+
+Connection between nodes in a dataflow graph.
+
+| Property | Type                                                    | Description                 |
+|:---------|:--------------------------------------------------------|:----------------------------|
+| from     | `[_5.DataflowGraphConnectionFrom](#user-defined-types)` | The source node connection. |
+| to       | `[_5.DataflowGraphConnectionTo](#user-defined-types)`   | The target node connection. |
+
+### `_5.DataflowGraphSchema`
+
+Schema reference for a dataflow graph node connection.
+
+| Property            | Type     | Description                              |
+|:--------------------|:---------|:-----------------------------------------|
+| schemaRef           | `string` | The schema reference identifier.         |
+| serializationFormat | `string` | The serialization format for the schema. |
+
+### `_5.DataflowGraphSettings`
+
+Graph processing settings for a dataflow graph node.
+
+| Property            | Type     | Description                                            |
+|:--------------------|:---------|:-------------------------------------------------------|
+| registryEndpointRef | `string` | The registry endpoint reference for the WASM artifact. |
+| artifact            | `string` | The artifact reference in the registry.                |
+| configuration       | `array`  | The configuration key-value pairs for the graph node.  |
+
+### `_5.DataflowGraphSourceSettings`
+
+Source settings for a dataflow graph node.
+
+| Property    | Type     | Description                                                                                        |
+|:------------|:---------|:---------------------------------------------------------------------------------------------------|
+| endpointRef | `string` | The endpoint reference name.                                                                       |
+| assetRef    | `string` | Reference to the resource in Azure Device Registry where the data in the endpoint originates from. |
+| dataSources | `array`  | The list of data sources to read from.                                                             |
+
+### `_5.DataflowOperation`
+
+Operation in a dataflow.
+
+| Property                      | Type                                                              | Description                                                                   |
+|:------------------------------|:------------------------------------------------------------------|:------------------------------------------------------------------------------|
+| operationType                 | `string`                                                          | The type of the operation.                                                    |
+| name                          | `string`                                                          | The name of the operation.                                                    |
+| sourceSettings                | `[_5.DataflowSourceSettings](#user-defined-types)`                | Source settings when operationType is Source.                                 |
+| builtInTransformationSettings | `[_5.DataflowBuiltInTransformationSettings](#user-defined-types)` | Built-in transformation settings when operationType is BuiltInTransformation. |
+| destinationSettings           | `[_5.DataflowDestinationSettings](#user-defined-types)`           | Destination settings when operationType is Destination.                       |
+
+### `_5.DataflowSourceSettings`
+
+Source settings for a dataflow operation.
+
+| Property            | Type     | Description                            |
+|:--------------------|:---------|:---------------------------------------|
+| endpointRef         | `string` | The endpoint reference name.           |
+| assetRef            | `string` | The asset reference.                   |
+| serializationFormat | `string` | The serialization format.              |
+| schemaRef           | `string` | The schema reference.                  |
+| dataSources         | `array`  | The list of data sources to read from. |
+
+### `_5.DataflowTransformDataset`
+
+Dataset for a built-in transformation.
+
+| Property    | Type     | Description                 |
+|:------------|:---------|:----------------------------|
+| key         | `string` | The dataset key.            |
+| description | `string` | The dataset description.    |
+| schemaRef   | `string` | The schema reference.       |
+| inputs      | `array`  | The input references.       |
+| expression  | `string` | The expression to evaluate. |
+
+### `_5.DataflowTransformFilter`
+
+Filter for a built-in transformation.
+
+| Property    | Type     | Description             |
+|:------------|:---------|:------------------------|
+| type        | `string` | The filter type.        |
+| description | `string` | The filter description. |
+| inputs      | `array`  | The input references.   |
+| expression  | `string` | The filter expression.  |
+
+### `_5.DataflowTransformMap`
+
+Map for a built-in transformation.
+
+| Property    | Type     | Description            |
+|:------------|:---------|:-----------------------|
+| type        | `string` | The map type.          |
+| description | `string` | The map description.   |
+| inputs      | `array`  | The input references.  |
+| expression  | `string` | The map expression.    |
+| output      | `string` | The output field name. |
+
+### `_5.DataLakeStorageAuthentication`
+
+Data Lake Storage authentication settings.
+
+| Property                              | Type                                                              | Description                                |
+|:--------------------------------------|:------------------------------------------------------------------|:-------------------------------------------|
+| accessTokenSettings                   | `[_5.AccessTokenSettings](#user-defined-types)`                   | The access token settings.                 |
+| method                                | `string`                                                          | The authentication method.                 |
+| systemAssignedManagedIdentitySettings | `[_5.SystemAssignedManagedIdentitySettings](#user-defined-types)` | System-assigned managed identity settings. |
+| userAssignedManagedIdentitySettings   | `[_5.UserAssignedManagedIdentitySettings](#user-defined-types)`   | User-assigned managed identity settings.   |
+
+### `_5.DataLakeStorageSettings`
+
+Data Lake Storage endpoint settings.
+
+| Property       | Type                                                      | Description                     |
+|:---------------|:----------------------------------------------------------|:--------------------------------|
+| authentication | `[_5.DataLakeStorageAuthentication](#user-defined-types)` | The authentication settings.    |
+| batching       | `[_5.BatchingSettingsSeconds](#user-defined-types)`       | The batching settings.          |
+| host           | `string`                                                  | The Data Lake Storage host URI. |
+
+### `_5.EndpointTlsSettings`
+
+TLS settings for endpoint connections.
+
+| Property                         | Type     | Description                                          |
+|:---------------------------------|:---------|:-----------------------------------------------------|
+| mode                             | `string` | The TLS mode.                                        |
+| trustedCaCertificateConfigMapRef | `string` | The ConfigMap reference for trusted CA certificates. |
+
+### `_5.EventGrid`
+
+Event Grid configuration.
+
+| Property  | Type     | Description                       |
+|:----------|:---------|:----------------------------------|
+| name      | `string` | The name of the Event Grid.       |
+| topicName | `string` | The topic name of the Event Grid. |
+| endpoint  | `string` | The endpoint of the Event Grid.   |
+
+### `_5.EventHub`
+
+Event Hub configuration.
+
+| Property      | Type     | Description                          |
+|:--------------|:---------|:-------------------------------------|
+| namespaceName | `string` | The namespace name of the Event Hub. |
+| eventHubName  | `string` | The name of the Event Hub.           |
+
+### `_5.FabricOneLakeAuthentication`
+
+Fabric OneLake authentication settings.
+
+| Property                              | Type                                                              | Description                                |
+|:--------------------------------------|:------------------------------------------------------------------|:-------------------------------------------|
+| method                                | `string`                                                          | The authentication method.                 |
+| systemAssignedManagedIdentitySettings | `[_5.SystemAssignedManagedIdentitySettings](#user-defined-types)` | System-assigned managed identity settings. |
+| userAssignedManagedIdentitySettings   | `[_5.UserAssignedManagedIdentitySettings](#user-defined-types)`   | User-assigned managed identity settings.   |
+
+### `_5.FabricOneLakeNames`
+
+Fabric OneLake names configuration.
+
+| Property      | Type     | Description         |
+|:--------------|:---------|:--------------------|
+| lakehouseName | `string` | The lakehouse name. |
+| workspaceName | `string` | The workspace name. |
+
+### `_5.FabricOneLakeSettings`
+
+Fabric OneLake endpoint settings.
+
+| Property        | Type                                                    | Description                        |
+|:----------------|:--------------------------------------------------------|:-----------------------------------|
+| authentication  | `[_5.FabricOneLakeAuthentication](#user-defined-types)` | The authentication settings.       |
+| batching        | `[_5.BatchingSettingsSeconds](#user-defined-types)`     | The batching settings.             |
+| host            | `string`                                                | The OneLake host URI.              |
+| names           | `[_5.FabricOneLakeNames](#user-defined-types)`          | The lakehouse and workspace names. |
+| oneLakePathType | `string`                                                | The OneLake path type.             |
+
+### `_5.KafkaAuthentication`
+
+Kafka authentication settings.
+
+| Property                              | Type                                                              | Description                                |
+|:--------------------------------------|:------------------------------------------------------------------|:-------------------------------------------|
+| method                                | `string`                                                          | The authentication method.                 |
+| saslSettings                          | `[_5.SaslSettings](#user-defined-types)`                          | SASL settings.                             |
+| systemAssignedManagedIdentitySettings | `[_5.SystemAssignedManagedIdentitySettings](#user-defined-types)` | System-assigned managed identity settings. |
+| userAssignedManagedIdentitySettings   | `[_5.UserAssignedManagedIdentitySettings](#user-defined-types)`   | User-assigned managed identity settings.   |
+| x509CertificateSettings               | `[_5.X509CertificateSettings](#user-defined-types)`               | X.509 certificate settings.                |
+
+### `_5.KafkaBatchingSettings`
+
+Batching settings for Kafka endpoints.
+
+| Property    | Type     | Description                               |
+|:------------|:---------|:------------------------------------------|
+| latencyMs   | `int`    | The batching latency in milliseconds.     |
+| maxBytes    | `int`    | The maximum number of bytes per batch.    |
+| maxMessages | `int`    | The maximum number of messages per batch. |
+| mode        | `string` | The batching mode.                        |
+
+### `_5.KafkaSettings`
+
+Kafka endpoint settings.
+
+| Property             | Type                                              | Description                           |
+|:---------------------|:--------------------------------------------------|:--------------------------------------|
+| authentication       | `[_5.KafkaAuthentication](#user-defined-types)`   | The authentication settings.          |
+| batching             | `[_5.KafkaBatchingSettings](#user-defined-types)` | The batching settings.                |
+| cloudEventAttributes | `string`                                          | How to handle cloud event attributes. |
+| compression          | `string`                                          | The compression type.                 |
+| consumerGroupId      | `string`                                          | The consumer group ID.                |
+| copyMqttProperties   | `string`                                          | Whether to copy MQTT properties.      |
+| host                 | `string`                                          | The Kafka host URI.                   |
+| kafkaAcks            | `string`                                          | The Kafka acknowledgment level.       |
+| partitionStrategy    | `string`                                          | The partition strategy.               |
+| tls                  | `[_5.EndpointTlsSettings](#user-defined-types)`   | The TLS settings.                     |
+
+### `_5.LocalStorageSettings`
+
+Local storage endpoint settings.
+
+| Property                 | Type     | Description                            |
+|:-------------------------|:---------|:---------------------------------------|
+| persistentVolumeClaimRef | `string` | The persistent volume claim reference. |
+
+### `_5.MqttAuthentication`
+
+MQTT authentication settings.
+
+| Property                              | Type                                                              | Description                                |
+|:--------------------------------------|:------------------------------------------------------------------|:-------------------------------------------|
+| method                                | `string`                                                          | The authentication method.                 |
+| serviceAccountTokenSettings           | `[_5.ServiceAccountTokenSettings](#user-defined-types)`           | Service account token settings.            |
+| systemAssignedManagedIdentitySettings | `[_5.SystemAssignedManagedIdentitySettings](#user-defined-types)` | System-assigned managed identity settings. |
+| userAssignedManagedIdentitySettings   | `[_5.UserAssignedManagedIdentitySettings](#user-defined-types)`   | User-assigned managed identity settings.   |
+| x509CertificateSettings               | `[_5.X509CertificateSettings](#user-defined-types)`               | X.509 certificate settings.                |
+
+### `_5.MqttSettings`
+
+MQTT endpoint settings.
+
+| Property             | Type                                            | Description                               |
+|:---------------------|:------------------------------------------------|:------------------------------------------|
+| authentication       | `[_5.MqttAuthentication](#user-defined-types)`  | The authentication settings.              |
+| clientIdPrefix       | `string`                                        | The client ID prefix.                     |
+| cloudEventAttributes | `string`                                        | How to handle cloud event attributes.     |
+| host                 | `string`                                        | The MQTT host URI.                        |
+| keepAliveSeconds     | `int`                                           | The keep-alive interval in seconds.       |
+| maxInflightMessages  | `int`                                           | The maximum number of in-flight messages. |
+| protocol             | `string`                                        | The MQTT protocol version.                |
+| qos                  | `int`                                           | The quality of service level.             |
+| retain               | `string`                                        | The retain policy.                        |
+| sessionExpirySeconds | `int`                                           | The session expiry interval in seconds.   |
+| tls                  | `[_5.EndpointTlsSettings](#user-defined-types)` | The TLS settings.                         |
+
+### `_5.OpenTelemetryAuthentication`
+
+OpenTelemetry authentication settings.
+
+| Property                    | Type                                                    | Description                     |
+|:----------------------------|:--------------------------------------------------------|:--------------------------------|
+| method                      | `string`                                                | The authentication method.      |
+| serviceAccountTokenSettings | `[_5.ServiceAccountTokenSettings](#user-defined-types)` | Service account token settings. |
+| x509CertificateSettings     | `[_5.X509CertificateSettings](#user-defined-types)`     | X.509 certificate settings.     |
+
+### `_5.OpenTelemetrySettings`
+
+OpenTelemetry endpoint settings.
+
+| Property       | Type                                                    | Description                           |
+|:---------------|:--------------------------------------------------------|:--------------------------------------|
+| authentication | `[_5.OpenTelemetryAuthentication](#user-defined-types)` | The authentication settings.          |
+| batching       | `[_5.BatchingSettingsSeconds](#user-defined-types)`     | The batching settings.                |
+| host           | `string`                                                | The OpenTelemetry collector host URI. |
+| tls            | `[_5.EndpointTlsSettings](#user-defined-types)`         | The TLS settings.                     |
+
+### `_5.SaslSettings`
+
+SASL authentication settings.
+
+| Property  | Type     | Description                                    |
+|:----------|:---------|:-----------------------------------------------|
+| saslType  | `string` | The SASL type.                                 |
+| secretRef | `string` | The secret reference for the SASL credentials. |
+
+### `_5.ServiceAccountTokenSettings`
+
+Service account token authentication settings.
+
+| Property | Type     | Description                                 |
+|:---------|:---------|:--------------------------------------------|
+| audience | `string` | The audience for the service account token. |
+
+### `_5.SystemAssignedManagedIdentitySettings`
+
+System-assigned managed identity authentication settings.
+
+| Property | Type     | Description                                  |
+|:---------|:---------|:---------------------------------------------|
+| audience | `string` | The audience for the managed identity token. |
+
+### `_5.UserAssignedManagedIdentitySettings`
+
+User-assigned managed identity authentication settings.
+
+| Property | Type     | Description                               |
+|:---------|:---------|:------------------------------------------|
+| clientId | `string` | The client ID of the managed identity.    |
+| scope    | `string` | The scope for the managed identity token. |
+| tenantId | `string` | The tenant ID of the managed identity.    |
+
+### `_5.X509CertificateSettings`
+
+X.509 certificate authentication settings.
+
+| Property  | Type     | Description                               |
+|:----------|:---------|:------------------------------------------|
+| secretRef | `string` | The secret reference for the certificate. |
+
+### `_6.Common`
 
 Common settings for the components.
 
@@ -1597,6 +2090,9 @@ Common settings for the components.
 | natGateway              | `object` | NAT gateway resource when managed outbound access is enabled.      |
 | natGatewayPublicIps     | `array`  | Public IP resources associated with the NAT gateway keyed by name. |
 | messaging               | `object` | Cloud messaging resources.                                         |
+| dataflowGraphs          | `array`  | Map of dataflow graph resources by name.                           |
+| dataflows               | `array`  | Map of dataflow resources by name.                                 |
+| dataflowEndpoints       | `array`  | Map of dataflow endpoint resources by name.                        |
 | aiFoundry               | `object` | Azure AI Foundry account resources.                                |
 | aiFoundryProjects       | `array`  | Azure AI Foundry project resources.                                |
 | aiFoundryDeployments    | `array`  | Azure AI Foundry model deployments.                                |
