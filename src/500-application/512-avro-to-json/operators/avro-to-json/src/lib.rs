@@ -527,26 +527,65 @@ mod tests {
     fn avro_decimal_to_json_positive() {
         // Decimal(42) = big-endian bytes [0x2A]
         let decimal = apache_avro::Decimal::from(vec![0x2A]);
-        assert_eq!(avro_to_json(&AvroValue::Decimal(decimal)), json!(42));
+        assert_eq!(avro_to_json(&AvroValue::Decimal(decimal)), json!("42"));
     }
 
     #[test]
     fn avro_decimal_to_json_negative() {
         // Decimal(-1) = big-endian two's complement [0xFF]
         let decimal = apache_avro::Decimal::from(vec![0xFF]);
-        assert_eq!(avro_to_json(&AvroValue::Decimal(decimal)), json!(-1));
+        assert_eq!(avro_to_json(&AvroValue::Decimal(decimal)), json!("-1"));
     }
 
     #[test]
     fn avro_decimal_to_json_zero() {
         let decimal = apache_avro::Decimal::from(vec![0x00]);
-        assert_eq!(avro_to_json(&AvroValue::Decimal(decimal)), json!(0));
+        assert_eq!(avro_to_json(&AvroValue::Decimal(decimal)), json!("0"));
     }
 
     #[test]
     fn avro_decimal_empty_bytes() {
         let decimal = apache_avro::Decimal::from(Vec::<u8>::new());
-        assert_eq!(avro_to_json(&AvroValue::Decimal(decimal)), json!(0));
+        assert_eq!(avro_to_json(&AvroValue::Decimal(decimal)), json!("0"));
+    }
+
+    #[test]
+    fn avro_decimal_exceeds_json_safe_integer() {
+        // 2^53 + 1 = 9007199254740993, exceeds JSON safe integer range
+        // Big-endian bytes: 0x00, 0x20, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01
+        let decimal = apache_avro::Decimal::from(vec![0x00, 0x20, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01]);
+        assert_eq!(
+            avro_to_json(&AvroValue::Decimal(decimal)),
+            json!("9007199254740993")
+        );
+    }
+
+    #[test]
+    fn avro_decimal_max_i128() {
+        // i128::MAX = 170141183460469231731687303715884105727
+        // 16 bytes: 0x7F followed by fifteen 0xFF bytes
+        let decimal = apache_avro::Decimal::from(vec![
+            0x7F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+            0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+        ]);
+        assert_eq!(
+            avro_to_json(&AvroValue::Decimal(decimal)),
+            json!("170141183460469231731687303715884105727")
+        );
+    }
+
+    #[test]
+    fn avro_decimal_min_i128() {
+        // i128::MIN = -170141183460469231731687303715884105728
+        // 16 bytes: 0x80 followed by fifteen 0x00 bytes
+        let decimal = apache_avro::Decimal::from(vec![
+            0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        ]);
+        assert_eq!(
+            avro_to_json(&AvroValue::Decimal(decimal)),
+            json!("-170141183460469231731687303715884105728")
+        );
     }
 
     #[test]
