@@ -19,8 +19,11 @@ estimated_reading_time: 8
 WASM map operator that converts Apache Avro binary data to JSON in Azure IoT Operations dataflow graphs. Designed for Kafka-to-MQTT transformation scenarios where the source system produces Avro-encoded messages and the destination expects JSON.
 
 ```text
-Kafka (Avro) → AIO DataFlow Source → [avro_to_json map] → AIO MQTT topic (JSON)
+Kafka (Avro) → AIO Data Flow Source → [avro_to_json map] → AIO MQTT topic (JSON)
 ```
+
+> [!NOTE]
+> This module addresses Avro messages using [Kafka Schema Registry](https://docs.confluent.io/platform/current/schema-registry/index.html) conventions, which differs from [Azure Schema Registry](https://learn.microsoft.com/azure/iot-operations/connect-to-cloud/concept-schema-registry). Azure IoT Operations does not natively support Kafka Schema Registry, so this WASM operator bridges that gap.
 
 The operator supports multiple Avro encoding formats including Object Container File (with embedded schema), schema-based decoding via configuration, and single-object encoding detection.
 
