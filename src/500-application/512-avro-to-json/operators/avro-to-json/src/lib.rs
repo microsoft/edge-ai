@@ -319,7 +319,7 @@ fn transform(input: DataModel) -> Result<DataModel, Error> {
         }
     } else if let Some(result) = try_parse_container_file(&payload) {
         logger::log(
-            Level::Info,
+            Level::Debug,
             "avro-to-json",
             "Detected Object Container File format",
         );

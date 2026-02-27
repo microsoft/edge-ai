@@ -64,7 +64,7 @@ dataflow_graphs = [
         graphSettings = {
           // Must match the registry endpoint name: acr-{var.resource_prefix}
           registryEndpointRef = "acr-avro"
-          artifact            = "graph-avro-to-json:1.0.0"
+          artifact            = "avro-to-json-graph:1.0.0"
           // avroSchema is required only when messages are raw Avro binary
           // (no embedded schema). Omit this configuration block entirely
           // when the producer sends Object Container File (OCF) format,
