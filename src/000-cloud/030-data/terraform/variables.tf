@@ -3,9 +3,61 @@
  */
 
 variable "should_create_schema_registry" {
-  description = "Whether to crate the Schema Registry resources."
+  description = "Whether to create the Schema Registry resources."
   type        = bool
   default     = true
+}
+
+/*
+ * Schema Parameters
+ */
+
+variable "schemas" {
+  type = list(object({
+    name         = string
+    display_name = optional(string)
+    description  = optional(string)
+    format       = optional(string, "JsonSchema/draft-07")
+    type         = optional(string, "MessageSchema")
+    versions = map(object({
+      description = string
+      content     = string
+    }))
+  }))
+  description = "List of schemas to create in the schema registry with their versions"
+  default     = []
+
+  validation {
+    condition = alltrue([
+      for schema in var.schemas :
+      can(regex("^[a-z0-9][a-z0-9-]*[a-z0-9]$", schema.name)) && length(schema.name) >= 3 && length(schema.name) <= 63
+    ])
+    error_message = "Schema name must be 3-63 characters, contain only lowercase letters, numbers, and hyphens, and cannot start or end with a hyphen."
+  }
+
+  validation {
+    condition = alltrue([
+      for schema in var.schemas :
+      length(schema.versions) > 0
+    ])
+    error_message = "Each schema must have at least one version defined."
+  }
+
+  validation {
+    condition = alltrue([
+      for schema in var.schemas :
+      contains(["MessageSchema"], schema.type)
+    ])
+    error_message = "Schema type must be 'MessageSchema'."
+  }
+
+  validation {
+    condition = alltrue([
+      for schema in var.schemas :
+      contains(["JsonSchema/draft-07", "Delta/1.0"], schema.format)
+    ])
+    error_message = "Schema format must be one of: 'JsonSchema/draft-07', 'Delta/1.0'."
+  }
 }
 
 /*

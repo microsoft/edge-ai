@@ -27,7 +27,7 @@ type SecretStoreExtension = {
 @export()
 var secretStoreExtensionDefaults = {
   release: {
-    version: '1.1.5'
+    version: '1.1.6'
     train: 'stable'
   }
 }
@@ -53,7 +53,7 @@ type AioExtension = {
 @export()
 var aioExtensionDefaults = {
   release: {
-    version: '1.2.154'
+    version: '1.2.189'
     train: 'stable'
   }
   settings: {
@@ -651,7 +651,7 @@ type AkriConnectorTemplate = {
 @export()
 @description('Authentication settings for System-Assigned Managed Identity.')
 type SystemAssignedManagedIdentitySettings = {
-  @description('Audience of the service to authenticate against. Defaults to "https://management.azure.com/" for ACR.')
+  @description('Audience of the service to authenticate against. Defaults to "<https://management.azure.com/>" for ACR.')
   audience: string?
 }
 

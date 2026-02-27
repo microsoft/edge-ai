@@ -33,6 +33,11 @@ output "schema_registry" {
   value       = try(module.schema_registry[0].schema_registry, null)
 }
 
+output "schemas" {
+  description = "Map of created schemas by name with their versions."
+  value       = try(module.schemas[0].schemas, {})
+}
+
 output "adr_namespace" {
   description = "The Azure Device Registry namespace resource."
   value       = try(module.adr_namespace[0].adr_namespace, null)

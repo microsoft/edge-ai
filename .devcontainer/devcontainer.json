@@ -32,8 +32,13 @@
 		"ghcr.io/devcontainers/features/powershell": {
 			"pwsh": "latest"
 		},
-		"ghcr.io/devcontainers/features/rust:1": {},
-		"ghcr.io/devcontainers/features/go:1": {}
+		"ghcr.io/devcontainers/features/go:1": {},
+		"ghcr.io/devcontainers/features/rust:1": {
+			"version": "latest",
+			"profile": "complete",
+			"targets": "wasm32-wasip2",
+			"components": "rust-analyzer,rust-src,rustfmt,clippy"
+		}
 	},
 	"customizations": {
 		"vscode": {

@@ -40,6 +40,7 @@
   - [Media Connector](/src/500-application/508-media-connector/README)
   - [Sse Connector](/src/500-application/509-sse-connector/README)
   - [Onvif Connector](/src/500-application/510-onvif-connector/README)
+  - [Rust Embedded Wasm Provider](/src/500-application/511-rust-embedded-wasm-provider/README)
 
 - [Ci Cd](/src/501-ci-cd/README)
 

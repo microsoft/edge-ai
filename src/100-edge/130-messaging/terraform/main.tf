@@ -58,3 +58,33 @@ module "sample_fabric_rti_dataflow" {
   fabric_eventstream_endpoint = var.fabric_eventstream_endpoint
   fabric_workspace            = var.fabric_workspace
 }
+
+module "dataflow_graphs" {
+  count = length(var.dataflow_graphs) > 0 ? 1 : 0
+
+  source = "./modules/dataflow-graphs"
+
+  aio_dataflow_profile = var.aio_dataflow_profile
+  custom_location      = var.aio_custom_locations
+  dataflow_graphs      = var.dataflow_graphs
+}
+
+module "dataflow_endpoints" {
+  count = length(var.dataflow_endpoints) > 0 ? 1 : 0
+
+  source = "./modules/dataflow-endpoint"
+
+  aio_instance       = var.aio_instance
+  custom_location    = var.aio_custom_locations
+  dataflow_endpoints = var.dataflow_endpoints
+}
+
+module "dataflows" {
+  count = length(var.dataflows) > 0 ? 1 : 0
+
+  source = "./modules/dataflow"
+
+  aio_dataflow_profile = var.aio_dataflow_profile
+  custom_location      = var.aio_custom_locations
+  dataflows            = var.dataflows
+}
