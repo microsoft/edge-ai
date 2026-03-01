@@ -36,6 +36,10 @@ ENABLE_LINTERS:
   # JavaScript
   - JAVASCRIPT_ES
 
+  # JSON
+  - JSON_PRETTIER
+  - JSON_V8R
+
   # PowerShell
   - POWERSHELL_POWERSHELL
   - POWERSHELL_POWERSHELL_FORMATTER
@@ -47,6 +51,7 @@ ENABLE_LINTERS:
 
   # Quality
   - SPELL_CSPELL
+  - YAML_V8R
   - YAML_YAMLLINT
 
 # DISABLE:
@@ -127,6 +132,14 @@ REPOSITORY_SECRETLINT_CONFIG_FILE: .secretlintrc.json
 # YAML Lint configuration
 YAML_YAMLLINT_CONFIG_FILE: .yamllint.yml
 YAML_YAMLLINT_FILTER_REGEX_EXCLUDE: '(\.github/ISSUE_TEMPLATE|charts/templates|charts/.*/templates/.*)'
+
+# v8r schema validation configuration
+JSON_V8R_CONFIG_FILE: .v8rrc.yml
+YAML_V8R_CONFIG_FILE: .v8rrc.yml
+YAML_V8R_FILTER_REGEX_EXCLUDE: '(\.github/ISSUE_TEMPLATE|charts/templates|charts/.*/templates/.*|\.mega-linter\.yml|azure-pipelines\.yml|docker-compose)'
+
+# JSON Prettier configuration
+JSON_PRETTIER_CONFIG_FILE: .prettierrc.json
 
 # Spell checker configuration
 SPELL_CSPELL_CONFIG_FILE: .cspell.json
