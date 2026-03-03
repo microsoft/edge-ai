@@ -1,0 +1,62 @@
+name: Documentation request
+description: Suggest improvements to the documentation
+title: "[DOCS] "
+labels:
+  - documentation
+body:
+  - type: markdown
+    attributes:
+      value: |
+        > **IMPORTANT:** Before submitting, please remove all sensitive data, secrets, tokens, or confidential information. Ensure you've redacted any NDA-covered information, IP addresses, resource names, or security-related details that shouldn't be publicly disclosed.
+
+  - type: dropdown
+    id: documentation-area
+    attributes:
+      label: Documentation Area
+      description: Which area of documentation should be improved?
+      options:
+        - README files
+        - Component documentation
+        - Blueprint documentation
+        - GitHub Actions/Workflows documentation
+        - Examples and tutorials
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: current-issue
+    attributes:
+      label: Current Documentation Issue
+      description: Describe what is missing, unclear, outdated, or incorrect.
+      placeholder: Explain the current gap or confusion in the docs.
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggested-improvement
+    attributes:
+      label: Suggested Improvement
+      description: Describe what should be added or changed.
+      placeholder: Propose concrete doc changes.
+    validations:
+      required: true
+
+  - type: textarea
+    id: why-this-matters
+    attributes:
+      label: Why This Matters
+      description: Explain impact to users and contributors.
+
+  - type: checkboxes
+    id: willingness-to-contribute
+    attributes:
+      label: Willingness to Contribute
+      options:
+        - label: I am willing to submit a PR for this documentation improvement.
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Add links, references, examples, or screenshots.
