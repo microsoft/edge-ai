@@ -8,9 +8,10 @@ Returns device status and operational data
 import os
 import random
 import time
-from datetime import datetime, timezone, timedelta
-from flask import Flask, jsonify, request
+from datetime import UTC, datetime, timedelta
 from functools import wraps
+
+from flask import Flask, jsonify, request
 
 app = Flask(__name__)
 
@@ -87,7 +88,7 @@ def generate_device_status():
             - configuration: Firmware version and security settings
     """
     return {
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "device_id": DEVICE_ID,
         "device_type": "authenticated_controller",
         "status": {
@@ -131,7 +132,7 @@ def health_check():
     """
     return jsonify({
         "status": "healthy",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "device_id": DEVICE_ID,
         "authenticated": True,
         "uptime": time.time()
@@ -216,7 +217,7 @@ def get_device_logs():
     """
     # Generate some mock log entries
     logs = []
-    base_time = datetime.now(timezone.utc)
+    base_time = datetime.now(UTC)
 
     log_levels = ["INFO", "WARN", "ERROR", "DEBUG"]
     log_messages = [
@@ -262,7 +263,7 @@ def test_auth():
     return jsonify({
         "message": "Authentication successful",
         "device_id": DEVICE_ID,
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "authenticated_user": API_USERNAME,
         "auth_method": "basic_http"
     })

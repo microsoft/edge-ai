@@ -7,10 +7,11 @@ and analytics state changes. This is separated from the SSE server infrastructur
 allow easy replacement with real event sources in production deployments.
 """
 
-import random
-from datetime import datetime
-from typing import AsyncGenerator, Dict, Any
 import asyncio
+import random
+from collections.abc import AsyncGenerator
+from datetime import datetime
+from typing import Any
 
 
 class AnalyticsEventSimulator:
@@ -47,7 +48,7 @@ class AnalyticsEventSimulator:
         self.analytics_enabled = True
         self.event_id_counter = 1000
 
-    def generate_heartbeat_event(self, timestamp: int) -> Dict[str, Any]:
+    def generate_heartbeat_event(self, timestamp: int) -> dict[str, Any]:
         """Generate a heartbeat event.
 
         Args:
@@ -61,7 +62,7 @@ class AnalyticsEventSimulator:
             'timestamp': timestamp
         }
 
-    def generate_analytics_enabled_event(self, timestamp: int) -> Dict[str, Any]:
+    def generate_analytics_enabled_event(self, timestamp: int) -> dict[str, Any]:
         """Generate an analytics enabled event.
 
         Args:
@@ -76,7 +77,7 @@ class AnalyticsEventSimulator:
             'analytics_type': 'leak detection'
         }
 
-    def generate_analytics_disabled_event(self, timestamp: int) -> Dict[str, Any]:
+    def generate_analytics_disabled_event(self, timestamp: int) -> dict[str, Any]:
         """Generate an analytics disabled event.
 
         Args:
@@ -91,7 +92,7 @@ class AnalyticsEventSimulator:
             'analytics_type': 'leak detection'
         }
 
-    def generate_basic_alert_event(self, timestamp: int) -> Dict[str, Any]:
+    def generate_basic_alert_event(self, timestamp: int) -> dict[str, Any]:
         """Generate a basic leak detection alert.
 
         Args:
@@ -108,7 +109,7 @@ class AnalyticsEventSimulator:
             'event_id': self.event_id_counter
         }
 
-    def generate_detailed_alert_event(self, timestamp: int) -> Dict[str, Any]:
+    def generate_detailed_alert_event(self, timestamp: int) -> dict[str, Any]:
         """Generate a detailed leak detection alert with environmental data.
 
         This event includes comprehensive leak information including location,
@@ -150,7 +151,7 @@ class AnalyticsEventSimulator:
             'humidity': random.randint(0, 100)
         }
 
-    async def generate_events(self) -> AsyncGenerator[Dict[str, Any], None]:
+    async def generate_events(self) -> AsyncGenerator[dict[str, Any], None]:
         """Generate continuous stream of simulated analytics camera events.
 
         This generator produces events based on configured probabilities and intervals:

@@ -12,7 +12,10 @@ Example usage:
     python generate-bicep-docs-jinja.py ./src/005-onboard-reqs/bicep/main.json ./src/005-onboard-reqs/README.md
 
     # Using a custom template
-    python generate-bicep-docs-jinja.py ./src/005-onboard-reqs/bicep/main.json ./src/005-onboard-reqs/README.md -t ./templates/custom-template.md
+    python generate-bicep-docs-jinja.py \
+        ./src/005-onboard-reqs/bicep/main.json \
+        ./src/005-onboard-reqs/README.md \
+        -t ./templates/custom-template.md
 
     # Specifying nesting level for module processing
     python generate-bicep-docs-jinja.py ./src/005-onboard-reqs/bicep/main.json ./src/005-onboard-reqs/README.md -n 2
@@ -23,7 +26,8 @@ Example usage:
 Args:
     arm_json_file: Path to the ARM JSON file (compiled Bicep)
     output_md_file: Path where the generated markdown documentation will be saved
-    -t, --template-file: Optional path to a custom Jinja2 template file (default: ./templates/bicep-docs-template.md.template)
+    -t, --template-file: Optional path to a custom Jinja2 template file
+        (default: ./templates/bicep-docs-template.md.template)
     -n, --modules-nesting-level: Optional maximum number of nested module levels to process (default: 1)
     -v, --verbose: Enable verbose output with additional processing information
 
@@ -34,10 +38,11 @@ Exit Codes:
 
 import argparse
 import json
-import sys
 import re
+import sys
 from pathlib import Path
-from typing import Dict, List, Any
+from typing import Any
+
 from jinja2 import Environment, FileSystemLoader, Template
 
 
@@ -85,7 +90,7 @@ def parse_arguments() -> argparse.Namespace:
     return args
 
 
-def load_json_file(file_path: str, verbose: bool = False) -> Dict[str, Any]:
+def load_json_file(file_path: str, verbose: bool = False) -> dict[str, Any]:
     """
     Load JSON data from file.
 
@@ -121,7 +126,7 @@ def load_json_file(file_path: str, verbose: bool = False) -> Dict[str, Any]:
         sys.exit(1)
 
 
-def extract_metadata(json_data: Dict[str, Any]) -> Dict[str, str]:
+def extract_metadata(json_data: dict[str, Any]) -> dict[str, str]:
     """
     Extract metadata information from the ARM JSON.
 
@@ -148,7 +153,7 @@ def extract_metadata(json_data: Dict[str, Any]) -> Dict[str, str]:
     return metadata
 
 
-def extract_parameters(json_data: Dict[str, Any]) -> List[Dict[str, Any]]:
+def extract_parameters(json_data: dict[str, Any]) -> list[dict[str, Any]]:
     """
     Extract parameters information from the ARM JSON.
 
@@ -224,7 +229,7 @@ def extract_parameters(json_data: Dict[str, Any]) -> List[Dict[str, Any]]:
 
 
 def is_existing_resource(
-    res_name: str, res_info: Dict[str, Any], verbose: bool = False
+    res_name: str, res_info: dict[str, Any], verbose: bool = False
 ) -> bool:
     """
     Check if a resource is an existing resource reference (not a new resource created by this module).
@@ -284,8 +289,8 @@ def is_existing_resource(
 
 
 def extract_resources(
-    json_data: Dict[str, Any], verbose: bool = False
-) -> List[Dict[str, Any]]:
+    json_data: dict[str, Any], verbose: bool = False
+) -> list[dict[str, Any]]:
     """
     Extract resources information from the ARM JSON.
 
@@ -349,7 +354,11 @@ def extract_resources(
     return resources
 
 
-def extract_modules(json_data: Dict[str, Any], max_nested_level: int = 1, current_level: int = 0) -> List[Dict[str, Any]]:
+def extract_modules(
+    json_data: dict[str, Any],
+    max_nested_level: int = 1,
+    current_level: int = 0,
+) -> list[dict[str, Any]]:
     """
     Extract modules (nested deployments) information from the ARM JSON.
 
@@ -471,7 +480,7 @@ def extract_modules(json_data: Dict[str, Any], max_nested_level: int = 1, curren
                                 )
                                 continue
 
-                            # Skip existing resources (references to existing resources, not new resources created by this module)
+                            # Skip existing resources (not created by this module)
                             if is_existing_resource(res_name, res_info):
                                 continue
 
@@ -575,7 +584,7 @@ def extract_modules(json_data: Dict[str, Any], max_nested_level: int = 1, curren
     return modules
 
 
-def extract_user_defined_types(json_data: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
+def extract_user_defined_types(json_data: dict[str, Any]) -> dict[str, dict[str, Any]]:
     """
     Extract user-defined types from the ARM JSON.
 
@@ -627,7 +636,7 @@ def extract_user_defined_types(json_data: Dict[str, Any]) -> Dict[str, Dict[str,
     return types
 
 
-def extract_outputs(json_data: Dict[str, Any]) -> List[Dict[str, Any]]:
+def extract_outputs(json_data: dict[str, Any]) -> list[dict[str, Any]]:
     """
     Extract outputs information from the ARM JSON.
 
@@ -683,7 +692,7 @@ def load_jinja_template(template_path: str) -> Template:
         template_file = path.name
 
         # Create Jinja2 environment with custom filters
-        env = Environment(loader=FileSystemLoader(template_dir))
+        env = Environment(loader=FileSystemLoader(template_dir))  # noqa: S701 — Markdown output, not HTML
 
         # Add custom filter for handling inline code as <pre><code> blocks
         env.filters['format_description_for_table'] = format_description_for_table
@@ -740,7 +749,7 @@ def format_description_for_table(description: str) -> str:
     return result
 
 
-def render_markdown(template: Template, context: Dict[str, Any], verbose: bool = False) -> str:
+def render_markdown(template: Template, context: dict[str, Any], verbose: bool = False) -> str:
     """
     Render the Jinja2 template with the provided context.
 
@@ -795,7 +804,7 @@ def save_markdown(content: str, output_path: str, verbose: bool = False) -> None
         path.write_text(content, encoding='utf-8')
 
         print(f"Documentation successfully written to {output_path}")
-    except IOError as e:
+    except OSError as e:
         print(f"Error writing to {output_path}: {e}")
         sys.exit(1)
 
