@@ -17,23 +17,11 @@
     // Terraform MCP Server: https://github.com/hashicorp/terraform-mcp-server
     "terraform": {
       "command": "docker",
-      "args": [
-        "run",
-        "-i",
-        "--rm",
-        "hashicorp/terraform-mcp-server"
-      ]
+      "args": ["run", "-i", "--rm", "hashicorp/terraform-mcp-server"]
     },
     "crisp": {
       "command": "docker",
-      "args": [
-        "run",
-        "--rm",
-        "-i",
-        "--name",
-        "crisp-mcp-server",
-        "anmalkov/mcp-crisp:latest"
-      ],
+      "args": ["run", "--rm", "-i", "--name", "crisp-mcp-server", "anmalkov/mcp-crisp:latest"],
       "env": {}
     },
     "context7": {
@@ -53,6 +41,6 @@
     "github": {
       "type": "http",
       "url": "https://api.githubcopilot.com/mcp/"
-    },
+    }
   }
 }

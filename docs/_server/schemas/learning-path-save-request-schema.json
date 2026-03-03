@@ -52,13 +52,7 @@
               "category": {
                 "type": "string",
                 "description": "Assessment category name - must match the official skill assessment categories",
-                "enum": [
-                  "AI-Assisted Engineering",
-                  "Prompt Engineering", 
-                  "Edge Deployment",
-                  "System Troubleshooting",
-                  "Project Planning"
-                ]
+                "enum": ["AI-Assisted Engineering", "Prompt Engineering", "Edge Deployment", "System Troubleshooting", "Project Planning"]
               },
               "score": {
                 "type": "number",

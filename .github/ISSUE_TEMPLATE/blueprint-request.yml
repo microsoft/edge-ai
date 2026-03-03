@@ -1,0 +1,90 @@
+name: Blueprint request
+description: Suggest a new infrastructure blueprint
+title: "[BLUEPRINT] "
+labels:
+  - blueprint
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        > **IMPORTANT:** Before submitting, please remove all sensitive data, secrets, tokens, or confidential information. Ensure you've redacted any NDA-covered information, IP addresses, resource names, or security-related details that shouldn't be publicly disclosed.
+
+  - type: dropdown
+    id: implementation-type
+    attributes:
+      label: Implementation Type
+      description: What implementation technology should this blueprint include?
+      options:
+        - Terraform
+        - Bicep
+        - Both Terraform and Bicep
+    validations:
+      required: true
+
+  - type: textarea
+    id: blueprint-purpose
+    attributes:
+      label: Blueprint Purpose
+      description: Describe the scenario and goals for this blueprint.
+      placeholder: Explain the use case this blueprint should address.
+
+  - type: textarea
+    id: target-architecture
+    attributes:
+      label: Target Architecture
+      description: Describe the desired architecture and deployment shape.
+      placeholder: Include topology, scope, and expected integrations.
+    validations:
+      required: true
+
+  - type: textarea
+    id: existing-components
+    attributes:
+      label: Components
+      description: Which existing components should be included in this blueprint?
+      placeholder: List existing components and dependencies.
+
+  - type: textarea
+    id: new-components-needed
+    attributes:
+      label: New Components Needed
+      description: Are there any new components that need to be created for this blueprint?
+      placeholder: List new components and why they are needed.
+
+  - type: textarea
+    id: azure-services
+    attributes:
+      label: Azure Services
+      description: List Azure services this blueprint should deploy.
+      placeholder: e.g., AKS, IoT Operations, Key Vault, Container Registry
+
+  - type: textarea
+    id: similar-blueprints
+    attributes:
+      label: Similar Blueprints
+      description: Are there any similar existing blueprints? How would this differ?
+
+  - type: textarea
+    id: target-users
+    attributes:
+      label: Target Users
+      description: Who would use this blueprint and for what purpose?
+
+  - type: textarea
+    id: deployment-considerations
+    attributes:
+      label: Deployment Considerations
+      description: Any special considerations for deploying this blueprint?
+
+  - type: textarea
+    id: testing-strategy
+    attributes:
+      label: Testing Strategy
+      description: How should this blueprint be tested?
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Add diagrams, references, constraints, or testing considerations.
