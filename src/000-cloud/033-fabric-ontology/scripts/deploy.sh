@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# shellcheck disable=SC1091
 # deploy.sh - Deploy complete ontology with local data
 #
 # Generic deployment script that deploys any ontology definition along with
