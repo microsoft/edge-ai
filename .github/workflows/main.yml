@@ -93,7 +93,7 @@ jobs:
       # GitHub doesn't have a direct equivalent to Azure's ComponentGovernanceComponentDetection
       # Using a basic dependency check with built-in security scanning
       - name: Dependency Review
-        uses: actions/dependency-review-action@dea54b434272cc45b0e9ff17d5f0da4d8676f07d
+        uses: actions/dependency-review-action@57a3d46a7be2c2e259fa3284ffc501296337f2ac
         with:
           head-ref: refs/heads/main
           base-ref: refs/heads/main
