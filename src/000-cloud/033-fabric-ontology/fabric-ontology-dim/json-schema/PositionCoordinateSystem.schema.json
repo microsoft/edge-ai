@@ -10,25 +10,14 @@
       "type": "string"
     },
     "Description": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     },
     "Namespace": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     },
     "Source": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     }
   },
-  "required": [
-    "Id"
-  ]
+  "required": ["Id"]
 }

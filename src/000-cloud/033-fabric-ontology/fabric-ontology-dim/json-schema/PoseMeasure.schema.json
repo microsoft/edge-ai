@@ -10,10 +10,7 @@
       "type": "string"
     },
     "Description": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     },
     "X": {
       "type": "number",
@@ -40,39 +37,19 @@
       "description": "Yaw angle in radians"
     },
     "CoordinateSystemId": {
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["string", "null"],
       "description": "Reference to coordinate system"
     },
     "Timestamp": {
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["string", "null"],
       "description": "ISO 8601 timestamp of measurement"
     },
     "Namespace": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     },
     "Source": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     }
   },
-  "required": [
-    "Id",
-    "X",
-    "Y",
-    "Z",
-    "Roll",
-    "Pitch",
-    "Yaw"
-  ]
+  "required": ["Id", "X", "Y", "Z", "Roll", "Pitch", "Yaw"]
 }

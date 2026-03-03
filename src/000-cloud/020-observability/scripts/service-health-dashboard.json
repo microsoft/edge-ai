@@ -25,22 +25,20 @@
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
   "id": null,
-"links": [
-  {
-    "asDropdown": false,
-    "icon": "external link",
-    "includeVars": true,
-    "keepTime": true,
-    "tags": [
-      "overview"
-    ],
-    "targetBlank": false,
-    "title": "Overview",
-    "tooltip": "",
-    "type": "dashboards",
-    "url": ""
-  }
-],
+  "links": [
+    {
+      "asDropdown": false,
+      "icon": "external link",
+      "includeVars": true,
+      "keepTime": true,
+      "tags": ["overview"],
+      "targetBlank": false,
+      "title": "Overview",
+      "tooltip": "",
+      "type": "dashboards",
+      "url": ""
+    }
+  ],
   "liveNow": false,
   "panels": [
     {
@@ -539,7 +537,7 @@
         "type": "prometheus",
         "uid": "$datasource_uid"
       },
-    "description": "The average percentage of messages delivered over the given period of time",
+      "description": "The average percentage of messages delivered over the given period of time",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -583,9 +581,7 @@
         "orientation": "auto",
         "percentChangeColorMode": "standard",
         "reduceOptions": {
-          "calcs": [
-            "mean"
-          ],
+          "calcs": ["mean"],
           "fields": "/^Value$/",
           "values": false
         },
@@ -623,7 +619,7 @@
           "color": {
             "mode": "thresholds"
           },
-        "links": [],
+          "links": [],
           "mappings": [],
           "max": 1,
           "thresholds": {
@@ -661,9 +657,7 @@
         "orientation": "auto",
         "percentChangeColorMode": "standard",
         "reduceOptions": {
-          "calcs": [
-            "mean"
-          ],
+          "calcs": ["mean"],
           "fields": "/^Value$/",
           "values": false
         },
@@ -755,7 +749,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-      "y": 18
+        "y": 18
       },
       "id": 44,
       "options": {
@@ -799,7 +793,7 @@
           "color": {
             "mode": "thresholds"
           },
-        "links": [],
+          "links": [],
           "mappings": [],
           "max": 1,
           "thresholds": {
@@ -827,7 +821,7 @@
         "h": 4,
         "w": 6,
         "x": 0,
-      "y": 22
+        "y": 22
       },
       "id": 50,
       "options": {
@@ -837,9 +831,7 @@
         "orientation": "auto",
         "percentChangeColorMode": "standard",
         "reduceOptions": {
-          "calcs": [
-            "mean"
-          ],
+          "calcs": ["mean"],
           "fields": "/^Value$/",
           "values": false
         },
@@ -877,7 +869,7 @@
           "color": {
             "mode": "thresholds"
           },
-        "links": [],
+          "links": [],
           "mappings": [],
           "max": 1,
           "thresholds": {
@@ -905,19 +897,17 @@
         "h": 4,
         "w": 6,
         "x": 6,
-      "y": 22
+        "y": 22
       },
       "id": 48,
       "options": {
         "colorMode": "background",
-      "graphMode": "none",
+        "graphMode": "none",
         "justifyMode": "auto",
         "orientation": "auto",
         "percentChangeColorMode": "standard",
         "reduceOptions": {
-          "calcs": [
-            "mean"
-          ],
+          "calcs": ["mean"],
           "fields": "/^Value$/",
           "values": false
         },
@@ -1025,7 +1015,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-      "y": 26
+        "y": 26
       },
       "id": 51,
       "options": {
@@ -1138,9 +1128,7 @@
               "id": "byNames",
               "options": {
                 "mode": "exclude",
-                "names": [
-                  "broker_selftest"
-                ],
+                "names": ["broker_selftest"],
                 "prefix": "All except:",
                 "readOnly": true
               }
@@ -1162,7 +1150,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-      "y": 26
+        "y": 26
       },
       "id": 36,
       "options": {
@@ -1262,7 +1250,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-      "y": 34
+        "y": 34
       },
       "id": 41,
       "options": {
@@ -1359,7 +1347,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-      "y": 34
+        "y": 34
       },
       "id": 39,
       "options": {
@@ -1400,170 +1388,170 @@
         "h": 1,
         "w": 24,
         "x": 0,
-      "y": 42
+        "y": 42
+      },
+      "id": 52,
+      "panels": [],
+      "title": "mqtt",
+      "type": "row"
     },
-    "id": 52,
-    "panels": [],
-    "title": "mqtt",
-    "type": "row"
-  },
-  {
-    "datasource": {
-      "default": false,
-      "type": "prometheus",
-      "uid": "$datasource_uid"
-    },
-    "description": "Checks for breaches of SLO. It will be red if auth failures > 20, auth denials > 20, rejected backpressure packets < 0.05, dropped QoS0 packets < 0.05.",
-    "fieldConfig": {
-      "defaults": {
-        "color": {
-          "mode": "thresholds"
-        },
-        "custom": {
-          "fillOpacity": 82,
-          "hideFrom": {
-            "legend": false,
-            "tooltip": false,
-            "viz": false
+    {
+      "datasource": {
+        "default": false,
+        "type": "prometheus",
+        "uid": "$datasource_uid"
+      },
+      "description": "Checks for breaches of SLO. It will be red if auth failures > 20, auth denials > 20, rejected backpressure packets < 0.05, dropped QoS0 packets < 0.05.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
           },
-          "insertNulls": false,
-          "lineWidth": 0,
-          "spanNulls": false
+          "custom": {
+            "fillOpacity": 82,
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineWidth": 0,
+            "spanNulls": false
+          },
+          "links": [],
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#505050",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "yellow",
+                "value": 0.5
+              },
+              {
+                "color": "green",
+                "value": 1
+              },
+              {
+                "color": "#505050",
+                "value": 404
+              }
+            ]
+          }
         },
-        "links": [],
-        "mappings": [],
-        "thresholds": {
-          "mode": "absolute",
-          "steps": [
-            {
-              "color": "#505050",
-              "value": null
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "MessageQueue SLO"
             },
-            {
-              "color": "red",
-              "value": 0
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "targetBlank": true,
+                    "title": "Click for details on ${__field.labels._}",
+                    "url": "/d/e2e98c97-7655-44d1-b8f3-5008b7f6ffbb/aio-health-service-mq?${__all_variables}&${__url_time_range}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "DataProcessor SLO"
             },
-            {
-              "color": "yellow",
-              "value": 0.5
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "targetBlank": true,
+                    "title": "Click for details on ${__field.labels._}",
+                    "url": "/d/e7f4802e-d73b-4f06-a84c-715cdc42fb36/aio-health-service-dp?${__all_variables}&${__url_time_range}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "OPCUA SLO"
             },
-            {
-              "color": "green",
-              "value": 1
-            },
-            {
-              "color": "#505050",
-              "value": 404
-            }
-          ]
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "targetBlank": true,
+                    "title": "Click for details on ${__field.labels._}",
+                    "url": "/d/ba43ff7a-e741-4965-b430-c9d4bf1757a6/aio-health-service-opcua?${__all_variables}&${__url_time_range}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 24,
+        "x": 0,
+        "y": 43
+      },
+      "id": 33,
+      "maxPerRow": 12,
+      "options": {
+        "alignValue": "left",
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "mergeValues": true,
+        "rowHeight": 0.72,
+        "showValue": "never",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
         }
       },
-      "overrides": [
+      "repeat": "cluster",
+      "repeatDirection": "h",
+      "targets": [
         {
-          "matcher": {
-            "id": "byName",
-            "options": "MessageQueue SLO"
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource_uid"
           },
-          "properties": [
-            {
-              "id": "links",
-              "value": [
-                {
-                  "targetBlank": true,
-                  "title": "Click for details on ${__field.labels._}",
-                  "url": "/d/e2e98c97-7655-44d1-b8f3-5008b7f6ffbb/aio-health-service-mq?${__all_variables}&${__url_time_range}"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "matcher": {
-            "id": "byName",
-            "options": "DataProcessor SLO"
-          },
-          "properties": [
-            {
-              "id": "links",
-              "value": [
-                {
-                  "targetBlank": true,
-                  "title": "Click for details on ${__field.labels._}",
-                  "url": "/d/e7f4802e-d73b-4f06-a84c-715cdc42fb36/aio-health-service-dp?${__all_variables}&${__url_time_range}"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "matcher": {
-            "id": "byName",
-            "options": "OPCUA SLO"
-          },
-          "properties": [
-            {
-              "id": "links",
-              "value": [
-                {
-                  "targetBlank": true,
-                  "title": "Click for details on ${__field.labels._}",
-                  "url": "/d/ba43ff7a-e741-4965-b430-c9d4bf1757a6/aio-health-service-opcua?${__all_variables}&${__url_time_range}"
-                }
-              ]
-            }
-          ]
+          "editorMode": "code",
+          "expr": "label_replace(min(\r\n    label_replace(label_replace(\r\n        (1 - min(\r\n            1 * sgn(\r\n                sum(\r\n                    rate(aio_broker_authentication_failures{cluster=\"$cluster\", instance=~\"$namespace\", category!=\"broker_selftest\"}[2m])\r\n                    )\r\n            <= 20) or\r\n            0 * sgn(\r\n                sum(\r\n                    rate(aio_broker_authentication_failures{cluster=\"$cluster\", instance=~\"$namespace\", category!=\"broker_selftest\"}[2m])\r\n                    )\r\n            > 20)) or vector(404))\r\n        ,\"url\",\"/d/f5a5c523-2cb6-42d8-b23f-06b0227fe40b/e4k-connect\",\"\",\"\")\r\n        ,\"_\",\"Authentication failures\",\"\",\"\") or\r\n    label_replace(label_replace(\r\n        (1 - min(\r\n            1 * sgn(\r\n                sum(\r\n                    rate(aio_broker_authorization_deny{cluster=\"$cluster\", instance=~\"$namespace\", category!=\"broker_selftest\"}[2m])\r\n                    )\r\n            <= 20) or\r\n            0 * sgn(\r\n                sum(\r\n                    rate(aio_broker_authorization_deny{cluster=\"$cluster\", instance=~\"$namespace\", category!=\"broker_selftest\"}[2m])\r\n                    )\r\n            > 20)) or vector(404))\r\n        ,\"url\",\"/d/f5a5c523-2cb6-42d8-b23f-06b0227fe40b/e4k-connect\",\"\",\"\")\r\n        ,\"_\",\"Authorization failures\",\"\",\"\") or        \r\n    label_replace(label_replace(\r\n        (1 - min(\r\n            1 * sgn(\r\n                sum(rate(aio_broker_backpressure_packets_rejected{pod_type=\"BE\", cluster=\"$cluster\", instance=~\"$namespace\", category!=\"broker_selftest\"}[2m])) / \r\n                sum(quantile_over_time(.95, rate(aio_broker_publishes_received{pod_type=\"FE\", cluster=\"$cluster\", instance=~\"$namespace\"}[2m])[30m:]))\r\n            <= 0.05) or\r\n            0 * sgn(\r\n                sum(rate(aio_broker_backpressure_packets_rejected{pod_type=\"BE\", cluster=\"$cluster\", instance=~\"$namespace\", category!=\"broker_selftest\"}[2m])) / \r\n                sum(quantile_over_time(.95, rate(aio_broker_publishes_received{pod_type=\"FE\", cluster=\"$cluster\", instance=~\"$namespace\"}[2m])[30m:]))\r\n            <= 0.05)) or vector(404))\r\n        ,\"url\",\"/d/E19etH24z/e4k-cluster-perf\",\"\",\"\")\r\n        ,\"_\",\"Backpressure\",\"\",\"\") or\r\n    label_replace(label_replace(\r\n        (1 - min(\r\n            1 * sgn(\r\n                sum(rate(aio_broker_qos0_messages_dropped{pod_type=\"BE\", cluster=\"$cluster\", instance=~\"$namespace\", category!=\"broker_selftest\"}[2m])) / \r\n                sum(quantile_over_time(.95, rate(aio_broker_publishes_received{pod_type=\"FE\", cluster=\"$cluster\", instance=~\"$namespace\"}[2m])[30m:]))\r\n            <= 0.05) or\r\n            0 * sgn(\r\n                sum(rate(aio_broker_qos0_messages_dropped{pod_type=\"BE\", cluster=\"$cluster\", instance=~\"$namespace\", category!=\"broker_selftest\"}[2m])) / \r\n                sum(quantile_over_time(.95, rate(aio_broker_publishes_received{pod_type=\"FE\", cluster=\"$cluster\", instance=~\"$namespace\"}[2m])[30m:]))\r\n            > 0.05)) or vector(404))\r\n        ,\"url\",\"/d/eb3949b9-da3a-4b9e-8573-beb5507617a9/aio-service-broker-clusterperf\",\"\",\"\")\r\n        ,\"_\",\"Dropped QoS0 Msgs\",\"\",\"\") or\r\n    vector(0) > 0 # Tail; not shown\r\n),\"_\",\"Mqtt Broker SLO\",\"\",\"\")",
+          "hide": false,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "MQ"
         }
-      ]
+      ],
+      "title": "Mqtt Broker SLO",
+      "type": "state-timeline"
     },
-    "gridPos": {
-      "h": 4,
-      "w": 24,
-      "x": 0,
-      "y": 43
-    },
-    "id": 33,
-    "maxPerRow": 12,
-    "options": {
-      "alignValue": "left",
-      "legend": {
-        "displayMode": "list",
-        "placement": "bottom",
-        "showLegend": false
-      },
-      "mergeValues": true,
-      "rowHeight": 0.72,
-      "showValue": "never",
-      "tooltip": {
-        "mode": "single",
-        "sort": "none"
-      }
-    },
-    "repeat": "cluster",
-    "repeatDirection": "h",
-    "targets": [
-      {
-        "datasource": {
-          "type": "prometheus",
-          "uid": "$datasource_uid"
-        },
-        "editorMode": "code",
-        "expr": "label_replace(min(\r\n    label_replace(label_replace(\r\n        (1 - min(\r\n            1 * sgn(\r\n                sum(\r\n                    rate(aio_broker_authentication_failures{cluster=\"$cluster\", instance=~\"$namespace\", category!=\"broker_selftest\"}[2m])\r\n                    )\r\n            <= 20) or\r\n            0 * sgn(\r\n                sum(\r\n                    rate(aio_broker_authentication_failures{cluster=\"$cluster\", instance=~\"$namespace\", category!=\"broker_selftest\"}[2m])\r\n                    )\r\n            > 20)) or vector(404))\r\n        ,\"url\",\"/d/f5a5c523-2cb6-42d8-b23f-06b0227fe40b/e4k-connect\",\"\",\"\")\r\n        ,\"_\",\"Authentication failures\",\"\",\"\") or\r\n    label_replace(label_replace(\r\n        (1 - min(\r\n            1 * sgn(\r\n                sum(\r\n                    rate(aio_broker_authorization_deny{cluster=\"$cluster\", instance=~\"$namespace\", category!=\"broker_selftest\"}[2m])\r\n                    )\r\n            <= 20) or\r\n            0 * sgn(\r\n                sum(\r\n                    rate(aio_broker_authorization_deny{cluster=\"$cluster\", instance=~\"$namespace\", category!=\"broker_selftest\"}[2m])\r\n                    )\r\n            > 20)) or vector(404))\r\n        ,\"url\",\"/d/f5a5c523-2cb6-42d8-b23f-06b0227fe40b/e4k-connect\",\"\",\"\")\r\n        ,\"_\",\"Authorization failures\",\"\",\"\") or        \r\n    label_replace(label_replace(\r\n        (1 - min(\r\n            1 * sgn(\r\n                sum(rate(aio_broker_backpressure_packets_rejected{pod_type=\"BE\", cluster=\"$cluster\", instance=~\"$namespace\", category!=\"broker_selftest\"}[2m])) / \r\n                sum(quantile_over_time(.95, rate(aio_broker_publishes_received{pod_type=\"FE\", cluster=\"$cluster\", instance=~\"$namespace\"}[2m])[30m:]))\r\n            <= 0.05) or\r\n            0 * sgn(\r\n                sum(rate(aio_broker_backpressure_packets_rejected{pod_type=\"BE\", cluster=\"$cluster\", instance=~\"$namespace\", category!=\"broker_selftest\"}[2m])) / \r\n                sum(quantile_over_time(.95, rate(aio_broker_publishes_received{pod_type=\"FE\", cluster=\"$cluster\", instance=~\"$namespace\"}[2m])[30m:]))\r\n            <= 0.05)) or vector(404))\r\n        ,\"url\",\"/d/E19etH24z/e4k-cluster-perf\",\"\",\"\")\r\n        ,\"_\",\"Backpressure\",\"\",\"\") or\r\n    label_replace(label_replace(\r\n        (1 - min(\r\n            1 * sgn(\r\n                sum(rate(aio_broker_qos0_messages_dropped{pod_type=\"BE\", cluster=\"$cluster\", instance=~\"$namespace\", category!=\"broker_selftest\"}[2m])) / \r\n                sum(quantile_over_time(.95, rate(aio_broker_publishes_received{pod_type=\"FE\", cluster=\"$cluster\", instance=~\"$namespace\"}[2m])[30m:]))\r\n            <= 0.05) or\r\n            0 * sgn(\r\n                sum(rate(aio_broker_qos0_messages_dropped{pod_type=\"BE\", cluster=\"$cluster\", instance=~\"$namespace\", category!=\"broker_selftest\"}[2m])) / \r\n                sum(quantile_over_time(.95, rate(aio_broker_publishes_received{pod_type=\"FE\", cluster=\"$cluster\", instance=~\"$namespace\"}[2m])[30m:]))\r\n            > 0.05)) or vector(404))\r\n        ,\"url\",\"/d/eb3949b9-da3a-4b9e-8573-beb5507617a9/aio-service-broker-clusterperf\",\"\",\"\")\r\n        ,\"_\",\"Dropped QoS0 Msgs\",\"\",\"\") or\r\n    vector(0) > 0 # Tail; not shown\r\n),\"_\",\"Mqtt Broker SLO\",\"\",\"\")",
-        "hide": false,
-        "legendFormat": "__auto",
-        "range": true,
-        "refId": "MQ"
-      }
-    ],
-    "title": "Mqtt Broker SLO",
-    "type": "state-timeline"
-  },
-  {
-    "collapsed": false,
-    "gridPos": {
-      "h": 1,
-      "w": 24,
-      "x": 0,
-      "y": 47
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 47
       },
       "id": 42,
       "panels": [],
@@ -1627,7 +1615,7 @@
         "h": 4,
         "w": 24,
         "x": 0,
-      "y": 48
+        "y": 48
       },
       "id": 14,
       "links": [
@@ -1865,10 +1853,7 @@
   "refresh": "",
   "revision": 1,
   "schemaVersion": 39,
-"tags": [
-  "health",
-  "shared"
-],
+  "tags": ["health", "shared"],
   "templating": {
     "list": [
       {
@@ -2025,6 +2010,6 @@
   "timezone": "",
   "title": "Service Health",
   "uid": "c4c37068-3940-40ba-8c20-67b3ce4923e2",
-"version": 35,
+  "version": 35,
   "weekStart": ""
 }
