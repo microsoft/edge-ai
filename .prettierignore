@@ -1,0 +1,52 @@
+# Generated and vendored
+node_modules/
+dist/
+build/
+target/
+.copilot-tracking/
+[Mm]egalinter-reports/
+
+# Lock files (auto-generated)
+package-lock.json
+
+# Terraform (handled by terraform fmt)
+**/.terraform/
+**/.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+*.tf
+*.tfvars
+
+# Bicep (handled by bicep linter)
+**/.arm/
+*.bicep
+*.bicepparam
+
+# Shell (handled by shfmt)
+*.sh
+*.bash
+
+# Markdown (handled by markdownlint)
+*.md
+
+# PowerShell (handled by PSScriptAnalyzer)
+*.ps1
+*.psd1
+*.psm1
+
+# Helm Go templates (unparseable)
+**/charts/**/templates/**
+
+# Minified files
+*.min.js
+*.min.css
+
+# Python virtual environments
+venv/
+.venv/
+
+# Azure
+.azure/
+
+# Rust
+*.rs
