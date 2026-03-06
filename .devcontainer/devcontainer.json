@@ -1,126 +1,126 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/ubuntu
 {
-	"name": "edge-ai-devcontainer",
-	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-	"image": "mcr.microsoft.com/devcontainers/python:3.11-bookworm",
-	// Features to add to the dev container. More info: https://containers.dev/features.
-	"features": {
-		"ghcr.io/devcontainers/features/common-utils:2": {},
-		"ghcr.io/devcontainers/features/docker-outside-of-docker:1": {},
-		"ghcr.io/devcontainers/features/git:1": {},
-		"ghcr.io/devcontainers/features/azure-cli:1": {
-			"extensions": "connectedk8s,k8s-extension,azure-iot-ops,amg,eventgrid"
-		},
-		"ghcr.io/devcontainers/features/dotnet:2": {},
-		"ghcr.io/devcontainers/features/github-cli:1": {},
-		"ghcr.io/devcontainers-extra/features/pipx-package:1": {},
-		"ghcr.io/devcontainers-extra/features/pre-commit:2": {},
-		"ghcr.io/devcontainers/features/node:1": {},
-		"ghcr.io/devcontainers/features/terraform:1": {
-			"installTerraformDocs": true
-		},
-    	"ghcr.io/rio/features/k3d:1": {},
-		"ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {
- 			// "version": "latest" uses https://dl.k8s.io/release/stable.txt which experiences outages during heavy load.
-			// Update this back to "latest" or continue to upgrade the version periodically.
-			"version": "1.33.2",
-			"helm": "latest",
-			"minikube": "none"
-		},
-		"ghcr.io/rio/features/k9s:1": {},
-		"ghcr.io/devcontainers/features/powershell": {
-			"pwsh": "latest"
-		},
-		"ghcr.io/devcontainers/features/go:1": {},
-		"ghcr.io/devcontainers/features/rust:1": {
-			"version": "latest",
-			"profile": "complete",
-			"targets": "wasm32-wasip2",
-			"components": "rust-analyzer,rust-src,rustfmt,clippy"
-		}
-	},
-	"customizations": {
-		"vscode": {
-			"settings": {
-				"terminal.integrated.profiles.linux": {
-					"bash": {
-						"path": "/bin/bash"
-					}
-				}
-			},
-			"extensions": [
-				"charliermarsh.ruff",
-				"darkriszty.markdown-table-prettify",
-				"DavidAnson.vscode-markdownlint",
-				"eamodio.gitlens",
-				"EditorConfig.EditorConfig",
-				"foxundermoon.shell-format",
-				"GitHub.vscode-pull-request-github",
-				"hashicorp.terraform",
-				"ms-azuretools.vscode-azureterraform",
-				"ms-azuretools.vscode-bicep",
-				"ms-azuretools.vscode-docker",
-				"ms-dotnettools.csdevkit",
-				"ms-python.debugpy",
-				"ms-python.python",
-				"ms-python.vscode-pylance",
-				"ms-vscode-remote.vscode-remote-extensionpack",
-				"ms-vscode.azurecli",
-				"streetsidesoftware.code-spell-checker",
-				"streetsidesoftware.code-spell-checker-cspell-bundled-dictionaries",
-				"timonwong.shellcheck",
-				"yzhang.markdown-all-in-one",
-				"ms-azuretools.vscode-azure-github-copilot",
-				"ms-azure-devops.azure-pipelines",
-				"ms-kubernetes-tools.vscode-kubernetes-tools",
-				"ms-vscode.powershell",
-				"github.vscode-github-actions",
-				"bierner.markdown-mermaid",
-				"rust-lang.rust-analyzer",
-				"ms-dotnettools.vscode-dotnet-runtime",
-				"ms-python.autopep8",
-				"ms-azuretools.vscode-azurefunctions",
-				"ms-azuretools.vscode-azureresourcegroups",
-				"ms-python.black-formatter",
-				"ms-dotnettools.csharp",
-				"vadimcn.vscode-lldb",
-				"ms-azuretools.vscode-containers",
-				"dbaeumer.vscode-eslint",
-				"tamasfe.even-better-toml",
-				"ms-python.flake8",
-				"golang.go",
-				"redhat.vscode-yaml",
-				"GitHub.copilot@prerelease",
-				"GitHub.copilot-chat@prerelease",
-				"ise-hve-essentials.hve-core"
-			]
-		}
-	},
+  "name": "edge-ai-devcontainer",
+  // Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
+  "image": "mcr.microsoft.com/devcontainers/python:3.11-bookworm",
+  // Features to add to the dev container. More info: https://containers.dev/features.
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {},
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {},
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/azure-cli:1": {
+      "extensions": "connectedk8s,k8s-extension,azure-iot-ops,amg,eventgrid"
+    },
+    "ghcr.io/devcontainers/features/dotnet:2": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers-extra/features/pipx-package:1": {},
+    "ghcr.io/devcontainers-extra/features/pre-commit:2": {},
+    "ghcr.io/devcontainers/features/node:1": {},
+    "ghcr.io/devcontainers/features/terraform:1": {
+      "installTerraformDocs": true
+    },
+    "ghcr.io/rio/features/k3d:1": {},
+    "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {
+      // "version": "latest" uses https://dl.k8s.io/release/stable.txt which experiences outages during heavy load.
+      // Update this back to "latest" or continue to upgrade the version periodically.
+      "version": "1.33.2",
+      "helm": "latest",
+      "minikube": "none"
+    },
+    "ghcr.io/rio/features/k9s:1": {},
+    "ghcr.io/devcontainers/features/powershell": {
+      "pwsh": "latest"
+    },
+    "ghcr.io/devcontainers/features/go:1": {},
+    "ghcr.io/devcontainers/features/rust:1": {
+      "version": "latest",
+      "profile": "complete",
+      "targets": "wasm32-wasip2",
+      "components": "rust-analyzer,rust-src,rustfmt,clippy"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.profiles.linux": {
+          "bash": {
+            "path": "/bin/bash"
+          }
+        }
+      },
+      "extensions": [
+        "charliermarsh.ruff",
+        "darkriszty.markdown-table-prettify",
+        "DavidAnson.vscode-markdownlint",
+        "eamodio.gitlens",
+        "EditorConfig.EditorConfig",
+        "foxundermoon.shell-format",
+        "GitHub.vscode-pull-request-github",
+        "hashicorp.terraform",
+        "ms-azuretools.vscode-azureterraform",
+        "ms-azuretools.vscode-bicep",
+        "ms-azuretools.vscode-docker",
+        "ms-dotnettools.csdevkit",
+        "ms-python.debugpy",
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-vscode-remote.vscode-remote-extensionpack",
+        "ms-vscode.azurecli",
+        "streetsidesoftware.code-spell-checker",
+        "streetsidesoftware.code-spell-checker-cspell-bundled-dictionaries",
+        "timonwong.shellcheck",
+        "yzhang.markdown-all-in-one",
+        "ms-azuretools.vscode-azure-github-copilot",
+        "ms-azure-devops.azure-pipelines",
+        "ms-kubernetes-tools.vscode-kubernetes-tools",
+        "ms-vscode.powershell",
+        "github.vscode-github-actions",
+        "bierner.markdown-mermaid",
+        "rust-lang.rust-analyzer",
+        "ms-dotnettools.vscode-dotnet-runtime",
+        "ms-python.autopep8",
+        "ms-azuretools.vscode-azurefunctions",
+        "ms-azuretools.vscode-azureresourcegroups",
+        "ms-python.black-formatter",
+        "ms-dotnettools.csharp",
+        "vadimcn.vscode-lldb",
+        "ms-azuretools.vscode-containers",
+        "dbaeumer.vscode-eslint",
+        "tamasfe.even-better-toml",
+        "ms-python.flake8",
+        "golang.go",
+        "redhat.vscode-yaml",
+        "GitHub.copilot@prerelease",
+        "GitHub.copilot-chat@prerelease",
+        "ise-hve-essentials.hve-core"
+      ]
+    }
+  },
 
-	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	"forwardPorts": [8080],
+  // Use 'forwardPorts' to make a list of ports inside the container available locally.
+  "forwardPorts": [8080],
 
-	// Container environment variables
-	"containerEnv": {
-		"BROWSER": "code --new-window"
-	},
+  // Container environment variables
+  "containerEnv": {
+    "BROWSER": "code --new-window"
+  },
 
-	"onCreateCommand": {
-		"uv": "pip install uv",
-		"pip": "pip install -r requirements.txt",
-		"npm": "npm install -g npm && npm ci",
-		"apt": "sudo apt update && sudo apt install -y shellcheck",
-		"go": "go install mvdan.cc/sh/v3/cmd/shfmt@latest",
-		"tflint": "curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash",
-		"update-bashrc": "echo 'export PATH=\"${containerWorkspaceFolder}/scripts:$PATH\"' | sudo tee -a  ~/.bashrc"
-	},
+  "onCreateCommand": {
+    "uv": "pip install uv",
+    "pip": "pip install -r requirements.txt",
+    "npm": "npm install -g npm && npm ci",
+    "apt": "sudo apt update && sudo apt install -y shellcheck",
+    "go": "go install mvdan.cc/sh/v3/cmd/shfmt@latest",
+    "tflint": "curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash",
+    "update-bashrc": "echo 'export PATH=\"${containerWorkspaceFolder}/scripts:$PATH\"' | sudo tee -a  ~/.bashrc"
+  },
 
-	// DONT USE 'postCreateCommand', it ruins your global .gitconfig https://github.com/devcontainers/cli/issues/787
+  // DONT USE 'postCreateCommand', it ruins your global .gitconfig https://github.com/devcontainers/cli/issues/787
 
-	// Replace when using a ptrace-based debugger like C++, Go, and Rust
-	// "runArgs": [ "--init", "--cap-add=SYS_PTRACE", "--security-opt", "seccomp=unconfined" ],
+  // Replace when using a ptrace-based debugger like C++, Go, and Rust
+  // "runArgs": [ "--init", "--cap-add=SYS_PTRACE", "--security-opt", "seccomp=unconfined" ],
 
-	// Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
-	"remoteUser": "vscode"
+  // Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
+  "remoteUser": "vscode"
 }

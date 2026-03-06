@@ -4,28 +4,7 @@
   "title": "Kata YAML Frontmatter Schema",
   "description": "Validation schema for Edge AI Learning Platform kata YAML frontmatter (28 fields across 6 sections)",
   "type": "object",
-  "required": [
-    "title",
-    "description",
-    "author",
-    "ms.date",
-    "kata_id",
-    "kata_category",
-    "kata_difficulty",
-    "estimated_time_minutes",
-    "learning_objectives",
-    "prerequisite_katas",
-    "technologies",
-    "success_criteria",
-    "ai_coaching_level",
-    "scaffolding_level",
-    "hint_strategy",
-    "common_pitfalls",
-    "requires_azure_subscription",
-    "requires_local_environment",
-    "tags",
-    "search_keywords"
-  ],
+  "required": ["title", "description", "author", "ms.date", "kata_id", "kata_category", "kata_difficulty", "estimated_time_minutes", "learning_objectives", "prerequisite_katas", "technologies", "success_criteria", "ai_coaching_level", "scaffolding_level", "hint_strategy", "common_pitfalls", "requires_azure_subscription", "requires_local_environment", "tags", "search_keywords"],
   "properties": {
     "title": {
       "type": "string",
@@ -70,19 +49,7 @@
       "items": {
         "type": "string",
         "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
-        "enum": [
-          "adr-creation",
-          "ado-automation",
-          "ai-assisted-engineering",
-          "cross-platform-integration",
-          "edge-deployment",
-          "fabric-integration",
-          "product-requirements",
-          "project-planning",
-          "prompt-engineering",
-          "task-planning",
-          "troubleshooting"
-        ]
+        "enum": ["adr-creation", "ado-automation", "ai-assisted-engineering", "cross-platform-integration", "edge-deployment", "fabric-integration", "product-requirements", "project-planning", "prompt-engineering", "task-planning", "troubleshooting"]
       }
     },
     "kata_difficulty": {

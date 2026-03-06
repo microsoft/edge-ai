@@ -1,0 +1,155 @@
+name: Bug report
+description: Create a report to help us improve
+title: "[BUG] "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        > **IMPORTANT:** Before submitting, please remove all sensitive data, secrets, tokens, or confidential information. Ensure you've redacted any NDA-covered information, IP addresses, resource names, or security-related details that shouldn't be publicly disclosed.
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Affected Component
+      description: Select the primary component where the issue occurs.
+      options:
+        - Terraform
+        - Bicep
+        - Blueprints
+        - GitHub Actions
+        - Documentation
+    validations:
+      required: true
+
+  - type: textarea
+    id: bug-description
+    attributes:
+      label: Bug Description
+      description: Clearly describe the issue.
+      placeholder: Describe what is broken and when it happens.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction-steps
+    attributes:
+      label: Reproduction Steps
+      description: Provide exact steps someone else can follow to reproduce the issue.
+      placeholder: |
+        1. Go to '...'
+        2. Click on '....'
+        3. Run command '....'
+        4. See error '...'
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+      placeholder: A clear and concise description of the expected behavior.
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: Actual Behavior
+      description: What actually happened?
+      placeholder: Include observed behavior, error messages, and impact.
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: "### Environment"
+
+  - type: input
+    id: os
+    attributes:
+      label: Operating System
+      description: e.g., Ubuntu 22.04, Windows 11, macOS 14
+      placeholder: Ubuntu 22.04
+    validations:
+      required: true
+
+  - type: input
+    id: azure-cli-version
+    attributes:
+      label: Azure CLI Version
+      description: e.g., 2.48.0
+      placeholder: 2.48.0
+
+  - type: input
+    id: other-cli-versions
+    attributes:
+      label: Other CLI Versions
+      description: Include versions for other relevant CLIs (for example, kubectl, azd).
+      placeholder: kubectl 1.29.2, azd 1.12.0
+
+  - type: input
+    id: terraform-version
+    attributes:
+      label: Terraform Version
+      description: e.g., 1.5.7
+      placeholder: 1.5.7
+
+  - type: input
+    id: bicep-version
+    attributes:
+      label: Bicep Version
+      description: e.g., 0.23.1
+      placeholder: 0.23.1
+
+  - type: input
+    id: kubernetes-version
+    attributes:
+      label: Kubernetes Version
+      description: e.g., 1.27.3
+      placeholder: 1.27.3
+
+  - type: input
+    id: azure-iot-operations-version
+    attributes:
+      label: Azure IoT Operations Version
+      description: e.g., 1.0.0
+      placeholder: 1.0.0
+
+  - type: textarea
+    id: deployment-configuration
+    attributes:
+      label: Deployment Configuration
+      description: Provide blueprint/component configuration details relevant to reproducing the issue.
+      placeholder: |
+        Blueprint used:
+        Resource prefix:
+        Service principals used (Yes/No):
+      render: shell
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Console Output / Logs
+      description: Paste relevant logs or command output.
+      render: shell
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: If applicable, add screenshots to help explain your problem.
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Add links, screenshots, and other context that helps triage.
+
+  - type: textarea
+    id: possible-solution
+    attributes:
+      label: Possible Solution
+      description: If you have ideas for a fix, share them here.

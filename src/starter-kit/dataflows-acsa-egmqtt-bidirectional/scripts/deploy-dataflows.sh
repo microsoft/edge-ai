@@ -2,7 +2,6 @@
 
 set -e
 
-# shellcheck disable=SC1091
 source ./utils/common.sh
 
 replace_placeholders_in_template_and_apply() {

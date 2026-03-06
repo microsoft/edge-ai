@@ -48,13 +48,7 @@
       "name": "Device Status Indicator",
       "data_type": "string",
       "units": "",
-      "string_options": [
-        "OK",
-        "WARNING",
-        "ERROR",
-        "OFFLINE",
-        "MAINTENANCE"
-      ],
+      "string_options": ["OK", "WARNING", "ERROR", "OFFLINE", "MAINTENANCE"],
       "metadata": {
         "indicator_type": "device_health"
       }

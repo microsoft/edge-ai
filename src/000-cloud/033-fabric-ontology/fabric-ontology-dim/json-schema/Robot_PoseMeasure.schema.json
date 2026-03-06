@@ -13,27 +13,14 @@
       "type": "string"
     },
     "RelationType": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     },
     "Namespace": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     },
     "Source": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     }
   },
-  "required": [
-    "Id",
-    "FromId",
-    "ToId"
-  ]
+  "required": ["Id", "FromId", "ToId"]
 }

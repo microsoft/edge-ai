@@ -4,32 +4,8 @@
   "cache": {
     "useCache": false
   },
-  "ignorePaths": [
-    "node_modules/**",
-    "**/node_modules/**",
-    "packages/**",
-    "**/packages/**",
-    "vendor/**",
-    "**/vendor/**",
-    "dist/**",
-    "build/**",
-    ".git/**",
-    "**/.terraform/**",
-    "**/.terraform.lock.hcl",
-    ".vscode/**",
-    ".github/copilot-instructions.md",
-    "**/*.min.js",
-    "**/*.min.css",
-    ".mega-linter.yml",
-    "package-lock.json",
-    "**/package-lock.json",
-    "Cargo.lock",
-    "**/Cargo.lock"
-  ],
-  "ignoreRegExpList": [
-    "/#.*/g",
-    "/^authors?:.*(?:\\r?\\n\\s*-.*)*$/gmi"
-  ],
+  "ignorePaths": ["node_modules/**", "**/node_modules/**", "packages/**", "**/packages/**", "vendor/**", "**/vendor/**", "dist/**", "build/**", ".git/**", "**/.terraform/**", "**/.terraform.lock.hcl", ".vscode/**", ".github/copilot-instructions.md", "**/*.min.js", "**/*.min.css", ".mega-linter.yml", "package-lock.json", "**/package-lock.json", "Cargo.lock", "**/Cargo.lock"],
+  "ignoreRegExpList": ["/#.*/g", "/^authors?:.*(?:\\r?\\n\\s*-.*)*$/gmi"],
   "dictionaryDefinitions": [
     {
       "name": "azure-services",
@@ -56,39 +32,6 @@
       "path": "./.cspell/general-technical.txt"
     }
   ],
-  "dictionaries": [
-    "k8s",
-    "docker",
-    "rust",
-    "data-science",
-    "aws",
-    "terraform",
-    "azure-services",
-    "iot-operations",
-    "microsoft-sample-companies",
-    "industry-acronyms",
-    "project-specific",
-    "general-technical"
-  ],
-  "words": [
-    "ˈpræksɪs",
-    "Acks",
-    "analyzability",
-    "behaviour",
-    "Chronograf",
-    "edgeai",
-    "GHCP",
-    "Kapacitor",
-    "kata",
-    "katas",
-    "learning",
-    "myorg",
-    "myorga",
-    "myorgb",
-    "SARIF",
-    "Segoe",
-    "shuf",
-    "westeurope",
-    "πρᾶξις"
-  ]
+  "dictionaries": ["k8s", "docker", "rust", "data-science", "aws", "terraform", "azure-services", "iot-operations", "microsoft-sample-companies", "industry-acronyms", "project-specific", "general-technical"],
+  "words": ["ˈpræksɪs", "Acks", "analyzability", "behaviour", "Chronograf", "edgeai", "GHCP", "Kapacitor", "kata", "katas", "learning", "myorg", "myorga", "myorgb", "SARIF", "Segoe", "shuf", "westeurope", "πρᾶξις"]
 }
