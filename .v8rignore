@@ -11,7 +11,7 @@ target/
 megalinter-reports/
 
 # MegaLinter config (SchemaStore schema uses additionalProperties:false,
-# rejecting valid linter-specific keys like JSON_V8R_CONFIG_FILE)
+# rejecting valid linter-specific keys like BASH_SHELLCHECK_ARGUMENTS)
 .mega-linter.yml
 .mega-linter.yaml
 

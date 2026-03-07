@@ -134,8 +134,9 @@ YAML_YAMLLINT_CONFIG_FILE: .yamllint.yml
 YAML_YAMLLINT_FILTER_REGEX_EXCLUDE: '(\.github/ISSUE_TEMPLATE|charts/templates|charts/.*/templates/.*)'
 
 # v8r schema validation configuration
-JSON_V8R_CONFIG_FILE: .v8rrc.yml
-YAML_V8R_CONFIG_FILE: .v8rrc.yml
+# v8r auto-discovers .v8rrc.yml from project root; do not set CONFIG_FILE
+# because MegaLinter maps it to -c (--catalogs array flag), which consumes
+# all subsequent positional file arguments and breaks validation.
 YAML_V8R_FILTER_REGEX_EXCLUDE: '(\.github/ISSUE_TEMPLATE|charts/templates|charts/.*/templates/.*|\.mega-linter\.yml|azure-pipelines\.yml|docker-compose)'
 
 # JSON Prettier configuration
