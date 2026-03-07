@@ -74,12 +74,7 @@
   },
   "MD032": true,
   "MD033": {
-    "allowed_elements": [
-      "details",
-      "summary",
-      "time",
-      "difficulty"
-    ]
+    "allowed_elements": ["details", "summary", "time", "difficulty"]
   },
   "MD034": true,
   "MD035": {
@@ -127,9 +122,7 @@
     "shortcut_syntax": false
   },
   "MD053": {
-    "ignored_definitions": [
-      "//"
-    ]
+    "ignored_definitions": ["//"]
   },
   "MD054": {
     "autolink": true,

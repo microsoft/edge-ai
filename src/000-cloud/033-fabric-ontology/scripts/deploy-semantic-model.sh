@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# shellcheck disable=SC1091
 # deploy-semantic-model.sh - Deploy Direct Lake Semantic Model from ontology definition
 #
 # Dependencies: curl, jq, yq, az (Azure CLI), uuidgen

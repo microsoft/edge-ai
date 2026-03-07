@@ -1,111 +1,92 @@
 {
-    "json.schemaDownload.enable": true,
-    "files.eol": "\n",
-    "files.trimTrailingWhitespace": true,
-    "files.insertFinalNewline": true,
-    "diffEditor.ignoreTrimWhitespace": false,
-    "editor.insertSpaces": true,
-    "markdownlint.configFile": ".markdownlint.json",
-    "markdownlint.lintWorkspaceGlobs": [
-        "**/*.{md,mkd,mdwn,mdown,markdown,markdn,mdtxt,mdtext,workbook}",
-        "!**/.copilot-tracking/**",
-        "!**/*.code-search",
-        "!**/bower_components",
-        "!**/node_modules",
-        "!**/.git",
-        "!**/vendor"
-    ],
-    "[markdown]": {
-        "editor.formatOnSave": true,
-        "editor.wordWrap": "on",
-        "editor.detectIndentation": false,
-    },
-    "[terraform-vars]": {
-        "editor.defaultFormatter": "hashicorp.terraform",
-        "editor.formatOnSave": true,
-        "editor.tabSize": 2,
-        "editor.codeActionsOnSave": {
-            "source.formatAll.terraform": "explicit"
-        },
-    },
-    "[terraform-test]": {
-        "editor.formatOnSave": true,
-        "editor.tabSize": 2,
-    },
-    "[terraform]": {
-        "editor.defaultFormatter": "hashicorp.terraform",
-        "editor.formatOnSave": true,
-        "editor.tabSize": 2,
-        "editor.codeActionsOnSave": {
-            "source.formatAll.terraform": "explicit"
-        },
-    },
-    "[bicep]": {
-        "editor.formatOnSave": true,
-        "editor.tabSize": 2,
-    },
-    "[shellscript]": {
-        "editor.formatOnSave": true,
-        "editor.tabSize": 2,
-    },
-    "[csharp]": {
-        "editor.formatOnSave": true,
-        "editor.tabSize": 4,
-    },
-    "[python]": {
-        "editor.formatOnSave": true,
-        "editor.tabSize": 4,
-    },
-    "[powershell]": {
-        "debug.saveBeforeStart": "nonUntitledEditorsInActiveGroup",
-        "editor.semanticHighlighting.enabled": false,
-        "editor.wordSeparators": "`~!@#$%^&*()=+[{]}\\|;:'\",.<>/?",
-        "editor.formatOnSave": true,
-        "editor.tabSize": 4,
-    },
-    "shellcheck.enableQuickFix": true,
-    "shellcheck.run": "onSave",
-    "yaml.schemas": {
-        "https://raw.githubusercontent.com/microsoft/azure-pipelines-vscode/master/service-schema.json": "*-pipelines.yml"
-    },
-    "yaml.customTags": [
-        "!ENV scalar",
-        "!ENV sequence",
-        "!relative scalar",
-        "tag:yaml.org,2002:python/name:material.extensions.emoji.to_svg",
-        "tag:yaml.org,2002:python/name:material.extensions.emoji.twemoji",
-        "tag:yaml.org,2002:python/name:pymdownx.superfences.fence_code_format",
-        "tag:yaml.org,2002:python/object/apply:pymdownx.slugs.slugify mapping"
-    ],
-    "github.copilot.chat.codeGeneration.useInstructionFiles": true,
-    "github.copilot.chat.agent.thinkingTool": true,
-    "github.copilot.chat.codesearch.enabled": true,
-    "github.copilot.chat.commitMessageGeneration.instructions": [
-        {
-            "file": "./.github/instructions/commit-message.instructions.md"
-        }
-    ],
-    "github.copilot.chat.advanced.workspace.prototypeAdoCodeSearchEnabled": true,
-    "github.copilot.chat.advanced.multiReplaceString.enabled": true,
-    "github.copilot.chat.customInstructionsInSystemMessage": true,
-    "chat.todoListTool.enabled": true,
-    "chat.agentFilesLocations": {
-        ".github/agents": true,
-        "/Users/vscode/repos/agents": true
-    },
-    "chat.instructionsFilesLocations": {
-        ".github/instructions": true,
-        "/Users/vscode/repos/instructions": true,
-        ".copilot-tracking/instructions": true,
-        ".copilot-tracking/plans": true
-    },
-    "chat.promptFilesLocations": {
-        ".github/prompts": true,
-        "/Users/vscode/repos/prompts": true,
-        ".copilot-tracking/prompts": true
-    },
-    "rust-analyzer.linkedProjects": [
-        "src/500-application/511-rust-embedded-wasm-provider/operators/custom-provider/Cargo.toml",
-        "src/500-application/511-rust-embedded-wasm-provider/operators/map/Cargo.toml",
-    ]
+  "json.schemaDownload.enable": true,
+  "files.eol": "\n",
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "diffEditor.ignoreTrimWhitespace": false,
+  "editor.insertSpaces": true,
+  "markdownlint.configFile": ".markdownlint.json",
+  "markdownlint.lintWorkspaceGlobs": ["**/*.{md,mkd,mdwn,mdown,markdown,markdn,mdtxt,mdtext,workbook}", "!**/.copilot-tracking/**", "!**/*.code-search", "!**/bower_components", "!**/node_modules", "!**/.git", "!**/vendor"],
+  "[markdown]": {
+    "editor.formatOnSave": true,
+    "editor.wordWrap": "on",
+    "editor.detectIndentation": false
+  },
+  "[terraform-vars]": {
+    "editor.defaultFormatter": "hashicorp.terraform",
+    "editor.formatOnSave": true,
+    "editor.tabSize": 2,
+    "editor.codeActionsOnSave": {
+      "source.formatAll.terraform": "explicit"
+    }
+  },
+  "[terraform-test]": {
+    "editor.formatOnSave": true,
+    "editor.tabSize": 2
+  },
+  "[terraform]": {
+    "editor.defaultFormatter": "hashicorp.terraform",
+    "editor.formatOnSave": true,
+    "editor.tabSize": 2,
+    "editor.codeActionsOnSave": {
+      "source.formatAll.terraform": "explicit"
+    }
+  },
+  "[bicep]": {
+    "editor.formatOnSave": true,
+    "editor.tabSize": 2
+  },
+  "[shellscript]": {
+    "editor.formatOnSave": true,
+    "editor.tabSize": 2
+  },
+  "[csharp]": {
+    "editor.formatOnSave": true,
+    "editor.tabSize": 4
+  },
+  "[python]": {
+    "editor.formatOnSave": true,
+    "editor.tabSize": 4
+  },
+  "[powershell]": {
+    "debug.saveBeforeStart": "nonUntitledEditorsInActiveGroup",
+    "editor.semanticHighlighting.enabled": false,
+    "editor.wordSeparators": "`~!@#$%^&*()=+[{]}\\|;:'\",.<>/?",
+    "editor.formatOnSave": true,
+    "editor.tabSize": 4
+  },
+  "shellcheck.enableQuickFix": true,
+  "shellcheck.run": "onSave",
+  "yaml.schemas": {
+    "https://raw.githubusercontent.com/microsoft/azure-pipelines-vscode/master/service-schema.json": "*-pipelines.yml"
+  },
+  "yaml.customTags": ["!ENV scalar", "!ENV sequence", "!relative scalar", "tag:yaml.org,2002:python/name:material.extensions.emoji.to_svg", "tag:yaml.org,2002:python/name:material.extensions.emoji.twemoji", "tag:yaml.org,2002:python/name:pymdownx.superfences.fence_code_format", "tag:yaml.org,2002:python/object/apply:pymdownx.slugs.slugify mapping"],
+  "github.copilot.chat.codeGeneration.useInstructionFiles": true,
+  "github.copilot.chat.agent.thinkingTool": true,
+  "github.copilot.chat.codesearch.enabled": true,
+  "github.copilot.chat.commitMessageGeneration.instructions": [
+    {
+      "file": "./.github/instructions/commit-message.instructions.md"
+    }
+  ],
+  "github.copilot.chat.advanced.workspace.prototypeAdoCodeSearchEnabled": true,
+  "github.copilot.chat.advanced.multiReplaceString.enabled": true,
+  "github.copilot.chat.customInstructionsInSystemMessage": true,
+  "chat.todoListTool.enabled": true,
+  "chat.agentFilesLocations": {
+    ".github/agents": true,
+    "/Users/vscode/repos/agents": true
+  },
+  "chat.instructionsFilesLocations": {
+    ".github/instructions": true,
+    "/Users/vscode/repos/instructions": true,
+    ".copilot-tracking/instructions": true,
+    ".copilot-tracking/plans": true
+  },
+  "chat.promptFilesLocations": {
+    ".github/prompts": true,
+    "/Users/vscode/repos/prompts": true,
+    ".copilot-tracking/prompts": true
+  },
+  "rust-analyzer.linkedProjects": ["src/500-application/511-rust-embedded-wasm-provider/operators/custom-provider/Cargo.toml", "src/500-application/511-rust-embedded-wasm-provider/operators/map/Cargo.toml"]
 }
