@@ -2,7 +2,6 @@
 
 set -e
 
-# shellcheck disable=SC1091
 source ./utils/common.sh
 
 verify_azcli_installed
