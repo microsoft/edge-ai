@@ -97,7 +97,7 @@ def send_mqtt_message(topic: str, message: dict) -> bool:
             "-m", message_json
         ]
 
-        result = subprocess.run(  # noqa: S603  # hardcoded kubectl cmd
+        result = subprocess.run(  # noqa: S603, S607  # hardcoded kubectl cmd
             cmd, capture_output=True, text=True, timeout=10)
 
         if result.returncode == 0:
@@ -144,7 +144,7 @@ def get_recent_inference_logs() -> str:
             "-n", "azure-iot-operations",
             "--tail=10", "--since=30s"
         ]
-        result = subprocess.run(cmd, capture_output=True, text=True)  # noqa: S603  # hardcoded kubectl cmd
+        result = subprocess.run(cmd, capture_output=True, text=True)  # noqa: S603, S607  # hardcoded kubectl cmd
         return result.stdout
     except Exception as e:
         print(f"❌ Error getting logs: {e}")
