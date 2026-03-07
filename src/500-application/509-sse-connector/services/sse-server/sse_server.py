@@ -13,7 +13,7 @@ import asyncio
 import json
 import logging
 import os
-from typing import AsyncGenerator
+from collections.abc import AsyncGenerator
 
 from aiohttp import web
 from events_simulator import AnalyticsEventSimulator
@@ -183,8 +183,8 @@ class AnalyticsSSEServer:
             logger.info(f"SSE client {client_ip} disconnected")
         except Exception as e:
             logger.error(f"Error in SSE handler: {e}")
-        finally:
-            return response
+
+        return response
 
     def run(self):
         """Start the HTTP server and begin serving SSE endpoints.

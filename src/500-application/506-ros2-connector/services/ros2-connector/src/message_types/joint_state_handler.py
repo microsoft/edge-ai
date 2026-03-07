@@ -5,8 +5,11 @@ This module handles JointState message processing and MQTT publishing.
 """
 
 from math import floor
+
 from sensor_msgs.msg import JointState
+
 from . import base_handler
+
 BaseMessageHandler = base_handler.BaseMessageHandler
 
 

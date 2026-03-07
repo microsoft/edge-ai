@@ -205,7 +205,7 @@ class ONVIFConnectorClient:
                 ) as response:
                     if response.status == 200:
                         text = await response.text()
-                        root = ET.fromstring(text)
+                        root = ET.fromstring(text)  # noqa: S314  # trusted ONVIF device
 
                         # Extract device information
                         for elem in root.iter():
@@ -254,7 +254,7 @@ class ONVIFConnectorClient:
                 ) as response:
                     if response.status == 200:
                         text = await response.text()
-                        root = ET.fromstring(text)
+                        root = ET.fromstring(text)  # noqa: S314  # trusted ONVIF device
 
                         # Extract capabilities
                         for elem in root.iter():
@@ -303,13 +303,14 @@ class ONVIFConnectorClient:
                 ) as response:
                     if response.status == 200:
                         text = await response.text()
-                        root = ET.fromstring(text)
+                        root = ET.fromstring(text)  # noqa: S314  # trusted ONVIF device
 
                         # Extract media profiles
                         for profile in root.findall('.//trt:Profiles', ONVIF_NAMESPACES):
+                            name_elem = profile.find('.//tt:Name', ONVIF_NAMESPACES)
                             profile_data = {
                                 'token': profile.get('token'),
-                                'name': profile.find('.//tt:Name', ONVIF_NAMESPACES).text if profile.find('.//tt:Name', ONVIF_NAMESPACES) is not None else 'Unknown'
+                                'name': name_elem.text if name_elem is not None else 'Unknown'
                             }
                             self.media_profiles.append(profile_data)
 
@@ -368,7 +369,7 @@ class ONVIFConnectorClient:
             xml_text: SOAP XML response containing event notifications
         """
         try:
-            root = ET.fromstring(xml_text)
+            root = ET.fromstring(xml_text)  # noqa: S314  # trusted local device
 
             for notification in root.findall('.//wsnt:NotificationMessage', ONVIF_NAMESPACES):
                 # Extract topic
