@@ -38,6 +38,7 @@ ENABLE_LINTERS:
 
   # JSON
   - JSON_PRETTIER
+  - JSON_V8R
 
   # PowerShell
   - POWERSHELL_POWERSHELL
@@ -50,6 +51,7 @@ ENABLE_LINTERS:
 
   # Quality
   - SPELL_CSPELL
+  - YAML_V8R
   - YAML_YAMLLINT
 
 # DISABLE:
@@ -130,6 +132,12 @@ REPOSITORY_SECRETLINT_CONFIG_FILE: .secretlintrc.json
 # YAML Lint configuration
 YAML_YAMLLINT_CONFIG_FILE: .yamllint.yml
 YAML_YAMLLINT_FILTER_REGEX_EXCLUDE: '(\.github/ISSUE_TEMPLATE|charts/templates|charts/.*/templates/.*)'
+
+# v8r schema validation configuration
+# v8r auto-discovers .v8rrc.yml from project root; do not set CONFIG_FILE
+# because MegaLinter maps it to -c (--catalogs array flag), which consumes
+# all subsequent positional file arguments and breaks validation.
+YAML_V8R_FILTER_REGEX_EXCLUDE: '(\.github/ISSUE_TEMPLATE|charts/templates|charts/.*/templates/.*|\.mega-linter\.yml|azure-pipelines\.yml|docker-compose)'
 
 # JSON Prettier configuration
 JSON_PRETTIER_CONFIG_FILE: .prettierrc.json

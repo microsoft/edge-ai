@@ -1,0 +1,51 @@
+# Dependencies and build outputs
+node_modules/
+dist/
+build/
+target/
+.terraform/
+**/.terraform/
+
+# Copilot tracking and linter reports
+.copilot-tracking/
+megalinter-reports/
+
+# MegaLinter config (SchemaStore schema uses additionalProperties:false,
+# rejecting valid linter-specific keys like BASH_SHELLCHECK_ARGUMENTS)
+.mega-linter.yml
+.mega-linter.yaml
+
+# Azure Pipelines (SchemaStore schema has invalid regex escapes in unicode mode)
+azure-pipelines.yml
+
+# Lock files and generated files
+package-lock.json
+*.tfstate
+*.tfstate.*
+
+# Helm Go-template files (not valid YAML — contain {{ }} template syntax)
+**/charts/**/templates/**
+
+# GitHub Issue templates (service account names may not match schema patterns)
+.github/ISSUE_TEMPLATE/
+
+# ARM templates
+**/*.arm.json
+
+# Docker Compose files (compose-spec schema contains duplicate $id keys
+# causing ajv validation errors — upstream schema issue)
+**/docker-compose.yml
+**/docker-compose.yaml
+**/docker-compose.*.yml
+**/docker-compose.*.yaml
+
+# Python virtual environments
+.venv/
+venv/
+
+# Azure CLI cache
+.azure/
+
+# Sample data and model configs
+**/sample-data/**
+**/model-configs/**
