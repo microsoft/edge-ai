@@ -162,6 +162,16 @@ stages:
             name: $(poolName)
             vmImage: $(vmImage)
 
+      # Use the rust-clippy-template.yml for Rust lint checking on main
+      - template: .azdo/templates/rust-clippy-template.yml
+        parameters:
+          dependsOn: MegaLinter
+          displayName: "Rust Clippy Lint Check"
+          condition: succeeded()
+          agentPool:
+            name: $(poolName)
+            vmImage: $(vmImage)
+
       # Use the wiki-update-template.yml to update the wiki documentation
       # This job will only run if the MegaLinter job passes.
       - template: .azdo/templates/wiki-update-template.yml
@@ -300,6 +310,15 @@ stages:
           matrixVariable: dependencies.ComponentChangesFolderCheck.outputs['matrixBuildFolderCheckTask.changedTfFolders']
           azureServiceConnection: azdo-ai-for-edge-iac-for-edge
           breakBuild: true
+          agentPool:
+            name: $(poolName)
+            vmImage: $(vmImage)
+      # Use the rust-clippy-template.yml for Rust lint checking
+      - template: .azdo/templates/rust-clippy-template.yml
+        parameters:
+          dependsOn: ComponentChangesFolderCheck
+          displayName: "Rust Clippy Lint Check"
+          condition: succeeded()
           agentPool:
             name: $(poolName)
             vmImage: $(vmImage)

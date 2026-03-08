@@ -112,6 +112,17 @@ jobs:
       github_comment_reporter: false
     secrets: inherit
 
+  # Rust clippy lint check for main branch
+  rust-clippy-main:
+    name: Rust Clippy Lint Check
+    needs: [mega-linter-main]
+    permissions:
+      contents: read
+    uses: ./.github/workflows/rust-clippy.yml
+    with:
+      break_build: false
+    secrets: inherit
+
   # Call docs-check-terraform workflow
   docs-check-terraform-main:
     name: Terraform Documentation Check

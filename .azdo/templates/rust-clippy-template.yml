@@ -1,0 +1,95 @@
+# Rust Clippy Lint Template
+#
+# Purpose:
+# Runs cargo clippy on all Rust crates under src/ to enforce lint standards.
+# WASM crates (cdylib) are detected automatically and built with --target wasm32-wasip2.
+#
+# Parameters:
+# - dependsOn: Jobs that this job depends on
+# - displayName: Display name for this job
+# - condition: Condition for running this job
+# - agentPool: Azure DevOps agent pool configuration
+#
+# Usage Examples:
+# ```yaml
+# # Basic usage:
+# - template: .azdo/templates/rust-clippy-template.yml
+#   parameters:
+#     dependsOn: ComponentChangesFolderCheck
+#
+# # Custom configuration:
+# - template: .azdo/templates/rust-clippy-template.yml
+#   parameters:
+#     dependsOn: [Lint, Check]
+#     displayName: "Custom Clippy Check"
+# ```
+---
+parameters:
+  - name: dependsOn
+    type: object
+    default: []
+  - name: displayName
+    type: string
+    default: 'Rust Clippy Lint Check'
+  - name: condition
+    type: string
+    default: succeeded()
+  - name: agentPool
+    type: object
+    default:
+      name: 'ai-on-edge-managed-pool'
+      vmImage: 'ubuntu-latest'
+
+jobs:
+  - job: RustClippyLintCheck
+    displayName: ${{ parameters.displayName }}
+    dependsOn: ${{ parameters.dependsOn }}
+    condition: ${{ parameters.condition }}
+    pool: ${{ parameters.agentPool }}
+    steps:
+      - checkout: self
+        fetchDepth: 0
+
+      - task: Bash@3
+        displayName: 'Checkout PR source branch'
+        inputs:
+          targetType: inline
+          script: |
+            if [ -n "$(System.PullRequest.SourceBranch)" ]; then
+              git checkout "$(System.PullRequest.SourceBranch)"
+            fi
+        condition: and(succeeded(), ne(variables['System.PullRequest.SourceBranch'], ''))
+
+      - task: Bash@3
+        displayName: 'Install Rust toolchain and clippy'
+        inputs:
+          targetType: inline
+          script: |
+            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable -c clippy
+            echo "##vso[task.prependpath]$HOME/.cargo/bin"
+            rustup target add wasm32-wasip2
+
+      - task: Bash@3
+        displayName: 'Run Clippy on all Rust crates'
+        inputs:
+          targetType: inline
+          script: |
+            set -euo pipefail
+            FAILED=0
+            for cargo_toml in $(find src/ -name "Cargo.toml" -not -path "./Cargo.toml"); do
+              crate_dir=$(dirname "$cargo_toml")
+              echo "##[group]Clippy: $crate_dir"
+              if grep -q 'crate-type.*=.*\["cdylib"\]' "$cargo_toml"; then
+                echo "WASM crate detected — using --target wasm32-wasip2"
+                (cd "$crate_dir" && cargo clippy --target wasm32-wasip2 -- -D warnings) || FAILED=1
+              else
+                (cd "$crate_dir" && cargo clippy -- -D warnings) || FAILED=1
+              fi
+              echo "##[endgroup]"
+            done
+            if [ "$FAILED" -ne 0 ]; then
+              echo "##vso[task.logissue type=error]Clippy found lint violations in one or more crates"
+              exit 1
+            fi
+        env:
+          CARGO_REGISTRIES_AIO_SDKS_TOKEN: $(CARGO_REGISTRIES_AIO_SDKS_TOKEN)
