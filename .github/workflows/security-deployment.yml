@@ -117,7 +117,7 @@ jobs:
 
       - name: Upload staleness results
         if: always()
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: dependency-staleness-results
           path: stale-dependencies.json
@@ -144,7 +144,7 @@ jobs:
 
       - name: Upload OSSF Scorecard results
         if: always()
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: ossf-scorecard-results
           path: scorecard-results.sarif
@@ -185,7 +185,7 @@ jobs:
 
       - name: Upload AIO version results
         if: always()
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: aio-version-check-results
           path: aio-version-check-results.json
@@ -200,7 +200,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Download all security artifacts
-        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3 # v8.0.0
         with:
           path: security-results
 
@@ -234,7 +234,7 @@ jobs:
 
       - name: Upload security summary
         if: always()
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: security-deployment-summary
           path: security-summary.md
