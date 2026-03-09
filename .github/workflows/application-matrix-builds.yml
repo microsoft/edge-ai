@@ -319,7 +319,7 @@ jobs:
 
       - name: Log in to Container Registry
         if: ${{ needs.parse-configuration.outputs.pushImages == 'true' }}
-        uses: docker/login-action@3227f5311cb93ffd14d13e65d8cc400d30f4dd8a
+        uses: docker/login-action@db14339dbc0a1f0b184157be94b23a2138122354
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ secrets.REGISTRY_USERNAME }}
