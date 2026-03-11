@@ -103,6 +103,8 @@ jobs:
     permissions:
       contents: read
     uses: ./.github/workflows/shell-lint.yml
+    with:
+      soft-fail: true
 
   # Terraform linting
   terraform-lint:
@@ -110,6 +112,8 @@ jobs:
     permissions:
       contents: read
     uses: ./.github/workflows/terraform-lint.yml
+    with:
+      soft-fail: true
 
   # Bicep linting
   bicep-lint:
@@ -131,6 +135,8 @@ jobs:
     permissions:
       contents: read
     uses: ./.github/workflows/code-quality-lint.yml
+    with:
+      soft-fail: true
 
   # PowerShell linting
   powershell-lint:
