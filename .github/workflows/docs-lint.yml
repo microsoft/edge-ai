@@ -79,9 +79,12 @@ jobs:
           FAILED=0
 
           echo "::group::markdown-table-formatter"
-          npx markdown-table-formatter --check \
-            --ignore .copilot-tracking \
-            "**/*.md" 2>&1 | tee table-formatter-output.txt || FAILED=1
+          find . -name '*.md' \
+            -not -path './.copilot-tracking/*' \
+            -not -path './node_modules/*' \
+            -not -path './venv/*' \
+            -print0 | xargs -0 npx markdown-table-formatter --check \
+            2>&1 | tee table-formatter-output.txt || FAILED=1
           echo "::endgroup::"
 
           if [ "$FAILED" -ne 0 ]; then
