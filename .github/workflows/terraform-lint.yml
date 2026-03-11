@@ -51,8 +51,16 @@ jobs:
         with:
           terraform_wrapper: false
 
-      - name: Setup TFLint
-        uses: terraform-linters/setup-tflint@19a52fbac37dacb22a09518e4ef6ee234f2d4987 # v4
+      - name: Install TFLint
+        run: |
+          TFLINT_VERSION="v0.54.0"
+          TFLINT_SHA256="16d062ebb3d2d199463fb93e17644c27feb57cb6175babecbce3e8d34f4956c6"
+          curl -fsSL "https://github.com/terraform-linters/tflint/releases/download/${TFLINT_VERSION}/tflint_linux_amd64.zip" -o /tmp/tflint.zip
+          echo "${TFLINT_SHA256}  /tmp/tflint.zip" | sha256sum --check --strict
+          unzip -o /tmp/tflint.zip -d /tmp
+          sudo mv /tmp/tflint /usr/local/bin/tflint
+          rm /tmp/tflint.zip
+          tflint --version
 
       - name: Terraform format check
         id: tf-fmt
