@@ -73,7 +73,7 @@ jobs:
         with:
           name: code-quality-lint-results
           path: lint-results/
-          retention-days: 7
+          retention-days: 30
 
       - name: Job Summary
         if: always()
@@ -97,8 +97,10 @@ jobs:
       - name: Fail on Lint Violations
         if: always() && (env.ESLINT_FAILED == 'true' || env.PRETTIER_FAILED == 'true')
         shell: bash
+        env:
+          SOFT_FAIL: ${{ inputs.soft-fail }}
         run: |
-          if [ "${{ inputs.soft-fail }}" = "true" ]; then
+          if [ "$SOFT_FAIL" = "true" ]; then
             echo "::warning::Code quality lint violations found (soft-fail enabled)"
           else
             echo "::error::Code quality lint violations found"

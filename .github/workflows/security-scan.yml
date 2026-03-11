@@ -116,7 +116,7 @@ jobs:
         with:
           name: security-scan-results
           path: security-results/
-          retention-days: 7
+          retention-days: 30
 
       - name: Job Summary
         if: always()
@@ -145,8 +145,10 @@ jobs:
       - name: Fail on Security Violations
         if: always() && (env.GITLEAKS_FAILED == 'true' || env.GRYPE_FAILED == 'true' || env.SECRETLINT_FAILED == 'true')
         shell: bash
+        env:
+          SOFT_FAIL: ${{ inputs.soft-fail }}
         run: |
-          if [ "${{ inputs.soft-fail }}" = "true" ]; then
+          if [ "$SOFT_FAIL" = "true" ]; then
             echo "::warning::Security scan violations found (soft-fail enabled)"
           else
             echo "::error::Security scan violations found"
