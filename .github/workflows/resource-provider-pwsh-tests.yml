@@ -23,8 +23,8 @@
 # # Basic usage in PR validation:
 # pwsh-provider-tests:
 #   name: PowerShell Provider Tests
-#   needs: [shell-lint, changes]
-#   if: needs.changes.outputs.changesInRpEnablementPwsh == 'true'
+#   needs: [shell-lint, matrix-changes]
+#   if: needs.matrix-changes.outputs.changesInRpEnablementPwsh == 'true'
 #   uses: ./.github/workflows/resource-provider-pwsh-tests.yml
 #   with:
 #     working-directory: 'src/azure-resource-providers'

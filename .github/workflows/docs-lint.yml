@@ -101,6 +101,13 @@ jobs:
           echo "::group::cspell"
           npx cspell "**/*.md" \
             --config .cspell.json \
+            --exclude .copilot-tracking \
+            --exclude .github/copilot-instructions.md \
+            --exclude .github/instructions \
+            --exclude .github/prompts \
+            --exclude .github/agents \
+            --exclude node_modules \
+            --exclude venv \
             --no-progress 2>&1 | tee cspell-output.txt || FAILED=1
           echo "::endgroup::"
 

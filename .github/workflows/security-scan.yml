@@ -63,22 +63,21 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p security-results
-          if ! gitleaks detect --config .gitleaks.toml --report-format sarif --report-path security-results/gitleaks-report.sarif --exit-code 0; then
+          if ! gitleaks detect --config .gitleaks.toml --report-format sarif --report-path security-results/gitleaks-report.sarif --exit-code 1; then
             echo "GITLEAKS_FAILED=true" >> "$GITHUB_ENV"
-          fi
-          if [ -f security-results/gitleaks-report.sarif ]; then
-            VIOLATIONS=$(grep -c '"level"' security-results/gitleaks-report.sarif 2>/dev/null || echo "0")
-            if [ "$VIOLATIONS" -gt 0 ]; then
-              echo "GITLEAKS_FAILED=true" >> "$GITHUB_ENV"
-              echo "::warning::Gitleaks detected $VIOLATIONS potential secret(s)"
-            fi
+            echo "::warning::Gitleaks detected potential secret(s). See SARIF report for details."
           fi
 
       - name: Install Grype
         shell: bash
         run: |
           set -euo pipefail
-          curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin
+          GRYPE_VERSION="0.80.0"
+          curl -sSfL "https://github.com/anchore/grype/releases/download/v${GRYPE_VERSION}/grype_${GRYPE_VERSION}_linux_amd64.tar.gz" \
+            -o grype.tar.gz
+          tar -xzf grype.tar.gz grype
+          sudo mv grype /usr/local/bin/grype
+          rm grype.tar.gz
           grype version
 
       - name: Run Grype
@@ -99,7 +98,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if ! npx secretlint "**/*" 2>&1 | tee security-results/secretlint-results.txt; then
+          if ! npx secretlint "**/*" "!**/node_modules/**" "!**/.git/**" "!**/.terraform/**" 2>&1 | tee security-results/secretlint-results.txt; then
             echo "SECRETLINT_FAILED=true" >> "$GITHUB_ENV"
           fi
 

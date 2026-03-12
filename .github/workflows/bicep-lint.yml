@@ -44,6 +44,17 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Setup Azure CLI with Bicep
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! command -v az &>/dev/null; then
+            echo "Azure CLI is not installed. Installing now..."
+            curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+          fi
+          az bicep install
+          az bicep version
+
       - name: Find and validate Bicep files
         id: bicep-build
         shell: bash

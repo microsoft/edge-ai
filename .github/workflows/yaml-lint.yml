@@ -47,6 +47,17 @@ jobs:
       - name: Install yamllint
         run: pip install yamllint
 
+      - name: Install Helm
+        shell: bash
+        run: |
+          set -euo pipefail
+          HELM_VERSION="3.16.3"
+          curl -sSfL "https://get.helm.sh/helm-v${HELM_VERSION}-linux-amd64.tar.gz" -o helm.tar.gz
+          tar -xzf helm.tar.gz linux-amd64/helm
+          sudo mv linux-amd64/helm /usr/local/bin/helm
+          rm -rf linux-amd64 helm.tar.gz
+          helm version
+
       - name: Run yamllint
         shell: bash
         run: |

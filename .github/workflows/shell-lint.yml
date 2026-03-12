@@ -61,19 +61,33 @@ jobs:
             echo "BASH_SYNTAX_FAILED=true" >> "$GITHUB_ENV"
           fi
 
+      - name: Install ShellCheck and shfmt
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq shellcheck
+          SHFMT_VERSION="3.8.0"
+          curl -sSfL "https://github.com/mvdan/sh/releases/download/v${SHFMT_VERSION}/shfmt_v${SHFMT_VERSION}_linux_amd64" \
+            -o shfmt
+          chmod +x shfmt
+          sudo mv shfmt /usr/local/bin/shfmt
+          shellcheck --version
+          shfmt --version
+
       - name: Run ShellCheck
         id: shellcheck
         run: |
-          find . -name '*.sh' -not -path './node_modules/*' -not -path './.copilot-tracking/*' \
-            | xargs shellcheck --rcfile .shellcheckrc --format=gcc > shellcheck-output.txt 2>&1 || echo "SHELLCHECK_FAILED=true" >> "$GITHUB_ENV"
+          find . -name '*.sh' -not -path './node_modules/*' -not -path './.copilot-tracking/*' -print0 \
+            | xargs -0 -r shellcheck --rcfile .shellcheckrc --format=gcc > shellcheck-output.txt 2>&1 || echo "SHELLCHECK_FAILED=true" >> "$GITHUB_ENV"
           cat shellcheck-output.txt
         continue-on-error: true
 
       - name: Run shfmt check
         id: shfmt
         run: |
-          find . -name '*.sh' -not -path './node_modules/*' -not -path './.copilot-tracking/*' \
-            | xargs shfmt --diff > shfmt-output.txt 2>&1 || echo "SHFMT_FAILED=true" >> "$GITHUB_ENV"
+          find . -name '*.sh' -not -path './node_modules/*' -not -path './.copilot-tracking/*' -print0 \
+            | xargs -0 -r shfmt --diff > shfmt-output.txt 2>&1 || echo "SHFMT_FAILED=true" >> "$GITHUB_ENV"
           cat shfmt-output.txt
         continue-on-error: true
 
