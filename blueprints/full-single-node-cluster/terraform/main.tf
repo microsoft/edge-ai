@@ -76,6 +76,7 @@ module "cloud_security_identity" {
   key_vault_private_endpoint_subnet_id     = var.should_enable_private_endpoints ? module.cloud_networking.subnet_id : null
   key_vault_virtual_network_id             = var.should_enable_private_endpoints ? module.cloud_networking.virtual_network.id : null
   should_enable_public_network_access      = var.should_enable_key_vault_public_network_access
+  should_enable_purge_protection           = var.should_enable_key_vault_purge_protection
   should_create_aks_identity               = var.should_create_aks_identity
   should_create_ml_workload_identity       = var.azureml_should_create_ml_workload_identity
 }
@@ -256,6 +257,7 @@ module "cloud_acr" {
   allowed_public_ip_ranges           = var.acr_allowed_public_ip_ranges
   public_network_access_enabled      = var.acr_public_network_access_enabled
   should_enable_data_endpoints       = var.acr_data_endpoint_enabled
+  should_enable_export_policy        = var.acr_export_policy_enabled
 }
 
 module "cloud_kubernetes" {

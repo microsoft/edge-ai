@@ -570,6 +570,12 @@ variable "acr_data_endpoint_enabled" {
   default     = true
 }
 
+variable "acr_export_policy_enabled" {
+  type        = bool
+  description = "Whether to allow container image export from the ACR. Requires acr_public_network_access_enabled to be true when enabled"
+  default     = false
+}
+
 variable "acr_public_network_access_enabled" {
   type        = bool
   description = "Whether to enable the ACR public endpoint alongside private connectivity"
@@ -609,6 +615,12 @@ variable "should_enable_key_vault_public_network_access" {
   type        = bool
   description = "Whether to enable public network access for the Key Vault"
   default     = true
+}
+
+variable "should_enable_key_vault_purge_protection" {
+  type        = bool
+  description = "Whether to enable purge protection for the Key Vault. Enable for production to prevent accidental or malicious secret deletion"
+  default     = false
 }
 
 /*
