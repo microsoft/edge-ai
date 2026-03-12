@@ -33,5 +33,5 @@
     }
   ],
   "dictionaries": ["k8s", "docker", "rust", "data-science", "aws", "terraform", "azure-services", "iot-operations", "microsoft-sample-companies", "industry-acronyms", "project-specific", "general-technical"],
-  "words": ["ˈpræksɪs", "Acks", "analyzability", "behaviour", "Chronograf", "edgeai", "GHCP", "Kapacitor", "kata", "katas", "learning", "myorg", "myorga", "myorgb", "SARIF", "Segoe", "shuf", "westeurope", "πρᾶξις"]
+  "words": ["ˈpræksɪs", "Acks", "analyzability", "behaviour", "cdylib", "Chronograf", "edgeai", "GHCP", "Kapacitor", "kata", "katas", "learning", "myorg", "myorga", "myorgb", "SARIF", "Segoe", "shuf", "westeurope", "πρᾶξις"]
 }

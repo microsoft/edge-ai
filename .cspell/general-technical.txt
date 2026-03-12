@@ -1538,6 +1538,8 @@ Dahua
 demangle
 demangling
 Hikvision
+imageops
+NCHW
 sandboxed
 SASL
 tptz
@@ -1546,3 +1548,5 @@ wasip
 Wasmtime
 wazero
 webassembly
+parsable
+parseable
