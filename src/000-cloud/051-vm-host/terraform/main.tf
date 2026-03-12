@@ -4,6 +4,8 @@
  * Deploys one or more Linux VMs for Arc-connected K3s cluster
  */
 
+data "azurerm_client_config" "current" {}
+
 locals {
   label_prefix = "${var.resource_prefix}-aio-${var.environment}-${var.instance}"
   vm_username  = coalesce(var.vm_username, var.resource_prefix)
@@ -12,24 +14,9 @@ locals {
   vm_admin_principals = merge(
     var.vm_admin_principals,
     var.should_assign_current_user_vm_admin ? {
-      "admin" = msgraph_resource_action.current_user[0].output.oid
+      "admin" = data.azurerm_client_config.current.object_id
     } : {}
   )
-}
-
-/*
- * Current User Data (Microsoft Graph)
- */
-
-resource "msgraph_resource_action" "current_user" {
-  count = var.should_assign_current_user_vm_admin ? 1 : 0
-
-  method       = "GET"
-  resource_url = "me"
-
-  response_export_values = {
-    oid = "id"
-  }
 }
 
 // Generate random password for VM authentication when password auth is enabled
