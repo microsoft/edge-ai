@@ -38,7 +38,7 @@ CAMERA_PASSWORD='your_password' \
 
 **Expected Output:**
 
-```
+```text
 ✅ Found profile token(s):
   🎯 ProfileToken: MainStream
   🎯 ProfileToken: SubStream

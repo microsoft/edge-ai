@@ -310,7 +310,7 @@ Increasing replicas (e.g., `--set replicaCount=2`) for the same deployment will:
 - ❌ Potentially cause race conditions when writing to the same paths
 - ❌ Not distribute load across multiple cameras
 
-**Correct Approach: Separate Helm Releases**
+### Correct Approach: Separate Helm Releases
 
 Deploy one Helm release per camera with unique configurations:
 
@@ -368,7 +368,7 @@ kubectl logs -n azure-iot-operations -l app.kubernetes.io/instance=media-capture
 
 Each camera automatically organizes recordings by camera ID:
 
-```
+```text
 /cloud-sync/video-recordings/
 ├── camera-01/
 │   └── 2026/01/13/21/
@@ -669,27 +669,23 @@ The service uses sophisticated timing to extract relevant video segments:
 2. **Check Storage Account Access**:
 
    ```bash
-
-  az storage container show --account-name $STORAGE_ACCOUNT_NAME --name video-recordings --auth-mode login
-
+   az storage container show --account-name $STORAGE_ACCOUNT_NAME --name video-recordings --auth-mode login
    ```
 
 3. **Monitor File Sync**:
 
    ```bash
-  kubectl exec -it deployment/media-capture-service -n azure-iot-operations -- ls -la /cloud-sync/video-recordings/
+   kubectl exec -it deployment/media-capture-service -n azure-iot-operations -- ls -la /cloud-sync/video-recordings/
    ```
 
-1. **Verify Cloud Storage Integration**:
+4. **Verify Cloud Storage Integration**:
 
    ```bash
    # Monitor logs for successful capture
    kubectl logs -l app.kubernetes.io/name=media-capture-service -n azure-iot-operations
 
    # Verify files in Azure Storage (using Azure CLI)
-
-  az storage blob list --account-name $STORAGE_ACCOUNT_NAME --container-name video-recordings --auth-mode login
-
+   az storage blob list --account-name $STORAGE_ACCOUNT_NAME --container-name video-recordings --auth-mode login
    ```
 
 ### Cloud Storage Sync Troubleshooting

@@ -8,7 +8,7 @@ This diagram shows the hierarchical structure and organization of video segments
 
 ### Path Hierarchy
 
-```
+```text
 media-capture-data/
 ├── a1/                          # Hash prefix (2 hex chars)
 │   └── camera-01/               # Camera ID
@@ -44,7 +44,7 @@ media-capture-data/
 
 ### 3. File Naming Convention
 
-```
+```text
 video-{YYYY}-{MM}-{DD}T{HH}-{mm}-{ss}Z.mp4
 ```
 
@@ -89,7 +89,7 @@ Each video segment is tagged for efficient querying:
 
 **Query Example**:
 
-```
+```text
 camera_id = 'camera-01' AND
 start_time >= '2026-01-20T10:00:00Z' AND
 start_time < '2026-01-20T11:00:00Z'

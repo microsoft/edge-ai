@@ -61,7 +61,7 @@ response=$(curl --digest -s -X POST "${CAMERA_URL}" \
 </s:Envelope>')
 
 # Save raw response
-echo "$response" > /tmp/onvif-profiles-response.xml
+echo "$response" >/tmp/onvif-profiles-response.xml
 echo "✅ Raw response saved to: /tmp/onvif-profiles-response.xml"
 echo ""
 
@@ -96,7 +96,7 @@ if [[ -n "$tokens" ]]; then
     if [[ -n "$token" ]]; then
       echo "  🎯 ProfileToken: $token"
     fi
-  done <<< "$tokens"
+  done <<<"$tokens"
   echo ""
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
   echo "Next Steps:"

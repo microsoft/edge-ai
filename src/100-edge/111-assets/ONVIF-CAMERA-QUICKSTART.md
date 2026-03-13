@@ -793,7 +793,7 @@ The configurations in this guide (both Bicep and Terraform) use **datasets with 
 
 **Evidence from ONVIF Connector Logs**:
 
-```
+```text
 <4> Asset Endpoint is not being observed. Received Asset Update Notification: 
 Asset { datasets: [...], events: [], management_groups: [], ... }
 ```
@@ -879,7 +879,7 @@ curl -X POST http://CAMERA-IP/onvif/device_service \
 3. Camera in manual mode - Some cameras disable remote PTZ when in manual control
 4. Network connectivity issues - Verify camera is reachable from cluster
 
-#### Additional Resources
+#### Asset Management Resources
 
 - **Microsoft Learn**: [Manage Assets in Azure IoT Operations](https://learn.microsoft.com/azure/iot-operations/discover-manage-assets/overview-manage-assets)
 - **Operations Experience UI**: Access through Azure Portal → Your IoT Operations Instance

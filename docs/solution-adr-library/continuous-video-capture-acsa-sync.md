@@ -195,7 +195,7 @@ impl AcsaWriter {
 
 Videos are organized using a two-level structure for optimal query performance:
 
-```
+```text
 media-capture-data/
 ├── a1/                              # MD5 hash prefix (first 2 chars of camera ID hash)
 │   └── camera-01/

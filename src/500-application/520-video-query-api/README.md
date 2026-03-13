@@ -13,7 +13,7 @@ keywords:
 estimated_reading_time: 10
 ---
 
-# Video Query API
+## Video Query API
 
 Azure Function for querying and retrieving time-based video segments from continuous camera recordings. Enables data scientists and analysts to request video from specific cameras for specific timeframes, with secure SAS URL generation for direct segment access.
 
@@ -35,7 +35,7 @@ The Video Query API provides a REST endpoint for querying video recordings store
 
 ## Architecture
 
-```
+```text
 ┌──────────────┐      HTTP GET      ┌─────────────────────┐
 │ Data         │ ─────────────────> │ Video Query API     │
 │ Scientist    │  /api/video?       │ (Azure Function)    │

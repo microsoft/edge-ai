@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=SC2016
 ################################################################################
 # Quick PTZ Test for ONVIF Camera
 #
@@ -26,7 +27,7 @@ if [[ -n "$K8S_SECRET_NAME" ]]; then
   echo "🔑 Loading credentials from Kubernetes secret: ${K8S_SECRET_NAME}..."
   CAMERA_USERNAME=$(kubectl get secret "${K8S_SECRET_NAME}" -n "${K8S_NAMESPACE}" -o jsonpath='{.data.username}' 2>/dev/null | base64 -d || echo "")
   CAMERA_PASSWORD=$(kubectl get secret "${K8S_SECRET_NAME}" -n "${K8S_NAMESPACE}" -o jsonpath='{.data.password}' 2>/dev/null | base64 -d || echo "")
-  
+
   if [[ -n "$CAMERA_USERNAME" ]] && [[ -n "$CAMERA_PASSWORD" ]]; then
     echo "✅ Credentials loaded from secret"
   else
@@ -81,12 +82,12 @@ curl --digest -s -X POST "${CAMERA_URL}" \
     </ptz:ContinuousMove>
   </s:Body>
 </s:Envelope>' \
-  --max-time 5 > /tmp/ptz-response.xml 2>&1
+  --max-time 5 >/tmp/ptz-response.xml 2>&1
 
 if grep -q "ContinuousMoveResponse\|HTTP" /tmp/ptz-response.xml; then
   echo "   ✅ Command sent successfully"
 else
-  echo "   ⚠️  Response: $(cat /tmp/ptz-response.xml | grep -o "SOAP-ENV:Text[^<]*" | head -1)"
+  echo "   ⚠️  Response: $(grep -o "SOAP-ENV:Text[^<]*" /tmp/ptz-response.xml | head -1)"
 fi
 
 sleep 2
@@ -107,7 +108,7 @@ curl --digest -s -X POST "${CAMERA_URL}" \
     </ptz:Stop>
   </s:Body>
 </s:Envelope>' \
-  --max-time 5 > /dev/null 2>&1
+  --max-time 5 >/dev/null 2>&1
 
 sleep 1
 
@@ -128,12 +129,12 @@ curl --digest -s -X POST "${CAMERA_URL}" \
     </ptz:ContinuousMove>
   </s:Body>
 </s:Envelope>' \
-  --max-time 5 > /tmp/ptz-response.xml 2>&1
+  --max-time 5 >/tmp/ptz-response.xml 2>&1
 
 if grep -q "ContinuousMoveResponse\|HTTP" /tmp/ptz-response.xml; then
   echo "   ✅ Command sent successfully"
 else
-  echo "   ⚠️  Response: $(cat /tmp/ptz-response.xml | grep -o "SOAP-ENV:Text[^<]*" | head -1)"
+  echo "   ⚠️  Response: $(grep -o "SOAP-ENV:Text[^<]*" /tmp/ptz-response.xml | head -1)"
 fi
 
 sleep 2
@@ -153,7 +154,7 @@ curl --digest -s -X POST "${CAMERA_URL}" \
     </ptz:Stop>
   </s:Body>
 </s:Envelope>' \
-  --max-time 5 > /dev/null 2>&1
+  --max-time 5 >/dev/null 2>&1
 
 sleep 1
 
@@ -174,12 +175,12 @@ curl --digest -s -X POST "${CAMERA_URL}" \
     </ptz:ContinuousMove>
   </s:Body>
 </s:Envelope>' \
-  --max-time 5 > /tmp/ptz-response.xml 2>&1
+  --max-time 5 >/tmp/ptz-response.xml 2>&1
 
 if grep -q "ContinuousMoveResponse\|HTTP" /tmp/ptz-response.xml; then
   echo "   ✅ Command sent successfully"
 else
-  echo "   ⚠️  Response: $(cat /tmp/ptz-response.xml | grep -o "SOAP-ENV:Text[^<]*" | head -1)"
+  echo "   ⚠️  Response: $(grep -o "SOAP-ENV:Text[^<]*" /tmp/ptz-response.xml | head -1)"
 fi
 
 sleep 2
@@ -199,7 +200,7 @@ curl --digest -s -X POST "${CAMERA_URL}" \
     </ptz:Stop>
   </s:Body>
 </s:Envelope>' \
-  --max-time 5 > /dev/null 2>&1
+  --max-time 5 >/dev/null 2>&1
 
 sleep 1
 
@@ -220,12 +221,12 @@ curl --digest -s -X POST "${CAMERA_URL}" \
     </ptz:ContinuousMove>
   </s:Body>
 </s:Envelope>' \
-  --max-time 5 > /tmp/ptz-response.xml 2>&1
+  --max-time 5 >/tmp/ptz-response.xml 2>&1
 
 if grep -q "ContinuousMoveResponse\|HTTP" /tmp/ptz-response.xml; then
   echo "   ✅ Command sent successfully"
 else
-  echo "   ⚠️  Response: $(cat /tmp/ptz-response.xml | grep -o "SOAP-ENV:Text[^<]*" | head -1)"
+  echo "   ⚠️  Response: $(grep -o "SOAP-ENV:Text[^<]*" /tmp/ptz-response.xml | head -1)"
 fi
 
 sleep 2
@@ -245,7 +246,7 @@ curl --digest -s -X POST "${CAMERA_URL}" \
     </ptz:Stop>
   </s:Body>
 </s:Envelope>' \
-  --max-time 5 > /dev/null 2>&1
+  --max-time 5 >/dev/null 2>&1
 
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

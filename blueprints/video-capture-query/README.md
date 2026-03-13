@@ -355,7 +355,7 @@ helm install media-capture \
   --set mediaCapture.continuousRecording.localRetentionHours=24 \
   --set mediaCapture.continuousRecording.cleanupIntervalMinutes=60 \
   --set mediaCapture.storage.cloudSyncDir=/cloud-sync/video-recordings \
-  --set mediaCapture.video.rtspUrl="rtsp://camera-user:camera-pass@192.168.1.100:554/stream1"
+  --set mediaCapture.video.rtspUrl="rtsp://192.168.1.100:554/stream1"
 
 # Verify deployment
 kubectl get pods -n azure-iot-operations -l app.kubernetes.io/name=media-capture-service
@@ -443,7 +443,9 @@ az storage blob list \
   --output table
 ```
 
-**Total deployment time: < 30 minutes**
+### Total Deployment Time
+
+Estimated: less than 30 minutes
 
 ## Usage
 

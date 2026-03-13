@@ -13,8 +13,8 @@ This document describes the deploy      "camera-01-endpoint" = {
 **Deployment Date:** December 19, 2025
 **API Version:** Microsoft.DeviceRegistry/namespaces/devices@2025-10-01
 **Location:** eastus2
-**Namespace:** <namespace-name>
-**Custom Location:** <custom-location-name>
+**Namespace:** `<namespace-name>`
+**Custom Location:** `<custom-location-name>`
 
 ### Successfully Deployed Resources
 
@@ -22,17 +22,17 @@ This document describes the deploy      "camera-01-endpoint" = {
 
 | Device Name     | IP Address    | Endpoint Name       | ONVIF Path            | Capabilities    |
 |-----------------|---------------|---------------------|-----------------------|-----------------|
-| <camera-name-1> | <camera-ip-1> | <camera-endpoint-1> | /onvif/device_service | Pan, Tilt       |
-| <camera-name-2> | <camera-ip-2> | <camera-endpoint-2> | /onvif/device_service | Pan, Tilt       |
-| <camera-name-3> | <camera-ip-3> | <camera-endpoint-3> | /onvif/device_service | Pan, Tilt, Zoom |
+| `<camera-name-1>` | `<camera-ip-1>` | `<camera-endpoint-1>` | /onvif/device_service | Pan, Tilt       |
+| `<camera-name-2>` | `<camera-ip-2>` | `<camera-endpoint-2>` | /onvif/device_service | Pan, Tilt       |
+| `<camera-name-3>` | `<camera-ip-3>` | `<camera-endpoint-3>` | /onvif/device_service | Pan, Tilt, Zoom |
 
 #### Assets (3)
 
 | Asset Name              | Device Reference | Type        | Data Points |
 |-------------------------|------------------|-------------|-------------|
-| amcrest-01-ptz-commands | <camera-name-1>  | PTZ Control | 5           |
-| amcrest-02-ptz-commands | <camera-name-2>  | PTZ Control | 5           |
-| reolink-01-ptz-commands | <camera-name-3>  | PTZ Control | 8           |
+| amcrest-01-ptz-commands | `<camera-name-1>`  | PTZ Control | 5           |
+| amcrest-02-ptz-commands | `<camera-name-2>`  | PTZ Control | 5           |
+| reolink-01-ptz-commands | `<camera-name-3>`  | PTZ Control | 8           |
 
 ### PTZ Data Points
 
@@ -88,24 +88,24 @@ resource_group = {
 }
 
 adr_namespace = {
-  id = "/subscriptions/<subscription-id>/resourceGroups/<resource-group>/providers/Microsoft.DeviceRegistry/namespaces/<namespace-name>"
+  id = "/subscriptions/<subscription-id>/resourceGroups/<resource-group>/providers/Microsoft.DeviceRegistry/namespaces/`<namespace-name>`"
 }
 
-custom_location_id = "/subscriptions/<subscription-id>/resourceGroups/<resource-group>/providers/Microsoft.ExtendedLocation/customLocations/<custom-location-name>"
+custom_location_id = "/subscriptions/<subscription-id>/resourceGroups/<resource-group>/providers/Microsoft.ExtendedLocation/customLocations/`<custom-location-name>`"
 ```
 
 ### Device Definition Pattern
 
 ```hcl
 {
-  name    = "<camera-name-1>"
+  name    = "`<camera-name-1>`"
   enabled = true
   endpoints = {
     outbound = { assigned = {} }
     inbound = {
-      "<camera-endpoint-1>" = {
+      "`<camera-endpoint-1>`" = {
         endpoint_type = "Microsoft.ONVIF"
-        address       = "http://<camera-ip-1>/onvif/device_service"
+        address       = "http://`<camera-ip-1>`/onvif/device_service"
         version       = "21.06"
         authentication = {
           method = "UsernamePassword"
@@ -127,8 +127,8 @@ custom_location_id = "/subscriptions/<subscription-id>/resourceGroups/<resource-
   name    = "amcrest-01-ptz-commands"
   enabled = true
   device_ref = {
-    device_name   = "<camera-name-1>"
-    endpoint_name = "<camera-endpoint-1>"
+    device_name   = "`<camera-name-1>`"
+    endpoint_name = "`<camera-endpoint-1>`"
   }
   data_points = [
     {
@@ -206,7 +206,7 @@ Use the ONVIF connector or a custom application to subscribe directly to camera 
 # Python example using onvif-zeep
 from onvif import ONVIFCamera
 
-camera = ONVIFCamera('<camera-ip-1>', 80, 'username', 'password')
+camera = ONVIFCamera('`<camera-ip-1>`', 80, 'username', 'password')
 event_service = camera.create_events_service()
 
 # Subscribe to events
@@ -238,7 +238,7 @@ spec:
         image: your-event-monitor:latest
         env:
         - name: CAMERA_IPS
-          value: "<camera-ip-1>,<camera-ip-2>,<camera-ip-3>"
+          value: "`<camera-ip-1>`,`<camera-ip-2>`,`<camera-ip-3>`"
 ```
 
 ### Option 4: Wait for API Update
@@ -262,7 +262,7 @@ az resource list --resource-group <resource-group> \
 
 # Get specific device details
 az resource show \
-  --ids /subscriptions/<subscription-id>/resourceGroups/<resource-group>/providers/Microsoft.DeviceRegistry/namespaces/<namespace-name>/devices/<camera-name-1> \
+  --ids /subscriptions/<subscription-id>/resourceGroups/<resource-group>/providers/Microsoft.DeviceRegistry/namespaces/`<namespace-name>`/devices/`<camera-name-1>` \
   --query "{name:name, enabled:properties.enabled, provisioningState:properties.provisioningState}" -o json
 ```
 
@@ -276,7 +276,7 @@ az resource list --resource-group <resource-group> \
 
 # Get specific asset details
 az resource show \
-  --ids /subscriptions/<subscription-id>/resourceGroups/<resource-group>/providers/Microsoft.DeviceRegistry/namespaces/<namespace-name>/assets/amcrest-01-ptz-commands \
+  --ids /subscriptions/<subscription-id>/resourceGroups/<resource-group>/providers/Microsoft.DeviceRegistry/namespaces/`<namespace-name>`/assets/amcrest-01-ptz-commands \
   --query "{name:name, enabled:properties.enabled, deviceRef:properties.deviceRef}" -o json
 ```
 
@@ -321,7 +321,7 @@ mosquitto_pub -h <mqtt-broker> -t "cameras/reolink-01/ptz/zoom_in" -m "1"
 
 1. Navigate to Azure IoT Operations in Azure Portal
 2. Select your IoT Hub
-3. Browse to Device Registry > Namespaces > <namespace-name>
+3. Browse to Device Registry > Namespaces > `<namespace-name>`
 4. Select device > Assets > PTZ Commands
 5. Use the portal interface to send commands
 
@@ -353,10 +353,10 @@ usernamePasswordCredentials = {
 
 ```bash
 # Test network connectivity
-ping <camera-ip-1>
+ping `<camera-ip-1>`
 
 # Test ONVIF endpoint
-curl -X POST http://<camera-ip-1>/onvif/device_service \
+curl -X POST http://`<camera-ip-1>`/onvif/device_service \
   -H "Content-Type: application/soap+xml" \
   -d '<?xml version="1.0" encoding="UTF-8"?><s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope"><s:Body><GetSystemDateAndTime xmlns="http://www.onvif.org/ver10/device/wsdl"/></s:Body></s:Envelope>'
 

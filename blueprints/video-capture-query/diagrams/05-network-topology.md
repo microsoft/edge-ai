@@ -164,7 +164,7 @@ The solution spans two main network environments connected via Azure Arc:
 
 ### Network Segmentation
 
-```
+```text
 Internet
     ↓ (Firewall)
 Edge Factory Network

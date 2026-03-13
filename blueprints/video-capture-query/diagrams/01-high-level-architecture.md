@@ -48,19 +48,19 @@ This diagram provides a complete overview of the video capture query solution, s
 
 ### Continuous Recording Flow
 
-```
+```text
 Cameras → Media Capture Service → ACSA → Hot Storage → Cool Storage → Archive Storage
 ```
 
 ### Query Flow
 
-```
+```text
 Data Scientist → Video Query API → Blob Storage → Stitched Video → Analysis
 ```
 
 ### Optional AI Enhancement
 
-```
+```text
 Blob Storage → Video Indexer → Enhanced Search Capabilities
 ```
 
