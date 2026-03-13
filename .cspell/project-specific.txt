@@ -11,6 +11,7 @@ Linfa
 Multimodal
 Ollama
 SARIF
+Standardised
 TMDL
 WIQL
 Workback
@@ -33,6 +34,7 @@ azureuser
 bicepconfig
 bicepparam
 bluenviron
+chipsets
 cloudapp
 colorbars
 commitish
@@ -67,6 +69,7 @@ isengineering
 jointable
 jspx
 kalypso
+leakdet
 libopencv
 logissue
 managedidentity
@@ -84,6 +87,7 @@ notebookutils
 ocation
 octocat
 onelake
+optimises
 orientationmeasure
 oxsecurity
 pipx
