@@ -45,7 +45,7 @@ jobs:
           fetch-depth: 0
 
       - name: Install Rust toolchain and clippy
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@631a55b12751854ce901bb631d5902ceb48146f7 # stable
         with:
           components: clippy
           targets: wasm32-wasip2
@@ -54,6 +54,7 @@ jobs:
         shell: bash
         env:
           BREAK_BUILD: ${{ inputs.break_build }}
+          CARGO_REGISTRIES_AIO_SDKS_TOKEN: ${{ secrets.CARGO_REGISTRIES_AIO_SDKS_TOKEN }}
         run: |
           set -euo pipefail
           FAILED=0
