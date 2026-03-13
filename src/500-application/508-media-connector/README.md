@@ -144,7 +144,7 @@ For **customer production environments**:
    - MediaMTX (open source, RTSP/HLS/WebRTC support)
    - NGINX with RTMP module
    - Wowza Streaming Engine
-   - Azure Media Services
+   - Third-party cloud services (AWS MediaConvert, Mux)
 
 2. **Reference the media server** in media connector assets:
    - Configure `stream-to-rtsp` tasks with media server endpoint
@@ -258,15 +258,15 @@ After deploying the connector template, configure your cameras (devices) and cap
 ```bash
 cd blueprints/full-single-node-cluster/terraform
 
-# Create or edit media-connector-assets.tfvars
-# Copy example configuration (when available)
-# cp media-connector-assets.tfvars.example media-connector-assets.tfvars
+# Create or edit terraform.tfvars
+# Copy example configuration
+# cp alert-dataflow.tfvars.example terraform.tfvars
 ```
 
 Add device and asset configurations using `namespaced_devices` and `namespaced_assets` variables:
 
 ```hcl
-# In media-connector-assets.tfvars
+# In terraform.tfvars
 
 # Define camera devices
 namespaced_devices = [
@@ -297,9 +297,9 @@ namespaced_assets = [
       device_name   = "warehouse-camera-01"
       endpoint_name = "warehouse-camera-endpoint"
     }
-    datasets = [{
-      name = "snapshots"
-      dataset_configuration = "{\"taskType\":\"snapshot-to-mqtt\",\"intervalSeconds\":5,\"quality\":85}"
+    streams = [{
+      name                 = "snapshots"
+      stream_configuration = "{\"taskType\":\"snapshot-to-mqtt\",\"autostart\":true,\"snapshotsPerSecond\":0.2,\"format\":\"jpeg\"}"
       destinations = [{ target = "Mqtt", configuration = { topic = "warehouse/camera-01/snapshots" } }]
     }]
   }
@@ -311,7 +311,7 @@ See the [Configuring Media Connector Assets](#configuring-media-connector-assets
 Apply the device and asset configuration:
 
 ```bash
-terraform apply -var-file="media-connector-assets.tfvars"
+terraform apply
 ```
 
 #### Verify
@@ -333,12 +333,12 @@ kubectl exec -it mqtt-client -n azure-iot-operations -- \
          --cafile /var/run/certs/ca.crt --topic 'media/#' -v"
 ```
 
-**Configuration Reference**: See `blueprints/full-single-node-cluster/terraform/media-connector-assets.tfvars.example`
+**Configuration Reference**: See `blueprints/full-single-node-cluster/terraform/alert-dataflow.tfvars.example`
 for a complete example of all available configuration options including device and asset definitions.
 
 ## Configuring Media Connector Assets
 
-When configuring media connector assets in your `terraform.tfvars` or `media-connector-assets.tfvars`, define devices for your cameras/media sources and assets for capture tasks.
+When configuring media connector assets in your `terraform.tfvars`, define devices for your cameras/media sources and assets for capture tasks.
 
 ### Device Configuration Example
 
@@ -397,12 +397,10 @@ namespaced_assets = [
       assetType = "media-snapshots"
       location  = "Warehouse Main Entrance"
     }
-    datasets = [
+    streams = [
       {
-        name                  = "snapshots"
-        data_source           = ""  # Media connector uses device endpoint
-        dataset_configuration = "{\"taskType\":\"snapshot-to-mqtt\",\"intervalSeconds\":5,\"quality\":85}"
-        data_points           = []
+        name                 = "snapshots"
+        stream_configuration = "{\"taskType\":\"snapshot-to-mqtt\",\"autostart\":true,\"snapshotsPerSecond\":0.2,\"format\":\"jpeg\"}"
         destinations = [
           {
             target = "Mqtt"
@@ -427,32 +425,30 @@ namespaced_assets = [
       assetType = "media-clips"
       location  = "Warehouse Main Entrance"
     }
-    datasets = [
+    streams = [
       {
-        name                  = "clips"
-        data_source           = ""  # Media connector uses device endpoint
-        dataset_configuration = "{\"taskType\":\"clip-to-fs\",\"durationSeconds\":30,\"storagePath\":\"/clips\"}"
-        data_points           = []
-        destinations = []  # Clips stored to filesystem, not MQTT
+        name                 = "clips"
+        stream_configuration = "{\"taskType\":\"clip-to-fs\",\"autostart\":true,\"durationSeconds\":30,\"storagePath\":\"/clips\"}"
+        destinations         = []
       }
     ]
   }
 ]
 ```
 
-### Task Types in Dataset Configuration
+### Task Types in Stream Configuration
 
-Configure different media connector tasks via `dataset_configuration` JSON:
+Configure different media connector tasks via `stream_configuration` JSON. All tasks require `autostart: true` to start automatically:
 
-| Task Type            | Configuration Example                                                                                   |
-|----------------------|---------------------------------------------------------------------------------------------------------|
-| **snapshot-to-mqtt** | `{"taskType":"snapshot-to-mqtt","intervalSeconds":5,"quality":85}`                                      |
-| **clip-to-fs**       | `{"taskType":"clip-to-fs","durationSeconds":30,"storagePath":"/clips"}`                                 |
-| **snapshot-to-fs**   | `{"taskType":"snapshot-to-fs","intervalSeconds":10,"quality":90,"storagePath":"/snapshots"}`            |
-| **stream-to-rtsp**   | `{"taskType":"stream-to-rtsp","mediaServerEndpoint":"rtsp://mediamtx:8554/stream"}`                     |
-| **stream-to-rtsps**  | `{"taskType":"stream-to-rtsps","mediaServerEndpoint":"rtsps://mediamtx:8555/stream","tlsEnabled":true}` |
+| Task Type            | Configuration Example                                                                                                    |
+|----------------------|--------------------------------------------------------------------------------------------------------------------------|
+| **snapshot-to-mqtt** | `{"taskType":"snapshot-to-mqtt","autostart":true,"snapshotsPerSecond":0.2,"format":"jpeg"}`                              |
+| **clip-to-fs**       | `{"taskType":"clip-to-fs","autostart":true,"durationSeconds":30,"storagePath":"/clips"}`                                 |
+| **snapshot-to-fs**   | `{"taskType":"snapshot-to-fs","autostart":true,"snapshotsPerSecond":0.1,"format":"jpeg","storagePath":"/snapshots"}`     |
+| **stream-to-rtsp**   | `{"taskType":"stream-to-rtsp","autostart":true,"mediaServerEndpoint":"rtsp://mediamtx:8554/stream"}`                     |
+| **stream-to-rtsps**  | `{"taskType":"stream-to-rtsps","autostart":true,"mediaServerEndpoint":"rtsps://mediamtx:8555/stream","tlsEnabled":true}` |
 
-**Complete Configuration Example**: See `blueprints/full-single-node-cluster/terraform/media-connector-assets.tfvars.example` for a production-ready configuration file with multiple cameras, authentication, and various task types.
+**Complete Configuration Example**: See `blueprints/full-single-node-cluster/terraform/alert-dataflow.tfvars.example` for a production-ready configuration file with multiple cameras, authentication, and various task types.
 
 ## Local Development and Testing
 
@@ -482,6 +478,24 @@ Configure different media connector tasks via `dataset_configuration` JSON:
    # Publish test message
    mosquitto_pub -h localhost -t "media/test" -m '{"test": "message"}'
    ```
+
+### Testing with Mock RTSP Cameras on Kubernetes
+
+For cluster-based testing without real cameras, deploy mock RTSP camera pods:
+
+```bash
+kubectl apply -f src/500-application/508-media-connector/kubernetes/mock-rtsp-cameras.yaml
+```
+
+This deploys three mock cameras in the `azure-iot-operations` namespace using `ullaakut/rtspatt`:
+
+| Camera      | Resolution | FPS | Service Address                  |
+|-------------|------------|-----|----------------------------------|
+| `pattern`   | 1920x1080  | 30  | `rtsp://mock-rtsp-pattern:554`   |
+| `colorbars` | 1280x720   | 15  | `rtsp://mock-rtsp-colorbars:554` |
+| `ball`      | 640x480    | 25  | `rtsp://mock-rtsp-ball:554`      |
+
+Device endpoint addresses should use the service name with the RTSP path (e.g., `rtsp://mock-rtsp-pattern:554/live.sdp/pattern`).
 
 ### Testing RTSP Streams
 
@@ -605,7 +619,7 @@ The media connector can be deployed using either:
 - **Simple enablement**: Set `should_enable_akri_media_connector = true` for default configuration
 - **Advanced configuration**: Use `custom_akri_connectors` list for custom images, MQTT settings, or multiple instances
 
-Specific camera and asset configuration is managed through **Device** and **Asset** resources defined in `media-connector-assets.tfvars`.
+Specific camera and asset configuration is managed through **Device** and **Asset** resources defined in `terraform.tfvars`.
 
 ### Scenario 1: Basic Snapshot Capture
 
@@ -619,10 +633,10 @@ cat >> terraform.tfvars <<EOF
 should_enable_akri_media_connector = true
 EOF
 
-# Configure camera and snapshot asset in media-connector-assets.tfvars
+# Configure camera and snapshot asset in terraform.tfvars
 # See "Configuring Media Connector Assets" section above for examples
 
-terraform apply -var-file="media-connector-assets.tfvars"
+terraform apply
 ```
 
 ### Scenario 2: Video Clip Recording
@@ -630,7 +644,7 @@ terraform apply -var-file="media-connector-assets.tfvars"
 Configure video clip recording to persistent storage. This requires both device (camera) and asset (clip recording task) configuration:
 
 ```hcl
-# In media-connector-assets.tfvars
+# In terraform.tfvars
 
 # Define the security camera device
 namespaced_devices = [
@@ -671,13 +685,11 @@ namespaced_assets = [
     attributes = {
       assetType = "media-clips"
     }
-    datasets = [
+    streams = [
       {
-        name                  = "motion-clips"
-        data_source           = ""  # Media connector uses device endpoint
-        dataset_configuration = "{\"taskType\":\"clip-to-fs\",\"durationSeconds\":60,\"storagePath\":\"/security/clips\"}"
-        data_points           = []
-        destinations          = []  # Clips stored to filesystem
+        name                 = "motion-clips"
+        stream_configuration = "{\"taskType\":\"clip-to-fs\",\"autostart\":true,\"durationSeconds\":60,\"storagePath\":\"/security/clips\"}"
+        destinations         = []
       }
     ]
   }
@@ -689,7 +701,7 @@ namespaced_assets = [
 Deploy multiple cameras with different capture configurations:
 
 ```hcl
-# In media-connector-assets.tfvars
+# In terraform.tfvars
 namespaced_devices = [
   {
     name         = "camera-entrance"
@@ -715,18 +727,18 @@ namespaced_assets = [
   {
     name       = "entrance-snapshots"
     device_ref = { device_name = "camera-entrance", endpoint_name = "entrance-endpoint" }
-    datasets = [{
-      name = "snapshots"
-      dataset_configuration = "{\"taskType\":\"snapshot-to-mqtt\",\"intervalSeconds\":2,\"quality\":90}"
+    streams = [{
+      name                 = "snapshots"
+      stream_configuration = "{\"taskType\":\"snapshot-to-mqtt\",\"autostart\":true,\"snapshotsPerSecond\":0.5,\"format\":\"jpeg\"}"
       destinations = [{ target = "Mqtt", configuration = { topic = "entrance/snapshots" } }]
     }]
   },
   {
     name       = "warehouse-snapshots"
     device_ref = { device_name = "camera-warehouse", endpoint_name = "warehouse-endpoint" }
-    datasets = [{
-      name = "snapshots"
-      dataset_configuration = "{\"taskType\":\"snapshot-to-mqtt\",\"intervalSeconds\":5,\"quality\":85}"
+    streams = [{
+      name                 = "snapshots"
+      stream_configuration = "{\"taskType\":\"snapshot-to-mqtt\",\"autostart\":true,\"snapshotsPerSecond\":0.2,\"format\":\"jpeg\"}"
       destinations = [{ target = "Mqtt", configuration = { topic = "warehouse/snapshots" } }]
     }]
   }
@@ -738,7 +750,7 @@ namespaced_assets = [
 Configure live stream proxying for operator access (requires MediaMTX deployment). This requires both device (camera) and asset (streaming task) configuration:
 
 ```hcl
-# In media-connector-assets.tfvars
+# In terraform.tfvars
 
 # Define the control room camera device
 namespaced_devices = [
@@ -779,13 +791,11 @@ namespaced_assets = [
     attributes = {
       assetType = "media-stream"
     }
-    datasets = [
+    streams = [
       {
-        name                  = "live-stream"
-        data_source           = ""  # Media connector uses device endpoint
-        dataset_configuration = "{\"taskType\":\"stream-to-rtsp\",\"mediaServerEndpoint\":\"rtsp://mediamtx-service:8554/control-room\"}"
-        data_points           = []
-        destinations          = []  # Stream proxied to MediaMTX
+        name                 = "live-stream"
+        stream_configuration = "{\"taskType\":\"stream-to-rtsp\",\"autostart\":true,\"mediaServerEndpoint\":\"rtsp://mediamtx-service:8554/control-room\"}"
+        destinations         = []
       }
     ]
   }
@@ -922,7 +932,7 @@ kubectl get pods -n azure-iot-operations -l app=media-connector
 kubectl get devices -n azure-iot-operations
 
 # Check asset status
-kubectl get assets -n azure-iot-operations
+kubectl get assets.namespaces.deviceregistry.microsoft.com -n azure-iot-operations
 
 # Monitor MQTT traffic
 kubectl logs -n azure-iot-operations deployment/aio-broker

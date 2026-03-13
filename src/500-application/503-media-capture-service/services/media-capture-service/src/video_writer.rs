@@ -74,6 +74,19 @@ fn sample_frames<'a>(
     }
 }
 
+/// Generates the hierarchical output path for video files.
+/// Format: {base_path}/{camera_id}/{YYYY}/{MM}/{DD}/{HH}/
+/// This matches the continuous recorder path structure for unified querying.
+fn generate_hierarchical_path(base_path: &PathBuf, camera_id: Option<&str>, timestamp: &chrono::DateTime<chrono::Utc>) -> PathBuf {
+    let camera = camera_id.unwrap_or("unknown-camera");
+    base_path
+        .join(camera)
+        .join(timestamp.format("%Y").to_string())
+        .join(timestamp.format("%m").to_string())
+        .join(timestamp.format("%d").to_string())
+        .join(timestamp.format("%H").to_string())
+}
+
 pub async fn write_buffered_video(
     buffer: Arc<Mutex<VideoBuffer>>,
     dest_path: PathBuf,
@@ -85,20 +98,20 @@ pub async fn write_buffered_video(
     wait_seconds: usize,
     event_id: Option<u64>,
     event_type: Option<&str>,
+    camera_id: Option<&str>,
 ) -> Result<bool, Box<dyn Error>> {
     let event_id_str = event_id.map(|id| id.to_string()).unwrap_or_else(|| "unknown".to_string());
     let formatted_timestamp = Utc::now().format(filename_format).to_string();
-    info!("Creating filename with event_id={}, event_type={:?}", event_id_str, event_type);
+    info!("Creating filename with event_id={}, event_type={:?}, camera_id={:?}", event_id_str, event_type, camera_id);
 
     let file_name = create_video_filename(formatted_timestamp.clone(), event_id, event_type);
-    // Get current date in UTC for folder naming
-    let date_folder = Utc::now().format("%Y-%m-%d").to_string();
-    let dated_dest_path = dest_path.join(date_folder);
+    // Use hierarchical path structure: {camera}/{YYYY}/{MM}/{DD}/{HH}/
+    let hierarchical_path = generate_hierarchical_path(&dest_path, camera_id, &Utc::now());
 
-    let file_path = dated_dest_path.join(&file_name);
-    if !dated_dest_path.exists() {
-        warn!("event_id={}, Directory does not exist: {:?}. Attempting to create it.", event_id_str, dated_dest_path);
-        fs::create_dir_all(dated_dest_path.clone()).await.map_err(|e| Box::new(e) as Box<dyn Error>)?;
+    let file_path = hierarchical_path.join(&file_name);
+    if !hierarchical_path.exists() {
+        warn!("event_id={}, Directory does not exist: {:?}. Attempting to create it.", event_id_str, hierarchical_path);
+        fs::create_dir_all(hierarchical_path.clone()).await.map_err(|e| Box::new(e) as Box<dyn Error>)?;
     }
 
     let fourcc_chars: Vec<char> = video_format.chars().collect();
@@ -336,6 +349,7 @@ mod tests {
             1,
             Some(1),
             Some("test"),
+            Some("test-camera"),
         ).await;
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), false); // test for false when no frames
@@ -362,6 +376,7 @@ mod tests {
             1,
             Some(2),
             Some("test"),
+            Some("test-camera"),
         ).await;
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), true); // test for true when frames exist

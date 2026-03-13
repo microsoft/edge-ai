@@ -1,6 +1,6 @@
 ---
 title: Video and Image Capture from Edge-Attached Cameras
-description: Architecture Decision Record for implementing secure video streaming and image capture from edge-attached IP cameras using Azure IoT Operations Media Connector. Covers live RTSP streaming, snapshot/clip storage workflows, MQTT integration, Azure Container Storage enabled by Azure Arc (ACSA), and media synchronization with Azure Blob Storage for anomaly detection scenarios.
+description: Architecture Decision Record for implementing secure video streaming and image capture from edge-attached IP cameras using Azure IoT Operations Media Connector. Covers live RTSP streaming, snapshot/clip storage workflows, MQTT integration, Azure Container Storage enabled by Azure Arc (ACSA), and media synchronization with Azure Blob Storage for anomaly detection scenarios. Amended to reference the Dual-Component Video Architecture ADR which supersedes the Media Sync Service approach.
 author: Alain Uyidi
 ms.date: 2025-11-12
 ms.topic: architecture-decision-record
@@ -86,17 +86,27 @@ Data flow:
 
 ### 2.2 Move files from unbacked to backed ACSA for confirmed events
 
-![scenario-2-2-diagram](./media//media-scenario-2-2.drawio.png)
+![scenario-2-2-diagram](./media/media-scenario-2-2.drawio.png)
 
 Data flow:
 
 (1) - The Deterministic Logic Service publishes to AIO MQTT Broker to the event topic with the timestamp of when the anomaly was detected.
 
-(2) - The Media Sync Service subscribed to the event topic, retrieves the message.
+> **Architecture Update**: The Media Sync Service described in this section was superseded by the [Media Capture Service (503)](../../src/500-application/503-media-capture-service/) which writes directly to cloud-backed ACSA PVCs, eliminating the need for an intermediate sync service. See [Dual-Component Video Architecture](./dual-component-video-architecture.md) for the updated architecture decision.
 
-(3) - The Media Sync Service finds and retrieves the clips/snapshot files stored in unbacked persisted volume within the time range configured for the event.
+**Updated Architecture (Mermaid)**:
 
-(4) - The Media Sync Service copies the clips and files to the cloud backed persisted volume.
+```mermaid
+graph LR
+    DLS[Deterministic Logic Service] -->|Publish event| MQTT[AIO MQTT Broker]
+    MQTT -->|Event topic| MCS[503 Media Capture Service]
+    MCS -->|Write segments| ACSA[ACSA Cloud-Backed PVC]
+    ACSA -->|Auto-sync| BLOB[Azure Blob Storage]
+```
+
+(2) - The Media Capture Service records continuously to cloud-backed ACSA PVC with automatic Azure Blob Storage sync.
+
+(3) - Event timestamps from the Deterministic Logic Service are used by the Video Query API to retrieve relevant segments from Azure Blob Storage.
 
 (5) - The files in ACSA Cloud backed persisted volume is then synced to Azure Blob Storage.
 
@@ -110,11 +120,19 @@ Data flow:
 
 (2) - Mosquitto MQTT Client publishes message to AIO MQTT Broker
 
-(3) - The Media Sync subscribes and retrieves message from the topic
+> **Architecture Update**: The Media Sync Service described in this section was superseded by the [Media Capture Service (503)](../../src/500-application/503-media-capture-service/). See [Dual-Component Video Architecture](./dual-component-video-architecture.md).
 
-(4) - The Media Sync finds and retrieves the clips/snapshot files stored in unbacked persisted volume within the time range specified by Operations Team
+**Updated Architecture (Mermaid)**:
 
-(5) - The Media Sync copies the clips and files to the cloud backed persisted volume.
+```mermaid
+graph LR
+    OT[Operations Team] -->|Time range query| QUERY[Video Query API<br/>503]
+    QUERY -->|Retrieve segments| BLOB[Azure Blob Storage]
+    BLOB -->|SAS URLs| QUERY
+    QUERY -->|Return SAS URLs| OT
+```
+
+(3) - The Video Query API retrieves clips and snapshots from Azure Blob Storage using the time range specified by the Operations Team.
 
 (6) - The files in ACSA Cloud backed persisted volume is then synced to Azure Blob Storage.
 
@@ -125,6 +143,8 @@ Based on the features available to securely interact and operate edge-attached c
 **Production Deployment**: The Media Connector is deployed via blueprints (e.g., `blueprints/full-single-node-cluster`) by enabling the `should_enable_akri_media_connector` flag or using the `custom_akri_connectors` variable for advanced configuration.
 
 **Local Development**: A Docker Compose development environment is available in `src/500-application/508-media-connector` for testing without requiring a full Kubernetes cluster.
+
+> **Note**: This ADR has been supplemented by [Dual-Component Video Architecture](./dual-component-video-architecture.md), which documents the decision to use the Media Capture Service (503) for recording and cloud archival alongside the Media Connector for live streaming and snapshots.
 
 ## Decision Drivers (optional)
 
@@ -158,5 +178,7 @@ In the current ADR, the following is out-of-scope:
 - Management of camera credentials with Azure Key Vault integration for asset endpoint profiles
 - Automated camera discovery and registration workflows
 - Multi-site media synchronization and federated storage
+
+> **Update**: Continuous video recording and cloud synchronization, previously out of scope for the Media Connector, are now provided by the [Media Capture Service (503)](../../src/500-application/503-media-capture-service/). See [Dual-Component Video Architecture](./dual-component-video-architecture.md).
 
 *AI and automation capabilities described in this scenario should be implemented following responsible AI principles, including fairness, reliability, safety, privacy, inclusiveness, transparency, and accountability. Organizations should ensure appropriate governance, monitoring, and human oversight are in place for all AI-powered solutions.*

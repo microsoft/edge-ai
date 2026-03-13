@@ -297,6 +297,91 @@ helm install media-capture-service . --dry-run --debug
 helm lint .
 ```
 
+#### Multi-Camera Deployments
+
+**Important**: Each media-capture-service deployment is configured for a **single camera**. To record from multiple cameras, deploy **separate instances** (not replicas).
+
+**Why Not Use Replicas?**
+
+Increasing replicas (e.g., `--set replicaCount=2`) for the same deployment will:
+
+- ❌ Create duplicate recordings of the same camera
+- ❌ Waste storage with identical video streams
+- ❌ Potentially cause race conditions when writing to the same paths
+- ❌ Not distribute load across multiple cameras
+
+**Correct Approach: Separate Helm Releases**
+
+Deploy one Helm release per camera with unique configurations:
+
+```bash
+# Camera 1 - Front Entrance
+helm install media-capture-camera-01 ./charts/media-capture-service \
+  --namespace azure-iot-operations \
+  --set mediaCapture.continuousRecording.cameraId=camera-01 \
+  --set mediaCapture.video.rtspUrl=rtsp://camera-01.local:8554/live \
+  --set mediaCapture.continuousRecording.cameraLocation=front-entrance
+
+# Camera 2 - Loading Dock
+helm install media-capture-camera-02 ./charts/media-capture-service \
+  --namespace azure-iot-operations \
+  --set mediaCapture.continuousRecording.cameraId=camera-02 \
+  --set mediaCapture.video.rtspUrl=rtsp://camera-02.local:8554/live \
+  --set mediaCapture.continuousRecording.cameraLocation=loading-dock
+
+# Camera 3 - Warehouse
+helm install media-capture-camera-03 ./charts/media-capture-service \
+  --namespace azure-iot-operations \
+  --set mediaCapture.continuousRecording.cameraId=camera-03 \
+  --set mediaCapture.video.rtspUrl=rtsp://camera-03.local:8554/live \
+  --set mediaCapture.continuousRecording.cameraLocation=warehouse
+```
+
+**Benefits of Separate Deployments:**
+
+- ✅ Each camera records independently to unique storage paths
+- ✅ Different camera configurations (resolution, FPS, retention)
+- ✅ Independent scaling and resource allocation
+- ✅ Isolated failures (one camera failure doesn't affect others)
+- ✅ Camera-specific monitoring and troubleshooting
+
+**Managing Multiple Deployments:**
+
+```bash
+# List all media capture deployments
+helm list -n azure-iot-operations | grep media-capture
+
+# Update specific camera configuration
+helm upgrade media-capture-camera-01 ./charts/media-capture-service \
+  --namespace azure-iot-operations \
+  --reuse-values \
+  --set mediaCapture.continuousRecording.segmentDurationSeconds=600
+
+# Remove specific camera deployment
+helm uninstall media-capture-camera-02 -n azure-iot-operations
+
+# View logs for specific camera
+kubectl logs -n azure-iot-operations -l app.kubernetes.io/instance=media-capture-camera-01
+```
+
+**Storage Organization:**
+
+Each camera automatically organizes recordings by camera ID:
+
+```
+/cloud-sync/video-recordings/
+├── camera-01/
+│   └── 2026/01/13/21/
+│       ├── segment_2026-01-13T21:00:00Z_camera-01.mp4
+│       └── segment_2026-01-13T21:05:00Z_camera-01.mp4
+├── camera-02/
+│   └── 2026/01/13/21/
+│       └── segment_2026-01-13T21:00:00Z_camera-02.mp4
+└── camera-03/
+    └── 2026/01/13/21/
+        └── segment_2026-01-13T21:00:00Z_camera-03.mp4
+```
+
 ### Manual Deployment (Advanced)
 
 For advanced users requiring custom configuration or legacy environments:
@@ -584,24 +669,217 @@ The service uses sophisticated timing to extract relevant video segments:
 2. **Check Storage Account Access**:
 
    ```bash
-   az storage container show --account-name $STORAGE_ACCOUNT_NAME --name media --auth-mode login
+
+  az storage container show --account-name $STORAGE_ACCOUNT_NAME --name video-recordings --auth-mode login
+
    ```
 
 3. **Monitor File Sync**:
 
    ```bash
-   kubectl exec -it deployment/media-capture-service -n azure-iot-operations -- ls -la /cloud-sync/media/
+  kubectl exec -it deployment/media-capture-service -n azure-iot-operations -- ls -la /cloud-sync/video-recordings/
    ```
 
-4. **Verify Cloud Storage Integration**:
+1. **Verify Cloud Storage Integration**:
 
    ```bash
    # Monitor logs for successful capture
    kubectl logs -l app.kubernetes.io/name=media-capture-service -n azure-iot-operations
 
    # Verify files in Azure Storage (using Azure CLI)
-   az storage blob list --account-name $STORAGE_ACCOUNT_NAME --container-name media --auth-mode login
+
+  az storage blob list --account-name $STORAGE_ACCOUNT_NAME --container-name video-recordings --auth-mode login
+
    ```
+
+### Cloud Storage Sync Troubleshooting
+
+When video recordings are not appearing in Azure Blob Storage, follow this diagnostic workflow:
+
+#### 1. Verify Service is Running and Recording
+
+Check if the media-capture-service pod is running and actively recording:
+
+```bash
+# Check pod status
+kubectl get pods -n azure-iot-operations -l app.kubernetes.io/name=media-capture-service
+
+# Check if service is scaled up (should show 1/1 replicas)
+kubectl get deployment media-capture-service -n azure-iot-operations
+
+# If scaled down (0/0), scale up to enable recording
+kubectl scale deployment media-capture-service -n azure-iot-operations --replicas=1
+```
+
+#### 2. Check Local Recording on Pod
+
+Verify files are being created locally before checking cloud sync:
+
+```bash
+# Get pod name
+POD_NAME=$(kubectl get pods -n azure-iot-operations -l app.kubernetes.io/name=media-capture-service -o jsonpath='{.items[0].metadata.name}')
+
+# Check if files are being written to local storage
+kubectl exec -n azure-iot-operations $POD_NAME -- ls -lh /cloud-sync/video-recordings/
+
+# Check for recent files (adjust camera ID as needed)
+kubectl exec -n azure-iot-operations $POD_NAME -- find /cloud-sync/video-recordings/ -name "*.mp4" -o -name "*.mkv" -mmin -10
+
+# Check total storage usage
+kubectl exec -n azure-iot-operations $POD_NAME -- du -sh /cloud-sync/video-recordings/
+```
+
+#### 3. Review Service Logs
+
+Check for recording activity and errors:
+
+```bash
+# View recent logs
+kubectl logs -n azure-iot-operations $POD_NAME --tail=100
+
+# Follow logs in real-time
+kubectl logs -n azure-iot-operations $POD_NAME --follow
+
+# Look for specific events
+kubectl logs -n azure-iot-operations $POD_NAME | grep -E "(Recording started|segment saved|error|failed)"
+```
+
+#### 4. Understand ACSA Sync Behavior
+
+**Important**: Files written to the ACSA-backed PVC are **not synced instantly** to Azure Blob Storage.
+
+- **Sync Delay**: Can take several minutes depending on file size and network conditions
+- **Local First**: Files are written to local PVC first, then synced asynchronously by ACSA
+- **No Immediate Visibility**: Recent files may not appear in Azure Portal or CLI immediately
+
+```bash
+# Check ACSA PVC status
+kubectl get pvc -n azure-iot-operations | grep -E "(NAME|cloud-backed)"
+
+# Verify PVC is bound and using cloud-backed storage class
+kubectl describe pvc pvc-acsa-cloud-backed -n azure-iot-operations
+```
+
+#### 5. Verify Storage Account Network Access
+
+The storage account may have network restrictions preventing access from certain locations:
+
+```bash
+# Check storage account network settings
+az storage account show --name $STORAGE_ACCOUNT_NAME \
+  --query "{publicNetworkAccess:publicNetworkAccess,allowSharedKeyAccess:allowSharedKeyAccess}" \
+  --output table
+
+# If publicNetworkAccess is Disabled and you don't have private connectivity configured,
+# ACSA uploads can fail with 403 AuthorizationFailure.
+# Use Azure CLI with auth-mode login to verify from an allowed network.
+az storage blob list --account-name $STORAGE_ACCOUNT_NAME \
+  --container-name video-recordings \
+  --auth-mode login \
+  --output table
+```
+
+**Common Network Issues**:
+
+- `publicNetworkAccess: Disabled` can block both Azure Portal browsing and ACSA edge-to-cloud uploads
+- IP allowlists may block your current location
+- Use `--auth-mode login` with Azure CLI to verify access (subject to network rules)
+
+#### 6. Check ACSA Sync Controller Logs
+
+If files exist locally but never appear in cloud storage, check ACSA sync status:
+
+```bash
+# Check Arc Container Storage pods (operator + per-PVC worker)
+kubectl get pods -n azure-arc-containerstorage
+
+# Check EdgeSubvolume health and backlog
+kubectl get edgesubvolumes -A
+kubectl get edgesubvolume media -o yaml
+
+# Tail logs from the per-PVC worker pod (datamover container)
+WORKER_POD=$(kubectl get pods -n azure-arc-containerstorage -o name | grep '^pod/w-pvc-acsa-cloud-backed' | head -n 1 | cut -d/ -f 2)
+kubectl logs -n azure-arc-containerstorage $WORKER_POD -c datamover --tail=200
+```
+
+#### 7. Verify Storage Account Credentials
+
+Ensure ACSA has proper credentials to access the storage account:
+
+```bash
+# ACSA uses the Azure Arc Container Storage extension managed identity.
+# If EdgeSubvolume status shows AuthorizationFailure, validate the extension identity has
+# Storage Blob Data Contributor on the target storage account.
+
+# Inspect EdgeSubvolume errors (look for AuthorizationFailure)
+kubectl get edgesubvolume media -o jsonpath='{.status.fileErrors[0].error}' && echo
+```
+
+#### 8. Test End-to-End Sync
+
+Force a test recording and monitor sync:
+
+```bash
+# Trigger a manual recording by publishing MQTT message (if configured)
+# Or wait for scheduled continuous recording segments
+
+# Monitor file creation locally
+watch -n 5 "kubectl exec -n azure-iot-operations $POD_NAME -- find /cloud-sync/video-recordings/ -name '*.mp4' -o -name '*.mkv' -mmin -5 | wc -l"
+
+# Wait 3-5 minutes, then check Azure storage
+az storage blob list --account-name $STORAGE_ACCOUNT_NAME \
+  --container-name video-recordings \
+  --auth-mode login \
+  --query "[?properties.lastModified >= '$(date -u -d '5 minutes ago' +%Y-%m-%dT%H:%M:%SZ)'].{name:name, size:properties.contentLength, modified:properties.lastModified}" \
+  --output table
+```
+
+#### Common Issues and Solutions
+
+| Issue                               | Symptoms                                    | Solution                                                        |
+|-------------------------------------|---------------------------------------------|-----------------------------------------------------------------|
+| **Service scaled down**             | No new files being created                  | Scale deployment to 1 replica                                   |
+| **RTSP stream unavailable**         | No recording activity in logs               | Verify camera RTSP URL is accessible from pod                   |
+| **ACSA not configured**             | PVC in Pending state                        | Deploy and configure Azure Container Storage                    |
+| **Storage network blocked**         | Can't see blobs in Portal                   | Use Azure CLI with `--auth-mode login`                          |
+| **Storage public access disabled**  | ACSA logs show `AuthorizationFailure` (403) | Enable public network access or configure private connectivity  |
+| **Sync delay**                      | Local files exist, cloud empty              | Wait 3-5 minutes for ACSA sync to complete                      |
+| **Storage credentials invalid**     | ACSA controller errors                      | Verify storage account connection in extension config           |
+| **Retention policy deleting files** | Files disappear quickly                     | Adjust `localRetentionHours` in values.yaml (default: 24 hours) |
+
+#### Quick Diagnostic Script
+
+Run this script to get a comprehensive status check:
+
+```bash
+#!/bin/bash
+echo "=== Media Capture Service Status ==="
+kubectl get deployment media-capture-service -n azure-iot-operations
+
+echo -e "\n=== Pod Status ==="
+kubectl get pods -n azure-iot-operations -l app=media-capture-service
+
+POD_NAME=$(kubectl get pods -n azure-iot-operations -l app.kubernetes.io/name=media-capture-service -o jsonpath='{.items[0].metadata.name}')
+
+if [ -n "$POD_NAME" ]; then
+  echo -e "\n=== Local Storage Usage ==="
+  kubectl exec -n azure-iot-operations $POD_NAME -- du -sh /cloud-sync/video-recordings/ 2>/dev/null || echo "Pod not ready or path not accessible"
+
+  echo -e "\n=== Recent Files (last 10 minutes) ==="
+  kubectl exec -n azure-iot-operations $POD_NAME -- find /cloud-sync/video-recordings/ \( -name "*.mp4" -o -name "*.mkv" \) -mmin -10 2>/dev/null | wc -l
+
+  echo -e "\n=== Recent Logs ==="
+  kubectl logs -n azure-iot-operations $POD_NAME --tail=20 2>/dev/null
+else
+  echo "No running pod found"
+fi
+
+echo -e "\n=== ACSA PVC Status ==="
+kubectl get pvc -n azure-iot-operations | grep -E "(NAME|cloud-backed)"
+
+echo -e "\n=== ACSA Controller Status ==="
+kubectl get pods -n azure-arc-containerstorage -l app=acsa-controller
+```
 
 ### Docker Compose Issues
 

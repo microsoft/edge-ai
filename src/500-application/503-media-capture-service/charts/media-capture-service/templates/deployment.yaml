@@ -32,6 +32,10 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       restartPolicy: Always
+      {{- with .Values.initContainers }}
+      initContainers:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           {{- with .Values.securityContext }}
@@ -84,10 +88,39 @@ spec:
               value: {{ .Values.mediaCapture.video.captureDurationSeconds | quote }}
             - name: VIDEO_FEED_DELAY_SECONDS
               value: {{ .Values.mediaCapture.video.feedDelaySeconds | quote }}
+            - name: OUTPUT_FORMAT
+              value: {{ .Values.mediaCapture.video.outputFormat | default "mp4" | quote }}
 
             # Logging
             - name: RUST_LOG
               value: {{ .Values.logging.level | quote }}
+
+            # Continuous Recording Configuration
+            {{- if .Values.mediaCapture.continuousRecording.enabled }}
+            - name: CONTINUOUS_RECORDING_ENABLED
+              value: "true"
+            - name: CAMERA_ID
+              value: {{ .Values.mediaCapture.continuousRecording.cameraId | quote }}
+            - name: CAMERA_LOCATION
+              value: {{ .Values.mediaCapture.continuousRecording.cameraLocation | quote }}
+            - name: CONTINUOUS_SEGMENT_DURATION_SECONDS
+              value: {{ .Values.mediaCapture.continuousRecording.segmentDurationSeconds | quote }}
+            - name: LOCAL_RETENTION_HOURS
+              value: {{ .Values.mediaCapture.continuousRecording.localRetentionHours | default "24" | quote }}
+            - name: CLEANUP_INTERVAL_MINUTES
+              value: {{ .Values.mediaCapture.continuousRecording.cleanupIntervalMinutes | default "60" | quote }}
+            - name: AZURE_STORAGE_CONNECTION_STRING
+              {{- if .Values.mediaCapture.continuousRecording.azureStorage.connectionStringSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.mediaCapture.continuousRecording.azureStorage.connectionStringSecret.name }}
+                  key: {{ .Values.mediaCapture.continuousRecording.azureStorage.connectionStringSecret.key }}
+              {{- else }}
+              value: {{ .Values.mediaCapture.continuousRecording.azureStorage.connectionString | quote }}
+              {{- end }}
+            - name: AZURE_STORAGE_CONTAINER_NAME
+              value: {{ .Values.mediaCapture.continuousRecording.azureStorage.containerName | quote }}
+            {{- end }}
 
           volumeMounts:
             {{- if .Values.volumes.mqSat.enabled }}

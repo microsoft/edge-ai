@@ -1,0 +1,167 @@
+<mxfile host="app.diagrams.net" modified="2026-01-08T00:00:00.000Z" agent="Draw.io" version="22.1.0" etag="component-integration" type="device">
+  <diagram name="Component Integration Flow" id="component-flow">
+    <mxGraphModel dx="1422" dy="794" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- Edge Environment -->
+        <mxCell id="edge-env" value="Edge Environment" style="swimlane;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="60" y="60" width="540" height="480" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="camera" value="📹 ONVIF Camera&#xa;&#xa;camera-01&#xa;RTSP Stream" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1f5ff;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="edge-env">
+          <mxGeometry x="40" y="50" width="140" height="80" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="device-registry" value="🔧 Device Registry&#xa;&#xa;111-assets&#xa;Camera Config" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="edge-env">
+          <mxGeometry x="220" y="50" width="140" height="80" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="media-capture" value="🎬 Media Capture Service&#xa;&#xa;503-media-capture-service&#xa;Continuous Recording" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff4e1;strokeColor=#d6b656;fontStyle=1;" vertex="1" parent="edge-env">
+          <mxGeometry x="40" y="180" width="180" height="90" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="mqtt-broker" value="📨 MQTT Broker&#xa;&#xa;Azure IoT Operations" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="edge-env">
+          <mxGeometry x="260" y="180" width="140" height="80" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="acsa" value="💾 ACSA Volume&#xa;&#xa;/media-capture-backed-acsa&#xa;Edge-to-Cloud Auto-Sync" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="edge-env">
+          <mxGeometry x="40" y="320" width="180" height="100" as="geometry"/>
+        </mxCell>
+
+        <!-- Azure Cloud -->
+        <mxCell id="cloud-env" value="Azure Cloud" style="swimlane;whiteSpace=wrap;html=1;fillColor=#e1f5fe;strokeColor=#0288d1;fontStyle=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="660" y="60" width="420" height="480" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="blob-storage" value="☁️ Blob Storage&#xa;&#xa;Video Segments&#xa;Lifecycle Policies" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#c8e6c9;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="cloud-env">
+          <mxGeometry x="40" y="180" width="160" height="90" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="video-api" value="⚡ Video Query API&#xa;&#xa;Azure Function&#xa;520-video-query-api" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3e5f5;strokeColor=#ba68c8;fontStyle=1;" vertex="1" parent="cloud-env">
+          <mxGeometry x="230" y="180" width="160" height="90" as="geometry"/>
+        </mxCell>
+
+        <!-- Data Scientist -->
+        <mxCell id="ds-env" value="Data Scientist Workstation" style="swimlane;whiteSpace=wrap;html=1;fillColor=#fff9c4;strokeColor=#d6b656;fontStyle=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="660" y="600" width="420" height="240" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="sdk" value="🐍 Python SDK&#xa;&#xa;920-video-query-sdk" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;" vertex="1" parent="ds-env">
+          <mxGeometry x="40" y="50" width="160" height="80" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="jupyter" value="📊 Jupyter Notebook&#xa;&#xa;Analysis Tools" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="ds-env">
+          <mxGeometry x="230" y="50" width="160" height="80" as="geometry"/>
+        </mxCell>
+
+        <!-- Arrows -->
+        <!-- Camera to Media Capture -->
+        <mxCell id="arrow1" value="RTSP Stream" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#0288d1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="camera" target="media-capture">
+          <mxGeometry x="-0.2" relative="1" as="geometry">
+            <mxPoint as="offset"/>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Device Registry to Camera (dashed) -->
+        <mxCell id="arrow2" value="Camera Config" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=1;strokeColor=#999999;dashed=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="device-registry" target="camera">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Media Capture to MQTT Broker -->
+        <mxCell id="arrow3" value="Subscribe" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#f57c00;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="media-capture" target="mqtt-broker">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- SDK to MQTT Broker -->
+        <mxCell id="arrow4" value="Publish Request" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#7b1fa2;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="sdk" target="mqtt-broker">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="780" y="580"/>
+              <mxPoint x="390" y="580"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- MQTT Broker to Media Capture -->
+        <mxCell id="arrow5" value="Capture Request" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#388e3c;exitX=0;exitY=0.75;exitDx=0;exitDy=0;entryX=1;entryY=0.75;entryDx=0;entryDy=0;" edge="1" parent="1" source="mqtt-broker" target="media-capture">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Media Capture to ACSA -->
+        <mxCell id="arrow6" value="Write MP4 + JSON" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#0288d1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="media-capture" target="acsa">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- ACSA to Blob Storage -->
+        <mxCell id="arrow7" value="Auto-Sync to Cloud" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;strokeColor=#388e3c;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="acsa" target="blob-storage">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Media Capture response to MQTT -->
+        <mxCell id="arrow8" value="Response" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=1;strokeColor=#666666;exitX=1;exitY=0.25;exitDx=0;exitDy=0;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" edge="1" parent="1" source="media-capture" target="mqtt-broker">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- MQTT to SDK -->
+        <mxCell id="arrow9" value="Blob URL" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#7b1fa2;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.25;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="mqtt-broker" target="sdk">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="390" y="580"/>
+              <mxPoint x="740" y="580"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- SDK to Video API -->
+        <mxCell id="arrow10" value="Query Historical" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#1565c0;exitX=0.75;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="sdk" target="video-api">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="820" y="560"/>
+              <mxPoint x="980" y="560"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Video API to Blob Storage -->
+        <mxCell id="arrow11" value="List &amp; Download" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#0288d1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="video-api" target="blob-storage">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Video API to SDK -->
+        <mxCell id="arrow12" value="Stitch &amp; Return" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#388e3c;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="video-api" target="sdk">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="980" y="560"/>
+              <mxPoint x="860" y="560"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- SDK to Jupyter -->
+        <mxCell id="arrow13" value="Video URL" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#f57c00;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="sdk" target="jupyter">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Component Labels -->
+        <mxCell id="label1" value="Component: 111-assets" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=9;fontColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="270" y="140" width="110" height="20" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="label2" value="Component: 503-media-capture-service" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=9;fontColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="85" y="280" width="180" height="20" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="label3" value="Component: 520-video-query-api" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=9;fontColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="865" y="280" width="150" height="20" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="label4" value="Component: 920-video-query-sdk" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=9;fontColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="710" y="740" width="150" height="20" as="geometry"/>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

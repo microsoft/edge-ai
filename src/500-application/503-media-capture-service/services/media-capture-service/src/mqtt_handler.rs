@@ -49,15 +49,15 @@ pub async fn receive_messages<W: TimeParamWorker + Send + Sync + 'static>(
                 continue;
             }
         };
-        
+
         // Create a new JSON value with the topic included
         let mut payload_with_topic = payload.clone();
         if let serde_json::Value::Object(ref mut map) = payload_with_topic {
             map.insert("__mqtt_topic".to_string(), serde_json::Value::String(input_topic.clone()));
         }
-        
+
         // Process the message with the enhanced payload
-        process_message(&payload_with_topic, worker.clone(), buffer.clone(), dest_path.clone(), 
+        process_message(&payload_with_topic, worker.clone(), buffer.clone(), dest_path.clone(),
             &filename_format, &video_format, fps, frame_size).await;
     }
 }
@@ -80,10 +80,11 @@ async fn process_message<W: TimeParamWorker + Send + Sync + 'static>(
             return;
         }
     };
-    
+
     let time_param = params_with_id.time_param;
     let event_id = params_with_id.event_id.clone();
     let event_type = params_with_id.event_type.clone();
+    let camera_id = params_with_id.camera_id.clone();
     let event_id_str = event_id.map(|id| id.to_string()).unwrap_or_else(|| "unknown".to_string());
 
     let start_range = time_param.start_time.with_timezone(&Local);
@@ -111,6 +112,7 @@ async fn process_message<W: TimeParamWorker + Send + Sync + 'static>(
         wait_seconds,
         event_id.clone(),
         event_type.as_deref(),
+        camera_id.as_deref(),
     )
     .await;
 

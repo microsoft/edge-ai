@@ -196,6 +196,9 @@ fn calculate_video_segment_params(
     capture_duration: f64,
     video_feed_delay_secs: i64
 ) -> Result<VideoSegmentParams, Box<dyn std::error::Error>> {
+    // Get camera_id from environment variable (same as continuous recorder)
+    let camera_id = std::env::var("CAMERA_ID").ok();
+
     // Calculate total capture duration including the delay compensation
     // For example, with 10s capture_duration and 5s delay:
     // Total duration becomes 15s (5s for delay + 10s for capture around the event)
@@ -229,7 +232,7 @@ fn calculate_video_segment_params(
     //    - End: (timestamp + 5s) = 5s after the event timestamp
     //    - Total duration: 15s (5s for delay + 5s before event + 5s after event)
 
-    Ok(VideoSegmentParams { time_param, event_id, event_type })
+    Ok(VideoSegmentParams { time_param, event_id, event_type, camera_id })
 }
 
 impl TimeParamWorker for MultiTriggerWorker {

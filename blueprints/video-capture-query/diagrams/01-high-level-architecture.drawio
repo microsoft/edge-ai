@@ -1,0 +1,140 @@
+<mxfile host="app.diagrams.net" modified="2026-01-08T00:00:00.000Z" agent="Draw.io" version="22.1.0" etag="video-capture-query-architecture" type="device">
+  <diagram name="High-Level Architecture" id="architecture-overview">
+    <mxGraphModel dx="1422" dy="794" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- Data Scientist Section -->
+        <mxCell id="ds-container" value="Data Scientist" style="swimlane;whiteSpace=wrap;html=1;fillColor=#fff9c4;strokeColor=#d6b656;fontStyle=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="80" y="80" width="280" height="200" as="geometry"/>
+        </mxCell>
+        <mxCell id="ds-request" value="Query Request&#xa;&#xa;'Get video from camera-01&#xa;on Jan 20, 10:00-10:30'" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="ds-container">
+          <mxGeometry x="40" y="40" width="200" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="ds-analysis" value="Video Analysis&#xa;Jupyter/Python" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="ds-container">
+          <mxGeometry x="40" y="120" width="200" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- Edge Environment Section -->
+        <mxCell id="edge-container" value="Edge Environment (Factory/Site)" style="swimlane;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="80" y="320" width="600" height="400" as="geometry"/>
+        </mxCell>
+
+        <!-- Cameras -->
+        <mxCell id="camera-container" value="Camera Infrastructure" style="swimlane;whiteSpace=wrap;html=1;fillColor=#e1f5ff;strokeColor=#6c8ebf;" vertex="1" parent="edge-container">
+          <mxGeometry x="20" y="40" width="260" height="160" as="geometry"/>
+        </mxCell>
+        <mxCell id="camera-01" value="Camera-01&#xa;ONVIF/RTSP" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="camera-container">
+          <mxGeometry x="20" y="30" width="100" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="camera-02" value="Camera-02&#xa;ONVIF/RTSP" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="camera-container">
+          <mxGeometry x="20" y="80" width="100" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="camera-n" value="Camera-N&#xa;ONVIF/RTSP" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="camera-container">
+          <mxGeometry x="140" y="55" width="100" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- Kubernetes -->
+        <mxCell id="k8s-container" value="Kubernetes (K3s/AKS-EE)" style="swimlane;whiteSpace=wrap;html=1;fillColor=#fff4e1;strokeColor=#d6b656;" vertex="1" parent="edge-container">
+          <mxGeometry x="300" y="40" width="280" height="160" as="geometry"/>
+        </mxCell>
+        <mxCell id="aio" value="Azure IoT Operations&#xa;Device Registry&#xa;MQTT Broker" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="k8s-container">
+          <mxGeometry x="20" y="30" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="media-svc" value="Media Capture Service&#xa;Continuous Recording&#xa;5-min segments" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="k8s-container">
+          <mxGeometry x="150" y="30" width="110" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- Azure Cloud Section -->
+        <mxCell id="azure-container" value="Azure Cloud" style="swimlane;whiteSpace=wrap;html=1;fillColor=#e1f5fe;strokeColor=#0288d1;fontStyle=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="760" y="80" width="760" height="640" as="geometry"/>
+        </mxCell>
+
+        <!-- Storage -->
+        <mxCell id="storage-container" value="Blob Storage" style="swimlane;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="azure-container">
+          <mxGeometry x="40" y="40" width="320" height="240" as="geometry"/>
+        </mxCell>
+        <mxCell id="hot-tier" value="Hot Tier (0-7d)&#xa;Fast Access" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffebee;strokeColor=#e57373;" vertex="1" parent="storage-container">
+          <mxGeometry x="20" y="30" width="280" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="cool-tier" value="Cool Tier (7-30d)&#xa;Lower Cost" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e3f2fd;strokeColor=#64b5f6;" vertex="1" parent="storage-container">
+          <mxGeometry x="20" y="95" width="280" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="archive-tier" value="Archive Tier (30-365d)&#xa;Lowest Cost" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3e5f5;strokeColor=#ba68c8;" vertex="1" parent="storage-container">
+          <mxGeometry x="20" y="160" width="280" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- Video API -->
+        <mxCell id="video-api" value="Video Query API&#xa;Azure Function&#xa;FFmpeg Stitching" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3e5f5;strokeColor=#ba68c8;" vertex="1" parent="azure-container">
+          <mxGeometry x="400" y="40" width="160" height="80" as="geometry"/>
+        </mxCell>
+
+        <!-- Optional Enhancement -->
+        <mxCell id="ml-container" value="Optional Enhancement" style="swimlane;whiteSpace=wrap;html=1;fillColor=#fff9c4;strokeColor=#d6b656;" vertex="1" parent="azure-container">
+          <mxGeometry x="40" y="320" width="280" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="video-indexer" value="Azure Video Indexer&#xa;AI-Powered Search" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="ml-container">
+          <mxGeometry x="40" y="30" width="200" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- Arrows - RTSP Streams -->
+        <mxCell id="arrow-cam01-media" value="RTSP Stream" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#666666;" edge="1" parent="1" source="camera-01" target="media-svc">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow-cam02-media" value="RTSP Stream" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#666666;" edge="1" parent="1" source="camera-02" target="media-svc">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow-camN-media" value="RTSP Stream" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#666666;" edge="1" parent="1" source="camera-n" target="media-svc">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- MQTT Connection -->
+        <mxCell id="arrow-aio-media" value="MQTT" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#FF6F00;dashed=1;startArrow=classic;startFill=1;" edge="1" parent="1" source="aio" target="media-svc">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Upload to Cloud -->
+        <mxCell id="arrow-media-hot" value="5-min segments" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;strokeColor=#0288d1;" edge="1" parent="1" source="media-svc" target="hot-tier">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Lifecycle arrows -->
+        <mxCell id="arrow-hot-cool" value="Auto-tier after 7d" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#42a5f5;" edge="1" parent="azure-container" source="hot-tier" target="cool-tier">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow-cool-archive" value="Auto-tier after 30d" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#7e57c2;" edge="1" parent="azure-container" source="cool-tier" target="archive-tier">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Query flow -->
+        <mxCell id="arrow-request-api" value="REST API" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;strokeColor=#43a047;" edge="1" parent="1" source="ds-request" target="video-api">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow-api-storage" value="Query blobs by timestamp" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#666666;" edge="1" parent="1" source="video-api" target="storage-container">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow-api-response" value="SAS URL" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;strokeColor=#43a047;" edge="1" parent="1" source="video-api" target="ds-request">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow-request-analysis" value="Download &amp; Analyze" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#f57c00;" edge="1" parent="1" source="ds-request" target="ds-analysis">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Optional enhancement arrows -->
+        <mxCell id="arrow-storage-indexer" value="Optional" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=1;strokeColor=#999999;dashed=1;" edge="1" parent="azure-container" source="storage-container" target="video-indexer">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="arrow-indexer-request" value="Enhanced Search" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=1;strokeColor=#999999;dashed=1;" edge="1" parent="1" source="video-indexer" target="ds-request">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Legend -->
+        <mxCell id="legend" value="Legend:&#xa;━━━ Primary Data Flow&#xa;┅┅┅ Optional/Enhanced Features&#xa;⟷ Bidirectional Communication" style="text;html=1;strokeColor=#666666;fillColor=#f5f5f5;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="80" y="760" width="240" height="80" as="geometry"/>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
