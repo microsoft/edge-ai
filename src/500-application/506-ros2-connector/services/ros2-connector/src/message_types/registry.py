@@ -5,13 +5,13 @@ This module automatically discovers and registers all message type handlers
 in the message_types folder.
 """
 
-import os
 import importlib
 import inspect
-from typing import Dict, Type
+import os
 
 # Import base handler using relative import
 from . import base_handler
+
 BaseMessageHandler = base_handler.BaseMessageHandler
 
 
@@ -20,7 +20,7 @@ class MessageTypeRegistry:
 
     def __init__(self):
         """Initialize the registry and discover handlers."""
-        self.handlers: Dict[str, Type[BaseMessageHandler]] = {}
+        self.handlers: dict[str, type[BaseMessageHandler]] = {}
         self.discover_handlers()
 
     def discover_handlers(self) -> None:
@@ -69,7 +69,7 @@ class MessageTypeRegistry:
                                 f"class attribute 'message_type'"
                             )
 
-    def get_handler(self, message_type: str) -> Type[BaseMessageHandler]:
+    def get_handler(self, message_type: str) -> type[BaseMessageHandler]:
         """
         Get a handler class for the specified message type.
 
@@ -88,7 +88,7 @@ class MessageTypeRegistry:
 
         return self.handlers[message_type]
 
-    def get_all_handlers(self) -> Dict[str, Type[BaseMessageHandler]]:
+    def get_all_handlers(self) -> dict[str, type[BaseMessageHandler]]:
         """
         Get all registered handlers.
 
@@ -124,7 +124,7 @@ def get_registry() -> MessageTypeRegistry:
     return _registry
 
 
-def get_supported_types() -> Dict[str, Type[BaseMessageHandler]]:
+def get_supported_types() -> dict[str, type[BaseMessageHandler]]:
     """
     Get all supported message types and their handlers.
 

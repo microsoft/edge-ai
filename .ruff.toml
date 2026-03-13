@@ -1,0 +1,13 @@
+target-version = "py311"
+line-length = 120
+
+[lint]
+select = ["E", "F", "W", "I", "N", "UP", "S", "B", "A", "C4"]
+
+[lint.per-file-ignores]
+"**/tests/**" = ["S101"]
+"**/*simulator*/**" = ["S311", "S104"]
+"**/*simulator*.py" = ["S311", "S104"]
+"**/services/**/app.py" = ["S311", "S104"]
+"**/services/**/*_server.py" = ["S104"]
+"**/services/**/*_connector.py" = ["S104"]

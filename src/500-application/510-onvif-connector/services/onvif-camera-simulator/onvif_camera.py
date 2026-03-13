@@ -23,6 +23,7 @@ import random
 import time
 import uuid
 from datetime import datetime
+
 from aiohttp import web
 from lxml import etree
 
@@ -183,19 +184,20 @@ class ONVIFCameraSimulator:
         Returns:
             SOAP XML response with device information
         """
-        response = etree.Element("{http://www.w3.org/2003/05/soap-envelope}Envelope")
-        body = etree.SubElement(response, "{http://www.w3.org/2003/05/soap-envelope}Body")
-        device_info_response = etree.SubElement(body, "{http://www.onvif.org/ver10/device/wsdl}GetDeviceInformationResponse")
+        soap_ns = "{http://www.w3.org/2003/05/soap-envelope}"
+        device_ns = "{http://www.onvif.org/ver10/device/wsdl}"
+        response = etree.Element(f"{soap_ns}Envelope")
+        body = etree.SubElement(response, f"{soap_ns}Body")
+        info_resp = etree.SubElement(body, f"{device_ns}GetDeviceInformationResponse")
 
-        etree.SubElement(device_info_response, "{http://www.onvif.org/ver10/device/wsdl}Manufacturer").text = self.manufacturer
-        etree.SubElement(device_info_response, "{http://www.onvif.org/ver10/device/wsdl}Model").text = self.model
-        etree.SubElement(device_info_response, "{http://www.onvif.org/ver10/device/wsdl}FirmwareVersion").text = self.firmware_version
-        etree.SubElement(device_info_response, "{http://www.onvif.org/ver10/device/wsdl}SerialNumber").text = self.serial_number
-        etree.SubElement(device_info_response, "{http://www.onvif.org/ver10/device/wsdl}HardwareId").text = self.device_id
+        etree.SubElement(info_resp, f"{device_ns}Manufacturer").text = self.manufacturer
+        etree.SubElement(info_resp, f"{device_ns}Model").text = self.model
+        etree.SubElement(info_resp, f"{device_ns}FirmwareVersion").text = self.firmware_version
+        etree.SubElement(info_resp, f"{device_ns}SerialNumber").text = self.serial_number
+        etree.SubElement(info_resp, f"{device_ns}HardwareId").text = self.device_id
 
         response_text = etree.tostring(response, encoding='utf-8', xml_declaration=True).decode('utf-8')
         return web.Response(text=response_text, content_type='application/soap+xml')
-        return web.Response(text=response, content_type='application/soap+xml')
 
     def _handle_get_capabilities(self) -> web.Response:
         """Return ONVIF device capabilities (Profile S and T support).
@@ -246,7 +248,7 @@ class ONVIFCameraSimulator:
             SOAP XML response with media profile list
         """
         profiles_xml = ''
-        for token, profile in self.media_profiles.items():
+        for _token, profile in self.media_profiles.items():
             profiles_xml += f'''
             <trt:Profiles token="{profile['token']}" fixed="true">
                 <tt:Name>{profile['name']}</tt:Name>
