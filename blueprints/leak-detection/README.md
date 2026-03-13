@@ -61,23 +61,23 @@ graph TB
 
 ## Components
 
-| Order | Component | Module Name | Purpose |
-|-------|-----------|-------------|---------|
-| 1 | 000-resource-group | `cloud_resource_group` | Resource group for all resources |
-| 2 | 050-networking | `cloud_networking` | Virtual network, subnets, NAT gateway |
-| 3 | 010-security-identity | `cloud_security_identity` | Key Vault, managed identities, RBAC |
-| 4 | 020-observability | `cloud_observability` | Log Analytics, Grafana, Monitor |
-| 5 | 030-data | `cloud_data` | Storage account, Schema Registry |
-| 6 | 040-messaging | `cloud_messaging` | Event Hub, Event Grid, Azure Functions |
-| 7 | 045-notification | `cloud_notification` | Logic App alert dedup + Teams posting |
-| 8 | 060-acr | `cloud_acr` | Container Registry for app images |
-| 9 | 051-vm-host | `cloud_vm_host` | VM for edge cluster hosting |
-| 10 | 100-cncf-cluster | `edge_cncf_cluster` | K3s cluster with Arc connection |
-| 11 | 109-arc-extensions | `edge_arc_extensions` | Arc cluster extensions |
-| 12 | 110-iot-ops | `edge_iot_ops` | Azure IoT Operations instance |
-| 13 | 111-assets | `edge_assets` | Camera asset definitions |
-| 14 | 120-observability | `edge_observability` | Edge monitoring and metrics |
-| 15 | 130-messaging | `edge_messaging` | MQTT topics, dataflows to Event Hub |
+| Order | Component             | Module Name               | Purpose                                |
+|-------|-----------------------|---------------------------|----------------------------------------|
+| 1     | 000-resource-group    | `cloud_resource_group`    | Resource group for all resources       |
+| 2     | 050-networking        | `cloud_networking`        | Virtual network, subnets, NAT gateway  |
+| 3     | 010-security-identity | `cloud_security_identity` | Key Vault, managed identities, RBAC    |
+| 4     | 020-observability     | `cloud_observability`     | Log Analytics, Grafana, Monitor        |
+| 5     | 030-data              | `cloud_data`              | Storage account, Schema Registry       |
+| 6     | 040-messaging         | `cloud_messaging`         | Event Hub, Event Grid, Azure Functions |
+| 7     | 045-notification      | `cloud_notification`      | Logic App alert dedup + Teams posting  |
+| 8     | 060-acr               | `cloud_acr`               | Container Registry for app images      |
+| 9     | 051-vm-host           | `cloud_vm_host`           | VM for edge cluster hosting            |
+| 10    | 100-cncf-cluster      | `edge_cncf_cluster`       | K3s cluster with Arc connection        |
+| 11    | 109-arc-extensions    | `edge_arc_extensions`     | Arc cluster extensions                 |
+| 12    | 110-iot-ops           | `edge_iot_ops`            | Azure IoT Operations instance          |
+| 13    | 111-assets            | `edge_assets`             | Camera asset definitions               |
+| 14    | 120-observability     | `edge_observability`      | Edge monitoring and metrics            |
+| 15    | 130-messaging         | `edge_messaging`          | MQTT topics, dataflows to Event Hub    |
 
 ## Prerequisites
 

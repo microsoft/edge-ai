@@ -2,6 +2,7 @@ AADSTS
 Burstable
 COMMITMSG
 DCAM
+EOBS
 Fanuc
 GHCP
 Hikvision

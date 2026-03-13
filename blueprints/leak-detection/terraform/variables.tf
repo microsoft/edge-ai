@@ -316,7 +316,7 @@ variable "eventhubs" {
       user_metadata = optional(string, null)
     })), {})
   }))
-  default = null
+  default = {}
 }
 
 /*

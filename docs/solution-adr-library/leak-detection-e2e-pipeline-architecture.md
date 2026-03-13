@@ -151,13 +151,13 @@ Implement the leak detection pipeline as a five-layer architecture deployed on a
 
 The `blueprints/leak-detection` blueprint implements this architecture using:
 
-| Layer | Reference Implementation | Component |
-|-------|--------------------------|-----------|
-| Camera ingestion | ONVIF Camera Simulator (simulated RTSP) + Media Connector (snapshotting) | onvif-camera-simulator, 503-media-capture-service |
-| On-site inference | AI Edge Inference with YOLOv8n ONNX model (server-side) | 507-ai-inference |
-| On-site messaging | AIO MQTT Broker with structured topic hierarchy | 110-iot-ops |
-| Cloud routing | AIO EventHub Dataflows | 130-messaging |
-| Notification | Logic App → Microsoft Teams with Table Storage deduplication | 045-notification |
+| Layer             | Reference Implementation                                                 | Component                                         |
+|-------------------|--------------------------------------------------------------------------|---------------------------------------------------|
+| Camera ingestion  | ONVIF Camera Simulator (simulated RTSP) + Media Connector (snapshotting) | onvif-camera-simulator, 503-media-capture-service |
+| On-site inference | AI Edge Inference with YOLOv8n ONNX model (server-side)                  | 507-ai-inference                                  |
+| On-site messaging | AIO MQTT Broker with structured topic hierarchy                          | 110-iot-ops                                       |
+| Cloud routing     | AIO EventHub Dataflows                                                   | 130-messaging                                     |
+| Notification      | Logic App → Microsoft Teams with Table Storage deduplication             | 045-notification                                  |
 
 The current end-to-end pipeline uses a **simulated RTSP camera** — the ONVIF Camera Simulator — which produces real H.264 RTSP streams from JPEG or MP4 sources.
 The Media Connector ingests these RTSP streams, extracts JPEG snapshots at a configurable interval, and publishes them to the MQTT broker for server-side inference by the AI Edge Inference service.
@@ -432,13 +432,13 @@ The blueprint provides Teams notification with stateful deduplication. FDEs guid
 
 The leak detection pipeline architecture uses a **layered, MQTT-brokered design** where each layer is decoupled through topic contracts and independently substitutable. The reference implementation in `blueprints/leak-detection` provides an opinionated starting point:
 
-| Layer | Reference Choice | Substitution Guidance |
-|-------|------------------|----------------------|
+| Layer            | Reference Choice                                       | Substitution Guidance                                                                     |
+|------------------|--------------------------------------------------------|-------------------------------------------------------------------------------------------|
 | Camera ingestion | RTSP Camera Simulator + Media Connector (snapshotting) | Swap to SSE Connector (analytics cameras) or ONVIF Connector based on camera capabilities |
-| Inference | YOLOv8n ONNX model via AI Edge Inference | Replace ONNX model file; conform to model interface contract (EXT-01) |
-| Messaging | AIO MQTT Broker | Not substitutable — foundational to Azure IoT Operations |
-| Cloud routing | EventHub Dataflows | Enable EventGrid Dataflows for event-driven fan-out scenarios |
-| Notification | Logic App → Teams (stateful dedup) | Replace with Azure Functions, SCADA integration, or custom webhook (EXT-02) |
+| Inference        | YOLOv8n ONNX model via AI Edge Inference               | Replace ONNX model file; conform to model interface contract (EXT-01)                     |
+| Messaging        | AIO MQTT Broker                                        | Not substitutable — foundational to Azure IoT Operations                                  |
+| Cloud routing    | EventHub Dataflows                                     | Enable EventGrid Dataflows for event-driven fan-out scenarios                             |
+| Notification     | Logic App → Teams (stateful dedup)                     | Replace with Azure Functions, SCADA integration, or custom webhook (EXT-02)               |
 
 ### Key Architectural Principles
 

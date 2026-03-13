@@ -99,7 +99,7 @@ az acr login \
   --resource-group "${RESOURCE_GROUP}"
 
 for entry in "${COMPONENTS[@]}"; do
-  IFS='|' read -r img_name dockerfile context <<< "${entry}"
+  IFS='|' read -r img_name dockerfile context <<<"${entry}"
 
   dockerfile_path="${REPO_ROOT}/${dockerfile}"
   context_path="${REPO_ROOT}/${context}"

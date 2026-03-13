@@ -54,16 +54,16 @@ graph LR
 
 #### Component Map
 
-| Component | Name | Role in Pipeline |
-|-----------|------|------------------|
-| 508 | media-connector | Captures RTSP/ONVIF camera frames, publishes to MQTT |
-| 507 | ai-inference | Runs ONNX leak detection model on frames, emits ALERT events |
-| 503 | media-capture | Records video clips to blob storage on alert trigger |
-| 509 | sse-connector | Server-Sent Events connector for real-time UI streaming |
-| 130 | messaging | Dataflows routing ALERT events from MQTT to Event Hub |
-| 045 | notification | Logic App deduplicating alerts and posting to Teams |
-| 040 | messaging (cloud) | Event Hub and Event Grid for cloud-side event processing |
-| 520 | video-query-api | REST API for querying stored video captures |
+| Component | Name              | Role in Pipeline                                             |
+|-----------|-------------------|--------------------------------------------------------------|
+| 508       | media-connector   | Captures RTSP/ONVIF camera frames, publishes to MQTT         |
+| 507       | ai-inference      | Runs ONNX leak detection model on frames, emits ALERT events |
+| 503       | media-capture     | Records video clips to blob storage on alert trigger         |
+| 509       | sse-connector     | Server-Sent Events connector for real-time UI streaming      |
+| 130       | messaging         | Dataflows routing ALERT events from MQTT to Event Hub        |
+| 045       | notification      | Logic App deduplicating alerts and posting to Teams          |
+| 040       | messaging (cloud) | Event Hub and Event Grid for cloud-side event processing     |
+| 520       | video-query-api   | REST API for querying stored video captures                  |
 
 #### Data Flow
 

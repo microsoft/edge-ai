@@ -231,7 +231,7 @@ if [[ "${DRY_RUN}" != true ]]; then
   )
 
   for entry in "${DEPLOYMENTS[@]}"; do
-    IFS='|' read -r dep_name timeout <<< "${entry}"
+    IFS='|' read -r dep_name timeout <<<"${entry}"
     echo "  Waiting for ${dep_name}..."
     kubectl rollout status "deployment/${dep_name}" \
       -n "${NAMESPACE}" \
