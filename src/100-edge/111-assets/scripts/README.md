@@ -275,15 +275,15 @@ sudo mv terraform /usr/local/bin/
 
 ## Examples
 
-### Example: Deploying Amcrest PT Camera with Terraform
+### Example: Deploying a PT Camera with Terraform
 
 ```bash
 # Run script
 ./deploy-onvif-camera-terraform.sh
 
 # Respond to prompts:
-Camera name: amcrest-office-01
-Camera IP address: <camera-ip-1>
+Camera name: camera-01
+Camera IP address: <camera-ip>
 ONVIF port: 80
 ONVIF path: /onvif/device_service
 Camera username: admin
@@ -291,7 +291,7 @@ Camera password: [your-password]
 
 # Use current subscription: y
 Resource group name: <resource-group>
-Custom location name: cl-arck-k3slocal-dev-001
+Custom location name: <custom-location-name>
 ADR namespace name: <namespace-name>
 
 # PTZ capabilities: 2 (Pan/Tilt only)
@@ -299,15 +299,15 @@ ADR namespace name: <namespace-name>
 # Review plan and confirm deployment
 ```
 
-### Example: Deploying Reolink PTZ Camera with Bicep
+### Example: Deploying a PTZ Camera with Bicep
 
 ```bash
 # Run script
 ./deploy-onvif-camera-bicep.sh
 
 # Respond to prompts:
-Camera name: reolink-garage-01
-Camera IP address: <camera-ip-3>
+Camera name: camera-02
+Camera IP address: <camera-ip>
 ONVIF port: 80
 ONVIF path: /onvif/device_service
 Camera username: admin
@@ -315,7 +315,7 @@ Camera password: [your-password]
 
 # Use current subscription: y
 Resource group name: <resource-group>
-Custom location name: cl-arck-k3slocal-dev-001
+Custom location name: <custom-location-name>
 ADR namespace name: <namespace-name>
 Environment name: dev
 Instance identifier: 001
@@ -332,15 +332,15 @@ Run the script multiple times with different camera names and IPs:
 ```bash
 # Camera 1
 ./deploy-onvif-camera-terraform.sh
-# Name: camera-01, IP: 192.168.1.100
+# Name: camera-01, IP: <camera-ip-1>
 
 # Camera 2
 ./deploy-onvif-camera-terraform.sh
-# Name: camera-02, IP: 192.168.1.101
+# Name: camera-02, IP: <camera-ip-2>
 
 # Camera 3
 ./deploy-onvif-camera-terraform.sh
-# Name: camera-03, IP: 192.168.1.102
+# Name: camera-03, IP: <camera-ip-3>
 ```
 
 Each run creates a separate configuration file and deploys independently.
