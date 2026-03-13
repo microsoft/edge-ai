@@ -9,8 +9,8 @@ import logging
 import os
 import threading
 import time
-from datetime import datetime, timezone
-from typing import Any, Dict
+from datetime import UTC, datetime
+from typing import Any
 
 import paho.mqtt.client as mqtt
 import requests
@@ -173,7 +173,7 @@ class RestConnectorClient:
     def publish_error(self, endpoint_name, error_message):
         """Publish error information to error topic"""
         error_data = {
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "connector": "akri-rest-connector-test",
             "endpoint": endpoint_name,
             "error": str(error_message),
@@ -196,7 +196,7 @@ class RestConnectorClient:
         ).prepare()
         return request_obj.url
 
-    def _normalize_sensor_payload(self, payload: Any) -> Dict[str, Any] | None:
+    def _normalize_sensor_payload(self, payload: Any) -> dict[str, Any] | None:
         """Normalize sensor payloads into a consistent structure."""
         if isinstance(payload, list):
             return {
@@ -239,7 +239,7 @@ class RestConnectorClient:
             data["connector_metadata"] = {
                 "connector_type": "akri-rest-connector",
                 "polling_interval": self.polling_interval,
-                "collection_time": datetime.now(timezone.utc).isoformat()
+                "collection_time": datetime.now(UTC).isoformat()
             }
             self.publish_to_mqtt(self.weather_topic, data)
         else:
@@ -271,7 +271,7 @@ class RestConnectorClient:
         normalized['connector_metadata'].update({
             "connector_type": "akri-rest-connector",
             "polling_interval": self.polling_interval,
-            "collection_time": datetime.now(timezone.utc).isoformat(),
+            "collection_time": datetime.now(UTC).isoformat(),
             "source_mode": normalized.get('source', 'fields-array'),
             "endpoint_used": endpoint_url,
             "field_ids": self.sensor_field_ids,
@@ -293,7 +293,7 @@ class RestConnectorClient:
                 "connector_type": "akri-rest-connector",
                 "authentication": "basic_http",
                 "polling_interval": self.polling_interval,
-                "collection_time": datetime.now(timezone.utc).isoformat()
+                "collection_time": datetime.now(UTC).isoformat()
             }
             self.publish_to_mqtt(self.auth_device_topic, data)
         else:

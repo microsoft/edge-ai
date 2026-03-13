@@ -5,7 +5,9 @@ This module handles Metrics message processing and MQTT publishing.
 """
 
 from edge_ros_interface.msg import Metrics
+
 from . import base_handler
+
 BaseMessageHandler = base_handler.BaseMessageHandler
 
 

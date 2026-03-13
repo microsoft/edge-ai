@@ -6,13 +6,13 @@ from __future__ import annotations
 import logging
 import os
 import random
-from datetime import datetime, timezone
-from typing import Any, Callable
+from collections.abc import Callable
+from datetime import UTC, datetime
+from typing import Any
 
 from flask import Flask, jsonify, request
+from models import DataType, FieldsArrayResponse, FieldsConfig, FieldValueResponse
 from pydantic import ValidationError
-
-from models import DataType, FieldValueResponse, FieldsArrayResponse, FieldsConfig
 
 
 def _configure_logging() -> logging.Logger:
@@ -101,7 +101,7 @@ def _respond_with_validation(builder: Callable[[], FieldsArrayResponse | FieldVa
 
 
 def _current_timestamp() -> str:
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(UTC).isoformat()
 
 
 @app.route("/health", methods=["GET"])

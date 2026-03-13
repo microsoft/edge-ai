@@ -14,19 +14,18 @@ Topics simulated:
 - /joy: Joystick input simulation
 """
 
-import time
 import math
 import os
+import time
 from threading import Thread
-from typing import Optional, Set
 
 import rclpy
-from rclpy.node import Node
-from rclpy.qos import QoSProfile, ReliabilityPolicy, DurabilityPolicy
-from std_msgs.msg import String
-from sensor_msgs.msg import JointState, Joy
-from geometry_msgs.msg import PoseStamped
 from flask import Flask, jsonify
+from geometry_msgs.msg import PoseStamped
+from rclpy.node import Node
+from rclpy.qos import DurabilityPolicy, QoSProfile, ReliabilityPolicy
+from sensor_msgs.msg import JointState, Joy
+from std_msgs.msg import String
 
 # Optional bag playback
 USE_BAG_PLAYBACK = os.getenv('USE_BAG_PLAYBACK', 'false').lower() in {
@@ -254,7 +253,7 @@ def run_health_server():
     app.run(host='0.0.0.0', port=HEALTH_PORT, debug=False)
 
 
-def _env_set(name: str) -> Optional[Set[str]]:
+def _env_set(name: str) -> set[str] | None:
     val = os.getenv(name)
     if not val:
         return None

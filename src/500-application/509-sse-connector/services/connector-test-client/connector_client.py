@@ -34,7 +34,6 @@ import logging
 import os
 import signal
 import sys
-from typing import Optional
 
 import aiohttp
 import paho.mqtt.client as mqtt
@@ -103,7 +102,7 @@ class SSEConnectorTestClient:
             'akri/sse-connector/errors'
         )
 
-        self.mqtt_client: Optional[mqtt.Client] = None
+        self.mqtt_client: mqtt.Client | None = None
         self.running = True
         self.stats = {
             'events_received': 0,
