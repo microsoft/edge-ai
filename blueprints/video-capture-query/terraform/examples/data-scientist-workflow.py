@@ -15,12 +15,12 @@ Prerequisites:
 """
 
 import argparse
+from datetime import datetime
+from pathlib import Path
+
 import cv2
 import numpy as np
 import pandas as pd
-from datetime import datetime, timedelta
-from pathlib import Path
-from typing import List, Tuple
 
 try:
     from video_query_sdk import VideoQueryClient
@@ -227,7 +227,7 @@ def analyze_brightness(video_path: Path) -> pd.DataFrame:
     cap.release()
 
     df = pd.DataFrame(results)
-    print(f"✅ Brightness analysis complete")
+    print("✅ Brightness analysis complete")
     print(f"   Mean brightness: {df['mean_brightness'].mean():.2f} (0-255)")
     print(
         f"   Brightness range: {df['mean_brightness'].min():.2f} - {df['mean_brightness'].max():.2f}")
@@ -299,7 +299,7 @@ def count_objects_simple(video_path: Path) -> pd.DataFrame:
     cap.release()
 
     df = pd.DataFrame(results)
-    print(f"✅ Object counting complete")
+    print("✅ Object counting complete")
     print(f"   Average objects per frame: {df['object_count'].mean():.2f}")
     print(f"   Max objects detected: {df['object_count'].max()}")
 
@@ -380,7 +380,8 @@ def print_summary(
         print(
             f"   Mean brightness: {brightness_df['mean_brightness'].mean():.2f}/255")
         print(
-            f"   Brightness range: {brightness_df['mean_brightness'].min():.2f} - {brightness_df['mean_brightness'].max():.2f}")
+            f"   Brightness range: {brightness_df['mean_brightness'].min():.2f}"
+            f" - {brightness_df['mean_brightness'].max():.2f}")
         print(
             f"   Brightness variability (std): {brightness_df['std_brightness'].mean():.2f}")
 

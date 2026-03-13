@@ -1,3 +1,4 @@
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -17,89 +18,81 @@ spec:
     spec:
       serviceAccountName: default
       containers:
-      - name: media-capture-service
-        image: acrmediacapturepoc.azurecr.io/media-capture-service:latest
-        imagePullPolicy: Always
-        env:
-        # MQTT-Triggered Mode (not continuous)
-        - name: CONTINUOUS_RECORDING_ENABLED
-          value: "false"
-        # Trigger topics for video capture requests
-        - name: TRIGGER_TOPICS
-          value: '["alerts/trigger", "camera/+/+/+/+/request", "aio/from-pdmz/#"]'
-        # RTSP Configuration (via MediaMTX relay)
-        - name: RTSP_URL
-          value: "rtsp://10.10.0.52:8554/camera01"
-        - name: VIDEO_FPS
-          value: "30"
-        - name: FRAME_WIDTH
-          value: "1920"
-        - name: FRAME_HEIGHT
-          value: "1080"
-        # Ring buffer configuration (2 minutes of buffered video)
-        - name: BUFFER_SECONDS
-          value: "120"
-        # Capture duration when triggered
-        - name: CAPTURE_DURATION_SECONDS
-          value: "30"
-        - name: VIDEO_FEED_DELAY_SECONDS
-          value: "5"
-        # Output configuration
-        - name: OUTPUT_FORMAT
-          value: "mp4"
-        - name: MEDIA_CLOUD_SYNC_DIR
-          value: "/cloud-sync/video-recordings"
-        - name: CAMERA_ID
-          value: "pmn-camera-01-triggered"
-        - name: CAMERA_LOCATION
-          value: "pmn-line1-cell1"
-        # MQTT Configuration for AIO Broker (same env vars as continuous)
-        - name: AIO_BROKER_HOSTNAME
-          value: "aio-broker"
-        - name: AIO_BROKER_TCP_PORT
-          value: "18883"
-        - name: AIO_MQTT_CLIENT_ID
-          value: "media-capture-mqtt-triggered"
-        - name: AIO_TLS_CA_FILE
-          value: "/var/run/certs/ca.crt"
-        - name: AIO_SAT_FILE
-          value: "/var/run/secrets/tokens/mq-sat"
-        # Logging
-        - name: RUST_LOG
-          value: "info,media_capture_service=debug"
-        volumeMounts:
-        - name: mq-sat
-          mountPath: /var/run/secrets/tokens
-          readOnly: true
-        - name: trust-bundle
-          mountPath: /var/run/certs
-          readOnly: true
-        - name: media-storage
-          mountPath: /cloud-sync/video-recordings
-        resources:
-          limits:
-            cpu: "2"
-            memory: "4Gi"
-          requests:
-            cpu: "500m"
-            memory: "1Gi"
-        securityContext:
-          allowPrivilegeEscalation: false
-          runAsNonRoot: true
-          runAsUser: 1000
+        - name: media-capture-service
+          image: acrmediacapturepoc.azurecr.io/media-capture-service:latest
+          imagePullPolicy: Always
+          env:
+            - name: CONTINUOUS_RECORDING_ENABLED
+              value: 'false'
+            - name: TRIGGER_TOPICS
+              value: '["alerts/trigger", "camera/+/+/+/+/request", "aio/from-pdmz/#"]'
+            - name: RTSP_URL
+              value: rtsp://10.10.0.52:8554/camera01
+            - name: VIDEO_FPS
+              value: '30'
+            - name: FRAME_WIDTH
+              value: '1920'
+            - name: FRAME_HEIGHT
+              value: '1080'
+            - name: BUFFER_SECONDS
+              value: '120'
+            - name: CAPTURE_DURATION_SECONDS
+              value: '30'
+            - name: VIDEO_FEED_DELAY_SECONDS
+              value: '5'
+            - name: OUTPUT_FORMAT
+              value: mp4
+            - name: MEDIA_CLOUD_SYNC_DIR
+              value: /cloud-sync/video-recordings
+            - name: CAMERA_ID
+              value: pmn-camera-01-triggered
+            - name: CAMERA_LOCATION
+              value: pmn-line1-cell1
+            - name: AIO_BROKER_HOSTNAME
+              value: aio-broker
+            - name: AIO_BROKER_TCP_PORT
+              value: '18883'
+            - name: AIO_MQTT_CLIENT_ID
+              value: media-capture-mqtt-triggered
+            - name: AIO_TLS_CA_FILE
+              value: /var/run/certs/ca.crt
+            - name: AIO_SAT_FILE
+              value: /var/run/secrets/tokens/mq-sat
+            - name: RUST_LOG
+              value: info,media_capture_service=debug
+          volumeMounts:
+            - name: mq-sat
+              mountPath: /var/run/secrets/tokens
+              readOnly: true
+            - name: trust-bundle
+              mountPath: /var/run/certs
+              readOnly: true
+            - name: media-storage
+              mountPath: /cloud-sync/video-recordings
+          resources:
+            limits:
+              cpu: '2'
+              memory: 4Gi
+            requests:
+              cpu: 500m
+              memory: 1Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            runAsUser: 1000
       volumes:
-      - name: mq-sat
-        projected:
-          sources:
-          - serviceAccountToken:
-              path: mq-sat
-              audience: aio-internal
-              expirationSeconds: 86400
-      - name: trust-bundle
-        configMap:
-          name: azure-iot-operations-aio-ca-trust-bundle
-      - name: media-storage
-        persistentVolumeClaim:
-          claimName: pvc-acsa-video-cloud
+        - name: mq-sat
+          projected:
+            sources:
+              - serviceAccountToken:
+                  path: mq-sat
+                  audience: aio-internal
+                  expirationSeconds: 86400
+        - name: trust-bundle
+          configMap:
+            name: azure-iot-operations-aio-ca-trust-bundle
+        - name: media-storage
+          persistentVolumeClaim:
+            claimName: pvc-acsa-video-cloud
       imagePullSecrets:
-      - name: acr-pull-secret
+        - name: acr-pull-secret
