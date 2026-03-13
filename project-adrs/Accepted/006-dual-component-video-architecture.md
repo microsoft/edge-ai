@@ -16,7 +16,7 @@ Adopt a dual-component video architecture where the Media Capture Service (503) 
 
 ## Context
 
-The industrial video surveillance pilot requires continuous 24/7 recording with cloud sync, event-driven capture with pre-event buffering, live video redistribution, and time-based video queries. Six limitations in the Media Connector prevent it from serving as the sole video capture component. A detailed analysis is documented in the solution ADR: [Dual-Component Video Architecture](../../docs/solution-adr-library/dual-component-video-architecture.md).
+The industrial video surveillance pilot requires continuous 24/7 recording with cloud sync, event-driven capture with pre-event buffering, live video redistribution, and time-based video queries. Six limitations in the Media Connector prevent it from serving as the sole video capture component. A detailed analysis is documented in the solution ADR: [Dual-Component Video Architecture](../../docs/solution-adr-library/edge-video-streaming-and-image-capture.md).
 
 ## Decision drivers
 
