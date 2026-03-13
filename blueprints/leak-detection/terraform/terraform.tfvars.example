@@ -1,0 +1,75 @@
+// ── Core Parameters ──────────────────────────────────────────
+environment     = "dev"
+resource_prefix = "leakdet"
+location        = "westus3"
+instance        = "001"
+
+// ── Feature Toggles ─────────────────────────────────────────
+should_create_azure_functions = true
+should_deploy_notification    = true
+
+// ── Networking ──────────────────────────────────────────────
+should_enable_managed_outbound_access = true
+should_enable_private_endpoints       = false
+
+// ── Key Vault ───────────────────────────────────────────────
+should_enable_key_vault_public_network_access = true
+should_enable_key_vault_purge_protection      = false
+
+// ── Container Registry ──────────────────────────────────────
+acr_sku                           = "Premium"
+acr_public_network_access_enabled = false
+should_include_acr_registry_endpoint = true
+
+// ── Akri Connectors (leak detection cameras) ────────────────
+should_enable_akri_media_connector = true
+should_enable_akri_onvif_connector = true
+
+// ── IoT Operations ──────────────────────────────────────────
+should_create_anonymous_broker_listener = false
+
+// ── Alert Event Hub Configuration ───────────────────────────
+// Adds a dedicated Event Hub for inference alert events
+eventhubs = {
+  "evh-aio-sample" = {}
+  "evh-leakdet-alerts-dev-001" = {
+    partition_count   = 2
+    message_retention = 1
+    consumer_groups = {
+      "notification" = {
+        user_metadata = "Logic App notification consumer"
+      }
+    }
+  }
+}
+
+// ── Notification Configuration (045-notification) ───────────
+// Teams chat or channel thread ID (replace with your actual ID)
+teams_recipient_id = "REPLACE_WITH_TEAMS_CHAT_OR_CHANNEL_ID"
+
+notification_event_schema = {
+  "type" = "object"
+  "properties" = {
+    "camera_id"  = { "type" = "string" }
+    "timestamp"  = { "type" = "string" }
+    "confidence" = { "type" = "number" }
+    "leak_type"  = { "type" = "string" }
+  }
+}
+
+notification_message_template = <<-EOT
+<p><b>Leak Detected</b></p>
+<p>Camera: @{body('Parse_Event')?['camera_id']}</p>
+<p>Type: @{body('Parse_Event')?['leak_type']}</p>
+<p>Confidence: @{body('Parse_Event')?['confidence']}</p>
+<p>Time: @{body('Parse_Event')?['timestamp']}</p>
+<p><a href="${close_session_url}">Close Session</a></p>
+EOT
+
+closure_message_template = <<-EOT
+<p><b>Leak Session Closed</b></p>
+<p>Camera: @{triggerBody()?['camera_id']}</p>
+<p>Session closed at @{utcNow()}</p>
+EOT
+
+notification_partition_key_field = "camera_id"
