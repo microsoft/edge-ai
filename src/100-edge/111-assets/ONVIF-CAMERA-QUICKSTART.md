@@ -546,11 +546,11 @@ kubectl logs -n azure-iot-operations -l app.kubernetes.io/component=connector --
 
 For complete ONVIF functionality, assets can include:
 
-| Configuration           | Purpose                                      | IaC Support          |
-|-------------------------|----------------------------------------------|----------------------|
-| **datasets/dataPoints** | Read telemetry FROM device                   | ✅ Terraform + Bicep  |
-| **events**              | Receive event notifications (motion, alarms) | ✅ Terraform + Bicep  |
-| **managementGroups**    | Send commands TO device (PTZ control)        | ✅ Terraform + Bicep  |
+| Configuration           | Purpose                                      | IaC Support         |
+|-------------------------|----------------------------------------------|---------------------|
+| **datasets/dataPoints** | Read telemetry FROM device                   | ✅ Terraform + Bicep |
+| **events**              | Receive event notifications (motion, alarms) | ✅ Terraform + Bicep |
+| **managementGroups**    | Send commands TO device (PTZ control)        | ✅ Terraform + Bicep |
 
 ### MRPC Protocol for PTZ Commands
 
@@ -989,11 +989,11 @@ For issues specific to:
 
 Complete ONVIF camera functionality is supported in both Terraform and Bicep:
 
-| Configuration        | REST API Documentation | IaC Support             | Operations Experience UI |
-|----------------------|------------------------|-------------------------|--------------------------|
-| **datasets**         | ✅ Documented           | ✅ Terraform + Bicep     | ✅ Supported              |
-| **events**           | ✅ Documented           | ✅ Terraform + Bicep     | ✅ Supported              |
-| **managementGroups** | ✅ Documented           | ✅ Terraform + Bicep     | ✅ Supported              |
+| Configuration        | REST API Documentation | IaC Support         | Operations Experience UI |
+|----------------------|------------------------|---------------------|--------------------------|
+| **datasets**         | ✅ Documented           | ✅ Terraform + Bicep | ✅ Supported              |
+| **events**           | ✅ Documented           | ✅ Terraform + Bicep | ✅ Supported              |
+| **managementGroups** | ✅ Documented           | ✅ Terraform + Bicep | ✅ Supported              |
 
 **Important Notes**:
 

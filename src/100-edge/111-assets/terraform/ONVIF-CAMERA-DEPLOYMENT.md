@@ -20,19 +20,19 @@ This document describes the deploy      "camera-01-endpoint" = {
 
 #### Devices (3)
 
-| Device Name     | IP Address    | Endpoint Name       | ONVIF Path            | Capabilities    |
-|-----------------|---------------|---------------------|-----------------------|-----------------|
+| Device Name       | IP Address      | Endpoint Name         | ONVIF Path            | Capabilities    |
+|-------------------|-----------------|-----------------------|-----------------------|-----------------|
 | `<camera-name-1>` | `<camera-ip-1>` | `<camera-endpoint-1>` | /onvif/device_service | Pan, Tilt       |
 | `<camera-name-2>` | `<camera-ip-2>` | `<camera-endpoint-2>` | /onvif/device_service | Pan, Tilt       |
 | `<camera-name-3>` | `<camera-ip-3>` | `<camera-endpoint-3>` | /onvif/device_service | Pan, Tilt, Zoom |
 
 #### Assets (3)
 
-| Asset Name              | Device Reference | Type        | Data Points |
-|-------------------------|------------------|-------------|-------------|
-| amcrest-01-ptz-commands | `<camera-name-1>`  | PTZ Control | 5           |
-| amcrest-02-ptz-commands | `<camera-name-2>`  | PTZ Control | 5           |
-| reolink-01-ptz-commands | `<camera-name-3>`  | PTZ Control | 8           |
+| Asset Name              | Device Reference  | Type        | Data Points |
+|-------------------------|-------------------|-------------|-------------|
+| amcrest-01-ptz-commands | `<camera-name-1>` | PTZ Control | 5           |
+| amcrest-02-ptz-commands | `<camera-name-2>` | PTZ Control | 5           |
+| reolink-01-ptz-commands | `<camera-name-3>` | PTZ Control | 8           |
 
 ### PTZ Data Points
 

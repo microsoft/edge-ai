@@ -10,28 +10,23 @@ Supports filtering by event_type:
 - <specific>: Filter by specific event type (alert, analytics_disabled, etc.)
 """
 
-import os
+import hashlib
 import json
 import logging
+import os
 import re
 import ssl
+import subprocess
 import tempfile
 import time
-import subprocess
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import List, Dict, Optional, Literal
-import hashlib
+from typing import Literal
 
 import azure.functions as func
-from azure.identity import ManagedIdentityCredential
-from azure.storage.blob import (
-    BlobServiceClient,
-    ContainerClient,
-    generate_blob_sas,
-    BlobSasPermissions
-)
 import paho.mqtt.client as mqtt
+from azure.identity import ManagedIdentityCredential
+from azure.storage.blob import BlobSasPermissions, BlobServiceClient, ContainerClient, generate_blob_sas
 
 app = func.FunctionApp()
 
@@ -144,12 +139,12 @@ def calculate_hash_prefix(camera_id: str) -> str:
     Returns:
         Three-digit hash prefix (000-999)
     """
-    hash_digest = hashlib.md5(camera_id.encode()).digest()
+    hash_digest = hashlib.md5(camera_id.encode()).digest()  # noqa: S324
     prefix = hash_digest[0] % 1000
     return f"{prefix:03d}"
 
 
-def parse_timestamp_from_blob_name(blob_name: str) -> Optional[datetime]:
+def parse_timestamp_from_blob_name(blob_name: str) -> datetime | None:
     """
     Parse timestamp from blob name for both continuous and triggered recordings.
 
@@ -222,7 +217,7 @@ TRIGGERED_PATTERNS = [
 def fetch_segment_metadata(
     container: ContainerClient,
     video_blob_name: str
-) -> Optional[Dict]:
+) -> dict | None:
     """
     Fetch companion JSON metadata for a video segment.
 
@@ -247,7 +242,7 @@ def fetch_segment_metadata(
         return None
 
 
-def detect_recording_type(blob_name: str) -> tuple[Literal["continuous", "triggered"], Optional[str]]:
+def detect_recording_type(blob_name: str) -> tuple[Literal["continuous", "triggered"], str | None]:
     """
     Detect whether a blob is a continuous or triggered recording.
 
@@ -310,9 +305,9 @@ def detect_recording_type(blob_name: str) -> tuple[Literal["continuous", "trigge
 
 
 def filter_segments_by_event_type(
-    segments: List[Dict],
-    event_type_filter: Optional[str]
-) -> List[Dict]:
+    segments: list[dict],
+    event_type_filter: str | None
+) -> list[dict]:
     """
     Filter segments by event type.
 
@@ -358,7 +353,7 @@ def query_blobs_by_prefix(
     start_time: datetime,
     end_time: datetime,
     blob_prefix: str = ""
-) -> List[Dict]:
+) -> list[dict]:
     """
     Query blobs using prefix-based list (optimized for < 1 hour queries).
 
@@ -419,7 +414,7 @@ def query_blobs_by_tags(
     camera_id: str,
     start_time: datetime,
     end_time: datetime
-) -> List[Dict]:
+) -> list[dict]:
     """
     Query blobs using blob index tags (optimized for 1-24 hour queries).
 
@@ -463,8 +458,8 @@ def query_blobs_by_tags(
 
 def enrich_segments_with_metadata(
     container: ContainerClient,
-    segments: List[Dict]
-) -> List[Dict]:
+    segments: list[dict]
+) -> list[dict]:
     """
     Fetch and attach JSON metadata to each video segment.
 
@@ -490,7 +485,7 @@ def enrich_segments_with_metadata(
     return enriched
 
 
-def sort_segments_by_metadata(segments: List[Dict]) -> List[Dict]:
+def sort_segments_by_metadata(segments: list[dict]) -> list[dict]:
     """
     Sort segments by precise segment_start timestamp from metadata.
     Falls back to filename-parsed timestamp if metadata unavailable.
@@ -512,14 +507,14 @@ def sort_segments_by_metadata(segments: List[Dict]) -> List[Dict]:
         ts = seg.get('timestamp')
         if ts:
             if ts.tzinfo is None:
-                return ts.replace(tzinfo=timezone.utc)
+                return ts.replace(tzinfo=UTC)
             return ts
-        return datetime.min.replace(tzinfo=timezone.utc)
+        return datetime.min.replace(tzinfo=UTC)
 
     return sorted(segments, key=sort_key)
 
 
-def detect_segment_gaps(segments: List[Dict], threshold_seconds: float = 5.0) -> List[Dict]:
+def detect_segment_gaps(segments: list[dict], threshold_seconds: float = 5.0) -> list[dict]:
     """
     Detect gaps between consecutive segments using metadata timestamps.
 
@@ -560,7 +555,7 @@ def detect_segment_gaps(segments: List[Dict], threshold_seconds: float = 5.0) ->
     return gaps
 
 
-def calculate_stitch_metrics(segments: List[Dict]) -> Dict:
+def calculate_stitch_metrics(segments: list[dict]) -> dict:
     """
     Calculate stitching metrics from segment metadata.
 
@@ -614,9 +609,9 @@ def calculate_stitch_metrics(segments: List[Dict]) -> Dict:
 
 def download_segments(
     container: ContainerClient,
-    segments: List[Dict],
+    segments: list[dict],
     temp_dir: Path
-) -> List[Path]:
+) -> list[Path]:
     """
     Download blob segments to temporary directory.
 
@@ -650,7 +645,7 @@ def download_segments(
     return downloaded_files
 
 
-def concat_segments(input_files: List[Path], output_file: Path) -> None:
+def concat_segments(input_files: list[Path], output_file: Path) -> None:
     """
     Concatenate video segments using FFmpeg concat demuxer with copy codec.
 
@@ -693,7 +688,7 @@ def concat_segments(input_files: List[Path], output_file: Path) -> None:
     logger.info(f"Running FFmpeg: {' '.join(cmd)}")
 
     try:
-        result = subprocess.run(
+        result = subprocess.run(  # noqa: S603
             cmd,
             check=True,
             capture_output=True,
@@ -1122,7 +1117,7 @@ def get_video(req: func.HttpRequest) -> func.HttpResponse:
                 mimetype="application/json"
             )
 
-    except Exception as e:
+    except Exception:
         logger.exception("Unexpected error processing video query")
         return func.HttpResponse(
             json.dumps({"error": "Internal server error"}),
@@ -1182,7 +1177,7 @@ def trigger_capture(req: func.HttpRequest) -> func.HttpResponse:
             topic="alerts/trigger",
             payload=trigger_payload,
         )
-    except Exception as e:
+    except Exception:
         logging.exception("MQTT trigger publish failed")
         return func.HttpResponse(
             json.dumps({"error": "Trigger delivery failed"}),

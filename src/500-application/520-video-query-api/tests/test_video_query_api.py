@@ -13,7 +13,7 @@ Tests the deployed Azure Function API for:
 
 import os
 import time
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import pytest
 import requests
@@ -36,7 +36,7 @@ def api_url(params: dict) -> str:
 
 def get_recent_timerange(hours: int = 1) -> tuple[str, str]:
     """Get ISO timestamps for recent time range."""
-    end = datetime.now(timezone.utc)
+    end = datetime.now(UTC)
     start = end - timedelta(hours=hours)
     return start.strftime("%Y-%m-%dT%H:%M:%SZ"), end.strftime("%Y-%m-%dT%H:%M:%SZ")
 
@@ -152,7 +152,7 @@ class TestRecordingTypeDetection:
     def test_triggered_recording_type(self, api_available):
         """Triggered recordings must have recording_type='triggered' and event_type."""
         # Use a wider time range to find triggered recordings
-        end = datetime.now(timezone.utc)
+        end = datetime.now(UTC)
         start = end - timedelta(days=1)
         start_str = start.strftime("%Y-%m-%dT%H:%M:%SZ")
         end_str = end.strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -176,7 +176,7 @@ class TestEventTypeFiltering:
 
     def test_filter_by_event_type_alert(self, api_available):
         """Filter by event_type=alert must return only alert segments."""
-        end = datetime.now(timezone.utc)
+        end = datetime.now(UTC)
         start = end - timedelta(days=1)
         start_str = start.strftime("%Y-%m-%dT%H:%M:%SZ")
         end_str = end.strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -261,7 +261,7 @@ class TestEnhancedStitch:
     def test_stitch_detects_gaps(self, api_available):
         """Stitched response must report gaps when present."""
         # Use longer timeframe to increase chance of gaps
-        end = datetime.now(timezone.utc)
+        end = datetime.now(UTC)
         start = end - timedelta(hours=2)
         start_str = start.strftime("%Y-%m-%dT%H:%M:%SZ")
         end_str = end.strftime("%Y-%m-%dT%H:%M:%SZ")

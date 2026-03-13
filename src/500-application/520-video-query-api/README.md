@@ -199,16 +199,16 @@ When gaps between video segments exceed 5 seconds, the response includes gap det
 
 ### HTTP Response Codes
 
-| Status | Description                                                          |
-|--------|----------------------------------------------------------------------|
-| 200    | Success — segments found or empty result with message                |
-| 202    | Accepted — trigger capture request accepted (POST /api/trigger)      |
-| 400    | Bad Request — missing/invalid parameters or disallowed camera        |
-| 404    | Not Found — stitch requested but no video files found                |
-| 429    | Too Many Requests — trigger rate limited (30-second per-camera)      |
-| 500    | Internal Server Error — storage connection or processing failure     |
-| 502    | Bad Gateway — MQTT trigger delivery failed                           |
-| 503    | Service Unavailable — Event Grid not configured                      |
+| Status | Description                                                      |
+|--------|------------------------------------------------------------------|
+| 200    | Success — segments found or empty result with message            |
+| 202    | Accepted — trigger capture request accepted (POST /api/trigger)  |
+| 400    | Bad Request — missing/invalid parameters or disallowed camera    |
+| 404    | Not Found — stitch requested but no video files found            |
+| 429    | Too Many Requests — trigger rate limited (30-second per-camera)  |
+| 500    | Internal Server Error — storage connection or processing failure |
+| 502    | Bad Gateway — MQTT trigger delivery failed                       |
+| 503    | Service Unavailable — Event Grid not configured                  |
 
 **Empty Results Response (HTTP 200):**
 
