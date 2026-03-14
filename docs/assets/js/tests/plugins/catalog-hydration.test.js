@@ -456,7 +456,7 @@ describe('CatalogHydration Plugin - DOM Decoration', () => {
       expect(progressContainer1.nextElementSibling).toBe(link1);
       expect(progressContainer2).not.toBeNull();
       expect(progressContainer2.innerHTML).toContain('Progress:');
-      expect(progressContainer2.innerHTML).toContain('0%');
+      expect(progressContainer2.innerHTML).toContain('Not Started');
     });
 
     it('should add default progress bar for items without progress data', () => {
@@ -679,9 +679,8 @@ describe('CatalogHydration Plugin - DOM Decoration', () => {
     it('should handle 0% progress', () => {
       const progressHTML = plugin.createProgressBar(0);
 
-      expect(progressHTML).toContain('0%');
-      expect(progressHTML).toContain('width: 0%');
-      expect(progressHTML).toContain('catalog-progress-fill');
+      expect(progressHTML).toContain('not-started');
+      expect(progressHTML).toContain('Not Started');
     });
 
     it('should handle 100% progress', () => {
