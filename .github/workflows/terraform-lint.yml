@@ -1,0 +1,111 @@
+# Terraform Lint
+#
+# Purpose:
+# Reusable workflow that runs terraform fmt and TFLint
+# across all Terraform configurations in the repository.
+#
+# Parameters:
+# - soft-fail: When true, lint violations are reported but do not fail the workflow (default: false)
+#
+# Usage Examples:
+# ```yaml
+# # Basic usage:
+# terraform-lint:
+#   uses: ./.github/workflows/terraform-lint.yml
+#
+# # With soft-fail:
+# terraform-lint:
+#   uses: ./.github/workflows/terraform-lint.yml
+#   with:
+#     soft-fail: true
+# ```
+---
+name: Terraform Lint
+
+on:  # yamllint disable-line rule:truthy
+  workflow_call:
+    inputs:
+      soft-fail:
+        description: 'Whether to continue on lint violations'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  terraform-lint:
+    name: Terraform Lint
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        with:
+          terraform_version: '1.9.8'
+          terraform_wrapper: false
+
+      - name: Install TFLint
+        run: |
+          TFLINT_VERSION="v0.54.0"
+          TFLINT_SHA256="16d062ebb3d2d199463fb93e17644c27feb57cb6175babecbce3e8d34f4956c6"
+          curl -fsSL "https://github.com/terraform-linters/tflint/releases/download/${TFLINT_VERSION}/tflint_linux_amd64.zip" -o /tmp/tflint.zip
+          echo "${TFLINT_SHA256}  /tmp/tflint.zip" | sha256sum --check --strict
+          unzip -o /tmp/tflint.zip -d /tmp
+          sudo mv /tmp/tflint /usr/local/bin/tflint
+          rm /tmp/tflint.zip
+          tflint --version
+
+      - name: Terraform format check
+        id: tf-fmt
+        run: |
+          terraform fmt -check -diff -recursive > terraform-fmt-output.txt 2>&1 || echo "TF_FMT_FAILED=true" >> "$GITHUB_ENV"
+          cat terraform-fmt-output.txt
+        continue-on-error: true
+
+      - name: TFLint init and check
+        id: tflint
+        run: |
+          tflint --init
+          tflint --recursive > tflint-output.txt 2>&1 || echo "TFLINT_FAILED=true" >> "$GITHUB_ENV"
+          cat tflint-output.txt
+        continue-on-error: true
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v4.4.3
+        with:
+          name: terraform-lint-results
+          path: |
+            terraform-fmt-output.txt
+            tflint-output.txt
+          retention-days: 30
+
+      - name: Add job summary
+        if: always()
+        shell: bash
+        run: |
+          echo "## Terraform Lint Results" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Check | Status |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|-------|--------|" >> "$GITHUB_STEP_SUMMARY"
+          if [ "${TF_FMT_FAILED:-}" = "true" ]; then
+            echo "| terraform fmt | :x: Failed |" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "| terraform fmt | :white_check_mark: Passed |" >> "$GITHUB_STEP_SUMMARY"
+          fi
+          if [ "${TFLINT_FAILED:-}" = "true" ]; then
+            echo "| TFLint | :x: Failed |" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "| TFLint | :white_check_mark: Passed |" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Fail job if violations found
+        if: (env.TF_FMT_FAILED == 'true' || env.TFLINT_FAILED == 'true') && inputs.soft-fail == false
+        run: exit 1
