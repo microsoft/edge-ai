@@ -24,8 +24,6 @@
     "tf-plan-ci": "SCRIPT_PATH=\"$PWD/scripts/tf-plan-smart.sh\"; ./scripts/tf-walker-parallel.sh \"terraform init && bash \\\"$SCRIPT_PATH\\\"\" \"tf-plan-ci-$(date +%Y%m%d-%H%M%S)\" true 4 ci",
     "tf-plan-blueprints": "SCRIPT_PATH=\"$PWD/scripts/tf-plan-smart.sh\"; ./scripts/tf-walker-parallel.sh \"terraform init && bash \\\"$SCRIPT_PATH\\\"\" \"tf-plan-blueprints-$(date +%Y%m%d-%H%M%S)\" true 4 blueprints",
     "tf-plan-all": "SCRIPT_PATH=\"$PWD/scripts/tf-plan-smart.sh\"; ./scripts/tf-walker-parallel.sh \"terraform init && bash \\\"$SCRIPT_PATH\\\"\" \"tf-plan-all-$(date +%Y%m%d-%H%M%S)\" true 4",
-    "lint-devcontainer": "npm run mdlint && npm run cspell && npm run format-json && npm run docker-lint",
-    "lint-fix-devcontainer": "npm run mdlint-fix && npm run format-json-fix",
     "format-tables": "pwsh -File ./scripts/linting/Format-Markdown-Tables.ps1",
     "format-tables-check": "pwsh -File ./scripts/linting/Format-Markdown-Tables.ps1 -Check",
     "checkov-changes": "pwsh -Command \"& $PWD/scripts/build/Detect-Folder-Changes.ps1 -OutputJson | & $PWD/scripts/Run-Checkov.ps1 -OutputFolder './checkov-results' -OutputFile 'code-analysis.xml'\"",

@@ -103,22 +103,23 @@ jobs:
 
       - name: Add job summary
         if: always()
+        shell: bash
         run: |
           echo "## Shell Lint Results" >> "$GITHUB_STEP_SUMMARY"
-          if [ "$BASH_SYNTAX_FAILED" == "true" ] || [ "$SHELLCHECK_FAILED" == "true" ] || [ "$SHFMT_FAILED" == "true" ]; then
+          if [ "${BASH_SYNTAX_FAILED:-}" = "true" ] || [ "${SHELLCHECK_FAILED:-}" = "true" ] || [ "${SHFMT_FAILED:-}" = "true" ]; then
             echo "| Check | Status |" >> "$GITHUB_STEP_SUMMARY"
             echo "|-------|--------|" >> "$GITHUB_STEP_SUMMARY"
-            if [ "$BASH_SYNTAX_FAILED" == "true" ]; then
+            if [ "${BASH_SYNTAX_FAILED:-}" = "true" ]; then
               echo "| Bash Syntax | :x: Failed |" >> "$GITHUB_STEP_SUMMARY"
             else
               echo "| Bash Syntax | :white_check_mark: Passed |" >> "$GITHUB_STEP_SUMMARY"
             fi
-            if [ "$SHELLCHECK_FAILED" == "true" ]; then
+            if [ "${SHELLCHECK_FAILED:-}" = "true" ]; then
               echo "| ShellCheck | :x: Failed |" >> "$GITHUB_STEP_SUMMARY"
             else
               echo "| ShellCheck | :white_check_mark: Passed |" >> "$GITHUB_STEP_SUMMARY"
             fi
-            if [ "$SHFMT_FAILED" == "true" ]; then
+            if [ "${SHFMT_FAILED:-}" = "true" ]; then
               echo "| shfmt | :x: Failed |" >> "$GITHUB_STEP_SUMMARY"
             else
               echo "| shfmt | :white_check_mark: Passed |" >> "$GITHUB_STEP_SUMMARY"

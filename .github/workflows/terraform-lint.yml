@@ -90,16 +90,17 @@ jobs:
 
       - name: Add job summary
         if: always()
+        shell: bash
         run: |
           echo "## Terraform Lint Results" >> "$GITHUB_STEP_SUMMARY"
           echo "| Check | Status |" >> "$GITHUB_STEP_SUMMARY"
           echo "|-------|--------|" >> "$GITHUB_STEP_SUMMARY"
-          if [ "$TF_FMT_FAILED" == "true" ]; then
+          if [ "${TF_FMT_FAILED:-}" = "true" ]; then
             echo "| terraform fmt | :x: Failed |" >> "$GITHUB_STEP_SUMMARY"
           else
             echo "| terraform fmt | :white_check_mark: Passed |" >> "$GITHUB_STEP_SUMMARY"
           fi
-          if [ "$TFLINT_FAILED" == "true" ]; then
+          if [ "${TFLINT_FAILED:-}" = "true" ]; then
             echo "| TFLint | :x: Failed |" >> "$GITHUB_STEP_SUMMARY"
           else
             echo "| TFLint | :white_check_mark: Passed |" >> "$GITHUB_STEP_SUMMARY"
