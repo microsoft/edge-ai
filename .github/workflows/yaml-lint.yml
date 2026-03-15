@@ -1,0 +1,177 @@
+# YAML Lint
+#
+# Purpose:
+# Reusable workflow that runs yamllint on YAML files, helm lint on Helm charts,
+# and hadolint on Dockerfiles.
+#
+# Parameters:
+# - soft-fail: When true, lint violations are reported but do not fail the workflow (default: false)
+#
+# Usage Examples:
+# ```yaml
+# # Basic usage:
+# yaml-lint:
+#   uses: ./.github/workflows/yaml-lint.yml
+#
+# # With soft-fail:
+# yaml-lint:
+#   uses: ./.github/workflows/yaml-lint.yml
+#   with:
+#     soft-fail: true
+# ```
+---
+name: YAML Lint
+
+on:  # yamllint disable-line rule:truthy
+  workflow_call:
+    inputs:
+      soft-fail:
+        description: 'Whether to continue on lint violations'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  yaml-lint:
+    name: YAML Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98  # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Install yamllint
+        run: pip install yamllint
+
+      - name: Install Helm
+        shell: bash
+        run: |
+          set -euo pipefail
+          HELM_VERSION="3.16.3"
+          curl -sSfL "https://get.helm.sh/helm-v${HELM_VERSION}-linux-amd64.tar.gz" -o helm.tar.gz
+          tar -xzf helm.tar.gz linux-amd64/helm
+          sudo mv linux-amd64/helm /usr/local/bin/helm
+          rm -rf linux-amd64 helm.tar.gz
+          helm version
+
+      - name: Run yamllint
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p lint-results
+          if find . \( -name '*.yml' -o -name '*.yaml' \) \
+            -not -path '*/node_modules/*' \
+            -not -path '*/.copilot-tracking/*' \
+            -not -path '*/.github/ISSUE_TEMPLATE/*' \
+            -not -path '*/charts/templates/*' \
+            -not -path '*/charts/*/templates/*' \
+            -print0 \
+            | xargs -0 -r yamllint -c .yamllint.yml -f parsable 2>&1 \
+            | tee lint-results/yamllint-results.txt; then
+            echo "yamllint passed"
+          else
+            echo "YAMLLINT_FAILED=true" >> "$GITHUB_ENV"
+          fi
+
+      - name: Run Helm Lint
+        shell: bash
+        run: |
+          set -euo pipefail
+          CHARTS=$(find src/500-application/ -name "Chart.yaml" 2>/dev/null || true)
+          if [ -z "$CHARTS" ]; then
+            echo "No Helm charts found"
+            echo "No Helm charts found" > lint-results/helm-lint-results.txt
+          else
+            echo "$CHARTS" | while read -r chart; do
+              chart_dir=$(dirname "$chart")
+              echo "::group::Helm lint: $chart_dir"
+              if ! helm lint "$chart_dir" 2>&1 | tee -a lint-results/helm-lint-results.txt; then
+                echo "HELM_LINT_FAILED=true" >> "$GITHUB_ENV"
+              fi
+              echo "::endgroup::"
+            done
+          fi
+
+      - name: Install Hadolint
+        shell: bash
+        run: |
+          set -euo pipefail
+          HADOLINT_VERSION="2.12.0"
+          curl -sSfL "https://github.com/hadolint/hadolint/releases/download/v${HADOLINT_VERSION}/hadolint-Linux-x86_64" \
+            -o hadolint
+          chmod +x hadolint
+          sudo mv hadolint /usr/local/bin/hadolint
+          hadolint --version
+
+      - name: Run Hadolint
+        shell: bash
+        run: |
+          set -euo pipefail
+          DOCKERFILES=$(find src/500-application/ -path '*/services/*/Dockerfile' 2>/dev/null || true)
+          if [ -z "$DOCKERFILES" ]; then
+            echo "No matching Dockerfiles found"
+            echo "No matching Dockerfiles found" > lint-results/hadolint-results.txt
+          else
+            echo "$DOCKERFILES" | while read -r dockerfile; do
+              echo "::group::Hadolint: $dockerfile"
+              COMPONENT_DIR=$(echo "$dockerfile" | sed -E 's|^(src/500-application/[^/]+)/.*|\1|')
+              if [ -f "$COMPONENT_DIR/.hadolint.yaml" ]; then
+                CONFIG="$COMPONENT_DIR/.hadolint.yaml"
+              else
+                CONFIG=".hadolint.yaml"
+              fi
+              if ! hadolint --config "$CONFIG" "$dockerfile" 2>&1 | tee -a lint-results/hadolint-results.txt; then
+                echo "HADOLINT_FAILED=true" >> "$GITHUB_ENV"
+              fi
+              echo "::endgroup::"
+            done
+          fi
+
+      - name: Upload Lint Results
+        if: always()
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f  # v4.4.3
+        with:
+          name: yaml-lint-results
+          path: lint-results/
+          retention-days: 30
+
+      - name: Job Summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "## YAML Lint Results"
+            echo ""
+            if [ "${YAMLLINT_FAILED:-}" = "true" ]; then
+              echo "- :x: yamllint: violations found"
+            else
+              echo "- :white_check_mark: yamllint: passed"
+            fi
+            if [ "${HELM_LINT_FAILED:-}" = "true" ]; then
+              echo "- :x: Helm lint: violations found"
+            else
+              echo "- :white_check_mark: Helm lint: passed"
+            fi
+            if [ "${HADOLINT_FAILED:-}" = "true" ]; then
+              echo "- :x: Hadolint: violations found"
+            else
+              echo "- :white_check_mark: Hadolint: passed"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Fail on Lint Violations
+        if: always() && (env.YAMLLINT_FAILED == 'true' || env.HELM_LINT_FAILED == 'true' || env.HADOLINT_FAILED == 'true')
+        shell: bash
+        env:
+          SOFT_FAIL: ${{ inputs.soft-fail }}
+        run: |
+          if [ "$SOFT_FAIL" = "true" ]; then
+            echo "::warning::YAML lint violations found (soft-fail enabled)"
+          else
+            echo "::error::YAML lint violations found"
+            exit 1
+          fi
