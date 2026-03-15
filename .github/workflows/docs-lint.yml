@@ -1,0 +1,175 @@
+# Docs Lint Workflow
+#
+# Purpose:
+# Reusable workflow that runs markdownlint, markdown table formatter check,
+# and cspell on all Markdown files in the repository.
+#
+# Parameters:
+# - soft-fail: When true, lint violations are reported but do not fail the workflow (default: false)
+#
+# Usage Examples:
+# ```yaml
+# # Basic usage:
+# docs-lint:
+#   uses: ./.github/workflows/docs-lint.yml
+#
+# # With soft-fail:
+# docs-lint:
+#   uses: ./.github/workflows/docs-lint.yml
+#   with:
+#     soft-fail: true
+# ```
+---
+name: Docs Lint
+
+on:  # yamllint disable-line rule:truthy
+  workflow_call:
+    inputs:
+      soft-fail:
+        description: 'Whether to continue on lint violations'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  docs-lint:
+    name: Docs Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run markdownlint
+        id: markdownlint
+        shell: bash
+        run: |
+          set -euo pipefail
+          FAILED=0
+
+          echo "::group::markdownlint"
+          npx markdownlint \
+            --config .markdownlint.json \
+            --ignore .copilot-tracking \
+            --ignore .github/copilot-instructions.md \
+            --ignore .github/instructions \
+            --ignore .github/prompts \
+            --ignore .github/agents \
+            --ignore node_modules \
+            --ignore venv \
+            "**/*.md" 2>&1 | tee markdownlint-output.txt || FAILED=1
+          echo "::endgroup::"
+
+          if [ "$FAILED" -ne 0 ]; then
+            echo "MARKDOWNLINT_FAILED=true" >> "$GITHUB_ENV"
+          fi
+
+      - name: Run markdown table formatter check
+        id: table-formatter
+        shell: bash
+        run: |
+          set -euo pipefail
+          FAILED=0
+
+          echo "::group::markdown-table-formatter"
+          find . -name '*.md' \
+            -not -path './.copilot-tracking/*' \
+            -not -path './node_modules/*' \
+            -not -path './venv/*' \
+            -print0 | xargs -0 npx markdown-table-formatter --check \
+            2>&1 | tee table-formatter-output.txt || FAILED=1
+          echo "::endgroup::"
+
+          if [ "$FAILED" -ne 0 ]; then
+            echo "TABLE_FORMATTER_FAILED=true" >> "$GITHUB_ENV"
+          fi
+
+      - name: Run cspell
+        id: cspell
+        shell: bash
+        run: |
+          set -euo pipefail
+          FAILED=0
+
+          echo "::group::cspell"
+          npx cspell "**/*.md" \
+            --config .cspell.json \
+            --exclude .copilot-tracking \
+            --exclude .github/copilot-instructions.md \
+            --exclude .github/instructions \
+            --exclude .github/prompts \
+            --exclude .github/agents \
+            --exclude node_modules \
+            --exclude venv \
+            --no-progress 2>&1 | tee cspell-output.txt || FAILED=1
+          echo "::endgroup::"
+
+          if [ "$FAILED" -ne 0 ]; then
+            echo "CSPELL_FAILED=true" >> "$GITHUB_ENV"
+          fi
+
+      - name: Generate job summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "## Docs Lint Results"
+            echo ""
+            echo "| Check | Status |"
+            echo "|-------|--------|"
+            if [ "${MARKDOWNLINT_FAILED:-}" = "true" ]; then
+              echo "| markdownlint | :x: Failed |"
+            else
+              echo "| markdownlint | :white_check_mark: Passed |"
+            fi
+            if [ "${TABLE_FORMATTER_FAILED:-}" = "true" ]; then
+              echo "| markdown-table-formatter | :x: Failed |"
+            else
+              echo "| markdown-table-formatter | :white_check_mark: Passed |"
+            fi
+            if [ "${CSPELL_FAILED:-}" = "true" ]; then
+              echo "| cspell | :x: Failed |"
+            else
+              echo "| cspell | :white_check_mark: Passed |"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload lint results
+        if: always()
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v4.4.3
+        with:
+          name: docs-lint-results-${{ github.run_id }}
+          path: |
+            markdownlint-output.txt
+            table-formatter-output.txt
+            cspell-output.txt
+          retention-days: 30
+          if-no-files-found: ignore
+
+      - name: Fail on violations
+        if: >-
+          env.MARKDOWNLINT_FAILED == 'true' ||
+          env.TABLE_FORMATTER_FAILED == 'true' ||
+          env.CSPELL_FAILED == 'true'
+        shell: bash
+        env:
+          SOFT_FAIL: ${{ inputs.soft-fail }}
+        run: |
+          TOOLS=""
+          [ "${MARKDOWNLINT_FAILED:-}" = "true" ] && TOOLS="${TOOLS} markdownlint"
+          [ "${TABLE_FORMATTER_FAILED:-}" = "true" ] && TOOLS="${TOOLS} markdown-table-formatter"
+          [ "${CSPELL_FAILED:-}" = "true" ] && TOOLS="${TOOLS} cspell"
+
+          if [ "$SOFT_FAIL" = "true" ]; then
+            echo "::warning::Docs lint found violations in:${TOOLS} (soft-fail enabled)"
+          else
+            echo "::error::Docs lint found violations in:${TOOLS}"
+            exit 1
+          fi
