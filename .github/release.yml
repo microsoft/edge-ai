@@ -56,7 +56,7 @@ changelog:
         - breaking-change
         - breaking
 
-    - title: � Vulnerabilities Fixed
+    - title: 🔒 Vulnerabilities Fixed
       labels:
         - cve-fix
 
