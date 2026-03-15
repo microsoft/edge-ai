@@ -72,7 +72,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          GRYPE_VERSION="0.80.0"
+          GRYPE_VERSION="0.109.1"
           curl -sSfL "https://github.com/anchore/grype/releases/download/v${GRYPE_VERSION}/grype_${GRYPE_VERSION}_linux_amd64.tar.gz" \
             -o grype.tar.gz
           tar -xzf grype.tar.gz grype
