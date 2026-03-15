@@ -1,9 +1,11 @@
-from pydantic import BaseModel, Field, ValidationError, model_validator
-from typing import Any
-from pathlib import Path
-from enum import Enum
-import os
 import json
+import os
+from enum import StrEnum
+from pathlib import Path
+from typing import Any
+
+from pydantic import BaseModel, Field, ValidationError, model_validator
+
 """Pydantic models supporting field-based sensor simulator configuration."""
 
 
@@ -13,7 +15,7 @@ DEFAULT_CONFIG_DIRECTORY = Path("/app")
 DEFAULT_CONFIG_PATH = DEFAULT_CONFIG_DIRECTORY / DEFAULT_CONFIG_FILENAME
 
 
-class DataType(str, Enum):
+class DataType(StrEnum):
     """Supported field data types exposed by the simulator."""
 
     INTEGER = "integer"

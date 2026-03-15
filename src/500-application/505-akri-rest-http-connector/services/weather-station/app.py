@@ -7,7 +7,8 @@ Simulates a weather station that provides temperature, humidity, and pressure da
 import os
 import random
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
+
 from flask import Flask, jsonify
 
 app = Flask(__name__)
@@ -20,12 +21,12 @@ LOCATION = os.environ.get('LOCATION', 'Seattle')
 
 def generate_weather_data():
     """Generate realistic simulated weather station data.
-    
+
     Creates randomized weather measurements with realistic variations
     for temperature, humidity, pressure, and weather conditions.
     Temperature ranges from 15-30°C, humidity from 40-90%, and
     pressure from 993-1033 hPa.
-    
+
     Returns:
         dict: Weather data including:
             - timestamp: Current UTC timestamp
@@ -39,7 +40,7 @@ def generate_weather_data():
     base_pressure = 1013.25 + random.uniform(-20.0, 20.0)  # 993-1033 hPa
 
     return {
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "device_id": DEVICE_ID,
         "location": LOCATION,
         "weather": {
@@ -72,17 +73,17 @@ def generate_weather_data():
 @app.route('/health', methods=['GET'])
 def health_check():
     """Health check endpoint for monitoring service availability.
-    
+
     Lightweight endpoint for health monitoring and service discovery.
     Does not require authentication.
-    
+
     Returns:
         Response: JSON containing status, timestamp, device_id,
                   uptime, and location
     """
     return jsonify({
         "status": "healthy",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "device_id": DEVICE_ID,
         "uptime": time.time(),
         "location": LOCATION
@@ -92,11 +93,11 @@ def health_check():
 @app.route('/api/weather', methods=['GET'])
 def get_weather():
     """Get current weather measurements from the station.
-    
+
     Returns real-time weather data including temperature (in both Celsius
     and Fahrenheit), humidity percentage, atmospheric pressure (in hPa
     and inHg), current weather conditions, and sensor metadata.
-    
+
     Returns:
         Response: JSON containing current weather measurements and metadata
     """
@@ -106,16 +107,16 @@ def get_weather():
 @app.route('/api/weather/history', methods=['GET'])
 def get_weather_history():
     """Get historical weather data for the past 24 hours.
-    
+
     Returns simulated hourly weather readings for the last 24 hours.
     Useful for trend analysis and data validation.
-    
+
     Returns:
         Response: JSON containing device_id, location, time period,
                   and array of 24 hourly weather readings
     """
     history = []
-    base_time = datetime.now(timezone.utc)
+    base_time = datetime.now(UTC)
 
     for i in range(24):
         # Generate data for each hour in the past 24 hours
@@ -135,11 +136,11 @@ def get_weather_history():
 @app.route('/api/device/info', methods=['GET'])
 def get_device_info():
     """Get comprehensive weather station device information.
-    
+
     Returns static configuration and capability information about the
     weather station including manufacturer details, supported protocols,
     available endpoints, and polling interval recommendations.
-    
+
     Returns:
         Response: JSON containing device metadata, capabilities, endpoints,
                   and recommended polling intervals
@@ -170,10 +171,10 @@ def get_device_info():
 @app.route('/', methods=['GET'])
 def root():
     """Root endpoint providing API discovery and documentation.
-    
+
     Returns service metadata and available endpoints for API discovery.
     Does not require authentication.
-    
+
     Returns:
         Response: JSON containing service information, device_id, location,
                   version, available endpoints, and documentation links

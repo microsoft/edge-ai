@@ -5,7 +5,9 @@ This module handles CompressedImage message processing and MQTT publishing.
 """
 
 from sensor_msgs.msg import CompressedImage
+
 from . import base_handler
+
 BaseMessageHandler = base_handler.BaseMessageHandler
 
 

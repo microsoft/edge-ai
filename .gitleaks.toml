@@ -32,8 +32,9 @@ paths = [
 [[allowlists]]
 description = "Ignore commits with files that were later deleted or refactored"
 commits = [
-  "c27825a7",
-  "42ee4823",
+  "c27825a7adc80195c91ee9829271c0caf3643736",
+  "42ee4823701026337ff90c941303fca7869a7cac",
+  "76304b405abef1071835aadc6dcaf466a03a20f3",
 ]
 
 [[rules]]
