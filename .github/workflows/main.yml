@@ -6,7 +6,7 @@
 # ensuring code quality and deploying documentation to GitHub Pages.
 #
 # Functionality:
-# - Runs MegaLinter for static code analysis across multiple languages
+# - Runs per-tool lint workflows for static code analysis across multiple languages
 # - Validates documentation standards and updates docs if needed
 # - When code is pushed to the main branch (triggers deployment to
 #   GitHub Pages)
@@ -98,24 +98,66 @@ jobs:
           head-ref: refs/heads/main
           base-ref: refs/heads/main
 
-  # MegaLinter job for main branch
-  mega-linter-main:
-    name: MegaLinter
-    needs: [dependency-scan-main]
+  # Shell script linting (main)
+  shell-lint-main:
+    name: Shell Lint
     permissions:
-      contents: write
-      pull-requests: write
-      statuses: write
-    uses: ./.github/workflows/megalinter.yml
-    with:
-      validate_all_codebase: true
-      github_comment_reporter: false
-    secrets: inherit
+      contents: read
+    uses: ./.github/workflows/shell-lint.yml
+
+  # Terraform linting (main)
+  terraform-lint-main:
+    name: Terraform Lint
+    permissions:
+      contents: read
+    uses: ./.github/workflows/terraform-lint.yml
+
+  # Bicep linting (main)
+  bicep-lint-main:
+    name: Bicep Lint
+    permissions:
+      contents: read
+    uses: ./.github/workflows/bicep-lint.yml
+
+  # Documentation linting (main)
+  docs-lint-main:
+    name: Documentation Lint
+    permissions:
+      contents: read
+    uses: ./.github/workflows/docs-lint.yml
+
+  # Code quality checks (main)
+  code-quality-lint-main:
+    name: Code Quality Lint
+    permissions:
+      contents: read
+    uses: ./.github/workflows/code-quality-lint.yml
+
+  # PowerShell linting (main)
+  powershell-lint-main:
+    name: PowerShell Lint
+    permissions:
+      contents: read
+    uses: ./.github/workflows/powershell-lint.yml
+
+  # Security scanning (main)
+  security-scan-main:
+    name: Security Scan
+    permissions:
+      contents: read
+      security-events: write
+    uses: ./.github/workflows/security-scan.yml
+
+  # YAML and container linting (main)
+  yaml-lint-main:
+    name: YAML Lint
+    permissions:
+      contents: read
+    uses: ./.github/workflows/yaml-lint.yml
 
   # Call docs-check-terraform workflow
   docs-check-terraform-main:
     name: Terraform Documentation Check
-    needs: [mega-linter-main]
     permissions:
       contents: read
     uses: ./.github/workflows/docs-check-terraform.yml
@@ -126,7 +168,6 @@ jobs:
   # Call docs-check-bicep workflow
   docs-check-bicep-main:
     name: Bicep Documentation Check
-    needs: [mega-linter-main]
     permissions:
       contents: read
     uses: ./.github/workflows/docs-check-bicep.yml

@@ -75,13 +75,22 @@ export default defineConfig({
     // Coverage configuration (replaces c8)
     coverage: {
       provider: 'v8',
-      reporter: ['text'], // Minimal coverage reporting
+      reporter: ['text', 'html', 'lcov'],
+      reportOnFailure: true,
       exclude: [
         'tests/**',
         'node_modules/**',
         '**/*.config.js',
         '**/coverage/**'
-      ]
+      ],
+      thresholds: {
+        global: {
+          branches: 74,
+          functions: 67,
+          lines: 54,
+          statements: 54
+        }
+      }
     },
 
     // Performance settings

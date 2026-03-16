@@ -1,4 +1,5 @@
 ---
+fail-on-severity: high
 ignore:
   # atty crate - LOW severity
   # Justification: Crate is unmaintained but functional with no known exploits.
@@ -6,3 +7,18 @@ ignore:
   # References: GHSA-g98v-hv3f-hcfr, RUSTSEC-2021-0145
   - vulnerability: GHSA-g98v-hv3f-hcfr
   - vulnerability: RUSTSEC-2021-0145
+
+  # flatted 3.3.3 - HIGH severity (transitive npm dependency)
+  # Justification: Prototype pollution in flatted. Transitive dependency in docs
+  # lock files. Update to 3.4.0 should be addressed in a separate dependency PR.
+  # Reference: GHSA-25h7-pfq9-p65f
+  - vulnerability: GHSA-25h7-pfq9-p65f
+
+  # aws-lc-sys 0.32.3 - HIGH severity (transitive Rust crate)
+  # Justification: Vulnerabilities in aws-lc-sys used transitively by the Rust
+  # HTTP connector broker. Update to 0.38.0 should be addressed in a separate
+  # dependency PR.
+  # References: GHSA-65p9-r9h6-22vj, GHSA-hfpc-8r3f-gw53, GHSA-vw5v-4f2q-w9xf
+  - vulnerability: GHSA-65p9-r9h6-22vj
+  - vulnerability: GHSA-hfpc-8r3f-gw53
+  - vulnerability: GHSA-vw5v-4f2q-w9xf
