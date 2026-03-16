@@ -79,6 +79,12 @@ variable "should_get_custom_locations_oid" {
  * Azure IoT Operations Parameters
  */
 
+variable "should_deploy_aio" {
+  type        = bool
+  description = "Whether to deploy Azure IoT Operations and its dependent edge components (assets, edge messaging). When false, deploys Arc-connected cluster with extensions and observability only"
+  default     = true
+}
+
 variable "aio_features" {
   description = "AIO instance features with mode ('Stable', 'Preview', 'Disabled') and settings ('Enabled', 'Disabled')"
   type = map(object({
