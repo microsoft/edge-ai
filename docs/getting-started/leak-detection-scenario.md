@@ -80,6 +80,7 @@ graph LR
 * **Terraform** >= 1.9.8
 * **Docker** installed and running
 * **kubectl** configured for your cluster
+* **jq** installed for JSON processing
 * **Basic understanding** of Azure IoT Operations — see the [General User Guide](general-user.md) for orientation
 
 ### Phase 1: Deploy Infrastructure
@@ -91,7 +92,8 @@ The `blueprints/leak-detection/terraform/` directory contains the full infrastru
 #### Configure Variables
 
 ```bash
-source scripts/az-sub-init.sh
+cd <repo-root>
+source ./scripts/az-sub-init.sh
 cd blueprints/leak-detection/terraform
 cp terraform.tfvars.example terraform.tfvars
 ```
