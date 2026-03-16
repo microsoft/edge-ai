@@ -39,7 +39,9 @@ updates:
 
   # Cargo
   - package-ecosystem: "cargo"
-    directory: "/"
+    directories:
+      - "/src/500-application/**"
+      - "/src/900-tools-utilities/**"
     schedule:
       interval: "weekly"
       day: "monday"
