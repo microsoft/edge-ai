@@ -55,6 +55,7 @@ access to resources.
 | should\_create\_ml\_workload\_identity        | Whether to create a user-assigned identity for AzureML workloads.                                                                             | `bool`                                                        | `false` |    no    |
 | should\_create\_secret\_sync\_identity        | Whether to create a user-assigned identity for Secret Sync Extension.                                                                         | `bool`                                                        | `true`  |    no    |
 | should\_enable\_public\_network\_access       | Whether to enable public network access for the Key Vault                                                                                     | `bool`                                                        | `true`  |    no    |
+| should\_enable\_purge\_protection             | Whether to enable purge protection for the Key Vault. Enable for production to prevent accidental or malicious secret deletion                | `bool`                                                        | `false` |    no    |
 | should\_use\_current\_user\_key\_vault\_admin | Whether to give the current user the Key Vault Secrets Officer Role.                                                                          | `bool`                                                        | `true`  |    no    |
 
 ## Outputs
