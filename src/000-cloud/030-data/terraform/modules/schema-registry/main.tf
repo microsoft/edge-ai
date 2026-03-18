@@ -57,7 +57,12 @@ resource "azurerm_role_assignment" "registry_storage_contributor" {
   skip_service_principal_aad_check = true
 }
 
-// Needed to prevent using the schema registry before role assignment configured.
+// Azure RBAC propagation delay for blob data-plane access.
+resource "time_sleep" "wait_for_rbac_propagation" {
+  create_duration = "30s"
+  depends_on      = [azurerm_role_assignment.registry_storage_contributor]
+}
+
 resource "terraform_data" "defer" {
   input = {
     schema_registry = {
@@ -65,5 +70,5 @@ resource "terraform_data" "defer" {
       name = azapi_resource.schema_registry.output.name
     }
   }
-  depends_on = [azurerm_role_assignment.registry_storage_contributor]
+  depends_on = [time_sleep.wait_for_rbac_propagation]
 }
