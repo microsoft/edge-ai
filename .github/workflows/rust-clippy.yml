@@ -45,10 +45,16 @@ jobs:
           fetch-depth: 0
 
       - name: Install Rust toolchain and clippy
-        uses: dtolnay/rust-toolchain@631a55b12751854ce901bb631d5902ceb48146f7 # stable
-        with:
-          components: clippy
-          targets: wasm32-wasip2
+        shell: bash
+        run: |
+          RUSTUP_INIT=$(mktemp)
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -o "$RUSTUP_INIT"
+          sha256sum "$RUSTUP_INIT"
+          sh "$RUSTUP_INIT" -y --default-toolchain stable -c clippy
+          rm -f "$RUSTUP_INIT"
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+          export PATH="$HOME/.cargo/bin:$PATH"
+          rustup target add wasm32-wasip2
 
       - name: Run Clippy on all Rust crates
         shell: bash
