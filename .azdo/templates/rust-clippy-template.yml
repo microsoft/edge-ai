@@ -50,22 +50,28 @@ jobs:
       - checkout: self
         fetchDepth: 0
 
+      # For PR builds, checkout the source branch HEAD instead of merge ref
       - task: Bash@3
-        displayName: 'Checkout PR source branch'
+        displayName: 'Checkout PR source branch HEAD'
+        condition: eq(variables['Build.Reason'], 'PullRequest')
         inputs:
-          targetType: inline
+          targetType: 'inline'
           script: |
-            if [ -n "$(System.PullRequest.SourceBranch)" ]; then
-              git checkout "$(System.PullRequest.SourceBranch)"
-            fi
-        condition: and(succeeded(), ne(variables['System.PullRequest.SourceBranch'], ''))
+            BRANCH_NAME=$(echo "$(System.PullRequest.SourceBranch)" | sed 's|^refs/heads/||')
+            echo "Switching to PR source branch HEAD: $BRANCH_NAME"
+            git checkout "$BRANCH_NAME"
+            git log -1 --oneline
 
       - task: Bash@3
         displayName: 'Install Rust toolchain and clippy'
         inputs:
           targetType: inline
           script: |
-            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable -c clippy
+            RUSTUP_INIT=$(mktemp)
+            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -o "$RUSTUP_INIT"
+            sha256sum "$RUSTUP_INIT"
+            sh "$RUSTUP_INIT" -y --default-toolchain stable -c clippy
+            rm -f "$RUSTUP_INIT"
             echo "##vso[task.prependpath]$HOME/.cargo/bin"
             export PATH="$HOME/.cargo/bin:$PATH"
             rustup target add wasm32-wasip2
@@ -77,7 +83,7 @@ jobs:
           script: |
             set -euo pipefail
             FAILED=0
-            for cargo_toml in $(find src/ -name "Cargo.toml" -not -path "./Cargo.toml"); do
+            for cargo_toml in $(find src/ -name "Cargo.toml"); do
               crate_dir=$(dirname "$cargo_toml")
               echo "##[group]Clippy: $crate_dir"
               if grep -q 'crate-type.*=.*\["cdylib"\]' "$cargo_toml"; then

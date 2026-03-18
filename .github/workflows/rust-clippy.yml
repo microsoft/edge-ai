@@ -58,7 +58,7 @@ jobs:
         run: |
           set -euo pipefail
           FAILED=0
-          for cargo_toml in $(find src/ -name "Cargo.toml" -not -path "./Cargo.toml"); do
+          for cargo_toml in $(find src/ -name "Cargo.toml"); do
             crate_dir=$(dirname "$cargo_toml")
             echo "::group::Clippy: $crate_dir"
             if grep -q 'crate-type.*=.*\["cdylib"\]' "$cargo_toml"; then

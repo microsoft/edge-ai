@@ -206,7 +206,6 @@ jobs:
   # Rust clippy lint check for PRs
   rust-clippy:
     name: Rust Clippy Lint Check
-    needs: [mega-linter]
     permissions:
       contents: read
     uses: ./.github/workflows/rust-clippy.yml

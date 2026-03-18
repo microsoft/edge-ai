@@ -158,7 +158,6 @@ jobs:
   # Rust clippy lint check for main branch
   rust-clippy-main:
     name: Rust Clippy Lint Check
-    needs: [mega-linter-main]
     permissions:
       contents: read
     uses: ./.github/workflows/rust-clippy.yml
