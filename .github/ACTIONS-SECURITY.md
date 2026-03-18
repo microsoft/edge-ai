@@ -41,8 +41,8 @@ Workflow-level permissions default to read-only (`contents: read`). Write permis
 Verify all actions comply with this policy:
 
 ```bash
-# Verify no tag-only pins (except slsa-framework)
-grep -rn "uses:" .github/workflows/ | grep -v "@[a-f0-9]\{40\}" | grep -v "slsa-framework"
+# Verify no tag-only pins (except slsa-framework and local workflow refs)
+grep -rn "uses:" .github/workflows/ | grep -v "uses:.*\./" | grep -v "@[a-f0-9]\{40\}" | grep -v "slsa-framework"
 
 # Verify all SHA pins have version comments
 grep -rn "uses:.*@[a-f0-9]\{40\}" .github/workflows/ | grep -v "#"
