@@ -67,7 +67,7 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       # Run Pester tests for the resource provider scripts
       - name: Run Pester Tests
@@ -83,7 +83,7 @@ jobs:
       # Publish the Pester test results
       - name: Publish Test Results
         if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: pester-test-results
           path: ${{ inputs.test-results-output }}
