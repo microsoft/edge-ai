@@ -18,9 +18,9 @@ This makes it human-readable which version each SHA corresponds to.
 
 All binary tool downloads in workflow steps must include SHA256 checksum verification before extraction:
 
-- Download to `/tmp/`
-- Verify with `sha256sum --check --strict`
-- Extract only after verification passes
+* Download to `/tmp/`
+* Verify with `sha256sum --check --strict`
+* Extract only after verification passes
 
 Currently verified binaries: Gitleaks, Grype, TFLint.
 
@@ -34,7 +34,7 @@ Workflow-level permissions default to read-only (`contents: read`). Write permis
 
 ## Exceptions
 
-- `slsa-framework/slsa-github-generator@v2.1.0` uses tag-based pinning because GitHub requires tag references for reusable workflow calls (`jobs.<id>.uses`). SHA pinning is not supported for this use case.
+* `slsa-framework/slsa-github-generator@v2.1.0` uses tag-based pinning because GitHub requires tag references for reusable workflow calls (`jobs.<id>.uses`). SHA pinning is not supported for this use case.
 
 ## Compliance Verification
 
