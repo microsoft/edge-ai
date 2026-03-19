@@ -22,9 +22,12 @@ impl Backend {
             #[cfg(feature = "candle")]
             Backend::Candle(backend) => backend.initialize(config).await,
             #[cfg(not(any(feature = "onnx-runtime", feature = "candle")))]
-            _ => Err(BackendError::ConfigurationError(
-                "No backend features enabled. Enable 'onnx-runtime' or 'candle' feature.".to_string()
-            )),
+            _ => {
+                let _ = config;
+                Err(BackendError::ConfigurationError(
+                    "No backend features enabled. Enable 'onnx-runtime' or 'candle' feature.".to_string()
+                ))
+            }
         }
     }
     
@@ -36,9 +39,12 @@ impl Backend {
             #[cfg(feature = "candle")]
             Backend::Candle(backend) => backend.load_model(model_name, model_config).await,
             #[cfg(not(any(feature = "onnx-runtime", feature = "candle")))]
-            _ => Err(BackendError::ConfigurationError(
-                "No backend features enabled. Enable 'onnx-runtime' or 'candle' feature.".to_string()
-            )),
+            _ => {
+                let _ = (model_name, model_config);
+                Err(BackendError::ConfigurationError(
+                    "No backend features enabled. Enable 'onnx-runtime' or 'candle' feature.".to_string()
+                ))
+            }
         }
     }
     
@@ -50,9 +56,12 @@ impl Backend {
             #[cfg(feature = "candle")]
             Backend::Candle(backend) => backend.unload_model(model_name).await,
             #[cfg(not(any(feature = "onnx-runtime", feature = "candle")))]
-            _ => Err(BackendError::ConfigurationError(
-                "No backend features enabled. Enable 'onnx-runtime' or 'candle' feature.".to_string()
-            )),
+            _ => {
+                let _ = model_name;
+                Err(BackendError::ConfigurationError(
+                    "No backend features enabled. Enable 'onnx-runtime' or 'candle' feature.".to_string()
+                ))
+            }
         }
     }
     
@@ -64,9 +73,12 @@ impl Backend {
             #[cfg(feature = "candle")]
             Backend::Candle(backend) => backend.infer(input, model_name).await,
             #[cfg(not(any(feature = "onnx-runtime", feature = "candle")))]
-            _ => Err(BackendError::ConfigurationError(
-                "No backend features enabled. Enable 'onnx-runtime' or 'candle' feature.".to_string()
-            )),
+            _ => {
+                let _ = (input, model_name);
+                Err(BackendError::ConfigurationError(
+                    "No backend features enabled. Enable 'onnx-runtime' or 'candle' feature.".to_string()
+                ))
+            }
         }
     }
     
@@ -346,6 +358,7 @@ impl BackendFactory {
     
     /// Check which backends are available at compile time
     pub fn available_backends() -> Vec<BackendType> {
+        #[allow(unused_mut)]
         let mut backends = Vec::new();
         
         #[cfg(feature = "onnx-runtime")]

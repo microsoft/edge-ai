@@ -83,7 +83,9 @@ pub mod engine;
 pub mod backend;
 pub mod backends;
 pub mod model_config;
+#[cfg(any(feature = "onnx", feature = "onnx-runtime"))]
 pub mod preprocessing;
+#[cfg(any(feature = "onnx", feature = "onnx-runtime"))]
 pub mod postprocessing;
 
 // Re-export main types for easy access
@@ -103,10 +105,12 @@ pub use model_config::{
 };
 
 // Re-export universal processing types
+#[cfg(any(feature = "onnx", feature = "onnx-runtime"))]
 pub use preprocessing::{
     UniversalImagePreprocessor, PreprocessedImage, PreprocessingError,
     ResizeStrategy, NormalizationConfig, InputFormat
 };
+#[cfg(any(feature = "onnx", feature = "onnx-runtime"))]
 pub use postprocessing::{
     UniversalPostprocessor, PostprocessingError, DetectionBox
 };

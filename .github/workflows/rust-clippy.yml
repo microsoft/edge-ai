@@ -56,6 +56,12 @@ jobs:
           export PATH="$HOME/.cargo/bin:$PATH"
           rustup target add wasm32-wasip2
 
+      - name: Install system dependencies
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler
+
       - name: Run Clippy on all Rust crates
         shell: bash
         env:
@@ -66,6 +72,10 @@ jobs:
           FAILED=0
           for cargo_toml in $(find src/ -name "Cargo.toml"); do
             crate_dir=$(dirname "$cargo_toml")
+            if [[ "$crate_dir" == *"media-capture-service"* ]]; then
+              echo "Skipping $crate_dir (requires OpenCV/FFmpeg system libraries)"
+              continue
+            fi
             echo "::group::Clippy: $crate_dir"
             if grep -q 'crate-type.*=.*\["cdylib"\]' "$cargo_toml"; then
               echo "WASM crate detected — using --target wasm32-wasip2"
