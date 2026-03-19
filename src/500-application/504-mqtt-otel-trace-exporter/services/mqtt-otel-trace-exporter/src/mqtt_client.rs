@@ -54,7 +54,7 @@ pub async fn run(config: AppConfig) -> Result<()> {
     }
 
     subscriber_task.await.expect("subscriber task panicked")?;
-    heartbeat_task.await.expect("heartbeat task panicked")?
+    heartbeat_task.await.expect("heartbeat task panicked")?;
 
     Ok(())
 }

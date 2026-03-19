@@ -61,6 +61,7 @@ impl TopicRouter {
     }
 
     /// Generate topic for status/health messages
+    #[allow(dead_code)]
     pub fn route_status(&self, component: &str, status_type: &str) -> String {
         format!("{}/status/{}/{}", 
             self.topic_prefix.trim_end_matches('/'), 
@@ -70,6 +71,7 @@ impl TopicRouter {
     }
 
     /// Generate topic for metrics
+    #[allow(dead_code)]
     pub fn route_metrics(&self, metric_type: &str) -> String {
         format!("{}/metrics/{}", 
             self.topic_prefix.trim_end_matches('/'), 
@@ -78,6 +80,7 @@ impl TopicRouter {
     }
 
     /// Generate topic for errors
+    #[allow(dead_code)]
     pub fn route_error(&self, component: &str, error_type: &str) -> String {
         format!("{}/errors/{}/{}", 
             self.topic_prefix.trim_end_matches('/'), 
@@ -131,6 +134,7 @@ impl TopicRouter {
     }
 
     /// Get topic mapping information for monitoring and debugging
+    #[allow(dead_code)]
     pub fn get_topic_mapping(&self, result: &InferenceResult) -> TopicMapping {
         let topic = self.route_result(result);
         

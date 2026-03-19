@@ -145,7 +145,7 @@ impl MqttPublisher {
             .connection_settings(connection_settings)
             .build()?;
 
-        let mut session = Session::new(session_options)
+        let session = Session::new(session_options)
             .map_err(|e| anyhow::anyhow!("Failed to create session: {}", e))?;
 
         let monitor = session.create_connection_monitor();
@@ -258,6 +258,7 @@ impl MqttPublisher {
     }
 
     /// Handle image inference using the crate library
+    #[allow(dead_code)]
     async fn handle_image_inference(
         &self,
         camera_id: String,
@@ -579,6 +580,7 @@ impl MqttPublisher {
 }
 
 /// Implementation for MQTT processing context
+#[allow(dead_code)]
 impl MqttProcessingContext {
     /// Process messages from a specific topic
     #[instrument(skip(self, receiver))]
