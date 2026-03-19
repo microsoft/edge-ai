@@ -1,7 +1,7 @@
 //! # AI Edge Inference Crate
-//! 
+//!
 //! A high-performance Rust library for running AI inference at the edge using multiple ML backends.
-//! Designed for industrial IoT applications with focus on reliability, performance, and 
+//! Designed for industrial IoT applications with focus on reliability, performance, and
 //! easy integration with messaging systems like MQTT.
 //!
 //! ## Features
@@ -28,11 +28,11 @@
 //! async fn main() -> Result<(), Box<dyn std::error::Error>> {
 //!     // Load configuration
 //!     let config = InferenceConfig::default();
-//!     
+//!
 //!     // Create and initialize engine (auto-selects best backend)
 //!     let mut engine = InferenceEngine::new(config).await?;
 //!     engine.initialize().await?;
-//!     
+//!
 //!     // Load a model
 //!     let model_config = ModelConfig {
 //!         model_path: "/path/to/model.onnx".to_string(),
@@ -42,7 +42,7 @@
 //!         postprocessing: None,
 //!     };
 //!     engine.load_model("safety-detector", &model_config).await?;
-//!     
+//!
 //!     // Create inference request
 //!     let request = InferenceRequest {
 //!         request_id: "test-001".to_string(),
@@ -51,14 +51,14 @@
 //!         input_type: "image".to_string(),
 //!         metadata: std::collections::HashMap::new(),
 //!     };
-//!     
+//!
 //!     // Run inference
 //!     let result = engine.infer(request).await?;
-//!     
+//!
 //!     // Serialize result to JSON for MQTT publishing
 //!     let json_result = serde_json::to_string(&result)?;
 //!     println!("Inference result: {}", json_result);
-//!     
+//!
 //!     Ok(())
 //! }
 //! ```
@@ -94,13 +94,13 @@ pub use types::{
 };
 pub use error::InferenceError;
 pub use config::{
-    InferenceConfig, ModelsConfig, PerformanceConfig, HardwareConfig, 
+    InferenceConfig, ModelsConfig, PerformanceConfig, HardwareConfig,
     MonitoringConfig, SiteContext, ModelDefinition, ModelParameters
 };
 pub use models::{ModelRegistry, ModelMetadata, LoadedModel};
 pub use engine::{InferenceEngine, InferenceMetrics};
 pub use model_config::{
-    ModelConfiguration, ModelConfigManager, ModelConfigError, 
+    ModelConfiguration, ModelConfigManager, ModelConfigError,
     ModelMetadata as YamlModelMetadata, ModelSummary
 };
 
@@ -117,7 +117,7 @@ pub use postprocessing::{
 
 // Re-export backend types
 pub use backend::{
-    InferenceBackend, BackendFactory, BackendConfig, BackendError, 
+    InferenceBackend, BackendFactory, BackendConfig, BackendError,
     BackendStatus, BackendType, DeviceType
 };
 
@@ -165,7 +165,7 @@ pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 /// Supported model types for industrial AI applications
 pub const SUPPORTED_MODEL_TYPES: &[&str] = &[
     "industrial-safety-vision",
-    "environmental-anomaly-detection", 
+    "environmental-anomaly-detection",
     "wildlife-detection",
     "facility-operations-monitoring",
     "ppe-compliance-detection",
@@ -182,7 +182,7 @@ mod tests {
         assert!(!VERSION.is_empty());
     }
 
-    #[test] 
+    #[test]
     fn test_supported_models() {
         assert!(!SUPPORTED_MODEL_TYPES.is_empty());
         assert!(SUPPORTED_MODEL_TYPES.contains(&"industrial-safety-vision"));

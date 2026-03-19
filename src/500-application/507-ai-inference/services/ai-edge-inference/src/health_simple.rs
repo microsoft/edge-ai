@@ -137,7 +137,7 @@ impl HealthService {
     // Model registry endpoints
     async fn get_models(engine: Arc<InferenceEngine>) -> Result<impl warp::Reply, warp::Rejection> {
         info!("Fetching available models");
-        
+
         let model_names = engine.get_loaded_models().await;
         let model_infos: Vec<ModelInfo> = model_names.iter().map(|name| {
             ModelInfo {
@@ -164,7 +164,7 @@ impl HealthService {
 
     async fn get_model_detail(model_name: String, engine: Arc<InferenceEngine>) -> Result<impl warp::Reply, warp::Rejection> {
         info!("Fetching details for model: {}", model_name);
-        
+
         let model_names = engine.get_loaded_models().await;
         if model_names.contains(&model_name) {
             let preprocessing_info = PreprocessingInfo {
@@ -343,9 +343,9 @@ impl HealthService {
         // Start the server
         let addr = ([0, 0, 0, 0], self.port);
         info!("Health service listening on http://{}", format!("{}:{}", "0.0.0.0", self.port));
-        
+
         warp::serve(routes).run(addr).await;
-        
+
         Ok(())
     }
 }
@@ -358,22 +358,22 @@ async fn handle_readiness_check_simple(
     // Check if inference engine is ready
     let backend_status = inference_engine.get_backend_status().await;
     let engine_ready = backend_status.initialized;
-    
+
     // For now, assume MQTT is connected (we can't check it safely across threads)
     let mqtt_connected = true;
-    
+
     let current_timestamp = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
         .unwrap_or_default()
         .as_secs();
-    
+
     if engine_ready && mqtt_connected {
         let response = SimpleHealthResponse {
             status: "ready".to_string(),
             timestamp: chrono::Utc::now().timestamp(),
             uptime_seconds: current_timestamp.saturating_sub(start_timestamp),
         };
-        
+
         Ok(warp::reply::with_status(
             warp::reply::json(&response),
             warp::http::StatusCode::OK,
@@ -384,7 +384,7 @@ async fn handle_readiness_check_simple(
             timestamp: chrono::Utc::now().timestamp(),
             uptime_seconds: current_timestamp.saturating_sub(start_timestamp),
         };
-        
+
         Ok(warp::reply::with_status(
             warp::reply::json(&response),
             warp::http::StatusCode::SERVICE_UNAVAILABLE,
@@ -399,24 +399,24 @@ async fn handle_simple_health_simple(
 ) -> Result<impl Reply, warp::Rejection> {
     let backend_status = inference_engine.get_backend_status().await;
     let mqtt_connected = true; // Assume connected for now
-    
+
     let status = if backend_status.initialized && mqtt_connected {
         "healthy"
     } else {
         "unhealthy"
     };
-    
+
     let current_timestamp = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
         .unwrap_or_default()
         .as_secs();
-    
+
     let response = SimpleHealthResponse {
         status: status.to_string(),
         timestamp: chrono::Utc::now().timestamp(),
         uptime_seconds: current_timestamp.saturating_sub(start_timestamp),
     };
-    
+
     Ok(warp::reply::json(&response))
 }
 
@@ -426,7 +426,7 @@ async fn handle_detailed_health_simple(
     start_timestamp: u64,
 ) -> Result<impl Reply, warp::Rejection> {
     let mut components = Vec::new();
-    
+
     // Check inference engine
     let backend_status = inference_engine.get_backend_status().await;
     let inference_component = ComponentHealth {
@@ -434,36 +434,36 @@ async fn handle_detailed_health_simple(
         status: if backend_status.initialized { "healthy" } else { "unhealthy" }.to_string(),
         details: Some(format!("Models loaded: {}", backend_status.loaded_models.len())),
     };
-    
+
     // Check MQTT publisher (simplified)
     let mqtt_component = ComponentHealth {
         name: "mqtt_publisher".to_string(),
         status: "healthy".to_string(), // Assume healthy for now
         details: Some("MQTT publisher status check skipped due to thread safety".to_string()),
     };
-    
+
     components.push(inference_component.clone());
     components.push(mqtt_component.clone());
-    
+
     let timestamp = chrono::Utc::now().timestamp();
     let overall_status = if components.iter().all(|c| c.status == "healthy") {
         "healthy"
     } else {
         "unhealthy"
     };
-    
+
     // System info
     let _system_info = SystemInfo {
         cpu_usage: 0.0, // Placeholder
         memory_usage: 0.0, // Placeholder
         disk_usage: 0.0, // Placeholder
     };
-    
+
     let current_timestamp = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
         .unwrap_or_default()
         .as_secs();
-    
+
     let response = DetailedHealthResponse {
         status: overall_status.to_string(),
         timestamp,
@@ -471,12 +471,12 @@ async fn handle_detailed_health_simple(
         inference_engine: inference_component,
         mqtt_publisher: mqtt_component,
     };
-    
+
     let status_code = match overall_status {
         "healthy" => warp::http::StatusCode::OK,
         _ => warp::http::StatusCode::SERVICE_UNAVAILABLE,
     };
-    
+
     Ok(warp::reply::with_status(
         warp::reply::json(&response),
         status_code,
@@ -491,30 +491,30 @@ async fn handle_startup_check_simple(
     // For startup probe, check if basic initialization is complete
     let backend_status = inference_engine.get_backend_status().await;
     let engine_ready = backend_status.initialized;
-    
+
     let status = if engine_ready {
         "started"
     } else {
         "starting"
     };
-    
+
     let current_timestamp = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
         .unwrap_or_default()
         .as_secs();
-    
+
     let response = SimpleHealthResponse {
         status: status.to_string(),
         timestamp: chrono::Utc::now().timestamp(),
         uptime_seconds: current_timestamp.saturating_sub(start_timestamp),
     };
-    
+
     let status_code = if status == "started" {
         warp::http::StatusCode::OK
     } else {
         warp::http::StatusCode::SERVICE_UNAVAILABLE
     };
-    
+
     Ok(warp::reply::with_status(
         warp::reply::json(&response),
         status_code,
@@ -527,7 +527,7 @@ async fn handle_test_inference(
     image_bytes: Bytes,
 ) -> Result<impl Reply, warp::Rejection> {
     info!("Received test inference request with {} bytes", image_bytes.len());
-    
+
     // Try to load the image to validate it
     let image = match image::load_from_memory(&image_bytes) {
         Ok(img) => img,
@@ -542,17 +542,17 @@ async fn handle_test_inference(
             ));
         }
     };
-    
+
     // Encode image to base64
     let image_base64 = base64::Engine::encode(&base64::engine::general_purpose::STANDARD, &image_bytes);
-    
+
     // Create metadata
     let mut metadata = std::collections::HashMap::new();
     metadata.insert("width".to_string(), serde_json::Value::Number(serde_json::Number::from(image.width())));
     metadata.insert("height".to_string(), serde_json::Value::Number(serde_json::Number::from(image.height())));
     metadata.insert("channels".to_string(), serde_json::Value::Number(serde_json::Number::from(3)));
     metadata.insert("format".to_string(), serde_json::Value::String("RGB".to_string()));
-    
+
     // Create inference request with correct structure
     let request = InferenceRequest {
         request_id: uuid::Uuid::new_v4().to_string(),
@@ -561,7 +561,7 @@ async fn handle_test_inference(
         input_type: "image".to_string(),
         metadata,
     };
-    
+
     // Run inference
     match inference_engine.infer(request).await {
         Ok(result) => {
@@ -592,12 +592,12 @@ async fn handle_file_processing(
     inference_engine: Arc<InferenceEngine>,
 ) -> Result<impl Reply, warp::Rejection> {
     info!("Starting file-based image processing from /models/test-images/");
-    
+
     let images_dir = "/models/test-images";
     let mut processed_files = Vec::new();
     let mut successful = 0;
     let mut failed = 0;
-    
+
     // Read directory contents
     match fs::read_dir(images_dir) {
         Ok(entries) => {
@@ -610,17 +610,17 @@ async fn handle_file_processing(
                             .unwrap_or_default()
                             .to_string_lossy()
                             .to_string();
-                        
+
                         info!("Processing image file: {}", filename);
                         let start_time = std::time::Instant::now();
-                        
+
                         match process_image_file(&path, &inference_engine).await {
                             Ok(result) => {
                                 let processing_time = start_time.elapsed().as_millis() as u64;
-                                
-                                // Convert result to JSON for HTTP response  
+
+                                // Convert result to JSON for HTTP response
                                 let json_result = result;
-                                
+
                                 processed_files.push(ProcessedFile {
                                     filename: filename.clone(),
                                     status: "success".to_string(),
@@ -661,10 +661,10 @@ async fn handle_file_processing(
             return Ok(warp::reply::json(&response));
         }
     }
-    
+
     let total_files = processed_files.len();
     let status = if failed == 0 { "success" } else if successful == 0 { "error" } else { "partial" };
-    
+
     let response = FileProcessingResponse {
         status: status.to_string(),
         message: format!("Processed {} files: {} successful, {} failed", total_files, successful, failed),
@@ -673,7 +673,7 @@ async fn handle_file_processing(
         successful,
         failed,
     };
-    
+
     info!("File processing complete: {} total, {} successful, {} failed", total_files, successful, failed);
     Ok(warp::reply::json(&response))
 }
@@ -686,14 +686,14 @@ async fn process_image_file(
     // Read image file
     let image_data = fs::read(path)?;
     let image_base64 = general_purpose::STANDARD.encode(&image_data);
-    
+
     // Create metadata
     let mut metadata = std::collections::HashMap::new();
     metadata.insert("source".to_string(), serde_json::Value::String("file_processor".to_string()));
     metadata.insert("filename".to_string(), serde_json::Value::String(
         path.file_name().unwrap_or_default().to_string_lossy().to_string()
     ));
-    
+
     // Create inference request using the same structure as the test endpoint
     let request = ai_edge_inference_crate::InferenceRequest {
         request_id: uuid::Uuid::new_v4().to_string(),
@@ -702,12 +702,12 @@ async fn process_image_file(
         input_type: "image".to_string(),
         metadata,
     };
-    
+
     // Run inference
     let result = inference_engine.infer(request).await?;
-    
+
     // Convert to JSON
     let json_result = serde_json::to_value(result)?;
-    
+
     Ok(json_result)
 }

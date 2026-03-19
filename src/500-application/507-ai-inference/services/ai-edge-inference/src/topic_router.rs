@@ -48,13 +48,13 @@ impl TopicRouter {
             self.model_type_to_topic(&result.model_type),
             result.model_name.replace("-", "_"),
         ];
-        
+
         // Add priority based on predictions
         let priority = self.determine_priority(result);
         if !priority.is_empty() {
             topic_parts.push(priority);
         }
-        
+
         let topic = topic_parts.join("/");
         debug!("Generated topic for model {}: {}", result.model_name, topic);
         topic
@@ -63,9 +63,9 @@ impl TopicRouter {
     /// Generate topic for status/health messages
     #[allow(dead_code)]
     pub fn route_status(&self, component: &str, status_type: &str) -> String {
-        format!("{}/status/{}/{}", 
-            self.topic_prefix.trim_end_matches('/'), 
-            component, 
+        format!("{}/status/{}/{}",
+            self.topic_prefix.trim_end_matches('/'),
+            component,
             status_type
         )
     }
@@ -73,8 +73,8 @@ impl TopicRouter {
     /// Generate topic for metrics
     #[allow(dead_code)]
     pub fn route_metrics(&self, metric_type: &str) -> String {
-        format!("{}/metrics/{}", 
-            self.topic_prefix.trim_end_matches('/'), 
+        format!("{}/metrics/{}",
+            self.topic_prefix.trim_end_matches('/'),
             metric_type
         )
     }
@@ -82,9 +82,9 @@ impl TopicRouter {
     /// Generate topic for errors
     #[allow(dead_code)]
     pub fn route_error(&self, component: &str, error_type: &str) -> String {
-        format!("{}/errors/{}/{}", 
-            self.topic_prefix.trim_end_matches('/'), 
-            component, 
+        format!("{}/errors/{}/{}",
+            self.topic_prefix.trim_end_matches('/'),
+            component,
             error_type
         )
     }
@@ -98,13 +98,13 @@ impl TopicRouter {
     fn determine_priority(&self, result: &InferenceResult) -> String {
         let mut max_confidence = result.confidence;
         let prediction_count = result.predictions.len();
-        
+
         for prediction in &result.predictions {
             if prediction.confidence > max_confidence {
                 max_confidence = prediction.confidence;
             }
         }
-        
+
         // Determine priority based on confidence and prediction count
         if max_confidence >= 0.9 && prediction_count > 0 {
             "high".to_string()
@@ -120,16 +120,16 @@ impl TopicRouter {
     /// Apply template variables to custom topic patterns
     fn apply_template(&self, template: &str, result: &InferenceResult) -> String {
         let mut topic = template.to_string();
-        
+
         // Replace template variables
         topic = topic.replace("{prefix}", &self.topic_prefix);
         topic = topic.replace("{model_name}", &result.model_name);
         topic = topic.replace("{model_type}", &self.model_type_to_topic(&result.model_type));
-        
+
         // Replace priority
         let priority = self.determine_priority(result);
         topic = topic.replace("{priority}", &priority);
-        
+
         topic
     }
 
@@ -137,7 +137,7 @@ impl TopicRouter {
     #[allow(dead_code)]
     pub fn get_topic_mapping(&self, result: &InferenceResult) -> TopicMapping {
         let topic = self.route_result(result);
-        
+
         TopicMapping {
             base_topic: topic,
             site_id: None, // Site context not available in InferenceResult
@@ -197,9 +197,9 @@ mod tests {
     fn test_basic_topic_routing() {
         let router = TopicRouter::new("edge-ai/downstream/facility_01/gateway_001".to_string());
         let result = create_test_result();
-        
+
         let topic = router.route_result(&result);
-        
+
         assert!(topic.contains("edge-ai/downstream/facility_01/gateway_001"));
         assert!(topic.contains("site/pilot-facility-001"));
         assert!(topic.contains("inference/vision"));
@@ -214,23 +214,23 @@ mod tests {
             "industrial-safety-vision".to_string(),
             "{prefix}/safety/{site_id}/alerts/{priority}".to_string()
         );
-        
+
         let result = create_test_result();
         let topic = router.route_result(&result);
-        
+
         assert_eq!(topic, "edge-ai/safety/pilot-facility-001/alerts/high");
     }
 
     #[test]
     fn test_status_routing() {
         let router = TopicRouter::new("edge-ai/test".to_string());
-        
+
         let status_topic = router.route_status("ai-inference", "health");
         assert_eq!(status_topic, "edge-ai/test/status/ai-inference/health");
-        
+
         let metrics_topic = router.route_metrics("performance");
         assert_eq!(metrics_topic, "edge-ai/test/metrics/performance");
-        
+
         let error_topic = router.route_error("ai-inference", "model_load_failed");
         assert_eq!(error_topic, "edge-ai/test/errors/ai-inference/model_load_failed");
     }
