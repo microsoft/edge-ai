@@ -1,0 +1,39 @@
+/*
+ * Full Single Node Cluster with Video Capture Query
+ *
+ * Deploys the complete single-node cluster infrastructure with the Video Query API
+ * Azure Function for time-based video recording retrieval.
+ *
+ * IMPORTANT: The Function App runtime is set to Python 3.11 for the Video Query API.
+ * This is mutually exclusive with Node.js-based functions (e.g., leak-detection notification).
+ * Azure Functions supports only one runtime per Function App.
+ *
+ * For combined deployments requiring both Python and Node.js functions,
+ * a dual Function App architecture is needed (see follow-on work).
+ */
+
+// Core Parameters
+environment     = "dev"
+location        = "eastus2"
+resource_prefix = "aio"
+instance        = "001"
+
+// Video Capture Query
+should_deploy_video_capture   = true
+should_create_azure_functions = true
+
+// Function App Runtime — Python for Video Query API
+// Setting python_version activates Python runtime; node_version must be null
+function_python_version = "3.11"
+function_node_version   = null
+
+// HNS must be disabled for Azure Functions storage access via managed identity
+storage_account_is_hns_enabled = false
+
+// Video Query Function App Settings
+function_app_settings = {
+  "FUNCTIONS_WORKER_RUNTIME"   = "python"
+  "TEMP_VIDEOS_CONTAINER"      = "temp-videos"
+  "VIDEO_RECORDINGS_CONTAINER" = "video-recordings"
+  "SAS_EXPIRY_HOURS"           = "24"
+}

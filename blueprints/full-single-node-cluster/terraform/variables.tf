@@ -350,6 +350,24 @@ variable "function_app_settings" {
   sensitive   = true
 }
 
+variable "should_deploy_video_capture" {
+  type        = bool
+  description = "Whether to deploy video capture query infrastructure including role assignment for Function App access to storage"
+  default     = false
+}
+
+variable "function_node_version" {
+  type        = string
+  description = "Node.js version for the Function App runtime. Set to null when using Python runtime"
+  default     = "20"
+}
+
+variable "function_python_version" {
+  type        = string
+  description = "Python version for the Function App runtime. Set to null when using Node.js runtime"
+  default     = null
+}
+
 /*
  * Azure Kubernetes Service Parameters
  */

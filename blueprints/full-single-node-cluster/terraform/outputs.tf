@@ -159,6 +159,11 @@ output "function_app" {
   value       = try(module.cloud_messaging.function_app, null)
 }
 
+output "video_query_storage_role_assignment" {
+  description = "Storage Blob Data Contributor role assignment for the Video Query API Function App."
+  value       = try(azurerm_role_assignment.video_query_storage_blob_data_contributor[0], null)
+}
+
 /*
  * Dataflow Outputs
  */
