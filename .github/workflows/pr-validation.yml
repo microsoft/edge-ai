@@ -210,7 +210,7 @@ jobs:
       contents: read
     uses: ./.github/workflows/rust-clippy.yml
     with:
-      break_build: true
+      break-build: true
     secrets: inherit
 
   # Use reusable workflow to detect detailed changes and create folder matrix

@@ -162,7 +162,7 @@ jobs:
       contents: read
     uses: ./.github/workflows/rust-clippy.yml
     with:
-      break_build: false
+      break-build: false
     secrets: inherit
 
   # Call docs-check-terraform workflow
