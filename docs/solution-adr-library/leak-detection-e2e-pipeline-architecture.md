@@ -149,7 +149,7 @@ Implement the leak detection pipeline as a five-layer architecture deployed on a
 
 ### Reference Implementation
 
-The `blueprints/leak-detection` blueprint implements this architecture using:
+The `blueprints/full-single-node-cluster` blueprint (with `leak-detection.tfvars.example`) implements this architecture using:
 
 | Layer             | Reference Implementation                                                 | Component                                         |
 |-------------------|--------------------------------------------------------------------------|---------------------------------------------------|
@@ -430,7 +430,7 @@ The blueprint provides Teams notification with stateful deduplication. FDEs guid
 
 ## Decision Conclusion
 
-The leak detection pipeline architecture uses a **layered, MQTT-brokered design** where each layer is decoupled through topic contracts and independently substitutable. The reference implementation in `blueprints/leak-detection` provides an opinionated starting point:
+The leak detection pipeline architecture uses a **layered, MQTT-brokered design** where each layer is decoupled through topic contracts and independently substitutable. The reference implementation in `blueprints/full-single-node-cluster` (using `leak-detection.tfvars.example`) provides an opinionated starting point:
 
 | Layer            | Reference Choice                                       | Substitution Guidance                                                                     |
 |------------------|--------------------------------------------------------|-------------------------------------------------------------------------------------------|
@@ -476,7 +476,7 @@ The leak detection pipeline architecture uses a **layered, MQTT-brokered design*
 
 - [BDR-001: Leak Detection Business Case](../../context/BDR-001-leak-detection-business-case%201.md)
 - [PDR-001: Leak Detection Product Design Requirements](../../context/PDR-001-leak-detection-product-design.md)
-- [Leak Detection Blueprint](../../blueprints/leak-detection/README.md)
+- [Leak Detection Blueprint](../../blueprints/full-single-node-cluster/README.md)
 
 ## Related ADRs
 

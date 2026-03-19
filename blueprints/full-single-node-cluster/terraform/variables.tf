@@ -351,6 +351,47 @@ variable "function_app_settings" {
 }
 
 /*
+ * Notification Parameters (045-notification)
+ */
+
+variable "should_deploy_notification" {
+  type        = bool
+  description = "Whether to deploy the 045-notification Logic App for alert deduplication and Teams posting"
+  default     = false
+}
+
+variable "closure_message_template" {
+  type        = string
+  description = "HTML message body for session-closure Teams notifications. Supports Logic App expression syntax for dynamic fields"
+  default     = "<p>Session closed for event.</p>"
+}
+
+variable "notification_event_schema" {
+  type        = any
+  description = "JSON schema object for parsing Event Hub events in the Logic App Parse_Event action"
+  default     = {}
+}
+
+variable "notification_message_template" {
+  type        = string
+  description = "HTML template for new-event Teams notifications. Supports Terraform template variable: close_session_url. Supports Logic App expression syntax for dynamic event fields"
+  default     = "<p>New alert event detected.</p>"
+}
+
+variable "notification_partition_key_field" {
+  type        = string
+  description = "Event schema field name used as the Table Storage partition key for session state deduplication lookups"
+  default     = "camera_id"
+}
+
+variable "teams_recipient_id" {
+  type        = string
+  description = "Teams chat or channel thread ID for posting event notifications"
+  sensitive   = true
+  default     = ""
+}
+
+/*
  * Azure Kubernetes Service Parameters
  */
 

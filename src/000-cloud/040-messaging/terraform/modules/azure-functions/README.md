@@ -39,11 +39,11 @@ This module creates the Function App with necessary configuration for messaging 
 | environment                | Environment for all resources in this module: dev, test, or prod     | `string`                                       | n/a     |   yes    |
 | instance                   | Instance identifier for naming resources: 001, 002, etc              | `string`                                       | n/a     |   yes    |
 | location                   | Azure region where all resources will be deployed                    | `string`                                       | n/a     |   yes    |
+| node\_version              | The version of Node.js to use.                                       | `string`                                       | n/a     |   yes    |
+| python\_version            | The version of Python to use.                                        | `string`                                       | n/a     |   yes    |
 | resource\_group\_name      | Name of the resource group                                           | `string`                                       | n/a     |   yes    |
 | resource\_prefix           | Prefix for all resources in this module                              | `string`                                       | n/a     |   yes    |
 | tags                       | Tags to apply to all resources                                       | `map(string)`                                  | n/a     |   yes    |
-| node\_version              | The version of Node.js to use                                        | `string`                                       | `null`  |    no    |
-| python\_version            | The version of Python to use                                         | `string`                                       | `null`  |    no    |
 
 ## Outputs
 

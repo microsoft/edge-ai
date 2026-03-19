@@ -87,18 +87,17 @@ graph LR
 
 **Estimated time:** ~20 minutes + provisioning
 
-The `blueprints/leak-detection/terraform/` directory contains the full infrastructure-as-code for this scenario.
+The `blueprints/full-single-node-cluster/terraform/` directory contains the infrastructure-as-code for this scenario. A dedicated variable file `leak-detection.tfvars.example` enables the leak-detection-specific components.
 
 #### Configure Variables
 
 ```bash
-cd <repo-root>
-source ./scripts/az-sub-init.sh
-cd blueprints/leak-detection/terraform
-cp terraform.tfvars.example terraform.tfvars
+source scripts/az-sub-init.sh
+cd blueprints/full-single-node-cluster/terraform
+cp leak-detection.tfvars.example leak-detection.tfvars
 ```
 
-Edit `terraform.tfvars` with your environment values. Key variables to set:
+Edit `leak-detection.tfvars` with your environment values. Key variables to set:
 
 * `environment` — Deployment environment name (e.g., `dev`)
 * `resource_prefix` — Prefix for all resource names (e.g., `leakdet`)
@@ -110,7 +109,7 @@ Edit `terraform.tfvars` with your environment values. Key variables to set:
 
 ```bash
 terraform init
-terraform apply
+terraform apply -var-file=leak-detection.tfvars
 ```
 
 #### Verify Outputs
@@ -141,9 +140,9 @@ Application container images must be built and pushed to the Azure Container Reg
 #### Option A: Automated Build
 
 ```bash
-cd blueprints/leak-detection
+cd blueprints/full-single-node-cluster
 
-scripts/build-app-images.sh \
+../../src/501-ci-cd/scripts/build-app-images.sh \
   --acr-name "$(cd terraform && terraform output -raw container_registry | jq -r .name)" \
   --resource-group "$(cd terraform && terraform output -raw deployment_summary | jq -r .resource_group)"
 ```
@@ -153,7 +152,7 @@ scripts/build-app-images.sh \
 For each application component (507-ai-inference, 508-media-connector, 503-media-capture, 509-sse-connector):
 
 ```bash
-ACR_NAME=$(cd terraform && terraform output -raw container_registry | jq -r .name)
+ACR_NAME=$(cd blueprints/full-single-node-cluster/terraform && terraform output -raw container_registry | jq -r .name)
 
 az acr login --name "$ACR_NAME"
 
@@ -178,9 +177,9 @@ az acr repository list --name "$ACR_NAME" --output table
 #### Option A: Automated Deployment
 
 ```bash
-cd blueprints/leak-detection
+cd blueprints/full-single-node-cluster
 
-scripts/deploy-edge-apps.sh
+../../src/501-ci-cd/scripts/deploy-edge-apps.sh
 ```
 
 #### Option B: Manual Deployment

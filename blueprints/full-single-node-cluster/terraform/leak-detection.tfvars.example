@@ -1,0 +1,253 @@
+/*
+ * Full Single Node Cluster with Leak Detection
+ *
+ * Deploys the complete single-node cluster infrastructure with alert dataflow
+ * routing, Azure Functions for alert processing, and the 045-notification
+ * Logic App pipeline for Teams-based leak detection alerts with session
+ * deduplication.
+ */
+
+// Core Parameters
+environment     = "dev"
+location        = "eastus2"
+resource_prefix = "aio"
+instance        = "001"
+
+// Use existing resource group when layering on a previous deployment
+use_existing_resource_group = false
+
+// Enable the Akri Media Connector template on the IoT Operations instance
+should_enable_akri_media_connector = true
+
+// Camera and media source devices
+namespaced_devices = [
+  {
+    name    = "warehouse-camera-01"
+    enabled = true
+    endpoints = {
+      inbound = {
+        "warehouse-camera-endpoint" = {
+          endpoint_type = "Microsoft.Media"
+          address       = "rtsp://192.168.1.100:554/stream1"
+          authentication = {
+            method = "UsernamePassword"
+            usernamePasswordCredentials = {
+              usernameSecretName = "camera-credentials-username"
+              passwordSecretName = "camera-credentials-password"
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    name    = "loading-dock-camera-01"
+    enabled = true
+    endpoints = {
+      inbound = {
+        "loading-dock-endpoint" = {
+          endpoint_type = "Microsoft.Media"
+          address       = "rtsp://192.168.1.101:554/stream1"
+          authentication = {
+            method = "Anonymous"
+          }
+        }
+      }
+    }
+  }
+]
+
+// Media capture task assets
+namespaced_assets = [
+  {
+    name         = "warehouse-camera-01-snapshots"
+    display_name = "Warehouse Camera 01 Snapshots"
+    device_ref = {
+      device_name   = "warehouse-camera-01"
+      endpoint_name = "warehouse-camera-endpoint"
+    }
+    description = "Snapshot capture from warehouse camera for AI processing"
+    attributes = {
+      assetType = "media-snapshots"
+      location  = "Warehouse Main Entrance"
+    }
+    datasets = [
+      {
+        name                  = "snapshots"
+        data_source           = ""
+        dataset_configuration = "{\"taskType\":\"snapshot-to-mqtt\",\"intervalSeconds\":5,\"quality\":85}"
+        data_points           = []
+        destinations = [
+          {
+            target = "Mqtt"
+            configuration = {
+              topic = "warehouse/camera-01/snapshots"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    name         = "warehouse-camera-01-clips"
+    display_name = "Warehouse Camera 01 Video Clips"
+    device_ref = {
+      device_name   = "warehouse-camera-01"
+      endpoint_name = "warehouse-camera-endpoint"
+    }
+    description = "Video clip recording from warehouse camera"
+    attributes = {
+      assetType = "media-clips"
+      location  = "Warehouse Main Entrance"
+    }
+    datasets = [
+      {
+        name                  = "clips"
+        data_source           = ""
+        dataset_configuration = "{\"taskType\":\"clip-to-fs\",\"durationSeconds\":30,\"storagePath\":\"/clips\"}"
+        data_points           = []
+        destinations          = []
+      }
+    ]
+  },
+  {
+    name         = "loading-dock-camera-01-snapshots"
+    display_name = "Loading Dock Camera Snapshots"
+    device_ref = {
+      device_name   = "loading-dock-camera-01"
+      endpoint_name = "loading-dock-endpoint"
+    }
+    description = "Periodic snapshot capture from loading dock camera"
+    attributes = {
+      assetType = "media-snapshots"
+      location  = "Loading Dock"
+    }
+    datasets = [
+      {
+        name                  = "snapshots"
+        data_source           = ""
+        dataset_configuration = "{\"taskType\":\"snapshot-to-fs\",\"intervalSeconds\":10,\"quality\":90,\"storagePath\":\"/snapshots\"}"
+        data_points           = []
+        destinations          = []
+      }
+    ]
+  }
+]
+
+// Alert Event Hub
+alert_eventhub_name = "evh-aio-alerts-dev-001"
+
+// Alert Notification Function App
+should_create_azure_functions = true
+function_app_settings = {
+  "NOTIFICATION_WEBHOOK_URL"      = "https://your-teams-or-slack-webhook-url"
+  "ALERT_SEVERITY_THRESHOLD"      = "high"
+  "ALERT_EVENTHUB_CONSUMER_GROUP" = "fn-notifications"
+}
+
+eventhubs = {
+  "evh-aio-sample" = {}
+  "evh-aio-alerts-dev-001" = {
+    message_retention = 1
+    partition_count   = 2
+    consumer_groups = {
+      "fn-notifications" = { user_metadata = "Alert notification function consumer group" }
+      "notification"     = { user_metadata = "Logic App notification consumer" }
+    }
+  }
+}
+
+// Notification Pipeline (045-notification)
+should_deploy_notification = true
+
+// Teams chat or channel thread ID (replace with your actual ID)
+teams_recipient_id = "REPLACE_WITH_TEAMS_CHAT_OR_CHANNEL_ID"
+
+notification_event_schema = {
+  "type" = "object"
+  "properties" = {
+    "camera_id"  = { "type" = "string" }
+    "timestamp"  = { "type" = "string" }
+    "confidence" = { "type" = "number" }
+    "leak_type"  = { "type" = "string" }
+  }
+}
+
+notification_message_template = <<-EOT
+<p><b>Leak Detected</b></p>
+<p>Camera: @{body('Parse_Event')?['camera_id']}</p>
+<p>Type: @{body('Parse_Event')?['leak_type']}</p>
+<p>Confidence: @{body('Parse_Event')?['confidence']}</p>
+<p>Time: @{body('Parse_Event')?['timestamp']}</p>
+<p><a href="${close_session_url}">Close Session</a></p>
+EOT
+
+closure_message_template = <<-EOT
+<p><b>Leak Session Closed</b></p>
+<p>Camera: @{triggerBody()?['camera_id']}</p>
+<p>Session closed at @{utcNow()}</p>
+EOT
+
+notification_partition_key_field = "camera_id"
+
+// Alert Dataflow Endpoint
+dataflow_endpoints = [
+  {
+    name         = "alert-eventhub-endpoint"
+    endpointType = "Kafka"
+    kafkaSettings = {
+      host = "evhns-aio-aio-dev-001.servicebus.windows.net:9093"
+      batching = {
+        latencyMs   = 0
+        maxMessages = 100
+      }
+      authentication = {
+        method                                = "SystemAssignedManagedIdentity"
+        systemAssignedManagedIdentitySettings = {}
+      }
+      tls = {
+        mode = "Enabled"
+      }
+    }
+  }
+]
+
+// Alert Dataflow
+dataflows = [
+  {
+    name = "alert-eventhub-dataflow"
+    operations = [
+      {
+        operationType = "Source"
+        name          = "source"
+        sourceSettings = {
+          endpointRef         = "default"
+          serializationFormat = "Json"
+          dataSources = [
+            "edge-ai/+/+/+/inference/+/+/high",
+            "edge-ai/+/+/+/alerts/triggers"
+          ]
+        }
+      },
+      {
+        operationType = "BuiltInTransformation"
+        name          = "passthrough"
+        builtInTransformationSettings = {
+          serializationFormat = "Json"
+          map = [{
+            inputs = ["*"]
+            output = "*"
+          }]
+        }
+      },
+      {
+        operationType = "Destination"
+        name          = "destination"
+        destinationSettings = {
+          endpointRef     = "alert-eventhub-endpoint"
+          dataDestination = "evh-aio-alerts-dev-001"
+        }
+      }
+    ]
+  }
+]

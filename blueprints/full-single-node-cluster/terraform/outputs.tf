@@ -160,6 +160,21 @@ output "function_app" {
 }
 
 /*
+ * Notification Outputs
+ */
+
+output "notification" {
+  description = "Alert notification pipeline resources."
+  value = {
+    logic_app              = try(module.cloud_notification[0].logic_app, null)
+    close_logic_app        = try(module.cloud_notification[0].close_logic_app, null)
+    close_session_endpoint = try(module.cloud_notification[0].close_session_endpoint, null)
+    storage_account        = try(module.cloud_notification[0].storage_account, null)
+  }
+  sensitive = true
+}
+
+/*
  * Dataflow Outputs
  */
 

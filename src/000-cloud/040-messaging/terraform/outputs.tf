@@ -22,6 +22,11 @@ output "app_service_plan" {
   value       = try(module.app_service_plan[0].app_service_plan, null)
 }
 
+output "function_identity" {
+  description = "User Assigned Managed Identity used by the Function App."
+  value       = try(module.azure_functions[0].function_identity, null)
+}
+
 output "function_app" {
   description = "Function App configuration and details."
   value       = try(module.azure_functions[0].function_app, null)
