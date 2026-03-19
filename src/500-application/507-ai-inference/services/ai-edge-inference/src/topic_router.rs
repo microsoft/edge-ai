@@ -9,6 +9,7 @@ pub struct TopicRouter {
     custom_routes: HashMap<String, String>,
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TopicMapping {
     pub base_topic: String,
@@ -28,6 +29,7 @@ impl TopicRouter {
     }
 
     /// Add custom routing rule for specific models or scenarios
+    #[allow(dead_code)]
     pub fn add_custom_route(&mut self, model_name: String, topic_pattern: String) {
         self.custom_routes.insert(model_name, topic_pattern);
     }
@@ -40,17 +42,12 @@ impl TopicRouter {
         }
 
         // Generate standard topic based on result context
-        let mut topic_parts = Vec::new();
-        
-        // Add base prefix
-        topic_parts.push(self.topic_prefix.trim_end_matches('/').to_string());
-        
-        // Add inference and model type
-        topic_parts.push("inference".to_string());
-        topic_parts.push(self.model_type_to_topic(&result.model_type));
-        
-        // Add model name
-        topic_parts.push(result.model_name.replace("-", "_"));
+        let mut topic_parts = vec![
+            self.topic_prefix.trim_end_matches('/').to_string(),
+            "inference".to_string(),
+            self.model_type_to_topic(&result.model_type),
+            result.model_name.replace("-", "_"),
+        ];
         
         // Add priority based on predictions
         let priority = self.determine_priority(result);

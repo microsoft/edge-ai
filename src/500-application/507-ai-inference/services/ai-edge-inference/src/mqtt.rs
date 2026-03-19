@@ -3,25 +3,21 @@ use std::sync::Arc;
 use std::collections::HashMap;
 use azure_iot_operations_mqtt::control_packet::QoS;
 use azure_iot_operations_mqtt::interface::{MqttPubSub, PubReceiver, ManagedClient};
-use azure_iot_operations_mqtt::session::{Session, SessionManagedClient, SessionExitHandle, SessionOptionsBuilder, SessionConnectionMonitor};
+use azure_iot_operations_mqtt::session::{Session, SessionManagedClient, SessionOptionsBuilder, SessionConnectionMonitor};
 use azure_iot_operations_mqtt::MqttConnectionSettingsBuilder;
 use tokio::time::{timeout, Duration};
 use tokio::sync::RwLock;
 use tracing::{error, info, debug, warn, instrument};
 use serde::{Deserialize, Serialize};
-use serde_json;
 use base64::Engine;
 use crate::config::MqttConfig;
 use ai_edge_inference_crate::{InferenceEngine, InferenceInput, InferenceResult, InferenceRequest, ImageMetadata, SensorMetadata};
-use uuid;
 use anyhow::Result;
 
 
 /// MQTT publisher for AI Edge Inference service - using Azure IoT Operations SDK pattern
 pub struct MqttPublisher {
     client: SessionManagedClient,
-    session: Option<Session>,
-    exit_handle: SessionExitHandle,
     monitor: SessionConnectionMonitor,
     config: MqttConfig,
     inference_engine: Arc<InferenceEngine>,
@@ -62,6 +58,7 @@ pub enum IncomingMessage {
         image_data: String, // Base64 encoded image
         device_name: String,
         location: Option<(f64, f64)>,
+        #[allow(dead_code)]
         metadata: serde_json::Value,
     },
     #[serde(rename = "sensor_data")]
@@ -72,6 +69,7 @@ pub enum IncomingMessage {
         timestamps: Vec<i64>,
         unit: String,
         device_name: String,
+        #[allow(dead_code)]
         metadata: serde_json::Value,
     },
     #[serde(rename = "alert_trigger")]
@@ -81,6 +79,7 @@ pub enum IncomingMessage {
         sensor_id: Option<String>,
         timestamp: i64,
         priority: String,
+        #[allow(dead_code)]
         metadata: serde_json::Value,
     },
     #[serde(rename = "model_command")]
@@ -151,19 +150,18 @@ impl MqttPublisher {
 
         let monitor = session.create_connection_monitor();
         let client = session.create_managed_client();
-        let exit_handle = session.create_exit_handle();
+        let _exit_handle = session.create_exit_handle();
+        drop(session);
         
         info!("Successfully created MQTT session with Azure IoT Operations SDK");
         
         Ok(Self { 
             client, 
-            session: Some(session),
-            exit_handle,
             monitor, 
             config,
             inference_engine,
             stats: Arc::new(RwLock::new(MqttStats::default())),
-            topic_router: None, // Will be set separately if needed
+            topic_router: None,
         })
     }
 
@@ -536,7 +534,7 @@ impl MqttPublisher {
             }
         }
         
-        Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, "Failed to publish after all retry attempts")))
+        Err(Box::new(std::io::Error::other("Failed to publish after all retry attempts")))
     }
 
     /// Publish inference result to specified topic (public method for external use)
@@ -578,16 +576,6 @@ impl MqttPublisher {
         Ok(())
     }
 
-    /// Clone publisher state for async tasks
-    fn clone_publisher_state(&self) -> MqttPublisherState {
-        MqttPublisherState {
-            client: self.client.clone(),
-            config: self.config.clone(),
-            inference_engine: Arc::clone(&self.inference_engine),
-            stats: Arc::clone(&self.stats),
-            topic_router: self.topic_router.clone(),
-        }
-    }
 }
 
 /// Implementation for MQTT processing context
@@ -1074,38 +1062,6 @@ impl MqttProcessingContext {
             alert_level,
             recommended_actions,
         }
-    }
-}
-
-/// Simplified state for async task handlers
-#[derive(Clone)]
-struct MqttPublisherState {
-    client: SessionManagedClient,
-    config: MqttConfig,
-    inference_engine: Arc<InferenceEngine>,
-    stats: Arc<RwLock<MqttStats>>,
-    topic_router: Option<Arc<crate::topic_router::TopicRouter>>,
-}
-
-impl MqttPublisherState {
-    /// Process messages from a specific topic (delegated method)
-    async fn process_topic_messages(&self, topic: &str, mut receiver: impl PubReceiver) -> anyhow::Result<()> {
-        info!("Processing messages for topic: {}", topic);
-
-        while let Some(message) = receiver.recv().await {
-            debug!("Received message on topic: {} (payload size: {} bytes)", 
-                   String::from_utf8_lossy(&message.topic), 
-                   message.payload.len());
-            
-            // Delegate to parent publisher for processing
-            // This is a simplified approach - in practice you'd implement the same logic here
-            
-            let mut stats = self.stats.write().await;
-            stats.total_messages += 1;
-        }
-        
-        warn!("Message processing stopped for topic: {}", topic);
-        Ok(())
     }
 }
 

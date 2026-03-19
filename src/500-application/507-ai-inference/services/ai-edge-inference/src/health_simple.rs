@@ -9,7 +9,6 @@ use bytes::Bytes;
 use std::path::Path;
 use std::fs;
 use base64::{Engine, engine::general_purpose};
-use uuid;
 
 /// Health monitoring service for MQTT Publisher Service readiness and liveness probes
 #[derive(Serialize)]
@@ -60,9 +59,9 @@ struct PostprocessingInfo {
 
 pub struct HealthService {
     inference_engine: Arc<InferenceEngine>,
-    mqtt_publisher: Arc<MqttPublisher>,
+    _mqtt_publisher: Arc<MqttPublisher>,
     port: u16,
-    start_time: std::time::Instant,
+    _start_time: std::time::Instant,
 }
 
 /// Simple health status response
@@ -129,15 +128,10 @@ impl HealthService {
     ) -> Result<Self> {
         Ok(Self {
             inference_engine,
-            mqtt_publisher,
+            _mqtt_publisher: mqtt_publisher,
             port,
-            start_time: std::time::Instant::now(),
+            _start_time: std::time::Instant::now(),
         })
-    }
-
-    /// Get service uptime in seconds
-    fn get_uptime_seconds(&self) -> u64 {
-        self.start_time.elapsed().as_secs()
     }
 
     // Model registry endpoints
@@ -459,7 +453,7 @@ async fn handle_detailed_health_simple(
     };
     
     // System info
-    let system_info = SystemInfo {
+    let _system_info = SystemInfo {
         cpu_usage: 0.0, // Placeholder
         memory_usage: 0.0, // Placeholder
         disk_usage: 0.0, // Placeholder
@@ -607,49 +601,47 @@ async fn handle_file_processing(
     // Read directory contents
     match fs::read_dir(images_dir) {
         Ok(entries) => {
-            for entry in entries {
-                if let Ok(entry) = entry {
-                    let path = entry.path();
-                    if let Some(extension) = path.extension() {
-                        let ext = extension.to_string_lossy().to_lowercase();
-                        if matches!(ext.as_str(), "jpg" | "jpeg" | "png") {
-                            let filename = path.file_name()
-                                .unwrap_or_default()
-                                .to_string_lossy()
-                                .to_string();
-                            
-                            info!("Processing image file: {}", filename);
-                            let start_time = std::time::Instant::now();
-                            
-                            match process_image_file(&path, &inference_engine).await {
-                                Ok(result) => {
-                                    let processing_time = start_time.elapsed().as_millis() as u64;
-                                    
-                                    // Convert result to JSON for HTTP response  
-                                    let json_result = result;
-                                    
-                                    processed_files.push(ProcessedFile {
-                                        filename: filename.clone(),
-                                        status: "success".to_string(),
-                                        inference_result: Some(json_result),
-                                        error: None,
-                                        processing_time_ms: processing_time,
-                                    });
-                                    successful += 1;
-                                    info!("✅ Successfully processed {} in {}ms", filename, processing_time);
-                                }
-                                Err(e) => {
-                                    let processing_time = start_time.elapsed().as_millis() as u64;
-                                    processed_files.push(ProcessedFile {
-                                        filename: filename.clone(),
-                                        status: "error".to_string(),
-                                        inference_result: None,
-                                        error: Some(e.to_string()),
-                                        processing_time_ms: processing_time,
-                                    });
-                                    failed += 1;
-                                    error!("❌ Failed to process {}: {}", filename, e);
-                                }
+            for entry in entries.flatten() {
+                let path = entry.path();
+                if let Some(extension) = path.extension() {
+                    let ext = extension.to_string_lossy().to_lowercase();
+                    if matches!(ext.as_str(), "jpg" | "jpeg" | "png") {
+                        let filename = path.file_name()
+                            .unwrap_or_default()
+                            .to_string_lossy()
+                            .to_string();
+                        
+                        info!("Processing image file: {}", filename);
+                        let start_time = std::time::Instant::now();
+                        
+                        match process_image_file(&path, &inference_engine).await {
+                            Ok(result) => {
+                                let processing_time = start_time.elapsed().as_millis() as u64;
+                                
+                                // Convert result to JSON for HTTP response  
+                                let json_result = result;
+                                
+                                processed_files.push(ProcessedFile {
+                                    filename: filename.clone(),
+                                    status: "success".to_string(),
+                                    inference_result: Some(json_result),
+                                    error: None,
+                                    processing_time_ms: processing_time,
+                                });
+                                successful += 1;
+                                info!("✅ Successfully processed {} in {}ms", filename, processing_time);
+                            }
+                            Err(e) => {
+                                let processing_time = start_time.elapsed().as_millis() as u64;
+                                processed_files.push(ProcessedFile {
+                                    filename: filename.clone(),
+                                    status: "error".to_string(),
+                                    inference_result: None,
+                                    error: Some(e.to_string()),
+                                    processing_time_ms: processing_time,
+                                });
+                                failed += 1;
+                                error!("❌ Failed to process {}: {}", filename, e);
                             }
                         }
                     }

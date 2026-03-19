@@ -169,6 +169,7 @@ impl ComponentConfig {
     }
 
     /// Parse model type string to enum
+    #[allow(dead_code)]
     fn parse_model_type(&self, model_type_str: &str) -> ai_edge_inference_crate::ModelType {
         match model_type_str.to_lowercase().as_str() {
             "vision" => ai_edge_inference_crate::ModelType::Vision,
@@ -332,6 +333,7 @@ fn parse_equipment_mapping(mapping_str: &str) -> HashMap<String, String> {
     })
 }
 
+#[allow(dead_code)]
 fn parse_shape(shape_str: &str) -> Result<Vec<i64>> {
     shape_str
         .split(',')

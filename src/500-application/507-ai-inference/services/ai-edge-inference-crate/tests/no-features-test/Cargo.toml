@@ -8,6 +8,7 @@ edition = "2021"
 
 [dependencies]
 ai-edge-inference-crate = { path = "../..", default-features = false }
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 
 [lints.clippy]
 correctness = { level = "deny", priority = -1 }
