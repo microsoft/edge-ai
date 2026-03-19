@@ -72,7 +72,7 @@ jobs:
             RUSTUP_URL="https://static.rust-lang.org/rustup/dist/x86_64-unknown-linux-gnu/rustup-init"
             curl --proto '=https' --tlsv1.2 -sSf "${RUSTUP_URL}" -o "${RUSTUP_INIT}"
             curl --proto '=https' --tlsv1.2 -sSf "${RUSTUP_URL}.sha256" -o "${RUSTUP_HASH}"
-            echo "$(cat "${RUSTUP_HASH}")  ${RUSTUP_INIT}" | sha256sum -c -
+            echo "$(awk '{print $1}' "${RUSTUP_HASH}")  ${RUSTUP_INIT}" | sha256sum -c -
             chmod +x "${RUSTUP_INIT}"
             "${RUSTUP_INIT}" -y --default-toolchain stable -c clippy
             rm -f "${RUSTUP_INIT}" "${RUSTUP_HASH}"
