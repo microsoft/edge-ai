@@ -8,12 +8,6 @@ ignore:
   - vulnerability: GHSA-g98v-hv3f-hcfr
   - vulnerability: RUSTSEC-2021-0145
 
-  # flatted 3.3.3 - HIGH severity (transitive npm dependency)
-  # Justification: Prototype pollution in flatted. Transitive dependency in docs
-  # lock files. Update to 3.4.0 should be addressed in a separate dependency PR.
-  # Reference: GHSA-25h7-pfq9-p65f
-  - vulnerability: GHSA-25h7-pfq9-p65f
-
   # aws-lc-sys 0.32.3 - HIGH severity (transitive Rust crate)
   # Justification: Vulnerabilities in aws-lc-sys used transitively by the Rust
   # HTTP connector broker. Update to 0.38.0 should be addressed in a separate
