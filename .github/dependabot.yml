@@ -1,13 +1,6 @@
----
-# Dependabot configuration for automated dependency updates
-# and OSSF Scorecard compliance
-# This configuration enables automated dependency monitoring for GitHub Actions,
-# Docker, npm, and Python
-# Security-critical dependencies are managed via SHA pinning in the
-# security scanning workflow
 version: 2
 updates:
-  # GitHub Actions dependency updates
+  # GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
@@ -15,7 +8,6 @@ updates:
       day: "monday"
       time: "09:00"
       timezone: "US/Pacific"
-    open-pull-requests-limit: 10
     commit-message:
       prefix: "chore(deps)"
       include: "scope"
@@ -23,3 +15,131 @@ updates:
       - "dependencies"
       - "security"
       - "github-actions"
+    open-pull-requests-limit: 10
+
+  # npm
+  - package-ecosystem: "npm"
+    directories:
+      - "/"
+      - "/docs/_server"
+      - "/docs/assets/js"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "US/Pacific"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "security"
+      - "npm"
+    open-pull-requests-limit: 10
+
+  # Cargo
+  - package-ecosystem: "cargo"
+    directories:
+      - "/src/500-application/**"
+      - "/src/900-tools-utilities/**"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "US/Pacific"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "security"
+      - "cargo"
+    open-pull-requests-limit: 10
+
+  # pip
+  - package-ecosystem: "pip"
+    directories:
+      - "/"
+      - "/src/500-application/**"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "US/Pacific"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "security"
+      - "pip"
+    groups:
+      application-python:
+        patterns:
+          - "*"
+    open-pull-requests-limit: 10
+
+  # Docker
+  - package-ecosystem: "docker"
+    directories:
+      - "/src/500-application/**"
+      - "/src/900-tools-utilities/**"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "US/Pacific"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "security"
+      - "docker"
+    groups:
+      application-docker:
+        patterns:
+          - "*"
+    open-pull-requests-limit: 10
+
+  # NuGet
+  - package-ecosystem: "nuget"
+    directories:
+      - "/src/500-application/**"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "US/Pacific"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "security"
+      - "nuget"
+    open-pull-requests-limit: 10
+
+  # Terraform
+  - package-ecosystem: "terraform"
+    directories:
+      - "/blueprints/**"
+      - "/deploy/**"
+      - "/src/**"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "US/Pacific"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "security"
+      - "terraform"
+    groups:
+      all-providers:
+        patterns:
+          - "*"
+    open-pull-requests-limit: 10
