@@ -14,6 +14,13 @@ ignore:
   # Reference: GHSA-25h7-pfq9-p65f
   - vulnerability: GHSA-25h7-pfq9-p65f
 
+  # flatted 3.3.3/3.4.1 - HIGH severity (transitive npm dependency)
+  # Justification: Prototype pollution in flatted. Transitive dependency in docs
+  # and root lock files. Fix requires updating lockfiles in docs/_server and
+  # docs/assets/js — tracked for a separate dependency PR.
+  # Reference: GHSA-rf6f-7fwh-wjgh
+  - vulnerability: GHSA-rf6f-7fwh-wjgh
+
   # aws-lc-sys 0.32.3 - HIGH severity (transitive Rust crate)
   # Justification: Vulnerabilities in aws-lc-sys used transitively by the Rust
   # HTTP connector broker. Update to 0.38.0 should be addressed in a separate
