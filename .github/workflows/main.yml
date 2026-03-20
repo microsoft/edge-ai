@@ -140,6 +140,17 @@ jobs:
       contents: read
     uses: ./.github/workflows/powershell-lint.yml
 
+  # PowerShell Resource Provider Tests (main)
+  pwsh-provider-tests-main:
+    name: PowerShell Provider Tests
+    permissions:
+      contents: read
+    uses: ./.github/workflows/resource-provider-pwsh-tests.yml
+    with:
+      working-directory: 'src/azure-resource-providers'
+      test-results-output: 'PWSH-TEST-RESULTS.xml'
+    secrets: inherit
+
   # Security scanning (main)
   security-scan-main:
     name: Security Scan

@@ -82,16 +82,61 @@ jobs:
 
       # Publish the Pester test results
       - name: Publish Test Results
-        if: always()
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
         with:
           name: pester-test-results
           path: ${{ inputs.test-results-output }}
 
-          # Publish test results to the GitHub interface
-          # - name: Publish to GitHub interface
-          #   if: always()
-          #   uses: EnricoMi/publish-unit-test-result-action@v2
-          #   with:
-          #     nunit_files: ${{ inputs.test-results-output }}
-          #     check_name: "PowerShell Resource Provider Test Results"
+      - name: Publish test summary to GitHub
+        if: ${{ !cancelled() }}
+        uses: actions/github-script@450193c5abd4cdb17ba9f3ffcfe8f635c4bb6c2a # v7.0.1
+        with:
+          script: |
+            const fs = require('fs');
+            const resultsFile = '${{ inputs.test-results-output }}';
+
+            if (!fs.existsSync(resultsFile)) {
+              core.warning('Test results file not found: ' + resultsFile);
+              return;
+            }
+
+            const xml = fs.readFileSync(resultsFile, 'utf8');
+
+            const attr = (tag, name) => {
+              const match = xml.match(new RegExp(`<${tag}[^>]*\\s${name}="([^"]*)"`, 's'));
+              return match ? match[1] : '0';
+            };
+
+            const total = attr('test-results', 'total');
+            const passed = attr('test-results', 'passed') || (parseInt(total) - parseInt(attr('test-results', 'failures')) - parseInt(attr('test-results', 'errors'))).toString();
+            const failures = attr('test-results', 'failures');
+            const errors = attr('test-results', 'errors');
+            const skipped = attr('test-results', 'not-run') || attr('test-results', 'skipped');
+            const timeTaken = attr('test-results', 'time') || attr('test-results', 'duration');
+            const result = (parseInt(failures) + parseInt(errors)) === 0 ? '✅ Passed' : '❌ Failed';
+
+            let summary = '## PowerShell Resource Provider Test Results\n\n';
+            summary += `| Metric | Value |\n|--------|-------|\n`;
+            summary += `| Result | ${result} |\n`;
+            summary += `| Total | ${total} |\n`;
+            summary += `| Passed | ${passed} |\n`;
+            summary += `| Failed | ${failures} |\n`;
+            summary += `| Errors | ${errors} |\n`;
+            summary += `| Skipped | ${skipped} |\n`;
+            summary += `| Duration | ${timeTaken}s |\n`;
+
+            const failureMatches = [...xml.matchAll(/<test-case[^>]*result="(?:Failed|Error)"[^>]*name="([^"]*)"[^>]*>/gs)];
+            if (failureMatches.length > 0) {
+              summary += '\n### Failed Tests\n\n';
+              for (const m of failureMatches) {
+                const testName = m[1];
+                const msgMatch = m[0] + xml.substring(xml.indexOf(m[0]) + m[0].length, xml.indexOf('</test-case>', xml.indexOf(m[0])));
+                const messageMatch = msgMatch.match(/<message><!\[CDATA\[([\s\S]*?)\]\]><\/message>/);
+                const message = messageMatch ? messageMatch[1].substring(0, 200) : '';
+                summary += `- **${testName}**${message ? ': ' + message : ''}\n`;
+                core.error(`Test failed: ${testName}${message ? ' - ' + message : ''}`);
+              }
+            }
+
+            await core.summary.addRaw(summary).write();
