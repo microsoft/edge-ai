@@ -83,7 +83,7 @@ jobs:
       # Publish the Pester test results
       - name: Publish Test Results
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f  # v4.4.3
         with:
           name: pester-test-results
           path: ${{ inputs.test-results-output }}
@@ -109,10 +109,10 @@ jobs:
             };
 
             const total = attr('test-results', 'total');
-            const passed = attr('test-results', 'passed') || (parseInt(total) - parseInt(attr('test-results', 'failures')) - parseInt(attr('test-results', 'errors'))).toString();
             const failures = attr('test-results', 'failures');
             const errors = attr('test-results', 'errors');
             const skipped = attr('test-results', 'not-run') || attr('test-results', 'skipped');
+            const passed = attr('test-results', 'passed') || (parseInt(total) - parseInt(failures) - parseInt(errors) - parseInt(skipped)).toString();
             const timeTaken = attr('test-results', 'time') || attr('test-results', 'duration');
             const result = (parseInt(failures) + parseInt(errors)) === 0 ? '✅ Passed' : '❌ Failed';
 

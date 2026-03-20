@@ -149,7 +149,6 @@ jobs:
     with:
       working-directory: 'src/azure-resource-providers'
       test-results-output: 'PWSH-TEST-RESULTS.xml'
-    secrets: inherit
 
   # Security scanning (main)
   security-scan-main:
