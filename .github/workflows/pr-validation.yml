@@ -219,8 +219,6 @@ jobs:
   # PowerShell Resource Provider Tests for PRs
   pwsh-provider-tests:
     name: PowerShell Provider Tests
-    needs: [matrix-changes]
-    if: needs.matrix-changes.outputs.changesInRpEnablementPwsh == 'true'
     permissions:
       contents: read
     uses: ./.github/workflows/resource-provider-pwsh-tests.yml
