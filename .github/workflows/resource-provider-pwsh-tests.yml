@@ -52,10 +52,10 @@ on:  # yamllint disable-line rule:truthy
         type: string
         default: 'src/azure-resource-providers'
       test-results-output:
-        description: 'Path to output PowerShell test results'
+        description: 'Directory path for PowerShell test result output files'
         required: false
         type: string
-        default: 'PWSH-TEST-RESULTS.xml'
+        default: 'test-results'
 
 permissions:
   contents: read
@@ -71,22 +71,19 @@ jobs:
 
       # Run Pester tests for the resource provider scripts
       - name: Run Pester Tests
+        id: pester
         shell: pwsh
+        working-directory: ${{ inputs.working-directory }}
         run: |
-          ./scripts/Invoke-Pester.ps1 -Path ./${{ inputs.working-directory }} -OutputFile ${{ inputs.test-results-output }}
-          if ($LASTEXITCODE -ne 0) {
-            Write-Error "Pester tests failed with exit code $LASTEXITCODE"
-            exit $LASTEXITCODE
-          }
-        working-directory: ${{ github.workspace }}
+          ../../scripts/Invoke-Pester.ps1 -CI -OutputPath '${{ inputs.test-results-output }}'
 
       # Publish the Pester test results
       - name: Publish Test Results
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
-          name: pester-test-results
-          path: ${{ inputs.test-results-output }}
+          name: rp-pester-test-results
+          path: ${{ inputs.test-results-output }}/
 
       - name: Publish test summary to GitHub
         if: ${{ !cancelled() }}

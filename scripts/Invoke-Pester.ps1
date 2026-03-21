@@ -1,55 +1,109 @@
-# Used for Azure DevOps unit test results
-
-# To run locally, simply just run Invoke-Pester, no need to run this script
-
-param (
-    [Parameter(Mandatory = $true)]
-    [string]$Path,
-
-    [Parameter(Mandatory = $true)]
-    [string]$OutputFile
+﻿[CmdletBinding()]
+param(
+    [switch]$CI,
+    [switch]$ChangedOnly,
+    [switch]$CodeCoverage,
+    [string]$ConfigPath = (Join-Path $PSScriptRoot 'tests/pester.config.ps1'),
+    [string]$OutputPath = './test-results',
+    [string[]]$Path
 )
 
-function Find-PesterModule {
-    param (
-        [string]$ModuleName = "Pester",
-        [string]$MinimumVersion = "5.0.0"
-    )
+$ErrorActionPreference = 'Stop'
 
-    # Check if the module is installed
-    $module = Get-Module -ListAvailable -Name $ModuleName | Sort-Object -Property Version -Descending | Select-Object -First 1
+Import-Module (Join-Path $PSScriptRoot 'ci/Modules/CIHelpers.psm1') -Force
 
-    if ($null -eq $module -or $module.Version -lt [version]$MinimumVersion) {
-        Write-Host "Installing or updating $ModuleName to version $MinimumVersion or higher..."
-        Install-Module -Name $ModuleName -MinimumVersion $MinimumVersion -Force -AllowClobber
+$pesterModule = Get-Module -ListAvailable -Name Pester |
+    Sort-Object Version -Descending |
+    Select-Object -First 1
+
+if (-not $pesterModule -or $pesterModule.Version -lt [version]'5.0.0') {
+    Install-Module -Name Pester -Force -Scope CurrentUser -SkipPublisherCheck -MinimumVersion '5.4.0'
+}
+
+Import-Module Pester -MinimumVersion '5.4.0' -Force
+
+$configParams = @{}
+if ($CI) { $configParams['CI'] = $true }
+if ($CodeCoverage) { $configParams['CodeCoverage'] = $true }
+if ($Path) { $configParams['Path'] = $Path }
+$configParams['OutputPath'] = $OutputPath
+
+$config = & $ConfigPath @configParams
+
+if ($ChangedOnly) {
+    $changedTests = & (Join-Path $PSScriptRoot 'tests/Get-ChangedTestFiles.ps1')
+    if ($changedTests.Count -eq 0) {
+        Write-Host 'No changed test files found.'
+        Write-CIStepSummary "## Pester Test Results`n`nNo changed test files to run."
+        Set-CIOutput -Name 'test-result' -Value 'passed'
+        Set-CIOutput -Name 'test-count' -Value '0'
+        Set-CIOutput -Name 'fail-count' -Value '0'
+        exit 0
     }
-    else {
-        Write-Host "$ModuleName version $($module.Version) is already installed."
+    $config.Run.Path = $changedTests
+}
+
+if (-not (Test-Path $OutputPath)) {
+    New-Item -ItemType Directory -Path $OutputPath -Force | Out-Null
+}
+
+$result = Invoke-Pester -Configuration $config
+
+function Get-FailedTest {
+    param([object]$Container)
+    $failures = @()
+    foreach ($block in $Container.Blocks) {
+        foreach ($test in $block.Tests) {
+            if ($test.Result -eq 'Failed') {
+                $failures += @{
+                    Name  = $test.ExpandedName
+                    Error = $test.ErrorRecord.Exception.Message
+                    File  = $test.ScriptBlock.File
+                    Line  = $test.ScriptBlock.StartPosition.StartLine
+                }
+            }
+        }
+        if ($block.Blocks.Count -gt 0) {
+            $failures += Get-FailedTest -Container $block
+        }
+    }
+    return $failures
+}
+
+$allFailures = @()
+foreach ($container in $result.Containers) {
+    $allFailures += Get-FailedTest -Container $container
+}
+
+$result | Select-Object TotalCount, PassedCount, FailedCount, SkippedCount, Duration |
+    ConvertTo-Json | Set-Content (Join-Path $OutputPath 'test-summary.json')
+
+if ($allFailures.Count -gt 0) {
+    $allFailures | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $OutputPath 'test-failures.json')
+    foreach ($failure in $allFailures) {
+        Write-CIAnnotation -Level 'Error' -Message "Test failed: $($failure.Name) — $($failure.Error)" `
+            -File $failure.File -Line $failure.Line
     }
 }
 
-# Ensure Pester module is installed and at least version 5
-Find-PesterModule -ModuleName "Pester" -MinimumVersion "5.0.0"
+$summary = @"
+## Pester Test Results
 
+| Metric | Value |
+|--------|-------|
+| Total | $($result.TotalCount) |
+| Passed | $($result.PassedCount) |
+| Failed | $($result.FailedCount) |
+| Skipped | $($result.SkippedCount) |
+| Duration | $($result.Duration) |
+"@
 
-Import-Module Pester
+Write-CIStepSummary $summary
 
-$configuration = [PesterConfiguration]@{
-    Run        = @{
-        Path = $Path
-    }
-    Output     = @{
-        Verbosity = 'Detailed'
-    }
-    TestResult = @{
-        Enabled      = $true
-        OutputFormat = "NUnitXml"
-        OutputPath   = $OutputFile
-    }
+Set-CIOutput -Name 'test-result' -Value $(if ($result.FailedCount -eq 0) { 'passed' } else { 'failed' })
+Set-CIOutput -Name 'test-count' -Value $result.TotalCount.ToString()
+Set-CIOutput -Name 'fail-count' -Value $result.FailedCount.ToString()
+
+if ($CI -and $result.FailedCount -gt 0) {
+    exit 1
 }
-
-# Print out the Path and OutputFile variables
-Write-Host "Test file path: $Path"
-Write-Host "Output test file path: $OutputFile"
-
-Invoke-Pester -Configuration $configuration
