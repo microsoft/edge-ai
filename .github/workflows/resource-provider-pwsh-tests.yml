@@ -105,16 +105,22 @@ jobs:
 
             const attr = (tag, name) => {
               const match = xml.match(new RegExp(`<${tag}[^>]*\\s${name}="([^"]*)"`, 's'));
-              return match ? match[1] : '0';
+              return match ? match[1] : undefined;
             };
 
-            const total = attr('test-results', 'total');
-            const failures = attr('test-results', 'failures');
-            const errors = attr('test-results', 'errors');
-            const skipped = attr('test-results', 'not-run') || attr('test-results', 'skipped');
-            const passed = attr('test-results', 'passed') || (parseInt(total) - parseInt(failures) - parseInt(errors) - parseInt(skipped)).toString();
-            const timeTaken = attr('test-results', 'time') || attr('test-results', 'duration');
-            const result = (parseInt(failures) + parseInt(errors)) === 0 ? '✅ Passed' : '❌ Failed';
+            const numberAttr = (tag, name) => {
+              const value = attr(tag, name);
+              return value !== undefined ? Number(value) : undefined;
+            };
+
+            const total = numberAttr('test-results', 'total') ?? 0;
+            const failures = numberAttr('test-results', 'failures') ?? 0;
+            const errors = numberAttr('test-results', 'errors') ?? 0;
+            const skipped = numberAttr('test-results', 'not-run') ?? numberAttr('test-results', 'skipped') ?? 0;
+            const computed = total - failures - errors - skipped;
+            const passed = numberAttr('test-results', 'passed') ?? (Number.isFinite(computed) ? computed : 0);
+            const timeTaken = attr('test-results', 'time') || attr('test-results', 'duration') || '';
+            const result = (failures + errors) === 0 ? '✅ Passed' : '❌ Failed';
 
             let summary = '## PowerShell Resource Provider Test Results\n\n';
             summary += `| Metric | Value |\n|--------|-------|\n`;
