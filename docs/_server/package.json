@@ -22,7 +22,7 @@
     "compression": "^1.7.4",
     "cors": "^2.8.6",
     "express": "^4.22.1",
-    "express-rate-limit": "^6.7.0",
+    "express-rate-limit": "^8.3.1",
     "fast-glob": "^3.3.3",
     "gray-matter": "^4.0.3",
     "helmet": "^7.0.0",
