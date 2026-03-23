@@ -50,7 +50,7 @@
     "markdownlint-cli": "0.48.0",
     "prettier": "^3.5.3",
     "cspell": "^9.7.0",
-    "eslint": "^9.0.0"
+    "eslint": "^10.0.3"
   },
   "devDependencies": {
     "docsify-cli": "4.4.4",
