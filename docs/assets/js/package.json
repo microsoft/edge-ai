@@ -16,7 +16,7 @@
     "lint:fix": "cd ../../.. && npm run eslint:frontend -- --fix"
   },
   "dependencies": {
-    "happy-dom": "^20.0.3",
+    "happy-dom": "^20.8.4",
     "vite": "^7.1.11",
     "vitest": "^3.2.4"
   },
