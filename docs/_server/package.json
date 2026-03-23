@@ -52,5 +52,8 @@
     "sse",
     "api",
     "schema-validation"
-  ]
+  ],
+  "overrides": {
+    "flatted": "3.4.2"
+  }
 }
