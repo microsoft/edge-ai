@@ -229,15 +229,12 @@ jobs:
   # PowerShell Resource Provider Tests for PRs
   pwsh-provider-tests:
     name: PowerShell Provider Tests
-    needs: [matrix-changes]
-    if: needs.matrix-changes.outputs.changesInRpEnablementPwsh == 'true'
     permissions:
       contents: read
     uses: ./.github/workflows/resource-provider-pwsh-tests.yml
     with:
       working-directory: 'src/azure-resource-providers'
       test-results-output: 'PWSH-TEST-RESULTS.xml'
-    secrets: inherit
 
   # Terraform variable compliance check for PRs
   terraform-var-compliance:
