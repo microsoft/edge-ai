@@ -20,13 +20,7 @@ export default defineConfig({
 
     // Use forks for server instances
     pool: 'forks',
-    poolOptions: {
-      forks: {
-        singleFork: true,
-        maxForks: 1,
-        minForks: 1
-      }
-    },
+    maxWorkers: 1, // Single worker for server isolation
 
     // Prevent infinite loops
     bail: 1,
