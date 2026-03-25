@@ -75,7 +75,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Run docs health check
-        uses: Azure/powershell@53dd145408794f7e80f97cfcca04155c85234709 # v2
+        uses: Azure/powershell@f5b8adcfff1904872c7b98d4012d4914d74b1a82 # v3.0.0
         with:
           inlineScript: |
             Write-Host "PowerShell version: $($PSVersionTable.PSVersion)"
@@ -107,7 +107,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup PowerShell
-        uses: Azure/powershell@53dd145408794f7e80f97cfcca04155c85234709 # v2
+        uses: Azure/powershell@f5b8adcfff1904872c7b98d4012d4914d74b1a82 # v3.0.0
         with:
           inlineScript: |
             Write-Host "PowerShell version: $($PSVersionTable.PSVersion)"

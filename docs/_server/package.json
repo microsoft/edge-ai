@@ -17,24 +17,25 @@
   },
   "dependencies": {
     "ajv": "^8.18.0",
-    "ajv-formats": "^2.1.1",
+    "ajv-formats": "^3.0.1",
     "chokidar": "^3.6.0",
     "compression": "^1.7.4",
-    "cors": "^2.8.5",
+    "cors": "^2.8.6",
     "express": "^4.22.1",
-    "express-rate-limit": "^6.7.0",
+    "express-rate-limit": "^8.3.1",
     "fast-glob": "^3.3.3",
     "gray-matter": "^4.0.3",
     "helmet": "^7.0.0",
-    "morgan": "^1.10.0"
+    "morgan": "^1.10.0",
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
-    "@eslint/js": "^9.32.0",
-    "@vitest/coverage-v8": "^4.0.13",
+    "@eslint/js": "^10.0.1",
+    "@vitest/coverage-v8": "^4.1.0",
     "@vitest/ui": "^4.0.13",
-    "eslint": "^9.32.0",
+    "eslint": "^10.0.3",
     "eventsource": "^4.0.0",
-    "happy-dom": "^20.0.3",
+    "happy-dom": "^20.8.4",
     "node-fetch": "^3.3.2",
     "nodemon": "^3.0.1",
     "supertest": "^7.1.4",
@@ -42,9 +43,6 @@
   },
   "engines": {
     "node": ">=14.0.0"
-  },
-  "overrides": {
-    "js-yaml": "^4.1.0"
   },
   "license": "MIT",
   "keywords": [
@@ -54,5 +52,8 @@
     "sse",
     "api",
     "schema-validation"
-  ]
+  ],
+  "overrides": {
+    "flatted": "3.4.2"
+  }
 }
