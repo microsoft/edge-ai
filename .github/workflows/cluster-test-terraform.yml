@@ -174,7 +174,7 @@ jobs:
           fi
 
       - name: Azure Login
-        uses: azure/login@bbcc074a232a35d7283353c18aabf0de1d557775
+        uses: azure/login@893aa84218880a3fafd9a6d332ff1aea7108f1fe
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
           enable-AzPSSession: true
