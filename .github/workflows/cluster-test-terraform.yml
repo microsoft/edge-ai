@@ -128,7 +128,7 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       # Process working directory: extract paths and check for CI folders
       - name: Process working directories
@@ -174,13 +174,13 @@ jobs:
           fi
 
       - name: Azure Login
-        uses: azure/login@bbcc074a232a35d7283353c18aabf0de1d557775
+        uses: azure/login@eec3c95657c1536435858eda1f3ff5437fee8474 # v2.3.0
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
           enable-AzPSSession: true
 
       - name: Get secrets from Key Vault
-        uses: azure/get-keyvault-secrets@c2b531e47fab4ca7cd8df09d44a65256651bf46e
+        uses: azure/get-keyvault-secrets@b5c723b9ac7870c022b8c35befe620b7009b336f # v1.2
         with:
           keyvault: ${{ inputs.keyvault-name }}
           secrets: '*'
@@ -188,7 +188,7 @@ jobs:
         if: inputs.keyvault-name != ''
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@5e8dbf3c6d9deaf4193ca7a8fb23f2ac83bb6c85
+        uses: hashicorp/setup-terraform@5e8dbf3c6d9deaf4193ca7a8fb23f2ac83bb6c85 # v4.0.0
         with:
           terraform_version: ${{ inputs.terraform-version }}
           cli_config_credentials_token: ${{ secrets.TERRAFORM_API_TOKEN }}
@@ -418,7 +418,7 @@ jobs:
       #     check_name: "${{ steps.workingDirProcessor.outputs.folderPathSafe }} Test Results"
 
       - name: Upload Terraform Plan
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: ${{ steps.workingDirProcessor.outputs.folderPathSafe }}-terraform-plan
           path: ${{ github.workspace }}/${{ github.run_id }}.${{ steps.workingDirProcessor.outputs.folderPathSafe }}.tfplan
@@ -426,7 +426,7 @@ jobs:
           if-no-files-found: ignore
 
       - name: Upload Terraform Test Output
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         if: steps.workingDirProcessor.outputs.tfTestsExist == 'true'
         with:
           name: ${{ steps.workingDirProcessor.outputs.folderPathSafe }}-test-output
