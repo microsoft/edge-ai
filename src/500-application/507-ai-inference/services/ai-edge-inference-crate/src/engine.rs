@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Instant;
 use std::sync::RwLock;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use tracing::{info, warn, debug};
 use base64::{Engine as _, engine::general_purpose};
 use serde_json;
@@ -117,7 +117,7 @@ impl InferenceEngine {
 
         // Validate configuration
         self.config.validate()
-            .map_err(|e| InferenceError::configuration(e))?;
+            .map_err(InferenceError::configuration)?;
 
         // Initialize backend
         let backend_config = BackendConfig {
@@ -501,20 +501,20 @@ impl InferenceEngine {
     }
 
     /// Helper method to convert YAML ModelConfiguration to legacy ModelConfig
-    fn convert_yaml_to_model_config(yaml_config: &ModelConfiguration, base_dir: &PathBuf) -> Result<ModelConfig, InferenceError> {
+    fn convert_yaml_to_model_config(yaml_config: &ModelConfiguration, base_dir: &Path) -> Result<ModelConfig, InferenceError> {
         let model_path = base_dir.join(&yaml_config.model.path)
             .to_string_lossy()
             .to_string();
 
         // Convert preprocessing to JSON if available
         let preprocessing = yaml_config.preprocessing.as_ref()
-            .map(|p| serde_json::to_value(p))
+            .map(serde_json::to_value)
             .transpose()
             .map_err(|e| InferenceError::configuration(format!("Failed to serialize preprocessing: {}", e)))?;
 
         // Convert postprocessing to JSON if available
         let postprocessing = yaml_config.postprocessing.as_ref()
-            .map(|p| serde_json::to_value(p))
+            .map(serde_json::to_value)
             .transpose()
             .map_err(|e| InferenceError::configuration(format!("Failed to serialize postprocessing: {}", e)))?;
 

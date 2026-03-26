@@ -33,6 +33,13 @@ opencv = { version = "0.94.4", features = ["videoio", "imgproc", "highgui", "cla
 ffmpeg-next = "7.1.0"
 uuid = { version = "1.17.0", features = ["v4"] }
 
+[lints.clippy]
+correctness = { level = "deny", priority = -1 }
+suspicious = { level = "warn", priority = -1 }
+complexity = { level = "warn", priority = -1 }
+style = { level = "warn", priority = -1 }
+perf = { level = "warn", priority = -1 }
+
 [profile.release]
 strip = true
 

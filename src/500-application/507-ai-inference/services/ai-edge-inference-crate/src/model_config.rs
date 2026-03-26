@@ -215,8 +215,8 @@ impl ModelConfigManager {
         let mut entries = tokio::fs::read_dir(full_dir).await?;
         while let Some(entry) = entries.next_entry().await? {
             let path = entry.path();
-            if path.extension().map_or(false, |ext| ext == "yaml" || ext == "yml") {
-                if let Some(relative_path) = path.strip_prefix(&self.base_dir).ok() {
+            if path.extension().is_some_and(|ext| ext == "yaml" || ext == "yml") {
+                if let Ok(relative_path) = path.strip_prefix(&self.base_dir) {
                     match self.load_config(relative_path.to_string_lossy().as_ref()).await {
                         Ok(model_name) => {
                             loaded_models.push(model_name);
