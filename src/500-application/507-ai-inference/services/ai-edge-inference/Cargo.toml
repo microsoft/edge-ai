@@ -19,10 +19,6 @@ azure_iot_operations_mqtt = { version = "0.9.0", registry = "aio-sdks" }
 azure_iot_operations_protocol = { version = "0.9.0", registry = "aio-sdks" }
 azure_iot_operations_services = { version = "0.8.0", registry = "aio-sdks", features = ["state_store"] }
 
-# MQTT Client (alternative to AIO MQTT for broader compatibility)
-rumqttc = { version = "0.24", features = ["use-rustls"] }
-tokio-rustls = "0.25"
-
 # Async runtime and utilities
 tokio = { version = "1.14.0", features = ["full", "signal"] }
 futures = "0.3"
@@ -84,6 +80,13 @@ default = ["onnx-runtime"]
 onnx-runtime = []
 gpu = []
 cpu-only = []
+
+[lints.clippy]
+correctness = { level = "deny", priority = -1 }
+suspicious = { level = "warn", priority = -1 }
+complexity = { level = "warn", priority = -1 }
+style = { level = "warn", priority = -1 }
+perf = { level = "warn", priority = -1 }
 
 [profile.release]
 lto = true

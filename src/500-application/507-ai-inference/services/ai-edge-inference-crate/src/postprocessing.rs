@@ -5,7 +5,7 @@
 //! This module provides a unified postprocessing system that can automatically
 //! handle different model output formats and convert them to standardized results.
 
-use ndarray::{Array1, Array2, Array3, Array4};
+use ndarray::{Array2, Array3};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use thiserror::Error;
@@ -35,6 +35,7 @@ pub struct UniversalPostprocessor {
     /// Postprocessing type
     processor_type: PostprocessorType,
     /// Configuration parameters
+    #[allow(dead_code)]
     config: PostprocessingConfig,
 }
 
@@ -588,6 +589,7 @@ impl UniversalPostprocessor {
     }
 
     /// Apply softmax activation to 2D array
+    #[allow(dead_code)]
     fn apply_softmax(&self, logits: &Array2<f32>) -> Array2<f32> {
         let max_val = logits.fold(f32::NEG_INFINITY, |acc, &x| acc.max(x));
         let exp_logits = logits.mapv(|x| (x - max_val).exp());

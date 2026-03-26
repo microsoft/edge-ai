@@ -22,12 +22,15 @@ impl Backend {
             #[cfg(feature = "candle")]
             Backend::Candle(backend) => backend.initialize(config).await,
             #[cfg(not(any(feature = "onnx-runtime", feature = "candle")))]
-            _ => Err(BackendError::ConfigurationError(
-                "No backend features enabled. Enable 'onnx-runtime' or 'candle' feature.".to_string()
-            )),
+            _ => {
+                let _ = config;
+                Err(BackendError::ConfigurationError(
+                    "No backend features enabled. Enable 'onnx-runtime' or 'candle' feature.".to_string()
+                ))
+            }
         }
     }
-    
+
     /// Load a model from file or URL
     pub async fn load_model(&mut self, model_name: &str, model_config: &ModelConfig) -> Result<(), BackendError> {
         match self {
@@ -36,12 +39,15 @@ impl Backend {
             #[cfg(feature = "candle")]
             Backend::Candle(backend) => backend.load_model(model_name, model_config).await,
             #[cfg(not(any(feature = "onnx-runtime", feature = "candle")))]
-            _ => Err(BackendError::ConfigurationError(
-                "No backend features enabled. Enable 'onnx-runtime' or 'candle' feature.".to_string()
-            )),
+            _ => {
+                let _ = (model_name, model_config);
+                Err(BackendError::ConfigurationError(
+                    "No backend features enabled. Enable 'onnx-runtime' or 'candle' feature.".to_string()
+                ))
+            }
         }
     }
-    
+
     /// Unload a model
     pub async fn unload_model(&mut self, model_name: &str) -> Result<(), BackendError> {
         match self {
@@ -50,12 +56,15 @@ impl Backend {
             #[cfg(feature = "candle")]
             Backend::Candle(backend) => backend.unload_model(model_name).await,
             #[cfg(not(any(feature = "onnx-runtime", feature = "candle")))]
-            _ => Err(BackendError::ConfigurationError(
-                "No backend features enabled. Enable 'onnx-runtime' or 'candle' feature.".to_string()
-            )),
+            _ => {
+                let _ = model_name;
+                Err(BackendError::ConfigurationError(
+                    "No backend features enabled. Enable 'onnx-runtime' or 'candle' feature.".to_string()
+                ))
+            }
         }
     }
-    
+
     /// Run inference on input data
     pub async fn infer(&self, input: InferenceInput, model_name: Option<&str>) -> Result<InferenceResult, BackendError> {
         match self {
@@ -64,12 +73,15 @@ impl Backend {
             #[cfg(feature = "candle")]
             Backend::Candle(backend) => backend.infer(input, model_name).await,
             #[cfg(not(any(feature = "onnx-runtime", feature = "candle")))]
-            _ => Err(BackendError::ConfigurationError(
-                "No backend features enabled. Enable 'onnx-runtime' or 'candle' feature.".to_string()
-            )),
+            _ => {
+                let _ = (input, model_name);
+                Err(BackendError::ConfigurationError(
+                    "No backend features enabled. Enable 'onnx-runtime' or 'candle' feature.".to_string()
+                ))
+            }
         }
     }
-    
+
     /// Get list of loaded models
     pub async fn get_loaded_models(&self) -> Vec<String> {
         match self {
@@ -81,7 +93,7 @@ impl Backend {
             _ => Vec::new(),
         }
     }
-    
+
     /// Get backend status
     pub async fn get_status(&self) -> BackendStatus {
         match self {
@@ -102,7 +114,7 @@ impl Backend {
             },
         }
     }
-    
+
     /// Get backend type identifier
     pub fn backend_type(&self) -> BackendType {
         match self {
@@ -121,22 +133,22 @@ impl Backend {
 pub trait InferenceBackend: Send + Sync {
     /// Initialize the backend with configuration
     async fn initialize(&mut self, config: &BackendConfig) -> Result<(), BackendError>;
-    
+
     /// Load a model from file or URL
     async fn load_model(&mut self, model_name: &str, model_config: &ModelConfig) -> Result<(), BackendError>;
-    
+
     /// Unload a model
     async fn unload_model(&mut self, model_name: &str) -> Result<(), BackendError>;
-    
+
     /// Run inference on input data
     async fn infer(&self, input: InferenceInput, model_name: Option<&str>) -> Result<InferenceResult, BackendError>;
-    
+
     /// Get list of loaded models
     async fn get_loaded_models(&self) -> Vec<String>;
-    
+
     /// Get backend status
     async fn get_status(&self) -> BackendStatus;
-    
+
     /// Get backend type identifier
     fn backend_type(&self) -> BackendType;
 }
@@ -319,41 +331,42 @@ impl BackendFactory {
                 {
                     let mut onnx_config = config.clone();
                     onnx_config.backend_type = BackendType::OnnxRuntime;
-                    
+
                     let mut backend = crate::backends::onnx::OnnxRuntimeBackend::new();
                     if backend.initialize(&onnx_config).await.is_ok() {
                         tracing::info!("Using ONNX Runtime backend (preferred)");
                         return Ok(Backend::OnnxRuntime(backend));
                     }
                 }
-                
+
                 #[cfg(feature = "candle")]
                 {
                     let mut candle_config = config.clone();
                     candle_config.backend_type = BackendType::Candle;
-                    
+
                     let mut backend = crate::backends::candle::CandleBackend::new();
                     if backend.initialize(&candle_config).await.is_ok() {
                         tracing::info!("Using Candle backend (fallback)");
                         return Ok(Backend::Candle(backend));
                     }
                 }
-                
+
                 Err(BackendError::BackendUnavailable("No suitable backend available".to_string()))
             }
         }
     }
-    
+
     /// Check which backends are available at compile time
     pub fn available_backends() -> Vec<BackendType> {
+        #[allow(unused_mut)]
         let mut backends = Vec::new();
-        
+
         #[cfg(feature = "onnx-runtime")]
         backends.push(BackendType::OnnxRuntime);
-        
+
         #[cfg(feature = "candle")]
         backends.push(BackendType::Candle);
-        
+
         backends
     }
 }
@@ -408,17 +421,17 @@ mod tests {
     #[test]
     fn test_backend_factory_available_backends() {
         let backends = BackendFactory::available_backends();
-        
+
         // At least one backend should be available
         assert!(!backends.is_empty(), "No backends compiled in");
-        
+
         #[cfg(feature = "onnx-runtime")]
         assert!(backends.contains(&BackendType::OnnxRuntime));
-        
+
         #[cfg(feature = "candle")]
         assert!(backends.contains(&BackendType::Candle));
     }
-    
+
     #[test]
     fn test_backend_config_default() {
         let config = BackendConfig::default();

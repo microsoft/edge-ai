@@ -11,4 +11,12 @@ wasm_graph_sdk = { version = "=1.1.3", registry = "aio-sdks" }
 [lib]
 crate-type = ["cdylib"]
 
+[lints.clippy]
+correctness = { level = "deny", priority = -1 }
+suspicious = { level = "warn", priority = -1 }
+complexity = { level = "warn", priority = -1 }
+style = { level = "warn", priority = -1 }
+perf = { level = "warn", priority = -1 }
+missing_safety_doc = "allow"
+
 [workspace]

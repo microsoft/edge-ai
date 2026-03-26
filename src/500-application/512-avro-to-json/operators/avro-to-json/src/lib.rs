@@ -143,8 +143,8 @@ fn base64_encode(bytes: &[u8]) -> String {
 }
 
 /// Attempts to parse Avro data with the provided schema
-fn parse_with_schema(data: &[u8], schema: &Schema) -> Result<AvroValue, String> {
-    from_avro_datum(schema, &mut &data[..], None)
+fn parse_with_schema(mut data: &[u8], schema: &Schema) -> Result<AvroValue, String> {
+    from_avro_datum(schema, &mut data, None)
         .map_err(|e| format!("Failed to parse Avro with schema: {}", e))
 }
 
@@ -187,7 +187,7 @@ fn try_parse_container_file(data: &[u8]) -> Option<Result<AvroValue, String>> {
     use apache_avro::Reader;
 
     Some(
-        Reader::new(&data[..])
+        Reader::new(data)
             .map_err(|e| format!("Failed to parse Avro container file: {}", e))
             .and_then(|mut reader| {
                 // Read first record from container

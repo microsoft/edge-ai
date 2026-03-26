@@ -8,6 +8,14 @@ edition = "2021"
 
 [dependencies]
 ai-edge-inference-crate = { path = "../..", default-features = false }
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+
+[lints.clippy]
+correctness = { level = "deny", priority = -1 }
+suspicious = { level = "warn", priority = -1 }
+complexity = { level = "warn", priority = -1 }
+style = { level = "warn", priority = -1 }
+perf = { level = "warn", priority = -1 }
 
 # Exclude from parent workspace
 [workspace]
