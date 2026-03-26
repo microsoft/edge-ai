@@ -4,8 +4,8 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use anyhow::{Result, Context};
 use ai_edge_inference_crate::{
-    InferenceConfig as CrateInferenceConfig, 
-    ModelsConfig, HardwareConfig, PerformanceConfig, 
+    InferenceConfig as CrateInferenceConfig,
+    ModelsConfig, HardwareConfig, PerformanceConfig,
     MonitoringConfig as CrateMonitoringConfig, SiteContext
 };
 
@@ -169,6 +169,7 @@ impl ComponentConfig {
     }
 
     /// Parse model type string to enum
+    #[allow(dead_code)]
     fn parse_model_type(&self, model_type_str: &str) -> ai_edge_inference_crate::ModelType {
         match model_type_str.to_lowercase().as_str() {
             "vision" => ai_edge_inference_crate::ModelType::Vision,
@@ -272,7 +273,7 @@ fn parse_default_models(models_str: &str) -> Vec<DefaultModel> {
     // Parse comma-separated model names and map to actual model files
     let model_names: Vec<&str> = models_str.split(',').map(|s| s.trim()).collect();
     let mut models = Vec::new();
-    
+
     for model_name in model_names {
         match model_name {
             "tiny-yolov2" => {
@@ -308,7 +309,7 @@ fn parse_default_models(models_str: &str) -> Vec<DefaultModel> {
             }
         }
     }
-    
+
     models
 }
 
@@ -332,6 +333,7 @@ fn parse_equipment_mapping(mapping_str: &str) -> HashMap<String, String> {
     })
 }
 
+#[allow(dead_code)]
 fn parse_shape(shape_str: &str) -> Result<Vec<i64>> {
     shape_str
         .split(',')

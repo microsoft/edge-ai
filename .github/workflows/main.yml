@@ -165,6 +165,16 @@ jobs:
       contents: read
     uses: ./.github/workflows/yaml-lint.yml
 
+  # Rust clippy lint check for main branch
+  rust-clippy-main:
+    name: Rust Clippy Lint Check
+    permissions:
+      contents: read
+    uses: ./.github/workflows/rust-clippy.yml
+    with:
+      break-build: false
+    secrets: inherit
+
   # Call docs-check-terraform workflow
   docs-check-terraform-main:
     name: Terraform Documentation Check
