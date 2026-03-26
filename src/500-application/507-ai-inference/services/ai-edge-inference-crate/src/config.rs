@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use crate::types::ModelType;
 
 /// Configuration for the AI inference engine
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct InferenceConfig {
     /// Models configuration
     pub models: ModelsConfig,
@@ -133,17 +133,7 @@ pub struct SiteContext {
     pub equipment_mapping: HashMap<String, String>,
 }
 
-impl Default for InferenceConfig {
-    fn default() -> Self {
-        Self {
-            models: ModelsConfig::default(),
-            performance: PerformanceConfig::default(),
-            hardware: HardwareConfig::default(),
-            monitoring: MonitoringConfig::default(),
-            site_context: SiteContext::default(),
-        }
-    }
-}
+
 
 impl Default for ModelsConfig {
     fn default() -> Self {

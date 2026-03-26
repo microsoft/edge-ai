@@ -19,6 +19,13 @@ anyhow = "1.0"
 tracing = { version = "0.1", features = ["std", "attributes"] }
 tracing-subscriber = { version = "0.3", features = ["env-filter", "registry", "std", "fmt"] }
 
+[lints.clippy]
+correctness = { level = "deny", priority = -1 }
+suspicious = { level = "warn", priority = -1 }
+complexity = { level = "warn", priority = -1 }
+style = { level = "warn", priority = -1 }
+perf = { level = "warn", priority = -1 }
+
 [profile.release]
 lto = true
 codegen-units = 1
