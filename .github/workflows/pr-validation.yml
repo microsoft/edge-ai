@@ -203,6 +203,16 @@ jobs:
     with:
       iac-type: all
       break-build: false
+  # Rust clippy lint check for PRs
+  rust-clippy:
+    name: Rust Clippy Lint Check
+    permissions:
+      contents: read
+    uses: ./.github/workflows/rust-clippy.yml
+    with:
+      break-build: true
+    secrets: inherit
+
   # Use reusable workflow to detect detailed changes and create folder matrix
   matrix-changes:
     name: Detect Matrix Changes
