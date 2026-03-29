@@ -20,11 +20,11 @@ param dataflowEndpoints types.DataflowEndpoint[]
   Resources
 */
 
-resource aioInstanceResource 'Microsoft.IoTOperations/instances@2025-10-01' existing = {
+resource aioInstanceResource 'Microsoft.IoTOperations/instances@2026-03-01' existing = {
   name: aioInstanceName
 }
 
-resource dataflowEndpoint 'Microsoft.IoTOperations/instances/dataflowEndpoints@2025-10-01' = [
+resource dataflowEndpoint 'Microsoft.IoTOperations/instances/dataflowEndpoints@2026-03-01' = [
   for ep in dataflowEndpoints: {
     parent: aioInstanceResource
     name: ep.name

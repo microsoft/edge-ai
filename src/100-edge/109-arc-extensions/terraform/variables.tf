@@ -22,7 +22,7 @@ variable "arc_extensions" {
   default = {
     cert_manager_extension = {
       enabled                            = true
-      version                            = "0.7.0"
+      version                            = "0.10.2"
       train                              = "stable"
       auto_upgrade_minor_version         = false
       agent_operation_timeout_in_minutes = 20

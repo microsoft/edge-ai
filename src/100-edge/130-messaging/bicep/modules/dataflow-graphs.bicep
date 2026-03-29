@@ -23,16 +23,16 @@ param dataflowGraphs types.DataflowGraph[]
   Resources
 */
 
-resource aioInstanceResource 'Microsoft.IoTOperations/instances@2025-10-01' existing = {
+resource aioInstanceResource 'Microsoft.IoTOperations/instances@2026-03-01' existing = {
   name: aioInstanceName
 }
 
-resource aioDataflowProfileResource 'Microsoft.IoTOperations/instances/dataflowProfiles@2025-10-01' existing = {
+resource aioDataflowProfileResource 'Microsoft.IoTOperations/instances/dataflowProfiles@2026-03-01' existing = {
   parent: aioInstanceResource
   name: aioDataflowProfileName
 }
 
-resource dataflowGraph 'Microsoft.IoTOperations/instances/dataflowProfiles/dataflowGraphs@2025-10-01' = [
+resource dataflowGraph 'Microsoft.IoTOperations/instances/dataflowProfiles/dataflowGraphs@2026-03-01' = [
   for graph in dataflowGraphs: {
     parent: aioDataflowProfileResource
     name: graph.name

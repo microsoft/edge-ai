@@ -14,6 +14,7 @@ RUN tdnf install -y \
     make-4.3-3.cm2 \
     binutils-2.37-16.cm2 \
     glibc-devel-2.35-7.cm2 \
+    kernel-headers \
     curl-8.8.0-6.cm2 \
     ca-certificates-2.0.0-22.cm2 \
     clang-12.0.1-4.cm2 \
@@ -26,9 +27,9 @@ RUN tdnf install -y \
 # Set shell options for better error handling with pipes
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-# Install Rust manually (needed for Rust 1.86+ for Azure IoT Operations crates)
+# Install Rust manually (needed for Azure IoT Operations crates and ort ONNX runtime)
 RUN wget -q https://sh.rustup.rs -O /tmp/rustup.sh && \
-    bash /tmp/rustup.sh -y --profile minimal --default-toolchain 1.86.0 --component rustc,cargo,rust-std,rustfmt && \
+    bash /tmp/rustup.sh -y --profile minimal --default-toolchain 1.88.0 --component rustc,cargo,rust-std,rustfmt && \
     rm /tmp/rustup.sh
 
 # Add Rust binaries to PATH for subsequent RUN commands
@@ -93,6 +94,7 @@ COPY ./ai-edge-inference-crate ../ai-edge-inference-crate
 # Copy source code and configuration
 COPY ./ai-edge-inference/src ./src
 COPY ./ai-edge-inference/Cargo.toml ./Cargo.toml
+COPY ./ai-edge-inference/Cargo.lock ./Cargo.lock
 COPY ./ai-edge-inference/.cargo ./.cargo
 
 # Build the application with backend-specific features

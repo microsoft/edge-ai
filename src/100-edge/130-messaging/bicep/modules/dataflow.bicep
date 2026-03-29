@@ -23,16 +23,16 @@ param dataflows types.Dataflow[]
   Resources
 */
 
-resource aioInstanceResource 'Microsoft.IoTOperations/instances@2025-10-01' existing = {
+resource aioInstanceResource 'Microsoft.IoTOperations/instances@2026-03-01' existing = {
   name: aioInstanceName
 }
 
-resource aioDataflowProfileResource 'Microsoft.IoTOperations/instances/dataflowProfiles@2025-10-01' existing = {
+resource aioDataflowProfileResource 'Microsoft.IoTOperations/instances/dataflowProfiles@2026-03-01' existing = {
   parent: aioInstanceResource
   name: aioDataflowProfileName
 }
 
-resource dataflow 'Microsoft.IoTOperations/instances/dataflowProfiles/dataflows@2025-10-01' = [
+resource dataflow 'Microsoft.IoTOperations/instances/dataflowProfiles/dataflows@2026-03-01' = [
   for df in dataflows: {
     parent: aioDataflowProfileResource
     name: df.name

@@ -18,7 +18,7 @@ variable "operations_config" {
   default = {
     namespace                      = "azure-iot-operations"
     kubernetesDistro               = "K3s"
-    version                        = "1.2.189"
+    version                        = "1.3.38"
     train                          = "stable"
     agentOperationTimeoutInMinutes = 120
   }
