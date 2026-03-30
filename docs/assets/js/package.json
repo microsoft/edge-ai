@@ -21,7 +21,7 @@
     "vitest": "^4.1.2"
   },
   "devDependencies": {
-    "@vitest/coverage-v8": "^4.1.0",
+    "@vitest/coverage-v8": "^4.1.2",
     "@vitest/ui": "^4.1.0",
     "c8": "^10.1.2",
     "eslint": "^10.0.3"
