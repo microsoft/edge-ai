@@ -6,7 +6,7 @@ python-hcl2~=7.3.1               # HCL2 (Terraform) configuration parser
 jinja2~=3.1.6                    # Template engine for configuration generation
 
 # Security and Compliance Scanning
-checkov~=3.2.510                   # Infrastructure security and compliance scanner
+checkov~=3.2.513                   # Infrastructure security and compliance scanner
 
 # Security-Critical Dependencies (Version Pinned for CVE Remediation)
 asteval>=1.0.6                   # Safe mathematical expression evaluator
