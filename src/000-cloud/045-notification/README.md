@@ -87,16 +87,16 @@ Both API connections require manual authorization in the Azure Portal after Terr
 
 ### Required Dependencies
 
-| Variable                        | Type     | Description                                                                        |
-|---------------------------------|----------|------------------------------------------------------------------------------------|
-| `closure_message_template`      | `string` | HTML template for the Teams closure summary message                                |
-| `event_schema`                  | `any`    | JSON schema object for parsing Event Hub event payloads                            |
-| `eventhub_name`                 | `string` | Name of the Event Hub to subscribe to for events                                   |
-| `eventhub_namespace`            | `object` | Event Hub namespace with `id` and `name` attributes                                |
+| Variable                        | Type     | Description                                                                                                  |
+|---------------------------------|----------|--------------------------------------------------------------------------------------------------------------|
+| `closure_message_template`      | `string` | HTML template for the Teams closure summary message                                                          |
+| `event_schema`                  | `any`    | JSON schema object for parsing Event Hub event payloads                                                      |
+| `eventhub_name`                 | `string` | Name of the Event Hub to subscribe to for events                                                             |
+| `eventhub_namespace`            | `object` | Event Hub namespace with `id` and `name` attributes                                                          |
 | `notification_message_template` | `string` | HTML template for Teams notification (supports `$${close_session_url}` placeholder, with Terraform escaping) |
-| `partition_key_field`           | `string` | JSON field name from parsed event used as the Table Storage PartitionKey           |
-| `resource_group`                | `object` | Resource group with `name`, `id`, and `location` attributes                        |
-| `teams_recipient_id`            | `string` | Teams chat or channel thread ID for posting notifications                          |
+| `partition_key_field`           | `string` | JSON field name from parsed event used as the Table Storage PartitionKey                                     |
+| `resource_group`                | `object` | Resource group with `name`, `id`, and `location` attributes                                                  |
+| `teams_recipient_id`            | `string` | Teams chat or channel thread ID for posting notifications                                                    |
 
 ### Optional Configuration
 
