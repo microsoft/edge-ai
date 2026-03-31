@@ -10,6 +10,7 @@ pub struct TopicRouter {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[allow(dead_code)]
 pub struct TopicMapping {
     pub base_topic: String,
     pub site_id: Option<String>,
@@ -28,6 +29,7 @@ impl TopicRouter {
     }
 
     /// Add custom routing rule for specific models or scenarios
+    #[allow(dead_code)]
     pub fn add_custom_route(&mut self, model_name: String, topic_pattern: String) {
         self.custom_routes.insert(model_name, topic_pattern);
     }
@@ -40,14 +42,11 @@ impl TopicRouter {
         }
 
         // Generate standard topic based on result context
-        let mut topic_parts = Vec::new();
-        
-        // Add base prefix
-        topic_parts.push(self.topic_prefix.trim_end_matches('/').to_string());
-        
-        // Add inference and model type
-        topic_parts.push("inference".to_string());
-        topic_parts.push(self.model_type_to_topic(&result.model_type));
+        let mut topic_parts = vec![
+            self.topic_prefix.trim_end_matches('/').to_string(),
+            "inference".to_string(),
+            self.model_type_to_topic(&result.model_type),
+        ];
         
         // Add model name
         topic_parts.push(result.model_name.replace("-", "_"));
@@ -64,6 +63,7 @@ impl TopicRouter {
     }
 
     /// Generate topic for status/health messages
+    #[allow(dead_code)]
     pub fn route_status(&self, component: &str, status_type: &str) -> String {
         format!("{}/status/{}/{}", 
             self.topic_prefix.trim_end_matches('/'), 
@@ -73,6 +73,7 @@ impl TopicRouter {
     }
 
     /// Generate topic for metrics
+    #[allow(dead_code)]
     pub fn route_metrics(&self, metric_type: &str) -> String {
         format!("{}/metrics/{}", 
             self.topic_prefix.trim_end_matches('/'), 
@@ -81,6 +82,7 @@ impl TopicRouter {
     }
 
     /// Generate topic for errors
+    #[allow(dead_code)]
     pub fn route_error(&self, component: &str, error_type: &str) -> String {
         format!("{}/errors/{}/{}", 
             self.topic_prefix.trim_end_matches('/'), 
@@ -134,6 +136,7 @@ impl TopicRouter {
     }
 
     /// Get topic mapping information for monitoring and debugging
+    #[allow(dead_code)]
     pub fn get_topic_mapping(&self, result: &InferenceResult) -> TopicMapping {
         let topic = self.route_result(result);
         
@@ -153,42 +156,25 @@ impl TopicRouter {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ai_edge_inference_crate::{ModelOutput, Prediction, SiteContext};
+    use ai_edge_inference_crate::Prediction;
     use std::collections::HashMap;
 
     fn create_test_result() -> InferenceResult {
         InferenceResult {
-            request_id: "test-001".to_string(),
             model_name: "industrial-safety-vision".to_string(),
-            model_type: ModelType::Vision,
-            model_version: "1.0.0".to_string(),
-            outputs: vec![
-                ModelOutput {
-                    output_type: "predictions".to_string(),
-                    predictions: vec![
-                        Prediction {
-                            class_id: 1,
-                            class_name: "safety_helmet".to_string(),
-                            confidence: 0.95,
-                            bounding_box: Some([0.1, 0.1, 0.3, 0.4]),
-                            attributes: HashMap::new(),
-                        }
-                    ],
-                    raw_output: None,
+            model_type: "vision".to_string(),
+            predictions: vec![
+                Prediction {
+                    class: "safety_helmet".to_string(),
+                    confidence: 0.95,
+                    bbox: Some([0.1, 0.1, 0.3, 0.4]),
+                    metadata: HashMap::new(),
+                    severity: None,
                 }
             ],
-            confidence_threshold: 0.5,
-            processing_time_ms: 45,
-            timestamp: chrono::Utc::now(),
-            site_context: Some(SiteContext {
-                site_id: "pilot-facility-001".to_string(),
-                facility_name: "Pilot Industrial AI Site".to_string(),
-                business_unit: Some("Digital Innovation".to_string()),
-                region: Some("North America".to_string()),
-                environmental_data: HashMap::new(),
-                equipment_mapping: HashMap::new(),
-            }),
-            metadata: HashMap::new(),
+            confidence: 0.95,
+            inference_time_ms: 45.0,
+            metadata: serde_json::Value::Object(serde_json::Map::new()),
         }
     }
 
@@ -196,11 +182,10 @@ mod tests {
     fn test_basic_topic_routing() {
         let router = TopicRouter::new("edge-ai/downstream/facility_01/gateway_001".to_string());
         let result = create_test_result();
-        
+
         let topic = router.route_result(&result);
-        
+
         assert!(topic.contains("edge-ai/downstream/facility_01/gateway_001"));
-        assert!(topic.contains("site/pilot-facility-001"));
         assert!(topic.contains("inference/vision"));
         assert!(topic.contains("industrial_safety_vision"));
         assert!(topic.contains("high")); // High confidence prediction
@@ -211,25 +196,25 @@ mod tests {
         let mut router = TopicRouter::new("edge-ai".to_string());
         router.add_custom_route(
             "industrial-safety-vision".to_string(),
-            "{prefix}/safety/{site_id}/alerts/{priority}".to_string()
+            "{prefix}/safety/alerts/{priority}".to_string()
         );
-        
+
         let result = create_test_result();
         let topic = router.route_result(&result);
-        
-        assert_eq!(topic, "edge-ai/safety/pilot-facility-001/alerts/high");
+
+        assert_eq!(topic, "edge-ai/safety/alerts/high");
     }
 
     #[test]
     fn test_status_routing() {
         let router = TopicRouter::new("edge-ai/test".to_string());
-        
+
         let status_topic = router.route_status("ai-inference", "health");
         assert_eq!(status_topic, "edge-ai/test/status/ai-inference/health");
-        
+
         let metrics_topic = router.route_metrics("performance");
         assert_eq!(metrics_topic, "edge-ai/test/metrics/performance");
-        
+
         let error_topic = router.route_error("ai-inference", "model_load_failed");
         assert_eq!(error_topic, "edge-ai/test/errors/ai-inference/model_load_failed");
     }

@@ -154,6 +154,11 @@ output "eventhub_namespace_name" {
   value       = try(module.cloud_messaging.eventhubs[0].namespace_name, "Not deployed")
 }
 
+output "function_app" {
+  description = "Azure Function App for alert notifications."
+  value       = try(module.cloud_messaging.function_app, null)
+}
+
 /*
  * Dataflow Outputs
  */

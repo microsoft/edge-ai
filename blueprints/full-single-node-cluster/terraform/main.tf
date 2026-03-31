@@ -6,7 +6,22 @@
  */
 
 locals {
+  alert_eventhub_name             = coalesce(var.alert_eventhub_name, "evh-${var.resource_prefix}-alerts-${var.environment}-${var.instance}")
+  eventhub_namespace_name         = "evhns-${var.resource_prefix}-aio-${var.environment}-${var.instance}"
   default_outbound_access_enabled = var.should_enable_managed_outbound_access == false
+
+  alert_eventhub_config = var.should_create_azure_functions ? {
+    (local.alert_eventhub_name) = {}
+  } : {}
+
+  eventhubs = merge(local.alert_eventhub_config, var.eventhubs)
+
+  function_app_computed_settings = var.should_create_azure_functions ? {
+    "EventHubConnection__fullyQualifiedNamespace" = "${local.eventhub_namespace_name}.servicebus.windows.net"
+    "EventHubConnection__credential"              = "managedidentity"
+    "ALERT_EVENTHUB_NAME"                         = local.alert_eventhub_name
+    "ALERT_EVENTHUB_CONSUMER_GROUP"               = var.alert_eventhub_consumer_group
+  } : {}
 
   acr_registry_endpoint = var.should_include_acr_registry_endpoint ? [{
     name                           = "acr-${var.resource_prefix}"
@@ -223,6 +238,11 @@ module "cloud_messaging" {
   instance        = var.instance
 
   should_create_azure_functions = var.should_create_azure_functions
+
+  // Event Hub configuration with alerts hub merged when Functions are enabled
+  eventhubs = local.eventhubs
+
+  function_app_settings = merge(var.function_app_settings, local.function_app_computed_settings)
 }
 
 module "cloud_vm_host" {
@@ -476,7 +496,7 @@ module "edge_messaging" {
   aio_instance         = module.edge_iot_ops[0].aio_instance
   aio_identity         = module.cloud_security_identity.aio_identity
   eventgrid            = module.cloud_messaging.eventgrid
-  eventhub             = module.cloud_messaging.eventhubs[0]
+  eventhub             = try([for eh in module.cloud_messaging.eventhubs : eh if eh.eventhub_name != local.alert_eventhub_name][0], try(module.cloud_messaging.eventhubs[0], null))
   adr_namespace        = module.cloud_data.adr_namespace
   dataflow_graphs      = var.dataflow_graphs
   dataflows            = var.dataflows

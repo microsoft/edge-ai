@@ -50,6 +50,10 @@ pub struct InferenceConfig {
     pub batch_size: usize,
     pub inference_timeout_ms: u64,
     pub enable_model_caching: bool,
+    pub max_concurrent_inferences: usize,
+    pub message_queue_capacity: usize,
+    pub rate_limit_per_second: f64,
+    pub is_drop_on_backpressure: bool,
 }
 
 /// Default model configuration
@@ -169,6 +173,7 @@ impl ComponentConfig {
     }
 
     /// Parse model type string to enum
+    #[allow(dead_code)]
     fn parse_model_type(&self, model_type_str: &str) -> ai_edge_inference_crate::ModelType {
         match model_type_str.to_lowercase().as_str() {
             "vision" => ai_edge_inference_crate::ModelType::Vision,
@@ -217,6 +222,10 @@ impl InferenceConfig {
             batch_size: get_env_or_default("BATCH_SIZE", "1").parse().unwrap_or(1),
             inference_timeout_ms: get_env_or_default("INFERENCE_TIMEOUT_MS", "5000").parse().unwrap_or(5000),
             enable_model_caching: get_env_or_default("ENABLE_MODEL_CACHING", "true").parse().unwrap_or(true),
+            max_concurrent_inferences: get_env_or_default("MAX_CONCURRENT_INFERENCES", "2").parse().unwrap_or(2),
+            message_queue_capacity: get_env_or_default("MESSAGE_QUEUE_CAPACITY", "16").parse().unwrap_or(16),
+            rate_limit_per_second: get_env_or_default("RATE_LIMIT_PER_SECOND", "5.0").parse().unwrap_or(5.0),
+            is_drop_on_backpressure: get_env_or_default("DROP_ON_BACKPRESSURE", "true").parse().unwrap_or(true),
         }
     }
 }
@@ -332,6 +341,7 @@ fn parse_equipment_mapping(mapping_str: &str) -> HashMap<String, String> {
     })
 }
 
+#[allow(dead_code)]
 fn parse_shape(shape_str: &str) -> Result<Vec<i64>> {
     shape_str
         .split(',')
