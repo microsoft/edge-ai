@@ -43,31 +43,11 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Install PSScriptAnalyzer
-        shell: pwsh
-        run: |
-          Install-Module -Name PSScriptAnalyzer -RequiredVersion '1.22.0' -Force -Scope CurrentUser
-
       - name: Run PSScriptAnalyzer
+        id: lint
         shell: pwsh
         run: |
-          $settings = './PSScriptAnalyzerSettings.psd1'
-          $files = Get-ChildItem -Recurse -Include '*.ps1','*.psm1','*.psd1' |
-            Where-Object { $_.FullName -notmatch 'node_modules|\.copilot-tracking' }
-
-          $results = $files | ForEach-Object { Invoke-ScriptAnalyzer -Path $_.FullName -Settings $settings }
-
-          New-Item -ItemType Directory -Force -Path lint-results | Out-Null
-
-          if ($results) {
-            $output = $results | Format-Table -AutoSize | Out-String
-            $output | Set-Content -Path lint-results/psscriptanalyzer-results.txt
-            Write-Host $output
-            "PSSCRIPTANALYZER_FAILED=true" | Out-File -FilePath $env:GITHUB_ENV -Append
-          } else {
-            "No PSScriptAnalyzer violations found." | Set-Content -Path lint-results/psscriptanalyzer-results.txt
-            Write-Host "No PSScriptAnalyzer violations found."
-          }
+          ./scripts/linting/Invoke-PSScriptAnalyzer.ps1 -SoftFail:$${{ inputs.soft-fail == 'true' }}
 
       - name: Upload Lint Results
         if: always()
@@ -76,30 +56,3 @@ jobs:
           name: powershell-lint-results
           path: lint-results/
           retention-days: 30
-
-      - name: Job Summary
-        if: always()
-        shell: bash
-        run: |
-          {
-            echo "## PowerShell Lint Results"
-            echo ""
-            if [ "${PSSCRIPTANALYZER_FAILED:-}" = "true" ]; then
-              echo "- :x: PSScriptAnalyzer: violations found"
-            else
-              echo "- :white_check_mark: PSScriptAnalyzer: passed"
-            fi
-          } >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Fail on Lint Violations
-        if: always() && env.PSSCRIPTANALYZER_FAILED == 'true'
-        shell: bash
-        env:
-          SOFT_FAIL: ${{ inputs.soft-fail }}
-        run: |
-          if [ "$SOFT_FAIL" = "true" ]; then
-            echo "::warning::PowerShell lint violations found (soft-fail enabled)"
-          else
-            echo "::error::PowerShell lint violations found"
-            exit 1
-          fi
