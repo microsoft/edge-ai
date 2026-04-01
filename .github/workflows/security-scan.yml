@@ -5,7 +5,10 @@
 # and vulnerabilities. Uploads SARIF reports to the GitHub Security tab.
 #
 # Parameters:
-# - soft-fail: When true, security violations are reported but do not fail the workflow (default: false)
+# - soft-fail: When true, all security violations are reported but do not fail the workflow (default: false)
+# - grype-soft-fail: When true, Grype vulnerability findings warn instead of fail while
+#   Gitleaks and Secretlint remain hard-fail. Use in PR validation where dependency-review-action
+#   provides delta-aware vulnerability checking. (default: false)
 #
 # Usage Examples:
 # ```yaml
@@ -13,11 +16,17 @@
 # security-scan:
 #   uses: ./.github/workflows/security-scan.yml
 #
-# # With soft-fail:
+# # With soft-fail (all scanners):
 # security-scan:
 #   uses: ./.github/workflows/security-scan.yml
 #   with:
 #     soft-fail: true
+#
+# # With grype-soft-fail (Grype warns, Gitleaks/Secretlint still fail):
+# security-scan:
+#   uses: ./.github/workflows/security-scan.yml
+#   with:
+#     grype-soft-fail: true
 # ```
 ---
 name: Security Scan
@@ -27,6 +36,11 @@ on:  # yamllint disable-line rule:truthy
     inputs:
       soft-fail:
         description: 'Whether to continue on security violations'
+        required: false
+        type: boolean
+        default: false
+      grype-soft-fail:
+        description: 'Whether Grype findings warn instead of fail (Gitleaks/Secretlint remain hard-fail)'
         required: false
         type: boolean
         default: false
@@ -150,10 +164,24 @@ jobs:
         shell: bash
         env:
           SOFT_FAIL: ${{ inputs.soft-fail }}
+          GRYPE_SOFT_FAIL: ${{ inputs.grype-soft-fail }}
         run: |
-          if [ "$SOFT_FAIL" = "true" ]; then
-            echo "::warning::Security scan violations found (soft-fail enabled)"
-          else
-            echo "::error::Security scan violations found"
-            exit 1
+          HARD_FAILURE="false"
+          if [ "${GITLEAKS_FAILED:-}" = "true" ] || [ "${SECRETLINT_FAILED:-}" = "true" ]; then
+            HARD_FAILURE="true"
+          fi
+          if [ "${GRYPE_FAILED:-}" = "true" ]; then
+            if [ "$GRYPE_SOFT_FAIL" = "true" ]; then
+              echo "::warning::Grype vulnerabilities found (grype-soft-fail enabled, Gitleaks/Secretlint remain enforced)"
+            else
+              HARD_FAILURE="true"
+            fi
+          fi
+          if [ "$HARD_FAILURE" = "true" ]; then
+            if [ "$SOFT_FAIL" = "true" ]; then
+              echo "::warning::Security scan violations found (soft-fail enabled)"
+            else
+              echo "::error::Security scan violations found"
+              exit 1
+            fi
           fi

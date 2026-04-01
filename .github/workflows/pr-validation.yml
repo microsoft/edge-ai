@@ -156,6 +156,8 @@ jobs:
       contents: read
       security-events: write
     uses: ./.github/workflows/security-scan.yml
+    with:
+      grype-soft-fail: true
 
   # YAML and container linting
   yaml-lint:
