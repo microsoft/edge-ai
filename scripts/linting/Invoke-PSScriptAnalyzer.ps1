@@ -12,7 +12,7 @@ Import-Module (Join-Path $PSScriptRoot '../ci/Modules/CIHelpers.psm1') -Force
 Import-Module (Join-Path $PSScriptRoot 'Modules/LintingHelpers.psm1') -Force
 
 if (-not (Get-Module -ListAvailable -Name PSScriptAnalyzer)) {
-    Install-Module -Name PSScriptAnalyzer -Force -Scope CurrentUser -AllowClobber
+    Install-Module -Name PSScriptAnalyzer -RequiredVersion '1.22.0' -Force -Scope CurrentUser -AllowClobber
 }
 Import-Module PSScriptAnalyzer -Force
 

@@ -1,4 +1,9 @@
 function Get-ChangedFilesFromGit {
+    <#
+    .SYNOPSIS
+    Returns changed files of specified extensions relative to a base branch.
+    #>
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseOutputTypeCorrectly', '')]
     [CmdletBinding()]
     param(
         [string[]]$Extension = @('.ps1', '.psm1', '.psd1'),
@@ -18,6 +23,10 @@ function Get-ChangedFilesFromGit {
 }
 
 function Get-FilesRecursive {
+    <#
+    .SYNOPSIS
+    Returns all files matching specified extensions, excluding configured patterns.
+    #>
     [CmdletBinding()]
     param(
         [string]$Path = '.',

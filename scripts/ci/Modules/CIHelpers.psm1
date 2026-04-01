@@ -160,6 +160,7 @@ function Set-CIOutput {
     .PARAMETER IsOutput
     For Azure DevOps, marks the variable as an output variable.
     #>
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '')]
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true)]
@@ -212,6 +213,7 @@ function Set-CIEnv {
     .PARAMETER Value
     The environment variable value.
     #>
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '')]
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true)]
@@ -267,9 +269,9 @@ function Write-CIStepSummary {
     .PARAMETER Path
     Path to a file containing markdown content.
     #>
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName = 'Content')]
     param(
-        [Parameter(Mandatory = $true, ParameterSetName = 'Content')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'Content', Position = 0)]
         [string]$Content,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'Path')]
@@ -409,6 +411,7 @@ function Write-CIAnnotations {
     .PARAMETER Summary
     Summary object containing Results with Issues and file metadata.
     #>
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '')]
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true)]
@@ -468,6 +471,7 @@ function Set-CITaskResult {
     .PARAMETER Result
     The result status: Succeeded, SucceededWithIssues, or Failed.
     #>
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '')]
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true)]

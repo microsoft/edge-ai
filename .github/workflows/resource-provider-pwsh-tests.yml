@@ -75,7 +75,7 @@ jobs:
         shell: pwsh
         working-directory: ${{ inputs.working-directory }}
         run: |
-          ../../scripts/Invoke-Pester.ps1 -CI -OutputPath '${{ inputs.test-results-output }}'
+          ../../scripts/Invoke-Pester.ps1 -CI -Path '.' -OutputPath '${{ inputs.test-results-output }}'
 
       # Publish the Pester test results
       - name: Publish Test Results
@@ -83,7 +83,7 @@ jobs:
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: rp-pester-test-results
-          path: ${{ inputs.test-results-output }}/
+          path: ${{ inputs.working-directory }}/${{ inputs.test-results-output }}/
 
       - name: Publish test summary to GitHub
         if: ${{ !cancelled() }}
@@ -91,7 +91,7 @@ jobs:
         with:
           script: |
             const fs = require('fs');
-            const resultsFile = '${{ inputs.test-results-output }}';
+            const resultsFile = '${{ inputs.working-directory }}/${{ inputs.test-results-output }}/test-results.xml';
 
             if (!fs.existsSync(resultsFile)) {
               core.warning('Test results file not found: ' + resultsFile);

@@ -8,7 +8,7 @@ param(
 $config = New-PesterConfiguration
 
 $config.Run.Path = $Path
-$config.Run.Exit = $CI.IsPresent
+$config.Run.Exit = $false
 $config.Run.PassThru = $true
 
 $config.Output.Verbosity = if ($CI) { 'Detailed' } else { 'Normal' }
