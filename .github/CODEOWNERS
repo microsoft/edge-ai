@@ -49,3 +49,8 @@
 
 # Security
 /project-security-plans/ @microsoft/edge-ai-core-dev
+
+# Security-sensitive paths (PRs require security-reviewed label before merge)
+/SECURITY.md @microsoft/edge-ai-core-dev
+/src/000-cloud/010-security-identity/ @microsoft/edge-ai-core-dev
+/deploy/ @microsoft/edge-ai-core-dev

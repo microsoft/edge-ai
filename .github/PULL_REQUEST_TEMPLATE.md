@@ -46,7 +46,20 @@
 - [ ] I have run `az bicep format` on all Bicep code
 - [ ] I have run `az bicep build` to validate all Bicep code
 - [ ] I have checked for any sensitive data/tokens that should not be committed
-- [ ] I have run MegaLinter on my code (`mega-linter-runner`)
+- [ ] Lint checks pass (run applicable linters for changed file types)
+
+## Security Review
+<!-- Required for PRs touching security-sensitive paths:
+     - SECURITY.md
+     - src/000-cloud/010-security-identity/
+     - deploy/
+     PRs modifying these paths require the `security-reviewed` label before merge. -->
+
+- [ ] No credentials, secrets, or tokens are hardcoded or logged
+- [ ] RBAC and identity changes follow least-privilege principles
+- [ ] No new network exposure or public endpoints introduced without justification
+- [ ] Dependency additions or updates have been reviewed for known vulnerabilities
+- [ ] Container image changes use pinned digests or SHA references
 
 ## Additional Notes
 <!-- Add any other context about the PR here -->
