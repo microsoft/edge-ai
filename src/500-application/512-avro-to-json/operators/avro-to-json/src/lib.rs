@@ -199,6 +199,18 @@ fn try_parse_container_file(data: &[u8]) -> Option<Result<AvroValue, String>> {
     )
 }
 
+/// Unwraps a JSON-string-encoded schema value if needed.
+///
+/// The AIO runtime may deliver configuration values as JSON strings. When a user
+/// sets `avroSchema` to a JSON object, the runtime can wrap it in an extra string
+/// literal. This function detects that case and returns the inner string.
+fn unwrap_schema_value(raw: &str) -> std::borrow::Cow<'_, str> {
+    match serde_json::from_str::<serde_json::Value>(raw) {
+        Ok(serde_json::Value::String(inner)) => std::borrow::Cow::Owned(inner),
+        _ => std::borrow::Cow::Borrowed(raw),
+    }
+}
+
 /// Initialize the operator with optional schema configuration
 fn avro_init(configuration: ModuleConfiguration) -> bool {
     logger::log(
@@ -221,7 +233,8 @@ fn avro_init(configuration: ModuleConfiguration) -> bool {
         .iter()
         .find(|(k, _)| k == "avroSchema")
         .map(|(_, v)| {
-            Schema::parse_str(v).map_err(|e| {
+            let schema_str = unwrap_schema_value(v);
+            Schema::parse_str(&schema_str).map_err(|e| {
                 logger::log(
                     Level::Error,
                     "avro-to-json",
@@ -640,5 +653,84 @@ mod tests {
         let bd = BigDecimal::from_str("-42.5").unwrap();
         let result = avro_to_json(&AvroValue::BigDecimal(bd));
         assert_eq!(result, json!("-42.5"));
+    }
+
+    // --- unwrap_schema_value tests ---
+
+    #[test]
+    fn unwrap_schema_value_raw_json_object() {
+        let raw = r#"{"type":"record","name":"Example","fields":[{"name":"id","type":"string"}]}"#;
+        let result = unwrap_schema_value(raw);
+        assert_eq!(result, raw);
+    }
+
+    #[test]
+    fn unwrap_schema_value_json_string_encoded() {
+        let inner = r#"{"type":"record","name":"Example","fields":[{"name":"id","type":"string"}]}"#;
+        let encoded = serde_json::to_string(inner).unwrap();
+        let result = unwrap_schema_value(&encoded);
+        assert_eq!(result, inner);
+    }
+
+    #[test]
+    fn unwrap_schema_value_primitive_schema() {
+        let raw = r#""string""#;
+        let result = unwrap_schema_value(raw);
+        assert_eq!(result, "string");
+    }
+
+    #[test]
+    fn unwrap_schema_value_non_json() {
+        let raw = "not valid json at all";
+        let result = unwrap_schema_value(raw);
+        assert_eq!(result, raw);
+    }
+
+    // --- Schema parsing with unwrap_schema_value ---
+
+    #[test]
+    fn schema_parse_raw_json_object() {
+        let raw = r#"{"type":"record","name":"TestRecord","namespace":"com.test","fields":[{"name":"value","type":"string"}]}"#;
+        let schema_str = unwrap_schema_value(raw);
+        let schema = Schema::parse_str(&schema_str);
+        assert!(schema.is_ok(), "Raw JSON object schema should parse: {:?}", schema.err());
+    }
+
+    #[test]
+    fn schema_parse_json_string_encoded() {
+        let inner = r#"{"type":"record","name":"TestRecord","namespace":"com.test","fields":[{"name":"value","type":"string"}]}"#;
+        let encoded = serde_json::to_string(inner).unwrap();
+        let schema_str = unwrap_schema_value(&encoded);
+        let schema = Schema::parse_str(&schema_str);
+        assert!(schema.is_ok(), "JSON-string-encoded schema should parse after unwrap: {:?}", schema.err());
+    }
+
+    #[test]
+    fn schema_parse_nested_record_raw() {
+        let raw = r#"{"type":"record","name":"Outer","namespace":"com.test","fields":[{"name":"Header","type":{"type":"record","name":"Header","namespace":"com.test.inner","fields":[{"name":"Source","type":"string"},{"name":"Timestamp","type":"long"}]}},{"name":"Payload","type":"string"}]}"#;
+        let schema_str = unwrap_schema_value(raw);
+        let schema = Schema::parse_str(&schema_str);
+        assert!(schema.is_ok(), "Nested record raw schema should parse: {:?}", schema.err());
+    }
+
+    #[test]
+    fn schema_parse_nested_record_json_string_encoded() {
+        let inner = r#"{"type":"record","name":"Outer","namespace":"com.test","fields":[{"name":"Header","type":{"type":"record","name":"Header","namespace":"com.test.inner","fields":[{"name":"Source","type":"string"},{"name":"Timestamp","type":"long"}]}},{"name":"Payload","type":"string"}]}"#;
+        let encoded = serde_json::to_string(inner).unwrap();
+
+        // Without unwrap, this would fail with InvalidSchemaName
+        let schema_str = unwrap_schema_value(&encoded);
+        let schema = Schema::parse_str(&schema_str);
+        assert!(schema.is_ok(), "Nested record JSON-string-encoded schema should parse after unwrap: {:?}", schema.err());
+    }
+
+    #[test]
+    fn schema_parse_json_string_encoded_fails_without_unwrap() {
+        let inner = r#"{"type":"record","name":"TestRecord","namespace":"com.test","fields":[{"name":"value","type":"string"}]}"#;
+        let encoded = serde_json::to_string(inner).unwrap();
+
+        // Parsing the encoded string directly should fail (the original bug)
+        let result = Schema::parse_str(&encoded);
+        assert!(result.is_err(), "Parsing JSON-string-encoded schema without unwrap should fail");
     }
 }
