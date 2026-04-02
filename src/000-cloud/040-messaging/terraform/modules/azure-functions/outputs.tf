@@ -5,6 +5,7 @@
 output "function_identity" {
   description = "The User Assigned Managed Identity used by the Function App."
   value = {
+    id           = azurerm_user_assigned_identity.function_identity.id
     principal_id = azurerm_user_assigned_identity.function_identity.principal_id
     client_id    = azurerm_user_assigned_identity.function_identity.client_id
   }
