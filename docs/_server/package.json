@@ -33,7 +33,7 @@
     "@eslint/js": "^10.0.1",
     "@vitest/coverage-v8": "^4.1.2",
     "@vitest/ui": "^4.0.13",
-    "eslint": "^10.0.3",
+    "eslint": "^10.2.0",
     "eventsource": "^4.0.0",
     "happy-dom": "^20.8.9",
     "node-fetch": "^3.3.2",
