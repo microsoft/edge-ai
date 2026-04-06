@@ -32,17 +32,13 @@ Workflow-level permissions default to read-only (`contents: read`). Write permis
 
 `.github/dependabot.yml` is configured for the `github-actions` ecosystem with weekly update cadence. Dependabot automatically creates PRs to update SHA pins when new action versions are released.
 
-## Exceptions
-
-* `slsa-framework/slsa-github-generator@v2.1.0` uses tag-based pinning because GitHub requires tag references for reusable workflow calls (`jobs.<id>.uses`). SHA pinning is not supported for this use case.
-
 ## Compliance Verification
 
 Verify all actions comply with this policy:
 
 ```bash
-# Verify no tag-only pins (except slsa-framework and local workflow refs)
-grep -rn "uses:" .github/workflows/ | grep -v "uses:.*\./" | grep -v "@[a-f0-9]\{40\}" | grep -v "slsa-framework"
+# Verify no tag-only pins (except local workflow refs)
+grep -rn "uses:" .github/workflows/ | grep -v "uses:.*\./" | grep -v "@[a-f0-9]\{40\}"
 
 # Verify all SHA pins have version comments
 grep -rn "uses:.*@[a-f0-9]\{40\}" .github/workflows/ | grep -v "#"
