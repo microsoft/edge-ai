@@ -230,28 +230,6 @@ export const cardsMixin = {
   },
 
   /**
-   * Update paths data
-   * @param {Array} paths - New paths array
-   */
-  updatePaths(paths) {
-    if (!Array.isArray(paths)) {
-      this.logError('updatePaths: paths must be an array');
-      return;
-    }
-
-    this.learningPaths = paths;
-    this.paths = paths;
-    this.filteredPaths = paths;
-
-    // Clear storage cache when paths are updated, as localStorage may have changed
-    if (this._storageCache) {
-      this._storageCache.delete('selectedPaths');
-    }
-
-    this.renderCards();
-  },
-
-  /**
    * Handle path selection
    * @param {string} pathId - ID of the path to select
    * @param {boolean} selected - Selection state
@@ -434,8 +412,8 @@ export const cardsMixin = {
       let bVal = b?.[field];
 
       // Handle undefined/null values
-      if (aVal === undefined || aVal === null) return 1;
-      if (bVal === undefined || bVal === null) return -1;
+      if (aVal === undefined || aVal === null) {return 1;}
+      if (bVal === undefined || bVal === null) {return -1;}
 
       // Handle string comparison
       if (typeof aVal === 'string') {
@@ -450,8 +428,8 @@ export const cardsMixin = {
       }
 
       let comparison = 0;
-      if (aVal < bVal) comparison = -1;
-      if (aVal > bVal) comparison = 1;
+      if (aVal < bVal) {comparison = -1;}
+      if (aVal > bVal) {comparison = 1;}
 
       return direction === 'desc' ? -comparison : comparison;
     });
@@ -504,7 +482,7 @@ export const cardsMixin = {
       ];
 
       return searchableFields.some(field => {
-        if (!field) return false;
+        if (!field) {return false;}
         return String(field).toLowerCase().includes(searchTerm);
       });
     });
@@ -1040,10 +1018,10 @@ export const cardsMixin = {
 
   getLevelEmoji(pathId) {
     const id = (pathId || '').toLowerCase();
-    if (id.includes('foundation-')) return '🌱';
-    if (id.includes('skill-')) return '🚀';
-    if (id.includes('expert-')) return '🎯';
-    if (id.includes('ai-')) return '🤖';
+    if (id.includes('foundation-')) {return '🌱';}
+    if (id.includes('skill-')) {return '🚀';}
+    if (id.includes('expert-')) {return '🎯';}
+    if (id.includes('ai-')) {return '🤖';}
     return '📚';
   },
 
@@ -1187,9 +1165,8 @@ export const cardsMixin = {
   },
 
 
-
   setupStepHandlers(container) {
-    if (!container) return;
+    if (!container) {return;}
 
     const stepCheckboxes = container.querySelectorAll('.step-checkbox');
 
@@ -1253,7 +1230,7 @@ export const cardsMixin = {
     this.invalidateProgressCache();
 
     const path = this.loadedPaths?.find(p => p.id === pathId);
-    if (!path) return;
+    if (!path) {return;}
 
     const progress = this.calculateProgress(path);
     this.updateProgressDisplay(pathId, progress);

@@ -118,7 +118,9 @@ function isDuplicate(alert, severity) {
 
   // Evict stale entries
   for (const [k, ts] of dedupCache) {
-    if (now - ts > DEDUP_WINDOW_MS) dedupCache.delete(k);
+    if (now - ts > DEDUP_WINDOW_MS) {
+      dedupCache.delete(k);
+    }
   }
 
   const lastSeen = dedupCache.get(key);
@@ -137,7 +139,9 @@ function isDuplicate(alert, severity) {
  * @returns {object|null} Parsed alert or null on failure
  */
 function parseAlertPayload(body) {
-  if (!body) return null;
+  if (!body) {
+    return null;
+  }
   try {
     if (Buffer.isBuffer(body) || body instanceof Uint8Array) {
       body = body.toString('utf8');
@@ -156,12 +160,20 @@ function parseAlertPayload(body) {
  * @returns {string} Severity level: low, medium, high, or critical
  */
 function extractSeverity(alert) {
-  if (alert.severity) return alert.severity.toLowerCase();
+  if (alert.severity) {
+    return alert.severity.toLowerCase();
+  }
 
   const confidence = alert.confidence ?? alert.score ?? 0;
-  if (confidence >= 0.95) return "critical";
-  if (confidence >= 0.8) return "high";
-  if (confidence >= 0.5) return "medium";
+  if (confidence >= 0.95) {
+    return "critical";
+  }
+  if (confidence >= 0.8) {
+    return "high";
+  }
+  if (confidence >= 0.5) {
+    return "medium";
+  }
   return "low";
 }
 
@@ -332,7 +344,9 @@ async function dispatchWebhook(webhookUrl, payload, context) {
         signal: AbortSignal.timeout(10_000),
       });
 
-      if (response.ok) return true;
+      if (response.ok) {
+        return true;
+      }
 
       const status = response.status;
       if (status >= 500 && attempt < maxAttempts) {

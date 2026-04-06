@@ -165,7 +165,7 @@ export const storageMixin = {
   _compressData(data) {
     try {
       return btoa(encodeURIComponent(data).replace(/%([0-9A-F]{2})/g, (match, p1) => {
-        return String.fromCharCode('0x' + p1);
+        return String.fromCharCode(`0x${ p1}`);
       }));
     } catch (error) {
       this.logError('Compression failed, using uncompressed:', error);
@@ -181,7 +181,7 @@ export const storageMixin = {
   _decompressData(data) {
     try {
       return decodeURIComponent(atob(data).split('').map((c) => {
-        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        return `%${ (`00${ c.charCodeAt(0).toString(16)}`).slice(-2)}`;
       }).join(''));
     } catch (error) {
       this.logError('Decompression failed, using as-is:', error);

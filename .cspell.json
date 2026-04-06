@@ -4,7 +4,7 @@
   "cache": {
     "useCache": false
   },
-  "ignorePaths": ["node_modules/**", "**/node_modules/**", "packages/**", "**/packages/**", "vendor/**", "**/vendor/**", "dist/**", "build/**", ".git/**", "**/.terraform/**", "**/.terraform.lock.hcl", ".vscode/**", ".copilot-tracking/**", ".github/copilot-instructions.md", ".github/instructions/**", ".github/prompts/**", ".github/agents/**", "venv/**", "**/*.min.js", "**/*.min.css", ".mega-linter.yml", "package-lock.json", "**/package-lock.json", "Cargo.lock", "**/Cargo.lock"],
+  "ignorePaths": ["node_modules/**", "**/node_modules/**", "packages/**", "**/packages/**", "vendor/**", "**/vendor/**", "dist/**", "build/**", ".git/**", "**/.terraform/**", "**/.terraform.lock.hcl", ".vscode/**", ".copilot-tracking/**", ".github/copilot-instructions.md", ".github/instructions/**", ".github/prompts/**", ".github/agents/**", "venv/**", "**/*.min.js", "**/*.min.css", "package-lock.json", "**/package-lock.json", "Cargo.lock", "**/Cargo.lock"],
   "ignoreRegExpList": ["/#.*/g", "/^authors?:.*(?:\\r?\\n\\s*-.*)*$/gmi"],
   "dictionaryDefinitions": [
     {

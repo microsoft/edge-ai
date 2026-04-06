@@ -20,52 +20,52 @@ SKIP_AZ_LOGIN="${SKIP_AZ_LOGIN}"             # Skips calling 'az login' and inst
 ###
 
 usage() {
-  echo "usage: ${0##*./}"
-  grep -x -B99 -m 1 "^###" "$0" \
-    | sed -E -e '/^[^#]+=/ {s/^([^ ])/  \1/ ; s/#/ / ; s/=[^ ]*$// ;}' \
-    | sed -E -e ':x' -e '/^[^#]+=/ {s/^(  [^ ]+)[^ ] /\1  / ;}' -e 'tx' \
-    | sed -e 's/^## //' -e '/^#/d' -e '/^$/d'
-  exit 1
+    echo "usage: ${0##*./}"
+    grep -x -B99 -m 1 "^###" "$0" |
+        sed -E -e '/^[^#]+=/ {s/^([^ ])/  \1/ ; s/#/ / ; s/=[^ ]*$// ;}' |
+        sed -E -e ':x' -e '/^[^#]+=/ {s/^(  [^ ]+)[^ ] /\1  / ;}' -e 'tx' |
+        sed -e 's/^## //' -e '/^#/d' -e '/^$/d'
+    exit 1
 }
 
 log() {
-  printf "========== %s ==========\n" "$1"
+    printf "========== %s ==========\n" "$1"
 }
 
 err() {
-  printf "[ ERROR ]: %s\n" "$1" >&2
-  exit 1
+    printf "[ ERROR ]: %s\n" "$1" >&2
+    exit 1
 }
 
 enable_debug() {
-  echo "[ DEBUG ]: Enabling writing out all commands being executed"
-  set -x
+    echo "[ DEBUG ]: Enabling writing out all commands being executed"
+    set -x
 }
 
 if [ $# -gt 0 ]; then
-  case "$1" in
+    case "$1" in
     -d | --debug)
-      enable_debug
-      ;;
+        enable_debug
+        ;;
     *)
-      usage
-      ;;
-  esac
+        usage
+        ;;
+    esac
 fi
 
 set -e
 
 # Check for required environment variables
 if [ -z "$KEY_VAULT_NAME" ]; then
-  err "KEY_VAULT_NAME environment variable is required"
+    err "KEY_VAULT_NAME environment variable is required"
 fi
 
 if [ -z "$KUBERNETES_DISTRO" ]; then
-  err "KUBERNETES_DISTRO environment variable is required"
+    err "KUBERNETES_DISTRO environment variable is required"
 fi
 
 if [ -z "$NODE_TYPE" ]; then
-  err "NODE_TYPE environment variable is required"
+    err "NODE_TYPE environment variable is required"
 fi
 
 ####
@@ -76,11 +76,11 @@ log "Detecting OS type..."
 # Print OS information for debugging
 echo "OS Information:"
 if [ -f /etc/os-release ]; then
-  cat /etc/os-release
+    cat /etc/os-release
 elif [ -f /etc/system-release ]; then
-  cat /etc/system-release
+    cat /etc/system-release
 else
-  uname -a
+    uname -a
 fi
 
 # Setting to ubuntu until other OS are supported
@@ -93,34 +93,34 @@ log "Setting up AZ CLI and authentication..."
 
 # Check if Azure CLI is installed
 if ! command -v "az" &>/dev/null; then
-  if [ -z "$SKIP_INSTALL_AZ_CLI" ]; then
-    log "Installing Azure CLI"
-    case "$OS_TYPE" in
-      ubuntu)
-        curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
-        ;;
-      *)
-        err "'az' command missing and not able to install Azure CLI. Please install Azure CLI before running this script."
-        ;;
-    esac
-  else
-    err "'az' is missing and required"
-  fi
+    if [ -z "$SKIP_INSTALL_AZ_CLI" ]; then
+        log "Installing Azure CLI"
+        case "$OS_TYPE" in
+        ubuntu)
+            curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+            ;;
+        *)
+            err "'az' command missing and not able to install Azure CLI. Please install Azure CLI before running this script."
+            ;;
+        esac
+    else
+        err "'az' is missing and required"
+    fi
 fi
 
 # Log in to Azure if not skipped
 if [ -z "$SKIP_AZ_LOGIN" ]; then
-  if [ -n "$CLIENT_ID" ]; then
-    log "Logging in with User Assigned Managed Identity (client ID: $CLIENT_ID)"
-    if ! az login --identity --client-id "$CLIENT_ID"; then
-      err "Failed to login with User Assigned Managed Identity (client ID: $CLIENT_ID)"
+    if [ -n "$CLIENT_ID" ]; then
+        log "Logging in with User Assigned Managed Identity (client ID: $CLIENT_ID)"
+        if ! az login --identity --client-id "$CLIENT_ID"; then
+            err "Failed to login with User Assigned Managed Identity (client ID: $CLIENT_ID)"
+        fi
+    else
+        log "Logging in with default managed identity"
+        if ! az login --identity; then
+            err "Failed to login with managed identity. If the VM has multiple identities, provide CLIENT_ID to specify which one to use"
+        fi
     fi
-  else
-    log "Logging in with default managed identity"
-    if ! az login --identity; then
-      err "Failed to login with managed identity. If the VM has multiple identities, provide CLIENT_ID to specify which one to use"
-    fi
-  fi
 fi
 
 ####
@@ -131,9 +131,9 @@ log "Preparing to download deployment script from Key Vault..."
 # Construct the secret name
 SECRET_NAME=""
 if [ -n "$SECRET_NAME_PREFIX" ]; then
-  SECRET_NAME="${SECRET_NAME_PREFIX}${OS_TYPE}-${KUBERNETES_DISTRO}-${NODE_TYPE}-script"
+    SECRET_NAME="${SECRET_NAME_PREFIX}${OS_TYPE}-${KUBERNETES_DISTRO}-${NODE_TYPE}-script"
 else
-  SECRET_NAME="${OS_TYPE}-${KUBERNETES_DISTRO}-${NODE_TYPE}-script"
+    SECRET_NAME="${OS_TYPE}-${KUBERNETES_DISTRO}-${NODE_TYPE}-script"
 fi
 
 # Path to the downloaded script
@@ -144,8 +144,8 @@ log "Downloading script: az keyvault secret download --vault-name $KEY_VAULT_NAM
 
 # Download the script from Key Vault
 if ! az keyvault secret download --vault-name "$KEY_VAULT_NAME" --name "$SECRET_NAME" --file "$SCRIPT_PATH"; then
-  log "First attempt to download script failed... Retrying..."
-  az keyvault secret download --vault-name "$KEY_VAULT_NAME" --name "$SECRET_NAME" --file "$SCRIPT_PATH"
+    log "First attempt to download script failed... Retrying..."
+    az keyvault secret download --vault-name "$KEY_VAULT_NAME" --name "$SECRET_NAME" --file "$SCRIPT_PATH"
 fi
 
 # Make the script executable

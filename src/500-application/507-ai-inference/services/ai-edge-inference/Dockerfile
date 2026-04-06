@@ -60,10 +60,10 @@ WORKDIR /tmp
 RUN if [ "$BACKEND" = "onnx" ]; then \
         mkdir -p /opt/onnxruntime && \
         # Use amd64 as default, can be enhanced for multi-arch later
-        wget -q "https://github.com/microsoft/onnxruntime/releases/download/v1.17.0/onnxruntime-linux-x64-1.17.0.tgz" && \
-        tar -xzf "onnxruntime-linux-x64-1.17.0.tgz" && \
-        cp -r onnxruntime-linux-x64-1.17.0/* /opt/onnxruntime/ && \
-        rm -rf onnxruntime-linux-x64-1.17.0.tgz onnxruntime-linux-x64-1.17.0 && \
+        wget -q "https://github.com/microsoft/onnxruntime/releases/download/v1.24.4/onnxruntime-linux-x64-1.24.4.tgz" && \
+        tar -xzf "onnxruntime-linux-x64-1.24.4.tgz" && \
+        cp -r onnxruntime-linux-x64-1.24.4/* /opt/onnxruntime/ && \
+        rm -rf onnxruntime-linux-x64-1.24.4.tgz onnxruntime-linux-x64-1.24.4 && \
         mkdir -p /installroot/opt/onnxruntime && \
         cp -r /opt/onnxruntime/* /installroot/opt/onnxruntime/; \
     fi
@@ -97,6 +97,10 @@ COPY ./ai-edge-inference/Cargo.toml ./Cargo.toml
 COPY ./ai-edge-inference/Cargo.lock ./Cargo.lock
 COPY ./ai-edge-inference/.cargo ./.cargo
 
+# Point ort-sys to the pre-downloaded ONNX Runtime (avoids downloading incompatible binaries)
+ENV ORT_LIB_LOCATION="/opt/onnxruntime/lib"
+ENV ORT_PREFER_DYNAMIC_LINK="1"
+
 # Build the application with backend-specific features
 RUN if [ "$BACKEND" = "candle" ]; then \
         cargo build --release --features candle --no-default-features; \
@@ -119,6 +123,7 @@ ARG BACKEND=onnx
 # Install runtime dependencies and create non-root user
 RUN tdnf install -y \
     ca-certificates-2.0.0-22.cm2 \
+    ncurses-libs-6.4-4.cm2 \
     shadow-utils-4.9-14.cm2 \
     wget-1.21.2-4.cm2 \
     tar-1.34-3.cm2 \

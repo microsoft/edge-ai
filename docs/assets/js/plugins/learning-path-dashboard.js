@@ -366,10 +366,6 @@ class LearningPathDashboard {
   }
 
 
-
-
-
-
   /**
    * Setup progress tracking integration
    * @private
@@ -391,7 +387,7 @@ class LearningPathDashboard {
    * @private
    */
   async initializeProgressTracker() {
-    if (!window.LearningProgressTracker) return;
+    if (!window.LearningProgressTracker) {return;}
 
     try {
       // LearningProgressTracker is a utility object for individual content pages
@@ -418,7 +414,6 @@ class LearningPathDashboard {
     this.announceProgressUpdate(pathId);
     this.emit('progress-updated', { pathId, stepId, completed });
   }
-
 
 
   /**

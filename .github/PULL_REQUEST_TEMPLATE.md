@@ -46,7 +46,7 @@
 - [ ] I have run `az bicep format` on all Bicep code
 - [ ] I have run `az bicep build` to validate all Bicep code
 - [ ] I have checked for any sensitive data/tokens that should not be committed
-- [ ] I have run MegaLinter on my code (`mega-linter-runner`)
+- [ ] I have verified my code passes all lint checks (`npm run lint`)
 
 ## Additional Notes
 <!-- Add any other context about the PR here -->

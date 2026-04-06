@@ -76,4 +76,16 @@ sharepoint
 southeastasia
 vpngateway
 westus
+AADSSH
+acrmodules
+activedirectory
+azmonitoring
+azuread
+azurecontainer
+azurelinux
+azurestack
+eastu
+functionalization
+servicebus
+storageaccounts
 youracr

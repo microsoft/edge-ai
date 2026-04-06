@@ -110,12 +110,18 @@ parameters:
     type: number
     default: 5
 
+  # Job timeout in minutes (default 120 to accommodate heavy Rust builds)
+  - name: timeoutInMinutes
+    type: number
+    default: 120
+
 jobs:
   - job: ${{ parameters.jobName }}
     displayName: ${{ parameters.displayName }}
     dependsOn: ${{ parameters.dependsOn }}
     condition: ${{ parameters.condition }}
     pool: ${{ parameters.agentPool }}
+    timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
     strategy:
       matrix: $[ ${{ parameters.matrixVariable }} ]
       maxParallel: ${{ parameters.maxParallel }}
