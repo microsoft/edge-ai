@@ -1,7 +1,7 @@
 # Multi-stage build for ai-edge-inference with configurable backend support
 # Build with: docker build --build-arg BACKEND=onnx|candle .
-# Cross-compilation support stage
-FROM --platform=$BUILDPLATFORM tonistiigi/xx:master AS xx
+# Cross-compilation support stage (pinned to versioned SHA256 digest for supply chain security)
+FROM --platform=$BUILDPLATFORM tonistiigi/xx:1.9.0@sha256:c64defb9ed5a91eacb37f96ccc3d4cd72521c4bd18d5442905b95e2226b0e707 AS xx
 
 # Build stage - using SHA-pinned Azure Linux image
 # SHA mapping maintained in scripts/security/Update-DockerSHAPinning.ps1

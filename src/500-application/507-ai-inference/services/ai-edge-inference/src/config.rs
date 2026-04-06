@@ -4,8 +4,8 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use anyhow::{Result, Context};
 use ai_edge_inference_crate::{
-    InferenceConfig as CrateInferenceConfig, 
-    ModelsConfig, HardwareConfig, PerformanceConfig, 
+    InferenceConfig as CrateInferenceConfig,
+    ModelsConfig, HardwareConfig, PerformanceConfig,
     MonitoringConfig as CrateMonitoringConfig, SiteContext
 };
 
@@ -281,7 +281,7 @@ fn parse_default_models(models_str: &str) -> Vec<DefaultModel> {
     // Parse comma-separated model names and map to actual model files
     let model_names: Vec<&str> = models_str.split(',').map(|s| s.trim()).collect();
     let mut models = Vec::new();
-    
+
     for model_name in model_names {
         match model_name {
             "tiny-yolov2" => {
@@ -317,7 +317,7 @@ fn parse_default_models(models_str: &str) -> Vec<DefaultModel> {
             }
         }
     }
-    
+
     models
 }
 

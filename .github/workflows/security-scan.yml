@@ -5,7 +5,10 @@
 # and vulnerabilities. Uploads SARIF reports to the GitHub Security tab.
 #
 # Parameters:
-# - soft-fail: When true, security violations are reported but do not fail the workflow (default: false)
+# - soft-fail: When true, all security violations are reported but do not fail the workflow (default: false)
+# - grype-soft-fail: When true, Grype vulnerability findings warn instead of fail while
+#   Gitleaks and Secretlint remain hard-fail. Use in PR validation where dependency-review-action
+#   provides delta-aware vulnerability checking. (default: false)
 #
 # Usage Examples:
 # ```yaml
@@ -13,11 +16,17 @@
 # security-scan:
 #   uses: ./.github/workflows/security-scan.yml
 #
-# # With soft-fail:
+# # With soft-fail (all scanners):
 # security-scan:
 #   uses: ./.github/workflows/security-scan.yml
 #   with:
 #     soft-fail: true
+#
+# # With grype-soft-fail (Grype warns, Gitleaks/Secretlint still fail):
+# security-scan:
+#   uses: ./.github/workflows/security-scan.yml
+#   with:
+#     grype-soft-fail: true
 # ```
 ---
 name: Security Scan
@@ -27,6 +36,11 @@ on:  # yamllint disable-line rule:truthy
     inputs:
       soft-fail:
         description: 'Whether to continue on security violations'
+        required: false
+        type: boolean
+        default: false
+      grype-soft-fail:
+        description: 'Whether Grype findings warn instead of fail (Gitleaks/Secretlint remain hard-fail)'
         required: false
         type: boolean
         default: false
@@ -41,7 +55,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98  # v4.2.2
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
           fetch-depth: 0
@@ -51,11 +65,13 @@ jobs:
         run: |
           set -euo pipefail
           GITLEAKS_VERSION="8.30.0"
+          GITLEAKS_SHA256="79a3ab579b53f71efd634f3aaf7e04a0fa0cf206b7ed434638d1547a2470a66e"
           curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" \
-            -o gitleaks.tar.gz
-          tar -xzf gitleaks.tar.gz gitleaks
-          sudo mv gitleaks /usr/local/bin/gitleaks
-          rm gitleaks.tar.gz
+            -o /tmp/gitleaks.tar.gz
+          echo "${GITLEAKS_SHA256}  /tmp/gitleaks.tar.gz" | sha256sum --check --strict
+          tar -xzf /tmp/gitleaks.tar.gz -C /tmp gitleaks
+          sudo mv /tmp/gitleaks /usr/local/bin/gitleaks
+          rm /tmp/gitleaks.tar.gz
           gitleaks version
 
       - name: Run Gitleaks
@@ -73,11 +89,13 @@ jobs:
         run: |
           set -euo pipefail
           GRYPE_VERSION="0.109.1"
+          GRYPE_SHA256="da25d9e29ae61dbb432d0dafe1df5f6bfed6b275906107f1289bcc1898c2b2e4"
           curl -sSfL "https://github.com/anchore/grype/releases/download/v${GRYPE_VERSION}/grype_${GRYPE_VERSION}_linux_amd64.tar.gz" \
-            -o grype.tar.gz
-          tar -xzf grype.tar.gz grype
-          sudo mv grype /usr/local/bin/grype
-          rm grype.tar.gz
+            -o /tmp/grype.tar.gz
+          echo "${GRYPE_SHA256}  /tmp/grype.tar.gz" | sha256sum --check --strict
+          tar -xzf /tmp/grype.tar.gz -C /tmp grype
+          sudo mv /tmp/grype /usr/local/bin/grype
+          rm /tmp/grype.tar.gz
           grype version
 
       - name: Run Grype
@@ -104,14 +122,14 @@ jobs:
 
       - name: Upload SARIF to GitHub Security
         if: always()
-        uses: github/codeql-action/upload-sarif@a2d9de63c2916881d0621fdb7e65abe32141606d
+        uses: github/codeql-action/upload-sarif@c10b8064de6f491fea524254123dbe5e09572f13 # v4.35.1
         with:
           sarif_file: security-results/
         continue-on-error: true
 
       - name: Upload Security Results
         if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f  # v4.4.3
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: security-scan-results
           path: security-results/
@@ -146,10 +164,24 @@ jobs:
         shell: bash
         env:
           SOFT_FAIL: ${{ inputs.soft-fail }}
+          GRYPE_SOFT_FAIL: ${{ inputs.grype-soft-fail }}
         run: |
-          if [ "$SOFT_FAIL" = "true" ]; then
-            echo "::warning::Security scan violations found (soft-fail enabled)"
-          else
-            echo "::error::Security scan violations found"
-            exit 1
+          HARD_FAILURE="false"
+          if [ "${GITLEAKS_FAILED:-}" = "true" ] || [ "${SECRETLINT_FAILED:-}" = "true" ]; then
+            HARD_FAILURE="true"
+          fi
+          if [ "${GRYPE_FAILED:-}" = "true" ]; then
+            if [ "$GRYPE_SOFT_FAIL" = "true" ]; then
+              echo "::warning::Grype vulnerabilities found (grype-soft-fail enabled, Gitleaks/Secretlint remain enforced)"
+            else
+              HARD_FAILURE="true"
+            fi
+          fi
+          if [ "$HARD_FAILURE" = "true" ]; then
+            if [ "$SOFT_FAIL" = "true" ]; then
+              echo "::warning::Security scan violations found (soft-fail enabled)"
+            else
+              echo "::error::Security scan violations found"
+              exit 1
+            fi
           fi

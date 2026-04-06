@@ -120,6 +120,7 @@ permissions:
   contents: read
   pages: write
   id-token: write
+  attestations: write
 
 # Allow only one concurrent deployment
 concurrency:
@@ -130,17 +131,15 @@ jobs:
   build:
     name: Build Documentation
     runs-on: ubuntu-latest
-    outputs:
-      hashes: ${{ steps.hash.outputs.hashes }}
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
           ref: ${{ inputs.source_branch }}
 
       - name: Setup Pages
-        uses: actions/configure-pages@d5606572c479bee637007364c6b4800ac4fc8573
+        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
 
       - name: Setup Node.js
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v4.3.0
@@ -149,7 +148,7 @@ jobs:
           cache: 'npm'
 
       - name: Cache Docsify CLI
-        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306
+        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         with:
           path: ~/.npm
           key: ${{ runner.os }}-docsify-${{ hashFiles('**/package-lock.json') }}
@@ -737,52 +736,60 @@ jobs:
         run: |
           echo "[TARGET] Build validation completed successfully"
 
-      - name: Generate artifact hashes for SLSA attestation
-        id: hash
+      - name: Create build artifact archive
         run: |
-          echo "🔒 Generating artifact hashes for SLSA attestation..."
-
-          # Create a tarball of the built site for consistent hashing
           tar -czf site-artifact.tar.gz -C ./_site .
 
-          # Generate SHA256 hash
-          HASH=$(sha256sum site-artifact.tar.gz | cut -d' ' -f1)
-
-          # Generate base64 encoded subjects in the format required by SLSA
-          # Format: "name":"sha256:hash"
-          SUBJECTS_JSON='{"site-artifact.tar.gz":"sha256:'$HASH'"}'
-          SUBJECTS_B64=$(echo -n "$SUBJECTS_JSON" | base64 -w0)
-
-          echo "hashes=$SUBJECTS_B64" >> "$GITHUB_OUTPUT"
-
-          echo "✅ Generated artifact hash: $HASH"
-          echo "📄 Subject: site-artifact.tar.gz"
-          echo "🔐 SLSA subjects: $SUBJECTS_JSON"
-
       - name: Upload build artifact
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: documentation-build-${{ github.run_number }}
           path: site-artifact.tar.gz
           retention-days: 30
 
       - name: Upload pages artifact
-        uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b
+        uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4.0.0
         with:
           # Adjust this path to match your documentation output directory
           path: './_site'
 
-  # SLSA attestation for documentation artifacts
-  slsa-attestation:
-    name: SLSA Attestation
-    needs: build
-    permissions:
-      id-token: write
-      contents: read
-    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v2.1.0
-    with:
-      base64-subjects: "${{ needs.build.outputs.hashes }}"
-      upload-assets: true
+  attest-documentation:
+    needs: [build]
+    if: inputs.deploy_environment == 'production'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: documentation-build-${{ github.run_number }}
+          path: ./attestation-staging
+
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@db473fddc028af60658334401dc6fa3ffd8669fd # v2.3.0
+        with:
+          subject-path: ./attestation-staging/**
+
+      - name: Sparse checkout for SBOM config
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          sparse-checkout: |
+            .syft.yaml
+          sparse-checkout-cone-mode: false
+
+      - name: Generate SBOM
+        uses: anchore/sbom-action@e11c554f704a0b820cbf8c51673f6945e0731532 # v0.20.0
+        with:
+          artifact-name: documentation-sbom-${{ github.run_number }}
+          output-file: documentation-sbom.spdx.json
+          format: spdx-json
+          config: .syft.yaml
+
+      - name: Attest SBOM
+        uses: actions/attest@afd638254319277bb3d7f0a234478733e2e46a73 # v2.3.0
+        with:
+          subject-path: documentation-sbom.spdx.json
+          predicate-type: https://spdx.dev/Document/v2.3
+          predicate-path: documentation-sbom.spdx.json
 
   deploy:
     name: Deploy to GitHub Pages
@@ -790,13 +797,13 @@ jobs:
       name: ${{ inputs.deploy_environment }}
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-    needs: [build, slsa-attestation]
+    needs: [build, attest-documentation]
     outputs:
       page_url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@854d7aa1b99e4509c4d1b53d69b7ba4eaf39215a
+        uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5.0.0
 
       - name: Verify deployment
         run: |

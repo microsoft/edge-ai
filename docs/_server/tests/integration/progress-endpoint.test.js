@@ -93,14 +93,12 @@ describe('GET / (Progress Endpoint) Integration', () => {
     expect(response.headers['content-type']).toMatch(/application\/json/);
   });
 
-  test('response structure matches { katas: [], paths: [] }', async () => {
+  test('response structure matches { progressData: [] }', async () => {
     const response = await request(app).get('/api/progress');
 
     expect(response.status).toBe(200);
-    expect(response.body).toHaveProperty('katas');
-    expect(response.body).toHaveProperty('paths');
-    expect(Array.isArray(response.body.katas)).toBe(true);
-    expect(Array.isArray(response.body.paths)).toBe(true);
+    expect(response.body).toHaveProperty('progressData');
+    expect(Array.isArray(response.body.progressData)).toBe(true);
   });
 
   test('paths array includes Foundation path with correct structure', async () => {
@@ -108,17 +106,15 @@ describe('GET / (Progress Endpoint) Integration', () => {
 
     expect(response.status).toBe(200);
 
-    const foundationPath = response.body.paths.find(
-      p => p.id === 'paths-foundation-ai-first-engineering'
+    const paths = response.body.progressData.filter(p => p.type === 'path');
+    const foundationPath = paths.find(
+      p => p.pageId === 'path-foundation-ai-first-engineering'
     );
 
     expect(foundationPath).toBeDefined();
-    expect(foundationPath).toHaveProperty('id');
-    expect(foundationPath).toHaveProperty('title');
-    expect(foundationPath).toHaveProperty('progress');
-    expect(foundationPath.progress).toHaveProperty('percentage');
-    expect(foundationPath.progress).toHaveProperty('completed');
-    expect(foundationPath.progress).toHaveProperty('total');
+    expect(foundationPath).toHaveProperty('pageId');
+    expect(foundationPath).toHaveProperty('completionPercentage');
+    expect(foundationPath).toHaveProperty('items');
   });
 
   test('Foundation path shows progress from partial kata completion', async () => {
@@ -126,34 +122,32 @@ describe('GET / (Progress Endpoint) Integration', () => {
 
     expect(response.status).toBe(200);
 
-    const foundationPath = response.body.paths.find(
-      p => p.id === 'paths-foundation-ai-first-engineering'
+    const paths = response.body.progressData.filter(p => p.type === 'path');
+    const foundationPath = paths.find(
+      p => p.pageId === 'path-foundation-ai-first-engineering'
     );
 
     expect(foundationPath).toBeDefined();
-    expect(foundationPath.progress).toBeDefined();
 
-    // Foundation path has 18 katas total
-    expect(foundationPath.progress.total).toBeGreaterThan(0);
-
-    // We have 2 katas with partial progress, so completed should be >= 0
-    expect(foundationPath.progress.completed).toBeGreaterThanOrEqual(0);
+    // Should have items representing katas in the path
+    expect(foundationPath.items.length).toBeGreaterThan(0);
 
     // Percentage should be calculated correctly
-    expect(foundationPath.progress.percentage).toBeGreaterThanOrEqual(0);
-    expect(foundationPath.progress.percentage).toBeLessThanOrEqual(100);
+    expect(foundationPath.completionPercentage).toBeGreaterThanOrEqual(0);
+    expect(foundationPath.completionPercentage).toBeLessThanOrEqual(100);
   });
 
   test('katas array includes progress data from services', async () => {
     const response = await request(app).get('/api/progress');
 
     expect(response.status).toBe(200);
-    expect(Array.isArray(response.body.katas)).toBe(true);
+
+    const katas = response.body.progressData.filter(p => p.type === 'kata');
 
     // Should have kata progress entries
-    if (response.body.katas.length > 0) {
-      const kata = response.body.katas[0];
-      expect(kata).toHaveProperty('id');
+    if (katas.length > 0) {
+      const kata = katas[0];
+      expect(kata).toHaveProperty('pageId');
       expect(kata).toHaveProperty('completionPercentage');
       expect(typeof kata.completionPercentage).toBe('number');
       expect(kata.completionPercentage).toBeGreaterThanOrEqual(0);

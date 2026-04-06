@@ -41,19 +41,12 @@ export default defineConfig({
     hookTimeout: 10000, // Increased for dev container environment (DOM setup can be slow)
 
     // Reporter configuration (minimal for performance)
-    reporter: ['basic'], // Switch to basic reporter for performance
+    reporter: ['default'], // Vitest 4 renamed 'basic' to 'default'
 
     // Parallel execution optimized for 20-core system with 32GB RAM
     pool: 'threads', // Switch to threads for better CPU utilization on multi-core systems
-    poolOptions: {
-      threads: {
-        singleThread: false, // Enable multiple threads
-        maxThreads: 16, // Aggressive threading for 20-core system (leave 4 cores for OS)
-        minThreads: 4, // Minimum thread count for consistent performance
-        isolate: true, // Maintain test isolation
-        useAtomics: true // Enable atomic operations for better performance
-      }
-    },
+    maxThreads: 16, // Aggressive threading for 20-core system (leave 4 cores for OS)
+    minThreads: 4, // Minimum thread count for consistent performance
 
     // Aggressive concurrency settings optimized for available hardware
     maxConcurrency: 16, // Match thread count for optimal resource utilization
@@ -61,9 +54,6 @@ export default defineConfig({
     maxWorkers: 16, // Explicit worker count matching available cores
     fileParallelism: true, // Enable file parallelism (vitest default)
     forceRerunTriggers: ['**/package.json/**', '**/vitest.config.*/**'],
-
-    // Optimized environment settings
-    experimentalVmThreads: false,
 
     // Reset concurrent execution to vitest default
     sequence: {

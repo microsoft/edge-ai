@@ -20,6 +20,8 @@
 # CI/CD pipelines
 /azure-pipelines.yml @microsoft/edge-ai-core-dev
 /.azdo/ @microsoft/edge-ai-core-dev
+/.azuredevops/ @microsoft/edge-ai-core-dev
+/deploy/ @microsoft/edge-ai-core-dev
 
 # Core infrastructure components
 /src/ @microsoft/edge-ai-core-dev
@@ -30,15 +32,25 @@
 # Documentation
 /docs/ @microsoft/edge-ai-core-dev
 /learning/ @microsoft/edge-ai-core-dev
+/project-adrs/ @microsoft/edge-ai-core-dev
 
 # Scripts and automation
 /scripts/ @microsoft/edge-ai-core-dev
 
 # Development environment
 /.devcontainer/ @microsoft/edge-ai-core-dev
+/.vscode/ @microsoft/edge-ai-core-dev
 
 # AI and prompts
 /copilot/ @microsoft/edge-ai-core-dev
 
+# Static assets
+/assets/ @microsoft/edge-ai-core-dev
+
 # Security
 /project-security-plans/ @microsoft/edge-ai-core-dev
+
+# Security-sensitive paths (PRs require security-reviewed label before merge)
+/SECURITY.md @microsoft/edge-ai-core-dev
+/src/000-cloud/010-security-identity/ @microsoft/edge-ai-core-dev
+/deploy/ @microsoft/edge-ai-core-dev

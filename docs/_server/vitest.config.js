@@ -20,13 +20,7 @@ export default defineConfig({
 
     // Backend-specific settings - Use forks for server instances
     pool: 'forks',
-    poolOptions: {
-      forks: {
-        singleFork: true, // Use single fork to avoid worker exit issues
-        maxForks: 1, // Single worker for integration tests
-        minForks: 1
-      }
-    },
+    maxWorkers: 1, // Single worker to avoid worker exit issues
 
     // Prevent infinite loops and re-runs
     bail: 1, // Stop on first failure to prevent loops

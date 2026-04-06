@@ -3,7 +3,7 @@ use std::sync::Arc;
 use std::collections::HashMap;
 use azure_iot_operations_mqtt::control_packet::QoS;
 use azure_iot_operations_mqtt::interface::{MqttPubSub, PubReceiver, ManagedClient};
-use azure_iot_operations_mqtt::session::{Session, SessionManagedClient, SessionExitHandle, SessionOptionsBuilder, SessionConnectionMonitor};
+use azure_iot_operations_mqtt::session::{Session, SessionManagedClient, SessionOptionsBuilder, SessionConnectionMonitor};
 use azure_iot_operations_mqtt::MqttConnectionSettingsBuilder;
 use tokio::time::{timeout, Duration};
 use tokio::sync::RwLock;
@@ -11,17 +11,13 @@ use tracing::{error, info, debug, warn, instrument};
 use serde::{Deserialize, Serialize};
 use base64::Engine;
 use crate::config::MqttConfig;
-use crate::rate_limiter::InferenceRateLimiter;
 use ai_edge_inference_crate::{InferenceEngine, InferenceInput, InferenceResult, InferenceRequest, ImageMetadata, SensorMetadata};
 use anyhow::Result;
 
 
 /// MQTT publisher for AI Edge Inference service - using Azure IoT Operations SDK pattern
-#[allow(dead_code)]
 pub struct MqttPublisher {
     client: SessionManagedClient,
-    session: Option<Session>,
-    exit_handle: SessionExitHandle,
     monitor: SessionConnectionMonitor,
     config: MqttConfig,
     inference_engine: Arc<InferenceEngine>,
@@ -38,7 +34,6 @@ pub struct MqttProcessingContext {
     pub config: MqttConfig,
     pub client: SessionManagedClient,
     pub monitor: SessionConnectionMonitor,
-    pub rate_limiter: Arc<InferenceRateLimiter>,
 }
 
 /// MQTT publishing statistics
@@ -55,7 +50,6 @@ pub struct MqttStats {
 /// Incoming message types from MQTT broker
 #[derive(Debug, Deserialize)]
 #[serde(tag = "message_type")]
-#[allow(dead_code)]
 pub enum IncomingMessage {
     #[serde(rename = "image_snapshot")]
     ImageSnapshot {
@@ -64,6 +58,7 @@ pub enum IncomingMessage {
         image_data: String, // Base64 encoded image
         device_name: String,
         location: Option<(f64, f64)>,
+        #[allow(dead_code)]
         metadata: serde_json::Value,
     },
     #[serde(rename = "sensor_data")]
@@ -74,6 +69,7 @@ pub enum IncomingMessage {
         timestamps: Vec<i64>,
         unit: String,
         device_name: String,
+        #[allow(dead_code)]
         metadata: serde_json::Value,
     },
     #[serde(rename = "alert_trigger")]
@@ -83,6 +79,7 @@ pub enum IncomingMessage {
         sensor_id: Option<String>,
         timestamp: i64,
         priority: String,
+        #[allow(dead_code)]
         metadata: serde_json::Value,
     },
     #[serde(rename = "model_command")]
@@ -153,32 +150,24 @@ impl MqttPublisher {
 
         let monitor = session.create_connection_monitor();
         let client = session.create_managed_client();
-        let exit_handle = session.create_exit_handle();
+        let _exit_handle = session.create_exit_handle();
+        drop(session);
 
         info!("Successfully created MQTT session with Azure IoT Operations SDK");
 
         Ok(Self {
             client,
-            session: Some(session),
-            exit_handle,
             monitor,
             config,
             inference_engine,
             stats: Arc::new(RwLock::new(MqttStats::default())),
-            topic_router: None, // Will be set separately if needed
+            topic_router: None,
         })
     }
 
     /// Set topic router for intelligent topic routing
     pub fn set_topic_router(&mut self, topic_router: Arc<crate::topic_router::TopicRouter>) {
         self.topic_router = Some(topic_router);
-    }
-
-    /// Take the MQTT session for running in the main event loop.
-    /// Must be called before wrapping in Arc. The returned session's
-    /// `run()` method drives the MQTT connection.
-    pub fn take_session(&mut self) -> Option<Session> {
-        self.session.take()
     }
 
     /// Start processing MQTT messages using Azure IoT Operations SDK
@@ -258,23 +247,6 @@ impl MqttPublisher {
 
     /// Create a processing context for handling messages in parallel tasks
     async fn clone_for_processing(&self) -> MqttProcessingContext {
-        // Read inference rate-limit settings from the ComponentConfig that created MqttConfig.
-        // The values are forwarded through environment variables at startup.
-        let max_concurrent: usize = std::env::var("MAX_CONCURRENT_INFERENCES")
-            .ok().and_then(|v| v.parse().ok()).unwrap_or(2);
-        let rate_per_sec: f64 = std::env::var("RATE_LIMIT_PER_SECOND")
-            .ok().and_then(|v| v.parse().ok()).unwrap_or(5.0);
-        let queue_cap: usize = std::env::var("MESSAGE_QUEUE_CAPACITY")
-            .ok().and_then(|v| v.parse().ok()).unwrap_or(16);
-        let is_drop: bool = std::env::var("DROP_ON_BACKPRESSURE")
-            .ok().and_then(|v| v.parse().ok()).unwrap_or(true);
-
-        let rate_limiter = Arc::new(InferenceRateLimiter::new(
-            max_concurrent, rate_per_sec, queue_cap, is_drop,
-        ));
-        info!("Rate limiter initialized: max_concurrent={}, rate/s={}, queue_capacity={}, drop={}",
-              max_concurrent, rate_per_sec, queue_cap, is_drop);
-
         MqttProcessingContext {
             inference_engine: Arc::clone(&self.inference_engine),
             stats: Arc::clone(&self.stats),
@@ -282,7 +254,6 @@ impl MqttPublisher {
             config: self.config.clone(),
             client: self.client.clone(),
             monitor: self.monitor.clone(),
-            rate_limiter,
         }
     }
 
@@ -346,7 +317,6 @@ impl MqttPublisher {
     }
 
     /// Handle sensor inference using the crate library
-    #[allow(dead_code)]
     async fn handle_sensor_inference(
         &self,
         sensor_id: String,
@@ -401,7 +371,6 @@ impl MqttPublisher {
     }
 
     /// Handle alert triggers
-    #[allow(dead_code)]
     async fn handle_alert_trigger(
         &self,
         trigger_id: String,
@@ -433,7 +402,6 @@ impl MqttPublisher {
     }
 
     /// Handle model management commands
-    #[allow(dead_code)]
     async fn handle_model_command(
         &self,
         command: ModelCommandType,
@@ -571,7 +539,6 @@ impl MqttPublisher {
     }
 
     /// Publish inference result to specified topic (public method for external use)
-    #[allow(dead_code)]
     pub async fn publish_result(&self, result: InferenceResult, topic: &str) -> Result<(), Box<dyn Error>> {
         let enrichment = self.create_enrichment_data(&result).await;
 
@@ -593,19 +560,16 @@ impl MqttPublisher {
     }
 
     /// Get current MQTT statistics
-    #[allow(dead_code)]
     pub async fn get_stats(&self) -> MqttStats {
         self.stats.read().await.clone()
     }
 
     /// Check if MQTT client is connected
-    #[allow(dead_code)]
     pub async fn is_connected(&self) -> bool {
         self.stats.read().await.is_connected
     }
 
     /// Gracefully disconnect from MQTT broker
-    #[allow(dead_code)]
     pub async fn disconnect(&self) -> Result<(), Box<dyn Error>> {
         // Note: AIO MQTT client doesn't have a direct disconnect method
         // We'll use the exit handle to signal shutdown
@@ -613,23 +577,12 @@ impl MqttPublisher {
         Ok(())
     }
 
-    /// Clone publisher state for async tasks
-    #[allow(dead_code)]
-    fn clone_publisher_state(&self) -> MqttPublisherState {
-        MqttPublisherState {
-            client: self.client.clone(),
-            config: self.config.clone(),
-            inference_engine: Arc::clone(&self.inference_engine),
-            stats: Arc::clone(&self.stats),
-            topic_router: self.topic_router.clone(),
-        }
-    }
 }
 
 /// Implementation for MQTT processing context
+#[allow(dead_code)]
 impl MqttProcessingContext {
     /// Process messages from a specific topic
-    #[allow(dead_code)]
     #[instrument(skip(self, receiver))]
     pub async fn process_topic_messages(&self, topic: &str, mut receiver: impl PubReceiver) -> anyhow::Result<()> {
         info!("Starting message processing for topic: {}", topic);
@@ -685,119 +638,18 @@ impl MqttProcessingContext {
         // Create unfiltered receiver (we'll filter manually)
         let mut receiver = self.client.create_unfiltered_pub_receiver();
 
-        // Bounded channel for backpressure between receiver and inference workers
-        let queue_cap = self.rate_limiter.queue_capacity();
-        let (tx, mut rx) = tokio::sync::mpsc::channel::<(Vec<u8>, Vec<u8>)>(queue_cap);
-
-        let batch_size: usize = std::env::var("BATCH_SIZE")
-            .ok().and_then(|v| v.parse().ok()).unwrap_or(1);
-        let batch_timeout_ms: u64 = std::env::var("BATCH_TIMEOUT_MS")
-            .ok().and_then(|v| v.parse().ok()).unwrap_or(100);
-
-        // Spawn the inference consumer task with batch collection
-        let consumer_ctx = self.clone();
-        let consumer_pattern = pattern.to_string();
-        tokio::spawn(async move {
-            let mut batch_buf: Vec<(String, Vec<u8>)> = Vec::with_capacity(batch_size);
-
-            loop {
-                // Fill the batch buffer up to batch_size or until timeout
-                let deadline = tokio::time::Instant::now() + Duration::from_millis(batch_timeout_ms);
-
-                while batch_buf.len() < batch_size {
-                    let remaining = deadline.saturating_duration_since(tokio::time::Instant::now());
-                    if remaining.is_zero() {
-                        break;
-                    }
-
-                    match tokio::time::timeout(remaining, rx.recv()).await {
-                        Ok(Some((topic_bytes, payload))) => {
-                            let topic_str = String::from_utf8_lossy(&topic_bytes).to_string();
-                            batch_buf.push((topic_str, payload));
-                        }
-                        Ok(None) => {
-                            warn!("Inference consumer channel closed for pattern: {}", consumer_pattern);
-                            // Process remaining items then exit
-                            break;
-                        }
-                        Err(_) => break, // Timeout: flush partial batch
-                    }
-                }
-
-                if batch_buf.is_empty() {
-                    // Channel closed and buffer drained
-                    if rx.is_closed() {
-                        break;
-                    }
-                    continue;
-                }
-
-                if batch_buf.len() > 1 {
-                    debug!("Processing batch of {} messages", batch_buf.len());
-                }
-
-                for (topic_str, payload) in batch_buf.drain(..) {
-                    // Acquire rate-limiter permit before running inference
-                    let permit = match consumer_ctx.rate_limiter.acquire().await {
-                        Some(p) => p,
-                        None => {
-                            debug!("Message dropped by rate limiter for topic: {}", topic_str);
-                            continue;
-                        }
-                    };
-
-                    // Detect raw image payloads by magic bytes
-                    let is_jpeg = payload.len() >= 3
-                        && payload[0] == 0xFF && payload[1] == 0xD8 && payload[2] == 0xFF;
-                    let is_png = payload.len() >= 4
-                        && payload[0..4] == [0x89, 0x50, 0x4E, 0x47];
-
-                    let result = if is_jpeg || is_png {
-                        let fmt = if is_jpeg { "jpeg" } else { "png" };
-                        info!("Detected raw {} image payload ({} bytes) on topic: {}", fmt, payload.len(), topic_str);
-                        consumer_ctx.handle_raw_image_message(&payload, &topic_str).await
-                    } else {
-                        let payload_str = String::from_utf8_lossy(&payload);
-                        info!("Processing AIO text message from topic: {} (payload preview: {})",
-                              topic_str,
-                              &payload_str[..std::cmp::min(100, payload_str.len())]);
-                        consumer_ctx.handle_incoming_message(&payload_str, &topic_str).await
-                    };
-
-                    match result {
-                        Ok(_) => {
-                            info!("Successfully processed AIO message from topic: {}", topic_str);
-                            let mut stats = consumer_ctx.stats.write().await;
-                            stats.total_messages += 1;
-                        }
-                        Err(e) => {
-                            error!("Failed to process AIO message from topic {}: {}", topic_str, e);
-                            let mut stats = consumer_ctx.stats.write().await;
-                            stats.failed_publishes += 1;
-                        }
-                    }
-
-                    drop(permit);
-                }
-            }
-            warn!("Inference consumer task exited for pattern: {}", consumer_pattern);
-        });
-
-        // Producer loop: receive MQTT messages and forward to the bounded channel
-        let mut heartbeat_counter: u64 = 0;
-        let is_drop = self.rate_limiter.is_drop_on_backpressure();
+        let mut heartbeat_counter = 0;
 
         loop {
             heartbeat_counter += 1;
 
-            if heartbeat_counter.is_multiple_of(60) {
-                let metrics = self.rate_limiter.metrics();
-                debug!("AIO heartbeat — pattern: {}, dropped: {}, rate_limited: {}",
-                       pattern, metrics.dropped_total, metrics.rate_limited_total);
+            // Log heartbeat every 60 iterations (about 1 minute at 1 second intervals)
+            if heartbeat_counter % 60 == 0 {
+                debug!("AIO message processing heartbeat - pattern: {}", pattern);
             }
 
-            // Periodic connection verification
-            if heartbeat_counter.is_multiple_of(300) {
+            // Wait for connection if needed
+            if heartbeat_counter % 300 == 0 { // Every 5 minutes
                 match timeout(Duration::from_secs(5), self.monitor.connected()).await {
                     Ok(_) => debug!("Connection verified"),
                     Err(_) => {
@@ -807,20 +659,30 @@ impl MqttProcessingContext {
                 }
             }
 
-            // Receive MQTT message with 1-second timeout
+            // Try to receive message with reasonable timeout
             match timeout(Duration::from_secs(1), receiver.recv()).await {
                 Ok(Some(message)) => {
                     let topic_str = String::from_utf8_lossy(&message.topic);
-                    info!("AIO MESSAGE RECEIVED on topic: {} (payload: {} bytes)", topic_str, message.payload.len());
+                    info!("🚀 AIO MESSAGE RECEIVED on topic: {} (payload: {} bytes)", topic_str, message.payload.len());
 
+                    // Check if topic matches our pattern
                     if self.topic_matches_pattern(&topic_str, pattern) {
-                        let item = (message.topic.to_vec(), message.payload.to_vec());
-                        if is_drop {
-                            if tx.try_send(item).is_err() {
-                                warn!("Backpressure: channel full, dropping message from topic: {}", topic_str);
+                        let payload_str = String::from_utf8_lossy(&message.payload);
+                        info!("Processing AIO message from topic: {} (payload preview: {})",
+                              topic_str,
+                              &payload_str[..std::cmp::min(100, payload_str.len())]);
+
+                        match self.handle_incoming_message(&payload_str, &topic_str).await {
+                            Ok(_) => {
+                                info!("✅ Successfully processed AIO message from topic: {}", topic_str);
+                                let mut stats = self.stats.write().await;
+                                stats.total_messages += 1;
                             }
-                        } else {
-                            let _ = tx.send(item).await;
+                            Err(e) => {
+                                error!("❌ Failed to process AIO message from topic {}: {}", topic_str, e);
+                                let mut stats = self.stats.write().await;
+                                stats.failed_publishes += 1;
+                            }
                         }
                     } else {
                         debug!("Ignoring message from non-matching topic: {}", topic_str);
@@ -831,6 +693,7 @@ impl MqttProcessingContext {
                     tokio::time::sleep(Duration::from_millis(500)).await;
                 }
                 Err(_) => {
+                    // Timeout - continue polling
                     tokio::time::sleep(Duration::from_millis(100)).await;
                 }
             }
@@ -858,7 +721,6 @@ impl MqttProcessingContext {
 
 
     /// Process messages from filtered receiver (Microsoft examples pattern)
-    #[allow(dead_code)]
     #[instrument(skip(self, receiver))]
     pub async fn process_filtered_messages(&self, pattern: &str, mut receiver: impl PubReceiver) -> anyhow::Result<()> {
         info!("Starting filtered message processing for pattern: {}", pattern);
@@ -906,7 +768,6 @@ impl MqttProcessingContext {
     }
 
     /// Process messages from unfiltered receiver (receives all messages)
-    #[allow(dead_code)]
     #[instrument(skip(self, receiver))]
     pub async fn process_unfiltered_messages(&self, pattern: &str, mut receiver: impl PubReceiver) -> anyhow::Result<()> {
         info!("Starting unfiltered message processing for pattern: {}", pattern);
@@ -957,33 +818,6 @@ impl MqttProcessingContext {
 
         warn!("Unfiltered message processing stopped for pattern: {}", pattern);
         Ok(())
-    }
-
-    /// Handle raw binary image payload (JPEG/PNG) from media connectors
-    async fn handle_raw_image_message(&self, payload: &[u8], topic: &str) -> anyhow::Result<()> {
-        info!("Processing raw image message from topic: {} ({} bytes)", topic, payload.len());
-
-        // Extract camera identifier from topic segments
-        // Topic format: azure-iot-operations/data/<asset-name>/<stream-name>
-        let segments: Vec<&str> = topic.split('/').collect();
-        let camera_id = if segments.len() >= 4 {
-            segments[3].to_string()
-        } else {
-            "unknown_camera".to_string()
-        };
-
-        let device_name = if segments.len() >= 4 {
-            segments[3].to_string()
-        } else {
-            "unknown_device".to_string()
-        };
-
-        let timestamp = chrono::Utc::now().timestamp();
-
-        // Base64-encode the raw bytes for handle_image_inference
-        let image_data = base64::engine::general_purpose::STANDARD.encode(payload);
-
-        self.handle_image_inference(camera_id, timestamp, image_data, device_name, None).await
     }
 
     /// Handle incoming message and perform inference + publishing
@@ -1230,40 +1064,6 @@ impl MqttProcessingContext {
             alert_level,
             recommended_actions,
         }
-    }
-}
-
-/// Simplified state for async task handlers
-#[derive(Clone)]
-#[allow(dead_code)]
-struct MqttPublisherState {
-    client: SessionManagedClient,
-    config: MqttConfig,
-    inference_engine: Arc<InferenceEngine>,
-    stats: Arc<RwLock<MqttStats>>,
-    topic_router: Option<Arc<crate::topic_router::TopicRouter>>,
-}
-
-#[allow(dead_code)]
-impl MqttPublisherState {
-    /// Process messages from a specific topic (delegated method)
-    async fn process_topic_messages(&self, topic: &str, mut receiver: impl PubReceiver) -> anyhow::Result<()> {
-        info!("Processing messages for topic: {}", topic);
-
-        while let Some(message) = receiver.recv().await {
-            debug!("Received message on topic: {} (payload size: {} bytes)",
-                   String::from_utf8_lossy(&message.topic),
-                   message.payload.len());
-
-            // Delegate to parent publisher for processing
-            // This is a simplified approach - in practice you'd implement the same logic here
-
-            let mut stats = self.stats.write().await;
-            stats.total_messages += 1;
-        }
-
-        warn!("Message processing stopped for topic: {}", topic);
-        Ok(())
     }
 }
 

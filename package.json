@@ -43,8 +43,8 @@
     "format-json-fix": "npx prettier --write \"**/*.json\""
   },
   "dependencies": {
-    "cspell": "^8.17.0",
-    "eslint": "^9.0.0",
+    "cspell": "^9.7.0",
+    "eslint": "^10.0.3",
     "glob": "^13.0.0",
     "js-yaml": "^4.1.1",
     "markdown-table-formatter": "1.7.0",
@@ -53,6 +53,7 @@
     "prettier": "^3.5.3"
   },
   "devDependencies": {
+    "@eslint/js": "10.0.1",
     "docsify-cli": "4.4.4",
     "markdown-link-check": "3.14.2",
     "marked": "^4.0.10"

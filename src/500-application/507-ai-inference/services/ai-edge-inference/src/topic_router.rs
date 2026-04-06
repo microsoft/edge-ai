@@ -9,8 +9,8 @@ pub struct TopicRouter {
     custom_routes: HashMap<String, String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
 #[allow(dead_code)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TopicMapping {
     pub base_topic: String,
     pub site_id: Option<String>,
@@ -46,17 +46,15 @@ impl TopicRouter {
             self.topic_prefix.trim_end_matches('/').to_string(),
             "inference".to_string(),
             self.model_type_to_topic(&result.model_type),
+            result.model_name.replace("-", "_"),
         ];
-        
-        // Add model name
-        topic_parts.push(result.model_name.replace("-", "_"));
-        
+
         // Add priority based on predictions
         let priority = self.determine_priority(result);
         if !priority.is_empty() {
             topic_parts.push(priority);
         }
-        
+
         let topic = topic_parts.join("/");
         debug!("Generated topic for model {}: {}", result.model_name, topic);
         topic
@@ -65,9 +63,9 @@ impl TopicRouter {
     /// Generate topic for status/health messages
     #[allow(dead_code)]
     pub fn route_status(&self, component: &str, status_type: &str) -> String {
-        format!("{}/status/{}/{}", 
-            self.topic_prefix.trim_end_matches('/'), 
-            component, 
+        format!("{}/status/{}/{}",
+            self.topic_prefix.trim_end_matches('/'),
+            component,
             status_type
         )
     }
@@ -75,8 +73,8 @@ impl TopicRouter {
     /// Generate topic for metrics
     #[allow(dead_code)]
     pub fn route_metrics(&self, metric_type: &str) -> String {
-        format!("{}/metrics/{}", 
-            self.topic_prefix.trim_end_matches('/'), 
+        format!("{}/metrics/{}",
+            self.topic_prefix.trim_end_matches('/'),
             metric_type
         )
     }
@@ -84,9 +82,9 @@ impl TopicRouter {
     /// Generate topic for errors
     #[allow(dead_code)]
     pub fn route_error(&self, component: &str, error_type: &str) -> String {
-        format!("{}/errors/{}/{}", 
-            self.topic_prefix.trim_end_matches('/'), 
-            component, 
+        format!("{}/errors/{}/{}",
+            self.topic_prefix.trim_end_matches('/'),
+            component,
             error_type
         )
     }
@@ -100,13 +98,13 @@ impl TopicRouter {
     fn determine_priority(&self, result: &InferenceResult) -> String {
         let mut max_confidence = result.confidence;
         let prediction_count = result.predictions.len();
-        
+
         for prediction in &result.predictions {
             if prediction.confidence > max_confidence {
                 max_confidence = prediction.confidence;
             }
         }
-        
+
         // Determine priority based on confidence and prediction count
         if max_confidence >= 0.9 && prediction_count > 0 {
             "high".to_string()
@@ -122,16 +120,16 @@ impl TopicRouter {
     /// Apply template variables to custom topic patterns
     fn apply_template(&self, template: &str, result: &InferenceResult) -> String {
         let mut topic = template.to_string();
-        
+
         // Replace template variables
         topic = topic.replace("{prefix}", &self.topic_prefix);
         topic = topic.replace("{model_name}", &result.model_name);
         topic = topic.replace("{model_type}", &self.model_type_to_topic(&result.model_type));
-        
+
         // Replace priority
         let priority = self.determine_priority(result);
         topic = topic.replace("{priority}", &priority);
-        
+
         topic
     }
 
@@ -139,7 +137,7 @@ impl TopicRouter {
     #[allow(dead_code)]
     pub fn get_topic_mapping(&self, result: &InferenceResult) -> TopicMapping {
         let topic = self.route_result(result);
-        
+
         TopicMapping {
             base_topic: topic,
             site_id: None, // Site context not available in InferenceResult
@@ -156,25 +154,42 @@ impl TopicRouter {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ai_edge_inference_crate::Prediction;
+    use ai_edge_inference_crate::{ModelOutput, Prediction, SiteContext};
     use std::collections::HashMap;
 
     fn create_test_result() -> InferenceResult {
         InferenceResult {
+            request_id: "test-001".to_string(),
             model_name: "industrial-safety-vision".to_string(),
-            model_type: "vision".to_string(),
-            predictions: vec![
-                Prediction {
-                    class: "safety_helmet".to_string(),
-                    confidence: 0.95,
-                    bbox: Some([0.1, 0.1, 0.3, 0.4]),
-                    metadata: HashMap::new(),
-                    severity: None,
+            model_type: ModelType::Vision,
+            model_version: "1.0.0".to_string(),
+            outputs: vec![
+                ModelOutput {
+                    output_type: "predictions".to_string(),
+                    predictions: vec![
+                        Prediction {
+                            class_id: 1,
+                            class_name: "safety_helmet".to_string(),
+                            confidence: 0.95,
+                            bounding_box: Some([0.1, 0.1, 0.3, 0.4]),
+                            attributes: HashMap::new(),
+                        }
+                    ],
+                    raw_output: None,
                 }
             ],
-            confidence: 0.95,
-            inference_time_ms: 45.0,
-            metadata: serde_json::Value::Object(serde_json::Map::new()),
+            confidence_threshold: 0.5,
+            processing_time_ms: 45,
+            timestamp: chrono::Utc::now(),
+            site_context: Some(SiteContext {
+                site_id: "pilot-facility-001".to_string(),
+                facility_name: "Pilot Industrial AI Site".to_string(),
+                business_unit: Some("Digital Innovation".to_string()),
+                region: Some("North America".to_string()),
+                environmental_data: HashMap::new(),
+                equipment_mapping: HashMap::new(),
+            }),
+            metadata: HashMap::new(),
         }
     }
 
@@ -186,6 +201,7 @@ mod tests {
         let topic = router.route_result(&result);
 
         assert!(topic.contains("edge-ai/downstream/facility_01/gateway_001"));
+        assert!(topic.contains("site/pilot-facility-001"));
         assert!(topic.contains("inference/vision"));
         assert!(topic.contains("industrial_safety_vision"));
         assert!(topic.contains("high")); // High confidence prediction
@@ -196,13 +212,13 @@ mod tests {
         let mut router = TopicRouter::new("edge-ai".to_string());
         router.add_custom_route(
             "industrial-safety-vision".to_string(),
-            "{prefix}/safety/alerts/{priority}".to_string()
+            "{prefix}/safety/{site_id}/alerts/{priority}".to_string()
         );
 
         let result = create_test_result();
         let topic = router.route_result(&result);
 
-        assert_eq!(topic, "edge-ai/safety/alerts/high");
+        assert_eq!(topic, "edge-ai/safety/pilot-facility-001/alerts/high");
     }
 
     #[test]

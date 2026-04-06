@@ -206,6 +206,15 @@ stages:
             name: $(poolName)
             vmImage: $(vmImage)
 
+      - template: .azdo/templates/rust-clippy-template.yml
+        parameters:
+          dependsOn: []
+          displayName: "Rust Clippy Lint Check"
+          condition: succeeded()
+          agentPool:
+            name: $(poolName)
+            vmImage: $(vmImage)
+
       - template: .azdo/templates/wiki-update-template.yml
         parameters:
           dependsOn:
@@ -218,6 +227,7 @@ stages:
             - BicepLint
             - TerraformLint
             - PythonLint
+            - RustClippyLintCheck
           displayName: "Wiki Documentation Update"
           condition: succeeded()
           branchRepoFolder: "branch"
@@ -458,6 +468,15 @@ stages:
           matrixVariable: dependencies.ComponentChangesFolderCheck.outputs['matrixBuildFolderCheckTask.changedTfFolders']
           azureServiceConnection: azdo-ai-for-edge-iac-for-edge
           breakBuild: true
+          agentPool:
+            name: $(poolName)
+            vmImage: $(vmImage)
+      # Use the rust-clippy-template.yml for Rust lint checking
+      - template: .azdo/templates/rust-clippy-template.yml
+        parameters:
+          dependsOn: ComponentChangesFolderCheck
+          displayName: "Rust Clippy Lint Check"
+          condition: succeeded()
           agentPool:
             name: $(poolName)
             vmImage: $(vmImage)
