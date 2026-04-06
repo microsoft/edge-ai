@@ -44,7 +44,7 @@
   },
   "dependencies": {
     "cspell": "^9.7.0",
-    "eslint": "^10.0.3",
+    "eslint": "^10.2.0",
     "glob": "^13.0.0",
     "js-yaml": "^4.1.1",
     "markdown-table-formatter": "1.7.0",
