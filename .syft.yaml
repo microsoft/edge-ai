@@ -1,0 +1,17 @@
+# Syft SBOM scanner configuration for anchore/sbom-action
+# Generates SPDX 2.3 JSON format SBOMs for documentation artifact attestation
+output:
+  - "spdx-json"
+
+default-catalogers:
+  - "javascript"
+  - "python"
+  - "go"
+  - "rust-cargo"
+
+file:
+  metadata:
+    digests:
+      - "sha256"
+  content:
+    skip-files-above-size: 1048576
