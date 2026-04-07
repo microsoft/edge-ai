@@ -15,6 +15,9 @@ moduleConfigurations:
       avroSchema:
         name: avroSchema
         description: "Optional Avro schema in JSON format. Required if messages don't include embedded schema."
+      wireFormat:
+        name: wireFormat
+        description: "Wire format of incoming Avro messages. Values: auto (default), confluent, raw."
 
 operations:
   - operationType: "source"

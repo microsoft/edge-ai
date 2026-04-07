@@ -133,9 +133,10 @@ To release a new version of the module:
 
 ### Graph Definition Parameters
 
-| Parameter    | Required | Default | Description                                                                                                            |
-|--------------|----------|---------|------------------------------------------------------------------------------------------------------------------------|
-| `avroSchema` | No       | (none)  | Avro schema as a JSON string. Required when messages are raw Avro binary without embedded schema. Omit for OCF format. |
+| Parameter    | Required | Default | Description                                                                                                                                                         |
+|--------------|----------|---------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `avroSchema` | No       | (none)  | Avro schema as a JSON string. Required when messages are raw Avro binary without embedded schema. Omit for OCF format.                                              |
+| `wireFormat` | No       | `auto`  | Wire format of incoming Avro messages. `auto`: try raw then Confluent fallback. `confluent`: always strip 5-byte prefix. `raw`: parse directly, no prefix handling. |
 
 ### Schema Handling
 
@@ -147,12 +148,29 @@ If your source produces Avro Object Container File format (messages start with m
 
 If messages contain raw Avro binary without an embedded schema, provide the schema as a JSON string in the `avroSchema` graph configuration parameter.
 
+### Wire Format
+
+When consuming from Kafka, the wire format of Avro messages depends on the producer's serializer configuration.
+
+#### Option A: Auto-detection (default)
+
+Omit the `wireFormat` parameter or set it to `auto`. The operator attempts raw Avro parsing first. If that fails and the payload starts with byte `0x00`, it retries after stripping the 5-byte Confluent Schema Registry prefix.
+
+#### Option B: Confluent Schema Registry
+
+Set `wireFormat` to `confluent` when your Kafka producer uses Confluent serializers. The operator always strips the 5-byte prefix (magic byte `0x00` + 4-byte schema ID) before parsing, producing clear errors if the prefix is missing.
+
+#### Option C: Raw Avro
+
+Set `wireFormat` to `raw` when messages contain plain Avro binary with no wire format prefix. The operator parses directly without any prefix handling.
+
 ## Avro Format Detection
 
 The operator tries parsing strategies in this order:
 
 | Priority | Format                 | Detection                  | Schema Source                         |
 |----------|------------------------|----------------------------|---------------------------------------|
+| 0        | `wireFormat` override  | `wireFormat` parameter set | Determines prefix handling            |
 | 1        | Configured schema      | `avroSchema` parameter set | Configuration                         |
 | 2        | Object Container File  | Magic bytes `Obj\x01`      | Embedded in message header            |
 | 3        | Single-object encoding | Marker `0xC3 0x01`         | Not supported (returns error)         |
@@ -204,6 +222,17 @@ Ensure you are logged in with the Azure CLI:
 ```bash
 az login
 az acr login --name <acr_name>
+```
+
+### Avro parsing fails with negative length or "Cannot convert i64 to usize" errors
+
+Your Kafka producer likely uses Confluent serializers which prepend a 5-byte wire format prefix to each message. Set `wireFormat` to `confluent` in the graph configuration:
+
+```hcl
+{
+  key   = "wireFormat"
+  value = "confluent"
+}
 ```
 
 ## Limitations
