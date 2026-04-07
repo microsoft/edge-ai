@@ -76,6 +76,7 @@ The following applications are currently available in this directory:
 - **[510-onvif-connector](./510-onvif-connector/README.md)** - ONVIF connector for IP camera integration with Azure IoT Operations
 - **[511-rust-embedded-wasm-provider](./511-rust-embedded-wasm-provider/README.md)** - WebAssembly operators for Azure IoT Operations dataflow graphs using WIT Component Model composition
 - **[512-avro-to-json](./512-avro-to-json/README.md)** - Avro binary to JSON transformation WASM module for Azure IoT Operations dataflow graphs
+- **[514-wasm-msg-to-dss](./514-wasm-msg-to-dss/README.md)** - WASM map operator that writes any incoming JSON message to the AIO Distributed State Store under a configurable key extracted via JSON Pointer, with TTL and passthrough behavior
 
 ## Service Implementation
 
