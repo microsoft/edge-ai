@@ -321,7 +321,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v4.3.0
         with:
-          node-version: '18'
+          node-version: '24'
 
       - name: Install markdown-link-check
         run: npm install -g markdown-link-check
@@ -371,7 +371,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v4.3.0
         with:
-          node-version: '18'
+          node-version: '24'
 
       - name: Install docsify-cli
         run: npm install -g docsify-cli
