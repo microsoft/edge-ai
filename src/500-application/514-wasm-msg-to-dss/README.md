@@ -141,6 +141,101 @@ To release a new version of the module:
 | `ttlSeconds` | Yes      | (none)  | Time-to-live in seconds for the DSS entry. Use `0` for no expiration.                                    |
 | `onMissing`  | No       | `skip`  | Behavior when `keyPath` is not found in the message. `skip` logs a warning and passes through. `error` drops the message. |
 
+### Key Extraction Examples
+
+The `keyPath` parameter uses RFC 6901 JSON Pointer syntax to extract a value from the incoming message and use it as the state store key. The following examples show how different JSON messages map to DSS keys.
+
+**Configuration**: `keyPath=/deviceId`, `keyPrefix=device:`, `ttlSeconds=3600`
+
+Incoming message:
+
+```json
+{
+  "deviceId": "sensor-001",
+  "temperature": 22.5,
+  "humidity": 45.2,
+  "timestamp": "2026-04-07T10:30:00Z"
+}
+```
+
+Result: DSS key `device:sensor-001` stores the full JSON payload. The original message passes through unchanged.
+
+**Configuration**: `keyPath=/metadata/assetId`, `keyPrefix=asset:`, `ttlSeconds=7200`
+
+Incoming message:
+
+```json
+{
+  "metadata": {
+    "assetId": "pump-42",
+    "location": "building-A"
+  },
+  "readings": {
+    "pressure": 101.3,
+    "flow_rate": 15.7
+  }
+}
+```
+
+Result: DSS key `asset:pump-42` stores the full JSON payload.
+
+**Configuration**: `keyPath=/sensors/0/id`, `keyPrefix=`, `ttlSeconds=600`
+
+Incoming message:
+
+```json
+{
+  "batchId": "batch-99",
+  "sensors": [
+    { "id": "temp-A", "value": 21.0 },
+    { "id": "temp-B", "value": 23.5 }
+  ]
+}
+```
+
+Result: DSS key `temp-A` stores the full JSON payload. The pointer `/sensors/0/id` selects the `id` field of the first array element.
+
+**Configuration**: `keyPath=/id`, `keyPrefix=`, `ttlSeconds=86400`, `onMissing=error`
+
+Incoming message without the expected field:
+
+```json
+{
+  "name": "unknown-device",
+  "temperature": 19.0
+}
+```
+
+Result: the operator returns an error because `/id` is not found and `onMissing=error`. The message is dropped and does not reach the sink.
+
+### Store-Only Mode (Discard After Write)
+
+In some scenarios, the goal is to write data to the DSS without forwarding the message to any downstream consumer. Because the `msg-to-dss-key` operator always passes the original message through, you can add a built-in [Filter transform](https://learn.microsoft.com/azure/iot-operations/connect-to-cloud/howto-dataflow-graphs-filter-route?tabs=portal) after this operator to drop all messages.
+
+A filter rule where the expression always evaluates to `true` drops every message:
+
+```text
+MQTT → [msg_to_dss_key] → [filter: true] → (no output)
+```
+
+In the DataflowGraph definition, add a built-in filter node after the WASM graph node with a rule that always matches:
+
+```yaml
+filter:
+  - inputs:
+      - "1"              # Literal constant, always present
+    expression: "true"   # Always evaluates to true, drops every message
+```
+
+A destination node is still required in the pipeline definition, but no messages reach it. Use the default MQTT endpoint with a designated "discard" topic.
+
+This pattern is useful when:
+
+* Pipeline A writes device state to the DSS for later enrichment by Pipeline B, and the original message has no other consumer.
+* You want to populate a lookup table in the DSS from a configuration topic without re-publishing the data.
+
+Reference: [Filter and route data in data flow graphs](https://learn.microsoft.com/azure/iot-operations/connect-to-cloud/howto-dataflow-graphs-filter-route?tabs=portal)
+
 ### Using Built-in Enrichment to Read from DSS
 
 After writing state with this operator, downstream pipelines can read back the stored data using AIO's built-in enrichment feature. This creates a two-pipeline stitching pattern: one pipeline writes entity state to the DSS, and a second pipeline enriches incoming events with that stored state using only built-in transforms.
@@ -236,11 +331,26 @@ The operator returns `false` during init if required configuration is missing or
 * `Invalid keyPath '...'`: The value must start with `/` and follow RFC 6901 JSON Pointer syntax.
 * `Invalid onMissing value '...'`: Use `skip` or `error`.
 
-## Limitations
+## Capacity and Performance Considerations
+
+The `msg-to-dss-key` operator writes to the AIO Distributed State Store on every message. This design is appropriate for low-to-moderate frequency updates (device state, configuration changes, periodic snapshots) but is not suitable for high-throughput telemetry streams.
+
+> [!WARNING]
+> Do not use this operator on high-speed message topics (thousands of messages per second). Each message triggers a synchronous state store write. At high volumes this can overwhelm the DSS, increase broker memory pressure, and degrade pipeline throughput across the cluster.
+
+Before deploying, evaluate the expected message rate on the source topic and consider:
+
+* **Message rate**: If the source topic exceeds a few hundred messages per second, filter or sample messages upstream before they reach this operator. Use a [Filter transform](https://learn.microsoft.com/azure/iot-operations/connect-to-cloud/howto-dataflow-graphs-filter-route?tabs=portal) to reduce the write rate.
+* **TTL sizing**: Short TTL values cause frequent key expiration and re-creation. Choose TTL values that match the expected update interval for each entity.
+* **Key cardinality**: Writing to thousands of distinct keys increases the DSS memory footprint. Monitor state store resource usage and adjust `keyPrefix` granularity or TTL accordingly.
+* **Broker memory profile**: The MQTT broker's memory profile affects how much data can be buffered in flight. For workloads that generate sustained write volume, review the broker's memory profile (`Tiny`, `Low`, `Medium`, `High`) and consider whether disk-backed persistence is appropriate.
+  See [Configure broker settings for high availability, scaling, and memory usage](https://learn.microsoft.com/azure/iot-operations/manage-mqtt-broker/howto-configure-availability-scale?tabs=portal)
+  for memory profile options and sizing guidance.
 
 * `onMissing=skip` is the default behavior. Messages where the `keyPath` is not found are silently passed through with only a log warning.
 * Each key stores a single JSON object. The operator does not produce multi-record NDJSON datasets.
 * Dynamic key lookup at enrichment time (where the key name is determined from the incoming message) is not supported by built-in enrichment and requires a custom WASM state reader operator.
+* Not designed for high-throughput telemetry. See [Capacity and Performance Considerations](#capacity-and-performance-considerations) for sizing guidance.
 
 ## References
 
@@ -249,6 +359,8 @@ The operator returns `false` during init if required configuration is missing or
 * [Enrich Data with External Datasets](https://learn.microsoft.com/azure/iot-operations/connect-to-cloud/howto-dataflow-graphs-enrich)
 * [ORAS CLI Documentation](https://oras.land/docs/)
 * [AIO State Store Overview](https://learn.microsoft.com/azure/iot-operations/develop-edge-apps/concept-about-state-store-protocol)
+* [Filter and Route Data in Data Flow Graphs](https://learn.microsoft.com/azure/iot-operations/connect-to-cloud/howto-dataflow-graphs-filter-route?tabs=portal)
+* [Configure Broker Availability, Scaling, and Memory](https://learn.microsoft.com/azure/iot-operations/manage-mqtt-broker/howto-configure-availability-scale?tabs=portal)
 
 ## License
 
