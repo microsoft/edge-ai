@@ -347,6 +347,8 @@ Before deploying, evaluate the expected message rate on the source topic and con
   See [Configure broker settings for high availability, scaling, and memory usage](https://learn.microsoft.com/azure/iot-operations/manage-mqtt-broker/howto-configure-availability-scale?tabs=portal)
   for memory profile options and sizing guidance.
 
+## Limitations
+
 * `onMissing=skip` is the default behavior. Messages where the `keyPath` is not found are silently passed through with only a log warning.
 * Each key stores a single JSON object. The operator does not produce multi-record NDJSON datasets.
 * Dynamic key lookup at enrichment time (where the key name is determined from the incoming message) is not supported by built-in enrichment and requires a custom WASM state reader operator.
