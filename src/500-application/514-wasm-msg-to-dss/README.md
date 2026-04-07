@@ -134,11 +134,11 @@ To release a new version of the module:
 
 ### Graph Definition Parameters
 
-| Parameter    | Required | Default | Description                                                                                              |
-|--------------|----------|---------|----------------------------------------------------------------------------------------------------------|
-| `keyPath`    | Yes      | (none)  | RFC 6901 JSON Pointer to the field used as the DSS key. Examples: `/id`, `/data/record_id`, `/items/0/id` |
-| `keyPrefix`  | No       | (empty) | String prepended to the extracted key value. Example: `device:` produces keys like `device:sensor-001`    |
-| `ttlSeconds` | Yes      | (none)  | Time-to-live in seconds for the DSS entry. Use `0` for no expiration.                                    |
+| Parameter    | Required | Default | Description                                                                                                               |
+|--------------|----------|---------|---------------------------------------------------------------------------------------------------------------------------|
+| `keyPath`    | Yes      | (none)  | RFC 6901 JSON Pointer to the field used as the DSS key. Examples: `/id`, `/data/record_id`, `/items/0/id`                 |
+| `keyPrefix`  | No       | (empty) | String prepended to the extracted key value. Example: `device:` produces keys like `device:sensor-001`                    |
+| `ttlSeconds` | Yes      | (none)  | Time-to-live in seconds for the DSS entry. Use `0` for no expiration.                                                     |
 | `onMissing`  | No       | `skip`  | Behavior when `keyPath` is not found in the message. `skip` logs a warning and passes through. `error` drops the message. |
 
 ### Key Extraction Examples
@@ -278,14 +278,14 @@ map:
 
 #### Enrichment behavior reference
 
-| Aspect | Behavior |
-|---|---|
-| Dataset source | DSS key specified as a static string in the DataflowGraph resource |
-| Data format | NDJSON (newline-delimited JSON). A single JSON object without a trailing newline is valid single-record NDJSON. |
-| Match expression | Boolean expression comparing `$source` fields against `$context` fields |
-| Context access | `$context(<alias>).<field>` in map, filter, or branch expressions |
-| Supported transforms | Built-in map, filter, and branch transforms |
-| Dynamic key lookup | Not supported by built-in enrichment. Requires a custom WASM state reader operator. |
+| Aspect               | Behavior                                                                                                        |
+|----------------------|-----------------------------------------------------------------------------------------------------------------|
+| Dataset source       | DSS key specified as a static string in the DataflowGraph resource                                              |
+| Data format          | NDJSON (newline-delimited JSON). A single JSON object without a trailing newline is valid single-record NDJSON. |
+| Match expression     | Boolean expression comparing `$source` fields against `$context` fields                                         |
+| Context access       | `$context(<alias>).<field>` in map, filter, or branch expressions                                               |
+| Supported transforms | Built-in map, filter, and branch transforms                                                                     |
+| Dynamic key lookup   | Not supported by built-in enrichment. Requires a custom WASM state reader operator.                             |
 
 > [!NOTE]
 > The `msg-to-dss-key` operator stores each message as a single JSON object per key. This is compatible with AIO enrichment because a single JSON object is valid single-record NDJSON. For multi-record datasets (multiple entities under one key), populate the state store directly using the [AIO state store CLI](https://github.com/Azure/iot-operations-sdks/tree/main/tools/statestore-cli) with NDJSON content.
