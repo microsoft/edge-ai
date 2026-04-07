@@ -385,6 +385,7 @@
   - [Onvif Connector](/src/500-application/510-onvif-connector/README)
   - [Rust Embedded Wasm Provider](/src/500-application/511-rust-embedded-wasm-provider/README)
   - [Avro To Json](/src/500-application/512-avro-to-json/README)
+  - [Wasm Msg To Dss](/src/500-application/514-wasm-msg-to-dss/README)
   - [Ci Cd](/src/501-ci-cd/README)
   - [Basic Inference Cicd](/src/501-ci-cd/basic-inference-cicd/README)
   - [Workload Orchestration](/src/600-workload-orchestration/README)
