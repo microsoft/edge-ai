@@ -49,8 +49,9 @@ jobs:
     steps:
       - name: Extract version from branch name
         id: version
+        env:
+          BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
         run: |
-          BRANCH_NAME="${{ github.event.pull_request.head.ref }}"
           VERSION="${BRANCH_NAME#release/}"
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "tag=v$VERSION" >> $GITHUB_OUTPUT
@@ -59,8 +60,9 @@ jobs:
 
       - name: Check if release already exists
         id: check
+        env:
+          TAG_NAME: ${{ steps.version.outputs.tag }}
         run: |
-          TAG_NAME="${{ steps.version.outputs.tag }}"
           echo "🔍 Checking for existing release: $TAG_NAME"
 
           STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
@@ -79,10 +81,10 @@ jobs:
 
       - name: Create GitHub Release
         if: steps.check.outputs.exists == 'false'
+        env:
+          TAG_NAME: ${{ steps.version.outputs.tag }}
+          VERSION: ${{ steps.version.outputs.version }}
         run: |
-          TAG_NAME="${{ steps.version.outputs.tag }}"
-          VERSION="${{ steps.version.outputs.version }}"
-
           echo "🚀 Creating release: $TAG_NAME"
 
           RESPONSE=$(curl -X POST \
@@ -113,11 +115,14 @@ jobs:
 
       - name: Summary
         if: always()
+        env:
+          RELEASE_EXISTS: ${{ steps.check.outputs.exists }}
+          TAG_NAME: ${{ steps.version.outputs.tag }}
         run: |
-          if [ "${{ steps.check.outputs.exists }}" = "true" ]; then
-            echo "📌 Release ${{ steps.version.outputs.tag }} already existed (idempotent skip)"
+          if [ "$RELEASE_EXISTS" = "true" ]; then
+            echo "📌 Release $TAG_NAME already existed (idempotent skip)"
           elif [ -n "$RELEASE_URL" ]; then
-            echo "🎉 Successfully created release ${{ steps.version.outputs.tag }}"
+            echo "🎉 Successfully created release $TAG_NAME"
             echo "🔗 $RELEASE_URL"
           else
             echo "⚠️ Release creation did not complete"
