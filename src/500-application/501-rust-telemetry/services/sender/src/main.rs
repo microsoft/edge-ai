@@ -242,3 +242,72 @@ impl PayloadSerialize for Payload {
         unimplemented!()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use azure_iot_operations_protocol::common::payload_serialize::{
+        FormatIndicator, PayloadSerialize,
+    };
+
+    #[test]
+    fn serialize_json_object() {
+        let payload = Payload(serde_json::json!({"temperature": 42}));
+        let result = payload.serialize();
+        assert!(result.is_ok());
+        let serialized = result.unwrap();
+        assert_eq!(serialized.content_type, "application/json");
+        assert_eq!(
+            serialized.format_indicator,
+            FormatIndicator::Utf8EncodedCharacterData
+        );
+        let parsed: serde_json::Value =
+            serde_json::from_slice(&serialized.payload).unwrap();
+        assert_eq!(parsed["temperature"], 42);
+    }
+
+    #[test]
+    fn serialize_nested_json() {
+        let payload = Payload(serde_json::json!({
+            "sensor": {"id": 1, "readings": [10, 20]}
+        }));
+        let result = payload.serialize();
+        assert!(result.is_ok());
+        let serialized = result.unwrap();
+        let parsed: serde_json::Value =
+            serde_json::from_slice(&serialized.payload).unwrap();
+        assert_eq!(parsed["sensor"]["id"], 1);
+        assert_eq!(parsed["sensor"]["readings"][0], 10);
+    }
+
+    #[test]
+    fn serialize_simple_value() {
+        let payload = Payload(serde_json::json!(99.5));
+        let result = payload.serialize();
+        assert!(result.is_ok());
+        let serialized = result.unwrap();
+        let parsed: serde_json::Value =
+            serde_json::from_slice(&serialized.payload).unwrap();
+        assert_eq!(parsed, 99.5);
+    }
+
+    #[test]
+    fn serialize_empty_object() {
+        let payload = Payload(serde_json::json!({}));
+        let result = payload.serialize();
+        assert!(result.is_ok());
+        let serialized = result.unwrap();
+        let parsed: serde_json::Value =
+            serde_json::from_slice(&serialized.payload).unwrap();
+        assert!(parsed.as_object().unwrap().is_empty());
+    }
+
+    #[test]
+    fn serialize_null_value() {
+        let payload = Payload(serde_json::Value::Null);
+        let result = payload.serialize();
+        assert!(result.is_ok());
+        let serialized = result.unwrap();
+        assert_eq!(std::str::from_utf8(&serialized.payload).unwrap(), "null");
+    }
+}

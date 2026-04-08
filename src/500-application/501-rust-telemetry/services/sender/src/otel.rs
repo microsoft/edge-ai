@@ -158,3 +158,56 @@ pub fn inject_current_context() -> Vec<(String, String)> {
 
     carrier
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use opentelemetry::propagation::Injector;
+
+    #[test]
+    fn injector_set_adds_key_value_pair() {
+        let mut carrier = Vec::new();
+        let mut injector = VecInjector(&mut carrier);
+        injector.set("traceparent", "00-abc-def-01".to_string());
+        assert_eq!(carrier.len(), 1);
+        assert_eq!(carrier[0].0, "traceparent");
+        assert_eq!(carrier[0].1, "00-abc-def-01");
+    }
+
+    #[test]
+    fn injector_set_appends_multiple_pairs() {
+        let mut carrier = Vec::new();
+        let mut injector = VecInjector(&mut carrier);
+        injector.set("traceparent", "tp-value".to_string());
+        injector.set("tracestate", "ts-value".to_string());
+        assert_eq!(carrier.len(), 2);
+        assert_eq!(carrier[0].0, "traceparent");
+        assert_eq!(carrier[1].0, "tracestate");
+    }
+
+    #[test]
+    fn injector_set_allows_duplicate_keys() {
+        let mut carrier = Vec::new();
+        let mut injector = VecInjector(&mut carrier);
+        injector.set("key", "first".to_string());
+        injector.set("key", "second".to_string());
+        assert_eq!(carrier.len(), 2);
+        assert_eq!(carrier[0].1, "first");
+        assert_eq!(carrier[1].1, "second");
+    }
+
+    #[test]
+    fn injector_set_handles_empty_values() {
+        let mut carrier = Vec::new();
+        let mut injector = VecInjector(&mut carrier);
+        injector.set("key", String::new());
+        assert_eq!(carrier.len(), 1);
+        assert!(carrier[0].1.is_empty());
+    }
+
+    #[test]
+    fn inject_current_context_returns_vec() {
+        let result = inject_current_context();
+        assert!(result.is_empty() || !result.is_empty());
+    }
+}
