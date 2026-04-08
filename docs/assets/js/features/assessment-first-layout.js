@@ -547,7 +547,7 @@ export class AssessmentFirstLayout {
 
       // Ensure it starts with #/
       if (!docsifyLink.startsWith('#/')) {
-        docsifyLink = '#/' + docsifyLink;
+        docsifyLink = `#/${ docsifyLink}`;
       }
 
       this.log(`Converted link: ${link} -> ${docsifyLink}`);

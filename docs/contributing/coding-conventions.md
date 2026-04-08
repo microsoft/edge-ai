@@ -190,18 +190,18 @@ GitHub workflows SHOULD follow these principles:
 
 ## Linting and Code Quality
 
-We use [MegaLinter](https://megalinter.github.io/) as our comprehensive linting solution to ensure code quality across
-all languages and file types in the repository.
+The CI/CD pipeline enforces code quality through dedicated lint jobs covering shell scripts, YAML, Terraform, Bicep,
+PowerShell, Python, Markdown, and general code quality checks.
 
-For detailed information about our MegaLinter configuration, integration with our CI/CD pipeline, and how to use it in
-your development workflow, please refer to our [MegaLinter documentation](./build-cicd/azure-pipelines/templates/megalinter-template.md).
+For detailed information about the linting configuration and CI/CD integration, see the
+[Azure Pipelines lint templates documentation](../build-cicd/azure-pipelines/README.md).
 
-This includes:
+Key capabilities:
 
-- How to run MegaLinter locally
-- Available linters and configuration options
-- CI/CD integration details
-- Pipeline optimization with caching
+- Individual lint jobs per language and framework
+- Configurable break-build behavior per linter
+- Security scanning with Checkov and credential detection
+- Documentation validation for Terraform and Bicep
 
 ## Infrastructure as Code
 

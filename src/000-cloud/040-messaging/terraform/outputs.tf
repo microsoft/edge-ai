@@ -30,5 +30,4 @@ output "function_app" {
 output "function_storage_account" {
   description = "Storage Account used by the Function App."
   value       = try(module.azure_functions[0].storage_account, null)
-  sensitive   = true
 }

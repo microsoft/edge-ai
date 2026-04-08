@@ -58,7 +58,7 @@ CLUSTER_URI=""
 ####
 
 usage() {
-  cat <<EOF
+    cat <<EOF
 Usage: $(basename "$0") [OPTIONS]
 
 Deploy a complete ontology with data to Microsoft Fabric.
@@ -110,47 +110,47 @@ EOF
 ####
 
 while [[ $# -gt 0 ]]; do
-  case "$1" in
+    case "$1" in
     --definition)
-      DEFINITION_FILE="$2"
-      shift 2
-      ;;
+        DEFINITION_FILE="$2"
+        shift 2
+        ;;
     --workspace-id)
-      WORKSPACE_ID="$2"
-      shift 2
-      ;;
+        WORKSPACE_ID="$2"
+        shift 2
+        ;;
     --data-dir)
-      DATA_DIR="$2"
-      shift 2
-      ;;
+        DATA_DIR="$2"
+        shift 2
+        ;;
     --lakehouse-id)
-      LAKEHOUSE_ID="$2"
-      shift 2
-      ;;
+        LAKEHOUSE_ID="$2"
+        shift 2
+        ;;
     --skip-data-sources)
-      SKIP_DATA_SOURCES="true"
-      shift
-      ;;
+        SKIP_DATA_SOURCES="true"
+        shift
+        ;;
     --skip-semantic-model)
-      SKIP_SEMANTIC_MODEL="true"
-      shift
-      ;;
+        SKIP_SEMANTIC_MODEL="true"
+        shift
+        ;;
     --skip-ontology)
-      SKIP_ONTOLOGY="true"
-      shift
-      ;;
+        SKIP_ONTOLOGY="true"
+        shift
+        ;;
     --dry-run)
-      DRY_RUN="true"
-      shift
-      ;;
+        DRY_RUN="true"
+        shift
+        ;;
     -h | --help)
-      usage
-      exit 0
-      ;;
+        usage
+        exit 0
+        ;;
     *)
-      err "Unknown option: $1"
-      ;;
-  esac
+        err "Unknown option: $1"
+        ;;
+    esac
 done
 
 ####
@@ -160,35 +160,35 @@ done
 log "Validating Prerequisites"
 
 if [[ -z "$DEFINITION_FILE" ]]; then
-  err "--definition is required"
+    err "--definition is required"
 fi
 
 if [[ ! -f "$DEFINITION_FILE" ]]; then
-  err "Definition file not found: $DEFINITION_FILE"
+    err "Definition file not found: $DEFINITION_FILE"
 fi
 
 if [[ -z "$WORKSPACE_ID" ]]; then
-  err "--workspace-id is required"
+    err "--workspace-id is required"
 fi
 
 if [[ "$SKIP_DATA_SOURCES" == "true" && -z "$LAKEHOUSE_ID" ]]; then
-  err "--lakehouse-id is required when using --skip-data-sources"
+    err "--lakehouse-id is required when using --skip-data-sources"
 fi
 
 if [[ -n "$DATA_DIR" && ! -d "$DATA_DIR" ]]; then
-  err "Data directory not found: $DATA_DIR"
+    err "Data directory not found: $DATA_DIR"
 fi
 
 # Check required tools
 for tool in az curl jq yq; do
-  if ! command -v "$tool" &>/dev/null; then
-    err "Required tool not found: $tool"
-  fi
+    if ! command -v "$tool" &>/dev/null; then
+        err "Required tool not found: $tool"
+    fi
 done
 
 # Check Azure CLI authentication
 if ! az account show &>/dev/null; then
-  err "Azure CLI not authenticated. Run 'az login' first."
+    err "Azure CLI not authenticated. Run 'az login' first."
 fi
 
 ok "Prerequisites validated"
@@ -201,7 +201,7 @@ log "Validating Definition"
 info "Definition: $DEFINITION_FILE"
 
 if ! "$SCRIPT_DIR/validate-definition.sh" --definition "$DEFINITION_FILE"; then
-  err "Definition validation failed"
+    err "Definition validation failed"
 fi
 
 ok "Definition validation passed"
@@ -229,18 +229,18 @@ log "Deployment Configuration"
 info "Workspace ID: $WORKSPACE_ID"
 info "Definition: $DEFINITION_FILE"
 if [[ -n "$DATA_DIR" ]]; then
-  info "Data Directory: $DATA_DIR"
+    info "Data Directory: $DATA_DIR"
 fi
 info "Deploy Data Sources: $(if [[ "$SKIP_DATA_SOURCES" == "true" ]]; then echo "No (skipped)"; else echo "Yes"; fi)"
 info "Deploy Semantic Model: $(if [[ "$SKIP_SEMANTIC_MODEL" == "true" ]]; then echo "No (skipped)"; else echo "Yes"; fi)"
 info "Deploy Ontology: $(if [[ "$SKIP_ONTOLOGY" == "true" ]]; then echo "No (skipped)"; else echo "Yes"; fi)"
 
 if [[ -n "$LAKEHOUSE_ID" ]]; then
-  info "Lakehouse ID: $LAKEHOUSE_ID (provided)"
+    info "Lakehouse ID: $LAKEHOUSE_ID (provided)"
 fi
 
 if [[ "$DRY_RUN" == "true" ]]; then
-  warn "DRY RUN MODE - No changes will be made"
+    warn "DRY RUN MODE - No changes will be made"
 fi
 
 ####
@@ -266,141 +266,141 @@ info "Workspace: $workspace_name ($WORKSPACE_ID)"
 ####
 
 if [[ "$SKIP_DATA_SOURCES" != "true" ]]; then
-  log "Step 1: Deploying Data Sources"
+    log "Step 1: Deploying Data Sources"
 
-  if [[ "$DRY_RUN" == "true" ]]; then
-    info "[DRY-RUN] Would create Lakehouse: $LAKEHOUSE_NAME"
+    if [[ "$DRY_RUN" == "true" ]]; then
+        info "[DRY-RUN] Would create Lakehouse: $LAKEHOUSE_NAME"
 
-    # Show what tables would be created
-    tables=$(get_lakehouse_tables "$DEFINITION_FILE")
-    table_count=$(echo "$tables" | jq 'length')
+        # Show what tables would be created
+        tables=$(get_lakehouse_tables "$DEFINITION_FILE")
+        table_count=$(echo "$tables" | jq 'length')
 
-    for i in $(seq 0 $((table_count - 1))); do
-      table_name=$(echo "$tables" | jq -r ".[$i].name")
+        for i in $(seq 0 $((table_count - 1))); do
+            table_name=$(echo "$tables" | jq -r ".[$i].name")
 
-      # Check for local data file
-      if [[ -n "$DATA_DIR" ]]; then
-        for ext in csv parquet; do
-          if [[ -f "$DATA_DIR/${table_name}.${ext}" ]]; then
-            info "[DRY-RUN] Would upload: ${table_name}.${ext} -> table '$table_name'"
-            break
-          fi
+            # Check for local data file
+            if [[ -n "$DATA_DIR" ]]; then
+                for ext in csv parquet; do
+                    if [[ -f "$DATA_DIR/${table_name}.${ext}" ]]; then
+                        info "[DRY-RUN] Would upload: ${table_name}.${ext} -> table '$table_name'"
+                        break
+                    fi
+                done
+            else
+                source_url=$(echo "$tables" | jq -r ".[$i].sourceUrl // empty")
+                source_file=$(echo "$tables" | jq -r ".[$i].sourceFile // empty")
+                if [[ -n "$source_url" ]]; then
+                    info "[DRY-RUN] Would download: $source_url -> table '$table_name'"
+                elif [[ -n "$source_file" ]]; then
+                    info "[DRY-RUN] Would upload: $source_file -> table '$table_name'"
+                fi
+            fi
         done
-      else
-        source_url=$(echo "$tables" | jq -r ".[$i].sourceUrl // empty")
-        source_file=$(echo "$tables" | jq -r ".[$i].sourceFile // empty")
-        if [[ -n "$source_url" ]]; then
-          info "[DRY-RUN] Would download: $source_url -> table '$table_name'"
-        elif [[ -n "$source_file" ]]; then
-          info "[DRY-RUN] Would upload: $source_file -> table '$table_name'"
+
+        # Set placeholder ID for dry-run mode
+        LAKEHOUSE_ID="dry-run-lakehouse-id"
+    else
+        # Create or get Lakehouse
+        info "Creating Lakehouse: $LAKEHOUSE_NAME"
+        lakehouse_response=$(get_or_create_lakehouse "$WORKSPACE_ID" "$LAKEHOUSE_NAME" "$FABRIC_TOKEN")
+        LAKEHOUSE_ID=$(echo "$lakehouse_response" | jq -r '.id')
+
+        if [[ -z "$LAKEHOUSE_ID" || "$LAKEHOUSE_ID" == "null" ]]; then
+            err "Failed to get Lakehouse ID"
         fi
-      fi
-    done
 
-    # Set placeholder ID for dry-run mode
-    LAKEHOUSE_ID="dry-run-lakehouse-id"
-  else
-    # Create or get Lakehouse
-    info "Creating Lakehouse: $LAKEHOUSE_NAME"
-    lakehouse_response=$(get_or_create_lakehouse "$WORKSPACE_ID" "$LAKEHOUSE_NAME" "$FABRIC_TOKEN")
-    LAKEHOUSE_ID=$(echo "$lakehouse_response" | jq -r '.id')
+        ok "Lakehouse ID: $LAKEHOUSE_ID"
 
-    if [[ -z "$LAKEHOUSE_ID" || "$LAKEHOUSE_ID" == "null" ]]; then
-      err "Failed to get Lakehouse ID"
-    fi
+        # Process tables
+        tables=$(get_lakehouse_tables "$DEFINITION_FILE")
+        table_count=$(echo "$tables" | jq 'length')
 
-    ok "Lakehouse ID: $LAKEHOUSE_ID"
+        info "Processing $table_count tables"
 
-    # Process tables
-    tables=$(get_lakehouse_tables "$DEFINITION_FILE")
-    table_count=$(echo "$tables" | jq 'length')
+        for i in $(seq 0 $((table_count - 1))); do
+            table_name=$(echo "$tables" | jq -r ".[$i].name")
+            format=$(echo "$tables" | jq -r ".[$i].format // \"csv\"")
+            source_url=$(echo "$tables" | jq -r ".[$i].sourceUrl // empty")
+            source_file=$(echo "$tables" | jq -r ".[$i].sourceFile // empty")
 
-    info "Processing $table_count tables"
+            info "Table: $table_name"
 
-    for i in $(seq 0 $((table_count - 1))); do
-      table_name=$(echo "$tables" | jq -r ".[$i].name")
-      format=$(echo "$tables" | jq -r ".[$i].format // \"csv\"")
-      source_url=$(echo "$tables" | jq -r ".[$i].sourceUrl // empty")
-      source_file=$(echo "$tables" | jq -r ".[$i].sourceFile // empty")
+            local_file=""
 
-      info "Table: $table_name"
+            # Priority 1: Local data directory
+            if [[ -n "$DATA_DIR" ]]; then
+                for ext in csv parquet; do
+                    if [[ -f "$DATA_DIR/${table_name}.${ext}" ]]; then
+                        local_file="$DATA_DIR/${table_name}.${ext}"
+                        format="$ext"
+                        info "Found local file: ${table_name}.${ext}"
+                        break
+                    fi
+                done
+            fi
 
-      local_file=""
+            # Priority 2: sourceUrl from YAML
+            if [[ -z "$local_file" && -n "$source_url" ]]; then
+                info "Downloading from: $source_url"
+                local_file=$(mktemp "/tmp/${table_name}.XXXXXX.${format}")
+                if ! curl -sSL "$source_url" -o "$local_file"; then
+                    err "Failed to download: $source_url"
+                fi
+            fi
 
-      # Priority 1: Local data directory
-      if [[ -n "$DATA_DIR" ]]; then
-        for ext in csv parquet; do
-          if [[ -f "$DATA_DIR/${table_name}.${ext}" ]]; then
-            local_file="$DATA_DIR/${table_name}.${ext}"
-            format="$ext"
-            info "Found local file: ${table_name}.${ext}"
-            break
-          fi
+            # Priority 3: sourceFile from YAML
+            if [[ -z "$local_file" && -n "$source_file" ]]; then
+                # Resolve relative paths from definition file location
+                if [[ ! "$source_file" = /* ]]; then
+                    source_file="$(dirname "$DEFINITION_FILE")/$source_file"
+                fi
+                if [[ -f "$source_file" ]]; then
+                    local_file="$source_file"
+                    info "Using source file: $source_file"
+                fi
+            fi
+
+            if [[ -z "$local_file" || ! -f "$local_file" ]]; then
+                warn "No data source found for table '$table_name', skipping"
+                continue
+            fi
+
+            # Upload to OneLake Files
+            info "Uploading to OneLake: raw/${table_name}.${format}"
+            upload_to_onelake "$WORKSPACE_ID" "$LAKEHOUSE_ID" "raw/${table_name}.${format}" "$local_file" "$STORAGE_TOKEN"
+
+            # Load as Delta table
+            info "Loading Delta table: $table_name"
+            load_lakehouse_table "$WORKSPACE_ID" "$LAKEHOUSE_ID" "$table_name" "raw/${table_name}.${format}" "$format" "$FABRIC_TOKEN"
+
+            ok "Table '$table_name' loaded"
+
+            # Cleanup temp files from URL downloads
+            if [[ -n "$source_url" && "$local_file" == /tmp/* ]]; then
+                rm -f "$local_file"
+            fi
         done
-      fi
 
-      # Priority 2: sourceUrl from YAML
-      if [[ -z "$local_file" && -n "$source_url" ]]; then
-        info "Downloading from: $source_url"
-        local_file=$(mktemp "/tmp/${table_name}.XXXXXX.${format}")
-        if ! curl -sSL "$source_url" -o "$local_file"; then
-          err "Failed to download: $source_url"
+        # Handle Eventhouse if defined
+        eventhouse_name=$(get_eventhouse_name "$DEFINITION_FILE")
+        if [[ -n "$eventhouse_name" && "$eventhouse_name" != "null" ]]; then
+            info "Eventhouse deployment delegated to deploy-data-sources.sh"
+            "$SCRIPT_DIR/deploy-data-sources.sh" \
+                --definition "$DEFINITION_FILE" \
+                --workspace-id "$WORKSPACE_ID" \
+                --skip-lakehouse
+
+            # Capture Eventhouse IDs from environment
+            EVENTHOUSE_ID="${EVENTHOUSE_ID:-}"
+            KQL_DATABASE_ID="${KQL_DATABASE_ID:-}"
+            CLUSTER_URI="${EVENTHOUSE_QUERY_URI:-}"
         fi
-      fi
 
-      # Priority 3: sourceFile from YAML
-      if [[ -z "$local_file" && -n "$source_file" ]]; then
-        # Resolve relative paths from definition file location
-        if [[ ! "$source_file" = /* ]]; then
-          source_file="$(dirname "$DEFINITION_FILE")/$source_file"
-        fi
-        if [[ -f "$source_file" ]]; then
-          local_file="$source_file"
-          info "Using source file: $source_file"
-        fi
-      fi
-
-      if [[ -z "$local_file" || ! -f "$local_file" ]]; then
-        warn "No data source found for table '$table_name', skipping"
-        continue
-      fi
-
-      # Upload to OneLake Files
-      info "Uploading to OneLake: raw/${table_name}.${format}"
-      upload_to_onelake "$WORKSPACE_ID" "$LAKEHOUSE_ID" "raw/${table_name}.${format}" "$local_file" "$STORAGE_TOKEN"
-
-      # Load as Delta table
-      info "Loading Delta table: $table_name"
-      load_lakehouse_table "$WORKSPACE_ID" "$LAKEHOUSE_ID" "$table_name" "raw/${table_name}.${format}" "$format" "$FABRIC_TOKEN"
-
-      ok "Table '$table_name' loaded"
-
-      # Cleanup temp files from URL downloads
-      if [[ -n "$source_url" && "$local_file" == /tmp/* ]]; then
-        rm -f "$local_file"
-      fi
-    done
-
-    # Handle Eventhouse if defined
-    eventhouse_name=$(get_eventhouse_name "$DEFINITION_FILE")
-    if [[ -n "$eventhouse_name" && "$eventhouse_name" != "null" ]]; then
-      info "Eventhouse deployment delegated to deploy-data-sources.sh"
-      "$SCRIPT_DIR/deploy-data-sources.sh" \
-        --definition "$DEFINITION_FILE" \
-        --workspace-id "$WORKSPACE_ID" \
-        --skip-lakehouse
-
-      # Capture Eventhouse IDs from environment
-      EVENTHOUSE_ID="${EVENTHOUSE_ID:-}"
-      KQL_DATABASE_ID="${KQL_DATABASE_ID:-}"
-      CLUSTER_URI="${EVENTHOUSE_QUERY_URI:-}"
+        ok "Data sources deployed"
     fi
-
-    ok "Data sources deployed"
-  fi
 else
-  log "Step 1: Skipping Data Sources"
-  info "Using existing Lakehouse: $LAKEHOUSE_ID"
+    log "Step 1: Skipping Data Sources"
+    info "Using existing Lakehouse: $LAKEHOUSE_ID"
 fi
 
 ####
@@ -408,26 +408,26 @@ fi
 ####
 
 if [[ "$SKIP_SEMANTIC_MODEL" != "true" ]]; then
-  log "Step 2: Deploying Semantic Model"
+    log "Step 2: Deploying Semantic Model"
 
-  if [[ -z "$LAKEHOUSE_ID" ]]; then
-    err "Lakehouse ID is required for semantic model deployment"
-  fi
+    if [[ -z "$LAKEHOUSE_ID" ]]; then
+        err "Lakehouse ID is required for semantic model deployment"
+    fi
 
-  deploy_args=(
-    "--definition" "$DEFINITION_FILE"
-    "--workspace-id" "$WORKSPACE_ID"
-    "--lakehouse-id" "$LAKEHOUSE_ID"
-  )
+    deploy_args=(
+        "--definition" "$DEFINITION_FILE"
+        "--workspace-id" "$WORKSPACE_ID"
+        "--lakehouse-id" "$LAKEHOUSE_ID"
+    )
 
-  if [[ "$DRY_RUN" == "true" ]]; then
-    deploy_args+=("--dry-run")
-  fi
+    if [[ "$DRY_RUN" == "true" ]]; then
+        deploy_args+=("--dry-run")
+    fi
 
-  "$SCRIPT_DIR/deploy-semantic-model.sh" "${deploy_args[@]}"
-  ok "Semantic model deployed"
+    "$SCRIPT_DIR/deploy-semantic-model.sh" "${deploy_args[@]}"
+    ok "Semantic model deployed"
 else
-  log "Step 2: Skipping Semantic Model"
+    log "Step 2: Skipping Semantic Model"
 fi
 
 ####
@@ -435,37 +435,37 @@ fi
 ####
 
 if [[ "$SKIP_ONTOLOGY" != "true" ]]; then
-  log "Step 3: Deploying Ontology"
+    log "Step 3: Deploying Ontology"
 
-  if [[ -z "$LAKEHOUSE_ID" ]]; then
-    err "Lakehouse ID is required for ontology deployment"
-  fi
+    if [[ -z "$LAKEHOUSE_ID" ]]; then
+        err "Lakehouse ID is required for ontology deployment"
+    fi
 
-  deploy_args=(
-    "--definition" "$DEFINITION_FILE"
-    "--workspace-id" "$WORKSPACE_ID"
-    "--lakehouse-id" "$LAKEHOUSE_ID"
-  )
+    deploy_args=(
+        "--definition" "$DEFINITION_FILE"
+        "--workspace-id" "$WORKSPACE_ID"
+        "--lakehouse-id" "$LAKEHOUSE_ID"
+    )
 
-  if [[ -n "$EVENTHOUSE_ID" ]]; then
-    deploy_args+=("--eventhouse-id" "$EVENTHOUSE_ID")
-  fi
-  if [[ -n "$CLUSTER_URI" ]]; then
-    deploy_args+=("--cluster-uri" "$CLUSTER_URI")
-  fi
-  if [[ -n "$KQL_DATABASE_ID" ]]; then
-    deploy_args+=("--kql-database-id" "$KQL_DATABASE_ID")
-  fi
-  if [[ "$DRY_RUN" == "true" ]]; then
-    deploy_args+=("--dry-run")
-  fi
+    if [[ -n "$EVENTHOUSE_ID" ]]; then
+        deploy_args+=("--eventhouse-id" "$EVENTHOUSE_ID")
+    fi
+    if [[ -n "$CLUSTER_URI" ]]; then
+        deploy_args+=("--cluster-uri" "$CLUSTER_URI")
+    fi
+    if [[ -n "$KQL_DATABASE_ID" ]]; then
+        deploy_args+=("--kql-database-id" "$KQL_DATABASE_ID")
+    fi
+    if [[ "$DRY_RUN" == "true" ]]; then
+        deploy_args+=("--dry-run")
+    fi
 
-  "$SCRIPT_DIR/deploy-ontology.sh" "${deploy_args[@]}"
-  ok "Ontology deployed"
-  warn "Ontology setup is async - entity types take 10-20 minutes to fully provision"
-  info "The portal will show 'Setting up your ontology' until complete"
+    "$SCRIPT_DIR/deploy-ontology.sh" "${deploy_args[@]}"
+    ok "Ontology deployed"
+    warn "Ontology setup is async - entity types take 10-20 minutes to fully provision"
+    info "The portal will show 'Setting up your ontology' until complete"
 else
-  log "Step 3: Skipping Ontology"
+    log "Step 3: Skipping Ontology"
 fi
 
 ####
@@ -475,9 +475,9 @@ fi
 log "Deployment Complete"
 
 if [[ "$DRY_RUN" == "true" ]]; then
-  warn "DRY RUN - No changes were made"
-  info "Remove --dry-run to perform actual deployment"
-  exit 0
+    warn "DRY RUN - No changes were made"
+    info "Remove --dry-run to perform actual deployment"
+    exit 0
 fi
 
 cat <<EOF
@@ -492,7 +492,7 @@ Resources Created:
 EOF
 
 if [[ -n "$EVENTHOUSE_ID" ]]; then
-  echo "  Eventhouse: $EVENTHOUSE_ID"
+    echo "  Eventhouse: $EVENTHOUSE_ID"
 fi
 
 cat <<EOF

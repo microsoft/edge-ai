@@ -643,7 +643,7 @@
         }
 
         // Set up event delegation for radio buttons that may be created dynamically
-        document.addEventListener('click', function(event) {
+        document.addEventListener('click', (event) => {
             if (event.target.matches('input[name^="skill-assessment-q"]')) {
                 // Small delay to ensure the radio button state is updated
                 setTimeout(updateSkillAssessmentProgress, 50);
@@ -651,7 +651,7 @@
         });
 
         // Set up change event listener for radio buttons
-        document.addEventListener('change', function(event) {
+        document.addEventListener('change', (event) => {
             if (event.target.matches('input[name^="skill-assessment-q"]')) {
                 // Skip if save already in progress to prevent duplicate saves
                 if (_isSavingProgress) {
@@ -1253,9 +1253,9 @@
                         categoryScores[category].maxPoints += 5; // Max rating is 5
                         categoryScores[category].score = categoryScores[category].totalPoints / categoryScores[category].questionsCount;
 
-                        if (categoryScores[category].score >= 4) categoryScores[category].level = 'advanced';
-                        else if (categoryScores[category].score >= 3) categoryScores[category].level = 'intermediate';
-                        else categoryScores[category].level = 'beginner';
+                        if (categoryScores[category].score >= 4) {categoryScores[category].level = 'advanced';}
+                        else if (categoryScores[category].score >= 3) {categoryScores[category].level = 'intermediate';}
+                        else {categoryScores[category].level = 'beginner';}
                     }
                 });
 
@@ -1637,7 +1637,7 @@
                         // Dispatch change event for any other listeners
                         radio.dispatchEvent(new Event('change', { bubbles: true }));
                     }
-                });            const totalQuestions = radioGroups.size || 18;
+                }); const totalQuestions = radioGroups.size || 18;
 
             // Reset skill assessment form if available
             if (window.skillAssessmentForm && typeof window.skillAssessmentForm.resetForm === 'function') {
@@ -2014,7 +2014,7 @@ Ready to continue your edge AI journey!`;
             const customagentRec = getCustomagentRecommendation(skillLevel);
             const kataList = formatKataRecommendations(recommendedKatas || []);
 
-            let message = `🎉 Assessment Complete!
+            const message = `🎉 Assessment Complete!
 
 Based on your responses, you're at a **${skillLevel}** skill level.
 

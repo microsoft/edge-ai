@@ -10,6 +10,7 @@ Storage Blob Data Contributor Role Assignment.
 |-----------|-----------------|
 | terraform | >= 1.9.8, < 2.0 |
 | azapi     | >= 2.3.0        |
+| time      | >= 0.9.0        |
 
 ## Providers
 
@@ -18,6 +19,7 @@ Storage Blob Data Contributor Role Assignment.
 | azapi     | >= 2.3.0 |
 | azurerm   | n/a      |
 | terraform | n/a      |
+| time      | >= 0.9.0 |
 
 ## Resources
 
@@ -27,6 +29,7 @@ Storage Blob Data Contributor Role Assignment.
 | [azurerm_role_assignment.registry_storage_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) | resource |
 | [azurerm_storage_container.schema_container](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_container)         | resource |
 | [terraform_data.defer](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data)                                          | resource |
+| [time_sleep.wait_for_rbac_propagation](https://registry.terraform.io/providers/hashicorp/time/latest/docs/resources/sleep)                              | resource |
 
 ## Inputs
 

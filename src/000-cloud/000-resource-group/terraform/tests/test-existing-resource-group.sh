@@ -27,43 +27,43 @@ LOG_FILE="${TEMP_DIR}/test-log.txt"
 
 # Function to log messages
 log() {
-  local msg_type="$1"
-  local message="$2"
-  local color=""
+    local msg_type="$1"
+    local message="$2"
+    local color=""
 
-  case "$msg_type" in
+    case "$msg_type" in
     "INFO") color="$BLUE" ;;
     "SUCCESS") color="$GREEN" ;;
     "ERROR") color="$RED" ;;
     "WARNING") color="$YELLOW" ;;
     *) color="$NC" ;;
-  esac
+    esac
 
-  echo -e "${color}${BOLD}[$msg_type]${NC} $message" | tee -a "$LOG_FILE"
+    echo -e "${color}${BOLD}[$msg_type]${NC} $message" | tee -a "$LOG_FILE"
 }
 
 # Function to clean up resources
 cleanup() {
-  log "INFO" "Cleaning up resources..."
+    log "INFO" "Cleaning up resources..."
 
-  # Delete temporary resource group if it exists
-  if az group show --name "$TEMP_RG_NAME" &>/dev/null; then
-    log "INFO" "Deleting resource group: $TEMP_RG_NAME"
-    az group delete --name "$TEMP_RG_NAME" --yes --no-wait
-  fi
+    # Delete temporary resource group if it exists
+    if az group show --name "$TEMP_RG_NAME" &>/dev/null; then
+        log "INFO" "Deleting resource group: $TEMP_RG_NAME"
+        az group delete --name "$TEMP_RG_NAME" --yes --no-wait
+    fi
 
-  # Remove temporary directory
-  log "INFO" "Removing temporary directory: $TEMP_DIR"
-  rm -rf "$TEMP_DIR"
+    # Remove temporary directory
+    log "INFO" "Removing temporary directory: $TEMP_DIR"
+    rm -rf "$TEMP_DIR"
 
-  log "SUCCESS" "Cleanup completed"
+    log "SUCCESS" "Cleanup completed"
 }
 
 # Function to handle errors
 handle_error() {
-  log "ERROR" "An error occurred during testing. See log file for details: $LOG_FILE"
-  cleanup
-  exit 1
+    log "ERROR" "An error occurred during testing. See log file for details: $LOG_FILE"
+    cleanup
+    exit 1
 }
 
 # Set up error handling
@@ -77,8 +77,8 @@ log "INFO" "Log file: $LOG_FILE"
 # Check if Azure CLI is logged in
 log "INFO" "Checking Azure CLI login status..."
 if ! az account show &>/dev/null; then
-  log "ERROR" "Azure CLI is not logged in. Please login with 'az login'"
-  exit 1
+    log "ERROR" "Azure CLI is not logged in. Please login with 'az login'"
+    exit 1
 fi
 
 # Get subscription ID for Terraform
@@ -91,8 +91,8 @@ az group create --name "$TEMP_RG_NAME" --location "$LOCATION" --tags "purpose=te
 
 # Verify resource group was created
 if ! az group show --name "$TEMP_RG_NAME" &>/dev/null; then
-  log "ERROR" "Failed to create resource group: $TEMP_RG_NAME"
-  exit 1
+    log "ERROR" "Failed to create resource group: $TEMP_RG_NAME"
+    exit 1
 fi
 
 log "SUCCESS" "Created temporary resource group: $TEMP_RG_NAME"
@@ -159,16 +159,16 @@ TF_RG_LOCATION=$(terraform output -raw resource_group_location)
 
 # Verify resource group name output matches the expected name
 if [ "$TF_RG_NAME" != "$TEMP_RG_NAME" ]; then
-  log "ERROR" "Resource group name output mismatch: Expected '$TEMP_RG_NAME', got '$TF_RG_NAME'"
-  cleanup
-  exit 1
+    log "ERROR" "Resource group name output mismatch: Expected '$TEMP_RG_NAME', got '$TF_RG_NAME'"
+    cleanup
+    exit 1
 fi
 
 # Verify resource group location matches the expected location
 if [ "$TF_RG_LOCATION" != "$LOCATION" ]; then
-  log "ERROR" "Resource group location output mismatch: Expected '$LOCATION', got '$TF_RG_LOCATION'"
-  cleanup
-  exit 1
+    log "ERROR" "Resource group location output mismatch: Expected '$LOCATION', got '$TF_RG_LOCATION'"
+    cleanup
+    exit 1
 fi
 
 log "SUCCESS" "Terraform outputs verified successfully!"
@@ -176,13 +176,13 @@ log "SUCCESS" "Terraform outputs verified successfully!"
 # Check if Terraform created a new resource group by mistake
 RG_COUNT=$(az group list --query "[?starts_with(name, 'rg-rgtest-dev-001')].name" -o tsv | wc -l)
 if [ "$RG_COUNT" -gt 0 ]; then
-  log "ERROR" "Terraform created a new resource group even though use_existing_resource_group=true"
-  # Find and delete the incorrectly created resource group
-  NEW_RG=$(az group list --query "[?starts_with(name, 'rg-rgtest-dev-001')].name" -o tsv)
-  log "WARNING" "Deleting incorrectly created resource group: $NEW_RG"
-  az group delete --name "$NEW_RG" --yes --no-wait
-  cleanup
-  exit 1
+    log "ERROR" "Terraform created a new resource group even though use_existing_resource_group=true"
+    # Find and delete the incorrectly created resource group
+    NEW_RG=$(az group list --query "[?starts_with(name, 'rg-rgtest-dev-001')].name" -o tsv)
+    log "WARNING" "Deleting incorrectly created resource group: $NEW_RG"
+    az group delete --name "$NEW_RG" --yes --no-wait
+    cleanup
+    exit 1
 fi
 
 log "SUCCESS" "Terraform correctly used the existing resource group without creating a new one!"

@@ -37,39 +37,39 @@ set -e
 
 # Check if Azure CLI is installed
 if ! command -v az &>/dev/null; then
-  echo "Azure CLI (az) could not be found."
-  echo "Please install Azure CLI and ensure it is in your PATH."
-  echo "Installation instructions can be found at: https://docs.microsoft.com/cli/azure/install-azure-cli"
-  echo
-  exit 1
+    echo "Azure CLI (az) could not be found."
+    echo "Please install Azure CLI and ensure it is in your PATH."
+    echo "Installation instructions can be found at: https://docs.microsoft.com/cli/azure/install-azure-cli"
+    echo
+    exit 1
 fi
 
 # Check if Bicep extension is installed
 if ! az bicep version &>/dev/null; then
-  echo "Installing Azure Bicep extension..."
-  az bicep install
+    echo "Installing Azure Bicep extension..."
+    az bicep install
 fi
 
 # Run the script to update all Bicep auto-gen README.md files
 echo "Running the script ./update-all-bicep-docs.sh ..."
 error_output=$("$(dirname "$0")/update-all-bicep-docs.sh" 2>&1) || {
-  exit_code=$?
-  echo "Error executing update-all-bicep-docs.sh:"
-  echo "$error_output"
-  echo "Exit code: $exit_code"
-  exit $exit_code
+    exit_code=$?
+    echo "Error executing update-all-bicep-docs.sh:"
+    echo "$error_output"
+    echo "Exit code: $exit_code"
+    exit $exit_code
 }
 
 echo "Checking for changes in README.md files ..."
 changed_files=$(git diff --name-only)
 docs_changed=false
 for file in $changed_files; do
-  if [[ $file == src/*/bicep/README.md || $file == blueprints/*/bicep/README.md ]]; then
-    if head -n 1 "$file" | grep -q "^<!-- <!-- BEGIN_BICEP_DOCS --> -->$"; then
-      echo "Updates required for: ./$file"
-      docs_changed=true
+    if [[ $file == src/*/bicep/README.md || $file == blueprints/*/bicep/README.md ]]; then
+        if head -n 1 "$file" | grep -q "^<!-- <!-- BEGIN_BICEP_DOCS --> -->$"; then
+            echo "Updates required for: ./$file"
+            docs_changed=true
+        fi
     fi
-  fi
 done
 echo "README.md files checked."
 echo $docs_changed

@@ -4,15 +4,7 @@ import domQueryHelper from '../helpers/dom-query-helper.js';
 import { unifiedTestFixtures } from '../fixtures/unified-test-fixtures.js';
 
 /**
- * DOM Query Stabilization     it('should accurately detect element visibility', () => {
-      const visiblePath = document.querySelector('[data-path-id="fundamentals"]');
-      const hiddenPath = document.querySelector('[data-path-id="advanced"]');
-
-      // The visible element should be considered visible (no inline styles hiding it)
-      expect(domQueryHelper.isElementVisible(visiblePath)).toBe(true);
-
-      // The hidden element has display: none inline style, so should be hidden
-      expect(domQueryHelper.isElementVisible(hiddenPath)).toBe(false);uite
+ * DOM Query Stabilization Test Suite
  *
  * Validates reliable DOM element selection, interaction patterns, and
  * dynamic content loading for the documentation application.

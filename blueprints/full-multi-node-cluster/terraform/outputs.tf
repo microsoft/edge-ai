@@ -109,15 +109,15 @@ output "eventhub_namespace_name" {
 
 output "dataflow_graphs" {
   description = "Map of dataflow graph resources by name."
-  value       = try(module.edge_messaging.dataflow_graphs, {})
+  value       = try(module.edge_messaging[0].dataflow_graphs, {})
 }
 
 output "dataflows" {
   description = "Map of dataflow resources by name."
-  value       = try(module.edge_messaging.dataflows, {})
+  value       = try(module.edge_messaging[0].dataflows, {})
 }
 
 output "dataflow_endpoints" {
   description = "Map of dataflow endpoint resources by name."
-  value       = try(module.edge_messaging.dataflow_endpoints, {})
+  value       = try(module.edge_messaging[0].dataflow_endpoints, {})
 }
