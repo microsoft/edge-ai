@@ -29,7 +29,7 @@ pub struct InferencePermit {
 
 /// Snapshot of rate-limiter metrics for Prometheus export.
 #[derive(Debug, Clone)]
-#[allow(dead_code)]
+#[expect(dead_code)]
 pub struct RateLimiterMetrics {
     pub dropped_total: u64,
     pub rate_limited_total: u64,
@@ -38,6 +38,7 @@ pub struct RateLimiterMetrics {
     pub queue_capacity: usize,
 }
 
+#[expect(dead_code)]
 impl InferenceRateLimiter {
     /// Build a new rate limiter.
     ///

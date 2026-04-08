@@ -284,7 +284,7 @@ export const storageMixin = {
       return [];
     } catch (error) {
       this.logError('Failed to load selected paths from server:', error);
-      throw new Error('❌ Failed to load selections. Check API server connection.');
+      throw new Error('❌ Failed to load selections. Check API server connection.', { cause: error });
     }
   },
 

@@ -1062,7 +1062,7 @@ export const cardsMixin = {
       }
     }
 
-    let stepsContent = '';
+    let stepsContent;
     if (Array.isArray(resolvedPath.steps) && resolvedPath.steps.length > 0) {
       const steps = resolvedPath.steps.map(step => {
         const stepCompleted = this.isStepCompleted(resolvedPath.id, step.id);

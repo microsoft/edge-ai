@@ -9,7 +9,6 @@
  * @version 1.0.0
  */
 
-/* eslint-env browser */
 /* global indexedDB, crypto */
 import { logger } from '../utils/index.js';
 

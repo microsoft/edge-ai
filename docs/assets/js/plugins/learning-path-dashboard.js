@@ -30,8 +30,8 @@ class LearningPathDashboard {
     );
 
     // Determine if second argument is paths array or config object
-    let paths = [];
-    let config = {};
+    let paths;
+    let config;
 
     if (Array.isArray(pathsOrConfig)) {
       paths = pathsOrConfig;

@@ -1,4 +1,3 @@
-/* eslint-env browser */
 /* global indexedDB */
 import { logger } from '../utils/index.js';
 

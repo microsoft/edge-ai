@@ -127,7 +127,7 @@ function setupMockPathCard(container) {
 
 describe('Learning Path Card Component', () => {
   let mockStorage;
-  let container;
+  const container = null;
 
   beforeEach(() => {
     // Setup DOM

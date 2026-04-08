@@ -160,7 +160,7 @@ jobs:
               "!**/node_modules/**" \
               "!**/.git/**" \
               "!**/.terraform/**" \
-              2>&1 | tee security-results/secretlint-results.txt || SECRETLINT_FAILED=true
+              2>&1 | tee security-results/secretlint-results.txt || SECRETLINT_FAILED=true #gitleaks:allow
 
             if [ "$SECRETLINT_FAILED" = "true" ]; then
               echo "##vso[task.logissue type=error]Secretlint detected sensitive data"
