@@ -106,10 +106,10 @@ class LearningPathCard {
 
   updateStepCompletion(pathId, stepId, completed) {
     const path = this.getPath(pathId);
-    if (!path || !path.steps) return;
+    if (!path || !path.steps) {return;}
 
     const step = path.steps.find(s => s.id === stepId);
-    if (!step) return;
+    if (!step) {return;}
 
     step.completed = completed;
 
@@ -135,7 +135,7 @@ class LearningPathCard {
 
     // Re-render to update visual state
     this.render();
-  }  saveProgress() {
+  } saveProgress() {
     try {
       const progressData = {};
       this.paths.forEach(path => {
@@ -286,7 +286,7 @@ class LearningPathCard {
   }
 
   applySorting() {
-    if (!this.currentSort.field) return;
+    if (!this.currentSort.field) {return;}
 
     this.filteredPaths.sort((a, b) => {
       let valueA, valueB;
@@ -394,7 +394,7 @@ class LearningPathCard {
   }
 
   off(event, callback) {
-    if (!this.eventListeners[event]) return;
+    if (!this.eventListeners[event]) {return;}
     const index = this.eventListeners[event].indexOf(callback);
     if (index > -1) {
       this.eventListeners[event].splice(index, 1);
@@ -402,7 +402,7 @@ class LearningPathCard {
   }
 
   emit(event, data) {
-    if (!this.eventListeners[event]) return;
+    if (!this.eventListeners[event]) {return;}
     this.eventListeners[event].forEach(callback => {
       try {
         callback(data);

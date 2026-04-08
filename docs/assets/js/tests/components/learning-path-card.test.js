@@ -52,16 +52,16 @@ function setupMockPathCard(container) {
     },
 
     filterPaths(criteria) {
-      if (!this.paths) return [];
+      if (!this.paths) {return [];}
       return this.paths.filter(path => {
-        if (criteria.difficulty && path.difficulty !== criteria.difficulty) return false;
-        if (criteria.tags && !criteria.tags.some(tag => path.tags.includes(tag))) return false;
+        if (criteria.difficulty && path.difficulty !== criteria.difficulty) {return false;}
+        if (criteria.tags && !criteria.tags.some(tag => path.tags.includes(tag))) {return false;}
         return true;
       });
     },
 
     sortPaths(sortBy) {
-      if (!this.paths) return [];
+      if (!this.paths) {return [];}
       return [...this.paths].sort((a, b) => {
         if (sortBy === 'title') {
           return a.title.localeCompare(b.title);
@@ -127,7 +127,6 @@ function setupMockPathCard(container) {
 
 describe('Learning Path Card Component', () => {
   let mockStorage;
-  let container;
 
   beforeEach(() => {
     // Setup DOM
@@ -141,9 +140,6 @@ describe('Learning Path Card Component', () => {
   });
 
   afterEach(() => {
-    if (container && container.parentNode) {
-      container.parentNode.removeChild(container);
-    }
     vi.restoreAllMocks();
   });
 

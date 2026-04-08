@@ -8,7 +8,6 @@ import request from 'supertest';
 
 describe('Health Check Routes', () => {
   let app;
-  let server;
 
   beforeEach(async () => {
     // Clear module cache to ensure fresh imports
@@ -29,17 +28,13 @@ describe('Health Check Routes', () => {
       }
     } catch (error) {
       console.error('Error loading app:', error);
-      throw new Error('App not ready for testing');
+      throw new Error('App not ready for testing', { cause: error });
     }
 
     vi.clearAllMocks();
   }, 10000); // Increase timeout to 10 seconds
 
   afterEach(async () => {
-    if (server) {
-      await new Promise(resolve => server.close(resolve));
-    }
-
     // Clear any cached modules
     if (global.gc) {
       global.gc();

@@ -235,7 +235,7 @@ export class SidebarChevrons {
         // Link text click: toggle folder AND allow browser navigation
         this.toggleFolder(folder);
       }
-    };    // Add hover effects for better UX
+    }; // Add hover effects for better UX
     const mouseEnterHandler = () => {
       if (chevron) {
         chevron.style.opacity = '1';

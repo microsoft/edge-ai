@@ -91,17 +91,6 @@ export class EnhancedAnchorLinks {
   }
 
   /**
-   * Debug logging that only outputs when debug mode is enabled
-   * @private
-   * @param {...any} args - Arguments to log
-   */
-  debugLog(...args) {
-    if (this.config.debug) {
-      console.log('[Enhanced Anchor Links]', ...args);
-    }
-  }
-
-  /**
    * Initialize enhanced anchor links with Docsify integration
    */
   initialize() {

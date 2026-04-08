@@ -625,9 +625,9 @@ describe('Learning Path File Creation', () => {
         .post('/api/learning/selections')
         .send({
           selectedItems: [
-            'ai-assisted-engineering-01',  // kata
-            'foundation-ai-first-engineering',   // path
-            'lab-ai-deployment-01'         // lab
+            'ai-assisted-engineering-01', // kata
+            'foundation-ai-first-engineering', // path
+            'lab-ai-deployment-01' // lab
           ],
           userId: 'test-user'
         })
