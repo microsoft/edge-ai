@@ -41,15 +41,16 @@ resource dataflowGraph 'Microsoft.IoTOperations/instances/dataflowProfiles/dataf
       name: customLocationId
     }
     properties: {
-      mode: graph.mode ?? types.dataflowGraphDefaults.mode
-      requestDiskPersistence: graph.requestDiskPersistence ?? types.dataflowGraphDefaults.requestDiskPersistence
+      mode: graph.?mode ?? types.dataflowGraphDefaults.mode
+      requestDiskPersistence: graph.?requestDiskPersistence ?? types.dataflowGraphDefaults.requestDiskPersistence
       nodes: [
         for node in graph.nodes: {
+          #disable-next-line BCP225
           nodeType: node.nodeType
           name: node.name
-          ...(node.sourceSettings != null ? { sourceSettings: node.sourceSettings } : {})
-          ...(node.graphSettings != null ? { graphSettings: node.graphSettings } : {})
-          ...(node.destinationSettings != null ? { destinationSettings: node.destinationSettings } : {})
+          ...(node.?sourceSettings != null ? { sourceSettings: node.?sourceSettings } : {})
+          ...(node.?graphSettings != null ? { graphSettings: node.?graphSettings } : {})
+          ...(node.?destinationSettings != null ? { destinationSettings: node.?destinationSettings } : {})
         }
       ]
       nodeConnections: graph.nodeConnections

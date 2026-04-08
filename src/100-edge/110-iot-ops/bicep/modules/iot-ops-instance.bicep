@@ -344,15 +344,28 @@ resource broker 'Microsoft.IoTOperations/instances/brokers@2026-03-01' = {
           workers: aioMqBrokerConfig.frontendWorkers
         }
       }
-      diagnostics: {
-        logs: {
-          level: aioMqBrokerConfig.logsLevel
-        }
-      }
+      diagnostics: union(
+        {
+          logs: {
+            level: aioMqBrokerConfig.logsLevel
+          }
+        },
+        aioMqBrokerConfig.?diagnosticsConfig ?? {}
+      )
     },
     aioMqBrokerConfig.?persistence != null
       ? {
           persistence: aioMqBrokerConfig.persistence!
+        }
+      : {},
+    aioMqBrokerConfig.?advanced != null
+      ? {
+          advanced: aioMqBrokerConfig.advanced!
+        }
+      : {},
+    aioMqBrokerConfig.?diskBackedMessageBuffer != null
+      ? {
+          diskBackedMessageBuffer: aioMqBrokerConfig.diskBackedMessageBuffer!
         }
       : {}
   )

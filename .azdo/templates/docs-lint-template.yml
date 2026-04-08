@@ -68,9 +68,9 @@ jobs:
             git log -1 --oneline
 
       - task: UseNode@1
-        displayName: 'Use Node.js 20.x'
+        displayName: 'Use Node.js 22.x'
         inputs:
-          version: '20.x'
+          version: '22.x'
 
       - task: Bash@3
         displayName: 'Install Dependencies'

@@ -38,7 +38,7 @@ resource "terraform_data" "defer_arc_machine_prefix" {
   count = local.should_use_arc_machines ? 1 : 0
 
   input = {
-    arc_machine_name_prefix = coalesce(var.arc_machine_name_prefix, var.resource_prefix)
+    arc_machine_name_prefix = try(coalesce(var.arc_machine_name_prefix, var.resource_prefix), var.resource_prefix)
   }
 }
 

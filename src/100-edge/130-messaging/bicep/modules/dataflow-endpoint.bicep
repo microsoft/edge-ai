@@ -32,16 +32,17 @@ resource dataflowEndpoint 'Microsoft.IoTOperations/instances/dataflowEndpoints@2
       type: 'CustomLocation'
       name: customLocationId
     }
+    #disable-next-line BCP225
     properties: {
       endpointType: ep.endpointType
-      ...(ep.hostType != null ? { hostType: ep.hostType } : {})
-      ...(ep.dataExplorerSettings != null ? { dataExplorerSettings: ep.dataExplorerSettings } : {})
-      ...(ep.dataLakeStorageSettings != null ? { dataLakeStorageSettings: ep.dataLakeStorageSettings } : {})
-      ...(ep.fabricOneLakeSettings != null ? { fabricOneLakeSettings: ep.fabricOneLakeSettings } : {})
-      ...(ep.kafkaSettings != null ? { kafkaSettings: ep.kafkaSettings } : {})
-      ...(ep.localStorageSettings != null ? { localStorageSettings: ep.localStorageSettings } : {})
-      ...(ep.mqttSettings != null ? { mqttSettings: ep.mqttSettings } : {})
-      ...(ep.openTelemetrySettings != null ? { openTelemetrySettings: ep.openTelemetrySettings } : {})
+      ...(ep.?hostType != null ? { hostType: ep.?hostType } : {})
+      ...(ep.?dataExplorerSettings != null ? { dataExplorerSettings: ep.?dataExplorerSettings } : {})
+      ...(ep.?dataLakeStorageSettings != null ? { dataLakeStorageSettings: ep.?dataLakeStorageSettings } : {})
+      ...(ep.?fabricOneLakeSettings != null ? { fabricOneLakeSettings: ep.?fabricOneLakeSettings } : {})
+      ...(ep.?kafkaSettings != null ? { kafkaSettings: ep.?kafkaSettings } : {})
+      ...(ep.?localStorageSettings != null ? { localStorageSettings: ep.?localStorageSettings } : {})
+      ...(ep.?mqttSettings != null ? { mqttSettings: ep.?mqttSettings } : {})
+      ...(ep.?openTelemetrySettings != null ? { openTelemetrySettings: ep.?openTelemetrySettings } : {})
     }
   }
 ]

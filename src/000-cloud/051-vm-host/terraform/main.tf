@@ -8,7 +8,7 @@ data "azurerm_client_config" "current" {}
 
 locals {
   label_prefix = "${var.resource_prefix}-aio-${var.environment}-${var.instance}"
-  vm_username  = coalesce(var.vm_username, var.resource_prefix)
+  vm_username  = try(coalesce(var.vm_username, var.resource_prefix), var.resource_prefix)
 
   // Combine current user (if enabled) with explicit admin principals
   vm_admin_principals = merge(

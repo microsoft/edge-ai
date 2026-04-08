@@ -197,11 +197,75 @@ resource "azapi_resource" "broker" {
             workers  = var.mqtt_broker_config.frontendWorkers
           }
         }
-        diagnostics = {
-          logs = {
-            level = var.mqtt_broker_config.logsLevel
-          }
-        }
+        diagnostics = merge(
+          {
+            logs = {
+              level = var.mqtt_broker_config.logsLevel
+            }
+          },
+          try(var.mqtt_broker_diagnostics_config.metrics.prometheus_port != null ? {
+            metrics = {
+              prometheusPort = var.mqtt_broker_diagnostics_config.metrics.prometheus_port
+            }
+          } : {}, {}),
+          try(
+            anytrue([
+              var.mqtt_broker_diagnostics_config.self_check.mode != null,
+              var.mqtt_broker_diagnostics_config.self_check.interval_seconds != null,
+              var.mqtt_broker_diagnostics_config.self_check.timeout_seconds != null
+              ]) ? {
+              selfCheck = merge(
+                var.mqtt_broker_diagnostics_config.self_check.mode != null ? {
+                  mode = var.mqtt_broker_diagnostics_config.self_check.mode
+                } : {},
+                var.mqtt_broker_diagnostics_config.self_check.interval_seconds != null ? {
+                  intervalSeconds = var.mqtt_broker_diagnostics_config.self_check.interval_seconds
+                } : {},
+                var.mqtt_broker_diagnostics_config.self_check.timeout_seconds != null ? {
+                  timeoutSeconds = var.mqtt_broker_diagnostics_config.self_check.timeout_seconds
+                } : {}
+              )
+            } : {},
+            {}
+          ),
+          try(
+            anytrue([
+              var.mqtt_broker_diagnostics_config.traces.mode != null,
+              var.mqtt_broker_diagnostics_config.traces.cache_size_megabytes != null,
+              var.mqtt_broker_diagnostics_config.traces.span_channel_capacity != null,
+              var.mqtt_broker_diagnostics_config.traces.self_tracing != null
+              ]) ? {
+              traces = merge(
+                var.mqtt_broker_diagnostics_config.traces.mode != null ? {
+                  mode = var.mqtt_broker_diagnostics_config.traces.mode
+                } : {},
+                var.mqtt_broker_diagnostics_config.traces.cache_size_megabytes != null ? {
+                  cacheSizeMegabytes = var.mqtt_broker_diagnostics_config.traces.cache_size_megabytes
+                } : {},
+                var.mqtt_broker_diagnostics_config.traces.span_channel_capacity != null ? {
+                  spanChannelCapacity = var.mqtt_broker_diagnostics_config.traces.span_channel_capacity
+                } : {},
+                try(
+                  anytrue([
+                    var.mqtt_broker_diagnostics_config.traces.self_tracing.mode != null,
+                    var.mqtt_broker_diagnostics_config.traces.self_tracing.interval_seconds != null
+                    ]) ? {
+                    selfTracing = merge(
+                      var.mqtt_broker_diagnostics_config.traces.self_tracing.mode != null ? {
+                        mode = var.mqtt_broker_diagnostics_config.traces.self_tracing.mode
+                      } : {},
+                      var.mqtt_broker_diagnostics_config.traces.self_tracing.interval_seconds != null ? {
+                        intervalSeconds = var.mqtt_broker_diagnostics_config.traces.self_tracing.interval_seconds
+                      } : {}
+                    )
+                  } : {},
+                  {}
+                )
+              )
+            } : {},
+            {}
+          )
+        )
       },
       try({
         persistence = merge(
@@ -214,12 +278,6 @@ resource "azapi_resource" "broker" {
             }
           }, {}),
           try({
-            dynamicSettings = {
-              userPropertyKey   = var.mqtt_broker_persistence_config.dynamic_settings.user_property_key
-              userPropertyValue = var.mqtt_broker_persistence_config.dynamic_settings.user_property_value
-            }
-          }, {}),
-          try({
             retain = merge(
               {
                 mode = var.mqtt_broker_persistence_config.retain_policy.mode
@@ -228,18 +286,21 @@ resource "azapi_resource" "broker" {
                 alltrue([
                   var.mqtt_broker_persistence_config.retain_policy.custom_settings != null,
                   var.mqtt_broker_persistence_config.retain_policy.mode == "Custom"
+                  ]) ? anytrue([
+                  var.mqtt_broker_persistence_config.retain_policy.custom_settings.topics != null,
+                  var.mqtt_broker_persistence_config.retain_policy.custom_settings.dynamic_enabled != null
                   ]) ? {
                   retainSettings = merge(
-                    try({
+                    var.mqtt_broker_persistence_config.retain_policy.custom_settings.topics != null ? {
                       topics = var.mqtt_broker_persistence_config.retain_policy.custom_settings.topics
-                    }, {}),
-                    try({
+                    } : {},
+                    var.mqtt_broker_persistence_config.retain_policy.custom_settings.dynamic_enabled != null ? {
                       dynamic = {
                         mode = local.enabled_disabled[var.mqtt_broker_persistence_config.retain_policy.custom_settings.dynamic_enabled]
                       }
-                    }, {})
+                    } : {}
                   )
-                } : {},
+                } : {} : {},
                 {}
               )
             )
@@ -253,23 +314,26 @@ resource "azapi_resource" "broker" {
                 alltrue([
                   var.mqtt_broker_persistence_config.state_store_policy.custom_settings != null,
                   var.mqtt_broker_persistence_config.state_store_policy.mode == "Custom"
+                  ]) ? anytrue([
+                  var.mqtt_broker_persistence_config.state_store_policy.custom_settings.state_store_resources != null,
+                  var.mqtt_broker_persistence_config.state_store_policy.custom_settings.dynamic_enabled != null
                   ]) ? {
                   stateStoreSettings = merge(
-                    try({
+                    var.mqtt_broker_persistence_config.state_store_policy.custom_settings.state_store_resources != null ? {
                       stateStoreResources = [
                         for resource in var.mqtt_broker_persistence_config.state_store_policy.custom_settings.state_store_resources : {
                           keyType = resource.key_type
                           keys    = resource.keys
                         }
                       ]
-                    }, {}),
-                    try({
+                    } : {},
+                    var.mqtt_broker_persistence_config.state_store_policy.custom_settings.dynamic_enabled != null ? {
                       dynamic = {
                         mode = local.enabled_disabled[var.mqtt_broker_persistence_config.state_store_policy.custom_settings.dynamic_enabled]
                       }
-                    }, {})
+                    } : {}
                   )
-                } : {},
+                } : {} : {},
                 {}
               )
             )
@@ -283,19 +347,333 @@ resource "azapi_resource" "broker" {
                 alltrue([
                   var.mqtt_broker_persistence_config.subscriber_queue_policy.custom_settings != null,
                   var.mqtt_broker_persistence_config.subscriber_queue_policy.mode == "Custom"
+                  ]) ? anytrue([
+                  var.mqtt_broker_persistence_config.subscriber_queue_policy.custom_settings.subscriber_client_ids != null,
+                  var.mqtt_broker_persistence_config.subscriber_queue_policy.custom_settings.dynamic_enabled != null
                   ]) ? {
                   subscriberQueueSettings = merge(
-                    try({
+                    var.mqtt_broker_persistence_config.subscriber_queue_policy.custom_settings.subscriber_client_ids != null ? {
                       subscriberClientIds = var.mqtt_broker_persistence_config.subscriber_queue_policy.custom_settings.subscriber_client_ids
-                    }, {}),
-                    try({
-                      topics = var.mqtt_broker_persistence_config.subscriber_queue_policy.custom_settings.topics
-                    }, {}),
-                    try({
+                    } : {},
+                    var.mqtt_broker_persistence_config.subscriber_queue_policy.custom_settings.dynamic_enabled != null ? {
                       dynamic = {
                         mode = local.enabled_disabled[var.mqtt_broker_persistence_config.subscriber_queue_policy.custom_settings.dynamic_enabled]
                       }
-                    }, {})
+                    } : {}
+                  )
+                } : {} : {},
+                {}
+              )
+            )
+          }, {}),
+          try(
+            anytrue([
+              var.mqtt_broker_persistence_config.persistent_volume_claim_spec.volume_name != null,
+              var.mqtt_broker_persistence_config.persistent_volume_claim_spec.volume_mode != null,
+              var.mqtt_broker_persistence_config.persistent_volume_claim_spec.storage_class_name != null,
+              var.mqtt_broker_persistence_config.persistent_volume_claim_spec.access_modes != null,
+              var.mqtt_broker_persistence_config.persistent_volume_claim_spec.data_source != null,
+              var.mqtt_broker_persistence_config.persistent_volume_claim_spec.data_source_ref != null,
+              var.mqtt_broker_persistence_config.persistent_volume_claim_spec.resources != null,
+              var.mqtt_broker_persistence_config.persistent_volume_claim_spec.selector != null
+              ]) ? {
+              persistentVolumeClaimSpec = merge(
+                var.mqtt_broker_persistence_config.persistent_volume_claim_spec.volume_name != null ? {
+                  volumeName = var.mqtt_broker_persistence_config.persistent_volume_claim_spec.volume_name
+                } : {},
+                var.mqtt_broker_persistence_config.persistent_volume_claim_spec.volume_mode != null ? {
+                  volumeMode = var.mqtt_broker_persistence_config.persistent_volume_claim_spec.volume_mode
+                } : {},
+                var.mqtt_broker_persistence_config.persistent_volume_claim_spec.storage_class_name != null ? {
+                  storageClassName = var.mqtt_broker_persistence_config.persistent_volume_claim_spec.storage_class_name
+                } : {},
+                var.mqtt_broker_persistence_config.persistent_volume_claim_spec.access_modes != null ? {
+                  accessModes = var.mqtt_broker_persistence_config.persistent_volume_claim_spec.access_modes
+                } : {},
+                try({
+                  dataSource = merge(
+                    {
+                      kind = var.mqtt_broker_persistence_config.persistent_volume_claim_spec.data_source.kind
+                      name = var.mqtt_broker_persistence_config.persistent_volume_claim_spec.data_source.name
+                    },
+                    var.mqtt_broker_persistence_config.persistent_volume_claim_spec.data_source.api_group != null ? {
+                      apiGroup = var.mqtt_broker_persistence_config.persistent_volume_claim_spec.data_source.api_group
+                    } : {}
+                  )
+                }, {}),
+                try({
+                  dataSourceRef = merge(
+                    {
+                      kind = var.mqtt_broker_persistence_config.persistent_volume_claim_spec.data_source_ref.kind
+                      name = var.mqtt_broker_persistence_config.persistent_volume_claim_spec.data_source_ref.name
+                    },
+                    var.mqtt_broker_persistence_config.persistent_volume_claim_spec.data_source_ref.api_group != null ? {
+                      apiGroup = var.mqtt_broker_persistence_config.persistent_volume_claim_spec.data_source_ref.api_group
+                    } : {},
+                    var.mqtt_broker_persistence_config.persistent_volume_claim_spec.data_source_ref.namespace != null ? {
+                      namespace = var.mqtt_broker_persistence_config.persistent_volume_claim_spec.data_source_ref.namespace
+                    } : {}
+                  )
+                }, {}),
+                try(
+                  anytrue([
+                    var.mqtt_broker_persistence_config.persistent_volume_claim_spec.resources.requests != null,
+                    var.mqtt_broker_persistence_config.persistent_volume_claim_spec.resources.limits != null
+                    ]) ? {
+                    resources = merge(
+                      var.mqtt_broker_persistence_config.persistent_volume_claim_spec.resources.requests != null ? {
+                        requests = var.mqtt_broker_persistence_config.persistent_volume_claim_spec.resources.requests
+                      } : {},
+                      var.mqtt_broker_persistence_config.persistent_volume_claim_spec.resources.limits != null ? {
+                        limits = var.mqtt_broker_persistence_config.persistent_volume_claim_spec.resources.limits
+                      } : {}
+                    )
+                  } : {},
+                  {}
+                ),
+                try(
+                  anytrue([
+                    var.mqtt_broker_persistence_config.persistent_volume_claim_spec.selector.match_labels != null,
+                    var.mqtt_broker_persistence_config.persistent_volume_claim_spec.selector.match_expressions != null
+                    ]) ? {
+                    selector = merge(
+                      var.mqtt_broker_persistence_config.persistent_volume_claim_spec.selector.match_labels != null ? {
+                        matchLabels = var.mqtt_broker_persistence_config.persistent_volume_claim_spec.selector.match_labels
+                      } : {},
+                      var.mqtt_broker_persistence_config.persistent_volume_claim_spec.selector.match_expressions != null ? {
+                        matchExpressions = [
+                          for expr in var.mqtt_broker_persistence_config.persistent_volume_claim_spec.selector.match_expressions : {
+                            key      = expr.key
+                            operator = expr.operator
+                            values   = expr.values
+                          }
+                        ]
+                      } : {}
+                    )
+                  } : {},
+                  {}
+                )
+              )
+            } : {},
+            {}
+          )
+        )
+      }, {}),
+      try({
+        diskBackedMessageBuffer = merge(
+          {
+            maxSize = var.mqtt_broker_disk_buffer_config.max_size
+          },
+          try(
+            anytrue([
+              var.mqtt_broker_disk_buffer_config.ephemeral_volume_claim_spec.volume_name != null,
+              var.mqtt_broker_disk_buffer_config.ephemeral_volume_claim_spec.volume_mode != null,
+              var.mqtt_broker_disk_buffer_config.ephemeral_volume_claim_spec.storage_class_name != null,
+              var.mqtt_broker_disk_buffer_config.ephemeral_volume_claim_spec.access_modes != null,
+              var.mqtt_broker_disk_buffer_config.ephemeral_volume_claim_spec.data_source != null,
+              var.mqtt_broker_disk_buffer_config.ephemeral_volume_claim_spec.data_source_ref != null,
+              var.mqtt_broker_disk_buffer_config.ephemeral_volume_claim_spec.resources != null,
+              var.mqtt_broker_disk_buffer_config.ephemeral_volume_claim_spec.selector != null
+              ]) ? {
+              ephemeralVolumeClaimSpec = merge(
+                var.mqtt_broker_disk_buffer_config.ephemeral_volume_claim_spec.volume_name != null ? {
+                  volumeName = var.mqtt_broker_disk_buffer_config.ephemeral_volume_claim_spec.volume_name
+                } : {},
+                var.mqtt_broker_disk_buffer_config.ephemeral_volume_claim_spec.volume_mode != null ? {
+                  volumeMode = var.mqtt_broker_disk_buffer_config.ephemeral_volume_claim_spec.volume_mode
+                } : {},
+                var.mqtt_broker_disk_buffer_config.ephemeral_volume_claim_spec.storage_class_name != null ? {
+                  storageClassName = var.mqtt_broker_disk_buffer_config.ephemeral_volume_claim_spec.storage_class_name
+                } : {},
+                var.mqtt_broker_disk_buffer_config.ephemeral_volume_claim_spec.access_modes != null ? {
+                  accessModes = var.mqtt_broker_disk_buffer_config.ephemeral_volume_claim_spec.access_modes
+                } : {},
+                try({
+                  dataSource = merge(
+                    {
+                      kind = var.mqtt_broker_disk_buffer_config.ephemeral_volume_claim_spec.data_source.kind
+                      name = var.mqtt_broker_disk_buffer_config.ephemeral_volume_claim_spec.data_source.name
+                    },
+                    var.mqtt_broker_disk_buffer_config.ephemeral_volume_claim_spec.data_source.api_group != null ? {
+                      apiGroup = var.mqtt_broker_disk_buffer_config.ephemeral_volume_claim_spec.data_source.api_group
+                    } : {}
+                  )
+                }, {}),
+                try({
+                  dataSourceRef = merge(
+                    {
+                      kind = var.mqtt_broker_disk_buffer_config.ephemeral_volume_claim_spec.data_source_ref.kind
+                      name = var.mqtt_broker_disk_buffer_config.ephemeral_volume_claim_spec.data_source_ref.name
+                    },
+                    var.mqtt_broker_disk_buffer_config.ephemeral_volume_claim_spec.data_source_ref.api_group != null ? {
+                      apiGroup = var.mqtt_broker_disk_buffer_config.ephemeral_volume_claim_spec.data_source_ref.api_group
+                    } : {},
+                    var.mqtt_broker_disk_buffer_config.ephemeral_volume_claim_spec.data_source_ref.namespace != null ? {
+                      namespace = var.mqtt_broker_disk_buffer_config.ephemeral_volume_claim_spec.data_source_ref.namespace
+                    } : {}
+                  )
+                }, {}),
+                try(
+                  anytrue([
+                    var.mqtt_broker_disk_buffer_config.ephemeral_volume_claim_spec.resources.requests != null,
+                    var.mqtt_broker_disk_buffer_config.ephemeral_volume_claim_spec.resources.limits != null
+                    ]) ? {
+                    resources = merge(
+                      var.mqtt_broker_disk_buffer_config.ephemeral_volume_claim_spec.resources.requests != null ? {
+                        requests = var.mqtt_broker_disk_buffer_config.ephemeral_volume_claim_spec.resources.requests
+                      } : {},
+                      var.mqtt_broker_disk_buffer_config.ephemeral_volume_claim_spec.resources.limits != null ? {
+                        limits = var.mqtt_broker_disk_buffer_config.ephemeral_volume_claim_spec.resources.limits
+                      } : {}
+                    )
+                  } : {},
+                  {}
+                ),
+                try(
+                  anytrue([
+                    var.mqtt_broker_disk_buffer_config.ephemeral_volume_claim_spec.selector.match_labels != null,
+                    var.mqtt_broker_disk_buffer_config.ephemeral_volume_claim_spec.selector.match_expressions != null
+                    ]) ? {
+                    selector = merge(
+                      var.mqtt_broker_disk_buffer_config.ephemeral_volume_claim_spec.selector.match_labels != null ? {
+                        matchLabels = var.mqtt_broker_disk_buffer_config.ephemeral_volume_claim_spec.selector.match_labels
+                      } : {},
+                      var.mqtt_broker_disk_buffer_config.ephemeral_volume_claim_spec.selector.match_expressions != null ? {
+                        matchExpressions = [
+                          for expr in var.mqtt_broker_disk_buffer_config.ephemeral_volume_claim_spec.selector.match_expressions : {
+                            key      = expr.key
+                            operator = expr.operator
+                            values   = expr.values
+                          }
+                        ]
+                      } : {}
+                    )
+                  } : {},
+                  {}
+                )
+              )
+            } : {},
+            {}
+          ),
+          try(
+            anytrue([
+              var.mqtt_broker_disk_buffer_config.persistent_volume_claim_spec.volume_name != null,
+              var.mqtt_broker_disk_buffer_config.persistent_volume_claim_spec.volume_mode != null,
+              var.mqtt_broker_disk_buffer_config.persistent_volume_claim_spec.storage_class_name != null,
+              var.mqtt_broker_disk_buffer_config.persistent_volume_claim_spec.access_modes != null,
+              var.mqtt_broker_disk_buffer_config.persistent_volume_claim_spec.data_source != null,
+              var.mqtt_broker_disk_buffer_config.persistent_volume_claim_spec.data_source_ref != null,
+              var.mqtt_broker_disk_buffer_config.persistent_volume_claim_spec.resources != null,
+              var.mqtt_broker_disk_buffer_config.persistent_volume_claim_spec.selector != null
+              ]) ? {
+              persistentVolumeClaimSpec = merge(
+                var.mqtt_broker_disk_buffer_config.persistent_volume_claim_spec.volume_name != null ? {
+                  volumeName = var.mqtt_broker_disk_buffer_config.persistent_volume_claim_spec.volume_name
+                } : {},
+                var.mqtt_broker_disk_buffer_config.persistent_volume_claim_spec.volume_mode != null ? {
+                  volumeMode = var.mqtt_broker_disk_buffer_config.persistent_volume_claim_spec.volume_mode
+                } : {},
+                var.mqtt_broker_disk_buffer_config.persistent_volume_claim_spec.storage_class_name != null ? {
+                  storageClassName = var.mqtt_broker_disk_buffer_config.persistent_volume_claim_spec.storage_class_name
+                } : {},
+                var.mqtt_broker_disk_buffer_config.persistent_volume_claim_spec.access_modes != null ? {
+                  accessModes = var.mqtt_broker_disk_buffer_config.persistent_volume_claim_spec.access_modes
+                } : {},
+                try({
+                  dataSource = merge(
+                    {
+                      kind = var.mqtt_broker_disk_buffer_config.persistent_volume_claim_spec.data_source.kind
+                      name = var.mqtt_broker_disk_buffer_config.persistent_volume_claim_spec.data_source.name
+                    },
+                    var.mqtt_broker_disk_buffer_config.persistent_volume_claim_spec.data_source.api_group != null ? {
+                      apiGroup = var.mqtt_broker_disk_buffer_config.persistent_volume_claim_spec.data_source.api_group
+                    } : {}
+                  )
+                }, {}),
+                try({
+                  dataSourceRef = merge(
+                    {
+                      kind = var.mqtt_broker_disk_buffer_config.persistent_volume_claim_spec.data_source_ref.kind
+                      name = var.mqtt_broker_disk_buffer_config.persistent_volume_claim_spec.data_source_ref.name
+                    },
+                    var.mqtt_broker_disk_buffer_config.persistent_volume_claim_spec.data_source_ref.api_group != null ? {
+                      apiGroup = var.mqtt_broker_disk_buffer_config.persistent_volume_claim_spec.data_source_ref.api_group
+                    } : {},
+                    var.mqtt_broker_disk_buffer_config.persistent_volume_claim_spec.data_source_ref.namespace != null ? {
+                      namespace = var.mqtt_broker_disk_buffer_config.persistent_volume_claim_spec.data_source_ref.namespace
+                    } : {}
+                  )
+                }, {}),
+                try(
+                  anytrue([
+                    var.mqtt_broker_disk_buffer_config.persistent_volume_claim_spec.resources.requests != null,
+                    var.mqtt_broker_disk_buffer_config.persistent_volume_claim_spec.resources.limits != null
+                    ]) ? {
+                    resources = merge(
+                      var.mqtt_broker_disk_buffer_config.persistent_volume_claim_spec.resources.requests != null ? {
+                        requests = var.mqtt_broker_disk_buffer_config.persistent_volume_claim_spec.resources.requests
+                      } : {},
+                      var.mqtt_broker_disk_buffer_config.persistent_volume_claim_spec.resources.limits != null ? {
+                        limits = var.mqtt_broker_disk_buffer_config.persistent_volume_claim_spec.resources.limits
+                      } : {}
+                    )
+                  } : {},
+                  {}
+                ),
+                try(
+                  anytrue([
+                    var.mqtt_broker_disk_buffer_config.persistent_volume_claim_spec.selector.match_labels != null,
+                    var.mqtt_broker_disk_buffer_config.persistent_volume_claim_spec.selector.match_expressions != null
+                    ]) ? {
+                    selector = merge(
+                      var.mqtt_broker_disk_buffer_config.persistent_volume_claim_spec.selector.match_labels != null ? {
+                        matchLabels = var.mqtt_broker_disk_buffer_config.persistent_volume_claim_spec.selector.match_labels
+                      } : {},
+                      var.mqtt_broker_disk_buffer_config.persistent_volume_claim_spec.selector.match_expressions != null ? {
+                        matchExpressions = [
+                          for expr in var.mqtt_broker_disk_buffer_config.persistent_volume_claim_spec.selector.match_expressions : {
+                            key      = expr.key
+                            operator = expr.operator
+                            values   = expr.values
+                          }
+                        ]
+                      } : {}
+                    )
+                  } : {},
+                  {}
+                )
+              )
+            } : {},
+            {}
+          )
+        )
+      }, {}),
+      // Advanced broker settings: client limits, internal traffic encryption, and internal certificates
+      try({
+        advanced = merge(
+          var.mqtt_broker_advanced_config.encrypt_internal_traffic != null ? {
+            encryptInternalTraffic = var.mqtt_broker_advanced_config.encrypt_internal_traffic
+          } : {},
+          try({
+            internalCerts = merge(
+              var.mqtt_broker_advanced_config.internal_certs.duration != null ? {
+                duration = var.mqtt_broker_advanced_config.internal_certs.duration
+              } : {},
+              var.mqtt_broker_advanced_config.internal_certs.renew_before != null ? {
+                renewBefore = var.mqtt_broker_advanced_config.internal_certs.renew_before
+              } : {},
+              try(
+                anytrue([
+                  var.mqtt_broker_advanced_config.internal_certs.private_key_algorithm != null,
+                  var.mqtt_broker_advanced_config.internal_certs.private_key_rotation_policy != null
+                  ]) ? {
+                  privateKey = merge(
+                    var.mqtt_broker_advanced_config.internal_certs.private_key_algorithm != null ? {
+                      algorithm = var.mqtt_broker_advanced_config.internal_certs.private_key_algorithm
+                    } : {},
+                    var.mqtt_broker_advanced_config.internal_certs.private_key_rotation_policy != null ? {
+                      rotationPolicy = var.mqtt_broker_advanced_config.internal_certs.private_key_rotation_policy
+                    } : {}
                   )
                 } : {},
                 {}
@@ -303,56 +681,38 @@ resource "azapi_resource" "broker" {
             )
           }, {}),
           try({
-            persistentVolumeClaimSpec = merge(
-              try({
-                volumeName = var.mqtt_broker_persistence_config.persistent_volume_claim_spec.volume_name
-              }, {}),
-              try({
-                volumeMode = var.mqtt_broker_persistence_config.persistent_volume_claim_spec.volume_mode
-              }, {}),
-              try({
-                storageClassName = var.mqtt_broker_persistence_config.persistent_volume_claim_spec.storage_class_name
-              }, {}),
-              try({
-                accessModes = var.mqtt_broker_persistence_config.persistent_volume_claim_spec.access_modes
-              }, {}),
-              try({
-                dataSource = merge(
-                  {
-                    kind = var.mqtt_broker_persistence_config.persistent_volume_claim_spec.data_source.kind
-                    name = var.mqtt_broker_persistence_config.persistent_volume_claim_spec.data_source.name
-                  },
-                  try({
-                    apiGroup = var.mqtt_broker_persistence_config.persistent_volume_claim_spec.data_source.api_group
-                  }, {})
-                )
-              }, {}),
-              try({
-                resources = merge(
-                  try({
-                    requests = var.mqtt_broker_persistence_config.persistent_volume_claim_spec.resources.requests
-                  }, {}),
-                  try({
-                    limits = var.mqtt_broker_persistence_config.persistent_volume_claim_spec.resources.limits
-                  }, {})
-                )
-              }, {}),
-              try({
-                selector = merge(
-                  try({
-                    matchLabels = var.mqtt_broker_persistence_config.persistent_volume_claim_spec.selector.match_labels
-                  }, {}),
-                  try({
-                    matchExpressions = [
-                      for expr in var.mqtt_broker_persistence_config.persistent_volume_claim_spec.selector.match_expressions : {
-                        key      = expr.key
-                        operator = expr.operator
-                        values   = expr.values
-                      }
-                    ]
-                  }, {})
-                )
-              }, {})
+            clients = merge(
+              var.mqtt_broker_advanced_config.clients.max_session_expiry_seconds != null ? {
+                maxSessionExpirySeconds = var.mqtt_broker_advanced_config.clients.max_session_expiry_seconds
+              } : {},
+              var.mqtt_broker_advanced_config.clients.max_message_expiry_seconds != null ? {
+                maxMessageExpirySeconds = var.mqtt_broker_advanced_config.clients.max_message_expiry_seconds
+              } : {},
+              var.mqtt_broker_advanced_config.clients.max_packet_size_bytes != null ? {
+                maxPacketSizeBytes = var.mqtt_broker_advanced_config.clients.max_packet_size_bytes
+              } : {},
+              var.mqtt_broker_advanced_config.clients.max_receive_maximum != null ? {
+                maxReceiveMaximum = var.mqtt_broker_advanced_config.clients.max_receive_maximum
+              } : {},
+              var.mqtt_broker_advanced_config.clients.max_keep_alive_seconds != null ? {
+                maxKeepAliveSeconds = var.mqtt_broker_advanced_config.clients.max_keep_alive_seconds
+              } : {},
+              try(
+                anytrue([
+                  var.mqtt_broker_advanced_config.clients.subscriber_queue_limit.length != null,
+                  var.mqtt_broker_advanced_config.clients.subscriber_queue_limit.strategy != null
+                  ]) ? {
+                  subscriberQueueLimit = merge(
+                    var.mqtt_broker_advanced_config.clients.subscriber_queue_limit.length != null ? {
+                      length = var.mqtt_broker_advanced_config.clients.subscriber_queue_limit.length
+                    } : {},
+                    var.mqtt_broker_advanced_config.clients.subscriber_queue_limit.strategy != null ? {
+                      strategy = var.mqtt_broker_advanced_config.clients.subscriber_queue_limit.strategy
+                    } : {}
+                  )
+                } : {},
+                {}
+              )
             )
           }, {})
         )

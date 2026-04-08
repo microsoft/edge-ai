@@ -41,17 +41,17 @@ resource dataflow 'Microsoft.IoTOperations/instances/dataflowProfiles/dataflows@
       name: customLocationId
     }
     properties: {
-      mode: df.mode ?? types.dataflowDefaults.mode
-      requestDiskPersistence: df.requestDiskPersistence ?? types.dataflowDefaults.requestDiskPersistence
+      mode: df.?mode ?? types.dataflowDefaults.mode
+      requestDiskPersistence: df.?requestDiskPersistence ?? types.dataflowDefaults.requestDiskPersistence
       operations: [
         for op in df.operations: {
           operationType: op.operationType
-          ...(op.name != null ? { name: op.name } : {})
-          ...(op.sourceSettings != null ? { sourceSettings: op.sourceSettings } : {})
-          ...(op.builtInTransformationSettings != null
-            ? { builtInTransformationSettings: op.builtInTransformationSettings }
+          ...(op.?name != null ? { name: op.?name } : {})
+          ...(op.?sourceSettings != null ? { sourceSettings: op.?sourceSettings } : {})
+          ...(op.?builtInTransformationSettings != null
+            ? { builtInTransformationSettings: op.?builtInTransformationSettings }
             : {})
-          ...(op.destinationSettings != null ? { destinationSettings: op.destinationSettings } : {})
+          ...(op.?destinationSettings != null ? { destinationSettings: op.?destinationSettings } : {})
         }
       ]
     }
