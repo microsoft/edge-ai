@@ -1,6 +1,6 @@
 ---
 title: Minimum Single Node Cluster Blueprint
-description: Minimal deployment of Azure IoT Operations on a single-node, Arc-enabled Kubernetes cluster using minimum required resources while maintaining functionality
+description: Minimal deployment of an Arc-enabled Kubernetes cluster with optional Azure IoT Operations on a single node, using minimum required resources
 author: Edge AI Team
 ms.date: 2025-06-07
 ms.topic: reference
@@ -19,7 +19,7 @@ estimated_reading_time: 3
 
 ## Minimum Single Node Cluster Blueprint
 
-This blueprint provides a minimal deployment of Azure IoT Operations (AIO) on a single-node, Arc-enabled Kubernetes cluster. It is designed to use the minimum required resources while still providing a functional edge deployment with Azure IoT Operations.
+This blueprint provides a minimal deployment of an Arc-enabled Kubernetes cluster on a single node, with optional Azure IoT Operations (AIO). It is designed to use the minimum required resources while still providing a functional edge deployment. Set `should_deploy_aio = false` to deploy an Arc-connected cluster without AIO.
 Please follow general blueprint recommendations from blueprints [README.md](../README.md).
 
 ## Architecture
@@ -29,8 +29,8 @@ This blueprint deploys:
 1. A Linux VM host in Azure (minimum size)
 2. A K3s Kubernetes cluster on the VM
 3. Azure Arc connection for the cluster
-4. Minimal cloud resources required by AIO (Key Vault, Storage, etc.)
-5. Core Azure IoT Operations components
+4. Minimal cloud resources (Key Vault, Storage)
+5. Azure IoT Operations components (optional, controlled by `should_deploy_aio`)
 
 The resulting architecture provides a functional edge-to-cloud solution with the minimal resource footprint.
 
@@ -94,6 +94,7 @@ Beyond the basic required variables, this blueprint supports these key configura
 | `instance`                                | Deployment instance number         | `"001"`  | For multiple deployments                                   |
 | `should_get_custom_locations_oid`         | Auto-retrieve Custom Locations OID | `true`   | Set to false when providing custom_locations_oid           |
 | `custom_locations_oid`                    | Custom Locations SP Object ID      | `null`   | Required for Arc custom locations                          |
+| `should_deploy_aio`                       | Deploy Azure IoT Operations        | `true`   | Set to false for Arc-only deployment without AIO           |
 | `should_create_anonymous_broker_listener` | Enable anonymous MQTT listener     | `false`  | For dev/test only, not secure for production               |
 
 For additional configuration options, review the variables in `variables.tf`.

@@ -140,6 +140,12 @@ variable "should_enable_key_vault_public_network_access" {
   default     = true
 }
 
+variable "should_enable_key_vault_purge_protection" {
+  type        = bool
+  description = "Whether to enable purge protection for the Key Vault. Enable for production to prevent accidental or malicious secret deletion"
+  default     = false
+}
+
 variable "should_enable_storage_public_network_access" {
   type        = bool
   description = "Whether to enable public network access for the storage account"

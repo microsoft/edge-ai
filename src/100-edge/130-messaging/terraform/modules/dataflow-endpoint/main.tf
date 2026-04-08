@@ -9,7 +9,7 @@
 resource "azapi_resource" "dataflow_endpoint" {
   for_each = { for ep in var.dataflow_endpoints : ep.name => ep }
 
-  type      = "Microsoft.IoTOperations/instances/dataflowEndpoints@2025-10-01"
+  type      = "Microsoft.IoTOperations/instances/dataflowEndpoints@2026-03-01"
   name      = each.value.name
   parent_id = var.aio_instance.id
 

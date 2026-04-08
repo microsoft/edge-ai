@@ -1370,7 +1370,7 @@ describe('Learning Progress Tracker + Interactive Checkboxes Integration', () =>
         const radioGroups = new Set();
         const allRadios = document.querySelectorAll('input[type="radio"][name^="skill-assessment-"]');
         allRadios.forEach(radio => {
-          if (radio.name) radioGroups.add(radio.name);
+          if (radio.name) {radioGroups.add(radio.name);}
         });
 
         const totalQuestions = radioGroups.size; // Should be 18, not 35
@@ -1386,7 +1386,7 @@ describe('Learning Progress Tracker + Interactive Checkboxes Integration', () =>
       const allRadios = document.querySelectorAll('input[type="radio"]');
       const radioGroups = new Set();
       allRadios.forEach(radio => {
-        if (radio.name) radioGroups.add(radio.name);
+        if (radio.name) {radioGroups.add(radio.name);}
       });
 
       expect(allH4s.length).toBe(35); // Total H4 elements
@@ -1711,10 +1711,10 @@ describe('Learning Progress Tracker + Interactive Checkboxes Integration', () =>
       const currentQuestionDisplay = document.querySelector('.current-question-display');
       const progressAriaLive = document.querySelector('.progress-aria-live');
 
-      if (progressBar) progressBar.style.width = '0%';
-      if (progressText) progressText.textContent = `0% Complete (0/${totalQuestions})`;
-      if (currentQuestionDisplay) currentQuestionDisplay.textContent = `Question 0 of ${totalQuestions}`;
-      if (progressAriaLive) progressAriaLive.textContent = '0% complete';
+      if (progressBar) {progressBar.style.width = '0%';}
+      if (progressText) {progressText.textContent = `0% Complete (0/${totalQuestions})`;}
+      if (currentQuestionDisplay) {currentQuestionDisplay.textContent = `Question 0 of ${totalQuestions}`;}
+      if (progressAriaLive) {progressAriaLive.textContent = '0% complete';}
 
       // Wait for async operations
       await new Promise(resolve => setTimeout(resolve, 100));

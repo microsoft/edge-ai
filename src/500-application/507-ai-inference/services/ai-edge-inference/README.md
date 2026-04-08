@@ -500,32 +500,8 @@ kubectl exec -it deployment/ai-edge-inference -- \
 
 ## Development and Testing
 
-### Local Development
-
-```bash
-# Build and test locally
-cargo build --release
-cargo test
-
-# Run with mock data
-cargo run --bin ai-edge-inference -- --config test-config.yaml
-
-# Model validation
-cargo run --bin model-validator -- --model path/to/model.onnx
-```
-
-### Integration Testing
-
-```bash
-# Deploy test environment
-kubectl apply -f test/integration-test.yaml
-
-# Run inference tests
-kubectl apply -f test/inference-test-job.yaml
-
-# Validate results
-kubectl logs job/inference-test -n azure-iot-operations
-```
+See [tests/README.md](tests/README.md) for the full validation and testing guide,
+including unit tests, integration tests, and the live AIO rate limiting simulation.
 
 ## Rust AI/ML Framework Comparison
 
