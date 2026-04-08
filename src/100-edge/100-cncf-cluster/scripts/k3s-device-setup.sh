@@ -124,11 +124,12 @@ if [[ ! $SKIP_AZ_LOGIN ]]; then
     else
         if [[ $CLIENT_ID ]]; then
             log "Logging into Azure CLI using managed identity client ID $CLIENT_ID"
-            if ! az login --identity --client-id "$CLIENT_ID"; then
+            if ! az login --identity --client-id "$CLIENT_ID" --allow-no-subscriptions; then
                 err "Azure CLI login failed for managed identity client ID $CLIENT_ID"
             fi
         else
-            az login --identity
+            log "Logging in with default managed identity"
+            az login --identity --allow-no-subscriptions
         fi
     fi
 fi

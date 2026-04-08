@@ -121,6 +121,7 @@ if [ -z "$SKIP_AZ_LOGIN" ]; then
             err "Failed to login with managed identity. If the VM has multiple identities, provide CLIENT_ID to specify which one to use"
         fi
     fi
+
 fi
 
 ####
@@ -142,10 +143,21 @@ trap 'rm "$SCRIPT_PATH"' EXIT
 
 log "Downloading script: az keyvault secret download --vault-name $KEY_VAULT_NAME --name $SECRET_NAME --file $SCRIPT_PATH"
 
-# Download the script from Key Vault
-if ! az keyvault secret download --vault-name "$KEY_VAULT_NAME" --name "$SECRET_NAME" --file "$SCRIPT_PATH"; then
-    log "First attempt to download script failed... Retrying..."
-    az keyvault secret download --vault-name "$KEY_VAULT_NAME" --name "$SECRET_NAME" --file "$SCRIPT_PATH"
+# Download the script from Key Vault. Retry with backoff to handle RBAC
+# propagation delay when using system-assigned managed identity.
+KV_OK=false
+for attempt in $(seq 1 10); do
+    if az keyvault secret download --vault-name "$KEY_VAULT_NAME" --name "$SECRET_NAME" --file "$SCRIPT_PATH" 2>&1; then
+        KV_OK=true
+        break
+    fi
+    log "Key Vault download attempt $attempt/10 failed, retrying in 30s..."
+    rm -f "$SCRIPT_PATH"
+    sleep 30
+done
+
+if [ "$KV_OK" != true ]; then
+    err "Failed to download script from Key Vault after 10 attempts"
 fi
 
 # Make the script executable
