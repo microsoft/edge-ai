@@ -524,8 +524,8 @@ describe('TOC Chevron Manager', () => {
           const bInPriorityZone = bTop >= priorityZoneTop && bTop <= priorityZoneBottom;
 
           // Prefer headers in priority zone
-          if (aInPriorityZone && !bInPriorityZone) return -1;
-          if (bInPriorityZone && !aInPriorityZone) return 1;
+          if (aInPriorityZone && !bInPriorityZone) {return -1;}
+          if (bInPriorityZone && !aInPriorityZone) {return 1;}
 
           // Within priority zone, prefer higher intersection ratio
           if (aInPriorityZone && bInPriorityZone) {

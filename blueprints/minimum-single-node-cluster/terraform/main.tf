@@ -32,6 +32,7 @@ module "cloud_security_identity" {
   should_create_key_vault_private_endpoint = var.should_enable_private_endpoints
   key_vault_private_endpoint_subnet_id     = var.should_enable_private_endpoints ? module.cloud_networking.subnet_id : null
   key_vault_virtual_network_id             = var.should_enable_private_endpoints ? module.cloud_networking.virtual_network.id : null
+  should_create_secret_sync_identity       = var.should_deploy_aio
 }
 
 module "cloud_data" {
@@ -51,6 +52,10 @@ module "cloud_data" {
   should_enable_private_endpoint = var.should_enable_private_endpoints
   private_endpoint_subnet_id     = var.should_enable_private_endpoints ? module.cloud_networking.subnet_id : null
   virtual_network_id             = var.should_enable_private_endpoints ? module.cloud_networking.virtual_network.id : null
+
+  // AIO-specific data resources
+  should_create_schema_registry = var.should_deploy_aio
+  should_create_adr_namespace   = var.should_deploy_aio
 }
 
 module "cloud_networking" {
@@ -114,6 +119,7 @@ module "edge_arc_extensions" {
 }
 
 module "edge_iot_ops" {
+  count  = var.should_deploy_aio ? 1 : 0
   source = "../../../src/100-edge/110-iot-ops/terraform"
 
   depends_on = [module.edge_arc_extensions]
@@ -134,13 +140,14 @@ module "edge_iot_ops" {
 }
 
 module "edge_assets" {
+  count  = var.should_deploy_aio ? 1 : 0
   source = "../../../src/100-edge/111-assets/terraform"
 
   depends_on = [module.edge_iot_ops]
 
   location           = var.location
   resource_group     = module.cloud_resource_group.resource_group
-  custom_location_id = module.edge_iot_ops.custom_locations.id
+  custom_location_id = module.edge_iot_ops[0].custom_locations.id
   adr_namespace      = module.cloud_data.adr_namespace
 
   namespaced_devices = var.namespaced_devices

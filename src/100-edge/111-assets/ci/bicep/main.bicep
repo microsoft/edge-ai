@@ -38,7 +38,7 @@ resource customLocation 'Microsoft.ExtendedLocation/customLocations@2021-08-31-p
   name: 'cl-arck-${resourcePrefix}-${environment}-${instance}'
 }
 
-resource adrNamespace 'Microsoft.DeviceRegistry/namespaces@2025-10-01' existing = {
+resource adrNamespace 'Microsoft.DeviceRegistry/namespaces@2026-04-01' existing = {
   scope: resourceGroup
   name: 'adrns-${resourcePrefix}-${environment}-${instance}'
 }

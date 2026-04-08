@@ -206,8 +206,8 @@ jobs:
 
           if ! command -v jq >/dev/null 2>&1; then
             echo "Installing jq..."
-            sudo apt-get update -y
-            sudo apt-get install -y jq
+            sudo apt-get -o DPkg::Lock::Timeout=60 update -y
+            sudo apt-get -o DPkg::Lock::Timeout=60 install -y jq
           fi
 
           DATA=$(jq -n \

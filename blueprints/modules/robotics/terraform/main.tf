@@ -140,6 +140,7 @@ module "cloud_security_identity" {
   key_vault_private_endpoint_subnet_id     = try(module.cloud_networking[0].subnet_id, data.azurerm_subnet.existing[0].id, null)
   key_vault_virtual_network_id             = try(module.cloud_networking[0].virtual_network.id, data.azurerm_virtual_network.existing[0].id, null)
   should_enable_public_network_access      = var.should_enable_public_network_access
+  should_enable_purge_protection           = var.should_enable_key_vault_purge_protection
 }
 
 module "cloud_vpn_gateway" {
@@ -340,6 +341,7 @@ module "cloud_acr" {
   allowed_public_ip_ranges      = var.acr_allowed_public_ip_ranges
   public_network_access_enabled = var.acr_public_network_access_enabled
   should_enable_data_endpoints  = var.acr_data_endpoint_enabled
+  should_enable_export_policy   = var.acr_export_policy_enabled
 }
 
 module "cloud_kubernetes" {
