@@ -70,6 +70,34 @@ function validateWebhookUrl(urlString) {
 }
 
 /**
+ * Classify a webhook URL by provider using secure hostname matching.
+ * Parses the URL and compares the hostname with exact or suffix checks
+ * to prevent subdomain-prefix bypass attacks (CWE-020).
+ * @param {string} webhookUrl - Webhook destination URL
+ * @returns {"teams"|"slack"|"generic"} Provider type
+ */
+function getWebhookType(webhookUrl) {
+  try {
+    const { hostname } = new URL(webhookUrl);
+    const host = hostname.toLowerCase();
+    if (
+      host === "webhook.office.com" ||
+      host.endsWith(".webhook.office.com") ||
+      host === "logic.azure.com" ||
+      host.endsWith(".logic.azure.com")
+    ) {
+      return "teams";
+    }
+    if (host === "hooks.slack.com" || host.endsWith(".hooks.slack.com")) {
+      return "slack";
+    }
+  } catch {
+    // Malformed URL falls through to generic
+  }
+  return "generic";
+}
+
+/**
  * In-memory deduplication cache.
  * Key: "source|label|severity" → value: timestamp of last dispatched alert.
  * Entries older than DEDUP_WINDOW_MS are evicted on each access.
@@ -312,11 +340,11 @@ function buildGenericPayload(alert, severity) {
  * @returns {object} Webhook-appropriate payload
  */
 function buildWebhookPayload(webhookUrl, alert, severity) {
-  const url = webhookUrl.toLowerCase();
-  if (url.includes("webhook.office.com") || url.includes(".logic.azure.com")) {
+  const type = getWebhookType(webhookUrl);
+  if (type === "teams") {
     return buildTeamsPayload(alert, severity);
   }
-  if (url.includes("hooks.slack.com")) {
+  if (type === "slack") {
     return buildSlackPayload(alert, severity);
   }
   return buildGenericPayload(alert, severity);
@@ -375,7 +403,7 @@ async function dispatchWebhook(webhookUrl, payload, context) {
  * @returns {object} Webhook-appropriate digest payload
  */
 function buildDigestPayload(webhookUrl, alerts) {
-  const url = webhookUrl.toLowerCase();
+  const type = getWebhookType(webhookUrl);
   const summary = alerts.map((a) => {
     const source = a.alert.source ?? a.alert.device_id ?? a.alert.topic ?? "edge";
     const label = a.alert.label ?? a.alert.class_name ?? "N/A";
@@ -383,7 +411,7 @@ function buildDigestPayload(webhookUrl, alerts) {
     return `${source}: ${label} (${confidence})`;
   });
 
-  if (url.includes("webhook.office.com") || url.includes(".logic.azure.com")) {
+  if (type === "teams") {
     return {
       type: "message",
       attachments: [
@@ -413,7 +441,7 @@ function buildDigestPayload(webhookUrl, alerts) {
     };
   }
 
-  if (url.includes("hooks.slack.com")) {
+  if (type === "slack") {
     return {
       blocks: [
         {
@@ -558,3 +586,18 @@ app.eventHub("processAlerts", {
     );
   },
 });
+
+export {
+  SEVERITY_LEVELS,
+  validateWebhookUrl,
+  getWebhookType,
+  buildDedupKey,
+  parseAlertPayload,
+  extractSeverity,
+  meetsSeverityThreshold,
+  buildTeamsPayload,
+  buildSlackPayload,
+  buildGenericPayload,
+  buildWebhookPayload,
+  buildDigestPayload,
+};
