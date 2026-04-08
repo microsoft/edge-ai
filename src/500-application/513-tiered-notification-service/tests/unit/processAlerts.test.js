@@ -109,11 +109,11 @@ describe('getWebhookType', () => {
 
   describe('Slack detection', () => {
     it('returns "slack" for hooks.slack.com', () => {
-      expect(getWebhookType('https://hooks.slack.com/services/T00/B00/abc')).toBe('slack');
+      expect(getWebhookType('https://hooks.slack.com/test-webhook')).toBe('slack');
     });
 
     it('returns "slack" for subdomains of hooks.slack.com', () => {
-      expect(getWebhookType('https://app.hooks.slack.com/services/T00')).toBe('slack');
+      expect(getWebhookType('https://app.hooks.slack.com/test-webhook')).toBe('slack');
     });
 
     it('rejects subdomain-prefix bypass for hooks.slack.com', () => {
@@ -330,7 +330,7 @@ describe('buildWebhookPayload', () => {
 
   it('delegates to Slack builder for hooks.slack.com', () => {
     const payload = buildWebhookPayload(
-      'https://hooks.slack.com/services/T00/B00/abc',
+      'https://hooks.slack.com/test-webhook',
       sampleAlert,
       'high',
     );
@@ -363,7 +363,7 @@ describe('buildDigestPayload', () => {
   });
 
   it('builds a Slack digest with alert count in header', () => {
-    const payload = buildDigestPayload('https://hooks.slack.com/services/T00', bufferedAlerts);
+    const payload = buildDigestPayload('https://hooks.slack.com/test-webhook', bufferedAlerts);
     expect(payload.blocks).toBeDefined();
     const header = payload.blocks.find((b) => b.type === 'header');
     expect(header.text.text).toContain('2');
