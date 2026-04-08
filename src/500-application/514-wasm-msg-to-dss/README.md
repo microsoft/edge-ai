@@ -19,7 +19,7 @@ estimated_reading_time: 8
 WASM map operator that writes any incoming JSON message to the AIO Distributed State Store (DSS) under a configurable key extracted via JSON Pointer, with configurable TTL and full passthrough behavior.
 
 ```text
-MQTT → [msg_to_dss_key] → MQTT
+input → [msg_to_dss_key] → output
 ```
 
 > [!TIP]
@@ -346,6 +346,138 @@ Before deploying, evaluate the expected message rate on the source topic and con
 * **Broker memory profile**: The MQTT broker's memory profile affects how much data can be buffered in flight. For workloads that generate sustained write volume, review the broker's memory profile (`Tiny`, `Low`, `Medium`, `High`) and consider whether disk-backed persistence is appropriate.
   See [Configure broker settings for high availability, scaling, and memory usage](https://learn.microsoft.com/azure/iot-operations/manage-mqtt-broker/howto-configure-availability-scale?tabs=portal)
   for memory profile options and sizing guidance.
+
+## Example: Food Manufacturing Lot Traceability
+
+A food factory operates two production lines on different schedules. The **Filling Line (Line A)** fills containers with product throughout the day and publishes lot metadata to MQTT (~1,000 lots/day). The **Packaging Line (Line B)** picks up completed lots hours or a day later. When packaging begins, Line B emits an event referencing the lot number. This event needs the original production context from Line A to produce a consolidated traceability record for compliance and analytics.
+
+```text
+                        MQTT Broker
+                       ┌───────────┐
+  Filling Line A       │           │       Packaging Line B
+  (lot completion)     │           │       (packaging start)
+        │              │           │              │
+        ▼              │           │              ▼
+  ┌───────────┐        │           │        ┌───────────┐
+  │ Topic:    │        │           │        │ Topic:    │
+  │ lots/     │        │           │        │ packaging/│
+  │ completed │        │           │        │ started   │
+  └─────┬─────┘        │           │        └─────┬─────┘
+        │              │           │              │
+        ▼              │           │              ▼
+  ┌──────────────┐     │           │     ┌──────────────────┐
+  │ Pipeline A   │     │           │     │ Pipeline B       │
+  │ msg_to_dss   │     │           │     │ built-in enrich  │
+  │ key          │     │           │     │ from DSS         │
+  └──────┬───────┘     │           │     └────┬────────┬────┘
+         │             │           │          │        │
+         ▼             │           │          │        ▼
+  ┌─────────────┐      │           │          │  ┌──────────┐
+  │ DSS         │      │           │          │  │ Enriched │
+  │ lot:LOT-001 │◄─────┼───────────┼──────────┘  │ message  │
+  │ lot:LOT-002 │      │           │             │ to cloud │
+  │ ...         │      │           │             └──────────┘
+  └─────────────┘      └───────────┘
+```
+
+### Pipeline A: Write lot metadata to DSS
+
+Line A publishes a message each time a lot is completed. Pipeline A uses `msg-to-dss-key` to store the full payload in the DSS with a 48-hour TTL, providing a window for Line B to consume the lot.
+
+**Graph configuration**: `keyPath=/lotId`, `keyPrefix=lot:`, `ttlSeconds=172800`
+
+Example message on `lots/completed`:
+
+```json
+{
+  "lotId": "LOT-2026-04-08-0042",
+  "productType": "apple-sauce-500ml",
+  "fillWeight": 502.3,
+  "qualityGrade": "A",
+  "lineId": "filling-line-A",
+  "completedAt": "2026-04-08T09:14:00Z"
+}
+```
+
+Result: DSS key `lot:LOT-2026-04-08-0042` stores the full JSON payload.
+
+### Pipeline B: Enrich packaging events with lot context
+
+When Line B begins packaging a lot, it publishes a lean event referencing the lot number. Pipeline B uses built-in enrichment to look up the lot metadata from the DSS and merge both records into a single consolidated message.
+
+Example message on `packaging/started`:
+
+```json
+{
+  "lotId": "LOT-2026-04-08-0042",
+  "packagingLineId": "packaging-line-B",
+  "palletId": "PLT-7891",
+  "startedAt": "2026-04-08T14:22:00Z"
+}
+```
+
+The DataflowGraph for Pipeline B uses a `datasets` enrichment to read from the DSS key written by Pipeline A:
+
+```yaml
+datasets:
+  - key: "lot:LOT-2026-04-08-0042"
+    inputs:
+      - "$source.lotId"
+      - "$context.lotId"
+    expression: "$1 == $2"
+```
+
+A map transform merges the stored lot fields into the outgoing message:
+
+```yaml
+map:
+  - inputs:
+      - "$source.lotId"
+    output: "lotId"
+  - inputs:
+      - "$source.packagingLineId"
+    output: "packagingLineId"
+  - inputs:
+      - "$source.palletId"
+    output: "palletId"
+  - inputs:
+      - "$source.startedAt"
+    output: "packagingStartedAt"
+  - inputs:
+      - "$context(lot).productType"
+    output: "productType"
+  - inputs:
+      - "$context(lot).fillWeight"
+    output: "fillWeight"
+  - inputs:
+      - "$context(lot).qualityGrade"
+    output: "qualityGrade"
+  - inputs:
+      - "$context(lot).completedAt"
+    output: "fillingCompletedAt"
+```
+
+The enriched output sent to the cloud:
+
+```json
+{
+  "lotId": "LOT-2026-04-08-0042",
+  "packagingLineId": "packaging-line-B",
+  "palletId": "PLT-7891",
+  "packagingStartedAt": "2026-04-08T14:22:00Z",
+  "productType": "apple-sauce-500ml",
+  "fillWeight": 502.3,
+  "qualityGrade": "A",
+  "fillingCompletedAt": "2026-04-08T09:14:00Z"
+}
+```
+
+### Why this works well with `msg-to-dss-key`
+
+* **Low message rate**: ~1,000 lots/day is well within the operator's design envelope for state store writes.
+* **Natural TTL alignment**: A 48-hour TTL covers the typical gap between filling and packaging. Expired lots that were never packaged are automatically cleaned up.
+* **`onMissing` safety net**: If Pipeline B references a lot that hasn't been produced yet or whose TTL has expired, the `onMissing` configuration controls whether the message passes through with a warning (`skip`) or is dropped (`error`).
+* **No custom read-side code**: Pipeline B uses only built-in AIO enrichment transforms — no additional WASM development required.
 
 ## Limitations
 

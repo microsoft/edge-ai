@@ -18,6 +18,7 @@ use wasm_graph_sdk::state_store;
 
 const MODULE_NAME: &str = "msg-to-dss-key";
 
+#[derive(Debug)]
 struct OperatorConfig {
     key_path: String,
     key_prefix: String,
@@ -38,6 +39,90 @@ fn value_to_key_string(value: &serde_json::Value) -> Option<String> {
     }
 }
 
+/// Parses and validates operator configuration from key-value properties.
+/// Returns `Ok(OperatorConfig)` on success, or `Err(message)` describing the validation failure.
+fn parse_config(properties: &[(String, String)]) -> Result<OperatorConfig, String> {
+    // keyPath — REQUIRED, must start with '/'
+    let key_path = match properties
+        .iter()
+        .find(|(k, _)| k == "keyPath")
+        .map(|(_, v)| v.clone())
+    {
+        Some(path) if !path.is_empty() && path.starts_with('/') => path,
+        Some(other) => {
+            return Err(format!(
+                "Invalid keyPath '{}': must start with '/'. \
+                 Use RFC 6901 JSON Pointer syntax, e.g. /id, /data/record_id, /items/0/id",
+                other
+            ));
+        }
+        None => {
+            return Err(
+                "Missing required configuration: 'keyPath'. \
+                 Provide a JSON Pointer path, e.g. /id or /data/record_id"
+                    .to_string(),
+            );
+        }
+    };
+
+    // ttlSeconds — REQUIRED, must be parseable as u64
+    let ttl_seconds = match properties
+        .iter()
+        .find(|(k, _)| k == "ttlSeconds")
+        .map(|(_, v)| v.clone())
+    {
+        Some(val) => match val.parse::<u64>() {
+            Ok(n) => n,
+            Err(_) => {
+                return Err(format!(
+                    "Invalid ttlSeconds '{}': must be a non-negative integer. \
+                     Use 0 for no expiration, or e.g. 3600 for one hour.",
+                    val
+                ));
+            }
+        },
+        None => {
+            return Err(
+                "Missing required configuration: 'ttlSeconds'. \
+                 Provide the TTL in seconds (0 = no expiration)."
+                    .to_string(),
+            );
+        }
+    };
+
+    // keyPrefix — OPTIONAL (default: empty string)
+    let key_prefix = properties
+        .iter()
+        .find(|(k, _)| k == "keyPrefix")
+        .map(|(_, v)| v.clone())
+        .unwrap_or_default();
+
+    // onMissing — OPTIONAL (default: "skip")
+    let on_missing = properties
+        .iter()
+        .find(|(k, _)| k == "onMissing")
+        .map(|(_, v)| v.clone())
+        .unwrap_or_else(|| "skip".to_string());
+
+    let error_on_missing = match on_missing.as_str() {
+        "skip" => false,
+        "error" => true,
+        other => {
+            return Err(format!(
+                "Invalid onMissing value '{}': must be 'skip' or 'error'.",
+                other
+            ));
+        }
+    };
+
+    Ok(OperatorConfig {
+        key_path,
+        key_prefix,
+        ttl_seconds,
+        error_on_missing,
+    })
+}
+
 fn msg_to_dss_key_init(configuration: ModuleConfiguration) -> bool {
     logger::log(Level::Info, MODULE_NAME, "Initializing operator");
 
@@ -49,122 +134,27 @@ fn msg_to_dss_key_init(configuration: ModuleConfiguration) -> bool {
         );
     }
 
-    // keyPath — REQUIRED, must be empty string or start with '/'
-    let key_path = match configuration
-        .properties
-        .iter()
-        .find(|(k, _)| k == "keyPath")
-        .map(|(_, v)| v.clone())
-    {
-        Some(path) if !path.is_empty() && path.starts_with('/') => path,
-        Some(other) => {
+    match parse_config(&configuration.properties) {
+        Ok(config) => {
             logger::log(
-                Level::Error,
+                Level::Info,
                 MODULE_NAME,
                 &format!(
-                    "Invalid keyPath '{}': must start with '/'. \
-                     Use RFC 6901 JSON Pointer syntax, e.g. /id, /data/record_id, /items/0/id",
-                    other
+                    "Initialized: keyPath='{}', keyPrefix='{}', ttlSeconds={}, onMissing='{}'",
+                    config.key_path,
+                    config.key_prefix,
+                    config.ttl_seconds,
+                    if config.error_on_missing { "error" } else { "skip" }
                 ),
             );
-            return false;
+            let _ = CONFIG.set(config);
+            true
         }
-        None => {
-            logger::log(
-                Level::Error,
-                MODULE_NAME,
-                "Missing required configuration: 'keyPath'. \
-                 Provide a JSON Pointer path, e.g. /id or /data/record_id",
-            );
-            return false;
+        Err(msg) => {
+            logger::log(Level::Error, MODULE_NAME, &msg);
+            false
         }
-    };
-
-    // ttlSeconds — REQUIRED, must be parseable as u64
-    let ttl_seconds = match configuration
-        .properties
-        .iter()
-        .find(|(k, _)| k == "ttlSeconds")
-        .map(|(_, v)| v.clone())
-    {
-        Some(val) => match val.parse::<u64>() {
-            Ok(n) => n,
-            Err(_) => {
-                logger::log(
-                    Level::Error,
-                    MODULE_NAME,
-                    &format!(
-                        "Invalid ttlSeconds '{}': must be a non-negative integer. \
-                         Use 0 for no expiration, or e.g. 3600 for one hour.",
-                        val
-                    ),
-                );
-                return false;
-            }
-        },
-        None => {
-            logger::log(
-                Level::Error,
-                MODULE_NAME,
-                "Missing required configuration: 'ttlSeconds'. \
-                 Provide the TTL in seconds (0 = no expiration).",
-            );
-            return false;
-        }
-    };
-
-    // keyPrefix — OPTIONAL (default: empty string)
-    let key_prefix = configuration
-        .properties
-        .iter()
-        .find(|(k, _)| k == "keyPrefix")
-        .map(|(_, v)| v.clone())
-        .unwrap_or_default();
-
-    // onMissing — OPTIONAL (default: "skip")
-    let on_missing = configuration
-        .properties
-        .iter()
-        .find(|(k, _)| k == "onMissing")
-        .map(|(_, v)| v.clone())
-        .unwrap_or_else(|| "skip".to_string());
-
-    let error_on_missing = match on_missing.as_str() {
-        "skip" => false,
-        "error" => true,
-        other => {
-            logger::log(
-                Level::Error,
-                MODULE_NAME,
-                &format!(
-                    "Invalid onMissing value '{}': must be 'skip' or 'error'.",
-                    other
-                ),
-            );
-            return false;
-        }
-    };
-
-    logger::log(
-        Level::Info,
-        MODULE_NAME,
-        &format!(
-            "Initialized: keyPath='{}', keyPrefix='{}', ttlSeconds={}, onMissing='{}'",
-            key_path,
-            key_prefix,
-            ttl_seconds,
-            if error_on_missing { "error" } else { "skip" }
-        ),
-    );
-
-    let _ = CONFIG.set(OperatorConfig {
-        key_path,
-        key_prefix,
-        ttl_seconds,
-        error_on_missing,
-    });
-
-    true
+    }
 }
 
 #[map_operator(init = "msg_to_dss_key_init")]
@@ -419,5 +409,186 @@ mod tests {
         let extracted = data.pointer("/active").and_then(value_to_key_string).unwrap();
         let key = format!("{}{}", "status:", extracted);
         assert_eq!(key, "status:true");
+    }
+
+    // ─── parse_config ────────────────────────────────────────────────────────
+
+    fn props(pairs: &[(&str, &str)]) -> Vec<(String, String)> {
+        pairs.iter().map(|(k, v)| (k.to_string(), v.to_string())).collect()
+    }
+
+    // — Valid configurations —
+
+    #[test]
+    fn test_parse_config_minimal_required() {
+        let p = props(&[("keyPath", "/id"), ("ttlSeconds", "60")]);
+        let cfg = parse_config(&p).unwrap();
+        assert_eq!(cfg.key_path, "/id");
+        assert_eq!(cfg.ttl_seconds, 60);
+        assert_eq!(cfg.key_prefix, "");
+        assert!(!cfg.error_on_missing);
+    }
+
+    #[test]
+    fn test_parse_config_all_fields() {
+        let p = props(&[
+            ("keyPath", "/data/record_id"),
+            ("ttlSeconds", "3600"),
+            ("keyPrefix", "device:"),
+            ("onMissing", "error"),
+        ]);
+        let cfg = parse_config(&p).unwrap();
+        assert_eq!(cfg.key_path, "/data/record_id");
+        assert_eq!(cfg.ttl_seconds, 3600);
+        assert_eq!(cfg.key_prefix, "device:");
+        assert!(cfg.error_on_missing);
+    }
+
+    #[test]
+    fn test_parse_config_ttl_zero_no_expiration() {
+        let p = props(&[("keyPath", "/id"), ("ttlSeconds", "0")]);
+        let cfg = parse_config(&p).unwrap();
+        assert_eq!(cfg.ttl_seconds, 0);
+    }
+
+    #[test]
+    fn test_parse_config_on_missing_skip_explicit() {
+        let p = props(&[("keyPath", "/id"), ("ttlSeconds", "10"), ("onMissing", "skip")]);
+        let cfg = parse_config(&p).unwrap();
+        assert!(!cfg.error_on_missing);
+    }
+
+    #[test]
+    fn test_parse_config_on_missing_defaults_to_skip() {
+        let p = props(&[("keyPath", "/id"), ("ttlSeconds", "10")]);
+        let cfg = parse_config(&p).unwrap();
+        assert!(!cfg.error_on_missing);
+    }
+
+    #[test]
+    fn test_parse_config_key_prefix_defaults_to_empty() {
+        let p = props(&[("keyPath", "/id"), ("ttlSeconds", "10")]);
+        let cfg = parse_config(&p).unwrap();
+        assert_eq!(cfg.key_prefix, "");
+    }
+
+    #[test]
+    fn test_parse_config_deep_key_path() {
+        let p = props(&[("keyPath", "/a/b/c/d"), ("ttlSeconds", "1")]);
+        let cfg = parse_config(&p).unwrap();
+        assert_eq!(cfg.key_path, "/a/b/c/d");
+    }
+
+    #[test]
+    fn test_parse_config_array_index_key_path() {
+        let p = props(&[("keyPath", "/items/0/id"), ("ttlSeconds", "1")]);
+        let cfg = parse_config(&p).unwrap();
+        assert_eq!(cfg.key_path, "/items/0/id");
+    }
+
+    #[test]
+    fn test_parse_config_large_ttl() {
+        let p = props(&[("keyPath", "/id"), ("ttlSeconds", "31536000")]);
+        let cfg = parse_config(&p).unwrap();
+        assert_eq!(cfg.ttl_seconds, 31_536_000);
+    }
+
+    // — keyPath validation —
+
+    #[test]
+    fn test_parse_config_missing_key_path() {
+        let p = props(&[("ttlSeconds", "60")]);
+        let err = parse_config(&p).unwrap_err();
+        assert!(err.contains("Missing required configuration: 'keyPath'"), "{err}");
+    }
+
+    #[test]
+    fn test_parse_config_empty_key_path() {
+        let p = props(&[("keyPath", ""), ("ttlSeconds", "60")]);
+        let err = parse_config(&p).unwrap_err();
+        assert!(err.contains("Invalid keyPath"), "{err}");
+    }
+
+    #[test]
+    fn test_parse_config_key_path_no_leading_slash() {
+        let p = props(&[("keyPath", "id"), ("ttlSeconds", "60")]);
+        let err = parse_config(&p).unwrap_err();
+        assert!(err.contains("must start with '/'"), "{err}");
+    }
+
+    #[test]
+    fn test_parse_config_key_path_whitespace() {
+        let p = props(&[("keyPath", " /id"), ("ttlSeconds", "60")]);
+        let err = parse_config(&p).unwrap_err();
+        assert!(err.contains("must start with '/'"), "{err}");
+    }
+
+    // — ttlSeconds validation —
+
+    #[test]
+    fn test_parse_config_missing_ttl_seconds() {
+        let p = props(&[("keyPath", "/id")]);
+        let err = parse_config(&p).unwrap_err();
+        assert!(err.contains("Missing required configuration: 'ttlSeconds'"), "{err}");
+    }
+
+    #[test]
+    fn test_parse_config_ttl_non_numeric() {
+        let p = props(&[("keyPath", "/id"), ("ttlSeconds", "abc")]);
+        let err = parse_config(&p).unwrap_err();
+        assert!(err.contains("Invalid ttlSeconds 'abc'"), "{err}");
+    }
+
+    #[test]
+    fn test_parse_config_ttl_negative() {
+        let p = props(&[("keyPath", "/id"), ("ttlSeconds", "-1")]);
+        let err = parse_config(&p).unwrap_err();
+        assert!(err.contains("Invalid ttlSeconds"), "{err}");
+    }
+
+    #[test]
+    fn test_parse_config_ttl_float() {
+        let p = props(&[("keyPath", "/id"), ("ttlSeconds", "3.14")]);
+        let err = parse_config(&p).unwrap_err();
+        assert!(err.contains("Invalid ttlSeconds"), "{err}");
+    }
+
+    #[test]
+    fn test_parse_config_ttl_empty_string() {
+        let p = props(&[("keyPath", "/id"), ("ttlSeconds", "")]);
+        let err = parse_config(&p).unwrap_err();
+        assert!(err.contains("Invalid ttlSeconds"), "{err}");
+    }
+
+    // — onMissing validation —
+
+    #[test]
+    fn test_parse_config_on_missing_invalid_value() {
+        let p = props(&[("keyPath", "/id"), ("ttlSeconds", "60"), ("onMissing", "ignore")]);
+        let err = parse_config(&p).unwrap_err();
+        assert!(err.contains("Invalid onMissing value 'ignore'"), "{err}");
+    }
+
+    #[test]
+    fn test_parse_config_on_missing_empty_string() {
+        let p = props(&[("keyPath", "/id"), ("ttlSeconds", "60"), ("onMissing", "")]);
+        let err = parse_config(&p).unwrap_err();
+        assert!(err.contains("Invalid onMissing value"), "{err}");
+    }
+
+    #[test]
+    fn test_parse_config_on_missing_case_sensitive() {
+        let p = props(&[("keyPath", "/id"), ("ttlSeconds", "60"), ("onMissing", "Skip")]);
+        let err = parse_config(&p).unwrap_err();
+        assert!(err.contains("Invalid onMissing value 'Skip'"), "{err}");
+    }
+
+    // — Empty / no properties —
+
+    #[test]
+    fn test_parse_config_empty_properties() {
+        let p: Vec<(String, String)> = vec![];
+        let err = parse_config(&p).unwrap_err();
+        assert!(err.contains("Missing required configuration: 'keyPath'"), "{err}");
     }
 }
