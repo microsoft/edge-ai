@@ -244,7 +244,7 @@ class InteractiveProgressDocsifyIntegration {
           this.logger.log(`Skipping ${name} - not on an individual learning path page`);
           return;
         }
-      }        if (componentData.instance && typeof componentData.instance.initialize === 'function') {
+      } if (componentData.instance && typeof componentData.instance.initialize === 'function') {
           componentData.instance.initialize();
           componentData.isActive = true;
           componentData.lastUpdate = Date.now();
@@ -293,7 +293,7 @@ class InteractiveProgressDocsifyIntegration {
           this.logger.log(`Skipping ${name} update - not on an individual learning path page`);
           return;
         }
-      }        if (componentData.isActive && componentData.instance) {
+      } if (componentData.isActive && componentData.instance) {
           // Call update method if available
           if (typeof componentData.instance.update === 'function') {
             componentData.instance.update();
@@ -432,7 +432,7 @@ class InteractiveProgressDocsifyIntegration {
     } else {
       this.logger.log('No dashboard containers found on this page');
     }
-  }  /**
+  } /**
    * Update dashboard for new page content
    */
   updateDashboard() {

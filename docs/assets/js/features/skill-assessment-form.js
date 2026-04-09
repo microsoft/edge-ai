@@ -213,7 +213,7 @@ export class SkillAssessmentForm {
       const allH4s = document.querySelectorAll('h4');
       this.totalQuestions = Array.from(allH4s).filter(h4 => {
         const nextUl = h4.nextElementSibling;
-        if (!nextUl || nextUl.tagName !== 'UL') return false;
+        if (!nextUl || nextUl.tagName !== 'UL') {return false;}
         return nextUl.querySelectorAll('input[type="radio"]').length > 0;
       }).length || 18;
     }
@@ -498,11 +498,11 @@ export class SkillAssessmentForm {
         const allH4s = document.querySelectorAll('h4');
         this.totalQuestions = Array.from(allH4s).filter(h4 => {
             const nextUl = h4.nextElementSibling;
-            if (!nextUl || nextUl.tagName !== 'UL') return false;
+            if (!nextUl || nextUl.tagName !== 'UL') {return false;}
             // Check if this ul contains radio buttons (actual question)
             return nextUl.querySelectorAll('input[type="radio"]').length > 0;
         }).length || 18;
-        console.log(`🎯 Initialized skill assessment with ${this.totalQuestions} actual questions`);      this.assignCheckboxIds(checkboxes);
+        console.log(`🎯 Initialized skill assessment with ${this.totalQuestions} actual questions`); this.assignCheckboxIds(checkboxes);
       this.organizeRatingGroups();
       this.bindCheckboxEventListeners(document.querySelectorAll('input[type="radio"]'));
 
@@ -527,7 +527,7 @@ export class SkillAssessmentForm {
 
       group.checkboxes.forEach(checkbox => {
         const parentLi = checkbox.closest('li');
-        if (!parentLi) return;
+        if (!parentLi) {return;}
 
         const text = parentLi.textContent.trim();
         const ratingMatch = text.match(/^(\d+)\s*-\s*(.+)$/);
@@ -740,7 +740,6 @@ export class SkillAssessmentForm {
   }
 
 
-
   /**
    * Organize rating options into proper groups
    * @private
@@ -876,9 +875,9 @@ export class SkillAssessmentForm {
   scoreToLevel(score) {
     const { SKILL_LEVELS, SCORE_THRESHOLDS } = LEARNING_PATH_CONSTANTS;
 
-    if (score >= SCORE_THRESHOLDS.expert.min) return SKILL_LEVELS.EXPERT;
-    if (score >= SCORE_THRESHOLDS.advanced.min) return SKILL_LEVELS.ADVANCED;
-    if (score > SCORE_THRESHOLDS.beginner.max) return SKILL_LEVELS.INTERMEDIATE;
+    if (score >= SCORE_THRESHOLDS.expert.min) {return SKILL_LEVELS.EXPERT;}
+    if (score >= SCORE_THRESHOLDS.advanced.min) {return SKILL_LEVELS.ADVANCED;}
+    if (score > SCORE_THRESHOLDS.beginner.max) {return SKILL_LEVELS.INTERMEDIATE;}
     return SKILL_LEVELS.BEGINNER;
   }
 

@@ -112,7 +112,7 @@
 
       // ISO 8601 format (YYYY-MM-DD) - preferred
       if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
-        date = new Date(dateStr + 'T00:00:00');
+        date = new Date(`${dateStr }T00:00:00`);
       }
       // Legacy MM/DD/YYYY format
       else if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(dateStr)) {
@@ -316,7 +316,7 @@
         html = frontmatterHtml + html;
       }
       next(html);
-    });    hook.doneEach(() => {
+    }); hook.doneEach(() => {
       // Styles are now handled by CSS files - no dynamic injection needed
     });
   }

@@ -134,7 +134,6 @@ Common issues and their solutions:
 ## Related Workflows
 
 - Variable Compliance Terraform: [YAML](/.github/workflows/variable-compliance-terraform.yml) | [Documentation](./variable-compliance-terraform.md) - Checks Terraform variable consistency
-- MegaLinter: [YAML](/.github/workflows/megalinter.yml) | [Documentation](./megalinter.md) - Provides broader code quality checks
 
 ## Learn More
 

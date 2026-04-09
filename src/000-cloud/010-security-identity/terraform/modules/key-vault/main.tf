@@ -17,7 +17,7 @@ resource "azurerm_key_vault" "new" {
   resource_group_name           = var.resource_group.name
   tenant_id                     = data.azurerm_client_config.current.tenant_id
   sku_name                      = "standard"
-  purge_protection_enabled      = false
+  purge_protection_enabled      = var.should_enable_purge_protection
   rbac_authorization_enabled    = true
   public_network_access_enabled = var.should_enable_public_network_access
 }

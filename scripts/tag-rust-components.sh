@@ -19,15 +19,15 @@ force=false
 push=false
 
 while getopts ":nfp" opt; do
-  case ${opt} in
+    case ${opt} in
     n) dry_run=true ;;
     f) force=true ;;
     p) push=true ;;
     *)
-      echo "Usage: $0 [-n] [-f] [-p] [components_dir]" >&2
-      exit 2
-      ;;
-  esac
+        echo "Usage: $0 [-n] [-f] [-p] [components_dir]" >&2
+        exit 2
+        ;;
+    esac
 done
 
 shift $((OPTIND - 1))
@@ -40,19 +40,19 @@ script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 repo_root="$script_dir/.."
 
 if ! git -C "$repo_root" rev-parse --git-dir >/dev/null 2>&1; then
-  echo "Error: not a git repository: $repo_root" >&2
-  exit 1
+    echo "Error: not a git repository: $repo_root" >&2
+    exit 1
 fi
 
 if [ ! -d "$components_dir" ]; then
-  echo "Error: components directory not found: $components_dir" >&2
-  exit 1
+    echo "Error: components directory not found: $components_dir" >&2
+    exit 1
 fi
 
 extract_version() {
-  # Extract the package.version from the [package] section only
-  # Usage: extract_version <path-to-Cargo.toml>
-  awk '
+    # Extract the package.version from the [package] section only
+    # Usage: extract_version <path-to-Cargo.toml>
+    awk '
     BEGIN { inpkg=0 }
     /^\[package\]/ { inpkg=1; next }
     inpkg && /^\[/ { inpkg=0 }
@@ -71,68 +71,68 @@ skipped=0
 updated=0
 
 for comp_path in "$components_dir"/*; do
-  [ -d "$comp_path" ] || continue
-  cargo_toml="$comp_path/Cargo.toml"
-  if [ ! -f "$cargo_toml" ]; then
-    # Not a Rust component; skip
-    continue
-  fi
+    [ -d "$comp_path" ] || continue
+    cargo_toml="$comp_path/Cargo.toml"
+    if [ ! -f "$cargo_toml" ]; then
+        # Not a Rust component; skip
+        continue
+    fi
 
-  comp_name=$(basename "$comp_path")
-  version=$(extract_version "$cargo_toml" || true)
-  if [ -z "${version:-}" ]; then
-    echo "WARN: No version found in $comp_name/Cargo.toml (skipping)" >&2
-    ((skipped++))
-    continue
-  fi
+    comp_name=$(basename "$comp_path")
+    version=$(extract_version "$cargo_toml" || true)
+    if [ -z "${version:-}" ]; then
+        echo "WARN: No version found in $comp_name/Cargo.toml (skipping)" >&2
+        ((skipped++))
+        continue
+    fi
 
-  tag="$comp_name/$version"
-  if git -C "$repo_root" show-ref --tags --quiet --verify "refs/tags/$tag"; then
-    if [ "$force" = true ]; then
-      echo "Updating existing tag: $tag"
-      if [ "$dry_run" = true ]; then
-        echo "DRY-RUN: git tag -a -f '$tag' -m 'Tag $comp_name $version'"
-      else
-        git -C "$repo_root" tag -a -f "$tag" -m "Tag $comp_name $version"
-      fi
-      if [ "$push" = true ]; then
-        if [ "$dry_run" = true ]; then
-          echo "DRY-RUN: git push -f origin '$tag'"
+    tag="$comp_name/$version"
+    if git -C "$repo_root" show-ref --tags --quiet --verify "refs/tags/$tag"; then
+        if [ "$force" = true ]; then
+            echo "Updating existing tag: $tag"
+            if [ "$dry_run" = true ]; then
+                echo "DRY-RUN: git tag -a -f '$tag' -m 'Tag $comp_name $version'"
+            else
+                git -C "$repo_root" tag -a -f "$tag" -m "Tag $comp_name $version"
+            fi
+            if [ "$push" = true ]; then
+                if [ "$dry_run" = true ]; then
+                    echo "DRY-RUN: git push -f origin '$tag'"
+                else
+                    git -C "$repo_root" push -f origin "$tag"
+                fi
+            fi
+            ((updated++))
         else
-          git -C "$repo_root" push -f origin "$tag"
+            echo "Tag exists, skipping: $tag"
+            ((skipped++))
         fi
-      fi
-      ((updated++))
-    else
-      echo "Tag exists, skipping: $tag"
-      ((skipped++))
+        continue
     fi
-    continue
-  fi
 
-  echo "Creating tag: $tag"
-  if [ "$dry_run" = true ]; then
-    echo "DRY-RUN: git tag -a '$tag' -m 'Tag $comp_name $version'"
-  else
-    if [ "$force" = true ]; then
-      git -C "$repo_root" tag -a -f "$tag" -m "Tag $comp_name $version"
-    else
-      git -C "$repo_root" tag -a "$tag" -m "Tag $comp_name $version"
-    fi
-  fi
-
-  if [ "$push" = true ]; then
+    echo "Creating tag: $tag"
     if [ "$dry_run" = true ]; then
-      echo "DRY-RUN: git push origin '$tag'"
+        echo "DRY-RUN: git tag -a '$tag' -m 'Tag $comp_name $version'"
     else
-      if [ "$force" = true ]; then
-        git -C "$repo_root" push -f origin "$tag"
-      else
-        git -C "$repo_root" push origin "$tag"
-      fi
+        if [ "$force" = true ]; then
+            git -C "$repo_root" tag -a -f "$tag" -m "Tag $comp_name $version"
+        else
+            git -C "$repo_root" tag -a "$tag" -m "Tag $comp_name $version"
+        fi
     fi
-  fi
-  ((created++))
+
+    if [ "$push" = true ]; then
+        if [ "$dry_run" = true ]; then
+            echo "DRY-RUN: git push origin '$tag'"
+        else
+            if [ "$force" = true ]; then
+                git -C "$repo_root" push -f origin "$tag"
+            else
+                git -C "$repo_root" push origin "$tag"
+            fi
+        fi
+    fi
+    ((created++))
 done
 
 echo "Summary: created=$created, updated=$updated, skipped=$skipped"

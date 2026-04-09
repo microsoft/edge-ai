@@ -76,6 +76,7 @@ The following applications are currently available in this directory:
 - **[510-onvif-connector](./510-onvif-connector/README.md)** - ONVIF connector for IP camera integration with Azure IoT Operations
 - **[511-rust-embedded-wasm-provider](./511-rust-embedded-wasm-provider/README.md)** - WebAssembly operators for Azure IoT Operations dataflow graphs using WIT Component Model composition
 - **[512-avro-to-json](./512-avro-to-json/README.md)** - Avro binary to JSON transformation WASM module for Azure IoT Operations dataflow graphs
+- **[514-wasm-msg-to-dss](./514-wasm-msg-to-dss/README.md)** - WASM map operator that writes any incoming JSON message to the AIO Distributed State Store under a configurable key extracted via JSON Pointer, with TTL and passthrough behavior
 
 ## Service Implementation
 
@@ -498,7 +499,7 @@ FROM mcr.microsoft.com/azurelinux/base/core:3.0.20250910
 
 SHA256 pinning is enforced through multiple mechanisms:
 
-- **Hadolint DL3006 Rule:** Automated linting via MegaLinter (`.mega-linter.yml`) enforces SHA256 digests on all FROM statements
+- **Hadolint DL3006 Rule:** Automated Hadolint linting enforces SHA256 digests on all FROM statements
 - **Pre-Build Validation:** GitHub Actions workflow (`.github/workflows/application-matrix-builds.yml`) validates Dockerfiles before builds
 - **Security Gate:** Build pipeline fails if Dockerfiles lack SHA256 digests, preventing non-compliant images from being built
 
@@ -542,7 +543,7 @@ This SHA256 pinning requirement complements the SLSA attestation practices docum
 - **Immutable Base Images:** SHA256 digests prevent supply chain tampering at the base image layer
 - **Combined Provenance:** Use SHA256 pinning with SLSA attestation for complete supply chain provenance tracking
 - **Automated Monitoring:** Security templates (`.azdo/templates/security-*.yml`) monitor both SHA staleness and attestation validity
-- **Defense in Depth:** Multiple enforcement layers (MegaLinter, pre-build validation, security gates) ensure compliance
+- **Defense in Depth:** Multiple enforcement layers (dedicated lint jobs, pre-build validation, security gates) ensure compliance
 
 ---
 

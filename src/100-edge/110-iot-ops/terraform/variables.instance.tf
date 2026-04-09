@@ -18,7 +18,7 @@ variable "operations_config" {
   default = {
     namespace                      = "azure-iot-operations"
     kubernetesDistro               = "K3s"
-    version                        = "1.2.189"
+    version                        = "1.3.38"
     train                          = "stable"
     agentOperationTimeoutInMinutes = 120
   }
@@ -87,6 +87,127 @@ variable "mqtt_broker_config" {
   }
 }
 
+variable "mqtt_broker_advanced_config" {
+  type = object({
+    encrypt_internal_traffic = optional(string)
+    internal_certs = optional(object({
+      duration                    = optional(string)
+      renew_before                = optional(string)
+      private_key_algorithm       = optional(string)
+      private_key_rotation_policy = optional(string)
+    }))
+    clients = optional(object({
+      max_session_expiry_seconds = optional(number)
+      max_message_expiry_seconds = optional(number)
+      max_packet_size_bytes      = optional(number)
+      max_receive_maximum        = optional(number)
+      max_keep_alive_seconds     = optional(number)
+      subscriber_queue_limit = optional(object({
+        length   = optional(number)
+        strategy = optional(string)
+      }))
+    }))
+  })
+  description = "Advanced broker settings for client limits, internal traffic encryption, and internal certificate configuration"
+  default     = null
+
+  validation {
+    condition = var.mqtt_broker_advanced_config == null || try(
+      var.mqtt_broker_advanced_config.encrypt_internal_traffic == null ||
+      contains(["Enabled", "Disabled"], var.mqtt_broker_advanced_config.encrypt_internal_traffic),
+      true
+    )
+    error_message = "encrypt_internal_traffic must be 'Enabled' or 'Disabled'."
+  }
+
+  validation {
+    condition = var.mqtt_broker_advanced_config == null || try(
+      var.mqtt_broker_advanced_config.internal_certs.private_key_algorithm == null ||
+      contains(["Ec256", "Ec384", "Ec521", "Ed25519", "Rsa2048", "Rsa4096", "Rsa8192"], var.mqtt_broker_advanced_config.internal_certs.private_key_algorithm),
+      true
+    )
+    error_message = "internal_certs.private_key_algorithm must be one of: 'Ec256', 'Ec384', 'Ec521', 'Ed25519', 'Rsa2048', 'Rsa4096', 'Rsa8192'."
+  }
+
+  validation {
+    condition = var.mqtt_broker_advanced_config == null || try(
+      var.mqtt_broker_advanced_config.internal_certs.private_key_rotation_policy == null ||
+      contains(["Always", "Never"], var.mqtt_broker_advanced_config.internal_certs.private_key_rotation_policy),
+      true
+    )
+    error_message = "internal_certs.private_key_rotation_policy must be 'Always' or 'Never'."
+  }
+
+  validation {
+    condition = var.mqtt_broker_advanced_config == null || try(
+      var.mqtt_broker_advanced_config.clients.subscriber_queue_limit.strategy == null ||
+      contains(["None", "DropOldest"], var.mqtt_broker_advanced_config.clients.subscriber_queue_limit.strategy),
+      true
+    )
+    error_message = "clients.subscriber_queue_limit.strategy must be 'None' or 'DropOldest'."
+  }
+
+  validation {
+    condition = var.mqtt_broker_advanced_config == null || try(
+      var.mqtt_broker_advanced_config.clients.max_session_expiry_seconds == null ||
+      var.mqtt_broker_advanced_config.clients.max_session_expiry_seconds >= 1,
+      true
+    )
+    error_message = "clients.max_session_expiry_seconds must be at least 1."
+  }
+
+  validation {
+    condition = var.mqtt_broker_advanced_config == null || try(
+      var.mqtt_broker_advanced_config.clients.max_message_expiry_seconds == null ||
+      var.mqtt_broker_advanced_config.clients.max_message_expiry_seconds >= 1,
+      true
+    )
+    error_message = "clients.max_message_expiry_seconds must be at least 1."
+  }
+
+  validation {
+    condition = var.mqtt_broker_advanced_config == null || try(
+      var.mqtt_broker_advanced_config.clients.max_packet_size_bytes == null || (
+        var.mqtt_broker_advanced_config.clients.max_packet_size_bytes >= 1 &&
+        var.mqtt_broker_advanced_config.clients.max_packet_size_bytes <= 268435456
+      ),
+      true
+    )
+    error_message = "clients.max_packet_size_bytes must be between 1 and 268435456."
+  }
+
+  validation {
+    condition = var.mqtt_broker_advanced_config == null || try(
+      var.mqtt_broker_advanced_config.clients.max_receive_maximum == null || (
+        var.mqtt_broker_advanced_config.clients.max_receive_maximum >= 1 &&
+        var.mqtt_broker_advanced_config.clients.max_receive_maximum <= 65535
+      ),
+      true
+    )
+    error_message = "clients.max_receive_maximum must be between 1 and 65535."
+  }
+
+  validation {
+    condition = var.mqtt_broker_advanced_config == null || try(
+      var.mqtt_broker_advanced_config.clients.max_keep_alive_seconds == null || (
+        var.mqtt_broker_advanced_config.clients.max_keep_alive_seconds >= 0 &&
+        var.mqtt_broker_advanced_config.clients.max_keep_alive_seconds <= 65535
+      ),
+      true
+    )
+    error_message = "clients.max_keep_alive_seconds must be between 0 and 65535."
+  }
+
+  validation {
+    condition = var.mqtt_broker_advanced_config == null || try(
+      var.mqtt_broker_advanced_config.clients.subscriber_queue_limit.length == null ||
+      var.mqtt_broker_advanced_config.clients.subscriber_queue_limit.length >= 1,
+      true
+    )
+    error_message = "clients.subscriber_queue_limit.length must be at least 1."
+  }
+}
+
 variable "dataflow_instance_count" {
   type        = number
   default     = 1
@@ -131,15 +252,8 @@ EOF
 
 variable "mqtt_broker_persistence_config" {
   type = object({
-    enabled            = bool
     max_size           = string
     encryption_enabled = optional(bool)
-
-    # Dynamic Settings
-    dynamic_settings = optional(object({
-      user_property_key   = string
-      user_property_value = string
-    }))
 
     # Retention Policy
     retain_policy = optional(object({
@@ -167,7 +281,6 @@ variable "mqtt_broker_persistence_config" {
       mode = string # "All", "None", "Custom"
       custom_settings = optional(object({
         subscriber_client_ids = optional(list(string))
-        topics                = optional(list(string))
         dynamic_enabled       = optional(bool)
       }))
     }))
@@ -186,6 +299,12 @@ variable "mqtt_broker_persistence_config" {
         api_group = optional(string)
         kind      = string
         name      = string
+      }))
+      data_source_ref = optional(object({
+        api_group = optional(string)
+        kind      = string
+        name      = string
+        namespace = optional(string)
       }))
       selector = optional(object({
         match_labels = optional(map(string))
@@ -244,11 +363,11 @@ variable "mqtt_broker_persistence_config" {
     condition = var.mqtt_broker_persistence_config == null || try(
       alltrue([
         for mode in coalesce(var.mqtt_broker_persistence_config.persistent_volume_claim_spec.access_modes, []) :
-        contains(["ReadWriteOnce", "ReadOnlyMany", "ReadWriteMany", "ReadWriteOncePod"], mode)
+        contains(["ReadWriteOncePod"], mode)
       ]),
       true
     )
-    error_message = "persistent_volume_claim_spec.access_modes must contain valid Kubernetes access modes: 'ReadWriteOnce', 'ReadOnlyMany', 'ReadWriteMany', or 'ReadWriteOncePod'."
+    error_message = "persistent_volume_claim_spec.access_modes must be 'ReadWriteOncePod' for broker persistence."
   }
 
   validation {
@@ -268,6 +387,233 @@ variable "mqtt_broker_persistence_config" {
       true
     )
     error_message = "persistent_volume_claim_spec.selector.match_expressions[].operator must be one of: 'In', 'NotIn', 'Exists', or 'DoesNotExist'."
+  }
+}
+
+variable "mqtt_broker_disk_buffer_config" {
+  type = object({
+    max_size = string
+    ephemeral_volume_claim_spec = optional(object({
+      storage_class_name = optional(string)
+      access_modes       = optional(list(string))
+      volume_mode        = optional(string)
+      volume_name        = optional(string)
+      resources = optional(object({
+        requests = optional(map(string))
+        limits   = optional(map(string))
+      }))
+      data_source = optional(object({
+        api_group = optional(string)
+        kind      = string
+        name      = string
+      }))
+      data_source_ref = optional(object({
+        api_group = optional(string)
+        kind      = string
+        name      = string
+        namespace = optional(string)
+      }))
+      selector = optional(object({
+        match_labels = optional(map(string))
+        match_expressions = optional(list(object({
+          key      = string
+          operator = string
+          values   = list(string)
+        })))
+      }))
+    }))
+    persistent_volume_claim_spec = optional(object({
+      storage_class_name = optional(string)
+      access_modes       = optional(list(string))
+      volume_mode        = optional(string)
+      volume_name        = optional(string)
+      resources = optional(object({
+        requests = optional(map(string))
+        limits   = optional(map(string))
+      }))
+      data_source = optional(object({
+        api_group = optional(string)
+        kind      = string
+        name      = string
+      }))
+      data_source_ref = optional(object({
+        api_group = optional(string)
+        kind      = string
+        name      = string
+        namespace = optional(string)
+      }))
+      selector = optional(object({
+        match_labels = optional(map(string))
+        match_expressions = optional(list(object({
+          key      = string
+          operator = string
+          values   = list(string)
+        })))
+      }))
+    }))
+  })
+  description = "Disk-backed message buffer configuration for broker in-memory overflow to disk"
+  default     = null
+
+  validation {
+    condition     = var.mqtt_broker_disk_buffer_config == null || try(can(regex("^[0-9]+[KMGTPE]$", var.mqtt_broker_disk_buffer_config.max_size)), false)
+    error_message = "max_size must follow the pattern '^[0-9]+[KMGTPE]$' (e.g., '100M', '1G', '500M'). Valid suffixes are K, M, G, T, P, E (binary suffixes like 'Gi', 'Mi' are not supported)."
+  }
+
+  validation {
+    condition = var.mqtt_broker_disk_buffer_config == null || try(
+      alltrue([
+        for mode in coalesce(var.mqtt_broker_disk_buffer_config.ephemeral_volume_claim_spec.access_modes, []) :
+        contains(["ReadWriteOnce", "ReadOnlyMany", "ReadWriteMany", "ReadWriteOncePod"], mode)
+      ]),
+      true
+    )
+    error_message = "ephemeral_volume_claim_spec.access_modes must contain valid Kubernetes access modes: 'ReadWriteOnce', 'ReadOnlyMany', 'ReadWriteMany', or 'ReadWriteOncePod'."
+  }
+
+  validation {
+    condition = var.mqtt_broker_disk_buffer_config == null || try(
+      contains(["Filesystem", "Block"], coalesce(var.mqtt_broker_disk_buffer_config.ephemeral_volume_claim_spec.volume_mode, "Filesystem")),
+      true
+    )
+    error_message = "ephemeral_volume_claim_spec.volume_mode must be either 'Filesystem' or 'Block'."
+  }
+
+  validation {
+    condition = var.mqtt_broker_disk_buffer_config == null || try(
+      alltrue([
+        for expr in coalesce(var.mqtt_broker_disk_buffer_config.ephemeral_volume_claim_spec.selector.match_expressions, []) :
+        contains(["In", "NotIn", "Exists", "DoesNotExist"], expr.operator)
+      ]),
+      true
+    )
+    error_message = "ephemeral_volume_claim_spec.selector.match_expressions[].operator must be one of: 'In', 'NotIn', 'Exists', or 'DoesNotExist'."
+  }
+
+  validation {
+    condition = var.mqtt_broker_disk_buffer_config == null || try(
+      alltrue([
+        for mode in coalesce(var.mqtt_broker_disk_buffer_config.persistent_volume_claim_spec.access_modes, []) :
+        contains(["ReadWriteOnce", "ReadOnlyMany", "ReadWriteMany", "ReadWriteOncePod"], mode)
+      ]),
+      true
+    )
+    error_message = "persistent_volume_claim_spec.access_modes must contain valid Kubernetes access modes: 'ReadWriteOnce', 'ReadOnlyMany', 'ReadWriteMany', or 'ReadWriteOncePod'."
+  }
+
+  validation {
+    condition = var.mqtt_broker_disk_buffer_config == null || try(
+      contains(["Filesystem", "Block"], coalesce(var.mqtt_broker_disk_buffer_config.persistent_volume_claim_spec.volume_mode, "Filesystem")),
+      true
+    )
+    error_message = "persistent_volume_claim_spec.volume_mode must be either 'Filesystem' or 'Block'."
+  }
+
+  validation {
+    condition = var.mqtt_broker_disk_buffer_config == null || try(
+      alltrue([
+        for expr in coalesce(var.mqtt_broker_disk_buffer_config.persistent_volume_claim_spec.selector.match_expressions, []) :
+        contains(["In", "NotIn", "Exists", "DoesNotExist"], expr.operator)
+      ]),
+      true
+    )
+    error_message = "persistent_volume_claim_spec.selector.match_expressions[].operator must be one of: 'In', 'NotIn', 'Exists', or 'DoesNotExist'."
+  }
+}
+
+variable "mqtt_broker_diagnostics_config" {
+  type = object({
+    metrics = optional(object({
+      prometheus_port = optional(number)
+    }))
+    self_check = optional(object({
+      mode             = optional(string)
+      interval_seconds = optional(number)
+      timeout_seconds  = optional(number)
+    }))
+    traces = optional(object({
+      mode                  = optional(string)
+      cache_size_megabytes  = optional(number)
+      span_channel_capacity = optional(number)
+      self_tracing = optional(object({
+        mode             = optional(string)
+        interval_seconds = optional(number)
+      }))
+    }))
+  })
+  description = "Extended broker diagnostics configuration for metrics, self-check, and distributed tracing"
+  default     = null
+
+  validation {
+    condition = var.mqtt_broker_diagnostics_config == null || try(
+      contains(["Enabled", "Disabled"], var.mqtt_broker_diagnostics_config.self_check.mode),
+      true
+    )
+    error_message = "self_check.mode must be one of: 'Enabled' or 'Disabled'."
+  }
+
+  validation {
+    condition = var.mqtt_broker_diagnostics_config == null || try(
+      contains(["Enabled", "Disabled"], var.mqtt_broker_diagnostics_config.traces.mode),
+      true
+    )
+    error_message = "traces.mode must be one of: 'Enabled' or 'Disabled'."
+  }
+
+  validation {
+    condition = var.mqtt_broker_diagnostics_config == null || try(
+      contains(["Enabled", "Disabled"], var.mqtt_broker_diagnostics_config.traces.self_tracing.mode),
+      true
+    )
+    error_message = "traces.self_tracing.mode must be one of: 'Enabled' or 'Disabled'."
+  }
+
+  validation {
+    condition = var.mqtt_broker_diagnostics_config == null || try(
+      var.mqtt_broker_diagnostics_config.metrics.prometheus_port >= 0 && var.mqtt_broker_diagnostics_config.metrics.prometheus_port <= 65535,
+      true
+    )
+    error_message = "metrics.prometheus_port must be between 0 and 65535."
+  }
+
+  validation {
+    condition = var.mqtt_broker_diagnostics_config == null || try(
+      var.mqtt_broker_diagnostics_config.self_check.interval_seconds >= 30 && var.mqtt_broker_diagnostics_config.self_check.interval_seconds <= 300,
+      true
+    )
+    error_message = "self_check.interval_seconds must be between 30 and 300."
+  }
+
+  validation {
+    condition = var.mqtt_broker_diagnostics_config == null || try(
+      var.mqtt_broker_diagnostics_config.self_check.timeout_seconds >= 5 && var.mqtt_broker_diagnostics_config.self_check.timeout_seconds <= 120,
+      true
+    )
+    error_message = "self_check.timeout_seconds must be between 5 and 120."
+  }
+
+  validation {
+    condition = var.mqtt_broker_diagnostics_config == null || try(
+      var.mqtt_broker_diagnostics_config.traces.cache_size_megabytes >= 1 && var.mqtt_broker_diagnostics_config.traces.cache_size_megabytes <= 128,
+      true
+    )
+    error_message = "traces.cache_size_megabytes must be between 1 and 128."
+  }
+
+  validation {
+    condition = var.mqtt_broker_diagnostics_config == null || try(
+      var.mqtt_broker_diagnostics_config.traces.span_channel_capacity >= 1000 && var.mqtt_broker_diagnostics_config.traces.span_channel_capacity <= 100000,
+      true
+    )
+    error_message = "traces.span_channel_capacity must be between 1000 and 100000."
+  }
+
+  validation {
+    condition = var.mqtt_broker_diagnostics_config == null || try(
+      var.mqtt_broker_diagnostics_config.traces.self_tracing.interval_seconds >= 1 && var.mqtt_broker_diagnostics_config.traces.self_tracing.interval_seconds <= 300,
+      true
+    )
+    error_message = "traces.self_tracing.interval_seconds must be between 1 and 300."
   }
 }
 

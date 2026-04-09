@@ -442,9 +442,9 @@ export class AssessmentResultProcessor {
    * @returns {string} Skill level (beginner, intermediate, advanced, expert)
    */
   determineSkillLevel(score) {
-    if (score >= SCORE_THRESHOLDS.expert.min) return SKILL_LEVELS.EXPERT;
-    if (score >= SCORE_THRESHOLDS.advanced.min) return SKILL_LEVELS.ADVANCED;
-    if (score >= SCORE_THRESHOLDS.intermediate.min) return SKILL_LEVELS.INTERMEDIATE;
+    if (score >= SCORE_THRESHOLDS.expert.min) {return SKILL_LEVELS.EXPERT;}
+    if (score >= SCORE_THRESHOLDS.advanced.min) {return SKILL_LEVELS.ADVANCED;}
+    if (score >= SCORE_THRESHOLDS.intermediate.min) {return SKILL_LEVELS.INTERMEDIATE;}
     return SKILL_LEVELS.BEGINNER;
   }
 

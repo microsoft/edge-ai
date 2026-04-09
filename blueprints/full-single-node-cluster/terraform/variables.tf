@@ -79,6 +79,12 @@ variable "should_get_custom_locations_oid" {
  * Azure IoT Operations Parameters
  */
 
+variable "should_deploy_aio" {
+  type        = bool
+  description = "Whether to deploy Azure IoT Operations and its dependent edge components (assets, edge messaging). When false, deploys Arc-connected cluster with extensions and observability only"
+  default     = true
+}
+
 variable "aio_features" {
   description = "AIO instance features with mode ('Stable', 'Preview', 'Disabled') and settings ('Enabled', 'Disabled')"
   type = map(object({
@@ -286,6 +292,42 @@ variable "should_enable_opc_ua_simulator" {
 }
 
 /*
+ * Alert Dataflow Parameters
+ */
+
+variable "alert_eventhub_name" {
+  type        = string
+  description = "Name of the Event Hub for inference alerts. Otherwise, 'evh-{resource_prefix}-alerts-{environment}-{instance}'"
+  default     = null
+}
+
+variable "alert_eventhub_consumer_group" {
+  type        = string
+  description = "Consumer group for the alert notification Function App Event Hub trigger. Otherwise, '$Default'"
+  default     = "$Default"
+}
+
+variable "eventhubs" {
+  description = <<-EOF
+    Per-Event Hub configuration. Keys are Event Hub names.
+
+    - **Message retention**: Specifies the number of days to retain events for this Event Hub, from 1 to 7.
+    - **Partition count**: Specifies the number of partitions for the Event Hub. Valid values are from 1 to 32.
+    - **Consumer group user metadata**: A placeholder to store user-defined string data with maximum length 1024.
+      It can be used to store descriptive data, such as list of teams and their contact information,
+      or user-defined configuration settings.
+  EOF
+  type = map(object({
+    message_retention = optional(number, 1)
+    partition_count   = optional(number, 1)
+    consumer_groups = optional(map(object({
+      user_metadata = optional(string, null)
+    })), {})
+  }))
+  default = {}
+}
+
+/*
  * Azure Functions Parameters
  */
 
@@ -293,6 +335,13 @@ variable "should_create_azure_functions" {
   type        = bool
   description = "Whether to create the Azure Functions resources including the App Service plan"
   default     = false
+}
+
+variable "function_app_settings" {
+  type        = map(string)
+  description = "Application settings for the Function App deployed by the messaging component"
+  default     = {}
+  sensitive   = true
 }
 
 /*
@@ -464,6 +513,12 @@ variable "acr_data_endpoint_enabled" {
   default     = true
 }
 
+variable "acr_export_policy_enabled" {
+  type        = bool
+  description = "Whether to allow container image export from the ACR. Requires acr_public_network_access_enabled to be true when enabled"
+  default     = false
+}
+
 variable "acr_public_network_access_enabled" {
   type        = bool
   description = "Whether to enable the ACR public endpoint alongside private connectivity"
@@ -484,6 +539,12 @@ variable "should_enable_key_vault_public_network_access" {
   type        = bool
   description = "Whether to enable public network access for the Key Vault"
   default     = true
+}
+
+variable "should_enable_key_vault_purge_protection" {
+  type        = bool
+  description = "Whether to enable purge protection for the Key Vault. Enable for production to prevent accidental or malicious secret deletion"
+  default     = false
 }
 
 /*

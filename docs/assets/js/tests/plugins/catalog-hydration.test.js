@@ -435,9 +435,9 @@ describe('CatalogHydration Plugin - DOM Decoration', () => {
       const checkbox2 = document.querySelector('input[data-item-id="docker-01-docker-basics"]');
       const checkbox3 = document.querySelector('input[data-item-id="path-foundation"]');
 
-      expect(checkbox1.checked).toBe(true);  // In selections
+      expect(checkbox1.checked).toBe(true); // In selections
       expect(checkbox2.checked).toBe(false); // Not in selections
-      expect(checkbox3.checked).toBe(true);  // In selections
+      expect(checkbox3.checked).toBe(true); // In selections
     });
 
     it('should inject progress bar HTML for items with progress data', () => {
@@ -1376,7 +1376,6 @@ describe('CatalogHydration Plugin - Assessment Recommendations Integration', () 
   });
 
 
-
   describe('Path Auto-Selection', () => {
     let plugin;
     let consoleLogSpy;
@@ -1701,7 +1700,7 @@ describe('CatalogHydration Plugin - Assessment Recommendations Integration', () 
     });
 
     it('should return null before instance is created', () => {
-      let catalogHydrationInstance = null;
+      const catalogHydrationInstance = null;
 
       Object.defineProperty(window, 'catalogHydrationInstance', {
         get: () => catalogHydrationInstance,
