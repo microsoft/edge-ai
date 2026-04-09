@@ -6,21 +6,7 @@
  * existing cloud infrastructure including Key Vault, Storage Account, Application Insights, and networking.
  */
 
-/*
- * Current User Data (Microsoft Graph)
- */
-
-resource "msgraph_resource_action" "current_user" {
-  count = var.should_assign_current_user_workspace_roles ? 1 : 0
-
-  method       = "GET"
-  resource_url = "me"
-
-
-  response_export_values = {
-    oid = "id"
-  }
-}
+data "azurerm_client_config" "current" {}
 
 /*
  * Network Module for Azure ML Compute Cluster
@@ -69,7 +55,7 @@ module "workspace" {
   description                                = "Azure Machine Learning workspace for ${var.resource_prefix}-${var.environment}-${var.instance}"
   friendly_name                              = coalesce(var.workspace_friendly_name, "${var.resource_prefix}-${var.environment}-${var.instance} ML Workspace")
   should_assign_current_user_workspace_roles = var.should_assign_current_user_workspace_roles
-  current_user_object_id                     = try(msgraph_resource_action.current_user[0].output.oid, null)
+  current_user_object_id                     = var.should_assign_current_user_workspace_roles ? data.azurerm_client_config.current.object_id : null
   ml_workload_identity                       = var.ml_workload_identity
   should_assign_ml_workload_identity_roles   = var.should_assign_ml_workload_identity_roles
 

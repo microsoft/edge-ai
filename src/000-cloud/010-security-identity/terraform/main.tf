@@ -6,24 +6,11 @@
  * access to resources.
  */
 
+data "azurerm_client_config" "current" {}
+
 locals {
-  key_vault_admin_principal_id         = try(coalesce(var.key_vault_admin_principal_id, msgraph_resource_action.current_user[0].output.oid), null)
+  key_vault_admin_principal_id         = try(coalesce(var.key_vault_admin_principal_id, var.should_use_current_user_key_vault_admin ? data.azurerm_client_config.current.object_id : null), null)
   should_add_key_vault_role_assignment = anytrue([var.key_vault_admin_principal_id != null, var.should_use_current_user_key_vault_admin])
-}
-
-/*
- * Current User Data (Microsoft Graph)
- */
-
-resource "msgraph_resource_action" "current_user" {
-  count = var.should_use_current_user_key_vault_admin ? 1 : 0
-
-  method       = "GET"
-  resource_url = "me"
-
-  response_export_values = {
-    oid = "id"
-  }
 }
 
 module "key_vault" {
@@ -42,6 +29,7 @@ module "key_vault" {
   private_endpoint_subnet_id           = var.key_vault_private_endpoint_subnet_id
   virtual_network_id                   = var.key_vault_virtual_network_id
   should_enable_public_network_access  = var.should_enable_public_network_access
+  should_enable_purge_protection       = var.should_enable_purge_protection
   should_add_key_vault_role_assignment = local.should_add_key_vault_role_assignment
 }
 

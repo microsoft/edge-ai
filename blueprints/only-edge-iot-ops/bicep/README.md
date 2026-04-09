@@ -193,10 +193,10 @@ Deploys Kubernetes asset definitions to a connected cluster using the namespaced
 
 | Name                   | Type                                             | API Version |
 |:-----------------------|:-------------------------------------------------|:------------|
-| namespacedDevice       | `Microsoft.DeviceRegistry/namespaces/devices`    | 2025-10-01  |
-| namespacedAsset        | `Microsoft.DeviceRegistry/namespaces/assets`     | 2025-10-01  |
-| assetEndpointProfile   | `Microsoft.DeviceRegistry/assetEndpointProfiles` | 2025-10-01  |
-| legacyAsset            | `Microsoft.DeviceRegistry/assets`                | 2025-10-01  |
+| namespacedDevice       | `Microsoft.DeviceRegistry/namespaces/devices`    | 2026-04-01  |
+| namespacedAsset        | `Microsoft.DeviceRegistry/namespaces/assets`     | 2026-04-01  |
+| assetEndpointProfile   | `Microsoft.DeviceRegistry/assetEndpointProfiles` | 2026-04-01  |
+| legacyAsset            | `Microsoft.DeviceRegistry/assets`                | 2026-04-01  |
 | k8BridgeRoleAssignment | `Microsoft.Resources/deployments`                | 2025-04-01  |
 
 #### Outputs for edgeAssets

@@ -121,19 +121,19 @@ npm run link-fix              # Fix language-specific links
 
 The Dev Container includes pre-configured linting tools for maintaining code quality:
 
-#### MegaLinter
+#### Linting
 
-Run comprehensive linting across all file types:
+Run linting tools locally:
 
 ```bash
-# Run all configured linters
-npm run lint-devcontainer
+# Run Terraform linting and formatting
+npm run tflint-fix-all
 
-# Fix automatically fixable issues
-npm run lint-fix-devcontainer
+# Run markdown linting
+npm run mdlint-fix
 ```
 
-For detailed information about the MegaLinter configuration, see the [MegaLinter documentation](../../.azdo/templates/megalinter-template.md).
+For detailed information about the CI/CD lint jobs, see the [Azure Pipelines lint templates documentation](../build-cicd/azure-pipelines/README.md).
 
 #### Markdown Linting
 

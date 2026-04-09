@@ -123,6 +123,9 @@ module "iot_ops_instance" {
   enable_instance_secret_sync             = var.enable_instance_secret_sync
   secret_sync_identity                    = var.secret_sync_identity
   mqtt_broker_persistence_config          = var.mqtt_broker_persistence_config
+  mqtt_broker_advanced_config             = var.mqtt_broker_advanced_config
+  mqtt_broker_disk_buffer_config          = var.mqtt_broker_disk_buffer_config
+  mqtt_broker_diagnostics_config          = var.mqtt_broker_diagnostics_config
   arc_connected_cluster_id                = var.arc_connected_cluster.id
   connected_cluster_location              = var.arc_connected_cluster.location
   connected_cluster_name                  = var.arc_connected_cluster.name

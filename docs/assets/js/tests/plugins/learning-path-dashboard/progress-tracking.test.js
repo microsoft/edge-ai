@@ -343,7 +343,7 @@ describe('Progress Tracking', () => {
 
       expect(progress).toBeDefined();
       expect(progress.percentage).toBe(75);
-    });    it('should load progress from localStorage', () => {
+    }); it('should load progress from localStorage', () => {
       localStorage.setItem('learningPathProgress', JSON.stringify({
         path1: 50,
         path2: 100

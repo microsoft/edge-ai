@@ -32,6 +32,12 @@ variable "should_enable_public_network_access" {
   default     = true
 }
 
+variable "should_enable_purge_protection" {
+  description = "Whether to enable purge protection for the Key Vault. Enable for production to prevent accidental or malicious secret deletion"
+  type        = bool
+  default     = false
+}
+
 /*
  * Key Vault Private Endpoint - Optional
  */

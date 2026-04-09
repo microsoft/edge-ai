@@ -413,7 +413,6 @@ describe('LearningPathProgress', () => {
     });
 
 
-
     it('should handle save errors gracefully', () => {
       // Mock Date.now to throw an error
       const originalNow = Date.now;
@@ -428,11 +427,6 @@ describe('LearningPathProgress', () => {
       Date.now = originalNow;
     });
   });
-
-
-
-
-
 
 
   describe('getCheckboxProgress()', () => {

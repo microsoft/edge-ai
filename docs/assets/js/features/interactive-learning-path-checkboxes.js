@@ -63,7 +63,7 @@ export class InteractiveLearningPathCheckboxes {
         const kataLink = item.querySelector('a[href*="/katas/"]');
         const pathLink = item.querySelector('a[href*="/paths/"]');
 
-        if (!checkbox) return;
+        if (!checkbox) {return;}
 
         // Skip if already decorated
         if (checkbox.hasAttribute('data-kata-id')) {
@@ -346,7 +346,7 @@ export class InteractiveLearningPathCheckboxes {
 
     // Kata: katas/category/number-name(.md) → category-number-name
     // Also handles relative paths: ../katas/category/number-name.md
-    const kataMatch = cleanHref.match(/katas\/([^\/]+)\/([^\/\.#]+)/);
+    const kataMatch = cleanHref.match(/katas\/([^/]+)\/([^/.#]+)/);
     if (kataMatch) {
       return `${kataMatch[1]}-${kataMatch[2]}`;
     }

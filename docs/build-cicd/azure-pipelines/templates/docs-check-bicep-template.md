@@ -86,9 +86,9 @@ This template depends on the following:
 # Advanced implementation with all parameters
   - template: .azdo/templates/docs-check-bicep-template.yml
   parameters:
-    dependsOn: [MegaLinter]
+    dependsOn: [BicepLint]
     displayName: "Bicep Documentation Quality Validation"
-    condition: succeeded('MegaLinter')
+    condition: succeeded('BicepLint')
     breakBuild: true
     pool:
       name: "custom-pool"
@@ -155,13 +155,12 @@ stages:
 stages:
   - stage: Validate
     jobs:
-      - template: .azdo/templates/megalinter-template.yml
-        # MegaLinter parameters...
+      - template: .azdo/templates/shell-lint-template.yml
 
       - template: .azdo/templates/docs-check-bicep-template.yml
         parameters:
-          dependsOn: [MegaLinter]
-          condition: succeeded('MegaLinter')
+          dependsOn: [ShellLint]
+          condition: succeeded('ShellLint')
 ```
 
 ## Troubleshooting
@@ -191,7 +190,6 @@ Common issues and their solutions:
 
 ## Related Templates
 
-- MegaLinter Template: [YAML](/.azdo/templates/megalinter-template.yml) | [Documentation](./megalinter-template.md) - Provides comprehensive linting for various file types
 - Variable Compliance Bicep Template: [YAML](/.azdo/templates/variable-compliance-bicep-template.yml) | [Documentation](./variable-compliance-bicep-template.md) - Ensures consistent parameter definitions
 - Docs Check Terraform Template: [YAML](/.azdo/templates/docs-check-terraform-template.yml) | [Documentation](./docs-check-terraform-template.md) - Similar template for checking Terraform documentation
 

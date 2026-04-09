@@ -139,7 +139,7 @@ class AssessmentCompletionModal {
         const skillBadge = modal.querySelector('.skill-badge');
 
         // Get skill level from recommendations (use recommended path type directly)
-        let skillLevel = recommendations?.recommendedPathType ||
+        const skillLevel = recommendations?.recommendedPathType ||
                         recommendations?.recommendedPath ||
                         assessmentResults?.overallLevel ||
                         assessmentResults?.results?.overallLevel ||
@@ -180,7 +180,7 @@ class AssessmentCompletionModal {
                 }
             };
 
-            const pathInfo = pathTypeMap[skillLevel] || pathTypeMap['beginner'];
+            const pathInfo = pathTypeMap[skillLevel] || pathTypeMap.beginner;
 
             const pathTitle = modal.querySelector('.path-title');
             pathTitle.textContent = pathInfo.title;
@@ -242,7 +242,7 @@ class AssessmentCompletionModal {
       'expert': 'Expert'
     };
     return levelMap[skillLevel] || 'Beginner';
-  }    /**
+  } /**
      * Sets up modal event listeners
      */
     async setupModalEventListeners() {
@@ -268,7 +268,7 @@ class AssessmentCompletionModal {
 
       // Overlay and keyboard handlers
       modal.addEventListener('click', (e) => {
-        if (e.target === modal) this.closeModal('closed');
+        if (e.target === modal) {this.closeModal('closed');}
       });
 
       const escapeHandler = (e) => {
@@ -281,7 +281,7 @@ class AssessmentCompletionModal {
 
       // Store handler for cleanup
       this.escapeHandler = escapeHandler;
-    }    /**
+    } /**
      * Saves the recommended learning path to user's dashboard via API
      * Dashboard will load selections from server on page load
      */
@@ -334,7 +334,7 @@ class AssessmentCompletionModal {
                     'intermediate': ['path-intermediate-infrastructure-architect'],
                     'expert': ['path-expert-enterprise-integration']
                 };
-                newPaths = pathDefaults[targetDifficulty] || pathDefaults['foundation'];
+                newPaths = pathDefaults[targetDifficulty] || pathDefaults.foundation;
             }
 
             // Merge new paths with existing selections (deduplicate with Set)
@@ -475,11 +475,11 @@ class AssessmentCompletionModal {
           this.escapeHandler = null;
         }
       }
-    }    /**
+    } /**
      * Adds CSS styles for the modal
      */
     addModalStyles() {
-        if (document.getElementById('assessment-modal-styles')) return;
+        if (document.getElementById('assessment-modal-styles')) {return;}
 
         const styles = `
             <style id="assessment-modal-styles">

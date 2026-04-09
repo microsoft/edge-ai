@@ -696,13 +696,13 @@ export const progressMixin = {
   },
 
   updateProgressDisplay(pathId, progressData = null) {
-    if (!pathId) return;
+    if (!pathId) {return;}
 
     const progress = progressData || this.calculateProgress(pathId);
 
     this.containers.forEach(container => {
       const pathCard = container.querySelector(`[data-path-id="${pathId}"]`);
-      if (!pathCard) return;
+      if (!pathCard) {return;}
 
       this.updateProgressElements(pathCard, progress);
     });
@@ -769,7 +769,6 @@ export const progressMixin = {
       this.logError('Failed to update progress in localStorage:', error);
     }
   },
-
 
 
   recalculateProgress() {

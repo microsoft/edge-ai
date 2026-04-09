@@ -27,7 +27,7 @@ type SecretStoreExtension = {
 @export()
 var secretStoreExtensionDefaults = {
   release: {
-    version: '1.1.6'
+    version: '1.3.0'
     train: 'stable'
   }
 }
@@ -53,7 +53,7 @@ type AioExtension = {
 @export()
 var aioExtensionDefaults = {
   release: {
-    version: '1.2.189'
+    version: '1.3.38'
     train: 'stable'
   }
   settings: {
@@ -87,9 +87,6 @@ type InstanceFeatureSettingValue = 'Enabled' | 'Disabled'
 @export()
 @description('Broker persistence configuration for disk-backed message storage.')
 type BrokerPersistence = {
-  @description('Whether persistence is enabled.')
-  enabled: bool
-
   @description('Maximum size of the message buffer on disk (e.g., "500M", "1G").')
   maxSize: string?
 
@@ -97,15 +94,6 @@ type BrokerPersistence = {
   encryption: {
     @description('Whether encryption is enabled for the persistence database. Either "Enabled" or "Disabled".')
     mode: ('Enabled' | 'Disabled')
-  }?
-
-  @description('Dynamic settings for MQTTv5 user property-based persistence control.')
-  dynamicSettings: {
-    @description('The user property key to enable persistence.')
-    userPropertyKey: string?
-
-    @description('The user property value to enable persistence.')
-    userPropertyValue: string?
   }?
 
   @description('Controls which retained messages should be persisted to disk.')
@@ -159,9 +147,6 @@ type BrokerPersistence = {
     subscriberQueueSettings: {
       @description('List of subscriber client IDs (supports wildcards).')
       subscriberClientIds: string[]?
-
-      @description('List of topics for subscriber persistence (supports wildcards).')
-      topics: string[]?
 
       @description('Dynamic subscriber queue control configuration.')
       dynamic: {
@@ -227,6 +212,114 @@ type BrokerPersistence = {
 }
 
 @export()
+@description('Advanced broker settings for client limits, internal traffic encryption, and internal certificate configuration.')
+type BrokerAdvancedConfig = {
+  @description('Encrypt internal broker traffic. Defaults to Enabled.')
+  encryptInternalTraffic: ('Enabled' | 'Disabled')?
+
+  @description('Internal certificate configuration.')
+  internalCerts: {
+    @description('Certificate lifetime (Go duration, e.g. "720h").')
+    duration: string?
+
+    @description('Time before expiry to renew (Go duration, e.g. "240h").')
+    renewBefore: string?
+
+    @description('Private key configuration.')
+    privateKey: {
+      @description('Key algorithm.')
+      algorithm: ('Ec256' | 'Ec384' | 'Ec521' | 'Ed25519' | 'Rsa2048' | 'Rsa4096' | 'Rsa8192')?
+
+      @description('Key rotation policy.')
+      rotationPolicy: ('Always' | 'Never')?
+    }?
+  }?
+
+  @description('Client configuration for MQTT sessions.')
+  clients: {
+    @description('Upper bound of Session Expiry Interval in seconds.')
+    maxSessionExpirySeconds: int?
+
+    @description('Upper bound of Message Expiry Interval in seconds.')
+    maxMessageExpirySeconds: int?
+
+    @description('Max packet size in bytes (max: 268435456).')
+    maxPacketSizeBytes: int?
+
+    @description('Upper bound of Receive Maximum (max: 65535).')
+    maxReceiveMaximum: int?
+
+    @description('Upper bound of Keep Alive in seconds (max: 65535).')
+    maxKeepAliveSeconds: int?
+
+    @description('Subscriber queue limit configuration.')
+    subscriberQueueLimit: {
+      @description('Max queue length before dropping.')
+      length: int?
+
+      @description('Drop strategy.')
+      strategy: ('None' | 'DropOldest')?
+    }?
+  }?
+}
+
+@export()
+@description('Disk-backed message buffer configuration for broker in-memory overflow to disk.')
+type BrokerDiskBufferConfig = {
+  @description('Maximum buffer size (e.g. "500M", "1G"). Pattern: ^[0-9]+[KMGTPE]$.')
+  maxSize: string
+
+  @description('Ephemeral volume claim spec for message buffer (preferred).')
+  ephemeralVolumeClaimSpec: object?
+
+  @description('Persistent volume claim spec for message buffer.')
+  persistentVolumeClaimSpec: object?
+}
+
+@export()
+@description('Extended broker diagnostics configuration for metrics, self-check, and distributed tracing.')
+type BrokerDiagnosticsConfig = {
+  @description('Metrics configuration.')
+  metrics: {
+    @description('Prometheus scrape port (0-65535, default: 9600).')
+    prometheusPort: int?
+  }?
+
+  @description('Self-check diagnostic configuration.')
+  selfCheck: {
+    @description('Operational mode.')
+    mode: ('Enabled' | 'Disabled')?
+
+    @description('Check interval in seconds (30-300, default: 30).')
+    intervalSeconds: int?
+
+    @description('Check timeout in seconds (5-120, default: 15).')
+    timeoutSeconds: int?
+  }?
+
+  @description('Distributed tracing configuration.')
+  traces: {
+    @description('Operational mode.')
+    mode: ('Enabled' | 'Disabled')?
+
+    @description('Cache size in megabytes (1-128, default: 16).')
+    cacheSizeMegabytes: int?
+
+    @description('Span channel capacity (1000-100000, default: 1000).')
+    spanChannelCapacity: int?
+
+    @description('Self-tracing configuration.')
+    selfTracing: {
+      @description('Operational mode.')
+      mode: ('Enabled' | 'Disabled')?
+
+      @description('Interval in seconds (1-300, default: 30).')
+      intervalSeconds: int?
+    }?
+  }?
+}
+
+@export()
 @description('The settings for the Azure IoT Operations MQ Broker.')
 type AioMqBroker = {
   @description('The service name for the broker listener.')
@@ -264,6 +357,15 @@ type AioMqBroker = {
 
   @description('Broker persistence configuration for disk-backed message storage.')
   persistence: BrokerPersistence?
+
+  @description('Advanced broker settings.')
+  advanced: BrokerAdvancedConfig?
+
+  @description('Disk-backed message buffer configuration.')
+  diskBackedMessageBuffer: BrokerDiskBufferConfig?
+
+  @description('Extended diagnostics configuration (metrics, self-check, traces).')
+  diagnosticsConfig: BrokerDiagnosticsConfig?
 }
 
 @export()

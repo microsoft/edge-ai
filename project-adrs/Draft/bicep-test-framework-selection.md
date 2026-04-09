@@ -253,7 +253,7 @@ Rule 'Custom.Tags.Required' {
 
 #### CI/CD Integration
 
-PSRule should be integrated into the CI/CD pipeline alongside the existing MegaLinter process:
+PSRule should be integrated into the CI/CD pipeline alongside the existing lint jobs:
 
 ```yaml
 # For GitHub Actions
