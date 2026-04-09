@@ -1,0 +1,4 @@
+# WASM operator - no Docker build artifacts
+# This component builds a wasm32-wasip2 module via Cargo, not Docker containers.
+# Build and push are handled via scripts/build-wasm.sh and scripts/push-to-acr.sh.
+# The .nobuild marker excludes this from the ADO/GitHub Docker matrix build pipeline.
