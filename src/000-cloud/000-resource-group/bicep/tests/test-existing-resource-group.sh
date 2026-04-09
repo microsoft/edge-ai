@@ -52,9 +52,9 @@ az group create --name "$RESOURCE_GROUP_NAME" --location "$LOCATION" --tags "Tes
 echo "Deploying Bicep template..."
 DEPLOYMENT_NAME="existing-rg-test-$(date +%s)"
 az deployment sub create \
-  --name "$DEPLOYMENT_NAME" \
-  --location "$LOCATION" \
-  --template-file "$TEST_DIR/main.bicep"
+    --name "$DEPLOYMENT_NAME" \
+    --location "$LOCATION" \
+    --template-file "$TEST_DIR/main.bicep"
 
 # Step 3: Verify outputs
 echo "Verifying outputs..."
@@ -62,17 +62,17 @@ RG_NAME=$(az deployment sub show --name "$DEPLOYMENT_NAME" --query 'properties.o
 RG_LOCATION=$(az deployment sub show --name "$DEPLOYMENT_NAME" --query 'properties.outputs.resourceGroupLocation.value' -o tsv)
 
 if [ "$RG_NAME" == "$RESOURCE_GROUP_NAME" ]; then
-  echo "✓ Resource group name output matches: $RG_NAME"
+    echo "✓ Resource group name output matches: $RG_NAME"
 else
-  echo "✗ Resource group name output mismatch: $RG_NAME != $RESOURCE_GROUP_NAME"
-  exit 1
+    echo "✗ Resource group name output mismatch: $RG_NAME != $RESOURCE_GROUP_NAME"
+    exit 1
 fi
 
 if [ "$RG_LOCATION" == "$LOCATION" ]; then
-  echo "✓ Resource group location output matches: $RG_LOCATION"
+    echo "✓ Resource group location output matches: $RG_LOCATION"
 else
-  echo "✗ Resource group location output mismatch: $RG_LOCATION != $LOCATION"
-  exit 1
+    echo "✗ Resource group location output mismatch: $RG_LOCATION != $LOCATION"
+    exit 1
 fi
 
 # Step 4: Clean up

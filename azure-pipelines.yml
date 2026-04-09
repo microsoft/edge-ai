@@ -150,33 +150,84 @@ stages:
     # Run the main build process only if the build is not scheduled and is the dev branch
     condition: and(eq(variables.isMain, true), eq(variables.isScheduled, false))
     jobs:
-      # Use the megaLinter-template.yml to run MegaLinter
-      - template: .azdo/templates/megalinter-template.yml
+      - template: .azdo/templates/security-scan-template.yml
         parameters:
           dependsOn: []
-          displayName: "Run MegaLinter"
-          condition: succeeded()
-          # for main do not report results as there's no PR to report to
-          enableAzureReporter: false
+          breakBuild: true
+          agentPool:
+            name: $(poolName)
+            vmImage: $(vmImage)
+      - template: .azdo/templates/shell-lint-template.yml
+        parameters:
+          dependsOn: []
+          agentPool:
+            name: $(poolName)
+            vmImage: $(vmImage)
+      - template: .azdo/templates/yaml-lint-template.yml
+        parameters:
+          dependsOn: []
+          agentPool:
+            name: $(poolName)
+            vmImage: $(vmImage)
+      - template: .azdo/templates/code-quality-lint-template.yml
+        parameters:
+          dependsOn: []
+          agentPool:
+            name: $(poolName)
+            vmImage: $(vmImage)
+      - template: .azdo/templates/docs-lint-template.yml
+        parameters:
+          dependsOn: []
+          agentPool:
+            name: $(poolName)
+            vmImage: $(vmImage)
+      - template: .azdo/templates/powershell-lint-template.yml
+        parameters:
+          dependsOn: []
+          agentPool:
+            name: $(poolName)
+            vmImage: $(vmImage)
+      - template: .azdo/templates/bicep-lint-template.yml
+        parameters:
+          dependsOn: []
+          agentPool:
+            name: $(poolName)
+            vmImage: $(vmImage)
+      - template: .azdo/templates/terraform-lint-template.yml
+        parameters:
+          dependsOn: []
+          agentPool:
+            name: $(poolName)
+            vmImage: $(vmImage)
+      - template: .azdo/templates/python-lint-template.yml
+        parameters:
+          dependsOn: []
           agentPool:
             name: $(poolName)
             vmImage: $(vmImage)
 
-      # Use the rust-clippy-template.yml for Rust lint checking on main
       - template: .azdo/templates/rust-clippy-template.yml
         parameters:
-          dependsOn: MegaLinter
+          dependsOn: []
           displayName: "Rust Clippy Lint Check"
           condition: succeeded()
           agentPool:
             name: $(poolName)
             vmImage: $(vmImage)
 
-      # Use the wiki-update-template.yml to update the wiki documentation
-      # This job will only run if the MegaLinter job passes.
       - template: .azdo/templates/wiki-update-template.yml
         parameters:
-          dependsOn: MegaLinter
+          dependsOn:
+            - SecurityScan
+            - ShellLint
+            - YamlLint
+            - CodeQualityLint
+            - DocsLint
+            - PowershellLint
+            - BicepLint
+            - TerraformLint
+            - PythonLint
+            - RustClippyLintCheck
           displayName: "Wiki Documentation Update"
           condition: succeeded()
           branchRepoFolder: "branch"
@@ -192,14 +243,66 @@ stages:
     # Run the pre-release build process only if the build is not scheduled and is the pre-release branch
     condition: and(eq(variables.isPreRelease, true), eq(variables.isScheduled, false))
     jobs:
-      # Use the megaLinter-template.yml to run MegaLinter
-      - template: .azdo/templates/megalinter-template.yml
+      - template: .azdo/templates/security-scan-template.yml
         parameters:
           dependsOn: []
-          displayName: "Run MegaLinter"
-          condition: succeeded()
-          # for main do not report results as there's no PR to report to
-          enableAzureReporter: false
+          breakBuild: true
+          agentPool:
+            name: $(poolName)
+            vmImage: $(vmImage)
+      - template: .azdo/templates/shell-lint-template.yml
+        parameters:
+          dependsOn: []
+          breakBuild: true
+          agentPool:
+            name: $(poolName)
+            vmImage: $(vmImage)
+      - template: .azdo/templates/yaml-lint-template.yml
+        parameters:
+          dependsOn: []
+          breakBuild: true
+          agentPool:
+            name: $(poolName)
+            vmImage: $(vmImage)
+      - template: .azdo/templates/code-quality-lint-template.yml
+        parameters:
+          dependsOn: []
+          breakBuild: true
+          agentPool:
+            name: $(poolName)
+            vmImage: $(vmImage)
+      - template: .azdo/templates/docs-lint-template.yml
+        parameters:
+          dependsOn: []
+          breakBuild: true
+          agentPool:
+            name: $(poolName)
+            vmImage: $(vmImage)
+      - template: .azdo/templates/powershell-lint-template.yml
+        parameters:
+          dependsOn: []
+          breakBuild: true
+          agentPool:
+            name: $(poolName)
+            vmImage: $(vmImage)
+      - template: .azdo/templates/bicep-lint-template.yml
+        parameters:
+          dependsOn: []
+          breakBuild: true
+          agentPool:
+            name: $(poolName)
+            vmImage: $(vmImage)
+      - template: .azdo/templates/terraform-lint-template.yml
+        parameters:
+          dependsOn: []
+          breakBuild: true
+          agentPool:
+            name: $(poolName)
+            vmImage: $(vmImage)
+      - template: .azdo/templates/python-lint-template.yml
+        parameters:
+          dependsOn: []
+          breakBuild: true
           agentPool:
             name: $(poolName)
             vmImage: $(vmImage)
@@ -209,27 +312,82 @@ stages:
     # Run the PR build process only if the build is not scheduled, not the dev branch and not the pre-release branch
     condition: and(eq(variables.isMain, false), eq(variables.isPreRelease, false), eq(variables.isScheduled, false))
     jobs:
-      # Use the MegaLinter template for PR builds with Azure reporter enabled
-      - template: .azdo/templates/megalinter-template.yml
+      - template: .azdo/templates/security-scan-template.yml
         parameters:
           dependsOn: []
-          displayName: "Run MegaLinter"
-          condition: succeeded()
-          # for PR builds, enable the Azure reporter to report results
-          # to the PR and set the pull request ID and source repo URIs
-          enableAzureReporter: true
-          pullRequestId: $(System.PullRequest.PullRequestId)
-          pullRequestIdOverride: $(pullRequestIdOverride)
-          sourceRepoUri: $(System.PullRequest.SourceRepositoryURI)
+          breakBuild: true
           agentPool:
             name: $(poolName)
             vmImage: $(vmImage)
-      # Use the matrix-folder-check-template.yml to check for changes in src directory
-      # This job runs early to provide change detection outputs for conditional execution
+      - template: .azdo/templates/shell-lint-template.yml
+        parameters:
+          dependsOn: []
+          breakBuild: true
+          agentPool:
+            name: $(poolName)
+            vmImage: $(vmImage)
+      - template: .azdo/templates/yaml-lint-template.yml
+        parameters:
+          dependsOn: []
+          breakBuild: true
+          agentPool:
+            name: $(poolName)
+            vmImage: $(vmImage)
+      - template: .azdo/templates/code-quality-lint-template.yml
+        parameters:
+          dependsOn: []
+          breakBuild: true
+          agentPool:
+            name: $(poolName)
+            vmImage: $(vmImage)
+      - template: .azdo/templates/docs-lint-template.yml
+        parameters:
+          dependsOn: []
+          breakBuild: true
+          agentPool:
+            name: $(poolName)
+            vmImage: $(vmImage)
+      - template: .azdo/templates/powershell-lint-template.yml
+        parameters:
+          dependsOn: []
+          breakBuild: true
+          agentPool:
+            name: $(poolName)
+            vmImage: $(vmImage)
+      - template: .azdo/templates/bicep-lint-template.yml
+        parameters:
+          dependsOn: []
+          breakBuild: true
+          agentPool:
+            name: $(poolName)
+            vmImage: $(vmImage)
+      - template: .azdo/templates/terraform-lint-template.yml
+        parameters:
+          dependsOn: []
+          breakBuild: true
+          agentPool:
+            name: $(poolName)
+            vmImage: $(vmImage)
+      - template: .azdo/templates/python-lint-template.yml
+        parameters:
+          dependsOn: []
+          breakBuild: true
+          agentPool:
+            name: $(poolName)
+            vmImage: $(vmImage)
       - template: .azdo/templates/matrix-folder-check-template.yml
         parameters:
-          jobName: ComponentChangesFolderCheck  # Add unique job name for this instance
-          dependsOn: MegaLinter
+          jobName: ComponentChangesFolderCheck
+          dependsOn:
+            - SecurityScan
+            - ShellLint
+            - YamlLint
+            - CodeQualityLint
+            - DocsLint
+            - PowershellLint
+            - BicepLint
+            - TerraformLint
+            - PythonLint
           displayName: "Check for changes in src directory"
           condition: succeeded()
           includeAllIaC: ${{ parameters.IncludeAllIaC }}

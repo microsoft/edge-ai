@@ -68,3 +68,5 @@ qlapi
 Cnet
 cnet
 avsc
+DCAM
+SPOD

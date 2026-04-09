@@ -10,7 +10,6 @@ Deploys one or more Linux VMs for Arc-connected K3s cluster
 | terraform | >= 1.9.8, < 2.0 |
 | azurerm   | >= 4.51.0       |
 | local     | >= 2.5.0        |
-| msgraph   | >= 0.2.0        |
 | random    | >= 3.6.0        |
 | tls       | >= 4.0.0        |
 
@@ -20,21 +19,20 @@ Deploys one or more Linux VMs for Arc-connected K3s cluster
 |---------|-----------|
 | azurerm | >= 4.51.0 |
 | local   | >= 2.5.0  |
-| msgraph | >= 0.2.0  |
 | random  | >= 3.6.0  |
 | tls     | >= 4.0.0  |
 
 ## Resources
 
-| Name                                                                                                                                                         | Type     |
-|--------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|
-| [azurerm_role_assignment.vm_admin_login](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment)                    | resource |
-| [azurerm_role_assignment.vm_user_login](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment)                     | resource |
-| [azurerm_virtual_machine_extension.aad_ssh_login](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_machine_extension) | resource |
-| [local_sensitive_file.private_key](https://registry.terraform.io/providers/hashicorp/local/latest/docs/resources/sensitive_file)                             | resource |
-| [msgraph_resource_action.current_user](https://registry.terraform.io/providers/microsoft/msgraph/latest/docs/resources/resource_action)                      | resource |
-| [random_password.vm_admin](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password)                                          | resource |
-| [tls_private_key.ssh](https://registry.terraform.io/providers/hashicorp/tls/latest/docs/resources/private_key)                                               | resource |
+| Name                                                                                                                                                         | Type        |
+|--------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------|
+| [azurerm_role_assignment.vm_admin_login](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment)                    | resource    |
+| [azurerm_role_assignment.vm_user_login](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment)                     | resource    |
+| [azurerm_virtual_machine_extension.aad_ssh_login](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_machine_extension) | resource    |
+| [local_sensitive_file.private_key](https://registry.terraform.io/providers/hashicorp/local/latest/docs/resources/sensitive_file)                             | resource    |
+| [random_password.vm_admin](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password)                                          | resource    |
+| [tls_private_key.ssh](https://registry.terraform.io/providers/hashicorp/tls/latest/docs/resources/private_key)                                               | resource    |
+| [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/client_config)                            | data source |
 
 ## Modules
 

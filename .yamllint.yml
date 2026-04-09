@@ -1,5 +1,4 @@
 # yamllint configuration file
-# Extracted from .mega-linter.yml for standalone use
 ---
 extends: default
 
@@ -59,7 +58,7 @@ rules:
     min-spaces-inside: 0
     max-spaces-inside: 1
 
-# Ignore patterns from MegaLinter configuration
+# Ignore patterns
 ignore: |
   .github/ISSUE_TEMPLATE/*
   charts/templates/*

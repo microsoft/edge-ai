@@ -1,0 +1,149 @@
+# Shell Lint Template
+#
+# Purpose:
+# Validates shell scripts using ShellCheck for static analysis, shfmt for formatting,
+# and bash -n for syntax verification.
+#
+# Functionality:
+# - ShellCheck: Static analysis for common shell scripting issues
+# - shfmt: Validates shell script formatting consistency
+# - bash -n: Syntax checking for all .sh files
+# - Publishes lint results as pipeline artifacts
+#
+# Parameters:
+# - breakBuild: Fail the pipeline on lint findings (default: false)
+# - dependsOn: Jobs that this job depends on
+# - displayName: Display name for the job
+# - condition: Condition for running the job
+# - agentPool: Azure DevOps agent pool configuration
+#
+# Usage Examples:
+# ```yaml
+# - template: .azdo/templates/shell-lint-template.yml
+#
+# - template: .azdo/templates/shell-lint-template.yml
+#   parameters:
+#     breakBuild: true
+#     dependsOn: ['previousJob']
+# ```
+---
+parameters:
+  - name: breakBuild
+    type: boolean
+    default: false
+  - name: dependsOn
+    type: object
+    default: []
+  - name: displayName
+    type: string
+    default: 'Shell Lint'
+  - name: condition
+    type: string
+    default: 'succeeded()'
+  - name: agentPool
+    type: object
+    default:
+      name: 'ai-on-edge-managed-pool'
+      vmImage: 'ubuntu-latest'
+
+jobs:
+  - job: ShellLint
+    displayName: ${{ parameters.displayName }}
+    dependsOn: ${{ parameters.dependsOn }}
+    condition: ${{ parameters.condition }}
+    pool: ${{ parameters.agentPool }}
+    steps:
+      - checkout: self
+
+      # For PR builds, checkout the source branch HEAD instead of merge ref
+      - task: Bash@3
+        displayName: 'Checkout PR source branch HEAD'
+        condition: eq(variables['Build.Reason'], 'PullRequest')
+        inputs:
+          targetType: 'inline'
+          script: |
+            BRANCH_NAME=$(echo "$(System.PullRequest.SourceBranch)" | sed 's|^refs/heads/||')
+            echo "Switching to PR source branch HEAD: $BRANCH_NAME"
+            git checkout "$BRANCH_NAME"
+            git log -1 --oneline
+
+      - task: Bash@3
+        displayName: 'Install Shell Lint Tools'
+        inputs:
+          targetType: 'inline'
+          script: |
+            set -euo pipefail
+            mkdir -p shell-lint-results
+
+            echo "Installing ShellCheck..."
+            sudo apt-get -o DPkg::Lock::Timeout=60 update -qq
+            sudo apt-get -o DPkg::Lock::Timeout=60 install -y -qq shellcheck
+
+            SHFMT_VERSION="3.8.0"
+            echo "Installing shfmt v${SHFMT_VERSION}..."
+            curl -sSfL "https://github.com/mvdan/sh/releases/download/v${SHFMT_VERSION}/shfmt_v${SHFMT_VERSION}_linux_amd64" -o shfmt
+            chmod +x shfmt
+            sudo mv shfmt /usr/local/bin/shfmt
+
+            shellcheck --version
+            shfmt --version
+
+      - task: Bash@3
+        displayName: 'Run Shell Lint'
+        inputs:
+          targetType: 'inline'
+          script: |
+            set -uo pipefail
+            LINT_FAILED=false
+
+            SHELL_FILES=$(find . -name '*.sh' \
+              -not -path '*/node_modules/*' \
+              -not -path '*/.copilot-tracking/*' \
+              -type f)
+
+            if [ -z "$SHELL_FILES" ]; then
+              echo "No shell scripts found to lint"
+              exit 0
+            fi
+
+            echo "=== Running bash -n syntax check ==="
+            for f in $SHELL_FILES; do
+              if ! bash -n "$f" 2>&1 | tee -a shell-lint-results/syntax-check.txt; then
+                echo "##vso[task.logissue type=error]Syntax error in $f"
+                LINT_FAILED=true
+              fi
+            done
+
+            echo "=== Running ShellCheck ==="
+            for f in $SHELL_FILES; do
+              if ! shellcheck -f gcc "$f" 2>&1 | tee -a shell-lint-results/shellcheck-results.txt; then
+                LINT_FAILED=true
+              fi
+            done
+
+            echo "=== Running shfmt ==="
+            for f in $SHELL_FILES; do
+              if ! shfmt -d -i 4 "$f" 2>&1 | tee -a shell-lint-results/shfmt-results.txt; then
+                LINT_FAILED=true
+              fi
+            done
+
+            if [ "$LINT_FAILED" = "true" ]; then
+              BREAK_BUILD="${{ parameters.breakBuild }}"
+              if [ "$BREAK_BUILD" = "True" ]; then
+                echo "##vso[task.logissue type=error]Shell lint failures detected and breakBuild is enabled"
+                exit 1
+              else
+                echo "##vso[task.logissue type=warning]Shell lint failures detected but breakBuild is disabled"
+              fi
+            else
+              echo "All shell lint checks passed"
+            fi
+
+      - task: PublishPipelineArtifact@1
+        displayName: 'Publish Shell Lint Results Artifacts'
+        condition: always()
+        inputs:
+          targetPath: '$(Build.SourcesDirectory)/shell-lint-results'
+          artifactName: 'shell-lint-results'
+        continueOnError: true
