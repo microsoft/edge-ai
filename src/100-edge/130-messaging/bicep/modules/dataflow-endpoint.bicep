@@ -20,11 +20,11 @@ param dataflowEndpoints types.DataflowEndpoint[]
   Resources
 */
 
-resource aioInstanceResource 'Microsoft.IoTOperations/instances@2026-03-01' existing = {
+resource aioInstanceResource 'Microsoft.IoTOperations/instances@2025-10-01' existing = {
   name: aioInstanceName
 }
 
-resource dataflowEndpoint 'Microsoft.IoTOperations/instances/dataflowEndpoints@2026-03-01' = [
+resource dataflowEndpoint 'Microsoft.IoTOperations/instances/dataflowEndpoints@2025-10-01' = [
   for ep in dataflowEndpoints: {
     parent: aioInstanceResource
     name: ep.name
@@ -32,17 +32,16 @@ resource dataflowEndpoint 'Microsoft.IoTOperations/instances/dataflowEndpoints@2
       type: 'CustomLocation'
       name: customLocationId
     }
-    #disable-next-line BCP225
     properties: {
       endpointType: ep.endpointType
-      ...(ep.?hostType != null ? { hostType: ep.?hostType } : {})
-      ...(ep.?dataExplorerSettings != null ? { dataExplorerSettings: ep.?dataExplorerSettings } : {})
-      ...(ep.?dataLakeStorageSettings != null ? { dataLakeStorageSettings: ep.?dataLakeStorageSettings } : {})
-      ...(ep.?fabricOneLakeSettings != null ? { fabricOneLakeSettings: ep.?fabricOneLakeSettings } : {})
-      ...(ep.?kafkaSettings != null ? { kafkaSettings: ep.?kafkaSettings } : {})
-      ...(ep.?localStorageSettings != null ? { localStorageSettings: ep.?localStorageSettings } : {})
-      ...(ep.?mqttSettings != null ? { mqttSettings: ep.?mqttSettings } : {})
-      ...(ep.?openTelemetrySettings != null ? { openTelemetrySettings: ep.?openTelemetrySettings } : {})
+      ...(ep.hostType != null ? { hostType: ep.hostType } : {})
+      ...(ep.dataExplorerSettings != null ? { dataExplorerSettings: ep.dataExplorerSettings } : {})
+      ...(ep.dataLakeStorageSettings != null ? { dataLakeStorageSettings: ep.dataLakeStorageSettings } : {})
+      ...(ep.fabricOneLakeSettings != null ? { fabricOneLakeSettings: ep.fabricOneLakeSettings } : {})
+      ...(ep.kafkaSettings != null ? { kafkaSettings: ep.kafkaSettings } : {})
+      ...(ep.localStorageSettings != null ? { localStorageSettings: ep.localStorageSettings } : {})
+      ...(ep.mqttSettings != null ? { mqttSettings: ep.mqttSettings } : {})
+      ...(ep.openTelemetrySettings != null ? { openTelemetrySettings: ep.openTelemetrySettings } : {})
     }
   }
 ]

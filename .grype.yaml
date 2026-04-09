@@ -1,16 +1,2 @@
 ---
 fail-on-severity: high
-ignore:
-  # atty crate - LOW severity
-  # Justification: Crate is unmaintained but functional with no known exploits.
-  # The atty crate is used transitively and does not pose an active security risk.
-  # References: GHSA-g98v-hv3f-hcfr, RUSTSEC-2021-0145
-  - vulnerability: GHSA-g98v-hv3f-hcfr
-  - vulnerability: RUSTSEC-2021-0145
-
-  # rustls-webpki 0.102.8 - MEDIUM severity (transitive Rust crate)
-  # Justification: Pulled in by azure_iot_operations_mqtt SDK's private fork of
-  # rumqttc 0.24.0-fork.4 → rustls 0.22 → rustls-webpki 0.102.8. Cannot be
-  # updated without an upstream AIO SDK release.
-  # Reference: GHSA-pwjx-qhcg-rvj4
-  - vulnerability: GHSA-pwjx-qhcg-rvj4

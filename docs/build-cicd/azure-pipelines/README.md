@@ -17,6 +17,7 @@ keywords:
   - managed identity
   - service principal
   - azure authentication
+  - megalinter
   - security scanning
   - pull request validation
   - deployment
@@ -54,13 +55,13 @@ The build pipeline provides several key features, with more on the way:
 
 - Checks Terraform Provider versions for update opportunities and publishes build warning
 - Runs a lightweight vulnerability scan for all dependant packages
-- Runs file linting on a wide variety of languages and file types using dedicated lint templates
+- Runs file linting on a wide variety of languages and file types using the MegaLinter template
 - Performs a matrix build on only resources that have been modified in the current PR
 - Publishes Terraform Plans for all changed resources within the current PR
 - Runs unit tests on changed Terraform within the current PR
 - Provides modular, templatized pipeline components for flexible pipeline creation
 - Ensures consistent validation steps across all pipelines through shared templates
-- Enables PR comment integration for linting results through dedicated lint job templates
+- Enables PR comment integration for linting results through the MegaLinter Azure Reporter
 - Optimizes pipeline performance with intelligent caching mechanisms
 
 ## Getting Started
@@ -105,6 +106,7 @@ The following templates are available in the `.azdo` directory:
 | `cluster-test-terraform-template.yml`        | Runs Terraform init, validate, plan and tests on component folders                                                                                                 | [Template Documentation](./templates/cluster-test-terraform-template.md)        |
 | `docs-check-terraform-template.yml`          | Validates documentation quality including Terraform docs and URL checks                                                                                            | [Template Documentation](./templates/docs-check-terraform-template.md)          |
 | `matrix-folder-check-template.yml`           | Checks for changes in source directories and creates a dynamic matrix of folders for downstream jobs                                                               | [Template Documentation](./templates/matrix-folder-check-template.md)           |
+| `megalinter-template.yml`                    | Provides linting capabilities across multiple languages                                                                                                            | [Template Documentation](./templates/megalinter-template.md)                    |
 | `resource-provider-pwsh-tests-template.yml`  | Runs tests to ensure resource provider registration scripts function as expected                                                                                   | [Template Documentation](./templates/resource-provider-pwsh-tests-template.md)  |
 | `variable-compliance-terraform-template.yml` | Ensures consistent Terraform variable definitions across modules                                                                                                   | [Template Documentation](./templates/variable-compliance-terraform-template.md) |
 | `wiki-update-template.yml`                   | Updates Azure DevOps wiki with comprehensive documentation coverage from all content areas including docs/, blueprints/, copilot/, learning/, and .github/ folders | [Template Documentation](./templates/wiki-update-template.md)                   |
@@ -139,43 +141,37 @@ Templates can be included in your pipeline definition using the `template` keywo
 stages:
   - stage: Validate
     jobs:
-      - template: .azdo/templates/shell-lint-template.yml
+      - template: .azdo/templates/megalinter-template.yml
         parameters:
-          displayName: "Shell Lint"
-
-      - template: .azdo/templates/terraform-lint-template.yml
-        parameters:
-          displayName: "Terraform Lint"
-          dependsOn: ShellLint
+          displayName: "Lint Code"
+          enableAzureReporter: true
 ```
 
-#### Advanced Lint Template Usage
+#### Advanced MegaLinter Template Usage
 
 ```yaml
-# Advanced configuration of lint templates with dependencies
-  - template: .azdo/templates/security-scan-template.yml
-    parameters:
-      displayName: 'Security Scan'
-
-  - template: .azdo/templates/shell-lint-template.yml
-    parameters:
-      displayName: 'Shell Lint'
-      dependsOn: SecurityScan
-      condition: succeeded('SecurityScan')
-
-  - template: .azdo/templates/terraform-lint-template.yml
-    parameters:
-      displayName: 'Terraform Lint'
-      dependsOn: SecurityScan
-      condition: succeeded('SecurityScan')
+# Advanced configuration of the MegaLinter template
+  - template: .azdo/templates/megalinter-template.yml
+  parameters:
+    displayName: 'Comprehensive Code Quality Analysis'
+    dependsOn:
+      - SecurityScan
+      - DependencyScan
+    condition: and(succeeded('SecurityScan'), succeeded('DependencyScan'))
+    megalinterCachePath: '$(Build.ArtifactStagingDirectory)/megalinter-cache'
+    enableAzureReporter: ${{ eq(variables['Build.Reason'], 'PullRequest') }}
+    pullRequestId: $(System.PullRequest.PullRequestId)
+    sourceRepoUri: $(System.PullRequest.SourceRepositoryURI)
 ```
 
 This advanced configuration:
 
-- Provides custom display names for better pipeline readability
-- Sets job dependencies to control execution order
-- Uses conditions to check dependent job status
-- Runs lint jobs in parallel after shared dependencies complete
+- Provides a custom display name for better pipeline readability
+- Sets multiple job dependencies with an array
+- Uses a more complex condition checking across multiple jobs
+- Specifies a custom cache path in the build artifact staging directory
+- Dynamically enables the Azure reporter only for pull requests
+- Passes required PR information for commenting
 
 #### Combining Multiple Templates
 
@@ -183,21 +179,19 @@ You can also combine multiple templates for a complete CI/CD workflow:
 
 ```yaml
 jobs:
-  - template: .azdo/templates/shell-lint-template.yml
+  - template: .azdo/templates/megalinter-template.yml
     parameters:
-      displayName: 'Shell Lint'
-
-  - template: .azdo/templates/terraform-lint-template.yml
-    parameters:
-      displayName: 'Terraform Lint'
+      # MegaLinter parameters...
 
   - template: .azdo/templates/resource-provider-pwsh-tests-template.yml
     parameters:
-      dependsOn: ShellLint
+      dependsOn: MegaLinter
+      # Resource Provider test parameters...
 
   - template: .azdo/templates/wiki-update-template.yml
     parameters:
-      dependsOn: [ShellLint, ResourceProviderShellScriptTest]
+      dependsOn: [MegaLinter, ResourceProviderShellScriptTest]
+      # Wiki update parameters...
 ```
 
 ### Required Pipeline Variables

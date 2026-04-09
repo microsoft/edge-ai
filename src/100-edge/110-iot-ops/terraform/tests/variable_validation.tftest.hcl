@@ -438,6 +438,7 @@ run "test_persistence_config_invalid_max_size" {
 
     # Variables under test - Testing invalid max_size format
     mqtt_broker_persistence_config = {
+      enabled  = true
       max_size = "invalid-size"
     }
   }
@@ -458,6 +459,7 @@ run "test_persistence_config_invalid_retain_policy_mode" {
 
     # Variables under test - Testing invalid retain_policy mode
     mqtt_broker_persistence_config = {
+      enabled  = true
       max_size = "1G"
       retain_policy = {
         mode = "InvalidMode" # Should be All, None, or Custom
@@ -481,6 +483,7 @@ run "test_persistence_config_invalid_key_type" {
 
     # Variables under test - Testing invalid key_type
     mqtt_broker_persistence_config = {
+      enabled  = true
       max_size = "1G"
       state_store_policy = {
         mode = "Custom"
@@ -512,6 +515,7 @@ run "test_persistence_config_invalid_access_mode" {
 
     # Variables under test - Testing invalid access_modes
     mqtt_broker_persistence_config = {
+      enabled  = true
       max_size = "1G"
       persistent_volume_claim_spec = {
         access_modes = ["InvalidAccessMode"] # Should be valid Kubernetes access modes
@@ -535,6 +539,7 @@ run "test_persistence_config_invalid_volume_mode" {
 
     # Variables under test - Testing invalid volume_mode
     mqtt_broker_persistence_config = {
+      enabled  = true
       max_size = "1G"
       persistent_volume_claim_spec = {
         volume_mode = "InvalidVolumeMode" # Should be Filesystem or Block
@@ -558,6 +563,7 @@ run "test_persistence_config_invalid_operator" {
 
     # Variables under test - Testing invalid match expression operator
     mqtt_broker_persistence_config = {
+      enabled  = true
       max_size = "1G"
       persistent_volume_claim_spec = {
         selector = {
@@ -589,6 +595,7 @@ run "test_persistence_config_valid_configuration" {
 
     # Variables under test - Testing valid persistence configuration
     mqtt_broker_persistence_config = {
+      enabled  = true
       max_size = "10G"
       retain_policy = {
         mode = "Custom"
@@ -641,6 +648,7 @@ run "test_mqtt_broker_persistence_config_invalid_max_size" {
 
     # Variables under test - Testing invalid max_size format
     mqtt_broker_persistence_config = {
+      enabled  = true
       max_size = "invalid-size"
     }
   }
@@ -661,6 +669,7 @@ run "test_mqtt_broker_persistence_config_invalid_retain_policy_mode" {
 
     # Variables under test - Testing invalid retain_policy mode
     mqtt_broker_persistence_config = {
+      enabled  = true
       max_size = "1G"
       retain_policy = {
         mode = "InvalidMode" # Should be "All", "None", or "Custom"
@@ -684,6 +693,7 @@ run "test_mqtt_broker_persistence_config_invalid_state_store_policy_mode" {
 
     # Variables under test - Testing invalid state_store_policy mode
     mqtt_broker_persistence_config = {
+      enabled  = true
       max_size = "1G"
       state_store_policy = {
         mode = "InvalidMode" # Should be "All", "None", or "Custom"
@@ -707,6 +717,7 @@ run "test_mqtt_broker_persistence_config_invalid_subscriber_queue_policy_mode" {
 
     # Variables under test - Testing invalid subscriber_queue_policy mode
     mqtt_broker_persistence_config = {
+      enabled  = true
       max_size = "1G"
       subscriber_queue_policy = {
         mode = "InvalidMode" # Should be "All", "None", or "Custom"
@@ -730,6 +741,7 @@ run "test_mqtt_broker_persistence_config_invalid_key_type" {
 
     # Variables under test - Testing invalid key_type in state_store_resources
     mqtt_broker_persistence_config = {
+      enabled  = true
       max_size = "1G"
       state_store_policy = {
         mode = "Custom"
@@ -761,6 +773,7 @@ run "test_mqtt_broker_persistence_config_invalid_access_modes" {
 
     # Variables under test - Testing invalid access_modes
     mqtt_broker_persistence_config = {
+      enabled  = true
       max_size = "1G"
       persistent_volume_claim_spec = {
         access_modes = ["InvalidAccessMode"] # Should be valid Kubernetes access modes
@@ -784,6 +797,7 @@ run "test_mqtt_broker_persistence_config_invalid_volume_mode" {
 
     # Variables under test - Testing invalid volume_mode
     mqtt_broker_persistence_config = {
+      enabled  = true
       max_size = "1G"
       persistent_volume_claim_spec = {
         volume_mode = "InvalidMode" # Should be "Filesystem" or "Block"
@@ -807,6 +821,7 @@ run "test_mqtt_broker_persistence_config_invalid_selector_operator" {
 
     # Variables under test - Testing invalid selector operator
     mqtt_broker_persistence_config = {
+      enabled  = true
       max_size = "1G"
       persistent_volume_claim_spec = {
         selector = {
@@ -838,6 +853,7 @@ run "test_mqtt_broker_persistence_config_valid_configuration" {
 
     # Variables under test - Testing valid configuration
     mqtt_broker_persistence_config = {
+      enabled  = true
       max_size = "10G" # Valid pattern
       retain_policy = {
         mode = "All" # Valid mode
@@ -1255,361 +1271,4 @@ run "test__registry_endpoints__valid_with_acr_resource_id" {
     ]
   }
   # This should pass validation
-}
-
-// Test cases for mqtt_broker_advanced_config validation
-
-run "test_advanced_config_invalid_encrypt_internal_traffic" {
-  command = plan
-  variables {
-    resource_group        = run.setup_tests.aio_resource_group
-    secret_sync_key_vault = run.setup_tests.sse_key_vault
-    secret_sync_identity  = run.setup_tests.sse_user_assigned_identity
-    aio_identity          = run.setup_tests.aio_user_assigned_identity
-    arc_connected_cluster = run.setup_tests.arc_connected_cluster
-    adr_schema_registry   = run.setup_tests.adr_schema_registry
-    adr_namespace         = run.setup_tests.adr_namespace
-
-    mqtt_broker_advanced_config = {
-      encrypt_internal_traffic = "Yes"
-    }
-  }
-  expect_failures = [var.mqtt_broker_advanced_config]
-}
-
-run "test_advanced_config_invalid_private_key_algorithm" {
-  command = plan
-  variables {
-    resource_group        = run.setup_tests.aio_resource_group
-    secret_sync_key_vault = run.setup_tests.sse_key_vault
-    secret_sync_identity  = run.setup_tests.sse_user_assigned_identity
-    aio_identity          = run.setup_tests.aio_user_assigned_identity
-    arc_connected_cluster = run.setup_tests.arc_connected_cluster
-    adr_schema_registry   = run.setup_tests.adr_schema_registry
-    adr_namespace         = run.setup_tests.adr_namespace
-
-    mqtt_broker_advanced_config = {
-      internal_certs = {
-        private_key_algorithm = "Rsa1024"
-      }
-    }
-  }
-  expect_failures = [var.mqtt_broker_advanced_config]
-}
-
-run "test_advanced_config_invalid_rotation_policy" {
-  command = plan
-  variables {
-    resource_group        = run.setup_tests.aio_resource_group
-    secret_sync_key_vault = run.setup_tests.sse_key_vault
-    secret_sync_identity  = run.setup_tests.sse_user_assigned_identity
-    aio_identity          = run.setup_tests.aio_user_assigned_identity
-    arc_connected_cluster = run.setup_tests.arc_connected_cluster
-    adr_schema_registry   = run.setup_tests.adr_schema_registry
-    adr_namespace         = run.setup_tests.adr_namespace
-
-    mqtt_broker_advanced_config = {
-      internal_certs = {
-        private_key_rotation_policy = "Sometimes"
-      }
-    }
-  }
-  expect_failures = [var.mqtt_broker_advanced_config]
-}
-
-run "test_advanced_config_invalid_subscriber_queue_strategy" {
-  command = plan
-  variables {
-    resource_group        = run.setup_tests.aio_resource_group
-    secret_sync_key_vault = run.setup_tests.sse_key_vault
-    secret_sync_identity  = run.setup_tests.sse_user_assigned_identity
-    aio_identity          = run.setup_tests.aio_user_assigned_identity
-    arc_connected_cluster = run.setup_tests.arc_connected_cluster
-    adr_schema_registry   = run.setup_tests.adr_schema_registry
-    adr_namespace         = run.setup_tests.adr_namespace
-
-    mqtt_broker_advanced_config = {
-      clients = {
-        subscriber_queue_limit = {
-          strategy = "DropNewest"
-        }
-      }
-    }
-  }
-  expect_failures = [var.mqtt_broker_advanced_config]
-}
-
-run "test_advanced_config_invalid_max_packet_size" {
-  command = plan
-  variables {
-    resource_group        = run.setup_tests.aio_resource_group
-    secret_sync_key_vault = run.setup_tests.sse_key_vault
-    secret_sync_identity  = run.setup_tests.sse_user_assigned_identity
-    aio_identity          = run.setup_tests.aio_user_assigned_identity
-    arc_connected_cluster = run.setup_tests.arc_connected_cluster
-    adr_schema_registry   = run.setup_tests.adr_schema_registry
-    adr_namespace         = run.setup_tests.adr_namespace
-
-    mqtt_broker_advanced_config = {
-      clients = {
-        max_packet_size_bytes = 300000000
-      }
-    }
-  }
-  expect_failures = [var.mqtt_broker_advanced_config]
-}
-
-run "test_advanced_config_valid_configuration" {
-  command = plan
-  variables {
-    resource_group        = run.setup_tests.aio_resource_group
-    secret_sync_key_vault = run.setup_tests.sse_key_vault
-    secret_sync_identity  = run.setup_tests.sse_user_assigned_identity
-    aio_identity          = run.setup_tests.aio_user_assigned_identity
-    arc_connected_cluster = run.setup_tests.arc_connected_cluster
-    adr_schema_registry   = run.setup_tests.adr_schema_registry
-    adr_namespace         = run.setup_tests.adr_namespace
-
-    mqtt_broker_advanced_config = {
-      encrypt_internal_traffic = "Enabled"
-      internal_certs = {
-        duration                    = "720h"
-        renew_before                = "240h"
-        private_key_algorithm       = "Ec256"
-        private_key_rotation_policy = "Always"
-      }
-      clients = {
-        max_session_expiry_seconds = 3600
-        max_message_expiry_seconds = 1800
-        max_packet_size_bytes      = 1048576
-        max_receive_maximum        = 100
-        max_keep_alive_seconds     = 300
-        subscriber_queue_limit = {
-          length   = 1000
-          strategy = "DropOldest"
-        }
-      }
-    }
-  }
-}
-
-// Test cases for mqtt_broker_disk_buffer_config validation
-
-run "test_disk_buffer_config_invalid_max_size" {
-  command = plan
-  variables {
-    resource_group        = run.setup_tests.aio_resource_group
-    secret_sync_key_vault = run.setup_tests.sse_key_vault
-    secret_sync_identity  = run.setup_tests.sse_user_assigned_identity
-    aio_identity          = run.setup_tests.aio_user_assigned_identity
-    arc_connected_cluster = run.setup_tests.arc_connected_cluster
-    adr_schema_registry   = run.setup_tests.adr_schema_registry
-    adr_namespace         = run.setup_tests.adr_namespace
-
-    mqtt_broker_disk_buffer_config = {
-      max_size = "10Gi"
-    }
-  }
-  expect_failures = [var.mqtt_broker_disk_buffer_config]
-}
-
-run "test_disk_buffer_config_invalid_ephemeral_access_mode" {
-  command = plan
-  variables {
-    resource_group        = run.setup_tests.aio_resource_group
-    secret_sync_key_vault = run.setup_tests.sse_key_vault
-    secret_sync_identity  = run.setup_tests.sse_user_assigned_identity
-    aio_identity          = run.setup_tests.aio_user_assigned_identity
-    arc_connected_cluster = run.setup_tests.arc_connected_cluster
-    adr_schema_registry   = run.setup_tests.adr_schema_registry
-    adr_namespace         = run.setup_tests.adr_namespace
-
-    mqtt_broker_disk_buffer_config = {
-      max_size = "1G"
-      ephemeral_volume_claim_spec = {
-        access_modes = ["InvalidMode"]
-      }
-    }
-  }
-  expect_failures = [var.mqtt_broker_disk_buffer_config]
-}
-
-run "test_disk_buffer_config_valid_configuration" {
-  command = plan
-  variables {
-    resource_group        = run.setup_tests.aio_resource_group
-    secret_sync_key_vault = run.setup_tests.sse_key_vault
-    secret_sync_identity  = run.setup_tests.sse_user_assigned_identity
-    aio_identity          = run.setup_tests.aio_user_assigned_identity
-    arc_connected_cluster = run.setup_tests.arc_connected_cluster
-    adr_schema_registry   = run.setup_tests.adr_schema_registry
-    adr_namespace         = run.setup_tests.adr_namespace
-
-    mqtt_broker_disk_buffer_config = {
-      max_size = "1G"
-      ephemeral_volume_claim_spec = {
-        storage_class_name = "local-path"
-        access_modes       = ["ReadWriteOnce"]
-      }
-    }
-  }
-}
-
-// Test cases for mqtt_broker_diagnostics_config validation
-
-run "test_diagnostics_config_invalid_self_check_mode" {
-  command = plan
-  variables {
-    resource_group        = run.setup_tests.aio_resource_group
-    secret_sync_key_vault = run.setup_tests.sse_key_vault
-    secret_sync_identity  = run.setup_tests.sse_user_assigned_identity
-    aio_identity          = run.setup_tests.aio_user_assigned_identity
-    arc_connected_cluster = run.setup_tests.arc_connected_cluster
-    adr_schema_registry   = run.setup_tests.adr_schema_registry
-    adr_namespace         = run.setup_tests.adr_namespace
-
-    mqtt_broker_diagnostics_config = {
-      self_check = {
-        mode = "On"
-      }
-    }
-  }
-  expect_failures = [var.mqtt_broker_diagnostics_config]
-}
-
-run "test_diagnostics_config_invalid_traces_mode" {
-  command = plan
-  variables {
-    resource_group        = run.setup_tests.aio_resource_group
-    secret_sync_key_vault = run.setup_tests.sse_key_vault
-    secret_sync_identity  = run.setup_tests.sse_user_assigned_identity
-    aio_identity          = run.setup_tests.aio_user_assigned_identity
-    arc_connected_cluster = run.setup_tests.arc_connected_cluster
-    adr_schema_registry   = run.setup_tests.adr_schema_registry
-    adr_namespace         = run.setup_tests.adr_namespace
-
-    mqtt_broker_diagnostics_config = {
-      traces = {
-        mode = "Active"
-      }
-    }
-  }
-  expect_failures = [var.mqtt_broker_diagnostics_config]
-}
-
-run "test_diagnostics_config_invalid_prometheus_port" {
-  command = plan
-  variables {
-    resource_group        = run.setup_tests.aio_resource_group
-    secret_sync_key_vault = run.setup_tests.sse_key_vault
-    secret_sync_identity  = run.setup_tests.sse_user_assigned_identity
-    aio_identity          = run.setup_tests.aio_user_assigned_identity
-    arc_connected_cluster = run.setup_tests.arc_connected_cluster
-    adr_schema_registry   = run.setup_tests.adr_schema_registry
-    adr_namespace         = run.setup_tests.adr_namespace
-
-    mqtt_broker_diagnostics_config = {
-      metrics = {
-        prometheus_port = 70000
-      }
-    }
-  }
-  expect_failures = [var.mqtt_broker_diagnostics_config]
-}
-
-run "test_diagnostics_config_invalid_self_check_interval" {
-  command = plan
-  variables {
-    resource_group        = run.setup_tests.aio_resource_group
-    secret_sync_key_vault = run.setup_tests.sse_key_vault
-    secret_sync_identity  = run.setup_tests.sse_user_assigned_identity
-    aio_identity          = run.setup_tests.aio_user_assigned_identity
-    arc_connected_cluster = run.setup_tests.arc_connected_cluster
-    adr_schema_registry   = run.setup_tests.adr_schema_registry
-    adr_namespace         = run.setup_tests.adr_namespace
-
-    mqtt_broker_diagnostics_config = {
-      self_check = {
-        mode             = "Enabled"
-        interval_seconds = 10
-      }
-    }
-  }
-  expect_failures = [var.mqtt_broker_diagnostics_config]
-}
-
-run "test_diagnostics_config_invalid_span_channel_capacity" {
-  command = plan
-  variables {
-    resource_group        = run.setup_tests.aio_resource_group
-    secret_sync_key_vault = run.setup_tests.sse_key_vault
-    secret_sync_identity  = run.setup_tests.sse_user_assigned_identity
-    aio_identity          = run.setup_tests.aio_user_assigned_identity
-    arc_connected_cluster = run.setup_tests.arc_connected_cluster
-    adr_schema_registry   = run.setup_tests.adr_schema_registry
-    adr_namespace         = run.setup_tests.adr_namespace
-
-    mqtt_broker_diagnostics_config = {
-      traces = {
-        span_channel_capacity = 500
-      }
-    }
-  }
-  expect_failures = [var.mqtt_broker_diagnostics_config]
-}
-
-run "test_diagnostics_config_valid_configuration" {
-  command = plan
-  variables {
-    resource_group        = run.setup_tests.aio_resource_group
-    secret_sync_key_vault = run.setup_tests.sse_key_vault
-    secret_sync_identity  = run.setup_tests.sse_user_assigned_identity
-    aio_identity          = run.setup_tests.aio_user_assigned_identity
-    arc_connected_cluster = run.setup_tests.arc_connected_cluster
-    adr_schema_registry   = run.setup_tests.adr_schema_registry
-    adr_namespace         = run.setup_tests.adr_namespace
-
-    mqtt_broker_diagnostics_config = {
-      metrics = {
-        prometheus_port = 9600
-      }
-      self_check = {
-        mode             = "Enabled"
-        interval_seconds = 60
-        timeout_seconds  = 30
-      }
-      traces = {
-        mode                  = "Enabled"
-        cache_size_megabytes  = 32
-        span_channel_capacity = 5000
-        self_tracing = {
-          mode             = "Disabled"
-          interval_seconds = 60
-        }
-      }
-    }
-  }
-}
-
-// Test persistence access_modes only allows ReadWriteOncePod
-
-run "test_persistence_config_rejects_read_write_once" {
-  command = plan
-  variables {
-    resource_group        = run.setup_tests.aio_resource_group
-    secret_sync_key_vault = run.setup_tests.sse_key_vault
-    secret_sync_identity  = run.setup_tests.sse_user_assigned_identity
-    aio_identity          = run.setup_tests.aio_user_assigned_identity
-    arc_connected_cluster = run.setup_tests.arc_connected_cluster
-    adr_schema_registry   = run.setup_tests.adr_schema_registry
-    adr_namespace         = run.setup_tests.adr_namespace
-
-    mqtt_broker_persistence_config = {
-      max_size = "1G"
-      persistent_volume_claim_spec = {
-        access_modes = ["ReadWriteOnce"]
-      }
-    }
-  }
-  expect_failures = [var.mqtt_broker_persistence_config]
 }

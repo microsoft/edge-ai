@@ -127,7 +127,7 @@ jobs:
             # First check if jq is installed, if not install it
             if ! command -v jq &> /dev/null; then
               echo "jq not found, installing..."
-              sudo apt-get -o DPkg::Lock::Timeout=60 update && sudo apt-get -o DPkg::Lock::Timeout=60 install -y jq
+              sudo apt-get update && sudo apt-get install -y jq
             fi
 
             # Use jq to parse the JSON and create a warning for each mismatch

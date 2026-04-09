@@ -340,6 +340,7 @@ describe('InteractiveCheckboxManager', () => {
   });
 
 
+
   describe('Page Processing', () => {
     it('should process kata pages successfully', () => {
       window.location.hash = '#/learning/katas/test-kata/kata.md';

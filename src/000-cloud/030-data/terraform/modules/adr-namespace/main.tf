@@ -5,7 +5,7 @@
  */
 
 resource "azapi_resource" "adr_namespace" {
-  type      = "Microsoft.DeviceRegistry/namespaces@2026-04-01"
+  type      = "Microsoft.DeviceRegistry/namespaces@2025-10-01"
   parent_id = var.resource_group.id
   name      = var.adr_namespace_name
   location  = var.location

@@ -288,7 +288,7 @@ locals {
 resource "azapi_resource" "namespaced_device" {
   for_each = local.processed_namespaced_devices
 
-  type                      = "Microsoft.DeviceRegistry/namespaces/devices@2026-04-01"
+  type                      = "Microsoft.DeviceRegistry/namespaces/devices@2025-10-01"
   name                      = each.value.name
   parent_id                 = var.adr_namespace.id
   schema_validation_enabled = false # Disable schema validation until azapi provider schema support is available
@@ -312,7 +312,7 @@ resource "azapi_resource" "namespaced_device" {
 resource "azapi_resource" "namespaced_asset" {
   for_each = local.processed_namespaced_assets
 
-  type                      = "Microsoft.DeviceRegistry/namespaces/assets@2026-04-01"
+  type                      = "Microsoft.DeviceRegistry/namespaces/assets@2025-10-01"
   name                      = each.value.name
   parent_id                 = var.adr_namespace.id
   schema_validation_enabled = false # Disable schema validation until azapi provider schema support is available
@@ -446,7 +446,7 @@ resource "azapi_resource" "namespaced_asset" {
 resource "azapi_resource" "asset_endpoint_profile" {
   for_each = local.processed_asset_endpoint_profiles
 
-  type      = "Microsoft.DeviceRegistry/assetEndpointProfiles@2026-04-01"
+  type      = "Microsoft.DeviceRegistry/assetEndpointProfiles@2025-10-01"
   name      = each.value.name
   parent_id = var.resource_group.id
   body = {
@@ -478,7 +478,7 @@ resource "azapi_resource" "asset_endpoint_profile" {
 resource "azapi_resource" "asset" {
   for_each = local.processed_assets
 
-  type      = "Microsoft.DeviceRegistry/assets@2026-04-01"
+  type      = "Microsoft.DeviceRegistry/assets@2025-10-01"
   name      = each.value.name
   parent_id = var.resource_group.id
 

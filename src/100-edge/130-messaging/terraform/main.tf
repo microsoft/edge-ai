@@ -6,7 +6,7 @@
  */
 
 module "sample_eventhub_dataflow" {
-  count = var.should_create_eventhub_dataflows && var.eventhub != null ? 1 : 0
+  count = var.should_create_eventhub_dataflows ? 1 : 0
 
   source = "./modules/eventhub"
 
@@ -24,7 +24,7 @@ module "sample_eventhub_dataflow" {
 }
 
 module "sample_eventgrid_dataflow" {
-  count = var.should_create_eventgrid_dataflows && var.eventgrid != null ? 1 : 0
+  count = var.should_create_eventgrid_dataflows ? 1 : 0
 
   source = "./modules/eventgrid"
 
@@ -87,6 +87,4 @@ module "dataflows" {
   aio_dataflow_profile = var.aio_dataflow_profile
   custom_location      = var.aio_custom_locations
   dataflows            = var.dataflows
-
-  depends_on = [module.dataflow_endpoints]
 }

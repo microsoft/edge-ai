@@ -1392,6 +1392,17 @@ export class EnhancedAnchorLinks {
   }
 
   /**
+   * Debug logging helper
+   * @param {...any} _args - Arguments to log
+   * @private
+   */
+  debugLog(..._args) {
+    if (this.config.debug) {
+      logger.log('[EnhancedAnchorLinks]', ..._args);
+    }
+  }
+
+  /**
    * Detect and handle navigation edge cases
    * @private
    */

@@ -298,7 +298,7 @@ describe('Dark Mode Toggle Positioning Tests', () => {
       const tocZIndex = parseInt(tocStyle.zIndex) || 15;
       // Handle calc() values that aren't computed in test environment
       const toggleZIndexRaw = toggleStyle.zIndex;
-      let toggleZIndex;
+      let toggleZIndex = 16; // Default expected value
 
       if (toggleZIndexRaw.includes('calc(') && toggleZIndexRaw.includes('+ 1)')) {
         // Parse calc(15 + 1) format

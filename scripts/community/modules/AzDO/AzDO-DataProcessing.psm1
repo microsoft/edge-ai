@@ -823,7 +823,7 @@ function Get-PRFirstResponseSLOMetric {
 
         # List of common keywords indicating a bot or automated service
         $botKeywords = @(
-            "build service", "bot", "automation", "system", "azure pipelines",
+            "build service", "megalinter", "bot", "automation", "system", "azure pipelines",
             "github actions", "github\[bot\]", "azdo", "devops", "ci", "cd"
         )
 

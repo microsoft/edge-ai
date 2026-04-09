@@ -94,30 +94,6 @@ variable "mqtt_broker_config" {
   })
 }
 
-variable "mqtt_broker_advanced_config" {
-  type = object({
-    encrypt_internal_traffic = optional(string)
-    internal_certs = optional(object({
-      duration                    = optional(string)
-      renew_before                = optional(string)
-      private_key_algorithm       = optional(string)
-      private_key_rotation_policy = optional(string)
-    }))
-    clients = optional(object({
-      max_session_expiry_seconds = optional(number)
-      max_message_expiry_seconds = optional(number)
-      max_packet_size_bytes      = optional(number)
-      max_receive_maximum        = optional(number)
-      max_keep_alive_seconds     = optional(number)
-      subscriber_queue_limit = optional(object({
-        length   = optional(number)
-        strategy = optional(string)
-      }))
-    }))
-  })
-  description = "Advanced broker settings for client limits, internal traffic encryption, and internal certificate configuration"
-}
-
 variable "should_deploy_resource_sync_rules" {
   type        = bool
   description = "Deploys resource sync rules if set to true"
@@ -174,8 +150,15 @@ EOF
 
 variable "mqtt_broker_persistence_config" {
   type = object({
+    enabled            = bool
     max_size           = string
     encryption_enabled = optional(bool)
+
+    # Dynamic Settings
+    dynamic_settings = optional(object({
+      user_property_key   = string
+      user_property_value = string
+    }))
 
     # Retention Policy
     retain_policy = optional(object({
@@ -203,6 +186,7 @@ variable "mqtt_broker_persistence_config" {
       mode = string # "All", "None", "Custom"
       custom_settings = optional(object({
         subscriber_client_ids = optional(list(string))
+        topics                = optional(list(string))
         dynamic_enabled       = optional(bool)
       }))
     }))
@@ -221,12 +205,6 @@ variable "mqtt_broker_persistence_config" {
         api_group = optional(string)
         kind      = string
         name      = string
-      }))
-      data_source_ref = optional(object({
-        api_group = optional(string)
-        kind      = string
-        name      = string
-        namespace = optional(string)
       }))
       selector = optional(object({
         match_labels = optional(map(string))
@@ -284,11 +262,11 @@ variable "mqtt_broker_persistence_config" {
     condition = var.mqtt_broker_persistence_config == null || try(
       alltrue([
         for mode in coalesce(var.mqtt_broker_persistence_config.persistent_volume_claim_spec.access_modes, []) :
-        contains(["ReadWriteOncePod"], mode)
+        contains(["ReadWriteOnce", "ReadOnlyMany", "ReadWriteMany", "ReadWriteOncePod"], mode)
       ]),
       true
     )
-    error_message = "persistent_volume_claim_spec.access_modes must be 'ReadWriteOncePod' for broker persistence."
+    error_message = "persistent_volume_claim_spec.access_modes must contain valid Kubernetes access modes: 'ReadWriteOnce', 'ReadOnlyMany', 'ReadWriteMany', or 'ReadWriteOncePod'."
   }
 
   validation {
@@ -309,94 +287,6 @@ variable "mqtt_broker_persistence_config" {
     )
     error_message = "persistent_volume_claim_spec.selector.match_expressions[].operator must be one of: 'In', 'NotIn', 'Exists', or 'DoesNotExist'."
   }
-}
-
-variable "mqtt_broker_disk_buffer_config" {
-  type = object({
-    max_size = string
-    ephemeral_volume_claim_spec = optional(object({
-      storage_class_name = optional(string)
-      access_modes       = optional(list(string))
-      volume_mode        = optional(string)
-      volume_name        = optional(string)
-      resources = optional(object({
-        requests = optional(map(string))
-        limits   = optional(map(string))
-      }))
-      data_source = optional(object({
-        api_group = optional(string)
-        kind      = string
-        name      = string
-      }))
-      data_source_ref = optional(object({
-        api_group = optional(string)
-        kind      = string
-        name      = string
-        namespace = optional(string)
-      }))
-      selector = optional(object({
-        match_labels = optional(map(string))
-        match_expressions = optional(list(object({
-          key      = string
-          operator = string
-          values   = list(string)
-        })))
-      }))
-    }))
-    persistent_volume_claim_spec = optional(object({
-      storage_class_name = optional(string)
-      access_modes       = optional(list(string))
-      volume_mode        = optional(string)
-      volume_name        = optional(string)
-      resources = optional(object({
-        requests = optional(map(string))
-        limits   = optional(map(string))
-      }))
-      data_source = optional(object({
-        api_group = optional(string)
-        kind      = string
-        name      = string
-      }))
-      data_source_ref = optional(object({
-        api_group = optional(string)
-        kind      = string
-        name      = string
-        namespace = optional(string)
-      }))
-      selector = optional(object({
-        match_labels = optional(map(string))
-        match_expressions = optional(list(object({
-          key      = string
-          operator = string
-          values   = list(string)
-        })))
-      }))
-    }))
-  })
-  description = "Disk-backed message buffer configuration for broker in-memory overflow to disk"
-}
-
-variable "mqtt_broker_diagnostics_config" {
-  type = object({
-    metrics = optional(object({
-      prometheus_port = optional(number)
-    }))
-    self_check = optional(object({
-      mode             = optional(string)
-      interval_seconds = optional(number)
-      timeout_seconds  = optional(number)
-    }))
-    traces = optional(object({
-      mode                  = optional(string)
-      cache_size_megabytes  = optional(number)
-      span_channel_capacity = optional(number)
-      self_tracing = optional(object({
-        mode             = optional(string)
-        interval_seconds = optional(number)
-      }))
-    }))
-  })
-  description = "Extended broker diagnostics configuration for metrics, self-check, and distributed tracing"
 }
 
 variable "resource_group" {

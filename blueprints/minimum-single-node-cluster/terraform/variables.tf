@@ -76,12 +76,6 @@ variable "should_enable_private_endpoints" {
  * Optional Variables
  */
 
-variable "should_deploy_aio" {
-  type        = bool
-  description = "Whether to deploy Azure IoT Operations and its dependent edge components (assets). When false, deploys Arc-connected cluster with extensions only"
-  default     = true
-}
-
 variable "should_create_anonymous_broker_listener" {
   type        = bool
   description = "Whether to enable an insecure anonymous AIO MQ Broker Listener. Should only be used for dev or test environments"

@@ -1,6 +1,6 @@
 use std::sync::Arc;
 use tokio::signal;
-use tracing::{info, warn, error, span, Level};
+use tracing::{info, error, span, Level};
 use tracing_subscriber::EnvFilter;
 use anyhow::Result;
 
@@ -11,7 +11,6 @@ use ai_edge_inference_crate::{
 
 mod config;
 mod mqtt;
-mod rate_limiter;
 mod topic_router;
 mod health_simple;
 
@@ -66,17 +65,10 @@ async fn main() -> Result<()> {
     // Initialize MQTT publisher with inference engine
     let mut mqtt_publisher = MqttPublisher::new(config.mqtt.clone(), Arc::clone(&inference_engine)).await?;
     mqtt_publisher.set_topic_router(Arc::clone(&topic_router));
-
-    // Extract the MQTT session — its event loop must run concurrently for the connection to work
-    let mqtt_session = mqtt_publisher.take_session()
-        .expect("MQTT session must be available");
-
-    #[allow(clippy::arc_with_non_send_sync)]
     let mqtt_publisher = Arc::new(mqtt_publisher);
     info!("MQTT publisher initialized");
 
     // Initialize health service
-    #[allow(clippy::arc_with_non_send_sync)]
     let health_service = Arc::new(
         HealthService::new(
             Arc::clone(&inference_engine),
@@ -97,9 +89,6 @@ async fn main() -> Result<()> {
 
     // Wait for any task to complete or shutdown signal
     tokio::select! {
-        _ = mqtt_session.run() => {
-            warn!("MQTT session event loop exited");
-        }
         result = health_service_clone.start_server() => {
             if let Err(e) = result {
                 error!("Health server error: {}", e);

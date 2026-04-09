@@ -1,16 +1,20 @@
 use std::collections::HashMap;
 use std::path::Path;
 use async_trait::async_trait;
-use tracing::{info, debug};
+use tracing::{info, warn, error, debug};
 
 use crate::backend::{
     InferenceBackend, BackendConfig, BackendError, BackendStatus, BackendType, 
-    DeviceType, CandleDType
+    DeviceType, CandleConfig, CandleDType
 };
-use crate::{InferenceInput, InferenceResult, ModelConfig};
+use crate::{InferenceInput, InferenceResult, ModelConfig, ImageMetadata, SensorMetadata};
 
 #[cfg(feature = "candle")]
 use candle_core::{Device, Tensor, DType, Shape};
+#[cfg(feature = "candle")]
+use candle_nn::{Module, VarBuilder, linear, conv2d, batch_norm, Activation};
+#[cfg(feature = "candle")]
+use candle_onnx::simple_eval;
 
 /// Hugging Face Candle backend implementation
 #[cfg(feature = "candle")]
@@ -24,7 +28,6 @@ pub struct CandleBackend {
 
 #[cfg(feature = "candle")]
 #[derive(Debug)]
-#[expect(dead_code)]
 struct CandleModel {
     name: String,
     model_type: String,
@@ -36,7 +39,6 @@ struct CandleModel {
 
 #[cfg(feature = "candle")]
 #[derive(Debug)]
-#[expect(dead_code)]
 struct PreprocessingConfig {
     normalize_mean: Vec<f32>,
     normalize_std: Vec<f32>,
@@ -46,7 +48,6 @@ struct PreprocessingConfig {
 
 #[cfg(feature = "candle")]
 #[derive(Debug)]
-#[expect(dead_code)]
 struct BackendStats {
     total_inferences: u64,
     successful_inferences: u64,
@@ -105,7 +106,6 @@ impl CandleBackend {
         Ok(())
     }
     
-    #[expect(dead_code)]
     fn candle_dtype_from_config(dtype: &CandleDType) -> DType {
         match dtype {
             CandleDType::F16 => DType::F16,
@@ -116,7 +116,7 @@ impl CandleBackend {
         }
     }
     
-    async fn load_onnx_model(&mut self, _model_path: &str, model_name: &str) -> Result<(), BackendError> {
+    async fn load_onnx_model(&mut self, model_path: &str, model_name: &str) -> Result<(), BackendError> {
         // For now, create a simple placeholder model since candle-onnx integration needs more work
         // This is a simplified implementation that can be expanded later
         let candle_model = CandleModel {
@@ -214,7 +214,7 @@ impl CandleBackend {
         Ok(tensor)
     }
     
-    async fn run_model_inference(&self, model: &CandleModel, _input_tensor: &Tensor) -> Result<Tensor, BackendError> {
+    async fn run_model_inference(&self, model: &CandleModel, input_tensor: &Tensor) -> Result<Tensor, BackendError> {
         // This is a simplified inference - in practice, you'd need to implement
         // the actual model forward pass based on the model architecture
         
@@ -225,7 +225,7 @@ impl CandleBackend {
             "onnx" => {
                 // In a real implementation, you would execute the ONNX graph here
                 // For now, we'll return a dummy classification result
-                let _dummy_output = Tensor::zeros(Shape::from_dims(&model.output_shape), DType::F32, &self.device)
+                let dummy_output = Tensor::zeros(Shape::from_dims(&model.output_shape), DType::F32, &self.device)
                     .map_err(|e| BackendError::CandleError(format!("Failed to create output tensor: {}", e)))?;
                 
                 // Add some randomness to simulate real predictions

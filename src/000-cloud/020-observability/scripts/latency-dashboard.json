@@ -388,7 +388,7 @@
         "type": "grafana-azure-monitor-datasource",
         "uid": "${ds}"
       },
-      "description": "Timeouts observed in each namespace. Separated by k8s Image reporting the error. ",
+      "description": "Timeouts observed in each namespace. Seperated by k8s Image reporting the error. ",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -540,7 +540,7 @@
         "type": "grafana-azure-monitor-datasource",
         "uid": "${ds}"
       },
-      "description": "Timeouts observed in each namespace. Separated by k8s Pods reporting the error. ",
+      "description": "Timeouts observed in each namespace. Seperated by k8s Pods reporting the error. ",
       "fieldConfig": {
         "defaults": {
           "color": {

@@ -99,15 +99,9 @@ variable "function_cors_support_credentials" {
 }
 
 variable "function_node_version" {
-  description = "The version of Node.js to use"
+  description = "The version of Node.js to use."
   type        = string
-  default     = "20"
-}
-
-variable "function_python_version" {
-  description = "The version of Python to use."
-  type        = string
-  default     = null
+  default     = "18"
 }
 
 variable "tags" {

@@ -1,7 +1,7 @@
 ##############################
 # Builder Stage              #
 ##############################
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/azurelinux/base/python:3.12@sha256:8798301c18bf675d2a4c6fe45f01aa2fe8ab469f05e571a07579f63f865a4809 AS builder
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/azurelinux/base/python:3.12.9-4-azl3.0.20250910@sha256:4033c29d6a292bd24a68cf0c42b650222a1f1a40474486461accaf9ae51a5ca2 AS builder
 
 WORKDIR /build
 
@@ -13,7 +13,7 @@ RUN pip wheel --no-cache-dir --wheel-dir /tmp/wheels -r requirements.txt
 ##############################
 # Runtime Stage              #
 ##############################
-FROM --platform=$TARGETPLATFORM mcr.microsoft.com/azurelinux/base/python:3.12@sha256:8798301c18bf675d2a4c6fe45f01aa2fe8ab469f05e571a07579f63f865a4809 AS runtime
+FROM --platform=$TARGETPLATFORM mcr.microsoft.com/azurelinux/base/python:3.12.9-4-azl3.0.20250910@sha256:4033c29d6a292bd24a68cf0c42b650222a1f1a40474486461accaf9ae51a5ca2 AS runtime
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \

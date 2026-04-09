@@ -8,7 +8,7 @@ import request from 'supertest';
 
 describe('Health Check Routes', () => {
   let app;
-  const server = null;
+  let server;
 
   beforeEach(async () => {
     // Clear module cache to ensure fresh imports
@@ -29,7 +29,7 @@ describe('Health Check Routes', () => {
       }
     } catch (error) {
       console.error('Error loading app:', error);
-      throw new Error('App not ready for testing', { cause: error });
+      throw new Error('App not ready for testing');
     }
 
     vi.clearAllMocks();

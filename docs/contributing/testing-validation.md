@@ -168,19 +168,22 @@ Checkov validates:
 - **Encryption** configuration for data at rest and in transit
 - **Compliance** with industry standards (CIS, PCI DSS, GDPR)
 
-### Code Quality Linting
+### Code Quality with MegaLinter
 
-Run linting tools locally:
+Run comprehensive linting across all file types:
 
 ```bash
-# Run Terraform linting and formatting
-npm run tflint-fix-all
+# Run all linters in Dev Container mode
+npm run lint-devcontainer
 
-# Run markdown linting
-npm run mdlint-fix
+# Fix automatically fixable issues
+npm run lint-fix-devcontainer
 
-# Run Terraform validation
-npm run tf-validate
+# Run specific linter category
+npx mega-linter-runner --flavor terraform
+
+# Run with specific configuration
+npx mega-linter-runner --env MEGALINTER_CONFIG=.mega-linter.yml
 ```
 
 ### Spell Checking
@@ -522,7 +525,7 @@ The CI/CD pipeline includes comprehensive testing:
 
 The pipeline enforces these quality gates:
 
-- **Linting**: All files must pass lint validation
+- **Linting**: All files must pass MegaLinter validation
 - **Security**: No new high-severity security issues
 - **Testing**: All component tests must pass
 - **Documentation**: All documentation must be current and properly formatted

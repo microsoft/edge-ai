@@ -30,7 +30,7 @@ var namespaceName = adrNamespaceName ?? 'adrns-${common.resourcePrefix}-${common
   Resources
 */
 
-resource adrNamespace 'Microsoft.DeviceRegistry/namespaces@2026-04-01' = {
+resource adrNamespace 'Microsoft.DeviceRegistry/namespaces@2025-10-01' = {
   name: namespaceName
   location: common.location
   identity: enableSystemAssignedIdentity

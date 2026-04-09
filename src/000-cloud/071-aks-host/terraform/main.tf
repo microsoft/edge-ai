@@ -4,12 +4,25 @@
  * Deploys Azure Kubernetes Service resources
  */
 
-data "azurerm_client_config" "current" {}
-
 locals {
-  current_user_oid            = var.should_add_current_user_cluster_admin ? data.azurerm_client_config.current.object_id : null
+  current_user_oid            = try(msgraph_resource_action.current_user.output.oid, null)
   should_assign_cluster_admin = var.cluster_admin_oid != null || var.should_add_current_user_cluster_admin
   cluster_admin_oid           = try(coalesce(var.cluster_admin_oid, local.current_user_oid), null)
+}
+
+/*
+ * Data Sources
+ */
+
+resource "msgraph_resource_action" "current_user" {
+
+  method       = "GET"
+  resource_url = "me"
+
+
+  response_export_values = {
+    oid = "id"
+  }
 }
 
 module "network" {

@@ -8,7 +8,7 @@
 resource "azapi_resource" "dataflow_graph" {
   for_each = { for graph in var.dataflow_graphs : graph.name => graph }
 
-  type      = "Microsoft.IoTOperations/instances/dataflowProfiles/dataflowGraphs@2026-03-01"
+  type      = "Microsoft.IoTOperations/instances/dataflowProfiles/dataflowGraphs@2025-10-01"
   name      = each.value.name
   parent_id = var.aio_dataflow_profile.id
 

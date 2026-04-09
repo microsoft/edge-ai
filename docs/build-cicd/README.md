@@ -21,6 +21,7 @@ keywords:
   - bicep
   - validation
   - documentation
+  - megalinter
   - checkov
   - pipelines
   - workflows
@@ -113,7 +114,7 @@ The project includes comprehensive build scripts for validation and automation:
 
 ### Code quality validation
 
-- **Individual Lint Jobs**: Dedicated linting for shell, YAML, Python, PowerShell, Bicep, Terraform, and documentation
+- **MegaLinter**: Comprehensive code quality and consistency validation
 - **Format Validation**: Markdown, YAML, and code formatting standards
 - **Link Validation**: Documentation link consistency and accuracy
 

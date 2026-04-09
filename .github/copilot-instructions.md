@@ -342,6 +342,7 @@ edge-ai/
 ├── .gitattributes                             # Git attributes configuration
 ├── .gitignore                                 # Git ignore patterns
 ├── .markdownlint.json                         # Markdown linting rules and configuration
+├── .mega-linter.yml                           # Multi-language linter configuration
 ├── .npmrc                                     # NPM package manager configuration
 ├── .terraform-docs.yml                        # Terraform documentation generation configuration
 ├── .terrascan.toml                            # Infrastructure security scanning configuration

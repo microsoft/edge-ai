@@ -176,7 +176,7 @@ class CatalogHydration {
 
         try {
             const response = await this._fetchWithTimeout(`${this.API_BASE}/learning/selections?userId=default-user`);
-            if (!response.ok) {throw new Error(`API error: ${response.status}`);}
+            if (!response.ok) throw new Error(`API error: ${response.status}`);
 
             const { data } = await response.json();
             this.selections = new Set(data?.selections?.selectedItems || []);
@@ -198,7 +198,7 @@ class CatalogHydration {
     async fetchProgress() {
         try {
             const response = await this._fetchWithTimeout(`${this.API_BASE}/progress`);
-            if (!response.ok) {throw new Error(`API error: ${response.status}`);}
+            if (!response.ok) throw new Error(`API error: ${response.status}`);
 
             const responseData = await response.json();
             const { progressData } = responseData;
@@ -335,10 +335,10 @@ class CatalogHydration {
             const checkbox = item.querySelector('input[type="checkbox"]');
             const link = item.querySelector('a');
 
-            if (!checkbox || !link) {return;}
+            if (!checkbox || !link) return;
 
             const itemId = this.extractItemIdFromLink(link.href);
-            if (!itemId) {return;}
+            if (!itemId) return;
 
             // Skip prerequisite checkboxes on learning path pages - they should remain static
             // But DON'T skip on the catalog page itself where paths are selectable
@@ -432,12 +432,12 @@ class CatalogHydration {
 
         this.recommendations.forEach(itemId => {
             const checkbox = document.querySelector(`input[data-item-id="${itemId}"]`);
-            if (!checkbox) {return;}
+            if (!checkbox) return;
 
             const item = checkbox.closest('.task-list-item') || checkbox.closest('li');
             const link = item?.querySelector('a');
 
-            if (!item || !link) {return;}
+            if (!item || !link) return;
 
             // Add star icon (before pin icon if both exist)
             const existingStar = link.querySelector('.recommendation-star');
@@ -553,21 +553,21 @@ class CatalogHydration {
         const cleanHref = hashPart.startsWith('/') ? hashPart.substring(1) : hashPart;
 
         // Kata: katas/ai/01-ai-fundamentals(.md) → ai-01-ai-fundamentals
-        const kataMatch = cleanHref.match(/katas\/([^/]+)\/([^/.#]+)/);
+        const kataMatch = cleanHref.match(/katas\/([^\/]+)\/([^\/\.#]+)/);
         if (kataMatch) {
             const itemId = `${kataMatch[1]}-${kataMatch[2]}`;
             return itemId;
         }
 
         // Path: paths/foundation(.md) → path-foundation
-        const pathMatch = cleanHref.match(/paths\/([^/.#]+)/);
+        const pathMatch = cleanHref.match(/paths\/([^\/\.#]+)/);
         if (pathMatch) {
             const itemId = `path-${pathMatch[1]}`;
             return itemId;
         }
 
         // Lab: training-labs/azure-iot-lab(.md) → lab-azure-iot-lab
-        const labMatch = cleanHref.match(/training-labs\/([^/.#]+)/);
+        const labMatch = cleanHref.match(/training-labs\/([^\/\.#]+)/);
         if (labMatch) {
             const itemId = `lab-${labMatch[1]}`;
             return itemId;
@@ -627,10 +627,10 @@ class CatalogHydration {
     _updateSelectionState(itemId, isChecked, link) {
         if (isChecked) {
             this.selections.add(itemId);
-            if (link) {this._addPinIcon(link);}
+            if (link) this._addPinIcon(link);
         } else {
             this.selections.delete(itemId);
-            if (link) {this._removePinIcon(link);}
+            if (link) this._removePinIcon(link);
         }
     }
 
@@ -660,7 +660,7 @@ class CatalogHydration {
         kataIds.forEach(kataId => {
             // Find the checkbox for this kata
             const checkbox = document.querySelector(`input[data-item-id="${kataId}"]`);
-            if (!checkbox) {return;}
+            if (!checkbox) return;
 
             // Only auto-select if not already checked
             if (!checkbox.checked) {
@@ -694,7 +694,7 @@ class CatalogHydration {
         kataIds.forEach(kataId => {
             // Find the checkbox for this kata
             const checkbox = document.querySelector(`input[data-item-id="${kataId}"]`);
-            if (!checkbox) {return;}
+            if (!checkbox) return;
 
             // Only auto-deselect if currently checked
             if (checkbox.checked) {
@@ -917,7 +917,7 @@ class CatalogHydration {
     _getCached(key) {
         try {
             const cached = localStorage.getItem(key);
-            if (!cached) {return null;}
+            if (!cached) return null;
 
             const parsed = JSON.parse(cached);
 
@@ -969,9 +969,9 @@ class CatalogHydration {
     _isCatalogPage() {
         const hash = window.location.hash;
         // Match catalog page
-        if (hash === '#/learning/catalog') {return true;}
+        if (hash === '#/learning/catalog') return true;
         // Match learning paths main README
-        if (hash === '#/learning/paths/README' || hash === '#/learning/paths/') {return true;}
+        if (hash === '#/learning/paths/README' || hash === '#/learning/paths/') return true;
         // Match any of the 5 signature learning path pages
         return /^#\/learning\/paths\/(foundation-ai-first-engineering|intermediate-devops-excellence|intermediate-infrastructure-architect|expert-data-analytics-integration|expert-enterprise-integration)$/.test(hash);
     }
@@ -999,7 +999,7 @@ class CatalogHydration {
      * @returns {string|null} Extracted kata ID or null if no match
      */
     extractKataId(pageId) {
-        const match = pageId.match(/learning\/katas\/([^/]+)\/([^/]+)\.md/);
+        const match = pageId.match(/learning\/katas\/([^\/]+)\/([^\/]+)\.md/);
         return match ? `${match[1]}-${match[2]}` : null;
     }
 
@@ -1018,7 +1018,7 @@ class CatalogHydration {
     async fetchAssessmentRecommendations() {
         try {
             const response = await fetch('http://localhost:3002/api/learning/selections?userId=default-user');
-            if (!response.ok) {throw new Error(`API error: ${response.status}`);}
+            if (!response.ok) throw new Error(`API error: ${response.status}`);
 
             const data = await response.json();
 
@@ -1135,8 +1135,8 @@ if (typeof window !== 'undefined' && typeof window.$docsify !== 'undefined') {
     // Create singleton instance to prevent memory leaks
     let catalogHydrationInstance = null;
 
-    window.$docsify.plugins.push((hook) => {
-        hook.doneEach(async () => {
+    window.$docsify.plugins.push(function(hook) {
+        hook.doneEach(async function() {
             // Reuse existing instance or create new one
             if (!catalogHydrationInstance) {
                 catalogHydrationInstance = new CatalogHydration();

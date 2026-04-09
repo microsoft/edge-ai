@@ -10,8 +10,10 @@
 import { logger } from '../utils/index.js';
 
 /**
- * Unified progress UI system with comprehensive visualization components.
- * Handles all progress displays, dashboards, charts, and interactive elements.
+ * Unified progress UI system with comprehensive visualization components
+ * Handles all progr    } catch (error) {
+      this.handleError('Failed to hide dashboard', error);
+    } displays, dashboards, charts, and interactive elements
  *
  * @class ProgressUI
  * @module ui/progress-ui

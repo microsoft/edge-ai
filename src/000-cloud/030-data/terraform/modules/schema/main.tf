@@ -24,7 +24,7 @@ locals {
 resource "azapi_resource" "schema" {
   for_each = local.processed_schemas
 
-  type      = "Microsoft.DeviceRegistry/schemaRegistries/schemas@2026-04-01"
+  type      = "Microsoft.DeviceRegistry/schemaRegistries/schemas@2025-10-01"
   name      = each.value.name
   parent_id = var.adr_schema_registry.id
 
@@ -44,7 +44,7 @@ resource "azapi_resource" "schema" {
 resource "azapi_resource" "schema_version" {
   for_each = local.schema_versions
 
-  type      = "Microsoft.DeviceRegistry/schemaRegistries/schemas/schemaVersions@2026-04-01"
+  type      = "Microsoft.DeviceRegistry/schemaRegistries/schemas/schemaVersions@2025-10-01"
   name      = each.value.version_key
   parent_id = azapi_resource.schema[each.value.schema_name].id
 

@@ -39,8 +39,8 @@ var defaultSystemAssignedManagedIdentityAudience = environment().resourceManager
 */
 
 // Default MCR endpoint (always created)
-resource mcrEndpoint 'Microsoft.IoTOperations/instances/registryEndpoints@2026-03-01' = {
-  name: '${aioInstanceName}/default'
+resource mcrEndpoint 'Microsoft.IoTOperations/instances/registryEndpoints@2025-10-01' = {
+  name: '${aioInstanceName}/mcr'
   extendedLocation: {
     type: 'CustomLocation'
     name: customLocationId
@@ -55,7 +55,7 @@ resource mcrEndpoint 'Microsoft.IoTOperations/instances/registryEndpoints@2026-0
 }
 
 // Custom registry endpoints
-resource customEndpoints 'Microsoft.IoTOperations/instances/registryEndpoints@2026-03-01' = [
+resource customEndpoints 'Microsoft.IoTOperations/instances/registryEndpoints@2025-10-01' = [
   for endpoint in registryEndpoints: {
     name: '${aioInstanceName}/${endpoint.name}'
     extendedLocation: {

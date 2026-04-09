@@ -24,7 +24,7 @@ data "azapi_resource" "custom_location" {
 
 // ADR namespace resource via Azure API
 data "azapi_resource" "adr_namespace" {
-  type                   = "Microsoft.DeviceRegistry/namespaces@2026-04-01"
+  type                   = "Microsoft.DeviceRegistry/namespaces@2025-10-01"
   parent_id              = data.azurerm_resource_group.aio.id
   name                   = "adrns-${var.resource_prefix}-${var.environment}-${var.instance}"
   response_export_values = ["name", "id"]

@@ -15,7 +15,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 print_usage() {
-    cat <<EOF
+    cat << EOF
 Usage: $0 [terraform|bicep|both] [options]
 
 Run static contract tests to validate IaC outputs match test requirements.
@@ -54,23 +54,23 @@ VERBOSE_FLAG=""
 
 while [[ $# -gt 0 ]]; do
     case $1 in
-    terraform | bicep | both)
-        TEST_TYPE="$1"
-        shift
-        ;;
-    -v | --verbose)
-        VERBOSE_FLAG="-v"
-        shift
-        ;;
-    -h | --help)
-        print_usage
-        exit 0
-        ;;
-    *)
-        echo -e "${RED}Unknown option: $1${NC}"
-        print_usage
-        exit 1
-        ;;
+        terraform|bicep|both)
+            TEST_TYPE="$1"
+            shift
+            ;;
+        -v|--verbose)
+            VERBOSE_FLAG="-v"
+            shift
+            ;;
+        -h|--help)
+            print_usage
+            exit 0
+            ;;
+        *)
+            echo -e "${RED}Unknown option: $1${NC}"
+            print_usage
+            exit 1
+            ;;
     esac
 done
 
@@ -86,7 +86,7 @@ echo ""
 echo -e "${YELLOW}Checking dependencies...${NC}"
 
 # Check Go
-if ! command -v go &>/dev/null; then
+if ! command -v go &> /dev/null; then
     echo -e "${RED}✗ Go not found. Please install Go toolchain.${NC}"
     exit 1
 fi
@@ -94,7 +94,7 @@ echo -e "${GREEN}✓ Go:            $(go version | awk '{print $3}')${NC}"
 
 # Check terraform-docs
 if [[ "$TEST_TYPE" == "terraform" || "$TEST_TYPE" == "both" ]]; then
-    if ! command -v terraform-docs &>/dev/null; then
+    if ! command -v terraform-docs &> /dev/null; then
         echo -e "${RED}✗ terraform-docs not found${NC}"
         echo -e "${YELLOW}  Install: brew install terraform-docs${NC}"
         exit 1
@@ -104,14 +104,14 @@ fi
 
 # Check az bicep
 if [[ "$TEST_TYPE" == "bicep" || "$TEST_TYPE" == "both" ]]; then
-    if ! command -v az &>/dev/null; then
+    if ! command -v az &> /dev/null; then
         echo -e "${RED}✗ Azure CLI not found${NC}"
         echo -e "${YELLOW}  Install: https://docs.microsoft.com/cli/azure/install-azure-cli${NC}"
         exit 1
     fi
 
     # Check bicep is installed
-    if ! az bicep version &>/dev/null; then
+    if ! az bicep version &> /dev/null; then
         echo -e "${RED}✗ Bicep not installed${NC}"
         echo -e "${YELLOW}  Install: az bicep install${NC}"
         exit 1
@@ -141,16 +141,16 @@ run_test() {
 }
 
 case $TEST_TYPE in
-terraform)
-    run_test "Terraform Contract Test" "TestTerraformOutputsContract"
-    ;;
-bicep)
-    run_test "Bicep Contract Test" "TestBicepOutputsContract"
-    ;;
-both)
-    run_test "Terraform Contract Test" "TestTerraformOutputsContract"
-    run_test "Bicep Contract Test" "TestBicepOutputsContract"
-    ;;
+    terraform)
+        run_test "Terraform Contract Test" "TestTerraformOutputsContract"
+        ;;
+    bicep)
+        run_test "Bicep Contract Test" "TestBicepOutputsContract"
+        ;;
+    both)
+        run_test "Terraform Contract Test" "TestTerraformOutputsContract"
+        run_test "Bicep Contract Test" "TestBicepOutputsContract"
+        ;;
 esac
 
 # Summary

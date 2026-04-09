@@ -13,18 +13,19 @@ access to resources.
 | azapi     | >= 2.3.0        |
 | azuread   | >= 3.0.2        |
 | azurerm   | >= 4.51.0       |
+| msgraph   | >= 0.2.0        |
 
 ## Providers
 
-| Name    | Version   |
-|---------|-----------|
-| azurerm | >= 4.51.0 |
+| Name    | Version  |
+|---------|----------|
+| msgraph | >= 0.2.0 |
 
 ## Resources
 
-| Name                                                                                                                              | Type        |
-|-----------------------------------------------------------------------------------------------------------------------------------|-------------|
-| [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/client_config) | data source |
+| Name                                                                                                                                    | Type     |
+|-----------------------------------------------------------------------------------------------------------------------------------------|----------|
+| [msgraph_resource_action.current_user](https://registry.terraform.io/providers/microsoft/msgraph/latest/docs/resources/resource_action) | resource |
 
 ## Modules
 
@@ -55,7 +56,6 @@ access to resources.
 | should\_create\_ml\_workload\_identity        | Whether to create a user-assigned identity for AzureML workloads.                                                                             | `bool`                                                        | `false` |    no    |
 | should\_create\_secret\_sync\_identity        | Whether to create a user-assigned identity for Secret Sync Extension.                                                                         | `bool`                                                        | `true`  |    no    |
 | should\_enable\_public\_network\_access       | Whether to enable public network access for the Key Vault                                                                                     | `bool`                                                        | `true`  |    no    |
-| should\_enable\_purge\_protection             | Whether to enable purge protection for the Key Vault. Enable for production to prevent accidental or malicious secret deletion                | `bool`                                                        | `false` |    no    |
 | should\_use\_current\_user\_key\_vault\_admin | Whether to give the current user the Key Vault Secrets Officer Role.                                                                          | `bool`                                                        | `true`  |    no    |
 
 ## Outputs

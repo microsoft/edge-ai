@@ -89,7 +89,7 @@ locals {
 resource "azapi_resource" "connector_template" {
   for_each = local.processed_connectors
 
-  type      = "Microsoft.IoTOperations/instances/akriConnectorTemplates@2026-03-01"
+  type      = "Microsoft.IoTOperations/instances/akriConnectorTemplates@2025-10-01"
   name      = each.value.name
   parent_id = var.aio_instance_id
 

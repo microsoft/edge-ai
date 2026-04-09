@@ -46,5 +46,4 @@ module "container_registry" {
   public_network_access_enabled      = var.public_network_access_enabled
   sku                                = var.sku
   should_enable_data_endpoints       = var.should_enable_data_endpoints
-  should_enable_export_policy        = var.should_enable_export_policy
 }

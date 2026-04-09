@@ -176,7 +176,7 @@ Tags are designed to improve navigation, highlight key topics, and connect relat
 - `manufacturing` - Manufacturing processes and optimization
 - `manufacturing-efficiency` - Manufacturing efficiency improvement
 - `matrix` - Matrix build strategies
-- `linting` - Code linting and quality analysis
+- `megalinter` - MegaLinter code analysis
 - `oee` - Overall Equipment Effectiveness
 - `operational-monitoring` - Operational performance monitoring
 

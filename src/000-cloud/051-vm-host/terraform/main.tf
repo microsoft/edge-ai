@@ -4,19 +4,32 @@
  * Deploys one or more Linux VMs for Arc-connected K3s cluster
  */
 
-data "azurerm_client_config" "current" {}
-
 locals {
   label_prefix = "${var.resource_prefix}-aio-${var.environment}-${var.instance}"
-  vm_username  = try(coalesce(var.vm_username, var.resource_prefix), var.resource_prefix)
+  vm_username  = coalesce(var.vm_username, var.resource_prefix)
 
   // Combine current user (if enabled) with explicit admin principals
   vm_admin_principals = merge(
     var.vm_admin_principals,
     var.should_assign_current_user_vm_admin ? {
-      "admin" = data.azurerm_client_config.current.object_id
+      "admin" = msgraph_resource_action.current_user[0].output.oid
     } : {}
   )
+}
+
+/*
+ * Current User Data (Microsoft Graph)
+ */
+
+resource "msgraph_resource_action" "current_user" {
+  count = var.should_assign_current_user_vm_admin ? 1 : 0
+
+  method       = "GET"
+  resource_url = "me"
+
+  response_export_values = {
+    oid = "id"
+  }
 }
 
 // Generate random password for VM authentication when password auth is enabled
@@ -54,8 +67,6 @@ module "virtual_machine" {
   ssh_public_key             = var.should_create_ssh_key ? tls_private_key.ssh[0].public_key_openssh : null
   admin_password             = var.should_use_password_auth ? random_password.vm_admin[count.index].result : null
   arc_onboarding_identity_id = try(var.arc_onboarding_identity.id, null)
-  os_disk_type               = var.os_disk_type
-  os_disk_size_gb            = var.os_disk_size_gb
 
   // Spot pricing configuration
   vm_priority        = var.vm_priority

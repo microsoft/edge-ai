@@ -20,18 +20,6 @@ variable "vm_username" {
   default     = null
 }
 
-variable "os_disk_type" {
-  type        = string
-  description = "Storage account type for the OS disk"
-  default     = "Standard_LRS"
-}
-
-variable "os_disk_size_gb" {
-  type        = number
-  description = "Size of the OS disk in GB. Defaults to the image default size"
-  default     = null
-}
-
 /*
  * Spot Pricing Configuration - Optional
  */

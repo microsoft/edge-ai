@@ -83,7 +83,6 @@ description = "Generic API Key"
     '''.*\.env\.example$''',
     '''.*\.config\.example$''',
     '''.*integration.*tests?.*\.rs$''',
-    '''\.azdo/templates/.*\.yml$''',
   ]
   regexes = [
     '''password:\s+\w{20,}=\s*#.*CHANGE''',

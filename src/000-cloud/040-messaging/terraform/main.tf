@@ -73,14 +73,5 @@ module "azure_functions" {
   cors_allowed_origins     = var.function_cors_allowed_origins
   cors_support_credentials = var.function_cors_support_credentials
   node_version             = var.function_node_version
-  python_version           = var.function_python_version
   tags                     = var.tags
-}
-
-resource "azurerm_role_assignment" "notification_eventhub_receiver" {
-  count = var.should_create_eventhub && var.should_create_azure_functions ? 1 : 0
-
-  scope                = module.eventhub[0].eventhub_namespace.id
-  role_definition_name = "Azure Event Hubs Data Receiver"
-  principal_id         = module.azure_functions[0].function_app.principal_id
 }

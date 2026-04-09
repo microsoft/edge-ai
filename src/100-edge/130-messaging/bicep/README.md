@@ -67,8 +67,8 @@ Provisions the ARM based data flow endpoint and data flow for Event Hub, require
 
 | Name                       | Type                                                           | API Version |
 |:---------------------------|:---------------------------------------------------------------|:------------|
-| dataflowEndpointToEventHub | `Microsoft.IoTOperations/instances/dataflowEndpoints`          | 2026-03-01  |
-| dataflowToEventHub         | `Microsoft.IoTOperations/instances/dataflowProfiles/dataflows` | 2026-03-01  |
+| dataflowEndpointToEventHub | `Microsoft.IoTOperations/instances/dataflowEndpoints`          | 2025-10-01  |
+| dataflowToEventHub         | `Microsoft.IoTOperations/instances/dataflowProfiles/dataflows` | 2025-10-01  |
 
 ### eventGridDataflow
 
@@ -92,8 +92,8 @@ Provisions the ARM based data flow endpoint and data flow for Event Grid, requir
 
 | Name                        | Type                                                           | API Version |
 |:----------------------------|:---------------------------------------------------------------|:------------|
-| dataflowEndpointToEventGrid | `Microsoft.IoTOperations/instances/dataflowEndpoints`          | 2026-03-01  |
-| dataflowToEventGrid         | `Microsoft.IoTOperations/instances/dataflowProfiles/dataflows` | 2026-03-01  |
+| dataflowEndpointToEventGrid | `Microsoft.IoTOperations/instances/dataflowEndpoints`          | 2025-10-01  |
+| dataflowToEventGrid         | `Microsoft.IoTOperations/instances/dataflowProfiles/dataflows` | 2025-10-01  |
 
 ### dataflowGraphsModule
 
@@ -112,7 +112,7 @@ Provisions dataflow graphs for Azure IoT Operations with WASM operator and stand
 
 | Name          | Type                                                                | API Version |
 |:--------------|:--------------------------------------------------------------------|:------------|
-| dataflowGraph | `Microsoft.IoTOperations/instances/dataflowProfiles/dataflowGraphs` | 2026-03-01  |
+| dataflowGraph | `Microsoft.IoTOperations/instances/dataflowProfiles/dataflowGraphs` | 2025-10-01  |
 
 #### Outputs for dataflowGraphsModule
 
@@ -137,7 +137,7 @@ Provisions dataflows for Azure IoT Operations with source, built-in transformati
 
 | Name     | Type                                                           | API Version |
 |:---------|:---------------------------------------------------------------|:------------|
-| dataflow | `Microsoft.IoTOperations/instances/dataflowProfiles/dataflows` | 2026-03-01  |
+| dataflow | `Microsoft.IoTOperations/instances/dataflowProfiles/dataflows` | 2025-10-01  |
 
 #### Outputs for dataflowsModule
 
@@ -161,7 +161,7 @@ Provisions dataflow endpoints for Azure IoT Operations connecting dataflows to e
 
 | Name             | Type                                                  | API Version |
 |:-----------------|:------------------------------------------------------|:------------|
-| dataflowEndpoint | `Microsoft.IoTOperations/instances/dataflowEndpoints` | 2026-03-01  |
+| dataflowEndpoint | `Microsoft.IoTOperations/instances/dataflowEndpoints` | 2025-10-01  |
 
 #### Outputs for dataflowEndpointsModule
 

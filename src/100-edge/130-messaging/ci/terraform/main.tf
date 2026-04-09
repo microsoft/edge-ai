@@ -16,7 +16,7 @@ data "azurerm_user_assigned_identity" "aio" {
 }
 
 data "azapi_resource" "aio_instance" {
-  type      = "Microsoft.IoTOperations/instances@2026-03-01"
+  type      = "Microsoft.IoTOperations/instances@2025-10-01"
   parent_id = data.azurerm_resource_group.aio.id
   name      = "arck-${var.resource_prefix}-${var.environment}-${var.instance}-ops-instance"
 
@@ -32,7 +32,7 @@ data "azapi_resource" "aio_custom_locations" {
 }
 
 data "azapi_resource" "aio_dataflow_profile" {
-  type      = "Microsoft.IoTOperations/instances/dataflowProfiles@2026-03-01"
+  type      = "Microsoft.IoTOperations/instances/dataflowProfiles@2025-10-01"
   parent_id = data.azapi_resource.aio_instance.id
   name      = "default"
 

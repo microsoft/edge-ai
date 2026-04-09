@@ -145,6 +145,7 @@ The template is configured with `continueOnError: true` for the publishing steps
 ## Related Templates
 
 - Terraform Test Template: [YAML](/.azdo/templates/cluster-test-terraform-template.yml) - Runs functional tests on Terraform modules after security scanning
+- MegaLinter Template: [YAML](/.azdo/templates/megalinter-template.yml) - Performs broader linting including security checks
 
 ## Learn More
 

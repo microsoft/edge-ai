@@ -18,15 +18,11 @@ This module creates the Function App with necessary configuration for messaging 
 
 ## Resources
 
-| Name                                                                                                                                                               | Type     |
-|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|
-| [azurerm_linux_function_app.function_app](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_function_app)                      | resource |
-| [azurerm_role_assignment.function_storage_blob_data_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment)  | resource |
-| [azurerm_role_assignment.function_storage_queue_data_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) | resource |
-| [azurerm_role_assignment.function_storage_table_data_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) | resource |
-| [azurerm_storage_account.function_storage](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account)                        | resource |
-| [azurerm_user_assigned_identity.function_identity](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/user_assigned_identity)         | resource |
-| [azurerm_windows_function_app.function_app](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/windows_function_app)                  | resource |
+| Name                                                                                                                                              | Type     |
+|---------------------------------------------------------------------------------------------------------------------------------------------------|----------|
+| [azurerm_linux_function_app.function_app](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_function_app)     | resource |
+| [azurerm_storage_account.function_storage](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account)       | resource |
+| [azurerm_windows_function_app.function_app](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/windows_function_app) | resource |
 
 ## Inputs
 
@@ -39,11 +35,10 @@ This module creates the Function App with necessary configuration for messaging 
 | environment                | Environment for all resources in this module: dev, test, or prod     | `string`                                       | n/a     |   yes    |
 | instance                   | Instance identifier for naming resources: 001, 002, etc              | `string`                                       | n/a     |   yes    |
 | location                   | Azure region where all resources will be deployed                    | `string`                                       | n/a     |   yes    |
+| node\_version              | The version of Node.js to use.                                       | `string`                                       | n/a     |   yes    |
 | resource\_group\_name      | Name of the resource group                                           | `string`                                       | n/a     |   yes    |
 | resource\_prefix           | Prefix for all resources in this module                              | `string`                                       | n/a     |   yes    |
 | tags                       | Tags to apply to all resources                                       | `map(string)`                                  | n/a     |   yes    |
-| node\_version              | The version of Node.js to use                                        | `string`                                       | `null`  |    no    |
-| python\_version            | The version of Python to use                                         | `string`                                       | `null`  |    no    |
 
 ## Outputs
 

@@ -246,6 +246,7 @@ export class EnhancedProgressDataModel {
   }
 
 
+
   /**
    * Helper methods
    */
@@ -409,6 +410,7 @@ export class EnhancedProgressDataModel {
       .filter(item => item.completed)
       .map(item => item.id);
   }
+
 
 
   /**

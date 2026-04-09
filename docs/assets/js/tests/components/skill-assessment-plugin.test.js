@@ -20,7 +20,7 @@ describe('Skill Assessment Plugin', () => {
       getItem: vi.fn((key) => storage[key] || null),
       setItem: vi.fn((key, value) => { storage[key] = value; }),
       removeItem: vi.fn((key) => { delete storage[key]; }),
-      clear: vi.fn(() => { for (const key in storage) {delete storage[key];} })
+      clear: vi.fn(() => { for (const key in storage) delete storage[key]; })
     };
     Object.defineProperty(window, 'localStorage', {
       value: mockLocalStorage,
@@ -153,8 +153,8 @@ describe('Skill Assessment Plugin', () => {
 
   describe('Skill Breakdown Analysis', () => {
     it('should categorize progress by skill', () => {
-      assessmentPlugin.answerQuestion('1', 'Container orchestration platform', true); // kubernetes: correct
-      assessmentPlugin.answerQuestion('2', 'Programming language', false); // azure: incorrect
+      assessmentPlugin.answerQuestion('1', 'Container orchestration platform', true);  // kubernetes: correct
+      assessmentPlugin.answerQuestion('2', 'Programming language', false);  // azure: incorrect
       const breakdown = assessmentPlugin.getSkillProgress();
       expect(breakdown.kubernetes.correct).toBe(1);
       expect(breakdown.kubernetes.total).toBe(1);
@@ -203,7 +203,7 @@ describe('Skill Assessment Plugin', () => {
     });
 
     it('should prevent multiple answers to same question', () => {
-      assessmentPlugin.answerQuestion('1', 'Container orchestration platform', true); // First answer
+      assessmentPlugin.answerQuestion('1', 'Container orchestration platform', true);  // First answer
       assessmentPlugin.answerQuestion('1', 'Database management system', false); // Attempt second answer (should be ignored)
       const progress = assessmentPlugin.getProgress();
       expect(progress.answeredQuestions).toBe(1);

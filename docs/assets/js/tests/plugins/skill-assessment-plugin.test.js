@@ -68,7 +68,7 @@ describe('Skill Assessment Plugin', () => {
       // This test should fail initially until plugin is implemented
       expect(() => {
         assessmentPlugin = new window.SkillAssessmentPlugin();
-      }).not.toThrow(); expect(assessmentPlugin).toBeDefined();
+      }).not.toThrow();      expect(assessmentPlugin).toBeDefined();
       expect(assessmentPlugin.config).toBeDefined();
       expect(assessmentPlugin.config.autoSave).toBe(true);
       expect(assessmentPlugin.config.trackTime).toBe(true);
@@ -185,8 +185,8 @@ describe('Skill Assessment Plugin', () => {
     });
 
     it('should calculate difficulty-based weighted scoring', () => {
-      assessmentPlugin.answerQuestion('1', 'A group of containers', true); // beginner
-      assessmentPlugin.answerQuestion('2', 'Edge platform for IoT', true); // intermediate
+      assessmentPlugin.answerQuestion('1', 'A group of containers', true);  // beginner
+      assessmentPlugin.answerQuestion('2', 'Edge platform for IoT', true);  // intermediate
 
       const score = assessmentPlugin.calculateWeightedScore();
       expect(score.totalPoints).toBeGreaterThan(0);
@@ -210,8 +210,8 @@ describe('Skill Assessment Plugin', () => {
 
     it('should calculate skill assessment scores', () => {
       // Answer questions with different correctness
-      assessmentPlugin.answerQuestion('1', 'A group of containers', true); // Correct
-      assessmentPlugin.answerQuestion('2', 'A database service', false); // Incorrect
+      assessmentPlugin.answerQuestion('1', 'A group of containers', true);   // Correct
+      assessmentPlugin.answerQuestion('2', 'A database service', false);     // Incorrect
 
       const finalScore = assessmentPlugin.getFinalScore();
       expect(finalScore.accuracy).toBe(0.5); // 50% correct

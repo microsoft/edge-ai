@@ -56,14 +56,7 @@ variable "cors_support_credentials" {
 
 variable "node_version" {
   type        = string
-  description = "The version of Node.js to use"
-  default     = null
-}
-
-variable "python_version" {
-  type        = string
-  description = "The version of Python to use"
-  default     = null
+  description = "The version of Node.js to use."
 }
 
 variable "tags" {

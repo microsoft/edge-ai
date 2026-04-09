@@ -663,19 +663,23 @@ export class SimpleProgressBarEnhancement {
    * Save progress to API
    */
   async saveProgressToAPI(progressData) {
-    const response = await fetch('/api/progress/save', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(progressData)
-    });
+    try {
+      const response = await fetch('/api/progress/save', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(progressData)
+      });
 
-    if (!response.ok) {
-      throw new Error(`API save failed: ${response.status}`);
+      if (!response.ok) {
+        throw new Error(`API save failed: ${response.status}`);
+      }
+
+      return true;
+    } catch (error) {
+      throw error;
     }
-
-    return true;
   }
 
   /**

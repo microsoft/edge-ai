@@ -127,11 +127,11 @@ describe('Security Attack Protection', () => {
       const nosqlInjectionPayload = {
         type: 'kata-progress',
         metadata: {
-          kataId: { $ne: null }, // Objects not allowed in metadata
-          title: { $regex: '.*' } // Objects not allowed in metadata
+          kataId: { $ne: null },  // Objects not allowed in metadata
+          title: { $regex: '.*' }  // Objects not allowed in metadata
         },
         progress: {
-          currentStep: { $gt: 0 }, // Objects not allowed
+          currentStep: { $gt: 0 },  // Objects not allowed
           completedSteps: [0]
         },
         timestamp: new Date().toISOString()

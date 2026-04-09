@@ -55,7 +55,6 @@ module "cloud_security_identity" {
   key_vault_private_endpoint_subnet_id     = null
   key_vault_virtual_network_id             = null
   should_enable_public_network_access      = var.should_enable_key_vault_public_network_access
-  should_enable_purge_protection           = var.should_enable_key_vault_purge_protection
   should_create_aks_identity               = false
   should_create_ml_workload_identity       = false
 }

@@ -494,6 +494,7 @@ describe('InteractiveLearningPathCheckboxes', () => {
   });
 
 
+
   describe('Select All Katas Functionality', () => {
     let component;
     let mockDependencies;
@@ -597,7 +598,7 @@ describe('InteractiveLearningPathCheckboxes', () => {
         container.innerHTML = `<div class="markdown-section"></div>`;
         // Also clear any checkboxes outside the container (e.g., primary checkbox)
         document.body.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-          if (!container.contains(cb)) {cb.remove();}
+          if (!container.contains(cb)) cb.remove();
         });
 
         const result = component.selectAllKatasInPath();
@@ -656,7 +657,7 @@ describe('InteractiveLearningPathCheckboxes', () => {
         container.innerHTML = `<div class="markdown-section"></div>`;
         // Also clear any checkboxes outside the container (e.g., primary checkbox)
         document.body.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-          if (!container.contains(cb)) {cb.remove();}
+          if (!container.contains(cb)) cb.remove();
         });
 
         const result = component.deselectAllKatasInPath();

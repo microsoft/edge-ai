@@ -368,86 +368,41 @@ function Test-DependencyAudit {
         $packageJsonFiles = Get-ChildItem -Recurse -Filter "package.json" -ErrorAction SilentlyContinue
         if ($packageJsonFiles) {
             Write-Info "Scanning Node.js dependencies for vulnerabilities..."
+            foreach ($packageJson in $packageJsonFiles) {
+                $projectDir = $packageJson.DirectoryName
+                try {
+                    Set-Location $projectDir
+                    $npmAudit = & npm audit --json 2>&1
+                    $auditJson = $npmAudit | ConvertFrom-Json -ErrorAction SilentlyContinue
 
-            $npmCli = Get-Command "npm" -ErrorAction SilentlyContinue
-            if (-not $npmCli) {
-                Write-Warn "npm CLI not available; skipping Node.js dependency audit"
-                foreach ($packageJson in $packageJsonFiles) {
+                    if ($auditJson.vulnerabilities -and $auditJson.vulnerabilities.PSObject.Properties.Count -gt 0) {
+                        $vulnCount = $auditJson.metadata.vulnerabilities.total
+                        $auditResults += [PSCustomObject]@{
+                            Language = "Node.js"
+                            Status   = "VULNERABLE"
+                            Details  = "Found $vulnCount vulnerabilities in $($packageJson.DirectoryName)"
+                            Project  = $projectDir
+                        }
+                        Write-Warn "Node.js vulnerable dependencies detected in $projectDir"
+                    }
+                    else {
+                        Write-Info "✅ No Node.js vulnerable dependencies found in $projectDir"
+                        $auditResults += [PSCustomObject]@{
+                            Language = "Node.js"
+                            Status   = "CLEAN"
+                            Details  = "No vulnerable dependencies detected"
+                            Project  = $projectDir
+                        }
+                    }
+                }
+                catch {
+                    $errorRecord = $_
+                    Write-Warn ("Failed to run npm audit in {0}: {1}" -f $projectDir, $errorRecord)
                     $auditResults += [PSCustomObject]@{
                         Language = "Node.js"
                         Status   = "ERROR"
-                        Details  = "npm CLI not available"
-                        Project  = $packageJson.DirectoryName
-                    }
-                }
-            }
-            else {
-                foreach ($packageJson in $packageJsonFiles) {
-                    $projectDir = $packageJson.DirectoryName
-                    try {
-                        Set-Location $projectDir
-
-                        $lockFile = Join-Path $projectDir "package-lock.json"
-                        if (-not (Test-Path $lockFile)) {
-                            Write-BuildDebug "No package-lock.json in $projectDir, skipping npm audit"
-                            continue
-                        }
-
-                        $npmAudit = & npm audit --json 2>&1
-                        $npmAuditOutput = ($npmAudit | Where-Object { $_ -is [string] }) -join "`n"
-
-                        $auditJson = $null
-                        if (-not [string]::IsNullOrWhiteSpace($npmAuditOutput)) {
-                            try {
-                                $auditJson = $npmAuditOutput | ConvertFrom-Json -ErrorAction Stop
-                            }
-                            catch {
-                                Write-BuildDebug ("npm audit JSON parse issue in {0}: {1}" -f $projectDir, $_)
-                            }
-                        }
-
-                        if ($null -eq $auditJson) {
-                            $auditResults += [PSCustomObject]@{
-                                Language = "Node.js"
-                                Status   = "CLEAN"
-                                Details  = "No parseable audit data returned"
-                                Project  = $projectDir
-                            }
-                            continue
-                        }
-
-                        $hasVulnerabilities = ($auditJson.PSObject.Properties.Name -contains 'vulnerabilities') -and
-                            ($null -ne $auditJson.vulnerabilities) -and
-                            (@($auditJson.vulnerabilities.PSObject.Properties).Count -gt 0)
-                        if ($hasVulnerabilities) {
-                            $vulnCount = $auditJson.metadata.vulnerabilities.total
-                            $auditResults += [PSCustomObject]@{
-                                Language = "Node.js"
-                                Status   = "VULNERABLE"
-                                Details  = "Found $vulnCount vulnerabilities in $($packageJson.DirectoryName)"
-                                Project  = $projectDir
-                            }
-                            Write-Warn "Node.js vulnerable dependencies detected in $projectDir"
-                        }
-                        else {
-                            Write-Info "✅ No Node.js vulnerable dependencies found in $projectDir"
-                            $auditResults += [PSCustomObject]@{
-                                Language = "Node.js"
-                                Status   = "CLEAN"
-                                Details  = "No vulnerable dependencies detected"
-                                Project  = $projectDir
-                            }
-                        }
-                    }
-                    catch {
-                        $errorRecord = $_
-                        Write-Warn ("Failed to run npm audit in {0}: {1}" -f $projectDir, $errorRecord)
-                        $auditResults += [PSCustomObject]@{
-                            Language = "Node.js"
-                            Status   = "ERROR"
-                            Details  = ("Audit failed: {0}" -f $errorRecord)
-                            Project  = $projectDir
-                        }
+                        Details  = ("Audit failed: {0}" -f $errorRecord)
+                        Project  = $projectDir
                     }
                 }
             }

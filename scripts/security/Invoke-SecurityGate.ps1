@@ -23,6 +23,7 @@ This script enforces security policies by analyzing security scan results from m
 - Grype vulnerability scanner (container images and source code)
 - Checkov infrastructure as code security scanner
 - Language-specific dependency audits (dotnet, cargo audit, npm audit, pip-audit)
+- MegaLinter security findings
 
 The script provides configurable thresholds and can fail builds when security policies are violated.
 

@@ -92,7 +92,7 @@ This template depends on the following:
 # Strict validation for pull request gates
   - template: .azdo/templates/docs-validation-template.yml
     parameters:
-      dependsOn: [DocsLint, SecurityScan]
+      dependsOn: [MegaLinter, SecurityScan]
       displayName: "Strict Documentation Validation"
       condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'))
       breakBuild: true
@@ -213,12 +213,13 @@ stages:
 stages:
   - stage: Validate
     jobs:
-      - template: .azdo/templates/docs-lint-template.yml
+      - template: .azdo/templates/megalinter-template.yml
+        # MegaLinter parameters...
 
       - template: .azdo/templates/docs-validation-template.yml
         parameters:
-          dependsOn: [DocsLint]
-          condition: succeeded('DocsLint')
+          dependsOn: [MegaLinter]
+          condition: succeeded('MegaLinter')
           displayName: "Documentation Validation"
 ```
 
@@ -248,6 +249,7 @@ Common issues and their solutions:
 
 ## Related Templates
 
+- MegaLinter Template: [YAML](/.azdo/templates/megalinter-template.yml) | [Documentation](./megalinter-template.md) - Provides comprehensive linting for various file types
 - Wiki Update Template: [YAML](/.azdo/templates/wiki-update-template.yml) | [Documentation](./wiki-update-template.md) - Manages wiki synchronization and now includes health reporting
 - Docs Check Bicep Template: [YAML](/.azdo/templates/docs-check-bicep-template.yml) | [Documentation](./docs-check-bicep-template.md) - Specialized template for Bicep documentation validation
 

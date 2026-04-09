@@ -91,9 +91,9 @@ This template depends on the following:
 # Advanced implementation with all parameters
   - template: .azdo/templates/variable-compliance-terraform-template.yml
   parameters:
-    dependsOn: [TerraformLint]
+    dependsOn: [MegaLinter]
     displayName: "Variable Definition Compliance"
-    condition: succeeded('TerraformLint')
+    condition: succeeded('MegaLinter')
     terraformDocsVersion: "v0.20.0"
     breakBuild: true
     pool:

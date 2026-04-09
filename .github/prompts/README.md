@@ -43,7 +43,6 @@ Prompts can be invoked in GitHub Copilot Chat using `/prompt-name` syntax (e.g.,
 - **[Terraform from Blueprint](./terraform-from-blueprint.prompt.md)** - Converting blueprints to Terraform
 - **[Terraform Variable Consistency Manager](./tf-variable-consistency-manager.prompt.md)** - Terraform variable standardization and consistency management
 - **[IoT Operations Version Upgrade](./iotops-version-upgrade.prompt.md)** - Azure IoT Operations component upgrade workflow and implementation
-- **[WASM Build and Deploy](./wasm-build-deploy.prompt.md)** - Build, push to ACR, and test WASM operator modules for dataflow graphs
 
 ### Azure DevOps Integration
 

@@ -40,7 +40,7 @@ class LearningPathParser {
   }
 
   parsePathMarkdown(markdownContent, fileName) {
-    const kataLinkRegex = /\[.*?\]\(\.\.\/katas\/([^/]+)\/([^).]+)\.md\)/g;
+    const kataLinkRegex = /\[.*?\]\(\.\.\/katas\/([^/]+)\/([^)\.]+)\.md\)/g;
     const kataIds = [];
     const seenIds = new Set();
 

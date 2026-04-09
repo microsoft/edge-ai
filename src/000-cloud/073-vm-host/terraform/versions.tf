@@ -8,6 +8,10 @@ terraform {
       source  = "hashicorp/local"
       version = ">= 2.5.0"
     }
+    msgraph = {
+      source  = "microsoft/msgraph"
+      version = ">= 0.2.0"
+    }
     random = {
       source  = "hashicorp/random"
       version = ">= 3.6.0"

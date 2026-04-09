@@ -160,7 +160,7 @@ class SkillAssessmentPlugin {
   // Provide immediate feedback
   provideFeedback(questionId, correct) {
     const questionElement = document.querySelector(`[data-question-id="${questionId}"]`);
-    if (!questionElement) {return;}
+    if (!questionElement) return;
 
     // Remove existing feedback
     const existingFeedback = questionElement.querySelector('.answer-feedback');
@@ -277,7 +277,7 @@ class SkillAssessmentPlugin {
 
   // Get time spent - minimal implementation
   getTimeSpent() {
-    if (!this.startTime) {return 0;}
+    if (!this.startTime) return 0;
     return Date.now() - this.startTime;
   }
 
@@ -382,7 +382,7 @@ class SkillAssessmentPlugin {
   // Update progress indicator - minimal implementation
   updateProgressIndicator() {
     const progressIndicator = document.querySelector('.progress-indicator');
-    if (!progressIndicator) {return;}
+    if (!progressIndicator) return;
 
     const progress = this.getProgress();
 
@@ -406,7 +406,7 @@ class SkillAssessmentPlugin {
   // Update skill breakdown - minimal implementation
   updateSkillBreakdown() {
     const skillBreakdown = document.querySelector('.skill-breakdown');
-    if (!skillBreakdown) {return;}
+    if (!skillBreakdown) return;
     const skillProgress = this.getSkillProgress();
     let html = '<div class="skill-progress-list">';
     Object.entries(skillProgress).forEach(([skill, progress]) => {
@@ -478,7 +478,7 @@ class SkillAssessmentPlugin {
 
   // Save progress - minimal implementation
   saveProgress() {
-    if (!this.config.autoSave) {return;}
+    if (!this.config.autoSave) return;
     try {
       const progressData = {
         answers: this.answers,

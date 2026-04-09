@@ -99,7 +99,7 @@ var processedConnectors = [
 */
 
 @batchSize(1)
-resource connectorTemplate 'Microsoft.IoTOperations/instances/akriConnectorTemplates@2026-03-01' = [
+resource connectorTemplate 'Microsoft.IoTOperations/instances/akriConnectorTemplates@2025-10-01' = [
   for (conn, i) in processedConnectors: {
     name: '${last(split(aioInstanceId, '/'))!}/${conn.name}'
     extendedLocation: {

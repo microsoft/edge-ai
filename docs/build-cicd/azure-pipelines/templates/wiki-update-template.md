@@ -174,6 +174,7 @@ Common issues and their solutions:
 
 ## Related Templates
 
+- MegaLinter Template: [YAML](/.azdo/templates/megalinter-template.yml) | [Documentation](./megalinter-template.md) - Validates documentation quality before wiki updates
 - Docs Check Template: [YAML](/.azdo/templates/docs-check-terraform-template.yml) | [Documentation](./docs-check-terraform-template.md) - Ensures documentation follows standards
 - Matrix Folder Check Template: [YAML](/.azdo/templates/matrix-folder-check-template.yml) | [Documentation](./matrix-folder-check-template.md) - Detects changes in documentation files
 

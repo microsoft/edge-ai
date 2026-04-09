@@ -8,8 +8,7 @@ export default [
       '.copilot-tracking/**',
       'node_modules/**',
       'dist/**',
-      'build/**',
-      'docs/assets/js/temp-*.js'
+      'build/**'
     ]
   },
   {
@@ -30,12 +29,7 @@ export default [
         setInterval: 'readonly',
         clearInterval: 'readonly',
         setImmediate: 'readonly',
-        clearImmediate: 'readonly',
-
-        // Node.js 18+ globals
-        URL: 'readonly',
-        fetch: 'readonly',
-        AbortSignal: 'readonly'
+        clearImmediate: 'readonly'
       }
     },
     rules: {
@@ -129,10 +123,6 @@ export default [
         FormData: 'readonly',
         Storage: 'readonly',
         StorageEvent: 'readonly',
-        EventSource: 'readonly',
-        btoa: 'readonly',
-        atob: 'readonly',
-        screen: 'readonly',
 
         // Browser dialogs (should be avoided in production)
         alert: 'readonly',
@@ -248,10 +238,6 @@ export default [
         FormData: 'readonly',
         Storage: 'readonly',
         StorageEvent: 'readonly',
-        EventSource: 'readonly',
-        btoa: 'readonly',
-        atob: 'readonly',
-        screen: 'readonly',
 
         // Browser dialogs for tests
         alert: 'readonly',

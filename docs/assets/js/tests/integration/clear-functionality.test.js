@@ -100,7 +100,7 @@ describe('Clear Functionality Integration Issues', () => {
             await this.storageManager.removeKataProgress(kataId);
             return true;
           } catch (_error) {
-            throw new Error(`removeKataProgress method does not exist: ${_error.message}`, { cause: _error });
+            throw new Error(`removeKataProgress method does not exist: ${_error.message}`);
           }
         },
         async clearAllProgress() {
@@ -110,7 +110,7 @@ describe('Clear Functionality Integration Issues', () => {
             await this.storageManager.clearUserSettings();
             return true;
           } catch (_error) {
-            throw new Error(`clearAssessmentResults/clearUserSettings methods do not exist: ${_error.message}`, { cause: _error });
+            throw new Error(`clearAssessmentResults/clearUserSettings methods do not exist: ${_error.message}`);
           }
         }
       };

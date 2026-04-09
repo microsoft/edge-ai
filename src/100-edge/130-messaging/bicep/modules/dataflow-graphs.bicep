@@ -23,16 +23,16 @@ param dataflowGraphs types.DataflowGraph[]
   Resources
 */
 
-resource aioInstanceResource 'Microsoft.IoTOperations/instances@2026-03-01' existing = {
+resource aioInstanceResource 'Microsoft.IoTOperations/instances@2025-10-01' existing = {
   name: aioInstanceName
 }
 
-resource aioDataflowProfileResource 'Microsoft.IoTOperations/instances/dataflowProfiles@2026-03-01' existing = {
+resource aioDataflowProfileResource 'Microsoft.IoTOperations/instances/dataflowProfiles@2025-10-01' existing = {
   parent: aioInstanceResource
   name: aioDataflowProfileName
 }
 
-resource dataflowGraph 'Microsoft.IoTOperations/instances/dataflowProfiles/dataflowGraphs@2026-03-01' = [
+resource dataflowGraph 'Microsoft.IoTOperations/instances/dataflowProfiles/dataflowGraphs@2025-10-01' = [
   for graph in dataflowGraphs: {
     parent: aioDataflowProfileResource
     name: graph.name
@@ -41,16 +41,15 @@ resource dataflowGraph 'Microsoft.IoTOperations/instances/dataflowProfiles/dataf
       name: customLocationId
     }
     properties: {
-      mode: graph.?mode ?? types.dataflowGraphDefaults.mode
-      requestDiskPersistence: graph.?requestDiskPersistence ?? types.dataflowGraphDefaults.requestDiskPersistence
+      mode: graph.mode ?? types.dataflowGraphDefaults.mode
+      requestDiskPersistence: graph.requestDiskPersistence ?? types.dataflowGraphDefaults.requestDiskPersistence
       nodes: [
         for node in graph.nodes: {
-          #disable-next-line BCP225
           nodeType: node.nodeType
           name: node.name
-          ...(node.?sourceSettings != null ? { sourceSettings: node.?sourceSettings } : {})
-          ...(node.?graphSettings != null ? { graphSettings: node.?graphSettings } : {})
-          ...(node.?destinationSettings != null ? { destinationSettings: node.?destinationSettings } : {})
+          ...(node.sourceSettings != null ? { sourceSettings: node.sourceSettings } : {})
+          ...(node.graphSettings != null ? { graphSettings: node.graphSettings } : {})
+          ...(node.destinationSettings != null ? { destinationSettings: node.destinationSettings } : {})
         }
       ]
       nodeConnections: graph.nodeConnections

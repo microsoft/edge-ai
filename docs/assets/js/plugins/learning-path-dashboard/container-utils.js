@@ -48,7 +48,7 @@ export const containerUtilitiesMixin = {
   },
 
   normalizeToElement(input) {
-    if (!input) {return null;}
+    if (!input) return null;
 
     if (input instanceof Element) {
       return input;

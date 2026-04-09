@@ -151,12 +151,12 @@ module dataflowEndpointsModule 'modules/dataflow-endpoint.bicep' = if (!empty(da
 */
 
 @description('List of dataflow graph names.')
-output dataflowGraphNames string[] = !empty(dataflowGraphs) ? dataflowGraphsModule!.outputs.dataflowGraphNames : []
+output dataflowGraphNames string[] = !empty(dataflowGraphs) ? dataflowGraphsModule.outputs.dataflowGraphNames : []
 
 @description('List of dataflow names.')
-output dataflowNames string[] = !empty(dataflows) ? dataflowsModule!.outputs.dataflowNames : []
+output dataflowNames string[] = !empty(dataflows) ? dataflowsModule.outputs.dataflowNames : []
 
 @description('List of dataflow endpoint names.')
 output dataflowEndpointNames string[] = !empty(dataflowEndpoints)
-  ? dataflowEndpointsModule!.outputs.dataflowEndpointNames
+  ? dataflowEndpointsModule.outputs.dataflowEndpointNames
   : []

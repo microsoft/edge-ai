@@ -30,10 +30,8 @@ RUN curl -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable \
 WORKDIR /app
 
 # Build and install x264 (software H.264 encoder) for FFmpeg
-ARG X264_BRANCH=master
 RUN set -eux; \
-    curl -fsSL -o /tmp/x264.tar.bz2 "https://code.videolan.org/videolan/x264/-/archive/${X264_BRANCH}/x264-${X264_BRANCH}.tar.bz2"; \
-    mkdir -p /tmp/x264 && tar -xjf /tmp/x264.tar.bz2 -C /tmp/x264 --strip-components=1
+    git clone --depth 1 https://code.videolan.org/videolan/x264.git /tmp/x264
 WORKDIR /tmp/x264
 RUN set -eux; \
     ./configure --prefix=/usr/local --enable-shared --disable-cli; \
@@ -41,7 +39,7 @@ RUN set -eux; \
     make install; \
     echo "/usr/local/lib" > /etc/ld.so.conf.d/local-x264.conf; \
     if command -v ldconfig >/dev/null 2>&1; then ldconfig; fi; \
-    rm -rf /tmp/x264 /tmp/x264.tar.bz2
+    rm -rf /tmp/x264
 WORKDIR /app
 # Build and install FFmpeg from source (Mariner repos may not include ffmpeg libs)
 ARG FFMPEG_VERSION=7.1.1

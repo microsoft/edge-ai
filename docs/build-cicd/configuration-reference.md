@@ -45,7 +45,7 @@ Complete reference for all configuration files used in the Edge AI Accelerator p
 - [`docs-check-bicep-template.yml`][bicep-docs] - Bicep documentation validation
 - [`docs-validation-template.yml`][docs-validation-template] - Comprehensive documentation validation
 - [`checkov-template.yml`][checkov-template] - Security scanning
-- Dedicated lint templates - Code quality validation (shell, YAML, Terraform, Bicep, Python, PowerShell, docs, security)
+- [`megalinter-template.yml`][megalinter-template] - Code quality validation
 - [`aio-version-checker-template.yml`][aio-version-template] - Azure IoT Operations version validation
 - [`resource-provider-pwsh-tests-template.yml`][resource-provider-template] - Azure resource provider tests
 - [`wiki-update-template.yml`][wiki-update-template] - Documentation synchronization
@@ -66,19 +66,22 @@ Complete reference for all configuration files used in the Edge AI Accelerator p
 
 ## Code quality and linting
 
-### Dedicated lint templates
+### MegaLinter configuration
 
-Code quality validation is handled through individual Azure DevOps lint templates in `.azdo/templates/`:
+| File                                    | Purpose                                        | Documentation                             |
+|-----------------------------------------|------------------------------------------------|-------------------------------------------|
+| [`.mega-linter.yml`][megalinter-config] | Primary linting and code quality configuration | [Security Scanning Guide][security-guide] |
 
-- **Shell linting** (ShellCheck, shell formatting)
-- **YAML linting** (yamllint validation)
-- **Terraform linting** (TFLint, terraform fmt)
-- **Bicep linting** (Bicep linter, PSRule)
-- **Python linting** (Ruff)
-- **PowerShell linting** (PSScriptAnalyzer)
-- **Documentation linting** (markdownlint, cspell)
-- **Code quality linting** (ESLint, general formatting)
-- **Security scanning** (GitLeaks, Grype, SecretLint, dependency audits)
+**Enabled linters**:
+
+- Shell scripting (Bash, ShellCheck)
+- Infrastructure as Code (Terraform, Bicep)
+- Container configuration (Dockerfile, Kubernetes)
+- Documentation (Markdown)
+- PowerShell
+- Security scanning (GitLeaks, Grype, SecretLint)
+- Container image vulnerability scanning (Grype)
+- Language-specific dependency audits (.NET, Rust, Node.js, Python)
 
 ### Language-specific linting
 
@@ -146,8 +149,8 @@ Code quality validation is handled through individual Azure DevOps lint template
 Most configuration files support local development workflows:
 
 ```bash
-# Run linters locally
-npm run tflint-fix-all
+# Run MegaLinter locally
+npx mega-linter-runner --flavor terraform
 
 # Validate Bicep templates
 az bicep build --file template.bicep
@@ -162,7 +165,7 @@ Configuration files are automatically used by:
 
 - **Azure DevOps**: Reads `azure-pipelines.yml` and template files
 - **GitHub Actions**: Uses workflow files and composite actions
-- **Dedicated lint templates**: Run individual linting and code quality checks
+- **MegaLinter**: Processes `.mega-linter.yml` configuration
 - **Checkov**: Applies `.checkov.yml` security policies
 
 ## Related documentation
@@ -182,6 +185,7 @@ Configuration files are automatically used by:
 [bicep-docs]: /.azdo/templates/docs-check-bicep-template.yml
 [docs-validation-template]: /.azdo/templates/docs-validation-template.yml
 [checkov-template]: /.azdo/templates/checkov-template.yml
+[megalinter-template]: /.azdo/templates/megalinter-template.yml
 [aio-version-template]: /.azdo/templates/aio-version-checker-template.yml
 [resource-provider-template]: /.azdo/templates/resource-provider-pwsh-tests-template.yml
 [wiki-update-template]: /.azdo/templates/wiki-update-template.yml
@@ -191,6 +195,7 @@ Configuration files are automatically used by:
 [gh-terraform-docs]: /.github/workflows/docs-check-terraform.yml
 [gh-bicep-docs]: /.github/workflows/docs-check-bicep.yml
 [gh-aio-version]: /.github/workflows/aio-version-checker.yml
+[megalinter-config]: /.mega-linter.yml
 [ps-settings]: /PSScriptAnalyzerSettings.psd1
 [cspell-config]: /.cspell.json
 [checkov-config]: /.checkov.yml

@@ -56,12 +56,6 @@ variable "should_enable_data_endpoints" {
   default     = true
 }
 
-variable "should_enable_export_policy" {
-  type        = bool
-  description = "Whether to allow container image export from the registry. Requires public_network_access_enabled to be true when enabled"
-  default     = false
-}
-
 /*
  * Outbound Access Controls - Optional
  */

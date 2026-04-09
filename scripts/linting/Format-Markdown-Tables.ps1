@@ -11,7 +11,7 @@
 
 .PARAMETER Exclude
     Array of folder patterns to exclude from formatting.
-    Default: @('node_modules', '.git', 'venv', '.copilot-tracking')
+    Default: @('node_modules', '.git', 'venv', '.github/copilot-instructions.md', '.github/instructions', '.github/prompts', '.copilot-tracking')
 
 .PARAMETER Include
     Array of folder patterns to explicitly include (overrides default exclusions).
@@ -47,6 +47,9 @@ param(
         'node_modules',
         '.git',
         'venv',
+        '.github/copilot-instructions.md',
+        '.github/instructions',
+        '.github/prompts',
         '.copilot-tracking'
     ),
 
@@ -64,7 +67,7 @@ $RepoRoot = Get-Location
 
 # Discover all markdown files
 Write-Host "Discovering markdown files..." -ForegroundColor Cyan
-$AllMarkdownFiles = Get-ChildItem -Path $RepoRoot -Filter "*.md" -Recurse -File -Force -ErrorAction SilentlyContinue
+$AllMarkdownFiles = Get-ChildItem -Path $RepoRoot -Filter "*.md" -Recurse -File -ErrorAction SilentlyContinue
 
 if ($AllMarkdownFiles.Count -eq 0) {
     Write-Host "No markdown files found." -ForegroundColor Yellow

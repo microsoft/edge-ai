@@ -62,9 +62,7 @@ pub struct MqttConfig {
     pub session_expiry_secs: u32,
     pub receive_max: u16,
     pub keep_alive_secs: u16,
-    #[expect(dead_code)]
     pub retry_min_backoff_secs: u64,
-    #[expect(dead_code)]
     pub retry_max_backoff_secs: u64,
     pub use_tls: bool,
     pub tls_auto_enabled: bool,

@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use tracing::{info, debug, error};
+use tracing::{info, warn, debug, error};
 use async_trait::async_trait;
 
 use crate::backend::{
@@ -20,7 +20,6 @@ pub struct OnnxRuntimeBackend {
 
 #[cfg(feature = "onnx-runtime")]
 #[derive(Debug)]
-#[expect(dead_code)]
 struct OnnxModel {
     name: String,
     model_path: String,
@@ -31,7 +30,6 @@ struct OnnxModel {
 
 #[cfg(feature = "onnx-runtime")]
 #[derive(Debug, Clone)]
-#[expect(dead_code)]
 struct BackendStats {
     models_loaded: usize,
     total_inferences: u64,

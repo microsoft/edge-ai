@@ -1388,7 +1388,7 @@ beforeEach(async () => {
       }
     } catch (recoveryError) {
       console.error('Window recovery failed:', recoveryError.message);
-      throw new Error('Critical: Unable to establish test environment', { cause: recoveryError });
+      throw new Error('Critical: Unable to establish test environment');
     }
   }
 });

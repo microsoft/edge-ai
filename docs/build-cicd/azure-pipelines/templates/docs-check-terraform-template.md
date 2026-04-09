@@ -88,9 +88,9 @@ This template depends on the following:
 # Advanced implementation with all parameters
   - template: .azdo/templates/docs-check-terraform-template.yml
   parameters:
-    dependsOn: [TerraformLint]
+    dependsOn: [MegaLinter]
     displayName: "Documentation Quality Validation"
-    condition: succeeded('TerraformLint')
+    condition: succeeded('MegaLinter')
     terraformDocsVersion: "v0.17.0"
     breakBuild: true
     pool:
@@ -159,12 +159,13 @@ stages:
 stages:
   - stage: Validate
     jobs:
-      - template: .azdo/templates/shell-lint-template.yml
+      - template: .azdo/templates/megalinter-template.yml
+        # MegaLinter parameters...
 
       - template: .azdo/templates/docs-check-terraform-template.yml
         parameters:
-          dependsOn: [ShellLint]
-          condition: succeeded('ShellLint')
+          dependsOn: [MegaLinter]
+          condition: succeeded('MegaLinter')
 ```
 
 ## Troubleshooting
@@ -192,6 +193,7 @@ Common issues and their solutions:
 
 ## Related Templates
 
+- MegaLinter Template: [YAML](/.azdo/templates/megalinter-template.yml) | [Documentation](./megalinter-template.md) - Provides comprehensive linting for various file types
 - Variable Compliance Terraform Template: [YAML](/.azdo/templates/variable-compliance-terraform-template.yml) | [Documentation](./variable-compliance-terraform-template.md) - Ensures consistent variable definitions
 - Cluster Test Terraform Template: [YAML](/.azdo/templates/cluster-test-terraform-template.yml) | [Documentation](./cluster-test-terraform-template.md) - Tests Terraform component functionality
 

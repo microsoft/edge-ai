@@ -89,7 +89,7 @@ module "ubuntu_k3s" {
   should_output_cluster_server_script       = var.should_output_cluster_server_script
   should_skip_az_cli_login                  = var.should_skip_az_cli_login
   should_skip_installing_az_cli             = var.should_skip_installing_az_cli
-  cluster_server_host_machine_username      = try(coalesce(var.cluster_server_host_machine_username, var.resource_prefix), var.resource_prefix)
+  cluster_server_host_machine_username      = coalesce(var.cluster_server_host_machine_username, var.resource_prefix)
   key_vault                                 = var.key_vault
   should_upload_to_key_vault                = var.should_upload_to_key_vault
   should_use_script_from_secrets_for_deploy = var.should_use_script_from_secrets_for_deploy

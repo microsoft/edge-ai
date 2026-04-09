@@ -7,8 +7,8 @@
 
 // Default MCR endpoint (always created)
 resource "azapi_resource" "registry_endpoint_mcr" {
-  type      = "Microsoft.IoTOperations/instances/registryEndpoints@2026-03-01"
-  name      = "default"
+  type      = "Microsoft.IoTOperations/instances/registryEndpoints@2025-10-01"
+  name      = "mcr"
   parent_id = var.aio_instance_id
 
   body = {
@@ -32,7 +32,7 @@ resource "azapi_resource" "registry_endpoint_mcr" {
 // Custom registry endpoints
 resource "azapi_resource" "registry_endpoint" {
   for_each  = { for endpoint in var.registry_endpoints : endpoint.name => endpoint }
-  type      = "Microsoft.IoTOperations/instances/registryEndpoints@2026-03-01"
+  type      = "Microsoft.IoTOperations/instances/registryEndpoints@2025-10-01"
   name      = each.value.name
   parent_id = var.aio_instance_id
 

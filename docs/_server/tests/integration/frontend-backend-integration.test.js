@@ -100,8 +100,8 @@ describe('Frontend-Backend Integration Tests', () => {
 
         server.close((err) => {
           clearTimeout(timeout);
-          if (err) {reject(err);}
-          else {resolve();}
+          if (err) reject(err);
+          else resolve();
         });
       }).catch(error => {
         console.warn('Error closing server:', error.message);

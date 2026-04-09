@@ -78,6 +78,7 @@ Reusable workflow components for consistent CI/CD processes:
 
 | Template                            | Purpose                                      |
 |-------------------------------------|----------------------------------------------|
+| `megalinter.yml`                    | Code quality and security validation         |
 | `docs-check-terraform.yml`          | Terraform documentation validation           |
 | `docs-check-bicep.yml`              | Bicep documentation validation               |
 | `variable-compliance-terraform.yml` | Terraform variable compliance checking       |

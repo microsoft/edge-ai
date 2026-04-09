@@ -33,6 +33,7 @@ Note:
 import base64
 import json
 import subprocess
+import tempfile
 import time
 from datetime import datetime
 from pathlib import Path
@@ -96,7 +97,7 @@ def send_mqtt_message(topic: str, message: dict) -> bool:
             "-m", message_json
         ]
 
-        result = subprocess.run(
+        result = subprocess.run(  # noqa: S603, S607  # hardcoded kubectl cmd
             cmd, capture_output=True, text=True, timeout=10)
 
         if result.returncode == 0:
@@ -143,7 +144,7 @@ def get_recent_inference_logs() -> str:
             "-n", "azure-iot-operations",
             "--tail=10", "--since=30s"
         ]
-        result = subprocess.run(cmd, capture_output=True, text=True)
+        result = subprocess.run(cmd, capture_output=True, text=True)  # noqa: S603, S607  # hardcoded kubectl cmd
         return result.stdout
     except Exception as e:
         print(f"❌ Error getting logs: {e}")
@@ -195,7 +196,7 @@ def main() -> None:
     print("=" * 50)
 
     # Test image path
-    image_path = Path("/tmp/test_images/test_image_1.jpg")
+    image_path = Path(tempfile.gettempdir()) / "test_images" / "test_image_1.jpg"
 
     if not image_path.exists():
         print(f"❌ Test image not found: {image_path}")

@@ -76,12 +76,12 @@ Provide standardized validation with configurable scope:
 ### Security and compliance templates
 
 **Checkov template**: `.azdo/templates/checkov-template.yml`
-**Dedicated lint templates**: `.azdo/templates/*-lint-template.yml`
+**MegaLinter template**: `.azdo/templates/megalinter-template.yml`
 
 Centralized security and quality validation:
 
 - Multi-framework security scanning (Terraform, Bicep, Docker)
-- Code quality validation through dedicated lint job templates
+- Code quality validation across multiple languages
 - Compliance checking and policy enforcement
 
 ### Variable compliance templates

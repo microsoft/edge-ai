@@ -26,7 +26,7 @@ data "azurerm_user_assigned_identity" "aio" {
 }
 
 data "azapi_resource" "schema_registry" {
-  type      = "Microsoft.DeviceRegistry/schemaRegistries@2026-04-01"
+  type      = "Microsoft.DeviceRegistry/schemaRegistries@2025-10-01"
   parent_id = data.azurerm_resource_group.aio.id
   name      = "sr-${var.resource_prefix}-${var.environment}-${var.instance}"
 
@@ -42,7 +42,7 @@ data "azapi_resource" "arc_connected_cluster" {
 }
 
 data "azapi_resource" "adr_namespace" {
-  type      = "Microsoft.DeviceRegistry/namespaces@2026-04-01"
+  type      = "Microsoft.DeviceRegistry/namespaces@2025-10-01"
   parent_id = data.azurerm_resource_group.aio.id
   name      = "adrns-${var.resource_prefix}-${var.environment}-${var.instance}"
 

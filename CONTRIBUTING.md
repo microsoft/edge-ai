@@ -128,9 +128,9 @@ If you see issues with the documentation, please follow the [your first code con
 
 ## Style Guides
 
-This project uses individual lint tools (ShellCheck, yamllint, Ruff, markdownlint, TFLint, PSScriptAnalyzer, etc.) run as separate CI/CD pipeline jobs. These linters can be run locally to ensure that code reads the same across the project.
+This project uses MegaLinter with numerous custom configured linters. These linters can be run locally to ensure that code reads the same across the project.
 
-For detailed information about our CI/CD lint configuration and available linters, see the [Azure Pipelines documentation](./docs/build-cicd/azure-pipelines/README.md).
+For detailed information about our MegaLinter configuration, integration with our CI/CD pipeline, and available linters, please refer to our [MegaLinter documentation](./docs/build-cicd/github-actions/templates/megalinter.md).
 
 ### Development Environment
 

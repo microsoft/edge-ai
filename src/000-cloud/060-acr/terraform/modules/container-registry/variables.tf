@@ -34,8 +34,3 @@ variable "should_enable_data_endpoints" {
   type        = bool
   description = "Whether to enable dedicated data endpoints for the registry"
 }
-
-variable "should_enable_export_policy" {
-  type        = bool
-  description = "Whether to allow container image export from the registry"
-}

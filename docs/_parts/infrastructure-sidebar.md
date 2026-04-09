@@ -15,7 +15,6 @@
   - [Postgresql](/src/000-cloud/035-postgresql/README)
   - [Managed Redis](/src/000-cloud/036-managed-redis/README)
   - [Messaging](/src/000-cloud/040-messaging/README)
-  - [Notification](/src/000-cloud/045-notification/README)
   - [Vm Host](/src/000-cloud/051-vm-host/README)
   - [Azure Local Host](/src/000-cloud/072-azure-local-host/README)
   - [Vm Host](/src/000-cloud/073-vm-host/README)
@@ -43,7 +42,6 @@
   - [Onvif Connector](/src/500-application/510-onvif-connector/README)
   - [Rust Embedded Wasm Provider](/src/500-application/511-rust-embedded-wasm-provider/README)
   - [Avro To Json](/src/500-application/512-avro-to-json/README)
-  - [Tiered Notification Service](/src/500-application/513-tiered-notification-service/README)
 
 - [Ci Cd](/src/501-ci-cd/README)
 

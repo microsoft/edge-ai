@@ -6,22 +6,7 @@
  */
 
 locals {
-  alert_eventhub_name             = coalesce(var.alert_eventhub_name, "evh-${var.resource_prefix}-alerts-${var.environment}-${var.instance}")
-  eventhub_namespace_name         = "evhns-${var.resource_prefix}-aio-${var.environment}-${var.instance}"
   default_outbound_access_enabled = var.should_enable_managed_outbound_access == false
-
-  alert_eventhub_config = var.should_create_azure_functions ? {
-    (local.alert_eventhub_name) = {}
-  } : {}
-
-  eventhubs = merge(local.alert_eventhub_config, var.eventhubs)
-
-  function_app_computed_settings = var.should_create_azure_functions ? {
-    "EventHubConnection__fullyQualifiedNamespace" = "${local.eventhub_namespace_name}.servicebus.windows.net"
-    "EventHubConnection__credential"              = "managedidentity"
-    "ALERT_EVENTHUB_NAME"                         = local.alert_eventhub_name
-    "ALERT_EVENTHUB_CONSUMER_GROUP"               = var.alert_eventhub_consumer_group
-  } : {}
 
   acr_registry_endpoint = var.should_include_acr_registry_endpoint ? [{
     name                           = "acr-${var.resource_prefix}"
@@ -91,10 +76,8 @@ module "cloud_security_identity" {
   key_vault_private_endpoint_subnet_id     = var.should_enable_private_endpoints ? module.cloud_networking.subnet_id : null
   key_vault_virtual_network_id             = var.should_enable_private_endpoints ? module.cloud_networking.virtual_network.id : null
   should_enable_public_network_access      = var.should_enable_key_vault_public_network_access
-  should_enable_purge_protection           = var.should_enable_key_vault_purge_protection
   should_create_aks_identity               = var.should_create_aks_identity
   should_create_ml_workload_identity       = var.azureml_should_create_ml_workload_identity
-  should_create_secret_sync_identity       = var.should_deploy_aio
 }
 
 module "cloud_vpn_gateway" {
@@ -159,10 +142,6 @@ module "cloud_data" {
 
   should_create_blob_dns_zone = !var.should_enable_private_endpoints
   blob_dns_zone               = var.should_enable_private_endpoints ? module.cloud_observability.blob_private_dns_zone : null
-
-  // AIO-specific data resources
-  should_create_schema_registry = var.should_deploy_aio
-  should_create_adr_namespace   = var.should_deploy_aio
 
   schemas = var.schemas
 }
@@ -238,11 +217,6 @@ module "cloud_messaging" {
   instance        = var.instance
 
   should_create_azure_functions = var.should_create_azure_functions
-
-  // Event Hub configuration with alerts hub merged when Functions are enabled
-  eventhubs = local.eventhubs
-
-  function_app_settings = merge(var.function_app_settings, local.function_app_computed_settings)
 }
 
 module "cloud_vm_host" {
@@ -282,7 +256,6 @@ module "cloud_acr" {
   allowed_public_ip_ranges           = var.acr_allowed_public_ip_ranges
   public_network_access_enabled      = var.acr_public_network_access_enabled
   should_enable_data_endpoints       = var.acr_data_endpoint_enabled
-  should_enable_export_policy        = var.acr_export_policy_enabled
 }
 
 module "cloud_kubernetes" {
@@ -424,7 +397,6 @@ module "edge_arc_extensions" {
 }
 
 module "edge_iot_ops" {
-  count  = var.should_deploy_aio ? 1 : 0
   source = "../../../src/100-edge/110-iot-ops/terraform"
 
   depends_on = [module.edge_arc_extensions]
@@ -452,14 +424,13 @@ module "edge_iot_ops" {
 }
 
 module "edge_assets" {
-  count  = var.should_deploy_aio ? 1 : 0
   source = "../../../src/100-edge/111-assets/terraform"
 
   depends_on = [module.edge_iot_ops]
 
   location           = var.location
   resource_group     = module.cloud_resource_group.resource_group
-  custom_location_id = module.edge_iot_ops[0].custom_locations.id
+  custom_location_id = module.edge_iot_ops.custom_locations.id
   adr_namespace      = module.cloud_data.adr_namespace
 
   should_create_default_namespaced_asset = var.should_enable_opc_ua_simulator
@@ -470,7 +441,7 @@ module "edge_assets" {
 module "edge_observability" {
   source = "../../../src/100-edge/120-observability/terraform"
 
-  depends_on = [module.edge_arc_extensions, module.edge_iot_ops]
+  depends_on = [module.edge_iot_ops]
 
   aio_azure_managed_grafana        = module.cloud_observability.azure_managed_grafana
   aio_azure_monitor_workspace      = module.cloud_observability.azure_monitor_workspace
@@ -482,7 +453,6 @@ module "edge_observability" {
 }
 
 module "edge_messaging" {
-  count  = var.should_deploy_aio ? 1 : 0
   source = "../../../src/100-edge/130-messaging/terraform"
 
   depends_on = [module.edge_iot_ops]
@@ -491,12 +461,12 @@ module "edge_messaging" {
   resource_prefix = var.resource_prefix
   instance        = var.instance
 
-  aio_custom_locations = module.edge_iot_ops[0].custom_locations
-  aio_dataflow_profile = module.edge_iot_ops[0].aio_dataflow_profile
-  aio_instance         = module.edge_iot_ops[0].aio_instance
+  aio_custom_locations = module.edge_iot_ops.custom_locations
+  aio_dataflow_profile = module.edge_iot_ops.aio_dataflow_profile
+  aio_instance         = module.edge_iot_ops.aio_instance
   aio_identity         = module.cloud_security_identity.aio_identity
   eventgrid            = module.cloud_messaging.eventgrid
-  eventhub             = try([for eh in module.cloud_messaging.eventhubs : eh if eh.eventhub_name != local.alert_eventhub_name][0], try(module.cloud_messaging.eventhubs[0], null))
+  eventhub             = module.cloud_messaging.eventhubs[0]
   adr_namespace        = module.cloud_data.adr_namespace
   dataflow_graphs      = var.dataflow_graphs
   dataflows            = var.dataflows

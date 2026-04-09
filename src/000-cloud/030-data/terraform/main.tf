@@ -49,8 +49,6 @@ module "schemas" {
 
   adr_schema_registry = module.schema_registry[0].schema_registry
   schemas             = var.schemas
-
-  depends_on = [module.schema_registry]
 }
 
 module "adr_namespace" {

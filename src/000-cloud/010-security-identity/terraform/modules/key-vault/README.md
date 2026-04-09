@@ -43,7 +43,6 @@ Create or use and existing a Key Vault for Secret Sync Extension
 | should\_add\_key\_vault\_role\_assignment | Whether to add role assignment to the Key Vault                                                                           | `bool`                          | n/a     |   yes    |
 | should\_create\_private\_endpoint         | Whether to create a private endpoint for the Key Vault                                                                    | `bool`                          | n/a     |   yes    |
 | should\_enable\_public\_network\_access   | Whether to enable public network access for the Key Vault                                                                 | `bool`                          | n/a     |   yes    |
-| should\_enable\_purge\_protection         | Whether to enable purge protection for the Key Vault                                                                      | `bool`                          | n/a     |   yes    |
 | virtual\_network\_id                      | The ID of the virtual network to link to the private DNS zone                                                             | `string`                        | n/a     |   yes    |
 | instance                                  | Instance identifier for naming resources: 001, 002, etc                                                                   | `string`                        | `"001"` |    no    |
 
