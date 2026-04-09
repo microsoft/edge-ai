@@ -16,8 +16,8 @@ EOF
 TOKEN=$(kubectl get secret deploy-user-secret -o jsonpath='{$.data.token}' | base64 -d | sed 's/$/\n/g')
 
 az keyvault secret set \
-  --vault-name "$AKV_NAME" \
-  --name "deploy-user-secret" \
-  --content-type "text/plain" \
-  --value "${TOKEN}" \
-  --output none
+    --vault-name "$AKV_NAME" \
+    --name "deploy-user-secret" \
+    --content-type "text/plain" \
+    --value "${TOKEN}" \
+    --output none

@@ -312,11 +312,11 @@ describe('Assessment Completion Modal', () => {
 
           // Overlay and keyboard handlers
           modal.addEventListener('click', (e) => {
-            if (e.target === modal) this.closeModal('closed');
+            if (e.target === modal) {this.closeModal('closed');}
           });
 
           document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && this.isOpen) this.closeModal('closed');
+            if (e.key === 'Escape' && this.isOpen) {this.closeModal('closed');}
           });
         }
 
@@ -351,7 +351,7 @@ describe('Assessment Completion Modal', () => {
               'advanced': ['advanced-edge-architecture'],
               'expert': ['expert-enterprise-integration', 'expert-data-analytics-integration']
             };
-            const newPaths = pathPatterns[targetDifficulty] || pathPatterns['beginner'];
+            const newPaths = pathPatterns[targetDifficulty] || pathPatterns.beginner;
 
             // Merge new paths with existing selections (deduplicate with Set)
             const selectedItems = [...new Set([...existingSelections, ...newPaths])];
@@ -399,7 +399,7 @@ describe('Assessment Completion Modal', () => {
               }, 0);
             }
           }
-        }        destroy() {
+        } destroy() {
           if (this.modal) {
             this.modal.remove();
             this.modal = null;
@@ -932,7 +932,7 @@ describe('Assessment Completion Modal', () => {
       modal.closeModal();
       await showPromise;
       expect(document.body.style.overflow).toBe('');
-    });    it('should maintain focus management', async () => {
+    }); it('should maintain focus management', async () => {
       const showPromise = modal.showModal(mockAssessmentResults.beginner, mockRecommendations.beginner);
 
       // Check that a focusable element exists

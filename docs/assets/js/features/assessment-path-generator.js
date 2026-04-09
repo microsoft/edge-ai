@@ -1310,7 +1310,7 @@ export class AssessmentPathGenerator {
       }
 
       // Handle different possible structures from skill assessment
-      let transformedAssessments = {};
+      const transformedAssessments = {};
 
       // Case 1: assessmentResults has categoryScores (from calculateResults)
       if (assessmentResults.categoryScores) {
