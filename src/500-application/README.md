@@ -499,7 +499,7 @@ FROM mcr.microsoft.com/azurelinux/base/core:3.0.20250910
 
 SHA256 pinning is enforced through multiple mechanisms:
 
-- **Hadolint DL3006 Rule:** Automated linting via MegaLinter (`.mega-linter.yml`) enforces SHA256 digests on all FROM statements
+- **Hadolint DL3006 Rule:** Automated Hadolint linting enforces SHA256 digests on all FROM statements
 - **Pre-Build Validation:** GitHub Actions workflow (`.github/workflows/application-matrix-builds.yml`) validates Dockerfiles before builds
 - **Security Gate:** Build pipeline fails if Dockerfiles lack SHA256 digests, preventing non-compliant images from being built
 
@@ -543,7 +543,7 @@ This SHA256 pinning requirement complements the SLSA attestation practices docum
 - **Immutable Base Images:** SHA256 digests prevent supply chain tampering at the base image layer
 - **Combined Provenance:** Use SHA256 pinning with SLSA attestation for complete supply chain provenance tracking
 - **Automated Monitoring:** Security templates (`.azdo/templates/security-*.yml`) monitor both SHA staleness and attestation validity
-- **Defense in Depth:** Multiple enforcement layers (MegaLinter, pre-build validation, security gates) ensure compliance
+- **Defense in Depth:** Multiple enforcement layers (dedicated lint jobs, pre-build validation, security gates) ensure compliance
 
 ---
 

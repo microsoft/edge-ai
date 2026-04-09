@@ -19,6 +19,7 @@ use anyhow::Result;
 pub struct MqttPublisher {
     client: SessionManagedClient,
     monitor: SessionConnectionMonitor,
+    session: Option<Session>,
     config: MqttConfig,
     inference_engine: Arc<InferenceEngine>,
     stats: Arc<RwLock<MqttStats>>,
@@ -151,13 +152,13 @@ impl MqttPublisher {
         let monitor = session.create_connection_monitor();
         let client = session.create_managed_client();
         let _exit_handle = session.create_exit_handle();
-        drop(session);
 
         info!("Successfully created MQTT session with Azure IoT Operations SDK");
 
         Ok(Self {
             client,
             monitor,
+            session: Some(session),
             config,
             inference_engine,
             stats: Arc::new(RwLock::new(MqttStats::default())),
@@ -168,6 +169,11 @@ impl MqttPublisher {
     /// Set topic router for intelligent topic routing
     pub fn set_topic_router(&mut self, topic_router: Arc<crate::topic_router::TopicRouter>) {
         self.topic_router = Some(topic_router);
+    }
+
+    /// Take the MQTT session for running its event loop concurrently
+    pub fn take_session(&mut self) -> Option<Session> {
+        self.session.take()
     }
 
     /// Start processing MQTT messages using Azure IoT Operations SDK
@@ -317,6 +323,7 @@ impl MqttPublisher {
     }
 
     /// Handle sensor inference using the crate library
+    #[expect(dead_code)]
     async fn handle_sensor_inference(
         &self,
         sensor_id: String,
@@ -371,6 +378,7 @@ impl MqttPublisher {
     }
 
     /// Handle alert triggers
+    #[expect(dead_code)]
     async fn handle_alert_trigger(
         &self,
         trigger_id: String,
@@ -402,6 +410,7 @@ impl MqttPublisher {
     }
 
     /// Handle model management commands
+    #[expect(dead_code)]
     async fn handle_model_command(
         &self,
         command: ModelCommandType,
@@ -539,6 +548,7 @@ impl MqttPublisher {
     }
 
     /// Publish inference result to specified topic (public method for external use)
+    #[expect(dead_code)]
     pub async fn publish_result(&self, result: InferenceResult, topic: &str) -> Result<(), Box<dyn Error>> {
         let enrichment = self.create_enrichment_data(&result).await;
 
@@ -560,16 +570,19 @@ impl MqttPublisher {
     }
 
     /// Get current MQTT statistics
+    #[expect(dead_code)]
     pub async fn get_stats(&self) -> MqttStats {
         self.stats.read().await.clone()
     }
 
     /// Check if MQTT client is connected
+    #[expect(dead_code)]
     pub async fn is_connected(&self) -> bool {
         self.stats.read().await.is_connected
     }
 
     /// Gracefully disconnect from MQTT broker
+    #[expect(dead_code)]
     pub async fn disconnect(&self) -> Result<(), Box<dyn Error>> {
         // Note: AIO MQTT client doesn't have a direct disconnect method
         // We'll use the exit handle to signal shutdown

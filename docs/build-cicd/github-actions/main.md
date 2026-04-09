@@ -13,7 +13,6 @@ keywords:
   - github-actions
   - codeql analysis
   - security scanning
-  - megalinter
   - terraform
   - bicep
   - infrastructure as code
@@ -31,7 +30,7 @@ The Main Branch CI/CD workflow is the primary continuous integration and deploym
 ## Features
 
 - Performs comprehensive security scanning with CodeQL analysis across multiple languages
-- Runs MegaLinter for static code analysis across multiple languages and file formats
+- Runs individual lint jobs for static code analysis across multiple languages and file formats
 - Validates documentation standards for both Terraform and Bicep configurations
 - Deploys documentation to GitHub Pages when documentation changes are detected
 - Runs automated dependency scanning to identify security vulnerabilities
@@ -46,7 +45,7 @@ This workflow does not accept any inputs when triggered automatically. When manu
 This workflow doesn't produce any direct output variables, but it generates the following:
 
 - GitHub code scanning alerts for any security issues found
-- Static analysis results via MegaLinter
+- Static analysis results via individual lint jobs
 - Documentation validation results
 - Deployed GitHub Pages documentation site (on successful execution)
 
@@ -72,7 +71,7 @@ The workflow consists of multiple jobs that run in a specific sequence:
 
 1. **CodeQL Analysis**: Scans code for security vulnerabilities across JavaScript, Python, TypeScript, and C#
 2. **Dependency Scan**: Analyzes project dependencies for known security issues
-3. **MegaLinter**: Performs comprehensive linting and static analysis
+3. **Lint Jobs**: Performs comprehensive linting and static analysis
 4. **Terraform Documentation Check**: Validates Terraform documentation consistency
 5. **Bicep Documentation Check**: Validates Bicep documentation consistency
 6. **Deploy Pages**: Publishes documentation to GitHub Pages when changes are detected
@@ -93,12 +92,9 @@ The workflow consists of multiple jobs that run in a specific sequence:
 2. Performs dependency review for security vulnerabilities
 3. Reports findings as GitHub annotations
 
-### MegaLinter
+### Lint Jobs
 
-Calls the reusable `megalinter.yml` workflow with these parameters:
-
-- `validate_all_codebase: true` - Checks the entire codebase, not just changed files
-- `github_comment_reporter: false` - Disables PR comment reporting (since this runs on the main branch)
+Runs dedicated lint jobs for shell scripts, YAML, Python, PowerShell, Bicep, Terraform, documentation, and code quality analysis across the entire codebase.
 
 ### Terraform Documentation Check
 
@@ -126,8 +122,8 @@ Calls the reusable `pages-deploy.yml` workflow with:
 1. **Failed CodeQL Analysis**:
    - **Solution**: Review security issues in the GitHub Security tab and fix identified vulnerabilities
 
-2. **MegaLinter Failures**:
-   - **Solution**: Check the MegaLinter report in the workflow artifacts for specific issues to fix
+2. **Lint Job Failures**:
+   - **Solution**: Check the individual lint job logs in the workflow run for specific issues to fix
 
 3. **Documentation Validation Issues**:
    - **Solution**: Use the documentation generation scripts (`update-all-terraform-docs.sh` or `update-all-bicep-docs.sh`) to regenerate documentation
@@ -149,7 +145,6 @@ To enhance this workflow:
 ## Related Workflows
 
 - [pr-validation.yml](./pr-validation.md): Similar workflow that runs on pull requests
-- [megalinter.yml](./megalinter.md): Linting workflow called by this workflow
 - [docs-check-terraform.yml](./docs-check-terraform.md): Terraform documentation validation
 - [docs-check-bicep.yml](./docs-check-bicep.md): Bicep documentation validation
 - [pages-deploy.yml](./pages-deploy.md): GitHub Pages deployment workflow

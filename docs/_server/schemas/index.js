@@ -130,10 +130,10 @@ async function loadSchema(schemaType) {
         schemaCache.set(schemaType, validate);
         return validate;
       } catch (retryError) {
-        throw new Error(`Failed to load schema ${schemaType} after retry: ${retryError.message}`);
+        throw new Error(`Failed to load schema ${schemaType} after retry: ${retryError.message}`, { cause: retryError });
       }
     }
-    throw new Error(`Failed to load schema ${schemaType}: ${error.message}`);
+    throw new Error(`Failed to load schema ${schemaType}: ${error.message}`, { cause: error });
   }
 }
 

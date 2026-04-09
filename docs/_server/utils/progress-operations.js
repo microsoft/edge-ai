@@ -187,7 +187,7 @@ export async function getLatestProgressFile() {
   } catch (error) {
     // Directory doesn't exist or can't be read
     if (error.code === 'ENOENT') {
-      throw new Error('No progress files found');
+      throw new Error('No progress files found', { cause: error });
     } else {
       throw error;
     }

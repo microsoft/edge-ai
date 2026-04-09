@@ -204,7 +204,7 @@ describe('SkillAssessmentForm', () => {
         const radioGroups = new Set();
         const allRadios = document.querySelectorAll('input[type="radio"][name^="skill-assessment-"]');
         allRadios.forEach(radio => {
-          if (radio.name) radioGroups.add(radio.name);
+          if (radio.name) {radioGroups.add(radio.name);}
         });
         return radioGroups.size;
       };
@@ -306,7 +306,6 @@ describe('SkillAssessmentForm', () => {
       expect(performAutoSaveSpy).toHaveBeenCalled();
     });
   });
-
 
 
   describe('Skill Level and Scoring', () => {
@@ -1144,7 +1143,7 @@ describe('SkillAssessmentForm', () => {
       expect(payload.assessment).toBeDefined();
       expect(payload.assessment.questions).toBeDefined();
       expect(Array.isArray(payload.assessment.questions)).toBe(true);
-    });    it('should handle auto-save without storage dependency', () => {
+    }); it('should handle auto-save without storage dependency', () => {
       skillAssessmentForm.storage = null;
       skillAssessmentForm.isDirty = true;
 

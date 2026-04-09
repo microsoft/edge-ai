@@ -402,8 +402,6 @@ terraform.rc
 # Ignore ssh folders
 .ssh/
 
-# Ignore megalinter reports
-[Mm]egalinter-reports
 
 # Ignore .temp files used for some processing
 *.temp

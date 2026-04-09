@@ -8,7 +8,9 @@
 locals {
   allowed_public_ip_ranges       = try(var.allowed_public_ip_ranges, [])
   sanitized_location             = lower(replace(var.location, " ", ""))
-  should_enable_data_endpoint    = alltrue([var.should_enable_data_endpoints, var.should_create_acr_private_endpoint, lower(var.sku) == "premium"])
+  is_premium                     = lower(var.sku) == "premium"
+  should_enable_data_endpoint    = alltrue([var.should_enable_data_endpoints, var.should_create_acr_private_endpoint, local.is_premium])
+  export_policy_enabled          = local.is_premium ? var.should_enable_export_policy : true
   should_configure_network_rules = alltrue([var.public_network_access_enabled, length(local.allowed_public_ip_ranges) > 0])
 }
 
@@ -19,6 +21,7 @@ resource "azurerm_container_registry" "acr" {
   sku                           = var.sku
   public_network_access_enabled = var.public_network_access_enabled
   data_endpoint_enabled         = local.should_enable_data_endpoint
+  export_policy_enabled         = local.export_policy_enabled
   network_rule_bypass_option    = var.allow_trusted_services ? "AzureServices" : "None"
 
   dynamic "network_rule_set" {
