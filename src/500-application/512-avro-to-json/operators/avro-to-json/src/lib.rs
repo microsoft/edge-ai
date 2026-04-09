@@ -283,6 +283,23 @@ fn unwrap_schema_value(raw: &str) -> std::borrow::Cow<'_, str> {
     }
 }
 
+/// Resolves a wire format configuration value to a `WireFormat` variant.
+///
+/// Applies trimming and case-insensitive matching. Unknown values default to `Auto`.
+/// Returns `(WireFormat, Option<String>)` where the second element is the unknown
+/// value if defaulting occurred, enabling the caller to log a warning.
+fn resolve_wire_format(value: Option<&str>) -> (WireFormat, Option<String>) {
+    match value {
+        Some(v) => match v.trim().to_lowercase().as_str() {
+            "confluent" => (WireFormat::Confluent, None),
+            "raw" => (WireFormat::Raw, None),
+            "auto" => (WireFormat::Auto, None),
+            _ => (WireFormat::Auto, Some(v.to_string())),
+        },
+        None => (WireFormat::Auto, None),
+    }
+}
+
 /// Initialize the operator with optional schema configuration
 fn avro_init(configuration: ModuleConfiguration) -> bool {
     logger::log(
@@ -300,28 +317,25 @@ fn avro_init(configuration: ModuleConfiguration) -> bool {
         );
     }
 
-    let wire_format = configuration
+    let wire_format_value = configuration
         .properties
         .iter()
         .find(|(k, _)| k == "wireFormat")
-        .map(|(_, v)| match v.trim().to_lowercase().as_str() {
-            "confluent" => WireFormat::Confluent,
-            "raw" => WireFormat::Raw,
-            "auto" => WireFormat::Auto,
-            other => {
-                logger::log(
-                    Level::Warn,
-                    "avro-to-json",
-                    &format!(
-                        "Unknown wireFormat '{}', defaulting to 'auto'. \
-                         Supported values: auto, confluent, raw.",
-                        other
-                    ),
-                );
-                WireFormat::Auto
-            }
-        })
-        .unwrap_or(WireFormat::Auto);
+        .map(|(_, v)| v.as_str());
+
+    let (wire_format, unknown) = resolve_wire_format(wire_format_value);
+
+    if let Some(unknown_value) = &unknown {
+        logger::log(
+            Level::Warn,
+            "avro-to-json",
+            &format!(
+                "Unknown wireFormat '{}', defaulting to 'auto'. \
+                 Supported values: auto, confluent, raw.",
+                unknown_value
+            ),
+        );
+    }
 
     logger::log(
         Level::Info,
@@ -1007,5 +1021,52 @@ mod tests {
         let result = parse_with_schema_inner(&short, &schema, WireFormat::Confluent);
         assert!(result.is_err());
         assert!(result.unwrap_err().contains("does not have the expected"));
+    }
+
+    // --- resolve_wire_format tests ---
+
+    #[test]
+    fn resolve_wire_format_lowercase_confluent() {
+        assert_eq!(resolve_wire_format(Some("confluent")), (WireFormat::Confluent, None));
+    }
+
+    #[test]
+    fn resolve_wire_format_uppercase_confluent() {
+        assert_eq!(resolve_wire_format(Some("CONFLUENT")), (WireFormat::Confluent, None));
+    }
+
+    #[test]
+    fn resolve_wire_format_mixed_case_confluent() {
+        assert_eq!(resolve_wire_format(Some("Confluent")), (WireFormat::Confluent, None));
+    }
+
+    #[test]
+    fn resolve_wire_format_trimmed_raw() {
+        assert_eq!(resolve_wire_format(Some("  raw  ")), (WireFormat::Raw, None));
+    }
+
+    #[test]
+    fn resolve_wire_format_unknown_defaults_to_auto() {
+        let (format, unknown) = resolve_wire_format(Some("invalid"));
+        assert_eq!(format, WireFormat::Auto);
+        assert_eq!(unknown, Some("invalid".to_string()));
+    }
+
+    #[test]
+    fn resolve_wire_format_missing_defaults_to_auto() {
+        assert_eq!(resolve_wire_format(None), (WireFormat::Auto, None));
+    }
+
+    #[test]
+    fn resolve_wire_format_auto_explicit() {
+        assert_eq!(resolve_wire_format(Some("auto")), (WireFormat::Auto, None));
+    }
+
+    #[test]
+    fn oncelock_second_set_is_silently_ignored() {
+        let lock = std::sync::OnceLock::new();
+        assert!(lock.set(WireFormat::Raw).is_ok());
+        assert!(lock.set(WireFormat::Confluent).is_err());
+        assert_eq!(*lock.get().unwrap(), WireFormat::Raw);
     }
 }
