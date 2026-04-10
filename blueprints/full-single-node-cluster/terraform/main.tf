@@ -95,6 +95,8 @@ module "cloud_security_identity" {
   should_create_aks_identity               = var.should_create_aks_identity
   should_create_ml_workload_identity       = var.azureml_should_create_ml_workload_identity
   should_create_secret_sync_identity       = var.should_deploy_aio
+  log_analytics_workspace_id               = module.cloud_observability.log_analytics_workspace.id
+  should_enable_diagnostic_settings        = true
 }
 
 module "cloud_vpn_gateway" {
@@ -243,6 +245,9 @@ module "cloud_messaging" {
   eventhubs = local.eventhubs
 
   function_app_settings = merge(var.function_app_settings, local.function_app_computed_settings)
+
+  log_analytics_workspace_id        = module.cloud_observability.log_analytics_workspace.id
+  should_enable_diagnostic_settings = true
 }
 
 module "cloud_vm_host" {
@@ -283,6 +288,8 @@ module "cloud_acr" {
   public_network_access_enabled      = var.acr_public_network_access_enabled
   should_enable_data_endpoints       = var.acr_data_endpoint_enabled
   should_enable_export_policy        = var.acr_export_policy_enabled
+  log_analytics_workspace_id         = module.cloud_observability.log_analytics_workspace.id
+  should_enable_diagnostic_settings  = true
 }
 
 module "cloud_kubernetes" {

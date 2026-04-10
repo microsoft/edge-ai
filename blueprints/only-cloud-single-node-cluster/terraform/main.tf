@@ -38,6 +38,8 @@ module "cloud_security_identity" {
   should_create_key_vault_private_endpoint = var.should_enable_private_endpoints
   key_vault_private_endpoint_subnet_id     = var.should_enable_private_endpoints ? module.cloud_networking.subnet_id : null
   key_vault_virtual_network_id             = var.should_enable_private_endpoints ? module.cloud_networking.virtual_network.id : null
+  log_analytics_workspace_id               = module.cloud_observability.log_analytics_workspace.id
+  should_enable_diagnostic_settings        = true
 }
 
 module "cloud_observability" {
@@ -76,7 +78,9 @@ module "cloud_messaging" {
   resource_prefix = var.resource_prefix
   instance        = var.instance
 
-  should_create_azure_functions = var.should_create_azure_functions
+  should_create_azure_functions     = var.should_create_azure_functions
+  log_analytics_workspace_id        = module.cloud_observability.log_analytics_workspace.id
+  should_enable_diagnostic_settings = true
 }
 
 module "cloud_networking" {
@@ -126,6 +130,8 @@ module "cloud_acr" {
   should_create_acr_private_endpoint = var.should_enable_private_endpoints
   default_outbound_access_enabled    = local.default_outbound_access_enabled
   should_enable_nat_gateway          = var.should_enable_managed_outbound_access
+  log_analytics_workspace_id         = module.cloud_observability.log_analytics_workspace.id
+  should_enable_diagnostic_settings  = true
 }
 
 module "cloud_kubernetes" {

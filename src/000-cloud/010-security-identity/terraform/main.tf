@@ -31,6 +31,8 @@ module "key_vault" {
   should_enable_public_network_access  = var.should_enable_public_network_access
   should_enable_purge_protection       = var.should_enable_purge_protection
   should_add_key_vault_role_assignment = local.should_add_key_vault_role_assignment
+  log_analytics_workspace_id           = var.log_analytics_workspace_id
+  should_enable_diagnostic_settings    = var.should_enable_diagnostic_settings
 }
 
 module "identity" {

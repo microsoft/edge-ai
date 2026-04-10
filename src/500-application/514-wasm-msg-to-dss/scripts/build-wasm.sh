@@ -10,19 +10,19 @@ OPERATOR_DIR="${APP_PATH}/operators/msg-to-dss-key"
 WASM_OUTPUT="${OPERATOR_DIR}/target/wasm32-wasip2/release/msg_to_dss_key.wasm"
 
 if ! rustup target list --installed | grep -q wasm32-wasip2; then
-  echo "Installing wasm32-wasip2 target..."
-  rustup target add wasm32-wasip2
+    echo "Installing wasm32-wasip2 target..."
+    rustup target add wasm32-wasip2
 fi
 
 echo "Building msg-to-dss-key WASM module..."
 cargo build --release \
-  --target wasm32-wasip2 \
-  --manifest-path "${OPERATOR_DIR}/Cargo.toml" \
-  --config "${APP_PATH}/.cargo/config.toml"
+    --target wasm32-wasip2 \
+    --manifest-path "${OPERATOR_DIR}/Cargo.toml" \
+    --config "${APP_PATH}/.cargo/config.toml"
 
 if [[ ! -f "${WASM_OUTPUT}" ]]; then
-  echo "ERROR: WASM file not found at ${WASM_OUTPUT}"
-  exit 1
+    echo "ERROR: WASM file not found at ${WASM_OUTPUT}"
+    exit 1
 fi
 
 echo ""
