@@ -108,7 +108,7 @@ jobs:
       contents: read
     uses: ./.github/workflows/shell-lint.yml
     with:
-      soft-fail: true
+      soft-fail: false
 
   # Terraform linting
   terraform-lint:
@@ -117,7 +117,7 @@ jobs:
       contents: read
     uses: ./.github/workflows/terraform-lint.yml
     with:
-      soft-fail: true
+      soft-fail: false
 
   # Bicep linting
   bicep-lint:
@@ -140,7 +140,7 @@ jobs:
       contents: read
     uses: ./.github/workflows/code-quality-lint.yml
     with:
-      soft-fail: true
+      soft-fail: false
 
   # PowerShell linting
   powershell-lint:
@@ -157,7 +157,7 @@ jobs:
       security-events: write
     uses: ./.github/workflows/security-scan.yml
     with:
-      grype-soft-fail: true
+      grype-soft-fail: false
 
   # YAML and container linting
   yaml-lint:
@@ -187,7 +187,7 @@ jobs:
     uses: ./.github/workflows/docs-check-terraform.yml
     with:
       break_build: true
-      terraformDocsVersion: 'v0.19.0'
+      terraformDocsVersion: 'v0.20.0'
     secrets: inherit
 
   # Call docs-check-bicep workflow
