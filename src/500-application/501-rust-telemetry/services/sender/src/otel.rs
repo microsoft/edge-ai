@@ -206,8 +206,15 @@ mod tests {
     }
 
     #[test]
-    fn inject_current_context_returns_vec() {
+    fn inject_current_context_returns_empty_for_default_propagator() {
         let result = inject_current_context();
-        assert!(result.is_empty() || !result.is_empty());
+        assert!(result.is_empty());
+    }
+
+    #[test]
+    fn inject_current_context_returns_empty_for_w3c_propagator_without_active_span() {
+        global::set_text_map_propagator(TraceContextPropagator::new());
+        let result = inject_current_context();
+        assert!(result.is_empty());
     }
 }

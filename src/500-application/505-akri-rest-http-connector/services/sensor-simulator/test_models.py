@@ -14,16 +14,19 @@ from models import (
 
 class TestFieldConfigValidation:
     def test_valid_integer_field(self):
-        cfg = FieldConfig(name="temp", data_type=DataType.INTEGER, min_value=0, max_value=100)
+        cfg = FieldConfig(name="temp", data_type=DataType.INTEGER,
+                          min_value=0, max_value=100)
         assert cfg.name == "temp"
         assert cfg.data_type == DataType.INTEGER
 
     def test_valid_float_field(self):
-        cfg = FieldConfig(name="pressure", data_type=DataType.FLOAT, min_value=0.0, max_value=1.0)
+        cfg = FieldConfig(
+            name="pressure", data_type=DataType.FLOAT, min_value=0.0, max_value=1.0)
         assert cfg.min_value == 0.0
 
     def test_valid_string_field_with_options(self):
-        cfg = FieldConfig(name="status", data_type=DataType.STRING, string_options=["on", "off"])
+        cfg = FieldConfig(name="status", data_type=DataType.STRING,
+                          string_options=["on", "off"])
         assert cfg.string_options == ["on", "off"]
 
     def test_valid_boolean_field(self):
@@ -36,14 +39,17 @@ class TestFieldConfigValidation:
 
     def test_string_type_rejects_empty_options(self):
         with pytest.raises(ValidationError, match="string_options required"):
-            FieldConfig(name="tag", data_type=DataType.STRING, string_options=[])
+            FieldConfig(name="tag", data_type=DataType.STRING,
+                        string_options=[])
 
     def test_max_less_than_min_rejected(self):
         with pytest.raises(ValidationError, match="max_value must be greater"):
-            FieldConfig(name="x", data_type=DataType.INTEGER, min_value=10, max_value=5)
+            FieldConfig(name="x", data_type=DataType.INTEGER,
+                        min_value=10, max_value=5)
 
     def test_equal_min_max_accepted(self):
-        cfg = FieldConfig(name="fixed", data_type=DataType.FLOAT, min_value=5.0, max_value=5.0)
+        cfg = FieldConfig(name="fixed", data_type=DataType.FLOAT,
+                          min_value=5.0, max_value=5.0)
         assert cfg.min_value == cfg.max_value
 
     def test_numeric_without_range_accepted(self):

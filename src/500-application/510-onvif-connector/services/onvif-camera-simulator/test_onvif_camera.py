@@ -9,10 +9,10 @@ from onvif_camera import ONVIFCameraSimulator
 
 
 @pytest.fixture
-def camera():
-    os.environ.pop("ONVIF_DEVICE_ID", None)
-    os.environ.pop("ONVIF_HOST", None)
-    os.environ.pop("ONVIF_PORT", None)
+def camera(monkeypatch):
+    monkeypatch.delenv("ONVIF_DEVICE_ID", raising=False)
+    monkeypatch.delenv("ONVIF_HOST", raising=False)
+    monkeypatch.delenv("ONVIF_PORT", raising=False)
     return ONVIFCameraSimulator()
 
 
