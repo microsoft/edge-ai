@@ -19,4 +19,7 @@ style = { level = "warn", priority = -1 }
 perf = { level = "warn", priority = -1 }
 missing_safety_doc = "allow"
 
+[profile.release]
+strip = true
+
 [workspace]
