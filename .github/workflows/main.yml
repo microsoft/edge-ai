@@ -167,6 +167,7 @@ jobs:
     uses: ./.github/workflows/docs-check-terraform.yml
     with:
       break_build: true
+      terraformDocsVersion: 'v0.20.0'
     secrets: inherit
 
   # Call docs-check-bicep workflow
