@@ -777,7 +777,7 @@ jobs:
           sparse-checkout-cone-mode: false
 
       - name: Generate SBOM
-        uses: anchore/sbom-action@e11c554f704a0b820cbf8c51673f6945e0731532 # v0.20.0
+        uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
         with:
           artifact-name: documentation-sbom-${{ github.run_number }}
           output-file: documentation-sbom.spdx.json
