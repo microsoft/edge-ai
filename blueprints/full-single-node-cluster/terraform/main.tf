@@ -416,6 +416,7 @@ module "edge_cncf_cluster" {
   should_deploy_arc_machines            = false
   should_get_custom_locations_oid       = var.should_get_custom_locations_oid
   should_add_current_user_cluster_admin = var.should_add_current_user_cluster_admin
+  cluster_admin_group_oid               = var.cluster_admin_group_oid
   custom_locations_oid                  = var.custom_locations_oid
 
   // Key Vault for script retrieval

@@ -436,6 +436,7 @@ module "edge_cncf_cluster" {
   should_generate_cluster_server_token  = true
   should_get_custom_locations_oid       = var.should_get_custom_locations_oid
   should_add_current_user_cluster_admin = var.should_add_current_user_cluster_admin
+  cluster_admin_group_oid               = var.cluster_admin_group_oid
   custom_locations_oid                  = var.custom_locations_oid
 
   cluster_server_host_machine_username = var.cluster_server_host_machine_username

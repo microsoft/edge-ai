@@ -95,6 +95,12 @@ variable "should_add_current_user_cluster_admin" {
   default     = true
 }
 
+variable "cluster_admin_group_oid" {
+  type        = string
+  description = "The Entra ID group Object ID that will be given cluster-admin permissions and Azure Arc RBAC access for 'az connectedk8s proxy'"
+  default     = null
+}
+
 variable "should_get_custom_locations_oid" {
   type        = bool
   description = <<-EOT
