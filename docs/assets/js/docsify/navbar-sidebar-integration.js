@@ -11,7 +11,6 @@
   const NAVBAR_SIDEBAR_MAP = {
     'Home': 'docs/_parts/home-sidebar.md',
     'Documentation': 'docs/_parts/docs-sidebar.md',
-    'Learning': 'docs/_parts/learning-sidebar.md',
     'Blueprints': 'docs/_parts/blueprints-sidebar.md',
     'Infrastructure': 'docs/_parts/infrastructure-sidebar.md',
     'GitHub Copilot': 'docs/_parts/copilot-sidebar.md'

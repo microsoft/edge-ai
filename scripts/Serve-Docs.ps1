@@ -2,29 +2,21 @@
 
 <#
 .SYNOPSIS
-    Start unified development servers for documentation and progress tracking.
+    Start development server for documentation.
 
 .DESCRIPTION
-    Unified development server script that starts both:
+    Development server script that starts:
     - Docsify documentation server (port 8080)
-    - Express progress tracking server (port 3002)
 
 .PARAMETER StartPage
-    Specify starting page/route (e.g., 'learning/').
+    Specify starting page/route (e.g., 'getting-started/').
 
 .PARAMETER DocsPort
     Port for the documentation server (default: 8080).
 
-.PARAMETER ProgressPort
-    Port for the Express progress server (default: 3002).
-
 .EXAMPLE
     .\Serve-Docs.ps1
-    Start both documentation and progress servers.
-
-.EXAMPLE
-    .\Serve-Docs.ps1 -StartPage "learning/"
-    Start both servers and open browser to Learning section.
+    Start the documentation server.
 #>
 
 [CmdletBinding()]
@@ -33,16 +25,12 @@ param(
     [string]$StartPage = '',
 
     [Parameter(Mandatory = $false)]
-    [int]$DocsPort = 8080,
-
-    [Parameter(Mandatory = $false)]
-    [int]$ProgressPort = 3002
+    [int]$DocsPort = 8080
 )
 
 $ErrorActionPreference = 'Stop'
 
 # Configuration
-$script:ServerJobs = @()
 $script:ServerProcesses = @()
 $script:docsifyProcess = $null
 
@@ -143,17 +131,15 @@ function Install-LocalDependency {
 }
 
 function Test-LocalDependenciesReady {
-    # Check if both Express and Docsify dependencies are installed locally
+    # Check if Docsify dependency is installed locally
     $nodeModules = Join-Path $PWD "node_modules"
-    $expressPath = Join-Path $nodeModules "express"
     $docsifyPath = Join-Path $nodeModules "docsify-cli"
 
-    $expressExists = Test-Path $expressPath
     $docsifyExists = Test-Path $docsifyPath
 
-    Write-ServerLog "Checking dependencies: Express=$expressExists, Docsify=$docsifyExists" -Color Yellow
+    Write-ServerLog "Checking dependencies: Docsify=$docsifyExists" -Color Yellow
 
-    return $expressExists -and $docsifyExists
+    return $docsifyExists
 }
 
 function Start-DocsifyServer {
@@ -256,38 +242,6 @@ function Start-DocsifyServer {
     return $script:docsifyProcess
 }
 
-function Start-ExpressServer {
-    [CmdletBinding(SupportsShouldProcess)]
-    param(
-        [int]$Port = 3002
-    )
-
-    if (-not $PSCmdlet.ShouldProcess("localhost:$Port", "Start Express server")) {
-        return
-    }
-
-    Write-ServerLog "Starting Express server on port $Port..." -Color Blue -ServerName "Express"
-
-    $appPath = Join-Path $PWD "docs/_server/app.js"
-
-    if (-not (Test-Path $appPath)) {
-        throw "Express server app not found: $appPath"
-    }
-
-    # Use $using: scope modifier to reference outer scope variables in Start-Job
-    $job = Start-Job -ScriptBlock {
-        Set-Location $using:PWD
-        & node $using:appPath
-    }
-
-    $script:ServerJobs += $job
-
-    Write-ServerLog "Express server started (Job ID: $($job.Id))" -Color Green -ServerName "Express"
-    Write-ServerLog "Progress API available at: http://localhost:$Port" -Color Cyan -ServerName "Express"
-
-    return $job
-}
-
 function Wait-ForServerStartup {
     param(
         [string]$Url,
@@ -369,19 +323,11 @@ function Stop-AllServer {
     [CmdletBinding(SupportsShouldProcess)]
     param()
 
-    if (-not $PSCmdlet.ShouldProcess("All servers", "Stop servers")) {
+    if (-not $PSCmdlet.ShouldProcess("Server", "Stop server")) {
         return
     }
 
-    Write-ServerLog "Shutting down all servers..." -Color Yellow    # Stop all jobs (Express server)
-    if ($script:ServerJobs) {
-        $script:ServerJobs | ForEach-Object {
-            if ($_.State -eq "Running") {
-                Stop-Job $_ -ErrorAction SilentlyContinue
-            }
-            Remove-Job $_ -ErrorAction SilentlyContinue
-        }
-    }
+    Write-ServerLog "Shutting down server..." -Color Yellow
 
     # Stop Docsify process
     if ($script:docsifyProcess -and !$script:docsifyProcess.HasExited) {
@@ -402,8 +348,7 @@ function Stop-AllServer {
         }
     }
 
-    Write-ServerLog "All servers stopped" -Color Green
-    $script:ServerJobs = @()
+    Write-ServerLog "Server stopped" -Color Green
     $script:ServerProcesses = @()
 }
 
@@ -429,7 +374,7 @@ try {
     $workspaceRoot = Split-Path -Parent $scriptPath
     Set-Location $workspaceRoot
 
-    Write-ServerLog "Starting development servers..." -Color Green
+    Write-ServerLog "Starting development server..." -Color Green
 
     # Debug: Show environment detection results
     Write-ServerLog "Environment Detection Results:" -Color Cyan
@@ -464,20 +409,6 @@ try {
     # Register shutdown handler
     Register-ShutdownHandler
 
-    Write-ServerLog "About to start servers..." -Color Green
-
-    # Start both servers
-    Write-ServerLog "Starting progress server first..." -Color Blue
-    try {
-        Start-ExpressServer -Port $ProgressPort
-        $healthCheckUrl = "http://$($script:RuntimeEnvironment.DetectedHost):$ProgressPort/health"
-        Write-ServerLog "Using health check URL: $healthCheckUrl" -Color Yellow -ServerName "Express"
-        Wait-ForServerStartup -Url $healthCheckUrl -ServerName "Express"
-    } catch {
-        Write-ServerLog "Error starting Express server: $($_.Exception.Message)" -Color Red
-        throw
-    }
-
     Write-ServerLog "Starting docsify server..." -Color Blue
     try {
         Start-DocsifyServer -Port $DocsPort
@@ -487,24 +418,19 @@ try {
         throw
     }
 
-    Write-ServerLog "All servers started successfully!" -Color Green
+    Write-ServerLog "Server started successfully!" -Color Green
 
     # Show environment-appropriate URLs
-    $progressUrl = "http://$($script:RuntimeEnvironment.DetectedHost):$ProgressPort"
     $docsUrl = "http://$($script:RuntimeEnvironment.DetectedHost):$DocsPort"
 
-    Write-ServerLog "Progress API Health: $progressUrl/health" -Color Cyan
     Write-ServerLog "Documentation: $docsUrl" -Color Cyan
-    Write-ServerLog "Training: $docsUrl/#/learning/README" -Color Cyan
     Write-ServerLog "" -Color White
 
     if ($script:RuntimeEnvironment.IsContainer -or $script:RuntimeEnvironment.IsDevContainer) {
         Write-ServerLog "Container/Remote URLs:" -Color Yellow
-        Write-ServerLog "Progress API: http://0.0.0.0:$ProgressPort" -Color Cyan
         Write-ServerLog "Documentation: http://0.0.0.0:$DocsPort" -Color Cyan
     } else {
         Write-ServerLog "Local URLs:" -Color Yellow
-        Write-ServerLog "Progress API: $progressUrl" -Color Cyan
         Write-ServerLog "Documentation: $docsUrl" -Color Cyan
     }
 
@@ -520,35 +446,16 @@ try {
     Start-Sleep 5  # Give servers more time to fully initialize, especially for JavaScript loading
     Open-BrowserToPage -Url $url -ServerName "Documentation"
 
-    Write-ServerLog "Press Ctrl+C to stop all servers" -Color Yellow
+    Write-ServerLog "Press Ctrl+C to stop the server" -Color Yellow
 
     # Keep the script running and monitor jobs and processes
     try {
         while ($true) {
             Start-Sleep 5
 
-            # Check if any jobs have failed
-            $failedJobs = $script:ServerJobs | Where-Object { $_.State -eq "Failed" }
-            if ($failedJobs) {
-                Write-ServerLog "One or more servers failed!" -Color Red
-                $failedJobs | ForEach-Object {
-                    Write-ServerLog "Job $($_.Id) failed: $($_.ChildJobs[0].JobStateInfo.Reason)" -Color Red
-                }
-                break
-            }
-
             # Check if Docsify process has exited
             if ($script:docsifyProcess -and $script:docsifyProcess.HasExited) {
                 Write-ServerLog "Docsify process has exited!" -Color Red
-                break
-            }
-
-            # Check if all jobs completed (shouldn't happen for servers)
-            $runningJobs = $script:ServerJobs | Where-Object { $_.State -eq "Running" }
-            $docsifyRunning = $script:docsifyProcess -and !$script:docsifyProcess.HasExited
-
-            if ($runningJobs.Count -eq 0 -and -not $docsifyRunning) {
-                Write-ServerLog "All servers stopped unexpectedly" -Color Red
                 break
             }
         }

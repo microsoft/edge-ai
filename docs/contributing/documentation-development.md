@@ -201,7 +201,6 @@ The documentation uses a dynamic section-specific sidebar navigation system that
 |-----------------------------------------|------------------------|--------------------------------------------------|
 | `docs/_parts/home-sidebar.md`           | Home section           | Default sidebar for home page                    |
 | `docs/_parts/docs-sidebar.md`           | Documentation section  | Getting Started, Contributing, ADR Library, etc. |
-| `docs/_parts/learning-sidebar.md`       | Learning section       | Katas, Training Labs, Shared Resources           |
 | `docs/_parts/blueprints-sidebar.md`     | Blueprints section     | Various cluster configurations                   |
 | `docs/_parts/infrastructure-sidebar.md` | Infrastructure section | Source code navigation                           |
 | `docs/_parts/copilot-sidebar.md`        | GitHub Copilot section | AI prompts and guides                            |
@@ -211,7 +210,6 @@ The documentation uses a dynamic section-specific sidebar navigation system that
 The system automatically detects the current section based on URL patterns and navbar clicks:
 
 - `/docs/getting-started/` → loads `docs/_parts/docs-sidebar.md`
-- `/learning/katas/` → loads `docs/_parts/learning-sidebar.md`
 - `/blueprints/full-single-node-cluster/` → loads `docs/_parts/blueprints-sidebar.md`
 - `/src/000-cloud/` → loads `docs/_parts/infrastructure-sidebar.md`
 - `/copilot/` → loads `docs/_parts/copilot-sidebar.md`
@@ -275,7 +273,7 @@ To add a new navigation section:
 
 ### Local Development Server
 
-The unified documentation server starts two services:
+The unified documentation server starts a documentation service:
 
 ```bash
 npm run docs
@@ -284,26 +282,24 @@ npm run docs
 **Services Started:**
 
 - **Docsify Server** (port 8080): Documentation site with hot reload
-- **Progress API Server** (port 3002): Backend for learning progress tracking
 
 **Features:**
 
 - 🔄 Hot reload for immediate preview
 - 🔀 Runtime URL replacement based on context
 - 🎯 Automatic environment detection (container, Windows, Linux/macOS)
-- 📊 Progress tracking API integration
 
 **Server Options:**
 
 ```powershell
-# Start with defaults (Docsify on 8080, Progress API on 3002)
+# Start with defaults (Docsify on 8080)
 npm run docs
 
 # Or run the PowerShell script directly with custom options
-pwsh ./scripts/Serve-Docs.ps1 -DocsPort 8080 -ProgressPort 3002
+pwsh ./scripts/Serve-Docs.ps1 -DocsPort 8080
 
 # Open browser to a specific section
-pwsh ./scripts/Serve-Docs.ps1 -StartPage "learning/README"
+pwsh ./scripts/Serve-Docs.ps1 -StartPage "docs/README"
 ```
 
 ### Testing Different Contexts
@@ -390,9 +386,8 @@ npm install
 npm run docs
 
 # Check port conflicts
-# Docsify runs on port 8080, Progress API on port 3002
+# Docsify runs on port 8080
 lsof -i :8080
-lsof -i :3002
 ```
 
 ### Getting Help
@@ -406,8 +401,7 @@ lsof -i :3002
 
 | Script                    | Description                                                           | Usage             |
 |---------------------------|-----------------------------------------------------------------------|-------------------|
-| `npm run docs`            | Start Docsify (8080) and Progress API (3002) servers                  | Local development |
-| `npm run progress-server` | Start only the Progress API server                                    | API development   |
+| `npm run docs`            | Start Docsify documentation server (port 8080)                        | Local development |
 | `npm run mdlint`          | Run markdown linting                                                  | Quality assurance |
 | `npm run mdlint-fix`      | Fix markdown linting issues automatically                             | Quality assurance |
 | `scripts/Build-Wiki.ps1`  | Build Azure DevOps Wiki with URL replacement and navigation structure | CI/CD pipeline    |

@@ -14,15 +14,6 @@
   * [Tech Papers](/docs/solution-technology-paper-library/README)
   * [Templates](/docs/build-cicd/templates/)
 
-* [🎓 Learning Platform](/learning/README)
-  * [Overview](/learning/README)
-  * [Learning Catalog](/learning/catalog)
-  * [Skill Assessment](/learning/skill-assessment)
-  * [Learning Paths](/learning/paths/README)
-  * [Katas](/learning/katas/README)
-  * [Training Labs](/learning/training-labs/README)
-  * [Shared Resources](/learning/shared/README)
-
 * [📋 Blueprints](/blueprints/README)
   * [Overview](/blueprints/README)
   * [Azure ML](/blueprints/azureml/README)

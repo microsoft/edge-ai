@@ -171,18 +171,6 @@ export default [
     }
   },
   {
-    // Server-specific configuration
-    files: ['docs/_server/**/*.js'],
-    languageOptions: {
-      globals: {
-        // Additional Node.js server globals if needed
-      }
-    },
-    rules: {
-      'no-console': 'off' // Allow console in server
-    }
-  },
-  {
     // Test files specific configuration
     files: ['**/tests/**/*.js', '**/*.test.js', '**/test/**/*.js'],
     languageOptions: {

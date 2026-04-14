@@ -50,33 +50,6 @@ Contributing new capabilities? The [Feature Developer Guide](/docs/getting-start
 - **Comprehensive Testing**: Automated validation and testing that ensures global-scale reliability for every deployment
 - **Edge-Focused**: Purpose-built capabilities that empower organizations worldwide to achieve edge AI computing workload success
 
-## 🎓 Learning Platform
-
-**Empower your team to achieve proficiency in Edge-AI's AI-assisted, hyper-velocity engineering** methodologies through challenge-based learning.
-
-[Learning](learning/) provides hands-on training that empowers engineers to achieve expertise in edge-to-cloud AI systems with discovery-based coaching:
-
-### Learning Formats
-
-- **🥋 [Katas](learning/katas/)**: Focused practice exercises for skill building (**15-45 minutes**)
-- **🧪 [Training Labs](learning/training-labs/)**: Comprehensive hands-on experiences (**2-8 hours**)
-- **🤖 AI Coaching**: Built-in VS Code coaching prompts for discovery-based learning
-
-### Ready to Start Learning?
-
-**🚀 Launch Documentation:**
-
-```bash
-npm run docs
-```
-
-> ⏱️ **Build Time**:
->
-> - **First run**: 2-4 minutes (installs dependencies + builds config)
-> - **Subsequent runs**: ~30 seconds startup
-
-Opens the complete documentation including the interactive **Learning** tab.
-
 ## Repository Overview
 
 ### How to Use This Repository
@@ -88,12 +61,6 @@ flowchart TD
     %% User approach choices
     Quick[Quick Deploy<br/>Use existing blueprints]
     Custom[Custom Solution<br/>Build with components]
-    Learn[Learn & Contribute<br/>Understand & extend]
-
-  %% Learning paths
-    Learning[learning/<br/>Learning Platform<br/>Paths & Katas]
-    Katas[Individual Practice<br/>Katas 15-45 min]
-    Labs[Team Exploration<br/>Labs 2-50+ hours]
 
     %% Repository structure navigation
     Blueprints[blueprints/<br/>Ready-to-deploy<br/>solutions]
@@ -108,18 +75,10 @@ flowchart TD
     %% Primary user flow
     Start --> Quick
     Start --> Custom
-    Start --> Learn
+    Start --> Docs
 
     Quick --> Blueprints
     Custom --> Components
-    Learn --> Docs
-    Learn --> Learning
-    Learning --> Katas
-    Learning --> Labs
-
-    %% Learning progression paths
-    Katas --> Components
-    Labs --> Blueprints
     Docs --> Components
     Components --> Blueprints
 
@@ -132,10 +91,6 @@ flowchart TD
     style Start fill:#e1f5fe,stroke:#01579b,stroke-width:3px
     style Quick fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
     style Custom fill:#fff3e0,stroke:#e65100,stroke-width:2px
-    style Learn fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
-    style Learning fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
-    style Katas fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
-    style Labs fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
     style Blueprints fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
     style Components fill:#fff3e0,stroke:#e65100,stroke-width:2px
     style Docs fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px

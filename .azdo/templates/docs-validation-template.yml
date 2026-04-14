@@ -7,7 +7,7 @@
 #
 # Enhanced Functionality:
 # - Validates enhanced multi-section sidebar navigation (docs/_parts/ structure)
-# - Performs link validation across all documentation folders (docs, src, blueprints, learning, .github, copilot)
+# - Performs link validation across all documentation folders (docs, src, blueprints, .github, copilot)
 # - Checks frontmatter consistency and required fields using Validate-MarkdownFrontmatter.ps1
 # - Validates section-based navigation architecture with Generate-DocsSidebar.ps1
 # - Ensures links don't contain language-specific paths (e.g., 'en-us') across entire repository
@@ -239,7 +239,6 @@ jobs:
             $sidebarPaths = @(
               "docs/_sidebar.md",
               "docs/_parts/docs-sidebar.md",
-              "docs/_parts/learning-sidebar.md",
               "docs/_parts/blueprints-sidebar.md",
               "docs/_parts/infrastructure-sidebar.md"
             )
@@ -465,7 +464,7 @@ jobs:
             echo "📋 Validating links in all documentation files"
 
             # Check all markdown files in tracked folders (includes enhanced documentation structure)
-            find docs src blueprints learning .github copilot -name "*.md" -type f 2>/dev/null | \
+            find docs src blueprints .github copilot -name "*.md" -type f 2>/dev/null | \
               grep -v node_modules | \
               while read file; do
                 echo "Checking: $file"

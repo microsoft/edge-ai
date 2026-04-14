@@ -284,12 +284,6 @@ FakesAssemblies/
 .ntvs_analysis.dat
 node_modules/
 
-# Docsify configuration (generated at runtime)
-docsify-url-config.js
-
-# Learning path manifest (generated at runtime)
-manifest.json
-
 # Visual Studio 6 build log
 *.plg
 
@@ -440,7 +434,6 @@ pr-reference.xml
 .copilot-tracking/
 
 # Test artifacts
-test-progress-*/
 test-performance/
 test-selections/
 __test-data__/

@@ -353,7 +353,7 @@ jobs:
           EOF
 
           # Check all markdown files
-          find docs src blueprints learning .github copilot \
+          find docs src blueprints .github copilot \
             -name "*.md" -type f | \
             grep -v node_modules | \
             xargs -I {} sh -c 'echo "Checking: {}" &&
@@ -428,8 +428,6 @@ jobs:
             -ErrorAction SilentlyContinue).Count
           $blueprintsCount = (Get-ChildItem -Path 'blueprints' -Filter '*.md' `
             -Recurse -ErrorAction SilentlyContinue).Count
-          $learningCount = (Get-ChildItem -Path 'learning' -Filter '*.md' `
-            -Recurse -ErrorAction SilentlyContinue).Count
           $githubCount = (Get-ChildItem -Path '.github' -Filter '*.md' `
             -Recurse -ErrorAction SilentlyContinue).Count
           $copilotCount = (Get-ChildItem -Path 'copilot' -Filter '*.md' `
@@ -448,11 +446,10 @@ jobs:
           | Main Documentation | $docsCount |
           | Infrastructure Components | $srcCount |
           | Blueprints | $blueprintsCount |
-          | Learning Platform | $learningCount |
           | GitHub Resources | $githubCount |
           | AI Assistant Guides (Copilot) | $copilotCount |
           | **Total** | **$($docsCount + $srcCount + $blueprintsCount + `
-            $learningCount + $githubCount + $copilotCount)** |
+            $githubCount + $copilotCount)** |
 
           ## 🏗️ Three-Tree Architecture Status
 
