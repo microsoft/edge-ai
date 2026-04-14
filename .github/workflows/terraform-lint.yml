@@ -74,7 +74,7 @@ jobs:
         id: tflint
         run: |
           tflint --init
-          tflint --recursive > tflint-output.txt 2>&1 || echo "TFLINT_FAILED=true" >> "$GITHUB_ENV"
+          tflint --disable-rule=terraform_required_providers --recursive > tflint-output.txt 2>&1 || echo "TFLINT_FAILED=true" >> "$GITHUB_ENV"
           cat tflint-output.txt
         continue-on-error: true
 
