@@ -441,10 +441,10 @@ export class MockDataGenerator {
 
     // Generate achievement badges based on progress
     const badges = [];
-    if (calculatedProgress >= 25) { badges.push('first-steps'); }
-    if (calculatedProgress >= 50) { badges.push('halfway'); }
-    if (calculatedProgress === 100) { badges.push('completed'); }
-    if (timeSpent > 3600000) { badges.push('dedicated-learner'); } // 1 hour+
+    if (calculatedProgress >= 25) {badges.push('first-steps');}
+    if (calculatedProgress >= 50) {badges.push('halfway');}
+    if (calculatedProgress === 100) {badges.push('completed');}
+    if (timeSpent > 3600000) {badges.push('dedicated-learner');} // 1 hour+
 
     return {
       pathId,
@@ -1230,7 +1230,7 @@ export function setupMockLocalStorage() {
  * @param {Object} options - Path configuration options
  * @returns {Object} Mock path data object
  */
-function generatePathData(options = {}) {
+export function generatePathData(options = {}) {
   return {
     id: options.id || `path-${Math.random().toString(36).substr(2, 9)}`,
     title: options.title || 'Test Learning Path',
@@ -1273,7 +1273,4 @@ export default {
   generatePathData
 };
 
-// Also export key utilities as named exports for easier importing
-export {
-  generatePathData
-};
+
