@@ -167,10 +167,10 @@ npm run link-lang-fix          # Fix language-specific links
 
 The Dev Container includes comprehensive linting and quality tools:
 
-1. **MegaLinter**: Comprehensive multi-language linting
-   - Configuration: `.mega-linter.yml`
+1. **Dedicated Lint Jobs**: Individual CI/CD lint jobs per language and framework
+   - Shell, YAML, Terraform, Bicep, PowerShell, Python, Markdown, and code quality
    - Runs automatically in CI/CD
-   - Documentation: `docs/build-cicd/azure-pipelines/templates/megalinter-template.md`
+   - Documentation: `docs/build-cicd/azure-pipelines/README.md`
 
 2. **Terraform Tools**:
    - `terraform fmt` - Code formatting

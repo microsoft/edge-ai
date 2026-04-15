@@ -1,0 +1,117 @@
+/*
+ * Dataflow Graphs Configuration Example — Message to DSS Key Writer
+ *
+ * This file demonstrates how to configure a dataflow graph that uses the
+ * msg-to-dss-key WASM module to write any JSON message from an MQTT topic
+ * to the AIO Distributed State Store (DSS) under a configurable key,
+ * while passing the message through unchanged to a destination MQTT topic.
+ *
+ * Before applying this configuration, build and push the module from
+ * src/500-application/514-wasm-msg-to-dss:
+ *   ./scripts/build-wasm.sh
+ *   ./scripts/push-to-acr.sh <acr_name>
+ *
+ * Copy the contents to enrich your terraform.tfvars with these values.
+ * Ensure your terraform.tfvars also includes the required core variables, for example:
+ *
+ *   environment                          = "graphs"
+ *   resource_prefix                      = "dss"
+ *   location                             = "eastus2"
+ *   instance                             = "001"
+ *   should_include_acr_registry_endpoint = true
+ */
+
+// Configure the dataflow graph that wires the default MQTT source through
+// the msg-to-dss-key WASM module back to a destination MQTT topic.
+// The operator writes each message to the DSS and forwards it unchanged.
+dataflow_graphs = [
+  {
+    name = "device-state-to-dss"
+    nodes = [
+      {
+        nodeType = "Source"
+        name     = "mqtt-source"
+        sourceSettings = {
+          // Read from the default AIO MQTT broker endpoint
+          endpointRef = "default"
+          // Replace with the MQTT topic carrying JSON messages to index in the DSS
+          dataSources = ["devices/+/state"]
+        }
+      },
+      {
+        nodeType = "Graph"
+        name     = "msg-to-dss-key-map"
+        graphSettings = {
+          // Must match the registry endpoint name: acr-{var.resource_prefix}
+          registryEndpointRef = "acr-dss"
+          artifact            = "msg-to-dss-key-graph:1.0.0"
+          // Configure key extraction and TTL for the state store write.
+          // keyPath (required): JSON Pointer to the field used as the state store key.
+          // ttlSeconds (required): TTL in seconds (0 = no expiration).
+          // keyPrefix (optional): Prefix for namespace isolation.
+          // onMissing (optional): "skip" (default) or "error".
+          configuration = [
+            {
+              key   = "keyPath"
+              value = "/deviceId"
+            },
+            {
+              key   = "keyPrefix"
+              value = "device:"
+            },
+            {
+              key   = "ttlSeconds"
+              value = "86400"    # 24 hours
+            }
+          ]
+        }
+      },
+      {
+        nodeType = "Destination"
+        name     = "mqtt-destination"
+        destinationSettings = {
+          // Write the passthrough message to a processed MQTT topic
+          endpointRef     = "default"
+          dataDestination = "devices/state/processed"
+        }
+      }
+    ]
+    node_connections = [
+      {
+        from = { name = "mqtt-source" }
+        to   = { name = "msg-to-dss-key-map" }
+      },
+      {
+        from = { name = "msg-to-dss-key-map" }
+        to   = { name = "mqtt-destination" }
+      }
+    ]
+  }
+]
+
+// --- Additional Configuration Examples ---
+//
+// Nested key extraction:
+//
+//   configuration = [
+//     { key = "keyPath",    value = "/metadata/entityId" },
+//     { key = "keyPrefix",  value = "entity:" },
+//     { key = "ttlSeconds", value = "3600" }
+//   ]
+//
+// Array-indexed key:
+//
+//   configuration = [
+//     { key = "keyPath",    value = "/entries/0/id" },
+//     { key = "keyPrefix",  value = "entry:" },
+//     { key = "ttlSeconds", value = "86400" }
+//   ]
+//
+// No expiration with strict missing-key behavior:
+//
+//   configuration = [
+//     { key = "keyPath",    value = "/assetId" },
+//     { key = "keyPrefix",  value = "asset:" },
+//     { key = "ttlSeconds", value = "0" },
+//     { key = "onMissing",  value = "error" }
+//   ]

@@ -370,7 +370,7 @@ These questions help us design content that learners actually want to engage wit
 - Execute `npm run lint:md` for markdownlint compliance across all markdown files
 - Run `npm run lint:cspell` to catch spelling errors and maintain dictionary consistency
 - Use `npm run format` to auto-fix formatting issues before committing
-- MegaLinter runs comprehensive checks on all file types in CI/CD pipeline
+- Individual lint jobs (ShellCheck, yamllint, Ruff, TFLint, etc.) run in the CI/CD pipeline
 
 ##### Catalog Synchronization
 

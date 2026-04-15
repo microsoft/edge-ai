@@ -1,6 +1,5 @@
 # TFLint Configuration
 # See: https://github.com/terraform-linters/tflint/blob/master/docs/user-guide/config.md
-# Based on MegaLinter default: https://github.com/oxsecurity/megalinter/blob/main/TEMPLATES/.tflint.hcl
 
 config {
   call_module_type = "local"
@@ -18,7 +17,6 @@ plugin "azurerm" {
   source  = "github.com/terraform-linters/tflint-ruleset-azurerm"
 }
 
-# Disabled by MegaLinter default template
 rule "terraform_required_providers" {
   enabled = false
 }

@@ -10,7 +10,6 @@ keywords:
   - validation
   - github-actions
   - ci-cd
-  - megalinter
   - terraform
   - bicep
   - infrastructure as code
@@ -31,7 +30,7 @@ The Pull Request Validation workflow is a comprehensive CI/CD pipeline that runs
 ## Features
 
 - Intelligent detection of changed files to determine necessary validation steps
-- Static code analysis with MegaLinter across multiple languages and file formats
+- Static code analysis with individual lint jobs across multiple languages and file formats
 - Strict documentation standards validation for Terraform and Bicep configurations
 - Terraform validation including init, validate, plan, and test operations
 - Azure IoT Operations component version checking
@@ -77,7 +76,7 @@ The workflow can also be triggered manually from the GitHub Actions tab:
 The workflow consists of multiple jobs that run in a specific sequence:
 
 1. **Dependency Scan**: Analyzes project dependencies for security issues
-2. **MegaLinter**: Performs comprehensive linting and static analysis
+2. **Lint Jobs**: Performs comprehensive linting and static analysis
 3. **Terraform Documentation Check**: Validates Terraform documentation consistency with strict validation
 4. **Bicep Documentation Check**: Validates Bicep documentation consistency with strict validation
 5. **AIO Version Check**: Verifies Azure IoT Operations component versions
@@ -94,11 +93,9 @@ The workflow consists of multiple jobs that run in a specific sequence:
 2. Performs dependency review for security vulnerabilities
 3. Reports findings as GitHub annotations
 
-### MegaLinter
+### Lint Jobs
 
-Calls the reusable `megalinter.yml` workflow with:
-
-- `github_comment_reporter: true` - Enables PR comment reporting for linting results
+Runs dedicated lint jobs for shell scripts, YAML, Python, PowerShell, Bicep, Terraform, documentation, and code quality analysis with PR comment reporting for linting results.
 
 ### Terraform Documentation Check
 
@@ -155,8 +152,8 @@ Uses the `cluster-test-terraform.yml` workflow with a matrix strategy to:
 
 ### Common Issues
 
-1. **MegaLinter Failures**:
-   - **Solution**: Review the linter report in PR comments or workflow artifacts and fix identified issues
+1. **Lint Job Failures**:
+   - **Solution**: Review the lint job logs in PR comments or workflow artifacts and fix identified issues
 
 2. **Documentation Validation Issues**:
    - **Solution**: Use the documentation generation scripts (`update-all-terraform-docs.sh` or `update-all-bicep-docs.sh`) to regenerate documentation, then commit changes
@@ -181,7 +178,6 @@ To enhance this workflow:
 ## Related Workflows
 
 - [main.yml](./main.md): Main branch CI/CD workflow that runs after PRs are merged
-- [megalinter.yml](./megalinter.md): Linting workflow called by this workflow
 - [docs-check-terraform.yml](./docs-check-terraform.md): Terraform documentation validation
 - [docs-check-bicep.yml](./docs-check-bicep.md): Bicep documentation validation
 - [matrix-folder-check.yml](./matrix-folder-check.md): Changes detection workflow
