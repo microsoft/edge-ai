@@ -127,7 +127,6 @@ function setupMockPathCard(container) {
 
 describe('Learning Path Card Component', () => {
   let mockStorage;
-  const container = null;
 
   beforeEach(() => {
     // Setup DOM
@@ -141,9 +140,6 @@ describe('Learning Path Card Component', () => {
   });
 
   afterEach(() => {
-    if (container && container.parentNode) {
-      container.parentNode.removeChild(container);
-    }
     vi.restoreAllMocks();
   });
 
