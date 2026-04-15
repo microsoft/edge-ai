@@ -442,6 +442,8 @@ module "cloud_azureml" {
   compute_cluster_vm_priority   = var.compute_cluster_vm_priority
   compute_cluster_vm_size       = var.compute_cluster_vm_size
 
+  compute_cluster_node_public_ip_enabled = !var.should_enable_private_endpoints
+
   key_vault            = try(module.cloud_security_identity[0].key_vault, data.azurerm_key_vault.existing[0], null)
   application_insights = try(module.cloud_observability[0].application_insights, data.azurerm_application_insights.existing[0], null)
   storage_account      = try(module.cloud_data[0].storage_account, data.azurerm_storage_account.existing[0], null)

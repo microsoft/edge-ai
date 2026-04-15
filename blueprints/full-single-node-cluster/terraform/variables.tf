@@ -390,7 +390,7 @@ variable "node_pools" {
 variable "node_vm_size" {
   type        = string
   description = "VM size for the agent pool in the AKS cluster"
-  default     = "Standard_D8ds_v5"
+  default     = "Standard_D8ds_v6"
 }
 
 variable "should_create_aks" {

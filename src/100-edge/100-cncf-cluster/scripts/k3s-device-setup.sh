@@ -58,6 +58,27 @@ err() {
     exit 1
 }
 
+install_azure_cli() {
+    log "Installing Azure CLI"
+    export DEBIAN_FRONTEND=noninteractive
+    sudo apt-get -o DPkg::Lock::Timeout=300 update
+    sudo apt-get -o DPkg::Lock::Timeout=300 install --assume-yes --no-install-recommends apt-transport-https ca-certificates curl gnupg lsb-release
+    sudo mkdir -p /etc/apt/keyrings
+    curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | sudo gpg --dearmor -o /etc/apt/keyrings/microsoft.gpg
+    sudo chmod go+r /etc/apt/keyrings/microsoft.gpg
+    local cli_repo architecture
+    cli_repo=$(lsb_release -cs)
+    architecture=$(dpkg --print-architecture)
+    echo "Types: deb
+URIs: https://packages.microsoft.com/repos/azure-cli/
+Suites: ${cli_repo}
+Components: main
+Architectures: ${architecture}
+Signed-by: /etc/apt/keyrings/microsoft.gpg" | sudo tee /etc/apt/sources.list.d/azure-cli.sources >/dev/null
+    sudo apt-get -o DPkg::Lock::Timeout=300 update
+    sudo apt-get -o DPkg::Lock::Timeout=300 install --assume-yes azure-cli
+}
+
 enable_debug() {
     echo "[ DEBUG ]: Enabling writing out all commands being executed"
     set -x
@@ -87,8 +108,7 @@ log "Setting up AZ CLI..."
 
 if ! command -v "az" &>/dev/null; then
     if [[ ! $SKIP_INSTALL_AZ_CLI ]]; then
-        log "Installing Azure CLI"
-        curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+        install_azure_cli
     else
         err "'az' is missing and required"
     fi
@@ -99,8 +119,8 @@ fi
 if [[ $AZ_CLI_VER && ! $SKIP_INSTALL_AZ_CLI ]]; then
     if ! az version | grep "\"azure-cli\"" | grep -Fq "$AZ_CLI_VER"; then
         log "Installing specified version of Azure CLI $AZ_CLI_VER"
-        sudo apt-get remove -y azure-cli && log "Removed Azure CLI to install specific version"
-        sudo apt-get install azure-cli="$AZ_CLI_VER-1~$(lsb_release -cs)"
+        sudo apt-get -o DPkg::Lock::Timeout=300 remove -y azure-cli && log "Removed Azure CLI to install specific version"
+        sudo apt-get -o DPkg::Lock::Timeout=300 install --assume-yes azure-cli="$AZ_CLI_VER-1~$(lsb_release -cs)"
     fi
 fi
 

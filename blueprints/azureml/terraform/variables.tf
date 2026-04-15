@@ -118,8 +118,8 @@ variable "node_count" {
 
 variable "node_vm_size" {
   type        = string
-  description = "VM size for the agent pool in the AKS cluster. Default is Standard_D8ds_v5."
-  default     = "Standard_D8ds_v5"
+  description = "VM size for the agent pool in the AKS cluster. Default is Standard_D8ds_v6."
+  default     = "Standard_D8ds_v6"
 }
 
 variable "subnet_address_prefixes_aks" {
@@ -756,8 +756,8 @@ variable "vm_host_count" {
 
 variable "vm_sku_size" {
   type        = string
-  description = "VM SKU size for the host. Examples: Standard_D8s_v3 (general purpose), Standard_NV36ads_A10_v5 (GPU workload)"
-  default     = "Standard_D8s_v3"
+  description = "VM SKU size for the host. Examples: Standard_D8s_v6 (general purpose), Standard_NV36ads_A10_v5 (GPU workload)"
+  default     = "Standard_D8s_v6"
 }
 
 variable "vm_priority" {

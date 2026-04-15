@@ -44,7 +44,7 @@ variable "node_count" {
 
 variable "node_vm_size" {
   type        = string
-  description = "VM size for the agent pool in the AKS cluster. Default is Standard_D8ds_v5."
+  description = "VM size for the agent pool in the AKS cluster. Default is Standard_D8ds_v6."
 }
 
 variable "dns_prefix" {

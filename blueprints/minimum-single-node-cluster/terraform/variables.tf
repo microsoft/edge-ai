@@ -98,7 +98,7 @@ variable "vm_sku_size" {
   type = string
   // Minimize resource usage - set smaller VM size
   description = "Size of the VM"
-  default     = "Standard_D4_v4"
+  default     = "Standard_D4s_v6"
 }
 
 variable "namespaced_devices" {

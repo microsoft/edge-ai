@@ -183,8 +183,8 @@ variable "cluster_a_node_count" {
 
 variable "cluster_a_node_vm_size" {
   type        = string
-  description = "VM size for the agent pool in the AKS cluster for Cluster A. Default is Standard_D8ds_v5."
-  default     = "Standard_D8ds_v5"
+  description = "VM size for the agent pool in the AKS cluster for Cluster A. Default is Standard_D8ds_v6."
+  default     = "Standard_D8ds_v6"
 }
 
 variable "cluster_a_enable_auto_scaling" {
@@ -238,8 +238,8 @@ variable "cluster_b_node_count" {
 
 variable "cluster_b_node_vm_size" {
   type        = string
-  description = "VM size for the agent pool in the AKS cluster for Cluster B. Default is Standard_D8ds_v5."
-  default     = "Standard_D8ds_v5"
+  description = "VM size for the agent pool in the AKS cluster for Cluster B. Default is Standard_D8ds_v6."
+  default     = "Standard_D8ds_v6"
 }
 
 variable "cluster_b_enable_auto_scaling" {
