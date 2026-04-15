@@ -79,7 +79,7 @@ jobs:
         id: shellcheck
         run: |
           find . -name '*.sh' -not -path './node_modules/*' -not -path './.copilot-tracking/*' -print0 \
-            | xargs -0 -r shellcheck --rcfile .shellcheckrc --format=gcc > shellcheck-output.txt 2>&1 || echo "SHELLCHECK_FAILED=true" >> "$GITHUB_ENV"
+            | xargs -0 -r shellcheck --format=gcc > shellcheck-output.txt 2>&1 || echo "SHELLCHECK_FAILED=true" >> "$GITHUB_ENV"
           cat shellcheck-output.txt
         continue-on-error: true
 
