@@ -398,8 +398,8 @@ This approach provides immediate architectural consistency while maintaining fle
 
 ## References
 
-* [Application Instructions](../../.github/instructions/application.instructions.md) - Component organization standards
-* [Blueprint README](../../blueprints/README.md) - Blueprint composition patterns
+* [Application Instructions](https://github.com/microsoft/edge-ai/blob/main/.github/instructions/application.instructions.md) - Component organization standards
+* [Blueprint README](https://github.com/microsoft/edge-ai/blob/main/blueprints/README.md) - Blueprint composition patterns
 * [Fabric RTI Blueprint](../../blueprints/fabric-rti/) - Addon blueprint reference implementation
 * [REST HTTP Connector](../../src/500-application/505-akri-rest-http-connector/) - Connector with buildable apps
 * [Media Connector PR Discussion](https://dev.azure.com/ai-at-the-edge-flagship-accelerator/edge-ai/_git/edge-ai/pullrequest/530) - Original architectural review
@@ -422,8 +422,8 @@ This approach provides immediate architectural consistency while maintaining fle
 
 ### Related ADRs
 
-* **[ADR-003: Language Selection](../../project-adrs/Accepted/003-adr-language-selection.md)**: Python selected for custom component development
-* **[ADR-005: Cluster Support](../../project-adrs/Accepted/005-adr-cluster-support.md)**: K3s cluster support impacts connector deployment patterns
+* **[ADR-003: Language Selection](https://github.com/microsoft/edge-ai/blob/main/project-adrs/Accepted/003-adr-language-selection.md)**: Python selected for custom component development
+* **[ADR-005: Cluster Support](https://github.com/microsoft/edge-ai/blob/main/project-adrs/Accepted/005-adr-cluster-support.md)**: K3s cluster support impacts connector deployment patterns
 
 ### Implementation Checklist
 

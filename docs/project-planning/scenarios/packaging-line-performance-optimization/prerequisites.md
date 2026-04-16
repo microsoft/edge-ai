@@ -73,8 +73,8 @@ This document provides a comprehensive framework for all prerequisites needed to
 
 | **Requirement**   | **Specification**                | **Validation Method**   | **Business Impact**           |
 |-------------------|----------------------------------|-------------------------|-------------------------------|
-| **Local Latency** | <5ms edge to PLC                 | Network latency test    | Real-time line control        |
-| **Cloud Latency** | <50ms to Azure regions           | Cloud connectivity test | Optimization model updates    |
+| **Local Latency** | \<5ms edge to PLC                 | Network latency test    | Real-time line control        |
+| **Cloud Latency** | \<50ms to Azure regions           | Cloud connectivity test | Optimization model updates    |
 | **Bandwidth**     | 100Mbps sustained, 500Mbps burst | Throughput test         | Data streaming and model sync |
 | **Reliability**   | 99.99% uptime, redundant paths   | Availability monitoring | Continuous optimization       |
 
@@ -93,8 +93,8 @@ This document provides a comprehensive framework for all prerequisites needed to
 
 | **System**      | **Integration Method**    | **Real-time Requirements** | **Safety Integration**     |
 |-----------------|---------------------------|----------------------------|----------------------------|
-| **PLC Systems** | OPC UA/Modbus/EtherNet IP | <10ms response time        | Emergency stop integration |
-| **HMI Systems** | OPC UA/web services       | <100ms update rate         | Operator alarm integration |
+| **PLC Systems** | OPC UA/Modbus/EtherNet IP | \<10ms response time        | Emergency stop integration |
+| **HMI Systems** | OPC UA/web services       | \<100ms update rate         | Operator alarm integration |
 | **SCADA**       | Industrial protocols      | Real-time data exchange    | System status integration  |
 | **MES Systems** | REST APIs/databases       | Near real-time sync        | Work order integration     |
 
@@ -104,7 +104,7 @@ This document provides a comprehensive framework for all prerequisites needed to
 
 | **Requirement**         | **Specification**               | **Validation Method**    | **Business Impact**     |
 |-------------------------|---------------------------------|--------------------------|-------------------------|
-| **Edge Processing**     | <10ms processing time           | Processing benchmark     | Real-time optimization  |
+| **Edge Processing**     | \<10ms processing time           | Processing benchmark     | Real-time optimization  |
 | **Optimization Models** | Physics-based + ML models       | Model accuracy test      | Performance improvement |
 | **Stream Analytics**    | High-throughput processing      | Stress test              | Real-time insights      |
 | **Anomaly Detection**   | Multi-variate anomaly detection | False positive rate test | Quality assurance       |
@@ -206,7 +206,7 @@ When implementing multiple scenarios, optimize shared infrastructure:
 
 #### Performance Validation
 
-- [ ] **Response Time**: <10ms processing for real-time control
+- [ ] **Response Time**: \<10ms processing for real-time control
 - [ ] **Throughput**: System handles peak packaging line speeds
 - [ ] **Accuracy**: Optimization recommendations improve line performance
 - [ ] **Reliability**: System maintains 99.99% uptime during production

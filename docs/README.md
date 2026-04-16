@@ -1,4 +1,6 @@
 ---
+slug: /
+sidebar_position: 0
 title: AI on Edge Flagship Accelerator
 description: Empower your organization with production-ready Infrastructure as Code for Edge AI solutions. Achieve more with accelerated edge computing deployment using our comprehensive reusable components, blueprints, and default AI-assisted engineering practices.
 author: Edge AI Team
@@ -24,22 +26,22 @@ keywords:
 ---
 
 [![Build Status](https://dev.azure.com/ai-at-the-edge-flagship-accelerator/IaC%20for%20the%20Edge/_apis/build/status%2FIaC%20for%20the%20Edge?branchName=main)](https://dev.azure.com/ai-at-the-edge-flagship-accelerator/IaC%20for%20the%20Edge/_build/latest?definitionId=3&branchName=main)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE.md)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/microsoft/edge-ai/blob/main/LICENSE.md)
 [![Open in Dev Containers](https://img.shields.io/static/v1?label=Dev%20Containers&message=Open&color=blue&logo=visualstudiocode)](https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://dev.azure.com/ai-at-the-edge-flagship-accelerator/_git/edge-ai)
 
 ## What You'll Find Here
 
 ### 🎯 For Users
 
-Ready to achieve rapid edge-ai deployments? Start with our [General User Guide](/docs/getting-started/general-user.md) to deploy existing blueprints to Azure in **30-60 minutes**.
+Ready to achieve rapid edge-ai deployments? Start with our [General User Guide](getting-started/general-user.md) to deploy existing blueprints to Azure in **30-60 minutes**.
 
 ### 🏗️ For Blueprint Developers
 
-Creating new deployment scenarios? Start your process with the [Blueprint Developer Guide](/docs/getting-started/blueprint-developer.md) to learn how to combine components into custom solutions that achieve your business goals.
+Creating new deployment scenarios? Start your process with the [Blueprint Developer Guide](getting-started/blueprint-developer.md) to learn how to combine components into custom solutions that achieve your business goals.
 
 ### ⚙️ For Feature Developers
 
-Contributing new capabilities? The [Feature Developer Guide](/docs/getting-started/feature-developer.md) empowers you with component development, testing, and contribution workflows to achieve impactful contributions.
+Contributing new capabilities? The [Feature Developer Guide](getting-started/feature-developer.md) empowers you with component development, testing, and contribution workflows to achieve impactful contributions.
 
 ## Key Features
 
@@ -177,7 +179,7 @@ flowchart TD
 - 🤝 [Contributing Guidelines](contributing/)
 - 🐛 [Issue Tracker]({{ISSUES_URL}})
 - 💬 [Discussions]({{DISCUSSIONS_URL}})
-- 📧 [Support](../SUPPORT.md)
+- 📧 [Support](https://github.com/microsoft/edge-ai/blob/main/SUPPORT.md)
 
 ---
 
@@ -191,7 +193,7 @@ Microsoft encourages customers to review its Responsible AI Standard when develo
 
 This project is licensed under the [MIT License](../LICENSE).
 
-**Security:** See [SECURITY.md](../SECURITY.md) for security policy and reporting vulnerabilities.
+**Security:** See [SECURITY.md](https://github.com/microsoft/edge-ai/blob/main/SECURITY.md) for security policy and reporting vulnerabilities.
 
 ## Trademark Notice
 

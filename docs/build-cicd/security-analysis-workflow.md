@@ -123,8 +123,8 @@ logs/checkov-security-analysis/
 
 The generated planning files follow repository work item planning conventions and can be processed using Copilot chat:
 
-1. **Review Planning Files**: Examine generated work item definitions and acceptance criteria in [`.copilot-tracking`](../.copilot-tracking/) folder
-2. **Execute Work Item Creation**: Use Copilot chat with the [`handoff.md`](../.copilot-tracking/workitems/security-analysis/checkov-k8s-arc-findings/handoff.md) file to create actual work items in Azure DevOps
+1. **Review Planning Files**: Examine generated work item definitions and acceptance criteria in `.copilot-tracking` folder
+2. **Execute Work Item Creation**: Use Copilot chat with the `handoff.md` file to create actual work items in Azure DevOps
 3. **Track Progress**: Monitor resolution through Azure DevOps after work items are created
 4. **Follow-up Scanning**: Verify fixes with subsequent security scans
 
@@ -195,7 +195,7 @@ cat .copilot-tracking/workitems/security-analysis/checkov-k8s-arc-findings/work-
 ## Related Documentation
 
 - [Invoke-SecurityAnalysisWithWorkItems.ps1 Script](../scripts/Invoke-SecurityAnalysisWithWorkItems.ps1)
-- [Run-Checkov.ps1 Documentation](../scripts/README.md)
+- [Run-Checkov.ps1 Documentation](https://github.com/microsoft/edge-ai/blob/main/scripts/README.md)
 - [Checkov Configuration Reference](../.checkov.yml)
 
 ---

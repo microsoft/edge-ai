@@ -178,11 +178,11 @@ To enhance this workflow:
 ## Related Workflows
 
 - [main.yml](./main.md): Main branch CI/CD workflow that runs after PRs are merged
-- [docs-check-terraform.yml](./docs-check-terraform.md): Terraform documentation validation
-- [docs-check-bicep.yml](./docs-check-bicep.md): Bicep documentation validation
-- [matrix-folder-check.yml](./matrix-folder-check.md): Changes detection workflow
-- [variable-compliance-terraform.yml](./variable-compliance-terraform.md): Terraform variable compliance check
-- [cluster-test-terraform.yml](./cluster-test-terraform.md): Terraform module testing workflow
+- [docs-check-terraform.yml](./templates/docs-check-terraform.md): Terraform documentation validation
+- [docs-check-bicep.yml](./templates/docs-check-bicep.md): Bicep documentation validation
+- [matrix-folder-check.yml](./templates/matrix-folder-check.md): Changes detection workflow
+- [variable-compliance-terraform.yml](./templates/variable-compliance-terraform.md): Terraform variable compliance check
+- [cluster-test-terraform.yml](./templates/cluster-test-terraform.md): Terraform module testing workflow
 
 ## Security Considerations
 

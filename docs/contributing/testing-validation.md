@@ -448,7 +448,7 @@ When creating a new blueprint, add comprehensive test coverage:
 
 **See:** [Blueprint Developer Guide](../getting-started/blueprint-developer.md#testing-and-validation) for detailed instructions
 
-**See:** [test-utilities README](../../src/900-tools-utilities/904-test-utilities/README.md) for complete API reference
+**See:** [test-utilities README](https://github.com/microsoft/edge-ai/blob/main/src/900-tools-utilities/904-test-utilities/README.md) for complete API reference
 
 ### Blueprint Validation Script
 
@@ -672,7 +672,7 @@ go test -v -cpuprofile=cpu.prof -memprofile=mem.prof ./tests/...
 - **Share testing knowledge** across the team
 - **Contribute improvements** to testing frameworks and tools
 
-For more information about development workflows, see the [Development Environment](./development-environment.md) and [Contributing Guidelines](./contributing.md).
+For more information about development workflows, see the [Development Environment](./development-environment.md) and [Contributing Guidelines](../contributions.md).
 
 <!-- markdownlint-disable MD036 -->
 *🤖 Crafted with precision by ✨Copilot following brilliant human instruction,

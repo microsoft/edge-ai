@@ -95,7 +95,7 @@ This document provides a comprehensive framework for all prerequisites needed to
 | **Requirement**          | **Specification**                      | **Validation Method**         | **Business Impact**            |
 |--------------------------|----------------------------------------|-------------------------------|--------------------------------|
 | **Time Series Database** | High-frequency inspection data storage | Write/read performance test   | Historical analysis capability |
-| **Real-time Dashboards** | <2 second inspection result display    | Dashboard responsiveness test | Immediate quality feedback     |
+| **Real-time Dashboards** | \<2 second inspection result display    | Dashboard responsiveness test | Immediate quality feedback     |
 | **Alert Engine**         | Configurable quality thresholds        | Alert response test           | Proactive defect detection     |
 | **Report Generation**    | Automated quality inspection reports   | Report accuracy validation    | Compliance documentation       |
 
@@ -123,7 +123,7 @@ This document provides a comprehensive framework for all prerequisites needed to
 - **Connectivity:** Gigabit Ethernet with PoE+ support, Wi-Fi 6 capability, optional 5G/LTE for remote sites, dedicated network segment for inspection traffic
 - **Security:** Hardware Security Module (HSM), secure boot capability, encrypted storage (AES-256), network segmentation from corporate systems
 
-**Validation Approach:** Deploy representative computer vision workload achieving <100ms inference time with >95% accuracy on production-quality images under sustained operation.
+**Validation Approach:** Deploy representative computer vision workload achieving \<100ms inference time with >95% accuracy on production-quality images under sustained operation.
 
 **Industrial Image Capture Infrastructure** (Mandatory)
 
@@ -148,7 +148,7 @@ This document provides a comprehensive framework for all prerequisites needed to
 **Network Infrastructure** (Mandatory)
 
 - **Bandwidth Requirements:** Dedicated 100Mbps for real-time operations, burst capacity to 500Mbps for model updates, separate network segment for inspection traffic
-- **Latency Requirements:** <5ms local network latency, <50ms cloud connectivity for non-critical operations, edge-local processing for real-time decisions
+- **Latency Requirements:** \<5ms local network latency, \<50ms cloud connectivity for non-critical operations, edge-local processing for real-time decisions
 - **Reliability Requirements:** 99.95% uptime with redundant connectivity, automatic failover capability, local operation during cloud outages (4-hour minimum)
 - **Security Requirements:** VPN or ExpressRoute connectivity, network intrusion detection, encrypted traffic (TLS 1.3), air-gapped inspection networks
 
@@ -183,7 +183,7 @@ This document provides a comprehensive framework for all prerequisites needed to
 - **Computer Vision Expertise:** Experience with industrial vision systems, understanding of lighting and imaging requirements, knowledge of defect detection algorithms, model validation expertise
 - **System Integration Skills:** API development and management, industrial protocol knowledge (OPC-UA, Modbus), database management, cloud platform administration
 - **Security Management:** Industrial cybersecurity expertise, AI system security protocols, network segmentation management, compliance framework implementation
-- **Support Capabilities:** 24/7 technical support for production systems, rapid response procedures (<30 minutes), backup system management, disaster recovery planning
+- **Support Capabilities:** 24/7 technical support for production systems, rapid response procedures (\<30 minutes), backup system management, disaster recovery planning
 
 **Validation Approach:** Assess technical team capabilities against AI industrial implementation requirements, identifying skill gaps and developing comprehensive training and certification programs.
 
@@ -207,7 +207,7 @@ This document provides a comprehensive framework for all prerequisites needed to
 - **Data Security:** AES-256 encryption for all quality data, role-based access control, data loss prevention systems, secure data transmission protocols
 - **Privacy Compliance:** GDPR compliance for EU operations, data sovereignty requirements, consent management for quality-related personal data, right-to-deletion procedures
 - **Audit Requirements:** Complete audit trail for all quality decisions, change tracking for models and standards, compliance reporting automation, regulatory inspection readiness
-- **Data Quality Standards:** Data validation procedures for training datasets, data lineage tracking, backup and recovery procedures (RTO <4 hours), data retention policy compliance
+- **Data Quality Standards:** Data validation procedures for training datasets, data lineage tracking, backup and recovery procedures (RTO \<4 hours), data retention policy compliance
 
 **Validation Approach:** Conduct comprehensive data governance audit, implementing privacy-by-design principles and ensuring full regulatory compliance across all data handling processes.
 
@@ -252,7 +252,7 @@ This comprehensive checklist provides structured assessment criteria for prerequ
 
 **Technical Infrastructure Assessment:**
 
-- [ ] **Edge Infrastructure Validation**: GPU-enabled device deployed with >95% uptime, <100ms inference capability demonstrated
+- [ ] **Edge Infrastructure Validation**: GPU-enabled device deployed with >95% uptime, \<100ms inference capability demonstrated
 - [ ] **Camera Infrastructure Validation**: Industrial cameras achieving consistent image quality across all production conditions
 - [ ] **Network Infrastructure Validation**: Dedicated bandwidth and latency requirements validated under peak loads
 - [ ] **Security Infrastructure Validation**: Complete security framework tested and compliance-verified
@@ -279,9 +279,9 @@ This comprehensive checklist provides structured assessment criteria for prerequ
 <!-- markdownlint-disable MD033 -->
 | Phase Transition             | Technical Validation                                                              | Organizational Validation                                                        | Compliance Validation              | Success Criteria                                                |
 |------------------------------|-----------------------------------------------------------------------------------|----------------------------------------------------------------------------------|------------------------------------|-----------------------------------------------------------------|
-| **🧪 PoC → 🚀 PoV**          | • >85% defect detection accuracy<br>• Edge inference <150ms                       | • Quality team basic training complete<br>• Production team engagement confirmed | • Initial compliance review passed | • Stakeholder approval secured<br>• Budget allocation confirmed |
-| **🚀 PoV → 🏭 Production**   | • >95% accuracy in production environment<br>• Complete system integration tested | • Full team training certified<br>• Workflow modifications implemented           | • Regulatory validation completed  | • Production readiness confirmed<br>• Go-live approval obtained |
-| **🏭 Production → 📈 Scale** | • >98% system uptime achieved<br>• Performance benchmarks met                     | • Advanced analytics capabilities proven<br>• Multi-line readiness validated     | • Audit trail systems operational  | • ROI targets achieved<br>• Expansion budget approved           |
+| **🧪 PoC → 🚀 PoV**          | • >85% defect detection accuracy<br />• Edge inference \<150ms                       | • Quality team basic training complete<br />• Production team engagement confirmed | • Initial compliance review passed | • Stakeholder approval secured<br />• Budget allocation confirmed |
+| **🚀 PoV → 🏭 Production**   | • >95% accuracy in production environment<br />• Complete system integration tested | • Full team training certified<br />• Workflow modifications implemented           | • Regulatory validation completed  | • Production readiness confirmed<br />• Go-live approval obtained |
+| **🏭 Production → 📈 Scale** | • >98% system uptime achieved<br />• Performance benchmarks met                     | • Advanced analytics capabilities proven<br />• Multi-line readiness validated     | • Audit trail systems operational  | • ROI targets achieved<br />• Expansion budget approved           |
 <!-- markdownlint-enable MD033 -->
 
 ### Success Criteria Validation

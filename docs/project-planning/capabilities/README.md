@@ -191,13 +191,13 @@ Contributions to capability documentation should follow the established patterns
 [protocol-translation-device-management]: ./protocol-translation-device-management/
 [remote-os-and-firmware-management]: ./remote-os-and-firmware-management/
 [industry-scenarios-platform-capabilities]: ../industry-scenarios-platform-capabilities.md
-[getting-started-guide]: ../getting-started-simple.md
+[getting-started-guide]: ../getting-started/
 [architecture-documentation]: ../README.md
-[blueprints]: blueprints/README.md
-[components]: src/README.md
-[contributing-guide]: ../../CONTRIBUTING.md
-[coding-conventions]: ../coding-conventions.md
-[documentation-standards]: ../coding-conventions.md#documentation
+[blueprints]: https://github.com/microsoft/edge-ai/blob/main/blueprints/README.md
+[components]: https://github.com/microsoft/edge-ai/blob/main/src/README.md
+[contributing-guide]: https://github.com/microsoft/edge-ai/blob/main/CONTRIBUTING.md
+[coding-conventions]: ../../contributing/coding-conventions.md
+[documentation-standards]: ../../contributing/coding-conventions.md#documentation
 
 ## Future Evolution
 

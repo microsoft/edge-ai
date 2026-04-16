@@ -86,7 +86,7 @@ This document provides a comprehensive framework for all prerequisites needed to
 |--------------------|---------------------------------------------------|------------------------|------------------------|
 | **OPC UA Sensors** | Industrial-grade temperature, vibration, pressure | OPC UA protocol        | 100-1000 points/sec    |
 | **Simulator**      | OPC UA server for testing                         | Container deployment   | Configurable rates     |
-| **Data Quality**   | 99.9% availability, <100ms latency                | Monitoring dashboard   | Real-time validation   |
+| **Data Quality**   | 99.9% availability, \<100ms latency                | Monitoring dashboard   | Real-time validation   |
 | **Protocols**      | OPC UA, MQTT, HTTP                                | Protocol gateway       | Multi-protocol support |
 
 #### 🧠 Machine Learning Infrastructure

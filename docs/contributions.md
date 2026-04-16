@@ -33,8 +33,8 @@ xychart-beta
 
 | PR Type       | Color                                   |
 |---------------|-----------------------------------------|
-| Created PRs   | <span style='color:#FF6384'>■■■■</span> |
-| Completed PRs | <span style='color:#36A2EB'>■■■■</span> |
+| Created PRs   | <span style={{color:'#FF6384'}}>■■■■</span> |
+| Completed PRs | <span style={{color:'#36A2EB'}}>■■■■</span> |
 
 ## Weekly Completed Pull Requests
 
@@ -92,8 +92,8 @@ xychart-beta
 
 | Metric           | Description                                                                   | Color                                   |
 |------------------|-------------------------------------------------------------------------------|-----------------------------------------|
-| SLO Compliance % | Percentage of PRs meeting the 48 hour response window                         | <span style='color:#4BC0C0'>■■■■</span> |
-| PRs Closed       | Total number of PRs closed in each week (scaled to percentage of maximum: 22) | <span style='color:#FF6384'>■■■■</span> |
+| SLO Compliance % | Percentage of PRs meeting the 48 hour response window                         | <span style={{color:'#4BC0C0'}}>■■■■</span> |
+| PRs Closed       | Total number of PRs closed in each week (scaled to percentage of maximum: 22) | <span style={{color:'#FF6384'}}>■■■■</span> |
 
 ## GitHub Copilot Impact
 
@@ -116,11 +116,11 @@ line "Total Contributors" [16, 32, 24, 80, 80, 112, 96, 96, 64, 40, 56, 80, 24]
 
 | Metric                                                       | Description                                                     | Actual Value Range | Scaling Factor |
 |--------------------------------------------------------------|-----------------------------------------------------------------|--------------------|----------------|
-| <span style='color:#4BC0C0'>■■■■</span> Avg Files Changed    | Average number of files modified per PR                         | 0-26.9 files       | ×5             |
-| <span style='color:#FF6384'>■■■■</span> Avg Days to Complete | Average time (in days) taken to complete PRs                    | 2.4-8 days         | ×25            |
-| <span style='color:#36A2EB'>■■■■</span> Avg Files/Day        | Productivity metric (files changed divided by days to complete) | 0-7.4 files/day    | ×15            |
-| <span style='color:#9966FF'>■■■■</span> Avg Lines/Day        | Productivity metric (lines changed divided by days to complete) | 0-749.6 lines/day  | ×0.4           |
-| <span style='color:#FFCE56'>■■■■</span> Total Contributors   | Count of unique contributors (new + returning) per month        | 2-14 contributors  | ×8             |
+| <span style={{color:'#4BC0C0'}}>■■■■</span> Avg Files Changed    | Average number of files modified per PR                         | 0-26.9 files       | ×5             |
+| <span style={{color:'#FF6384'}}>■■■■</span> Avg Days to Complete | Average time (in days) taken to complete PRs                    | 2.4-8 days         | ×25            |
+| <span style={{color:'#36A2EB'}}>■■■■</span> Avg Files/Day        | Productivity metric (files changed divided by days to complete) | 0-7.4 files/day    | ×15            |
+| <span style={{color:'#9966FF'}}>■■■■</span> Avg Lines/Day        | Productivity metric (lines changed divided by days to complete) | 0-749.6 lines/day  | ×0.4           |
+| <span style={{color:'#FFCE56'}}>■■■■</span> Total Contributors   | Count of unique contributors (new + returning) per month        | 2-14 contributors  | ×8             |
 
 *Note: Scaling factors are applied to make different metrics comparable on the same chart.*
 
@@ -233,8 +233,8 @@ xychart-beta
 
 | Contributor Type       | Color                                   |
 |------------------------|-----------------------------------------|
-| New Contributors       | <span style='color:#4287f5'>■■■■</span> |
-| Returning Contributors | <span style='color:#42f5a7'>■■■■</span> |
+| New Contributors       | <span style={{color:'#4287f5'}}>■■■■</span> |
+| Returning Contributors | <span style={{color:'#42f5a7'}}>■■■■</span> |
 
 ## File Types
 
@@ -278,10 +278,10 @@ xychart-beta
 
 | Focus Area    | Color                                   | Focus Area     | Color                                   |
 |---------------|-----------------------------------------|----------------|-----------------------------------------|
-| Features      | <span style='color:#9966FF'>■■■■</span> | Bug Fixes      | <span style='color:#4BC0C0'>■■■■</span> |
-| CI/CD         | <span style='color:#FF6384'>■■■■</span> | IoT Operations | <span style='color:#F58220'>■■■■</span> |
-| Documentation | <span style='color:#36A2EB'>■■■■</span> | Bicep/ARM      | <span style='color:#C9CBCF'>■■■■</span> |
-| Terraform     | <span style='color:#FF9F40'>■■■■</span> |                |                                         |
+| Features      | <span style={{color:'#9966FF'}}>■■■■</span> | Bug Fixes      | <span style={{color:'#4BC0C0'}}>■■■■</span> |
+| CI/CD         | <span style={{color:'#FF6384'}}>■■■■</span> | IoT Operations | <span style={{color:'#F58220'}}>■■■■</span> |
+| Documentation | <span style={{color:'#36A2EB'}}>■■■■</span> | Bicep/ARM      | <span style={{color:'#C9CBCF'}}>■■■■</span> |
+| Terraform     | <span style={{color:'#FF9F40'}}>■■■■</span> |                |                                         |
 
 ## Industry Backlog Visualization
 
@@ -581,7 +581,7 @@ sankey-beta
 "VM Host Infrastructure","Cloud Virtual Machine Host(s) (050-vm-host)",10
 ```
 
-### Scenarios with No Direct Customer Weighting (Value <= 1)
+### Scenarios with No Direct Customer Weighting (Value &lt;= 1)
 
 This chart shows scenarios with no direct customer use weighting (value of 0), and all their related capabilities and features.
 

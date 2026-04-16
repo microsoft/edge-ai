@@ -591,7 +591,7 @@ For existing camera integrations using vendor-specific APIs or RTSP:
 - [ONVIF Official Specifications](https://www.onvif.org/profiles/)
 - [Azure IoT Operations Documentation](https://learn.microsoft.com/azure/iot-operations/)
 - [Akri Connector Framework](https://github.com/Azure/iot-operations-sdks)
-- [ONVIF Connector Implementation](../../src/500-application/510-onvif-connector/README.md)
+- [ONVIF Connector Implementation](https://github.com/microsoft/edge-ai/blob/main/src/500-application/510-onvif-connector/README.md)
 - [Blueprint Configuration Example](../../blueprints/full-single-node-cluster/terraform/onvif-connector-assets.tfvars.example)
 - [ONVIF Device Test Tool](https://www.onvif.org/conformance/)
 

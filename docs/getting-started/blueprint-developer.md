@@ -370,7 +370,7 @@ export CLEANUP_RESOURCES=true
 ./run-deployment-tests.sh terraform  # or bicep, or both
 ```
 
-**Documentation:** See [src/900-tools-utilities/904-test-utilities/README.md](../../src/900-tools-utilities/904-test-utilities/README.md) for complete testing guide and API reference
+**Documentation:** See [src/900-tools-utilities/904-test-utilities/README.md](https://github.com/microsoft/edge-ai/blob/main/src/900-tools-utilities/904-test-utilities/README.md) for complete testing guide and API reference
 
 ### Linting and Code Quality
 
@@ -545,7 +545,7 @@ After creating your blueprint:
 ## Additional Resources
 
 - **[Feature Developer Guide](feature-developer.md)** - Contribute new components
-- **[Component Documentation](src/README.md)** - Understanding existing components
+- **[Component Documentation](https://github.com/microsoft/edge-ai/blob/main/src/README.md)** - Understanding existing components
 - **[AI-Assisted Engineering](../contributing/ai-assisted-engineering.md)** - Using GitHub Copilot for blueprint development
 - **[Terraform Best Practices][terraform-best-practices]** - Official Terraform guidelines
 - **[Bicep Best Practices][bicep-best-practices]** - Official Bicep guidelines

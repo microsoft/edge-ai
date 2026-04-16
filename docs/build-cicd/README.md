@@ -176,7 +176,7 @@ The project includes comprehensive build scripts for validation and automation:
 - [Development Environment](../contributing/development-environment.md) - Dev Container setup and tools
 - [Coding Conventions](../contributing/coding-conventions.md) - Infrastructure code standards
 - [Observability Documentation](../observability/) - Monitoring and debugging guides
-- [Security Documentation](../../SECURITY.md) - Security policies and best practices
+- [Security Documentation](https://github.com/microsoft/edge-ai/blob/main/SECURITY.md) - Security policies and best practices
 
 <!-- Reference Links -->
 [build-scripts-guide]: ./build-scripts.md

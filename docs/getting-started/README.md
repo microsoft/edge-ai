@@ -91,7 +91,7 @@ This opens the documentation with both the main docs and the interactive **Learn
 - 📖 [Complete Documentation](../) - Comprehensive guides and references
 - 🐛 [Issue Tracker](https://github.com/Microsoft/edge-ai/issues) - Report problems
 - 💬 [Discussions](https://github.com/Microsoft/edge-ai/discussions) - Ask questions and share ideas
-- 📧 [Support](../../SUPPORT.md) - Get additional support
+- 📧 [Support](https://github.com/microsoft/edge-ai/blob/main/SUPPORT.md) - Get additional support
 
 ---
 

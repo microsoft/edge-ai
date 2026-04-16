@@ -465,3 +465,7 @@ crates/
 
 # Ignore beads files
 .beads/
+
+# Docusaurus build artifacts
+docs/docusaurus/.docusaurus/
+docs/docusaurus/build/

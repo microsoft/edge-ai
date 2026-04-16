@@ -113,15 +113,15 @@ The following reusable template workflows are available in the `.github/workflow
 
 | Workflow                            | Purpose                                                                   | Documentation                                                |
 |-------------------------------------|---------------------------------------------------------------------------|--------------------------------------------------------------|
-| `aio-version-checker.yml`           | Checks component versions against latest available releases               | [Workflow Documentation](./aio-version-checker.md)           |
-| `cluster-test-terraform.yml`        | Performs comprehensive testing of Terraform modules against real clusters | [Workflow Documentation](./cluster-test-terraform.md)        |
-| `docs-check-bicep.yml`              | Validates documentation quality including Bicep docs and URL checks       | [Workflow Documentation](./docs-check-bicep.md)              |
-| `docs-check-terraform.yml`          | Validates documentation quality including Terraform docs and URL checks   | [Workflow Documentation](./docs-check-terraform.md)          |
-| `matrix-folder-check.yml`           | Creates dynamic matrices of changed folders for downstream jobs           | [Workflow Documentation](./matrix-folder-check.md)           |
-| `pages-deploy.yml`                  | Deploys documentation to GitHub Pages                                     | [Workflow Documentation](./pages-deploy.md)                  |
-| `resource-provider-pwsh-tests.yml`  | Validates Azure resource provider registration scripts                    | [Workflow Documentation](./resource-provider-pwsh-tests.md)  |
-| `variable-compliance-bicep.yml`     | Ensures consistent Bicep variable definitions across modules              | [Workflow Documentation](./variable-compliance-bicep.md)     |
-| `variable-compliance-terraform.yml` | Ensures consistent Terraform variable definitions across modules          | [Workflow Documentation](./variable-compliance-terraform.md) |
+| `aio-version-checker.yml`           | Checks component versions against latest available releases               | [Workflow Documentation](./templates/aio-version-checker.md)           |
+| `cluster-test-terraform.yml`        | Performs comprehensive testing of Terraform modules against real clusters | [Workflow Documentation](./templates/cluster-test-terraform.md)        |
+| `docs-check-bicep.yml`              | Validates documentation quality including Bicep docs and URL checks       | [Workflow Documentation](./templates/docs-check-bicep.md)              |
+| `docs-check-terraform.yml`          | Validates documentation quality including Terraform docs and URL checks   | [Workflow Documentation](./templates/docs-check-terraform.md)          |
+| `matrix-folder-check.yml`           | Creates dynamic matrices of changed folders for downstream jobs           | [Workflow Documentation](./templates/matrix-folder-check.md)           |
+| `pages-deploy.yml`                  | Deploys documentation to GitHub Pages                                     | [Workflow Documentation](./templates/pages-deploy.md)                  |
+| `resource-provider-pwsh-tests.yml`  | Validates Azure resource provider registration scripts                    | [Workflow Documentation](./templates/resource-provider-pwsh-tests.md)  |
+| `variable-compliance-bicep.yml`     | Ensures consistent Bicep variable definitions across modules              | [Workflow Documentation](./templates/variable-compliance-bicep.md)     |
+| `variable-compliance-terraform.yml` | Ensures consistent Terraform variable definitions across modules          | [Workflow Documentation](./templates/variable-compliance-terraform.md) |
 
 > **Note:** All workflow documentation follows a standardized format that includes overview,
 > features, parameters, usage examples, implementation details, and troubleshooting sections.
