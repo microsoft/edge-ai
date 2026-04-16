@@ -8,7 +8,6 @@ import request from 'supertest';
 
 describe('Health Check Routes', () => {
   let app;
-  const server = null;
 
   beforeEach(async () => {
     // Clear module cache to ensure fresh imports
@@ -36,10 +35,6 @@ describe('Health Check Routes', () => {
   }, 10000); // Increase timeout to 10 seconds
 
   afterEach(async () => {
-    if (server) {
-      await new Promise(resolve => server.close(resolve));
-    }
-
     // Clear any cached modules
     if (global.gc) {
       global.gc();
