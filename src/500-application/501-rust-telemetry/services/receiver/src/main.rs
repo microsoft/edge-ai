@@ -252,3 +252,108 @@ impl PayloadSerialize for Payload {
         Ok(Payload(payload))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use azure_iot_operations_protocol::common::payload_serialize::{
+        FormatIndicator, PayloadSerialize,
+    };
+
+    #[test]
+    fn deserialize_valid_json_with_correct_content_type() {
+        let json_bytes = br#"{"temperature": 25.5}"#;
+        let content_type = "application/json".to_string();
+        let result = Payload::deserialize(
+            json_bytes,
+            Some(&content_type),
+            &FormatIndicator::Utf8EncodedCharacterData,
+        );
+        assert!(result.is_ok());
+        let payload = result.unwrap();
+        assert_eq!(payload.0["temperature"], 25.5);
+    }
+
+    #[test]
+    fn deserialize_valid_json_without_content_type() {
+        let json_bytes = br#"{"key": "value"}"#;
+        let result = Payload::deserialize(
+            json_bytes,
+            None,
+            &FormatIndicator::Utf8EncodedCharacterData,
+        );
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap().0["key"], "value");
+    }
+
+    #[test]
+    fn deserialize_rejects_invalid_content_type() {
+        let json_bytes = br#"{"key": "value"}"#;
+        let content_type = "text/plain".to_string();
+        let result = Payload::deserialize(
+            json_bytes,
+            Some(&content_type),
+            &FormatIndicator::Utf8EncodedCharacterData,
+        );
+        assert!(matches!(
+            result,
+            Err(DeserializationError::UnsupportedContentType(_))
+        ));
+    }
+
+    #[test]
+    fn deserialize_rejects_invalid_utf8() {
+        let bad_bytes: &[u8] = &[0xff, 0xfe, 0xfd];
+        let content_type = "application/json".to_string();
+        let result = Payload::deserialize(
+            bad_bytes,
+            Some(&content_type),
+            &FormatIndicator::Utf8EncodedCharacterData,
+        );
+        assert!(matches!(
+            result,
+            Err(DeserializationError::InvalidPayload(_))
+        ));
+    }
+
+    #[test]
+    fn deserialize_rejects_invalid_json() {
+        let bad_json = b"not valid json {{{";
+        let content_type = "application/json".to_string();
+        let result = Payload::deserialize(
+            bad_json,
+            Some(&content_type),
+            &FormatIndicator::Utf8EncodedCharacterData,
+        );
+        assert!(matches!(
+            result,
+            Err(DeserializationError::InvalidPayload(_))
+        ));
+    }
+
+    #[test]
+    fn deserialize_handles_nested_json() {
+        let json_bytes = br#"{"sensor": {"id": 1, "readings": [10, 20, 30]}}"#;
+        let result = Payload::deserialize(
+            json_bytes,
+            None,
+            &FormatIndicator::Utf8EncodedCharacterData,
+        );
+        assert!(result.is_ok());
+        let payload = result.unwrap();
+        assert_eq!(payload.0["sensor"]["id"], 1);
+        assert_eq!(payload.0["sensor"]["readings"][1], 20);
+    }
+
+    #[test]
+    fn deserialize_handles_empty_object() {
+        let json_bytes = b"{}";
+        let result = Payload::deserialize(
+            json_bytes,
+            None,
+            &FormatIndicator::Utf8EncodedCharacterData,
+        );
+        assert!(result.is_ok());
+        assert!(result.unwrap().0.as_object().unwrap().is_empty());
+    }
+}
