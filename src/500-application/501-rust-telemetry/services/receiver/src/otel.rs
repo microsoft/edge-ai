@@ -227,3 +227,69 @@ pub fn handle_receive_trace(custom_user_data: &Vec<(String, String)>) {
     // This creates a continuous trace across services
     span.set_parent(cx);
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use opentelemetry::propagation::Extractor;
+
+    #[test]
+    fn extractor_get_returns_value_for_existing_key() {
+        let data = vec![
+            ("traceparent".to_string(), "00-abc-def-01".to_string()),
+            ("tracestate".to_string(), "vendor=opaque".to_string()),
+        ];
+        let extractor = CustomUserDataExtractor(&data);
+        assert_eq!(extractor.get("traceparent"), Some("00-abc-def-01"));
+    }
+
+    #[test]
+    fn extractor_get_returns_none_for_missing_key() {
+        let data = vec![("traceparent".to_string(), "value".to_string())];
+        let extractor = CustomUserDataExtractor(&data);
+        assert_eq!(extractor.get("missing"), None);
+    }
+
+    #[test]
+    fn extractor_get_returns_none_for_empty_data() {
+        let data: Vec<(String, String)> = vec![];
+        let extractor = CustomUserDataExtractor(&data);
+        assert_eq!(extractor.get("traceparent"), None);
+    }
+
+    #[test]
+    fn extractor_keys_returns_all_keys() {
+        let data = vec![
+            ("traceparent".to_string(), "val1".to_string()),
+            ("tracestate".to_string(), "val2".to_string()),
+        ];
+        let extractor = CustomUserDataExtractor(&data);
+        let keys = extractor.keys();
+        assert_eq!(keys.len(), 2);
+        assert!(keys.contains(&"traceparent"));
+        assert!(keys.contains(&"tracestate"));
+    }
+
+    #[test]
+    fn extractor_keys_returns_empty_for_empty_data() {
+        let data: Vec<(String, String)> = vec![];
+        let extractor = CustomUserDataExtractor(&data);
+        assert!(extractor.keys().is_empty());
+    }
+
+    #[test]
+    fn extractor_get_returns_first_match_for_duplicate_keys() {
+        let data = vec![
+            ("key".to_string(), "first".to_string()),
+            ("key".to_string(), "second".to_string()),
+        ];
+        let extractor = CustomUserDataExtractor(&data);
+        assert_eq!(extractor.get("key"), Some("first"));
+    }
+
+    #[test]
+    fn extract_trace_context_returns_context_for_empty_data() {
+        let data: Vec<(String, String)> = vec![];
+        let _ctx = extract_trace_context(&data);
+    }
+}
