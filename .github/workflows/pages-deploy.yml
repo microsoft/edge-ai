@@ -765,7 +765,7 @@ jobs:
           path: ./attestation-staging
 
       - name: Attest build provenance
-        uses: actions/attest-build-provenance@db473fddc028af60658334401dc6fa3ffd8669fd # v2.3.0
+        uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
         with:
           subject-path: ./attestation-staging/**
 
@@ -785,7 +785,7 @@ jobs:
           config: .syft.yaml
 
       - name: Attest SBOM
-        uses: actions/attest@afd638254319277bb3d7f0a234478733e2e46a73 # v2.3.0
+        uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
         with:
           subject-path: documentation-sbom.spdx.json
           predicate-type: https://spdx.dev/Document/v2.3
