@@ -22,7 +22,7 @@
   },
   "devDependencies": {
     "@vitest/coverage-v8": "^4.1.2",
-    "@vitest/ui": "^4.1.0",
+    "@vitest/ui": "^4.1.4",
     "c8": "^11.0.0",
     "eslint": "^10.2.0"
   },
