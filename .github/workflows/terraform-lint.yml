@@ -73,8 +73,8 @@ jobs:
       - name: TFLint init and check
         id: tflint
         run: |
-          tflint --init
-          tflint --recursive > tflint-output.txt 2>&1 || echo "TFLINT_FAILED=true" >> "$GITHUB_ENV"
+          tflint --init --config "$(pwd)/.tflint.hcl"
+          tflint --recursive --config "$(pwd)/.tflint.hcl" > tflint-output.txt 2>&1 || echo "TFLINT_FAILED=true" >> "$GITHUB_ENV"
           cat tflint-output.txt
         continue-on-error: true
 
