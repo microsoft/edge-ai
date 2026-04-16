@@ -201,25 +201,39 @@ This script logs into the ACR, tags each local image with the ACR registry prefi
 
 After Terraform completes, deploy the application workloads to the Arc-connected cluster.
 
-#### Step 1: Source init-scripts.sh
-
-Source the IoT Operations init script to establish an Arc proxy tunnel and export required environment variables from Terraform output.
+Run `run-deploy-edge-apps.sh` from anywhere in the repo. The script reads Terraform outputs automatically, establishes an Arc proxy connection, and deploys all edge applications. It runs in bash regardless of your login shell (fish, zsh, etc.).
 
 ```bash
+cd blueprints/leak-detection/scripts
+export TF_IMAGE_VERSION="1.0.0"
+./run-deploy-edge-apps.sh
+```
+
+The script performs the following sequence:
+
+1. Reads Terraform outputs to populate all required environment variables
+2. Establishes an Arc proxy tunnel (`az connectedk8s proxy`) to the cluster
+3. Creates the AIO namespace if it does not exist
+4. Deploys `509-sse-connector` via Kustomize (generates ACR image patches, applies manifests)
+5. Deploys `507-ai-inference` via Kustomize
+6. Creates an ACSA PersistentVolumeClaim (`pvc-acsa-cloud-backed`) with `cloud-backed-sc` StorageClass
+7. Creates an ACSA EdgeSubvolume for media storage with managed identity authentication
+8. Deploys `503-media-capture-service` via Helm with the ACSA PVC
+9. Deploys the `model-downloader-job` to fetch the ONNX model for inference
+10. Waits for all deployment rollouts to complete
+
+<details>
+<summary>Manual alternative (advanced)</summary>
+
+If you need to run steps individually, source `init-scripts.sh` in a bash shell, set the required environment variables, and run `deploy-edge-apps.sh` separately.
+
+```bash
+bash  # ensure you are in a bash shell
 cd blueprints/leak-detection/terraform
 source ../../../src/100-edge/110-iot-ops/scripts/init-scripts.sh
 ```
 
-This script:
-
-* Starts `az connectedk8s proxy` to create an HTTPS tunnel (port 9800) to the Arc-connected cluster
-* Waits for the kubeconfig to become ready
-* Creates the AIO namespace if it does not exist
-* Exports `TF_*` environment variables from Terraform output for use by downstream scripts
-
-#### Step 2: Set required environment variables
-
-The `init-scripts.sh` script exports most variables automatically from Terraform output. Verify these are set:
+The following environment variables must be set (normally exported by Terraform or read from `terraform output`):
 
 | Variable                       | Description                                        |
 |--------------------------------|----------------------------------------------------|
@@ -233,27 +247,18 @@ The `init-scripts.sh` script exports most variables automatically from Terraform
 | `TF_APP_507_PATH`              | Path to 507-ai-inference source                    |
 | `TF_APP_503_PATH`              | Path to 503-media-capture-service source           |
 | `TF_STORAGE_ACCOUNT_ENDPOINT`  | Blob storage endpoint for ACSA EdgeSubvolume       |
+| `TF_BLUEPRINT_DIR`             | Path to leak-detection blueprint root              |
 
-#### Step 3: Run deploy-edge-apps.sh
-
-Deploy all three applications to the cluster:
+Then run the deploy script:
 
 ```bash
-cd blueprints/leak-detection/scripts
+cd ../scripts
 ./deploy-edge-apps.sh
 ```
 
-The script executes the following sequence:
+</details>
 
-1. Deploys `509-sse-connector` via Kustomize (generates ACR image patches, applies manifests)
-2. Deploys `507-ai-inference` via Kustomize
-3. Creates an ACSA PersistentVolumeClaim (`pvc-acsa-cloud-backed`) with `cloud-backed-sc` StorageClass
-4. Creates an ACSA EdgeSubvolume for media storage with managed identity authentication
-5. Deploys `503-media-capture-service` via Helm with the ACSA PVC
-6. Deploys the `model-downloader-job` to fetch the ONNX model for inference
-7. Waits for all three deployment rollouts to complete
-
-#### Step 4: Verify deployment
+#### Verify deployment
 
 Confirm all three application pods are running:
 
