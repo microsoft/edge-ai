@@ -84,10 +84,10 @@ jobs:
 
       - name: Install Python Dependencies
         run: |
-          # Install dependencies from requirements.txt if it exists
-          if [ -f ./requirements.txt ]; then
+          # Install dependencies from requirements.lock if it exists
+          if [ -f ./requirements.lock ]; then
             python -m pip install --upgrade pip
-            pip install -r ./requirements.txt
+            pip install -r ./requirements.lock
           else
             # Fallback to installing just what's needed
             pip install hcl2 requests
