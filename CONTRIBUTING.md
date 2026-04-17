@@ -169,6 +169,17 @@ The guide covers:
 - Best practices for using Copilot with project-specific context
 - Step-by-step examples for Infrastructure as Code development
 
+### Managing Python Dependencies
+
+This project uses a hash-pinned `requirements.lock` file for reproducible Python dependency installation, satisfying the OSSF Silver Badge `build_repeatable` requirement.
+
+**To update Python dependencies:**
+
+1. Update `requirements.txt` with new or modified dependency versions
+2. Run `uv pip compile --generate-hashes requirements.txt -o requirements.lock` to generate the lock file
+3. Commit both files: the updated `requirements.txt` and the generated `requirements.lock`
+4. The lock file ensures CI/CD pipelines and dev containers use exact pinned versions with SHA256 hashes for verified reproducible builds
+
 ### HVE Core Integration
 
 Edge-ai uses [hve-core](https://github.com/microsoft/hve-core) for general-purpose prompt engineering artifacts including standardized agents, prompts, and instructions for common development tasks (Bash, C#, Python, task planning, ADR creation, TDD workflows).
