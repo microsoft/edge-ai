@@ -19,4 +19,4 @@ Visit Learning to explore what's currently available.
 
 ---
 
-*Return to Learning Home*
+Return to Learning Home.

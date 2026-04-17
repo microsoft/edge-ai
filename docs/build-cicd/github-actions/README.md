@@ -111,8 +111,8 @@ These core workflows typically call the template workflows above in a specific s
 
 The following reusable template workflows are available in the `.github/workflows` directory:
 
-| Workflow                            | Purpose                                                                   | Documentation                                                |
-|-------------------------------------|---------------------------------------------------------------------------|--------------------------------------------------------------|
+| Workflow                            | Purpose                                                                   | Documentation                                                          |
+|-------------------------------------|---------------------------------------------------------------------------|------------------------------------------------------------------------|
 | `aio-version-checker.yml`           | Checks component versions against latest available releases               | [Workflow Documentation](./templates/aio-version-checker.md)           |
 | `cluster-test-terraform.yml`        | Performs comprehensive testing of Terraform modules against real clusters | [Workflow Documentation](./templates/cluster-test-terraform.md)        |
 | `docs-check-bicep.yml`              | Validates documentation quality including Bicep docs and URL checks       | [Workflow Documentation](./templates/docs-check-bicep.md)              |

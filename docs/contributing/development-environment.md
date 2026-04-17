@@ -268,7 +268,7 @@ kubectl config use-context your-cluster-context
 2. **Make changes** using the development tools and scripts
 3. **Test changes** using the provided npm scripts
 4. **Commit changes** following [conventional commit guidelines](./coding-conventions.md#conventional-commits)
-5. **Push and create pull requests** using the [PR guidelines](../contributions.md#pull-request-process)
+5. **Push and create pull requests** using the [PR guidelines](./coding-conventions.md#pull-request-conventions)
 
 ### Code Quality Workflow
 
@@ -361,7 +361,7 @@ If tools report unexpected versions:
 For development environment issues:
 
 1. Check the [troubleshooting documentation](./troubleshooting.md)
-2. Review existing [GitHub issues]({{ISSUES_URL}})
+2. Review existing [GitHub issues](https://github.com/microsoft/edge-ai/issues)
 3. Create a new issue with detailed environment information
 
 ## Maintenance

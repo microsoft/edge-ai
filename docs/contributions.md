@@ -31,8 +31,8 @@ xychart-beta
 
 ### PR Activity Chart Legend
 
-| PR Type       | Color                                   |
-|---------------|-----------------------------------------|
+| PR Type       | Color                                       |
+|---------------|---------------------------------------------|
 | Created PRs   | <span style={{color:'#FF6384'}}>■■■■</span> |
 | Completed PRs | <span style={{color:'#36A2EB'}}>■■■■</span> |
 
@@ -90,8 +90,8 @@ xychart-beta
 
 ### Chart Legend
 
-| Metric           | Description                                                                   | Color                                   |
-|------------------|-------------------------------------------------------------------------------|-----------------------------------------|
+| Metric           | Description                                                                   | Color                                       |
+|------------------|-------------------------------------------------------------------------------|---------------------------------------------|
 | SLO Compliance % | Percentage of PRs meeting the 48 hour response window                         | <span style={{color:'#4BC0C0'}}>■■■■</span> |
 | PRs Closed       | Total number of PRs closed in each week (scaled to percentage of maximum: 22) | <span style={{color:'#FF6384'}}>■■■■</span> |
 
@@ -114,8 +114,8 @@ line "Total Contributors" [16, 32, 24, 80, 80, 112, 96, 96, 64, 40, 56, 80, 24]
 
 ### PR Complexity Chart Legend
 
-| Metric                                                       | Description                                                     | Actual Value Range | Scaling Factor |
-|--------------------------------------------------------------|-----------------------------------------------------------------|--------------------|----------------|
+| Metric                                                           | Description                                                     | Actual Value Range | Scaling Factor |
+|------------------------------------------------------------------|-----------------------------------------------------------------|--------------------|----------------|
 | <span style={{color:'#4BC0C0'}}>■■■■</span> Avg Files Changed    | Average number of files modified per PR                         | 0-26.9 files       | ×5             |
 | <span style={{color:'#FF6384'}}>■■■■</span> Avg Days to Complete | Average time (in days) taken to complete PRs                    | 2.4-8 days         | ×25            |
 | <span style={{color:'#36A2EB'}}>■■■■</span> Avg Files/Day        | Productivity metric (files changed divided by days to complete) | 0-7.4 files/day    | ×15            |
@@ -231,8 +231,8 @@ xychart-beta
 
 ### Contributor Chart Legend
 
-| Contributor Type       | Color                                   |
-|------------------------|-----------------------------------------|
+| Contributor Type       | Color                                       |
+|------------------------|---------------------------------------------|
 | New Contributors       | <span style={{color:'#4287f5'}}>■■■■</span> |
 | Returning Contributors | <span style={{color:'#42f5a7'}}>■■■■</span> |
 
@@ -276,12 +276,12 @@ xychart-beta
 
 ### Focus Area Chart Legend
 
-| Focus Area    | Color                                   | Focus Area     | Color                                   |
-|---------------|-----------------------------------------|----------------|-----------------------------------------|
+| Focus Area    | Color                                       | Focus Area     | Color                                       |
+|---------------|---------------------------------------------|----------------|---------------------------------------------|
 | Features      | <span style={{color:'#9966FF'}}>■■■■</span> | Bug Fixes      | <span style={{color:'#4BC0C0'}}>■■■■</span> |
 | CI/CD         | <span style={{color:'#FF6384'}}>■■■■</span> | IoT Operations | <span style={{color:'#F58220'}}>■■■■</span> |
 | Documentation | <span style={{color:'#36A2EB'}}>■■■■</span> | Bicep/ARM      | <span style={{color:'#C9CBCF'}}>■■■■</span> |
-| Terraform     | <span style={{color:'#FF9F40'}}>■■■■</span> |                |                                         |
+| Terraform     | <span style={{color:'#FF9F40'}}>■■■■</span> |                |                                             |
 
 ## Industry Backlog Visualization
 

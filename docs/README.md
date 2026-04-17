@@ -177,8 +177,8 @@ flowchart TD
 - 📖 [Complete Documentation](.)
 - 🗺️ [Project Roadmap](roadmap.md)
 - 🤝 [Contributing Guidelines](contributing/)
-- 🐛 [Issue Tracker]({{ISSUES_URL}})
-- 💬 [Discussions]({{DISCUSSIONS_URL}})
+- 🐛 [Issue Tracker](https://github.com/microsoft/edge-ai/issues)
+- 💬 [Discussions](https://github.com/microsoft/edge-ai/discussions)
 - 📧 [Support](https://github.com/microsoft/edge-ai/blob/main/SUPPORT.md)
 
 ---
@@ -191,7 +191,7 @@ Microsoft encourages customers to review its Responsible AI Standard when develo
 
 ## 📄 Legal
 
-This project is licensed under the [MIT License](../LICENSE).
+This project is licensed under the [MIT License](https://github.com/microsoft/edge-ai/blob/main/LICENSE).
 
 **Security:** See [SECURITY.md](https://github.com/microsoft/edge-ai/blob/main/SECURITY.md) for security policy and reporting vulnerabilities.
 

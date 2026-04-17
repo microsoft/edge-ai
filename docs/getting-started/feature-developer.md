@@ -765,7 +765,7 @@ After contributing your first component:
 [terraform-docs]: https://www.terraform.io/docs
 [bicep-docs]: https://docs.microsoft.com/azure/azure-resource-manager/bicep/
 [iot-ops-docs]: https://learn.microsoft.com/azure/iot-operations/
-[project-repo]: {{REPO_URL}}
+[project-repo]: https://github.com/microsoft/edge-ai
 
 <!-- markdownlint-disable MD036 -->
 *🤖 Crafted with precision by ✨Copilot following brilliant human instruction,

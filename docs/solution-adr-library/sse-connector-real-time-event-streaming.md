@@ -379,7 +379,7 @@ For existing systems using legacy deployment scripts:
 - [Azure IoT Operations Documentation](https://learn.microsoft.com/azure/iot-operations/)
 - [Akri Connector Framework](https://github.com/Azure/iot-operations-sdks)
 - [SSE Connector Implementation](https://github.com/microsoft/edge-ai/blob/main/src/500-application/509-sse-connector/README.md)
-- [Blueprint Configuration Example](../../blueprints/full-single-node-cluster/terraform/sse-connector-assets.tfvars.example)
+- [Blueprint Configuration Example](https://github.com/microsoft/edge-ai/blob/main/blueprints/full-single-node-cluster/terraform/sse-connector-assets.tfvars.example)
 
 ## Implementation Timeline
 

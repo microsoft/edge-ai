@@ -319,7 +319,7 @@ Some blueprints include comprehensive test suites using Go and the Terratest fra
 
 ### Blueprint Test Architecture
 
-**Shared Test Utilities:** [src/900-tools-utilities/904-test-utilities/](../../src/900-tools-utilities/904-test-utilities/)
+**Shared Test Utilities:** [src/900-tools-utilities/904-test-utilities/](https://github.com/microsoft/edge-ai/tree/main/src/900-tools-utilities/904-test-utilities/)
 
 Provides reusable testing functions for all blueprints including:
 
@@ -327,7 +327,7 @@ Provides reusable testing functions for all blueprints including:
 - Deployment and cleanup utilities
 - Output normalization across frameworks
 
-**Reference Implementation:** [blueprints/full-single-node-cluster/tests/](../../blueprints/full-single-node-cluster/tests/)
+**Reference Implementation:** [blueprints/full-single-node-cluster/tests/](https://github.com/microsoft/edge-ai/tree/main/blueprints/full-single-node-cluster/tests/)
 
 Complete test suite demonstrating:
 

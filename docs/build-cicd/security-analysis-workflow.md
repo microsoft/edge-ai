@@ -60,11 +60,11 @@ The security analysis workflow provides:
 
 ### Stage 1: Security Scanning
 
-- Executes [`Run-Checkov.ps1`](../scripts/Run-Checkov.ps1) script with existing configuration
+- Executes [`Run-Checkov.ps1`](https://github.com/microsoft/edge-ai/blob/main/scripts/Run-Checkov.ps1) script with existing configuration
 - Scans target K8s and Arc component directories:
-  - [`src/100-edge/100-cncf-cluster/`](../src/100-edge/100-cncf-cluster/)
-  - [`src/100-edge/110-iot-ops/`](../src/100-edge/110-iot-ops/)
-  - [`src/000-cloud/070-kubernetes/`](../src/000-cloud/070-kubernetes/)
+  - [`src/100-edge/100-cncf-cluster/`](https://github.com/microsoft/edge-ai/tree/main/src/100-edge/100-cncf-cluster/)
+  - [`src/100-edge/110-iot-ops/`](https://github.com/microsoft/edge-ai/tree/main/src/100-edge/110-iot-ops/)
+  - [`src/000-cloud/070-kubernetes/`](https://github.com/microsoft/edge-ai/tree/main/src/000-cloud/070-kubernetes/)
 - Generates JSON output files for analysis
 
 ### Stage 2: Finding Analysis and Filtering
@@ -194,7 +194,7 @@ cat .copilot-tracking/workitems/security-analysis/checkov-k8s-arc-findings/work-
 
 ## Related Documentation
 
-- [Invoke-SecurityAnalysisWithWorkItems.ps1 Script](../scripts/Invoke-SecurityAnalysisWithWorkItems.ps1)
+- [Invoke-SecurityAnalysisWithWorkItems.ps1 Script](https://github.com/microsoft/edge-ai/blob/main/scripts/Invoke-SecurityAnalysisWithWorkItems.ps1)
 - [Run-Checkov.ps1 Documentation](https://github.com/microsoft/edge-ai/blob/main/scripts/README.md)
 - [Checkov Configuration Reference](../.checkov.yml)
 

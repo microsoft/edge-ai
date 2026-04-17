@@ -400,8 +400,8 @@ This approach provides immediate architectural consistency while maintaining fle
 
 * [Application Instructions](https://github.com/microsoft/edge-ai/blob/main/.github/instructions/application.instructions.md) - Component organization standards
 * [Blueprint README](https://github.com/microsoft/edge-ai/blob/main/blueprints/README.md) - Blueprint composition patterns
-* [Fabric RTI Blueprint](../../blueprints/fabric-rti/) - Addon blueprint reference implementation
-* [REST HTTP Connector](../../src/500-application/505-akri-rest-http-connector/) - Connector with buildable apps
+* [Fabric RTI Blueprint](https://github.com/microsoft/edge-ai/tree/main/blueprints/fabric-rti/) - Addon blueprint reference implementation
+* [REST HTTP Connector](https://github.com/microsoft/edge-ai/tree/main/src/500-application/505-akri-rest-http-connector/) - Connector with buildable apps
 * [Media Connector PR Discussion](https://dev.azure.com/ai-at-the-edge-flagship-accelerator/edge-ai/_git/edge-ai/pullrequest/530) - Original architectural review
 
 ## Notes
