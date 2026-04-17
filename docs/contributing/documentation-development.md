@@ -261,7 +261,7 @@ npx markdown-table-formatter docs/**/*.md       # Table formatting
 
 ### Getting Help
 
-- File issues at <https://github.com/microsoft/edge-ai/issues/new>.
+- File issues at [github.com/microsoft/edge-ai/issues/new](https://github.com/microsoft/edge-ai/issues/new).
 - See [Contributing Overview](../contributing/README.md) for broader contribution guidance.
 
 ## Scripts Reference
