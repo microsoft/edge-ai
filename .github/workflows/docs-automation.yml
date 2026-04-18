@@ -45,14 +45,12 @@ on:  # yamllint disable-line rule:truthy
       - 'docs/**'
       - 'src/**/*.md'
       - 'blueprints/**/*.md'
-      - 'scripts/Generate-DocsSidebar.ps1'
   pull_request:
     branches: [main]
     paths:
       - 'docs/**'
       - 'src/**/*.md'
       - 'blueprints/**/*.md'
-      - 'scripts/Generate-DocsSidebar.ps1'
   workflow_dispatch:
     inputs:
       force_regenerate:
@@ -96,7 +94,7 @@ jobs:
 
           Write-Host "✅ Frontmatter validation completed successfully" -ForegroundColor Green
 
-  generate-sidebar:
+  generate-sidebar-REMOVED:
     name: 🏗️ Generate Three-Tree Sidebar
     runs-on: ubuntu-latest
     needs: validate-frontmatter
@@ -313,7 +311,7 @@ jobs:
   validate-links:
     name: 🔗 Validate Documentation Links
     runs-on: ubuntu-latest
-    needs: generate-sidebar
+    needs: validate-frontmatter
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -359,56 +357,12 @@ jobs:
             xargs -I {} sh -c 'echo "Checking: {}" &&
               markdown-link-check {} --config .markdown-link-check.json'
 
-  build-documentation:
-    name: 🏗️ Build Documentation Site
-    runs-on: ubuntu-latest
-    needs: [validate-frontmatter, generate-sidebar, validate-links]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      - name: Setup Node.js
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v4.3.0
-        with:
-          node-version: '24'
-
-      - name: Install docsify-cli
-        run: npm install -g docsify-cli
-
-      - name: Test documentation build
-        run: |
-          echo "🏗️ Testing documentation build..."
-
-          # Create a temporary server to test the build
-          timeout 10s docsify serve . --port 3000 || true
-
-          echo "✅ Documentation build test completed"
-
-      - name: Generate search index
-        run: |
-          echo "🔍 Generating search index for enhanced search..."
-
-          # Create search index for better search performance
-          cat > search-index.js << EOF
-          // Enhanced search index for three-tree documentation
-          window.searchIndex = {
-            bicepDocs: [],
-            terraformDocs: [],
-            readmeDocs: [],
-            mainDocs: []
-          };
-          EOF
-
-          echo "✅ Search index generated"
   report-documentation-health:
     name: 📊 Documentation Health Report
     runs-on: ubuntu-latest
     needs:
       - validate-frontmatter
-      - generate-sidebar
       - validate-links
-      - build-documentation
     if: always()
     permissions:
       issues: write
@@ -461,9 +415,7 @@ jobs:
 
           - Frontmatter Validation: `
             ${{ needs.validate-frontmatter.result }}
-          - Sidebar Generation: ${{ needs.generate-sidebar.result }}
           - Link Validation: ${{ needs.validate-links.result }}
-          - Build Test: ${{ needs.build-documentation.result }}
 
           ---
 
