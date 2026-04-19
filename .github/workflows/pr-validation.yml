@@ -173,6 +173,15 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+
+  # Docusaurus build and test validation for PRs
+  docusaurus-tests:
+    name: Docusaurus Tests
+    permissions:
+      contents: read
+    uses: ./.github/workflows/docusaurus-tests.yml
+    with:
+      soft-fail: false
       actions: read
       issues: write
     with:
