@@ -185,7 +185,7 @@ jobs:
 
       - name: Upload staleness results
         if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: dependency-staleness-results
           path: stale-dependencies.json
@@ -232,7 +232,7 @@ jobs:
 
       - name: Upload OSSF Scorecard results
         if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ossf-scorecard-results
           path: scorecard-results.sarif
@@ -271,26 +271,8 @@ jobs:
         run: |
           python scripts/aio-version-checker.py \
             --iac-type ${{ inputs.iac-types }} \
-            --output-format json \
-            --output-path aio-version-check-results.json
-
-          # Parse results for outputs
-          if [[ -f "aio-version-check-results.json" ]]; then
-            issues=$(jq '.issues | length' aio-version-check-results.json 2>/dev/null || echo "0")
-            echo "issues=$issues" >> $GITHUB_OUTPUT
-            echo "AIO version check completed with $issues issues"
-          else
-            echo "issues=0" >> $GITHUB_OUTPUT
-            echo "AIO version check completed (no results file)"
-          fi
-
-      - name: Upload AIO version results
-        if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
-        with:
-          name: aio-version-check-results
-          path: aio-version-check-results.json
-          retention-days: 30
+            --error-on-mismatch \
+            --verbose
 
   # Comprehensive dependency pinning analysis
   security-analysis:
@@ -386,7 +368,7 @@ jobs:
 
       - name: Upload security analysis results
         if: inputs.publish-artifacts
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: comprehensive-security-analysis
           path: |
@@ -479,7 +461,7 @@ jobs:
 
       - name: Upload comprehensive security summary
         if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: comprehensive-security-summary
           path: comprehensive-security-summary.md
