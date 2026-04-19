@@ -36,7 +36,9 @@ jobs:
 
       - name: TypeScript typecheck
         working-directory: docs/docusaurus
-          run: npm run typecheck
+        run: npm run typecheck
+
+      - name: Run tests
         working-directory: docs/docusaurus
         continue-on-error: ${{ inputs.soft-fail }}
         run: npm test
