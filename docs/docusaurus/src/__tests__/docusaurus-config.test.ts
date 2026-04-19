@@ -15,7 +15,9 @@ describe('Docusaurus configuration', () => {
     // URLs and remaining broken anchors are cleaned up. Tracked as follow-up
     // from the Docsify-to-Docusaurus migration PR.
     expect(config.onBrokenLinks).toBe('warn');
-    expect(config.onBrokenMarkdownLinks).toBe('warn');
+    const markdown = config.markdown as Record<string, unknown>;
+    const hooks = markdown.hooks as Record<string, unknown>;
+    expect(hooks.onBrokenMarkdownLinks).toBe('warn');
   });
 
   it('disables the blog', () => {
