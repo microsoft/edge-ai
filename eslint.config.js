@@ -148,17 +148,7 @@ export default [
 
         // Module system
         module: 'readonly',
-        require: 'readonly',
-
-        // Server-Sent Events
-        EventSource: 'readonly',
-
-        // Encoding APIs
-        btoa: 'readonly',
-        atob: 'readonly',
-
-        // Screen API
-        screen: 'readonly'
+        require: 'readonly'
       }
     },
     rules: {
