@@ -94,7 +94,7 @@ This document provides a comprehensive framework for all prerequisites needed to
 | **Requirement**          | **Specification**                         | **Validation Method**         | **Business Impact**            |
 |--------------------------|-------------------------------------------|-------------------------------|--------------------------------|
 | **Time Series Database** | High-frequency data storage               | Write/read performance test   | Historical analysis capability |
-| **Real-time Dashboards** | <5 second data refresh                    | Dashboard responsiveness test | Operational visibility         |
+| **Real-time Dashboards** | \<5 second data refresh                   | Dashboard responsiveness test | Operational visibility         |
 | **Alert Engine**         | Configurable thresholds and notifications | Alert response test           | Proactive issue detection      |
 | **Report Generation**    | Automated OEE and performance reports     | Report accuracy validation    | Management insight             |
 

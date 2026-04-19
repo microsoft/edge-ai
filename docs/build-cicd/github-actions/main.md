@@ -145,9 +145,9 @@ To enhance this workflow:
 ## Related Workflows
 
 - [pr-validation.yml](./pr-validation.md): Similar workflow that runs on pull requests
-- [docs-check-terraform.yml](./docs-check-terraform.md): Terraform documentation validation
-- [docs-check-bicep.yml](./docs-check-bicep.md): Bicep documentation validation
-- [pages-deploy.yml](./pages-deploy.md): GitHub Pages deployment workflow
+- [docs-check-terraform.yml](./templates/docs-check-terraform.md): Terraform documentation validation
+- [docs-check-bicep.yml](./templates/docs-check-bicep.md): Bicep documentation validation
+- [pages-deploy.yml](./templates/pages-deploy.md): GitHub Pages deployment workflow
 
 ## Security Considerations
 
