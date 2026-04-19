@@ -173,6 +173,11 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+      actions: read
+      issues: write
+    with:
+      force_regenerate: false
+    secrets: inherit
 
   # Docusaurus build and test validation for PRs
   docusaurus-tests:
@@ -182,11 +187,6 @@ jobs:
     uses: ./.github/workflows/docusaurus-tests.yml
     with:
       soft-fail: false
-      actions: read
-      issues: write
-    with:
-      force_regenerate: false
-    secrets: inherit
 
   # Call docs-check-terraform for PR validation
   docs-check-terraform:
