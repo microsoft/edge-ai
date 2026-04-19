@@ -29,8 +29,7 @@
 name: Create GitHub Release
 
 permissions:
-  contents: write
-  pull-requests: read
+  contents: read
 
 on:  # yamllint disable-line rule:truthy
   pull_request:
@@ -45,6 +44,9 @@ jobs:
       github.event.pull_request.merged == true &&
       startsWith(github.event.pull_request.head.ref, 'release/')
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: read
 
     steps:
       - name: Extract version from branch name

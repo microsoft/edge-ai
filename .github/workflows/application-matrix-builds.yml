@@ -149,6 +149,8 @@ jobs:
   # configuration as JSON objects and outputting individual values for downstream jobs.
   parse-configuration:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     outputs:
       registryName: ${{ steps.parse.outputs.registryName }}
       buildEnvironment: ${{ steps.parse.outputs.buildEnvironment }}
@@ -256,6 +258,8 @@ jobs:
   prepare-builds:
     needs: parse-configuration
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     outputs:
       matrix: ${{ steps.parse-matrix.outputs.matrix }}
       buildId: ${{ steps.generate-id.outputs.buildId }}
@@ -310,6 +314,11 @@ jobs:
   build-applications:
     needs: [parse-configuration, prepare-builds]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      security-events: write
     strategy:
       matrix: ${{ fromJson(needs.prepare-builds.outputs.matrix) }}
       fail-fast: false
@@ -579,6 +588,8 @@ jobs:
   summarize-builds:
     needs: [parse-configuration, prepare-builds, build-applications]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     if: always()
     outputs:
       buildResults: ${{ steps.summarize.outputs.buildResults }}
