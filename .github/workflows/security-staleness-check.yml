@@ -80,8 +80,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           Write-Host "Running Checkov IaC scan (output to logs/checkov-report.json and logs/checkov-report.txt)"
-          python3 -m pip install --user checkov
-          $env:PATH = "$env:PATH:$HOME/.local/bin"
+          pip install --require-hashes -r .github/requirements/checkov.txt
 
           # Run Checkov against repository root, produce JSON and CLI outputs
           checkov -d . -o json > logs/checkov-report.json 2>&1 || true

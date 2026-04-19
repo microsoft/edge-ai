@@ -322,9 +322,10 @@ jobs:
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v4.3.0
         with:
           node-version: '24'
+          cache: 'npm'
 
-      - name: Install markdown-link-check
-        run: npm install -g markdown-link-check
+      - name: Install markdown-link-check (pinned via package-lock.json)
+        run: npm ci --ignore-scripts
 
       - name: Check links in documentation
         continue-on-error: true
@@ -357,7 +358,7 @@ jobs:
             -name "*.md" -type f | \
             grep -v node_modules | \
             xargs -I {} sh -c 'echo "Checking: {}" &&
-              markdown-link-check {} --config .markdown-link-check.json'
+              npx markdown-link-check {} --config .markdown-link-check.json'
 
   build-documentation:
     name: 🏗️ Build Documentation Site
@@ -372,16 +373,17 @@ jobs:
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v4.3.0
         with:
           node-version: '24'
+          cache: 'npm'
 
-      - name: Install docsify-cli
-        run: npm install -g docsify-cli
+      - name: Install docsify-cli (pinned via package-lock.json)
+        run: npm ci --ignore-scripts
 
       - name: Test documentation build
         run: |
           echo "🏗️ Testing documentation build..."
 
           # Create a temporary server to test the build
-          timeout 10s docsify serve . --port 3000 || true
+          timeout 10s npx docsify serve . --port 3000 || true
 
           echo "✅ Documentation build test completed"
 

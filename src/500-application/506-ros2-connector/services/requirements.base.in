@@ -21,3 +21,6 @@ pyyaml==6.0.3
 pytest==9.0.3
 pytest-asyncio==1.3.0
 pytest-cov==7.1.0
+
+# ROS2 build tooling (consumed by builder stage; harmless in runtime)
+colcon-common-extensions==0.3.0
