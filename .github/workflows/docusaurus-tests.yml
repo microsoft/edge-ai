@@ -34,6 +34,10 @@ jobs:
         working-directory: docs/docusaurus
         run: npm ci
 
+      - name: TypeScript typecheck
+        working-directory: docs/docusaurus
+        run: npx tsc --noEmit
+
       - name: Run tests
         working-directory: docs/docusaurus
         continue-on-error: ${{ inputs.soft-fail }}
