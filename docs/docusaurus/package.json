@@ -15,7 +15,8 @@
     "serve": "docusaurus serve",
     "write-translations": "docusaurus write-translations",
     "write-heading-ids": "docusaurus write-heading-ids",
-    "test": "jest --passWithNoTests --verbose"
+    "test": "jest --passWithNoTests --verbose",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@docusaurus/core": "3.10.0",
