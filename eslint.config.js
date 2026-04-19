@@ -139,10 +139,6 @@ export default [
         confirm: 'readonly',
         prompt: 'readonly',
 
-        // Docsify globals
-        Docsify: 'readonly',
-        $docsify: 'readonly',
-
         // Common libraries
         marked: 'readonly',
 

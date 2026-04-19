@@ -140,8 +140,6 @@ To add or change navigation:
 2. Reference documents by their path relative to the `docs/` root, without the `.md` extension.
 3. Restart `npm start` if automatic reload does not pick up new files.
 
-The legacy Docsify `_sidebar.md` and `_navbar.md` fragments and the `_parts/*-sidebar.md` files are used only by the Azure DevOps Wiki build and are excluded from Docusaurus via the `_parts/**` exclude pattern.
-
 ## Link Guidelines
 
 ### Internal Links
