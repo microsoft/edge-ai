@@ -340,6 +340,7 @@ jobs:
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v4.3.0
         with:
           node-version: '24'
+          cache: 'npm'
         if: steps.workingDirProcessor.outputs.tfTestsExist == 'true'
 
       # Run Terraform Tests
@@ -381,27 +382,10 @@ jobs:
         working-directory: ${{ steps.workingDirProcessor.outputs.terraformWorkingDir }}
         shell: bash
 
-      # Install the tftest-to-junitxml NPM package
-      - name: Install tftest-to-junitxml
+      # Install pinned NPM dependencies (tftest-to-junitxml) reproducibly from package-lock.json
+      - name: Install pinned NPM dependencies
         if: steps.test.outcome == 'success' && steps.workingDirProcessor.outputs.tfTestsExist == 'true'
-        run: |
-          # Check for newer versions
-          CURRENT_VERSION="0.2.0"
-          echo "Current version of tftest-to-junitxml: $CURRENT_VERSION"
-
-          # Pin latest version
-          npm install -g tftest-to-junitxml@$CURRENT_VERSION
-
-          # Query npm registry for latest version
-          LATEST_VERSION=$(npm view tftest-to-junitxml version)
-          echo "Latest version: $LATEST_VERSION"
-
-          # Compare versions and log a warning if newer version exists
-          if [ "$CURRENT_VERSION" != "$LATEST_VERSION" ]; then
-            echo "::warning::A newer version of tftest-to-junitxml exists: $LATEST_VERSION. Consider updating from current version: $CURRENT_VERSION"
-          else
-            echo "Using the latest version of tftest-to-junitxml: $CURRENT_VERSION"
-          fi
+        run: npm ci --ignore-scripts
 
       # Convert the Terraform test output to JUnit XML
       - name: Convert Terraform test output to JUnit XML

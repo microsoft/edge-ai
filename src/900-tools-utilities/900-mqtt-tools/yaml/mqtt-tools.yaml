@@ -54,7 +54,7 @@ spec:
               apt update && apt install -y vim curl python3-pip gcc libffi-dev libssl-dev build-essential \
               && curl -Ls https://astral.sh/uv/install.sh | sh \
               && mv ~/.local/bin/uv ~/.local/bin/uvx /usr/local/bin \
-              && uv pip install --system asyncua \
+              && uv pip install --system asyncua==1.1.5 \
               && echo "OPC UA tools installed" \
               && sleep infinity
       volumes:

@@ -84,11 +84,11 @@ COPY --from=builder /workspace/install/edge_ros_interface/lib/python3.12/site-pa
 
 # Shared base Python requirements
 COPY services/requirements.txt requirements.base.txt
-RUN pip3 install --break-system-packages --ignore-installed --no-cache-dir -r requirements.base.txt
+RUN pip3 install --break-system-packages --ignore-installed --no-cache-dir --require-hashes -r requirements.base.txt
 
 # Simulator-specific requirements
 COPY services/ros2-simulator/requirements.txt requirements.sim.txt
-RUN if [ -s requirements.sim.txt ]; then pip3 install --break-system-packages --ignore-installed --no-cache-dir -r requirements.sim.txt; fi
+RUN if [ -s requirements.sim.txt ]; then pip3 install --break-system-packages --ignore-installed --no-cache-dir --require-hashes -r requirements.sim.txt; fi
 
 ENV ROS_PACKAGE_PATH="" \
     PYTHONPATH=""
