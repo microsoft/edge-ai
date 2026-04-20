@@ -1,0 +1,56 @@
+# Docusaurus Tests Workflow
+# Reusable workflow for running Docusaurus test suite and build verification.
+# Called by pages-deploy.yml before documentation deployment.
+name: Docusaurus Tests
+
+on:
+  workflow_call:
+    inputs:
+      soft-fail:
+        description: 'Allow tests to fail without blocking the workflow'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test Docusaurus
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v4.3.0
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: 'docs/docusaurus/package-lock.json'
+
+      - name: Install dependencies
+        working-directory: docs/docusaurus
+        run: npm ci
+
+      - name: TypeScript typecheck
+        working-directory: docs/docusaurus
+        run: npm run typecheck
+
+      - name: Run tests
+        working-directory: docs/docusaurus
+        continue-on-error: ${{ inputs.soft-fail }}
+        run: npm test
+
+      - name: Build Docusaurus
+        working-directory: docs/docusaurus
+        run: npm run build
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: docusaurus-test-results
+          path: docs/docusaurus/build
+          retention-days: 30

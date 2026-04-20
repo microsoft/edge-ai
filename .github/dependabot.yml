@@ -21,7 +21,6 @@ updates:
   - package-ecosystem: "npm"
     directories:
       - "/"
-      - "/docs/_server"
       - "/docs/assets/js"
     schedule:
       interval: "weekly"

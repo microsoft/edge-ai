@@ -140,7 +140,7 @@ Pros:
 Cons:
 
 - AML-generated containers can be bulky though it has its own hardware acceleration support for model optimization. If there are other specific option of optimizing a model container more efficiently, AML won't be suitable for packing and deploy a large model.
-- Overhead may be introduced by the AML built-in inference router feature for load balancing, scaling, and request handling, which may become a bottleneck for ultra-low-latency applications (for example, <10ms inference for high-speed video feeds). A configurable option with more manual control to reduce operational overhead would be helpful, unlike AML which fully controls the autoscaling logic and the user has less control of mitigating operational overhead.
+- Overhead may be introduced by the AML built-in inference router feature for load balancing, scaling, and request handling, which may become a bottleneck for ultra-low-latency applications (for example, \<10ms inference for high-speed video feeds). A configurable option with more manual control to reduce operational overhead would be helpful, unlike AML which fully controls the autoscaling logic and the user has less control of mitigating operational overhead.
 - Custom frameworks and framework-specific dependencies may require extensive testing in your edge environment for compatibility with unique runtime dependencies and features. For example, a custom-built C++ libraries that are utilized by model but requires integration testing in a standard AML container.
 
 ### Scenario 3

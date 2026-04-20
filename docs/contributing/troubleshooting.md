@@ -710,6 +710,6 @@ For critical issues:
 
 Remember: Most issues have been encountered before. Search existing documentation and issues first, then ask for help with specific details about your situation.
 
-For more information about development workflows, see the [Development Environment](./development-environment.md) and [Contributing Guidelines](./contributing.md).
+For more information about development workflows, see the [Development Environment](./development-environment.md) and [Contributing Guidelines](../contributions.md).
 
 *🤖 Crafted with precision by ✨Copilot following brilliant human instruction, then carefully refined by our team of discerning human reviewers.*
