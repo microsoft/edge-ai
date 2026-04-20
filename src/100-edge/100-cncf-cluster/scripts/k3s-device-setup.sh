@@ -40,37 +40,37 @@ SKIP_DEPLOY_SAT="${SKIP_DEPLOY_SAT}"             # Skips adding a 'cluster-admin
 ###
 
 usage() {
-    echo "usage: ${0##*./}"
-    grep -x -B99 -m 1 "^###" "$0" |
-        sed -E -e '/^[^#]+=/ {s/^([^ ])/  \1/ ; s/#/ / ; s/=[^ ]*$// ;}' |
-        sed -E -e ':x' -e '/^[^#]+=/ {s/^(  [^ ]+)[^ ] /\1  / ;}' -e 'tx' |
-        sed -e 's/^## //' -e '/^#/d' -e '/^$/d'
-    exit 1
+  echo "usage: ${0##*./}"
+  grep -x -B99 -m 1 "^###" "$0" \
+    | sed -E -e '/^[^#]+=/ {s/^([^ ])/  \1/ ; s/#/ / ; s/=[^ ]*$// ;}' \
+    | sed -E -e ':x' -e '/^[^#]+=/ {s/^(  [^ ]+)[^ ] /\1  / ;}' -e 'tx' \
+    | sed -e 's/^## //' -e '/^#/d' -e '/^$/d'
+  exit 1
 }
 
 log() {
-    printf "========== %s ==========\n" "$1"
+  printf "========== %s ==========\n" "$1"
 }
 
 err() {
-    printf "[ ERROR ]: %s" "$1" >&2
-    exit 1
+  printf "[ ERROR ]: %s" "$1" >&2
+  exit 1
 }
 
 enable_debug() {
-    echo "[ DEBUG ]: Enabling writing out all commands being executed"
-    set -x
+  echo "[ DEBUG ]: Enabling writing out all commands being executed"
+  set -x
 }
 
 if [[ $# -gt 0 ]]; then
-    case "$1" in
+  case "$1" in
     -d | --debug)
-        enable_debug
-        ;;
+      enable_debug
+      ;;
     *)
-        usage
-        ;;
-    esac
+      usage
+      ;;
+  esac
 fi
 
 set -e
@@ -85,53 +85,53 @@ log "Setting up AZ CLI..."
 # Install Azure CLI.
 
 if ! command -v "az" &>/dev/null; then
-    if [[ ! $SKIP_INSTALL_AZ_CLI ]]; then
-        log "Installing Azure CLI"
-        curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
-    else
-        err "'az' is missing and required"
-    fi
+  if [[ ! $SKIP_INSTALL_AZ_CLI ]]; then
+    log "Installing Azure CLI"
+    curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+  else
+    err "'az' is missing and required"
+  fi
 fi
 
 # Verify correct version of Azure CLI and install if needed.
 
 if [[ $AZ_CLI_VER && ! $SKIP_INSTALL_AZ_CLI ]]; then
-    if ! az version | grep "\"azure-cli\"" | grep -Fq "$AZ_CLI_VER"; then
-        log "Installing specified version of Azure CLI $AZ_CLI_VER"
-        sudo apt-get remove -y azure-cli && log "Removed Azure CLI to install specific version"
-        sudo apt-get install azure-cli="$AZ_CLI_VER-1~$(lsb_release -cs)"
-    fi
+  if ! az version | grep "\"azure-cli\"" | grep -Fq "$AZ_CLI_VER"; then
+    log "Installing specified version of Azure CLI $AZ_CLI_VER"
+    sudo apt-get remove -y azure-cli && log "Removed Azure CLI to install specific version"
+    sudo apt-get install azure-cli="$AZ_CLI_VER-1~$(lsb_release -cs)"
+  fi
 fi
 
 # Enable Azure CLI extension connectedk8s.
 
 if [[ $AZ_CONNECTEDK8S_VER ]]; then
-    if ! az version | grep "\"connectedk8s\"" | grep -Fq "$AZ_CONNECTEDK8S_VER"; then
-        az extension remove --name connectedk8s 2>/dev/null && log "Removed Azure CLI extension [connectedk8s]"
-        log "Enabling Azure CLI extension [connectedk8s] with version $AZ_CONNECTEDK8S_VER"
-        az extension add --name connectedk8s --version "$AZ_CONNECTEDK8S_VER" -y
-    fi
+  if ! az version | grep "\"connectedk8s\"" | grep -Fq "$AZ_CONNECTEDK8S_VER"; then
+    az extension remove --name connectedk8s 2>/dev/null && log "Removed Azure CLI extension [connectedk8s]"
+    log "Enabling Azure CLI extension [connectedk8s] with version $AZ_CONNECTEDK8S_VER"
+    az extension add --name connectedk8s --version "$AZ_CONNECTEDK8S_VER" -y
+  fi
 else
-    log "Enabling and upgrading Azure CLI extension [connectedk8s]"
-    az extension add --upgrade --name connectedk8s -y
+  log "Enabling and upgrading Azure CLI extension [connectedk8s]"
+  az extension add --upgrade --name connectedk8s -y
 fi
 
 # Log in to the tenant with Azure CLI.
 
 if [[ ! $SKIP_AZ_LOGIN ]]; then
-    if [[ $ARC_SP_CLIENT_ID && $ARC_SP_SECRET && $ARC_TENANT_ID ]]; then
-        az login --service-principal -u "$ARC_SP_CLIENT_ID" -p "$ARC_SP_SECRET" --tenant "$ARC_TENANT_ID"
+  if [[ $ARC_SP_CLIENT_ID && $ARC_SP_SECRET && $ARC_TENANT_ID ]]; then
+    az login --service-principal -u "$ARC_SP_CLIENT_ID" -p "$ARC_SP_SECRET" --tenant "$ARC_TENANT_ID"
+  else
+    if [[ $CLIENT_ID ]]; then
+      log "Logging into Azure CLI using managed identity client ID $CLIENT_ID"
+      if ! az login --identity --client-id "$CLIENT_ID" --allow-no-subscriptions; then
+        err "Azure CLI login failed for managed identity client ID $CLIENT_ID"
+      fi
     else
-        if [[ $CLIENT_ID ]]; then
-            log "Logging into Azure CLI using managed identity client ID $CLIENT_ID"
-            if ! az login --identity --client-id "$CLIENT_ID" --allow-no-subscriptions; then
-                err "Azure CLI login failed for managed identity client ID $CLIENT_ID"
-            fi
-        else
-            log "Logging in with default managed identity"
-            az login --identity --allow-no-subscriptions
-        fi
+      log "Logging in with default managed identity"
+      az login --identity --allow-no-subscriptions
     fi
+  fi
 fi
 
 log "Finished setting up AZ CLI..."
@@ -150,13 +150,13 @@ max_user_watches=524288
 file_max=100000
 
 if [[ $(sudo cat /proc/sys/fs/inotify/max_user_instances 2>/dev/null || echo 0) -lt "$max_user_instances" ]]; then
-    echo "fs.inotify.max_user_instances=$max_user_instances" | sudo tee -a /etc/sysctl.conf
+  echo "fs.inotify.max_user_instances=$max_user_instances" | sudo tee -a /etc/sysctl.conf
 fi
 if [[ $(sudo cat /proc/sys/fs/inotify/max_user_watches 2>/dev/null || echo 0) -lt "$max_user_watches" ]]; then
-    echo "fs.inotify.max_user_watches=$max_user_watches" | sudo tee -a /etc/sysctl.conf
+  echo "fs.inotify.max_user_watches=$max_user_watches" | sudo tee -a /etc/sysctl.conf
 fi
 if [[ $(sudo cat /proc/sys/fs/file-max 2>/dev/null || echo 0) -lt "$file_max" ]]; then
-    echo "fs.file-max=$file_max" | sudo tee -a /etc/sysctl.conf
+  echo "fs.file-max=$file_max" | sudo tee -a /etc/sysctl.conf
 fi
 
 sudo sysctl -p
@@ -165,60 +165,60 @@ sudo sysctl -p
 
 if [[ ! $SKIP_INSTALL_K3S ]]; then
 
-    # Install k3s agent if requested.
+  # Install k3s agent if requested.
 
-    if [[ ${K3S_NODE_TYPE,,} == "agent" ]]; then
+  if [[ ${K3S_NODE_TYPE,,} == "agent" ]]; then
 
-        # Validate 'agent' required parameters.
-        if [[ ! $K3S_URL ]]; then
-            err "'K3S_URL' env var is required for 'agent' K3S_NODE_TYPE"
-        elif [[ ! $K3S_TOKEN ]]; then
-            err "'K3S_TOKEN' env var is required for 'agent' K3S_NODE_TYPE"
-        fi
-
-        # Get k3s token from Key Vault if name and secret are provided.
-        if [[ $AKV_NAME && $AKV_K3S_TOKEN_SECRET ]]; then
-            log "Getting k3s token from key vault: $AKV_NAME (secret: $AKV_K3S_TOKEN_SECRET)"
-            if akv_k3s_token="$(az keyvault secret show --name "$AKV_K3S_TOKEN_SECRET" --vault-name "$AKV_NAME" --query "value" -o tsv)"; then
-                K3S_TOKEN="$akv_k3s_token"
-            else
-                err "'AKV_NAME' and 'AKV_K3S_TOKEN_SECRET' were provided but failed getting secret value, please verify roles are properly configured."
-            fi
-        fi
-
-        export INSTALL_K3S_EXEC="agent"
-        export INSTALL_K3S_VERSION="$K3S_VERSION"
-        export K3S_TOKEN
-        export K3S_URL
-        curl -sfL https://get.k3s.io | sh -
-
-        log "Finished installing k3s agent node... exiting successfully..."
-
-        exit 0
+    # Validate 'agent' required parameters.
+    if [[ ! $K3S_URL ]]; then
+      err "'K3S_URL' env var is required for 'agent' K3S_NODE_TYPE"
+    elif [[ ! $K3S_TOKEN ]]; then
+      err "'K3S_TOKEN' env var is required for 'agent' K3S_NODE_TYPE"
     fi
 
-    # Install k3s server if it is missing.
-
-    if ! command -v 'k3s' &>/dev/null; then
-        export INSTALL_K3S_EXEC="server"
-        export INSTALL_K3S_VERSION="$K3S_VERSION"
-        export K3S_TOKEN
-        curl -sfL https://get.k3s.io | sh -
-
-        log "Finished installing k3s server"
+    # Get k3s token from Key Vault if name and secret are provided.
+    if [[ $AKV_NAME && $AKV_K3S_TOKEN_SECRET ]]; then
+      log "Getting k3s token from key vault: $AKV_NAME (secret: $AKV_K3S_TOKEN_SECRET)"
+      if akv_k3s_token="$(az keyvault secret show --name "$AKV_K3S_TOKEN_SECRET" --vault-name "$AKV_NAME" --query "value" -o tsv)"; then
+        K3S_TOKEN="$akv_k3s_token"
+      else
+        err "'AKV_NAME' and 'AKV_K3S_TOKEN_SECRET' were provided but failed getting secret value, please verify roles are properly configured."
+      fi
     fi
+
+    export INSTALL_K3S_EXEC="agent"
+    export INSTALL_K3S_VERSION="$K3S_VERSION"
+    export K3S_TOKEN
+    export K3S_URL
+    curl -sfL https://get.k3s.io | sh -
+
+    log "Finished installing k3s agent node... exiting successfully..."
+
+    exit 0
+  fi
+
+  # Install k3s server if it is missing.
+
+  if ! command -v 'k3s' &>/dev/null; then
+    export INSTALL_K3S_EXEC="server"
+    export INSTALL_K3S_VERSION="$K3S_VERSION"
+    export K3S_TOKEN
+    curl -sfL https://get.k3s.io | sh -
+
+    log "Finished installing k3s server"
+  fi
 fi
 
 # Install kubectl if it is missing (should come with k3s).
 
 if ! command -v 'kubectl' &>/dev/null; then
-    if [[ ! $SKIP_INSTALL_KUBECTL ]]; then
-        curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-        chmod +x ./kubectl
-        sudo mv ./kubectl /usr/local/bin
-    else
-        err "'kubectl' is missing and required"
-    fi
+  if [[ ! $SKIP_INSTALL_KUBECTL ]]; then
+    curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+    chmod +x ./kubectl
+    sudo mv ./kubectl /usr/local/bin
+  else
+    err "'kubectl' is missing and required"
+  fi
 fi
 
 # Configure kubectl for k3s.
@@ -239,63 +239,63 @@ kubectl config use-context default
 # Add ~/.kube/config to the user's .kube config folder and make it available to all users
 
 if [[ "$DEVICE_USERNAME" && -d "/home/$DEVICE_USERNAME" && ! -f "/home/$DEVICE_USERNAME/.kube/config" ]]; then
-    log "Creating /home/$DEVICE_USERNAME/.kube/config"
-    mkdir -p "/home/$DEVICE_USERNAME/.kube"
-    cp "$HOME/.kube/config" "/home/$DEVICE_USERNAME/.kube/config"
-    chmod 666 "/home/$DEVICE_USERNAME/.kube/config"
+  log "Creating /home/$DEVICE_USERNAME/.kube/config"
+  mkdir -p "/home/$DEVICE_USERNAME/.kube"
+  cp "$HOME/.kube/config" "/home/$DEVICE_USERNAME/.kube/config"
+  chmod 666 "/home/$DEVICE_USERNAME/.kube/config"
 fi
 
 # Add utilities and settings for non-prod environments.
 
 if [[ ${ENVIRONMENT,,} != "prod" ]]; then
-    log "Configuring non-prod settings"
-    bash_rc="/etc/bash.bashrc"
-    {
-        for line in \
-            "export KUBECONFIG=~/.kube/config" \
-            "source <(kubectl completion bash)" \
-            "alias k=kubectl" \
-            "complete -o default -F __start_kubectl k" \
-            "alias kubens='kubectl config set-context --current --namespace '"; do
-            sudo grep -qxF -- "$line" "$bash_rc" || echo "$line"
-        done
-    } | sudo tee -a "$bash_rc" >/dev/null
+  log "Configuring non-prod settings"
+  bash_rc="/etc/bash.bashrc"
+  {
+    for line in \
+      "export KUBECONFIG=~/.kube/config" \
+      "source <(kubectl completion bash)" \
+      "alias k=kubectl" \
+      "complete -o default -F __start_kubectl k" \
+      "alias kubens='kubectl config set-context --current --namespace '"; do
+      sudo grep -qxF -- "$line" "$bash_rc" || echo "$line"
+    done
+  } | sudo tee -a "$bash_rc" >/dev/null
 
-    if ! command -v 'k9s' &>/dev/null; then
-        log "Downloading and installing k9s"
-        curl -LO https://github.com/derailed/k9s/releases/latest/download/k9s_linux_amd64.tar.gz &&
-            sudo tar -xf k9s_linux_amd64.tar.gz --directory=/usr/local/bin k9s &&
-            sudo chmod +x /usr/local/bin/k9s &&
-            rm k9s_linux_amd64.tar.gz
-    fi
+  if ! command -v 'k9s' &>/dev/null; then
+    log "Downloading and installing k9s"
+    curl -LO https://github.com/derailed/k9s/releases/latest/download/k9s_linux_amd64.tar.gz \
+      && sudo tar -xf k9s_linux_amd64.tar.gz --directory=/usr/local/bin k9s \
+      && sudo chmod +x /usr/local/bin/k9s \
+      && rm k9s_linux_amd64.tar.gz
+  fi
 fi
 
 # Create 'cluster-admin' role binding for the provided Admin Object ID and/or UPN, needed for additional setup.
 
 if [[ $CLUSTER_ADMIN_OID ]]; then
-    log "Adding $CLUSTER_ADMIN_OID as cluster admin by object ID"
-    short_id="$(echo "$CLUSTER_ADMIN_OID" | cut -c1-7)"
-    kubectl create clusterrolebinding "$short_id-user-binding" \
-        --clusterrole cluster-admin \
-        --user="$CLUSTER_ADMIN_OID" \
-        --dry-run=client -o yaml | kubectl apply -f -
+  log "Adding $CLUSTER_ADMIN_OID as cluster admin by object ID"
+  short_id="$(echo "$CLUSTER_ADMIN_OID" | cut -c1-7)"
+  kubectl create clusterrolebinding "$short_id-user-binding" \
+    --clusterrole cluster-admin \
+    --user="$CLUSTER_ADMIN_OID" \
+    --dry-run=client -o yaml | kubectl apply -f -
 fi
 
 if [[ $CLUSTER_ADMIN_UPN ]]; then
-    log "Adding $CLUSTER_ADMIN_UPN as cluster admin by user principal name"
-    short_upn="$(echo "$CLUSTER_ADMIN_UPN" | sha256sum | cut -c1-7)"
-    kubectl create clusterrolebinding "$short_upn-user-binding" \
-        --clusterrole cluster-admin \
-        --user="$CLUSTER_ADMIN_UPN" \
-        --dry-run=client -o yaml | kubectl apply -f -
+  log "Adding $CLUSTER_ADMIN_UPN as cluster admin by user principal name"
+  short_upn="$(echo "$CLUSTER_ADMIN_UPN" | sha256sum | cut -c1-7)"
+  kubectl create clusterrolebinding "$short_upn-user-binding" \
+    --clusterrole cluster-admin \
+    --user="$CLUSTER_ADMIN_UPN" \
+    --dry-run=client -o yaml | kubectl apply -f -
 fi
 
 # Create SAT with 'custer-admin' for deployment scripts.
 
 if [[ ! $SKIP_DEPLOY_SAT ]]; then
-    kubectl create serviceaccount deploy-user -n default --dry-run=client -o yaml | kubectl apply -f -
-    kubectl create clusterrolebinding deploy-user --clusterrole cluster-admin --serviceaccount default:deploy-user --dry-run=client -o yaml | kubectl apply -f -
-    kubectl apply -f - <<EOF
+  kubectl create serviceaccount deploy-user -n default --dry-run=client -o yaml | kubectl apply -f -
+  kubectl create clusterrolebinding deploy-user --clusterrole cluster-admin --serviceaccount default:deploy-user --dry-run=client -o yaml | kubectl apply -f -
+  kubectl apply -f - <<EOF
 apiVersion: v1
 kind: Secret
 metadata:
@@ -304,32 +304,32 @@ metadata:
     kubernetes.io/service-account.name: deploy-user
 type: kubernetes.io/service-account-token
 EOF
-    CLUSTER_ADMIN_TOKEN=$(kubectl get secret deploy-user-secret -o jsonpath='{$.data.token}' | base64 -d | sed 's/$/\n/g')
+  CLUSTER_ADMIN_TOKEN=$(kubectl get secret deploy-user-secret -o jsonpath='{$.data.token}' | base64 -d | sed 's/$/\n/g')
 fi
 
 # Store secrets in Azure Key Vault if name and secret are provided.
 
 if [[ $AKV_NAME ]]; then
 
-    # Store K3S server token if secret name is provided
+  # Store K3S server token if secret name is provided
 
-    if [[ $AKV_K3S_TOKEN_SECRET ]]; then
-        k3s_token_file="/var/lib/rancher/k3s/server/token"
-        k3s_token_value=$(sudo cat "$k3s_token_file" | tr -d '\n')
-        log "Storing k3s token from $k3s_token_file in key vault: $AKV_NAME (secret: $AKV_K3S_TOKEN_SECRET)"
-        if ! az keyvault secret set --name "$AKV_K3S_TOKEN_SECRET" --vault-name "$AKV_NAME" --value "$k3s_token_value" --content-type "text/plain" --output none; then
-            err "'AKV_NAME' and 'AKV_K3S_TOKEN_SECRET' were provided but failed storing secret value, please verify roles are properly configured."
-        fi
+  if [[ $AKV_K3S_TOKEN_SECRET ]]; then
+    k3s_token_file="/var/lib/rancher/k3s/server/token"
+    k3s_token_value=$(sudo cat "$k3s_token_file" | tr -d '\n')
+    log "Storing k3s token from $k3s_token_file in key vault: $AKV_NAME (secret: $AKV_K3S_TOKEN_SECRET)"
+    if ! az keyvault secret set --name "$AKV_K3S_TOKEN_SECRET" --vault-name "$AKV_NAME" --value "$k3s_token_value" --content-type "text/plain" --output none; then
+      err "'AKV_NAME' and 'AKV_K3S_TOKEN_SECRET' were provided but failed storing secret value, please verify roles are properly configured."
     fi
+  fi
 
-    # Store cluster admin token if secret name is provided and token exists
+  # Store cluster admin token if secret name is provided and token exists
 
-    if [[ $AKV_DEPLOY_SAT_SECRET && ! $SKIP_DEPLOY_SAT ]]; then
-        log "Storing cluster admin token in key vault: $AKV_NAME (secret: $AKV_DEPLOY_SAT_SECRET)"
-        if ! az keyvault secret set --name "$AKV_DEPLOY_SAT_SECRET" --vault-name "$AKV_NAME" --value "$CLUSTER_ADMIN_TOKEN" --content-type "text/plain" --output none; then
-            err "'AKV_NAME' and 'AKV_DEPLOY_SAT_SECRET' were provided but failed storing secret value, please verify roles are properly configured."
-        fi
+  if [[ $AKV_DEPLOY_SAT_SECRET && ! $SKIP_DEPLOY_SAT ]]; then
+    log "Storing cluster admin token in key vault: $AKV_NAME (secret: $AKV_DEPLOY_SAT_SECRET)"
+    if ! az keyvault secret set --name "$AKV_DEPLOY_SAT_SECRET" --vault-name "$AKV_NAME" --value "$CLUSTER_ADMIN_TOKEN" --content-type "text/plain" --output none; then
+      err "'AKV_NAME' and 'AKV_DEPLOY_SAT_SECRET' were provided but failed storing secret value, please verify roles are properly configured."
     fi
+  fi
 fi
 
 log "Finished setting up k3s..."
@@ -341,75 +341,75 @@ log "Finished setting up k3s..."
 log "Setting up Azure Arc..."
 
 connect_arc() {
-    log "Connecting to Azure Arc"
-    az_connectedk8s_connect=("az connectedk8s connect"
-        "--name $ARC_RESOURCE_NAME"
-        "--resource-group $ARC_RESOURCE_GROUP_NAME"
-        "--enable-oidc-issuer"
-        "--enable-workload-identity"
-    )
-    if [[ ${ARC_AUTO_UPGRADE,,} == "false" ]]; then
-        az_connectedk8s_connect+=("--disable-auto-upgrade")
-    fi
-    echo "Executing: ${az_connectedk8s_connect[*]}"
-    eval "${az_connectedk8s_connect[*]}"
+  log "Connecting to Azure Arc"
+  az_connectedk8s_connect=("az connectedk8s connect"
+    "--name $ARC_RESOURCE_NAME"
+    "--resource-group $ARC_RESOURCE_GROUP_NAME"
+    "--enable-oidc-issuer"
+    "--enable-workload-identity"
+  )
+  if [[ ${ARC_AUTO_UPGRADE,,} == "false" ]]; then
+    az_connectedk8s_connect+=("--disable-auto-upgrade")
+  fi
+  echo "Executing: ${az_connectedk8s_connect[*]}"
+  eval "${az_connectedk8s_connect[*]}"
 }
 
 if [[ ! $SKIP_ARC_CONNECT ]]; then
 
-    # Connect the cluster to Azure Arc if it has not already been connected.
+  # Connect the cluster to Azure Arc if it has not already been connected.
 
-    connected_to_cluster="$(kubectl get cm azure-clusterconfig -n azure-arc -o jsonpath="{.data.AZURE_RESOURCE_NAME}" 2>/dev/null || echo "")"
-    if [[ ! $connected_to_cluster ]]; then
-        # Do the 'az connectedk8s connect' and check for error.
-        if ! connect_arc; then
-            log "Connecting to Azure Arc failed"
-            if [[ ${ENVIRONMENT,,} == "prod" ]]; then
-                err "Cluster failed Azure Arc connect to resource: $ARC_RESOURCE_NAME in resource group: $ARC_RESOURCE_GROUP_NAME, \
+  connected_to_cluster="$(kubectl get cm azure-clusterconfig -n azure-arc -o jsonpath="{.data.AZURE_RESOURCE_NAME}" 2>/dev/null || echo "")"
+  if [[ ! $connected_to_cluster ]]; then
+    # Do the 'az connectedk8s connect' and check for error.
+    if ! connect_arc; then
+      log "Connecting to Azure Arc failed"
+      if [[ ${ENVIRONMENT,,} == "prod" ]]; then
+        err "Cluster failed Azure Arc connect to resource: $ARC_RESOURCE_NAME in resource group: $ARC_RESOURCE_GROUP_NAME, \
           likely resource already exists and needs to be deleted"
-            fi
-            log "Attempting to reconnect by deleting Azure Arc connectedCluster resource in Azure"
-            if ! az connectedk8s delete --name "$ARC_RESOURCE_NAME" --resource-group "$ARC_RESOURCE_GROUP_NAME" --yes; then
-                log "Error on deleting Azure Arc connectedCluster resource in Azure... Ignoring and re-attempting Azure Arc connect..."
-            fi
-            connect_arc
-        fi
-    elif [[ $connected_to_cluster != "$ARC_RESOURCE_NAME" ]]; then
-        err "Cluster is already connected to a different Azure Arc resource: $connected_to_cluster"
+      fi
+      log "Attempting to reconnect by deleting Azure Arc connectedCluster resource in Azure"
+      if ! az connectedk8s delete --name "$ARC_RESOURCE_NAME" --resource-group "$ARC_RESOURCE_GROUP_NAME" --yes; then
+        log "Error on deleting Azure Arc connectedCluster resource in Azure... Ignoring and re-attempting Azure Arc connect..."
+      fi
+      connect_arc
     fi
+  elif [[ $connected_to_cluster != "$ARC_RESOURCE_NAME" ]]; then
+    err "Cluster is already connected to a different Azure Arc resource: $connected_to_cluster"
+  fi
 
-    # Enable Cluster Connect and Custom Locations, both are required for Azure IoT Operations.
+  # Enable Cluster Connect and Custom Locations, both are required for Azure IoT Operations.
 
-    log "Enabling Azure Arc feature [cluster-connect custom-locations]"
-    az_connectedk8s_enable_features=("az connectedk8s enable-features"
-        "--name $ARC_RESOURCE_NAME"
-        "--resource-group $ARC_RESOURCE_GROUP_NAME"
-        "--features cluster-connect custom-locations"
-    )
-    if [[ $CUSTOM_LOCATIONS_OID ]]; then
-        az_connectedk8s_enable_features+=("--custom-locations-oid $CUSTOM_LOCATIONS_OID")
-    fi
-    echo "Executing: ${az_connectedk8s_enable_features[*]}"
-    eval "${az_connectedk8s_enable_features[*]}"
+  log "Enabling Azure Arc feature [cluster-connect custom-locations]"
+  az_connectedk8s_enable_features=("az connectedk8s enable-features"
+    "--name $ARC_RESOURCE_NAME"
+    "--resource-group $ARC_RESOURCE_GROUP_NAME"
+    "--features cluster-connect custom-locations"
+  )
+  if [[ $CUSTOM_LOCATIONS_OID ]]; then
+    az_connectedk8s_enable_features+=("--custom-locations-oid $CUSTOM_LOCATIONS_OID")
+  fi
+  echo "Executing: ${az_connectedk8s_enable_features[*]}"
+  eval "${az_connectedk8s_enable_features[*]}"
 
-    # Update k3s config.yaml with Azure Arc Workload Identity settings to support Managed Identities.
+  # Update k3s config.yaml with Azure Arc Workload Identity settings to support Managed Identities.
 
-    log "Updating kube-api server settings with OIDC settings for Azure Arc workload identity"
-    issuer_url=$(az connectedk8s show -g "$ARC_RESOURCE_GROUP_NAME" -n "$ARC_RESOURCE_NAME" --query oidcIssuerProfile.issuerUrl --output tsv 2>/dev/null || echo "")
-    if [[ $issuer_url ]]; then
-        k3s_config="/etc/rancher/k3s/config.yaml"
-        {
-            for line in \
-                "kube-apiserver-arg:" \
-                "- service-account-issuer=$issuer_url" \
-                "- service-account-max-token-expiration=24h"; do
-                sudo grep -qxF -- "$line" "$k3s_config" || echo "$line"
-            done
-        } | sudo tee -a "$k3s_config" >/dev/null
+  log "Updating kube-api server settings with OIDC settings for Azure Arc workload identity"
+  issuer_url=$(az connectedk8s show -g "$ARC_RESOURCE_GROUP_NAME" -n "$ARC_RESOURCE_NAME" --query oidcIssuerProfile.issuerUrl --output tsv 2>/dev/null || echo "")
+  if [[ $issuer_url ]]; then
+    k3s_config="/etc/rancher/k3s/config.yaml"
+    {
+      for line in \
+        "kube-apiserver-arg:" \
+        "- service-account-issuer=$issuer_url" \
+        "- service-account-max-token-expiration=24h"; do
+        sudo grep -qxF -- "$line" "$k3s_config" || echo "$line"
+      done
+    } | sudo tee -a "$k3s_config" >/dev/null
 
-        # Restart the cluster to use the new settings for workload identity.
-        sudo systemctl restart k3s
-    fi
+    # Restart the cluster to use the new settings for workload identity.
+    sudo systemctl restart k3s
+  fi
 fi
 
 ####
@@ -417,39 +417,39 @@ fi
 ####
 
 wait_for_k3s_server_ready() {
-    local timeout_seconds=1800
-    local start_time
-    local elapsed_time
+  local timeout_seconds=1800
+  local start_time
+  local elapsed_time
 
-    start_time=$(date +%s)
+  start_time=$(date +%s)
 
-    log "Waiting for k3s server to be ready (timeout: ${timeout_seconds}s)..."
+  log "Waiting for k3s server to be ready (timeout: ${timeout_seconds}s)..."
 
-    while true; do
-        elapsed_time=$(($(date +%s) - start_time))
+  while true; do
+    elapsed_time=$(($(date +%s) - start_time))
 
-        if ((elapsed_time >= timeout_seconds)); then
-            err "Timeout waiting for k3s server to become ready after ${timeout_seconds} seconds. Check 'systemctl status k3s' and 'kubectl get nodes' for more information."
+    if ((elapsed_time >= timeout_seconds)); then
+      err "Timeout waiting for k3s server to become ready after ${timeout_seconds} seconds. Check 'systemctl status k3s' and 'kubectl get nodes' for more information."
+    fi
+
+    if kubectl wait --for condition=ready node --all --timeout=60s; then
+      if kubectl wait --for=jsonpath='{.status.phase}'=Running pod -l '!job-name' -n kube-system --timeout=60s \
+        && kubectl wait --for=jsonpath='{.status.phase}'=Succeeded pod -l 'job-name' -n kube-system --timeout=60s; then
+        if kubectl cluster-info | grep -c -E "(Kubernetes control plane|CoreDNS|Metrics-server).*running" | grep -q "3"; then
+          log "k3s server is ready and responding (${elapsed_time}s elapsed)"
+          return 0
         fi
+      fi
+    fi
 
-        if kubectl wait --for condition=ready node --all --timeout=60s; then
-            if kubectl wait --for=jsonpath='{.status.phase}'=Running pod -l '!job-name' -n kube-system --timeout=60s &&
-                kubectl wait --for=jsonpath='{.status.phase}'=Succeeded pod -l 'job-name' -n kube-system --timeout=60s; then
-                if kubectl cluster-info | grep -c -E "(Kubernetes control plane|CoreDNS|Metrics-server).*running" | grep -q "3"; then
-                    log "k3s server is ready and responding (${elapsed_time}s elapsed)"
-                    return 0
-                fi
-            fi
-        fi
-
-        sleep 5
-        elapsed_time=$(($(date +%s) - start_time))
-        log "Still waiting for k3s server readiness... (${elapsed_time}s elapsed)"
-    done
+    sleep 5
+    elapsed_time=$(($(date +%s) - start_time))
+    log "Still waiting for k3s server readiness... (${elapsed_time}s elapsed)"
+  done
 }
 
 if [[ ! $SKIP_INSTALL_K3S ]]; then
-    wait_for_k3s_server_ready
+  wait_for_k3s_server_ready
 fi
 
 log "Finished setting up Azure Arc..."

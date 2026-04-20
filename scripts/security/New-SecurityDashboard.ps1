@@ -780,7 +780,7 @@ try {
 
     # Parse parameters
     $sourcesToInclude = $IncludeSources.Split(',') | ForEach-Object { $_.Trim() }
-    $alertThresholds = $AlertThresholds | ConvertFrom-Json
+    $alertThresholds = $AlertThresholds | ConvertFrom-Json -AsHashtable
 
     Write-SecurityLog "Data path: $DataPath" -Level Info
     Write-SecurityLog "Output format: $OutputFormat" -Level Info
