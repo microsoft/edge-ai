@@ -204,10 +204,10 @@ No, releases must come from `dev`. Merge your feature first.
 ## References
 
 * [Release Workflow Documentation](release-workflow.md)
-* [Main-to-Dev Sync Pipeline](../../.azuredevops/docs/main-to-dev-sync.md)
-* [GitHub Workflows](../../.github/workflows/)
-* [Azure Pipelines](../../azure-pipelines.yml)
-* [Contributing Guidelines](../../CONTRIBUTING.md)
+* [Main-to-Dev Sync Pipeline](https://github.com/microsoft/edge-ai/blob/main/.azuredevops/docs/main-to-dev-sync.md)
+* [GitHub Workflows](https://github.com/microsoft/edge-ai/tree/main/.github/workflows/)
+* [Azure Pipelines](https://github.com/microsoft/edge-ai/blob/main/azure-pipelines.yml)
+* [Contributing Guidelines](https://github.com/microsoft/edge-ai/blob/main/CONTRIBUTING.md)
 
 ---
 

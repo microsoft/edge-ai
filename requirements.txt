@@ -1,5 +1,5 @@
 # Documentation Generation
-# NOTE: mkdocs removed - project uses docsify (see package.json devDependencies and index.html)
+# NOTE: Documentation site uses Docusaurus (see docs/docusaurus/)
 
 # Infrastructure as Code Processing
 python-hcl2~=8.1.2               # HCL2 (Terraform) configuration parser

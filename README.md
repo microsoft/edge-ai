@@ -29,7 +29,7 @@ Start here if you're combining components to achieve new deployment scenarios. *
 
 Start here if you're developing new components to help others achieve more. **Time: 1-2 days setup**
 
-## 🗺️ Your Learning and Deployment Journey
+## 🗺️ Your Deployment Journey
 
 ```mermaid
 graph TD
@@ -39,12 +39,6 @@ graph TD
         Beginner[New to Edge AI<br/>Need to learn<br/>fundamentals]
         Intermediate[Some Experience<br/>Want to deploy<br/>quickly]
         Advanced[Expert Level<br/>Building custom<br/>solutions]
-    end
-
-    subgraph learning [Learning Platform]
-        Foundation[Foundation Katas<br/>AI-Assisted Engineering<br/>15-45 min each]
-        Skills[Core Skills<br/>Task Planning<br/>ADR Creation<br/>Prompt Engineering]
-        Application[Applied Practice<br/>Edge Deployment Labs<br/>2-50+ hours]
     end
 
     subgraph deployment [Deployment Path]
@@ -63,10 +57,7 @@ graph TD
     Start --> Intermediate
     Start --> Advanced
 
-    Beginner --> Foundation
-    Foundation --> Skills
-    Skills --> Application
-    Application --> QuickDeploy
+    Beginner --> QuickDeploy
 
     Intermediate --> QuickDeploy
     Intermediate --> CustomBuild
@@ -74,16 +65,10 @@ graph TD
     Advanced --> CustomBuild
     Advanced --> NewFeatures
 
-    %% Learning enhances all paths
-    Foundation -.-> QuickDeploy
-    Skills -.-> CustomBuild
-    Application -.-> NewFeatures
-
     QuickDeploy --> Production
     CustomBuild --> Production
     NewFeatures --> Production
 
-    Application --> Expertise
     NewFeatures --> Community
 
     %% Enhanced color scheme for learning journey
@@ -91,9 +76,6 @@ graph TD
     style Beginner fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
     style Intermediate fill:#fff3e0,stroke:#e65100,stroke-width:2px
     style Advanced fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
-    style Foundation fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
-    style Skills fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
-    style Application fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
     style QuickDeploy fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
     style CustomBuild fill:#fff3e0,stroke:#e65100,stroke-width:2px
     style NewFeatures fill:#fff3e0,stroke:#e65100,stroke-width:2px
@@ -213,35 +195,6 @@ git clone https://github.com/<your-organization>/<your-project>.git  # Replace w
 - ✅ **Always up-to-date** - no file copying needed
 
 *💡 Perfect for teams wanting to adopt AI-assisted development patterns without duplicating files across repositories.*
-
-## 🎓 Learning Platform
-
-**Empower your team to achieve proficiency in AI-assisted, hyper-velocity engineering** through hands-on training labs and focused practice exercises (Katas).
-
-### Learning Platform Philosophy
-
-This Learning Platform combines AI assistance with practical engineering challenges, empowering every engineer to achieve more and ensuring that learning translates directly into real-world engineering capabilities and better contributions to Edge-AI.
-
-The Learning Platform provides challenge-based learning for edge-to-cloud AI systems:
-
-- **🥋 [Katas](learning/katas/)** - Focused 15-45 minute practice exercises
-- **🧪 [Training Labs](learning/training-labs/)** - Comprehensive 2-8 hour hands-on experiences *(Coming Soon)*
-- **🤖 [AI Coaching](learning/)** - Built-in coaching prompts for discovery-based learning
-
-### 🚀 Start Your AI-Assisted Learning Path
-
-**One-click training mode** - launch documentation with automatic navigation to Learning Platform:
-
-```bash
-npm run docs
-```
-
-This command automatically:
-
-- ✅ Builds the documentation
-- ✅ Starts the local server
-- ✅ Opens your browser directly to the documentation site
-- ✅ Navigate to the Learning section to access all learning paths and resources
 
 ## 🤝 Contributing
 

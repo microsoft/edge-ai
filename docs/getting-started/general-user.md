@@ -568,7 +568,7 @@ _This guide is part of the AI on Edge Flagship Accelerator project. For the late
 [iot-ops-quickstart]: https://learn.microsoft.com/azure/iot-operations/get-started-end-to-end-sample/quickstart-deploy
 [iot-ops-docs]: https://learn.microsoft.com/azure/iot-operations/
 [iot-ops-permissions]: https://learn.microsoft.com/azure/iot-operations/deploy-iot-ops/overview-deploy#required-permissions
-[project-repo]: {{REPO_URL}}
+[project-repo]: https://github.com/microsoft/edge-ai
 [python-install]: https://www.python.org/downloads/
 [azure-resource-providers]: /src/azure-resource-providers/
 

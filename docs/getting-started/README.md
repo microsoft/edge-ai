@@ -81,17 +81,17 @@ This opens the documentation with both the main docs and the interactive **Learn
 
 ### Next Steps After Getting Started
 
-1. **Explore [Blueprints](../../blueprints/)** - Ready-to-deploy solutions
-2. **Browse [Components](../../src/)** - Reusable infrastructure building blocks
-3. **Join [Discussions](https://github.com/Microsoft/edge-ai/discussions)** - Connect with the community
+1. **Explore [Blueprints](https://github.com/microsoft/edge-ai/tree/main/blueprints/)** - Ready-to-deploy solutions
+2. **Browse [Components](https://github.com/microsoft/edge-ai/tree/main/src/)** - Reusable infrastructure building blocks
+3. **Join [Discussions](https://github.com/microsoft/edge-ai/discussions)** - Connect with the community
 4. **Check [Contributing Guide](../contributing/)** - Learn how to contribute
 
 ## 🆘 Need Help?
 
 - 📖 [Complete Documentation](../) - Comprehensive guides and references
-- 🐛 [Issue Tracker](https://github.com/Microsoft/edge-ai/issues) - Report problems
-- 💬 [Discussions](https://github.com/Microsoft/edge-ai/discussions) - Ask questions and share ideas
-- 📧 [Support](../../SUPPORT.md) - Get additional support
+- 🐛 [Issue Tracker](https://github.com/microsoft/edge-ai/issues) - Report problems
+- 💬 [Discussions](https://github.com/microsoft/edge-ai/discussions) - Ask questions and share ideas
+- 📧 [Support](https://github.com/microsoft/edge-ai/blob/main/SUPPORT.md) - Get additional support
 
 ---
 

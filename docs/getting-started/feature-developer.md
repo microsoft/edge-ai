@@ -752,8 +752,8 @@ After contributing your first component:
 ## Additional Resources
 
 - **[Blueprint Developer Guide](blueprint-developer.md)** - Create deployment scenarios
-- **[Coding Conventions](../coding-conventions.md)** - Detailed coding standards
-- **[AI-Assisted Engineering](../ai-assisted-engineering.md)** - Using GitHub Copilot effectively
+- **[Coding Conventions](../contributing/coding-conventions.md)** - Detailed coding standards
+- **[AI-Assisted Engineering](../contributing/ai-assisted-engineering.md)** - Using GitHub Copilot effectively
 - **[Terraform Documentation][terraform-docs]** - Official Terraform guides
 - **[Bicep Documentation][bicep-docs]** - Official Bicep guides
 - **[Azure IoT Operations Documentation][iot-ops-docs]** - Platform documentation
@@ -765,7 +765,7 @@ After contributing your first component:
 [terraform-docs]: https://www.terraform.io/docs
 [bicep-docs]: https://docs.microsoft.com/azure/azure-resource-manager/bicep/
 [iot-ops-docs]: https://learn.microsoft.com/azure/iot-operations/
-[project-repo]: {{REPO_URL}}
+[project-repo]: https://github.com/microsoft/edge-ai
 
 <!-- markdownlint-disable MD036 -->
 *🤖 Crafted with precision by ✨Copilot following brilliant human instruction,
