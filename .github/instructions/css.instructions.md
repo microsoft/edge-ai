@@ -106,8 +106,8 @@ docs/assets/css/
 
 ```css
 /* Good: Documented override with specific justification */
-.docsify-override {
-  /* !important required to override Docsify's inline styles */
+.theme-override {
+  /* !important required to override a third-party inline style */
   background: var(--sidebar-gradient) !important;
 }
 
@@ -291,7 +291,7 @@ element.style.backgroundColor = '#ff0000';
 ### Complex Selector Documentation
 
 ```css
-/* Override Docsify's deeply nested navigation structure */
+/* Override a framework's deeply nested navigation structure */
 /* Specificity required to compete with framework defaults */
 .sidebar-nav li.active > a,
 .sidebar ul li.active a {

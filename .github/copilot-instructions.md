@@ -385,8 +385,7 @@ edge-ai/
 ├── copilot/                                   # GitHub Copilot instruction files for different technologies
 ├── docs/                                      # Comprehensive project documentation
 ├── project-adrs/                              # Architecture Decision Records
-├── project-security-plans/                    # Security planning templates and examples
-└── praxisworx/                                # Training materials and skill assessments
+└── project-security-plans/                    # Security planning templates and examples
 ```
 
 ### Core Infrastructure Components (src/)

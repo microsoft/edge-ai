@@ -1,18 +1,18 @@
-# Enhanced Documentation Validation Template
+# Documentation Validation Template
 #
 # Purpose:
 # This template provides comprehensive documentation validation for Azure DevOps pull requests,
-# ensuring documentation standards are maintained and the enhanced multi-section sidebar navigation
+# ensuring documentation standards are maintained and the Docusaurus documentation structure
 # stays synchronized with content changes across all documentation folders.
 #
-# Enhanced Functionality:
-# - Validates enhanced multi-section sidebar navigation (docs/_parts/ structure)
-# - Performs link validation across all documentation folders (docs, src, blueprints, learning, .github, copilot)
+# Functionality:
+# - Validates Docusaurus documentation structure (docs/docusaurus/ configuration)
+# - Performs link validation across all documentation folders (docs, src, blueprints, .github, copilot)
 # - Checks frontmatter consistency and required fields using Validate-MarkdownFrontmatter.ps1
-# - Validates section-based navigation architecture with Generate-DocsSidebar.ps1
+# - Validates Docusaurus documentation architecture and configuration files
 # - Ensures links don't contain language-specific paths (e.g., 'en-us') across entire repository
 # - Provides detailed documentation health reporting with enhanced statistics
-# - Supports the full enhanced documentation structure from Generate-DocsSidebar.ps1
+# - Supports the Docusaurus-based documentation structure at docs/docusaurus/
 #
 # Parameters:
 # - dependsOn: Jobs that this job depends on
@@ -28,7 +28,7 @@
 # - template: .azdo/templates/docs-validation-template.yml
 #   parameters:
 #     dependsOn: PreviousJob
-#     displayName: "Enhanced Documentation Validation"
+#     displayName: "Documentation Validation"
 #
 # # Changed files validation mode:
 # - template: .azdo/templates/docs-validation-template.yml
@@ -37,11 +37,10 @@
 #     displayName: "Changed Files Documentation Validation"
 # ```
 #
-# This template validates the complete enhanced documentation architecture including:
-# - Multi-section navigation with docs/_parts/ structure
-# - All documentation folders processed by Generate-DocsSidebar.ps1
-# - Section-specific sidebars for improved navigation organization
-# - Comprehensive content validation across the enhanced structure
+# This template validates the complete documentation architecture including:
+# - Docusaurus-based documentation at docs/docusaurus/
+# - Docusaurus sidebar configuration and _category_.json files
+# - Comprehensive content validation across the documentation structure
 ---
 parameters:
   # Dependencies for this job
@@ -227,141 +226,51 @@ jobs:
         displayName: "Validate Frontmatter Consistency"
         condition: and( not(failed()), not(canceled()), eq(variables.DocsValidationShouldRun, 'true') )
 
-      # Validate enhanced multi-section sidebar navigation
+      # Validate Docusaurus documentation structure
       - task: PowerShell@2
         inputs:
           targetType: 'inline'
           script: |
-            Write-Host "🔍 Validating enhanced multi-section navigation sidebar..."
+            Write-Host "🔍 Validating Docusaurus documentation structure..."
 
-            # Store original sidebar content for all sections
-            $originalSidebars = @{}
-            $sidebarPaths = @(
-              "docs/_sidebar.md",
-              "docs/_parts/docs-sidebar.md",
-              "docs/_parts/learning-sidebar.md",
-              "docs/_parts/blueprints-sidebar.md",
-              "docs/_parts/infrastructure-sidebar.md"
-            )
-
-            foreach ($path in $sidebarPaths) {
-              if (Test-Path $path) {
-                $originalSidebars[$path] = Get-Content $path -Raw
-              }
-            }
-
-            # Run the enhanced sidebar generation
-            . ./scripts/Generate-DocsSidebar.ps1
-
-            # Validate each sidebar section
             $validationPassed = $true
             $issues = @()
 
-            foreach ($path in $sidebarPaths) {
-              if (Test-Path $path) {
-                $newContent = Get-Content $path -Raw
-                $originalContent = $originalSidebars[$path]
-
-                if ($originalContent -ne $newContent) {
-                  $issues += "- $path is outdated"
-                  $validationPassed = $false
-
-                  Write-Host "`n📄 Detailed diff for: $path" -ForegroundColor Yellow
-                  Write-Host ("=" * 80) -ForegroundColor Yellow
-
-                  # Show character counts to help identify differences
-                  Write-Host "📊 Character counts:" -ForegroundColor Cyan
-                  Write-Host "  Original (checked-in): $($originalContent.Length) chars" -ForegroundColor Cyan
-                  Write-Host "  Generated (expected):  $($newContent.Length) chars" -ForegroundColor Cyan
-                  Write-Host "  Difference: $($newContent.Length - $originalContent.Length) chars" -ForegroundColor Cyan
-
-                  # Save to temp files for comparison
-                  $tempOriginal = [System.IO.Path]::GetTempFileName()
-                  $tempNew = [System.IO.Path]::GetTempFileName()
-                  $originalContent | Set-Content $tempOriginal -NoNewline
-                  $newContent | Set-Content $tempNew -NoNewline
-
-                  if (Get-Command git -ErrorAction SilentlyContinue) {
-                    Write-Host "`n🔍 Git diff output:" -ForegroundColor Cyan
-                    try {
-                      $diffOutput = git diff --no-index --word-diff=plain --unified=3 $tempOriginal $tempNew 2>&1
-                      if ($diffOutput) {
-                        $diffOutput | ForEach-Object {
-                          $line = $_
-                          if ($line -match '^\+') {
-                            Write-Host $line -ForegroundColor Green
-                          } elseif ($line -match '^\-') {
-                            Write-Host $line -ForegroundColor Red
-                          } elseif ($line -match '^@@') {
-                            Write-Host $line -ForegroundColor Cyan
-                          } else {
-                            Write-Host $line
-                          }
-                        }
-                      }
-                    } catch {
-                      Write-Host "Git diff failed, falling back to PowerShell comparison" -ForegroundColor Yellow
-                    }
-                  }
-
-                  Write-Host "`n🔍 Line-by-line comparison (first 30 differences):" -ForegroundColor Cyan
-                  $originalLines = $originalContent -split "`r?`n"
-                  $newLines = $newContent -split "`r?`n"
-
-                  Write-Host "Original has $($originalLines.Count) lines, Generated has $($newLines.Count) lines" -ForegroundColor Cyan
-
-                  $comparison = Compare-Object -ReferenceObject $originalLines -DifferenceObject $newLines -IncludeEqual | Select-Object -First 30
-
-                  $diffCount = 0
-                  foreach ($diff in $comparison) {
-                    if ($diff.SideIndicator -ne "==") {
-                      $diffCount++
-                      $indicator = if ($diff.SideIndicator -eq "<=") { "- ORIGINAL" } else { "+ GENERATED" }
-                      $color = if ($diff.SideIndicator -eq "<=") { "Red" } else { "Green" }
-                      Write-Host "$indicator`: $($diff.InputObject)" -ForegroundColor $color
-                    }
-                  }
-
-                  if ($diffCount -eq 0) {
-                    Write-Host "No line differences found, but content differs (possibly whitespace or encoding)" -ForegroundColor Yellow
-
-                    Write-Host "`n🔍 Checking for whitespace differences:" -ForegroundColor Cyan
-                    $originalNoSpace = $originalContent -replace '\s+', ''
-                    $newNoSpace = $newContent -replace '\s+', ''
-
-                    if ($originalNoSpace -eq $newNoSpace) {
-                      Write-Host "Content is identical when whitespace is removed - this is a whitespace-only difference" -ForegroundColor Yellow
-                    } else {
-                      Write-Host "Content differs even without whitespace" -ForegroundColor Yellow
-                      Write-Host "Original (no space): $($originalNoSpace.Length) chars" -ForegroundColor Cyan
-                      Write-Host "Generated (no space): $($newNoSpace.Length) chars" -ForegroundColor Cyan
-                    }
-                  }
-
-                  Remove-Item $tempOriginal -ErrorAction SilentlyContinue
-                  Remove-Item $tempNew -ErrorAction SilentlyContinue
-
-                  Write-Host ("=" * 80) -ForegroundColor Yellow
-                  Write-Host ""
-                }
-              }
-            }
-
-            if (-not (Test-Path "docs/_parts/")) {
-              $issues += "- docs/_parts/ directory missing - required for multi-section navigation"
+            # Verify docs/docusaurus/ directory exists
+            if (-not (Test-Path "docs/docusaurus/")) {
+              $issues += "- docs/docusaurus/ directory missing"
               $validationPassed = $false
             }
 
-            if (-not $validationPassed) {
-              $messageLines = @(
-                "Sidebar validation failed:",
-                ($issues -join "`n"),
-                "",
-                "Detailed comparison output is shown above."
-              )
-              $message = $messageLines -join "`n"
+            # Check required Docusaurus configuration files
+            $requiredFiles = @(
+              "docs/docusaurus/docusaurus.config.ts",
+              "docs/docusaurus/sidebars.ts",
+              "docs/docusaurus/package.json"
+            )
 
-              Write-Host "❌ Sidebar validation failed!" -ForegroundColor Red
+            foreach ($file in $requiredFiles) {
+              if (-not (Test-Path $file)) {
+                $issues += "- Missing required file: $file"
+                $validationPassed = $false
+              } else {
+                Write-Host "  ✅ Found: $file" -ForegroundColor Green
+              }
+            }
+
+            # Check for _category_.json files in documentation directories
+            $categoryFiles = Get-ChildItem -Path 'docs/docusaurus/docs' -Filter '_category_.json' -Recurse -ErrorAction SilentlyContinue
+            if ($categoryFiles.Count -eq 0) {
+              $issues += "- No _category_.json files found in docs/docusaurus/docs/"
+              $validationPassed = $false
+            } else {
+              Write-Host "  ✅ Found $($categoryFiles.Count) _category_.json file(s)" -ForegroundColor Green
+            }
+
+            if (-not $validationPassed) {
+              $message = ($issues -join "`n")
+
+              Write-Host "❌ Docusaurus structure validation failed!" -ForegroundColor Red
               Write-Host $message -ForegroundColor Red
 
               if ("${{ parameters.breakBuild }}" -eq "True") {
@@ -371,17 +280,9 @@ jobs:
                 Write-Host "##vso[task.logissue type=warning]$message"
               }
             } else {
-              Write-Host "✅ All sidebar sections are up to date" -ForegroundColor Green
-              exit 0
+              Write-Host "✅ Docusaurus documentation structure is valid" -ForegroundColor Green
             }
-
-            # If we reach here, validation failed - restore content before exit
-            foreach ($path in $originalSidebars.Keys) {
-              if ($originalSidebars[$path] -ne "") {
-                $originalSidebars[$path] | Set-Content $path -NoNewline
-              }
-            }
-        displayName: "Validate Enhanced Multi-Section Sidebar Navigation"
+        displayName: "Validate Docusaurus Documentation Structure"
         condition: and( not(failed()), not(canceled()), eq(variables.DocsValidationShouldRun, 'true') )
 
       # Set up Node.js for link validation
@@ -465,7 +366,7 @@ jobs:
             echo "📋 Validating links in all documentation files"
 
             # Check all markdown files in tracked folders (includes enhanced documentation structure)
-            find docs src blueprints learning .github copilot -name "*.md" -type f 2>/dev/null | \
+            find docs src blueprints .github copilot -name "*.md" -type f 2>/dev/null | \
               grep -v node_modules | \
               while read file; do
                 echo "Checking: $file"
@@ -496,32 +397,29 @@ jobs:
           script: |
             Write-Host "📊 Generating documentation health report..."
 
-            # Count documentation files by type (enhanced structure)
+            # Count documentation files by type
             $docsCount = (Get-ChildItem -Path 'docs' -Filter '*.md' -Recurse -ErrorAction SilentlyContinue).Count
             $srcCount = (Get-ChildItem -Path 'src' -Filter '*.md' -Recurse -ErrorAction SilentlyContinue).Count
             $blueprintsCount = (Get-ChildItem -Path 'blueprints' -Filter '*.md' -Recurse -ErrorAction SilentlyContinue).Count
-            $learningCount = (Get-ChildItem -Path 'learning' -Filter '*.md' -Recurse -ErrorAction SilentlyContinue).Count
             $githubCount = (Get-ChildItem -Path '.github' -Filter '*.md' -Recurse -ErrorAction SilentlyContinue).Count
             $copilotCount = (Get-ChildItem -Path 'copilot' -Filter '*.md' -Recurse -ErrorAction SilentlyContinue).Count
 
-            # Check section-based navigation structure
+            # Check Docusaurus configuration structure
             $sectionStructure = @()
             $sectionPaths = @(
-              "docs/_parts/docs-sidebar.md",
-              "docs/_parts/learning-sidebar.md",
-              "docs/_parts/blueprints-sidebar.md",
-              "docs/_parts/infrastructure-sidebar.md"
+              "docs/docusaurus/docusaurus.config.ts",
+              "docs/docusaurus/sidebars.ts",
+              "docs/docusaurus/package.json"
             )
 
             foreach ($path in $sectionPaths) {
               $status = if (Test-Path $path) { "✅" } else { "❌" }
-              $sectionName = (Split-Path $path -Leaf) -replace "-sidebar.md", ""
-              $sectionStructure += "- $status $sectionName section: $path"
+              $sectionStructure += "- $status $path"
             }
 
-            # Generate enhanced health report
+            # Generate health report
             $report = @"
-            # 📚 Enhanced Documentation Health Report
+            # 📚 Documentation Health Report
 
             Generated on: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss UTC')
 
@@ -532,32 +430,31 @@ jobs:
             | Main Documentation | $docsCount |
             | Infrastructure Components | $srcCount |
             | Blueprints | $blueprintsCount |
-            | Learning Platform | $learningCount |
             | GitHub Resources | $githubCount |
             | AI Assistant Guides (Copilot) | $copilotCount |
-            | **Total** | **$($docsCount + $srcCount + $blueprintsCount + $learningCount + $githubCount + $copilotCount)** |
+            | **Total** | **$($docsCount + $srcCount + $blueprintsCount + $githubCount + $copilotCount)** |
 
-            ## 🏗️ Multi-Section Navigation Architecture
+            ## 🏗️ Docusaurus Documentation Architecture
 
-            ### Section-Based Sidebars
+            ### Configuration Files
             $($sectionStructure -join "`n")
 
-            ### Enhanced Three-Tree Architecture Status
+            ### Documentation Architecture Status
             - ✅ Bicep Documentation Tree: Auto-generated navigation
             - ✅ Terraform Documentation Tree: Auto-generated navigation
             - ✅ README Documentation Tree: Manual README organization
-            - ✅ Multi-Section Navigation: Section-specific sidebars in docs/_parts/
+            - ✅ Docusaurus Navigation: Sidebar configuration and _category_.json files
 
             ## 🔍 Validation Results
 
             - Frontmatter Validation: Completed
-            - Enhanced Multi-Section Sidebar Validation: Completed
+            - Docusaurus Structure Validation: Completed
             - Link Validation: Completed (includes copilot/ folder)
             - Documentation Standards: Verified
 
             ---
 
-            *This report is automatically generated during enhanced documentation validation.*
+            *This report is automatically generated during documentation validation.*
             "@
 
             Write-Host $report

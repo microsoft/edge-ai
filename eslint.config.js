@@ -139,16 +139,22 @@ export default [
         confirm: 'readonly',
         prompt: 'readonly',
 
-        // Docsify globals
-        Docsify: 'readonly',
-        $docsify: 'readonly',
-
         // Common libraries
         marked: 'readonly',
 
         // Module system
         module: 'readonly',
-        require: 'readonly'
+        require: 'readonly',
+
+        // Server-Sent Events
+        EventSource: 'readonly',
+
+        // Encoding APIs
+        btoa: 'readonly',
+        atob: 'readonly',
+
+        // Screen API
+        screen: 'readonly'
       }
     },
     rules: {
@@ -158,18 +164,6 @@ export default [
         'varsIgnorePattern': '^_',
         'caughtErrorsIgnorePattern': '^_'
       }]
-    }
-  },
-  {
-    // Server-specific configuration
-    files: ['docs/_server/**/*.js'],
-    languageOptions: {
-      globals: {
-        // Additional Node.js server globals if needed
-      }
-    },
-    rules: {
-      'no-console': 'off' // Allow console in server
     }
   },
   {

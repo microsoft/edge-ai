@@ -1,757 +1,97 @@
-# GitHub Pages Deployment Workflow with PowerShell JavaScript Stripping
-#
-# POWERSHELL JAVASCRIPT STRIPPING APPROACH:
-# This workflow uses PowerShell for cross-platform JavaScript compatibility processing.
-# - Cross-platform compatibility: Same PowerShell code works on Windows (development) and          echo "[FOLDER] Copying documentation folders with enhanced monitoring..."Linux (GitHub Actions)
-# - Robust regex processing with UTF8 encoding support for international characters
-# - Comprehensive validation with detailed feedback and file size reduction metrics
-# - Local testing capability using scripts/Strip-GHPagesJS.ps1 standalone script
-# - Backup and restore functionality for error recovery during processing
-#
-# GITHUB PAGES COMPATIBILITY MODIFICATIONS:
-# Complex JavaScript features are automatically stripped during deployment to ensure static hosting compatibility:
-# - Removes ES6 modules (<script type="module">) that don't work on static hosting
-# - Strips server-dependent features (progress tracking, learning systems)
-# - Eliminates complex external libraries (mermaid, js-yaml, advanced plugins)
-# - Preserves essential Docsify functionality (navigation, search, basic plugins)
-# - Maintains all CSS styling and markdown content accessibility
-#
-# LOCAL TESTING:
-# Developers can test JavaScript stripping locally before pushing:
-#   Windows: .\scripts\Strip-GHPagesJS.ps1
-#   Linux:   pwsh ./scripts/Strip-GHPagesJS.ps1
-#
-# DEPLOYMENT FEATURES:
-# Available on GitHub Pages: markdown navigation, search, CSS, basic Docsify plugins
-# Removed for compatibility: progress tracking, advanced plugins, mermaid diagrams, interactive features
-#
-# MAINTENANCE:
-# Update PowerShell regex patterns in this workflow and scripts/Strip-GHPagesJS.ps1
-# when adding new complex JavaScript features to ensure proper GitHub Pages compatibility.
-#
-# Purpose:
-# This workflow builds and deploys Docsify documentation with enhanced multi-section navigation to GitHub Pages.
-# It supports the full documentation architecture including all content folders processed by Generate-DocsSidebar.ps1
-# and implements dynamic validation for content-aware deployment verification.
-#
-# Enhanced Functionality:
-# - Triggers via workflow_call (manually or from ci-cd.yml)
-# - Sets up Node.js environment for Docsify CLI
-# - Comprehensive content copying for all documentation folders (docs/, src/, blueprints/, learning/, .github/, copilot/)
-# - Section-based navigation architecture support with docs/_parts/ structure
-# - Dynamic sidebar currency validation (fails deployment if outdated)
-# - Content-aware validation for special file types (.prompt.md, .agent.md, .instructions.md)
-# - Post-deployment verification with site accessibility and path testing
-# - Generates GitHub Pages-specific URL configuration for token replacement
-# - Builds Docsify documentation with all assets and plugins
-# - Deploys built documentation to GitHub Pages with comprehensive validation reporting
-#
-# Parameters:
-# - source_branch: Branch to build documentation from
-# - deploy_environment: Environment to deploy to (e.g., production, staging)
-#
-# Output Variables:
-# - page_url: URL of the deployed GitHub Pages site
-#
-# Usage Examples:
-# ```yaml
-# # Called from another workflow:
-# jobs:
-#   deploy-docs:
-#     uses: ./.github/workflows/pages-deploy.yml
-#     with:
-#       source_branch: 'main'
-#       deploy_environment: 'github-pages'
-#
-# # Direct call with custom branch:
-# jobs:
-#   deploy-docs:
-#     uses: ./.github/workflows/pages-deploy.yml
-#     with:
-#       source_branch: 'feature/improved-docs'
-#       deploy_environment: 'staging'
-# ```
-#
-# Enhanced Features:
-# - Multi-section documentation architecture with comprehensive folder coverage
-# - Dynamic content-aware validation that scales with documentation structure changes
-# - Section-based navigation support (docs/_parts/) for docsify multi-section architecture
-# - Sidebar currency validation prevents deployment of outdated navigation
-# - Post-deployment verification ensures site accessibility and documentation paths
-# - Comprehensive validation reporting for troubleshooting deployment issues
-# - Docsify CLI build process with Node.js caching
-# - Dynamic URL token replacement for GitHub Pages environment
-# - Comprehensive asset management (CSS, JS, images, plugins)
-# - Build validation and error reporting
-# - .nojekyll file generation to prevent Jekyll processing
-#
-# Content Architecture Support:
-# - docs/: Core documentation content with section-specific sidebars
-# - src/: Infrastructure as Code components and modules
-# - blueprints/: Deployment blueprint configurations
-# - learning/: Training and learning content
-# - .github/: Workflow and repository automation documentation
-# - copilot/: AI assistant instructions and prompts
-#
-# This workflow follows GitHub's best practices for Pages deployments, uses the
-# recommended actions for setting up and deploying to GitHub Pages, and implements
-# robust validation to ensure comprehensive documentation coverage.
----
+# Docusaurus GitHub Pages Deployment Workflow
+# Builds and deploys the Docusaurus site at docs/docusaurus/ to GitHub Pages.
+# Reusable workflow invoked via workflow_call.
+
 name: Deploy to GitHub Pages
 
-on: # yamllint disable-line rule:truthy
-  workflow_call:      # Make this a reusable workflow
+on:
+  workflow_call:
     inputs:
       source_branch:
-        description: 'Branch to build documentation from'
-        required: true
+        description: 'Branch to deploy from'
+        required: false
         type: string
+        default: 'main'
       deploy_environment:
-        description: 'Environment to deploy to (e.g., production, staging)'
-        required: true
+        description: 'Deployment environment name'
+        required: false
         type: string
+        default: 'github-pages'
     outputs:
       page_url:
-        description: "URL of the deployed GitHub Pages site"
+        description: 'The deployed GitHub Pages URL'
         value: ${{ jobs.deploy.outputs.page_url }}
 
-# Sets permissions of the GITHUB_TOKEN
 permissions:
   contents: read
   pages: write
   id-token: write
   attestations: write
 
-# Allow only one concurrent deployment
 concurrency:
   group: "pages"
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
+  test:
+    uses: ./.github/workflows/docusaurus-tests.yml
+    with:
+      soft-fail: false
+
   build:
-    name: Build Documentation
+    name: Build Docusaurus Site
+    needs: [test]
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
+      - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          fetch-depth: 0
           ref: ${{ inputs.source_branch }}
 
-      - name: Setup Pages
+      - name: Configure GitHub Pages
         uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
 
       - name: Setup Node.js
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v4.3.0
         with:
-          node-version: '24'
+          node-version: '20'
           cache: 'npm'
-
-      - name: Cache Docsify CLI
-        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-docsify-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-docsify-
+          cache-dependency-path: docs/docusaurus/package-lock.json
 
       - name: Install dependencies
+        working-directory: docs/docusaurus
+        run: npm ci
+
+      - name: Build Docusaurus site
+        working-directory: docs/docusaurus
+        run: npm run build
+
+      - name: Verify build output
+        working-directory: docs/docusaurus
         run: |
-          echo "[PACKAGE] Installing dependencies..."
-          npm ci
-
-      - name: Validate PowerShell stripping rules currency
-        shell: pwsh
-        run: |
-          Write-Host "[CHECK] Validating PowerShell JavaScript stripping rules currency..." -ForegroundColor Cyan
-
-          $indexContent = Get-Content "index.html" -Raw -Encoding UTF8
-
-          # Check for new ES6 module patterns that might need stripping
-          $moduleMatches = [regex]::Matches($indexContent, 'type="module"|import\s+.*\s+from')
-          if ($moduleMatches.Count -gt 1) {
-              Write-Host "[WARNING] $($moduleMatches.Count) ES6 module patterns found - review stripping rules" -ForegroundColor Yellow
-              Write-Host "    Patterns detected:" -ForegroundColor Yellow
-              foreach ($match in $moduleMatches[0..2]) {  # Show first 3 matches
-                  $preview = $match.Value.Substring(0, [Math]::Min(50, $match.Value.Length))
-                  Write-Host "    - $preview..." -ForegroundColor Yellow
-              }
-          } else {
-              Write-Host "[SUCCESS] ES6 module patterns within expected range" -ForegroundColor Green
-          }
-
-          # Check for new complex external libraries that might need attention
-          $libMatches = [regex]::Matches($indexContent, 'unpkg\.|jsdelivr\.net/(?!.*(?:docsify|search|copy-code|pagination))')
-          if ($libMatches.Count -gt 10) {
-              Write-Host "[WARNING] $($libMatches.Count) external libraries found - review for complexity" -ForegroundColor Yellow
-              Write-Host "    Consider updating stripping rules if new complex libraries added" -ForegroundColor Yellow
-          } else {
-              Write-Host "[SUCCESS] External library usage within expected parameters" -ForegroundColor Green
-          }
-
-          # Check for server-dependent features that should be stripped
-          $serverFeatures = [regex]::Matches($indexContent, 'progress-tracker|kata-.*\.js|main\.js|modules/')
-          if ($serverFeatures.Count -gt 0) {
-              Write-Host "[LIST] Server-dependent features detected: $($serverFeatures.Count)" -ForegroundColor Cyan
-              Write-Host "    These will be stripped for GitHub Pages compatibility" -ForegroundColor Cyan
-          }
-
-          Write-Host "[SUCCESS] PowerShell stripping rules validation completed" -ForegroundColor Green
-          Write-Host "[LIST] Maintenance: Review scripts/Strip-GHPagesJS.ps1 if adding new complex JavaScript" -ForegroundColor Cyan
-          echo "[SUCCESS] Dependencies installed successfully"
-
-      - name: Generate GitHub Pages URL configuration
-        env:
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
-          GITHUB_REPOSITORY_NAME: ${{ github.event.repository.name }}
-          SOURCE_BRANCH: ${{ inputs.source_branch }}
-        run: |
-          echo "[CONFIG] Generating GitHub Pages URL configuration..."
-          if ! pwsh -File scripts/Generate-GitHubPagesConfig.ps1; then
-            echo "[ERROR] Failed to generate URL configuration"
-            echo "Debug information:"
-            echo "Repository: $GITHUB_REPOSITORY"
-            echo "Owner: $GITHUB_REPOSITORY_OWNER"
-            echo "Name: $GITHUB_REPOSITORY_NAME"
-            echo "Branch: $SOURCE_BRANCH"
+          echo "=== Build Output Verification ==="
+          if [ ! -f "build/index.html" ]; then
+            echo "ERROR: build/index.html not found"
             exit 1
           fi
-          echo "[SUCCESS] URL configuration generated successfully"
-
-      - name: Validate sidebar is current
-        run: |
-          echo "[CHECK] Validating sidebar is current with documentation structure..."
-
-          # Store original sidebar content
-          original_sidebar=""
-          if [ -f "docs/_sidebar.md" ]; then
-            original_sidebar=$(cat docs/_sidebar.md)
-          fi
-
-          # Generate sidebar temporarily to check if it's current
-          echo "[EDIT] Generating temporary sidebar for validation..."
-          if ! pwsh -File ./scripts/Generate-DocsSidebar.ps1; then
-            echo "[ERROR] Failed to generate sidebar for validation"
-            exit 1
-          fi
-
-          # Get the newly generated content
-          new_sidebar=""
-          if [ -f "docs/_sidebar.md" ]; then
-            new_sidebar=$(cat docs/_sidebar.md)
-          fi
-
-          if [ "$original_sidebar" != "$new_sidebar" ]; then
-            echo "[ERROR] Sidebar is outdated and needs regeneration!"
-            echo "The sidebar doesn't match the current documentation structure."
-            echo "Please run the following command locally and commit the changes:"
-            echo "  pwsh -File ./scripts/Generate-DocsSidebar.ps1"
-            exit 1
-          else
-            echo "[SUCCESS] Sidebar is current with documentation structure"
-          fi
-
-          # Restore original sidebar if it was temporarily modified
-          if [ -n "$original_sidebar" ]; then
-            echo "$original_sidebar" > docs/_sidebar.md
-          fi
-
-      - name: Build Docsify documentation
-        run: |
-          set -e  # Exit on any error
-
-          echo "[BUILD] Starting enhanced Docsify documentation build..."
-
-          # Show build environment info
-          echo "[INFO] Build Environment:"
-          echo "   - Working directory: $(pwd)"
-          echo "   - Available space: $(df -h . | tail -1 | awk '{print $4}')"
-          echo "   - Memory: $(free -h | grep '^Mem:' | awk '{print $7}' || echo 'N/A')"
-
-          # Create the build directory
-          echo "[FOLDER] Creating build directory..."
-          if ! mkdir -p ./_site; then
-            echo "[ERROR] Failed to create build directory"
-            exit 1
-          fi
-
-          # Copy main Docsify files with progress reporting
-          echo "[LIST] Copying main Docsify files..."
-          files_to_copy=("index.html" "docsify-url-config.js")
-          for file in "${files_to_copy[@]}"; do
-            if [ -f "$file" ]; then
-              if cp "$file" ./_site/; then
-                file_size=$(ls -lh "$file" | awk '{print $5}')
-                echo "   [SUCCESS] $file ($file_size)"
-              else
-                echo "   [ERROR] Failed to copy $file"
-                exit 1
-              fi
-            else
-              echo "   [WARNING] $file not found"
-            fi
-          done
-
-          # Copy all documentation folders with enhanced progress reporting
-          echo "[FOLDER] Copying documentation folders with enhanced monitoring..."
-
-          doc_folders=("docs" "src" "blueprints" "learning" ".github" "copilot")
-          total_folders=${#doc_folders[@]}
-          current_folder=0
-
-          for folder in "${doc_folders[@]}"; do
-            ((current_folder++))
-            echo "[FOLDER] Processing folder $current_folder/$total_folders: $folder"
-
-            if [ -d "$folder" ]; then
-              # Get folder size and file count before copying
-              folder_size=$(du -sh "$folder" | cut -f1)
-              file_count=$(find "$folder" -type f | wc -l)
-              md_count=$(find "$folder" -name "*.md" | wc -l)
-
-              echo "   [INFO] $folder stats: $folder_size, $file_count files ($md_count markdown)"
-
-              # Copy with progress feedback
-              if cp -r "$folder" ./_site/; then
-                echo "   [SUCCESS] $folder copied successfully"
-              else
-                echo "   [WARNING] Failed to copy $folder directory"
-                # For critical folders, this should be an error
-                if [ "$folder" = "docs" ]; then
-                  echo "   [ERROR] Critical folder $folder failed to copy"
-                  exit 1
-                fi
-              fi
-            else
-              echo "   [INFO] $folder directory not found (skipping)"
-            fi
-          done
-
-          # Copy assets if they exist
-          echo "[ASSETS] Copying assets..."
-          if [ -d "assets" ]; then
-            if cp -r assets ./_site/; then
-              echo "[SUCCESS] Root assets directory copied"
-            else
-              echo "[WARNING] Failed to copy root assets directory"
-            fi
-          else
-            echo "[INFO] No root assets directory found"
-          fi
-
-          # Copy any root-level markdown files that might be referenced
-          echo "[MARKDOWN] Copying root markdown files..."
-          find . -maxdepth 1 -name "*.md" -exec cp {} ./_site/ \; 2>/dev/null || true
-
-          # Copy any additional static files Docsify might need
-          echo "[FILES] Copying additional static files..."
-          for file in robots.txt sitemap.xml favicon.ico .nojekyll; do
-            if [ -f "$file" ]; then
-              if cp "$file" ./_site/; then
-                echo "[SUCCESS] Copied $file"
-              else
-                echo "[WARNING] Failed to copy $file"
-              fi
-            fi
-          done
-
-          # Create .nojekyll file to prevent GitHub Pages from trying to process with Jekyll
-          if ! touch ./_site/.nojekyll; then
-            echo "[ERROR] Failed to create .nojekyll file"
-            exit 1
-          fi
-          echo "[SUCCESS] Created .nojekyll file"
-
-          # Verify the build
-          echo "[VERIFY] Build verification:"
-          echo "Build output directory structure:"
-          if ! find ./_site -type f | head -20; then
-            echo "[ERROR] Failed to list build output files"
-            exit 1
-          fi
-
-          echo ""
-          echo "[STATS] Build statistics:"
-          total_files=$(find ./_site -type f | wc -l)
-          total_size=$(du -sh ./_site | cut -f1)
-          echo "Total files: $total_files"
-          echo "Total size: $total_size"
-
-          if [ "$total_files" -lt 10 ]; then
-            echo "[ERROR] Build output contains suspiciously few files ($total_files)"
-            exit 1
-          fi
-
-          # Check critical files
-          echo "[CHECK] Critical files check:"
-          for file in index.html docsify-url-config.js docs/_sidebar.md; do
-            if [ -f "./_site/$file" ]; then
-              echo "[SUCCESS] $file found"
-            else
-              echo "[ERROR] $file missing"
-              exit 1
-            fi
-          done
-
-          # Verify section-based navigation architecture
-          echo "[NAVIGATION] Section-based navigation verification:"
-          if [ -d "./_site/docs/_parts" ]; then
-            echo "[SUCCESS] Section navigation directory (docs/_parts) found"
-
-            # Check for section-specific sidebars
-            section_sidebars=("docs-sidebar.md" "learning-sidebar.md" "blueprints-sidebar.md" "infrastructure-sidebar.md")
-            for sidebar in "${section_sidebars[@]}"; do
-              if [ -f "./_site/docs/_parts/$sidebar" ]; then
-                echo "[SUCCESS] Section sidebar found: $sidebar"
-              else
-                echo "[WARNING] Section sidebar missing: $sidebar"
-              fi
-            done
-          else
-            echo "[WARNING] Section navigation directory (docs/_parts) not found"
-          fi
-
-          # Verify all documentation folders are copied
-          echo "[DOCS] Documentation folders verification:"
-          doc_folders=("docs" "src" "blueprints" "learning" ".github" "copilot")
-          for folder in "${doc_folders[@]}"; do
-            if [ -d "./_site/$folder" ]; then
-              file_count=$(find "./_site/$folder" -name "*.md" | wc -l)
-              echo "[SUCCESS] $folder directory found ($file_count markdown files)"
-            else
-              echo "[INFO] $folder directory not found (may not exist in source)"
-            fi
-          done
-
-          # Verify assets are copied
-          echo "[ASSETS] Asset verification:"
-          if [ -d "./_site/docs/assets" ]; then
-            echo "[SUCCESS] docs/assets directory found"
-            echo "[FOLDER] Assets found: $(ls ./_site/docs/assets/ | tr '\n' ' ')"
-          else
-            echo "[WARNING]  No docs/assets directory found"
-          fi
-
-          # Verify Docsify configuration
-          echo "[CONFIG]  Docsify configuration check:"
-          if grep -q "window.\$docsify" ./_site/index.html; then
-            echo "[SUCCESS] Docsify configuration found in index.html"
-          else
-            echo "[ERROR] Docsify configuration missing from index.html"
-            exit 1
-          fi
-
-          # Verify URL token replacement setup
-          echo "[LINK] URL configuration check:"
-          if grep -q "window.EDGE_AI_URL_CONFIG" ./_site/docsify-url-config.js; then
-            echo "[SUCCESS] URL configuration found"
-          else
-            echo "[ERROR] URL configuration missing"
-            exit 1
-          fi
-
-          echo "[COMPLETE] Docsify build completed successfully"
-
-      - name: Strip complex JavaScript for GitHub Pages compatibility
-        shell: pwsh
-        run: |
-          Write-Host "[TOOL] Stripping complex JavaScript features for static hosting compatibility..."
-
-          $indexPath = "./_site/index.html"
-          $backupPath = "./_site/index.html.backup"
-
-          # Create backup of original index.html
-          if (Test-Path $indexPath) {
-            Copy-Item $indexPath $backupPath
-            Write-Host "[SUCCESS] Created backup of index.html"
-          } else {
-            Write-Host "[ERROR] index.html not found in build output"
-            exit 1
-          }
-
-          # Read the HTML content
-          $content = Get-Content $indexPath -Raw
-
-          # Strip ES6 modules - remove script tags with type="module"
-          $content = $content -replace '<script type="module" src="[^"]*"></script>', ''
-
-          # Remove the entire ES6 modules section
-          $content = $content -replace '(?s)<!-- KATA TRACKER SYSTEM - ES6 MODULES -->.*?<!-- DOCSIFY PLUGINS & ENHANCEMENTS -->', '<!-- DOCSIFY PLUGINS & ENHANCEMENTS -->'
-
-          # Remove complex interactive features that require server-side support
-          $content = $content -replace '.*learning-progress-tracker-plugin\.js.*\r?\n?', ''
-
-          # Write the modified content back
-          Set-Content $indexPath $content -NoNewline
-
-          # Remove server-dependent JavaScript files
-          $filesToRemove = @(
-            "./_site/docs/assets/js/main.js",
-            "./_site/docs/assets/js/modules/*",
-            "./_site/docs/assets/js/features/progress-tracker*",
-            "./_site/docs/assets/js/features/kata-*"
-          )
-
-          foreach ($pattern in $filesToRemove) {
-            $files = Get-ChildItem $pattern -ErrorAction SilentlyContinue
-            if ($files) {
-              $files | Remove-Item -Force
-              Write-Host "[REMOVE]  Removed: $($files.Count) files matching $pattern"
-            }
-          }
-
-          # Validate the stripping was successful
-          Write-Host "[CHECK] Validating JavaScript stripping..."
-          $finalContent = Get-Content $indexPath -Raw
-
-          if ($finalContent -match 'type="module"') {
-            Write-Host "[WARNING]  Warning: Some ES6 modules may still be present"
-          } else {
-            Write-Host "[SUCCESS] ES6 modules successfully removed"
-          }
-
-          if ($finalContent -match 'learning-progress-tracker') {
-            Write-Host "[WARNING]  Warning: Progress tracker references may still be present"
-          } else {
-            Write-Host "[SUCCESS] Progress tracker references successfully removed"
-          }
-
-          # Display file size comparison
-          $originalSize = (Get-Item $backupPath).Length
-          $newSize = (Get-Item $indexPath).Length
-          Write-Host "[STATS] File size: Original: $originalSize bytes, Stripped: $newSize bytes"
-
-          Write-Host "[TARGET] JavaScript stripping completed for GitHub Pages compatibility"
-
-      - name: Validate build output
-        run: |
-          echo "[CHECK] Running build validation tests..."
-
-          # Test 1: Verify HTML structure
-          echo "[FILE] Testing HTML structure..."
-          if ! grep -q "<html" ./_site/index.html; then
-            echo "[ERROR] Invalid HTML structure in index.html"
-            exit 1
-          fi
-          echo "[SUCCESS] HTML structure is valid"
-
-          # Test 2: Check for broken internal links in markdown
-          echo "[LINK] Checking for potential internal link issues..."
-          broken_links=0
-
-          # Check for common broken link patterns in docs
-          if find ./_site/docs -name "*.md" -exec grep -l "\](.*\.md)" {} \; | head -5; then
-            echo "[WARNING]  Found relative markdown links that may need attention"
-            echo "[INFO]  Note: These will be processed by Docsify's router"
-          fi
-
-          # Test 3: Verify critical Docsify plugins are referenced
-          echo "[PLUGIN] Checking plugin references..."
-          plugins_found=0
-          for plugin in "docsify@4" "search.min.js" "docsify-pagination" "docsify-copy-code"; do
-            if grep -q "$plugin" ./_site/index.html; then
-              echo "[SUCCESS] Plugin $plugin found"
-              ((plugins_found++))
-            else
-              echo "[WARNING]  Plugin $plugin not found"
-            fi
-          done
-
-          if [ $plugins_found -ge 3 ]; then
-            echo "[SUCCESS] Essential plugins are properly referenced"
-          else
-            echo "[WARNING]  Some plugins may be missing, but build can continue"
-          fi
-
-          # Test 4: Dynamic sidebar validation based on actual content
-          echo "[DOCS] Dynamic sidebar validation..."
-          if [ -f "./_site/docs/_sidebar.md" ]; then
-            # Count total sections in sidebar (lines starting with '- [' or just '- ')
-            sidebar_sections=$(grep -c "^- " "./_site/docs/_sidebar.md" || echo "0")
-            echo "[SUCCESS] Sidebar found with $sidebar_sections navigation sections"
-
-            # Verify sidebar contains content from all copied folders
-            content_areas_found=0
-
-            # Check for docs content
-            if grep -q "docs/" "./_site/docs/_sidebar.md"; then
-              echo "[SUCCESS] Docs content found in sidebar"
-              ((content_areas_found++))
-            fi
-
-            # Check for GitHub resources (if .github was copied)
-            if [ -d "./_site/.github" ] && grep -q -i "github\|copilot.*resources\|prompts" "./_site/docs/_sidebar.md"; then
-              echo "[SUCCESS] GitHub resources content found in sidebar"
-              ((content_areas_found++))
-            fi
-
-            # Check for infrastructure content (if src was copied)
-            if [ -d "./_site/src" ] && grep -q -i "infrastructure\|terraform\|bicep" "./_site/docs/_sidebar.md"; then
-              echo "[SUCCESS] Infrastructure content found in sidebar"
-              ((content_areas_found++))
-            fi
-
-            # Check for blueprints content (if blueprints was copied)
-            if [ -d "./_site/blueprints" ] && grep -q -i "blueprint" "./_site/docs/_sidebar.md"; then
-              echo "[SUCCESS] Blueprints content found in sidebar"
-              ((content_areas_found++))
-            fi
-
-            # Check for learning content (if learning was copied)
-            if [ -d "./_site/learning" ] && grep -q -i "learning" "./_site/docs/_sidebar.md"; then
-              echo "[SUCCESS] Learning content found in sidebar"
-              ((content_areas_found++))
-            fi
-
-            echo "[STATS] Content areas validated: $content_areas_found"
-
-            # Require at least basic content structure
-            if [ "$sidebar_sections" -ge 5 ] && [ "$content_areas_found" -ge 2 ]; then
-              echo "[SUCCESS] Sidebar validation passed: adequate content structure"
-            else
-              echo "[WARNING]  Sidebar validation warning: limited content structure detected"
-              echo "    Sections: $sidebar_sections, Content areas: $content_areas_found"
-            fi
-          else
-            echo "[ERROR] Sidebar file missing"
-            exit 1
-          fi
-
-          # Test 5: Validate content accessibility across all folders
-          echo "[LINK] Content accessibility validation..."
-          total_md_files=$(find ./_site -name "*.md" | wc -l)
-          echo "[FILE] Total markdown files deployed: $total_md_files"
-
-          # Verify special file types are accessible
-          special_files_found=0
-          if find ./_site -name "*.prompt.md" | head -1 > /dev/null 2>&1; then
-            prompt_count=$(find ./_site -name "*.prompt.md" | wc -l)
-            echo "[SUCCESS] Prompt files found: $prompt_count"
-            ((special_files_found++))
-          fi
-
-          if find ./_site -name "*.agent.md" | head -1 > /dev/null 2>&1; then
-            agent_count=$(find ./_site -name "*.agent.md" | wc -l)
-            echo "[SUCCESS] Agent files found: $agent_count"
-            ((special_files_found++))
-          fi
-
-          if find ./_site -name "*.instructions.md" | head -1 > /dev/null 2>&1; then
-            instructions_count=$(find ./_site -name "*.instructions.md" | wc -l)
-            echo "[SUCCESS] Instructions files found: $instructions_count"
-            ((special_files_found++))
-          fi
-
-          echo "[TARGET] Special file types accessible: $special_files_found"
-
-          # Comprehensive deployment validation report
-          echo ""
-          echo "[INFO] === COMPREHENSIVE DEPLOYMENT VALIDATION REPORT ==="
-          echo "[BUILD]  Build Summary:"
-          echo "   - Total files deployed: $total_files"
-          echo "   - Total markdown files: $total_md_files"
-          echo "   - Sidebar sections: $sidebar_sections"
-          echo "   - Content areas validated: $content_areas_found"
-          echo "   - Special file types: $special_files_found"
-          echo ""
-          echo "[FOLDER] Folder Status:"
-          for folder in docs src blueprints learning .github copilot; do
-            if [ -d "./_site/$folder" ]; then
-              folder_md_count=$(find "./_site/$folder" -name "*.md" | wc -l)
-              echo "   [SUCCESS] $folder: $folder_md_count files"
-            else
-              echo "   [NEUTRAL] $folder: not present"
-            fi
-          done
-          echo ""
-          echo "[TARGET] Navigation Architecture:"
-          if [ -d "./_site/docs/_parts" ]; then
-            parts_count=$(ls "./_site/docs/_parts"/*.md 2>/dev/null | wc -l)
-            echo "   [SUCCESS] Section-based navigation: $parts_count section sidebars"
-          else
-            echo "   [NEUTRAL] Section-based navigation: not detected"
-          fi
-          echo ""
-          echo "[COMPLETE] Deployment validation completed successfully!"
-
-          # Task 2.1: Enhanced PowerShell validation for simplified index.html structure
-          echo ""
-          echo "[STATS] === GITHUB PAGES COMPATIBILITY VALIDATION ==="
-
-      - name: Validate GitHub Pages JavaScript stripping
-        shell: pwsh
-        run: |
-          Write-Host "[CHECK] Validating simplified index.html for GitHub Pages..." -ForegroundColor Cyan
-
-          $indexContent = Get-Content "./_site/index.html" -Raw -Encoding UTF8
-
-          # Check for stripped content using PowerShell regex
-          $hasES6Modules = $indexContent -match 'type="module"'
-          $hasComplexLibs = $indexContent -match 'mermaid|js-yaml|main\.js'
-          $hasProgressTracker = $indexContent -match 'learning-progress-tracker|kata-.*\.js'
-
-          Write-Host "[STATS] Simplified index.html validation:" -ForegroundColor Cyan
-          Write-Host "   - ES6 modules removed: $(if (-not $hasES6Modules) { 'YES [SUCCESS]' } else { 'NO [ERROR]' })"
-          Write-Host "   - Complex libraries removed: $(if (-not $hasComplexLibs) { 'YES [SUCCESS]' } else { 'NO [ERROR]' })"
-          Write-Host "   - Progress tracker removed: $(if (-not $hasProgressTracker) { 'YES [SUCCESS]' } else { 'NO [ERROR]' })"
-
-          # Verify core functionality preserved
-          $coreDocsify = ([regex]::Matches($indexContent, 'cdn\.jsdelivr\.net/npm/docsify@4')).Count
-          $basicPlugins = ([regex]::Matches($indexContent, 'search\.min\.js|copy-code|pagination')).Count
-          $cssLinks = ([regex]::Matches($indexContent, 'stylesheet')).Count
-
-          Write-Host "   - Docsify core: $(if ($coreDocsify -gt 0) { "FOUND $coreDocsify [SUCCESS]" } else { 'MISSING [ERROR]' })"
-          Write-Host "   - Basic plugins: $(if ($basicPlugins -gt 0) { "FOUND $basicPlugins [SUCCESS]" } else { 'MISSING [ERROR]' })"
-          Write-Host "   - CSS stylesheets: $(if ($cssLinks -gt 0) { "FOUND $cssLinks [SUCCESS]" } else { 'MISSING [ERROR]' })"
-
-          # Calculate file size reduction if backup exists
-          $backupPath = "./_site/index.html.backup"
-          if (Test-Path $backupPath) {
-              $originalSize = (Get-Item $backupPath).Length
-              $newSize = (Get-Item "./_site/index.html").Length
-              $reductionBytes = $originalSize - $newSize
-              $reductionPercent = [math]::Round(($reductionBytes) / $originalSize * 100, 1)
-              Write-Host "   - File size reduction: $reductionBytes bytes ($reductionPercent%)" -ForegroundColor Green
-          }
-
-          # Final validation result
-          $validationPassed = (-not $hasES6Modules) -and (-not $hasComplexLibs) -and ($coreDocsify -gt 0)
-
-          if ($validationPassed) {
-              Write-Host "[TARGET] GitHub Pages optimization successful!" -ForegroundColor Green
-              Write-Host "[INFO] Static hosting compatibility confirmed - no complex JS features detected" -ForegroundColor Green
-          } else {
-              Write-Host "[ERROR] GitHub Pages optimization failed" -ForegroundColor Red
-              Write-Host "[WARNING]  Complex JavaScript features may cause runtime errors on static hosting" -ForegroundColor Red
-
-              if ($hasES6Modules) { Write-Host "   - ES6 modules detected (incompatible with GitHub Pages)" -ForegroundColor Red }
-              if ($hasComplexLibs) { Write-Host "   - Complex external libraries detected" -ForegroundColor Red }
-              if ($coreDocsify -eq 0) { Write-Host "   - Docsify core missing" -ForegroundColor Red }
-
-              exit 1
-          }
-
-      - name: Continue build validation
-        run: |
-          echo "[TARGET] Build validation completed successfully"
+          echo "Build output contains $(find build -type f | wc -l) files"
+          echo "Build directory size: $(du -sh build | cut -f1)"
+          echo "Build verification passed"
 
       - name: Create build artifact archive
-        run: |
-          tar -czf site-artifact.tar.gz -C ./_site .
+        run: tar -czf site-artifact.tar.gz -C docs/docusaurus/build .
 
       - name: Upload build artifact
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: documentation-build-${{ github.run_number }}
           path: site-artifact.tar.gz
           retention-days: 30
 
-      - name: Upload pages artifact
-        uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4.0.0
+      - name: Upload GitHub Pages artifact
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
-          # Adjust this path to match your documentation output directory
-          path: './_site'
+          path: docs/docusaurus/build
 
   attest-documentation:
     needs: [build]
@@ -759,13 +99,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download build artifact
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: documentation-build-${{ github.run_number }}
           path: ./attestation-staging
 
       - name: Attest build provenance
-        uses: actions/attest-build-provenance@db473fddc028af60658334401dc6fa3ffd8669fd # v2.3.0
+        uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
         with:
           subject-path: ./attestation-staging/**
 
@@ -777,7 +117,7 @@ jobs:
           sparse-checkout-cone-mode: false
 
       - name: Generate SBOM
-        uses: anchore/sbom-action@e11c554f704a0b820cbf8c51673f6945e0731532 # v0.20.0
+        uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
         with:
           artifact-name: documentation-sbom-${{ github.run_number }}
           output-file: documentation-sbom.spdx.json
@@ -785,7 +125,7 @@ jobs:
           config: .syft.yaml
 
       - name: Attest SBOM
-        uses: actions/attest@afd638254319277bb3d7f0a234478733e2e46a73 # v2.3.0
+        uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
         with:
           subject-path: documentation-sbom.spdx.json
           predicate-type: https://spdx.dev/Document/v2.3
@@ -807,171 +147,21 @@ jobs:
 
       - name: Verify deployment
         run: |
-          echo "[CHECK] Verifying GitHub Pages deployment..."
-
-          # Get the deployment URL
+          echo "=== Deployment Verification ==="
           SITE_URL="${{ steps.deployment.outputs.page_url }}"
-          echo "[LOCATION] Deployment URL: $SITE_URL"
+          echo "Deployed to: ${SITE_URL}"
 
-          # Wait a moment for deployment to be fully active
-          echo "[WAIT] Waiting for deployment to be fully active..."
-          sleep 30
-
-          # Test basic site accessibility
-          echo "[WEB] Testing site accessibility..."
-          if curl -s -f "$SITE_URL" > /dev/null; then
-            echo "[SUCCESS] Site is accessible"
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${SITE_URL}" || echo "000")
+          if [ "$STATUS" -ge 200 ] && [ "$STATUS" -lt 400 ]; then
+            echo "Site is accessible (HTTP ${STATUS})"
           else
-            echo "[WARNING]  Site accessibility check failed (may need more time)"
+            echo "WARNING: Site returned HTTP ${STATUS}"
           fi
 
-          # Test specific documentation paths if site is accessible
-          if curl -s -f "$SITE_URL" > /dev/null; then
-            echo "[LINK] Testing documentation paths..."
-
-            # Test main documentation structure
-            paths_to_test=("" "/#/docs/" "/#/docs/_sidebar")
-
-            for path in "${paths_to_test[@]}"; do
-              test_url="${SITE_URL}${path}"
-              if curl -s -f "$test_url" > /dev/null; then
-                echo "   [SUCCESS] $path accessible"
-              else
-                echo "   [WARNING]  $path may not be accessible"
-              fi
-            done
-
-            echo "[TARGET] Deployment verification completed"
-            echo "[INFO] Site URL: $SITE_URL"
-            echo "[INFO] Documentation should be accessible at: ${SITE_URL}/#/"
+          CONTENT=$(curl -sL "${SITE_URL}" || echo "")
+          if echo "$CONTENT" | grep -q '<div id="__docusaurus"'; then
+            echo "Docusaurus root element found"
           else
-            echo "[INFO]  Skipping path tests due to accessibility issues"
-            echo "[INFO] Site URL: $SITE_URL (may need additional time to be fully active)"
+            echo "WARNING: Docusaurus root element not detected"
           fi
-
-      - name: Verify GitHub Pages functionality with PowerShell
-        shell: pwsh
-        run: |
-          Write-Host "[CHECK] Testing basic Docsify functionality..." -ForegroundColor Cyan
-
-          $siteUrl = "${{ steps.deployment.outputs.page_url }}"
-          Write-Host "[LOCATION] Testing deployed site: $siteUrl" -ForegroundColor Cyan
-
-          try {
-              # Test that deployed site loads and contains Docsify configuration
-              Write-Host "[WEB] Fetching deployed site content..." -ForegroundColor Cyan
-              $siteContent = Invoke-WebRequest -Uri $siteUrl -UseBasicParsing -TimeoutSec 30
-
-              if ($siteContent.Content -match 'window\.\$docsify') {
-                  Write-Host "[SUCCESS] Docsify configuration found in deployed site" -ForegroundColor Green
-              } else {
-                  Write-Host "[ERROR] Docsify configuration missing from deployed site" -ForegroundColor Red
-                  exit 1
-              }
-
-              # Test search plugin is referenced
-              if ($siteContent.Content -match 'search\.min\.js') {
-                  Write-Host "[SUCCESS] Search plugin referenced in deployed site" -ForegroundColor Green
-              } else {
-                  Write-Host "[WARNING]  Search plugin missing from deployed site" -ForegroundColor Yellow
-              }
-
-              # Test CSS is preserved
-              $cssCount = ([regex]::Matches($siteContent.Content, 'stylesheet')).Count
-              if ($cssCount -gt 5) {
-                  Write-Host "[SUCCESS] CSS stylesheets preserved ($cssCount found)" -ForegroundColor Green
-              } else {
-                  Write-Host "[WARNING]  Limited CSS stylesheets ($cssCount found)" -ForegroundColor Yellow
-              }
-
-              # Test no complex JS that could cause errors
-              $hasComplexJS = $siteContent.Content -match 'type="module"|main\.js|mermaid|learning-progress-tracker'
-              if (-not $hasComplexJS) {
-                  Write-Host "[SUCCESS] No complex JS references that could cause errors" -ForegroundColor Green
-              } else {
-                  Write-Host "[WARNING]  Complex JS references still present in deployed site" -ForegroundColor Yellow
-
-                  # Show what complex JS was found for debugging
-                  if ($siteContent.Content -match 'type="module"') {
-                      Write-Host "   - ES6 modules detected" -ForegroundColor Yellow
-                  }
-                  if ($siteContent.Content -match 'main\.js') {
-                      Write-Host "   - Main.js references detected" -ForegroundColor Yellow
-                  }
-                  if ($siteContent.Content -match 'mermaid') {
-                      Write-Host "   - Mermaid library detected" -ForegroundColor Yellow
-                  }
-              }
-
-              # Test basic Docsify functionality indicators
-              $hasDocsifyCore = $siteContent.Content -match 'cdn\.jsdelivr\.net/npm/docsify@4'
-              $hasBasicPlugins = $siteContent.Content -match 'docsify.*\.(min\.)?js'
-
-              Write-Host ""
-              Write-Host "[STATS] GitHub Pages Compatibility Summary:" -ForegroundColor Cyan
-              Write-Host "   - Docsify core present: $(if ($hasDocsifyCore) { 'YES [SUCCESS]' } else { 'NO [ERROR]' })"
-              Write-Host "   - Basic plugins present: $(if ($hasBasicPlugins) { 'YES [SUCCESS]' } else { 'NO [ERROR]' })"
-              Write-Host "   - Complex JS removed: $(if (-not $hasComplexJS) { 'YES [SUCCESS]' } else { 'NO [WARNING]' })"
-              Write-Host "   - CSS styling preserved: $(if ($cssCount -gt 5) { 'YES [SUCCESS]' } else { 'LIMITED [WARNING]' })"
-
-              if ($hasDocsifyCore -and (-not $hasComplexJS)) {
-                  Write-Host ""
-                  Write-Host "[TARGET] GitHub Pages deployment successfully validated!" -ForegroundColor Green
-                  Write-Host "[INFO] Static hosting compatibility confirmed" -ForegroundColor Green
-              } else {
-                  Write-Host ""
-                  Write-Host "[WARNING]  Deployment validation completed with warnings" -ForegroundColor Yellow
-                  Write-Host "[INFO] Site should function but may have limited features" -ForegroundColor Yellow
-              }
-
-          } catch {
-              Write-Host "[WARNING]  Failed to validate deployed site: $_" -ForegroundColor Yellow
-              Write-Host "[INFO] This may be due to deployment delay - site should be accessible shortly" -ForegroundColor Yellow
-              Write-Host "[INFO] Site URL: $siteUrl" -ForegroundColor Cyan
-          }
-
-      - name: Test essential GitHub Pages functionality
-        run: |
-          echo "[CHECK] Testing essential GitHub Pages functionality..."
-
-          SITE_URL="${{ steps.deployment.outputs.page_url }}"
-
-          # Test basic site loads
-          if curl -s -f "$SITE_URL" > /dev/null; then
-            echo "[SUCCESS] Site loads successfully"
-          else
-            echo "[WARNING]  Site failed to load (may need more time)"
-            exit 0  # Don't fail the build, just warn
-          fi
-
-          # Test Docsify configuration is present
-          if curl -s "$SITE_URL" | grep -q 'window\.\$docsify'; then
-            echo "[SUCCESS] Docsify configuration found"
-          else
-            echo "[ERROR] Docsify configuration missing"
-            exit 1
-          fi
-
-          # Validate no obvious broken references that would cause JS errors
-          site_content=$(curl -s "$SITE_URL")
-
-          if echo "$site_content" | grep -q 'type="module"'; then
-            echo "[WARNING]  ES6 modules detected - may cause errors on GitHub Pages"
-          else
-            echo "[SUCCESS] No ES6 modules detected"
-          fi
-
-          if echo "$site_content" | grep -q 'main\.js\|learning-progress-tracker'; then
-            echo "[WARNING]  Complex JS references detected - may cause errors"
-          else
-            echo "[SUCCESS] No complex JS references that could cause errors"
-          fi
-
-          # Test that basic Docsify functionality is preserved
-          if echo "$site_content" | grep -q 'search\.min\.js'; then
-            echo "[SUCCESS] Search functionality preserved"
-          else
-            echo "[WARNING]  Search functionality may not be available"
-          fi
-
-          echo "[TARGET] Essential functionality validation completed"
+          echo "Deployment verification complete"

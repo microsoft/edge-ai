@@ -319,7 +319,7 @@ Some blueprints include comprehensive test suites using Go and the Terratest fra
 
 ### Blueprint Test Architecture
 
-**Shared Test Utilities:** [src/900-tools-utilities/904-test-utilities/](../../src/900-tools-utilities/904-test-utilities/)
+**Shared Test Utilities:** [src/900-tools-utilities/904-test-utilities/](https://github.com/microsoft/edge-ai/tree/main/src/900-tools-utilities/904-test-utilities/)
 
 Provides reusable testing functions for all blueprints including:
 
@@ -327,7 +327,7 @@ Provides reusable testing functions for all blueprints including:
 - Deployment and cleanup utilities
 - Output normalization across frameworks
 
-**Reference Implementation:** [blueprints/full-single-node-cluster/tests/](../../blueprints/full-single-node-cluster/tests/)
+**Reference Implementation:** [blueprints/full-single-node-cluster/tests/](https://github.com/microsoft/edge-ai/tree/main/blueprints/full-single-node-cluster/tests/)
 
 Complete test suite demonstrating:
 
@@ -448,7 +448,7 @@ When creating a new blueprint, add comprehensive test coverage:
 
 **See:** [Blueprint Developer Guide](../getting-started/blueprint-developer.md#testing-and-validation) for detailed instructions
 
-**See:** [test-utilities README](../../src/900-tools-utilities/904-test-utilities/README.md) for complete API reference
+**See:** [test-utilities README](https://github.com/microsoft/edge-ai/blob/main/src/900-tools-utilities/904-test-utilities/README.md) for complete API reference
 
 ### Blueprint Validation Script
 
@@ -672,7 +672,7 @@ go test -v -cpuprofile=cpu.prof -memprofile=mem.prof ./tests/...
 - **Share testing knowledge** across the team
 - **Contribute improvements** to testing frameworks and tools
 
-For more information about development workflows, see the [Development Environment](./development-environment.md) and [Contributing Guidelines](./contributing.md).
+For more information about development workflows, see the [Development Environment](./development-environment.md) and [Contributing Guidelines](../contributions.md).
 
 <!-- markdownlint-disable MD036 -->
 *🤖 Crafted with precision by ✨Copilot following brilliant human instruction,

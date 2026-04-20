@@ -309,7 +309,7 @@ Each phase must include:
 **Column Requirements:**
 
 - **Capability Group**: Bold text with capability group link
-- **Critical Capabilities**: List individual capabilities with links, use `<br>` for multiple capabilities
+- **Critical Capabilities**: List individual capabilities with links, use `<br />` for multiple capabilities
 - **Implementation Requirements**: Specific technical requirements (not generic descriptions)
 - **Status**: Use standardized status indicators with consistent formatting
 
