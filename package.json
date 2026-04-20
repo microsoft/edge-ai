@@ -30,7 +30,6 @@
     "checkov-all": "pwsh -Command \"& $PWD/scripts/build/Detect-Folder-Changes.ps1 -IncludeAllIaC -OutputJson | & $PWD/scripts/Run-Checkov.ps1 -OutputFolder './checkov-results' -OutputFile 'code-analysis.xml'\"",
     "link-lang-check": "pwsh -File ./scripts/linting/Link-Lang-Check.ps1",
     "link-lang-fix": "pwsh -File ./scripts/linting/Link-Lang-Check.ps1 -Fix",
-
     "unicode:outputonly": "pwsh -File ./scripts/Fix-VisuallySimilarUnicode.ps1 -OutputOnly",
     "unicode:outputonly:verbose": "pwsh -File ./scripts/Fix-VisuallySimilarUnicode.ps1 -OutputOnly -Verbose",
     "unicode:fix": "pwsh -File ./scripts/Fix-VisuallySimilarUnicode.ps1",
