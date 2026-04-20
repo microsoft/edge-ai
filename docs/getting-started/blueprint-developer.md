@@ -308,8 +308,8 @@ Selected blueprints include comprehensive test suites using Go and the Terratest
 
 **Available Test Infrastructure:**
 
-- **Shared utilities**: [src/900-tools-utilities/904-test-utilities/](../../src/900-tools-utilities/904-test-utilities/) - Reusable test functions for all blueprints
-- **Reference implementation**: [blueprints/full-single-node-cluster/tests/](../../blueprints/full-single-node-cluster/tests/) - Complete test suite example
+- **Shared utilities**: [src/900-tools-utilities/904-test-utilities/](https://github.com/microsoft/edge-ai/tree/main/src/900-tools-utilities/904-test-utilities/) - Reusable test functions for all blueprints
+- **Reference implementation**: [blueprints/full-single-node-cluster/tests/](https://github.com/microsoft/edge-ai/tree/main/blueprints/full-single-node-cluster/tests/) - Complete test suite example
 
 ### Creating Tests for Your Blueprint
 
@@ -333,19 +333,19 @@ Selected blueprints include comprehensive test suites using Go and the Terratest
 
    Define a struct matching your blueprint's outputs with framework-specific tags.
 
-   **See:** [full-single-node-cluster/tests/outputs.go](../../blueprints/full-single-node-cluster/tests/outputs.go) for pattern
+   **See:** [full-single-node-cluster/tests/outputs.go](https://github.com/microsoft/edge-ai/blob/main/blueprints/full-single-node-cluster/tests/outputs.go) for pattern
 
 4. **Create contract tests**:
 
    Create `contract_terraform_test.go` and `contract_bicep_test.go` that validate declared outputs match your struct.
 
-   **See:** [full-single-node-cluster/tests/contract_terraform_test.go](../../blueprints/full-single-node-cluster/tests/contract_terraform_test.go)
+   **See:** [full-single-node-cluster/tests/contract_terraform_test.go](https://github.com/microsoft/edge-ai/blob/main/blueprints/full-single-node-cluster/tests/contract_terraform_test.go)
 
 5. **Create deployment tests**:
 
    Create `deploy_terraform_test.go` and `deploy_bicep_test.go` for end-to-end validation.
 
-   **See:** [full-single-node-cluster/tests/deploy_terraform_test.go](../../blueprints/full-single-node-cluster/tests/deploy_terraform_test.go)
+   **See:** [full-single-node-cluster/tests/deploy_terraform_test.go](https://github.com/microsoft/edge-ai/blob/main/blueprints/full-single-node-cluster/tests/deploy_terraform_test.go)
 
 6. **Add helper scripts**:
 
@@ -370,7 +370,7 @@ export CLEANUP_RESOURCES=true
 ./run-deployment-tests.sh terraform  # or bicep, or both
 ```
 
-**Documentation:** See [src/900-tools-utilities/904-test-utilities/README.md](../../src/900-tools-utilities/904-test-utilities/README.md) for complete testing guide and API reference
+**Documentation:** See [src/900-tools-utilities/904-test-utilities/README.md](https://github.com/microsoft/edge-ai/blob/main/src/900-tools-utilities/904-test-utilities/README.md) for complete testing guide and API reference
 
 ### Linting and Code Quality
 
@@ -545,7 +545,7 @@ After creating your blueprint:
 ## Additional Resources
 
 - **[Feature Developer Guide](feature-developer.md)** - Contribute new components
-- **[Component Documentation](src/README.md)** - Understanding existing components
+- **[Component Documentation](https://github.com/microsoft/edge-ai/blob/main/src/README.md)** - Understanding existing components
 - **[AI-Assisted Engineering](../contributing/ai-assisted-engineering.md)** - Using GitHub Copilot for blueprint development
 - **[Terraform Best Practices][terraform-best-practices]** - Official Terraform guidelines
 - **[Bicep Best Practices][bicep-best-practices]** - Official Bicep guidelines
@@ -558,7 +558,7 @@ After creating your blueprint:
 [terraform-best-practices]: https://www.terraform.io/docs/cloud/guides/recommended-practices/index.html
 [bicep-best-practices]: https://docs.microsoft.com/azure/azure-resource-manager/bicep/best-practices
 [iot-ops-docs]: https://learn.microsoft.com/azure/iot-operations/
-[project-repo]: {{REPO_URL}}
+[project-repo]: https://github.com/microsoft/edge-ai
 
 <!-- markdownlint-disable MD036 -->
 *🤖 Crafted with precision by ✨Copilot following brilliant human instruction,
