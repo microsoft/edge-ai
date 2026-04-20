@@ -774,11 +774,20 @@ function Invoke-SecurityScan {
         Write-Info "Scanning service: $service"
 
         try {
+            # Use a per-service OutputPath so concurrent scans within a multi-service
+            # build cannot overwrite each other's reports. The downstream gate reader
+            # (Get-GrypeScanResult) recurses, so './security-reports' as the gate root
+            # still discovers all per-service subdirectories (issue #362).
+            $serviceReportPath = Join-Path './security-reports' $service
+            if (-not (Test-Path $serviceReportPath)) {
+                New-Item -ItemType Directory -Path $serviceReportPath -Force | Out-Null
+            }
+
             $scanArgs = @{
                 ImageName      = "$($Context.App.Name)/$service"
                 ImageTag       = $Context.App.BuildId
                 Registry       = $Context.App.Registry
-                OutputPath     = "./security-reports"
+                OutputPath     = $serviceReportPath
                 FailOnSeverity = $Threshold
                 Quiet          = $true
                 VerboseLogging = $true

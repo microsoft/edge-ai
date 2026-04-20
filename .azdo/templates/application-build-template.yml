@@ -335,7 +335,7 @@ jobs:
             -ConfigFile "./.security-gate.yml"
             -Environment "$(Build.Reason)"
             -OutputFormat "junit"
-            -ExitOnFailure $true
+            -ExitOnFailure $${{ parameters.breakBuild }}
           workingDirectory: '$(System.DefaultWorkingDirectory)'
           pwsh: true
 
