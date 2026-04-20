@@ -170,6 +170,16 @@ jobs:
       break-build: false
     secrets: inherit
 
+  # Dependency advisory audit (cargo-audit + govulncheck) for main branch
+  dep-audit-main:
+    name: Dependency Audit
+    permissions:
+      contents: read
+    uses: ./.github/workflows/dep-audit.yml
+    with:
+      break-build: false
+    secrets: inherit
+
   # Call docs-check-terraform workflow
   docs-check-terraform-main:
     name: Terraform Documentation Check

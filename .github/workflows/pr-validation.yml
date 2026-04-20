@@ -228,6 +228,16 @@ jobs:
       break-build: true
     secrets: inherit
 
+  # Dependency advisory audit (cargo-audit + govulncheck) for PRs
+  dep-audit:
+    name: Dependency Audit
+    permissions:
+      contents: read
+    uses: ./.github/workflows/dep-audit.yml
+    with:
+      break-build: true
+    secrets: inherit
+
   # Use reusable workflow to detect detailed changes and create folder matrix
   matrix-changes:
     name: Detect Matrix Changes
