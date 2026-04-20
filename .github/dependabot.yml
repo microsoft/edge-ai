@@ -1,3 +1,21 @@
+# Dependabot configuration
+#
+# Grouping policy (aligned with microsoft/hve-core, optimized for fewer PRs):
+#   * One grouped PR per ecosystem per week (Monday 09:00 US/Pacific).
+#     Floor = 7 PRs/week (one per ecosystem) since Dependabot cannot group
+#     across ecosystems.
+#   * Each ecosystem uses a single group named after the ecosystem itself,
+#     pattern "*", and update-types ["major", "minor", "patch"] so every
+#     non-security update lands in the weekly batch.
+#   * Package-manager ecosystems (npm, pip, cargo, nuget) also set
+#     dependency-type: "all" so production and development dependencies share
+#     the same weekly PR.
+#   * Security updates are auto-created by Dependabot as separate, immediate
+#     PRs and are NOT subject to the weekly grouping window.
+#   * open-pull-requests-limit is 5 per ecosystem (concurrent non-security
+#     PRs); the weekly grouping keeps steady-state at 1 per ecosystem.
+#   * Commit prefix "chore(deps)" with scope matches existing PR history
+#     (e.g. #394, #395, #397) and the project's commit-message convention.
 version: 2
 updates:
   # GitHub Actions
@@ -15,7 +33,15 @@ updates:
       - "dependencies"
       - "security"
       - "github-actions"
-    open-pull-requests-limit: 10
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+        update-types:
+          - "major"
+          - "minor"
+          - "patch"
+    open-pull-requests-limit: 5
 
   # npm
   - package-ecosystem: "npm"
@@ -35,7 +61,16 @@ updates:
       - "dependencies"
       - "security"
       - "npm"
-    open-pull-requests-limit: 10
+    groups:
+      npm:
+        patterns:
+          - "*"
+        dependency-type: "all"
+        update-types:
+          - "major"
+          - "minor"
+          - "patch"
+    open-pull-requests-limit: 5
 
   # Cargo
   - package-ecosystem: "cargo"
@@ -54,7 +89,16 @@ updates:
       - "dependencies"
       - "security"
       - "cargo"
-    open-pull-requests-limit: 10
+    groups:
+      cargo:
+        patterns:
+          - "*"
+        dependency-type: "all"
+        update-types:
+          - "major"
+          - "minor"
+          - "patch"
+    open-pull-requests-limit: 5
 
   # pip
   - package-ecosystem: "pip"
@@ -74,10 +118,15 @@ updates:
       - "security"
       - "pip"
     groups:
-      application-python:
+      pip:
         patterns:
           - "*"
-    open-pull-requests-limit: 10
+        dependency-type: "all"
+        update-types:
+          - "major"
+          - "minor"
+          - "patch"
+    open-pull-requests-limit: 5
 
   # Docker
   - package-ecosystem: "docker"
@@ -97,10 +146,14 @@ updates:
       - "security"
       - "docker"
     groups:
-      application-docker:
+      docker:
         patterns:
           - "*"
-    open-pull-requests-limit: 10
+        update-types:
+          - "major"
+          - "minor"
+          - "patch"
+    open-pull-requests-limit: 5
 
   # NuGet
   - package-ecosystem: "nuget"
@@ -118,7 +171,16 @@ updates:
       - "dependencies"
       - "security"
       - "nuget"
-    open-pull-requests-limit: 10
+    groups:
+      nuget:
+        patterns:
+          - "*"
+        dependency-type: "all"
+        update-types:
+          - "major"
+          - "minor"
+          - "patch"
+    open-pull-requests-limit: 5
 
   # Terraform
   - package-ecosystem: "terraform"
@@ -139,7 +201,11 @@ updates:
       - "security"
       - "terraform"
     groups:
-      all-providers:
+      terraform:
         patterns:
           - "*"
-    open-pull-requests-limit: 10
+        update-types:
+          - "major"
+          - "minor"
+          - "patch"
+    open-pull-requests-limit: 5
