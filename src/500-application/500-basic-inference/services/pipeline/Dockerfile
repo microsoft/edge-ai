@@ -8,8 +8,9 @@ WORKDIR /src/InferencePipeline
 
 COPY ./NuGet.config .
 COPY ./src/InferencePipeline/InferencePipeline.csproj .
+COPY ./src/InferencePipeline/packages.lock.json .
 
-RUN dotnet restore InferencePipeline.csproj
+RUN dotnet restore InferencePipeline.csproj --locked-mode
 COPY ./src/InferencePipeline .
 RUN dotnet build InferencePipeline.csproj -c $BUILD_CONFIGURATION -o /app/build
 

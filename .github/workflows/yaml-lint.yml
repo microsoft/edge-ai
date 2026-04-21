@@ -45,7 +45,7 @@ jobs:
           persist-credentials: false
 
       - name: Install yamllint
-        run: pip install yamllint
+        run: pip install --require-hashes -r .github/requirements/yamllint.txt
 
       - name: Install Helm
         shell: bash

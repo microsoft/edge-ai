@@ -1,5 +1,6 @@
 ---
 title: GitHub Actions workflows
+slug: github-actions-workflows
 description: Essential guide to GitHub Actions workflows used in the Edge AI Accelerator project for CI/CD automation, validation, and deployment
 author: Edge AI Team
 ms.date: 2025-06-06

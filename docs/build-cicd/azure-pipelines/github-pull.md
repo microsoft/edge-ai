@@ -51,7 +51,7 @@ This pipeline automates pulling content from GitHub repositories into Azure DevO
    - Clones the GitHub repository
    - Compares changes with Azure DevOps main branch
    - If changes exist:
-     - Creates a new branch in Azure DevOps (named `github-{BuildId}`)
+     - Creates a new branch in Azure DevOps (named `github-\{BuildId\d\}`)
      - Opens a pull request in Azure DevOps
 
 ## Usage
@@ -73,7 +73,7 @@ This pipeline uses:
 ## Notes
 
 - The pipeline only creates a PR if it detects changes between the repositories
-- The pull request will be titled "GitHub merge for branch github-{BuildId}"
+- The pull request will be titled "GitHub merge for branch github-\{BuildId\}"
 - The pipeline depends on helper scripts in `scripts/github/` directory
 - The pipeline force-pushes to create the branch in Azure DevOps
 

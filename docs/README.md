@@ -1,4 +1,6 @@
 ---
+slug: /
+sidebar_position: 0
 title: AI on Edge Flagship Accelerator
 description: Empower your organization with production-ready Infrastructure as Code for Edge AI solutions. Achieve more with accelerated edge computing deployment using our comprehensive reusable components, blueprints, and default AI-assisted engineering practices.
 author: Edge AI Team
@@ -24,22 +26,22 @@ keywords:
 ---
 
 [![Build Status](https://dev.azure.com/ai-at-the-edge-flagship-accelerator/IaC%20for%20the%20Edge/_apis/build/status%2FIaC%20for%20the%20Edge?branchName=main)](https://dev.azure.com/ai-at-the-edge-flagship-accelerator/IaC%20for%20the%20Edge/_build/latest?definitionId=3&branchName=main)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE.md)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/microsoft/edge-ai/blob/main/LICENSE.md)
 [![Open in Dev Containers](https://img.shields.io/static/v1?label=Dev%20Containers&message=Open&color=blue&logo=visualstudiocode)](https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://dev.azure.com/ai-at-the-edge-flagship-accelerator/_git/edge-ai)
 
 ## What You'll Find Here
 
 ### 🎯 For Users
 
-Ready to achieve rapid edge-ai deployments? Start with our [General User Guide](/docs/getting-started/general-user.md) to deploy existing blueprints to Azure in **30-60 minutes**.
+Ready to achieve rapid edge-ai deployments? Start with our [General User Guide](getting-started/general-user.md) to deploy existing blueprints to Azure in **30-60 minutes**.
 
 ### 🏗️ For Blueprint Developers
 
-Creating new deployment scenarios? Start your process with the [Blueprint Developer Guide](/docs/getting-started/blueprint-developer.md) to learn how to combine components into custom solutions that achieve your business goals.
+Creating new deployment scenarios? Start your process with the [Blueprint Developer Guide](getting-started/blueprint-developer.md) to learn how to combine components into custom solutions that achieve your business goals.
 
 ### ⚙️ For Feature Developers
 
-Contributing new capabilities? The [Feature Developer Guide](/docs/getting-started/feature-developer.md) empowers you with component development, testing, and contribution workflows to achieve impactful contributions.
+Contributing new capabilities? The [Feature Developer Guide](getting-started/feature-developer.md) empowers you with component development, testing, and contribution workflows to achieve impactful contributions.
 
 ## Key Features
 
@@ -49,33 +51,6 @@ Contributing new capabilities? The [Feature Developer Guide](/docs/getting-start
 - **AI-Assisted Development**: Optimized for GitHub Copilot and AI-powered development workflows that accelerate team productivity
 - **Comprehensive Testing**: Automated validation and testing that ensures global-scale reliability for every deployment
 - **Edge-Focused**: Purpose-built capabilities that empower organizations worldwide to achieve edge AI computing workload success
-
-## 🎓 Learning Platform
-
-**Empower your team to achieve proficiency in Edge-AI's AI-assisted, hyper-velocity engineering** methodologies through challenge-based learning.
-
-[Learning](learning/) provides hands-on training that empowers engineers to achieve expertise in edge-to-cloud AI systems with discovery-based coaching:
-
-### Learning Formats
-
-- **🥋 [Katas](learning/katas/)**: Focused practice exercises for skill building (**15-45 minutes**)
-- **🧪 [Training Labs](learning/training-labs/)**: Comprehensive hands-on experiences (**2-8 hours**)
-- **🤖 AI Coaching**: Built-in VS Code coaching prompts for discovery-based learning
-
-### Ready to Start Learning?
-
-**🚀 Launch Documentation:**
-
-```bash
-npm run docs
-```
-
-> ⏱️ **Build Time**:
->
-> - **First run**: 2-4 minutes (installs dependencies + builds config)
-> - **Subsequent runs**: ~30 seconds startup
-
-Opens the complete documentation including the interactive **Learning** tab.
 
 ## Repository Overview
 
@@ -88,12 +63,6 @@ flowchart TD
     %% User approach choices
     Quick[Quick Deploy<br/>Use existing blueprints]
     Custom[Custom Solution<br/>Build with components]
-    Learn[Learn & Contribute<br/>Understand & extend]
-
-  %% Learning paths
-    Learning[learning/<br/>Learning Platform<br/>Paths & Katas]
-    Katas[Individual Practice<br/>Katas 15-45 min]
-    Labs[Team Exploration<br/>Labs 2-50+ hours]
 
     %% Repository structure navigation
     Blueprints[blueprints/<br/>Ready-to-deploy<br/>solutions]
@@ -108,18 +77,10 @@ flowchart TD
     %% Primary user flow
     Start --> Quick
     Start --> Custom
-    Start --> Learn
+    Start --> Docs
 
     Quick --> Blueprints
     Custom --> Components
-    Learn --> Docs
-    Learn --> Learning
-    Learning --> Katas
-    Learning --> Labs
-
-    %% Learning progression paths
-    Katas --> Components
-    Labs --> Blueprints
     Docs --> Components
     Components --> Blueprints
 
@@ -132,10 +93,6 @@ flowchart TD
     style Start fill:#e1f5fe,stroke:#01579b,stroke-width:3px
     style Quick fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
     style Custom fill:#fff3e0,stroke:#e65100,stroke-width:2px
-    style Learn fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
-    style Learning fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
-    style Katas fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
-    style Labs fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
     style Blueprints fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
     style Components fill:#fff3e0,stroke:#e65100,stroke-width:2px
     style Docs fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
@@ -220,9 +177,9 @@ flowchart TD
 - 📖 [Complete Documentation](.)
 - 🗺️ [Project Roadmap](roadmap.md)
 - 🤝 [Contributing Guidelines](contributing/)
-- 🐛 [Issue Tracker]({{ISSUES_URL}})
-- 💬 [Discussions]({{DISCUSSIONS_URL}})
-- 📧 [Support](../SUPPORT.md)
+- 🐛 [Issue Tracker](https://github.com/microsoft/edge-ai/issues)
+- 💬 [Discussions](https://github.com/microsoft/edge-ai/discussions)
+- 📧 [Support](https://github.com/microsoft/edge-ai/blob/main/SUPPORT.md)
 
 ---
 
@@ -234,9 +191,9 @@ Microsoft encourages customers to review its Responsible AI Standard when develo
 
 ## 📄 Legal
 
-This project is licensed under the [MIT License](../LICENSE).
+This project is licensed under the [MIT License](https://github.com/microsoft/edge-ai/blob/main/LICENSE).
 
-**Security:** See [SECURITY.md](../SECURITY.md) for security policy and reporting vulnerabilities.
+**Security:** See [SECURITY.md](https://github.com/microsoft/edge-ai/blob/main/SECURITY.md) for security policy and reporting vulnerabilities.
 
 ## Trademark Notice
 

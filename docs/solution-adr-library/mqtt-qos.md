@@ -25,7 +25,6 @@ keywords:
   - memory-profile
   - architecture-decision-record
   - adr
-estimated_reading_time: 9
 ---
 
 ## Status
@@ -159,8 +158,8 @@ To configure the `cardinality` of the MQTT Broker elements, we can:
 
 ## Related Documentation
 
-- [MQTT Bridge configuration](../how-to/mqtt-bridge.md)
-- [Publishing data into the Local and Enterprise UNS](../how-to/datapipeline-publish-data-uns.md)
+- MQTT Bridge configuration
+- Publishing data into the Local and Enterprise UNS
 
 ## References
 

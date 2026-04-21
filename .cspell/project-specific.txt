@@ -41,7 +41,6 @@ curlimages
 dimproducts
 dimstore
 dlqc
-docsify
 docsmcp
 docstool
 docstrings
