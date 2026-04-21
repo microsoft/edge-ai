@@ -130,11 +130,7 @@ on:  # yamllint disable-line rule:truthy
         type: string
 
 permissions:
-  contents: read          # Read repository contents for checkout
-  packages: write         # Push container images to registry
-  id-token: write         # Generate OIDC tokens for secure registry auth
-  actions: read           # Read workflow run information
-  security-events: write  # Write SLSA security bundles and attestations
+  contents: read
 
 env:
   REGISTRY: ${{ inputs.registryName || 'local' }}
