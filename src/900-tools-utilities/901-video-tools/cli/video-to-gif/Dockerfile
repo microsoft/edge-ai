@@ -21,13 +21,35 @@ RUN rpm --import /etc/pki/rpm-gpg/MICROSOFT-RPM-GPG-KEY \
 ENV RUSTUP_HOME=/root/.rustup \
     CARGO_HOME=/root/.cargo \
     PATH=/root/.cargo/bin:/usr/local/bin:/usr/bin:/bin
-RUN curl -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable \
-    && rustc --version && cargo --version
+# Install Rust via rustup-init with sha256 verification (OSSF Pinned-Dependencies)
+ARG RUST_TOOLCHAIN=1.86.0
+RUN set -eux; \
+    case "$(uname -m)" in \
+        x86_64)  RUSTUP_ARCH="x86_64-unknown-linux-gnu" ;; \
+        aarch64) RUSTUP_ARCH="aarch64-unknown-linux-gnu" ;; \
+        *) echo "unsupported arch: $(uname -m)" >&2; exit 1 ;; \
+    esac; \
+    RUSTUP_DIR="$(mktemp -d)"; \
+    RUSTUP_INIT="${RUSTUP_DIR}/rustup-init"; \
+    RUSTUP_HASH="$(mktemp)"; \
+    RUSTUP_URL="https://static.rust-lang.org/rustup/dist/${RUSTUP_ARCH}/rustup-init"; \
+    curl --proto '=https' --tlsv1.2 -sSf "${RUSTUP_URL}"        -o "${RUSTUP_INIT}"; \
+    curl --proto '=https' --tlsv1.2 -sSf "${RUSTUP_URL}.sha256" -o "${RUSTUP_HASH}"; \
+    echo "$(awk '{print $1}' "${RUSTUP_HASH}")  ${RUSTUP_INIT}" | sha256sum -c -; \
+    chmod +x "${RUSTUP_INIT}"; \
+    "${RUSTUP_INIT}" -y --profile minimal --default-toolchain "${RUST_TOOLCHAIN}" --component rustc,cargo,rust-std; \
+    rm -rf "${RUSTUP_DIR}" "${RUSTUP_HASH}"; \
+    rustc --version && cargo --version
 
 WORKDIR /app
 
+# Pin x264 to specific commit on `stable` branch with SHA256 verification
+ARG X264_COMMIT=b35605ace3ddf7c1a5d67a2eb553f034aef41d55
+ARG X264_SHA256=6eeb82934e69fd51e043bd8c5b0d152839638d1ce7aa4eea65a3fedcf83ff224
 RUN set -eux; \
-    git clone --depth 1 https://code.videolan.org/videolan/x264.git /tmp/x264
+    curl -fsSL -o /tmp/x264.tar.bz2 "https://code.videolan.org/videolan/x264/-/archive/${X264_COMMIT}/x264-${X264_COMMIT}.tar.bz2"; \
+    echo "${X264_SHA256}  /tmp/x264.tar.bz2" | sha256sum -c -; \
+    mkdir -p /tmp/x264 && tar -xjf /tmp/x264.tar.bz2 -C /tmp/x264 --strip-components=1
 WORKDIR /tmp/x264
 RUN set -eux; \
     ./configure --prefix=/usr/local --enable-shared --disable-cli; \
@@ -35,17 +57,19 @@ RUN set -eux; \
     make install; \
     echo "/usr/local/lib" > /etc/ld.so.conf.d/local-x264.conf; \
     if command -v ldconfig >/dev/null 2>&1; then ldconfig; fi; \
-    rm -rf /tmp/x264
+    rm -rf /tmp/x264 /tmp/x264.tar.bz2
 WORKDIR /app
 
 ARG FFMPEG_VERSION=7.1.1
+ARG FFMPEG_SHA256=733984395e0dbbe5c046abda2dc49a5544e7e0e1e2366bba849222ae9e3a03b1
 ENV CC=gcc CXX=g++
 ENV FFMPEG_VERSION=${FFMPEG_VERSION}
 ENV PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/usr/lib64/pkgconfig:/usr/lib/pkgconfig
 
 RUN set -eux; echo 'int main(){return 0;}' > /tmp/t.c; ${CC} /tmp/t.c -o /tmp/t; file /tmp/t; rm -f /tmp/t /tmp/t.c
 RUN set -eux; \
-    curl -fsSL -o ffmpeg.tar.xz https://ffmpeg.org/releases/ffmpeg-${FFMPEG_VERSION}.tar.xz; \
+    curl -fsSL -o ffmpeg.tar.xz "https://ffmpeg.org/releases/ffmpeg-${FFMPEG_VERSION}.tar.xz"; \
+    echo "${FFMPEG_SHA256}  ffmpeg.tar.xz" | sha256sum -c -; \
     mkdir -p /tmp/ffmpeg && tar -xJf ffmpeg.tar.xz -C /tmp/ffmpeg --strip-components=1
 WORKDIR /tmp/ffmpeg
 RUN set -eux; \

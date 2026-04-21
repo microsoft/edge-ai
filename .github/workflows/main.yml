@@ -77,22 +77,6 @@ jobs:
         with:
           category: "/language:${{matrix.language}}"
 
-  # Dependency scanning job for main branch
-  dependency-scan-main:
-    name: Dependency Scan
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      # GitHub doesn't have a direct equivalent to Azure's ComponentGovernanceComponentDetection
-      # Using a basic dependency check with built-in security scanning
-      - name: Dependency Review
-        uses: actions/dependency-review-action@2031cfc080254a8a887f58cffee85186f0e49e48 # v4.9.0
-        with:
-          head-ref: refs/heads/main
-          base-ref: refs/heads/main
-
   # Shell script linting (main)
   shell-lint-main:
     name: Shell Lint
@@ -167,7 +151,7 @@ jobs:
       contents: read
     uses: ./.github/workflows/rust-clippy.yml
     with:
-      break-build: false
+      break-build: true
     secrets: inherit
 
   # Dependency advisory audit (cargo-audit + govulncheck) for main branch
@@ -187,7 +171,8 @@ jobs:
       contents: read
     uses: ./.github/workflows/docs-check-terraform.yml
     with:
-      break_build: false
+      break_build: true
+      terraformDocsVersion: 'v0.20.0'
     secrets: inherit
 
   # Call docs-check-bicep workflow
@@ -197,7 +182,7 @@ jobs:
       contents: read
     uses: ./.github/workflows/docs-check-bicep.yml
     with:
-      break_build: false
+      break_build: true
     secrets: inherit
 
   # Security monitoring job for main branch
@@ -208,6 +193,8 @@ jobs:
       security-events: write
       actions: read
     uses: ./.github/workflows/security-comprehensive.yml
+    with:
+      fail-on-critical: true
     secrets: inherit
 
   # Pages deployment for main branch (replaces wiki update)

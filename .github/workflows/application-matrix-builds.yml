@@ -337,23 +337,37 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y jq curl
 
-          # Install pinned Docker Compose CLI plugin
+          # Install pinned Docker Compose CLI plugin (verified via sibling .sha256 from release)
           COMPOSE_VERSION="${DOCKER_COMPOSE_VERSION}"
           if [ -z "$COMPOSE_VERSION" ]; then
             echo "Docker Compose version input is empty"
             exit 1
           fi
 
+          COMPOSE_TMP="$(mktemp -d)"
+          curl -sSfL "https://github.com/docker/compose/releases/download/v${COMPOSE_VERSION}/docker-compose-linux-x86_64" \
+            -o "${COMPOSE_TMP}/docker-compose"
+          curl -sSfL "https://github.com/docker/compose/releases/download/v${COMPOSE_VERSION}/docker-compose-linux-x86_64.sha256" \
+            -o "${COMPOSE_TMP}/docker-compose.sha256"
+          (cd "${COMPOSE_TMP}" && awk '{print $1"  docker-compose"}' docker-compose.sha256 | sha256sum -c -)
           sudo mkdir -p /usr/libexec/docker/cli-plugins
-          sudo curl -sSL "https://github.com/docker/compose/releases/download/v${COMPOSE_VERSION}/docker-compose-linux-x86_64" \
-            -o /usr/libexec/docker/cli-plugins/docker-compose
-          sudo chmod +x /usr/libexec/docker/cli-plugins/docker-compose
+          sudo install -m 0755 "${COMPOSE_TMP}/docker-compose" /usr/libexec/docker/cli-plugins/docker-compose
+          rm -rf "${COMPOSE_TMP}"
 
           docker compose version
 
-          # Install Grype vulnerability scanner
-          echo "Installing Grype vulnerability scanner..."
-          curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin
+          # Install Grype vulnerability scanner pinned to a release tag with checksum verification
+          GRYPE_VERSION="v0.86.1"
+          GRYPE_VER="${GRYPE_VERSION#v}"
+          GRYPE_TMP="$(mktemp -d)"
+          echo "Installing Grype ${GRYPE_VERSION}..."
+          curl -sSfL -o "${GRYPE_TMP}/grype.tar.gz" \
+            "https://github.com/anchore/grype/releases/download/${GRYPE_VERSION}/grype_${GRYPE_VER}_linux_amd64.tar.gz"
+          curl -sSfL -o "${GRYPE_TMP}/grype_checksums.txt" \
+            "https://github.com/anchore/grype/releases/download/${GRYPE_VERSION}/grype_${GRYPE_VER}_checksums.txt"
+          (cd "${GRYPE_TMP}" && grep " grype_${GRYPE_VER}_linux_amd64.tar.gz$" grype_checksums.txt | sha256sum -c -)
+          sudo tar -xzf "${GRYPE_TMP}/grype.tar.gz" -C /usr/local/bin grype
+          rm -rf "${GRYPE_TMP}"
 
           echo "Verifying Grype installation..."
           grype version
@@ -642,6 +656,7 @@ jobs:
             # Extract and compress security reports for final upload
             mkdir -p final-security-reports
             find collected-build-artifacts -name "*security-reports*" -type d -exec cp -r {} final-security-reports/ \;
+          fi
 
           # This would collect actual results from matrix jobs in a real implementation
           BUILD_SUMMARY="{

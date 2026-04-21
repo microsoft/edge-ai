@@ -73,16 +73,25 @@ jobs:
           mkdir -p logs
           chmod 755 logs
 
+      - name: 'Setup Python'
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: '3.11'
+
       - name: 'Run Checkov (security IaC scan)'
         shell: pwsh
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           Write-Host "Running Checkov IaC scan (output to logs/checkov-report.json and logs/checkov-report.txt)"
-          python3 -m pip install --user checkov
-          $env:PATH = "$env:PATH:$HOME/.local/bin"
+          pip install --require-hashes -r .github/requirements/checkov.txt
 
-          # Run Checkov against repository root, produce JSON and CLI outputs
+          # Fail loudly if checkov did not install correctly rather than masking via `|| true`.
+          Get-Command checkov -ErrorAction Stop | Out-Null
+
+          # Run Checkov against repository root, produce JSON and CLI outputs.
+          # `|| true` keeps the workflow green when checkov reports findings (non-zero exit),
+          # but the Get-Command guard above ensures a missing binary fails the job.
           checkov -d . -o json > logs/checkov-report.json 2>&1 || true
           checkov -d . -o cli > logs/checkov-report.txt 2>&1 || true
 

@@ -84,9 +84,9 @@ COPY --from=builder /workspace/install/edge_ros_interface/lib/python3.12/site-pa
 
 # Python deps
 COPY services/requirements.txt requirements.base.txt
-RUN pip3 install --break-system-packages --ignore-installed --no-cache-dir -r requirements.base.txt
+RUN pip3 install --break-system-packages --ignore-installed --no-cache-dir --require-hashes -r requirements.base.txt
 COPY services/ros2-connector/requirements.txt requirements.connector.txt
-RUN if [ -s requirements.connector.txt ]; then pip3 install --break-system-packages --ignore-installed --no-cache-dir -r requirements.connector.txt; fi
+RUN if [ -s requirements.connector.txt ]; then pip3 install --break-system-packages --ignore-installed --no-cache-dir --require-hashes -r requirements.connector.txt; fi
 
 # App source
 COPY services/ros2-connector/src/ ./src/

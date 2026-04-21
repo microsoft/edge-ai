@@ -1,0 +1,5 @@
+# ROS2 Connector Specific Dependencies
+# Base dependencies are included in the base image
+
+# MQTT client for connectivity
+paho-mqtt==2.1.0
