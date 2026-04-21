@@ -186,7 +186,6 @@ module "inference_cluster_integration" {
   ml_workload_identity                  = var.ml_workload_identity
   ml_workload_subjects                  = var.ml_workload_subjects
   should_configure_ml_workload_identity = var.should_assign_ml_workload_identity_roles
-  resource_group_name                   = var.resource_group.name
 
   // App Configuration integration for volcano scheduler
   volcano_scheduler_configmap_name = try(var.kubernetes.app_configuration_configmap_name, null)
