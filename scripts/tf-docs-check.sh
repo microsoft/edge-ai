@@ -37,30 +37,30 @@ set -e
 
 # Check if terraform-docs is installed
 if ! command -v terraform-docs &>/dev/null; then
-    echo "terraform-docs could not be found."
-    echo "Please install terraform-docs and ensure it is in your PATH."
-    echo "Installation instructions can be found at: https://terraform-docs.io/user-guide/installation/"
-    echo
-    exit 1
+  echo "terraform-docs could not be found."
+  echo "Please install terraform-docs and ensure it is in your PATH."
+  echo "Installation instructions can be found at: https://terraform-docs.io/user-guide/installation/"
+  echo
+  exit 1
 fi
 
 # Check if jq is installed
 if ! command -v jq &>/dev/null; then
-    echo "jq could not be found."
-    echo "Please install jq and ensure it is in your PATH."
-    echo "Installation instructions for jq can be found at: https://stedolan.github.io/jq/download/."
-    echo
-    exit 1
+  echo "jq could not be found."
+  echo "Please install jq and ensure it is in your PATH."
+  echo "Installation instructions for jq can be found at: https://stedolan.github.io/jq/download/."
+  echo
+  exit 1
 fi
 
 # Run the script to update all TF auto-gen README.md files
 echo "Running the script ./update-all-terraform-docs.sh ..."
 error_output=$("$(dirname "$0")/update-all-terraform-docs.sh" 2>&1) || {
-    exit_code=$?
-    echo "Error executing update-all-terraform-docs.sh:"
-    echo "$error_output"
-    echo "Exit code: $exit_code"
-    exit $exit_code
+  exit_code=$?
+  echo "Error executing update-all-terraform-docs.sh:"
+  echo "$error_output"
+  echo "Exit code: $exit_code"
+  exit $exit_code
 }
 
 # Check for changes in README.md files
@@ -68,12 +68,12 @@ echo "Checking for changes in README.md files ..."
 changed_files=$(git diff --name-only)
 readme_changed=false
 for file in $changed_files; do
-    if [[ $file == src/*/README.md ]]; then
-        if head -n 1 "$file" | grep -q "^<!-- BEGIN_TF_DOCS -->$"; then
-            echo "Updates required for: ./$file"
-            readme_changed=true
-        fi
+  if [[ $file == src/*/README.md ]]; then
+    if head -n 1 "$file" | grep -q "^<!-- BEGIN_TF_DOCS -->$"; then
+      echo "Updates required for: ./$file"
+      readme_changed=true
     fi
+  fi
 done
 echo "README.md files checked."
 echo $readme_changed
