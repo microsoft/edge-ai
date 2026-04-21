@@ -1,2 +1,0 @@
-[yanked]
-enabled = false # core2 0.4.0 yanked — transitive via apache-avro 0.17.0 -> libflate 2.2.1; awaiting upstream release

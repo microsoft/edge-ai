@@ -7,10 +7,9 @@
 # allow-list them deliberately.
 #
 # Allow-listing:
-# Each Rust service may carry a `.cargo/audit.toml` whose `[advisories].ignore`
-# array documents accepted unmaintained / unsound transitives that cannot be
-# dropped without an upstream release. cargo-audit honours that file
-# automatically when invoked from the crate directory.
+# Accepted unmaintained / unsound transitives are documented in the repo-level
+# `.github/audit.toml`. The file is passed to every cargo-audit invocation via
+# `-c`; cargo-audit does not auto-load project-local audit.toml files.
 #
 # Parameters:
 # - break-build: When true, advisories fail the workflow (default: true).
@@ -81,11 +80,12 @@ jobs:
         run: |
           set -euo pipefail
           export PATH="$HOME/.cargo/bin:$PATH"
+          AUDIT_CONFIG="${GITHUB_WORKSPACE}/.github/audit.toml"
           FAILED=0
           while IFS= read -r -d '' lockfile; do
             crate_dir=$(dirname "${lockfile}")
             echo "::group::cargo audit: ${crate_dir}"
-            (cd "${crate_dir}" && cargo audit --deny warnings) || FAILED=1
+            (cd "${crate_dir}" && cargo audit -c "${AUDIT_CONFIG}" --deny warnings) || FAILED=1
             echo "::endgroup::"
           done < <(find . -name "Cargo.lock" -not -path "*/target/*" -not -path "*/node_modules/*" -print0)
           if [[ "${FAILED}" -ne 0 ]]; then
