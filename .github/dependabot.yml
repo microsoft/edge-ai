@@ -6,10 +6,8 @@
 #     across ecosystems.
 #   * Each ecosystem uses a single group named after the ecosystem itself,
 #     pattern "*", and update-types ["major", "minor", "patch"] so every
-#     non-security update lands in the weekly batch.
-#   * Package-manager ecosystems (npm, pip, cargo, nuget) also set
-#     dependency-type: "all" so production and development dependencies share
-#     the same weekly PR.
+#     non-security update lands in the weekly batch. Groups include all
+#     dependency types (production and development) by default.
 #   * Security updates are auto-created by Dependabot as separate, immediate
 #     PRs and are NOT subject to the weekly grouping window.
 #   * open-pull-requests-limit is 5 per ecosystem (concurrent non-security
@@ -64,7 +62,6 @@ updates:
       npm:
         patterns:
           - "*"
-        dependency-type: "all"
         update-types:
           - "major"
           - "minor"
@@ -92,7 +89,6 @@ updates:
       cargo:
         patterns:
           - "*"
-        dependency-type: "all"
         update-types:
           - "major"
           - "minor"
@@ -120,7 +116,6 @@ updates:
       pip:
         patterns:
           - "*"
-        dependency-type: "all"
         update-types:
           - "major"
           - "minor"
@@ -174,7 +169,6 @@ updates:
       nuget:
         patterns:
           - "*"
-        dependency-type: "all"
         update-types:
           - "major"
           - "minor"
