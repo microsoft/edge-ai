@@ -134,6 +134,10 @@ For detailed information about our CI/CD lint configuration and available linter
 
 ### Development Environment
 
+**Prerequisites**:
+
+- Install [uv](https://docs.astral.sh/uv/getting-started/installation/) for Python package management: `pip install uv`
+
 We strongly recommend using the provided [DevContainer](./.devcontainer/README.md) for development work. The DevContainer:
 
 - Ensures consistent tooling across all developers
@@ -168,6 +172,17 @@ The guide covers:
 - Prompt templates for common development tasks
 - Best practices for using Copilot with project-specific context
 - Step-by-step examples for Infrastructure as Code development
+
+### Managing Python Dependencies
+
+This project uses a hash-pinned `requirements.lock` file for reproducible Python dependency installation, satisfying the OSSF Silver Badge `build_repeatable` requirement.
+
+**To update Python dependencies:**
+
+1. Update `requirements.txt` with new or modified dependency versions
+2. Run `uv pip compile --generate-hashes requirements.txt -o requirements.lock` to generate the lock file
+3. Commit both files: the updated `requirements.txt` and the generated `requirements.lock`
+4. The lock file ensures CI/CD pipelines and dev containers use exact pinned versions with SHA256 hashes for verified reproducible builds
 
 ### HVE Core Integration
 

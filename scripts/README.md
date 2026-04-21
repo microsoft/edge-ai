@@ -147,7 +147,7 @@ Installs the terraform-docs tool at a specific version.
 Python script that generates standardized markdown documentation for Bicep modules by parsing ARM JSON output.
 
 - **Usage**:
-  - Run `pip install -r requirements.txt` (to install module dependencies)
+  - Run `pip install --require-hashes -r requirements.lock` (to install module dependencies)
   - Run `python3 generate-bicep-docs.py <arm_json_file> <output_md_file> [-t <template_file>] [-n <nesting_level>]`
 - **Arguments**:
   - `arm_json_file`: Path to the ARM JSON file (compiled Bicep)
