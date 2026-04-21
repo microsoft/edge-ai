@@ -8,7 +8,7 @@ WORKDIR /build
 COPY ./services/sensor-simulator/requirements.txt ./requirements.txt
 
 # Build dependency wheels for reproducible installs in runtime stage
-RUN pip wheel --no-cache-dir --wheel-dir /tmp/wheels -r requirements.txt
+RUN pip wheel --no-cache-dir --require-hashes --wheel-dir /tmp/wheels -r requirements.txt
 
 ##############################
 # Runtime Stage              #

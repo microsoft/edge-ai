@@ -87,7 +87,20 @@ log "Setting up AZ CLI..."
 if ! command -v "az" &>/dev/null; then
   if [[ ! $SKIP_INSTALL_AZ_CLI ]]; then
     log "Installing Azure CLI"
-    curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+    # Pin Azure CLI install via Microsoft apt keyring/repo and explicit version (OSSF Scorecard pinned-dependencies)
+    AZ_CLI_INSTALL_VER="${AZ_CLI_VER:-2.67.0}"
+    sudo apt-get update
+    sudo apt-get install -y ca-certificates curl apt-transport-https lsb-release gnupg
+    sudo mkdir -p /etc/apt/keyrings
+    curl -sLS https://packages.microsoft.com/keys/microsoft.asc \
+      | gpg --dearmor \
+      | sudo tee /etc/apt/keyrings/microsoft.gpg >/dev/null
+    sudo chmod go+r /etc/apt/keyrings/microsoft.gpg
+    AZ_REPO=$(lsb_release -cs)
+    echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/microsoft.gpg] https://packages.microsoft.com/repos/azure-cli/ ${AZ_REPO} main" \
+      | sudo tee /etc/apt/sources.list.d/azure-cli.list >/dev/null
+    sudo apt-get update
+    sudo apt-get install -y "azure-cli=${AZ_CLI_INSTALL_VER}-1~${AZ_REPO}"
   else
     err "'az' is missing and required"
   fi
@@ -99,7 +112,7 @@ if [[ $AZ_CLI_VER && ! $SKIP_INSTALL_AZ_CLI ]]; then
   if ! az version | grep "\"azure-cli\"" | grep -Fq "$AZ_CLI_VER"; then
     log "Installing specified version of Azure CLI $AZ_CLI_VER"
     sudo apt-get remove -y azure-cli && log "Removed Azure CLI to install specific version"
-    sudo apt-get install azure-cli="$AZ_CLI_VER-1~$(lsb_release -cs)"
+    sudo apt-get install -y "azure-cli=$AZ_CLI_VER-1~$(lsb_release -cs)"
   fi
 fi
 
@@ -186,11 +199,20 @@ if [[ ! $SKIP_INSTALL_K3S ]]; then
       fi
     fi
 
+    # Pin k3s binary + installer (OSSF Scorecard pinned-dependencies)
+    K3S_INSTALL_VERSION="${K3S_VERSION:-v1.31.2+k3s1}"
+    K3S_TAG_URL="${K3S_INSTALL_VERSION//+/%2B}"
+    curl -sfL -o /tmp/k3s "https://github.com/k3s-io/k3s/releases/download/${K3S_TAG_URL}/k3s"
+    curl -sfL -o /tmp/k3s.sha256sums "https://github.com/k3s-io/k3s/releases/download/${K3S_TAG_URL}/sha256sum-amd64.txt"
+    (cd /tmp && grep -E '(^|[[:space:]])k3s$' k3s.sha256sums | sha256sum -c -)
+    sudo install -m 0755 /tmp/k3s /usr/local/bin/k3s
+    curl -sfL -o /tmp/k3s-install.sh https://get.k3s.io
+    export INSTALL_K3S_SKIP_DOWNLOAD=true
     export INSTALL_K3S_EXEC="agent"
-    export INSTALL_K3S_VERSION="$K3S_VERSION"
+    export INSTALL_K3S_VERSION="$K3S_INSTALL_VERSION"
     export K3S_TOKEN
     export K3S_URL
-    curl -sfL https://get.k3s.io | sh -
+    sh /tmp/k3s-install.sh
 
     log "Finished installing k3s agent node... exiting successfully..."
 
@@ -200,10 +222,19 @@ if [[ ! $SKIP_INSTALL_K3S ]]; then
   # Install k3s server if it is missing.
 
   if ! command -v 'k3s' &>/dev/null; then
+    # Pin k3s binary + installer (OSSF Scorecard pinned-dependencies)
+    K3S_INSTALL_VERSION="${K3S_VERSION:-v1.31.2+k3s1}"
+    K3S_TAG_URL="${K3S_INSTALL_VERSION//+/%2B}"
+    curl -sfL -o /tmp/k3s "https://github.com/k3s-io/k3s/releases/download/${K3S_TAG_URL}/k3s"
+    curl -sfL -o /tmp/k3s.sha256sums "https://github.com/k3s-io/k3s/releases/download/${K3S_TAG_URL}/sha256sum-amd64.txt"
+    (cd /tmp && grep -E '(^|[[:space:]])k3s$' k3s.sha256sums | sha256sum -c -)
+    sudo install -m 0755 /tmp/k3s /usr/local/bin/k3s
+    curl -sfL -o /tmp/k3s-install.sh https://get.k3s.io
+    export INSTALL_K3S_SKIP_DOWNLOAD=true
     export INSTALL_K3S_EXEC="server"
-    export INSTALL_K3S_VERSION="$K3S_VERSION"
+    export INSTALL_K3S_VERSION="$K3S_INSTALL_VERSION"
     export K3S_TOKEN
-    curl -sfL https://get.k3s.io | sh -
+    sh /tmp/k3s-install.sh
 
     log "Finished installing k3s server"
   fi
@@ -213,7 +244,11 @@ fi
 
 if ! command -v 'kubectl' &>/dev/null; then
   if [[ ! $SKIP_INSTALL_KUBECTL ]]; then
-    curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+    # Pin kubectl version + verify sha256 (OSSF Scorecard pinned-dependencies)
+    KUBECTL_VERSION="${KUBECTL_VERSION:-v1.31.2}"
+    curl -LO "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl"
+    curl -LO "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl.sha256"
+    echo "$(cat kubectl.sha256)  kubectl" | sha256sum -c -
     chmod +x ./kubectl
     sudo mv ./kubectl /usr/local/bin
   else

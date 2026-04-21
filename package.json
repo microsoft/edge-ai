@@ -54,8 +54,11 @@
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
+    "@secretlint/secretlint-rule-preset-recommend": "12.0.0",
     "markdown-link-check": "3.14.2",
-    "marked": "^4.0.10"
+    "marked": "^4.0.10",
+    "secretlint": "12.0.0",
+    "tftest-to-junitxml": "0.2.0"
   },
   "resolutions": {
     "marked": "^4.0.10",

@@ -83,15 +83,7 @@ jobs:
           cache: 'pip'
 
       - name: Install Python Dependencies
-        run: |
-          # Install dependencies from requirements.txt if it exists
-          if [ -f ./requirements.txt ]; then
-            python -m pip install --upgrade pip
-            pip install -r ./requirements.txt
-          else
-            # Fallback to installing just what's needed
-            pip install hcl2 requests
-          fi
+        run: pip install --require-hashes -r ./requirements.txt
 
       - name: Run AIO Version Checker
         id: version-check

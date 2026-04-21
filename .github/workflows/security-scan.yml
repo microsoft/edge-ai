@@ -110,12 +110,13 @@ jobs:
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v4.3.0
         with:
           node-version: '24'
+          cache: 'npm'
 
-      - name: Install Secretlint
+      - name: Install Secretlint (pinned via package-lock.json)
         shell: bash
         run: |
           set -euo pipefail
-          npm install --no-save secretlint @secretlint/secretlint-rule-preset-recommend
+          npm ci --ignore-scripts
 
       - name: Run Secretlint
         shell: bash
