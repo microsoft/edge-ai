@@ -74,7 +74,7 @@ jobs:
           export PATH="$HOME/.cargo/bin:$PATH"
           cargo install cargo-audit --locked --version ^0.22
 
-      - name: Run cargo audit on every Rust service
+      - name: Run cargo audit on every Rust crate
         shell: bash
         env:
           BREAK_BUILD: ${{ inputs.break-build }}
@@ -82,22 +82,12 @@ jobs:
           set -euo pipefail
           export PATH="$HOME/.cargo/bin:$PATH"
           FAILED=0
-          SERVICES=(
-            "src/500-application/501-rust-telemetry/services/sender"
-            "src/500-application/501-rust-telemetry/services/receiver"
-            "src/500-application/502-rust-http-connector/services/broker"
-            "src/500-application/503-media-capture-service/services/media-capture-service"
-            "src/500-application/507-ai-inference/services/ai-edge-inference"
-          )
-          for svc in "${SERVICES[@]}"; do
-            if [[ ! -f "${svc}/Cargo.lock" ]]; then
-              echo "::warning::No Cargo.lock found at ${svc}, skipping"
-              continue
-            fi
-            echo "::group::cargo audit: ${svc}"
-            (cd "${svc}" && cargo audit --deny warnings) || FAILED=1
+          while IFS= read -r -d '' lockfile; do
+            crate_dir=$(dirname "${lockfile}")
+            echo "::group::cargo audit: ${crate_dir}"
+            (cd "${crate_dir}" && cargo audit --deny warnings) || FAILED=1
             echo "::endgroup::"
-          done
+          done < <(find . -name "Cargo.lock" -not -path "*/target/*" -not -path "*/node_modules/*" -print0)
           if [[ "${FAILED}" -ne 0 ]]; then
             if [[ "${BREAK_BUILD}" == "true" ]]; then
               echo "::error::cargo audit found advisories in one or more crates"
