@@ -108,7 +108,7 @@
 
   "onCreateCommand": {
     "uv": "pip install uv",
-    "pip": "pip install -r requirements.lock",
+    "pip": "pip install --require-hashes -r requirements.lock",
     "npm": "npm install -g npm && npm ci",
     "apt": "sudo apt update && sudo apt install -y shellcheck",
     "go": "go install mvdan.cc/sh/v3/cmd/shfmt@latest",

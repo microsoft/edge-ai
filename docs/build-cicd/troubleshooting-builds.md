@@ -40,7 +40,7 @@ Quick solutions for common build and CI/CD issues in the Edge AI Accelerator pro
 
 - Install missing tools: Use `./scripts/install-terraform-docs.sh` for Terraform docs
 - Clear caches: Remove `~/.terraform.d/plugin-cache`, `~/.cache/pip`, `~/.npm`
-- Reinstall dependencies: Run `terraform init -upgrade`, `pip install --force-reinstall -r requirements.lock`
+- Reinstall dependencies: Run `terraform init -upgrade`, `pip install --force-reinstall --require-hashes -r requirements.lock`
 - Azure Linux containers: Import `/etc/pki/rpm-gpg/MICROSOFT-RPM-GPG-KEY` before running `tdnf` to avoid `Header V4 RSA/SHA256 Signature ... NOKEY`
 - Check tool versions: `terraform --version`, `bicep --version`, `az --version`
 
@@ -152,7 +152,7 @@ az --version
 # Clean and reinstall
 rm -rf ~/.terraform.d/plugin-cache ~/.cache/pip ~/.npm
 terraform init -upgrade
-pip install --force-reinstall -r requirements.lock
+pip install --force-reinstall --require-hashes -r requirements.lock
 ```
 
 ## Related documentation

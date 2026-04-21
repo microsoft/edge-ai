@@ -117,7 +117,7 @@ jobs:
 
       - name: Upload staleness results
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: dependency-staleness-results
           path: stale-dependencies.json
@@ -144,7 +144,7 @@ jobs:
 
       - name: Upload OSSF Scorecard results
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: ossf-scorecard-results
           path: scorecard-results.sarif
@@ -174,14 +174,22 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.lock
+          pip install --require-hashes -r requirements.lock
 
       - name: Run AIO version check
         run: |
           python scripts/aio-version-checker.py \
             --iac-type ${{ inputs.iac-types }} \
-            --error-on-mismatch \
-            --verbose
+            --break-build ${{ inputs.break-build }} \
+            --output-format json
+
+      - name: Upload AIO version results
+        if: always()
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: aio-version-check-results
+          path: aio-version-check-results.json
+          retention-days: 30
 
   # Comprehensive security validation summary
   security-validation-summary:
@@ -226,7 +234,7 @@ jobs:
 
       - name: Upload security summary
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: security-deployment-summary
           path: security-summary.md
