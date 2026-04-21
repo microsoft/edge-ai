@@ -103,7 +103,7 @@ jobs:
           # template, we don't know if it exists or not in the repo using this template
           if [ -f ./requirements.lock ]; then
             python -m pip install --upgrade pip
-            pip install -r ./requirements.lock
+            pip install --require-hashes -r ./requirements.lock
           else
             # Fallback to installing just what's needed
             pip install hcl2 requests

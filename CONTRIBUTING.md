@@ -134,6 +134,10 @@ For detailed information about our CI/CD lint configuration and available linter
 
 ### Development Environment
 
+**Prerequisites**:
+
+- Install [uv](https://docs.astral.sh/uv/getting-started/installation/) for Python package management: `pip install uv`
+
 We strongly recommend using the provided [DevContainer](./.devcontainer/README.md) for development work. The DevContainer:
 
 - Ensures consistent tooling across all developers
