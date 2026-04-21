@@ -7,7 +7,7 @@ default-catalogers:
   - "javascript"
   - "python"
   - "go"
-  - "rust-cargo"
+  - "rust"
 
 file:
   metadata:

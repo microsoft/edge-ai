@@ -13,7 +13,7 @@ WORKDIR /app
 
 # Build Python wheels for faster installation in runtime stage
 COPY src/requirements.txt .
-RUN pip wheel --no-cache-dir --wheel-dir /wheels -r requirements.txt
+RUN pip wheel --no-cache-dir --require-hashes --wheel-dir /wheels -r requirements.txt
 
 # STAGE 2: Runtime - Creates the minimal production image
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/azurelinux/base/python:3.12@sha256:8798301c18bf675d2a4c6fe45f01aa2fe8ab469f05e571a07579f63f865a4809 AS runtime
