@@ -89,7 +89,7 @@ src/500-application/
 - **Targeted CI/CD**: Change detection and rebuilds only for affected services
 - **Component-level SBOM**: Each deployable artifact has exact dependency manifest
 
-See [Cargo Workspace Removal ADR](../../.copilot-tracking/decisions/cargo-workspace-removal-rationale.md) for architectural rationale.
+See Cargo Workspace Removal ADR for architectural rationale.
 
 **Registry-Aware Build Strategy**:
 

@@ -36,11 +36,11 @@ aioExtensionName=$(az k8s-extension list --resource-group "$RESOURCE_GROUP" --cl
 # Get principal ID
 echo "Getting the principal ID of the Azure IoT Operations extension..."
 principalId=$(az k8s-extension show \
-    --resource-group "$RESOURCE_GROUP" \
-    --cluster-name "$CLUSTER_NAME" \
-    --name "$aioExtensionName" \
-    --cluster-type connectedClusters \
-    --query identity.principalId -o tsv)
+  --resource-group "$RESOURCE_GROUP" \
+  --cluster-name "$CLUSTER_NAME" \
+  --name "$aioExtensionName" \
+  --cluster-type connectedClusters \
+  --query identity.principalId -o tsv)
 
 subscriptionId=$(az account show --query id --output tsv)
 
@@ -48,13 +48,13 @@ subscriptionId=$(az account show --query id --output tsv)
 echo "Assigning the EventGrid TopicSpaces Publisher role to the Azure IoT Operations extension principal..."
 
 az role assignment create \
-    --assignee "$principalId" \
-    --role "EventGrid TopicSpaces Publisher" \
-    --scope /subscriptions/"$subscriptionId"/resourceGroups/"$RESOURCE_GROUP"/providers/Microsoft.EventGrid/namespaces/"$EVENT_GRID_NAMESPACE_NAME"/topicSpaces/"$topicSpaceName"
+  --assignee "$principalId" \
+  --role "EventGrid TopicSpaces Publisher" \
+  --scope /subscriptions/"$subscriptionId"/resourceGroups/"$RESOURCE_GROUP"/providers/Microsoft.EventGrid/namespaces/"$EVENT_GRID_NAMESPACE_NAME"/topicSpaces/"$topicSpaceName"
 
 echo "Assigning the EventGrid TopicSpaces Subscriber role to the Azure IoT Operations extension principal..."
 
 az role assignment create \
-    --assignee "$principalId" \
-    --role "EventGrid TopicSpaces Subscriber" \
-    --scope /subscriptions/"$subscriptionId"/resourceGroups/"$RESOURCE_GROUP"/providers/Microsoft.EventGrid/namespaces/"$EVENT_GRID_NAMESPACE_NAME"/topicSpaces/"$topicSpaceName"
+  --assignee "$principalId" \
+  --role "EventGrid TopicSpaces Subscriber" \
+  --scope /subscriptions/"$subscriptionId"/resourceGroups/"$RESOURCE_GROUP"/providers/Microsoft.EventGrid/namespaces/"$EVENT_GRID_NAMESPACE_NAME"/topicSpaces/"$topicSpaceName"

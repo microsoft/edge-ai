@@ -30,17 +30,17 @@
     "checkov-all": "pwsh -Command \"& $PWD/scripts/build/Detect-Folder-Changes.ps1 -IncludeAllIaC -OutputJson | & $PWD/scripts/Run-Checkov.ps1 -OutputFolder './checkov-results' -OutputFile 'code-analysis.xml'\"",
     "link-lang-check": "pwsh -File ./scripts/linting/Link-Lang-Check.ps1",
     "link-lang-fix": "pwsh -File ./scripts/linting/Link-Lang-Check.ps1 -Fix",
-    "generate-sidebar": "pwsh -File ./scripts/Generate-DocsSidebar.ps1 -DocsPath ./docs -SrcPath ./src -SidebarFile _sidebar.md -AllSections -Verbose",
-    "progress-server": "cd docs/_server && npm install --silent && node app.js",
-    "docs": "pwsh -File ./scripts/Serve-Docs.ps1",
-    "test:frontend": "cd docs/assets/js && npm test",
-    "test:server": "cd docs/_server && npm test",
     "unicode:outputonly": "pwsh -File ./scripts/Fix-VisuallySimilarUnicode.ps1 -OutputOnly",
     "unicode:outputonly:verbose": "pwsh -File ./scripts/Fix-VisuallySimilarUnicode.ps1 -OutputOnly -Verbose",
     "unicode:fix": "pwsh -File ./scripts/Fix-VisuallySimilarUnicode.ps1",
     "unicode:fix:quiet": "pwsh -File ./scripts/Fix-VisuallySimilarUnicode.ps1 -Quiet",
     "format-json": "npx prettier --check \"**/*.json\"",
-    "format-json-fix": "npx prettier --write \"**/*.json\""
+    "format-json-fix": "npx prettier --write \"**/*.json\"",
+    "docs:build": "npm run --prefix docs/docusaurus build",
+    "docs:serve": "npm run --prefix docs/docusaurus serve",
+    "docs:start": "npm run --prefix docs/docusaurus start",
+    "docs:test": "npm run --prefix docs/docusaurus test",
+    "docs:clear": "npm run --prefix docs/docusaurus clear"
   },
   "dependencies": {
     "cspell": "^10.0.0",
@@ -54,9 +54,11 @@
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
-    "docsify-cli": "4.4.4",
+    "@secretlint/secretlint-rule-preset-recommend": "12.0.0",
     "markdown-link-check": "3.14.2",
-    "marked": "^4.0.10"
+    "marked": "^4.0.10",
+    "secretlint": "12.0.0",
+    "tftest-to-junitxml": "0.2.0"
   },
   "resolutions": {
     "marked": "^4.0.10",

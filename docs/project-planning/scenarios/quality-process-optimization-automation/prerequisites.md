@@ -93,7 +93,7 @@ This document provides a comprehensive framework for all prerequisites needed to
 | **Requirement**            | **Specification**                       | **Validation Method**     | **Business Impact**          |
 |----------------------------|-----------------------------------------|---------------------------|------------------------------|
 | **Computer Vision Models** | Defect detection, classification models | Model accuracy test       | Quality detection capability |
-| **Edge Inference**         | Real-time inference <100ms              | Inference speed benchmark | Production line integration  |
+| **Edge Inference**         | Real-time inference \<100ms             | Inference speed benchmark | Production line integration  |
 | **Model Training**         | Cloud-based training infrastructure     | Training pipeline test    | Continuous improvement       |
 | **Image Storage**          | High-speed local and cloud storage      | Storage performance test  | Image data management        |
 

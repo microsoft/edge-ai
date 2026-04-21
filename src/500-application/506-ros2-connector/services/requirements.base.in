@@ -1,0 +1,26 @@
+# Base ROS2 Application Dependencies
+# Common dependencies shared between ros2-connector and ros2-simulator
+
+# Web framework for health checks
+flask==3.1.3
+werkzeug==3.1.8
+
+# Data processing and utilities
+numpy>=1.26.0
+opencv-python==4.13.0.92
+Pillow==12.2.0
+
+# System monitoring
+psutil==7.2.2
+
+# Configuration management
+python-dotenv==1.2.2
+pyyaml==6.0.3
+
+# Testing (development)
+pytest==9.0.3
+pytest-asyncio==1.3.0
+pytest-cov==7.1.0
+
+# ROS2 build tooling (consumed by builder stage; harmless in runtime)
+colcon-common-extensions==0.3.0

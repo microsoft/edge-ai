@@ -30,11 +30,24 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # NOTE: The rust install should be removed when v1.85 is available
 # See Open Issue: https://github.com/microsoft/azurelinux/issues/12837
 # A rust version that supports edition 2024 is needed to use Azure IoT Operations crates
-# Install Rust and immediately source the environment in the same RUN command
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y \
-    --profile minimal \
-    --default-toolchain 1.86.0 \
-    --component rustc,cargo,rust-std
+# Install Rust via rustup-init with sha256 verification (OSSF Pinned-Dependencies)
+ARG RUST_TOOLCHAIN=1.86.0
+RUN set -eux; \
+    case "$(uname -m)" in \
+        x86_64)  RUSTUP_ARCH="x86_64-unknown-linux-gnu" ;; \
+        aarch64) RUSTUP_ARCH="aarch64-unknown-linux-gnu" ;; \
+        *) echo "unsupported arch: $(uname -m)" >&2; exit 1 ;; \
+    esac; \
+    RUSTUP_DIR="$(mktemp -d)"; \
+    RUSTUP_INIT="${RUSTUP_DIR}/rustup-init"; \
+    RUSTUP_HASH="$(mktemp)"; \
+    RUSTUP_URL="https://static.rust-lang.org/rustup/dist/${RUSTUP_ARCH}/rustup-init"; \
+    curl --proto '=https' --tlsv1.2 -sSf "${RUSTUP_URL}"        -o "${RUSTUP_INIT}"; \
+    curl --proto '=https' --tlsv1.2 -sSf "${RUSTUP_URL}.sha256" -o "${RUSTUP_HASH}"; \
+    echo "$(awk '{print $1}' "${RUSTUP_HASH}")  ${RUSTUP_INIT}" | sha256sum -c -; \
+    chmod +x "${RUSTUP_INIT}"; \
+    "${RUSTUP_INIT}" -y --profile minimal --default-toolchain "${RUST_TOOLCHAIN}" --component rustc,cargo,rust-std; \
+    rm -rf "${RUSTUP_DIR}" "${RUSTUP_HASH}"
 
 # Add Rust binaries to PATH for subsequent RUN commands
 ENV PATH="/root/.cargo/bin:${PATH}"

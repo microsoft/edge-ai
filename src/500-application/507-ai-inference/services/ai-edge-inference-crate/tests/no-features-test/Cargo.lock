@@ -58,6 +58,7 @@ name = "ai-edge-test-no-features"
 version = "0.1.0"
 dependencies = [
  "ai-edge-inference-crate",
+ "tokio",
 ]
 
 [[package]]

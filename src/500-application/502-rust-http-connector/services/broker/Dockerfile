@@ -39,10 +39,8 @@ RUN rpm --import /etc/pki/rpm-gpg/MICROSOFT-RPM-GPG-KEY && \
 # Set shell options for better error handling with pipes
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-
-RUN rustup update stable && \
-    rustup component add rustfmt
+# Rust toolchain is provided pinned by the base image (azurelinux/base/rust:1.86.0).
+# Avoid running rustup to prevent pulling an unpinned upstream toolchain.
 
 ARG USE_REPLACE_WITH=false
 
