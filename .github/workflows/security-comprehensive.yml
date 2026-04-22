@@ -94,7 +94,6 @@ name: Security Comprehensive Monitoring
 
 permissions:
   contents: read
-  security-events: write
   actions: read
 
 jobs:
@@ -183,6 +182,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: security-hardening
     timeout-minutes: 25
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
     outputs:
       score: ${{ steps.scorecard-check.outputs.score }}
       threshold-failed: ${{ steps.scorecard-check.outputs.threshold-failed }}
